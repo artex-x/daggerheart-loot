@@ -1,11 +1,10 @@
 /* "Everything a person can reach" - the 110 states tests/app/golden.js
- * captures a structural snapshot of on both languages. Originated (issue 47,
- * "R0a planned: the evidence, the sweep, and the structural goldens") as an
- * independent copy of tests/parity/specs.js's STATES array plus the
+ * captures a structural snapshot of on both languages. Originated (issue 47)
+ * as an independent copy of tests/parity/specs.js's STATES array plus the
  * module-level constants it read: the print routes, PACKED, the button-name
  * dictionary NAME (used inside several `enter` closures), the fixture
- * requires, and the storage seeds. R0c deleted specs.js and the parity
- * harness around it; this file is now the only copy.
+ * requires, and the storage seeds. specs.js and the parity harness around it
+ * were later deleted; this file is now the only copy.
  *
  * tests/app/golden.js is the only reader; tests/app/lib.js's `fresh()` and
  * `makeDriver` do the rest.
@@ -144,7 +143,7 @@ const NAME = {
     undo: 'Undo',
     noteClear: 'Clear the note',
     /* A plain apostrophe, the way the live app prints it (dict.ts's ASCII
-       string, straightened by P14/B7) - not a curly one. */
+       string, straightened) - not a curly one. */
     sharePlayers: "Players' link",
     shareGm: 'Your own link',
     rollBy: 'Roll on this list',
@@ -190,7 +189,7 @@ const eight = {
 };
 
 /* The lists index's own seed: one card with six thumbnails and a badge of 7,
-   one empty card - `plan.md`, "B5.3 planned", "Parity states". */
+   one empty card. */
 const seven = {
   'dhloot.lists.v2': JSON.stringify([
     { ...LISTS[0], ids: ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'] },
@@ -199,7 +198,7 @@ const seven = {
 };
 
 /* The list page's own seed: a priced, counted, noted entry, and a list note
-   both public and hidden - `plan.md`, "B5.4 planned". */
+   both public and hidden. */
 const noted = {
   'dhloot.lists.v2': JSON.stringify([
     {
@@ -217,7 +216,7 @@ const noted = {
 /* The empty list, on its own - `#/lists/b`. */
 const oneEmpty = { 'dhloot.lists.v2': JSON.stringify([LISTS[1]]) };
 
-/** P2: a list row's checkbox is now named after its own record rather than
+/** A list row's checkbox is now named after its own record rather than
  *  the generic "Выбрать позицию", so a spec ticking `seven`/`noted`'s row 1
  *  or row 2 has to click the record's own Russian name (ci1, ci2). */
 const ROW1_CI1 = 'Первоклассный Спальный Мешок';
@@ -715,10 +714,10 @@ const STATES = [
   },
 
   /* The row/section anchor - `#/tables/<table>/<key>` - never had a state at
-     all, on any table, so the mechanism went unwired since B1 without
-     anything noticing. One of each: a section on a table this batch builds,
-     and a row on one of B1's own tables, which is the only way the fix on the
-     tables built earlier gets verified. */
+     all, on any table, so the mechanism went unwired without anything
+     noticing. One of each: a section on a newly added table, and a row on
+     an already-shipped one, which is the only way the fix on the earlier
+     table gets verified. */
   {
     id: '#/tables/voa ~ section anchor',
     route: '#/tables/voa/tA',
@@ -727,7 +726,7 @@ const STATES = [
   {
     id: '#/tables/core_item ~ row anchor',
     route: '#/tables/core_item/ci1',
-    why: "arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one"
+    why: "arriving at a record's row link scrolls to and flashes it - an already-shipped table, not a new one"
   },
 
   /* `srcLabel`'s frame case returned the raw id rather than the frame's own
@@ -739,7 +738,7 @@ const STATES = [
     why: 'a frame-equipment record, catching the source-badge fix'
   },
 
-  /* B2: a tag and a table path are two different things. Neither shape had a
+  /* A tag and a table path are two different things. Neither shape had a
      state before, which is why the human found both defects on the published
      site rather than in a golden. */
   {
@@ -812,8 +811,8 @@ const STATES = [
     storage: { 'dhloot.lists.v2': '{' }
   },
 
-  /* The list page, off `renderOneList` and everything it draws - app.js
-     2933-3128. `plan.md`, "B5.4 planned". */
+  /* The list page, off `renderOneList` and everything it draws in the
+     legacy app.js. */
   {
     id: '#/lists/a',
     route: '#/lists/a',
@@ -979,7 +978,7 @@ const STATES = [
     why: 'the bad-link page: "Предмет не найден", the badShare line, the "На главную" button'
   },
   {
-    /* Valid base64url, invalid deflate - R10/D2 (Q4 settled): a failed
+    /* Valid base64url, invalid deflate: a failed
        expansion now keeps the address exactly where it was rather than
        replacing it with #/l/zzzz, and draws the same bad-link page in place. */
     id: '#/l/~AAAA',
@@ -1021,7 +1020,7 @@ const STATES = [
   {
     id: '#/search ~ capped',
     route: '#/search',
-    why: 'the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it (P7)',
+    why: 'the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'а');
     }
@@ -1040,7 +1039,7 @@ const STATES = [
     why: 'the bar over search',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'меч');
-      /* P2: the first hit for "меч" - verified against the real catalogue,
+      /* The first hit for "меч" - verified against the real catalogue,
          `search.ts`'s own matcher (`node -e` against `data.json`, both
          directly and through `buildIndex`/`matches`/`hayFor`). */
       await d.tick('Камень Доблести');

@@ -114,7 +114,11 @@ So, before dispatching:
   the worker commits, rather than asking a worker to babysit it in one call.
 - Never let two heavy runs overlap - a vitest coverage pass started while a
   `tests/app/` run's browsers are alive produces spurious 5000ms timeouts.
-  Check for stray `chrome.exe` before trusting a timeout.
+  But `chrome.exe` is not always the culprit: vitest has timed out a single
+  test (`sections.test.ts`, 5000 ms) with zero `chrome.exe` running, then
+  passed the same test alone in 8.37 s right after - one `Test timed out`
+  line is reason to re-run before it is reason to investigate, whether or
+  not a stray browser process is present.
 
 ## Concurrency
 - Only one writer on this branch at a time (implementer, add-source, or refresh-artwork)
@@ -212,7 +216,9 @@ blocker on its own schedule, even when that means waiting for the tree.
 findings as messages, not files, so they live only in the orchestrator's
 context and die with the session. 2026-09-17: four reviews' worth of nits,
 risks and evidence were one context away from being lost. Write them to a
-register in `issues/<id>/` as they arrive - not when somebody actions them.
+register in `issues/<id>/` as they arrive - not when somebody actions them;
+at closeout the register's open rows go to `docs/specs/DEBT.md` or are named
+to the human and dropped.
 
 ## Model selection (orchestrator only)
 Agents must not choose models or effort.
@@ -276,7 +282,11 @@ Run reviewer after implement or add-source when ANY of:
 - worker reported uncertainty or deviation from plan
 Otherwise skip review. Record the verdict in the batch's handoff Completed
 section: `Review: required (trigger: <which>)` or `not required (no trigger
-fired)` - both derivable from what the record already holds.
+fired)` - both derivable from what the record already holds. A batch whose
+whole scope is other reviews' findings may run without a reviewer on the
+owner's say-so - each routed finding then proves itself in the failing
+direction as an acceptance line - and the handoff says `Review: not run
+(owner's decision)`, never `not required`.
 
 ## Procedure (feature path)
 1. Ensure context.md exists/refreshed for TASK
@@ -341,6 +351,9 @@ queued behind it is mid-plan, whatever its size.
   left.
 - Gates do not move. The fix-pass reruns the batch's checks and commits, or it
   reverts its own nit fixes and reports. A nit never justifies a red gate.
+- Exception: when a plan's batches are merged by area and do not overlap, a
+  deferred nit has nothing to ride - such a plan clears nits in the batch
+  that receives them (owner instruction, 2026-09-17).
 - Unsure whether a batch is terminal - ask. It is one question, where a wrong
   guess either burns the cycle or drops the nits on the floor.
 
@@ -368,11 +381,12 @@ Before reporting a batch or task complete:
 1. Wait for every dispatched worker to finish or report a blocker; collect each result. If the host exposes teammate lifecycle controls, request shutdown of any remaining teammates. Do not edit or delete host-managed agent/team state by hand.
 2. Reconcile `context.md`, `plan.md`, and `handoff.md`: status, completed batch, branch/base, commits, exact checks and results, review findings, deferred work, blockers, and next action must agree. If the Stop hook named a task document over its size budget, compact it per `.claude/skills/handoff/SKILL.md` before reporting.
 3. Confirm no required acceptance criterion, review blocker, or `NEEDS_HUMAN_CONFIRMATION: yes` remains unresolved. If one remains, mark the task blocked rather than done.
-4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and commit the coherent change; the reviewer stays read-only. The branch is pushed at each committed boundary; confirm the remote matches before reporting done.
+4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and amend the task's commit; the reviewer stays read-only.
 5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, and anything user-owned or ambiguous. The `Stop` hook names this session's own untracked writes (excluding `docs/` and the task-document set) as a candidate set, not a verdict - it states what is there, never what to do with it. The session that watched the files appear is the one that can tell scratch from evidence; a hook cannot. Record what was removed or deliberately retained in `handoff.md`.
-6. Retire the task directory. Durable knowledge earns a permanent home first - behaviour to `docs/specs/`, tooling and rationale to the README that owns that area - because a rejected-options list or a measured fact is worth exactly as much as the next person's ability to find it. Before deleting `plan.md`, run `git grep -n "issues/<id>/plan\.md"`; move the durable content, then retarget or delete every tracked citation the grep finds, and remove the file in that same commit - `bash-guard.mjs` denies the deletion while a citation still stands, so the order is not optional. Watch the trap this very task walked into: the retirement itself is `.md`-only and gate-exempt, but a citation repair that touches a non-exempt file (`.claude/hooks/*.mjs`, `README.md`, `README.ru.md`, or any code) puts the whole commit behind a passing `npm run check`. Once nothing in `plan.md` is still referenced, delete it; keep `context.md` and `handoff.md`, and mark the handoff status **done**. Never retire a directory the human still calls active - issue 47 holds the live migration backlog by `CLAUDE.md`'s own instruction.
-7. A completed task directory is history, not instructions. Do not read one for a new task unless the human names that id, and never treat a done task's `handoff.md` as the next batch. Closeout is not finished until what steps 5 and 6 did is written into the handoff's `Cleanup performed / retained artifacts` field - the only durable record of a decision to keep something.
-8. Finish with a concise summary: outcome, commits, checks, cleanup, retained artifacts, deferred work, and whether human action is required.
+6. Retire the task directory per `.claude/skills/handoff/SKILL.md`, "Finishing a task": audit, move, repair every citation `git grep -n "issues/<id>" -- ':!issues/'` finds (unslashed and scoped outside all of `issues/` - the same boundary `bash-guard.mjs` rule 2i checks, so a bare-name citation with no trailing slash is not missed; a sibling id that merely starts with this one is not a real hit), `git rm -r issues/<id>` in the closeout amend - `bash-guard.mjs` rule 2i denies the deletion while a citation stands, so the order is not optional. A citation repair that touches a non-exempt file puts the amend behind a passing `npm run check`. A directory whose task is planned but not started stays until that task closes.
+7. A retired task leaves nothing behind but its commit and what it wrote to permanent homes. Closeout is not finished until the closeout summary names the pushed sha and every place something was moved to.
+8. Push the task's commit once, now that the task directory is retired; record the pushed sha in the closeout summary. The amend window is closed at that push - any further work on this task is a new commit, never an amend.
+9. Finish with a concise summary: outcome, commit (pushed sha), checks, cleanup, retained artifacts, deferred work, and whether human action is required.
 
 ## Rules
 - One implement batch per implement cycle unless human asks for more

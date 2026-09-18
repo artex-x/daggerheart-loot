@@ -3,10 +3,11 @@
 ## Start here
 
 For task work read, in order: `CLAUDE.md`, then `issues/<id>/context.md`,
-`plan.md` and `handoff.md`, then the `docs/specs/` files the change touches.
+`plan.md` and `handoff.md`, then the `docs/specs/` files the change touches,
+and `docs/DECISIONS.md` when the change touches a recorded decision.
 
-Use the task id supplied by the human; issue 47 is the Svelte migration, not a
-default. Reuse `context.md`; re-fetch only missing, stale, or superseded facts.
+Use the task id supplied by the human; there is no default task. Reuse
+`context.md`; re-fetch only missing, stale, or superseded facts.
 If issue evidence, specs, live behaviour, and the plan conflict, stop and surface it.
 
 ## Project shape
@@ -29,8 +30,10 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 - Add no module, export, component, or variant before something uses it.
 - Extract shared UI on its second real use; remove both inline copies.
 - In a touched path, fix cheap, local, safe bugs, stale tests/fixtures, and cleanup required for correctness.
-- Do not use "out of scope" to avoid local fixes. Record unrelated refactors,
-  redesigns, or project-wide cleanup in the handoff instead.
+- Do not use "out of scope" to avoid local fixes. Record unrelated
+  refactors, redesigns, or project-wide cleanup in the handoff's Deferred;
+  at closeout a defect goes to `docs/specs/DEBT.md`, the rest is named to
+  the human and dropped.
 
 ## Task and session protocol
 
@@ -38,11 +41,17 @@ One session at a time per working tree. A second session's `npm ci`, staged
 index, vitest coverage directory or browser suite run will corrupt the
 first's results, and the failure looks like a bug in whatever was running.
 
-Task state lives under `issues/<id>/`: `context.md` (shared facts and settled
-decisions), `plan.md` (design, ordered batches, status), `handoff.md` (recovery
-state, checks, blockers, next batch). Each has a size budget: the Stop hook
-warns past it, and `.claude/skills/handoff/SKILL.md` (`/handoff`) is the
-compaction and closeout procedure.
+Task state lives under `issues/<id>/` only while the task is open:
+`context.md` (shared facts and settled decisions), `plan.md` (design, ordered
+batches, status), `handoff.md` (recovery state, checks, blockers, next batch).
+It is scratch: nothing outside the directory may cite it, and closeout
+deletes it. Durable knowledge is written to its permanent home in the batch
+that establishes it - behaviour to `docs/specs/`, tooling and host facts to
+`.claude/README.md`, decisions and their rejected alternatives to
+`docs/DECISIONS.md`, a defect kept on purpose to `docs/specs/DEBT.md` - never
+parked in a task document. Each has a
+size budget: the Stop hook warns past it; `.claude/skills/handoff/SKILL.md`
+(`/handoff`) is the closeout, retirement and compaction procedure.
 
 When asked to continue, report status and the next batch, then wait for confirmation. Implement only that batch unless the human changes scope.
 A placed item is its own acceptance line in the batch that receives it; a
@@ -51,20 +60,19 @@ A new state gets a `tests/app/inventory.js` entry and a re-seeded golden in
 the same change; a defect kept on purpose gets a `docs/specs/DEBT.md` entry in
 the same change.
 
-Size a batch by its gates, not its diff: `npm run check`, `check:built` and a
-golden shard or `tests/app/` filter cost the same minutes for eight paths as
-for forty, so merge work that shares a component, seed and filter. Split only
-at a public-contract change, a different route and filter set, or a commit the
-harness cannot reach; never plan a batch whose check cannot finish one
-foreground call or whose review cannot be held in one pass. Costs and the
-test: `.claude/README.md`, "Batch size and the fixed cost of a run".
-A plan names the criterion behind every split and states its total gate
-cost; a split with no criterion is a merge.
+Size a batch by its gates, not its diff: merge work that shares a component,
+seed and filter; split only at a public-contract change, a different route
+and filter set, or a commit the harness cannot reach. A plan names the
+criterion behind every split and states its total gate cost; a split with no
+criterion is a merge. Costs and the test: `.claude/README.md`, "Batch size
+and the fixed cost of a run".
 
 When the human says stop, handoff, or the session is ending: start no new work,
 leave code at a committed boundary (never a half-batch), and run `/handoff`.
-Task, branch, and environment facts belong in the handoff; durable behaviour
-belongs in specs.
+A finished task is closed by auditing its directory against `/handoff`'s
+durable list, moving what qualifies, deleting the directory in the task's
+commit, and pushing once. No directory is exempt; a task that is planned
+but not started keeps its directory until it ships.
 
 ## Specs are the behaviour source of truth
 
@@ -79,7 +87,7 @@ Read the files the change touches:
 | `docs/specs/COVERAGE.md` | suite ownership, thresholds, and known gaps |
 | `docs/specs/I18N.md` | bilingual behaviour |
 | `docs/specs/META.md` | `noindex`, crawling, URL-only lists, `file://`, tiers |
-| `docs/specs/DEBT.md` | live defects the rewrite reproduces on purpose, and live decisions kept over its own; owed a fix after the migration |
+| `docs/specs/DEBT.md` | live defects the rewrite reproduces on purpose, and live decisions kept over its own |
 
 Public contracts default to no change. An unavoidable change updates
 `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md`, and `llms.txt`
@@ -140,12 +148,32 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 ## Source and commit conventions
 
 - Open issue screenshots and design nodes before visual work; they are evidence.
-- Comments explain why. Source, identifiers, tests, and developer docs are English.
+- Source, identifiers, tests, and developer docs are English.
 - Product text may be Russian; otherwise use ASCII punctuation and characters.
 - Preserve unrelated working-tree changes. Commit only the coherent task scope.
 - Use Conventional Commits; author as `artex-x <artex-x@users.noreply.github.com>`.
-- Push the branch once a batch's commits pass their gates; a committed boundary
-  the remote never saw is one lost session away from gone.
+- One commit per task: the first batch commits, every later batch and the
+  closeout amend it (`git commit --amend`), each amend green on its gates.
+  Push once, at closeout, after the task directory is deleted. A push closes
+  the amend window: never force-push in any form; work after a push is a new
+  commit. A push before closeout is the human's call and costs one more commit.
+
+## Comments
+
+- A comment earns its place only when the code cannot say it: a reason, a
+  measured constraint, a defect reproduced on purpose, a trap the next reader
+  would fall into. Never what the code does, who did it, or the session
+  narrative - a measurement's own date stays (`measured 2026-09-10 on this
+  host`).
+- Cite only what resolves from a clean checkout: a spec section, a permanent
+  doc section, a commit sha (`git show <sha>:<path>` for a deleted file), or
+  a GitHub issue number - never a bare batch id, a review finding id, a plan
+  or handoff section, an `issues/<id>/` path, or a line number.
+- One to three lines; a longer reason belongs in a spec, `docs/DECISIONS.md`
+  or `.claude/README.md`, cited from the comment. The rule binds test and
+  suite titles and commit messages too: a title names the behaviour and, if
+  it must, the coupling it guards, never a batch id, a finding id, or a line
+  number.
 
 ## Maintaining this file
 
@@ -158,7 +186,8 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 ## Orchestration
 
 Feature work uses roles (see `.claude/`):
-- **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code)
+- **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code);
+  decisions to `docs/DECISIONS.md`
 - **implementer** -> next batch only; routing: `.claude/README.md`, "Host-aware explicit routing policy"
 - **reviewer** -> required when a trigger in `.claude/prompts/orchestrate.prompt.md`, "When to run reviewer (do not skip these)" fires; one remediation cycle; nits defer mid-plan and clear on the terminal batch
 - **add-source** -> rare end-to-end content ingest

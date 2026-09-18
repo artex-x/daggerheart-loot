@@ -110,10 +110,10 @@
    * `App.svelte` remounts a different page component - the live app's own
    * "every other route" moment.
    *
-   * R4-1/PF3: this used to call `app.syncListUrl(l)` straight away, so one
+   * This used to call `app.syncListUrl(l)` straight away, so one
    * `history.replaceState` landed per keystroke in a note - WebKit throws
    * past 100 of those in 30s. `scheduleUrlSync` below debounces the actual
-   * call 150ms trailing (`router.ts`'s own try/catch, R4-2, is the other
+   * call 150ms trailing (`router.ts`'s own try/catch is the other
    * half - the fallback for whichever browser is hit anyway); the read that
    * subscribes this effect to every edit still happens synchronously, right
    * here, so no edit is ever missed even though the write it causes lands
@@ -172,7 +172,7 @@
   });
 
   $effect(() => {
-    /* B6-R4, paid off: `pagehide` alone missed the mobile-Safari case where a
+    /* `pagehide` alone missed the mobile-Safari case where a
        hidden tab is discarded with no `pagehide` at all - `visibilitychange`
        is the more reliable last callback there. Both can fire for the same
        teardown (a tab hidden, then actually unloaded); `flushUrlSync`'s own
@@ -208,7 +208,7 @@
      fails it as dead CSS if the port toggled them itself. */
   const lsel = new SvelteSet<string>();
 
-  /* D23: Back/Forward between two different list addresses does not remount
+  /* Back/Forward between two different list addresses does not remount
      this component - Svelte only remounts between two different *route
      kinds* - so `lsel` and the open batch bar used to survive a history move
      onto a different list entirely, showing the previous list's ticks over
@@ -295,13 +295,13 @@
     const l = own;
     if (!l) return;
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
-    /* Before removing it: a pending debounced sync (R4-1/PF3) still names
+    /* Before removing it: a pending debounced sync still names
        this list, and must not flush into the address bar after it is gone -
        see `cancelUrlSync`. */
     cancelUrlSync();
     const removed = store.remove(l.id);
     app.go('#/lists');
-    /* P5: delete gets an undo, like every other destructive action here. */
+    /* Delete gets an undo, like every other destructive action here. */
     if (removed) {
       app.say(t.listDeleted.replace('%s', l.name), {
         action: {
@@ -455,7 +455,7 @@
   }
 
   /**
-   * The shape all three batch price actions below repeated (A6): for every
+   * The shape all three batch price actions below repeated: for every
    * ticked row, ask `next(id)` for a new gold value - `undefined` skips the
    * row (no eligible price, or nothing to change) - remember what it was,
    * write it, and if anything actually changed, toast `msg(n)` with an undo
@@ -628,7 +628,7 @@
    * leaves `textContent` empty) - the mount write stays `textContent` for
    * exactly that reason.
    *
-   * S4: past mount, an uncontrolled field ignores whatever this component's
+   * Past mount, an uncontrolled field ignores whatever this component's
    * own state does next - so a note that changed underneath it (another
    * tab's edit, landed through `watch()`) stayed on screen showing the old
    * text until the next keystroke silently overwrote the new one with it.
@@ -702,7 +702,7 @@
     {:else if !own}
       {#if route.kind === 'sharedList' && route.packed}
         {#if app.expandFailed === route.payload}
-          <!-- R10/D2 (Q4 settled): the expansion failed and the address is left
+          <!-- The expansion failed and the address is left
            exactly as it was - the same bad-link page a plain payload that
            will not decode draws, without replacing what is on the bar. -->
           <PageTitle title={t.notFound} sub={t.badShare} />
@@ -714,7 +714,7 @@
            either, app.js 4636. -->
         {/if}
       {:else if route.kind === 'sharedList'}
-        <!-- B10-N4: this mounts its own `<RecordHost>` inside this file's
+        <!-- This mounts its own `<RecordHost>` inside this file's
              (above), so `#/l/<payload>` carries two `open` states and two
              navigation effects at once. Harmless only because nothing wires
              this file's own `openRecord` into `SharedListPage` - every card
@@ -790,8 +790,7 @@
       {#if items.length > 1}
         <!-- `<details class="panel lroll">` is a `Panel.svelte` variant: a
          `<details>`, and `.lroll{padding:0}` plus its own `summary`/`[open]`
-         rules are this component's own - kept inline (plan.md, "B10
-         planned", decided 1). -->
+         rules are this component's own - kept inline. -->
         <details class="panel lroll">
           <summary><Icon name="die" /><span>{t.rollBy}</span></summary>
           <Field label="{t.rollResult} (1–{items.length})" after={hit ? 14 : 0}>
@@ -1042,7 +1041,7 @@
 
 <style>
   /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
-     `NoData.svelte` (B10, though this component's own copy read `--muted2`
+     `NoData.svelte` (though this component's own copy read `--muted2`
      where `NoData`'s reads `--muted` - never photographed either way).
 
      off the global `input[type=text]` rule (style.css:254-258), scoped as
@@ -1092,7 +1091,7 @@
     border-bottom-color: var(--muted2);
   }
 
-  /* `.card-acts` moved to `Actions.svelte` (B10) - `margin-bottom:16px` is
+  /* `.card-acts` moved to `Actions.svelte` - `margin-bottom:16px` is
      the live inline style on this specific block, now passed as `style`. */
 
   /* off `.money`, `.money-l`, `.money-br`, `.money-help` (style.css:694-702).
@@ -1272,8 +1271,8 @@
     color: var(--txt);
   }
 
-  /* P12: 20px of paint, 44px of target - the same `PageHead.svelte`
-     `.homebtn::after` shape, off `PageHead.svelte:133-141`. */
+  /* 20px of paint, 44px of target - the same `PageHead.svelte`
+     `.homebtn::after` shape. */
   .note-x::after {
     content: '';
     position: absolute;
@@ -1524,7 +1523,7 @@
   }
 
   /* off `.rows`, `.row`, the `(hover:hover)` `.row:hover` (style.css:547-553)
-     - the third copy of three short rules, recorded (plan.md, "Decided"). */
+     - the third copy of three short rules. */
   .rows {
     display: flex;
     flex-direction: column;
@@ -1774,7 +1773,7 @@
     flex: none;
   }
 
-  /* D18, paid off: this component's own 8px-radius override deleted - the
+  /* This component's own 8px-radius override deleted - the
      global `:focus-visible` rule (tokens.css) already reaches every
      control, at the one radius the owner chose. */
 

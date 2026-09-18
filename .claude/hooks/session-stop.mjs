@@ -10,11 +10,11 @@ import { readInput, guard, warn, git, activeTask, getWrote, once, pathKey } from
 
 /** issues/<id>/context.md, plan.md, handoff.md, or anything under
  * issues/<id>/mocks/ - the task-document set. Excluded from the untracked-
- * writes candidate list below: the one recorded scratch artifact
- * (issues/dh-image-polish/refresh_artwork.py) lives inside an issue
- * directory, so excluding the whole active directory would blind this rule
- * to its only measured instance. Excluding just the document names keeps a
- * planner's own fresh plan.md out of the message instead. */
+ * writes candidate list below: a scratch script left inside a task
+ * directory (one recorded instance, since deleted) is why the whole active
+ * directory is not excluded - that would blind this rule to its only
+ * measured instance. Excluding just the document names keeps a planner's
+ * own fresh plan.md out of the message instead. */
 function isTaskDocument(key) {
   return (
     /^issues\/[^/]+\/(context|plan|handoff)\.md$/.test(key) ||

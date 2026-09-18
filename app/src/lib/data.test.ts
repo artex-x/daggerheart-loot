@@ -139,7 +139,7 @@ describe('the index over the real dataset', () => {
 
   it('carries eqtest.js/lists2.js real-data guards nothing else makes', () => {
     /* Ported from tests/eqtest.js:44-51,61 - the only place these ever ran,
-       and eqtest.js is one of the ten suites R0c deletes. */
+       and eqtest.js is one of the ten suites R0c (23c00a6) deletes. */
     const eq = LOOT.eq ?? [];
     const byT = (t: string) => eq.filter((it) => it.eq?.t === t).length;
     expect(byT('secondary')).toBe(73);
@@ -172,9 +172,9 @@ describe('the index over the real dataset', () => {
   it("orders the equipment pool the way app.js's ALL_EQ does - eq before the roll tables", () => {
     /* `ALL_EQ = EQ.concat(...Object.values(DATA))` in app.js: `eq` first, then
        every roll table in its own order. `allEquip` used to read `all` (the
-       roll tables) before `eq`, which was invisible until the equipment
-       tables (B4) drew a pool off it directly - a bare `#/tables/eq_weapon`
-       opened on a table-embedded weapon rather than on `eq`'s own first one. */
+       roll tables) before `eq`, which was invisible until something drew a
+       pool off it directly - a bare `#/tables/eq_weapon` opened on a
+       table-embedded weapon rather than on `eq`'s own first one. */
     const want = [...(LOOT.eq ?? []), ...Object.values(LOOT.items).flat()]
       .filter((it) => it.eq?.t === 'weapon')
       .map((it) => it.id);

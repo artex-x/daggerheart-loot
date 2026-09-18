@@ -1,7 +1,7 @@
 <script lang="ts">
   /* The lists index, `#/lists` - off `renderLists` (app.js 2909-2931),
    * `storageWarning`/`hideWarn` (2865-2886, 4175) and `listCardHTML`
-   * (2888-2907). The storage notice lives here and on the list page (B5.4),
+   * (2888-2907). The storage notice lives here and on the list page,
    * nowhere else - `Shell.svelte`'s own copy was the rewrite's invention. */
   import Badge from './Badge.svelte';
   import Button from './Button.svelte';
@@ -72,7 +72,7 @@
   function del(l: StoredList): void {
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
     const removed = app.lists.remove(l.id);
-    /* P5: delete gets an undo, like every other destructive action here. */
+    /* Delete gets an undo, like every other destructive action here. */
     if (removed) {
       app.say(t.listDeleted.replace('%s', l.name), {
         action: {
@@ -88,8 +88,7 @@
   async function restore(): Promise<void> {
     const raw = importDraft.trim();
     /* `~` is in the capture on purpose: the live regex lacks it and so refuses
-       its own "Поделиться" output whenever the packed form is shorter - see
-       plan.md, "B5.3 planned", "Decided in planning". */
+       its own "Поделиться" output whenever the packed form is shorter. */
     const m = /#\/l\/([~A-Za-z0-9_-]+)/.exec(raw);
     let pay = m?.[1] ?? raw;
     try {
@@ -102,7 +101,7 @@
       app.say(t.badShare, { error: true });
       return;
     }
-    /* R3: the list's own two notes and its money mode used to be dropped
+    /* The list's own two notes and its money mode used to be dropped
        here - decodeList returns all three and ListStore.create's own init
        already accepts them, so passing them through is the whole fix. */
     const l = app.lists.create(data.name, {
@@ -114,9 +113,9 @@
     });
     importDraft = '';
     app.go(sharedListHash(encodeList(l, true)));
-    /* P9: this call site is the one R3 named that must not proceed silently
-       - once created, a dropped entry is gone from the copy for good even
-       if the data later knows it again. */
+    /* This call site must not proceed silently - once created, a dropped
+       entry is gone from the copy for good even if the data later knows it
+       again. */
     if (data.dropped) app.say(t.droppedItems.replace('%n', String(data.dropped)));
   }
 </script>
@@ -204,12 +203,11 @@
 <style>
   /* `.miss` moved to `NoData.svelte`, `.numrow` to `NumRow.svelte`, `.panel`
      to `Panel.svelte` - the 16px margin-top is the live inline attribute,
-     passed as `style` (B10). */
+     passed as `style`. */
   /* Was `.numrow .grow`: `.numrow` now belongs to `NumRow.svelte`, a
      different component, so a descendant selector naming it here would match
      nothing - `.grow` only ever appears inside this file's own two `NumRow`
-     children anyway, so the ancestor is not needed to disambiguate it
-     (components.md, C7). */
+     children anyway, so the ancestor is not needed to disambiguate it. */
   .grow {
     flex: 1 1 170px;
     min-width: 0;

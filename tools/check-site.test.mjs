@@ -2,8 +2,8 @@
   node:test over check-site.lib.mjs's `checks()`/`runChecks()` - an in-memory
   good site and three broken ones, driven through the exact same injected-
   reader contract `fetchReader`/`dirReader` implement, so this is unit
-  coverage for the assertions themselves rather than for either transport
-  (issues/phase-8, B4, T10/DP9). `dirReader` itself is covered separately
+  coverage for the assertions themselves rather than for either transport.
+  `dirReader` itself is covered separately
   below against a real temp directory, since it is the one with filesystem
   logic worth proving (the GitHub-Pages-404 emulation).
 */
@@ -160,11 +160,11 @@ describe('dirReader - the GitHub Pages missing-path emulation, against a real di
 });
 
 describe('checks() shape', () => {
-  it('is the exact, named set of {path, test, message} descriptors - not just "more than a few" (issues/phase-8, B4-R2)', () => {
+  it('is the exact, named set of {path, test, message} descriptors - not just "more than a few"', () => {
     const list = checks();
-    // `list.length > 10` could not have caught the exact failure T10/DP9
-    // exists to prevent - an assertion silently vanishing in a refactor -
-    // because a refactor that dropped several checks would still pass it.
+    // `list.length > 10` could not catch an assertion silently vanishing in
+    // a refactor, because a refactor that dropped several checks would
+    // still pass it.
     // The exact count and the exact sorted distinct path set close that.
     assert.equal(list.length, 21);
     const paths = [...new Set(list.map((c) => c.path))].sort();

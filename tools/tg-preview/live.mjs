@@ -2,8 +2,8 @@
   Confirms the CDN is already serving what the manifest hashed, before a
   refresh is sent: pushing a refresh before Pages catches up would make
   Telegram re-cache the very bytes this tool exists to replace, under a state
-  entry that claims to be current - the one failure the state cannot see
-  (plan.md section 5.3). No unit test: it is real network I/O, same as
+  entry that claims to be current - the one failure the state cannot see.
+  No unit test: it is real network I/O, same as
   client.mjs; docs/tg-preview.md section "How the owner verifies a real
   refresh" is what actually checks its output.
 */
@@ -73,7 +73,7 @@ export async function verify(urls, { site, fetch: fetchImpl, sleep, log }) {
     const mismatched = [];
     await runPool(pending, VERIFY_CONCURRENCY, async (url) => {
       // Declared, not initialised: the initial value was never read before
-      // either branch below overwrote it (issues/phase-8, B9-R2/B9-N5).
+      // either branch below overwrote it.
       let live;
       try {
         live = await liveFingerprint(url);

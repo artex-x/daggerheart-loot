@@ -2,10 +2,9 @@
 
 `tools/artwork/` converts and installs the catalog's item pictures - the
 80% that four artwork operations (`8e7fed1`, `ce0c414`, `37ecc8d`,
-`art-to-fix`) each re-derived from prose, one of them leaving a tracked but
-unfound Pillow implementation behind
-(`issues/dh-image-polish/refresh_artwork.py`, superseded by this tool). It
-is a sibling npm project, modelled on `tools/tg-preview/`: its own
+`art-to-fix`) each re-derived from prose, one of them leaving a Pillow
+script behind in a task directory, since deleted and superseded by this
+tool. It is a sibling npm project, modelled on `tools/tg-preview/`: its own
 `package.json` and lockfile carry `sharp`, so the root `package.json` gains
 no dependency and root `npm ci` never installs an image encoder. Only
 `tools/artwork/run.mjs` imports `sharp`, and only lazily, so the verbs that
@@ -24,6 +23,10 @@ page is where those settings live, once.
 ```text
 cd tools/artwork && npm ci && cd ../..
 ```
+
+On Windows, `convert` on `PATH` resolves to the OS's own `convert.exe` (the
+FAT->NTFS tool), not ImageMagick - a `which convert`/`where convert` probe
+is a false positive and proves nothing about an ImageMagick install.
 
 ## Verbs
 
@@ -97,9 +100,11 @@ before trusting the drop:
 
 ## Conversion settings
 
-Established across three refreshes and measured byte-deterministic within a
-run (`issues/art-tooling/context.md`). Stated **once, here** - nowhere else
-in the repository outside `issues/` restates these numbers:
+Established independently across three refreshes - identical in
+`refresh_artwork.py` (the second and third refresh) and `art-to-fix`'s
+`convert.py` - and measured byte-deterministic across repeated runs of the
+same encoder within one run. Stated **once, here** - nowhere else in the
+repository restates these numbers:
 
 - Apply EXIF orientation.
 - Flatten alpha only when the input is fully opaque; a non-opaque alpha
@@ -201,3 +206,9 @@ The conversion settings are exactly `install`'s, above - not restated here.
 - `plan` and `verify-previews` need no encoder; `install`, `ingest` and
   `verify` do. If `tools/artwork/npm ci` cannot resolve `sharp`'s prebuilt
   binary on a given machine, the first two verbs are still useful there.
+- `og/` is not derived from `img/`: `tools/artwork/run.mjs`'s `encodePair`
+  writes the WebP and the JPEG as siblings from one original delivery
+  buffer, and `verify` re-encodes from that same original; the originals
+  live in untracked drop directories, so neither folder is recoverable from
+  the other or from the repository - why both stay tracked whatever the
+  generated-artefact policy elsewhere says.

@@ -5,11 +5,11 @@
  * selector, so a spec reads the same whether the markup underneath it is
  * hand-written HTML or a Svelte component's output.
  *
- * Until R0c (2026-09-17) this drove either of two targets - the live app at
+ * This driver used to drive either of two targets - the live app at
  * the repository root, or the built rewrite at `dist/index.html` - and a
  * side-by-side comparison harness ran every spec against the pair, with the
  * live app read as the expectation. That harness and the live app it
- * compared against were both deleted at R0c; `tests/app/*.js` is this
+ * compared against were both since deleted; `tests/app/*.js` is this
  * driver's only remaining reader, and it always means `next`.
  */
 const path = require('path');
@@ -79,14 +79,15 @@ async function ready(page) {
 /**
  * Waits for whatever a press started to finish moving.
  *
- * A fixed pause is the wrong instrument here in principle, but as of B8
- * (`tokens.css`'s blanket reduced-motion kill, D1) it is nearly what this
+ * A fixed pause is the wrong instrument here in principle, but
+ * `tokens.css`'s blanket reduced-motion kill (D1) made it nearly what this
  * has become in practice: under `prepare()`'s emulated
  * `prefers-reduced-motion: reduce` plus that blanket rule,
  * `document.getAnimations()` reports only 0.01ms animations, so the animation
  * wait below resolves immediately and `settle()` returns after its own 80ms frame
- * alone (measured: ~127ms from a click that finishes dispatching at ~19ms -
- * `issues/phase-8/context.md`, "The mechanism, measured 2026-09-18"). It is
+ * alone (measured: dispatch returns ~19ms, `settle()` ~127ms, `location.hash`
+ * changes ~174ms; the one running animation is `toastIn` at `duration: 0.01`;
+ * before the fix `settle()` returned ~300ms). It is
  * kept anyway because it is still the correct instrument for an animation
  * the CSS rule cannot reach, and for whenever the emulation is scoped down.
  * What it does NOT do any more is stand in for anything a press defers past
@@ -197,7 +198,7 @@ function makeDriver(page, target) {
      * instead (`aria-label`), the way a person reads them.
      *
      * `event` is `'change'` for the position field, whose live handler
-     * (app.js 4545-4549) waits for the field to be committed rather than
+     * (the legacy app.js) waits for the field to be committed rather than
      * acting on every keystroke; every other field keeps the default
      * `'input'`.
      */
@@ -232,7 +233,7 @@ function makeDriver(page, target) {
      * toggle that carries no text of its own - answers to the same verb as a
      * button. `has()` already searched inputs; `click()` had not.
      *
-     * P2 named every row checkbox after its own record, the same name
+     * Every row checkbox is named after its own record, the same name
      * pressing the row itself opens - a name this method used to resolve by
      * "first exact match, DOM order", which now means the checkbox (an exact
      * match) pre-empts the row (whose own name usually carries a roll number
@@ -290,7 +291,7 @@ function makeDriver(page, target) {
     /**
      * Ticks (or unticks) the checkbox named `name` - a row's own tick box,
      * which `click()` no longer resolves to when the same name also opens
-     * the row (P2). Used wherever a spec means the box specifically, not
+     * the row. Used wherever a spec means the box specifically, not
      * whatever else on the row shares its name.
      */
     async tick(name, nth = 0) {
@@ -330,8 +331,7 @@ function makeDriver(page, target) {
      * onclick>` listener, a block the first handler opened or closed can
      * already have replaced its target by the time the second one runs - the
      * class `el.click()` and jsdom's `userEvent` cannot reach by construction
-     * (`plan.md`, "Phase 5 planned", decided 6; the defect it caught was B11's
-     * `isConnected` guard). `tests/app/` is what needs this; no parity state
+     * (the defect it caught was the `isConnected` guard). `tests/app/` is what needs this; no parity state
      * does, so `click`'s synthetic dispatch - and every debt figure measured
      * against it - is untouched.
      *
@@ -375,9 +375,9 @@ function makeDriver(page, target) {
       } catch (e) {
         await handle.dispose();
         // The message already folds e.message in by hand; adding
-        // { cause: e } too is a real improvement, left for the batch that
-        // next touches error handling here rather than a directory-wide
-        // rule turn-off (issues/phase-8, B9-R2/B9-N5).
+        // { cause: e } too is a real improvement, left for whatever next
+        // touches error handling here rather than a directory-wide
+        // rule turn-off.
         // eslint-disable-next-line preserve-caught-error
         throw new Error(
           `${target}: "${name}"${nth ? ` (nth ${nth})` : ''} is not clickable - ${e.message}`
@@ -438,7 +438,7 @@ function makeDriver(page, target) {
      * Waits for a packed shared-list address to finish expanding.
      *
      * `ready()` alone is not enough here: on the live app nothing renders
-     * before `expandHash()` replaces the hash (app.js 4636, `if
+     * before `expandHash()` replaces the hash (the legacy app.js: `if
      * (!expandHash()) render()`), so its own wait for `#view`/`#app` to have
      * children already implies the expansion landed. The rewrite's `Shell`
      * mounts at once and the replace lands a few milliseconds later, so
@@ -586,7 +586,7 @@ function makeDriver(page, target) {
      * `evaluateOnNewDocument`, the same way `prepare()` clears storage, and
      * called after it (from `arrive()`, before `open()`) so this write
      * survives the clear rather than racing it. The live app's own suites
-     * (deleted at R0c, issue 47) did exactly this.
+     * (since deleted, issue 47) did exactly this.
      */
     async seed(entries) {
       await page.evaluateOnNewDocument((kv) => {
@@ -657,7 +657,7 @@ function makeDriver(page, target) {
      * grips a control by the name a person reads; this method instead measures
      * one specific *ported* control, and the class names are themselves
      * ported - every component in `app/src/components/` writes its CSS "off
-     * `.x` in style.css" (the live stylesheet, deleted at R0c but still
+     * `.x` in style.css" (the live stylesheet, since deleted but still
      * readable from history), and Svelte's scoping keeps the original class in
      * the `class` attribute alongside its hash. Selectors stay structural or
      * contract-level wherever one exists (`input[type=search]`, `[data-row]`)
@@ -719,7 +719,7 @@ function makeDriver(page, target) {
      * shot and were never being looked at.
      *
      * A full-page capture rasterises the whole document in one go, most of it
-     * never painted before this call - B5.1 measured the geometry
+     * never painted before this call - measured directly: the geometry stayed
      * byte-identical across readings while the pixels swung 0.00-7.31% on an
      * unchanged build, worse under load: a capture handed back before the
      * raster finished, not anything the app drew. Same invariant `settle()`
@@ -845,9 +845,10 @@ function makeDriver(page, target) {
    difference in what comes back is a difference in the app rather than in the
    conditions it was run under. */
 async function prepare(page) {
-  /* This emulation predates B8 and its original reasoning (parity-era: "both
-     apps fade a card in over 0.28s... takes timing out of the pixel
-     comparison") died with the parity harness at R0c. It stays for a better
+  /* This emulation predates the current rewrite; its original reasoning
+     (parity-era: "both apps fade a card in over 0.28s... takes timing out of
+     the pixel comparison") died along with the parity harness, since
+     deleted. It stays for a better
      reason: D1 (`tokens.css`'s blanket reduced-motion kill) is the app's
      shipped behaviour for a visitor who asked for less motion, and only under
      this emulation does every browser suite exercise that branch - drop it
@@ -871,8 +872,7 @@ async function prepare(page) {
     window.__clip = null;
     // A plain constructor function, not a `class`, so it is not an
     // extraneous-class violation - it exists only to be `new`-able the way
-    // the real DOM ClipboardItem is, with no static members (issues/phase-8,
-    // B9-R2/B9-N5).
+    // the real DOM ClipboardItem is, with no static members.
     window.ClipboardItem = function (m) {
       this.map = m;
     };

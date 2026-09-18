@@ -1,6 +1,6 @@
 # #/search ~ capped
 # route: #/search
-# why: the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it (P7)
+# why: the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it
 
 ## ru :: tree
 RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]

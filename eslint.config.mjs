@@ -57,14 +57,12 @@ export default ts.config(
         svelteConfig
       }
     }
-    /* C9 (issues/phase-8): tried `@typescript-eslint/no-confusing-void-
-       expression`'s `ignoreVoidReturningFunctions` option here to clear the
-       three eslint-disable comments in ListPage.svelte/PrintCard.svelte that
-       suppress it for `{@render}` tags. It cleared none of the three and, on
-       PrintCard's file-wide disable, exposed thirteen other pre-existing
-       violations the disable had also been hiding - a wider effect than
-       intended for zero gain, so not kept; the three disables stay as they
-       were. */
+    /* `@typescript-eslint/no-confusing-void-expression`'s
+       `ignoreVoidReturningFunctions` option does not clear the three
+       eslint-disable comments in ListPage.svelte/PrintCard.svelte that
+       suppress it for `{@render}` tags, and turning it on exposes many other
+       pre-existing violations through PrintCard's file-wide disable - not
+       worth it for zero gain, so the three disables stay as they are. */
   },
   {
     /* ---------- the layer boundary ----------
@@ -137,26 +135,22 @@ export default ts.config(
     /* tests/** and tools/**: standalone node scripts that sit outside every
        tsconfig, so the type-aware rules have no project to resolve them
        against - same treatment as the root config files above.
-       `.claude/hooks/**` joins them for the same reason (issues/phase-8,
-       H11): these ran outside both lint and format on a rationale - "an
-       older style" - that only ever described the fourteen legacy suites
-       R0c deleted, not this code.
+       `.claude/hooks/**` joins them for the same reason: these ran outside
+       both lint and format on a rationale - "an older style" - that only
+       ever described the fourteen legacy suites now deleted, not this code.
 
        Every rule turned off below reflects a real, structural fact about
-       this code, not a diff-size budget (issues/phase-8, B9-N6 - the
-       original wording here cited this same commit's own "git diff -w
-       --stat empty" acceptance line, which B9 itself recorded as unmet and
-       as the wrong instrument): `no-console` is these suites' entire
-       reporting mechanism, the same way it is for any node CLI tool, not
-       the browser-app policy the rule exists to enforce; `no-require-
-       imports` (narrowed to `*.js` below, issues/phase-8, B9-N11) is
-       correct CommonJS in these files, not a TypeScript-era holdover to
-       migrate off; `explicit-module-boundary-types` has no annotation to
-       write over untyped JS, and no type to infer one from either. A rule
-       that instead caught a real, fixable pattern - `no-regex-spaces`,
+       this code, not a diff-size budget: `no-console` is these suites'
+       entire reporting mechanism, the same way it is for any node CLI tool,
+       not the browser-app policy the rule exists to enforce; `no-require-
+       imports` (narrowed to `*.js` below) is correct CommonJS in these
+       files, not a TypeScript-era holdover to migrate off;
+       `explicit-module-boundary-types` has no annotation to write over
+       untyped JS, and no type to infer one from either. A rule that instead
+       caught a real, fixable pattern - `no-regex-spaces`,
        `no-extraneous-class`, `no-useless-assignment` - was fixed at each of
-       its sites rather than turned off directory-wide (issues/phase-8,
-       B9-R2/B9-N5); `preserve-caught-error` likewise stays on here, with an
+       its sites rather than turned off directory-wide; `preserve-caught-
+       error` likewise stays on here, with an
        inline disable at each of its three pre-existing sites, so a *new*
        catch/rethrow in `tests/`/`tools/` is still caught instead of passing
        silently. */
@@ -187,7 +181,7 @@ export default ts.config(
     /* Narrower than the block above: every `no-require-imports` finding is
        in a `.js` CommonJS file (60 sites, measured), never a `.mjs` one, so
        scoping the turn-off to `*.js` still catches a future `.mjs` tool that
-       reaches for `require` by mistake (issues/phase-8, B9-N11). */
+       reaches for `require` by mistake. */
     files: ['tests/**/*.js', 'tools/**/*.js'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off'

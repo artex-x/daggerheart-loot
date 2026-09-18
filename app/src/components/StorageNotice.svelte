@@ -5,7 +5,7 @@
    * only in this browser" notice has not been dismissed yet.
    *
    * Extracted here on its second use - the lists index and the list page
-   * (B5.4) both draw it in the same slot, and nowhere else. */
+   * both draw it in the same slot, and nowhere else. */
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -25,7 +25,7 @@
   <!-- Nothing dismisses this one - there is nothing to remember it with. -->
   <div class="warn"><b>{t.noStorageTitle}</b>{' ' + t.noStorage}</div>
 {:else if app.lists.unreadable}
-  <!-- R1: storage itself works, but the lists key held something that would
+  <!-- Storage itself works, but the lists key held something that would
        not parse. Not dismissable either - the notice has to keep saying so
        until `unreadable` clears, which takes two writes, not one:
        `save()`'s own `#readCurrent()` still reads the corrupt value first
@@ -40,7 +40,7 @@
        `[data-keep]` elements - this is not one. Keyed on `app.lang` so the
        rewrite's own `<details>` is destroyed and re-created the same way. -->
   {#key app.lang}
-    <!-- D3, paid off: the dismiss cross used to sit inside `<summary>`, which
+    <!-- The dismiss cross used to sit inside `<summary>`, which
          is itself the disclosure's own interactive control - a button
          nested inside another interactive element, invalid HTML that also
          forced `expectNoA11yViolations`'s `nested-interactive` rule off at
@@ -50,8 +50,8 @@
          does not only hide its content visually the way `display: none` on
          one child would - the browser's own rendering suppresses every
          non-summary child at once, so the button painted nothing and had no
-         hit target either, silently undoing P12's 44x44 target along with
-         it. `<details>` moves inside `.warn` instead, carrying only the
+         hit target either, silently undoing the 44x44 target below along
+         with it. `<details>` moves inside `.warn` instead, carrying only the
          disclosure itself; the button sits beside it, a sibling of
          `<details>` rather than a child, and still visible with the
          disclosure closed. -->
@@ -142,12 +142,12 @@
     color: var(--txt);
   }
 
-  /* D18, paid off: this component's own 8px-radius override deleted - the
+  /* This component's own 8px-radius override deleted - the
      global `:focus-visible` rule (tokens.css) already reaches every
      control, at the one radius the owner chose. */
 
-  /* P12: 26px of paint, 44px of target - the same `PageHead.svelte`
-     `.homebtn::after` shape, off `PageHead.svelte:133-141`. */
+  /* 26px of paint, 44px of target - the same `PageHead.svelte`
+     `.homebtn::after` shape. */
   .warn-x::after {
     content: '';
     position: absolute;

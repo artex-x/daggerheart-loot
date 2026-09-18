@@ -15,7 +15,7 @@
  * Both kinds used to fail silently where a page had lost the control they
  * grip - `softClick`'s `has()` guard and `hit()`'s `querySelector` both
  * no-op on nothing found, and a renamed name or class stopped checking a
- * panel without saying so (B12 nit 1). `EXPECTED` is what turns "found
+ * panel without saying so. `EXPECTED` is what turns "found
  * nothing" into a failure where the grip should have resolved: a table of
  * which of the five each of the thirteen pages actually offers, read off the
  * components rather than assumed, so a page that loses one goes red instead
@@ -113,7 +113,7 @@ const { ok } = rep;
 
 /* EXPECTED and PAGES must name exactly the same set of routes - a page in
  * PAGES with no EXPECTED row used to fall through `EXPECTED[hash] ?? []` and
- * check nothing silently (B14 nit 3), and a stale EXPECTED row for a route
+ * check nothing silently, and a stale EXPECTED row for a route
  * PAGES no longer visits would be dead weight nobody reads. Asserted once, at
  * start-up, both directions, so a route added to one and not the other fails
  * loudly instead of quietly checking less than it looks like it does. */
@@ -134,7 +134,7 @@ const { ok } = rep;
 /** Presses a control by name if the page has one, and reports whether it
  *  did - the live equivalent of `hit()`'s `querySelector` returning null,
  *  but reported rather than swallowed: a grip `EXPECTED` names for this page
- *  and does not find is a failure, not a skip (B12 nit 1). */
+ *  and does not find is a failure, not a skip. */
 async function softClick(d, name) {
   const has = await d.has(name);
   if (has) await d.click(name);

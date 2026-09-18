@@ -354,8 +354,8 @@ describe('a record on its own page', () => {
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener');
     /* <i class="ref-s">, not <span> - .ref-s sets font-style: normal, so the
-       tag itself is invisible to every pixel instrument and, after R0c,
-       has no record outside this file and the source. */
+       tag itself is invisible to every pixel instrument and, after R0c
+       (23c00a6), has no record outside this file and the source. */
     expect(screen.getByText('Мудрость · Уровень 1 · Заклинание').tagName).toBe('I');
 
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
@@ -419,9 +419,9 @@ describe('a record on its own page', () => {
   });
 
   it('drops the copy-image button once the picture fails to load, restoring the live gate', async () => {
-    /* R0b.4's divergence 3: RecordActions.svelte:105 gated on `it.img` alone;
-       live gates on hasImage(it) = !!it.img && !brokenArt[it.id] (app.js:1684,
-       used at :2047). `ci1` carries an `img` field, so the button starts
+    /* RecordActions.svelte used to gate the copy-image button on `it.img`
+       alone; the live app gates on hasImage(it) = !!it.img &&
+       !brokenArt[it.id]. `ci1` carries an `img` field, so the button starts
        present and only the load failure should take it away. */
     const { container } = render(App, { env: at('ci1') });
     expect(screen.getByRole('button', { name: 'Скопировать изображение' })).toBeInTheDocument();
@@ -771,8 +771,8 @@ describe('the tier ladder', () => {
     );
   });
 
-  it('closes on a real navigation, but a filter pick or a list mutation would not (RecordHost, C6)', async () => {
-    /* RecordHost's close-on-navigation effect (components.md C6) is shared
+  it('closes on a real navigation, but a filter pick or a list mutation would not (RecordHost)', async () => {
+    /* RecordHost's close-on-navigation effect is shared
        by all eight pages now, pinned here on the one it came from.
        app.navigations bumps on go() and on an external hash change only
        (app.svelte.ts:312,460) - replace() never touches it, so a filter
@@ -788,7 +788,7 @@ describe('the tier ladder', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('closes the add-to-list menu on Escape and returns focus to its toggle, leaving the modal open (P4a)', async () => {
+  it('closes the add-to-list menu on Escape and returns focus to its toggle, leaving the modal open', async () => {
     render(App, { env: at('q1') });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const toggle = within(screen.getByRole('dialog')).getByRole('button', {

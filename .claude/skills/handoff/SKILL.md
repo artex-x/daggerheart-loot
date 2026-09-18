@@ -1,11 +1,11 @@
 ---
 name: handoff
-description: Closeout and task-state compaction for issues/<id>/ - end the session at a committed boundary and keep context.md, plan.md and handoff.md inside their size budgets. Manual only; the Stop hook names this file when a task document is over budget.
+description: Closeout, retirement and compaction for issues/<id>/ - finish a task by auditing its directory against the durable list, moving what qualifies, deleting the directory in the task's commit and pushing once; keep the three documents inside their size budgets while the task is open.
 disable-model-invocation: true
 argument-hint: "<task-id> [close | compact]"
 ---
 
-# Handoff: closeout and compaction
+# Handoff: closeout, retirement and compaction
 
 Applies to the active task's `issues/<id>/` set (`context.md`, `plan.md`,
 `handoff.md`). Any agent may follow this file by reading it; the slash command
@@ -21,8 +21,55 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
    `.claude/templates/handoff.template.md`): decisions, deviations, partial
    progress, exact commands and results, blockers, and the exact next action.
 4. Change `CLAUDE.md` only for a new standing rule or a recurring mistake.
-5. Push the branch if the batch's commits passed their gates.
-6. Compact (below) any task document the Stop hook named, before ending.
+5. Amend the task's commit with the task documents (`git commit --amend`),
+   green on its gates.
+6. Push only when the task is finished (below) - not at every session's end.
+
+## Finishing a task
+
+1. Start no new work; code at a committed (amended) boundary.
+2. Audit every file in the directory against the durable list (below). For
+   each qualifying item: grep the candidate home for a distinctive phrase
+   first (it may already be there), then write it there, self-contained.
+3. `git grep -n "issues/<id>" -- ':!issues/'`. Unslashed and scoped outside
+   all of `issues/`, matching the boundary `bash-guard.mjs` rule 2i checks -
+   a bare-name citation with no trailing slash (`(issues/<id>, ...)`) is the
+   dominant real shape and a slashed pattern misses it. Read each hit: a
+   sibling id that merely starts with this one (`issues/<id>-2`) is not a
+   real citation - the hook applies an identifier-boundary test a plain
+   `git grep` does not. Repair every real hit: state the fact where it is
+   cited, retarget to the permanent home, or - for a history-only pointer to
+   a deleted file - qualify it as `git show <sha>:<path>`. The handoff's
+   Deferred list: a defect goes to `DEBT.md`;
+   an idea is named to the human in the closeout summary; then it drops.
+4. `git rm -r issues/<id>`; `git commit --amend`. Rule 2i denies while a
+   citation stands; that is the rule working - repair, do not bypass.
+5. `git push`. Once. Record the sha in the closeout summary.
+
+## What is durable
+
+Exactly these classes, nothing else:
+
+1. **Decision** - still in force, with the alternatives rejected and the
+   reason. Not already recorded in a permanent file (grep a distinctive
+   phrase first).
+2. **Fact** - measured, not re-derivable from the repository or git history
+   (a wall clock, a probe outcome, a count used as evidence for a threshold),
+   whose subject still exists in the repository today.
+3. **Defect or owed work** - a defect knowingly kept, or work explicitly
+   deferred and never closed. A defect -> `DEBT.md`; an idea -> named to the
+   human, then dropped.
+4. **Quirk** - a host or tool behaviour with the symptom that identifies it.
+
+Homes: behaviour -> the spec that owns it; hook/harness/host ->
+`.claude/README.md` (a "Facts settled" list, a "Known limitations" bullet, a
+candidates row, or the section that owns the tool); other decisions ->
+`docs/DECISIONS.md`; defects -> `docs/specs/DEBT.md`.
+
+## Not durable
+
+Never durable: narrative, batch briefs, file lists, diffs, command output
+beyond its result line, status snapshots, anything re-derivable.
 
 ## The budget
 
@@ -32,12 +79,10 @@ session that wrote into that directory; it warns, never blocks, once per
 session per state. Why these numbers: every worker reads the three files at
 dispatch (`CLAUDE.md`, "Start here"), and at roughly four bytes per token a
 150 KB file is ~37k tokens - a fifth of a worker's context spent before it has
-read a line of code. Measured on 2026-09-15: issue 47's `plan.md` was 1,031 KB,
-57.7% of it pre-implementation briefs for batches that had already shipped;
-its `handoff.md` 523 KB, an append log under snapshot headings, 96% of its
-Status section superseded snapshots.
+read a line of code. Issue 47's `plan.md` reached 1,031 KB before compaction
+existed.
 
-## Never drop
+## Never drop (while the task is open)
 
 - decisions and their reasons, and the approaches rejected on the way
 - blockers, open questions, and any `NEEDS_HUMAN_CONFIRMATION` state
@@ -74,13 +119,5 @@ Status section superseded snapshots.
 
 Before collapsing, run `git log --oneline -3 -- issues/<id>/` and name the
 last pre-collapse commit in the handoff's `Cleanup performed / retained
-artifacts` line; history keeps the full text. Compact in its own commit
-(`docs(<id>): compact task state`), `.md`-only and gate-exempt.
-
-## Retirement
-
-`.claude/prompts/orchestrate.prompt.md`, "Task closeout and cleanup", step 6:
-durable knowledge goes to `docs/specs/` or `.claude/README.md` first; run
-`git grep -n "issues/<id>/plan\.md"` and retarget every citation before
-deleting `plan.md` (`bash-guard.mjs` denies the deletion while one stands);
-keep `context.md` and `handoff.md`, status `done`.
+artifacts` line; history keeps the full text. Compaction is folded into the
+task's next amend, `.md`-only and gate-exempt.

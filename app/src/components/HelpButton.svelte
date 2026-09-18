@@ -4,7 +4,7 @@
    * same title/aria-label (`whatIsThis`, the rewrite's `helpHint`).
    *
    * Extracted on its second use: the page-level button (`PageHead.svelte`)
-   * and the money picker's own, smaller one (`ListPage.svelte`, B5.4) draw
+   * and the money picker's own, smaller one (`ListPage.svelte`) draw
    * the same button at two sizes. */
   import { dict } from '../lib/dict.js';
   import type { Lang } from '../lib/types.js';

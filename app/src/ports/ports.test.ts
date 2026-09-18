@@ -305,7 +305,7 @@ describe('sharing', () => {
 });
 
 describe('the picture download fallback (D14)', () => {
-  /* B8-R4: `pngOf` cannot run in jsdom at all (no Image, no canvas, no
+  /* `pngOf` cannot run in jsdom at all (no Image, no canvas, no
      toBlob) and stays excluded from coverage (vite.config.mts) for exactly
      that reason - but `download` needs only the two DOM globals it actually
      touches stubbed, `URL.createObjectURL`/`revokeObjectURL`, so it can be
@@ -491,7 +491,7 @@ describe('dragging', () => {
   };
 
   /** Before the target's own midpoint - the shape these three cases were
-   *  written against, before B5.5 added the midpoint rule. */
+   *  written against, before the midpoint rule was added. */
   const drag = (box: HTMLElement, from: number, to: number): void => {
     dragAt(box, from, to, to * 40);
   };

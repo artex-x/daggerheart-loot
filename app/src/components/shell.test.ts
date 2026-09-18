@@ -81,7 +81,7 @@ describe('the tab title (D5/O3)', () => {
     expect(document.title).toBe('Генератор лута — Daggerheart');
   });
 
-  it('shows a shared list’s name on screen but keeps the plain tab title (B7-N12)', () => {
+  it('shows a shared list’s name on screen but keeps the plain tab title', () => {
     /* `#/l/<payload>` is `SharedListPage`'s route, not `ListPage`'s - the
        visitor opening someone else's link has no entry in `app.lists`, so
        `app.openList` (what Shell's title effect keys off, see its own
@@ -248,9 +248,9 @@ describe('the address on the way in', () => {
 
   it('refuses a pinned address that is a snapshot rather than a section', () => {
     /* A record or a list drifts away from the data; only a section or a named
-       table may be pinned. The refused pin falls back to the default, and
-       under B12.1's rule 1 a default pin writes nothing at boot - so what is
-       drawn is what proves the fallback, not the bar. */
+       table may be pinned. The refused pin falls back to the default, and a
+       default pin writes nothing at boot - so what is drawn is what proves
+       the fallback, not the bar. */
     const router = memoryRouter('');
     render(App, {
       env: fakeEnv({ router, storage: memoryStorage({ 'dhloot.home.v1': '#/i/ci1' }) })
@@ -265,9 +265,9 @@ describe('the address on the way in', () => {
 describe('an unreadable address', () => {
   it('draws the home section and rewrites the bar', () => {
     /* Every route kind lib/hash.ts can parse draws a real page; a genuinely
-       unparseable one now normalises to the pinned home before App.svelte
-       ever sees it (plan.md, "B12.1 planned"), so no fallback heading is
-       reachable any more - see docs/specs/ROUTES.md, "Fallback". */
+       unparseable one normalises to the pinned home before App.svelte ever
+       sees it, so no fallback heading is reachable any more - see
+       docs/specs/ROUTES.md, "Fallback". */
     const router = memoryRouter('#/nowhere');
     render(App, { env: fakeEnv({ router }) });
     expect(screen.getByRole('link', { name: 'Обычные правила' })).toHaveAttribute(
@@ -287,9 +287,9 @@ describe('pinning the tables page', () => {
        .navigate`, exactly what that link's real click does) lands on a bare
        `#/tables` that still shows the same table underneath. Pinning
        `this.hash` there would have written '#/tables/core_item' regardless
-       of what was genuinely on screen (plan.md, "B14 planned": the App.svelte
-       remount its first design leaned on does not hold); PageHead's `home`
-       override, fed by TablesPage's own `table`, is what fixes it. */
+       of what was genuinely on screen - the App.svelte remount an earlier
+       design leaned on does not hold here; PageHead's `home` override, fed
+       by TablesPage's own `table`, is what fixes it. */
     const router = memoryRouter('#/tables/eq_weapon');
     const storage = memoryStorage();
     render(App, { env: fakeEnv({ router, storage }) });

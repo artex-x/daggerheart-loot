@@ -4,9 +4,8 @@
 // LOOT_HOOK_STATE_DIR at a throwaway git repo in the OS temp directory,
 // built once and reused, removed in a finally.
 //
-// See .claude/README.md, "Hooks", and issues/hooks-guardrails/plan.md
-// section 5, for the case list this file implements (numbered #1-#153
-// in the comments below).
+// See .claude/README.md, "Hooks", which documents this file's own case
+// numbering inline (numbered #1 upward in the comments below).
 
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -126,12 +125,12 @@ function setupScratch() {
   writeFile('app/dist/x.html', '<html></html>\n');
   writeFile('tests/app/snapshot.txt', '# not inside snapshots/\n');
   writeFile('tests/app-snapshots/x.txt', '# not tests/app/snapshots/\n');
-  writeFile('issues/65/context.md', '# context\n');
-  writeFile('issues/65/plan.md', '# plan\n');
-  writeFile('issues/65/handoff.md', '# handoff\n');
-  // A committed file citing issues/65/plan.md, for the orphan-plan rule
+  writeFile('issues/orphan-demo/context.md', '# context\n');
+  writeFile('issues/orphan-demo/plan.md', '# plan\n');
+  writeFile('issues/orphan-demo/handoff.md', '# handoff\n');
+  // A committed file citing issues/orphan-demo/plan.md, for the orphan-task rule
   // (#102-#104): it stays clean throughout, so no dirty-path count moves.
-  writeFile('tools/cites-plan.js', '// See issues/65/plan.md section 4.\n');
+  writeFile('tools/cites-plan.js', '// See issues/orphan-demo/plan.md section 4.\n');
 
   gitSh(['init', '-q']);
   gitSh(['add', '-A']);
@@ -141,7 +140,7 @@ function setupScratch() {
   // "older than a written source file" without depending on wall-clock
   // ordering inside this one test run.
   const old = new Date('2020-01-01T00:00:00Z');
-  fs.utimesSync(path.join(scratchRoot, 'issues/65/handoff.md'), old, old);
+  fs.utimesSync(path.join(scratchRoot, 'issues/orphan-demo/handoff.md'), old, old);
 
   // Two tracked files modified and left unstaged: the "2+ dirty paths"
   // baseline that the blanket-stage and Stop cases need something to see.
@@ -257,9 +256,26 @@ function testBashDenyCases() {
     [
       '#8 git push --force',
       'git push --force origin main',
-      'overwrites whatever the remote has'
+      'rewrites history the remote already has'
     ],
     ['#9 git push -f cluster', 'git push -f origin main', 'force-with-lease'],
+    // #22b - every force form is denied, including a lease that would have
+    // refused to clobber a moved ref.
+    [
+      '#22b git push --force-with-lease',
+      'git push --force-with-lease origin main',
+      'force-with-lease'
+    ],
+    [
+      '#177 git push --force-if-includes',
+      'git push --force-if-includes origin main',
+      'force-if-includes'
+    ],
+    [
+      '#178 git push +refspec',
+      'git push origin +main',
+      'rewrites history the remote already has'
+    ],
     ['#10 git checkout --', 'git checkout -- app/src/lib/x.ts', null],
     ['#11 git restore', 'git restore app/src/lib/x.ts', null],
     ['#12 git stash drop', 'git stash drop', null],
@@ -274,7 +290,7 @@ function testBashDenyCases() {
     [
       '#13f command on a later line',
       'npm test\ngit push --force',
-      'overwrites whatever the remote has'
+      'rewrites history the remote already has'
     ],
     ['#13g wrapper + quoted flag', 'command git clean "-fd"', 'deletes untracked files'],
     [
@@ -309,9 +325,9 @@ function testBashSilentCases() {
     ['#20 heredoc', "cat > x.md <<'EOF'\ngit reset --hard\nEOF"],
     ['#21 git clean -nd (dry-run)', 'git clean -nd'],
     ['#22 git push --dry-run', 'git push --dry-run'],
-    // Pushing is the agent's to do now; only a bare --force is blocked.
+    // Pushing is the agent's to do now; #22b moved to the deny list -
+    // every force form is denied.
     ['#22a git push', 'git push'],
-    ['#22b git push --force-with-lease', 'git push --force-with-lease origin main'],
     ['#22c git push --force --dry-run', 'git push --force --dry-run'],
     ['#23 git restore --staged', 'git restore --staged app/src/lib/x.ts'],
     ['#24 rm -rf dist', 'rm -rf dist'],
@@ -336,24 +352,32 @@ function testBashSilentCases() {
   }
 }
 
-// ---------- bash-guard.mjs: rule 2i, orphan plan citation (#102-#107) ----------
+// ---------- bash-guard.mjs: rule 2i, orphan task-directory citation (#102-#107, #172-#186) ----------
 
 function testOrphanPlan() {
-  const target = 'issues/65/plan.md';
+  const target = 'issues/orphan-demo/plan.md';
   const citingFile = path.join(scratchRoot, 'tools', 'cites-plan.js');
 
   {
     const result = runHook('bash-guard.mjs', bashPayload(`rm ${target}`));
-    check('#102 rm issues/65/plan.md: denies', isDeny(result), JSON.stringify(result.json));
     check(
-      '#102 rm issues/65/plan.md: reason names the citing file and the target',
+      '#102 rm issues/orphan-demo/plan.md: denies',
+      isDeny(result),
+      JSON.stringify(result.json)
+    );
+    check(
+      '#102 rm issues/orphan-demo/plan.md: reason names the citing file and the target',
       denyReason(result).includes('tools/cites-plan.js') && denyReason(result).includes(target),
       denyReason(result)
     );
   }
   {
     const result = runHook('bash-guard.mjs', bashPayload(`git rm ${target}`));
-    check('#103 git rm issues/65/plan.md: denies', isDeny(result), JSON.stringify(result.json));
+    check(
+      '#103 git rm issues/orphan-demo/plan.md: denies',
+      isDeny(result),
+      JSON.stringify(result.json)
+    );
   }
   {
     const original = fs.readFileSync(citingFile, 'utf8');
@@ -363,8 +387,12 @@ function testOrphanPlan() {
     fs.writeFileSync(citingFile, original);
   }
   {
-    const result = runHook('bash-guard.mjs', bashPayload('rm issues/65/handoff.md'));
-    check('#105 rm handoff.md: silent - scoped to plan.md', isSilent(result), result.stdout);
+    const result = runHook('bash-guard.mjs', bashPayload('rm issues/orphan-demo/handoff.md'));
+    check(
+      '#105 rm handoff.md: silent - nothing cites this file',
+      isSilent(result),
+      result.stdout
+    );
   }
   {
     const result = runHook('bash-guard.mjs', bashPayload('rm app/src/lib/x.ts'));
@@ -373,7 +401,7 @@ function testOrphanPlan() {
   {
     const result = runHook('bash-guard.mjs', bashPayload(`echo rm ${target}`));
     check(
-      '#107 echo rm issues/65/plan.md: silent - READERS already covers it',
+      '#107 echo rm issues/orphan-demo/plan.md: silent - READERS already covers it',
       isSilent(result),
       result.stdout
     );
@@ -410,6 +438,213 @@ function testOrphanPlan() {
         denyReason(result).includes('tools/cites-plan.js:2') &&
         !denyReason(result).includes('tools/cites-plan.js:1'),
       denyReason(result)
+    );
+    fs.writeFileSync(citingFile, original);
+  }
+
+  // #172-#176 - rule 2i covers any file under issues/<id>/, or the
+  // directory itself, not only a single still-cited plan.md.
+  // tools/cites-plan.js still cites `issues/orphan-demo/plan.md`, and the
+  // unslashed `issues/orphan-demo` is a substring of that citation, so a
+  // directory-level target sees the same hit a plan.md-only target would.
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo'));
+    check(
+      '#172 git rm -r issues/orphan-demo: denies',
+      isDeny(result),
+      JSON.stringify(result.json)
+    );
+    check(
+      '#172 git rm -r issues/orphan-demo: names the citing file',
+      denyReason(result).includes('tools/cites-plan.js'),
+      denyReason(result)
+    );
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo/'));
+    check(
+      '#173 git rm -r issues/orphan-demo/ (trailing slash): denies',
+      isDeny(result),
+      JSON.stringify(result.json)
+    );
+  }
+  {
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(citingFile, `// See \`git show 1234567:${target}\` for the old text.\n`);
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo'));
+    check(
+      '#174 git rm -r issues/orphan-demo: silent once the citing file is sha-qualified',
+      isSilent(result),
+      JSON.stringify(result.json)
+    );
+    fs.writeFileSync(citingFile, original);
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('rm issues/orphan-demo/context.md'));
+    check(
+      '#175 rm issues/orphan-demo/context.md: silent - nothing cites it',
+      isSilent(result),
+      result.stdout
+    );
+  }
+  {
+    // A citation living only inside the very directory being retired is a
+    // self-citation: it goes away in the same commit, so it must not block
+    // the deletion. Blank out the one external citation first (as #104
+    // does), so the only remaining citation of `issues/orphan-demo/` is the one
+    // written inside `issues/orphan-demo/handoff.md` itself. Write, track and commit
+    // both changes so `git grep` (tracked files only) can see them, then
+    // restore both files and the commit.
+    const citingOriginal = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(citingFile, '// nothing to see here.\n');
+    const handoffPath = path.join(scratchRoot, 'issues', 'orphan-demo', 'handoff.md');
+    const handoffOriginal = fs.readFileSync(handoffPath, 'utf8');
+    fs.writeFileSync(
+      handoffPath,
+      `${handoffOriginal}\nSelf-citation: issues/orphan-demo/ retires with this file.\n`
+    );
+    gitSh(['add', 'tools/cites-plan.js', 'issues/orphan-demo/handoff.md']);
+    gitCommit('test: temporary self-citation for #176');
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo'));
+    check(
+      '#176 git rm -r issues/orphan-demo: silent - the only citation is inside issues/orphan-demo/ itself',
+      isSilent(result),
+      JSON.stringify(result.json)
+    );
+    fs.writeFileSync(citingFile, citingOriginal);
+    fs.writeFileSync(handoffPath, handoffOriginal);
+    gitSh(['add', 'tools/cites-plan.js', 'issues/orphan-demo/handoff.md']);
+    gitCommit('test: restore #176 fixture');
+  }
+
+  // #179-#182 - the directory needle is unslashed and identifier-boundary-
+  // aware, and the self-citation exemption covers all of issues/, not just
+  // the target's own task id.
+  {
+    // #179 - a bare-name citation, no trailing slash and no filename (the
+    // dominant real shape: `(issues/<id>, <label>)`), is invisible to a
+    // slashed needle `issues/orphan-demo/` and must deny.
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(citingFile, '// See (issues/orphan-demo, B1) for context.\n');
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo'));
+    check(
+      '#179 git rm -r issues/orphan-demo: denies a bare-name citation with no trailing slash',
+      isDeny(result),
+      JSON.stringify(result.json)
+    );
+    check(
+      '#179: names the citing file',
+      denyReason(result).includes('tools/cites-plan.js'),
+      denyReason(result)
+    );
+    fs.writeFileSync(citingFile, original);
+  }
+  {
+    // #180 - an unslashed needle must not match a sibling task id it is a
+    // prefix of: issues/orphan-demo is not a citation of issues/orphan-demo-followup.
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(citingFile, '// See issues/orphan-demo-followup/plan.md section 4.\n');
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo'));
+    check(
+      '#180 git rm -r issues/orphan-demo: silent - issues/orphan-demo-followup is a different task',
+      isSilent(result),
+      JSON.stringify(result.json)
+    );
+    fs.writeFileSync(citingFile, original);
+  }
+  {
+    // #181 - two occurrences on one line, the sha-qualified one first: a
+    // first-occurrence-only scan would exempt the whole line.
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(
+      citingFile,
+      `// git show 1234567:${target} and also directly ${target}.\n`
+    );
+    const result = runHook('bash-guard.mjs', bashPayload(`rm ${target}`));
+    check(
+      '#181 rm issues/orphan-demo/plan.md: denies - a live second occurrence follows a sha-qualified first',
+      isDeny(result),
+      JSON.stringify(result.json)
+    );
+    fs.writeFileSync(citingFile, original);
+  }
+  {
+    // #182 - self-citation is not scoped to the target's own directory: a
+    // citation living only inside a *different* issues/<id>/
+    // (not the one being retired) is still scratch citing scratch, and must
+    // not block the deletion either. Blank the external citation, add a
+    // sibling task directory with the only remaining citation, commit both,
+    // then restore.
+    const citingOriginal = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(citingFile, '// nothing to see here.\n');
+    const otherPath = path.join(scratchRoot, 'issues', 'other-task', 'note.md');
+    fs.mkdirSync(path.dirname(otherPath), { recursive: true });
+    fs.writeFileSync(otherPath, 'Cites issues/orphan-demo from a different task directory.\n');
+    gitSh(['add', 'tools/cites-plan.js', 'issues/other-task/note.md']);
+    gitCommit('test: temporary cross-task citation for #182');
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo'));
+    check(
+      '#182 git rm -r issues/orphan-demo: silent - the only citation is inside a different issues/<id>/',
+      isSilent(result),
+      JSON.stringify(result.json)
+    );
+    fs.writeFileSync(citingFile, citingOriginal);
+    gitSh(['rm', '-q', 'issues/other-task/note.md']);
+    gitSh(['add', 'tools/cites-plan.js']);
+    gitCommit('test: restore #182 fixture');
+  }
+
+  // #183-#184 - a bare `issues`/`issues/` target denies outright,
+  // unconditionally: there is no legitimate single command that retires all
+  // of issues/ at once, and the citation audit would still allow it the
+  // moment every directory happened to be citation-free.
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues'));
+    check('#183 git rm -r issues: denies', isDeny(result), JSON.stringify(result.json));
+    check(
+      '#183: reason names the bare-issues danger, not a citation count',
+      denyReason(result).includes('every task directory'),
+      denyReason(result)
+    );
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/'));
+    check(
+      '#184 git rm -r issues/ (trailing slash): denies',
+      isDeny(result),
+      JSON.stringify(result.json)
+    );
+  }
+
+  // #185-#186 - a GitHub issue link and a task-directory path are the same
+  // characters, so a line whose only occurrence is part of a URL must not
+  // deny; a bare occurrence alongside one must still deny (every occurrence
+  // on the line is scanned, not only the first).
+  {
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(
+      citingFile,
+      '// See https://github.com/artex-x/daggerheart-loot/issues/orphan-demo for background.\n'
+    );
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo'));
+    check(
+      '#185 git rm -r issues/orphan-demo: silent - the only occurrence is part of a GitHub issue URL',
+      isSilent(result),
+      JSON.stringify(result.json)
+    );
+    fs.writeFileSync(citingFile, original);
+  }
+  {
+    const original = fs.readFileSync(citingFile, 'utf8');
+    fs.writeFileSync(
+      citingFile,
+      '// See https://github.com/artex-x/daggerheart-loot/issues/orphan-demo and issues/orphan-demo directly.\n'
+    );
+    const result = runHook('bash-guard.mjs', bashPayload('git rm -r issues/orphan-demo'));
+    check(
+      '#186 git rm -r issues/orphan-demo: denies - a bare occurrence follows the URL-qualified one',
+      isDeny(result),
+      JSON.stringify(result.json)
     );
     fs.writeFileSync(citingFile, original);
   }
@@ -543,10 +778,9 @@ function testBackgroundCheck() {
       '#67 background check: recorded shape, chained',
       'npm run check 2>&1 | grep -E "Test Files|Tests |FAIL" ; echo CHECK_EXIT=$?\nnpm run check:built 2>&1 | tail -15'
     ],
-    // #140-#141 (rtk-coverage B1) - RTK rewrites a bare `npm run check`
-    // into `rtk npm run check` before this hook sees it, so the same
-    // backgrounding deny has to fire on the rewritten shape too, plain and
-    // wrapped in `nohup`.
+    // RTK rewrites a bare `npm run check` into `rtk npm run check` before
+    // this hook sees it, so the same backgrounding deny has to fire on the
+    // rewritten shape too, plain and wrapped in `nohup`.
     ['#140 background check: rtk-prefixed', 'rtk npm run check'],
     ['#141 background check: nohup rtk-prefixed', 'nohup rtk npm run check']
   ];
@@ -768,8 +1002,8 @@ function testBlindCheck() {
 }
 
 // ---------- bash-guard.mjs: rule 2j, RTK-bypass readers (#112-#125,
-// narrowed at rtk-coverage B1: #135, #137, #139, corrected on remediation
-// against a direct `rtk hook check` probe of the installed `rtk 0.48.0`:
+// narrowed: #135, #137, #139, corrected on remediation against a direct
+// `rtk hook check` probe of the installed `rtk 0.48.0`:
 // #116-#117 reverted to deny (tail is never rewritten, any position), #136
 // retired (a chain prefix never blocks grep's rewrite), #144-#153 added)
 // ----------
@@ -877,7 +1111,7 @@ function testRtkReaders() {
   }
 
   const silentCases = [
-    ['#120 git grep -n', 'git grep -n "issues/65/plan\\.md"'],
+    ['#120 git grep -n', 'git grep -n "issues/orphan-demo/plan\\.md"'],
     ['#121 rtk grep -n', 'rtk grep -n x docs/'],
     ['#122 tail -n', 'tail -n 120 f'],
     ['#123 grep -r', 'grep -r x docs/'],
@@ -986,12 +1220,12 @@ function testEditFollowup() {
       systemMessage(result)
     );
     // #40b - the reminder's own content is checked, not only that it fires.
-    // TL7/T4 (phase-8 B2): the reminder used to overclaim that a forgotten
-    // rebuild makes tests/derived.js fail - it cannot, since npm run check
-    // regenerates the files immediately before comparing them. The message
-    // now points at tests/derived.js's COUNT_BEARING_FILES array by name
-    // instead of a line range (phase-8 B2 remediation, B-2): a range that
-    // five files must track moved the moment another batch touched the file.
+    // The reminder used to overclaim that a forgotten rebuild makes
+    // tests/derived.js fail - it cannot, since npm run check regenerates
+    // the files immediately before comparing them. The message now points
+    // at tests/derived.js's COUNT_BEARING_FILES array by name instead of a
+    // line range: a range that five files must track moved the moment the
+    // file was touched again.
     check(
       '#40b data.js reminder names the derived files array by identifier',
       systemMessage(result).includes("tests/derived.js's COUNT_BEARING_FILES array"),
@@ -1380,9 +1614,9 @@ async function testCheckObserver() {
       { exit_code: 1, stdout: 'All files | 96 |\n', stderr: '', interrupted: false },
       false
     ],
-    // #142-#143 (rtk-coverage B1) - the gate has to arm on the shape RTK's
-    // own hook actually produces, `rtk npm run check`, not only on the
-    // bare invocation a human types by hand.
+    // #142-#143 - the gate has to arm on the shape RTK's own hook actually
+    // produces, `rtk npm run check`, not only on the bare invocation a
+    // human types by hand.
     ['#142 rtk-prefixed check arms the gate', 'rtk npm run check', passingResponse, true],
     [
       '#143 rtk-prefixed check still refuses on failure',
@@ -1651,13 +1885,12 @@ async function testTaskBudget() {
   // safely old mtime, so activeTask()'s "newest file wins" comparison for
   // the fresh issues/98 writes below is a strict inequality regardless of
   // filesystem mtime resolution or readdirSync() order - the same pattern
-  // setupScratch() already uses for issues/65/handoff.md. A real code/
+  // setupScratch() already uses for issues/orphan-demo/handoff.md. A real code/
   // comment discrepancy on its own (an earlier version of this pin covered
   // only issues/99/context.md, not every directory as its comment claimed),
-  // worth keeping regardless, but NOT what caused CI's failures below - two
-  // remediation cycles chased an mtime-tie theory here and were wrong; see
-  // the handoff's "B3 CI remediation" for the corrected record and the
-  // actual cause, which is the session-state isolation just below.
+  // worth keeping regardless, but NOT what caused CI's failures below - an
+  // mtime-tie theory was chased here and was wrong; the actual cause is the
+  // session-state isolation just below.
   const old = new Date('2020-01-01T00:00:00Z');
   const issuesRoot = path.join(scratchRoot, 'issues');
   for (const dirEntry of fs.readdirSync(issuesRoot, { withFileTypes: true })) {
@@ -1874,10 +2107,10 @@ async function testStateCap() {
 
   try {
     // #131 - the writer survives its own write at saturation: this is the
-    // standalone probe from context.md (eight `other-*` writers then one
-    // writer, all inside one second), run at MAX_SESSIONS scale. Under the
-    // pre-fix prune (no reservation, cap 5) this is exactly the shape that
-    // silently dropped `s-stop-budget` on CI (config-audit B3, 2026-09-16).
+    // standalone probe (eight `other-*` writers then one writer, all inside
+    // one second), run at MAX_SESSIONS scale. Under the pre-fix prune (no
+    // reservation, cap 5) this is exactly the shape that silently dropped
+    // `s-stop-budget` on CI (measured 2026-09-16).
     // Which `other-*` ids survive alongside the writer is unspecified under
     // a full tie (plan 4.3) and is not asserted.
     for (let i = 1; i <= MAX_SESSIONS + 8; i++) {
@@ -2116,8 +2349,8 @@ async function testCommitGateAsync() {
 
   clearCache();
   gitSh(['reset']);
-  appendFile('issues/65/plan.md', '\nmore plan\n');
-  gitSh(['add', 'issues/65/plan.md']);
+  appendFile('issues/orphan-demo/plan.md', '\nmore plan\n');
+  gitSh(['add', 'issues/orphan-demo/plan.md']);
   {
     const result = runHook('bash-guard.mjs', bashPayload('git commit -m "docs: plan"'));
     check('#26 gate: exempt path silent', isSilent(result), result.stdout);
@@ -2132,7 +2365,7 @@ async function testCommitGateAsync() {
   {
     const key2 = treeKey();
     writeCache(key2);
-    appendFile('issues/65/handoff.md', '\nmore handoff\n');
+    appendFile('issues/orphan-demo/handoff.md', '\nmore handoff\n');
     gitSh(['add', 'app/src/lib/x.ts']);
     const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'));
     check(

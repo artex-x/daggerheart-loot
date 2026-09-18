@@ -1,6 +1,6 @@
 <script lang="ts">
   /* The frame every route sits in: brand, tabs and language. The storage
-     notice moved to the lists index (B5.3), where the live app draws it. */
+     notice moved to the lists index, where the live app draws it. */
   import Seg from './Seg.svelte';
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
@@ -24,16 +24,11 @@
   ];
 
   /**
-   * D5/O3, paid off: a record, a section or an owned list titles the tab
+   * A record, a section or an owned list titles the tab
    * with its own name ahead of the app's - `<name> — <docTitle>` - and every
-   * other route keeps the plain title. B6 built this, then backed it out of
-   * that batch once `tests/app/golden.js`'s own capture proved a problem
-   * that belongs to the harness, not to this fix: `page.accessibility
-   * .snapshot()` reports `document.title` as the RootWebArea node's own
-   * accessible name, so a per-route title moves every golden whose route has
-   * one - expected and accounted for, since B7 is the batch that already
-   * re-records (`issues/phase-8/handoff.md`, B6's report; `docs/specs/
-   * DEBT.md` D5).
+   * other route keeps the plain title. Built and reverted once because it
+   * moved goldens a batch was not allowed to re-record; landed with the
+   * re-record.
    *
    * Keyed off `app.openList` rather than `route.kind === 'storedList'`:
    * `ListPage`'s own mount effect rewrites a `#/lists/<id>` address to the
@@ -57,11 +52,11 @@
   });
 
   /** The skip link's own activation, off `#skip` in the live stylesheet's
-   *  overlay shape (D19) - `href="#main"` stays for a client with no script,
+   *  overlay shape - `href="#main"` stays for a client with no script,
    *  but the SPA's own hash means a browser fragment jump would also route
    *  the app itself: `parseHash('#main')` reads as `unknown` and the app
    *  would replace it with the home section, clearing whatever the person
-   *  had selected (P1). Handled here instead: move focus to `#main` directly
+   *  had selected. Handled here instead: move focus to `#main` directly
    *  and never let the browser touch the address bar at all. */
   function skip(e: MouseEvent): void {
     e.preventDefault();
@@ -102,7 +97,7 @@
   {@render children()}
 </main>
 
-<!-- P10: the selection bar comes before the footer now, not after - it is
+<!-- The selection bar comes before the footer now, not after - it is
      `position: sticky`, not fixed, and z-index (SelBar.svelte's own
      `.selbarwrap`, 45) is what paints it over the footer whenever it is
      open, so a keyboard user tabbing forward used to reach the footer's
@@ -113,7 +108,7 @@
      selection, 5938px with one - the 53px difference is `.selbarwrap`'s own
      height there), and at maximum scroll the bar rests above the footer
      with a ~20px gap rather than overlapping it (measured at both 1180 and
-     375 - issues/phase-8 B12d, see nits.md, B7-R1). -->
+     375). -->
 <SelBar {app} />
 
 <!-- The licence notice is on every page on purpose: the terms ask for it, and
@@ -129,7 +124,7 @@
 <Toast {app} />
 
 <style>
-  /* off `.skip`/`.skip:focus` in style.css - D19, paid off: a focused skip
+  /* off `.skip`/`.skip:focus` in style.css - a focused skip
      link is a gold plate pinned over the page's top-left corner, out of
      flow, the same as the live app - not a grey chip that pushes the header
      down while it is focused. */

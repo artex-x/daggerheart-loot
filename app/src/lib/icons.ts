@@ -1,9 +1,9 @@
 /* The interface icons, copied from the live app's app.js rather than redrawn.
  *
  * They are part of the look, and the look is not supposed to change - see
- * CLAUDE.md, "This is a refactor, not a redesign". The parity harness (deleted
- * at R0c, issue 47) compared the two apps pixel for pixel, so a path that was
- * nearly the same was a path that failed.
+ * CLAUDE.md, "This is a refactor, not a redesign". The parity harness
+ * (deleted at 23c00a6, issue 47) compared the two apps pixel for pixel, so a
+ * path that was nearly the same was a path that failed.
  *
  * Data, not markup: `Icon.svelte` draws them. The sizes travel with the paths
  * because the live app sets them per icon rather than by class. */

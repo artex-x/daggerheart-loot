@@ -2,7 +2,7 @@
  * versatile weapons, dice by damage type, armour, black and white, art
  * edges, text fitting, entry points.
  *
- * Transposed from tests/print.js (the live-app suite, `print`, R0b.3 C1) onto
+ * Transposed from tests/print.js (the live-app suite, `print`) onto
  * `fresh()` and the moved driver (`tests/app/driver.js`). `window.LOOT` does
  * not exist here - the rewrite loads `data.js` into its own module graph, not
  * onto `window` - so the one set built from it (all of Wondrous, for the
@@ -10,7 +10,7 @@
  * the way the deleted parity harness's own `tests/parity/specs.js` built its
  * print sets. Every `[data-act="printArt"][data-val=...]` click becomes a
  * name-based `d.click()`: `dist/` renders no `data-act` attribute anywhere
- * (R0b.3 preflight, checked live against a built tree) - `PrintPage.svelte`
+ * (checked live against a built tree) - `PrintPage.svelte`
  * wires its colour/black-and-white switch and its "back" control through
  * Svelte `onclick` handlers on plain buttons, not through attributes a CSS
  * selector can grip. This is the same fallback `tests/parity/specs.js` used
@@ -24,10 +24,11 @@
  * repository root, from `tests/`) to a `src` already shaped `card/x.svg`,
  * but this suite's `__dirname` is `tests/app/`, one level deeper, so the same
  * join would look for `tests/card/`. `readPNG` is inlined - one consumer, no
- * shared home earned, and `tests/lib.js` (its former home) died at R0c.
+ * shared home earned, and `tests/lib.js` (its former home) has since been
+ * deleted.
  *
- * `sheetCounts`, `cardFit`, `printMedia` and `copiedPrintLink` below (R0b.3
- * C2) are ported from `tests/parity/specs.js`'s own print specs, which died
+ * `sheetCounts`, `cardFit`, `printMedia` and `copiedPrintLink` below are
+ * ported from `tests/parity/specs.js`'s own print specs, which died
  * with the parity harness and are measured nowhere else. A parity spec only
  * observed and compared against the live app; run standalone here, each
  * becomes a real assertion against numbers read directly off `dist/` (and,
@@ -1023,11 +1024,11 @@ const { ok } = rep;
   /* The fit hands over space rule by rule: font, then padding, then the
      picture itself. On this Windows host, 2026-09-16, this nine-card set
      never pushes the ladder past the font step - measured directly against
-     the live app's own `index.html` on the same route (deleted at R0c, issue
+     the live app's own `index.html` on the same route (since deleted, issue
      47), so it is text-metric variance between hosts, not catalogue content
      or a fit regression: ubuntu CI reaches the art rung on the same route
      (this suite's `print` job, CI run 35130947774, green on `98ddf52` before
-     R0c existed). A local result is advisory and may legitimately fail a
+     R0c (23c00a6) existed). A local result is advisory and may legitimately fail a
      cell CI passes (`CLAUDE.md`, "Decisions taken by the repository owner").
      So this first check only pins what is true on every host - the font step
      engages - and the rung invariant right below it is what still holds
@@ -1164,7 +1165,7 @@ const { ok } = rep;
     'the empty print page has no heading'
   );
 
-  /* ---------- the sheet, in counts (R0b.3 C2, `sheetCounts`) ----------
+  /* ---------- the sheet, in counts (`sheetCounts`) ----------
      `renderPrint`'s own arithmetic, off six counts rather than pixels - the
      fast, always-on half of what a print state checks. Every number below is
      computed from each state's own id count, not copied as a constant: a
@@ -1209,7 +1210,7 @@ const { ok } = rep;
     );
   }
 
-  /* ---------- the fit, as the numbers it wrote (R0b.3 C2, `cardFit`) ----------
+  /* ---------- the fit, as the numbers it wrote (`cardFit`) ----------
      What `fitPrintCards` actually wrote onto each card - the only instrument
      that reads the *decision*, not its pixel consequence. Per width, unlike
      the legacy suite's single 1180: the card's own container query makes its
@@ -1218,7 +1219,7 @@ const { ok } = rep;
      colour (`{#if !bw}` in `PrintCard.svelte`), and `.pc-head` only in
      black-and-white (`{#if bw}`) - so their counts flip with `s.bw` rather
      than both landing on `printed`.
-     Run twice (R0c C2): once in Russian on the shared page above, once in
+     Run twice: once in Russian on the shared page above, once in
      English on a second page opened `lang: 'en'`, over the same eight
      card-drawing states and all three widths - the one surface where a
      longer or shorter word can change what the fitting ladder decides.
@@ -1266,7 +1267,7 @@ const { ok } = rep;
           /* The floor is 2.8, not 3: `let pad = bw ? 5.8 : 23; while (tight() &&
              pad > (bw ? 3 : 8)) pad -= 1.5;` steps 5.8 -> 4.3 -> 2.8 in
              black-and-white, one step past the loop's own `> 3` guard -
-             `printPage.test.ts:581` pins the same 2.8 floor. */
+             `printPage.test.ts` pins the same 2.8 floor. */
           ok(v >= 2.8 && v <= 23, tag + 'padding is off the ladder: ' + b.style['--pcpad']);
         });
 
@@ -1326,12 +1327,12 @@ const { ok } = rep;
   pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
   await cardFit(dEn, bwEn, colourEn, ' en');
 
-  /* ---------- the card's own name, capped at two lines (P16, Q2 settled) ----------
+  /* ---------- the card's own name, capped at two lines ----------
      "Look first, then shrink": inspected before any code was written, at
      1100px, both languages, both layouts, against the design's four longest
      names (`docs/specs/FEATURES.md`, "Print") - every one rendered at one
      line, so `.pc-name` was left out of `fit()`'s shrink ladder rather than
-     given a floor nothing needs yet. Q2 set the cap at two lines, not one -
+     given a floor nothing needs yet. The cap was set at two lines, not one -
      this pins all four so a future name (or a data edit lengthening one of
      these) that pushes past the two-line cap fails loudly instead of
      silently; the "all four at one line" measurement itself stays in
@@ -1374,7 +1375,7 @@ const { ok } = rep;
   await nameLines(d, page, '', 1180, 950);
   await nameLines(dEn, pageEn, ' en', 1180, 950);
 
-  /* ---------- the sheet under print media (R0b.3 C2, `printMedia`) ----------
+  /* ---------- the sheet under print media (`printMedia`) ----------
      The chrome hidden, the page unshadowed and page-broken, the print
      colours kept - `d.media('print')` is the only thing in the repository
      that emulates print media, so it always restores the medium in a
@@ -1443,7 +1444,7 @@ const { ok } = rep;
           main['max-width'] === 'none',
           s.label + ': main still has a width limit: ' + main['max-width']
         );
-        /* `width: auto` (Shell.svelte's @media print, off style.css:1406's
+        /* `width: auto` (Shell.svelte's @media print, off style.css's
            `.wrap,#view{width:auto}`) resolves to the full viewport minus the
            stable scrollbar gutter at this suite's fixed 1180 width - measured
            live, not guessed: 1180 - 15px. */
@@ -1534,7 +1535,7 @@ const { ok } = rep;
      later `d.open()` on this page, not only the next one - there is no
      unseed. Harmless here because everything below reads a print route,
      which shows no lists; a case appended later that opens a list-bearing
-     route on this same `d` would silently inherit list `a` (B8-R6). If that
+     route on this same `d` would silently inherit list `a`. If that
      ever matters, open a fresh driver for the later case rather than fight
      this one's residual seed. */
   await d.seed({
@@ -1548,7 +1549,7 @@ const { ok } = rep;
        `say()` gives an action toast 7000ms (dict.ts/AppState), and the two
        round trips above (open + click) are comfortable inside that window,
        but it is a real flake budget on a contended host, not a guaranteed
-       margin (B8-R6). */
+       margin. */
     const toast = await d.computed('.toast', ['display']);
     ok(
       toast && toast.display === 'none',
@@ -1558,10 +1559,10 @@ const { ok } = rep;
     await d.media(undefined);
   }
 
-  /* ---------- the print link, copied (R0b.3 C2, `copiedPrintLink`) ----------
+  /* ---------- the print link, copied (`copiedPrintLink`) ----------
      The set-link button, copied - only the hash is compared, the way the
      deleted parity harness's `copiedPrintLink` spec read it. Russian-only
-     above, English added below (R0c C2) - the link text changes, the hash
+     above, English added below - the link text changes, the hash
      it carries does not. */
   console.log('the set link, copied');
   await d.open('#/print/ci1-q1');

@@ -168,7 +168,7 @@ const at = (over: Partial<Env> = {}): Env =>
 const rows = (): HTMLElement[] =>
   screen.getAllByRole('button', { name: /Кольцо|Плащ|Клинок|Осколок|Пыль/ });
 
-/** Every row's own tick checkbox, in document order - P2 named each one
+/** Every row's own tick checkbox, in document order - each one is named
  *  after its own record instead of the generic "Выбрано", so the group is
  *  found by elimination: every checkbox except select-all's own (which
  *  keeps a name, "Выбрать все (N)", from its wrapping `<label>`). */
@@ -563,9 +563,9 @@ describe('the filter', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Сбросить всё' }));
     expect(screen.getByText('Зелье Ветра')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
-    /* R0b.1 nit 2: the strip's reset clears the filter in memory (proven
-       above by the empty-state assertions) and must also clear the address a
-       reload or a shared link would read back - not just the panel state. */
+    /* The strip's reset clears the filter in memory (proven above by the
+       empty-state assertions) and must also clear the address a reload or a
+       shared link would read back - not just the panel state. */
     expect(env.router.hash()).toBe('#/tables/wondrous');
   });
 
@@ -585,7 +585,7 @@ describe('the filter', () => {
        panel does not take them with it. */
     await userEvent.click(toggle);
     /* Role level, not a class probe: the pill above the panel also reads
-       "Предметы" now that P2's pill fix hid the pill's own "×" from its
+       "Предметы" now that the pill fix hid the pill's own "×" from its
        accessible name, and the pill is the one control here that is
        supposed to survive the fold - so one match, not zero, is what proves
        the panel's own copy is gone. */
@@ -620,7 +620,7 @@ describe('the filter', () => {
       'true'
     );
     /* Scoped to the panel: the pill above it also reads "Предметы" now that
-       P2's pill fix hid the pill's own "×" from its accessible name. */
+       the pill fix hid the pill's own "×" from its accessible name. */
     expect(
       within(container.querySelector('.ffilter') as HTMLElement).getByRole('button', {
         name: 'Предметы'
@@ -803,7 +803,7 @@ describe('the equipment tables', () => {
       'true'
     );
     /* Scoped to the filter panel: the pill above it also reads "Магическое"
-       now that P2's pill fix hid the pill's own "×" from its accessible
+       now that the pill fix hid the pill's own "×" from its accessible
        name, so the bare name is ambiguous over the whole screen. */
     const panel = within(container.querySelector('.ffilter') as HTMLElement);
     expect(panel.getByRole('button', { name: '2' })).toHaveAttribute('aria-pressed', 'true');

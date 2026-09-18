@@ -17,9 +17,7 @@
  * The `--dir` form runs inside the deploy job itself, before the deploy
  * step, against the local `_site/` collect output - the same assertions,
  * with no network and no retry, so a stale or partial local build is caught
- * before anything is published rather than after (issues/phase-8, T10/DP9).
- *
- * Issue 47, B13; issues/phase-8, B4.
+ * before anything is published rather than after.
  */
 import { runChecks, fetchReader, dirReader } from './check-site.lib.mjs';
 

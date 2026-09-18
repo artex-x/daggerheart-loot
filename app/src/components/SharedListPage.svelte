@@ -76,7 +76,7 @@
     app.shared = null;
   });
 
-  /* P9: toasted once per distinct payload, not once per component instance -
+  /* Toasted once per distinct payload, not once per component instance -
      this page is never remounted between two plain shared-list addresses,
      so a component-lifetime flag would miss every payload after the first. */
   let toldFor = $state('');
@@ -134,7 +134,7 @@
 
 <style>
   /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.card-acts` to
-     `Actions.svelte` (B10) - `margin-bottom:18px` is the live inline style
+     `Actions.svelte` - `margin-bottom:18px` is the live inline style
      on this specific block, now passed as `style` rather than folded into a
      rule of this component's own. */
   .notes {

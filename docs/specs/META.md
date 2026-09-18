@@ -64,6 +64,29 @@ This constrains any future build:
 - `fetch()` of a local file is blocked, so the dataset must keep arriving as a
   script that assigns a global (see `CONTRACTS.md` section 4).
 
+The `<noscript>` links work under `file://` through the build, not by
+rewriting them: `vite.config.mts`'s `closeBundle` copies `catalog.csv`,
+`data.json` and `llms.txt` into `dist/`, and `tools/smoke-file-url.mjs`
+asserts every `noscript a[href]` resolves to a real file under `dist/`;
+`app/index.html` itself stays untouched, so `dist/index.html` and every
+golden stay byte-identical. Rejected: absolute Pages URLs for those links
+(would break the no-server, no-network property this section states).
+
+The main landmark's id moved from `view` to `main`, alongside the skip link,
+after checking `#view` appears in no spec, fixture, or route grammar
+(`CONTRACTS.md` names routes, ids, links, and asset paths, never a DOM id);
+`tabindex="-1"` was preserved on the move. Other shape differences from the
+deleted live app, carried deliberately: the skip-link text itself, the pair
+of controls now marked `type="button"`, and the selection bar being absent
+from the DOM when empty rather than present with a `hidden` attribute.
+
+First load, measured live 2026-09-17, enforced by nothing
+(`bundle-budget.mjs` excludes `data.js`): `index.html` 2,120 B gzip +
+`assets/app.js` 92,033 B + `data.js` 148,860 B = 243,013 B gzip, ~973 kB to
+parse; `data.js` re-eval 32.1 ms in Node (a mid-range phone 4-6x that);
+`buildIndex`'s `byId` pass 1.27 ms. The number to quote at any proposal to
+grow `data.js`.
+
 The refactor plan (issue #47, Phase 1 item 6) asks for
 `base: '/daggerheart-loot/'`. That contradicts this policy, and this policy
 wins; the plan's own opening constraints list `file://` among the strengths to
@@ -85,19 +108,25 @@ else - tests, tools, comments, developer docs - is English (`CLAUDE.md`).
 `tests/` is being brought into line in phase 8: today its node/browser suites
 (`tests/run-all.js`, `tests/stub.js`, and the rest of `tests/*.js`) still
 print Russian messages and comments, which predates this rule, while
-`app/src/**/*.test.ts` is already English throughout.
+`app/src/**/*.test.ts` is already English throughout. Closing census of the
+language sweep, 2026-09-17: 14 files, 395 Cyrillic lines remain under
+`tests/` + `tools/` (snapshots excluded), every one a product literal or an
+English sentence quoting one; the 24 remaining Cyrillic comment lines were
+classified by hand.
 
-## 7. The 404 fallback page (issues/phase-8, B4, owner override of R8's "skip it")
+## 7. The 404 fallback page
+
+Kept on the owner's instruction over the review's recommendation to skip it.
 
 `404.html` is authored and tracked at the repository root (it carries no
 data, so nothing generates it) and published by `.github/workflows/ci.yml`'s
 collect step alongside `llms.txt`/`robots.txt`. GitHub Pages serves it
 verbatim, with a 404 status, for any request under this site that does not
 match a real path - a share link truncated by a chat client, a hand-typed
-record id, a stub whose record a data change dropped
-(`issues/phase-8/critique/resilience.md`, R8). Before this page existed,
-every one of those landed on GitHub's own generic 404, with no route back to
-the app in either language.
+record id, a stub whose record a data change dropped. Before this page
+existed, every one of those landed on GitHub's own generic 404, with no
+route back to the app in either language (verified live on `i/zzzz.html`
+before this page shipped).
 
 It carries `noindex, nofollow` like every other page (section 1) and both
 languages on the one page at once (`docs/specs/I18N.md`) rather than

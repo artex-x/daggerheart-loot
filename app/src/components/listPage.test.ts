@@ -1,7 +1,7 @@
 /* The list page, `#/lists/<id>` and `#/l/<payload>` - off `renderOneList` and
- * everything it draws, read in `plan.md`, "B5.4 planned". Through `App`, the
- * way `listsPage.test.ts` reaches the index: the address rewrite, the tab bar
- * and the modal all live above this component. */
+ * everything it draws. Through `App`, the way `listsPage.test.ts` reaches the
+ * index: the address rewrite, the tab bar and the modal all live above this
+ * component. */
 
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -108,13 +108,13 @@ const withA = (hash = '#/lists/a', over: Partial<Env> = {}): Env =>
 const readLists = (storage: { get: (k: string) => string | null }): StoredList[] =>
   JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
 
-/** listA's rows in order (P2 - each row checkbox is now named after its own
+/** listA's rows in order (each row checkbox is now named after its own
  *  record, not the generic "Выбрать позицию"). */
 const ROW_NAMES = ['Спальный мешок', 'Зелье', 'Меч'];
 
 describe('the address', () => {
   it('rewrites #/lists/<id> to the players’ payload on mount', async () => {
-    /* R4-1/PF3: the rewrite is debounced 150ms trailing, so this now waits
+    /* The rewrite is debounced 150ms trailing, so this now waits
        for it rather than reading `router.hash()` straight away. */
     const router = memoryRouter('#/lists/a');
     render(App, { env: withA('#/lists/a', { router }) });
@@ -271,7 +271,7 @@ describe('the storage notice', () => {
 });
 
 describe('the money picker', () => {
-  it('marks the selected mode with aria-pressed, like every other chip (D12)', () => {
+  it('marks the selected mode with aria-pressed, like every other chip', () => {
     /* Owner ruling, 2026-09-16: kept as aria-pressed on both modes rather
        than restored to the live app's own aria-current on the selected one
        alone - nothing measured the money picker as a special case. */
@@ -310,7 +310,7 @@ describe('the money picker', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Монетами' }));
     expect(readLists(storage)[0]?.money).toBe('coin');
-    // R4-1/PF3: the address rewrite is now debounced 150ms trailing.
+    // The address rewrite is now debounced 150ms trailing.
     await waitFor(() => {
       expect(router.hash()).toBe('#/l/' + encodeList({ ...listA, money: 'coin' }, true));
     });
@@ -369,7 +369,7 @@ describe('the list note', () => {
     expect(readLists(storage)[0]?.note).toBeUndefined();
   });
 
-  it('debounces twenty rapid keystrokes into one address rewrite (R4-1/PF3)', async () => {
+  it('debounces twenty rapid keystrokes into one address rewrite', async () => {
     const router = memoryRouter('#/lists/a');
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     render(App, { env: at('#/lists/a', { router, storage }) });
@@ -394,7 +394,7 @@ describe('the list note', () => {
     );
   });
 
-  it('flushes a pending edit on visibilitychange, once, even if pagehide also fires (B6-R4)', async () => {
+  it('flushes a pending edit on visibilitychange, once, even if pagehide also fires', async () => {
     /* pagehide alone missed the mobile-Safari case where a hidden tab is
        discarded with no pagehide at all; visibilitychange is the more
        reliable last callback there. Both firing for the same teardown must
@@ -504,7 +504,7 @@ describe('select-all', () => {
     expect(screen.getByText('Выбрано 3')).toBeInTheDocument();
   });
 
-  it('clears when history moves to a different list, not just a different page (D23)', async () => {
+  it('clears when history moves to a different list, not just a different page', async () => {
     const listB: StoredList = { id: 'b', name: 'Другой', ids: ['q1'], created: 2 };
     const router = memoryRouter('#/lists/a');
     render(App, {
@@ -827,12 +827,12 @@ describe('deleting', () => {
   });
 });
 
-describe("another tab's write, while this page is mounted (S7)", () => {
+describe("another tab's write, while this page is mounted", () => {
   /* The gap the dispatch named: no test fired a storage event into a mounted
      page, though the harness (`memoryStorage`'s own `fireExternalChange`)
-     already existed for `state/lists.test.ts`. Closes it for S4 directly;
+     already existed for `state/lists.test.ts`. Closes it directly here;
      `listsPage.test.ts` closes it for R2's own general reload trigger. */
-  it('re-seeds an unfocused note field with another tab’s edit (S4)', async () => {
+  it('re-seeds an unfocused note field with another tab’s edit', async () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     render(App, { env: at('#/lists/a', { storage }) });
 

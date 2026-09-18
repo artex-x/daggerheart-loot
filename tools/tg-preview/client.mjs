@@ -72,7 +72,7 @@ export async function createClient({ apiId, apiHash, session, log }) {
   // false }` (client/users.js), so it swallows the very class name decide()
   // classifies on and reports a transport blip as "not authorized" too. The
   // first RPC below throws the real error instead - a dead session, a banned
-  // account - and runRefresh classifies it once (B6 review R2).
+  // account - and runRefresh classifies it once.
   const peer = await client.getEntity('WebpageBot');
 
   // Idempotent: only sends /start the first time this account talks to the
@@ -112,7 +112,8 @@ export async function createClient({ apiId, apiHash, session, log }) {
     },
     // `Message.click()` swallows BOT_RESPONSE_TIMEOUT into `null` (teleproto's
     // tl/custom/messageButton.js), and the loop needs to tell an answered
-    // press from an unanswered one (plan.md section 3.4) - so this calls
+    // press from an unanswered one (docs/tg-preview.md, "Rate limiting and
+    // resumability") - so this calls
     // `GetBotCallbackAnswer` directly and lets every error, including that
     // one, propagate to `decide()` in lib.mjs.
     async press(id, data) {

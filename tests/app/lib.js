@@ -24,13 +24,13 @@ if (!fs.existsSync(DIST_HTML)) {
   process.exit(1);
 }
 
-/* B11-R1 (issues/phase-8, B12a). golden.js and every other suite here
+/* golden.js and every other suite here
    compare captures against dist/ (golden.js's own header comment), but npm
    run check's npm run data step regenerates data.json/catalog.csv/i/ and
    never runs vite build - so dist/ can lag the tree arbitrarily. A
    --update run against a lagging dist/ re-records the OLD render, and the
    next verification run prints "unchanged", having measured nothing - the
-   same failure class as B8.1's lost settle instrument (COVERAGE.md, "The
+   same failure class as a lost settle instrument (COVERAGE.md, "The
    gate rule for 'no golden moved'"). Fail closed, both halves, no escape
    hatch: an env-var bypass is a guard that gets waved through, which
    .claude/README.md already records as worse than no guard. */
@@ -95,10 +95,9 @@ function browser() {
     browserPromise = puppeteer.launch({
       args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
       /* This tree is shared with peer sessions (CLAUDE.md, "Task and session
-         protocol"), and a loaded host makes an individual CDP round trip take
-         longer than puppeteer's own default - a `protocolTimeout` failure
-         under load is contention, not a defect (the same class the check
-         gate documents in issues/47/context.md, "Host load"). */
+         protocol"): a shared tree plus a loaded host makes a CDP round trip
+         exceed puppeteer's default, so a `protocolTimeout` failure under
+         load is contention, not a defect. */
       protocolTimeout: 300_000
     });
   }
@@ -193,8 +192,8 @@ const AXE_PATH = require.resolve('axe-core/axe.min.js');
  *
  * No per-call rule disabling: `#/lists`/`#/lists/a` used to need one for
  * `nested-interactive` (`StorageNotice.svelte`'s dismiss button sat inside
- * its own `<summary>`, `docs/specs/DEBT.md` D3); paid off, and B7-N3
- * (issues/phase-8) found the parameter that carried it had gone unused by
+ * its own `<summary>`, `docs/specs/DEBT.md` D3); paid off, and it turned out
+ * the parameter that carried it had gone unused by
  * every caller - `app/src/test/a11y.ts`'s own comment already argues that a
  * parameter with no caller is a maintained shape for nothing, so this suite
  * does not keep one either. A future live-shared defect that needs one adds

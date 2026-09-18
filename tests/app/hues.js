@@ -1,6 +1,6 @@
 /* Badges that can share a screen have to be told apart by colour, not by
- * reading them - the same rule the live app's own suite (deleted at R0c,
- * issue 47) enforced there. Distance in Lab was the wrong measure there; hue
+ * reading them - the same rule the live app's own suite, since deleted
+ * (issue 47), enforced there. Distance in Lab was the wrong measure there; hue
  * is what the eye sorts by, so hue is what is checked.
  *
  * Rewritten, not ported: the original injected a bare `<span class="badge
@@ -147,7 +147,7 @@ const gap = (a, b) => {
 
   /* Equipment's stat line keeps one tone everywhere across the three
    * equipment tables - the kind is told by the badge, not by a second colour
-   * on the numbers (`eqtest.js:207-218`). */
+   * on the numbers, the same rule the legacy `eqtest.js` enforced. */
   console.log('equipment stats are one tone');
   const statColour = async (hash) => {
     await d.open(hash);
@@ -164,8 +164,8 @@ const gap = (a, b) => {
   );
 
   /* A selected tile has its own fill, read off the rendered page rather than
-   * grepped out of style.css (craftmob.js:68-71) - the same claim, made
-   * against the app R0c keeps. */
+   * grepped out of the legacy style.css - the same claim, made against the
+   * app as it stands today. */
   console.log('selected tile fill');
   await d.open('#/tables/eq_weapon');
   await d.press('Сеткой');

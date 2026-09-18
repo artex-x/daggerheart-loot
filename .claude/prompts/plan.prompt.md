@@ -12,7 +12,7 @@ Use `<TASK_ID>` as a variable. Never treat a sample id as hard-coded.
 
 This session is for investigation, technical design, and durable planning.
 Do not implement production application code for the feature itself.
-Write only under `<TASK_DIR>/` (`plan.md`, `handoff.md`, optional `mocks/`; refresh `context.md` with durable facts).
+Write only under `<TASK_DIR>/` (`plan.md`, `handoff.md`, optional `mocks/`; refresh `context.md` with durable facts) and, for a decision the plan settles that outlives the task, `docs/DECISIONS.md` - the task directory is deleted at closeout.
 
 This prompt is agent-agnostic (Claude Code, Codex, or similar).
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
@@ -76,6 +76,7 @@ Batch size preference (human):
 - Split only for risk, reviewability, or independent verification
 - When you split, each batch should still be a meaningful vertical slice
 - Required outputs of a planning pass: for every split, the criterion it invokes (`CLAUDE.md`, "Task and session protocol", or a review that cannot be held in one pass), and the plan's total gate cost summed from `.claude/README.md`, "Batch size and the fixed cost of a run"
+- A batch is an amend of the task's one commit; a split is never for a commit boundary's own sake
 
 Design decisions - ask sparingly:
 - Default: decide from repo, issue, screenshots, specs, and existing patterns; do not ask the human to approve routine choices

@@ -69,12 +69,10 @@ ALL.forEach((x) => {
       x.id + '.' + k + ': words glued together after a link'
     );
     ok(!/�/.test(v), x.id + '.' + k + ': broken character');
-    /* O2 (issues/phase-8, B11): the source book ships typographic apostrophes
-       (U+2019, and U+02BC for good measure) in both languages; B11 normalised
-       every one then in the catalogue to ASCII but added no guard, so the
-       next ingest could silently reintroduce them. All four fields pass
-       today - covers the whole class rather than only en/ende (B11-BL-2,
-       "Decisions this plan takes"). */
+    /* The source book ships typographic apostrophes (U+2019, and U+02BC for
+       good measure) in both languages; the catalogue was normalised to ASCII
+       but that added no guard, so the next ingest could silently reintroduce
+       them. This covers the whole class rather than only en/ende. */
     ok(!/[’ʼ]/.test(v), x.id + '.' + k + ': typographic apostrophe');
   });
   ok(!/^[a-z]/.test(x.en), x.id + ': English name starts lowercase — ' + x.en);

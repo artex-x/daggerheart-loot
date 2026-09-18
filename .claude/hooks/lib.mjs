@@ -341,7 +341,7 @@ function loadState() {
 // The MAX_SESSIONS most recently active sessions survive a save, and the
 // session being written always does: it is reserved first and the rest
 // are ranked after it. Without the reservation, a tail of sessions tied at
-// second granularity evicted the writer itself (config-audit B3, 2026-09-16).
+// second granularity evicted the writer itself (measured 2026-09-16).
 // 64: this host has run 15 concurrent sessions on one tree
 // (orchestrate.prompt.md, 2026-09-10); an entry is lost only when 63 other
 // sessions write between this session's last hook call and its Stop.

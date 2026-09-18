@@ -37,8 +37,9 @@ change. Anything else is the orchestrate path (`/orchestrate`). Read
    `--update` only when the change is intended, per `.claude/README.md`,
    "Batch size and the fixed cost of a run").
 6. **Commit** the coherent change (Conventional Commits, author per
-   `CLAUDE.md`), push, then close out per `/handoff`: status `done`, and
-   retire `plan.md` in the closing commit (nothing cites it).
+   `CLAUDE.md`), then close out per `/handoff`: status `done`, retire
+   `issues/<id>/` in the same commit (nothing cites it), and push once - a
+   small fix is still one task and one commit.
 
 Not this path: a second file, a new state (it needs a `STATES` entry), a
 contract or fixture change, or a symptom nobody has pinned to a width.

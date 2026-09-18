@@ -49,7 +49,8 @@ const FRAME_LABEL = {
 };
 
 /* Kept in step with the app's own vocabulary (app/src/lib/{label,i18n}.ts's
-   EQ_* tables; the live app's app.js carried the same names until R0c). */
+   EQ_* tables; the live app's app.js carried the same names before it was
+   removed). */
 const EQ_TYPE = { weapon: 'Основное оружие', secondary: 'Вторичное оружие', armor: 'Броня' };
 const EQ_TRAIT = {
   agility: 'Проворность',

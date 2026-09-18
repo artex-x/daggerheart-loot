@@ -32,7 +32,7 @@ function artwork(): Plugin {
   };
 }
 
-/* The <noscript> fallback's own three links (issue 47, R0c N6): `catalog.csv`,
+/* The <noscript> fallback's own three links: `catalog.csv`,
  * `data.json` and `llms.txt` are generated files at the repository root, not
  * inputs Vite's own graph ever touches, so nothing put them in `dist/` once
  * the build stopped being "copy the root folder as-is". Files, not the
@@ -113,8 +113,7 @@ export default defineConfig({
        were measured at 13.5s. The default held only on an idle machine - one
        `npm run check` with a single puppeteer probe alongside produced 92
        failures, 71 of them `Test timed out in 5000ms`, on a suite that passes
-       658/658 at 30s. Three sessions wrote that off as "contention" before
-       anyone looked at the config.
+       658/658 at 30s.
 
        30s is a little over twice the slowest measured test, so a genuinely
        hung test still fails rather than hanging the run. Scoping it to the
@@ -128,7 +127,7 @@ export default defineConfig({
        and lives in app/src/test/a11y.ts instead: expectNoA11yViolations
        clears axe's `_running` flag before every run, so an abandoned run from
        a timed-out neighbour can no longer block the next one. See
-       app/src/test/a11y.test.ts for the regression test (issue 47, B3.6). */
+       app/src/test/a11y.test.ts for the regression test. */
     testTimeout: 30_000,
     include: ['src/**/*.test.ts'],
     setupFiles: ['./vitest-setup.ts'],
@@ -148,14 +147,14 @@ export default defineConfig({
            no canvas, no toBlob - so a percentage of this file would measure
            one test double and nothing else. It is exercised for real by
            tests/app/states.js's copy-image case, which drives the built app
-           in Chrome and, since D10 (paid off), reads a real assertion on
-           whichever of the two outcomes this build actually produces - a
-           real picture, or (the tainted canvas this build has) the record's
+           in Chrome and reads a real assertion on whichever of the two
+           outcomes this build actually produces - a real picture, or (the
+           tainted canvas this build has) the record's
            text and its own toast - rather than only proving the promise
            does not hang. The caller's own branching on a rejection
            (RecordActions.svelte's copyImage) is covered here, through
-           fakeImage. `download` is different - B8-R4, paid off: it touches
-           only `URL.createObjectURL`/`revokeObjectURL` and a plain `<a>`,
+           fakeImage. `download` is different: it touches only
+           `URL.createObjectURL`/`revokeObjectURL` and a plain `<a>`,
            all of which jsdom has, so `ports.test.ts` covers it directly
            rather than through `states.js` (which never reaches it either -
            that suite's build taints the canvas, so `writeImage` refuses
@@ -215,7 +214,7 @@ export default defineConfig({
            whole component is a single optional-attribute update path,
            present-vs-absent, plus a class-value update path - badge.test.ts
            covers both directions of each, including a rerender that swaps
-           both, and 50% branch is still the ceiling (issues/phase-8, B5). */
+           both, and 50% branch is still the ceiling. */
         'src/components/Badge.svelte': {
           lines: 85,
           functions: 80,

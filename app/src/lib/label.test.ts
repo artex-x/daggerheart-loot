@@ -169,7 +169,7 @@ describe('the line under the heading', () => {
     expect(whereFrom(rec({ src: 'dread' }), 'en')).toBe('Dread GM Toolbox');
   });
 
-  it('names the equipment slice, whichever piece (B5-N8, the last un-pinned group)', () => {
+  it('names the equipment slice, whichever piece (the last un-pinned group)', () => {
     expect(whereFrom(rec({ src: 'core', eq: { t: 'weapon', tier: 1 } }), 'ru')).toBe(
       'Снаряжение · Оружие'
     );

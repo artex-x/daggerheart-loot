@@ -3,8 +3,8 @@
      The markup mirrors `cardHTML(it, {full:true})` in app.js and the styles are
      copied out of style.css - `.card`, `.card-media`, `.card-body`,
      `.card-meta`, `.badge`, `.card-name`, `.card-desc`, `.craft`, `.refs`,
-     `.card-acts`. This was a refactor: the parity harness (deleted at R0c,
-     issue 47) compared the two apps pixel for pixel, so a value that was
+     `.card-acts`. This was a refactor: the parity harness (deleted, issue
+     47) compared the two apps pixel for pixel, so a value that was
      nearly right was a value that failed.
 
      Nothing here injects HTML. The description arrives parsed - see
@@ -267,7 +267,7 @@
     background: linear-gradient(180deg, var(--surface2), var(--surface));
     border: 1px solid var(--line);
     border-radius: var(--r);
-    /* `clip` rather than `hidden` (D6, paid off): the add-to-list menu's
+    /* `clip` rather than `hidden`: the add-to-list menu's
        placement effect no longer calls `scrollIntoView` on the wrong button
        and pulls this article's own scroll position along with it, but
        `clip` is what stops a programmatic scroll from moving the content at
@@ -342,7 +342,7 @@
     transition: transform 0.25s;
   }
 
-  /* D18 mostly paid off, but this one override was not a no-op: `.card-media`
+  /* Mostly paid off, but this one override was not a no-op: `.card-media`
      is a real button flush against `.card`, and `.card` is `overflow: clip`.
      The global rule's `+2px` offset (tokens.css) draws the ring outside this
      button's border box, which is outside `.card`'s padding box, so it is
@@ -556,7 +556,7 @@
     border-bottom-style: solid;
   }
 
-  /* `.card-acts` moved to `Actions.svelte` (B10); its two 600px descendant
+  /* `.card-acts` moved to `Actions.svelte`; its two 600px descendant
      rules below are re-anchored on this component's own root, `.card`,
      since a scoped rule cannot otherwise reach inside a child component. */
 
@@ -577,7 +577,7 @@
      the opposite of `AddToList.svelte`'s own base rule (the future selection
      bar's). Two classes deep, same as the live rule, so this beats both the
      bare `.dropmenu` and its own 600px override at equal specificity - see
-     issue 47, B5.1 planned, "Specificity matters here". */
+     issue 47. */
   .cardpick :global(.dropmenu) {
     bottom: auto;
     top: calc(100% + 8px);

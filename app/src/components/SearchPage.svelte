@@ -38,7 +38,7 @@
   const query = $derived(foldQuery(q.trim()));
   const statLine = $derived(statLineFor(app.lang, t));
   const hay = $derived(hayFor(statLine));
-  /* P7: the unsliced match count, kept so a broad query can say "these are
+  /* The unsliced match count, kept so a broad query can say "these are
      the first 300 of N" instead of stopping at 300 with nothing on screen to
      tell that apart from "this is all of them" - the same shown-of-total
      line the table filter strip already prints (`FilterBar.svelte`'s
@@ -124,11 +124,11 @@
   {/snippet}
 </RecordHost>
 
-<!-- `.miss` moved to `NoData.svelte`, `.panel` to `Panel.svelte` (B10) - the
+<!-- `.miss` moved to `NoData.svelte`, `.panel` to `Panel.svelte` - the
      16px margin-bottom is the live inline attribute, passed as `style`. -->
 
 <style>
-  /* P7 - off `FilterBar.svelte`'s `.fcount`, the shown-of-total line the
+  /* Off `FilterBar.svelte`'s `.fcount`, the shown-of-total line the
      table filter strip already had: same font, same muted colour. */
   .scount {
     margin: 0 0 10px;

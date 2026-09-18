@@ -5,7 +5,7 @@
      A genuine component rather than a snippet local to `TablesPage.svelte`:
      every sectioned body (tier, frame, community, and each alternate-table
      column) draws this exact markup, so it is past "extracted on the second
-     use" several times over by the time B3 adds them all in one commit. A
+     use" several times over by the time they are all added in one commit. A
      child component also sidesteps calling a locally-declared snippet through
      its own `{@render}`, which eslint-plugin-svelte's void-expression rule
      currently flags even for a snippet with no return value of its own -
@@ -243,8 +243,8 @@
   }
 
   /* off `[data-row]{scroll-margin-top:...}` and `.row.flash,.tilewrap.flash`
-     in style.css - the row anchor's own target, unused since B1 shipped but
-     wired up for the first time in this batch. */
+     in style.css - the row anchor's own target, unused until now, wired up
+     here for the first time. */
   :global([data-row]) {
     scroll-margin-top: 118px;
   }

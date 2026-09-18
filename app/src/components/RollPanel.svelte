@@ -126,12 +126,12 @@
           <!-- Keyed on the record, not the panel: without this Svelte patches the
                existing card in place on every roll, and the previous artwork sits
                on screen until the new <img> decodes - live rebuilds #view.innerHTML
-               every time, so its <img> is always brand new (plan.md, "B14
-               planned"). Rolling the *same* record twice is the one case this
+               every time, so its <img> is always brand new. Rolling the
+               *same* record twice is the one case this
                still keeps the node for; the image is identical, so nothing
                visible differs. -->
           {#key shown.it}
-            <!-- B10-N5: the third near-copy of StdPanel.svelte's and
+            <!-- The third near-copy of StdPanel.svelte's and
                  AltPanel.svelte's own `RecordCard` wrapping, a different
                  enough shape (one result, not a pool through `OrGrid`) that
                  the case for extracting all three - and against it - is
@@ -163,11 +163,10 @@
 
 <style>
   /* off `.field`, `.lbl` and `.btn` in style.css - `.numrow` moved to
-     `NumRow.svelte`, `.panel` to `Panel.svelte`, `.miss` to `NoData.svelte`
-     (B10) */
+     `NumRow.svelte`, `.panel` to `Panel.svelte`, `.miss` to `NoData.svelte` */
   /* off `.results` in style.css - three lines, duplicated in
      `AltPanel.svelte`/`StdPanel.svelte`, too small to be worth a component
-     of its own (components.md, C7). */
+     of its own. */
   .results {
     margin-top: 26px;
   }

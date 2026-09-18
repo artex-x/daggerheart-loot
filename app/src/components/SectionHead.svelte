@@ -9,7 +9,7 @@
     label: string;
     title: string;
     oncopy: () => void;
-    /** D8, paid off: the alternate tables follow this label with their own
+    /** The alternate tables follow this label with their own
      *  `<h3 class="altcol">` column pair, which used to sit straight under
      *  the page's `<h1>` with nothing between - a two-level jump `axe`'s
      *  `heading-order` rule caught. Every other caller leaves this unset and
@@ -20,7 +20,7 @@
 
   const { label, title, oncopy, heading }: Props = $props();
 
-  /* B7-N10, paid off: a lookup rather than `'h' + String(heading)` (which
+  /* A lookup rather than `'h' + String(heading)` (which
      widened to `string`, dropping the tag name out of the literal union
      `svelte:element` wants checked) or a ternary (which would be a branch
      `heading === 3` is never given to exercise, in production or in a
@@ -49,8 +49,8 @@
   }
 
   .tsec-head .lbl {
-    /* Zeroes a heading element's own default top/bottom margin too - D8's
-       `<h2>`/`<h3>` need to read exactly like the plain `<span>` every other
+    /* Zeroes a heading element's own default top/bottom margin too - the
+       heading prop's `<h2>`/`<h3>` need to read exactly like the plain `<span>` every other
        caller still gets. */
     margin: 0 0 8px;
   }

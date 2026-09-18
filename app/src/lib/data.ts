@@ -92,15 +92,15 @@ export function buildIndex(loot: Loot): Index {
   for (const it of eq) byId.set(it.id, it);
 
   /* Equipment is not only in `eq`. Eleven Wondrous records, every campaign
-     frame entry, and some of Vault of Ages and Dread carry the same block while
-     keeping their place in a roll table - one record showing up in both places
+     frame entry, and some of Vault of Ages and Dread carry the same block
+     while also keeping their place in `rows` - a roll table for most of
+     them, though a campaign frame entry has no roll number of its own (see
+     the `rows` doc comment above) - one record showing up in both places
      rather than a copy in each.
 
-     `eq` comes first - off `ALL_EQ = EQ.concat(...Object.values(DATA))` in
-     app.js. Nothing read this order before the equipment tables (B4) drew a
-     pool off it directly: `core_item`'s weapons used to open every equipment
-     table, ahead of the campaign frames' own, and armour has no `roll` to
-     sort by so the table's whole order came from this concat. */
+     `eq` comes first, so `core_item`'s weapons open every equipment table,
+     ahead of the campaign frames' own; armour has no `roll` to sort by, so
+     the table's whole order comes from this concat. */
   const allEquip = [...eq, ...all].filter((it) => it.eq);
 
   /* Only one direction is stored. Deriving the other means the two halves

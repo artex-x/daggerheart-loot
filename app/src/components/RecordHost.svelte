@@ -1,6 +1,6 @@
 <script lang="ts">
-  /* The record modal, owned once instead of once per page (components.md,
-     C6). Eight pages each carried their own `let open = $state<Record_ |
+  /* The record modal, owned once instead of once per page. Eight pages
+     each carried their own `let open = $state<Record_ |
      null>(null)`, the same `{#if open && index}<RecordModal .../>{/if}`
      block, and - on `SearchPage`/`TablesPage` only - an effect closing it on
      a real navigation. This component is that state and that block: a page
@@ -16,7 +16,7 @@
      navigate without closing it" in a way that would have shown the
      difference.
 
-     B10-N1, paid off: the effect below watches `app.navigations`, not
+     The effect below watches `app.navigations`, not
      `app.hash` - a rejected alternative worth keeping, since this is now
      the one copy of what was `TablesPage`'s own reasoning before
      extraction. Route strings cannot tell one table from another on their
@@ -39,7 +39,7 @@
 
   interface Props {
     app: AppState;
-    /* B10-N3, paid off: not `| undefined` - seven callers pass
+    /* Not `| undefined` - seven callers pass
        `const index = $derived(app.index)`, typed `Index | null`
        (`app.svelte.ts`); the eighth (`SharedListPage`) passes a
        non-nullable `Index`. Nothing can pass `undefined`, and the prop is
@@ -51,7 +51,7 @@
      * note applies depends on which record is open, which is this
      * component's own state and not the caller's to read.
      *
-     * B10-N2, paid off: the function's own return type carries no
+     * The function's own return type carries no
      * `| undefined` - `entryNoteBlock` (`lib/share.ts`) always returns
      * `ShareBlock[]`, never `undefined` (`share.test.ts` pins `[]` for an
      * entry with no visible note). The optional *call* below, `extra?.(open)`,

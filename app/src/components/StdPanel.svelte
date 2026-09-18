@@ -58,7 +58,7 @@
   const choice = $derived(index && pool.length > 1 ? { index, pool } : null);
 
   async function copyRoll(one: { index: Index; pool: Record_[] }): Promise<void> {
-    /* D13, paid off: its own toast, distinct from a plain text copy. */
+    /* Its own toast, distinct from a plain text copy. */
     const { text, html } = shareRoll(one.pool, one.index, app.lang, t.or);
     await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.rollCopied);
   }
@@ -151,7 +151,7 @@
 
     {#snippet cardOf(it: Record_)}
       {#if index}
-        <!-- B10-N5: this snippet and AltPanel.svelte's own `cardOf` are
+        <!-- This snippet and AltPanel.svelte's own `cardOf` are
              byte-identical apart from `it`/`col`/`rollLabel` - this panel's
              pool has neither a die column nor a die face to caption a card
              with, `AltPanel`'s does. `RollPanel.svelte` is the third
@@ -160,8 +160,7 @@
              `OrGrid` snippet passed a whole pool, `index={shown.index}`
              instead of this file's own panel-level `{index}`. Considered
              extracting all three (`CLAUDE.md`'s "second real use" is long
-             past): rejected per `plan.md`'s own "do not over-extract" -
-             the two real props that vary (`col`, `rollLabel`) plus
+             past): rejected - the two real props that vary (`col`, `rollLabel`) plus
              `RollPanel`'s different wrapper shape would make the extraction's
              own prop list about as long as just forwarding `RecordCard`
              directly, for three call sites that read fine side by side. -->
@@ -190,9 +189,9 @@
 
 <style>
   /* off `.results` in style.css - `.numrow` moved to `NumRow.svelte`,
-     `.panel` to `Panel.svelte` (B10) */
+     `.panel` to `Panel.svelte` */
   /* Three lines, duplicated in `AltPanel.svelte`/`RollPanel.svelte` - too
-     small to be worth a component of its own (components.md, C7). */
+     small to be worth a component of its own. */
   .results {
     margin-top: 26px;
   }

@@ -31,8 +31,8 @@ function sleep(ms) {
 
 // A file that exists and does not parse is corrupt, not absent. Returning {}
 // for it made a refresh re-send the whole catalogue and, under `--apply`,
-// committed a state with every other entry dropped (B6 review R3). Only
-// ENOENT is the bootstrap.
+// committed a state with every other entry dropped. Only ENOENT is the
+// bootstrap.
 function readState(path) {
   let text;
   try {
@@ -45,9 +45,8 @@ function readState(path) {
     return JSON.parse(text);
   } catch (err) {
     // The message already folds err in by hand; adding { cause: err } too is
-    // a real improvement, left for the batch that next touches error
-    // handling here rather than a directory-wide rule turn-off
-    // (issues/phase-8, B9-R2/B9-N5).
+    // a real improvement, left for whatever next touches error
+    // handling here rather than a directory-wide rule turn-off.
     // eslint-disable-next-line preserve-caught-error
     throw new Error(
       'state file is not valid JSON: ' +
@@ -72,14 +71,13 @@ function previousState(path) {
   }
 }
 
-// Atomic write, sorted keys, trailing newline - plan.md section 5.4.
-// `updatedAt` moves only when `urls` actually changes: a run (or an --apply)
-// that confirms nothing produces the same map already on disk, and minting a
-// fresh timestamp for it was the whole defect - a byte that always differs,
-// so `git diff --cached --quiet` in previews.yml's record step never
-// short-circuits and every idle run commits noise (issues/tg-preview-refresh
-// handoff.md, "the previews CI job commits a state file in which only the
-// updatedAt timestamp moved"). Comparing against the file already at `path`
+// Atomic write, sorted keys, trailing newline. `updatedAt` moves only when
+// `urls` actually changes: a run (or an --apply) that confirms nothing
+// produces the same map already on disk, and minting a fresh timestamp for
+// it was the whole defect - a byte that always differs, so `git diff
+// --cached --quiet` in previews.yml's record step never short-circuits and
+// every idle run commits noise. See docs/tg-preview.md, "What CI does after
+// a deploy". Comparing against the file already at `path`
 // (rather than threading a previous-state argument through both callers -
 // lib.mjs's record() and --apply above) keeps the fix in the one place that
 // already owns "what does this write actually change", for every writer.
@@ -124,7 +122,7 @@ async function main() {
   if (opts.apply) {
     const state = readState(statePath);
     // `site` travels in the result, so the record step does not need `main`'s
-    // tree to be buildable at commit time (B6 review, R1 item 7).
+    // tree to be buildable at commit time.
     const result = JSON.parse(readFileSync(opts.apply, 'utf8'));
     if (!result.site) throw new Error('result file carries no site: ' + opts.apply);
     const next = applyResult(state, result, result.site);

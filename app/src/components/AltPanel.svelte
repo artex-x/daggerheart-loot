@@ -85,7 +85,7 @@
   );
 
   async function copyRoll(one: { index: Index; pool: Record_[] }): Promise<void> {
-    /* D13, paid off: its own toast, distinct from a plain text copy. */
+    /* Its own toast, distinct from a plain text copy. */
     const { text, html } = shareRoll(one.pool, one.index, app.lang, t.or);
     await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.rollCopied);
   }
@@ -225,7 +225,7 @@
 
     {#snippet cardOf(pick: AltPick)}
       {#if index}
-        <!-- B10-N5: near-identical to StdPanel.svelte's own `cardOf` and to
+        <!-- Near-identical to StdPanel.svelte's own `cardOf` and to
              RollPanel.svelte's single-result card - the extraction this
              invites, and why it is not done, is written down at
              StdPanel.svelte's copy rather than three times over. -->
@@ -256,7 +256,7 @@
 
 <style>
   /* off `.dieblock`, `.dielbl`, `.crit` and `.results` in style.css -
-     `.numrow` moved to `NumRow.svelte`, `.panel` to `Panel.svelte` (B10) */
+     `.numrow` moved to `NumRow.svelte`, `.panel` to `Panel.svelte` */
   .dieblock {
     flex: 0 0 auto;
   }
@@ -285,7 +285,7 @@
   }
 
   /* Three lines, duplicated in `RollPanel.svelte`/`StdPanel.svelte` - too
-     small to be worth a component of its own (components.md, C7). */
+     small to be worth a component of its own. */
   .results {
     margin-top: 26px;
   }

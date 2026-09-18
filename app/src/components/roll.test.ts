@@ -49,8 +49,8 @@ describe('rolling on a table', () => {
   it('opens on the first row rather than on an empty panel', () => {
     /* What the live app did. A page that shows nothing until it is pressed
        reads as one that failed to load - and the parity harness (deleted at
-       R0c, issue 47) caught the invitation-first version as a difference
-       from the original. */
+       23c00a6, R0c, issue 47) caught the invitation-first version as a
+       difference from the original. */
     render(App, { env: at('#/roll/wondrous') });
     expect(screen.getByRole('heading', { level: 2, name: 'w вещь 1' })).toBeInTheDocument();
   });

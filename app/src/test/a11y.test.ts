@@ -7,7 +7,7 @@
  * looks at anything. This reproduces exactly that stuck state, without waiting
  * out a real timeout to produce it, and checks expectNoA11yViolations recovers
  * rather than propagating the lock. See vite.config.mts for the testTimeout
- * half of the same fix (issue 47, B3.6).
+ * half of the same fix (issue 47).
  */
 import axe from 'axe-core';
 import { afterEach, expect, it } from 'vitest';

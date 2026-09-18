@@ -1,6 +1,6 @@
 # #/tables/core_item ~ row anchor
 # route: #/tables/core_item/ci1
-# why: arriving at a record's row link scrolls to and flashes it - a B1 table, not a new one
+# why: arriving at a record's row link scrolls to and flashes it - an already-shipped table, not a new one
 
 ## ru :: tree
 RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/core_item/ci1]

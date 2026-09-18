@@ -5,8 +5,8 @@
 
      The live `#sq` carries `autofocus`, and the search page opens with the
      box focused and its focus ring already painted - measured with a
-     headless-Chrome probe, see `context.md`, "B6 planning facts". `focus`
-     drives that from `onMount` instead of the `autofocus` attribute: Svelte
+     headless-Chrome probe. `focus` drives that from `onMount` instead of
+     the `autofocus` attribute: Svelte
      5's runtime turns `autofocus` into a `focus()` gated on
      `document.activeElement === document.body` anyway, and the compiler
      flags it as an a11y warning under `--fail-on-warnings`. */

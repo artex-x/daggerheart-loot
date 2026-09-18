@@ -32,7 +32,7 @@
   --fear: #8a72d6;
   /* `--gold` as an `r g b` triple, for the handful of places that need it at
      an opacity `--gold` itself cannot carry - moved here from `Badge.svelte`'s
-     own `.uniq`/`.num` variants (B5), not a new value invented for them. */
+     own `.uniq`/`.num` variants, not a new value invented for them. */
   --gold-rgb: 216 171 94;
 
   /* One hue per kind, used by the badge only; the stat line stays plain
@@ -48,7 +48,7 @@
 
   --danger: #e0685f;
 
-  /* The badge's own ground - moved here from `Badge.svelte` (B5), where it
+  /* The badge's own ground - moved here from `Badge.svelte`, where it
      was the base rule's `background` alone; every variant sits on it. */
   --badge-bg: rgb(10 8 16 / 50%);
 
@@ -144,11 +144,11 @@ a {
   color: var(--gold-soft);
 }
 
-/* style.css:727 - global, because every input in the app inherits it there.
-   Measured against Chrome's UA style: live rgb(138,131,163) at 0.7 opacity,
-   this rule's absence left every search box at Chrome's own rgb(117,117,117)
-   at full opacity - under JITTER on any one screen, but the class B3.6 wrote
-   down for the toolbar search box and every other placeholder since B1. */
+/* Global, because every input in the app inherits it. Measured against
+   Chrome's UA style: live rgb(138,131,163) at 0.7 opacity, this rule's
+   absence left every search box at Chrome's own rgb(117,117,117) at full
+   opacity - under JITTER on any one screen, but the class that sets it for
+   the toolbar search box and every other placeholder in the app. */
 input::placeholder,
 textarea::placeholder {
   color: var(--muted2);

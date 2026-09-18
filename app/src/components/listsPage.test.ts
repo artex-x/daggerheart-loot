@@ -1,6 +1,6 @@
 /* The lists index, `#/lists` - off `renderLists`/`storageWarning`/`hideWarn`/
- * `listCardHTML` in app.js and the create/share/delete/restore handlers the
- * plan reads off 4136-4270. `shell.test.ts` used to cover the storage notice
+ * `listCardHTML` in app.js and the create/share/delete/restore handlers
+ * (app.js 4136-4270). `shell.test.ts` used to cover the storage notice
  * as the frame's own invention; it lives here now, where the live app draws
  * it. */
 
@@ -152,10 +152,9 @@ describe('a card per list', () => {
     /* The card link renders the GM payload, not the players' one - a live-app
        bug (`listCardHTML` calls `listHash(l)` with no second argument;
        `listHash`'s `forPlayers` goes undefined, falsy) that this port
-       matches: see context.md, "The card link renders the GM payload". Proof
-       the two flavours actually differ for `listA` (its `hnote` makes them
-       diverge) is what makes the assertion below meaningful rather than a
-       line that would pass either way. */
+       matches. Proof the two flavours actually differ for `listA` (its
+       `hnote` makes them diverge) is what makes the assertion below
+       meaningful rather than a line that would pass either way. */
     expect(encodeList(listA, false)).not.toBe(encodeList(listA, true));
 
     const cardA = screen.getByRole('link', { name: /Клад дракона/ });
@@ -380,9 +379,9 @@ describe('restoring a list', () => {
   });
 });
 
-describe("another tab's write while the index is mounted (S7/R2)", () => {
+describe("another tab's write while the index is mounted (R2)", () => {
   /* The gap the dispatch named: no test fired a storage event into a mounted
-     page. `listPage.test.ts` closes it for S4's own note-field symptom;
+     page. `listPage.test.ts` closes it for the note-field symptom;
      this closes it for R2's general reload trigger, on a second page type,
      through the `null`-key path a `storage` event with no key (or this
      tab becoming visible again) uses. */

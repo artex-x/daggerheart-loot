@@ -11,7 +11,7 @@
    whole, which is how `f_rg-melee` from llms.txt spent a year looking like a
    working filter while selecting nothing.
 
-   R0c (2026-09-17) trimmed this file to its fs-only half - the list-encoding
+   This file covers only its fs-only half - the list-encoding
    check and the docs-name check. The browser half (the link against a real
    app, the address grammar, the stat line, the filter-group probe) moved to
    `tests/app/contracts.js`, which reads the rewrite instead of the live app;

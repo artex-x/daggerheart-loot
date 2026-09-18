@@ -1,9 +1,9 @@
 /* Public contracts against the golden fixtures, re-pointed at dist/ - the
  * browser half of tests/contracts.js. The pure half (the second
  * implementation of the codec) and the llms.txt/CONTRACTS.md/ROUTES.md name
- * greps need no browser and stay there; decided 3 leaves that file alive
- * until Phase 7. Nothing here edits a fixture: a divergence is root-caused
- * and reported, per CLAUDE.md, "Public contracts default to no change". */
+ * greps need no browser and stay there for now. Nothing here edits a
+ * fixture: a divergence is root-caused and reported, per CLAUDE.md,
+ * "Public contracts default to no change". */
 const fs = require('fs');
 const path = require('path');
 const { fresh, reporter, closeBrowser } = require('./lib.js');
@@ -42,7 +42,7 @@ function stampOf(parts) {
       storage: { 'dhloot.lists.v2': JSON.stringify([fx.list]) }
     });
     await d.open('#/lists/' + fx.list.id);
-    /* B8.1-N3: the owned-list address is debounce-written (ListPage.svelte),
+    /* The owned-list address is debounce-written (ListPage.svelte),
        so reading location.hash right after open() rests on ready()'s own
        wait happening to already exceed the 150ms debounce, not on anything
        here asserting settlement - addressSettled() makes that explicit. */
@@ -102,7 +102,7 @@ function stampOf(parts) {
   await c.ctx.close();
 
   /* ---------- a link assembled purely from llms.txt's own description ----------
-   * Moved here from tests/lists2.js (decided 3): the format is documented so
+   * Moved here from tests/lists2.js: the format is documented so
    * an agent can build an address with no help from the app, and that promise
    * is only as good as this - a link built by a second implementation, not by
    * the app's own encoder, opening correctly. */
@@ -148,9 +148,9 @@ function stampOf(parts) {
 
   console.log('the address grammar');
   const routes = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'routes.json'), 'utf8'));
-  /* One context reused across all 30 fixtures rather than one per fixture
-   * (issues/phase-8, T3) - none of them seed storage, so `d.open`'s full
-   * navigation (driver.js:151-153) and `prepare()`'s per-navigation
+  /* One context reused across all 30 fixtures rather than one per fixture -
+   * none of them seed storage, so `d.open`'s full
+   * navigation (driver.js's own) and `prepare()`'s per-navigation
    * localStorage.clear() (lib.js/driver.js) already give every fixture the
    * same clean slate a fresh context would, without paying puppeteer's
    * ~1.8s-per-context floor (tests/app/golden.js's measured cost) 30 times. */
@@ -160,7 +160,7 @@ function stampOf(parts) {
     const seen = await rPage.evaluate(() => {
       const on = document.querySelector('nav.tabs a[aria-current="page"]');
       /* `.chip[data-val]` is StdPanel's source row and only it - the `value`
-         prop on Chip.svelte has no other caller (plan.md, "B12 planned"). */
+         prop on Chip.svelte has no other caller. */
       const srcBtns = [...document.querySelectorAll('.chip[data-val]')];
       return {
         hash: location.hash,
@@ -248,7 +248,7 @@ function stampOf(parts) {
     ['community', 'comm-Seaborne'],
     ['wondrous', 'kind-consumable']
   ];
-  /* One context reused across all 18 opens (issues/phase-8, T3) - same
+  /* One context reused across all 18 opens - same
    * reasoning as the address-grammar loop above: no probe here seeds
    * storage, so a full `d.open` navigation already starts each one clean. */
   const { ctx: pCtx, page: pPage, d: pD } = await fresh({ width: 1280, height: 900 });

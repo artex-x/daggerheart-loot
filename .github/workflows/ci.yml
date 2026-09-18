@@ -17,8 +17,7 @@ permissions:
 # an in-flight publish could be cancelled mid-deploy by an unrelated PR push.
 # So only a push to main keeps the shared, never-cancelled `pages` group; any
 # other run (PR, workflow_dispatch, a push to another branch) gets its own
-# group keyed on the ref and may cancel its own superseded runs
-# (issues/phase-8, DP6).
+# group keyed on the ref and may cancel its own superseded runs.
 concurrency:
   group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'pages' || format('ci-{0}', github.ref) }}
   cancel-in-progress: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main') }}
@@ -30,8 +29,7 @@ jobs:
     # but a value still has to be here: with none, a stuck step runs to
     # GitHub's own 6-hour job ceiling, and because `concurrency.group: pages`
     # is `cancel-in-progress: false`, the documented revert-and-push recovery
-    # then queues behind that hung job instead of running (issues/phase-8,
-    # DP1).
+    # then queues behind that hung job instead of running.
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
@@ -52,9 +50,9 @@ jobs:
       # comparing the freshly regenerated files against themselves and could
       # never catch a data.js edit committed without its generated output.
       # This is the actual gate: a diff here means someone edited data.js and
-      # forgot `node tools/build.js` before committing (issues/phase-8,
-      # DP4/T4 - README.md, README.ru.md and .claude/hooks/edit-followup.mjs
-      # already describe this step; it did not exist until now).
+      # forgot `node tools/build.js` before committing. README.md,
+      # README.ru.md and .claude/hooks/edit-followup.mjs describe this step
+      # too.
       - name: Generated data actually matches what is committed
         run: git diff --exit-code -- data.json catalog.csv
 
@@ -88,12 +86,12 @@ jobs:
   # four runners by CI-measured weight instead of one `check`-job step owning
   # 84% of that job plus a separate `golden` matrix that then sat idle for
   # 9m21s waiting on it. `--shard=n/4` packs the whole pool, goldens
-  # included; see tests/run-all.js's weight comment and
-  # issues/phase-8/handoff.md, "B3".
+  # included; four jobs because a CI job's fixed cost is ~20 s, not minutes,
+  # and `tests/derived.js` asserts the shard count matches. See
+  # tests/run-all.js's own weight comment.
   browser:
     runs-on: ubuntu-latest
-    # See `check`'s own comment above (issues/phase-8, DP1) - same reasoning,
-    # same fix.
+    # See `check`'s own comment above - same reasoning, same fix.
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -150,7 +148,7 @@ jobs:
       # secrets-adjacent trust (it reads full history looking for leaked
       # credentials) and a mutable tag can be repointed. `actions/*` stay on
       # their major tags below and elsewhere in this file - GitHub's own
-      # actions, not pinned as a deliberate line (issues/phase-8, B4 step 8).
+      # actions, not pinned as a deliberate line.
       - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -172,9 +170,9 @@ jobs:
   # revert, so reverting the offending commit is the whole procedure. What this
   # omits is the cost: push-to-live is ~7-8 minutes end to end (the `browser`
   # matrix dominates it - measured 7m21s on run 35241351714, 2026-09-17, on
-  # top of B3's sharding), of which this `deploy` job's own steps are ~30-40
-  # seconds (37s that run). A cheaper path exists when the *previous* commit
-  # was known good and nothing about the source needs to change:
+  # top of the sharding described above), of which this `deploy` job's own
+  # steps are ~30-40 seconds (37s that run). A cheaper path exists when the
+  # *previous* commit was known good and nothing about the source needs to change:
   #
   #     gh run rerun <that earlier green run's id> --job <its deploy job id>
   #
@@ -184,8 +182,8 @@ jobs:
   # old run built, silently, with no new commit and no record in `git log` of
   # what is now live - reach for it only to undo a bad publish fast while a
   # proper revert is prepared, and never to "retry" a deploy that failed on
-  # the *current* commit, since it would just republish stale content instead
-  # (issues/phase-8, DP5).
+  # the *current* commit, since it would just republish stale content
+  # instead.
   #
   # THE OLD APP IS GONE FROM THE REPOSITORY, NOT JUST FROM THE PUBLISHED SET
   #
@@ -209,11 +207,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # A job-level `permissions:` block replaces the workflow-level one at
-    # `ci.yml:9-10` entirely rather than adding to it - without `contents:
-    # read` here this job's token actually has `contents: none`, and
-    # `actions/checkout` only ever worked because the repository is public
-    # (issues/phase-8, DP3).
+    # A job-level `permissions:` block replaces the workflow-level one above
+    # entirely rather than adding to it - without `contents: read` here this
+    # job's token actually has `contents: none`, and `actions/checkout`
+    # only ever worked because the repository is public.
     permissions:
       contents: read
       pages: write
@@ -249,7 +246,7 @@ jobs:
       # not what should reach the artifact. Those three folders are copied from
       # the repository below, like the rest of the static assets.
       #
-      # `i/` is not in the repository (issues/untrack-stubs) - the Build step
+      # `i/` is not in the repository - the Build step
       # above regenerates it (npm run build -> npm run data ->
       # tools/build-share-pages.js) immediately before this step copies it, so
       # Collect must never be reordered ahead of Build.
@@ -287,8 +284,7 @@ jobs:
           # it). This check can only ever fail for a reason that does not
           # matter to what gets served; it would matter only if Pages were
           # ever switched back to the legacy branch-based build, where a
-          # missing .nojekyll lets Jekyll eat any file starting with `_`
-          # (issues/phase-8, DP7).
+          # missing .nojekyll lets Jekyll eat any file starting with `_`.
           if [ ! -e "_site/.nojekyll" ]; then echo "::error::.nojekyll is missing"; exit 1; fi
           for d in img og i card; do
             if [ ! -d "_site/$d" ] || [ -z "$(ls -A "_site/$d")" ]; then
@@ -308,8 +304,7 @@ jobs:
           # catalog.csv has exactly one header row plus one row per record
           # (tests/derived.js proves catalog.csv's own row count against
           # data.js already), so it is the count already on disk to compare
-          # against, with no extra source of truth to invent
-          # (issues/phase-8, DP2).
+          # against, with no extra source of truth to invent.
           stub_count=$(ls -1 _site/i | wc -l)
           csv_rows=$(($(wc -l < _site/catalog.csv) - 1))
           echo "stub count: $stub_count, catalog.csv data rows: $csv_rows"
@@ -332,7 +327,7 @@ jobs:
       # one array of checks (tools/check-site.lib.mjs) driving both a
       # filesystem reader here and a fetch reader below, rather than this
       # step's own hand-written greps drifting from that file's checks the
-      # way they used to (issues/phase-8, T10/DP9).
+      # way they used to.
       - name: The published content is what tools/check-site.mjs expects
         run: node tools/check-site.mjs --dir _site
 

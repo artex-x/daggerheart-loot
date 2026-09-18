@@ -20,13 +20,22 @@ Six modes. Each keeps its own input in memory only.
 - The source switch on Core rules cannot be emptied - unticking the last one is
   refused.
 - Rarity on Core rules only sets the dice count, so there is no rarity picker;
-  each button is labelled with the count and the rarities it covers.
+  each button is labelled with the count and the rarities it covers. Core
+  rules spans four rarity bands (common, uncommon, rare, legendary); the
+  alternate tables have a fifth, `very_rare`, that Core rolls never reach -
+  intentional, per the Core book, not a gap.
 - The roll button uses a real die where the range is one, and reads
   "Random 1-N" where it is not (119, 29, a list of arbitrary length).
 - Other is two browsable tables, not a rolling mode: Starting items
   (`other_starting`) holds the non-rollable starting inventory as a plain
   list, and Frame items (`other_frames`) holds campaign-frame equipment
   sectioned by setting, with no roll number.
+- Other's navigation subchips are the short `Стартовые`/`Сеттинги`
+  (`Starting`/`Frames`) while each page's own heading stays descriptive: the
+  descriptive wording measured 293 px on a 360 px viewport against the
+  subchip's 260 px cap. Shrinking type, reducing spacing, wrapping,
+  truncating, horizontal scroll and any other layout change were rejected -
+  the short wording is the fix.
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
   consumables off on one switches them off everywhere, not per page.
@@ -103,7 +112,11 @@ Six modes. Each keeps its own input in memory only.
 ## Lists
 
 - Create, rename, reorder (drag handle or by typing a position), remove with
-  undo, delete with undo (P5).
+  undo, delete with undo (P5). Dragging near a viewport edge auto-scrolls:
+  a 120px band at either edge, up to 22px per frame, driven off
+  `requestAnimationFrame` (`app/src/ports/drag.ts`) - untested by any suite
+  (no test drags near a viewport edge); `docs/specs/COVERAGE.md` names the
+  gap, this line the constants.
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
   and its cancel; a search box appears from the eighth list; the menu opens on
@@ -168,7 +181,11 @@ Six modes. Each keeps its own input in memory only.
   Vault of Ages artifact or cursed object carries that word in the same line
   (`Vault of Ages · Артефакт` / `Vault of Ages · Artifact`, `· Проклятый
   предмет` / `· Cursed object`). The print card's source line and a generated
-  share stub's subtitle are paths too, and are held to the same rule.
+  share stub's subtitle are paths too, and are held to the same rule. The
+  section leaf is not generalised past this set - a table earns one only when
+  it is sectioned by a value the record itself carries, or, for Vault of
+  Ages, by the book's own tiers; extending the rule to every table was
+  rejected.
 - The `.badge src` chip on a record card, a table row, a Search result, a list
   row, or a modal card is a tag, not a path: one leaf naming the book, the
   community, or the setting - never a breadcrumb. It carries no path segment
@@ -215,7 +232,7 @@ Six modes. Each keeps its own input in memory only.
   leads to, because its own content is a bare digit.
 - A campaign-frame record with equipment metadata (a tier, thresholds, armour
   score) prints its tier word and its tier ladder exactly as an equivalent
-  `eq` record does (`DEBT.md` D11, paid off, Q6) - `f33` "Quilted Clothing"
+  `eq` record does - `f33` "Quilted Clothing"
   and `q313` "Gambeson Armor" now agree, where the live app printed one and
   hid the other with no stated reason. Its source label still names the frame
   itself, the same tag any other book's own equipment gets (`isFrameRecord`
@@ -313,4 +330,10 @@ Six modes. Each keeps its own input in memory only.
   button`'s 999px is untouched) - a global rule (`tokens.css`) rather than
   the live app's closed list of 18 selectors at an 8px radius, with
   everything outside that list falling back to the browser's own outline.
+- Self-hosted fonts were considered and dropped: the app declares `Inter,
+  -apple-system, 'Segoe UI', Roboto, ...` with no `@font-face` (`tokens.
+  css`), so glyphs depend on the machine. The five weights in use (650, 680,
+  620, 560, 540) render as authored only with a variable font, and the print
+  card needs a real italic - both argue for self-hosting, but the owner
+  decided against it.
   Broader coverage was the owner's call: `DEBT.md`, D18, paid off.

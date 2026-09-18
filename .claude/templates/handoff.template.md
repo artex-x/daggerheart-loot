@@ -7,14 +7,18 @@
 - NEEDS_HUMAN_CONFIRMATION: yes | no
 - Branch:
 - Base / starting commit:
+- Pushed: no | yes at <sha>
 
 ## Completed
 - Batch name/id:
 - What shipped:
 - Files changed:
-- Commit(s):
+- Previous sha (batch diff base): the task's HEAD entering this batch - a
+  reviewer reads `git diff <this> HEAD`. There is no separate "sha after
+  this amend" field: the handoff is inside the commit it would name, so
+  that field is always one step behind the moment it is written.
 - Deviations and rationale:
-- Review: required (trigger: <which>) | not required (no trigger fired)
+- Review: required (trigger: <which>) | not required (no trigger fired) | not run (owner's decision)
 
 ## Verification
 - Commands run (exact):
@@ -44,3 +48,4 @@
 - Screenshot findings:
 - Cleanup performed / retained artifacts:
 - Session end partial progress (if any):
+- Durable items written to their homes this batch (file, section):

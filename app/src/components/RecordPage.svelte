@@ -45,7 +45,7 @@
 
 <!-- A record opened over this page: a rung of the tier ladder, or the
      picture, both of which the live app answers with the modal rather than
-     a navigation - `RecordHost`'s own state (C6). -->
+     a navigation - `RecordHost`'s own state. -->
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}
     {#if !index}
@@ -97,7 +97,7 @@
 
 <style>
   /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
-     `NoData.svelte` (B10). */
+     `NoData.svelte`. */
   .itemtable {
     white-space: nowrap;
     font-size: 13px;

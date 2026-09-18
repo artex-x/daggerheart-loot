@@ -122,7 +122,7 @@ const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
 /* This checks the source, not the build: `npm run check` builds nothing, and
    a test that reads yesterday's dist/ is worse than no test. This used to
    compare both input pages - the root and app/index.html - while the old app
-   lived alongside it (R0c deleted it). */
+   lived alongside it. */
 ok(
   NOINDEX.test(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8')),
   'app/index.html has no noindex'
@@ -131,8 +131,8 @@ ok(NOINDEX.test(page(ALL[0])), 'the stub generator stopped setting noindex');
 /* 404.html is authored, not generated (tools/build.js never touches it), so
    neither of the above two checks reaches it - a deleted noindex or a
    deleted id="app-404" marker on this file stayed green through npm run
-   check and only reddened in the deploy guard's own 404-fallback checks
-   (issues/phase-8, B4-5). Two lines make it a local gate too. */
+   check and only reddened in the deploy guard's own 404-fallback checks.
+   Two lines make it a local gate too. */
 const notFoundHtml = fs.readFileSync(path.join(ROOT, '404.html'), 'utf8');
 ok(NOINDEX.test(notFoundHtml), '404.html has no noindex');
 ok(notFoundHtml.includes('id="app-404"'), '404.html has lost its id="app-404" marker');
@@ -152,8 +152,8 @@ ok(
 
 console.log('app/index.html head reads clean');
 /* This used to compare two input pages - the root and app/index.html -
-   while the old app lived alongside it. R0c deleted index.html with it, so
-   there is nothing left to compare against; one input page remains, and its
+   while the old app lived alongside it. That page is gone now, so there is
+   nothing left to compare against; one input page remains, and its
    head simply has to parse and carry everything a messenger preview card
    needs. `headFacts` reads only `<head>`, not the whole document - the body
    may mention `<meta`/`<title>` inside a code sample without risking being
@@ -195,7 +195,7 @@ const icon = (ICON.exec(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'u
 ok(!!icon, 'the tab icon is missing on app/index.html');
 
 console.log('layout does not shift between a short and a long page');
-/* tokens.css:93. Reserves the scrollbar gutter whether or not the page needs
+/* tokens.css reserves the scrollbar gutter whether or not the page needs
    one, so a short route does not measure fifteen pixels wider than a long
    one - nothing else in tests/app/ reads this file as source text. */
 ok(
@@ -232,8 +232,7 @@ ok(shareFacts['og:locale'] === 'ru_RU', 'og:locale is not ru_RU: ' + shareFacts[
    (tools/derived.js and tools/build-share-pages.js already read SITE, and
    llms.txt carries the same literal) - a repo rename or an apex CNAME would
    break all of them with every other gate green. One assertion against the
-   pathname SITE already carries closes 404.html's own copy (issues/phase-8,
-   B4-R4). */
+   pathname SITE already carries closes 404.html's own copy. */
 ok(
   fs.readFileSync(path.join(ROOT, '404.html'), 'utf8').includes(new URL(SITE).pathname),
   '404.html no longer contains ' +
@@ -713,7 +712,7 @@ const COUNTERS = [
   [/(\d{3,})\s+entries/g, [N.all, N.wondrous], 'entries']
 ];
 /* index.html and app.js were the live app's own copies of these numbers and
-   left the list at R0c along with the files themselves. */
+   left the list along with the files themselves when they were deleted. */
 const COUNT_BEARING_FILES = [
   'app/index.html',
   'README.md',
@@ -833,7 +832,7 @@ const OUTSIDE = [
    workflow is deliberately small here, and accepting a stray `browser`
    mention elsewhere would let deploy bypass a failing structural baseline -
    `browser` is the sharded matrix that runs tests/run-all.js, structural
-   goldens included (issues/phase-8, B3; it replaced a separate `golden`
+   goldens included (it replaced a separate `golden`
    job, which this assertion named until then). */
 const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
 const deploy =
@@ -850,7 +849,7 @@ if (deployNeeds) {
   ok(names.includes('browser'), 'deploy.needs: browser is missing');
 }
 
-/* R1 (issues/phase-8, B3 review -> routed into B4): the browser matrix and
+/* The browser matrix and
    the divisor tests/run-all.js's own --shard flag divides by have to agree,
    and three ways of breaking that are loud - a divisor above the matrix
    throws inside run-all.js, a deleted browser: job fails the assertion

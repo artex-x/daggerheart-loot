@@ -8,7 +8,11 @@ address without touching the site.
 update the golden fixtures, the tests, this file and `llms.txt` together.
 
 Fixtures: `docs/fixtures/lists/*.json`, `docs/fixtures/urls/routes.json`.
-Checked by `tests/contracts.js`.
+Checked by `tests/contracts.js`. `docs/fixtures/share/records.json` is not a
+contract fixture in this sense - it is `share.test.ts`'s own golden,
+regenerated from `dist/` by `tools/capture-share-fixture.mjs` and last
+matched against the live app at `cf96e6f` (`docs/specs/COVERAGE.md`, "flows
+- the share fixture's own provenance").
 
 ## 1. Hash route grammar
 
@@ -106,6 +110,12 @@ byte for byte by `tests/derived.js`.
 arrive as a script. Any future build must keep loading the data this way, and
 read it through one typed adapter rather than importing it.
 
+`data.json` and `catalog.csv` stay tracked in git (a generated pair kept
+rather than gitignored). Three triggers would reopen that: the seven
+`app/src/lib/*.test.ts` suites stop reading `data.json` off disk; `data.json`
+stops being one line (what keeps its diff invisible); its packed history
+grows past a few MB (433 KB measured).
+
 ## 5. Static asset paths
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`. Referenced from
@@ -125,3 +135,9 @@ several records may share one asset (`tools/build-share-pages.js` derives the
 code enforces, not a new one). In both directions: replacing a shared asset
 never creates `og/<some-other-sharing-record's-id>.jpg`, and a new record
 that joins an existing asset gets no `img/` or `og/` file of its own.
+
+`tools/artwork/` (see `.claude/README.md`, "Artwork tooling") enforces this
+same rule at write time rather than only documenting it, so its shipment
+was deliberately not treated as a new contract: `docs/fixtures/`,
+`tests/contracts.js` and `llms.txt` state behaviour the code already
+enforced, not a new promise the code just started keeping.

@@ -10,13 +10,13 @@ Finding 1's "do not design around resumption being available" is withdrawn 2026-
 `SendMessage` resumes a subagent on this host - `.claude/README.md`,
 "Resuming a worker". Finding 4's hook-input `effort` is an object `{ level }`,
 and the same level reaches a worker's Bash tool as `$CLAUDE_EFFORT`
-(`issues/agent-effort/`, 2026-09-11). Finding 7 (the configuration audit
+(task `agent-effort`, 2026-09-11). Finding 7 (the configuration audit
 baseline) is recorded for a same-command re-measure on 2026-10-15.
 
 Findings from the 2026-09-09 session (TASK 47, batches B3.5 and the B3.6
 planning), and an implement-ready plan. Written for whoever picks up the
-orchestration wiring next; unrelated to the migration backlog, which stays in
-`issues/47/`.
+orchestration wiring next; unrelated to the migration backlog, which was
+issue 47's own.
 
 Everything below is grounded in what actually happened in one session. Where a
 claim depends on a Claude Code capability, the source is named and the parts
@@ -120,8 +120,9 @@ gaps, not capability gaps.
 
 ## Finding 3 - shared context worked, and should carry more
 
-`issues/47/context.md` was created this session and did its job: the planner,
-three implementers and the reviewer all read it and none re-fetched the issue.
+Issue 47's shared context file was created this session and did its job: the
+planner, three implementers and the reviewer all read it and none re-fetched
+the issue.
 Worth adding to it as standing sections, because each was re-derived by hand at
 least once this session:
 
@@ -352,7 +353,7 @@ the axe lock so a single timeout stops taking the rest of the file with it.
 
 ## Finding 7 - configuration audit baseline (2026-09-15), re-measure 2026-10-15
 
-The audit behind `issues/config-audit/` measured the configuration's cost
+The audit behind task `config-audit` measured the configuration's cost
 once, so the next pass measures drift instead of re-deriving numbers. Same
 commands, same host (this Windows desktop), on 2026-10-15:
 
@@ -361,8 +362,8 @@ commands, same host (this Windows desktop), on 2026-10-15:
 | RTK savings, global | `rtk gain` | 424 commands, 563.0K saved, 60.5% |
 | RTK misses, 30 days | `rtk discover` | 178 sessions, 19,194 commands, 40.9% handled, ~179.7K missed; top: `grep -n` 160 / 61.2K, `tail -c` 144 / 35.2K, `git commit` 206 / 26.3K, `npm run` 51 / 20.4K, `npx vitest` 6 / 11.7K |
 | Always-loaded markdown | `wc -c CLAUDE.md ~/.claude/CLAUDE.md ~/.claude/RTK.md ~/.claude/projects/E--dev-daggerheart-loot/memory/MEMORY.md` | 13,308 B (~3,300 tokens); project `CLAUDE.md` 10,469 B / 199 lines |
-| Skill listing | count model-invocable skills and sum `description:` chars over `~/.claude/plugins`, `~/.claude/skills`, `.claude/skills` | 58 skills, 14,705 chars + ~7,700 built-in = ~22,400 chars (~5,600 tokens) against a ~8,000-char budget (`skillListingBudgetFraction` 0.01); per-skill cap 1,536 |
-| Task state | `wc -c issues/47/*.md` | plan 1,031,333 B / 16,012 lines; handoff 522,543 B / 7,671; context 227,406 B / 3,701 |
+| Skill listing | count model-invocable skills and sum `description:` chars over `~/.claude/plugins`, `~/.claude/skills`, `.claude/skills` | 58 skills, 14,705 chars + ~7,700 built-in = ~22,400 chars (~5,600 tokens) against a ~8,000-char budget (`skillListingBudgetFraction` 0.01); per-skill cap 1,536. Evidence behind the budget concern: `~/.claude.json`'s `skillUsage` records only four skills ever invoked (`claude-api`, `doctor`, `schedule`, `update-config`) against the 58; 20 bundled `anthropic-skills` are byte-identical resume/career copies (1,474 chars total); `docx`+`pptx`+`xlsx` alone are 2,939 chars, ~20% of the budget. |
+| Task state (frozen, no re-run - the directory retired 2026-09-18) | `wc -c` on issue 47's own task documents | measured 2026-09-15: plan 1,031,333 B / 16,012 lines; handoff 522,543 B / 7,671; context 227,406 B / 3,701. Final sizes at retirement: plan 134 KB, handoff 132 KB, context 76 KB. |
 
 What `config-audit` changed against that baseline (commits in its
 `handoff.md`): `bash-guard.mjs` denies `grep -n` and `tail -c` (96.4K of the

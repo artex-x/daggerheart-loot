@@ -34,7 +34,7 @@
   /* Everything picked, in the order the rows are drawn - `fChosen` in app.js.
      A bare number takes its row's name rather than standing for itself - but
      `fChosen` tests the value's *label*, not its value. They agree everywhere
-     B2 and B3 offer a numeric value (`voa`'s tier prints "Ранг 2" either way,
+     a group offers a numeric value (`voa`'s tier prints "Ранг 2" either way,
      because its label already is that string), and part on the equipment
      tables' burden row: value `'1'`/`'2'`, label "Одноручное"/"Двуручное" -
      testing the value would print "Хват 2" where the live app prints
@@ -63,7 +63,7 @@
      beside it. That is not only about trimming: app.js emits the label and its
      space as one text node, and a separate `{' '}` made two, which measures
      0.1px wider in English because a text advance rounds per node. The parity
-     type probe caught it - see issue 47, B3.6 part 2. */
+     type probe caught it - see issue 47. */
 </script>
 
 {#if rows.length}
@@ -107,7 +107,7 @@
   {#if open}
     <!-- `.ffilter` is a `Panel.svelte` variant: the base `.panel` rule plus
          this component's own margin-top, kept inline for the same reason
-         `TablesPage`'s `.tablenav` is (plan.md, "B10 planned", decided 1). -->
+         `TablesPage`'s `.tablenav` is. -->
     <div class="panel ffilter">
       {#each rows as row (row.group)}
         <div class="field">

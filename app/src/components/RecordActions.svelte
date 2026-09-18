@@ -50,7 +50,7 @@
   }
 
   /**
-   * D10/D14/D15: three levels, not two. `pngOf` rejecting at all (a tainted
+   * Three levels, not two. `pngOf` rejecting at all (a tainted
    * canvas under `file://`, or any other draw failure) means no picture can
    * ever leave the canvas - falling back to the clipboard's generic
    * `copyFailed` would be reporting a dead end as though it might work next
@@ -79,7 +79,7 @@
     try {
       blob = await png;
     } catch (err) {
-      /* B8-R3: `imgTainted` is deliberately the one wording for every `pngOf`
+      /* `imgTainted` is deliberately the one wording for every `pngOf`
          rejection (see the doc comment above) - but `image.ts` already builds
          a distinct `Error` message per cause (tainted canvas, the picture
          failing to load, the encode watchdog firing), so naming which one it
@@ -103,7 +103,7 @@
   }
 
   /**
-   * D22: the same three-level payload the live `sendItem` builds - the full
+   * The same three-level payload the live `sendItem` builds - the full
    * share text always, a picture attached where there is art and the
    * environment can take a file (`SharePort` itself decides that with
    * `canShare`; this only ever offers one when there is a picture to offer).

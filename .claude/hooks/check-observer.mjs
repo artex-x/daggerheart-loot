@@ -81,15 +81,14 @@ const EXIT_CODE_FIELDS = [
  * shows the check's own stdout, and is the invocation .claude/README.md
  * recommends. So is a leading `cd <dir> &&`, which is habit rather than a second output
  * producer - cd writes nothing to stdout, so the check is still the only
- * thing that can have produced what the hook reads. (Found the hard way:
- * the first version of this rule rejected the very command that was meant
- * to satisfy the gate.) A leading `set -o pipefail;` is accepted for the
- * same reason and is the recommended prefix: without it the pipeline's
+ * thing that can have produced what the hook reads. A leading
+ * `set -o pipefail;` is accepted for the same reason and is the recommended
+ * prefix: without it the pipeline's
  * status is `tail`'s, the Bash tool prints no exit line for a failed check,
  * and a worker re-runs the check to learn what it already ran - measured
- * twelve times across five sessions, `issues/hooks-guardrails/plan.md`
- * section 2d. With it `exit_code` is the check's and the non-zero test
- * below refuses to arm. Accepting the prefix cannot weaken the gate: a
+ * twelve times across five sessions (`.claude/README.md`, "Candidates
+ * considered", row 30). With it `exit_code` is the check's and the non-zero
+ * test below refuses to arm. Accepting the prefix cannot weaken the gate: a
  * forger who omits it is where the gate stood before.
  *
  * A leading `rtk ` needs no stripping here at all - RTK's own PreToolUse
@@ -98,19 +97,11 @@ const EXIT_CODE_FIELDS = [
  * probe that logged `cat package.json` arriving here as `rtk read
  * package.json`), and `CHECK_INVOCATION_RE` (lib.mjs) already tolerates
  * exactly one leading `rtk ` on its own, on whatever the final segment
- * turns out to be. A first draft of this normalizer stripped `rtk ` here
- * too, inside the same 3-iteration loop as `cd`/`pipefail` - that let
- * `rtk rtk npm run check` arm this hook (the loop peels both copies) while
- * `CHECK_INVOCATION_RE` used directly (bash-guard.mjs's gate and
- * `LONG_CHECKS`, neither of which pre-strips) refuses that exact string,
- * since its own optional group can only ever consume one `rtk `. Not a
- * live vector - RTK never doubles its own prefix - but real: `rtk rtk npm
- * run check` armed the observer while remaining invisible to the guard.
- * Fixed by deleting the strip rather than reducing its iteration count:
- * reducing it to one pass would have layered a second, independent
- * `rtk `-tolerance on top of `CHECK_INVOCATION_RE`'s own, which still
- * arms on the doubled string (verified: stripping one leaves one behind,
- * and the regex's own optional group then consumes that leftover too).
+ * turns out to be. Do not strip `rtk ` in the loop above too: doing so
+ * lets `rtk rtk npm run check` arm this hook while `CHECK_INVOCATION_RE`
+ * used directly (bash-guard.mjs's gate and `LONG_CHECKS`, neither of which
+ * pre-strips) still refuses that doubled string - the observer would then
+ * arm on a command the gate itself denies.
  */
 function isCheckInvocation(rawCommand) {
   let s = sanitize(rawCommand).replace(/\d?>&\d/g, ' ');

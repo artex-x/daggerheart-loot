@@ -5,7 +5,7 @@
    * missing only `index.html`'s static shell draws; the live app has no
    * `.miss` rule and no such screen. Every rewrite page draws this instead
    * (`docs/specs/FEATURES.md`, "Records"), which is why the rule is a plain
-   * invention rather than a port. Extracted in B10 from seven identical
+   * invention rather than a port. Extracted from seven identical
    * copies (`ListPage`, `ListsPage`, `PrintPage`, `RecordPage`, `RollPanel`,
    * `SearchPage`, `TablesPage`) - `var(--muted)` because five of the seven
    * already used it and it is the live tone for `.page-sub`. */

@@ -1,7 +1,7 @@
 /*
   node:test over golden.js's pure half - the normalisation, rule A (same-shape
   sibling elision), rule B (name cap) and comparison logic that `npm run check`
-  can exercise without dist/ or puppeteer (issues/phase-8, B4, T6).
+  can exercise without dist/ or puppeteer.
 
   golden.js keeps `require('./lib.js')` (which checks dist/index.html exists
   and requires puppeteer) inside its `require.main === module` guard, so
@@ -108,7 +108,7 @@ describe('elisionOf - rule A, the 5/6 sibling boundary', () => {
     assert.equal(info.total, 6);
   });
 
-  it('groups by signature across the whole list, not by consecutive run - a table row alternates checkbox/button and neither ever runs 6 deep on its own (issues/phase-8, B4-2)', () => {
+  it('groups by signature across the whole list, not by consecutive run - a table row alternates checkbox/button and neither ever runs 6 deep on its own', () => {
     const cell = (role) => ({ role, name: '', attrs: [], children: [] });
     // 6 checkboxes and 6 buttons, strictly alternating: every consecutive
     // run has length 1, so a run-detection algorithm would elide nothing at
@@ -137,7 +137,7 @@ describe('elisionOf - rule A, the 5/6 sibling boundary', () => {
   });
 });
 
-describe('serializeTree - rule A (elision) and rule B (name cap) applied together (issues/phase-8, B4-1)', () => {
+describe('serializeTree - rule A (elision) and rule B (name cap) applied together', () => {
   it('caps a long name inline and elides a run of same-shape siblings, in one pass', () => {
     const longName = 'a'.repeat(65);
     const row = (name) => ({ role: 'row', name, attrs: [], children: [] });
@@ -162,7 +162,7 @@ describe('serializeTree - rule A (elision) and rule B (name cap) applied togethe
   });
 });
 
-describe('slugOf - unique per state id (tests/app/golden.js:53, issues/phase-8, B6-N2)', () => {
+describe("slugOf - unique per state id (golden.js's slugOf)", () => {
   it('never lets two different state ids collapse onto the same golden filename', () => {
     const seenBy = new Map();
     for (const s of STATES) {
@@ -287,15 +287,16 @@ describe('compareGolden', () => {
   });
 });
 
-describe('addressSettled() call sites - nothing guarded them before this (issues/phase-8, B8.1-N1)', () => {
+describe('addressSettled() call sites', () => {
   it('is awaited before every capture, in both the ordinary branch (twice) and the timed branch (once)', () => {
-    /* Deleting any one of these three calls silently reintroduces B8.1's own
+    /* Deleting any one of these three calls silently reintroduces a real
      * defect - no unit-level signal at all, only an intermittent red golden
-     * shard on an owned-list route (issues/phase-8/context.md, "A
-     * deterministic B8 regression"). This does not prove the calls are in
-     * the *right place* - only that they are still there - but that is the
-     * gap B8.1-N1 named: before this, nothing guarded the call sites at
-     * all. */
+     * shard on an owned-list route: the three timed owned-list goldens (ru)
+     * captured the untouched seed's URL because the snapshot beat
+     * ListPage's 150ms debounced write - deterministic, bisected. This does
+     * not prove the calls are in the *right place* - only that they are
+     * still there - but that is the gap this guards: before it, nothing
+     * checked the call sites at all. */
     const src = readFileSync(path.join(HERE, 'golden.js'), 'utf8');
     const calls = src.match(/await d\.addressSettled\(\)/g) || [];
     assert.equal(
@@ -307,12 +308,12 @@ describe('addressSettled() call sites - nothing guarded them before this (issues
   });
 });
 
-describe("URL_DEBOUNCE_MS - coupled to ListPage.svelte's own debounce (issues/phase-8, B8.1)", () => {
+describe("URL_DEBOUNCE_MS - coupled to ListPage.svelte's own debounce", () => {
   /* driver.js's addressSettled() waits `URL_DEBOUNCE_MS + 100ms` of address
    * quiet before a golden capture, so it stays a real wait rather than a
    * guess only while the two numbers agree. tests/derived.js parsing
-   * ci.yml for the shard/divisor coupling (B3 review finding) is the
-   * precedent for reading a file as text to assert two numbers that could
+   * ci.yml for the shard/divisor coupling is the precedent for reading a
+   * file as text to assert two numbers that could
    * silently drift apart never do. */
   it('agrees with the 150ms trailing debounce scheduleUrlSync actually sets', () => {
     const listPage = readFileSync(

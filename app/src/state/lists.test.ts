@@ -143,7 +143,7 @@ describe('creating a list', () => {
     const l = store.create('  Клад дракона  ');
     expect(l.name).toBe('Клад дракона');
     expect(l.created).toBe(1000);
-    /* `toBe`, not `toEqual` (ride-along, B6): `create()` used to hand back
+    /* `toBe`, not `toEqual` (ride-along): `create()` used to hand back
        the plain object built before `this.lists` wrapped it in `$state`'s
        own reactive proxy - a different reference from what the store
        actually holds. It now returns `this.lists[0]` instead, so the two
@@ -271,7 +271,7 @@ describe('removing a list', () => {
       expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([other, l]);
     });
 
-    it('unsets #deleted too, so a plain reload does not filter the list back out (S5)', () => {
+    it('unsets #deleted too, so a plain reload does not filter the list back out', () => {
       const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
       const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([l]) });
       const store = new ListStore(at({ storage }), say, t);
@@ -297,7 +297,7 @@ describe('removing a list', () => {
     expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([]);
   });
 
-  it('does not come back through a reload either (S5)', () => {
+  it('does not come back through a reload either', () => {
     /* save()'s own merge already filtered #deleted (the test above) - this
        is the same guard on the plain-read side, reachable through watch()'s
        reload rather than a write. */

@@ -3,11 +3,12 @@
   touches the outside world - reading upload bytes, hashing them, decoding
   geometry, encoding, writing atomically - lives in run.mjs. See
   docs/artwork.md for the operator-facing behaviour this implements and
-  issues/art-tooling/plan.md section 5.2 for the design.
+  docs/specs/COVERAGE.md's `tools/artwork/lib.test.mjs` paragraph for the
+  design.
 
-  Boundary drawn exactly as tools/tg-preview/lib.mjs draws it (issues/
-  art-tooling/plan.md section 4): this module holds every rule that can be
-  stated over data - name normalisation, matching, destination resolution,
+  Boundary drawn exactly as tools/tg-preview/lib.mjs draws it (the pure-module
+  contract docs/specs/COVERAGE.md documents): this module holds every rule
+  that can be stated over data - name normalisation, matching, destination resolution,
   shared-asset grouping, collision and duplicate detection, the
   affected-stub-URL set, and the stale-set algebra.
 */
@@ -16,8 +17,7 @@
 // plain ASCII one - folded so "Ranger's Bow" and "Ranger’s Bow" match.
 const APOSTROPHES = /[’ʼ′]/g;
 
-// A trailing " v2" / " v10" is a delivery's own provenance suffix (plan.md
-// 3.4, "a v<N> suffix that is provenance rather than a choice"), not part of
+// A trailing " v2" / " v10" is a delivery's own provenance suffix, not part of
 // the name - stripped only at the end, so "Halberd v2 Blade" (v2 in the
 // middle) is untouched.
 const VERSION_SUFFIX = /\s+v\d+$/i;
@@ -85,8 +85,8 @@ function findDuplicateSources(sources) {
 
 // Resolves each source to a candidate record via `map.assign` first, then by
 // normalized name - the matching half shared by `planInstall` and
-// `planIngest` (plan.md 5.3 step 1: "reusing the same helpers - do not fork
-// the matching code"). Returns { candidates, unmatched, ambiguous,
+// `planIngest`, reusing the same helpers rather than forking the matching
+// code. Returns { candidates, unmatched, ambiguous,
 // duplicateSources }; `candidates` is [{ source, record }].
 function matchSources({ sources, index, assign }) {
   const duplicateSources = findDuplicateSources(sources);
@@ -137,8 +137,7 @@ function matchSources({ sources, index, assign }) {
 // - The pair list is keyed by distinct **asset** (a record's `img` value),
 //   never by record: two matched records sharing one asset and one source
 //   produce one pair, whose `jpeg` is the shared asset's own `.jpg` and never
-//   `og/<other-record-id>.jpg` (plan.md 3.4, the structural form of the
-//   og/-naming trap).
+//   `og/<other-record-id>.jpg` (the structural form of the og/-naming trap).
 // - `collisions`: two different sources resolving to the same asset - a hard
 //   error, because it would mean two different files racing to become one
 //   destination.
@@ -241,7 +240,7 @@ export function staleDelta({ before, after, expected }) {
 }
 
 // { creates, shares, unarted, unsourced, unmatched, ambiguous, collisions,
-// duplicateSources, counts } - the ingest planner (plan.md 5.3 step 1).
+// duplicateSources, counts } - the ingest planner.
 //
 // - `missingAssets` is supplied by run.mjs: the distinct `img` values in
 //   data.js for which `img/<value>` does not exist on disk yet. planIngest

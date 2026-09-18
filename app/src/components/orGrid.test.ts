@@ -9,7 +9,7 @@
  * one that paints empty and fills. Positional keying let Svelte patch the
  * existing node's `src` in place instead, and the previous artwork sat on
  * screen until the new one decoded - a transient no settled screenshot can
- * see, which is why no parity state caught it (issue 47, "B14 planned").
+ * see, which is why no parity state caught it (issue 47).
  *
  * A plain object stands in for a record: OrGrid only ever touches `.it` as an
  * opaque identity, and a real `Record_` would just be noise here. */
@@ -52,12 +52,11 @@ describe('a cell keyed on the item it holds', () => {
   it('keeps the node when the same record comes up again - the one recorded deviation from live', async () => {
     /* "Same record" means the same object, the way a real roll hands OrGrid
        the very row it read off `rows[n-1]` both times - StdPanel and ListPage
-       do that; AltPanel does not (plan.md, "B14 planned": its AltPick is a
-       fresh wrapper every roll, so it gets a new node regardless, which
-       matches live). Live rebuilds unconditionally, so it would swap the
-       node here too; this fix does not, because nothing on screen differs
-       (the image is identical) and a roll counter to force it would be a
-       bigger change than the defect ("Risks and do-nots"). */
+       do that; AltPanel does not (its AltPick is a fresh wrapper every roll,
+       so it gets a new node regardless, which matches live). Live rebuilds
+       unconditionally, so it would swap the node here too; this fix does
+       not, because nothing on screen differs (the image is identical) and a
+       roll counter to force it would be a bigger change than the defect. */
     const a = { id: 'a' };
     const { container, rerender } = render(OrGrid, { or: 'или', items: [a], card });
     const before = container.querySelector('img[data-id="a"]');

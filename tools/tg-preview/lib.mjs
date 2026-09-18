@@ -15,7 +15,7 @@
 */
 import { createHash } from 'node:crypto';
 
-// The bot's only documented bulk figure (context.md). The press cost is per
+// The bot's only documented bulk figure. The press cost is per
 // URL and identical at any batch size, so batching only shapes the send
 // axis - the largest documented batch is the fewest sends.
 export const PER_MESSAGE = 10;
@@ -47,12 +47,13 @@ export const BUTTON_WAIT_MS = 5000;
 // per batch (one summary + one per link).
 export const BUTTON_FETCH = 50;
 // How many recent chat messages are read at run start to find pressable
-// button messages that need no new send (resumability, plan.md section 3.4).
+// button messages that need no new send (resumability, docs/tg-preview.md,
+// "Rate limiting and resumability").
 export const RECOVER_SCAN = 200;
 // Matched by exact button text - never parsed from the bot's prose.
 export const UPDATE_BUTTON = 'Update with content';
-// @WebpageBot's own per-user attempt quota (plan.md 3.4, "The bot's own
-// attempt quota") - a third limit, independent of Telegram's flood control,
+// @WebpageBot's own per-user attempt quota (docs/tg-preview.md, "Rate
+// limiting and resumability") - a third limit, independent of Telegram's flood control,
 // that binds before either axis above does. The only measurement is that 115
 // presses in one run tripped it; 50 deliberately under-shoots, because the
 // costs are asymmetric - over-shooting costs a ~54-minute lockout plus the
@@ -94,8 +95,8 @@ function sortedMap(map) {
 // run.mjs's writeStateSync uses this to decide whether an apply (or a
 // record()) actually changed anything worth a fresh `updatedAt` - a
 // confirmation-free run merges an unchanged map, and minting a new timestamp
-// for that was the defect (issues/tg-preview-refresh, "the previews CI job
-// commits a state file in which only the updatedAt timestamp moved").
+// for that was the defect: see docs/tg-preview.md, "What CI does after a
+// deploy" ("A run that sends but confirms nothing leaves state.json alone").
 export function sameUrls(a, b) {
   const ak = Object.keys(a || {});
   const bk = Object.keys(b || {});
@@ -147,8 +148,8 @@ export function extractMeta(html) {
 }
 
 // What Telegram would see for one URL, folding in the image bytes so a
-// picture swapped under an unchanged og:image is caught too (the root cause
-// this whole tool exists for - see context.md).
+// picture swapped under an unchanged og:image is caught too - the root
+// cause this whole tool exists for.
 export function fingerprint(meta, imageSha) {
   return sha256(JSON.stringify([meta.title, meta.description, meta.image, imageSha]));
 }
@@ -219,9 +220,9 @@ const FATAL_ERRORS = new Set([
   'AuthKeyInvalidError',
   // The account, not only the session: a ban, a deletion, a banned number, a
   // duplicated key or a blocked bot are conditions no later run can change
-  // (B6 review R2). Before pass 7 they fell to the catch-all below and
-  // stopped the run green forever, so the backlog never drained and nothing
-  // ever told the owner why.
+  // Before this, they fell to the catch-all below and stopped the run
+  // green forever, so the backlog never drained and nothing ever told the
+  // owner why.
   'AuthKeyDuplicatedError',
   'UserDeactivatedError',
   'UserDeactivatedBanError',
@@ -231,7 +232,8 @@ const FATAL_ERRORS = new Set([
 
 // One outcome per teleproto error, matched by class name / `.errorMessage` /
 // `.seconds` rather than `instanceof` so this needs no import of teleproto -
-// see plan.md section 3.4 for the table this mirrors.
+// see docs/tg-preview.md, "Rate limiting and resumability", for the table
+// this mirrors.
 export function decide(err, { attempt = 0, maxWaitS = MAX_WAIT_S } = {}) {
   const name = (err && err.constructor && err.constructor.name) || '';
 
@@ -250,7 +252,7 @@ export function decide(err, { attempt = 0, maxWaitS = MAX_WAIT_S } = {}) {
   }
   // Telegram delivered the callback query but the bot did not answer inside
   // its own window - neither a retry nor a stop; confirmation falls back to
-  // the photo check (plan.md section 3.4).
+  // the photo check (docs/tg-preview.md, "Rate limiting and resumability").
   if (
     name === 'BotResponseTimeoutError' ||
     (err && err.errorMessage === 'BOT_RESPONSE_TIMEOUT')
@@ -421,8 +423,8 @@ export function matchButtons(messages, urls) {
   return { matched, unmatched, summary };
 }
 
-// Phase 1 (recovery) then phase 2 (send-and-press) - plan.md section 5.2,
-// steps 4-13. `deps.manifest` and `deps.state` are already-built/already-read
+// Phase 1 (recovery) then phase 2 (send-and-press) - docs/tg-preview.md,
+// "Rate limiting and resumability". `deps.manifest` and `deps.state` are already-built/already-read
 // values (see run.mjs); the rest are the seams that make this testable
 // without a network or a clock.
 export async function runRefresh(opts, deps) {
@@ -489,11 +491,11 @@ export async function runRefresh(opts, deps) {
   // `--mode full` treats every URL as stale on every run, so a press budget
   // smaller than the stale set cannot finish it in one run and the next run
   // re-presses the same recovered buttons - a livelock the budget bounds but
-  // does not cure (plan.md 3.4, "`--mode full` is not chunkable"). This is
+  // does not cure (docs/tg-preview.md, "Rate limiting and resumability"). This is
   // advice for the owner, not a stop: the run still makes whatever progress
   // the budget allows. Logged before the dry-run branch so
   // `--dry-run --mode full` - the invocation the runbook recommends - shows
-  // it (B4 review nit 3).
+  // it.
   if (mode === 'full' && pressLimit < todo.length) {
     log(
       'warning: --mode full cannot finish ' +
@@ -569,10 +571,12 @@ export async function runRefresh(opts, deps) {
   let stopped = null;
   let exitCode = 0;
   // One run-scoped allowance spanning both phases - the bot's quota does not
-  // care which phase a press came from (plan.md 3.4).
+  // care which phase a press came from (docs/tg-preview.md, "Rate limiting
+  // and resumability").
   let pressBudget = pressLimit;
 
-  // The shared retry table (plan.md section 3.4): checked before every send
+  // The shared retry table (docs/tg-preview.md, "Rate limiting and
+  // resumability"): checked before every send
   // and every press attempt, and before every wait a retry would start - a
   // wait that would end past the deadline is refused rather than begun.
   async function attempt(action) {
@@ -606,8 +610,8 @@ export async function runRefresh(opts, deps) {
   }
 
   // Reads share the sends' and presses' table: a FLOOD_WAIT or a transport
-  // blip on incoming()/byIds() is a resumable stop, not a crash (B6 review
-  // R1). A read never yields `unanswered` (that is press-only), but this
+  // blip on incoming()/byIds() is a resumable stop, not a crash. A read
+  // never yields `unanswered` (that is press-only), but this
   // does not assume it.
   async function read(action) {
     const r = await attempt(action);
@@ -618,7 +622,8 @@ export async function runRefresh(opts, deps) {
   async function pressOne(entry) {
     if (pressBudget <= 0) return { stopped: 'press budget reached' };
     // Decremented whether or not the attempt succeeds - a refused attempt
-    // still counts against the bot's quota (plan.md 3.4).
+    // still counts against the bot's quota (docs/tg-preview.md, "Rate
+    // limiting and resumability").
     pressBudget--;
     const r = await attempt(() => cx.press(entry.id, entry.data));
     if (r.stopped) return r;
@@ -634,7 +639,7 @@ export async function runRefresh(opts, deps) {
   // once by id afterwards for the photo-id delta, which gates confirmation
   // only in the unanswered case and is telemetry otherwise - the photo-id
   // trap: an unchanged id is not evidence of failure when the press was
-  // acknowledged (plan.md section 3.4).
+  // acknowledged (docs/tg-preview.md, "Rate limiting and resumability").
   async function pressGroup(urlsInOrder, matched) {
     const budgetBefore = pressBudget;
     const pressedList = [];
@@ -664,7 +669,7 @@ export async function runRefresh(opts, deps) {
     // An answered press is confirmed by the existing rule whether or not the
     // message could be re-read afterwards - `unseen` already means exactly
     // that - so a failed refetch costs telemetry, not evidence. The run still
-    // stops, because the transport is not healthy (B6 review R1).
+    // stops, because the transport is not healthy.
     let refetched = [];
     let readStop = null;
     let readCode = 0;
@@ -684,8 +689,8 @@ export async function runRefresh(opts, deps) {
     for (const p of pressedList) {
       const after = photoAfter.has(p.id) ? photoAfter.get(p.id) : undefined;
       // A new id proves Telegram re-fetched and re-stored something - not
-      // that the rendered picture differs (plan.md 3.4, "What the photo
-      // counter measures"): Telegram's own re-encode, or a webpage that had
+      // that the rendered picture differs (docs/tg-preview.md, "Rate
+      // limiting and resumability"): Telegram's own re-encode, or a webpage that had
       // no photo yet, mint a new id too.
       const delta =
         after === undefined
@@ -700,8 +705,8 @@ export async function runRefresh(opts, deps) {
     }
 
     // Attempts, not confirmations: a press the bot refused still decremented
-    // pressBudget above and must count here too (B4 review nit 2), or a
-    // throttle stop under-reports the number B2 tunes the quota from.
+    // pressBudget above and must count here too, or a throttle stop
+    // under-reports the number the quota is tuned from.
     return {
       confirmed,
       photo,
@@ -723,7 +728,7 @@ export async function runRefresh(opts, deps) {
     await writeState({ version: 1, site: manifest.site, urls: nextUrls });
     // `site` travels with the result so CI's `--apply` no longer rebuilds the
     // manifest from whatever tree `main` is at commit time - the record step
-    // must not depend on that tree being buildable (B6 review, R1 item 7).
+    // must not depend on that tree being buildable.
     if (writeResult)
       await writeResult({ site: manifest.site, urls: pick(manifest.urls, confirmedSoFar) });
   }
@@ -769,8 +774,8 @@ export async function runRefresh(opts, deps) {
   }
 
   // Phase 1 - recovery: a button message already in the chat is a cheaper
-  // retry - no new send, but still a press from the same budget (plan.md
-  // section 3.4). Every URL matched here - confirmed or not - is removed
+  // retry - no new send, but still a press from the same budget
+  // (docs/tg-preview.md, "Rate limiting and resumability"). Every URL matched here - confirmed or not - is removed
   // from `ready` so phase 2 never re-sends it in the same run.
   const scanR = await read(() => cx.incoming({ limit: RECOVER_SCAN }));
   if (scanR.stopped) {
@@ -826,7 +831,8 @@ export async function runRefresh(opts, deps) {
 
     // A send whose buttons cannot be afforded is pure waste on the scarcer
     // axis - stopped, never trimmed: re-chunking mid-run would make --limit
-    // mean something different on the last batch (plan.md 3.4).
+    // mean something different on the last batch (docs/tg-preview.md,
+    // "Rate limiting and resumability").
     if (pressBudget < PER_MESSAGE) {
       stopped = 'press budget too low for another batch';
       exitCode = 0;
@@ -859,7 +865,8 @@ export async function runRefresh(opts, deps) {
     let m = matchButtons(replies, batch);
     // The bot's summary can itself be a throttle refusal - checked on every
     // round so the run does not burn BUTTON_WAIT_ROUNDS x BUTTON_WAIT_MS
-    // waiting for buttons that are never coming (plan.md 3.4).
+    // waiting for buttons that are never coming (docs/tg-preview.md, "Rate
+    // limiting and resumability").
     let summaryThrottle = m.summary.map(botThrottle).find(Boolean) || null;
     let rounds = 0;
     while (!summaryThrottle && m.unmatched.length && rounds < BUTTON_WAIT_ROUNDS) {

@@ -212,9 +212,9 @@ export class AppState {
   #home = $state(DEFAULT_HOME);
   /** Whether the "lists live in this browser only" notice has been dismissed
    *  for good - the live app's `dhloot.warn.v1`. App-level because the list
-   *  page (B5.4) reads the same flag, not only the index. */
+   *  page reads the same flag, not only the index. */
   #warnHidden = $state(false);
-  /** The tables page's list/grid switch (DC1/Q1 - restored). `dhloot.prefs.v1`
+  /** The tables page's list/grid switch (restored). `dhloot.prefs.v1`
    *  held `{ view }` on live and nothing else; app-level, the way `#home` and
    *  `#warnHidden` are, rather than component-local, because how a page looks
    *  is remembered (`STATE.md`) and `TablesPage` is never destroyed between
@@ -240,7 +240,7 @@ export class AppState {
   #stopListWatch: (() => void) | null = null;
   /** The hash `go()` itself just wrote, so the router's own change handler
    *  can tell "the app just navigated" apart from "the address changed
-   *  underneath it" and not process the same navigation twice (S1). Real
+   *  underneath it" and not process the same navigation twice. Real
    *  browsers fire `hashchange` asynchronously, after `go()` has already
    *  returned, so this has to survive until then rather than being read and
    *  cleared inline. */
@@ -299,7 +299,7 @@ export class AppState {
   /** Starts listening. Returns a stop, so a test does not leak a listener. */
   start(): () => void {
     this.#stopRouter = this.env.router.onChange((h) => {
-      /* S1: `go()` already did all of this synchronously for the hash it
+      /* `go()` already did all of this synchronously for the hash it
          just wrote - a real browser's `hashchange` for that same write still
          fires, only asynchronously, and without this guard it was processed
          a second time, double-counting `navigations` for anyone who had
@@ -328,7 +328,7 @@ export class AppState {
     this.#stopListWatch = null;
     /* A timer left running past the listeners it would otherwise update is a
        leak of the same kind `#stopRouter`/`#stopListWatch` already guard
-       against - S6. */
+       against. */
     this.hideToast();
   }
 
@@ -444,11 +444,11 @@ export class AppState {
   }
 
   go(hash: string): void {
-    /* S1: set before `navigate()`, which for a fake/in-memory router fires
+    /* Set before `navigate()`, which for a fake/in-memory router fires
        the change handler synchronously, inline in this same call - the
        handler reads it back before this method's own processing below runs,
        so the two do not double-count one navigation.
-       B6-R3, paid off: only set when the hash actually changes. A real
+       Only set when the hash actually changes: a real
        browser fires no `hashchange` at all for a same-value assignment, so
        an unconditional set here used to leave a stale `#expectHash` behind
        whenever a caller navigated to the address already showing; a later
@@ -456,7 +456,7 @@ export class AppState {
        `h === this.#expectHash` guard above, instead of being processed. */
     if (hash !== this.env.router.hash()) this.#expectHash = hash;
     this.env.router.navigate(hash);
-    /* S2/R7: `go()`'s callers all build a hash from this file's own writers,
+    /* `go()`'s callers all build a hash from this file's own writers,
        so this is defence rather than a reachable bug - but the router's own
        `onChange` handler already resolves a bad hash through `#fallback`
        (below), and this method deserved the same guarantee for the same

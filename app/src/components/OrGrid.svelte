@@ -56,8 +56,8 @@
              paints empty and fills. Positional keying let Svelte patch the
              existing node's src in place instead, and the previous artwork
              sat on screen until the new one decoded - invisible to a settled
-             screenshot, which is why no parity state caught it (plan.md,
-             "B14 planned"). Object identity is the only key this generic
+             screenshot, which is why no parity state caught it. Object
+             identity is the only key this generic
              component has - AltPanel's AltPick wrappers are a new object per
              roll, which matches. Rolling the *same* record twice is the one
              case this still keeps the node for (the image is identical, so

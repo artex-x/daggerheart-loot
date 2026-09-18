@@ -9,7 +9,7 @@
  * width is one argument, the way `run-all.js` already splits audit2 into
  * four entries - `node sweep.js 1180` runs one width alone. A trailing
  * `ru`/`en` narrows the languages too - `node sweep.js 1180 ru` runs 1180
- * alone in Russian, with the focus walk (issues/phase-8, T2: 1180 axe'd both
+ * alone in Russian, with the focus walk (1180 axe'd both
  * languages and ran the focus walk, which made it 1.7x its siblings; the
  * language split is what `run-all.js`'s two 1180 rows pass). No language
  * argument means both, the original shape. */
@@ -67,8 +67,8 @@ const PAGES = [
   ['#/i/cc1', 'карточка сообщества'],
   ['#/i/f1', 'карточка фрейма'],
   ['#/i/nope', 'предмета нет'],
-  /* The four craft-heavy worst cases craftmob.js:7 swept - the mobile craft
-   * block and the dice bar overflow checks below need a page that actually
+  /* The four craft-heavy worst cases the legacy craftmob.js swept - the
+   * mobile craft block and the dice bar overflow checks below need a page that actually
    * draws `.craft`/`.rcraft`/`.dicebar`/`.numrow`. */
   ['#/i/w65', 'карточка с крафтом (худший случай 1)'],
   ['#/i/w3', 'карточка с крафтом (худший случай 2)'],
@@ -139,11 +139,11 @@ const FOCUS_WALK = [
  *  own outline; the text fields' `:focus` rule (style.css) replaces it with
  *  a border colour change plus a gold `box-shadow` ring; `NumberField.svelte`
  *  (`.numbox input[type=text]:focus{outline:none;box-shadow:none}`, matching
- *  style.css:217 byte-for-byte) suppresses both on the input itself and
+ *  style.css byte-for-byte) suppresses both on the input itself and
  *  raises the ring on the wrapper via `.numbox:focus-within` instead
- *  (style.css:218); and `ListPage.svelte`'s qty/gold fields
+ *  (also style.css); and `ListPage.svelte`'s qty/gold fields
  *  (`.lrow-meta input:focus{outline:none;border-color:var(--gold)}`, matching
- *  style.css:776) show neither outline nor box-shadow at all, only a border
+ *  style.css) show neither outline nor box-shadow at all, only a border
  *  colour swap to the app's one accent token. An element-only outline/
  *  box-shadow read misses the second and third shapes and reports a real,
  *  visible ring as absent - measured directly against `dist/` on
@@ -336,7 +336,7 @@ async function focusWalk(page, where) {
                 );
             });
 
-          /* craftmob.js:22-42's three extra reads on the craft block, ported
+          /* The legacy craftmob.js's three extra reads on the craft block, ported
            * onto the same walk rather than a second one: a spill past either
            * edge, a caption squeezed under 60px, and a craft link under the
            * 12px tap-height floor. */
@@ -421,8 +421,8 @@ async function focusWalk(page, where) {
         /* axe, right here - the page is already open, so this is not an
          * extra navigation. Contrast and heading order are a function of
          * tokens and DOM order, not of which language's text occupies a
-         * node - `plan.md`, "B12 planned", fallback - so at the three
-         * narrow widths axe runs RU only, and 1180 alone keeps both
+         * node - so at the three narrow widths axe runs RU only, and
+         * 1180 alone keeps both
          * languages; a real production fix would show up in whichever
          * language reaches it first, so nothing measurable is lost. Every
          * disabled rule is named, and each one points at a DEBT.md entry -

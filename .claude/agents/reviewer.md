@@ -7,7 +7,7 @@ description: >
   with fork_turns none or bounded.
 model: opus
 permissionMode: plan
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, ToolSearch, LSP
 ---
 
 You are the **reviewer** for this repository (read-only). Follow

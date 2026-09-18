@@ -9,10 +9,8 @@ img/
 og/
 card/
 
-# Permanent, decided at phase 8 (this was left open at R0c, issue 47, for
-# app/index.html, as "not the batch that decides its formatting" - it is
-# decided now; 404.html, added later in phase 8 (B4), follows the same
-# decision on the same reasoning, not a copy-pasted rationale): both are
+# Permanent decision, issue 47: 404.html follows the same reasoning as
+# app/index.html below, not a copy-pasted rationale - both are
 # hand-authored, flat, no indentation, HTML5-style void elements with no
 # trailing slash. Prettier's HTML formatter would indent every line and add
 # a self-closing `/>` to every `<meta>`/`<link>` - a ~60-line diff for no
@@ -37,7 +35,7 @@ docs/fixtures/
 # (a host placement choice, not this repository's). A repo-root
 # `prettier --check .` walks into one if it is there, reddening format:check
 # (hence npm run check) for a reason no diff in this tree explains - it
-# blocked R0c C3's commit gate once already (issues/47/handoff.md, "R0c C3").
+# blocked a commit gate once already.
 # Also in .gitignore, which is the superset: Prettier's own default
 # `--ignore-path` is [".gitignore", ".prettierignore"] together, but
 # tree-key.mjs's commit-gate fingerprint runs `git add -A`, which reads only

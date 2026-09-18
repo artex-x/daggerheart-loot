@@ -4,7 +4,7 @@
  * this one presses controls with `press` - a trusted puppeteer
  * ElementHandle.click(), not the synthetic `el.click()` every parity state
  * and every legacy suite uses - because a handful of real defects only show
- * up on the far side of a browser's own microtask checkpoint (B11's
+ * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
  * real second tab to mean anything at all. Twenty-three cases, no ancestor. */
 const fs = require('fs');
@@ -14,7 +14,7 @@ const { TARGETS, ready } = require('./driver.js');
 const rep = reporter();
 const { ok } = rep;
 
-/** Case 7's two-stage wait budget. Set against tests/app/lib.js:37's own
+/** Case 7's two-stage wait budget. Set against tests/app/lib.js's own
  *  protocolTimeout (300_000) - this tree is shared with peer sessions and a
  *  loaded host makes CDP round trips slower, so the wait has to outlast
  *  ordinary contention without outlasting a genuine hang. */
@@ -69,8 +69,8 @@ async function newListFromBar() {
   await ctx.close();
 }
 
-/** 3. New list from the modal - the cell B11.1's fix turned, and the plan's
- *  own pre-measured one: Самоцвет Чутья, 1100x900, no seed. */
+/** 3. New list from the modal - Самоцвет Чутья, 1100x900, no seed: the
+ *  pre-measured case this fix was verified against. */
 async function newListFromModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
   await d.open('#/tables');
@@ -107,7 +107,7 @@ async function addToListMenuStaysInModal() {
   ok(await d.has('Добавить в список'), '23 (menu in the modal): the modal did not open');
   await d.press('Добавить в список');
 
-  /* B7-R2: `.card` is `overflow: clip` (RecordCard.svelte), which creates no
+  /* `.card` is `overflow: clip` (RecordCard.svelte), which creates no
      scroll container, so a `.card.scrollTop` reading would be 0 regardless
      of what the placement effect does - it stopped being able to fail and
      is not what D6's fix actually measures. The real invariant is that
@@ -154,9 +154,8 @@ async function addToListMenuStaysInModal() {
   await ctx.close();
 }
 
-/** 4/5. Two frames picked, and the same link arriving fresh - decided 7,
- *  defect 1: the live side legitimately reads 0 on arrival, so no parity
- *  state can hold this one. */
+/** 4/5. Two frames picked, and the same link arriving fresh - the live side
+ *  legitimately reads 0 on arrival, so no parity state can hold this one. */
 async function twoFramesPicked() {
   const { ctx, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables/other_frames');
@@ -255,7 +254,7 @@ async function twoTabsShareStorage() {
    * covering both. */
   await b.page.evaluateOnNewDocument(() => {
     window.addEventListener('storage', (e) => {
-      /* R0b.1 review nit 6: gated on the list key, so prepare()'s own
+      /* Gated on the list key, so prepare()'s own
        * localStorage.clear() on the next fresh() call cannot satisfy this
        * stage by itself - the two stages stay disjoint as designed. */
       if (e.key === 'dhloot.lists.v2') window.__storageSeen = (window.__storageSeen || 0) + 1;
@@ -394,7 +393,7 @@ async function copyTextThroughClipboard() {
  *  `canvas.toDataURL()` throws "Tainted canvases may not be exported" on
  *  both apps for the identical picture; `toBlob()` does not throw in this
  *  Chromium build, it simply never calls back, which is what made this
- *  invisible before B8 (`tests/app/driver.js`'s `clipboardImage()`
+ *  invisible (`tests/app/driver.js`'s `clipboardImage()`
  *  reads a *pending promise*'s absent `.arrayBuffer` as `null` on both
  *  sides, so parity's own `copiedImage` spec has been comparing two
  *  identical nulls). D10, paid off: `RecordActions.svelte`'s `copyImage`
@@ -455,9 +454,9 @@ async function brokenArtPath() {
     await d.has('Скопировать текст'),
     '11 (no picture): the text button disappeared along with the picture'
   );
-  /* R0b.4's divergence 3: the copy-image button must go with the picture,
-   * not just switch to offering the placeholder (RecordActions.svelte:105,
-   * restored to it.img && !app.artBroken(it.id) - app.js:1684's hasImage). */
+  /* The copy-image button must go with the picture, not just switch to
+   * offering the placeholder (RecordActions.svelte, restored to
+   * it.img && !app.artBroken(it.id) - the legacy app.js's own hasImage). */
   ok(
     !(await d.has('Скопировать изображение')),
     '11 (no picture): the copy-image button should disappear along with the picture'
@@ -525,10 +524,10 @@ async function noteTextareaHeight() {
     );
   }
 
-  /* The list's own note group (notes.js:256-311) - a second, independent
+  /* The list's own note group (the legacy notes.js) - a second, independent
    * pair of boxes at `.lnote`, closed by default until its summary is
    * pressed, plus the clear cross's `:has(:placeholder-shown)` visibility
-   * (notes.js:225-241) - a real-CSS read jsdom cannot make. */
+   * (also notes.js) - a real-CSS read jsdom cannot make. */
   await d.press('Заметки');
   const LIST_PH = 'Например: лавка закрыта до утра';
   const boxLines = () =>
@@ -585,7 +584,7 @@ async function noteTextareaHeight() {
 /** 14. A roll replaces its card's <img>, as the live app does - it rebuilds
  *  #view.innerHTML on every render, so a new record's picture is always a
  *  brand-new node that paints empty and fills; `RollPanel.svelte`'s
- *  `{#key shown.it}` (issue 47, "B14 planned") reproduces that. Node identity
+ *  `{#key shown.it}` (issue 47) reproduces that. Node identity
  *  is the only instrument that can see a transient a settled screenshot never
  *  catches, and `OrGrid.svelte`'s own `{#key cell.it}` - three of the four
  *  call sites - is `orGrid.test.ts`'s. Rolling the *same* record twice
@@ -621,8 +620,8 @@ async function rollReplacesCardImg() {
   await ctx.close();
 }
 
-/** 15. Real history - Back/Forward, not only the hash changing.
- *  `behave.js:303-312`. */
+/** 15. Real history - Back/Forward, not only the hash changing, ported
+ *  from the legacy `behave.js`. */
 async function historyBackForward() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/roll/std');
@@ -650,7 +649,7 @@ async function historyBackForward() {
 }
 
 /** 16. The selection bar pinned to the viewport bottom, and its buttons not
- *  spilling at 360. `select.js:54-57`, `craftmob.js:77-99`. */
+ *  spilling at 360, ported from the legacy `select.js` and `craftmob.js`. */
 async function selectionBarGeometry() {
   const { ctx, page, d } = await fresh({ width: 1000, height: 900 });
   await d.open('#/tables/core_item');
@@ -682,7 +681,7 @@ async function selectionBarGeometry() {
   await ctx2.close();
 }
 
-/** 17. A real HTML5 drag reorder. `lists2.js:61-79`. */
+/** 17. A real HTML5 drag reorder, ported from the legacy `lists2.js`. */
 async function dragReorder() {
   const seedIds = ['ci1', 'ci2', 'ci3', 'ci4'];
   const { ctx, page, d } = await fresh({
@@ -697,8 +696,8 @@ async function dragReorder() {
    * `$state`, and Svelte's own microtask-scheduled flush (CLAUDE.md, the
    * `queueMicrotask` note) has not necessarily run by the time a *single*
    * `page.evaluate()` call's own script returns - unlike the live app's
-   * imperative classList write, which lists2.js:61-79 could read back in the
-   * same call. Splitting dispatch from read across separate CDP round trips
+   * imperative classList write, which the legacy lists2.js could read back
+   * in the same call. Splitting dispatch from read across separate CDP round trips
    * gives the flush somewhere to happen. */
   await page.evaluate(() => {
     const rows = [...document.querySelectorAll('.lrow')];
@@ -752,8 +751,8 @@ async function dragReorder() {
   await ctx.close();
 }
 
-/** 18. A folded `<details>` surviving a select-all/money-mode re-render.
- *  `lists2.js:571-589`. */
+/** 18. A folded `<details>` surviving a select-all/money-mode re-render,
+ *  ported from the legacy `lists2.js`. */
 async function foldedDetailsSurviveRerender() {
   const { ctx, page, d } = await fresh({
     width: 1180,
@@ -804,8 +803,8 @@ async function foldedDetailsSurviveRerender() {
 }
 
 /** 19. Tile geometry with no art loaded - `/img/*.webp` left unanswered by
- *  request interception, never aborted and never continued.
- *  `qa.js:266-283`. */
+ *  request interception, never aborted and never continued, ported from
+ *  the legacy `qa.js`. */
 async function tileGeometryNoArt() {
   const { ctx, page, d } = await fresh({ width: 360, height: 800 });
   await page.setRequestInterception(true);
@@ -847,7 +846,7 @@ async function tileGeometryNoArt() {
   await ctx.close();
 }
 
-/** 20. The storage notice folded on a phone. `qa.js:359-368`. */
+/** 20. The storage notice folded on a phone, ported from the legacy `qa.js`. */
 async function storageNoticeAt320() {
   const { ctx, page, d } = await fresh({
     width: 320,
@@ -878,7 +877,7 @@ async function storageNoticeAt320() {
 }
 
 /** 21. A button keeps focus across a re-render - not only an input (case
- *  12). `qa.js:122-134`. */
+ *  12), ported from the legacy `qa.js`. */
 async function buttonFocusSurvivesRerender() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/roll/std');
@@ -903,7 +902,7 @@ async function buttonFocusSurvivesRerender() {
 }
 
 /** 22. The money help box measured against its container, and the pressed
- *  add-to-list button's own colour. `lists2.js:338-355, 144-156`. */
+ *  add-to-list button's own colour, ported from the legacy `lists2.js`. */
 async function moneyHelpAndPressedPicker() {
   const { ctx, page, d } = await fresh({
     width: 1180,
@@ -990,7 +989,7 @@ async function reducedMotionKillsEverything() {
 
 /** 25. The storage-notice dismiss button stays hit-testable while its
  *  `<details>` is folded - real-browser coverage of exactly the regression
- *  class D3's fix could only be verified against by eye (B7-N2): jsdom does
+ *  class D3's fix could only be verified against by eye: jsdom does
  *  not implement `<details>`'s native closed-content suppression at all, so
  *  every vitest test for the dismiss button passed against the *old*,
  *  button-hidden structure the first time it was tried. `.warn-x` is a

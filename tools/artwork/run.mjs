@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
   CLI entry point for tools/artwork/. Verbs, not a mode flag or a second
-  entry point (issues/art-tooling/plan.md 3.7): `lib.mjs` holds every rule
+  entry point (`.claude/README.md`, "Artwork tooling"): `lib.mjs` holds every rule
   that can be stated over data, this file holds only what its honest proof is
   the filesystem and the encoder - hashing uploads, decoding geometry,
   encoding, atomic install, byte verification. See docs/artwork.md for what
@@ -24,9 +24,8 @@ const REPO_ROOT = join(HERE, '..', '..');
 
 const VERBS = ['plan', 'install', 'verify', 'verify-previews', 'ingest'];
 
-// The settings measured across three refreshes (issues/art-tooling/context.md,
-// "Conversion settings, established across three refreshes") and documented
-// once, in docs/artwork.md - not restated anywhere else in the repository.
+// The settings measured across three refreshes and documented once, in
+// docs/artwork.md - not restated anywhere else in the repository.
 const DIMENSION = 640;
 const WEBP_QUALITY = 85;
 const JPEG_QUALITY = 80;
@@ -122,9 +121,8 @@ async function loadSharp() {
     return mod.default || mod;
   } catch (err) {
     // The message already folds err in by hand; adding { cause: err } too is
-    // a real improvement, left for the batch that next touches error
-    // handling here rather than a directory-wide rule turn-off
-    // (issues/phase-8, B9-R2/B9-N5).
+    // a real improvement, left for whatever next touches error
+    // handling here rather than a directory-wide rule turn-off.
     // eslint-disable-next-line preserve-caught-error
     throw new Error(
       'sharp is not installed for tools/artwork - run: cd tools/artwork && npm ci (' +
@@ -218,8 +216,8 @@ async function verbPlan(flags) {
   return blocked ? 1 : 0;
 }
 
-// The one installer code path shared by `install` and `ingest` (plan.md 5.3
-// acceptance: "grep for the temp-sibling rename and find one implementation").
+// The one installer code path shared by `install` and `ingest` - grep for
+// the temp-sibling rename and there is one implementation to find.
 // `entries` is [{ source, asset, webp, jpeg, label }] - `label` is what a
 // progress line and a verification-failure message name (the record id for
 // `install`, the asset for `ingest`, which has no single record to blame).
@@ -234,8 +232,8 @@ async function installAndVerify(sharpFn, repo, entries, bytesByName) {
   }
 
   // Re-encode from source and compare against what was just installed - the
-  // per-run determinism proof (plan.md 3.1: never a comparison against
-  // bytes committed by a different encoder or a different run).
+  // per-run determinism proof: never a comparison against bytes committed by
+  // a different encoder or a different run.
   for (const e of entries) {
     const buf = bytesByName.get(e.source);
     const { webp, jpeg } = await encodePair(sharpFn, buf);
@@ -373,8 +371,8 @@ function printIngest(result) {
 }
 
 // The distinct `img` values data.js declares for which `img/<value>` does not
-// exist on disk yet - the definition of "new art needed" (plan.md 5.3 step
-// 3). run.mjs computes this; planIngest never touches the filesystem.
+// exist on disk yet - the definition of "new art needed". run.mjs computes
+// this; planIngest never touches the filesystem.
 function findMissingAssets(repo, records) {
   const assets = new Set();
   for (const r of records) if (r.img) assets.add(r.img);
@@ -404,7 +402,7 @@ async function verbIngest(flags) {
   }
 
   // `unsourced` and `unarted` are reported above and never stop the run: a
-  // partially-arted ingest is normal (plan.md 5.3 step 3).
+  // partially-arted ingest is normal.
   const sharpFn = await loadSharp();
   for (const c of result.creates) {
     const buf = bytesByName.get(c.source);

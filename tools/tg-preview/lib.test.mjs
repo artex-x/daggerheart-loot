@@ -1,7 +1,7 @@
 /*
   node:test over lib.mjs's pure logic. Imports nothing from node_modules, so
   it runs inside `npm run check` even before `npm install` has ever touched
-  this directory - the acceptance criterion in plan.md section 10, B1.
+  this directory - a deliberate acceptance criterion.
 
   The real data.js is loaded the way tests/derived.js does it, for the one
   count that has to be pinned against something real rather than a fixture.
@@ -275,7 +275,7 @@ describe('decide', () => {
     SessionExpiredError,
     SessionPasswordNeededError,
     AuthKeyInvalidError,
-    // The account, not only the session (B6 review R2).
+    // The account, not only the session.
     AuthKeyDuplicatedError,
     UserDeactivatedError,
     UserDeactivatedBanError,
@@ -951,7 +951,8 @@ describe('runRefresh', () => {
     const result = await runRefresh({ mode: 'full' }, deps);
     assert.deepEqual(result.photo, { newId: 1, sameId: 1, none: 1, unseen: 0 });
     // Every press was answered, so all three are confirmed regardless of
-    // their photo-id delta - the photo-id trap (plan.md section 3.4).
+    // their photo-id delta - the photo-id trap (docs/tg-preview.md, "Rate
+    // limiting and resumability").
     assert.equal(result.confirmed.length, 3);
   });
 
@@ -981,8 +982,8 @@ describe('runRefresh', () => {
     assert.equal(fake.sent.length, 0); // both recovered in phase 1
   });
 
-  // Pass 7 - a Telegram read that fails after its retries is a green,
-  // resumable stop, not a crash (plan.md 3.5's pass-7 table, B6 review R1).
+  // A Telegram read that fails after its retries is a green, resumable
+  // stop, not a crash.
 
   it('a transport error on the recovery scan stops the run green after NET_RETRIES, with nothing pressed or written', async () => {
     const manifest = fakeManifest(3); // 4 urls
@@ -1292,7 +1293,8 @@ describe('runRefresh', () => {
     );
   });
 
-  // Pass 4 - the bot's own attempt quota (plan.md section 3.4, 10a).
+  // The bot's own attempt quota (docs/tg-preview.md, "Rate limiting and
+  // resumability").
 
   it('a press answered with the throttle sentence is not recorded and stops the run green, with the presses before it recorded', async () => {
     const manifest = fakeManifest(2); // 3 urls: root, r0, r1
@@ -1311,7 +1313,7 @@ describe('runRefresh', () => {
     assert.equal(result.pending.length, 1);
     assert.match(result.stopped, /bot throttled: retry in 3213s/);
     assert.equal(result.exitCode, 0);
-    // The refused press is still an attempt (B4 review nit 2): `pressed`
+    // The refused press is still an attempt: `pressed`
     // counts all three, not just the two the bot answered normally.
     assert.equal(result.pressed, 3);
     // The throttled URL never reaches any writeState call.
@@ -1481,11 +1483,11 @@ describe('sameUrls', () => {
 // scratch directory - never the committed tools/tg-preview/state.json, never
 // TG_* or .env (--apply never reads Telegram credentials, and the scratch
 // cwd below has no .env for run.mjs's loadEnvFile to find). This is the
-// exact scenario the defect was measured in: a run that confirms nothing
-// still merges an unchanged `urls` map, and previously minted a fresh
-// `updatedAt` for it anyway - the one line that made
+// exact scenario the defect was measured in (commit 8850600): a run that
+// confirms nothing still merges an unchanged `urls` map, and previously
+// minted a fresh `updatedAt` for it anyway - the one line that made
 // `git diff --cached --quiet` never short-circuit in previews.yml's record
-// step (issues/tg-preview-refresh, commit 8850600).
+// step. See docs/tg-preview.md, "What CI does after a deploy".
 describe('writeStateSync updatedAt (via run.mjs --apply)', () => {
   const RUN_MJS = join(HERE, 'run.mjs');
 

@@ -47,7 +47,7 @@ const MSG = {
   gitCleanForce:
     'Blocked: `git clean` with -f deletes untracked files permanently. Run it with -n first and act on the list, or delete the specific paths you meant.',
   gitPushForce:
-    'Blocked: a bare `git push --force` overwrites whatever the remote has, including commits this tree never saw. Push normally, or use `git push --force-with-lease`, which refuses when the remote ref moved under you.',
+    'Blocked: a force push in any form (`--force`, `-f`, `--force-with-lease`, `--force-if-includes`, `+<ref>`) rewrites history the remote already has, and `CLAUDE.md` forbids it: a push closes the amend window, so the fix is a new commit on top. `--dry-run` is allowed.',
   gitDiscard:
     'Blocked: this overwrites working-tree changes, and this tree carries in-flight work from other tasks. If you only meant to unstage, use `git restore --staged <path>`. Otherwise name the exact file and confirm with the human.',
   gitStashDestroy:
@@ -64,11 +64,13 @@ const MSG = {
     "Blocked: piping the check hands the Bash tool the *last* stage's exit status, not the check's, so a failed run comes back indistinguishable from a passing one and you spend a second run learning what you already ran. Drop the pipe: `rtk npm run check`, Bash timeout 600000. `rtk` propagates the child's exit code directly and prints both stdout and stderr (measured: 21,382 characters, under the tool's output cap), and check-observer.mjs reports PASS or FAIL in one line of its own - there is nothing left to recover through a pipe.",
   blindCheckRedirect:
     'Blocked: redirecting the check to a file hides its stdout from check-observer.mjs, so the commit gate never arms and the next `git commit` is refused - and reading the file back costs a second call. Run it plainly: `rtk npm run check`, Bash timeout 600000. If a run ever does come back persisted as too large, grep the file the tool names rather than redirecting the run yourself.',
-  orphanPlan: (target, hits) => {
+  orphanTask: (target, hits) => {
     const shown = hits.slice(0, 4).join(', ');
     const more = hits.length > 4 ? ', ...' : '';
-    return `Blocked: ${target} is still cited by ${hits.length} tracked line(s): ${shown}${more}. Retiring a plan.md leaves those pointing at nothing. Closeout step 6: move the durable content to its permanent home (.claude/README.md for tooling rationale, docs/specs/ for behaviour), update every citation, and remove the file in that same commit. The way out for a citation that only needs the file's content as of a past commit, not the file itself: rewrite it as \`git show <sha>:${target}\` - that form resolves through history and does not count as a live citation here.`;
+    return `Blocked: \`${target}\` is still cited by ${hits.length} tracked line(s): ${shown}${more}. Repair every citation first - state the fact where it is cited, retarget it to its permanent home (\`docs/specs/\`, \`.claude/README.md\`, \`docs/DECISIONS.md\`), or qualify a history-only pointer as \`git show <sha>:<path>\` - then delete in the same commit.`;
   },
+  orphanTaskBare:
+    "Blocked: `issues` (or `issues/`) deletes every task directory in one command, including the live task's own and anyone else's in-flight work - there is no legitimate reason to retire all of `issues/` at once. Retire one task at a time: `git rm -r issues/<id>`, after its citations are repaired.",
   grepLineNumber:
     'Blocked: this `grep -n` is in a shape `rtk` 0.48.0 is measured (`rtk hook check "<command>"`) never to rewrite - a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time` - so its output lands unfiltered in context. Restructure it into its own command, `rtk grep -n <pattern> <path>` (a `&&`/`;`/`cd` prefix is fine and does not need restructuring - only a pipe or substitution does). `git grep -n` is not affected.',
   tailBytes:
@@ -157,10 +159,19 @@ function evaluateBlocklist(segList, cwd) {
         }
       }
       if (subcommand === 'push') {
-        // Pushing itself is allowed. Only the force that ignores the remote's
-        // state is not: --force-with-lease still refuses to clobber a ref that
-        // moved, so it is a normal push here.
-        const hasForce = tokens.includes('--force') || flagMatches(tokens, 'f');
+        // Every force form is denied, not only a bare --force: with one
+        // amended commit per task (CLAUDE.md, "Source and commit
+        // conventions"), an amend after a push is the tempting mistake, and
+        // a lease that succeeds is still the rewrite CLAUDE.md forbids.
+        // --dry-run still exempts - it changes nothing on the remote.
+        const hasForce =
+          tokens.includes('--force') ||
+          flagMatches(tokens, 'f') ||
+          tokens.some(
+            (t) => t === '--force-with-lease' || t.startsWith('--force-with-lease=')
+          ) ||
+          tokens.includes('--force-if-includes') ||
+          tokens.some((t) => t.startsWith('+') && t.length > 1);
         if (hasForce && !tokens.includes('--dry-run')) {
           return { id: 'git-push-force', message: MSG.gitPushForce };
         }
@@ -195,7 +206,7 @@ function evaluateBlocklist(segList, cwd) {
   return null;
 }
 
-// ---------- 2i: deny removing a still-cited issues/<id>/plan.md ----------
+// ---------- 2i: deny removing a still-cited issues/<id>/ file or directory ----------
 //
 // bash-guard.mjs is the only site with both the input (the rm/git-rm
 // target, before the file is gone) and the timing (before the retirement
@@ -205,10 +216,26 @@ function evaluateBlocklist(segList, cwd) {
 // runs inside npm run check and a .md-only retirement commit is gate-exempt.
 // See .claude/README.md, "Hooks", row 40, for the rejected sites and the
 // fallback (a speak instead of a deny) if this proves too blunt in use.
+//
+// Closeout retires a whole task directory every time, not rarely, so the
+// rule sees a `git rm -r issues/<id>` the same way it always saw a plan.md
+// target. A bare `issues/<id>` or `issues/<id>/` token is a directory
+// target, needled on the unslashed `issues/<id>`, boundary-tested on both
+// sides so a sibling id sharing a prefix does not match; any other path
+// under it keeps the old, exact-path behaviour. A bare `issues` or
+// `issues/` token retires every task directory in one command, including
+// the live task's own and anyone else's in-flight work - denied outright,
+// the same class as `rm -rf` inside the repo, rather than routed through
+// the citation audit below: enumerating "every issues/<id> needle" would
+// still allow it the moment every existing directory happened to be
+// citation-free, which is exactly the state a fresh, not-yet-cited task
+// directory can be in - there is no legitimate single command that means
+// "delete all of issues/ at once".
 
-const PLAN_MD_RE = /^issues\/[^/]+\/plan\.md$/;
+const TASK_PATH_RE = /^issues\/([^/]+)(?:\/(.+))?$/;
+const BARE_ISSUES = 'issues';
 
-function orphanPlanTargets(segList, cwd) {
+function orphanTaskTargets(segList, cwd) {
   const targets = new Set();
   for (const segment of segList) {
     const info = segmentInfo(segment);
@@ -223,10 +250,19 @@ function orphanPlanTargets(segList, cwd) {
     }
     if (!candidateTokens) continue;
     for (const token of candidateTokens.filter((t) => !t.startsWith('-'))) {
-      const rel = relPath(token, cwd);
+      const stripped = token.endsWith('/') ? token.slice(0, -1) : token;
+      const rel = relPath(stripped, cwd);
       if (!rel) continue;
       const key = pathKey(rel);
-      if (PLAN_MD_RE.test(key)) targets.add(key);
+      if (key === BARE_ISSUES) {
+        targets.add(BARE_ISSUES);
+        continue;
+      }
+      const m = TASK_PATH_RE.exec(key);
+      if (!m) continue;
+      const taskId = m[1];
+      const needle = m[2] ? key : `issues/${taskId}`;
+      targets.add(needle);
     }
   }
   return [...targets];
@@ -239,14 +275,64 @@ function orphanPlanTargets(segList, cwd) {
 // stays unimplemented; see .claude/README.md, "Known limitations".
 const SHA_CITE_RE = /(?:[0-9a-f]{7,40}|HEAD[~^\d]*)\s*:\s*$/i;
 
-/** Tracked lines citing `target` (a repo-relative, folded path), as
- * "file:line" strings. `git()` returns null on a non-zero exit, which
- * covers both "no matches" and "git unavailable" - both mean no deny, and
- * this function must not try to tell them apart. Drops any hit inside the
- * target file itself, and any hit whose citation is `git show <sha>:` (or
- * `HEAD:`) qualified - see SHA_CITE_RE. */
-function citingLines(target) {
-  const out = git(['grep', '-n', '--fixed-strings', '--', target]);
+// A match whose preceding text on the line is an unbroken URL: a GitHub
+// issue link and a task-directory path are the same characters, and the
+// comment standard allows a GitHub issue number as a permanent citation, so
+// the rule must not deny on one.
+const URL_CITE_RE = /https?:\/\/[^\s)'"`]*$/;
+
+// A character that continues an identifier segment: letters, digits,
+// underscore, hyphen - a task id can itself contain hyphens. An unslashed
+// directory needle (`issues/<id>`) is a substring of both a real
+// citation of a file inside it (`issues/<id>/plan.md`, boundary char `/`)
+// and a false one naming a sibling task whose id happens to start the same
+// way (`issues/<id>-2`, boundary char `-`) - only the former is a real
+// citation, and the test is the character immediately before and after the
+// match, not the needle's shape.
+function isIdentChar(ch) {
+  return ch !== undefined && /[A-Za-z0-9_-]/.test(ch);
+}
+
+/** True when `content` contains `needle` at a real, non-sha-qualified,
+ * non-URL citation: an identifier-boundary match (see isIdentChar) whose
+ * preceding text does not end in a `git show <sha>:`/`HEAD:` qualifier
+ * (SHA_CITE_RE) or an unbroken URL (URL_CITE_RE). Scans every occurrence,
+ * not only the first: a line can carry a sha-qualified or URL
+ * mention and a live one together, and `indexOf`'s first hit used to exempt
+ * the whole line regardless of what came after it. */
+function hasLiveCitation(content, needle) {
+  let from = 0;
+  for (;;) {
+    const idx = content.indexOf(needle, from);
+    if (idx === -1) return false;
+    const before = idx > 0 ? content[idx - 1] : undefined;
+    const after =
+      idx + needle.length < content.length ? content[idx + needle.length] : undefined;
+    if (
+      !isIdentChar(before) &&
+      !isIdentChar(after) &&
+      !SHA_CITE_RE.test(content.slice(0, idx)) &&
+      !URL_CITE_RE.test(content.slice(0, idx))
+    ) {
+      return true;
+    }
+    from = idx + 1;
+  }
+}
+
+/** Tracked lines citing `needle` (a repo-relative, folded file path, or an
+ * unslashed `issues/<id>` directory prefix), as "file:line" strings. `git()`
+ * returns null on a non-zero exit, which covers both "no matches" and "git
+ * unavailable" - both mean no deny, and this function must not try to tell
+ * them apart. Drops any hit whose file is itself under `issues/` (self-
+ * citation is not scoped to the target's own task id - a citation from
+ * one scratch directory into another cannot outlive either, since each is
+ * deleted at its own closeout, and a still-open task's own ledger of the
+ * paths it is retiring would otherwise cite - and so deny - its own
+ * instruction), and any hit with no live (boundary-matched, non-sha-
+ * qualified) occurrence of `needle` - see hasLiveCitation. */
+function citingLines(needle) {
+  const out = git(['grep', '-n', '--fixed-strings', '--', needle]);
   if (out === null) return [];
   const hits = [];
   for (const row of out.split('\n')) {
@@ -257,19 +343,20 @@ function citingLines(target) {
     const rest = row.slice(first + 1);
     const second = rest.indexOf(':');
     const line = second === -1 ? rest : rest.slice(0, second);
-    if (pathKey(file) === target) continue;
+    if (pathKey(file).startsWith('issues/')) continue;
     const content = second === -1 ? '' : rest.slice(second + 1);
-    const idx = content.indexOf(target);
-    if (idx !== -1 && SHA_CITE_RE.test(content.slice(0, idx))) continue;
-    hits.push(`${file}:${line}`);
+    if (hasLiveCitation(content, needle)) hits.push(`${file}:${line}`);
   }
   return hits;
 }
 
-function evaluateOrphanPlan(segList, cwd) {
-  for (const target of orphanPlanTargets(segList, cwd)) {
+function evaluateOrphanTask(segList, cwd) {
+  for (const target of orphanTaskTargets(segList, cwd)) {
+    if (target === BARE_ISSUES) {
+      return { id: 'orphan-task', message: MSG.orphanTaskBare };
+    }
     const hits = citingLines(target);
-    if (hits.length) return { id: 'orphan-plan', message: MSG.orphanPlan(target, hits) };
+    if (hits.length) return { id: 'orphan-task', message: MSG.orphanTask(target, hits) };
   }
   return null;
 }
@@ -453,9 +540,9 @@ const LONG_CHECKS = [
 //
 // check-observer.mjs refuses a run_in_background launch by design (no
 // stdout to attribute), so such a run can never satisfy the commit gate,
-// and a worker whose turn ends with it running loses the result. Three
-// workers on issue 47 did exactly this with the dispatch warning against
-// it. Blocking it forbids nothing that works. Only the gate-feeding check:
+// and a worker whose turn ends with it running loses the result - observed
+// three times despite the dispatch warning against it. Blocking it forbids
+// nothing that works. Only the gate-feeding check:
 // the other long checks can legitimately run detached from a main session.
 // Per segment, not first-segment: the recorded shapes were piped, chained,
 // `cd`-prefixed and file-redirected. Strict boolean, as the observer: an
@@ -535,11 +622,11 @@ function evaluateBlindCheck(sanitized) {
 // `grep -n` and `tail -c` were 96.4K of the 179.7K tokens RTK missed over
 // thirty days (rtk discover, 2026-09-15). The boundary below is measured
 // directly against the installed `rtk 0.48.0` with `rtk hook check
-// "<command>"` (a reproducible probe - see issues/rtk-coverage/context.md
-// for the full table), not inferred from RTK's own source or docs, because
-// the first version of this rule (adopted at `config-audit` B3, then
-// narrowed once already at `rtk-coverage` B1) got it wrong twice: RTK
-// rewrites `grep -n` far more often than "leading and unchained" suggests,
+// "<command>"` (a reproducible probe - see .claude/README.md, "Facts
+// settled during measurement (rtk-coverage, 2026-09-18)" for the full
+// table), not inferred from RTK's own source or docs, because a rule
+// inferred that way got it wrong twice already: RTK rewrites `grep -n`
+// far more often than "leading and unchained" suggests,
 // and denies it in one shape that positional reasoning alone would have
 // allowed.
 //
@@ -723,8 +810,8 @@ guard(() => {
   const blocked = evaluateBlocklist(segList, cwd);
   if (blocked) return deny(event, blocked.message);
 
-  const orphanPlan = evaluateOrphanPlan(segList, cwd);
-  if (orphanPlan) return deny(event, orphanPlan.message);
+  const orphanTask = evaluateOrphanTask(segList, cwd);
+  if (orphanTask) return deny(event, orphanTask.message);
 
   const blanket = evaluateBlanketStage(segList, cwd);
   if (blanket) return deny(event, blanket.message);

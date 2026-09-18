@@ -1,7 +1,7 @@
 <script lang="ts">
   /* The `.row-main` button: a table row's clickable body, off `rowHTML` in
      app.js (2785-2803). Extracted out of `TableRows.svelte` on its second
-     real use - the list page's own row (B5.4) draws the same body without
+     real use - the list page's own row draws the same body without
      `num` (`rnum` - only the alternate tables' columns override the roll
      number) or `tail` (`rtail` - the shared page's decoration, threaded
      through `TableRows`'s own `TableEntry.tail`). */
@@ -116,7 +116,7 @@
     font: inherit;
   }
 
-  /* D18, paid off: this component's own 8px-radius override deleted - the
+  /* This component's own 8px-radius override deleted - the
      global `:focus-visible` rule (tokens.css) already reaches every control,
      at the one radius the owner chose. */
 

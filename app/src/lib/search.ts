@@ -84,10 +84,10 @@ type Hay = (it: Record_) => readonly string[];
 /**
  * Builds a per-record folded haystack, memoised by id.
  *
- * Folding is the expensive part - `performance.md` PF2 measured 2.74ms
- * refolding the catalogue on every keystroke against 0.33ms warm. That
- * 0.33ms is PF2's own proposed design: one lowercased string per record,
- * built into `data.ts`'s `Index` at load time. This file builds a
+ * Folding is the expensive part - measured at 2.74ms refolding the
+ * catalogue on every keystroke against 0.33ms warm. That 0.33ms reflects a
+ * proposed design: one lowercased string per record, built into
+ * `data.ts`'s `Index` at load time. This file builds a
  * different design instead - an array of per-field folded strings, cached
  * per id here rather than baked into the `Index` - for the field-boundary
  * correctness reason `Hay`'s own comment records, so the two numbers are
@@ -122,7 +122,7 @@ const hasAny = (parts: readonly string[], needle: string): boolean =>
  * two paths agree on every query because both fold the same fields the same
  * way, just with a cache in front of one of them.
  *
- * B1-N9, considered and left open: `statLine` and `hay` are two separate
+ * Considered and left open: `statLine` and `hay` are two separate
  * positional arguments, so a caller can pass a `hay` built from one
  * `statLine` and a different `statLine` here - `hay` silently wins, since
  * it is checked first. Unreachable today (every real caller builds both

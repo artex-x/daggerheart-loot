@@ -31,8 +31,8 @@ const stored = memoryStorage;
 /** `memoryRouter`'s own `navigate()` announces unconditionally (its doc
  *  comment says why: it exists to catch `AppState.navigations` gaps, not to
  *  model this quirk). A real browser fires no `hashchange` at all for
- *  `location.hash = <the value it already holds>` - the one behaviour B6-R3
- *  needs a double for, so `navigate()` here only announces on an actual
+ *  `location.hash = <the value it already holds>` - the one behaviour this
+ *  double exists for, so `navigate()` here only announces on an actual
  *  change, and `fire()` stands in for a hashchange the browser dispatches on
  *  its own (a Back/Forward landing on an address, whether or not it happens
  *  to match the current one). */
@@ -106,13 +106,13 @@ describe('settings are read as untrusted data', () => {
   it('accepts a bare #/tables too, the one shape the app itself no longer writes', () => {
     /* Live's own homeAllows (app.js 1124-1130) keeps this - `tables` is one
        of the section tabs its own list checks, not only a specific table
-       name (B2-4, paid off: that list was `TAB_LIST`, an identifier that
-       lived in app.js alone and has no equivalent anywhere in this rewrite,
-       so it is named here in prose rather than cited as something a reader
-       could go find in this tree). A pin written before this fix, or by
-       hand, still opens rather than silently falling back (B12.1 nit 1/4:
-       the rewrite used to refuse it and lose the pin at the next boot). The
-       writer below never produces this shape any more - see 'pinning'. */
+       name (that list was `TAB_LIST`, an identifier that lived in app.js
+       alone and has no equivalent anywhere in this rewrite, so it is named
+       here in prose rather than cited as something a reader could go find in
+       this tree). A pin written before this fix, or by hand, still opens
+       rather than silently falling back (the rewrite used to refuse it and
+       lose the pin at the next boot). The writer below never produces this
+       shape any more - see 'pinning'. */
     const app = new AppState(at('', { storage: stored({ [HOME_KEY]: '#/tables' }) }));
     expect(app.home).toBe('#/tables');
   });
@@ -128,10 +128,9 @@ describe('the address on the way in', () => {
   });
 
   it('opens the default at boot and leaves the bare bar untouched when nothing is pinned', () => {
-    /* Row 1 of plan.md's B12.1 table: live's own boot check (app.js
-       4610-4614) never assigns `location.hash` when the pinned home is
-       already the default - there is nothing to add - so a bare address
-       stays bare while the default section draws. */
+    /* Live's own boot check (app.js 4610-4614) never assigns `location.hash`
+       when the pinned home is already the default - there is nothing to add
+       - so a bare address stays bare while the default section draws. */
     const router = memoryRouter('#/');
     const app = new AppState(fakeEnv({ router }));
     expect(app.hash).toBe('#/roll/std');
@@ -139,7 +138,7 @@ describe('the address on the way in', () => {
   });
 
   it('pushes a pinned section at boot, so Back leaves the bare address behind', () => {
-    /* Row 2: live's boot check is a plain assignment, not a replaceState
+    /* Live's boot check is a plain assignment, not a replaceState
        (app.js 4610-4614), so a non-default pin is a real history entry -
        unlike the unreadable-address case below, which replaces. */
     const router = memoryRouter('');
@@ -150,9 +149,9 @@ describe('the address on the way in', () => {
   });
 
   it('replaces an unreadable address at boot with the pinned section', () => {
-    /* Row 3, boot half - the live `currentRoute` fallback (app.js 3638-3647)
-       answers an unknown address the same way whether it is met at boot or
-       on navigation; see 'navigation' below for the navigation half. */
+    /* The live `currentRoute` fallback (app.js 3638-3647) answers an
+       unknown address the same way whether it is met at boot or on
+       navigation; see 'navigation' below for the navigation half. */
     const router = memoryRouter('#/nonsense');
     const app = new AppState(
       fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/roll/wondrous' }) })
@@ -228,7 +227,7 @@ describe('pinning', () => {
   });
 });
 
-describe('the tables view preference (DC1/Q1 - restored)', () => {
+describe('the tables view preference (restored)', () => {
   const PREFS_KEY = 'dhloot.prefs.v1';
 
   it('defaults to list with nothing stored', () => {
@@ -399,7 +398,7 @@ describe('navigation', () => {
     }).not.toThrow();
   });
 
-  it('stop() also hides a standing toast (S6)', () => {
+  it('stop() also hides a standing toast', () => {
     vi.useFakeTimers();
     const app = new AppState(at('#/roll/std'));
     app.start();
@@ -410,7 +409,7 @@ describe('navigation', () => {
     vi.useRealTimers();
   });
 
-  it('does not double-count a navigation go() itself just wrote, once start() is listening (S1)', () => {
+  it('does not double-count a navigation go() itself just wrote, once start() is listening', () => {
     /* Without the guard, a fake router's synchronous announce meant go()'s
        own bookkeeping and the router handler it triggered both counted the
        same navigation - reachable only once both start() and go() are used
@@ -423,7 +422,7 @@ describe('navigation', () => {
     expect(app.hash).toBe('#/lists');
   });
 
-  it('falls back home when go() itself is handed an unreadable hash (S2/R7)', () => {
+  it('falls back home when go() itself is handed an unreadable hash', () => {
     const router = memoryRouter('#/tables');
     const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
     app.go('#/nonsense');
@@ -458,10 +457,10 @@ describe('navigation', () => {
   });
 
   it('reaching a bare address by navigating draws the default, not the pinned section, and leaves the bar bare', () => {
-    /* Row 4 of plan.md's B12.1 table: unlike boot (row 1/2 above), a bare
-       address met after the app is already running never consults the
-       pinned home - live's own home check runs once at boot only, app.js
-       4610-4614 - so it always lands on `#/roll/std`. */
+    /* Unlike boot (above), a bare address met after the app is already
+       running never consults the pinned home - live's own home check runs
+       once at boot only, app.js 4610-4614 - so it always lands on
+       `#/roll/std`. */
     const router = memoryRouter('#/tables');
     const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
     app.start();
@@ -471,8 +470,8 @@ describe('navigation', () => {
   });
 
   it('reaching an unreadable address by navigating replaces it with the pinned section', () => {
-    /* Row 3, navigation half - the same fallback rule the boot branch above
-       uses for an unknown kind. */
+    /* The same fallback rule the boot branch above uses for an unknown
+       kind. */
     const router = memoryRouter('#/tables');
     const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
     app.start();
@@ -511,7 +510,7 @@ describe('replace vs navigate', () => {
     expect(app.navigations).toBe(1);
   });
 
-  it("does not swallow a later Back/Forward landing on go()'s own unchanged target (B6-R3)", () => {
+  it("does not swallow a later Back/Forward landing on go()'s own unchanged target", () => {
     /* go(X) used to set #expectHash unconditionally, even when X is already
        the address showing - a real browser then fires no hashchange for that
        write, so nothing ever cleared it. A subsequent Back/Forward landing on

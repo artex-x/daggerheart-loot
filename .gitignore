@@ -46,7 +46,7 @@ work/
 # Published, never committed, and never hand-edited (.claude/hooks/edit-guard.mjs).
 # data.json and catalog.csv stay tracked on purpose - seven vitest suites and
 # two tests/app suites read data.json off disk under `npm run test`, which
-# does not build first. See issues/untrack-stubs/plan.md.
+# does not build first.
 i/
 
 # Per-suite logs from tests/run-all.js: the CI artifact, not source.

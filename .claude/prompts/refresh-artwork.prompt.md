@@ -102,7 +102,7 @@ Do not distort aspect ratio, overwrite the approval sources, rename public asset
    - `node tests/run-all.js dataint,noart`
    - any image/stub checks identified by current docs
 5. Before a commit, run `npm run check` as required by `CLAUDE.md`. Because artwork changes what screens draw, also run `npm run check:built`; distinguish failures caused by pre-existing unrelated work.
-6. Do not commit unless requested or required by the active task protocol. When you do commit, push the branch; never force-push.
+6. Do not commit unless requested or required by the active task protocol. When you do commit, follow the task's commit protocol (`CLAUDE.md`, "Source and commit conventions"): the first batch commits, later batches amend; push only at closeout, once; never force-push.
 
 ## Optional local reference-cache refresh
 

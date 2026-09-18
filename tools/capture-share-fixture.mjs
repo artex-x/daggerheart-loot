@@ -1,6 +1,6 @@
 /* Captures what the built rewrite actually puts on the clipboard for a
  * record - the rewrite's own golden, last matched against the live app at
- * `cf96e6f` (R0b.4 C3, before R0c deleted `app.js`/`index.html`). It is
+ * `cf96e6f`, before `app.js`/`index.html` were deleted. It is
  * observed rather than called directly: stub `navigator.clipboard`, open a
  * record page in `dist/`, press each copy button by its accessible name
  * (`dict.ts`'s `copyName`/`copyText`, hardcoded here in both languages the
@@ -16,11 +16,10 @@
  * Output: docs/fixtures/share/records.json
  *
  * A non-empty diff on this run is a divergence between the rewrite and the
- * last live-app capture - record it, do not regenerate to make it go away
- * (issue 47, R0c, `plan.md`'s stop-and-raise list). Before R0c the tool drove
- * the live app's own `index.html` and gripped `[data-copy-name]`/
- * `[data-copy-full]`, which `dist/` never rendered; `git show
- * a6b4a94:tools/capture-share-fixture.mjs` is that version.
+ * last live-app capture - record it, do not regenerate to make it go away.
+ * The tool used to drive the live app's own `index.html` and grip
+ * `[data-copy-name]`/`[data-copy-full]`, which `dist/` never rendered;
+ * `git show a6b4a94:tools/capture-share-fixture.mjs` is that version.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -78,7 +77,7 @@ function pickIds() {
        5+ lines with its own stat line on its own line - a shape no other
        picked id's reference carries, so its copy format needs its own
        fixture entry rather than riding on the generic refs?.length pick
-       above. issue 47, R0b.1. */
+       above. */
     'w118'
   ].filter(Boolean);
   return [...new Set(ids)];
@@ -96,8 +95,7 @@ await page.evaluateOnNewDocument(() => {
   window.__clip = null;
   // A plain constructor function, not a `class`, so it is not an
   // extraneous-class violation - it exists only to be `new`-able the way
-  // the real DOM ClipboardItem is, with no static members (issues/phase-8,
-  // B9-R2/B9-N5).
+  // the real DOM ClipboardItem is, with no static members.
   window.ClipboardItem = function (m) {
     this.map = m;
   };

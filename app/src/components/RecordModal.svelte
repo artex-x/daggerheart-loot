@@ -103,7 +103,7 @@
     >
       {#snippet nameActions()}
         <!-- RecordActions toasts through `app.say` directly now (the `say`
-             shim this file used to wrap it in was deleted, B5) - it still
+             shim this file used to wrap it in was deleted) - it still
              reaches the reader from inside this dialog's own inertness
              because the toast is `popover="manual"` (Toast.svelte), which
              puts it in the top layer above this dialog. -->
@@ -198,7 +198,7 @@
     color: var(--gold);
   }
 
-  /* D20, paid off: the live app hid `#modal` unconditionally under print
+  /* The live app hid `#modal` unconditionally under print
      media (style.css:1397-1415); this component carried no equivalent rule
      at all, so a page printed while a record was open printed the dialog
      over it. `!important` for the same reason Toast.svelte's rule needs

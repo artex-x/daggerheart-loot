@@ -97,7 +97,7 @@
   /* The search box is memory only - docs/specs/STATE.md is explicit that
      what was asked on a page is not remembered, and it does not touch the
      address. The view switch is the one exception: how a page looks is
-     remembered (`dhloot.prefs.v1`, `AppState.tablesView`) - DC1/Q1, restored
+     remembered (`dhloot.prefs.v1`, `AppState.tablesView`), restored
      after the rewrite briefly dropped it. */
   let q = $state('');
   const view = $derived(app.tablesView);
@@ -441,8 +441,7 @@
     <!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus
          this screen's own margin-free nav row. Svelte scopes this
          component's rule to its own elements, so a `class` prop on `Panel`
-         would have to be `:global()` here - kept inline (plan.md, "B10
-         planned", decided 1). -->
+         would have to be `:global()` here - kept inline. -->
     <div class="panel tablenav">
       <ChipRow>
         {#each TABLE_GROUPS as g (g.id)}
@@ -617,7 +616,7 @@
 <style>
   /* off `.page-h`, `.itemtable` and friends were already covered; what
      follows is the tables screen's own furniture. `.miss` moved to
-     `NoData.svelte` (B10). */
+     `NoData.svelte`. */
 
   /* off `.panel` in style.css */
   .tablenav {

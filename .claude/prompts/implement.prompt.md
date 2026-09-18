@@ -67,6 +67,7 @@ Session rules:
   commit or a comment - a plan has already lost items this way
 * If primary approach fails: stop; present named fallback only with human confirmation; else report blocker + recommendation
 * If human ends session mid-batch: stop coding, do not commit a half-batch, update handoff partial progress and exact next step
+* Write a durable fact or decision to its permanent home in this batch (`CLAUDE.md`, "Task and session protocol"); a comment follows `CLAUDE.md`, "Comments"
 
 For the current batch:
 1. Confirm objective, scope, acceptance criteria, mock/visual constraints
@@ -89,8 +90,8 @@ For the current batch:
    where you stopped.
 8. Review the final diff for unintended changes
 9. Update `<TASK_DIR>/plan.md`
-10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own
-11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - commit the coherent batch, not unrelated foreign changes
-12. Push the current branch once the batch is committed. If the push is rejected, report it - do not force, do not rebase someone else's work away
+10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own; record the pre-batch sha (`git rev-parse HEAD` before the amend) as "Previous sha" - the handoff is inside the commit it would otherwise name, so it never records a "new" sha for itself; report that sha in this turn's final summary instead
+11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - the first batch commits, every later batch amends (`git commit --amend`) the task's one commit; commit the coherent batch, not unrelated foreign changes. The message body names the task id (a `Task: <id>` line, or the id stated in a sentence) - this is what `git log --grep=<id>` and a `docs/DECISIONS.md` entry's provenance pointer resolve through; a commit that never names it leaves that pointer dead.
+12. Do not push. The task's commit is pushed once, at closeout, after the task directory is retired (`CLAUDE.md`, "Source and commit conventions"; `.claude/skills/handoff/SKILL.md`).
 
-Finish with a concise summary of the batch, verification, commit, push, and next batch.
+Finish with a concise summary of the batch, verification, commit (amended sha, previous sha), and next batch.

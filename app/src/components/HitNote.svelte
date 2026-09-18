@@ -1,8 +1,8 @@
 <script lang="ts">
   /* One "for players" / "GM only" note, off `ListPage.svelte`'s own `hitnote`
      snippet (app.js's `notePairHTML`, 3109-3128, drawn one label at a time).
-     Extracted on its second real use - the list page's rolled entry (B5.4a)
-     and the shared page (B5.6), which draws two above the rows and two more
+     Extracted on its second real use - the list page's rolled entry
+     and the shared page, which draws two above the rows and two more
      after every entry. Renders nothing when `text` is empty. */
   import Icon from './Icon.svelte';
   import type { IconName } from '../lib/icons.js';

@@ -1,13 +1,12 @@
 /* Craft/upgrade chains: data integrity + the generated share stubs.
 
-   R0c (2026-09-17) trimmed this file to its two DOM-free sections - data
-   integrity and the share stubs on disk. The middle sections rendered the
-   live `index.html` + `app.js` in JSDOM (craft-block rendering, the language
-   switch, the clipboard payload, table-row captions); `docs/specs/
+   This file covers only its two DOM-free sections - data integrity and the
+   share stubs on disk. The sections that used to render the live
+   `index.html` + `app.js` in JSDOM (craft-block rendering, the language
+   switch, the clipboard payload, table-row captions) are gone; `docs/specs/
    COVERAGE.md`'s `craft` row says where each of those assertions went - most
    are now covered by `record.test.ts`/`share.test.ts`/`tables.test.ts` on a
-   synthetic or golden-pinned record, and the sweep (`issues/47/sweep.md`,
-   Part E(ii-a)) records the handful that lost their real-data breadth. */
+   synthetic or golden-pinned record. */
 const fs = require('fs');
 const path = require('path');
 
@@ -105,8 +104,8 @@ ok(
 );
 const stale = ALL.filter((x) => {
   const p = path.join(ROOT, 'i', x.id + '.html');
-  /* Only the first line, not a raw 40-char slice: issues/phase-8, O6 made the
-     generator print one <p> per source line, so a multi-line description
+  /* Only the first line, not a raw 40-char slice: the generator prints one
+     <p> per source line, so a multi-line description
      (five Vault of Ages records open with a one-line "Стоимость Призыва: N"
      header under 40 characters) no longer carries a raw "line one\nline two"
      substring anywhere in the stub - the newline is now a paragraph break. */
@@ -122,12 +121,12 @@ ok(
       .join(', ')
 );
 
-/* O6 changed 98 of 1091 stub pages (every record whose rud carries a
-   newline) and nothing pinned the new shape - the staleness probe above
-   only proves a stub isn't stale, not what a fresh one actually renders.
-   Pin it directly: descHtml() in tools/build-share-pages.js renders one
-   <p> per source line, not one glued paragraph (issues/phase-8, B5-R1). */
-console.log('multi-line description rendering (O6)');
+/* 98 of 1091 stub pages (every record whose rud carries a newline) render a
+   multi-line description, and nothing pins the new shape - the staleness
+   probe above only proves a stub isn't stale, not what a fresh one actually
+   renders. Pin it directly: descHtml() in tools/build-share-pages.js renders
+   one <p> per source line, not one glued paragraph. */
+console.log('multi-line description rendering');
 const w6 = ALL.find((x) => x.id === 'w6');
 ok(
   !!w6 && w6.rud.split('\n').length > 1,

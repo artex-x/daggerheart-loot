@@ -141,18 +141,18 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
   });
 
   it('finds a record typed with the typographic apostrophe autocorrect produces', () => {
-    /* O2 (issues/phase-8, B11) normalised every record's own apostrophe to
-       ASCII, so "Keeper's Staff" (q80) is now stored plain. The fold still has
-       to run - iOS/macOS autocorrect turns a typed ' into U+2019 on the QUERY,
-       not the record - so this case types the typographic form against the
-       now-ASCII name. Before B11 this test exercised the record side instead;
-       B11-BL-1 (issues/phase-8) found the old case had gone vacuous (both
-       sides ASCII, search.ts:71's fold an identity transform on either). */
+    /* Every record's own apostrophe is normalised to ASCII, so "Keeper's
+       Staff" (q80) is now stored plain. The fold still has to run - iOS/macOS
+       autocorrect turns a typed ' into U+2019 on the QUERY, not the record -
+       so this case types the typographic form against the now-ASCII name.
+       This test used to exercise the record side instead, until that was
+       found to have gone vacuous (both sides ASCII, search.ts's fold an
+       identity transform on either). */
     expect(find('keeper’s staff').map((x) => x.id)).toContain('q80');
   });
 
   it('finds a name with a Latin diacritic typed in plain ASCII', () => {
-    /* N7, owner-approved: "Ethereal Zweihänder" (q238) and "Möbius Orb"
+    /* Owner-approved: "Ethereal Zweihänder" (q238) and "Möbius Orb"
        (q311) were unreachable by ordinary typing across all 1091 records. */
     expect(find('Zweihander').map((x) => x.id)).toContain('q238');
     expect(find('Mobius').map((x) => x.id)).toContain('q311');
@@ -234,15 +234,14 @@ describe('the stat line the pages search with', () => {
     expect(ru).not.toBe(en);
   });
 
-  it('keeps the tier word for a frame record (D11, paid off)', () => {
-    /* R0b.4 (2026-09-16) once made this match the live app, which dropped the
-       tier word for frame equipment - app.js:612's `if (e.tier &&
-       !isFrameRecord(it))`. D11 named that a defect, not a rule: an
-       identical piece of armour prints its tier when it sits in `eq` and hid
-       it when it sat in a frame table, with nothing a reader can see to
-       explain the difference. The owner settled on printing it like any
-       other equipment (Q6), so `statLineFor` no longer passes `noTier` at
-       all - this is the inverse of the case R0b.4 added. */
+  it('keeps the tier word for a frame record', () => {
+    /* This test used to match the live app, which dropped the tier word for
+       frame equipment (`if (e.tier && !isFrameRecord(it))`) - tracked as a
+       defect, not a rule: an identical piece of armour printed its tier when
+       it sat in `eq` and hid it when it sat in a frame table, with nothing a
+       reader could see to explain the difference. The owner settled on
+       printing it like any other equipment (`docs/specs/FEATURES.md`,
+       "Records"), so `statLineFor` no longer passes `noTier` at all. */
     const frame = index.searchable.find((r) => isFrameRecord(r) && r.eq?.tier === 1) as Record_;
     expect(frame).toBeDefined();
     const line = statLineFor('ru', dict('ru'))(frame);

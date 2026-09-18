@@ -9,7 +9,7 @@
  * ci.yml's guard step before the deploy even starts). Before this file
  * existed, ci.yml's guard step re-implemented a subset of these assertions
  * as hand-written `grep`/`wc` lines that had already drifted from
- * check-site.mjs once (issues/phase-8, T10/DP9).
+ * check-site.mjs once.
  *
  * English throughout: this is a tool, not product text (docs/specs/META.md
  * section 6). The rest of tests/ still prints Russian and moves to English
@@ -56,8 +56,8 @@ export function checks() {
       test: (body) => /<div\s+id="app"/.test(body),
       message: 'the published page has no <div id="app">'
     },
-    /* The assertion that the R0c cut-over actually took: the old app's entry
-     * script must be gone, not merely joined by the new one. */
+    /* The assertion that the cut-over to the new app actually took: the old
+     * app's entry script must be gone, not merely joined by the new one. */
     {
       path: '',
       test: (body) => !/src="\.?\/?app\.js"/.test(body),
@@ -99,11 +99,12 @@ export function checks() {
       ...status200(f)
     })),
 
-    /* The 404 fallback (issues/phase-8, B4 step 11, owner-approved
-     * 404.html). A hosted record link truncated by a chat client, or a stub
-     * for a record a data change dropped, has to land somewhere better than
-     * GitHub's own generic 404 - docs/specs/DEBT.md and
-     * issues/phase-8/critique/resilience.md R8. */
+    /* The 404 fallback, owner-approved: a hosted record link truncated by a
+     * chat client, or a stub for a record a data change dropped, has to
+     * land somewhere better than GitHub's own generic 404 - with no
+     * `404.html` every wrong path got GitHub's generic 404 (verified live
+     * on `i/zzzz.html`), no link back in either language. See
+     * `docs/specs/DEBT.md`. */
     {
       path: UNKNOWN_PATH,
       test: (body, meta) => meta.status === 404,
@@ -142,13 +143,13 @@ export async function runChecks(read, list = checks()) {
 /** The live-URL reader: plain `fetch`, no dependency, so it can run in a job
  *  that has not necessarily installed anything. `AbortSignal.timeout` gives
  *  every request a hard ceiling so one stalled CDN socket cannot hang this
- *  step indefinitely (issues/phase-8, DP1; the existing catch below already
+ *  step indefinitely (the existing catch below already
  *  treats an abort as a retry) - it bounds a single request, not the whole
  *  retry loop below: `checks()`'s 12 distinct paths, `TRIES=6` and
  *  `WAIT_MS=10_000` between attempts add up to a worst case of roughly
  *  12 x 15s x 6 + 5 x 10s, about 19 minutes, if every request on every try
- *  stalls to its own ceiling - past `deploy`'s own 10-minute job timeout
- *  (issues/phase-8, B4-R3). That worst case needs every request to fail
+ *  stalls to its own ceiling - past `deploy`'s own 10-minute job timeout.
+ *  That worst case needs every request to fail
  *  identically on every attempt, unlike the few-seconds-of-stale-CDN read
  *  this retry loop actually exists for; the job timeout is still what bounds
  *  it in the end. */

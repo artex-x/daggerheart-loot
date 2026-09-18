@@ -125,7 +125,7 @@ describe('a critical success', () => {
     expect(bumpUp('legendary')).toBe(null);
   });
 
-  it('bumps every rarity but the top one (B5-N9)', () => {
+  it('bumps every rarity but the top one', () => {
     /* `BUMP` (alt.ts) is a `Partial<Record<Rarity, keyof Dict>>`, so a sixth
        rarity added to both the union and `RARITY_ORDER` without a matching
        `BUMP` entry would make `bumpUp` return `null` for it silently, the

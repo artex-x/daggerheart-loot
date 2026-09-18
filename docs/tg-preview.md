@@ -630,3 +630,11 @@ clock and a fake live check. `tools/tg-preview/client.mjs` (the real
 Telegram connection) and `tools/tg-preview/live.mjs` (the real CDN fetch)
 have no unit test - they are thin, and the only real proof either works is
 Telegram and the CDN themselves, which is what step F above is for.
+
+The only real-world validation the fingerprint has had: a baseline of 125
+stale URLs rose to 192 after installing 65 assets, 67 newly stale against
+68 expected, the one-short difference being a stub already stale for
+unrelated text drift - checked by set equality (`after == before +
+expected`, zero missing, zero extra, zero unexpectedly-disappeared). One
+byte-swap under an unchanged shared address marked all four dependent stubs
+stale and nothing else.

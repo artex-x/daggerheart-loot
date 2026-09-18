@@ -42,7 +42,7 @@ export async function expectNoA11yViolations(container: Element): Promise<void> 
    * and the very next axe.run() in the same file throws "Axe is already
    * running" before it looks at anything. Without this, one slow test takes
    * every a11y assertion after it down with it, which is why the failure
-   * count swung with machine load instead of staying put (issue 47, B3.6).
+   * count swung with machine load instead of staying put (issue 47).
    *
    * Clearing it here is safe either way: on the common path the previous run
    * already cleared it and this is a no-op; on the timeout path, the run it

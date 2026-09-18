@@ -38,9 +38,9 @@
    *  item binding of its own. */
   const blankKeys = $derived(Array.from({ length: sheet.blanks }, (_, k) => k));
 
-  /* D21, paid off: kept as session memory on `AppState`, the way live's
+  /* Kept as session memory on `AppState`, the way live's
      `S.printBW` (app.js:49) was - it survives leaving the page, unlike
-     search's `q` and TablesPage's `q` (B6), which stay component-local on
+     search's `q` and TablesPage's `q`, which stay component-local on
      purpose. `app.printBW` directly, not a local mirror: this page remounts
      on every navigation, so a local copy would have to be re-synced from
      `app.printBW` on mount anyway. */
@@ -127,7 +127,7 @@
 
 <style>
   /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
-     `NoData.svelte`, `.card-acts` to `Actions.svelte` (B10, though this
+     `NoData.svelte`, `.card-acts` to `Actions.svelte` (though this
      component's own `.miss` read `--muted2` where `NoData`'s reads
      `--muted` - never photographed either way).
 

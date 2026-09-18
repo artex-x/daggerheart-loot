@@ -70,9 +70,9 @@ ok(
   'a built script tag lost its defer: ' + JSON.stringify(seen.defers)
 );
 
-/* The <noscript> block's own links (issue 47, R0c N6): with scripting on,
-   the browser never parses its content into real DOM, so it is read back as
-   text and parsed by hand. Each href has to resolve to a file dist/ actually
+/* The <noscript> block's own links: with scripting on, the browser never
+   parses its content into real DOM, so it is read back as text and parsed
+   by hand. Each href has to resolve to a file dist/ actually
    holds - Vite's build does not copy catalog.csv, data.json or llms.txt on
    its own, so this failed before vite.config.mts's closeBundle copy landed. */
 const noscriptHrefs = await page.evaluate(() =>

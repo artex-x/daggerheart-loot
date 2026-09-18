@@ -3,7 +3,7 @@
    * paragraph renderer `PageHead.svelte` carried before this extraction.
    *
    * Extracted on its second use: the page-level help panel and the money
-   * picker's own box (`ListPage.svelte`, B5.4) draw the same shape, the
+   * picker's own box (`ListPage.svelte`) draw the same shape, the
    * second one narrower and in a different slot - hence `class`. */
   import { isBold, isBreak, isLink } from '../lib/help.js';
   import type { Help } from '../lib/help.js';

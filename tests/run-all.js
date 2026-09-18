@@ -16,15 +16,15 @@
    Slowest first: with the long ones started early, the tail of the run is
    short jobs filling the gaps instead of one straggler holding the pool.
 
-   R0c (2026-09-17) deleted the fourteen suites that drove the live app
-   (`index.html`/`app.js`/`style.css`) and the parity harness that compared it
-   against `dist/`; `docs/specs/COVERAGE.md`'s per-suite table says where each
-   one's assertions went. What is left runs against `dist/` alone, plus a
-   handful of fs-only data/contract checks.
+   The suites that drove the live app (`index.html`/`app.js`/`style.css`) and
+   the parity harness that compared it against `dist/` are gone;
+   `docs/specs/COVERAGE.md`'s per-suite table says where each one's
+   assertions went. What is left runs against `dist/` alone, plus a handful
+   of fs-only data/contract checks.
 
-   `--shard` (added issues/phase-8, B3) is what ci.yml's `browser` matrix
+   `--shard` is what ci.yml's `browser` matrix
    uses instead of a single `check`-job step plus a separate `golden` job -
-   see the weight comment below and issues/phase-8/handoff.md, "B3". */
+   see the weight comment below. */
 const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
@@ -32,19 +32,18 @@ const path = require('path');
 const HERE = __dirname;
 
 /* Weight column: CI seconds, not a local guess. Measured on GitHub's
-   ubuntu-latest runners, run 35214847899, 2026-09-17
-   (issues/phase-8/critique/tests.md, section 0.3) - a local run is advisory,
-   the same doctrine `.claude/README.md` states for every other cost table in
-   this repository. These numbers are the input to `--shard`'s bin packer
-   below, so an entry that is off by multiples mis-packs a shard, not just a
-   sort order (issues/phase-8/critique/tests.md, "T5").
+   ubuntu-latest runners, run 35214847899, 2026-09-17 - a local run is
+   advisory, the same doctrine `.claude/README.md` states for every other
+   cost table in this repository. These numbers are the input to
+   `--shard`'s bin packer below, so an entry that is off by multiples
+   mis-packs a shard, not just a sort order.
 
    `app/sweep`'s 1180 row is split into a `ru` and an `en` row: at 550.5s
    measured it was 25% of all browser work and 1.7x its narrower siblings -
    axe running both languages there, plus the RU-only focus walk, account
-   for the whole excess (`tests.md`, "T2"). The two halves below are kept at
+   for the whole excess. The two halves below are kept at
    an even ~275s split rather than the two rows' real measured weights
-   (371.9s ru, 172.7s en - issues/phase-8's B3 review, re-measured after this
+   (371.9s ru, 172.7s en, re-measured after this
    comment was first written): re-running the packer with the corrected
    numbers still produces the same four bins, because each CI runner is
    itself a 4-way pool, so wall clock is max(longest row, total/4) and the
@@ -135,7 +134,7 @@ let queue = SUITES.filter(
    exhaustive by construction - every suite lands in exactly one bin - the
    same promise tests/app/golden.js's own --shard=n/of makes for its states,
    generalised here from one suite's states to the whole pool. ci.yml's
-   `browser` matrix is four calls of this (issues/phase-8/handoff.md, "B3").
+   `browser` matrix is four calls of this.
 
    Four separate `node` processes, one per matrix job, each sort and pack
    this same array independently and have to agree on the result without

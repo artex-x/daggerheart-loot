@@ -2,7 +2,7 @@
  *
  * The other component tests each end with an axe assertion, and every one of
  * them ran on a screen nobody had pressed anything on - the same blind spot
- * the parity harness (deleted at R0c, issue 47) had before it compared
+ * the parity harness (deleted at 23c00a6, R0c, issue 47) had before it compared
  * states. The modal is the sharpest example: a focus trap, `aria-modal`, and
  * a close button, none of which any axe run had ever seen, because opening
  * it takes two presses.
@@ -237,7 +237,7 @@ const STATES: {
       ])
     },
     /* `press` grips buttons; the row checkbox is reached by role instead -
-       P2 named it after its own record rather than the generic "Выбрано",
+       it is named after its own record rather than the generic "Выбрано",
        so the first one is found by excluding select-all's own (named
        "Выбрать все (N)" by its wrapping `<label>`). */
     enter: async () => {
@@ -377,7 +377,7 @@ const COVERED: Record<string, string> = {
   'RecordActions.svelte': 'record.test.ts, and inside the modal above',
   'RecordCard.svelte': 'record.test.ts, and inside the modal above',
   'RecordHost.svelte':
-    'the first state above (through RollPanel), and every page test that opens the modal (C6)',
+    'the first state above (through RollPanel), and every page test that opens the modal',
   'RecordModal.svelte': 'the first state above, and the tier ladder in record.test.ts',
   'RecordPage.svelte': 'record.test.ts',
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',

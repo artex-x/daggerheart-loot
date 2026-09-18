@@ -2,15 +2,14 @@
   Interactive, run once per account (docs/tg-preview.md, step D.3): asks for
   the throwaway account's phone number, the code Telegram sends, and its 2FA
   password if any, then prints one line - TG_SESSION=<session> - and nothing
-  else. That string *is* the account (plan.md section 3.6): this script never
-  writes it to a file; the operator appends the printed line to .env
-  themselves.
+  else. That string *is* the account: this script never writes it to a file;
+  the operator appends the printed line to .env themselves.
 
   --sms passes forceSMS: true to client.start, which issues auth.ResendCode
   instead of the normal auth.sendCode. On the owner's own throwaway number
   this returned SEND_CODE_UNAVAILABLE ("all available options for this type
-  of number were already used") - see issues/tg-preview-refresh/context.md,
-  "Telegram will not issue a login code yet". Treat --sms as a last resort,
+  of number were already used") - see docs/tg-preview.md, "Setup, start to
+  finish". Treat --sms as a last resort,
   not a first move: reaching auth.ResendCode at all proves the first send
   already used a non-SMS channel, so asking for SMS on top of that is what
   exhausted the number's remaining options. Default stays off.

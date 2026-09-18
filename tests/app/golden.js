@@ -6,11 +6,8 @@
  * anything missing or renamed since the commit that seeded this file?" is a
  * question a pixel diff answers by accident and a text diff answers on
  * purpose - a renamed button or a dropped landmark is a line in `git diff`,
- * not a percentage. See issue 47, plan.md, "R0a planned: the evidence, the
- * sweep, and the structural goldens", Decided 1-2, for the format and the
- * normalisation rules, and "Decided 1, revised: what a golden captures for
- * the largest states" for rule A, rule B and sharding - this file implements
- * both exactly and does not repeat the reasoning.
+ * not a percentage. The normalisation rules and the format are implemented
+ * directly below (rule A, rule B) rather than repeated here.
  *
  * Usage:
  *   node tests/app/golden.js                 compare every state, unchanged
@@ -48,11 +45,11 @@ const SHARD = shardArg
     })()
   : null;
 
-/** The file name a state's golden is written under - `parity.js:208`'s own
- *  rule, so a state id and its golden's basename always agree by eye. */
+/** The file name a state's golden is written under - the deleted `parity.js`'s
+ *  own rule, so a state id and its golden's basename always agree by eye. */
 const slugOf = (id) => id.replace(/\W+/g, '_');
 
-/* ---------- normalisation (plan.md, "R0a planned", Decided 1) ---------- */
+/* ---------- normalisation ---------- */
 
 /* Kept, in this fixed order, after role and name. elementHandle,
  * backendNodeId and loaderId are poison - a per-run function/id/uuid that
@@ -101,12 +98,12 @@ function normUrl(u) {
  * children}`, recursively - `attrs` is an ordered `[key, value]` list in
  * `KEEP_KEYS`'s fixed order, `url` already cut to its hash.
  *
- * Rule 3 (Decided 1, unchanged) runs here, first, as a tree transform: a
+ * Rule 3 runs here, first, as a tree transform: a
  * StaticText child that is the only child, has no children of its own, and
  * whose name equals its parent's is dropped - the exact shape of a joined
  * text node, kept apart from the split-text-node signal two or more
  * StaticText children carry (`CLAUDE.md`, "port the live app's text-node
- * structure"). Order matters (Decided 1, revised): a signature (below) is
+ * structure"). Order matters: a signature (below) is
  * computed on this already-cleaned tree, never on the raw one - computing it
  * first would group a joined text node with a split one.
  */
@@ -130,7 +127,7 @@ function clean(node) {
   return { role: node.role, name, attrs, children: rawChildren.map(clean) };
 }
 
-/* ---------- rule A: same-shape sibling elision (Decided 1, revised) ---------- */
+/* ---------- rule A: same-shape sibling elision ---------- */
 
 /** Names are excluded at every depth; attribute VALUES are not - two rows
  *  differ in their signature the moment anything but their text differs, so
@@ -180,10 +177,10 @@ function elisionOf(children) {
   return { keep, summaryAt };
 }
 
-/* ---------- rule B: a cap on every accessible name (Decided 1, revised) ---------- */
+/* ---------- rule B: a cap on every accessible name ---------- */
 
 /**
- * `namelen`/`namehash` are appended after Decided 1's fixed key order, and
+ * `namelen`/`namehash` are appended after the fixed key order, and
  * appear only when the cap fires, so an uncapped line is byte-identical to
  * what rule B does not touch. The hash is over the *whole* collapsed name,
  * which is what makes the rule fail-closed - truncating past position 64
@@ -330,7 +327,7 @@ function compareGolden(id, wantText, gotText, ok) {
  * `KEEP_KEYS`, `sigOf`, `lineFor` and `controlLine` stay unexported: each is
  * used internally (by `clean`, `elisionOf`, `serializeTree` and the
  * `require.main` capture path respectively) but nothing outside this file
- * ever called the export directly (issues/phase-8, B4-1 - a `git grep`
+ * ever called the export directly (a `git grep`
  * outside this file found none). `serializeTree` itself stays exported
  * because `golden.test.mjs` now exercises it directly, pinning the two
  * output shapes rule A and rule B produce together. */
@@ -354,7 +351,7 @@ if (require.main === module) {
   const rep = reporter();
   const { ok } = rep;
 
-  /* ---------- arrival (plan.md, "R0a planned", Decided 2) ---------- */
+  /* ---------- arrival ---------- */
 
   const captureLang = async (page, d) => {
     const snap = await page.accessibility.snapshot();
@@ -364,9 +361,9 @@ if (require.main === module) {
     return { tree, controls };
   };
 
-  /** Polls for the toast a `timed` state's `enter` raised. Since B8's D1
-   *  (the blanket reduced-motion kill) the toast's own entrance transition is
-   *  one of the stays this app turns off too, so under the driver's emulated
+  /** Polls for the toast a `timed` state's `enter` raised. D1
+   *  (the blanket reduced-motion kill) is why the toast's own entrance
+   *  transition is one of the stays this app turns off too, so under the driver's emulated
    *  reduced motion it is up within a frame of the click that raised it -
    *  which makes this poll cheap, not wrong: it is still the assertion in
    *  place of the coin flip a fixed pause would be, for a machine slow enough

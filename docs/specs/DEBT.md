@@ -34,6 +34,17 @@ one GitHub issue per entry (outlives the task but not in the tree, needs
 post-migration review files issues *from* this register instead); the
 READMEs (a reader's document, not a maintainer's).
 
+**What does not belong here.** A pure refactor question about the rewrite's
+own code, with no live-app counterpart, does not fit this register: it
+cannot fill the `Where`/`What`/`Why deferred`/`How to verify` shape (there is
+no live behaviour to cite, and a hash-verified entry with no live-code
+citation weakens the check that every entry here names real, still-current
+source), so it stays a named, open question instead. The `Panel.svelte`/
+`.ffilter`/`.tablenav` extraction question is the standing example -
+`TableRows`/`SectionHead` are not `.panel` copies, so the extraction is
+narrower than it looks, and it is still open (`CLAUDE.md`'s campsite rule is
+the test for whether it is ever worth doing).
+
 **The live sources were deleted at R0c (`23c00a6`)**; `git show
 23c00a6^:app.js` (or `:style.css`, `:index.html`) reads them at their final
 state. A line citation below with no other hash refers to that state; a
@@ -47,11 +58,12 @@ The live app was wrong; the rewrite copied it; parity was the reason.
 
 ## Divergences found at the deletion (R0c sweep), owed a decision at Phase 8
 
-Commissioned by the repository owner before R0c's deletions (`issues/47/
-context.md`, decision 11, 2026-09-16): one more deliberate pass over
-everything the migration deletes, read against `app/src/` for behaviour no
-surviving instrument would notice. Full record: `issues/47/sweep.md`, written
-while HEAD was `7a33c22`. **None of these blocked the deletion** - the owner's ruling was
+Commissioned by the repository owner before R0c's deletions (`git show
+92d6a4b:issues/47/context.md`, decision 11, 2026-09-16): one more deliberate
+pass over everything the migration deletes, read against `app/src/` for
+behaviour no surviving instrument would notice. Full record: `git show
+92d6a4b:issues/47/sweep.md`, written while HEAD was `7a33c22`. **None of
+these blocked the deletion** - the owner's ruling was
 that a finding here is recorded, not fixed, in R0c; reviewing and addressing
 each is Phase 8 work. Unlike section 1, these are not known to be *deliberate*
 parity choices - they are accidental losses or additions the sweep caught
@@ -72,8 +84,8 @@ touched, each one bounded (`CLAUDE.md`'s campsite rule) to more than a nit
 can fix in the batch that found it: a public-contract change, a new spec
 sentence, a new `app/src/ports/` surface, or (D27) a layout redesign the
 owner's own scope fence bars this task from doing - none of which fits
-alongside the nit-sized fixes `issues/phase-8/nits.md` cleared in the same
-pass (`plan.md`, "Rows this plan moves to Deferred"). Entered in the commit
+alongside the ~103 one-line review findings the terminal batch cleared in
+the same pass. Entered in the commit
 that makes the deferral decision, per this file's own rule above; paid off
 by whichever task lands the real fix, most likely the consistent-storage
 ticket (D24), a dedicated batch (D25, D26), or the UI/UX ticket (D27).
@@ -96,9 +108,9 @@ ticket (D24), a dedicated batch (D25, D26), or the UI/UX ticket (D27).
   timestamped key grows `localStorage` without bound, and dropping `.bad`
   the moment a read succeeds discards the one copy of the first loss before
   anyone could reach it - plus a way for a person to actually reach a
-  backup at all, which today has no UI anywhere. `issues/phase-8/context.md`
-  already routes ".bad-key recovery beyond a notice" to the consistent-
-  storage ticket; this is that same design question, not a second one.
+  backup at all, which today has no UI anywhere. The consistent-storage
+  ticket already owns ".bad-key recovery beyond a notice"; this is that same
+  design question, not a second one.
 - **How to verify the fix**: corrupt `dhloot.lists.v2` twice in a row (a
   plain write of unparsable text, then - after the app has re-validated the
   key once, clearing `unreadable` - corrupt it again) and confirm two
@@ -157,7 +169,7 @@ ticket (D24), a dedicated batch (D25, D26), or the UI/UX ticket (D27).
   `position: absolute; ... transform: translate(-50%, -50%)` - but unlike
   `.homebtn`, both buttons sit flush against an editable or interactive
   neighbour, so the extended target spills into it. Measured on this host at
-  1180x900 (`dist/`, real Chromium, issues/phase-8 B12d): `.note-x::after`
+  1180x900 (`dist/`, real Chromium): `.note-x::after`
   extends **7px** into the note `<textarea>` immediately below it
   (`.nfield`'s label/textarea pair, `ListPage.svelte`); `.warn-x::after`
   extends **2px** above the notice box's own top edge (`.warn`,
@@ -180,4 +192,244 @@ ticket (D24), a dedicated batch (D25, D26), or the UI/UX ticket (D27).
   against its neighbour, at 1180x900) and confirm zero overlap in both
   directions, with the target still at 44x44 and the button unmoved in
   every other respect.
+
+### D30 - `.card-media`'s focus ring at `.full`/`.compact` is unconfirmed by any instrument
+
+- **Where**: `app/src/components/RecordCard.svelte`, the `.card-media`
+  `outline-offset: -2px` rule.
+- **What**: nothing in the repository can confirm the ring is actually drawn
+  inside `.card` at both `.full` and `.compact`: the sweep's focus walk reads
+  computed style (which reports a ring an ancestor clips, not whether it is
+  visible), the goldens read structure only, and axe checks neither. The
+  `-2px` offset was reasoned from `.card`'s `overflow: clip`, never
+  instrumented.
+- **Why deferred**: needs a human eye, not a new gate - the failure mode (a
+  ring clipped by an ancestor) is exactly the class no automated instrument
+  here can see.
+- **How to verify the fix**: a human check at `#/i/ci1` and
+  `#/tables/core_item`, tabbing to a card's image and confirming the ring is
+  visible in both card sizes.
+
+### D31 - `dict.ts`'s storage-corruption message is unactionable without devtools
+
+- **Where**: `app/src/lib/dict.ts`, `badStorage` (`ru`, `en`).
+- **What**: tells a reader their unreadable data is kept "under a separate
+  key" with no way to act on that outside devtools.
+- **Why deferred**: product copy, routed to the UI/UX ticket rather than
+  rewritten as a nit.
+
+### D32 - the reduced-motion rule zeroes duration but not delay
+
+- **Where**: `app/src/styles/tokens.css`, the `prefers-reduced-motion`
+  block.
+- **What**: zeroes `animation-duration`/`transition-duration` but not the
+  paired `-delay` properties.
+- **Why deferred**: zero sites in the app are affected today; fixing the
+  rule anyway is a policy edit, not a bug fix for a live symptom.
+
+### D33 - the `#/tables/frames` legacy alias has no fixture row
+
+- **Where**: `docs/specs/ROUTES.md` (documents the alias);
+  `docs/fixtures/urls/routes.json` (only carries `other_frames` rows).
+- **What**: `hash.test.ts` covers the route directly, so nothing is
+  untested, but the alias has no row in the fixture that is supposed to
+  enumerate every documented address - a completeness gap in a file
+  `CONTRACTS.md` freezes as a public contract, which needs its own
+  justification to touch.
+- **Why deferred**: a fixture change needs the same public-contract
+  handling as any other `docs/fixtures/` edit, not a nit-sized fix.
+
+### D36 - two accessible names reproduce the live app's markup on purpose, unrecorded
+
+- **Where**: `app/src/components/FilterBar.svelte` (a filter pill's
+  accessible name, `"Ранг 1 ×"` - `title` becomes the description, the
+  visible content the name); `app/src/components/ListPage.svelte` (an owned
+  list's row/card name, `"Лавка в порту 0 Список пуст"`).
+- **What**: both names read as run-together, mid-sentence noise to a screen
+  reader. Both reproduce exactly what the deleted live app emitted, and both
+  move goldens (`tests/app/snapshots/_tables_eq_weapon_filtered.txt`,
+  `_lists_two_lists.txt`, among others) if changed. A cleaner shape exists
+  for the filter pill (`aria-hidden="true"` on the dismiss glyph would read
+  `"Ранг 1"` and keep the rest as the description) but it diverges from
+  parity, so it was never applied.
+- **Why deferred**: a product decision, not a structural cleanup - whether
+  to trade parity with the live app for a better accessible name is the
+  product pass's call, not a review finding to act on unasked.
+- **How to verify the fix**: change the markup so each name reads as
+  intended text (e.g. `aria-hidden` on the dismiss glyph, a visually-hidden
+  span reordering the list-card name), re-seed the affected goldens, and
+  confirm the golden diff is exactly the accessible-name lines.
+
+### D37 - the undo toast's action is unreachable by keyboard in practice
+
+- **Where**: `app/src/components/Toast.svelte` (the `$effect` that shows the
+  toast, no focus management); `app/src/state/app.svelte.ts` (the 7000 ms
+  duration).
+- **What**: the toast is a `popover="manual"` element at the end of the
+  document with no focus moved into it on show, so a keyboard user has to
+  tab through the rest of the page to reach the undo button before the
+  7000 ms window closes it - realistically unusable from the keyboard.
+- **Why deferred**: fixing it properly means moving focus into the toast on
+  show, which is intrusive for a transient notice that is not always an
+  error; judged not worth it as a small change. A real fix belongs with the
+  UI/UX ticket's broader focus-management pass (`docs/specs/DEBT.md`,
+  "Routed elsewhere, not paid").
+- **How to verify the fix**: trigger an undoable action with the keyboard
+  only, and confirm the undo control is reachable (and used) before the
+  toast's own timeout closes it.
+
+### D41 (idea, not built) - the apostrophe splits perfectly along the data's ingest seam, unreconciled
+
+- **Where**: `data.js`, and therefore `data.json`, `catalog.csv` and
+  `i/*.html`.
+- **What**: all 381 equipment records (`eq`, ids `q*`/`f*`) use the
+  typographic apostrophe (U+2019); all 710 loot-table records use the ASCII
+  apostrophe. Zero records mix the two - two ingests never reconciled, not
+  editorial drift. Visible in search: a query can return a U+2019 name and
+  an ASCII-apostrophe name in the same result list.
+- **Why deferred**: a data-pipeline question, not a Phase 8 batch - `#/search`
+  already folds the difference for matching (`app/src/lib/search.ts`
+  `foldQuery`, "O1" in the same review), so this is now purely cosmetic and
+  defensible to defer indefinitely once that folding is in place, or to
+  resolve the other way (normalise everything *to* U+2019) without losing
+  anything.
+- **How to verify the fix**: one substitution over the `en`/`ende` fields of
+  `d.eq` in `data.js`, rebuild the derived files, and re-seed the six
+  affected goldens (`_search_searched.txt`, `_search_a_row_ticked.txt`,
+  `_tables_eq_armor.txt`, `_tables_eq_secondary.txt`, `_tables_eq_weapon.txt`,
+  `_tables_eq_weapon_panel_open.txt`).
+
+## Routed elsewhere, not paid
+
+Findings a review raised that were routed to an existing ticket, a new task
+of their own, or a named decision, instead of becoming a `DEBT.md` entry or
+being dropped - recorded here so the routing itself is not lost.
+
+**Consistent storage** (a separate ticket): a versioned envelope with
+validation and migration, per-entry reconciliation, `dhloot.lang`/`home`/
+`warn` not watched cross-tab, a `save()` debounce, a local `.json` export.
+
+**UI/UX** (a separate ticket): a focus-management pass, the roll live region
+reading four whole cards, money-picker discoverability, a Search help panel,
+an inlined first-paint skeleton, boundary reporting.
+
+**Own tasks** (costed rather than folded into a review batch): generated
+image derivatives (`img/` ships 640x640 originals - 876 files, 30 MB, mean
+34,719 B - into 60px rows and 168px tiles; scrolling `#/tables/eq_weapon` in
+grid view pulls ~11 MB against a 243 kB first load; the fix is a generated
+~192px derivative under a new asset path, which `CONTRACTS.md` would
+freeze); splitting `ListPage.svelte`; decomposing `AppState`; `Record_.tier`
+-> `voaTier`; branded ids; one home for the shared-link wire constants;
+publishing the artefact `check` proves; a replacement heavy-run lock, weighed
+against the Playwright decision (`docs/DECISIONS.md`, "Playwright: not now")
+beside it, since a second real-browser dependency would need a guard of its
+own too.
+
+**Open, from the R0c sweep's own findings, never picked up**: B12.1's nits
+2 and 6, and B12's nits 4 and 5 - text that survives only in the retired
+task's history (`git show 92d6a4b:issues/47/handoff.md`, "Deferred"); the
+`.selbox:has(:focus-visible)` keyboard question (`TableRows.svelte:222-226`
+- nothing today drives a row checkbox by keyboard, so the rule's own value
+is unconfirmed).
+
+## Other live defects, deferred with a reason
+
+Not a phase-8 review finding - caught by a later task's own review, same
+deferral discipline.
+
+### D34 - a generated share stub's subtitle is a path only for two of the fifteen tables
+
+- **Where**: `tools/build-share-pages.js`, `provenance()`; `docs/specs/
+  FEATURES.md` "Records" ("a generated share stub's subtitle" is held to the
+  same path rule as the record page's own heading line).
+- **What**: `provenance()` returns a full breadcrumb only for frame and
+  starting records; every other record's stub keeps the old `Предмет · Core
+  · №12` tag form instead of a path.
+- **Why deferred**: making it a path for all 1091 records needs a full stub
+  regeneration plus its own public-contract commit (`i/*.html` is generated,
+  frozen output) - not a nit-sized fix in a batch that touched only the two
+  tables that already agree.
+- **How to verify the fix**: regenerate the stubs and confirm every
+  `i/<id>.html` subtitle reads as a full table path, matching the record
+  page's own heading line for the same id.
+
+## Hook and tooling defects, kept open
+
+Not a parity question and not a phase-8 review finding - a real gap in a
+harness or tool this repository owns, recorded rather than silently
+tolerated.
+
+`gitleaks-action@v2` and the three Pages actions in `ci.yml` target Node 20
+and are forced onto Node 24 by the runner - two standing, pre-existing CI
+annotations, neither an error. Worth filing only if one starts failing
+rather than warning; not filed today.
+
+### D28 - `.hook-state.json` has no defence against a torn read or a concurrent read-modify-write
+
+- **Where**: `lib.mjs`'s `loadState()`/`saveState()`.
+- **What**: two gaps, neither yet reproduced end to end. A `loadState()`
+  parse failure (a torn read mid-write) makes the next `saveState()` hold
+  only the writer, discarding every other session's record. Two sessions
+  racing a read-modify-write on the same file can each save over the
+  other's update.
+- **Why deferred**: needs a Windows rename-over-open-file probe first, to
+  know whether the platform's own atomic-rename behaviour already closes
+  the torn-read half before designing a fix for the rest.
+- **How to verify the fix**: force a parse failure mid-write and confirm
+  every other session's entry survives; force two saves to race and confirm
+  neither is silently dropped.
+
+### D29 - `node tests/dataint.js` is not wired into `npm run check`
+
+- **Where**: `package.json`'s check chain; `tests/dataint.js`.
+- **What**: the `img/`/`og/` orphan checks, the duplicate-bytes invariant,
+  and the artwork-sharing rule only run when a prompt explicitly names
+  `run-all.js dataint` - not on every check. The old objection (its sibling
+  `noart` needed puppeteer) is moot: `tests/noart.js` no longer exists.
+- **Why deferred**: undecided whether the added second or two per check is
+  worth paying on every run rather than only when artwork changes.
+- **How to verify the fix**: `npm run check` fails when `dataint.js` would,
+  with no separate `run-all.js dataint` invocation needed.
+
+### D38 (idea, not built) - nothing pins `build-share-pages.js`'s equipment vocabulary to `i18n.ts`'s
+
+- **Where**: `app/src/lib/i18n.ts` (claims to be "the single place those
+  words live"); `tools/build-share-pages.js` (`EQ_TYPE`, `EQ_TRAIT`,
+  `EQ_RANGE`, `EQ_DT`, `EQ_CLS`, `EQ_BURDEN` - a second, unguarded copy).
+- **What**: `tests/derived.js` regenerates the stubs from
+  `build-share-pages.js` and compares against disk, so it catches a stale
+  stub, but nothing checks the generator's own tables against `i18n.ts`'s.
+  A renamed equipment word would ship as an app that says one thing and a
+  share preview that says another, silently.
+- **Why deferred**: an idea, not built - a real guard is a new derived-test
+  assertion (that the two tables agree), which is a separate item, not a
+  hygiene-pass fix.
+- **How to verify the fix**: rename one equipment word in `i18n.ts` only
+  and confirm `npm run check` fails on the mismatch.
+
+### D39 (idea, not built) - `tests/` and `tools/` sit outside both lint and format, on a rationale that no longer holds
+
+- **Where**: `eslint.config.mjs`'s ignore comment for `tests/`/`tools/`
+  ("an older style, no lint config of their own to satisfy"); `.prettierignore`.
+- **What**: that reasoning was true of the suites R0c deleted; what is left
+  under `tests/app/` (220 KB across ten files) is new code written during
+  the migration, and it is where several review findings (stray Russian
+  messages, stale comments) all lived - not a coincidence, since nothing
+  mechanical reads those files today.
+- **Why deferred**: bringing `tests/app/` under Prettier is a whole-tree,
+  pure-whitespace diff; a candidate follow-up, sequenced after the language
+  sweep (`docs/specs/META.md` section 6) or not at all.
+- **How to verify the fix**: `npx prettier --check tests/app` passes with
+  no manual reformatting, and the ignore comment states the real reason
+  (outside every tsconfig) rather than the retired one.
+
+### D40 (idea, not built) - `tests/run-all.js` does not regenerate `i/` when it is missing
+
+- **Where**: `tests/run-all.js`.
+- **What**: a cold clone running `run-all.js` outside `npm run check` (which
+  does shell out to `node tools/build.js`) loses `derived`, `dataint`,
+  `craft` and `stub` to a missing `i/` folder. A one-time `node
+  tools/build.js` call when `i/` is absent would close it.
+- **Why deferred**: an idea, not a defect hit in practice - reopen only if
+  the friction is actually hit.
 

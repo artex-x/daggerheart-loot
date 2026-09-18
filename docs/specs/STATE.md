@@ -25,7 +25,7 @@ instead - that is what the `f_` segment is for.
 | `dhloot.lists.v2` | lists, with contents, per-entry meta and both notes |
 | `dhloot.lists.v1` | the pre-split shape. Read once and migrated into v2, then **left untouched** so a rollback loses nothing. Never delete it. |
 | `dhloot.lang.v1` | `ru` or `en` |
-| `dhloot.home.v1` | the pinned starting section, as a full hash - a section, or a named table (`#/tables/<table>`); reading also accepts a bare `#/tables` from an older pin, but the app itself always writes the named form |
+| `dhloot.home.v1` | the pinned starting section, as a full hash - a section, or a named table (`#/tables/<table>`); reading also accepts a bare `#/tables` from an older pin, but the app itself always writes the named form. A stored `#/tables/frames` (the legacy alias, `hash.ts` `TABLE_ALIASES`) normalises to `#/tables/other_frames` on read only, with no write-back; the home control compares the active route against the canonical path, and the next explicit save writes the canonical id (`app.svelte.ts` `readHome`). |
 | `dhloot.prefs.v1` | `{ view: 'list' \| 'grid' }` |
 | `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |
 | `dhloot.probe` | written and removed to test whether storage works at all |
@@ -98,3 +98,10 @@ address rather than orphaning the page.
 
 `keepOpen` holds what the person folded or unfolded by hand, so a redraw does
 not undo it.
+
+Svelte does not remount a page component between two addresses of the same
+route kind: `App.svelte`'s `{#if}/{:else if}` chain tears a branch down only
+when the *matched branch itself* changes, not on every address change within
+it - so `TablesPage`'s own `$state` survives a move between two `tables`
+addresses. Any design reasoning about state lifecycle across a route change
+has to check which branch changed, not the address string.
