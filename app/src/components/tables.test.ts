@@ -570,7 +570,7 @@ describe('the filter', () => {
   });
 
   it('hides reset and the copy-link button while the filter is empty, and keeps both reachable with the panel folded', async () => {
-    const { container } = render(App, { env: wond() });
+    render(App, { env: wond() });
     expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ссылка на фильтры' })).not.toBeInTheDocument();
 
@@ -584,10 +584,12 @@ describe('the filter', () => {
        and .flink outside FilterBar's {#if open} block is that folding the
        panel does not take them with it. */
     await userEvent.click(toggle);
-    /* Scoped to the panel: the pill above it also reads "Предметы" now that
-       P2's pill fix hid the pill's own "×" from its accessible name, and the
-       pill is the one control here that is supposed to survive the fold. */
-    expect(container.querySelector('.ffilter')).toBeNull();
+    /* Role level, not a class probe: the pill above the panel also reads
+       "Предметы" now that P2's pill fix hid the pill's own "×" from its
+       accessible name, and the pill is the one control here that is
+       supposed to survive the fold - so one match, not zero, is what proves
+       the panel's own copy is gone. */
+    expect(screen.queryAllByRole('button', { name: 'Предметы' })).toHaveLength(1);
     expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
   });

@@ -14,7 +14,21 @@
      had no such effect before this batch; verified by the golden shards
      that none of the states they cover exercises "open a record, then
      navigate without closing it" in a way that would have shown the
-     difference. */
+     difference.
+
+     B10-N1, paid off: the effect below watches `app.navigations`, not
+     `app.hash` - a rejected alternative worth keeping, since this is now
+     the one copy of what was `TablesPage`'s own reasoning before
+     extraction. Route strings cannot tell one table from another on their
+     own - they all read "tables" (`route.kind`) - which is what would make
+     a hash-only move look tempting, to catch a filter pick that stays on
+     the same table's own address. It is rejected anyway: `app.hash` also
+     changes on a table-to-table move made through a filter pick
+     (`replace()`), which must not close the modal, so the address alone
+     cannot tell the two kinds of move apart. `app.navigations` (`app.svelte.ts`
+     :136-145) is what already makes exactly that distinction - `go()`
+     counts, `replace()` does not - which is why the effect watches it
+     instead of the address. */
   import { untrack } from 'svelte';
   import type { Snippet } from 'svelte';
   import RecordModal from './RecordModal.svelte';
@@ -25,14 +39,27 @@
 
   interface Props {
     app: AppState;
-    index: Index | null | undefined;
+    /* B10-N3, paid off: not `| undefined` - seven callers pass
+       `const index = $derived(app.index)`, typed `Index | null`
+       (`app.svelte.ts`); the eighth (`SharedListPage`) passes a
+       non-nullable `Index`. Nothing can pass `undefined`, and the prop is
+       not optional either. */
+    index: Index | null;
     /**
      * The live `contextNote` block, forwarded to the open record's "Copy
      * text" - only `ListPage` has one, and only as a function: which entry's
      * note applies depends on which record is open, which is this
      * component's own state and not the caller's to read.
+     *
+     * B10-N2, paid off: the function's own return type carries no
+     * `| undefined` - `entryNoteBlock` (`lib/share.ts`) always returns
+     * `ShareBlock[]`, never `undefined` (`share.test.ts` pins `[]` for an
+     * entry with no visible note). The optional *call* below, `extra?.(open)`,
+     * already yields `| undefined` on its own when `extra` itself is unset -
+     * that is where the `undefined` `RecordModal`'s own `extra` prop wants
+     * comes from, not from this function's return type.
      */
-    extra?: ((it: Record_) => readonly ShareBlock[] | undefined) | undefined;
+    extra?: ((it: Record_) => readonly ShareBlock[]) | undefined;
     /** Draws the page; receives `openRecord` to pass to a card's `onopen`. */
     children: Snippet<[(r: Record_) => void]>;
   }

@@ -169,10 +169,13 @@ textarea::placeholder {
    which is what `PrintCard.svelte`'s `fit()` needs (it reads layout back
    right after setting a style, with no frame to wait out); a longer
    non-zero duration was tried first and rejected for exactly the opposite
-   reason (`docs/specs/DEBT.md`, D1's own history). `RecordCard.svelte`'s and
-   `TablesPage.svelte`'s own two named `animation: none` rules stay - they
-   predate this and are now redundant with it, but harmless, and removing
-   them is not part of this fix. */
+   reason - a non-zero `transition-duration` still starts a running
+   `CSSTransition` whose value at t=0 is the *old* one, not the end state,
+   which is exactly what `fit()`'s synchronous read-back cannot tolerate
+   (D1's history, before the entry it paid off was deleted). `RecordCard.
+   svelte`'s and `TablesPage.svelte`'s own two named `animation: none`
+   rules stay - they predate this and are now redundant with it, but
+   harmless, and removing them is not part of this fix. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

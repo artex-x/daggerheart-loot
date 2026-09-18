@@ -124,6 +124,16 @@ describe('a critical success', () => {
        out; nothing must invent a sixth rarity to bump into. */
     expect(bumpUp('legendary')).toBe(null);
   });
+
+  it('bumps every rarity but the top one (B5-N9)', () => {
+    /* `BUMP` (alt.ts) is a `Partial<Record<Rarity, keyof Dict>>`, so a sixth
+       rarity added to both the union and `RARITY_ORDER` without a matching
+       `BUMP` entry would make `bumpUp` return `null` for it silently, the
+       same shape as the top's own legitimate `null` above. This does not
+       stop that at compile time, but it does mean the day it happens, this
+       fails instead of nobody noticing. */
+    for (const r of RARITIES.slice(0, -1)) expect(bumpUp(r), r).not.toBe(null);
+  });
 });
 
 describe('the rarity chips', () => {

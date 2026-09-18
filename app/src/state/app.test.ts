@@ -16,7 +16,7 @@ import type { StoredList } from '../lib/lists.js';
 import { LOOT_KINDS } from '../lib/std.js';
 import { KINDS } from '../lib/types.js';
 import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
-import type { CompressPort, Env } from '../ports/index.js';
+import type { CompressPort, Env, RouterPort } from '../ports/index.js';
 import { AppState } from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -27,6 +27,46 @@ const at = (hash: string, over: Partial<Env> = {}): Env =>
 
 /** A store already holding something, the way a returning visitor's would. */
 const stored = memoryStorage;
+
+/** `memoryRouter`'s own `navigate()` announces unconditionally (its doc
+ *  comment says why: it exists to catch `AppState.navigations` gaps, not to
+ *  model this quirk). A real browser fires no `hashchange` at all for
+ *  `location.hash = <the value it already holds>` - the one behaviour B6-R3
+ *  needs a double for, so `navigate()` here only announces on an actual
+ *  change, and `fire()` stands in for a hashchange the browser dispatches on
+ *  its own (a Back/Forward landing on an address, whether or not it happens
+ *  to match the current one). */
+function quirkyRouter(start: string): RouterPort & { fire: (h: string) => void } {
+  let hash = start;
+  const listeners = new Set<(h: string) => void>();
+  return {
+    hash: () => hash,
+    navigate(h) {
+      if (h === hash) return;
+      hash = h;
+      for (const fn of listeners) fn(hash);
+    },
+    replace(h) {
+      hash = h;
+    },
+    onChange(fn) {
+      listeners.add(fn);
+      return () => {
+        listeners.delete(fn);
+      };
+    },
+    base: () => 'https://example.test/',
+    hosted: () => true,
+    canGoBack: () => true,
+    back() {
+      /* Unused by this suite's one test. */
+    },
+    fire(h) {
+      hash = h;
+      for (const fn of listeners) fn(hash);
+    }
+  };
+}
 
 describe('settings are read as untrusted data', () => {
   it('takes a remembered language', () => {
@@ -64,12 +104,15 @@ describe('settings are read as untrusted data', () => {
   });
 
   it('accepts a bare #/tables too, the one shape the app itself no longer writes', () => {
-    /* Live's own homeAllows (app.js 1124-1130) keeps this - `tables` is a
-       tab in TAB_LIST, not only a table name - so a pin written before this
-       fix, or by hand, still opens rather than silently falling back
-       (B12.1 nit 1/4: the rewrite used to refuse it and lose the pin at the
-       next boot). The writer below never produces this shape any more -
-       see 'pinning'. */
+    /* Live's own homeAllows (app.js 1124-1130) keeps this - `tables` is one
+       of the section tabs its own list checks, not only a specific table
+       name (B2-4, paid off: that list was `TAB_LIST`, an identifier that
+       lived in app.js alone and has no equivalent anywhere in this rewrite,
+       so it is named here in prose rather than cited as something a reader
+       could go find in this tree). A pin written before this fix, or by
+       hand, still opens rather than silently falling back (B12.1 nit 1/4:
+       the rewrite used to refuse it and lose the pin at the next boot). The
+       writer below never produces this shape any more - see 'pinning'. */
     const app = new AppState(at('', { storage: stored({ [HOME_KEY]: '#/tables' }) }));
     expect(app.home).toBe('#/tables');
   });
@@ -466,6 +509,26 @@ describe('replace vs navigate', () => {
     app.start();
     router.navigate('#/lists');
     expect(app.navigations).toBe(1);
+  });
+
+  it("does not swallow a later Back/Forward landing on go()'s own unchanged target (B6-R3)", () => {
+    /* go(X) used to set #expectHash unconditionally, even when X is already
+       the address showing - a real browser then fires no hashchange for that
+       write, so nothing ever cleared it. A subsequent Back/Forward landing on
+       exactly X arrived past that guard and was swallowed as if it were go()'s
+       own echo, though it never was: go() itself changed nothing that time. */
+    const router = quirkyRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+
+    app.go('#/lists');
+    expect(app.navigations).toBe(1);
+
+    app.go('#/lists'); // same target go() already wrote - real browser: silent
+    expect(app.navigations).toBe(2);
+
+    router.fire('#/lists'); // a genuine Back/Forward landing on that address
+    expect(app.navigations).toBe(3);
   });
 });
 

@@ -131,6 +131,11 @@
                still keeps the node for; the image is identical, so nothing
                visible differs. -->
           {#key shown.it}
+            <!-- B10-N5: the third near-copy of StdPanel.svelte's and
+                 AltPanel.svelte's own `RecordCard` wrapping, a different
+                 enough shape (one result, not a pool through `OrGrid`) that
+                 the case for extracting all three - and against it - is
+                 written down once, at StdPanel.svelte's copy. -->
             <RecordCard
               variant="compact"
               it={shown.it}

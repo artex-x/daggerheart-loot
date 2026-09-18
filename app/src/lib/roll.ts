@@ -11,8 +11,10 @@ import type { Dict } from './dict.js';
 import { clamp } from './numField.js';
 import type { Rarity } from './money.js';
 
-/** Re-exported so every existing `from './roll.js'` import (`roll.test.ts`,
- *  and any future caller of the Core clamp) keeps working unchanged. */
+/** Re-exported because `roll.test.ts` imports it alongside the engines it
+ *  exercises - `coreRoll` (below) clamps its dice total into the 1-60 table
+ *  range with it, and the test pins that clamp along with everything else in
+ *  the file. The one real caller, not a speculative future one. */
 export { clamp };
 
 /** A source of randomness. `Math.random` in the app, something fixed in tests. */

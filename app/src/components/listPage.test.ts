@@ -393,6 +393,42 @@ describe('the list note', () => {
       '#/l/' + encodeList({ ...listA, note: '12345678901234567890' }, true)
     );
   });
+
+  it('flushes a pending edit on visibilitychange, once, even if pagehide also fires (B6-R4)', async () => {
+    /* pagehide alone missed the mobile-Safari case where a hidden tab is
+       discarded with no pagehide at all; visibilitychange is the more
+       reliable last callback there. Both firing for the same teardown must
+       not write the address twice. */
+    const router = memoryRouter('#/lists/a');
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { router, storage }) });
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
+    });
+    const replaceSpy = vi.spyOn(router, 'replace');
+
+    const pub = screen.getByPlaceholderText('Например: лавка закрыта до утра');
+    await userEvent.clear(pub);
+    await userEvent.type(pub, 'flushed', { delay: null });
+    expect(replaceSpy).not.toHaveBeenCalled(); // still inside the 150ms debounce
+
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'hidden',
+      configurable: true
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(replaceSpy).toHaveBeenCalledTimes(1); // flushed synchronously, no wait
+    expect(router.hash()).toBe('#/l/' + encodeList({ ...listA, note: 'flushed' }, true));
+
+    // pagehide firing right after must find nothing left to flush
+    window.dispatchEvent(new Event('pagehide'));
+    expect(replaceSpy).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'visible',
+      configurable: true
+    });
+  });
 });
 
 describe('the roll panel', () => {

@@ -11,6 +11,7 @@ import { hashRouter, memoryRouter } from './router.js';
 import { browserShare } from './share.js';
 import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 import { browserData, fakeData, noData } from './data.js';
+import { browserImage } from './image.js';
 import { browserEnv, fakeEnv } from './index.js';
 
 describe('storage that works', () => {
@@ -300,6 +301,43 @@ describe('sharing', () => {
     const file = (): Promise<File> => Promise.reject(new Error('404'));
     expect(await browserShare(nav).share({ ...what, file })).toBe('shared');
     expect(calls[0]?.url).toBe(what.url);
+  });
+});
+
+describe('the picture download fallback (D14)', () => {
+  /* B8-R4: `pngOf` cannot run in jsdom at all (no Image, no canvas, no
+     toBlob) and stays excluded from coverage (vite.config.mts) for exactly
+     that reason - but `download` needs only the two DOM globals it actually
+     touches stubbed, `URL.createObjectURL`/`revokeObjectURL`, so it can be
+     covered here directly instead of only through a real Chrome (which
+     `tests/app/states.js`'s case 10 never reaches either - that suite runs
+     against a build that taints the canvas, so `writeImage` refuses before
+     `download` is ever called). */
+  it('clicks a hidden <a download> named for the file, then removes it', async () => {
+    const url = 'blob:test/1';
+    const createSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue(url);
+    const revokeSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
+
+    const blob = new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47])]);
+    await browserImage().download(blob, 'Спальный мешок.png');
+
+    expect(createSpy).toHaveBeenCalledWith(blob);
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    const a = clickSpy.mock.instances[0] as HTMLAnchorElement;
+    expect(a.download).toBe('Спальный мешок.png');
+    expect(a.getAttribute('href')).toBe(url);
+    expect(document.body.contains(a)).toBe(false);
+
+    /* Revoked on a delay, not immediately - a slow disk still needs the blob
+       readable after click() returns (image.ts's own comment). */
+    expect(revokeSpy).not.toHaveBeenCalled();
+
+    createSpy.mockRestore();
+    revokeSpy.mockRestore();
+    clickSpy.mockRestore();
   });
 });
 

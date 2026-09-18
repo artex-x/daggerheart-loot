@@ -20,8 +20,11 @@ import type { Chosen, LootKind } from './std.js';
 import { kindOf } from './data.js';
 import type { Record_ } from './types.js';
 
-/** The five rarities, in the order the chips show them - `roll.ts`'s own
- *  order, which `nextRarity` (used below by `bumpUp`) already walks. */
+/** The five rarities, in the order the chips show them - the same array
+ *  `roll.ts` exports as `RARITY_ORDER`, referenced rather than copied, so
+ *  this is a name for alt-table callers (`AltPanel.svelte`, `TablesPage.svelte`)
+ *  that already import the rest of their vocabulary from here, not a second
+ *  source of truth for the order `nextRarity` (used below by `bumpUp`) walks. */
 export const RARITIES: readonly Rarity[] = RARITY_ORDER;
 
 /**

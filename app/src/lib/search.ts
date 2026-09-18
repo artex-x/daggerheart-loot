@@ -121,6 +121,20 @@ const hasAny = (parts: readonly string[], needle: string): boolean =>
  * fields - see `hayFor`. Without it, each field is folded on the spot; the
  * two paths agree on every query because both fold the same fields the same
  * way, just with a cache in front of one of them.
+ *
+ * B1-N9, considered and left open: `statLine` and `hay` are two separate
+ * positional arguments, so a caller can pass a `hay` built from one
+ * `statLine` and a different `statLine` here - `hay` silently wins, since
+ * it is checked first. Unreachable today (every real caller builds both
+ * from the same `statLineFor(app.lang, app.t)` call and passes them
+ * together), so this is a shape the types allow rather than a live bug. A
+ * union third argument would make the mismatch unrepresentable, but costs
+ * more than a nit: `StatLine` and `Hay` return different types (`string` vs
+ * `readonly string[]`), so folding them into one parameter needs either a
+ * tagged wrapper or overloaded signatures, and touches every one of this
+ * function's ten-odd call sites across `SearchPage.svelte`, `TablesPage.svelte`
+ * (twice) and `search.test.ts`'s eight - past the point a one-line fix stays
+ * one line. Left as a doc clause instead of a redesign.
  */
 export function matches(
   it: Record_,

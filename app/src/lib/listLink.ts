@@ -11,9 +11,11 @@
 import { MONEY_DEFAULT, MONEY_MODES } from './money.js';
 import type { MoneyMode } from './money.js';
 
-/* Re-exported so every caller that reads a list's own money mode - `lists.ts`,
-   `ListPage.svelte`, `state/lists.svelte.ts` - keeps importing it from here
-   rather than reaching into `money.ts` for one type. */
+/* Re-exported so a list entry's shape - `MoneyMode` beside `ListEntryMeta`
+   below - reads as one import from the callers that carry both (`lists.ts`,
+   `ListPage.svelte`, `state/lists.svelte.ts`). Two of those three already
+   import other things from `money.ts` directly, so this does not spare them
+   that import - it only keeps the list-entry vocabulary in one place. */
 export type { MoneyMode };
 
 /** One entry: everything optional, older lists knew none of these fields. */

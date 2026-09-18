@@ -623,34 +623,25 @@ five-row table is authoritative, per `nits.md`'s note under its Deferred
 table). Full detail: `git show e52f5de`,
 or `issues/phase-8/handoff.md`.
 
-### B12b - production source (`app/src/**`), and the DEBT entries
+### B12b - production source (`app/src/**`), and the DEBT entries - SHIPPED `<pending, see B12b sha-citation follow-up>`
 
-**Criterion**: see the `B12b`|`B12c` seam above.
-
-**Rows** (each its own acceptance line): `B5-R3`, `B5-N5`, `B5-N6`, `B5-N8`,
+Outcome: all 25 live rows landed as real edits (`B5-N5`, `B5-N6`, `B5-N8`,
 `B5-N9`, `B5-N13`, `B5-N10/11/12`, `B6-R3`, `B6-R4`, `B6-N3`, `B6-N5`,
 `B7-N9`, `B7-N10`, `B7-N11`, `B7-N12`, `B8-R3`, `B8-R4`, `B8-N1`, `B8-N2`,
-`B10-N1`, `B10-N2`, `B10-N3`, `B10-N4`, `B10-N5`, `B1-N9`, `B2-4`.
-
-Plus one line that is not a register row: **three new `docs/specs/DEBT.md`
-entries** for the deferred live defects (`B6-R1`, `B6-R5`, `B8-N7`), written
-in the commit that makes the decision, as `DEBT.md`'s own preamble requires.
-`D1`-`D23` are all paid off and the file currently holds no entries, so the
-new ones take `D24`, `D25`, `D26` - never a reused id - under a new heading
-("Live defects found in phase-8's own reviews, deferred with a reason"),
-since the three existing headings are all migration-framed.
-
-**Gates**: `rtk npm run check`. `npm run check:built` **only** if a `.svelte`
-template or a CSS declaration lands (a comment or a type narrowing is
-neither). A `node tests/app/golden.js --only=<sub>` probe only if the
-string-vs-snapshot grep above finds a hit - in which case the row moves to
-`B12d` instead.
-
-**Risks / do-nots**: `B6-R4` adds a `visibilitychange` listener beside the
-existing `pagehide` one - it must not double-flush; `B8-R3` adds no
-`dict.ts` key; `B10-N4` adds a sentence, not a structural move; a row that
-turns out to move rendered output is a stop-and-report, not a quiet
-re-record.
+`B10-N1`, `B10-N2`, `B10-N3`, `B10-N4`, `B10-N5`, `B2-4`); `B1-N9` closed
+with no change (the union third argument touches ten-odd call sites, past
+this row's own six-call-site/no-type-gymnastics budget - a doc clause on
+`matches` records the risk instead); `B5-R3` confirmed already closed by
+B12a's census, no further action. The two behaviour fixes (`B6-R3`,
+`B6-R4`) each proved to bite with a new test, reverted and restored; every
+other row is a comment, a type narrowing, a test addition, or a doc clause,
+recorded as such rather than proved in the failing direction. Three new
+`docs/specs/DEBT.md` entries landed (`D24`-`D26`, for `B6-R1`, `B6-R5`,
+`B8-N7`) under a new, non-migration-framed heading. No row moved rendered
+output - `B8-N2`'s string change was checked against `tests/app/snapshots/`
+first and found zero hits, so it stayed here rather than moving to `B12d`.
+`npm run check:built` not run (no `.svelte` template or CSS declaration
+landed). Full detail: `git show <sha>`, or `issues/phase-8/handoff.md`.
 
 ### B12c - harness, tooling and CI
 

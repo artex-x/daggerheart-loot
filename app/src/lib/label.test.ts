@@ -169,6 +169,15 @@ describe('the line under the heading', () => {
     expect(whereFrom(rec({ src: 'dread' }), 'en')).toBe('Dread GM Toolbox');
   });
 
+  it('names the equipment slice, whichever piece (B5-N8, the last un-pinned group)', () => {
+    expect(whereFrom(rec({ src: 'core', eq: { t: 'weapon', tier: 1 } }), 'ru')).toBe(
+      'Снаряжение · Оружие'
+    );
+    expect(whereFrom(rec({ src: 'hnf', eq: { t: 'armor', tier: 1 } }), 'en')).toBe(
+      'Equipment · Armor'
+    );
+  });
+
   it('uses the concise Other breadcrumb for starters and settings', () => {
     expect(whereFrom(rec({ starting: true }), 'ru')).toBe('Прочее · Стартовые');
     expect(whereFrom(rec({ starting: true }), 'en')).toBe('Other · Starting');

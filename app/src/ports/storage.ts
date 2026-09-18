@@ -59,11 +59,17 @@ export function browserStorage(win: Window = window): StoragePort {
       }
     },
     onExternalChange(fn) {
-      /* Fires only for other tabs, which is exactly the case the merge exists
-         for: this tab already knows what it wrote. A `null` key -
-         `localStorage.clear()` - used to be dropped here; R2 treats it the
-         same as a named key, since the merge's own `mergeLists(mine, [])`
-         already answers "storage came back empty" correctly. */
+      /* Fires only for other tabs, which is exactly the case `watch()`
+         (`state/lists.svelte.ts`) exists for: this tab already knows what it
+         wrote. A `null` key - `localStorage.clear()` - used to be dropped
+         here; R2 treats it the same as a named key. `watch()` itself does no
+         merge for either shape - a matched key or `null` both call `load()`
+         plain, which reads storage fresh and replaces `this.lists` wholesale
+         (`mergeLists` is `save()`'s own, reconciling this tab's unsaved edits
+         against whatever storage holds, a different question from "what did
+         another tab just write"). A cleared key reads back as `null` from
+         `#readCurrent`, and `load()` answers that the same way a genuinely
+         empty key does: no stored lists. */
       const handler = (e: StorageEvent): void => {
         fn(e.key);
       };

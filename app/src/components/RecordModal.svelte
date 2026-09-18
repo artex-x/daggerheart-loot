@@ -102,6 +102,11 @@
       }}
     >
       {#snippet nameActions()}
+        <!-- RecordActions toasts through `app.say` directly now (the `say`
+             shim this file used to wrap it in was deleted, B5) - it still
+             reaches the reader from inside this dialog's own inertness
+             because the toast is `popover="manual"` (Toast.svelte), which
+             puts it in the top layer above this dialog. -->
         <RecordActions {app} {index} {it} row="name" />
       {/snippet}
       {#snippet actions()}

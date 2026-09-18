@@ -172,9 +172,20 @@
   });
 
   $effect(() => {
+    /* B6-R4, paid off: `pagehide` alone missed the mobile-Safari case where a
+       hidden tab is discarded with no `pagehide` at all - `visibilitychange`
+       is the more reliable last callback there. Both can fire for the same
+       teardown (a tab hidden, then actually unloaded); `flushUrlSync`'s own
+       `syncTimer === null` guard is what keeps that from double-writing - the
+       second call is a no-op because the first already cleared the timer. */
+    const onHidden = (): void => {
+      if (document.visibilityState === 'hidden') flushUrlSync();
+    };
     window.addEventListener('pagehide', flushUrlSync);
+    document.addEventListener('visibilitychange', onHidden);
     return () => {
       window.removeEventListener('pagehide', flushUrlSync);
+      document.removeEventListener('visibilitychange', onHidden);
     };
   });
 
@@ -703,6 +714,16 @@
            either, app.js 4636. -->
         {/if}
       {:else if route.kind === 'sharedList'}
+        <!-- B10-N4: this mounts its own `<RecordHost>` inside this file's
+             (above), so `#/l/<payload>` carries two `open` states and two
+             navigation effects at once. Harmless only because nothing wires
+             this file's own `openRecord` into `SharedListPage` - every card
+             it draws opens through its own host instead - so the outer one
+             can never be set here regardless. Keep it that way: passing
+             `openRecord` down would put a card's modal behind the wrong
+             host's `extra`, and this file's own `extra` above assumes `own`
+             (the list this tab owns), which `SharedListPage`'s payload never
+             is. -->
         <SharedListPage {app} {index} payload={route.payload} />
       {/if}
     {:else}

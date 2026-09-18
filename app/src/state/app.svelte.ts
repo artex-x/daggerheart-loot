@@ -447,8 +447,14 @@ export class AppState {
     /* S1: set before `navigate()`, which for a fake/in-memory router fires
        the change handler synchronously, inline in this same call - the
        handler reads it back before this method's own processing below runs,
-       so the two do not double-count one navigation. */
-    this.#expectHash = hash;
+       so the two do not double-count one navigation.
+       B6-R3, paid off: only set when the hash actually changes. A real
+       browser fires no `hashchange` at all for a same-value assignment, so
+       an unconditional set here used to leave a stale `#expectHash` behind
+       whenever a caller navigated to the address already showing; a later
+       Back/Forward landing on exactly that hash was then swallowed by the
+       `h === this.#expectHash` guard above, instead of being processed. */
+    if (hash !== this.env.router.hash()) this.#expectHash = hash;
     this.env.router.navigate(hash);
     /* S2/R7: `go()`'s callers all build a hash from this file's own writers,
        so this is defence rather than a reachable bug - but the router's own

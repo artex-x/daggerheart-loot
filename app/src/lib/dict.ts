@@ -81,7 +81,7 @@ const ru = {
    *  generic every-other-copy-button wording. */
   imgTainted: 'Не удалось скопировать картинку - скопирован текст',
   imgSaved: 'Картинка сохранена',
-  imgFailed: 'Не удалось получить картинку',
+  imgFailed: 'Не удалось сохранить картинку',
 
   /* Rolling */
   roll: 'Бросить',
@@ -429,7 +429,7 @@ const en: Dict = {
   rollCopied: 'Options copied',
   imgTainted: 'Could not copy the image - copied the text instead',
   imgSaved: 'Image saved',
-  imgFailed: 'Could not load the image',
+  imgFailed: 'Could not save the image',
 
   roll: 'Roll',
   randomIn: 'Random',

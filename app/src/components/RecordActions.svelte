@@ -78,7 +78,14 @@
     let blob: Blob;
     try {
       blob = await png;
-    } catch {
+    } catch (err) {
+      /* B8-R3: `imgTainted` is deliberately the one wording for every `pngOf`
+         rejection (see the doc comment above) - but `image.ts` already builds
+         a distinct `Error` message per cause (tainted canvas, the picture
+         failing to load, the encode watchdog firing), so naming which one it
+         was costs nothing and is worth keeping for whoever debugs a report
+         of this firing. */
+      console.warn('copyImage: pngOf rejected, falling back to text', err);
       const { text, html } = share(it, index, app.lang, { extra });
       await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.imgTainted);
       return;

@@ -645,7 +645,7 @@ describe('taking a record somewhere else', () => {
     const image = fakeImage({ failDownload: true });
     render(App, { env: at('ci1', { clipboard: clip, image }) });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
-    expect(screen.getByText('Не удалось получить картинку')).toBeInTheDocument();
+    expect(screen.getByText('Не удалось сохранить картинку')).toBeInTheDocument();
     expect(screen.queryByText('Не удалось скопировать')).not.toBeInTheDocument();
   });
 

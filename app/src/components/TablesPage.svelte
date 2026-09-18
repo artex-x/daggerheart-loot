@@ -80,8 +80,9 @@
          that also reads reactive state reads better with the "this is a
          write, not a two-way binding" intent made explicit, the same as
          `SearchPage.svelte`'s reset effect already does. */
+      const routeTable = route.table;
       untrack(() => {
-        lastTable = route.table as TableId;
+        lastTable = routeTable;
       });
     }
   });

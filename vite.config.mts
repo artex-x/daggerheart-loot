@@ -144,9 +144,9 @@ export default defineConfig({
            - it emits no code, so a percentage of it is noise. */
         'src/test/**',
         'src/ports/types.ts',
-        /* The canvas conversion cannot run in jsdom at all - no Image, no
-           canvas, no toBlob - so a percentage of this file would measure the
-           two test doubles and nothing else. It is exercised for real by
+        /* `pngOf`'s canvas conversion cannot run in jsdom at all - no Image,
+           no canvas, no toBlob - so a percentage of this file would measure
+           one test double and nothing else. It is exercised for real by
            tests/app/states.js's copy-image case, which drives the built app
            in Chrome and, since D10 (paid off), reads a real assertion on
            whichever of the two outcomes this build actually produces - a
@@ -154,7 +154,14 @@ export default defineConfig({
            text and its own toast - rather than only proving the promise
            does not hang. The caller's own branching on a rejection
            (RecordActions.svelte's copyImage) is covered here, through
-           fakeImage. */
+           fakeImage. `download` is different - B8-R4, paid off: it touches
+           only `URL.createObjectURL`/`revokeObjectURL` and a plain `<a>`,
+           all of which jsdom has, so `ports.test.ts` covers it directly
+           rather than through `states.js` (which never reaches it either -
+           that suite's build taints the canvas, so `writeImage` refuses
+           before `download` is ever called). The whole file still carries
+           one exclusion rather than an inline ignore on `pngOf` alone,
+           because `pngOf` is most of it. */
         'src/ports/image.ts',
         'src/vite-env.d.ts',
         /* The entry point that mounts the app onto a real DOM - exercised for

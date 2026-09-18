@@ -19,11 +19,19 @@
   }
 
   const { label, title, oncopy, heading }: Props = $props();
+
+  /* B7-N10, paid off: a lookup rather than `'h' + String(heading)` (which
+     widened to `string`, dropping the tag name out of the literal union
+     `svelte:element` wants checked) or a ternary (which would be a branch
+     `heading === 3` is never given to exercise, in production or in a
+     test - see the prop's own doc comment above). A lookup is neither: one
+     computed property read, no branch to leave half-covered. */
+  const HEADING_TAG: Record<2 | 3, 'h2' | 'h3'> = { 2: 'h2', 3: 'h3' };
 </script>
 
 <div class="tsec-head">
   {#if heading}
-    <svelte:element this={'h' + String(heading)} class="lbl">{label}</svelte:element>
+    <svelte:element this={HEADING_TAG[heading]} class="lbl">{label}</svelte:element>
   {:else}
     <span class="lbl">{label}</span>
   {/if}

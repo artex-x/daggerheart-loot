@@ -2,40 +2,29 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `4786ea9`, B12a's own
-  sha-citation follow-up, one commit past **B12a** itself (`e52f5de`),
-  which was one commit past **B11 - equipment apostrophes (O2)**'s docs
-  pass (`78981b2`). `rtk npm run check`, the fs suites, `npm run build`
-  and the `app/typo` proof cycle are green on B12a - see "Verification";
-  nothing since has touched a gated path (`issues/**` markdown is exempt).
-  B1-B11 plus B12a and every remediation pass are on `main` and pushed;
-  `git rev-parse HEAD origin/main` agreed after the push.
-- Last agent: implementer (2026-09-18, B12a: the census, the three routed
-  findings, and the record rows).
+- Task status: in_progress. HEAD is `<pending, see B12b sha-citation
+  follow-up>`, **B12b** itself, one commit past B12a's own sha-citation
+  follow-up (`4786ea9`), which was one commit past **B12a** (`e52f5de`).
+  `rtk npm run check` is green on B12b (all suites, coverage thresholds
+  met) - see "Verification". Not yet pushed - see "Next batch".
+- Last agent: implementer (2026-09-18, B12b: production source
+  (`app/src/**`) and the three new `docs/specs/DEBT.md` entries).
 - Branch: `main`.
 - Base / starting commit: `e7ce2ad` (this task's planning pass, B12
   designed as four consecutive pieces).
-- Review: standing policy for this task (`context.md`, "Review and nit
-  policy") - every phase-8 batch gets a reviewer regardless of the standard
-  triggers; nits are logged immediately to `issues/phase-8/nits.md` and
-  cleared in B12, not folded into whichever batch is next. B12a is reviewed
-  read-only against its own committed sha while B12b's implementer works,
-  per this task's own review policy - required (trigger: terminal-batch
-  piece per `orchestrate.prompt.md`, "Nits: defer mid-plan, clear on the
-  terminal batch").
-- No open deviations. One discrepancy recorded, not silently resolved:
-  `plan.md`'s B12a step 7 says "the four Deferred rows" while its own
-  fuller table just above names five (`B6-R1`, `B6-R5`, `B8-N7`, `B6-N4`,
-  `B8-N6`); all five were moved to `nits.md`'s "Deferred out of phase-8"
-  table, since that table is the one with an itemised reason per row - see
-  `nits.md`, the note under that table.
+- Review: **not run (owner's decision, 2026-09-18 - see context.md,
+  "Review and nit policy for this task")**. B12a-B12d get no reviewer; B12
+  is itself the remediation stage for B1-B11's eleven reviews, and
+  reviewing it would open a second-order review -> remediate loop with no
+  natural floor. Not "not required (no trigger fired)" - a trigger did
+  fire (production source, `app/src/**`), the review was declined.
+- No open deviations. Same discrepancy carried from B12a, not re-resolved
+  here (unchanged, `plan.md`'s B12a step 7 undercounts the Deferred table
+  by one row - see `nits.md`'s note under its Deferred table).
 - Last planning pass: planner, 2026-09-18, at `78981b2` - designed B12 as
   four consecutive pieces.
 - NEEDS_HUMAN_CONFIRMATION: no.
-- Next batch: **B12b** - production source (`app/src/**`) and the three new
-  `docs/specs/DEBT.md` entries (`D24`-`D26`) - per `plan.md`, "B12b". B12a's
-  own review has not yet run; per this task's standing policy it runs
-  read-only against B12a's committed sha while B12b's implementer works.
+- Next batch: **B12c** - harness, tooling and CI - per `plan.md`, "B12c".
 
 ## Completed
 
@@ -346,12 +335,157 @@ pre-compaction text.
   in `B12b`, which opens `app/src`). Deviation: none in scope; one
   discrepancy recorded (`plan.md`'s B12a step 7 undercounts the Deferred
   table by one row - see "Status").
+- **B12b - production source (`app/src/**`), and the three new `DEBT.md`
+  entries** - `<pending, see B12b sha-citation follow-up>`. Review: not run
+  (owner's decision, 2026-09-18 - see "Status"). Twenty-five rows landed as
+  real edits, one closed with no change: `B5-N5` (`badge.test.ts`'s third
+  case now ends `expectNoA11yViolations`), `B5-N6` (header count corrected
+  to eleven), `B5-N8` (`whereFrom` pinned for Equipment), `B5-N9`
+  (`alt.test.ts` asserts every non-top rarity bumps), `B5-N13`
+  (`RecordModal.svelte` regains the toast-from-modal comment), `B5-N10/11/12`
+  (three re-export comments reworded to their true reasons; `RARITIES` kept
+  - confirmed real callers), `B6-R3` (`app.svelte.ts`'s `go()` only sets
+  `#expectHash` when the hash actually changes, proved to bite), `B6-R4`
+  (`ListPage.svelte` gained a `visibilitychange` flush beside `pagehide`,
+  sharing `flushUrlSync`'s no-double-flush guard, proved to bite), `B6-N3`
+  (`StorageNotice.svelte`'s comment now says two writes, not one), `B6-N5`
+  (`storage.ts`'s comment corrected - `watch()` does no merge), `B7-N9`
+  (`TablesPage.svelte`'s cast removed via narrowing before `untrack`),
+  `B7-N10` (`SectionHead.svelte` uses a lookup, not a widening
+  concatenation or an untested ternary branch), `B7-N11` (`tables.test.ts`
+  moved to a role-level assertion), `B7-N12` (`shell.test.ts` pins the
+  negative for a shared list's title), `B8-R3` (measured `toBlob` on this
+  host - 640x640, five runs, 1032-1074ms - kept the 2000ms watchdog with
+  the number recorded; `RecordActions.svelte` now logs which cause
+  internally, no user-facing or `dict.ts` change), `B8-R4` (`ports.test.ts`
+  gained a jsdom test on `download`; `vite.config.mts`'s exclusion comment
+  now attributes the `states.js` claim to `pngOf` alone), `B8-N1`
+  (`tokens.css` states D1's rejected-alternative reason inline instead of
+  citing the deleted register entry), `B8-N2` (`imgFailed` reworded in both
+  languages to "could not save"; `record.test.ts` updated; zero golden
+  hits, confirmed before editing), `B10-N1` (`RecordHost.svelte`'s header
+  comment regains the `app.hash`-rejection reasoning), `B10-N2`/`B10-N3`
+  (`extra`/`index` narrowed to what every caller actually passes), `B10-N4`
+  (`ListPage.svelte` gained the nested-host invariant as a comment, not the
+  structural move), `B10-N5` (the StdPanel/AltPanel/RollPanel extraction
+  rejection written once, pointed at from the other two), `B2-4`
+  (`app.test.ts`'s comment reworded to drop the dead `TAB_LIST`
+  identifier). Closed with no change: `B1-N9` - the union third argument
+  touches ten-odd call sites across `SearchPage.svelte`, `TablesPage.svelte`
+  (twice) and `search.test.ts` (eight), past the plan's own
+  six-call-site/no-type-gymnastics budget; a doc clause on `matches` records
+  the risk instead. `B5-R3` was already closed by B12a's census - confirmed
+  on arrival, no further action, per `plan.md`'s own note. Plus three new
+  `docs/specs/DEBT.md` entries, `D24`-`D26` (for `B6-R1`, `B6-R5`, `B8-N7`,
+  deferred out of phase-8 by B12a), under a new heading - `D1`-`D23` are all
+  paid off and the three existing headings are migration-framed. No row
+  moved rendered output: the two user-visible string changes (`B8-N2`'s
+  `imgFailed`) were checked against `tests/app/snapshots/` first and found
+  zero hits, so both stayed check-gated in this piece rather than moving to
+  `B12d`. No deviation.
 
 ## Verification
 
-Latest pass (B12a, sha in "Completed" above); earlier passes' exact
+Latest pass (B12b, sha in "Completed" above); earlier passes' exact
 commands/results are in git history per "Completed" above, and the B9-
 remediation, B10 and B10-remediation runs are preserved below.
+
+### B12b's own verification
+
+**Proof obligations for the two behaviour fixes, exact results, in order
+run** (every other row is a comment, a type narrowing, a test addition or a
+doc clause - no behaviour to prove in the failing direction, per this
+task's review-declined policy):
+
+- `B6-R3` (`app/src/state/app.test.ts`, "does not swallow a later
+  Back/Forward landing on go()'s own unchanged target"): a purpose-built
+  `quirkyRouter` double (announces only on an actual hash change, unlike
+  `memoryRouter`'s unconditional announce) drives `go('#/lists')` twice
+  (the second a no-op address-wise) then fires a genuine hashchange for the
+  same address. `npx vitest run app/src/state/app.test.ts` green with the
+  `hash !== this.env.router.hash()` guard in place (70/70). Reverted the
+  guard to the unconditional `this.#expectHash = hash;` - re-run:
+  **1 failed**, `expected 2 to be 3` on exactly the new case (the
+  Back/Forward-equivalent `fire()` call was swallowed as a false echo).
+  Restored the guard - re-run: green again (70/70). `git diff --stat --
+  app/src/state/app.svelte.ts` after restoring shows only the intended
+  guard + comment.
+- `B6-R4` (`app/src/components/listPage.test.ts`, "flushes a pending edit
+  on visibilitychange, once, even if pagehide also fires"): types into a
+  list's note field (inside the 150ms debounce window), stubs
+  `document.visibilityState` to `'hidden'` and dispatches
+  `visibilitychange`, asserts `router.replace` fired synchronously with the
+  new value, then dispatches `pagehide` and asserts `replace` was **not**
+  called a second time. `npx vitest run
+  app/src/components/listPage.test.ts` green with the listener in place
+  (59/59). Removed the `visibilitychange` listener (kept `pagehide`) -
+  re-run: **1 failed**, `expected "replace" to be called 1 times, but got 0
+  times` on exactly the new assertion. Restored the listener - re-run:
+  green again (59/59).
+
+**Individually verified test files, before the full gate** (each run
+green in isolation as the edit landed): `app/src/lib/alt.test.ts`,
+`app/src/lib/label.test.ts`, `app/src/components/badge.test.ts`,
+`app/src/components/tables.test.ts`, `app/src/components/shell.test.ts`,
+`app/src/components/record.test.ts`, `app/src/ports/ports.test.ts`
+(the new `download` test).
+
+**`B8-R3`'s measurement**, a real browser (Claude Browser pane, a
+throwaway `python -m http.server` over the repo's own `img/` so the canvas
+is not tainted the way `file://` would taint it): loaded `img/f95.webp`
+(640x640, 98 KB, the largest catalogue art file by bytes), drew it to a
+canvas, ran `canvas.toBlob(..., 'image/png')` five times with
+`performance.now()` around each call - `1074.1, 1051.9, 1040.3, 1032.6,
+1045.2` ms. `image.ts`'s watchdog comment now records this and the
+decision to keep 2000ms (roughly double the worst measured run) rather
+than raise it.
+
+**Full gate run:**
+
+- `rtk npm run check` - green (after the concurrent-session contention
+  below cleared): `format:check`, `lint`, `typecheck` (551 files, 0
+  errors/warnings), `node --check tools/check-site.mjs`, `npm run data`,
+  `node tests/derived.js`, `node .claude/hooks/selftest.mjs` (430/430,
+  once the other session's in-flight edit settled - see "Notes"), every
+  `node --test` suite (`tools/tg-preview/lib.test.mjs`,
+  `tools/artwork/lib.test.mjs`, `tools/check-site.test.mjs`,
+  `tests/app/golden.test.mjs` 17/17), `npm run test` - 45 test files /
+  **1138** tests passed (+7 over B12a's 1131: the two proof-of-bite cases
+  plus five coverage-only additions), coverage 97.04% statements / 89.02%
+  branches / 98.04% functions / 97.83% lines, every `perFile` threshold
+  met including `SectionHead.svelte` (a `Record<2\|3,'h2'\|'h3'>` lookup
+  chosen over a ternary specifically to avoid a new, permanently
+  half-covered branch - see `nits.md`, `B7-N10`).
+- `npm run check:built` - **not run**, per this piece's own gate rule: no
+  `.svelte` template change and no CSS declaration landed (every `.svelte`
+  edit was a `<script>` change, a type narrowing, or an HTML comment; the
+  one `tokens.css` edit changed a comment, not a declaration).
+- `node tests/app/golden.js --only=<sub>` probes - **not run**: the
+  string-vs-snapshot grep for `B8-N2`'s changed strings found zero hits in
+  `tests/app/snapshots/`, so no row moved to `B12d`.
+- `git status --short` (final, before staging): every file listed in
+  "Completed" above modified; `.claude/agents/reviewer.md` (unstaged,
+  foreign), `issues/56/` (untracked, foreign) and `remediate` (an empty,
+  untracked file from the same foreign session, 0 bytes) untouched and
+  unstaged, per "preserve unrelated working-tree changes" - `remediate` is
+  new since this task's own preflight and is not this piece's to explain or
+  remove.
+- Push: not yet done this pass - see "Next batch".
+
+**A tree-contention note, not a defect in this piece's own changes**: a
+second, concurrent session was actively editing `.claude/hooks/bash-guard.mjs`,
+`check-observer.mjs` and `selftest.mjs` (plus `.claude/README.md` and three
+`.claude/prompts/*.md` files) while this piece's gate ran - confirmed by
+file mtimes moving forward between consecutive `npm run check` attempts
+(16:55-17:01) and by `.claude/hooks/selftest.mjs`'s own pass count changing
+between runs (420 -> 430) with no edit from this session. Two runs failed
+transiently on that account: once on a stale self-test assertion
+(`#119 canonical check`), once on a formatting warning in
+`.claude/hooks/selftest.mjs` itself - neither file is this piece's to fix
+(out of scope, and actively being edited elsewhere), so neither was
+touched; a third attempt, after the other session's edit settled, passed
+clean. This is exactly the hazard `CLAUDE.md`'s "one session at a time"
+rule names - recorded for the orchestrator, not resolved here.
 
 ### B12a's own verification
 
@@ -694,47 +828,44 @@ first-ever Prettier run on these files.
 
 ## Next batch (implement-ready)
 
-- **Name**: B12b - production source (`app/src/**`), and the `DEBT.md`
-  entries. The second of B12's four consecutive pieces (`plan.md`, "B12b").
-  B12a shipped this pass; B12 is the terminal batch and nothing is listed
-  after `B12d`.
-- **Rows**: `B5-R3`, `B5-N5`, `B5-N6`, `B5-N8`, `B5-N9`, `B5-N13`,
-  `B5-N10/11/12`, `B6-R3`, `B6-R4`, `B6-N3`, `B6-N5`, `B7-N9`, `B7-N10`,
-  `B7-N11`, `B7-N12`, `B8-R3`, `B8-R4`, `B8-N1`, `B8-N2`, `B10-N1`,
-  `B10-N2`, `B10-N3`, `B10-N4`, `B10-N5`, `B1-N9`, `B2-4` - each its own
-  acceptance line, per `plan.md`, "B12b". Note: `B5-R3` is already recorded
-  closed-no-change by B12a's census (`nits.md`); `plan.md`'s B12b row list
-  still names it, so confirm on arrival rather than re-deriving the reason.
-- **Plus**: three new `docs/specs/DEBT.md` entries (`D24`, `D25`, `D26`) for
-  the deferred live defects `B6-R1`, `B6-R5`, `B8-N7` (`nits.md`, "Deferred
-  out of phase-8" has the reason each was moved), under a new heading -
-  `D1`-`D23` are all paid off and the three existing headings are all
-  migration-framed.
+- **Name**: B12c - harness, tooling and CI. The third of B12's four
+  consecutive pieces (`plan.md`, "B12c"). B12b shipped this pass; B12 is
+  the terminal batch and nothing is listed after `B12d`.
+- **Rows**: `B4-R1`, `B4-R2`, `B4-R3`, `B4-R4`, `B4-1`, `B4-2`, `B4-3`,
+  `B4-4`, `B4-5`, `B4-6`, `B4-7`, `B4-10`, `B5-R1`, `B5-N3`, `B5-N14`,
+  `B5-N15`, `B6-N2`, `B8.1-N1`, `B9-R2`, `B9-N3`, `B9-N5`, `B9-N6`,
+  `B9-N11` - each its own acceptance line, per `plan.md`, "B12c".
+- **Notes the implementer needs** (`plan.md`, "B12c"): `B4-3` is the row
+  that must record an unmet line as unmet - add the `echo` before the `if`
+  so the deploy log actually carries the stub-count line, and record that
+  the original acceptance line ("the deploy log shows the stub-count line")
+  was **not met** at B4, not restated as met now. `B4-4` and `B4-7` are
+  settled by B12a's census (`nits.md`): `B4-4` live, `B4-7` half done (the
+  misplaced comment is gone, the bare `fetch-depth: 0` in `check` remains).
+  `B9-R2` and `B9-N5` are one edit: narrow or fix the four code-rule
+  turn-offs and enumerate every site per rule. `B5-N15` is likely already
+  closed by B9's wholesale translation of `tests/` - confirm on arrival
+  rather than re-deriving.
 - **Criterion for this seam** (`plan.md`, "Shape: four consecutive
-  pieces"): a review that cannot be held in one pass - `B12b` is production
-  source judged against `FEATURES.md`/`STATE.md`/`DEBT.md` and the
-  architecture boundaries and can move rendered output; `B12c` (harness,
-  tooling, CI) is judged against `COVERAGE.md` and the CI shape and cannot.
-- **Gates**: `rtk npm run check`. `npm run check:built` **only** if a
-  `.svelte` template or a CSS declaration lands. A `node tests/app/
-  golden.js --only=<sub>` probe only if a string-vs-snapshot grep (per
-  `plan.md`'s "A user-visible string is a golden question before it is an
-  edit") finds a hit - in which case that row moves to `B12d` instead.
-- **Risks / do-nots** (`plan.md`, "B12b"): `B6-R4` adds a
-  `visibilitychange` listener beside the existing `pagehide` one - must not
-  double-flush; `B8-R3` adds no `dict.ts` key; `B10-N4` adds a sentence, not
-  a structural move; a row that turns out to move rendered output is a
-  stop-and-report, not a quiet re-record.
+  pieces"): a review that cannot be held in one pass - `B12b` (just
+  shipped) is production source judged against `FEATURES.md`/`STATE.md`/
+  `DEBT.md` and the architecture boundaries and can move rendered output;
+  `B12c` is judged against `COVERAGE.md` and the CI shape and cannot move
+  rendered output at all.
+- **Gates**: `rtk npm run check`; `node tests/run-all.js
+  contracts,derived,dataint,craft,stub`; **one CI watch after the push** -
+  the only instrument that can see `B4-3`'s echo and `B4-4`'s `_site` path,
+  since `deploy` runs on push to `main`.
 - After `B12d` and its review, this task closes out per
   `.claude/skills/handoff/SKILL.md`, "Retirement".
 
 ## Blockers
 
-None. B12a shipped with no deviation in scope (one recorded discrepancy in
-`plan.md`'s own step count, not a blocker - see "Status") - see "Completed"
-and "Verification". `rtk npm run check`, the fs suites, `npm run build` and
-the `app/typo` proof cycle (all six results) are green, confirmed for real,
-not assumed.
+None. B12b shipped with no deviation in scope - see "Completed" and
+"Verification". `rtk npm run check` is green, confirmed for real, not
+assumed, after a transient tree-contention failure from a concurrent
+session cleared (see "Verification"'s own note on it - not this piece's
+defect, nothing to remediate here).
 
 ## Deferred
 
@@ -749,8 +880,8 @@ not assumed.
   `matchMedia` anywhere in `app/src` today, so the boundary-respecting fix
   needs a new port surface), `B6-N4` (product copy, the owner's voice) and
   `B8-N6` (a policy edit to a rule the owner approved under Q5). The first
-  three are live defects and therefore get `docs/specs/DEBT.md` entries
-  (`D24`-`D26`) in `B12b`, so they survive this task directory's
+  three are live defects and got `docs/specs/DEBT.md` entries (`D24`-`D26`)
+  in **B12b, done this pass**, so they survive this task directory's
   retirement; the last two are taste and policy and get none.
 - **One check nothing in this repository can perform, still owed**:
   confirming `.card-media`'s focus ring is drawn inside `.card` at both
@@ -776,13 +907,26 @@ not assumed.
   file is `d882707` (`git log --oneline -3 -- issues/phase-8/`); the full
   pre-compaction text of this file is there. No scratch files, probe
   branches, or manually-built `_site/` remain in the tree at any point this
-  task has checked. `.claude/agents/reviewer.md` (an unstaged tools-
-  frontmatter edit from another session) and `issues/56/` (an untracked
-  directory, another task's) have been present throughout this task's
-  sessions and are preserved untouched and unstaged, per "preserve
-  unrelated working-tree changes, do not revert foreign work." Normal
-  `npm run data`/`npm run build` outputs (`i/`, `dist/`) are gitignored or
-  untracked as usual and regenerate on demand.
-- Session end partial progress: none - `main` is at a committed, pushed,
-  gate-verified boundary (B12a's own sha `e52f5de`, sha-citation follow-up
-  `4786ea9`, see "Completed").
+  task has checked. A measurement helper for `B8-R3` (an HTML page timing
+  `canvas.toBlob`) was written to and read from the session scratchpad, not
+  the repository, and a throwaway `python -m http.server` over the repo's
+  own `img/` was stopped before this piece's gate ran - neither is in the
+  tree.
+- **New this pass**: two more foreign, untracked/unstaged items are now
+  present alongside the two already recorded (`.claude/agents/reviewer.md`,
+  `issues/56/`) - a second session was actively editing
+  `.claude/hooks/{bash-guard,check-observer,selftest}.mjs`,
+  `.claude/README.md` and three `.claude/prompts/*.md` files concurrently
+  with this piece's own work (see "Verification"'s tree-contention note),
+  and an empty, untracked `remediate` file (0 bytes) appeared in the repo
+  root partway through this session, before this piece's own edits began.
+  None of the five is this piece's to explain, fix, or stage - all are
+  preserved untouched and unstaged, per "preserve unrelated working-tree
+  changes, do not revert foreign work." Flagging the hooks contention for
+  the orchestrator: `CLAUDE.md`'s "one session at a time per working tree"
+  rule exists exactly because a second session's edits can make the first
+  session's gate results look like a bug in its own work, which is what
+  happened here (see "Verification").
+- Session end partial progress: none - `main` is at a committed,
+  gate-verified boundary (B12b's own sha, see "Completed" and "Status");
+  not yet pushed - see "Next batch".

@@ -9,6 +9,7 @@ import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import Toast from './Toast.svelte';
+import { encodeList } from '../lib/listLink.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import {
   brokenStorage,
@@ -77,6 +78,19 @@ describe('the tab title (D5/O3)', () => {
     /* A print sheet lights no tab (`AppState.section` is null for `route.kind
        === 'print'`) and opens no one's own list either. */
     render(App, { env: at('#/print/ci1', { data: fakeData(LOOT) }) });
+    expect(document.title).toBe('Генератор лута — Daggerheart');
+  });
+
+  it('shows a shared list’s name on screen but keeps the plain tab title (B7-N12)', () => {
+    /* `#/l/<payload>` is `SharedListPage`'s route, not `ListPage`'s - the
+       visitor opening someone else's link has no entry in `app.lists`, so
+       `app.openList` (what Shell's title effect keys off, see its own
+       comment above) never fires for it, even though the heading on screen
+       does draw the list's own name. Deliberate: documented in
+       `docs/specs/FEATURES.md` as the one route left titled plainly. */
+    const payload = encodeList({ name: 'Тайник', ids: ['ci1'] }, true);
+    render(App, { env: at('#/l/' + payload, { data: fakeData(LOOT) }) });
+    expect(screen.getByRole('heading', { level: 1, name: 'Тайник' })).toBeInTheDocument();
     expect(document.title).toBe('Генератор лута — Daggerheart');
   });
 });

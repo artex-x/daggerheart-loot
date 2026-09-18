@@ -1,5 +1,6 @@
-/* Badge.svelte on its own - the base rule and the nine variants are exercised
- * end to end already (record.test.ts, tables.test.ts, listsPage.test.ts), so
+/* Badge.svelte on its own - the base rule and the eleven variants are
+ * exercised end to end already (record.test.ts, tables.test.ts,
+ * listsPage.test.ts), so
  * this file only has to prove the one thing none of those callers vary
  * together: a badge with a title and one without, since both shapes are real
  * (`cardBadges`'s `uniq` entry carries one, `src` never does). */
@@ -40,7 +41,7 @@ describe('the record badge', () => {
     /* A card's own badges never do this - `cardBadges` runs once per record -
        but the roll die badge's `cls` swaps between "hope" and "fear" on the
        same mounted card as a new roll lands, so the update path is real. */
-    const { rerender } = render(Badge, { cls: 'hope', children: textOf('Надежда') });
+    const { container, rerender } = render(Badge, { cls: 'hope', children: textOf('Надежда') });
     let el = screen.getByText('Надежда').closest('.badge');
     expect(el).toHaveClass('badge', 'hope');
     expect(el).not.toHaveAttribute('title');
@@ -50,5 +51,6 @@ describe('the record badge', () => {
     expect(el).toHaveClass('badge', 'fear');
     expect(el).not.toHaveClass('hope');
     expect(el).toHaveAttribute('title', 'Страх');
+    await expectNoA11yViolations(container);
   });
 });

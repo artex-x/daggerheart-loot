@@ -27,9 +27,12 @@
 {:else if app.lists.unreadable}
   <!-- R1: storage itself works, but the lists key held something that would
        not parse. Not dismissable either - the notice has to keep saying so
-       until a write actually clears it, and there is no state to remember a
-       dismissal against that would survive the next reload finding the same
-       bad value again. -->
+       until `unreadable` clears, which takes two writes, not one:
+       `save()`'s own `#readCurrent()` still reads the corrupt value first
+       (setting `unreadable` again) and only overwrites it after, so the fix
+       lands one write before the flag notices. There is also no state to
+       remember a dismissal against that would survive the next reload
+       finding the same bad value again. -->
   <div class="warn"><b>{t.badStorageTitle}</b>{' ' + t.badStorage}</div>
 {:else if !app.warnHidden}
   <!-- The live `render()` builds this notice fresh on a language switch, and

@@ -225,6 +225,10 @@
 
     {#snippet cardOf(pick: AltPick)}
       {#if index}
+        <!-- B10-N5: near-identical to StdPanel.svelte's own `cardOf` and to
+             RollPanel.svelte's single-result card - the extraction this
+             invites, and why it is not done, is written down at
+             StdPanel.svelte's copy rather than three times over. -->
         <RecordCard
           variant="compact"
           it={pick.it}
