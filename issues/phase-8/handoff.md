@@ -2,15 +2,14 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `e52f5de`, this pass's own commit,
-  one commit past **B11 - equipment apostrophes (O2)**'s docs pass
-  (`78981b2`), which was two past B11 itself (`78b13f0`). `rtk npm run
-  check`, the fs suites, `npm run build` and the
-  `app/typo` proof cycle are green on B12a - see "Verification"; the tree
-  is otherwise unchanged since B11 (nothing between `78981b2` and this
-  pass touched a gated path). B1-B11 plus every remediation pass are on
-  `main`; this pass is committed locally and not yet pushed until the
-  sha-citation follow-up lands in the same push (see "Next batch").
+- Task status: in_progress. HEAD is `4786ea9`, B12a's own
+  sha-citation follow-up, one commit past **B12a** itself (`e52f5de`),
+  which was one commit past **B11 - equipment apostrophes (O2)**'s docs
+  pass (`78981b2`). `rtk npm run check`, the fs suites, `npm run build`
+  and the `app/typo` proof cycle are green on B12a - see "Verification";
+  nothing since has touched a gated path (`issues/**` markdown is exempt).
+  B1-B11 plus B12a and every remediation pass are on `main` and pushed;
+  `git rev-parse HEAD origin/main` agreed after the push.
 - Last agent: implementer (2026-09-18, B12a: the census, the three routed
   findings, and the record rows).
 - Branch: `main`.
@@ -411,10 +410,10 @@ remediation, B10 and B10-remediation runs are preserved below.
   reviewer.md` (unstaged, another session's) and `issues/56/` (untracked,
   another task's) untouched and unstaged, per "preserve unrelated
   working-tree changes."
-- Push: deferred to the sha-citation follow-up commit, so both land in one
-  push per this task's own convention (B9/B10/B11 all followed it) -
-  `git push origin main` and `git rev-parse HEAD origin/main` agreement
-  will be recorded in that follow-up's own note.
+- Push: `git push origin main` after the sha-citation follow-up
+  (`4786ea9`), so both commits landed in one push per this task's own
+  convention (B9/B10/B11 all followed it); `git rev-parse HEAD
+  origin/main` confirmed both equal `4786ea9` afterward.
 
 ### B11's own verification
 
@@ -784,6 +783,6 @@ not assumed.
   unrelated working-tree changes, do not revert foreign work." Normal
   `npm run data`/`npm run build` outputs (`i/`, `dist/`) are gitignored or
   untracked as usual and regenerate on demand.
-- Session end partial progress: none - the tree is at a committed,
-  gate-verified boundary (B12a's own sha, see "Completed"); push is the
-  sha-citation follow-up's own last step, same convention as B9/B10/B11.
+- Session end partial progress: none - `main` is at a committed, pushed,
+  gate-verified boundary (B12a's own sha `e52f5de`, sha-citation follow-up
+  `4786ea9`, see "Completed").
