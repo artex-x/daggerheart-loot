@@ -65,11 +65,11 @@ const TOO_MANY =
  * = min(n, 180), sheets = ceil(printed / 9). */
 const PRINT_CARD_STATES = [
   { route: NINE, bw: false, label: 'NINE', n: 9 },
-  { route: NINE, bw: true, label: 'NINE ~ ч/б', n: 9 },
+  { route: NINE, bw: true, label: 'NINE ~ bw', n: 9 },
   { route: LONG, bw: false, label: 'LONG', n: 9 },
-  { route: LONG, bw: true, label: 'LONG ~ ч/б', n: 9 },
+  { route: LONG, bw: true, label: 'LONG ~ bw', n: 9 },
   { route: '#/print/ci1-q1', bw: false, label: 'ci1-q1', n: 2 },
-  { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ ч/б', n: 2 },
+  { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ bw', n: 2 },
   { route: TEN, bw: false, label: 'TEN', n: 10 },
   { route: TOO_MANY, bw: false, label: 'TOO_MANY', n: 181 }
 ];
@@ -112,7 +112,7 @@ function readPNG(buf) {
     p += 12 + len; // length + tag + data + crc
   }
   if (depth !== 8 || (type !== 6 && type !== 2)) {
-    throw new Error('PNG не тот: ' + depth + ' бит, тип ' + type);
+    throw new Error('wrong PNG shape: ' + depth + ' bit, type ' + type);
   }
   const ch = type === 6 ? 4 : 3;
   const raw = require('zlib').inflateSync(Buffer.concat(idat));
@@ -169,17 +169,17 @@ const { ok } = rep;
   /* ---------- card size ----------
      63x88 mm is a playing-card size: sleeves and boxes are sold to it, so it
      is checked in millimetres, not "by eye off a picture". */
-  console.log('размер и сетка');
+  console.log('size and grid');
   await d.open('#/print/ci1-ci2-ci3-w7-w1-q1-voa1_t1a-cc1-f1');
   const box = await page.$eval('.pcard', (e) => {
     const r = e.getBoundingClientRect();
     return { w: r.width, h: r.height };
   });
-  ok(Math.abs(box.w / MM - 63) < 0.4, 'ширина карты не 63 мм: ' + (box.w / MM).toFixed(2));
-  ok(Math.abs(box.h / MM - 88) < 0.4, 'высота карты не 88 мм: ' + (box.h / MM).toFixed(2));
+  ok(Math.abs(box.w / MM - 63) < 0.4, 'card width is not 63 mm: ' + (box.w / MM).toFixed(2));
+  ok(Math.abs(box.h / MM - 88) < 0.4, 'card height is not 88 mm: ' + (box.h / MM).toFixed(2));
 
-  ok((await page.$$eval('.psheet', (e) => e.length)) === 1, 'девять карт легли не на один лист');
-  ok((await page.$$eval('.pcard', (e) => e.length)) === 9, 'на листе не девять мест');
+  ok((await page.$$eval('.psheet', (e) => e.length)) === 1, 'nine cards did not lay out on one sheet');
+  ok((await page.$$eval('.pcard', (e) => e.length)) === 9, 'the sheet does not have nine slots');
   /* The sheet is a whole A4: its margins live inside it, not on the page, or
      the third column drifts onto the next sheet. */
   const sheet = await page.$eval('.psheet', (e) => {
@@ -188,7 +188,7 @@ const { ok } = rep;
   });
   ok(
     Math.abs(sheet.w / MM - 210) < 0.6 && Math.abs(sheet.h / MM - 297) < 0.6,
-    'лист не A4: ' + (sheet.w / MM).toFixed(1) + 'x' + (sheet.h / MM).toFixed(1)
+    'sheet is not A4: ' + (sheet.w / MM).toFixed(1) + 'x' + (sheet.h / MM).toFixed(1)
   );
   /* A gap between cards is where the cut goes, and the card's own border
      stays visible. */
@@ -196,55 +196,55 @@ const { ok } = rep;
     const c = document.querySelectorAll('.pcard');
     return c[1].getBoundingClientRect().left - c[0].getBoundingClientRect().right;
   });
-  ok(gap / MM > 1 && gap / MM < 4, 'зазор между картами не под рез: ' + (gap / MM).toFixed(2) + ' мм');
+  ok(gap / MM > 1 && gap / MM < 4, 'gap between cards is not sized for the cut: ' + (gap / MM).toFixed(2) + ' mm');
 
   /* A tenth card starts a second sheet, and blanks pad it to nine: a full
      grid cuts more evenly. */
-  console.log('несколько листов');
+  console.log('several sheets');
   await d.open('#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10');
-  ok((await page.$$eval('.psheet', (e) => e.length)) === 2, 'десятая карта не завела второй лист');
-  ok((await page.$$eval('.pcard', (e) => e.length)) === 18, 'второй лист не добит до девяти мест');
-  ok((await page.$$eval('.pcard.blank', (e) => e.length)) === 8, 'пустых мест не восемь');
+  ok((await page.$$eval('.psheet', (e) => e.length)) === 2, 'the tenth card did not start a second sheet');
+  ok((await page.$$eval('.pcard', (e) => e.length)) === 18, 'the second sheet is not padded to nine slots');
+  ok((await page.$$eval('.pcard.blank', (e) => e.length)) === 8, 'blank slots are not eight');
   /* A place is held, but no cut line is drawn over it: there is nothing to
      cut there, and an extra line is an extra reason to cut the wrong thing. */
   ok(
     (await page.$eval('.pcard.blank', (e) => parseFloat(getComputedStyle(e).borderTopWidth))) === 0,
-    'по пустому месту нарисована линия реза'
+    'a cut line is drawn over a blank slot'
   );
   ok(
     (await page.$eval('.pcard:not(.blank)', (e) => parseFloat(getComputedStyle(e).borderTopWidth))) > 0,
-    'у карты пропала линия реза'
+    "a card's cut line is missing"
   );
-  ok(await page.$('.psheet[data-next]'), 'второй лист не помечен как начало страницы');
+  ok(await page.$('.psheet[data-next]'), 'the second sheet is not marked as a page start');
   /* A third sheet at the twentieth card, and every sheet stays exactly A4. */
   await d.open('#/print/' + Array.from({ length: 20 }, (_, i) => 'ci' + (i + 1)).join('-'));
   const heights = await page.$$eval('.psheet', (e) => e.map((x) => x.getBoundingClientRect().height));
-  ok(heights.length === 3, 'двадцать карт легли не на три листа: ' + heights.length);
+  ok(heights.length === 3, 'twenty cards did not lay out on three sheets: ' + heights.length);
   ok(
     heights.every((h) => Math.abs(h / MM - 297) < 0.6),
-    'какой-то лист не A4: ' + heights
+    'a sheet is not A4: ' + heights
   );
 
   /* All of Wondrous at once - 119 cards - fits: the old cap of 54 clipped
      exactly this case, and clipped it silently. */
-  console.log('большой набор');
+  console.log('a large set');
   const many = LOOT.items.wondrous.map((x) => x.id);
   await d.open('#/print/' + many.join('-'));
   const drawn = await page.$$eval('.pcard:not(.blank)', (e) => e.length);
-  ok(drawn === many.length, 'весь Wondrous не поместился: ' + drawn + ' из ' + many.length);
-  ok(!(await page.$('.warnnote')), 'предупреждение об обрезке на наборе, который поместился');
+  ok(drawn === many.length, 'all of Wondrous did not fit: ' + drawn + ' of ' + many.length);
+  ok(!(await page.$('.warnnote')), 'a truncation warning on a set that fit');
   /* And when it genuinely does not fit, that is said, not silently dropped. */
   const tooMany = many
     .concat(LOOT.items.voa.map((x) => x.id))
     .concat(LOOT.items.community.map((x) => x.id));
   await d.open('#/print/' + tooMany.join('-'));
-  ok(await page.$('.warnnote'), 'набор обрезан молча, без предупреждения');
+  ok(await page.$('.warnnote'), 'the set was truncated silently, with no warning');
 
   /* ---------- card layout ----------
      Off the print-card design: the rank ribbon, the grip marks, a pair of
      tags, the name in capitals, the framed stat strip, the text, the book
      caption. */
-  console.log('вёрстка карты');
+  console.log('card layout');
   await d.open('#/print/q1');
   const parts = await page.evaluate(() => {
     const q = (s) => {
@@ -263,18 +263,18 @@ const { ok } = rep;
       die: q('.pc-die')
     };
   });
-  ok(/^1/.test(parts.tier || ''), 'в ленте не ранг: ' + parts.tier);
-  ok(/ОРУЖИЕ/i.test(parts.tags[0] || ''), 'на первой плашке не вид вещи: ' + parts.tags);
-  ok(/ФИЗИЧЕСК/i.test(parts.tags[1] || ''), 'на второй плашке не класс: ' + parts.tags);
-  ok(parts.name === 'Палаш', 'имя на карте другое: ' + parts.name);
-  ok(/Надёжное/.test(parts.text), 'нет текста свойства');
-  ok(parts.die === 'd8', 'на кости не тот урон: ' + parts.die);
-  ok(parts.ribbon, 'полоса характеристик без рамки');
+  ok(/^1/.test(parts.tier || ''), 'the ribbon has no tier: ' + parts.tier);
+  ok(/ОРУЖИЕ/i.test(parts.tags[0] || ''), "the first tag is not the item's kind: " + parts.tags);
+  ok(/ФИЗИЧЕСК/i.test(parts.tags[1] || ''), 'the second tag is not the class: ' + parts.tags);
+  ok(parts.name === 'Палаш', 'the name on the card is different: ' + parts.name);
+  ok(/Надёжное/.test(parts.text), 'no property text');
+  ok(parts.die === 'd8', 'the die does not show the right damage: ' + parts.die);
+  ok(parts.ribbon, 'the stat strip has no frame');
   /* Values sit at the frame's own partitions, not wherever: the dividers are
      at 30.4% and 64.1% of its width, and the cells' shares repeat them. The
      damage die with its bonus stands outside - inside, it took space from the
      first cell. */
-  ok(!(await page.$('.pc-cells .pc-die')), 'кость урона стоит внутри рамки');
+  ok(!(await page.$('.pc-cells .pc-die')), 'the damage die sits inside the frame');
   const cells = await page.evaluate(() => {
     const f = document.querySelector('.pc-frame').getBoundingClientRect();
     return [...document.querySelectorAll('.pc-cells > *')].map((b) => {
@@ -282,28 +282,28 @@ const { ok } = rep;
       return { l: ((r.left - f.left) / f.width) * 100, r: ((r.right - f.left) / f.width) * 100 };
     });
   });
-  ok(cells.length === 3, 'в полосе характеристик не три клетки: ' + cells.length);
+  ok(cells.length === 3, 'the stat strip does not have three cells: ' + cells.length);
   ok(
     Math.abs(cells[0].r - 30.8) < 1 && Math.abs(cells[1].r - 63.7) < 1,
-    'клетки не совпали с перегородками рамки: ' + cells.map((c) => c.r.toFixed(1)).join(', ')
+    "cells do not line up with the frame's dividers: " + cells.map((c) => c.r.toFixed(1)).join(', ')
   );
   ok(
     /Проворность/i.test(parts.cells) && /Вплотную/i.test(parts.cells),
-    'в полосе характеристик нет черты или дистанции: ' + parts.cells
+    'the stat strip is missing the trait or the range: ' + parts.cells
   );
-  ok(parts.hands === 1, 'знак хвата не один: ' + parts.hands);
+  ok(parts.hands === 1, 'burden mark count is not one: ' + parts.hands);
 
   /* The grip mark comes from the design whole. Assembled from two pictures,
      it drew the right palm twice - a two-handed grip looked like two right
      palms. */
   const burden = () => page.$eval('.pc-burden img', (e) => e.getAttribute('src').replace(/^.*\//, ''));
   await d.open('#/print/w51'); // two-handed grip
-  ok((await burden()) === 'burden-2.svg', 'у хвата в две руки не тот знак: ' + (await burden()));
+  ok((await burden()) === 'burden-2.svg', 'the two-handed grip has the wrong mark: ' + (await burden()));
   await d.open('#/print/w7'); // one-handed
-  ok((await burden()) === 'burden-1.svg', 'у хвата в одну руку не тот знак: ' + (await burden()));
+  ok((await burden()) === 'burden-1.svg', 'the one-handed grip has the wrong mark: ' + (await burden()));
   ok(
     /Daggerheart/.test(parts.bottom) && /Core/i.test(parts.bottom),
-    'в подписи нет книги: ' + parts.bottom
+    'the caption is missing the book: ' + parts.bottom
   );
   /* A community item's caption names the book, not only the community: the
      card leaves the table on its own, and "Великородное" does not say where
@@ -312,40 +312,40 @@ const { ok } = rep;
   const commBottom = await page.$eval('.pc-bottom', (e) => e.textContent);
   ok(
     /Сообществ/i.test(commBottom) && /Великородное/.test(commBottom),
-    'на карте сообщества нет книги: ' + commBottom
+    'the community card is missing the book: ' + commBottom
   );
 
   /* Damage with a bonus: "d6 +2" beside the die, not a digit over it. */
   await d.open('#/print/w7');
-  ok((await page.$eval('.pc-die', (e) => e.textContent.trim())) === 'd6', 'бонус урона залез на кость');
-  ok((await page.$eval('.pc-bonus', (e) => e.textContent.trim())) === '+2', 'бонус урона не показан отдельно');
+  ok((await page.$eval('.pc-die', (e) => e.textContent.trim())) === 'd6', 'the damage bonus crept onto the die');
+  ok((await page.$eval('.pc-bonus', (e) => e.textContent.trim())) === '+2', 'the damage bonus is not shown separately');
 
   /* "Versatile" is a second set of stats, and the book hides it in the
      property's prose. On the card it stands as a second strip, as the design
      has it. */
-  console.log('универсальное оружие');
+  console.log('versatile weapon');
   await d.open('#/print/q23');
   const strips = await page.$$eval('.pc-strip .pc-cells', (e) => e.map((x) => x.textContent));
-  ok(strips.length === 2, 'у универсального оружия не две полосы: ' + strips.length);
+  ok(strips.length === 2, 'versatile weapon does not have two strips: ' + strips.length);
   ok(
     /Далеко/i.test(strips[0]) && /Вплотную/i.test(strips[1]),
-    'вторая полоса повторяет первую: ' + strips.join(' | ')
+    'the second strip repeats the first: ' + strips.join(' | ')
   );
   const dice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
-  ok(dice.join() === 'd6,d8', 'кости двух полос не из книги: ' + dice.join());
+  ok(dice.join() === 'd6,d8', "the two strips' dice are not from the book: " + dice.join());
 
   /* Each die has its own shape, and colour follows the damage type: physical
      gold, magical blue-violet. */
-  console.log('кость по типу урона');
+  console.log('die by damage type');
   await d.open('#/print/q1');
   ok(
     /die-d8-phy\.svg$/.test(await page.$eval('.pc-die img', (e) => e.getAttribute('src'))),
-    'у физического d8 не своя кость'
+    'the physical d8 does not have its own die'
   );
   await d.open('#/print/q35');
   const md = await page.$$eval('.pc-die img', (e) => e.map((x) => x.getAttribute('src')));
-  ok(/die-d6-mag\.svg$/.test(md[0]), 'у магического d6 не магическая кость: ' + md[0]);
-  ok(await page.$('.pc-die.mag'), 'магическая кость не помечена классом');
+  ok(/die-d6-mag\.svg$/.test(md[0]), 'the magical d6 does not have a magical die: ' + md[0]);
+  ok(await page.$('.pc-die.mag'), 'the magical die is not marked with its class');
   /* Every die has its own shape, and none draws as the generic hexagon - d4
      and d12 used to fall into it and looked out of place. */
   const DICE = [
@@ -359,8 +359,8 @@ const { ok } = rep;
   for (const [id, die] of DICE) {
     await d.open('#/print/' + id);
     const src = await page.$eval('.pc-die img', (e) => e.getAttribute('src'));
-    ok(new RegExp('die-' + die + '-(phy|mag)\\.svg$').test(src), die + ' взял чужую форму: ' + src);
-    ok(await page.$('.pc-die.own'), die + ' нарисован общим шестиугольником');
+    ok(new RegExp('die-' + die + '-(phy|mag)\\.svg$').test(src), die + ' took the wrong shape: ' + src);
+    ok(await page.$('.pc-die.own'), die + ' is drawn as the generic hexagon');
   }
 
   /* Values in the strip are not ellipsised: they shrink by font instead. */
@@ -374,7 +374,7 @@ const { ok } = rep;
       })
       .map((x) => x.textContent)
   );
-  ok(!cut.length, 'значение в полосе обрезано: ' + cut.join(', '));
+  ok(!cut.length, 'a value in the strip is clipped: ' + cut.join(', '));
 
   /* The longest trait/range/bonus combinations in the whole catalogue: if a
      value is ever going to be cut, it is on these. Both sheet kinds are
@@ -395,7 +395,7 @@ const { ok } = rep;
         })
         .map((v) => v.textContent);
     });
-    ok(!lost.length, (isBw ? 'ч/б: ' : 'цвет: ') + 'на самых длинных значениях потерян текст: ' + lost.join(', '));
+    ok(!lost.length, (isBw ? 'bw: ' : 'colour: ') + 'text is lost on the longest values: ' + lost.join(', '));
   }
   await d.open('#/print/q1');
   await colour();
@@ -410,35 +410,35 @@ const { ok } = rep;
     const fr = document.querySelector('.pc-frame').getBoundingClientRect();
     return ((fr.left - die.right) / document.querySelector('.pcard').clientWidth) * 344;
   });
-  ok(seam < 0, 'рамка не заходит за кость: зазор ' + seam.toFixed(1));
+  ok(seam < 0, 'the frame does not reach behind the die: gap ' + seam.toFixed(1));
   /* And the damage bonus sits inside the first cell, pressed against the die,
      while the damage type sits at the divider. With no bonus the type
      centres in the cell: nothing to press it against then. */
-  ok(await page.$('.pc-c1.wbonus .pc-bonus'), 'бонус урона снова снаружи рамки');
+  ok(await page.$('.pc-c1.wbonus .pc-bonus'), 'the damage bonus is outside the frame again');
   const spread = await page.$eval('.pc-c1', (e) => getComputedStyle(e).justifyContent);
-  ok(spread === 'space-between', 'бонус не прижат к кости: ' + spread);
+  ok(spread === 'space-between', 'the bonus is not pressed against the die: ' + spread);
   await d.open('#/print/q1'); // damage with no bonus
-  ok(!(await page.$('.pc-c1.wbonus')), 'у кости без бонуса включён разнос');
+  ok(!(await page.$('.pc-c1.wbonus')), 'a die with no bonus has spacing turned on');
   ok(
     (await page.$eval('.pc-c1', (e) => getComputedStyle(e).justifyContent)) === 'center',
-    'без бонуса тип урона не по середине отсека'
+    'with no bonus the damage type is not centred in the cell'
   );
 
   /* Armour is counted differently: instead of a grip mark, a shield with its
      Armour Score; instead of damage, a threshold scale. */
-  console.log('броня');
+  console.log('armour');
   await d.open('#/print/q313');
-  ok(!(await page.$('.pc-burden')), 'у брони завелись ладони хвата');
+  ok(!(await page.$('.pc-burden')), 'armour grew burden-grip hands');
   const shield = await page.$eval('.pc-shield', (e) => e.textContent.trim());
-  ok(/^3/.test(shield), 'на щите не Показатель Брони: ' + shield);
-  ok(/БРОНЯ/i.test(shield), 'на щите нет слова: ' + shield);
+  ok(/^3/.test(shield), 'the shield is missing the Armor Score ("Показатель Брони"): ' + shield);
+  ok(/БРОНЯ/i.test(shield), 'the shield is missing the word: ' + shield);
   /* The mark comes from the design: in colour it is a dark shield in a gold
      halo with a white number, not an outline with a dark number - a
      different mark altogether. */
   const shieldFile = svgFile(await page.$eval('.pc-shield img', (e) => e.getAttribute('src')));
-  ok(/fill="#18171C"/.test(shieldFile), 'щит в цвете снова один контур, без тёмного поля');
+  ok(/fill="#18171C"/.test(shieldFile), 'the shield in colour is an outline again, with no dark fill');
   const asInk = await page.$eval('.pc-shield b', (e) => getComputedStyle(e).color);
-  ok(/255, 255, 255/.test(asInk), 'число на тёмном щите не белое: ' + asInk);
+  ok(/255, 255, 255/.test(asInk), 'the number on the dark shield is not white: ' + asInk);
   /* The number sits centred on the shield, the caption under it and not
      flush: both offsets were computed from the mark's width, and the width
      later changed - so they drifted apart. */
@@ -471,18 +471,18 @@ const { ok } = rep;
       { timeout: 8000, polling: 'raf' }
     );
     const m = await mark();
-    ok(Math.abs(m.off) < 1.5, (isBw ? 'ч/б: ' : 'цвет: ') + 'число сдвинуто от середины щита на ' + m.off.toFixed(1));
-    ok(m.gap > 1.5, (isBw ? 'ч/б: ' : 'цвет: ') + 'подпись прижата к щиту: зазор ' + m.gap.toFixed(1));
+    ok(Math.abs(m.off) < 1.5, (isBw ? 'bw: ' : 'colour: ') + 'the number is offset from the shield centre by ' + m.off.toFixed(1));
+    ok(m.gap > 1.5, (isBw ? 'bw: ' : 'colour: ') + 'the caption is pressed against the shield: gap ' + m.gap.toFixed(1));
   }
   await d.open('#/print/q313');
   await colour();
   await d.settle();
   const th = await page.$eval('.pc-thstrip', (e) => e.textContent);
-  ok(/5/.test(th) && /11/.test(th), 'на шкале нет порогов: ' + th);
-  ok((await page.$$eval('.pc-th-box', (e) => e.length)) === 2, 'порогов на шкале не два');
+  ok(/5/.test(th) && /11/.test(th), 'the scale has no thresholds: ' + th);
+  ok((await page.$$eval('.pc-th-box', (e) => e.length)) === 2, 'the scale does not have two thresholds');
   /* Both threshold cells are the same size, however many digits sit in them. */
   const thBox = await page.$$eval('.pc-th-box', (e) => e.map((x) => Math.round(x.getBoundingClientRect().width)));
-  ok(thBox[0] === thBox[1], 'клетки порогов разной ширины: ' + thBox.join(' и '));
+  ok(thBox[0] === thBox[1], 'threshold cells are different widths: ' + thBox.join(' and '));
   /* And the diamonds over the captions: one, two or three of them, but always
      the same diamond. */
   const dots = await page.$$eval('.pc-th-lab img', (e) =>
@@ -493,7 +493,7 @@ const { ok } = rep;
   );
   ok(
     new Set(dots.map((d2) => d2.split('@')[1])).size === 1,
-    'ромбы над подписями разной высоты: ' + dots.join(', ')
+    'diamonds above the captions are different heights: ' + dots.join(', ')
   );
   /* The scale's frame is a css border, not a picture: the picture stretched
      to height (the file is half as tall as the space it sits in) and the
@@ -504,31 +504,31 @@ const { ok } = rep;
       r = e.getBoundingClientRect();
     return { img: c.backgroundImage, rad: parseFloat(c.borderTopLeftRadius), h: r.height, w: r.width };
   });
-  ok(frame.img === 'none', 'рамка шкалы порогов снова картинка: ' + frame.img);
-  ok(frame.rad <= frame.h / 2 + 0.5, 'скругление рамки больше половины высоты: ' + frame.rad + ' при ' + frame.h);
+  ok(frame.img === 'none', "the threshold scale's frame is a picture again: " + frame.img);
+  ok(frame.rad <= frame.h / 2 + 0.5, "the frame's rounding is more than half its height: " + frame.rad + ' at ' + frame.h);
   /* The cells overhang the frame top and bottom - as the design has it. */
   const thH = await page.$eval('.pc-th-box', (e) => e.getBoundingClientRect().height);
-  ok(thH > frame.h, 'клетки порогов не выходят за рамку: ' + thH + ' и ' + frame.h);
-  ok(!(await page.$('.pc-die')), 'у брони завелась кость урона');
+  ok(thH > frame.h, 'threshold cells do not overhang the frame: ' + thH + ' and ' + frame.h);
+  ok(!(await page.$('.pc-die')), 'armour grew a damage die');
 
   /* Loot has neither. */
   await d.open('#/print/ci1');
-  ok(!(await page.$('.pc-strip')) && !(await page.$('.pc-thstrip')), 'у предмета завелась полоса характеристик');
-  ok(!(await page.$('.pc-burden')), 'у предмета завелись ладони хвата');
+  ok(!(await page.$('.pc-strip')) && !(await page.$('.pc-thstrip')), 'the item grew a stat strip');
+  ok(!(await page.$('.pc-burden')), 'the item grew burden-grip hands');
 
   /* An artifact or a cursed item carries no rank, and the book's word for it
      sits on the tag instead of "item". */
   await d.open('#/print/voa2_a3');
-  ok(!(await page.$('.pc-tier')), 'у артефакта завелась лента ранга');
-  ok(/АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)), 'артефакт не назван на плашке');
+  ok(!(await page.$('.pc-tier')), 'the artifact grew a tier ribbon');
+  ok(/АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)), 'the artifact is not named on the tag');
 
   /* An upgrade chain and links to other cards do not go to print: the card
      goes to a player, and that is a conversation with the GM, and 63 mm is
      spoken for already. */
-  console.log('лишнее не печатается');
+  console.log('extras are not printed');
   await d.open('#/print/ci18');
   const crafted = await page.$eval('.pcard', (e) => e.textContent);
-  ok(!/Крафт|Craft|улучш/i.test(crafted), 'на карту попала цепочка улучшений: ' + crafted.slice(0, 120));
+  ok(!/Крафт|Craft|улучш/i.test(crafted), 'the upgrade chain leaked onto the card: ' + crafted.slice(0, 120));
 
   /* The card is deliberately light: a dark background eats ink, and on a
      black-and-white printer it turns text to mush. */
@@ -536,28 +536,28 @@ const { ok } = rep;
     card: getComputedStyle(e).backgroundColor,
     name: getComputedStyle(e.querySelector('.pc-name')).color
   }));
-  ok(/255, 255, 255/.test(paint.card), 'карта печатается не белой: ' + paint.card);
+  ok(/255, 255, 255/.test(paint.card), 'the card does not print white: ' + paint.card);
   const lum = (paint.name.match(/\d+/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
-  ok(lum < 90, 'имя на карте слишком светлое для печати: ' + paint.name);
+  ok(lum < 90, 'the name on the card is too light to print: ' + paint.name);
 
   /* ---------- black-and-white sheet ----------
      Not "colour with no colour": there are no pictures at all, details are
      white with a dark outline, and the ribbon, the tag and the mark gather
      into a row above the name. */
-  console.log('чёрно-белый лист');
+  console.log('black-and-white sheet');
   await d.open('#/print/q1');
-  ok(await page.$('.pc-img'), 'в цветном режиме нет картинки');
+  ok(await page.$('.pc-img'), 'no picture in colour mode');
   await bw();
   await d.settle();
-  ok(await page.$('.pcard.bw'), 'кнопка не включила чёрно-белый лист');
-  ok(!(await page.$('.pc-img')) && !(await page.$('.pc-art')), 'в чёрно-белом осталась картинка');
+  ok(await page.$('.pcard.bw'), 'the button did not switch to the black-and-white sheet');
+  ok(!(await page.$('.pc-img')) && !(await page.$('.pc-art')), 'a picture remains in black-and-white');
   ok(
     (await page.$('.pc-head .pc-tier')) && (await page.$('.pc-head .pc-tags')),
-    'в чёрно-белом лента и плашка не собрались в строку'
+    'in black-and-white the ribbon and tag did not gather into a row'
   );
   ok(
     /-bw\.svg$/.test(await page.$eval('.pc-tier img', (e) => e.getAttribute('src'))),
-    'в чёрно-белом взята цветная деталь'
+    'black-and-white uses a colour asset'
   );
   /* The rank ribbon hangs from the card's top edge - in the design it starts
      exactly on the border. Standing in the common row it used to drift down
@@ -566,7 +566,7 @@ const { ok } = rep;
     const t = c.querySelector('.pc-tier').getBoundingClientRect();
     return Math.round(t.top - c.getBoundingClientRect().top);
   });
-  ok(tierTop <= 1, 'лента ранга оторвалась от верха карты на ' + tierTop + ' px');
+  ok(tierTop <= 1, "the tier ribbon detached from the card's top by " + tierTop + ' px');
   /* The space held for the ribbon is held only where the ribbon exists. Loot
      has no rank, and the kind tag used to sit under the empty space instead
      of the text's own left edge. */
@@ -581,10 +581,10 @@ const { ok } = rep;
       name: c.querySelector('.pc-name').getBoundingClientRect().left - cr.left
     };
   });
-  ok(!noTier.tier, 'у добычи откуда-то взялась лента ранга');
+  ok(!noTier.tier, 'loot somehow grew a tier ribbon');
   ok(
     Math.abs(noTier.tag - noTier.name) < 2,
-    'без ленты плашка вида не по левому краю текста: ' + noTier.tag.toFixed(0) + ' и ' + noTier.name.toFixed(0)
+    "with no ribbon, the kind tag is not at the text's left edge: " + noTier.tag.toFixed(0) + ' and ' + noTier.name.toFixed(0)
   );
   /* A magic weapon's die shows a white number on a blue fill. In
      black-and-white the fill is white, and the number has to darken or it is
@@ -596,15 +596,15 @@ const { ok } = rep;
      the facets. The facets were once simply removed, and the die stopped
      looking like a die. */
   const bwDie = await page.$eval('.pc-die img', (e) => e.getAttribute('src'));
-  ok(/-bw\.svg$/.test(bwDie), 'в чёрно-белом взята цветная кость: ' + bwDie);
+  ok(/-bw\.svg$/.test(bwDie), 'black-and-white uses a colour die: ' + bwDie);
   const bwFile = svgFile(bwDie);
-  ok((bwFile.match(/<path/g) || []).length === 2, 'у чёрно-белой кости пропали грани');
-  ok(/0 0 [\d.]+ [\d.]+/.test(bwFile), 'у чёрно-белой кости нет рамки');
+  ok((bwFile.match(/<path/g) || []).length === 2, "the black-and-white die's facets are missing");
+  ok(/0 0 [\d.]+ [\d.]+/.test(bwFile), 'the black-and-white die has no frame');
   const halo = await page.$eval('.pc-die b', (e) => getComputedStyle(e).textShadow);
-  ok(halo && halo !== 'none', 'у цифры на кости нет ореола: ' + halo);
+  ok(halo && halo !== 'none', 'the number on the die has no halo: ' + halo);
   const dieInk = await page.$eval('.pc-die b', (e) => getComputedStyle(e).color);
   const dl = (dieInk.match(/\d+/g) || []).slice(0, 3).map(Number).reduce((a, b) => a + b, 0) / 3;
-  ok(dl < 90, 'в чёрно-белом число на кости белое по белому: ' + dieInk);
+  ok(dl < 90, 'in black-and-white the number on the die is white on white: ' + dieInk);
   /* The caption sits at the card's bottom edge. In black-and-white the block
      is pinned to the top, and it used to hang wherever the rule ended - a
      different height on every card. */
@@ -616,7 +616,7 @@ const { ok } = rep;
   );
   ok(
     feet.every((v) => v < 24),
-    'подпись не у нижнего края: ' + feet.map((v) => v.toFixed(0)).join(', ')
+    'the caption is not at the bottom edge: ' + feet.map((v) => v.toFixed(0)).join(', ')
   );
 
   /* A held grip in black-and-white used to paint almost black, with a dark
@@ -627,13 +627,13 @@ const { ok } = rep;
   await bw();
   await d.settle();
   const bwBurden = await page.$eval('.pc-burden img', (e) => e.getAttribute('src'));
-  ok(/-bw\.svg$/.test(bwBurden), 'в чёрно-белом взят цветной знак хвата: ' + bwBurden);
+  ok(/-bw\.svg$/.test(bwBurden), 'black-and-white uses a colour grip mark: ' + bwBurden);
   const bwHand = svgFile(bwBurden);
   const ink = (h) => parseInt(h.slice(1, 3), 16) + parseInt(h.slice(3, 5), 16) + parseInt(h.slice(5, 7), 16);
   const fills = (bwHand.match(/fill="#[0-9a-fA-F]{6}"/g) || []).map((s) => s.slice(7, 14));
   ok(
     fills.length && fills.every((f) => ink(f) > 180),
-    'в чёрно-белом ладонь залита почти чёрным: ' + fills.join(', ')
+    'in black-and-white the hand is filled almost black: ' + fills.join(', ')
   );
 
   /* The die is the same size in both looks: the same card must not change its
@@ -643,11 +643,11 @@ const { ok } = rep;
   await bw();
   await d.settle();
   const dieBw = await page.$eval('.pc-die', (e) => Math.round(e.getBoundingClientRect().width));
-  ok(dieColour === dieBw, 'кость в цвете и в чёрно-белом разного размера: ' + dieColour + ' и ' + dieBw);
+  ok(dieColour === dieBw, 'the die is a different size in colour vs black-and-white: ' + dieColour + ' and ' + dieBw);
 
   await colour();
   await d.settle();
-  ok(await page.$('.pc-img'), 'кнопка не вернула цветной лист');
+  ok(await page.$('.pc-img'), 'the button did not return to the colour sheet');
 
   /* A magic weapon has its own frame - by picture and by colour. In
      black-and-white the picture stays: it is its own there too, and the
@@ -662,7 +662,7 @@ const { ok } = rep;
     }
     ok(
       (await ribbonOf()) === (isBw ? 'ribbon-mag-bw.svg' : 'ribbon-mag.svg'),
-      'у магического оружия не своя рамка: ' + (await ribbonOf())
+      'the magic weapon does not have its own frame: ' + (await ribbonOf())
     );
     await d.open('#/print/q1');
     if (isBw) {
@@ -671,7 +671,7 @@ const { ok } = rep;
     }
     ok(
       (await ribbonOf()) === (isBw ? 'ribbon-bw.svg' : 'ribbon.svg'),
-      'у физического оружия не своя рамка: ' + (await ribbonOf())
+      'the physical weapon does not have its own frame: ' + (await ribbonOf())
     );
   }
   await d.open('#/print/q1');
@@ -698,22 +698,22 @@ const { ok } = rep;
       })
       .filter(Boolean)
   );
-  ok(art.length > 2, 'не на чем проверить верх карты');
+  ok(art.length > 2, "nothing to check the card's top against");
   art.forEach((a) => {
-    ok(Math.abs(a.top) < 2, a.id + ': поле снимка не от верхнего края: ' + a.top.toFixed(1));
-    ok(a.wide > 0.98, a.id + ': поле снимка не во всю ширину: ' + (a.wide * 100).toFixed(0) + '%');
+    ok(Math.abs(a.top) < 2, a.id + ": the picture's field is not flush with the top edge: " + a.top.toFixed(1));
+    ok(a.wide > 0.98, a.id + ": the picture's field is not full width: " + (a.wide * 100).toFixed(0) + '%');
     /* The picture does not run under the text: the item itself is there, and
        its bottom cannot be cut. */
-    ok(a.over < 2, a.id + ': снимок уходит под текст на ' + a.over.toFixed(0) + ' px');
+    ok(a.over < 2, a.id + ': the picture runs under the text by ' + a.over.toFixed(0) + ' px');
   });
   const capInk = await page.$eval('.pc-shield i', (e) => getComputedStyle(e).color);
-  ok(/255, 255, 255/.test(capInk), 'подпись знака на снимке не светлая: ' + capInk);
+  ok(/255, 255, 255/.test(capInk), "the mark's caption over the picture is not light: " + capInk);
   /* And in black-and-white there is no picture, and it is dark again - over
      white. */
   await bw();
   await d.settle();
   const bwCap = await page.$eval('.pc-shield i', (e) => getComputedStyle(e).color);
-  ok(!/255, 255, 255/.test(bwCap), 'в чёрно-белом подпись знака белая по белому: ' + bwCap);
+  ok(!/255, 255, 255/.test(bwCap), "in black-and-white the mark's caption is white on white: " + bwCap);
   await d.open('#/print/q1');
   await colour();
   await d.settle();
@@ -733,7 +733,7 @@ const { ok } = rep;
      cards it has to differ. With a flat fill it was the same on all of them
      to within half a point. */
   {
-    console.log('край снимка у реза');
+    console.log('art edge at the cut line');
     const dpr = 2; // at one pixel the noise eats the difference
     await page.setViewport({ width: 1180, height: 950, deviceScaleFactor: dpr });
     /* Nine cards with different picture backgrounds: from near-black (ci19)
@@ -754,7 +754,7 @@ const { ok } = rep;
         })
         .filter(Boolean)
     );
-    ok(spots.length === 9, 'не на чем проверить край снимка: ' + spots.length);
+    ok(spots.length === 9, 'nothing to check the art edge against: ' + spots.length);
     const shot = readPNG(await page.screenshot({ fullPage: true }));
     const edges = [];
     spots.forEach((s) => {
@@ -778,14 +778,14 @@ const { ok } = rep;
       hi = Math.max.apply(null, edges);
     ok(
       hi - lo > 8,
-      'цвет у линии реза одинаков на всех картах (' + lo.toFixed(1) + '..' + hi.toFixed(1) + ') - значит, взят из заливки, а не из снимка'
+      'the colour at the cut line is the same on every card (' + lo.toFixed(1) + '..' + hi.toFixed(1) + ') - meaning it comes from the fill, not the picture'
     );
     /* And light pictures read noticeably lighter than the near-black margin
        that used to stand in for them: the band is gone there, the picture
        reaches all the way to the cut. */
     ok(
       edges.filter((v) => v > 14).length >= 3,
-      'ни у одной светлой карты снимок не доходит до реза'
+      'no light card has its picture reach the cut'
     );
     /* The backing is the same file as the picture itself: otherwise it has
        its own colour and the seam comes back, just somewhere else. */
@@ -796,7 +796,7 @@ const { ok } = rep;
         return !i || (b && b.getAttribute('src') === i.getAttribute('src'));
       })
     );
-    ok(same, 'подложка под снимком - не тот же файл, что снимок');
+    ok(same, 'the backing under the picture is not the same file as the picture');
     await page.setViewport({ width: 1180, height: 950 });
   }
 
@@ -806,21 +806,21 @@ const { ok } = rep;
      screen and another on paper, but the shares are the same. A 1.5-point
      tolerance is for the cut border, which the design has none of, and for
      rounding. */
-  console.log('размеры по макету');
+  console.log('measurements against the design');
   const SPEC = {
-    'лента ранга слева': ['.pc-tier', 'left', 24],
-    'лента ранга сверху': ['.pc-tier', 'top', 0],
-    'знак брони справа': ['.pc-shield', 'right', 24],
-    'знак брони сверху': ['.pc-shield', 'top', 20],
-    'знак брони шириной': ['.pc-shield', 'width', 32],
-    'знак хвата справа': ['.pc-burden', 'right', 24],
-    'знак хвата сверху': ['.pc-burden', 'top', 20],
-    'знак хвата шириной': ['.pc-burden', 'width', 62],
-    'полоса урона слева': ['.pc-strip', 'left', 24],
-    'полоса урона высотой': ['.pc-strip', 'height', 48],
-    'кость шириной': ['.pc-die', 'width', 40],
-    'текст слева': ['.pc-text', 'left', 24],
-    'подпись слева': ['.pc-bottom', 'left', 24]
+    'tier ribbon left': ['.pc-tier', 'left', 24],
+    'tier ribbon top': ['.pc-tier', 'top', 0],
+    'armour mark right': ['.pc-shield', 'right', 24],
+    'armour mark top': ['.pc-shield', 'top', 20],
+    'armour mark width': ['.pc-shield', 'width', 32],
+    'burden mark right': ['.pc-burden', 'right', 24],
+    'burden mark top': ['.pc-burden', 'top', 20],
+    'burden mark width': ['.pc-burden', 'width', 62],
+    'damage strip left': ['.pc-strip', 'left', 24],
+    'damage strip height': ['.pc-strip', 'height', 48],
+    'die width': ['.pc-die', 'width', 40],
+    'text left': ['.pc-text', 'left', 24],
+    'caption left': ['.pc-bottom', 'left', 24]
   };
   for (const isBw of [false, true]) {
     for (const id of ['q1', 'q313']) {
@@ -849,11 +849,11 @@ const { ok } = rep;
                   : what === 'width'
                     ? r.width * k
                     : r.height * k;
-          if (Math.abs(v - ideal) > 1.5) out.push(name + ': ' + v.toFixed(1) + ' вместо ' + ideal);
+          if (Math.abs(v - ideal) > 1.5) out.push(name + ': ' + v.toFixed(1) + ' instead of ' + ideal);
         }
         return out;
       }, SPEC);
-      ok(!off.length, (isBw ? 'ч/б ' : 'цвет ') + id + ' разошлась с макетом: ' + off.join('; '));
+      ok(!off.length, (isBw ? 'bw ' : 'colour ') + id + ' diverges from the design: ' + off.join('; '));
     }
   }
   await d.open('#/print/q1');
@@ -863,12 +863,12 @@ const { ok } = rep;
   /* ---------- long text shrinks ----------
      An artifact's description runs many times longer than a potion's, and
      the space is the same one. */
-  console.log('длинный текст ужимается');
+  console.log('long text shrinks');
   await d.open('#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11');
   const over = await page.$$eval('.pc-text', (e) => e.map((x) => x.scrollHeight - x.clientHeight));
   ok(
     over.every((v) => v <= 1),
-    'длинный текст вылез за карту: ' + over.join(',')
+    'long text spilled off the card: ' + over.join(',')
   );
   /* The fit hands over space rule by rule: font, then padding, then the
      picture itself. On this Windows host, 2026-09-16, this nine-card set
@@ -883,7 +883,7 @@ const { ok } = rep;
      engages - and the rung invariant right below it is what still holds
      end-to-end wherever the ladder is actually reached. */
   const shrunk = await page.$$eval('.pc-text', (e) => e.filter((x) => x.style.fontSize !== '').length);
-  ok(shrunk > 0, 'ни одна длинная карта не ужала текст');
+  ok(shrunk > 0, 'no long card shrank its text');
 
   /* The rung invariant, host-independent: the padding step only ever runs
      after the font step has already failed to fit, and the art step only
@@ -910,7 +910,7 @@ const { ok } = rep;
   );
   ok(
     !floors.some((c) => c.atFloor) || floors.some((c) => c.artHidden),
-    'подгонка дошла до пола отступа, но снимок ни у одной карты не спрятан'
+    'the fit reached the padding floor, but no card hid its picture'
   );
 
   /* The picture either takes a visible band or is gone entirely. There must
@@ -928,32 +928,32 @@ const { ok } = rep;
       })
       .filter((v) => v > 0 && v < 20)
   );
-  ok(!slivers.length, 'над именем осталась полоска картинки: ' + slivers.map((v) => v.toFixed(1)).join(', '));
+  ok(!slivers.length, 'a sliver of picture remains above the name: ' + slivers.map((v) => v.toFixed(1)).join(', '));
 
   /* Print replaces the page it came from: with no "back" button there was
      nowhere to return to except browser history. */
-  console.log('дорога назад');
+  console.log('the way back');
   await d.open('#/tables/core_item');
   await page.click('.rows .row .selbox input');
   await d.settle();
   await page.click('.selbarwrap a[href^="#/print/"]');
   await d.settle();
-  ok(await d.has('Назад'), 'с печати нет дороги назад');
+  ok(await d.has('Назад'), 'there is no way back from print');
   await d.click('Назад');
-  ok(/#\/tables\/core_item/.test(await d.hash()), 'кнопка «назад» увела не туда, откуда пришли: ' + (await d.hash()));
+  ok(/#\/tables\/core_item/.test(await d.hash()), 'the back button did not return to where it came from: ' + (await d.hash()));
 
   /* ---------- entry points ----------
      Three places: the item card, a list, and the selection bar in a table. */
-  console.log('точки входа');
+  console.log('entry points');
   await d.open('#/i/q1');
   ok(
     (await page.$eval('a[href^="#/print/"]', (e) => e.getAttribute('href'))) === '#/print/q1',
-    'со страницы вещи печатается не она'
+    'the item page does not print itself'
   );
   /* And it stands beside "add to list": both take the item off the page - to
      a list or onto paper - while copying leaves it in the clipboard. */
-  ok(await page.$('.card.full .cardpick a[href^="#/print/"]'), 'кнопка печати не рядом с «в список»');
-  ok(!(await page.$('.card.full .card-acts a[href^="#/print/"]')), 'кнопка печати осталась среди кнопок копирования');
+  ok(await page.$('.card.full .cardpick a[href^="#/print/"]'), 'the print button is not beside "add to list"');
+  ok(!(await page.$('.card.full .card-acts a[href^="#/print/"]')), 'the print button remained among the copy buttons');
 
   await d.open('#/tables/core_item');
   await page.click('.rows .row .selbox input');
@@ -961,16 +961,16 @@ const { ok } = rep;
   const acts = await page.$$eval('.selbarwrap .selacts > *', (e) => e.map((x) => (x.className || '') + '|' + x.tagName));
   ok(
     /seldrop/.test(acts[0] || '') && /A$/.test(acts[1] || ''),
-    'в полосе выделения печать не сразу за «в список»: ' + acts.join(' ')
+    'in the selection bar, print is not right after "add to list": ' + acts.join(' ')
   );
   const sel = await page.$eval('.selbarwrap a[href^="#/print/"]', (e) => e.getAttribute('href'));
-  ok(/^#\/print\/\w+$/.test(sel), 'из полосы выделения не печатается: ' + sel);
+  ok(/^#\/print\/\w+$/.test(sel), 'the selection bar does not print: ' + sel);
   /* Print is a link, and ordinary buttons stand beside it. The rule that
      strips the underline sat only on the card's own actions, and here it
      arrived underlined - one button in the row unlike the rest. */
   ok(
     (await page.$eval('.selbarwrap a.btn', (e) => getComputedStyle(e).textDecorationLine)) === 'none',
-    'кнопка печати подчёркнута, а соседние - нет'
+    'the print button is underlined, and its neighbours are not'
   );
 
   await d.seed({
@@ -979,21 +979,21 @@ const { ok } = rep;
   await d.open('#/lists/p');
   ok(
     (await page.$eval('.card-acts a[href^="#/print/"]', (e) => e.getAttribute('href'))) === '#/print/ci1-q1',
-    'со списка печатается не он'
+    'the list does not print itself'
   );
 
   /* Garbage in the address must not drop the page - only say there is
      nothing to print. */
   await d.open('#/print/nosuchid');
-  ok(!(await page.$('.psheet')), 'из выдуманного адреса собрался лист');
-  ok(/\S/.test(await page.$eval('.page-h', (e) => e.textContent)), 'пустая печать без заголовка');
+  ok(!(await page.$('.psheet')), 'a made-up address assembled a sheet');
+  ok(/\S/.test(await page.$eval('.page-h', (e) => e.textContent)), 'the empty print page has no heading');
 
   /* ---------- the sheet, in counts (R0b.3 C2, `sheetCounts`) ----------
      `renderPrint`'s own arithmetic, off six counts rather than pixels - the
      fast, always-on half of what a print state checks. Every number below is
      computed from each state's own id count, not copied as a constant: a
      future ninth PRINT_CARD_STATES entry inherits the check for free. */
-  console.log('лист по числам');
+  console.log('the sheet, in counts');
   for (const s of PRINT_CARD_STATES) {
     await d.open(s.route);
     if (s.bw) {
@@ -1010,15 +1010,15 @@ const { ok } = rep;
     };
     const printed = Math.min(s.n, 180);
     const sheets = Math.ceil(printed / 9);
-    ok(counts.sheets === sheets, s.label + ': листов не ' + sheets + ': ' + counts.sheets);
-    ok(counts.cards === sheets * 9, s.label + ': мест не ' + sheets * 9 + ': ' + counts.cards);
+    ok(counts.sheets === sheets, s.label + ': sheets are not ' + sheets + ': ' + counts.sheets);
+    ok(counts.cards === sheets * 9, s.label + ': slots are not ' + sheets * 9 + ': ' + counts.cards);
     ok(
       counts.blanks === sheets * 9 - printed,
-      s.label + ': пустых мест не ' + (sheets * 9 - printed) + ': ' + counts.blanks
+      s.label + ': blank slots are not ' + (sheets * 9 - printed) + ': ' + counts.blanks
     );
-    ok(counts.breaks === sheets - 1, s.label + ': разрывов страницы не ' + (sheets - 1) + ': ' + counts.breaks);
-    ok(counts.bw === (s.bw ? sheets : 0), s.label + ': число .psheet.bw не совпало: ' + counts.bw);
-    ok(counts.warn === (s.n > 180 ? 1 : 0), s.label + ': предупреждение об обрезке не совпало: ' + counts.warn);
+    ok(counts.breaks === sheets - 1, s.label + ': page breaks are not ' + (sheets - 1) + ': ' + counts.breaks);
+    ok(counts.bw === (s.bw ? sheets : 0), s.label + ': .psheet.bw count did not match: ' + counts.bw);
+    ok(counts.warn === (s.n > 180 ? 1 : 0), s.label + ': the truncation warning did not match: ' + counts.warn);
   }
 
   /* ---------- the fit, as the numbers it wrote (R0b.3 C2, `cardFit`) ----------
@@ -1034,10 +1034,10 @@ const { ok } = rep;
      English on a second page opened `lang: 'en'`, over the same eight
      card-drawing states and all three widths - the one surface where a
      longer or shorter word can change what the fitting ladder decides.
-     `sheetCounts` and `printMedia` below stay Russian-only: sheet counts and
-     the print-media rules are arithmetic and CSS, neither of which depends
-     on text length in either language. */
-  console.log('подгонка карты по числам');
+     `sheetCounts` and `printMedia` below are driven in Russian only: sheet
+     counts and the print-media rules are arithmetic and CSS, neither of
+     which depends on text length in either language. */
+  console.log('card fit, in numbers');
   async function cardFit(d2, bwFn, colourFn, langTag) {
     for (const width of WIDTHS) {
       await d2.viewport(width.w, width.h);
@@ -1051,18 +1051,18 @@ const { ok } = rep;
         const tag = s.label + ' @ ' + width.w + langTag + ': ';
 
         const text = await d2.eachAt('.pcard:not(.blank) .pc-text', ['font-size']);
-        ok(text.length === printed, tag + 'число карт с текстом не совпало: ' + text.length);
+        ok(text.length === printed, tag + 'the count of cards with text did not match: ' + text.length);
         text.forEach((t) => {
           if (!t.style['font-size']) return;
           const v = parseFloat(t.style['font-size']);
           /* The text ladder's own floor (PrintCard.svelte's second `while (tight()
              && pct > 2.6)`), not the strip box's 2.2 - the two ladders are
              separate and this one never goes lower. */
-          ok(v >= 2.6 && v <= 3.5, tag + 'кегль текста вне лестницы: ' + t.style['font-size']);
+          ok(v >= 2.6 && v <= 3.5, tag + 'text size is off the ladder: ' + t.style['font-size']);
         });
 
         const box2 = await d2.eachAt('.pcard:not(.blank) .pc-content', ['--pcpad']);
-        ok(box2.length === printed, tag + 'число карт с отступом не совпало: ' + box2.length);
+        ok(box2.length === printed, tag + 'the count of cards with padding did not match: ' + box2.length);
         box2.forEach((b) => {
           if (!b.style['--pcpad']) return;
           const v = parseFloat(b.style['--pcpad']);
@@ -1070,18 +1070,18 @@ const { ok } = rep;
              pad > (bw ? 3 : 8)) pad -= 1.5;` steps 5.8 -> 4.3 -> 2.8 in
              black-and-white, one step past the loop's own `> 3` guard -
              `printPage.test.ts:581` pins the same 2.8 floor. */
-          ok(v >= 2.8 && v <= 23, tag + 'отступ вне лестницы: ' + b.style['--pcpad']);
+          ok(v >= 2.8 && v <= 23, tag + 'padding is off the ladder: ' + b.style['--pcpad']);
         });
 
         const art = await d2.eachAt('.pc-art', ['height', '--artw', 'display']);
         ok(
           art.length === (s.bw ? 0 : printed),
-          tag + 'число снимков не совпало с цветным режимом: ' + art.length
+          tag + 'the picture count does not match colour mode: ' + art.length
         );
         art.forEach((a) => {
           ok(
             a.style.display === '' || a.style.display === 'none',
-            tag + 'display у снимка не пусто и не none: ' + a.style.display
+            tag + "the picture's display is neither empty nor none: " + a.style.display
           );
         });
 
@@ -1089,18 +1089,18 @@ const { ok } = rep;
         strip.forEach((v) => {
           if (!v.style['font-size']) return;
           const n = parseFloat(v.style['font-size']);
-          ok(n >= 2.2 && n <= 3, tag + 'кегль полосы вне лестницы: ' + v.style['font-size']);
+          ok(n >= 2.2 && n <= 3, tag + 'strip text size is off the ladder: ' + v.style['font-size']);
         });
 
         const head = await d2.eachAt('.pc-head', []);
         if (s.bw) {
-          ok(head.length === printed, tag + 'не у каждой чёрно-белой карты своя pc-head: ' + head.length);
+          ok(head.length === printed, tag + 'not every black-and-white card has its own pc-head: ' + head.length);
           ok(
             head.every((h) => h.w > 0 && h.h > 0),
-            tag + 'pc-head нулевого размера'
+            tag + 'pc-head is zero-sized'
           );
         } else {
-          ok(head.length === 0, tag + 'в цвете завелась pc-head: ' + head.length);
+          ok(head.length === 0, tag + 'colour mode grew a pc-head: ' + head.length);
         }
       }
     }
@@ -1111,7 +1111,7 @@ const { ok } = rep;
   }
   await cardFit(d, bw, colour, '');
 
-  console.log('подгонка карты по числам (en)');
+  console.log('card fit, in numbers (en)');
   const { ctx: ctxEn, page: pageEn, d: dEn } = await fresh({ width: 1180, height: 950, lang: 'en' });
   const bwEn = () => dEn.click('Black and white');
   const colourEn = () => dEn.click('Colour');
@@ -1129,7 +1129,7 @@ const { ok } = rep;
      these) that pushes past the two-line cap fails loudly instead of
      silently; the "all four at one line" measurement itself stays in
      `docs/specs/FEATURES.md`, "Print". */
-  console.log('имя карточки не длиннее двух строк (P16)');
+  console.log('card name no longer than two lines (P16)');
   async function nameLines(d2, page2, langTag, restoreW, restoreH) {
     await d2.viewport(1100, 900);
     try {
@@ -1143,7 +1143,7 @@ const { ok } = rep;
           const lines = await page2.$eval(`.pcard[data-pid="${pid}"] .pc-name`, (e) => e.getClientRects().length);
           ok(
             lines <= 2,
-            'имя ' + pid + langTag + (bwOn ? ' ч/б' : '') + ' превысило потолок в две строки: ' + lines
+            'name ' + pid + langTag + (bwOn ? ' bw' : '') + ' exceeded the two-line cap: ' + lines
           );
         }
       }
@@ -1165,10 +1165,10 @@ const { ok } = rep;
      that emulates print media, so it always restores the medium in a
      `finally`, or leaving it on would photograph the wrong medium for
      whatever runs next. */
-  console.log('лист под печатной медиа');
+  console.log('the sheet under print media');
   const MEDIA_STATES = [
     { route: '#/print/ci1-q1', bw: false, label: 'ci1-q1' },
-    { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ ч/б' },
+    { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ bw' },
     { route: TEN, bw: false, label: 'TEN' },
     { route: '#/print/nope', bw: false, label: 'nope' }
   ];
@@ -1198,19 +1198,19 @@ const { ok } = rep;
       for (const [name, val] of Object.entries(chrome)) {
         ok(
           val && val.display === 'none',
-          s.label + ': ' + name + ' не спрятан под печать: ' + JSON.stringify(val)
+          s.label + ': ' + name + ' is not hidden under print: ' + JSON.stringify(val)
         );
       }
 
       if (s.route === '#/print/nope') {
-        ok(!(await d.computed('.psheet', ['display'])), s.label + ': у пустой печати всё равно завёлся лист');
+        ok(!(await d.computed('.psheet', ['display'])), s.label + ': an empty print page grew a sheet anyway');
       } else {
         const body = await d.computed('body', ['background-color', 'color']);
         ok(
           body['background-color'] === 'rgb(255, 255, 255)',
-          s.label + ': фон страницы не белый: ' + body['background-color']
+          s.label + ': page background is not white: ' + body['background-color']
         );
-        ok(body.color === 'rgb(0, 0, 0)', s.label + ': текст страницы не чёрный: ' + body.color);
+        ok(body.color === 'rgb(0, 0, 0)', s.label + ': page text is not black: ' + body.color);
 
         const main = await d.computed('main', [
           'max-width',
@@ -1219,40 +1219,40 @@ const { ok } = rep;
           'padding-left',
           'margin-left'
         ]);
-        ok(main['max-width'] === 'none', s.label + ': у main осталось ограничение ширины: ' + main['max-width']);
+        ok(main['max-width'] === 'none', s.label + ': main still has a width limit: ' + main['max-width']);
         /* `width: auto` (Shell.svelte's @media print, off style.css:1406's
            `.wrap,#view{width:auto}`) resolves to the full viewport minus the
            stable scrollbar gutter at this suite's fixed 1180 width - measured
            live, not guessed: 1180 - 15px. */
-        ok(main.width === '1165px', s.label + ': у main ширина не во весь лист: ' + main.width);
+        ok(main.width === '1165px', s.label + ": main's width is not the full sheet: " + main.width);
         ok(
           main['padding-top'] === '0px' && main['padding-left'] === '0px' && main['margin-left'] === '0px',
-          s.label + ': у main остались отступы под печать: ' + JSON.stringify(main)
+          s.label + ': main still has print padding: ' + JSON.stringify(main)
         );
 
         const psheet = await d.computed('.psheet', ['margin-top', 'margin-left', 'box-shadow', 'break-inside']);
         ok(
           psheet['margin-top'] === '0px' && psheet['margin-left'] === '0px',
-          s.label + ': у листа остались поля: ' + JSON.stringify(psheet)
+          s.label + ': the sheet still has margins: ' + JSON.stringify(psheet)
         );
-        ok(psheet['box-shadow'] === 'none', s.label + ': у листа осталась тень: ' + psheet['box-shadow']);
+        ok(psheet['box-shadow'] === 'none', s.label + ': the sheet still has a shadow: ' + psheet['box-shadow']);
         ok(
           psheet['break-inside'] === 'avoid',
-          s.label + ': лист может разорваться посреди страницы: ' + psheet['break-inside']
+          s.label + ': the sheet can break mid-page: ' + psheet['break-inside']
         );
 
         const last = await d.computed('.psheet:last-child', ['height']);
         const lastPx = parseFloat(last.height);
-        ok(Math.abs(lastPx / MM - 297) < 0.6, s.label + ': последний лист не A4 под печать: ' + (lastPx / MM).toFixed(1));
+        ok(Math.abs(lastPx / MM - 297) < 0.6, s.label + ': the last sheet is not A4 under print: ' + (lastPx / MM).toFixed(1));
 
         const card2 = await d.computed('.pcard', ['break-inside', 'print-color-adjust']);
         ok(
           card2['break-inside'] === 'avoid',
-          s.label + ': карта может разорваться посреди страницы: ' + card2['break-inside']
+          s.label + ': the card can break mid-page: ' + card2['break-inside']
         );
         ok(
           card2['print-color-adjust'] === 'exact',
-          s.label + ': печатные цвета карты не сохраняются: ' + card2['print-color-adjust']
+          s.label + ": the card's print colours are not preserved: " + card2['print-color-adjust']
         );
       }
 
@@ -1260,7 +1260,7 @@ const { ok } = rep;
         const next = await d.computed('.psheet[data-next]', ['break-before']);
         ok(
           next['break-before'] === 'page',
-          s.label + ': второй лист не начинает новую страницу печати: ' + next['break-before']
+          s.label + ': the second sheet does not start a new print page: ' + next['break-before']
         );
       }
     } finally {
@@ -1273,13 +1273,13 @@ const { ok } = rep;
      `RecordModal` opened from a roll result, and the "removed" undo toast
      from a seeded list. Both print rules carry `!important`/are otherwise
      unconditional, so nothing here depends on which route raised them. */
-  console.log('модалка и тост-с-действием под печатной медиа (D20)');
+  console.log('the dialog and the action toast under print media (D20)');
   await d.open('#/roll/wondrous');
   await d.click('Страница');
   await d.media('print');
   try {
     const dialog = await d.computed('dialog', ['display']);
-    ok(dialog && dialog.display === 'none', 'D20: открытая модалка не спряталась под печать: ' + JSON.stringify(dialog));
+    ok(dialog && dialog.display === 'none', 'D20: the open dialog did not hide under print: ' + JSON.stringify(dialog));
   } finally {
     await d.media(undefined);
   }
@@ -1290,7 +1290,7 @@ const { ok } = rep;
   await d.media('print');
   try {
     const toast = await d.computed('.toast', ['display']);
-    ok(toast && toast.display === 'none', 'D20: тост с действием не спрятался под печать: ' + JSON.stringify(toast));
+    ok(toast && toast.display === 'none', 'D20: the action toast did not hide under print: ' + JSON.stringify(toast));
   } finally {
     await d.media(undefined);
   }
@@ -1300,15 +1300,15 @@ const { ok } = rep;
      deleted parity harness's `copiedPrintLink` spec read it. Russian-only
      above, English added below (R0c C2) - the link text changes, the hash
      it carries does not. */
-  console.log('ссылка на набор, скопированная');
+  console.log('the set link, copied');
   await d.open('#/print/ci1-q1');
   await d.resetClipboard();
   await d.click('Ссылка на набор');
   const clip = await d.clipboard();
   const hash = clip.text ? clip.text.slice(clip.text.indexOf('#')) : null;
-  ok(hash === '#/print/ci1-q1', 'скопированная ссылка на набор не та: ' + hash);
+  ok(hash === '#/print/ci1-q1', 'the copied set link is wrong: ' + hash);
 
-  console.log('ссылка на набор, скопированная (en)');
+  console.log('the set link, copied (en)');
   await dEn.open('#/print/ci1-q1');
   await dEn.resetClipboard();
   await dEn.click('Link to this set');
@@ -1316,12 +1316,12 @@ const { ok } = rep;
   const hashEn = clipEn.text ? clipEn.text.slice(clipEn.text.indexOf('#')) : null;
   ok(hashEn === '#/print/ci1-q1', 'copied set link (en) is wrong: ' + hashEn);
 
-  ok(!pageErrs.length, 'ошибка на странице — ' + pageErrs.slice(0, 2).join(' | '));
+  ok(!pageErrs.length, 'page error — ' + pageErrs.slice(0, 2).join(' | '));
   ok(!pageErrsEn.length, 'page error (en) - ' + pageErrsEn.slice(0, 2).join(' | '));
 
   await ctxEn.close();
   await ctx.close();
   await closeBrowser();
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nпечать (dist/): все проверки прошли');
+  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nprint (dist/): every check passed');
   process.exit(rep.failed ? 1 : 0);
 })();

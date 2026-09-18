@@ -45,9 +45,9 @@ async function newListFromCard() {
   await d.press('Добавить в список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
-  ok(!!box, '1 (карточка): форма нового списка не открылась');
-  ok(!!box?.focused, '1 (карточка): поле ввода не в фокусе');
-  ok(await d.has('Создать'), '1 (карточка): меню закрылось после "+ Новый список"');
+  ok(!!box, '1 (card): the new-list form did not open');
+  ok(!!box?.focused, '1 (card): the input is not focused');
+  ok(await d.has('Создать'), '1 (card): the menu closed after "+ Новый список"');
   await ctx.close();
 }
 
@@ -59,8 +59,8 @@ async function newListFromBar() {
   await d.press('Добавить в список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
-  ok(!!box, '2 (панель выбора): форма нового списка не открылась');
-  ok(!!box?.focused, '2 (панель выбора): поле ввода не в фокусе');
+  ok(!!box, '2 (selection bar): the new-list form did not open');
+  ok(!!box?.focused, '2 (selection bar): the input is not focused');
   await ctx.close();
 }
 
@@ -70,21 +70,21 @@ async function newListFromModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
   await d.open('#/tables');
   await d.press('Самоцвет Чутья');
-  ok(await d.has('Добавить в список'), '3 (модалка): модалка не открылась');
+  ok(await d.has('Добавить в список'), '3 (modal): the modal did not open');
   await d.press('Добавить в список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
-  ok(!!box, '3 (модалка): форма нового списка не открылась');
-  ok(!!box?.focused, '3 (модалка): поле ввода не в фокусе');
+  ok(!!box, '3 (modal): the new-list form did not open');
+  ok(!!box?.focused, '3 (modal): the input is not focused');
   const card = await page.evaluate(() => {
     const el = document.querySelector('.modal-card');
     if (!el) return null;
     const r = el.getBoundingClientRect();
     return { x: r.x, y: r.y, w: r.width, h: r.height };
   });
-  ok(!!card, '3 (модалка): .modal-card не найден');
+  ok(!!card, '3 (modal): .modal-card not found');
   if (box && card) {
-    ok(inside(box, card), '3 (модалка): поле ввода лежит вне .modal-card (DEBT.md D6)');
+    ok(inside(box, card), '3 (modal): the input sits outside .modal-card (DEBT.md D6)');
   }
   await ctx.close();
 }
@@ -99,13 +99,13 @@ async function addToListMenuStaysInModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
   await d.open('#/tables');
   await d.press('Кольцо Тишины');
-  ok(await d.has('Добавить в список'), '23 (меню в модалке): модалка не открылась');
+  ok(await d.has('Добавить в список'), '23 (menu in the modal): the modal did not open');
   await d.press('Добавить в список');
 
   const scrollTop = await page.evaluate(
     () => document.querySelector('.card')?.scrollTop ?? null
   );
-  ok(scrollTop === 0, '23 (меню в модалке): .card.scrollTop = ' + scrollTop + ', ожидали 0');
+  ok(scrollTop === 0, '23 (menu in the modal): .card.scrollTop = ' + scrollTop + ', expected 0');
 
   const box = (sel) =>
     page.evaluate((s) => {
@@ -116,19 +116,19 @@ async function addToListMenuStaysInModal() {
     }, sel);
 
   const card = await box('.modal-card');
-  ok(!!card, '23 (меню в модалке): .modal-card не найден');
+  ok(!!card, '23 (menu in the modal): .modal-card not found');
   const menu = await box('.dropmenu');
-  ok(!!menu, '23 (меню в модалке): .dropmenu не найден');
+  ok(!!menu, '23 (menu in the modal): .dropmenu not found');
   if (menu && card) {
-    ok(inside(menu, card), '23 (меню в модалке): меню лежит вне .modal-card (DEBT.md D6)');
+    ok(inside(menu, card), '23 (menu in the modal): the menu sits outside .modal-card (DEBT.md D6)');
   }
 
   await d.press('+ Новый список');
   const input = await newListInputBox(page);
-  ok(!!input, '23 (меню в модалке): форма нового списка не открылась');
-  ok(!!input?.focused, '23 (меню в модалке): поле ввода не в фокусе');
+  ok(!!input, '23 (menu in the modal): the new-list form did not open');
+  ok(!!input?.focused, '23 (menu in the modal): the input is not focused');
   if (input && card) {
-    ok(inside(input, card), '23 (меню в модалке): поле ввода лежит вне .modal-card (DEBT.md D6)');
+    ok(inside(input, card), '23 (menu in the modal): the input sits outside .modal-card (DEBT.md D6)');
   }
   await ctx.close();
 }
@@ -145,20 +145,20 @@ async function twoFramesPicked() {
   const hash1 = await d.hash();
   ok(
     hash1 === '#/tables/other_frames/f_frame-beast_feast-colossus',
-    '4 (два фрейма): адрес ' + hash1 + ', ожидали f_frame-beast_feast-colossus'
+    '4 (two frames): address ' + hash1 + ', expected f_frame-beast_feast-colossus'
   );
   const rows1 = await d.count('.rows .row[data-row]');
-  ok(rows1 === 57, '4 (два фрейма): ' + rows1 + ' строк вместо 57');
+  ok(rows1 === 57, '4 (two frames): ' + rows1 + ' rows instead of 57');
   const pills1 = await d.count('.fpill');
-  ok(pills1 === 2, '4 (два фрейма): ' + pills1 + ' пиллов вместо 2');
+  ok(pills1 === 2, '4 (two frames): ' + pills1 + ' pills instead of 2');
   await ctx.close();
 
   const { ctx: ctx2, d: d2 } = await fresh({ width: 1180, height: 900 });
   await d2.open('#/tables/other_frames/f_frame-beast_feast-colossus');
   const rows2 = await d2.count('.rows .row[data-row]');
-  ok(rows2 === 57, '5 (ссылка с ходу): ' + rows2 + ' строк вместо 57');
+  ok(rows2 === 57, '5 (link arriving fresh): ' + rows2 + ' rows instead of 57');
   const pills2 = await d2.count('.fpill');
-  ok(pills2 === 2, '5 (ссылка с ходу): ' + pills2 + ' пиллов вместо 2');
+  ok(pills2 === 2, '5 (link arriving fresh): ' + pills2 + ' pills instead of 2');
   await ctx2.close();
 }
 
@@ -172,7 +172,7 @@ async function dialogSemantics() {
     const dlg = document.querySelector('dialog[open]');
     return !!dlg && dlg.contains(document.activeElement);
   });
-  ok(inDialog, '6 (диалог): фокус не попал внутрь диалога при открытии');
+  ok(inDialog, '6 (dialog): focus did not land inside the dialog on open');
 
   /* Tab a generous number of times - a real click's own trip past the wrap
    * point (last control back to the first) measures one Tab where Chrome's
@@ -190,7 +190,7 @@ async function dialogSemantics() {
       return !dlg || !dlg.contains(document.activeElement);
     });
     escaped = out ? escaped + 1 : 0;
-    ok(escaped < 2, '6 (диалог): Tab вывел фокус за пределы диалога и не вернул его на следующем шаге');
+    ok(escaped < 2, '6 (dialog): Tab moved focus outside the dialog and did not return it on the next step');
   }
 
   /* The page behind is inert: trying to focus something outside directly
@@ -201,18 +201,18 @@ async function dialogSemantics() {
     outside.focus();
     return document.activeElement !== outside;
   });
-  ok(blocked, '6 (диалог): фон не инертен - элемент за диалогом принял фокус');
+  ok(blocked, '6 (dialog): the background is not inert - an element behind the dialog took focus');
 
   await page.keyboard.press('Escape');
   const closed = await page.evaluate(() => !document.querySelector('dialog[open]'));
-  ok(closed, '6 (диалог): Escape не закрыл диалог');
+  ok(closed, '6 (dialog): Escape did not close the dialog');
   const returned = await page.evaluate(() => {
     const btn = [...document.querySelectorAll('button')].find(
       (b) => (b.textContent || '').includes('Кольцо Тишины')
     );
     return !!btn && btn === document.activeElement;
   });
-  ok(returned, '6 (диалог): фокус не вернулся на открывавшую строку');
+  ok(returned, '6 (dialog): focus did not return to the row that opened it');
   await ctx.close();
 }
 
@@ -237,7 +237,7 @@ async function twoTabsShareStorage() {
   await b.d.open('#/lists');
   ok(
     (await b.page.evaluate(() => document.body.innerText)).includes('Списков пока нет'),
-    '7 (два окна): страница B не начинает с пустого списка'
+    '7 (two windows): page B does not start with an empty list'
   );
 
   const a = await sharedPage({ width: 1180, height: 900 });
@@ -246,7 +246,7 @@ async function twoTabsShareStorage() {
   await a.d.click('Создать');
   ok(
     (await a.page.evaluate(() => document.body.innerText)).includes('Общий клад'),
-    '7 (два окна): страница A не создала список'
+    '7 (two windows): page A did not create the list'
   );
 
   /* No navigation on B - the storage event alone must redraw it. Two
@@ -261,7 +261,7 @@ async function twoTabsShareStorage() {
     void e;
     storageDelivered = false;
   }
-  ok(storageDelivered, `7 (два окна): страница B не получила событие storage за ${STORAGE_WAIT_MS / 1000}с`);
+  ok(storageDelivered, `7 (two windows): page B did not receive the storage event within ${STORAGE_WAIT_MS / 1000}s`);
 
   if (storageDelivered) {
     let repainted = true;
@@ -273,7 +273,7 @@ async function twoTabsShareStorage() {
       void e;
       repainted = false;
     }
-    ok(repainted, '7 (два окна): событие storage пришло, но страница B не перерисовалась');
+    ok(repainted, '7 (two windows): the storage event arrived, but page B did not redraw');
   }
 
   await a.page.close();
@@ -302,7 +302,7 @@ async function packedLink() {
   const clip = await d.clipboard();
   const text = clip?.text || '';
   const m = /#\/l\/(~[A-Za-z0-9_-]+)/.exec(text);
-  ok(!!m, '8 (упакованная ссылка): скопированный текст не содержит #/l/~ - ' + text.slice(0, 120));
+  ok(!!m, '8 (packed link): the copied text does not contain #/l/~ - ' + text.slice(0, 120));
   if (m) {
     await d.open('#/l/' + m[1]);
     await d.expanded();
@@ -312,13 +312,13 @@ async function packedLink() {
      * way on both apps. What proves the packed round trip is the count and
      * the long note, which are body text either way. */
     const seen = await page.evaluate(() => document.body.innerText);
-    ok(seen.includes('12 позиций'), '8 (упакованная ссылка): не все позиции распаковались - ' + seen.slice(0, 200));
+    ok(seen.includes('12 позиций'), '8 (packed link): not every entry unpacked - ' + seen.slice(0, 200));
     /* The note is a <textarea>'s value, not rendered text - innerText does
      * not carry it. */
     const noteValue = await page.evaluate(() => document.querySelector('textarea')?.value || '');
     ok(
       noteValue.includes('перевесил издержки заголовка'),
-      '8 (упакованная ссылка): длинная заметка не распаковалась - ' + noteValue.slice(0, 80)
+      '8 (packed link): the long note did not unpack - ' + noteValue.slice(0, 80)
     );
   }
   await ctx.close();
@@ -330,8 +330,8 @@ async function copyTextThroughClipboard() {
   await d.open('#/i/ci1');
   await d.press('Скопировать текст');
   const clip = await d.clipboard();
-  ok(!!clip?.text, '9 (копия текста): text/plain не попал в буфер');
-  ok(!!clip?.html, '9 (копия текста): text/html не попал в буфер');
+  ok(!!clip?.text, '9 (copy text): text/plain did not reach the clipboard');
+  ok(!!clip?.html, '9 (copy text): text/html did not reach the clipboard');
   await ctx.close();
 }
 
@@ -365,16 +365,16 @@ async function copyImage() {
     return { neither: true };
   });
   if ('blob' in result) {
-    ok(result.blob > 0, '10 (копия картинки, D10): скопированная картинка пуста');
+    ok(result.blob > 0, '10 (copy image, D10): the copied picture is empty');
   } else {
     ok(
       typeof result.text === 'string' && result.text.length > 0,
-      '10 (копия картинки, D10): ни снимок, ни текст-заглушка не пришли - ' + JSON.stringify(result)
+      '10 (copy image, D10): neither the picture nor the fallback text arrived - ' + JSON.stringify(result)
     );
     const toast = await page.evaluate(() => document.querySelector('.toast')?.textContent || '');
     ok(
       toast.includes('Не удалось скопировать картинку - скопирован текст'),
-      '10 (копия картинки, D10): не показан тост про недоступную картинку - ' + toast
+      '10 (copy image, D10): the toast about the unavailable picture is not shown - ' + toast
     );
   }
   await ctx.close();
@@ -394,12 +394,12 @@ async function brokenArtPath() {
   page.on('request', onReq);
   await d.open('#/i/w3');
   const src = await page.evaluate(() => document.querySelector('.card-media img')?.getAttribute('src'));
-  ok(/_none\.webp$/.test(src || ''), '11 (без картинки): вместо заглушки — ' + src);
-  ok(await d.has('Скопировать текст'), '11 (без картинки): кнопка текста пропала вместе с картинкой');
+  ok(/_none\.webp$/.test(src || ''), '11 (no picture): instead of the placeholder — ' + src);
+  ok(await d.has('Скопировать текст'), '11 (no picture): the text button disappeared along with the picture');
   /* R0b.4's divergence 3: the copy-image button must go with the picture,
    * not just switch to offering the placeholder (RecordActions.svelte:105,
    * restored to it.img && !app.artBroken(it.id) - app.js:1684's hasImage). */
-  ok(!(await d.has('Скопировать изображение')), '11 (без картинки): кнопка копирования картинки должна пропасть вместе с картинкой');
+  ok(!(await d.has('Скопировать изображение')), '11 (no picture): the copy-image button should disappear along with the picture');
   page.off('request', onReq);
   await ctx.close();
 }
@@ -414,7 +414,7 @@ async function focusSurvivesKeystroke() {
     (ph) => document.activeElement instanceof HTMLInputElement && document.activeElement.placeholder === ph,
     'Поиск по названию или описанию…'
   );
-  ok(stillFocused, '12 (фокус переживает ввод): фокус ушёл с поля поиска после перерисовки');
+  ok(stillFocused, '12 (focus survives input): focus left the search box after the redraw');
   await ctx.close();
 }
 
@@ -435,19 +435,19 @@ async function noteTextareaHeight() {
     const ta = document.querySelector(`textarea[placeholder="${ph}"]`);
     return ta ? parseFloat(getComputedStyle(ta).height) : null;
   }, PH);
-  ok(before !== null, '13 (высота заметки): текстовое поле не найдено');
+  ok(before !== null, '13 (note height): the textarea was not found');
   await d.type(PH, 'Строка первая\nСтрока вторая\nСтрока третья\nСтрока четвёртая\nСтрока пятая');
   const after = await page.evaluate((ph) => {
     const ta = document.querySelector(`textarea[placeholder="${ph}"]`);
     if (!ta) return null;
     return { height: parseFloat(getComputedStyle(ta).height), scrollHeight: ta.scrollHeight };
   }, PH);
-  ok(!!after, '13 (высота заметки): текстовое поле пропало после ввода');
+  ok(!!after, '13 (note height): the textarea disappeared after typing');
   if (before !== null && after) {
-    ok(after.height > before, '13 (высота заметки): поле не выросло - было ' + before + ', стало ' + after.height);
+    ok(after.height > before, '13 (note height): the field did not grow - was ' + before + ', became ' + after.height);
     ok(
       after.height >= after.scrollHeight - 1 || after.height >= 320,
-      '13 (высота заметки): высота ' + after.height + ' меньше содержимого ' + after.scrollHeight
+      '13 (note height): height ' + after.height + ' is less than its content ' + after.scrollHeight
     );
   }
 
@@ -468,32 +468,32 @@ async function noteTextareaHeight() {
   let lnoteLines = await boxLines();
   ok(
     lnoteLines.length === 2 && lnoteLines.every((n) => n === 3),
-    '13 (заметки списка): пустая заметка открывается не на три строки - ' + lnoteLines.join(',')
+    '13 (list notes): an empty note does not open at three lines - ' + lnoteLines.join(',')
   );
 
   await d.type(LIST_PH, Array.from({ length: 8 }, (_, i) => 'строка ' + i).join('\n'));
   lnoteLines = await boxLines();
-  ok(lnoteLines[0] >= 8, '13 (заметки списка): публичное поле не выросло под текст - ' + lnoteLines[0]);
-  ok(lnoteLines[1] === 3, '13 (заметки списка): соседнее поле выросло заодно - ' + lnoteLines[1]);
+  ok(lnoteLines[0] >= 8, '13 (list notes): the public field did not grow to fit the text - ' + lnoteLines[0]);
+  ok(lnoteLines[1] === 3, '13 (list notes): the neighbouring field grew along with it - ' + lnoteLines[1]);
 
   await d.type(LIST_PH, Array.from({ length: 80 }, (_, i) => 'строка ' + i).join('\n'));
   const tall = await page.$eval('.lnote .n-pub textarea', (t) => ({
     h: t.offsetHeight,
     over: t.scrollHeight > t.clientHeight
   }));
-  ok(tall.h <= 320, '13 (заметки списка): поле переросло потолок - ' + tall.h);
-  ok(tall.over, '13 (заметки списка): выше потолка текст должен прокручиваться');
+  ok(tall.h <= 320, '13 (list notes): the field grew past its ceiling - ' + tall.h);
+  ok(tall.over, '13 (list notes): past the ceiling the text should scroll');
 
   await d.type(LIST_PH, 'одна строка');
   lnoteLines = await boxLines();
-  ok(lnoteLines[0] === 3, '13 (заметки списка): поле не вернулось к трём строкам - ' + lnoteLines[0]);
+  ok(lnoteLines[0] === 3, '13 (list notes): the field did not return to three lines - ' + lnoteLines[0]);
 
   const crossVisible = await page.evaluate(() =>
     [...document.querySelectorAll('.lnote .note-x')].map((x) => getComputedStyle(x).display)
   );
   ok(
     crossVisible.length === 2 && crossVisible[0] !== 'none' && crossVisible[1] === 'none',
-    '13 (заметки списка): крестик показан не у того поля - ' + crossVisible.join(',')
+    '13 (list notes): the clear cross is shown on the wrong field - ' + crossVisible.join(',')
   );
 
   await ctx.close();
@@ -517,12 +517,12 @@ async function rollReplacesCardImg() {
     if (img) img.setAttribute('data-mark', '1');
     return !!img;
   });
-  ok(marked, '14 (карточка ролла): исходный <img> не найден - .results .card-media img переименован?');
+  ok(marked, '14 (roll card): the original <img> was not found - was .results .card-media img renamed?');
   const rollName = await page.evaluate(() => {
     const btn = document.querySelector('.numrow button.primary');
     return btn ? (btn.textContent || '').replace(/\s+/g, ' ').trim() : '';
   });
-  ok(!!rollName, '14 (карточка ролла): кнопка броска не найдена');
+  ok(!!rollName, '14 (roll card): the roll button was not found');
 
   let replaced = false;
   for (let i = 0; rollName && i < 20 && !replaced; i++) {
@@ -531,7 +531,7 @@ async function rollReplacesCardImg() {
       () => !document.querySelector('.results .card-media img[data-mark]')
     );
   }
-  ok(replaced, '14 (карточка ролла): узел <img> выжил после броска на другую запись');
+  ok(replaced, '14 (roll card): the <img> node survived a roll onto a different record');
   await ctx.close();
 }
 
@@ -553,13 +553,13 @@ async function historyBackForward() {
   const chip = await page.evaluate(
     () => document.querySelector('.subchips .chip.on')?.textContent
   );
-  ok(chip === 'Броня', '15 (навигация): назад вернуло не ту таблицу - ' + chip);
+  ok(chip === 'Броня', '15 (navigation): back returned the wrong table - ' + chip);
   await page.goForward();
   await d.settle();
   /* The live `#sq` has no ported id - `input[type=search]` is the driver's
    * own structural stand-in (driver.js's `typeAt` doc comment). */
   const hasSearch = await d.count('input[type="search"]');
-  ok(hasSearch > 0, '15 (навигация): вперёд не вернуло поиск');
+  ok(hasSearch > 0, '15 (navigation): forward did not return to search');
   await ctx.close();
 }
 
@@ -573,7 +573,7 @@ async function selectionBarGeometry() {
     const w = document.querySelector('.selbarwrap');
     return w ? Math.abs(w.getBoundingClientRect().bottom - window.innerHeight) : null;
   });
-  ok(gap !== null && gap <= 2, '16 (панель выбора): панель не прижата к низу окна - ' + gap);
+  ok(gap !== null && gap <= 2, '16 (selection bar): the bar is not pinned to the window bottom - ' + gap);
   await ctx.close();
 
   const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 360, height: 840 });
@@ -583,12 +583,12 @@ async function selectionBarGeometry() {
     const out = [];
     document.querySelectorAll('.selbarwrap .btn').forEach((b) => {
       const r = b.getBoundingClientRect();
-      if (b.scrollWidth > b.clientWidth + 1) out.push('подпись обрезана: ' + b.textContent.trim());
-      if (r.left < -1 || r.right > w + 1) out.push('кнопка за краем экрана: ' + b.textContent.trim());
+      if (b.scrollWidth > b.clientWidth + 1) out.push('label clipped: ' + b.textContent.trim());
+      if (r.left < -1 || r.right > w + 1) out.push('button off the edge of the screen: ' + b.textContent.trim());
     });
     return out;
   }, 360);
-  ok(spill.length === 0, '16 (панель выбора, 360px): ' + spill.join('; '));
+  ok(spill.length === 0, '16 (selection bar, 360px): ' + spill.join('; '));
   await ctx2.close();
 }
 
@@ -629,7 +629,7 @@ async function dragReorder() {
   });
   await d.settle();
   const dragged = await page.evaluate(() => document.querySelectorAll('.lrow')[2].className);
-  ok(/drop-after/.test(dragged), '17 (перетаскивание): место вставки не подсвечено - ' + dragged);
+  ok(/drop-after/.test(dragged), '17 (drag reorder): the drop position is not highlighted - ' + dragged);
 
   await page.evaluate(() => {
     const rows = [...document.querySelectorAll('.lrow')];
@@ -646,9 +646,9 @@ async function dragReorder() {
     const list = stored.find((l) => l.id === 'a');
     return list ? list.ids.join(',') : '';
   });
-  ok(order === 'ci2,ci3,ci1,ci4', '17 (перетаскивание): итоговый порядок ' + order);
+  ok(order === 'ci2,ci3,ci1,ci4', '17 (drag reorder): final order ' + order);
   const stillDragging = await d.count('.lrow.dragging');
-  ok(stillDragging === 0, '17 (перетаскивание): строка осталась в состоянии перетаскивания');
+  ok(stillDragging === 0, '17 (drag reorder): the row remained in the dragging state');
   await ctx.close();
 }
 
@@ -683,14 +683,14 @@ async function foldedDetailsSurviveRerender() {
   let open1 = await openState();
   ok(
     open1.note === false && open1.roll === false,
-    '18 (свёрнутые панели): «выбрать все» развернуло свёрнутое - ' + JSON.stringify(open1)
+    '18 (folded panels): "select all" unfolded something folded - ' + JSON.stringify(open1)
   );
 
   await d.click('Монетами');
   const open2 = await openState();
   ok(
     open2.note === false && open2.roll === false,
-    '18 (свёрнутые панели): смена режима цен развернула свёрнутое - ' + JSON.stringify(open2)
+    '18 (folded panels): switching price mode unfolded something folded - ' + JSON.stringify(open2)
   );
   await ctx.close();
 }
@@ -716,7 +716,7 @@ async function tileGeometryNoArt() {
   const widths = await page.$$eval('.tilewrap .tile', (e) => [
     ...new Set(e.map((x) => Math.round(x.getBoundingClientRect().width)))
   ]);
-  ok(widths.length === 1 && widths[0] > 100, '19 (плитки без картинок): ширины ' + widths.join(', '));
+  ok(widths.length === 1 && widths[0] > 100, '19 (tiles with no pictures): widths ' + widths.join(', '));
   const clash = await page.$$eval(
     '.tilewrap',
     (e) =>
@@ -728,7 +728,7 @@ async function tileGeometryNoArt() {
         return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
       }).length
   );
-  ok(clash === 0, '19 (плитки без картинок): галочка налезла на подпись у ' + clash + ' плиток');
+  ok(clash === 0, '19 (tiles with no pictures): the checkbox overlaps the label on ' + clash + ' tiles');
   page.off('request', onReq);
   await ctx.close();
 }
@@ -748,10 +748,10 @@ async function storageNoticeAt320() {
     if (!w || !x) return null;
     return { h: w.getBoundingClientRect().height, xw: x.getBoundingClientRect().width };
   });
-  ok(!!warn, '20 (предупреждение на 320): .warn не найден');
+  ok(!!warn, '20 (warning at 320): .warn not found');
   if (warn) {
-    ok(warn.h < 140, '20 (предупреждение на 320): свёрнутое предупреждение занимает ' + Math.round(warn.h) + 'px');
-    ok(warn.xw > 0, '20 (предупреждение на 320): крестик не виден, пока предупреждение свёрнуто');
+    ok(warn.h < 140, '20 (warning at 320): the folded warning takes up ' + Math.round(warn.h) + 'px');
+    ok(warn.xw > 0, '20 (warning at 320): the cross is not visible while the warning is folded');
   }
   await ctx.close();
 }
@@ -768,7 +768,7 @@ async function buttonFocusSurvivesRerender() {
     const a = document.activeElement;
     return a instanceof HTMLElement && !!a.closest('.dicebar') && a.tagName === 'BUTTON';
   });
-  ok(afterRoll, '21 (фокус кнопки): после броска с клавиатуры фокус ушёл с кнопки');
+  ok(afterRoll, '21 (button focus): after a keyboard roll, focus left the button');
 
   await page.evaluate(() => document.querySelector('.chip[data-val="core"]')?.focus());
   await page.keyboard.press('Enter');
@@ -777,7 +777,7 @@ async function buttonFocusSurvivesRerender() {
     const a = document.activeElement;
     return a instanceof HTMLElement && a.matches('.chip[data-val="core"]');
   });
-  ok(afterSrc, '21 (фокус источника): после переключения источника фокус потерян');
+  ok(afterSrc, '21 (source focus): focus was lost after switching source');
   await ctx.close();
 }
 
@@ -804,12 +804,12 @@ async function moneyHelpAndPressedPicker() {
     if (!h || !c) return null;
     return { box: h.classList.contains('helpbox'), w: h.getBoundingClientRect().width, cw: c.getBoundingClientRect().width };
   });
-  ok(!!helpBox, '22 (справка и выбор списка): .money-help не открылась');
+  ok(!!helpBox, '22 (help and list pick): .money-help did not open');
   if (helpBox) {
-    ok(helpBox.box, '22 (справка и выбор списка): справка о золоте - не та рамка');
+    ok(helpBox.box, '22 (help and list pick): the gold help is not the right frame');
     ok(
       Math.abs(helpBox.w - helpBox.cw) < 2,
-      '22 (справка и выбор списка): справка о золоте не по ширине контейнера - ' + helpBox.w + ' из ' + helpBox.cw
+      '22 (help and list pick): the gold help is not the width of its container - ' + helpBox.w + ' of ' + helpBox.cw
     );
   }
   await ctx.close();
@@ -822,10 +822,10 @@ async function moneyHelpAndPressedPicker() {
     const b = document.querySelector('.cardpick .btn');
     return b ? { on: b.classList.contains('on'), color: getComputedStyle(b).color } : null;
   });
-  ok(!!btn, '22 (справка и выбор списка): кнопка .cardpick .btn не найдена');
+  ok(!!btn, '22 (help and list pick): the .cardpick .btn button was not found');
   if (btn) {
-    ok(btn.on, '22 (справка и выбор списка): нажатая кнопка не помечена on');
-    ok(btn.color !== 'rgb(99, 194, 148)', '22 (справка и выбор списка): нажатая кнопка снова бирюзовая - ' + btn.color);
+    ok(btn.on, '22 (help and list pick): the pressed button is not marked on');
+    ok(btn.color !== 'rgb(99, 194, 148)', '22 (help and list pick): the pressed button is teal again - ' + btn.color);
   }
   await ctx2.close();
 }
@@ -847,34 +847,34 @@ async function reducedMotionKillsEverything() {
   await d.viewport(560, 900);
   await new Promise((r) => setTimeout(r, 80));
   const running = await page.evaluate(() => document.getAnimations().length);
-  ok(running === 0, '24 (уменьшенное движение, D1): под reduce анимации всё ещё идут - ' + running);
+  ok(running === 0, '24 (reduced motion, D1): animations are still running under reduce - ' + running);
   await ctx.close();
 }
 
 const CASES = [
-  ['1 (новый список с карточки)', newListFromCard],
-  ['2 (панель выбора)', newListFromBar],
-  ['3 (модалка)', newListFromModal],
-  ['4/5 (два фрейма)', twoFramesPicked],
-  ['6 (диалог)', dialogSemantics],
-  ['7 (два окна)', twoTabsShareStorage],
-  ['8 (упакованная ссылка)', packedLink],
-  ['9 (копия текста)', copyTextThroughClipboard],
-  ['10 (копия картинки)', copyImage],
-  ['11 (без картинки)', brokenArtPath],
-  ['12 (фокус переживает ввод)', focusSurvivesKeystroke],
-  ['13 (высота заметки)', noteTextareaHeight],
-  ['14 (карточка ролла)', rollReplacesCardImg],
-  ['15 (навигация)', historyBackForward],
-  ['16 (панель выбора)', selectionBarGeometry],
-  ['17 (перетаскивание)', dragReorder],
-  ['18 (свёрнутые панели)', foldedDetailsSurviveRerender],
-  ['19 (плитки без картинок)', tileGeometryNoArt],
-  ['20 (предупреждение на 320)', storageNoticeAt320],
-  ['21 (фокус кнопки)', buttonFocusSurvivesRerender],
-  ['22 (справка и выбор списка)', moneyHelpAndPressedPicker],
-  ['23 (меню в модалке)', addToListMenuStaysInModal],
-  ['24 (уменьшенное движение)', reducedMotionKillsEverything]
+  ['1 (new list from the card)', newListFromCard],
+  ['2 (selection bar)', newListFromBar],
+  ['3 (modal)', newListFromModal],
+  ['4/5 (two frames)', twoFramesPicked],
+  ['6 (dialog)', dialogSemantics],
+  ['7 (two windows)', twoTabsShareStorage],
+  ['8 (packed link)', packedLink],
+  ['9 (copy text)', copyTextThroughClipboard],
+  ['10 (copy image)', copyImage],
+  ['11 (no picture)', brokenArtPath],
+  ['12 (focus survives input)', focusSurvivesKeystroke],
+  ['13 (note height)', noteTextareaHeight],
+  ['14 (roll card)', rollReplacesCardImg],
+  ['15 (navigation)', historyBackForward],
+  ['16 (selection bar)', selectionBarGeometry],
+  ['17 (drag reorder)', dragReorder],
+  ['18 (folded panels)', foldedDetailsSurviveRerender],
+  ['19 (tiles with no pictures)', tileGeometryNoArt],
+  ['20 (warning at 320)', storageNoticeAt320],
+  ['21 (button focus)', buttonFocusSurvivesRerender],
+  ['22 (help and list pick)', moneyHelpAndPressedPicker],
+  ['23 (menu in the modal)', addToListMenuStaysInModal],
+  ['24 (reduced motion)', reducedMotionKillsEverything]
 ];
 
 (async () => {
@@ -884,15 +884,15 @@ const CASES = [
    * console.log's own buffering - is what survives a crash that follows
    * immediately after. */
   for (const [label, fn] of CASES) {
-    fs.writeSync(1, 'запуск: ' + label + '\n');
+    fs.writeSync(1, 'running: ' + label + '\n');
     try {
       await fn();
     } catch (e) {
-      rep.ok(false, label + ': упало - ' + (e && e.message ? e.message : String(e)));
+      rep.ok(false, label + ': threw - ' + (e && e.message ? e.message : String(e)));
     }
   }
 
   await closeBrowser().catch(() => {});
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nсостояния реального ввода (dist/): все двадцать четыре пройдены');
+  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nreal-input states (dist/): all twenty-four passed');
   process.exit(rep.failed ? 1 : 0);
 })();
