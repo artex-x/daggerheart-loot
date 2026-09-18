@@ -32,6 +32,127 @@ criteria is the answer.
 
 ## Outstanding - B12's scope
 
+### Census, 2026-09-18, at `e7ce2ad` (B12a, planner's sweep confirmed)
+
+One verdict per live row, per `plan.md`'s "The census" - a scripted sweep
+(session scratchpad, not committed), one discriminating check per id against
+the tree at `e7ce2ad`, folding in the eight verdicts `plan.md` already
+established rather than re-deriving them. `live` means the row's own "where"
+still reads exactly as the review found it; `already done <sha>` means a
+later batch fixed it as a side effect without the register noticing;
+`moved: <site>` means the target relocated but the defect is the same;
+`closed (no change - reason)` matches a verdict `plan.md` or this piece
+already decided. Every `already done` row below is moved to `## Done` in
+this same commit. Rows this piece itself lands (`B11-BL-1`, `B11-BL-2`,
+`B11-R1`, `B7-N3`, and the record/spec list) carry `done <sha>` where they
+live in their own review section below, not repeated here.
+
+| id | verdict |
+|---|---|
+| B4-R1 | live |
+| B4-R2 | live |
+| B4-R3 | live |
+| B4-R4 | live |
+| B4-1 | live |
+| B4-2 | live |
+| B4-3 | live |
+| B4-4 | live |
+| B4-5 | live |
+| B4-6 | live |
+| B4-7 | half done - the misplaced comment is gone from `ci.yml:39`; the bare `fetch-depth: 0` in `check` remains |
+| B4-8 | closed (no change - `handoff.md` was compacted since B4; no batch's Completed entry carries a per-entry `Review:` field any longer, so "in `## Status` rather than its own entry" no longer maps onto the file's structure) |
+| B4-9 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/META.md` section 7 reflowed) |
+| B4-10 | closed (no change - `plan.md`'s own decision, real branch-build justification) |
+| B5-R1 | live |
+| B5-R2 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/COVERAGE.md` gained the "no golden moved is narrower than it sounds" paragraph) |
+| B5-R3 | closed (no change - `plan.md`'s own decision, no instrument short of a CSS test this repo does not have) |
+| B5-N1 | done `<pending, see B12a sha-citation follow-up>`, this piece (`.claude/README.md`'s cost table gained a `run-all.js --shard=n/m` row) |
+| B5-N2 | done `<pending, see B12a sha-citation follow-up>`, this piece (`.claude/README.md`'s Hooks row states the asymmetry) |
+| B5-N3 | live |
+| B5-N4 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/COVERAGE.md` names all three carve-outs) |
+| B5-N5 | live |
+| B5-N6 | live |
+| B5-N7 | done `<pending, see B12a sha-citation follow-up>`, this piece (`handoff.md`'s B5 entry gained the `SUB_LABEL` deviation) |
+| B5-N8 | live |
+| B5-N9 | live |
+| B5-N10/11/12 | live - `RARITIES` (`app/src/lib/alt.ts:25`) has real callers (`AltPanel.svelte`, `TablesPage.svelte`, `alt.test.ts`), so it is not a dead re-export; only the reword is still owed |
+| B5-N13 | live |
+| B5-N14 | live |
+| B5-N15 | already done `0f0c73b` - `tests/run-all.js`'s empty-shard message is already English ("shard ... is empty: fewer suites than bins"), fixed incidentally by B9's translation sweep |
+| B6-R1 | live - routed to Deferred, this piece (see "Deferred out of phase-8") |
+| B6-R3 | live |
+| B6-R4 | live |
+| B6-R5 | live - routed to Deferred, this piece |
+| B6-N1 | live |
+| B6-N2 | live |
+| B6-N3 | live |
+| B6-N4 | live - routed to Deferred, this piece |
+| B6-N5 | live |
+| B7-N1 | live |
+| B7-N2 | live |
+| B7-R1 | live |
+| B7-R2 | live |
+| B7-R4 | live |
+| B7-N3 | done `<pending, see B12a sha-citation follow-up>`, this piece (`tests/app/lib.js`'s unused `allow` parameter deleted) |
+| B7-N4 | live |
+| B7-N5 | closed (no change - `handoff.md`'s "Not yet committed"/"one unstaged file" text this row names was already superseded by later compaction; not present in the current file) |
+| B7-N6 | closed (no change - same compaction; no batch's Completed entry carries a per-entry `Review:` field, identical resolution to B4-8) |
+| B7-N7 | closed (no change - already done; `handoff.md:318` carries a top-level `## Verification`) |
+| B7-N8 | closed (no change - `handoff.md`'s "Category 6" text this row names was compacted away; the current B7 entry's prose no longer itemises categories) |
+| B7-N9 | live |
+| B7-N10 | live |
+| B7-N11 | live |
+| B7-N12 | live |
+| B7-N13 | live |
+| B7-N14 | closed (no change - the attempt-by-attempt `npm run check` chronology this row names was compacted away) |
+| B7-N15 | live |
+| B8-R3 | live |
+| B8-R4 | live |
+| B8-R5 | done `<pending, see B12a sha-citation follow-up>`, this piece (discharged by evidence - see "From B8's review", below) |
+| B8-R6 | live |
+| B8-N1 | live |
+| B8-N2 | live |
+| B8-N3 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/FEATURES.md`'s focus-ring radius claim corrected) |
+| B8-N4 | live |
+| B8-N5 | done, already `480c380` - the same edit as `B8-R2`, which that sha already shipped; this row simply duplicated it |
+| B8-N6 | live - routed to Deferred, this piece |
+| B8-N7 | live - routed to Deferred, this piece |
+| B8-N8 | closed (no change - already done, same as B7-N7) |
+| B8.1-R1 | closed (no change - verified reasoning, the reviewer's own grading) |
+| B8.1-R2 | closed (no change - verified reasoning) |
+| B8.1-R3 | closed (no change - verified reasoning) |
+| B8.1-R4 | closed (no change - verified reasoning) |
+| B8.1-R5 | closed (no change - verified reasoning) |
+| B8.1-R6 | closed (no change - verified reasoning, and NIT-4 already closes the actionable half) |
+| B8.1-N1 | live |
+| B8.1-N2 | live - not one of this plan's five named Deferred rows, stays Outstanding |
+| B8.1-N3 | live - same |
+| B8.1-N4 | closed (no change - the review's own conclusion stands: a location fix is a format change beyond nit-size, the same class as `B4-10`/`B5-R2`/`B5-R3`) |
+| B9-R1 | closed (no change - a documented risk, per the review's own framing ("risk, recorded")); no action was ever specified |
+| B9-R2 | live |
+| B9-R3 | closed (no change - verified sound, the reviewer's own grading) |
+| B9-N3 | live |
+| B9-N5 | live |
+| B9-N6 | live |
+| B9-N10 | done `<pending, see B12a sha-citation follow-up>`, this piece (`context.md:165`'s header cells now read `want`/`got`) |
+| B9-N11 | live |
+| B10-N1 | live |
+| B10-N2 | live |
+| B10-N3 | live |
+| B10-N4 | live |
+| B10-N5 | live |
+| B11-BL-1 | done `<pending, see B12a sha-citation follow-up>`, this piece (see "From B11's review", below - proved to bite) |
+| B11-BL-2 | done `<pending, see B12a sha-citation follow-up>`, this piece (proved to bite) |
+| B11-R1 | done `<pending, see B12a sha-citation follow-up>`, this piece (both halves, six proofs) |
+| B11-N1 | done `<pending, see B12a sha-citation follow-up>`, this piece (`docs/specs/FEATURES.md`'s example re-pointed at the query side, with a real U+2019) |
+| B11-N2 | live |
+| B11-N3 | live |
+| B11-N4 | done `<pending, see B12a sha-citation follow-up>`, this piece (append-only note under `context.md`'s Q8 row) |
+| B11-N5 | done `<pending, see B12a sha-citation follow-up>`, this piece (`handoff.md`'s B11 entry reflowed) |
+| B1-N9 | live - `app/src/lib/search.ts:125` is still `matches(it, q, statLine, hay?)` |
+| B2-4 | moved - `TAB_LIST` no longer exists in `frames.ts`; the one surviving citation is `app/src/state/app.test.ts:68` |
+| B2-5 | done `<pending, see B12a sha-citation follow-up>`, this piece (`.claude/README.md:109`'s commit-gate description now says "covered paths", not "the tree") |
+
 ### From B4's review (deploy and gate correctness)
 
 | id | where | what |
@@ -83,14 +204,14 @@ below are B12's.
 
 | id | where | what |
 |---|---|---|
-| B6-R1 | `app/src/state/lists.svelte.ts` (`#readCurrent`) | A **second** corruption is never backed up, and nothing cleans `.bad` up. The `get(LISTS_KEY_BAD) === null` guard is deliberate and its rationale is sound (do not overwrite the first loss), but the consequence is concrete: corruption #1 backs up; the key later becomes valid; `unreadable` clears and the notice disappears; `.bad` is orphaned forever with no UI to reach it; corruption #2 is **not** backed up and `save()` overwrites it, while the notice still claims preservation. Key the backup by timestamp, or drop `.bad` once a read succeeds. This is the defect one level down, not eliminated. |
+| B6-R1 | `app/src/state/lists.svelte.ts` (`#readCurrent`) | A **second** corruption is never backed up, and nothing cleans `.bad` up. The `get(LISTS_KEY_BAD) === null` guard is deliberate and its rationale is sound (do not overwrite the first loss), but the consequence is concrete: corruption #1 backs up; the key later becomes valid; `unreadable` clears and the notice disappears; `.bad` is orphaned forever with no UI to reach it; corruption #2 is **not** backed up and `save()` overwrites it, while the notice still claims preservation. Key the backup by timestamp, or drop `.bad` once a read succeeds. This is the defect one level down, not eliminated. **Moved to Deferred, this piece (B12a)** - see "Deferred out of phase-8"; `DEBT.md` entry `D24` lands in `B12b`. |
 | B6-R3 | `app/src/state/app.svelte.ts` (`#expectHash`) | Never cleared on a non-matching navigation. `go(X)` sets it before `navigate(X)`; if `X` equals the current hash a real browser fires no `hashchange` and the value goes stale indefinitely (`memoryRouter` announces unconditionally, so no test can see it). A later Back/Forward landing on `X` is then swallowed and `this.hash` desyncs from the address bar. Unreachable from today's four `go()` call sites, all of which navigate elsewhere. A `hash !== router.hash()` guard removes the trap. |
 | B6-R4 | `app/src/components/ListPage.svelte` | `pagehide` alone for the pending URL flush. On mobile Safari a tab can be discarded from hidden without `pagehide`; `visibilitychange`->hidden is the more reliable last callback. Bounded (the address lags, the storage write is already synchronous), but on a bfcache restore the component is not remounted and the effect does not re-run, so the address can stay stale until the next edit. |
-| B6-R5 | `app/src/lib/listLink.ts` (`parseItems`/`decodeList`) | When **every** id is dropped, `parseItems` returns `null`, so the user gets `badShare` ("the link is damaged") rather than `droppedItems`. The link is not damaged; its items are all gone. Pre-existing shape, but it is the worst case of the defect R3/P9 was fixing. |
+| B6-R5 | `app/src/lib/listLink.ts` (`parseItems`/`decodeList`) | When **every** id is dropped, `parseItems` returns `null`, so the user gets `badShare` ("the link is damaged") rather than `droppedItems`. The link is not damaged; its items are all gone. Pre-existing shape, but it is the worst case of the defect R3/P9 was fixing. **Moved to Deferred, this piece (B12a)** - see "Deferred out of phase-8"; `DEBT.md` entry `D25` lands in `B12b`. |
 | B6-N1 | `tests/app/contracts.js:128` | Comment says "One context reused across all **28** fixtures"; `routes.json` now has 30 - a count used as evidence, made stale by this batch's own two rows. |
 | B6-N2 | `tests/app/golden.js:53` | `slugOf = id.replace(/\W+/g, '_')` has no uniqueness assertion and `wantFiles` is a `Set`, so two ids sharing a slug would silently share one golden and the stale-file sweep would not notice. B6 shipped the first id whose distinguishing character is stripped (`#/l/~AAAA` -> `_l_AAAA`, colliding with a hypothetical `#/l/AAAA`). One assertion over `STATES` closes it; verified no collision today (112/112). |
 | B6-N3 | `app/src/state/lists.svelte.ts` / `StorageNotice.svelte` comment | Says the notice keeps showing "until a write actually clears it"; it takes **two** writes - the first `save()` reads the still-corrupt key (setting `unreadable` again) before overwriting it. |
-| B6-N4 | `app/src/lib/dict.ts` `badStorage` (ru + en) | *(taste)* "under a separate key" is unactionable for a non-technical reader - there is no way to reach it without devtools. Name the key or drop the reassurance. Interacts with the BL-2 remediation. |
+| B6-N4 | `app/src/lib/dict.ts` `badStorage` (ru + en) | *(taste)* "under a separate key" is unactionable for a non-technical reader - there is no way to reach it without devtools. Name the key or drop the reassurance. Interacts with the BL-2 remediation. **Moved to Deferred, this piece (B12a)** - product content, no `DEBT.md` entry; see "Deferred out of phase-8". |
 | B6-N5 | `app/src/ports/storage.ts` (the `storage` handler comment) | *(prose)* Claims "the merge's own `mergeLists(mine, [])` already answers 'storage came back empty' correctly" - but `watch()` performs no merge. This comment is the justification BL-1 rests on; correct it whichever way BL-1 is resolved. |
 
 ### Found while implementing B7 (accessible names, product text, structure)
@@ -151,7 +272,7 @@ cycle is now spent; see `issues/phase-8/handoff.md`, "B7 remediation".
 | B7-R2 | `tests/app/states.js` (case 23, `addToListMenuStaysInModal`) | `ok(scrollTop === 0, ...)` can no longer fail: `RecordCard.svelte:270` changed `.card` to `overflow: clip`, which creates no scroll container, so `scrollTop` is 0 whatever the placement effect does - a stray `scrollIntoView` would scroll the nearest *scrollable* ancestor and this assertion would still pass. The D6 evidence it names (`.card.scrollTop` 109) is not what it measures any more. The real assertion is `inside(menu, card)`. Drop the scrollTop line or replace it with one pinning `:scope > .btn`. |
 | B7-R3 | `app/src/lib/i18n.ts:120,126,147` | After B7, `noTier` has **zero production callers** - only `i18n.test.ts:56,75-80` (the old-app parity fixture, which legitimately still needs it). Nothing says so at either site, so a later reader applying `CLAUDE.md`'s "add no variant before something uses it" deletes it and breaks the parity fixture for a reason that takes an hour to find. One clause closes it. Interacts with BL-0's fix. `done 6b50945`: bundled into BL-0's fix (same file, same reader trap) - a clause on `eqParts`'s doc comment names the zero-caller fact and the test that would break. |
 | B7-R4 | `app/src/components/ListPage.svelte:1267-1276`, `StorageNotice.svelte` | P12's 44x44 targets overlap editable neighbours: `.note-x::after` extends ~12px beyond a 20px button into the note `<textarea>`; `.warn-x::after` ~3px above the notice box. The `.homebtn` precedent it copies has no editable neighbour. A tap 12px from the cross clears the note instead of placing a caret. Unmeasured, low severity. |
-| B7-N3 | `tests/app/lib.js:124-135` | `axe(page, { allow })` is kept "for a future live-shared defect" with no caller - in the same commit whose `app/src/test/a11y.ts` comment argues that a parameter with no caller is a maintained shape for nothing. Pick one: delete it here too, or state why the browser suite differs. |
+| B7-N3 | `tests/app/lib.js:124-135` | `axe(page, { allow })` is kept "for a future live-shared defect" with no caller - in the same commit whose `app/src/test/a11y.ts` comment argues that a parameter with no caller is a maintained shape for nothing. Pick one: delete it here too, or state why the browser suite differs. **done `<pending, see B12a sha-citation follow-up>`, this piece (B12a)** - deleted; `sweep.js:432`'s `axe(page)` was the only caller and passed nothing. |
 | B7-N4 | `tests/app/inventory.js:94,142` and `:98,146` | `selected: 'Выбрано'/'Selected'` and `importPh: 'Ссылка на список'/'Paste a list link'` are dead keys - no reader. `pickRow` was deleted in this very batch for exactly that reason. `importPh` is also now wrong: after P6 that field's accessible name is `t.importList`. |
 | B7-N5 | `issues/phase-8/handoff.md` (`### B7`) | The entry still opens "**Not yet committed**", says files are "all currently in the working tree; most already `git add`ed", and calls the Escape test "the one unstaged file". All three are false as of `fa56576`, and the entry's own last bullet contradicts them. |
 | B7-N6 | `issues/phase-8/handoff.md` (`### B7`) | No `Review:` line inside the batch entry - it sits in `## Status`. Identical placement miss to `B4-8`, against the rule shipped in `c8cc38e`. |
@@ -248,15 +369,15 @@ remediation".
 | B8-R2 | `tests/app/print.js:1131-1155` | *(rides B8's remediation)* The committed `nameLines()` **is** the P16 measurement (same route, same 1100px, same `getClientRects().length`, both languages, both layouts), so the uncommitted scratchpad script costs nothing for `cm26`. But the route renders `cm26-f60-hi62-ci81` and the helper reads only `cm26`, so "the four longest names all render at one line" rests on a deleted script. Loop the four ids inside the existing `$eval` - two lines, zero extra page loads. `done 480c380`: looped `cm26`/`f60`/`hi62`/`ci81` inside the same `$eval`/`ok` pair. |
 | B8-R3 | `app/src/ports/image.ts:45-51`, `RecordActions.svelte` | The 2000 ms `toBlob` watchdog can fire on a slow-but-fine encode, and `copyImage` maps *any* `pngOf` rejection to `imgTainted` - so a contended machine encoding a large source gives the user a tainted-canvas story for a slow encode and silently loses the picture. 2000 ms is defensible for card art; the residual risk is the wording. The code already builds distinct `Error` messages and `copyImage` discards them - name the two causes apart, or raise the watchdog and document the measured encode time. |
 | B8-R4 | `app/src/ports/image.ts` (`browserImage().download`), `vite.config.mts` | New code exercised by nothing: no unit test imports `browserImage`, the file is coverage-excluded, and the browser path cannot reach it (`states.js` case 10 runs on a build that taints, so `writeImage` is never reached, let alone refused). The comment updated in the same commit now overstates the exclusion - "exercised for real by `states.js`'s copy-image case" is true of `pngOf`, not of `download`. The plan's step 1 offered "narrow the exclusion **or** add the rejection-path test"; the rejection path got real browser coverage, the download did not. A jsdom test on `download` with `URL.createObjectURL`/`revokeObjectURL` stubbed (asserting the `<a download>` name, the click, and the element's removal), and trim the comment's claim to `pngOf`. |
-| B8-R5 | (proof, not a file) | D1 and D18 are **global CSS** reaching every rendered page, but B8's local gates were `app/states`, `app/print`, `sweep 1180` and two golden probes. `app/hues`, `app/typo`, `app/contracts`, `stub`, the other sweep widths and the four golden shards have not run against this tree. Nothing in the review's reading suggests movement (goldens are structure-only; hues reads computed colours, which a 0s transition only stabilises). **CI is the outstanding proof** - check the full browser matrix on the B8 commits or the remediation. |
+| B8-R5 | (proof, not a file) | D1 and D18 are **global CSS** reaching every rendered page, but B8's local gates were `app/states`, `app/print`, `sweep 1180` and two golden probes. `app/hues`, `app/typo`, `app/contracts`, `stub`, the other sweep widths and the four golden shards have not run against this tree. Nothing in the review's reading suggests movement (goldens are structure-only; hues reads computed colours, which a 0s transition only stabilises). **CI is the outstanding proof** - check the full browser matrix on the B8 commits or the remediation. **done `<pending, see B12a sha-citation follow-up>`, this piece (B12a) - discharged by evidence, not by a re-run** (per `plan.md`'s own instruction not to re-run B8's gates): the `check` workflow (`.github/workflows/ci.yml`, which runs the full four-shard `browser` matrix as part of it) ran green on the state B8 landed at each of three later shas - run `35341735535` (`2d404c7`, the docs commit immediately after B9's own `5602ca9`), run `35344512741` (`56dabbc`, B10's own implementation commit), and run `35350599995` (`78981b2`, the docs commit immediately after B11's own `78b13f0`). All three succeeded; no golden re-record happened between B8 and any of them except B8.1's `addressSettled()` fix and B11's own six-golden update, both accounted for and green. |
 | B8-R6 | `tests/app/print.js` (the D20 block, ~line 1280) | `d.seed({'dhloot.lists.v2': ...})` is never cleared, and `driver.js`'s `seed` installs an `evaluateOnNewDocument` handler that survives every later `d.open()`. Harmless today (only the print-link block follows and it reads no lists), but the next person appending to this file inherits a seeded list without knowing - the same class as the viewport leak B8's own handoff documents. Also: the assertion depends on the action toast still being alive, and `say()` gives action toasts 7000 ms - two round trips inside 7 s is comfortable, but it is a real flake budget on a contended host. |
 | B8-N1 | `app/src/styles/tokens.css:172` | Cites "`docs/specs/DEBT.md`, D1's own history" for a rejected alternative, and the same commit deletes D1. The load-bearing half ("a longer non-zero duration was tried first and rejected for exactly the opposite reason") never says what the opposite reason *was*, so the dead pointer is the only route to it. State the reason inline in one clause, or cite `git show 8e43c92:docs/specs/DEBT.md`. |
 | B8-N2 | `app/src/lib/dict.ts:84,432` | `imgFailed` now fires only when `download()` throws (the blob already exists), but the wording is "Не удалось получить картинку" / "Could not load the image". The strings are live's own and live's use was broader, so they are inherited rather than invented - but wrong for the only case that can now raise them. "Не удалось сохранить картинку" / "Could not save the image". |
 | B8-N3 | `docs/specs/FEATURES.md` (Chrome section) | "Every focusable control gets the same gold keyboard-focus ring, **at one radius (`--r-sm`)**" is not true as built: a component's own scoped `border-radius` outranks the unscoped global rule, so `.seg button` keeps 999px - correctly. Drop "at one radius", or say the radius follows the control's own. |
 | B8-N4 | `tests/app/states.js:346` | "which is what made this invisible before **B12**" cites a first-plan batch id; this work is B8. Stale, and that clause narrates the session rather than the code. The rest of the comment block earns its keep - the Chromium `toBlob` behaviour is a live trap. |
 | B8-N5 | `tests/app/print.js:1131-1155` | Same edit as `B8-R2`; listed there. |
-| B8-N6 | `app/src/styles/tokens.css` (D1's rule) | *(deferred-scope)* The rule zeroes `animation-duration`/`transition-duration` but not `animation-delay`/`transition-delay`, so a delayed animation still waits under `reduce`. Nothing in the tree uses a delay today, so this is cheap insurance, not a defect - and the plan specified these four declarations and the owner approved them, so changing it is a policy edit, not a fix. |
-| B8-N7 | `app/src/components/TablesPage.svelte:444` | *(deferred-scope)* `scrollIntoView({ behavior: 'smooth' })` overrides CSS `scroll-behavior` per spec, so D1's `scroll-behavior: auto !important` does not reach it: the one real smooth scroll in the app still animates under `prefers-reduced-motion: reduce`. `TablesPage` is outside B8's file list. One-line fix when someone next opens that file - pick the behaviour from a `matchMedia('(prefers-reduced-motion: reduce)')` read. |
+| B8-N6 | `app/src/styles/tokens.css` (D1's rule) | *(deferred-scope)* The rule zeroes `animation-duration`/`transition-duration` but not `animation-delay`/`transition-delay`, so a delayed animation still waits under `reduce`. Nothing in the tree uses a delay today, so this is cheap insurance, not a defect - and the plan specified these four declarations and the owner approved them, so changing it is a policy edit, not a fix. **Moved to Deferred, this piece (B12a)** - policy edit to an owner decision, no `DEBT.md` entry; see "Deferred out of phase-8". |
+| B8-N7 | `app/src/components/TablesPage.svelte:444` | *(deferred-scope)* `scrollIntoView({ behavior: 'smooth' })` overrides CSS `scroll-behavior` per spec, so D1's `scroll-behavior: auto !important` does not reach it: the one real smooth scroll in the app still animates under `prefers-reduced-motion: reduce`. `TablesPage` is outside B8's file list. One-line fix when someone next opens that file - pick the behaviour from a `matchMedia('(prefers-reduced-motion: reduce)')` read. **Moved to Deferred, this piece (B12a)** - needs a new `app/src/ports/` surface; `DEBT.md` entry `D26` lands in `B12b`; see "Deferred out of phase-8". |
 | B8-N8 | `issues/phase-8/handoff.md` | *(deferred-scope, duplicate of `B7-N7`)* No top-level `## Verification` section (`.claude/templates/handoff.template.md:19`); each batch entry carries its results inline instead. Pre-existing for the whole file, not introduced by B8. **Size**: 138,821 B against `session-stop.mjs`'s 150 KB warn threshold - B9's entry will trip it, so `/handoff` compaction is due. |
 
 **One check this review names that nothing in the repository can perform**:
@@ -568,6 +689,16 @@ dispatched to B12 as **named acceptance lines, not as nits** - see the note
 under "Outstanding" about blockers never being demoted into a nit batch.
 They are listed here for the record, already routed.
 
+**All three, done `<pending, see B12a sha-citation follow-up>`, this piece (B12a)** - `search.test.ts:143-151` re-points
+the case at the query side and is proved to bite (deleted `search.ts:71`,
+watched the case fail with `AssertionError: expected [] to include 'q80'`,
+restored, `git diff --stat -- app/src/lib/search.ts` empty afterward);
+`tests/dataint.js:52-72`'s text-hygiene loop gained the apostrophe
+assertion over all four fields, proved to bite against a fabricated record
+(`FAIL zzTEST.en: typographic apostrophe`, never against the tree's own
+`data.js`); `tests/app/lib.js` gained both halves of the stale-`dist/`
+guard with all six proof results recorded in `handoff.md`, "Verification".
+
 | id | where | what |
 |---|---|---|
 | B11-BL-1 | `app/src/lib/search.test.ts:143-146` | *(routed to B12 as an acceptance line)* B11 removed the last live U+2019 from `data.js`, so the repository's **only** apostrophe test stopped biting: `q80`'s `en` is now ASCII, the query is ASCII, and `foldQuery`'s `.replace(/[’ʼ]/g, "'")` (`app/src/lib/search.ts:71`) is an identity transform on both sides. That line could be deleted today and the test would still pass; line coverage stays 100% because the `.replace` still executes, which is why `npm run check` stayed green. The folding must stay - iOS/macOS autocorrect turns a typed `'` into U+2019 on the **query** side - B11 simply inverted which side needs it. Fix: type the typographic form against the now-ASCII record and re-point the comment at the query side. Prove it bites by deleting `search.ts:71` and watching it fail. |
@@ -661,6 +792,17 @@ re-believed.
 | B2-6 | `docs/specs/ROUTES.md` documents `#/tables/frames` as a route shape with no row in `docs/fixtures/urls/routes.json` | Fixture completeness, not a coverage gap - `app/src/lib/hash.test.ts` covers the route. Touching `docs/fixtures/` is a public-contract change and needs its own justification. |
 | B3-N9 | `docs/specs/COVERAGE.md`: "adding it back costs a fifth `run-all` row and a fifth CI width" | The 320px width would now be a sixth row. Cosmetic count in a sentence about a hypothetical. |
 | perf-PF4 | 640x640 originals feed 60px rows and 168px tiles; grid view pulls ~11 MB against a 243 kB first load | Needs a generated derivative under a new asset path, which `CONTRACTS.md` freezes. Its own task, recorded in `plan.md`'s deferred list. |
+| B6-R1 | `app/src/state/lists.svelte.ts` (`#readCurrent`) - a **second** storage corruption is never backed up, and the first backup is orphaned forever once a read succeeds | Moved out of B12 by `plan.md`, "Rows this plan moves to Deferred": the fix needs a backup **keying scheme** (a timestamped key grows `localStorage` without bound; dropping `.bad` on a successful read discards the first loss) and a way for a user to reach the backup at all - the consistent-storage ticket already owns ".bad-key recovery beyond a notice". Gets a `docs/specs/DEBT.md` entry (`D24`) in `B12b`, so it survives this task directory's retirement. |
+| B6-R5 | `app/src/lib/listLink.ts` (`parseItems`/`decodeList`) - when every id in a shared link is dropped, the user sees "the link is damaged" (`badShare`) rather than "every item in it is gone" (`droppedItems`) | Moved out of B12: telling the two apart is a new user-visible outcome - a `dict.ts` string pair in two languages, a `FEATURES.md`/`ROUTES.md` sentence, and possibly an `inventory.js` entry plus a seeded golden. That is a batch, not a nit. Gets a `docs/specs/DEBT.md` entry (`D25`) in `B12b`. |
+| B8-N7 | `app/src/components/TablesPage.svelte:444` - `scrollIntoView({behavior:'smooth'})` still animates under `prefers-reduced-motion: reduce`, since the CSS property `scroll-behavior` cannot override a call-site `behavior` argument | Moved out of B12: the boundary-respecting fix needs a `matchMedia` read, and there is no `matchMedia` anywhere in `app/src` today - it needs a new `app/src/ports/` surface with its type, `index.ts` entry, fake and per-file coverage. Gets a `docs/specs/DEBT.md` entry (`D26`) in `B12b`. |
+| B6-N4 | `app/src/lib/dict.ts` `badStorage` (ru + en) - "under a separate key" is unactionable for a non-technical reader, who has no way to reach it without devtools | Moved out of B12: rewriting an informational clause is product **content**, in `dict.ts`'s own voice (`context.md`, language policy) - not a batch B12 is scoped for. Deferred to the UI/UX ticket. No `DEBT.md` entry - not a defect. |
+| B8-N6 | `app/src/styles/tokens.css` (D1's rule) - zeroes `animation-duration`/`transition-duration` but not `animation-delay`/`transition-delay`, so a delayed animation would still wait under `reduce` | Moved out of B12: the plan specified exactly these four declarations and the owner approved them under Q5 - changing the rule now is a policy edit to an owner decision, for a hazard with zero sites in the tree today. No `DEBT.md` entry - not a defect. |
+
+*(`plan.md`'s own step 7 text says "the four Deferred rows"; its fuller table
+just above, "Rows this plan moves to Deferred", names five - `B6-R1`,
+`B6-R5`, `B8-N7`, `B6-N4` and `B8-N6`. The five-row table is the one with an
+itemised reason per row and is treated as authoritative here; the "four" in
+step 7 is recorded as a discrepancy, not silently resolved by dropping one.)*
 
 ## Done
 
@@ -669,3 +811,13 @@ re-believed.
 - **B3 review** N1 (`COVERAGE.md`'s stale `golden` job name) - `c8cc38e`, routed mid-flight.
 - **B3 review** N2-N8 - B5 (`112bd07`), after B4 skipped them.
 - **B9 review** blockers BL-1, BL-2 and record corrections N1/N2/N4/N7/N8/N9 - `0686bb6`.
+- **B5-N15** (`tests/run-all.js`'s empty-shard message, flagged `deferred-scope` if B9 owned the file) - found already done `0f0c73b`, B9's own translation sweep; census, B12a.
+- **B12a** - the census (all 103 rows), the three routed findings
+  (`B11-BL-1`, `B11-BL-2`, `B11-R1`), `B7-N3`, and the record/spec rows
+  (`B4-9`, `B5-R2`, `B5-N1`, `B5-N2`, `B5-N4`, `B5-N7`, `B8-R5`, `B8-N3`,
+  `B9-N10`, `B11-N1`, `B11-N4`, `B11-N5`, `B2-5`) - `<pending, see B12a
+  sha-citation follow-up>`. Closed with no change (decision or already
+  done, no edit needed): `B4-8`, `B4-10`, `B5-R3`, `B7-N5`, `B7-N6`,
+  `B7-N7`, `B7-N8`, `B7-N14`, `B8-N5` (already `480c380`), `B8-N8`,
+  `B8.1-R1`-`B8.1-R6`, `B8.1-N4`, `B9-R1`, `B9-R3`. Moved to "Deferred out
+  of phase-8": `B6-R1`, `B6-R5`, `B8-N7`, `B6-N4`, `B8-N6`.

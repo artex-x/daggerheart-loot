@@ -66,9 +66,11 @@ Six modes. Each keeps its own input in memory only.
 - Search folds case, `ё`/`е`, typographic apostrophes (U+2019, U+02BC), Latin
   diacritics (`ä`/`ö` etc., NFD-stripped - Cyrillic is excluded so `й` never
   merges into `и`) and the Unicode minus sign (U+2212 -> `-`) on both the
-  query and the catalogue, so `плетеная` finds "Плетёная", `soldier's` finds
-  "Soldier's", `zweihander` finds "Zweihänder" and `-1` finds a "−1" penalty;
-  still a substring match, not fuzzy.
+  query and the catalogue, so `плетеная` finds "Плетёная", a query typed with
+  the typographic apostrophe autocorrect produces (`keeper’s staff` -> the
+  now-ASCII "Keeper's Staff", O2/B11) still finds it, `zweihander` finds
+  "Zweihänder" and `-1` finds a "−1" penalty; still a substring match, not
+  fuzzy.
 - Starting inventory is searchable, opens on direct record pages, and is
   browsable under Other's Starting items table (`other_starting`); it remains
   held in the non-rollable `starting` collection. Its source and class context
@@ -305,8 +307,10 @@ Six modes. Each keeps its own input in memory only.
 - Under `prefers-reduced-motion: reduce` every transition and animation stops
   moving - a blanket kill (`tokens.css`), not the live app's own two named
   exceptions. A deliberate improvement over parity: `DEBT.md`, D1, paid off.
-- Every focusable control gets the same gold keyboard-focus ring, at one
-  radius (`--r-sm`) - a global rule (`tokens.css`) rather than the live app's
-  closed list of 18 selectors at an 8px radius, with everything outside that
-  list falling back to the browser's own outline. Broader coverage was the
-  owner's call: `DEBT.md`, D18, paid off.
+- Every focusable control gets the same gold keyboard-focus ring, at the
+  control's own border-radius where a component sets one and `--r-sm`
+  otherwise (a scoped rule always outranks the unscoped global one - `.seg
+  button`'s 999px is untouched) - a global rule (`tokens.css`) rather than
+  the live app's closed list of 18 selectors at an 8px radius, with
+  everything outside that list falling back to the browser's own outline.
+  Broader coverage was the owner's call: `DEBT.md`, D18, paid off.

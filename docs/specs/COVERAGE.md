@@ -197,7 +197,11 @@ browser APIs whose success paths jsdom cannot run at all, so it sits at
 70 lines, 80 functions, 55 branches, 70 statements, and the difference is
 covered by `tests/app/` driving the built app in a real browser (B12).
 Components are at 85 lines, 80 functions, 75 branches, 85 statements; state is
-at 95 lines, 95 functions, 85 branches, 90 statements.
+at 95 lines, 95 functions, 85 branches, 90 statements. Three components carry
+their own lower branch carve-out in `vite.config.mts` - `Button.svelte` 60,
+`DiceBar.svelte` 55, `Badge.svelte` 50 - each named there with the reason
+(Svelte compiles every attribute into an update path a small component's own
+tests cannot all reach); only `Button`'s is called out in prose below.
 
 **A per-file rule is not a per-file *test* rule.** Nothing requires a
 `Foo.test.ts` beside every `Foo.svelte`, and a rule that did would be answered
@@ -355,6 +359,15 @@ coupling). If the two ever disagree the failure names both files and what to
 do - the debounce moved, so `URL_DEBOUNCE_MS` and every golden shard need
 re-running.
 
+**"No golden moved" is narrower than it sounds (issues/phase-8, B5-R2).** A
+golden snapshots the accessibility tree plus the control inventory
+(`serializeTree`/`controlLine`, above) - no class attribute, no CSS, no
+computed style. A CSS-only change (B5's C2 dedup, D1, D18, D20) can therefore
+truthfully claim "no golden moved" while still moving what the page looks
+like; that half rests on `tests/app/hues.js` (computed `color` on a handful
+of selectors) and axe's `color-contrast` rule, not on the goldens. Do not
+read "no golden moved" as "no pixel moved" - it answers structure only.
+
 **The gate rule for "no golden moved" (issues/phase-8, B8.1).** A batch's
 claim that a change moved no golden is proved by all four `--shard=n/4` runs,
 or by `--only=` probes that between them reach every route kind the change can
@@ -364,7 +377,11 @@ it measured. B8's three failures fell one each in shards 2, 3 and 4
 4), so `--shard=1/4` alone would have come back green and shipped the exact
 defect this rule exists to catch. B8 in fact claimed no movement with
 `--only=#/i/ci1` and `--only=print`; both were true, and both missed all three
-failures, because neither reaches an owned-list route.
+failures, because neither reaches an owned-list route. A prior claim of "no
+movement" is worth nothing if `dist/` itself was stale when it was measured -
+`tests/app/lib.js` fails closed on a lagging `dist/`, both a byte mismatch
+against the three files `npm run data` regenerates and an mtime check against
+the bundle, before any suite requiring it can run (issues/phase-8, B11-R1).
 
 **The capture wait.** `golden.js`'s `captureState` calls
 `driver.js`'s `d.addressSettled()` immediately before every snapshot - the

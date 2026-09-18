@@ -162,7 +162,7 @@ packed list URL. The **title is byte-identical in all three**
 (`"Клад дракона — Генератор лута — Daggerheart"`), so D5/O3 is not implicated.
 The whole divergence is the URL payload. Decoded:
 
-| state | expected (`было`) | actual on CI (`стало`) |
+| state | expected (`want`) | actual on CI (`got`) |
 |---|---|---|
 | `~ removed` | `Клад дракона\n6.9cfk~ci2,ci3,ci4,ci5,ci6,ci7` | `Клад дракона\n7.trm3~ci1,...,ci7` |
 | `~ prices set` | `Клад дракона\n7.r35z~ci1*1*100,ci2,...,ci7` | `Клад дракона\n7.trm3~ci1,...,ci7` |
@@ -400,6 +400,12 @@ Two notes that are part of the decisions, not commentary:
 - Q8 is cosmetic **only because B1 ships first**. If B1 is ever dropped or
   deferred, Q8 stops being cosmetic and becomes the search fix, and the
   ranking has to be revisited.
+- **B11-N4 (issues/phase-8/nits.md), measured count, appended without
+  touching the row above**: Q8's "381 equipment names" is the `eq` record
+  count, not the number of names carrying U+2019 - B11 (`78b13f0`) measured
+  the real scope as 13 distinct names, 28 records, 30 field values, 34
+  characters (`issues/phase-8/critique/open.md:53` already had "the 13
+  English equipment names" right).
 
 ### Two further owner decisions (2026-09-17)
 

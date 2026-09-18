@@ -599,177 +599,29 @@ Recorded here because each is a fork the register leaves open.
   states named. A nit that changes what a screen draws was mis-classified,
   and this is how that is caught before the diff, not after.
 
-### B12a - the census, the three routed findings, and the record rows
+### B12a - the census, the three routed findings, and the record rows - SHIPPED `<pending, see B12a sha-citation follow-up>`
 
-**Objective.** Establish the verdict for all 103 rows once; land the three
-findings B11's review routed here as acceptance lines; clear every row whose
-fix is a record or spec correction.
-
-**In scope.** The census; `B11-R1`, `B11-BL-1`, `B11-BL-2` as named
-acceptance lines; the record and spec rows below; `B7-N3`, because
-`tests/app/lib.js` is already open for `B11-R1` (`CLAUDE.md`, campsite).
-
-**Out of scope.** Any `app/src/**` change other than `search.test.ts`
-(`B11-BL-1`); `.github/`; any browser-suite source file other than
-`tests/app/lib.js`.
-
-**Files expected.** `issues/phase-8/nits.md`, `issues/phase-8/handoff.md`,
-`issues/phase-8/context.md`, `issues/phase-8/plan.md`, `.claude/README.md`,
-`docs/specs/COVERAGE.md`, `docs/specs/FEATURES.md`, `docs/specs/META.md`,
-`tests/app/lib.js`, `tests/dataint.js`, `app/src/lib/search.test.ts`.
-
-**Three routed findings - full acceptance lines, not nits.** B11's review
-returned these as new work, and `orchestrate.prompt.md`, "Blockers do not go
-to a nit batch" forbids demoting them:
-
-1. **`B11-BL-1` - the apostrophe test bites again.** `search.test.ts:143-146`
-   asserts `find("keeper's staff")` finds `q80`, whose `en` is now ASCII on
-   both sides, so `search.ts:71`'s `.replace(/[’ʼ]/g, "'")` is an identity
-   transform and could be deleted with the suite still green. Re-point the
-   case at the **query** side: type the typographic form (U+2019) against the
-   now-ASCII record, and rewrite the comment to say that iOS/macOS
-   autocorrect produces U+2019 on the query, not that the record carries it.
-   **Proof obligation**: delete `app/src/lib/search.ts:71`, watch the case
-   fail, restore it, and record both results. A green run does not discharge
-   this line; the red one does.
-2. **`B11-BL-2` - an invariant, so the next ingest cannot re-introduce O2.**
-   One assertion inside `tests/dataint.js:52-72`'s existing text-hygiene
-   loop, over all four fields per the decision above:
-   `ok(!/[’ʼ]/.test(v), x.id + '.' + k + ': typographic apostrophe')`. It
-   runs inside `npm run check` in under a second. **Proof obligation**:
-   temporarily put a U+2019 back into one `eq` `en` value in a scratch copy
-   (never in the tree's `data.js` - the generated-output hooks and
-   `tools/build.js` make an in-tree edit expensive) or assert against a
-   fabricated record, watch the assertion fail, and record it.
-3. **`B11-R1` - the stale-`dist/` trap. Placement accepted as the reviewer
-   proposed it**, with the narrowings below. See "The `B11-R1` decision".
-
-**The `B11-R1` decision** (a durable tooling change every later session runs
-under, so the planner settles it, not the implementer):
-
-- **Accepted: `tests/app/lib.js`, not seven suites and not
-  `.claude/README.md`.** All seven `tests/app/` suites require `./lib.js`
-  before anything else (census table above), and that file already carries
-  the precedent - the `dist/index.html` existence guard at `:20-23`, same
-  shape, `console.log` plus `process.exit(1)`. One guard, seven suites,
-  nothing to drift. `COVERAGE.md` owns suite ownership and gate rules and
-  already holds the B8.1 "no golden moved" rule this guard makes enforceable,
-  so the one sentence belongs in that paragraph. Not `.claude/README.md`: it
-  costs runs, not correctness, and a third copy of a rule is a third thing to
-  drift.
-- **Narrowing 1 - the mtime half's source set.** Newest mtime under
-  `app/src/`, excluding every `*.test.ts` file and the whole `app/src/test/`
-  directory (they are not bundled, so they cannot make `dist/` stale, and
-  including them would demand a rebuild after every test edit), plus `app/index.html`,
-  `vite.config.mts` and `app/svelte.config.mjs`. Compared against
-  `dist/assets/app.js`. The exclusion and its reason are written in the code,
-  not inferred.
-- **Narrowing 2 - the byte half's file set.** `data.js`, `data.json`,
-  `catalog.csv` against their `dist/` copies, exactly as the reviewer named
-  them (~1.3 MB, milliseconds). **Verify each `dist/` copy exists before
-  depending on it**: the deploy collect step copies `data.json`/`catalog.csv`
-  from the repo root, not from `dist/`, so their presence in `dist/` comes
-  from vite's own static copying and must be checked, not assumed. A file
-  vite does not emit is dropped from the comparison with a comment saying so.
-  `llms.txt` is deliberately not included - the three above are what
-  `npm run data` regenerates and what the suites actually read.
-- **Narrowing 3 - the message names the half and the file**, then the fix:
-  `dist/ is stale (<which check>, <which file>) - run npm run build first`.
-  A guard whose message does not say which half fired costs a round trip.
-- **No escape hatch.** Fail-closed means fail-closed; an env-var bypass is a
-  guard that gets waved through, which `.claude/README.md` already records as
-  worse than no guard.
-- **CI is safe and it is recorded why**: `ci.yml:112-118`'s `browser` job
-  runs `npm ci` then `npm run build` then the suites, and checkout sets
-  source mtimes before the build, so the mtime half cannot fire falsely
-  there.
-- **`npm run check` cannot be broken by it**: `golden.test.mjs` imports
-  `golden.js`'s DOM-free half and never requires `lib.js`
-  (`golden.js:326,346,349`), so the `node --test` step inside `check` never
-  loads the guard.
-- **Proof obligation, both directions, both halves.** (a) On a correctly
-  built tree: `npm run build`, then `node tests/run-all.js app/typo` - the
-  guard is silent and the suite passes. (b) mtime half fires: `touch` one
-  bundled file under `app/src`, re-run `app/typo`, record the guard's exact
-  message and the non-zero exit; `npm run build`; re-run green. (c) byte half
-  fires: append one byte to `dist/data.js` from the shell (`dist/` is build
-  output - the Edit-tool guard blocks writes there, Bash does not), re-run
-  `app/typo`, record it; `npm run build`; re-run green. All six results go in
-  the handoff. A guard proved only in the silent direction is the same class
-  of nothing this row exists to close.
-
-**Record and spec rows in this piece** (each its own acceptance line; detail
-in `nits.md` under the id):
-
-`B4-8`, `B4-9`, `B5-R2`, `B5-N1`, `B5-N2`, `B5-N4`, `B5-N7`, `B7-N3`,
-`B7-N5`, `B7-N6`, `B7-N7`, `B7-N8`, `B7-N14`, `B8-R5`, `B8-N3`, `B8-N5`,
-`B8-N8`, `B8.1-R1`, `B8.1-R2`, `B8.1-R3`, `B8.1-R4`, `B8.1-R5`, `B8.1-R6`,
-`B8.1-N4`, `B9-R1`, `B9-R3`, `B9-N10`, `B11-N1`, `B11-N4`, `B11-N5`, `B2-5`.
-
-Three of those have a decided shape:
-
-- **`B7-N7` and `B8-N8` close with no edit** - `handoff.md:303` already has
-  `## Verification` (census above). Record the verdict; do not re-add it.
-- **`B8-R5` is discharged by evidence, not by a run.** B8's outstanding proof
-  was "the full browser matrix on the B8 commits". CI has since run the whole
-  matrix green on `main` at B9, B10 and B11 shas. Name the run and close the
-  row; do not re-run B8's gates.
-- **`B11-N4` is append-only.** `context.md:394` is a verbatim owner-decision
-  row and the register says not to rewrite it. Append the measured counts
-  (13 distinct names, 28 records, 30 field values, 34 characters) as a note
-  **under** the table; do not touch the owner's sentence. If the owner would
-  rather the row were left entirely alone, that is a one-line reversal.
-
-**Steps.**
-
-1. Run the census sweep (scratchpad script, not committed) and write a
-   `### Census, 2026-09-18, at <HEAD sha>` block into `nits.md` under
-   "Outstanding", one verdict line per id: `live` / `already done <sha>` /
-   `moved: <new site>` / `closed (no change - <reason>)`. Fold in the eight
-   verdicts this plan already established rather than re-deriving them. Move
-   every `already done` row straight to "## Done" in the same commit.
-2. Land `B11-R1` with its narrowings, plus the `COVERAGE.md` sentence in the
-   existing B8.1 gate-rule paragraph. Run its three proofs.
-3. Land `B11-BL-2`, with its proof.
-4. Land `B11-BL-1`, with its proof (delete `search.ts:71`, watch it fail,
-   restore).
-5. Land `B7-N3` (delete `axe`'s unused `allow` parameter from
-   `tests/app/lib.js`, after `git grep` shows no caller passes it).
-6. Land the record and spec rows, each moved to `Done <sha>` or `closed` in
-   `nits.md` in the same commit.
-7. Record the four Deferred rows in `nits.md`'s "Deferred out of phase-8"
-   table with their reasons (the `DEBT.md` entries themselves land in
-   `B12b`, which is the piece that opens `app/src`).
-
-**Acceptance.**
-
-1. `nits.md` carries a census verdict for every one of the 103 live rows.
-2. `B11-BL-1` is proved to bite: `search.ts:71` deleted -> the case fails;
-   restored -> green. Both recorded.
-3. `B11-BL-2` is proved to bite, and covers all four text fields.
-4. `B11-R1` is landed in `tests/app/lib.js` with both halves, and all six
-   proof results (silent, mtime-fires, mtime-restored, byte-fires,
-   byte-restored, and the final green) are recorded in the handoff.
-5. `COVERAGE.md`'s B8.1 gate-rule paragraph gains the one sentence; nothing
-   is added to `.claude/README.md` for this rule.
-6. Every id in the record-and-spec list above is `Done <sha>` or `closed
-   <sha> (no change - <reason>)` in `nits.md`.
-7. `git status` leaves `.claude/agents/reviewer.md` and `issues/56/`
-   untouched and unstaged.
-
-**Verification commands.**
-
-```text
-rtk npm run check                       # one foreground call, timeout 600000
-node tests/run-all.js contracts,derived,dataint,craft,stub
-npm run build
-node tests/run-all.js app/typo          # guard silent, suite green
-# then the two deliberate-stale runs and their two restores, per step 2
-```
-
-**Risks / do-nots.** Do not put the staleness rule in `.claude/README.md`.
-Do not add an env-var bypass. Do not include `**/*.test.ts` in the mtime
-scan. Do not edit `context.md:394`'s owner sentence. Do not `git add -A`.
+Outcome: verdict recorded for all 103 live register rows in `nits.md`
+("### Census, 2026-09-18, at e7ce2ad"), one found already done along the
+way (`B5-N15`, B9's own translation commit). The three routed findings
+landed exactly as decided: `B11-BL-1` re-points the apostrophe test at
+the query side and is proved to bite (deleting `search.ts:71` fails the
+case; restoring it passes; `app/src/lib/search.ts` byte-identical
+afterward); `B11-BL-2` adds the typographic-apostrophe invariant to
+`tests/dataint.js`'s text-hygiene loop over all four fields, proved
+against a fabricated record; `B11-R1` adds the fail-closed stale-`dist/`
+guard to `tests/app/lib.js` (byte half + mtime half) with all six proof
+results recorded, plus one sentence in `COVERAGE.md`. `B7-N3` (the
+unused `allow` parameter) deleted alongside `B11-R1` in the same file.
+Thirteen record/spec rows landed as doc edits; fourteen closed with no
+change (decision already made, or already done); five rows moved to
+"Deferred out of phase-8" with reasons, three of them owed a `DEBT.md`
+entry in `B12b`. No deviation in scope; one discrepancy recorded (this
+section's own step 7 undercounts "Rows this plan moves to Deferred" by
+one row - both are this plan's own text, not a finding about the tree; the
+five-row table is authoritative, per `nits.md`'s note under its Deferred
+table). Full detail: `git show <pending, see B12a sha-citation follow-up>`,
+or `issues/phase-8/handoff.md`.
 
 ### B12b - production source (`app/src/**`), and the DEBT entries
 

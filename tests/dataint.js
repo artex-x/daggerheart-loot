@@ -69,6 +69,13 @@ ALL.forEach((x) => {
       x.id + '.' + k + ': words glued together after a link'
     );
     ok(!/�/.test(v), x.id + '.' + k + ': broken character');
+    /* O2 (issues/phase-8, B11): the source book ships typographic apostrophes
+       (U+2019, and U+02BC for good measure) in both languages; B11 normalised
+       every one then in the catalogue to ASCII but added no guard, so the
+       next ingest could silently reintroduce them. All four fields pass
+       today - covers the whole class rather than only en/ende (B11-BL-2,
+       "Decisions this plan takes"). */
+    ok(!/[’ʼ]/.test(v), x.id + '.' + k + ': typographic apostrophe');
   });
   ok(!/^[a-z]/.test(x.en), x.id + ': English name starts lowercase — ' + x.en);
   ok(!/^[а-яё]/.test(x.ru), x.id + ': Russian name starts lowercase — ' + x.ru);

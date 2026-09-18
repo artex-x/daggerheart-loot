@@ -11,7 +11,9 @@ const path = require('path');
 const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./driver.js');
 
-const DIST_HTML = path.join(__dirname, '..', '..', 'dist', 'index.html');
+const ROOT = path.join(__dirname, '..', '..');
+const DIST = path.join(ROOT, 'dist');
+const DIST_HTML = path.join(DIST, 'index.html');
 
 /* Every suite requires this file before it does anything else, so the guard
    belongs at the top: a missing dist/ should say so once, in one sentence,
@@ -20,6 +22,71 @@ const DIST_HTML = path.join(__dirname, '..', '..', 'dist', 'index.html');
 if (!fs.existsSync(DIST_HTML)) {
   console.log('dist/index.html is not built - run npm run build first');
   process.exit(1);
+}
+
+/* B11-R1 (issues/phase-8, B12a). golden.js and every other suite here
+   compare captures against dist/ (golden.js's own header comment), but npm
+   run check's npm run data step regenerates data.json/catalog.csv/i/ and
+   never runs vite build - so dist/ can lag the tree arbitrarily. A
+   --update run against a lagging dist/ re-records the OLD render, and the
+   next verification run prints "unchanged", having measured nothing - the
+   same failure class as B8.1's lost settle instrument (COVERAGE.md, "The
+   gate rule for 'no golden moved'"). Fail closed, both halves, no escape
+   hatch: an env-var bypass is a guard that gets waved through, which
+   .claude/README.md already records as worse than no guard. */
+
+/* Byte half: the three files `npm run data` actually regenerates, against
+   their dist/ copies (~1.3 MB, milliseconds). Each dist/ copy is verified
+   to exist before it is depended on - the deploy collect step copies
+   data.json/catalog.csv from the repo root, not from dist/, so their
+   presence in dist/ comes only from vite's own static asset copying and is
+   not guaranteed; a file vite did not emit is dropped from the comparison
+   rather than treated as a mismatch. llms.txt is deliberately excluded -
+   it is not one of the three files `npm run data` writes. */
+const BYTE_FILES = ['data.js', 'data.json', 'catalog.csv'];
+for (const f of BYTE_FILES) {
+  const distCopy = path.join(DIST, f);
+  if (!fs.existsSync(distCopy)) continue;
+  if (!fs.readFileSync(path.join(ROOT, f)).equals(fs.readFileSync(distCopy))) {
+    console.log('dist/ is stale (byte check, ' + f + ') - run npm run build first');
+    process.exit(1);
+  }
+}
+
+/* Mtime half: newest mtime under app/src/ - excluding every *.test.ts file
+   and the whole app/src/test/ directory, neither of which is bundled, so
+   neither can make dist/ stale, and including them would demand a rebuild
+   after every test edit - plus app/index.html, vite.config.mts and
+   app/svelte.config.mjs, compared against dist/assets/app.js. Safe on CI:
+   ci.yml's browser job runs `npm ci` then `npm run build` before any suite,
+   and checkout sets source mtimes ahead of the build, so this cannot fire
+   falsely there. */
+function newestMtimeUnder(dir) {
+  let newest = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (full === path.join(ROOT, 'app', 'src', 'test')) continue;
+      newest = Math.max(newest, newestMtimeUnder(full));
+    } else if (!entry.name.endsWith('.test.ts')) {
+      newest = Math.max(newest, fs.statSync(full).mtimeMs);
+    }
+  }
+  return newest;
+}
+
+const APP_JS = path.join(DIST, 'assets', 'app.js');
+if (fs.existsSync(APP_JS)) {
+  const sourceNewest = Math.max(
+    newestMtimeUnder(path.join(ROOT, 'app', 'src')),
+    fs.statSync(path.join(ROOT, 'app', 'index.html')).mtimeMs,
+    fs.statSync(path.join(ROOT, 'vite.config.mts')).mtimeMs,
+    fs.statSync(path.join(ROOT, 'app', 'svelte.config.mjs')).mtimeMs
+  );
+  if (sourceNewest > fs.statSync(APP_JS).mtimeMs) {
+    console.log('dist/ is stale (mtime check, dist/assets/app.js) - run npm run build first');
+    process.exit(1);
+  }
 }
 
 let browserPromise = null;
@@ -124,20 +191,21 @@ const AXE_PATH = require.resolve('axe-core/axe.min.js');
  * rule `app/src/test/a11y.ts` cannot answer honestly in jsdom, and the whole
  * reason this suite exists rather than another vitest case.
  *
- * `allow` disables named rules for this one call - kept general for a future
- * live-shared defect ported on purpose, the same contract
- * `expectNoA11yViolations` carries. `#/lists`/`#/lists/a` used to need it for
+ * No per-call rule disabling: `#/lists`/`#/lists/a` used to need one for
  * `nested-interactive` (`StorageNotice.svelte`'s dismiss button sat inside
- * its own `<summary>`, `docs/specs/DEBT.md` D3); paid off, so every caller
- * currently runs with nothing disabled.
+ * its own `<summary>`, `docs/specs/DEBT.md` D3); paid off, and B7-N3
+ * (issues/phase-8) found the parameter that carried it had gone unused by
+ * every caller - `app/src/test/a11y.ts`'s own comment already argues that a
+ * parameter with no caller is a maintained shape for nothing, so this suite
+ * does not keep one either. A future live-shared defect that needs one adds
+ * it back with a caller, not ahead of one.
  *
  * Returns violations only - a suite reads `.length` for "found anything" and
  * the array itself to print what.
  */
-async function axe(page, { allow = [] } = {}) {
+async function axe(page) {
   await page.addScriptTag({ path: AXE_PATH });
   const rules = { 'color-contrast': { enabled: true } };
-  for (const id of allow) rules[id] = { enabled: false };
   return page.evaluate(async (r) => {
     const res = await window.axe.run(document, { rules: r });
     return res.violations;

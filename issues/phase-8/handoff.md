@@ -2,42 +2,41 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `bd1a3d7`, this planning pass's
-  docs-only commit, two commits past **B11 - equipment apostrophes (O2)**
-  (`78b13f0`), the last content batch. `npm run check`, `npm run
-  check:built`, the fs suites, both `--only=` golden probes and all four
-  golden shards are green on B11 - see "Verification"; nothing since has
-  touched a gated path (`issues/**` markdown is exempt, `.claude/README.md`
-  and `docs/specs/` are `.prettierignore`d). B1-B11 plus every remediation
-  pass are on `main` in full and pushed; `git rev-parse HEAD origin/main`
-  agreed after the push.
-- Last agent: planner (2026-09-18, B12 design: one docs commit `bd1a3d7`).
+- Task status: in_progress. HEAD is `<pending, see B12a sha-citation
+  follow-up>`, this pass's own commit, one commit past **B11 - equipment
+  apostrophes (O2)**'s docs pass (`78981b2`), which was two past B11 itself
+  (`78b13f0`). `rtk npm run check`, the fs suites, `npm run build` and the
+  `app/typo` proof cycle are green on B12a - see "Verification"; the tree
+  is otherwise unchanged since B11 (nothing between `78981b2` and this
+  pass touched a gated path). B1-B11 plus every remediation pass are on
+  `main`; this pass is committed locally and not yet pushed until the
+  sha-citation follow-up lands in the same push (see "Next batch").
+- Last agent: implementer (2026-09-18, B12a: the census, the three routed
+  findings, and the record rows).
 - Branch: `main`.
-- Base / starting commit: `78981b2`.
+- Base / starting commit: `e7ce2ad` (this task's planning pass, B12
+  designed as four consecutive pieces).
 - Review: standing policy for this task (`context.md`, "Review and nit
   policy") - every phase-8 batch gets a reviewer regardless of the standard
   triggers; nits are logged immediately to `issues/phase-8/nits.md` and
-  cleared in B12, not folded into whichever batch is next. **Every batch
-  including B11 has now been reviewed**; the register is complete, which is
-  B12's precondition. B12 is the terminal batch, so each of its four pieces
-  clears its own review's findings in that piece's one remediation cycle -
-  nothing is appended to the register for a fifth piece (`plan.md`, "How the
-  tail is guaranteed to land").
-- No open deviations. `docs/fixtures/share/records.json` and `llms.txt` were
-  both checked for a U+2019 that would need a matching update and neither
-  carries one, so no public-contract file changed - see "Completed".
+  cleared in B12, not folded into whichever batch is next. B12a is reviewed
+  read-only against its own committed sha while B12b's implementer works,
+  per this task's own review policy - required (trigger: terminal-batch
+  piece per `orchestrate.prompt.md`, "Nits: defer mid-plan, clear on the
+  terminal batch").
+- No open deviations. One discrepancy recorded, not silently resolved:
+  `plan.md`'s B12a step 7 says "the four Deferred rows" while its own
+  fuller table just above names five (`B6-R1`, `B6-R5`, `B8-N7`, `B6-N4`,
+  `B8-N6`); all five were moved to `nits.md`'s "Deferred out of phase-8"
+  table, since that table is the one with an itemised reason per row - see
+  `nits.md`, the note under that table.
 - Last planning pass: planner, 2026-09-18, at `78981b2` - designed B12 as
-  four consecutive pieces. No production code written; `plan.md`,
-  `handoff.md` and the orchestrator's pending `nits.md` edit only.
-- NEEDS_HUMAN_CONFIRMATION: no. Two things the owner may want to overrule,
-  both one-line reversals: the four-piece shape (merge by concatenating the
-  id lists) and the five rows this plan defers (`plan.md`, "Rows this plan
-  moves to Deferred").
-- Next batch: **B12a** - the census, the three routed findings, and the
-  record rows - per `plan.md`, "B12a". B12's precondition is met: every
-  batch including B11 has now been reviewed and the register is complete at
-  **103 live rows** (108 table rows, less 3 already in "Deferred out of
-  phase-8", less `B7-R3`/`B8-R1`/`B8-R2` which already carry `done`).
+  four consecutive pieces.
+- NEEDS_HUMAN_CONFIRMATION: no.
+- Next batch: **B12b** - production source (`app/src/**`) and the three new
+  `docs/specs/DEBT.md` entries (`D24`-`D26`) - per `plan.md`, "B12b". B12a's
+  own review has not yet run; per this task's standing policy it runs
+  read-only against B12a's committed sha while B12b's implementer works.
 
 ## Completed
 
@@ -91,10 +90,14 @@ pre-compaction text.
   sites collapsed onto `AppState.copied`/`say`; `Badge.svelte`/
   `NumRow.svelte` extracted; D7 (opacity, not palette) fixed and deleted.
   Deviation: `Badge.svelte` carries eleven variants, not the plan's nine
-  (RecordCard's own die-result badge folded in). CI caught a real
-  regression this batch's local gates missed (`craft.js`'s stub-staleness
-  probe broke on multi-line descriptions) - fixed same-day in `571b041`.
-  All four golden shards green throughout.
+  (RecordCard's own die-result badge folded in). Second deviation
+  (B5-N7): the plan's step 1 named `subLabelOf(table)`; the shipped code
+  uses `SUB_LABEL[table]` instead (`label.ts:204`) - the right call, since
+  `subLabelOf` falls back to `'tables'` and would render "Wondrous Loot -
+  Таблицы", failing `label.test.ts:158`, but unrecorded here until now. CI
+  caught a real regression this batch's local gates missed (`craft.js`'s
+  stub-staleness probe broke on multi-line descriptions) - fixed same-day
+  in `571b041`. All four golden shards green throughout.
 - **B6 - router, state and lists** (P1, D19, D5/O3, P11, R7, S1, S2,
   S3/D2, S6, R5, R4, DC1, R9, R10, R1, R2, S4, S5, S7, R3/P9, PF3, D23,
   D12, A6, P5) - `370fec2` (shell/router/state), `11066f0` (lists/two-tab).
@@ -297,8 +300,9 @@ pre-compaction text.
   does not. `nits.md` updated: B10-B1, B10-B2 and B10-N6 marked
   `done bfea223` and moved out of "Outstanding"; B10-N1..B10-N5 stay there
   for B12. No deviation.
-- **B11 - equipment apostrophes (O2)** - `78b13f0`. Normalised U+2019 to the ASCII apostrophe in the `en`/`ende`
-  fields of `eq` records in `data.js`: 28 records, 30 field values, 34
+- **B11 - equipment apostrophes (O2)** - `78b13f0`. Normalised U+2019 to
+  the ASCII apostrophe in the `en`/`ende` fields of `eq` records in
+  `data.js`: 28 records, 30 field values, 34
   individual characters (some records share one upgrade-chain description
   text across several ids; two records, `q157` and `q350`, had both `en`
   and `ende` change). Verified by parsing the old and new `data.js` and
@@ -314,12 +318,103 @@ pre-compaction text.
   `_tables_eq_armor`, `_tables_eq_secondary`, `_tables_eq_weapon`,
   `_tables_eq_weapon_panel_open`); all four golden shards (112 states) green
   without `--update` confirm nothing else did. No deviation.
+- **B12a - the census, the three routed findings, and the record rows** -
+  `<pending, see B12a sha-citation follow-up>`. Census: verdict recorded for
+  all 103 live rows in `nits.md` (`### Census, 2026-09-18, at e7ce2ad`),
+  folding in the eight verdicts the planning pass already established plus
+  one found during the sweep (`B5-N15`, already done by B9's own
+  translation commit `0f0c73b`, moved to `## Done`). Landed, each proved to
+  bite: `B11-BL-1` (`search.test.ts` re-points the apostrophe case at the
+  query side - deleting `search.ts:71` fails the case, restoring it passes
+  again, `git diff --stat -- app/src/lib/search.ts` empty afterward);
+  `B11-BL-2` (`tests/dataint.js`'s text-hygiene loop gained the U+2019/U+02BC
+  assertion over all four fields - proved against a fabricated record, never
+  against the tree's own `data.js`); `B11-R1` (`tests/app/lib.js` gained a
+  fail-closed stale-`dist/` guard, both the byte half against `data.js`/
+  `data.json`/`catalog.csv` and the mtime half against `dist/assets/app.js`,
+  plus one sentence in `COVERAGE.md`'s B8.1 gate-rule paragraph - all six
+  proof results below). `B7-N3` (the unused `allow` parameter deleted from
+  `tests/app/lib.js`'s `axe()` - `sweep.js:432` was the only caller and
+  passed nothing). Thirteen record/spec rows landed as their own doc edits
+  (`B4-9`, `B5-R2`, `B5-N1`, `B5-N2`, `B5-N4`, `B5-N7`, `B8-R5`, `B8-N3`,
+  `B9-N10`, `B11-N1`, `B11-N4`, `B11-N5`, `B2-5` - see `nits.md`'s census
+  for what each changed). Fourteen rows closed with no change (decision
+  already made, or already done by an earlier batch): `B4-8`, `B4-10`,
+  `B5-R3`, `B7-N5`, `B7-N6`, `B7-N7`, `B7-N8`, `B7-N14`, `B8-N5`, `B8-N8`,
+  `B8.1-R1`-`B8.1-R6`, `B8.1-N4`, `B9-R1`, `B9-R3`. Five rows moved to
+  `nits.md`'s "Deferred out of phase-8" with reasons (`B6-R1`, `B6-R5`,
+  `B8-N7`, `B6-N4`, `B8-N6` - the DEBT.md entries for the first three land
+  in `B12b`, which opens `app/src`). Deviation: none in scope; one
+  discrepancy recorded (`plan.md`'s B12a step 7 undercounts the Deferred
+  table by one row - see "Status").
 
 ## Verification
 
-Latest pass (B11, sha in "Completed" above); earlier passes' exact
+Latest pass (B12a, sha in "Completed" above); earlier passes' exact
 commands/results are in git history per "Completed" above, and the B9-
 remediation, B10 and B10-remediation runs are preserved below.
+
+### B12a's own verification
+
+**The three proof obligations, exact results, in order run:**
+
+- `B11-BL-1` (`app/src/lib/search.test.ts`): `npx vitest run
+  app/src/lib/search.test.ts` green with the fix in place (25/25). Deleted
+  `app/src/lib/search.ts:71` (the `.replace(/[’ʼ]/g, "'")` line) - re-run:
+  **1 failed / 24 passed**, `AssertionError: expected [] to include 'q80'`
+  on exactly the new case. Restored the line - re-run: green again (25/25).
+  `git diff --stat -- app/src/lib/search.ts` after restoring: empty.
+- `B11-BL-2` (`tests/dataint.js`): `node tests/dataint.js` green
+  ("data: every invariant holds") with the new assertion in place. Proved
+  to bite against a fabricated record (`{ id: 'zzTEST', en: 'Keeper’s
+  Staff', ... }`) run through the same `ok()`/`failed()` harness from
+  `tests/ok.js`, never against the tree's own `data.js`: `FAIL zzTEST.en:
+  typographic apostrophe`, `failed()` returned `1`.
+- `B11-R1` (`tests/app/lib.js`), all six results, in order:
+  1. **Silent** (correct tree): `npm run build` (251 modules, `dist/data.js`
+     661.33 kB, `dist/assets/app.js` 313.40 kB), then `node tests/run-all.js
+     app/typo` - `ok app/typo dist/: fonts and scale 79.4s`, no guard
+     message.
+  2. **mtime-fires**: `touch app/src/lib/search.ts`, re-run `app/typo` -
+     `FAIL app/typo dist/: fonts and scale 0.4s`, log: `dist/ is stale
+     (mtime check, dist/assets/app.js) - run npm run build first`.
+  3. **mtime-restored**: `npm run build`, re-run `app/typo` - green,
+     `79.7s`.
+  4. **byte-fires**: `printf 'X' >> dist/data.js` (Bash, not the Edit tool -
+     `dist/` is build output the Edit-tool guard blocks writes to), re-run
+     `app/typo` - `FAIL`, log: `dist/ is stale (byte check, data.js) - run
+     npm run build first`.
+  5. **byte-restored**: `npm run build`, re-run `app/typo` - green, `79.8s`.
+  6. **Final green**: one more `app/typo` run with nothing further changed -
+     `ok app/typo dist/: fonts and scale 79.3s`.
+  `COVERAGE.md`'s B8.1 gate-rule paragraph gained the one sentence
+  (narrowing 3's placement, per the planner's decision).
+
+**Full gate run, after all three proofs and the record/spec edits:**
+
+- `rtk npm run check` - green: format:check, lint, typecheck, `node --check
+  tools/check-site.mjs`, `npm run data`, `node tests/derived.js`, `node
+  .claude/hooks/selftest.mjs`, every `node --test` suite including
+  `golden.test.mjs` 17/17, `npm run test`.
+- `node tests/run-all.js contracts,derived,dataint,craft,stub` - all five
+  green (the dispatch's verification list named
+  `contracts,derived,dataint,craft,stub`; run as one pooled call).
+- `npm run build` - green, as the final rebuild after the byte-half proof
+  (see above); `dist/` left in a correct, non-stale state.
+- `node tests/run-all.js app/typo` - green (the final green of the six
+  proof results above; not re-run a second time beyond that).
+- `git status --short` (final): `app/src/lib/search.test.ts`,
+  `tests/app/lib.js`, `tests/dataint.js`, `docs/specs/{COVERAGE,FEATURES,
+  META}.md`, `.claude/README.md`, `issues/phase-8/{nits,handoff,context,
+  plan}.md` modified; `app/src/lib/search.ts` unmodified (restored);
+  `dist/` untracked as always (gitignored, rebuilt); `.claude/agents/
+  reviewer.md` (unstaged, another session's) and `issues/56/` (untracked,
+  another task's) untouched and unstaged, per "preserve unrelated
+  working-tree changes."
+- Push: deferred to the sha-citation follow-up commit, so both land in one
+  push per this task's own convention (B9/B10/B11 all followed it) -
+  `git push origin main` and `git rev-parse HEAD origin/main` agreement
+  will be recorded in that follow-up's own note.
 
 ### B11's own verification
 
@@ -600,56 +695,47 @@ first-ever Prettier run on these files.
 
 ## Next batch (implement-ready)
 
-- **Name**: B12a - the census, the three routed findings, and the record
-  rows. The first of B12's four consecutive pieces (`plan.md`, "B12a").
-  B1-B11 have all shipped and all been reviewed; B12 is the terminal batch
-  and nothing is listed after `B12d`.
-- **Objective**: establish the verdict for all 103 live register rows once;
-  land the three findings B11's review routed here as named acceptance lines
-  (`B11-BL-1`, `B11-BL-2`, `B11-R1`); clear every row whose fix is a record
-  or spec correction.
-- **In scope**: the census sweep and its verdict block in `nits.md`;
-  `B11-R1` (the fail-closed stale-`dist/` guard in `tests/app/lib.js` plus
-  one `COVERAGE.md` sentence); `B11-BL-1` (re-point the apostrophe test at
-  the query side, **proved to bite**); `B11-BL-2` (one assertion in
-  `tests/dataint.js`'s text-hygiene loop, all four text fields); `B7-N3`
-  (same file as `B11-R1`); and the record/spec rows listed in `plan.md`,
-  "B12a".
-- **Out of scope**: any `app/src/**` file except `search.test.ts`;
-  `.github/`; any `tests/app/` suite source except `tests/app/lib.js`. Those
-  are `B12b`, `B12c` and `B12d`.
-- **Files expected**: `issues/phase-8/{nits,handoff,context,plan}.md`,
-  `.claude/README.md`, `docs/specs/{COVERAGE,FEATURES,META}.md`,
-  `tests/app/lib.js`, `tests/dataint.js`, `app/src/lib/search.test.ts`.
-- **Steps / acceptance / risks**: `plan.md`, "B12a", in full - seven steps,
-  seven acceptance lines, three proof obligations. The proof obligations are
-  the part that cannot be skipped: `B11-BL-1` is discharged by the **red**
-  run after deleting `app/src/lib/search.ts:71`, not by a green one, and
-  `B11-R1` is discharged by six recorded results (silent on a correct tree,
-  each half fired deliberately, each restored, and a final green).
-- **Verification commands**: `rtk npm run check` (one foreground call,
-  Bash timeout 600000); `node tests/run-all.js
-  contracts,derived,dataint,craft,stub`; `npm run build`; `node
-  tests/run-all.js app/typo` for the guard proofs.
-- **Do-nots**: do not put the staleness rule in `.claude/README.md`; do not
-  add an env-var bypass to the guard; do not include `*.test.ts` in the
-  mtime scan; do not edit `context.md:394`'s verbatim owner sentence (append
-  a note beneath the table instead); do not `git add -A` - `.claude/agents/
-  reviewer.md` and `issues/56/` are other sessions' and stay untouched.
-- **Do not fold any register row into a piece other than the one `plan.md`
-  routes it to**, and do not leave a routed row in "Outstanding" at a
-  piece's commit - it moves to `Done <sha>`, to `closed <sha> (no change -
-  reason)`, or to "Deferred out of phase-8" with a reason, in the same
-  commit.
+- **Name**: B12b - production source (`app/src/**`), and the `DEBT.md`
+  entries. The second of B12's four consecutive pieces (`plan.md`, "B12b").
+  B12a shipped this pass; B12 is the terminal batch and nothing is listed
+  after `B12d`.
+- **Rows**: `B5-R3`, `B5-N5`, `B5-N6`, `B5-N8`, `B5-N9`, `B5-N13`,
+  `B5-N10/11/12`, `B6-R3`, `B6-R4`, `B6-N3`, `B6-N5`, `B7-N9`, `B7-N10`,
+  `B7-N11`, `B7-N12`, `B8-R3`, `B8-R4`, `B8-N1`, `B8-N2`, `B10-N1`,
+  `B10-N2`, `B10-N3`, `B10-N4`, `B10-N5`, `B1-N9`, `B2-4` - each its own
+  acceptance line, per `plan.md`, "B12b". Note: `B5-R3` is already recorded
+  closed-no-change by B12a's census (`nits.md`); `plan.md`'s B12b row list
+  still names it, so confirm on arrival rather than re-deriving the reason.
+- **Plus**: three new `docs/specs/DEBT.md` entries (`D24`, `D25`, `D26`) for
+  the deferred live defects `B6-R1`, `B6-R5`, `B8-N7` (`nits.md`, "Deferred
+  out of phase-8" has the reason each was moved), under a new heading -
+  `D1`-`D23` are all paid off and the three existing headings are all
+  migration-framed.
+- **Criterion for this seam** (`plan.md`, "Shape: four consecutive
+  pieces"): a review that cannot be held in one pass - `B12b` is production
+  source judged against `FEATURES.md`/`STATE.md`/`DEBT.md` and the
+  architecture boundaries and can move rendered output; `B12c` (harness,
+  tooling, CI) is judged against `COVERAGE.md` and the CI shape and cannot.
+- **Gates**: `rtk npm run check`. `npm run check:built` **only** if a
+  `.svelte` template or a CSS declaration lands. A `node tests/app/
+  golden.js --only=<sub>` probe only if a string-vs-snapshot grep (per
+  `plan.md`'s "A user-visible string is a golden question before it is an
+  edit") finds a hit - in which case that row moves to `B12d` instead.
+- **Risks / do-nots** (`plan.md`, "B12b"): `B6-R4` adds a
+  `visibilitychange` listener beside the existing `pagehide` one - must not
+  double-flush; `B8-R3` adds no `dict.ts` key; `B10-N4` adds a sentence, not
+  a structural move; a row that turns out to move rendered output is a
+  stop-and-report, not a quiet re-record.
 - After `B12d` and its review, this task closes out per
   `.claude/skills/handoff/SKILL.md`, "Retirement".
 
 ## Blockers
 
-None. B11 shipped with no deviation - see "Completed" and "Verification".
-`npm run check`, `npm run check:built`, the fs suites, both `--only=`
-golden probes and all four golden shards are green, confirmed for real,
-not assumed, and the branch is pushed.
+None. B12a shipped with no deviation in scope (one recorded discrepancy in
+`plan.md`'s own step count, not a blocker - see "Status") - see "Completed"
+and "Verification". `rtk npm run check`, the fs suites, `npm run build` and
+the `app/typo` proof cycle (all six results) are green, confirmed for real,
+not assumed.
 
 ## Deferred
 
@@ -698,5 +784,6 @@ not assumed, and the branch is pushed.
   unrelated working-tree changes, do not revert foreign work." Normal
   `npm run data`/`npm run build` outputs (`i/`, `dist/`) are gitignored or
   untracked as usual and regenerate on demand.
-- Session end partial progress: none - `main` is at a committed, pushed,
-  gate-verified boundary (B11's own sha, see "Completed").
+- Session end partial progress: none - the tree is at a committed,
+  gate-verified boundary (B12a's own sha, see "Completed"); push is the
+  sha-citation follow-up's own last step, same convention as B9/B10/B11.

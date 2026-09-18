@@ -104,14 +104,14 @@ languages on the one page at once (`docs/specs/I18N.md`) rather than
 switching on a stored preference, since there is no script here to read one.
 Its two links are root-anchored (`/daggerheart-loot/#/roll/std` and
 `/daggerheart-loot/#/search`) rather than relative, unlike every other page
-in this repository: it can be served while
-the browser still shows an arbitrary, possibly nested bad path, and a
-relative link would resolve against that path's own directory, not against
-this file's real location. It is never opened over `file://` - nothing links
-to it locally, it exists only as a Pages serving fallback - so section 4's
-relative-path rule does not apply to it. `tools/check-site.lib.mjs`'s
-`checks()` proves the fallback on every deploy, against the local `_site/`
-build before publishing and against the live URL after
+in this repository: it can be served while the browser still shows an
+arbitrary, possibly nested bad path, and a relative link would resolve
+against that path's own directory, not against this file's real location.
+It is never opened over `file://` - nothing links to it locally, it exists
+only as a Pages serving fallback - so section 4's relative-path rule does
+not apply to it. `tools/check-site.lib.mjs`'s `checks()` proves the
+fallback on every deploy, against the local `_site/` build before
+publishing and against the live URL after
 (`tools/check-site.mjs --dir _site` / `tools/check-site.mjs <url>`).
 
 ## 8. Link previews are cached by Telegram until pushed

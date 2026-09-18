@@ -140,9 +140,15 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
     expect(find('плетеная сеть').map((x) => x.id)).toContain('ci8');
   });
 
-  it('finds an apostrophe name typed with an ordinary keyboard apostrophe', () => {
-    /* "Keeper's Staff" (q80) is stored with U+2019; nobody's keyboard types that */
-    expect(find("keeper's staff").map((x) => x.id)).toContain('q80');
+  it('finds a record typed with the typographic apostrophe autocorrect produces', () => {
+    /* O2 (issues/phase-8, B11) normalised every record's own apostrophe to
+       ASCII, so "Keeper's Staff" (q80) is now stored plain. The fold still has
+       to run - iOS/macOS autocorrect turns a typed ' into U+2019 on the QUERY,
+       not the record - so this case types the typographic form against the
+       now-ASCII name. Before B11 this test exercised the record side instead;
+       B11-BL-1 (issues/phase-8) found the old case had gone vacuous (both
+       sides ASCII, search.ts:71's fold an identity transform on either). */
+    expect(find('keeper’s staff').map((x) => x.id)).toContain('q80');
   });
 
   it('finds a name with a Latin diacritic typed in plain ASCII', () => {
