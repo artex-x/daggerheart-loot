@@ -139,12 +139,9 @@
     color: var(--txt);
   }
 
-  /* off the keyboard-focus block in style.css, `.warn-x`'s own share of it */
-  .warn-x:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
-    border-radius: 8px;
-  }
+  /* D18, paid off: this component's own 8px-radius override deleted - the
+     global `:focus-visible` rule (tokens.css) already reaches every
+     control, at the one radius the owner chose. */
 
   /* P12: 26px of paint, 44px of target - the same `PageHead.svelte`
      `.homebtn::after` shape, off `PageHead.svelte:133-141`. */

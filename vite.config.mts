@@ -148,7 +148,13 @@ export default defineConfig({
            canvas, no toBlob - so a percentage of this file would measure the
            two test doubles and nothing else. It is exercised for real by
            tests/app/states.js's copy-image case, which drives the built app
-           in Chrome. */
+           in Chrome and, since D10 (paid off), reads a real assertion on
+           whichever of the two outcomes this build actually produces - a
+           real picture, or (the tainted canvas this build has) the record's
+           text and its own toast - rather than only proving the promise
+           does not hang. The caller's own branching on a rejection
+           (RecordActions.svelte's copyImage) is covered here, through
+           fakeImage. */
         'src/ports/image.ts',
         'src/vite-env.d.ts',
         /* The entry point that mounts the app onto a real DOM - exercised for

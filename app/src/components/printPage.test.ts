@@ -10,6 +10,7 @@
 
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { tick } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
@@ -236,6 +237,24 @@ describe('no art', () => {
     expect(withArt?.querySelector('.pc-img')).toBeInTheDocument();
     withArt?.querySelector('.pc-img')?.dispatchEvent(new Event('error'));
   });
+
+  it('swaps to the glyph once the picture 404s, reached directly at a print address (R6, paid off)', async () => {
+    /* Unlike every other route, a shared #/print/... address may be the
+       first (and only) page this session ever draws for this id - nothing
+       else could already have caught the failure the way RecordCard's own
+       onerror does elsewhere. */
+    render(App, { env: at('#/print/ci1') });
+    const card = document.querySelector('.pcard[data-pid="ci1"]');
+    expect(card?.querySelector('svg.pc-glyph')).toBeNull();
+    /* Both `<img>`s carry their own `onerror` - either one reports the same
+       id, so whichever the browser happens to fail first still catches it. */
+    card?.querySelector('.pc-back')?.dispatchEvent(new Event('error'));
+    card?.querySelector('.pc-img')?.dispatchEvent(new Event('error'));
+    await tick();
+    expect(card?.querySelector('.pc-img')).toBeNull();
+    expect(card?.querySelector('.pc-back')).toBeNull();
+    expect(card?.querySelector('svg.pc-glyph')).toBeInTheDocument();
+  });
 });
 
 describe('the weapon card', () => {
@@ -389,6 +408,22 @@ describe('black and white', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Цветная' }));
     expect(document.querySelector('.pc-art')).toBeInTheDocument();
+  });
+
+  it('survives leaving the print page and coming back (D21, paid off)', async () => {
+    /* Session memory on AppState, the way live's own S.printBW was - not the
+       page-local $state this replaces, which reset to colour on every fresh
+       mount. */
+    const env = at('#/print/q1-a1');
+    render(App, { env });
+    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
+
+    env.router.navigate('#/roll/std');
+    await tick();
+    env.router.navigate('#/print/q1-a1');
+    await tick();
+    expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
   });
 });
 

@@ -116,13 +116,9 @@
     font: inherit;
   }
 
-  /* off the keyboard-focus block in style.css (1001), this component's own
-     share of it. */
-  .row-main:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
-    border-radius: 8px;
-  }
+  /* D18, paid off: this component's own 8px-radius override deleted - the
+     global `:focus-visible` rule (tokens.css) already reaches every control,
+     at the one radius the owner chose. */
 
   .row-main img {
     width: 60px;

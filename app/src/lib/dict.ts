@@ -71,6 +71,17 @@ const ru = {
   textCopied: 'Текст скопирован',
   linkCopied: 'Ссылка скопирована',
   copyFailed: 'Не удалось скопировать',
+  /* D13, paid off: the copy-all-options button gets its own toast. */
+  rollCopied: 'Варианты скопированы',
+  /* D10/D14/D15, paid off: a file:// document's own picture taints the
+   *  canvas it is redrawn on, so the picture can never leave it - falls back
+   *  to the record's text instead of reporting a false success. Distinct
+   *  from a clipboard that simply refuses the picture, which offers a
+   *  download instead (`imgSaved`/`imgFailed`), and from `copyFailed`, the
+   *  generic every-other-copy-button wording. */
+  imgTainted: 'Не удалось скопировать картинку - скопирован текст',
+  imgSaved: 'Картинка сохранена',
+  imgFailed: 'Не удалось получить картинку',
 
   /* Rolling */
   roll: 'Бросить',
@@ -415,6 +426,10 @@ const en: Dict = {
   textCopied: 'Text copied',
   linkCopied: 'Link copied',
   copyFailed: 'Could not copy',
+  rollCopied: 'Options copied',
+  imgTainted: 'Could not copy the image - copied the text instead',
+  imgSaved: 'Image saved',
+  imgFailed: 'Could not load the image',
 
   roll: 'Roll',
   randomIn: 'Random',

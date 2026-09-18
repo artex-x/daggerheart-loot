@@ -137,10 +137,13 @@
     }
   }
 
-  /* off `#toast` in the live `@media print` block (style.css:1409) */
+  /* off `#toast` in the live `@media print` block (style.css:1409) - D20,
+     paid off: without `!important`, `.toast{display:none}` (0,1,0) lost
+     under print to `.toast.act{display:inline-flex}` (0,2,0) above, so an
+     action toast (an undo prompt, mid-copy) printed over the page. */
   @media print {
     .toast {
-      display: none;
+      display: none !important;
     }
   }
 </style>

@@ -346,28 +346,37 @@ async function copyTextThroughClipboard() {
  *  invisible before B12 (`tests/app/driver.js`'s `clipboardImage()`
  *  reads a *pending promise*'s absent `.arrayBuffer` as `null` on both
  *  sides, so parity's own `copiedImage` spec has been comparing two
- *  identical nulls). What this case can honestly assert today is the shape
- *  of the defect - drawing succeeds, the blob promise never settles - not a
- *  successful copy; D10 names the fix and what replaces this case once it
- *  lands. */
+ *  identical nulls). D10, paid off: `RecordActions.svelte`'s `copyImage`
+ *  now probes `toDataURL` itself and a `toBlob` watchdog, so the rejection
+ *  is real rather than a promise that never settles - this reads whichever
+ *  of the two outcomes this build actually produces (a real picture, on a
+ *  build that is not tainted; the record's text and its own `imgTainted`
+ *  toast, on this one) rather than racing a timeout against a hang. */
 async function copyImage() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1');
   await d.press('Скопировать изображение');
   const result = await page.evaluate(async () => {
     const m = window.__clip;
-    const key = m && Object.keys(m).find((k) => k.startsWith('image/'));
-    if (!key) return { noClip: true };
-    const settled = Symbol('unsettled');
-    const timeout = new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(settled);
-      }, 5_000);
-    });
-    const raced = await Promise.race([m[key].then((b) => ({ blob: b })).catch((e) => ({ err: e.message })), timeout]);
-    return raced === settled ? { pending: true } : raced;
+    const imgKey = m && Object.keys(m).find((k) => k.startsWith('image/'));
+    const textKey = m && m['text/plain'] ? 'text/plain' : null;
+    if (imgKey) return { blob: (await m[imgKey]).size };
+    if (textKey) return { text: await m[textKey].text() };
+    return { neither: true };
   });
-  ok(!!result.pending, '10 (копия картинки, D10): промис не завис, как ожидалось - ' + JSON.stringify(result));
+  if ('blob' in result) {
+    ok(result.blob > 0, '10 (копия картинки, D10): скопированная картинка пуста');
+  } else {
+    ok(
+      typeof result.text === 'string' && result.text.length > 0,
+      '10 (копия картинки, D10): ни снимок, ни текст-заглушка не пришли - ' + JSON.stringify(result)
+    );
+    const toast = await page.evaluate(() => document.querySelector('.toast')?.textContent || '');
+    ok(
+      toast.includes('Не удалось скопировать картинку - скопирован текст'),
+      '10 (копия картинки, D10): не показан тост про недоступную картинку - ' + toast
+    );
+  }
   await ctx.close();
 }
 
@@ -821,6 +830,27 @@ async function moneyHelpAndPressedPicker() {
   await ctx2.close();
 }
 
+/** 24. D1, paid off: the real reduced-motion policy - every transition and
+ *  animation dies under `prefers-reduced-motion: reduce`, not only the
+ *  card's entrance and the section outline's fade `RecordCard.svelte`/
+ *  `TablesPage.svelte` killed by name. Explicit here even though `prepare()`
+ *  already emulates the same media feature for every other case
+ *  (`driver.js`, timing out the pixel comparisons) - this is the one case
+ *  whose whole point is proving the policy itself, not relying on it as a
+ *  side effect of something else. Hovers a button (the transition class) and
+ *  crosses the 600px breakpoint (the responsive class) in the same pass. */
+async function reducedMotionKillsEverything() {
+  const { ctx, page, d } = await fresh({ width: 900, height: 900 });
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await d.open('#/roll/std');
+  await page.hover('button');
+  await d.viewport(560, 900);
+  await new Promise((r) => setTimeout(r, 80));
+  const running = await page.evaluate(() => document.getAnimations().length);
+  ok(running === 0, '24 (уменьшенное движение, D1): под reduce анимации всё ещё идут - ' + running);
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (новый список с карточки)', newListFromCard],
   ['2 (панель выбора)', newListFromBar],
@@ -843,7 +873,8 @@ const CASES = [
   ['20 (предупреждение на 320)', storageNoticeAt320],
   ['21 (фокус кнопки)', buttonFocusSurvivesRerender],
   ['22 (справка и выбор списка)', moneyHelpAndPressedPicker],
-  ['23 (меню в модалке)', addToListMenuStaysInModal]
+  ['23 (меню в модалке)', addToListMenuStaysInModal],
+  ['24 (уменьшенное движение)', reducedMotionKillsEverything]
 ];
 
 (async () => {
@@ -862,6 +893,6 @@ const CASES = [
   }
 
   await closeBrowser().catch(() => {});
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nсостояния реального ввода (dist/): все двадцать три пройдены');
+  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nсостояния реального ввода (dist/): все двадцать четыре пройдены');
   process.exit(rep.failed ? 1 : 0);
 })();

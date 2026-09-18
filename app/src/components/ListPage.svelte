@@ -1766,16 +1766,9 @@
     flex: none;
   }
 
-  /* off the focus rules for `.lrow-acts button`, `.row-x`, `.lrow-grip`
-     (style.css:999-1004), this component's own share of that combined
-     selector. */
-  .lrow-acts button:focus-visible,
-  .row-x:focus-visible,
-  .lrow-grip:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
-    border-radius: 8px;
-  }
+  /* D18, paid off: this component's own 8px-radius override deleted - the
+     global `:focus-visible` rule (tokens.css) already reaches every
+     control, at the one radius the owner chose. */
 
   /* off the 600px block for `.lrow`, `.lrow .row-main`, `.lrow-meta`,
      `.lrow-acts`, its `button`, `.row-x` (style.css:890-895) */

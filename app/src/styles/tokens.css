@@ -163,9 +163,23 @@ textarea::placeholder {
   border-radius: var(--r-sm);
 }
 
-/* No blanket reduced-motion rule here, on purpose: the live app has none
-   either, only two named animations killed per component
-   (`RecordCard.svelte`, `TablesPage.svelte`). A blanket `transition-duration`
-   of any value differs from the live app at `#/tables/core_item ~ row anchor
-   @ 375` (B8) and a non-zero one breaks `PrintCard.svelte`'s `fit()` (B7).
-   Owed a real policy after the migration - `docs/specs/DEBT.md`, D1. */
+/* D1, paid off: the real policy the comment above used to point at as owed.
+   `0.01ms`/`0s` rather than `transition: none`/`animation: none` - a zero
+   duration still applies the end state synchronously, on the same frame,
+   which is what `PrintCard.svelte`'s `fit()` needs (it reads layout back
+   right after setting a style, with no frame to wait out); a longer
+   non-zero duration was tried first and rejected for exactly the opposite
+   reason (`docs/specs/DEBT.md`, D1's own history). `RecordCard.svelte`'s and
+   `TablesPage.svelte`'s own two named `animation: none` rules stay - they
+   predate this and are now redundant with it, but harmless, and removing
+   them is not part of this fix. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}

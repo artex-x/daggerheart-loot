@@ -85,6 +85,15 @@ function statLine(it: Record_, lang: Lang): string {
   return eqLine(it, lang, { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore });
 }
 
+/** A record's name, safe to use as a downloaded or shared file's name - the
+ *  live `safeFileName` (app.js 1713-1715): strip the characters Windows and
+ *  macOS both refuse in a filename, keep everything else. The bare name, not
+ *  `shareName`'s consumable suffix - live's own `safeFileName` calls `nameOf`
+ *  directly, not `nameForShare`. */
+export function imageFileName(it: Record_, lang: Lang): string {
+  return nameOf(it, lang).replace(/[\\/:*?"<>|]/g, '') + '.png';
+}
+
 /**
  * Both flavours of the message.
  *

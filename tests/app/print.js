@@ -1119,6 +1119,39 @@ const { ok } = rep;
   pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
   await cardFit(dEn, bwEn, colourEn, ' en');
 
+  /* ---------- the card's own name (P16, Q2 settled) ----------
+     "Look first, then shrink": inspected before any code was written, at
+     1100px, both languages, both layouts, against the design's four longest
+     names (`docs/specs/FEATURES.md`, "Print") - every one rendered at one
+     line, so `.pc-name` was left out of `fit()`'s shrink ladder rather than
+     given a floor nothing needs yet. This pins the longest of the four so a
+     future name (or a data edit lengthening this one) that pushes past one
+     line fails loudly instead of silently. */
+  console.log('имя карточки в одну строку (P16)');
+  async function nameLines(d2, page2, langTag, restoreW, restoreH) {
+    await d2.viewport(1100, 900);
+    try {
+      for (const bwOn of [false, true]) {
+        await d2.open('#/print/cm26-f60-hi62-ci81');
+        if (bwOn) {
+          await d2.click(langTag === ' en' ? 'Black and white' : 'Чёрно-белая');
+          await d2.settle();
+        }
+        const lines = await page2.$eval('.pcard[data-pid="cm26"] .pc-name', (e) => e.getClientRects().length);
+        ok(lines === 1, 'имя cm26' + langTag + (bwOn ? ' ч/б' : '') + ' заняло больше одной строки: ' + lines);
+      }
+    } finally {
+      /* This driver is reused below at its own original width - leaving it
+         at 1100 moved `printMedia`'s "main fills the whole sheet" numbers
+         out from under it. */
+      await d2.viewport(restoreW, restoreH);
+    }
+  }
+  /* Both drivers are 1180x950 here - `cardFit`'s own final line sets it for
+     `d`, and `dEn`'s `fresh()` call started there. */
+  await nameLines(d, page, '', 1180, 950);
+  await nameLines(dEn, pageEn, ' en', 1180, 950);
+
   /* ---------- the sheet under print media (R0b.3 C2, `printMedia`) ----------
      The chrome hidden, the page unshadowed and page-broken, the print
      colours kept - `d.media('print')` is the only thing in the repository
@@ -1226,6 +1259,33 @@ const { ok } = rep;
     } finally {
       await d.media(undefined);
     }
+  }
+
+  /* ---------- an open dialog and an action toast, under print media (D20) ----------
+     Neither is drawn by a print route itself, so each needs its own state:
+     `RecordModal` opened from a roll result, and the "removed" undo toast
+     from a seeded list. Both print rules carry `!important`/are otherwise
+     unconditional, so nothing here depends on which route raised them. */
+  console.log('модалка и тост-с-действием под печатной медиа (D20)');
+  await d.open('#/roll/wondrous');
+  await d.click('Страница');
+  await d.media('print');
+  try {
+    const dialog = await d.computed('dialog', ['display']);
+    ok(dialog && dialog.display === 'none', 'D20: открытая модалка не спряталась под печать: ' + JSON.stringify(dialog));
+  } finally {
+    await d.media(undefined);
+  }
+
+  await d.seed({ 'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }]) });
+  await d.open('#/lists/a');
+  await d.click('Убрать из списка');
+  await d.media('print');
+  try {
+    const toast = await d.computed('.toast', ['display']);
+    ok(toast && toast.display === 'none', 'D20: тост с действием не спрятался под печать: ' + JSON.stringify(toast));
+  } finally {
+    await d.media(undefined);
   }
 
   /* ---------- the print link, copied (R0b.3 C2, `copiedPrintLink`) ----------

@@ -77,14 +77,9 @@
     color: var(--txt);
   }
 
-  /* off the focus-visible block in style.css (1002-1005) - neither of the two
-     copies this component replaces ported this rule; a cheap local fix in a
-     touched path, not a design change. */
-  .seg button:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 2px;
-    border-radius: 8px;
-  }
+  /* D18, paid off: this component's own 8px-radius override deleted - the
+     global `:focus-visible` rule (tokens.css) already reaches every
+     control, at the one radius the owner chose. */
 
   @media (max-width: 600px) {
     .seg button,

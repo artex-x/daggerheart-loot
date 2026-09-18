@@ -38,13 +38,12 @@
    *  item binding of its own. */
   const blankKeys = $derived(Array.from({ length: sheet.blanks }, (_, k) => k));
 
-  /* The live app's own memory - `S.printBW` (app.js:49) - survives leaving
-     the page; this page remounts on every navigation and forgets it, the
-     same intentional divergence B6 recorded for search's `q` and
-     TablesPage's `q`: nothing else can observe a page's own memory, and a
-     per-page value on `AppState` for one caller is the shape this migration
-     keeps declining. */
-  let bw = $state(false);
+  /* D21, paid off: kept as session memory on `AppState`, the way live's
+     `S.printBW` (app.js:49) was - it survives leaving the page, unlike
+     search's `q` and TablesPage's `q` (B6), which stay component-local on
+     purpose. `app.printBW` directly, not a local mirror: this page remounts
+     on every navigation, so a local copy would have to be re-synced from
+     `app.printBW` on mount anyway. */
 
   const ART = $derived([
     { value: 'color', label: t.printColor },
@@ -91,10 +90,10 @@
       <Seg
         small
         options={ART}
-        value={bw ? 'bw' : 'color'}
+        value={app.printBW ? 'bw' : 'color'}
         label={t.printTitle}
         onchange={(v: 'color' | 'bw') => {
-          bw = v === 'bw';
+          app.printBW = v === 'bw';
         }}
       />
       <Button onclick={() => void copyLink()}><Icon name="link" />{t.printLink}</Button>
@@ -105,9 +104,17 @@
     <p class="printnote">{t.printNote}</p>
   </div>
   {#each sheet.pages as page, i (i)}
-    <div class="psheet" class:bw data-next={i ? '1' : undefined}>
+    <div class="psheet" class:bw={app.printBW} data-next={i ? '1' : undefined}>
       {#each page as it (it.id)}
-        <PrintCard {it} lang={app.lang} {bw} artBroken={app.artBroken(it.id)} />
+        <PrintCard
+          {it}
+          lang={app.lang}
+          bw={app.printBW}
+          artBroken={app.artBroken(it.id)}
+          onartfail={(bad: string) => {
+            app.markArtBroken(bad);
+          }}
+        />
       {/each}
       {#if i === sheet.pages.length - 1}
         {#each blankKeys as k (k)}

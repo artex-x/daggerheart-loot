@@ -17,6 +17,7 @@ import {
   fakeClipboard,
   fakeData,
   fakeEnv,
+  fakeImage,
   fakeShare,
   memoryRouter,
   noData
@@ -533,12 +534,74 @@ describe('taking a record somewhere else', () => {
     expect(clip.last.text).toBe('https://example.test/i/cc1.html');
   });
 
+  it('shares the full text, not just the name (D22, paid off)', async () => {
+    const share = fakeShare();
+    render(App, { env: at('cc1', { share }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    expect(share.last.title).toBe('Зелье выносливости (расходник)');
+    expect(share.last.text).toContain('Очистите 1d4 Стресса.');
+    expect(share.last.text).not.toBe('Зелье выносливости (расходник)');
+  });
+
+  it('attaches no file for a record with no art', async () => {
+    const share = fakeShare();
+    render(App, { env: at('cc1', { share }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    expect(share.last.hasFile).toBe(false);
+  });
+
+  it('attaches the picture where there is art (D22, paid off)', async () => {
+    const share = fakeShare();
+    render(App, { env: at('ci1', { share }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    expect(share.last.hasFile).toBe(true);
+    const file = await share.last.file?.();
+    expect(file?.name).toBe('Спальный мешок.png');
+    expect(file?.type).toBe('image/png');
+  });
+
   it('copies the picture, which the clipboard will only take as a PNG', async () => {
     const clip = fakeClipboard();
     render(App, { env: at('ci1', { clipboard: clip }) });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
     expect(clip.last.image).toBe(true);
     expect(screen.getByText('Картинка скопирована')).toBeInTheDocument();
+  });
+
+  it('falls back to the text when the canvas cannot be read back at all (D10, paid off)', async () => {
+    /* A tainted canvas under file:// - `pngOf` itself rejects, so there is
+       never a blob to offer the clipboard at all. */
+    const clip = fakeClipboard();
+    const image = {
+      pngOf: () => Promise.reject(new Error('tainted')),
+      download: () => Promise.resolve()
+    };
+    render(App, { env: at('ci1', { clipboard: clip, image }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
+    expect(clip.last.image).toBeUndefined();
+    expect(clip.last.rich?.plain).toContain('Спальный мешок');
+    expect(
+      screen.getByText('Не удалось скопировать картинку - скопирован текст')
+    ).toBeInTheDocument();
+  });
+
+  it('offers a download when the picture exists but the clipboard refuses it (D14, paid off)', async () => {
+    const clip = fakeClipboard({ fail: true });
+    const image = fakeImage();
+    render(App, { env: at('ci1', { clipboard: clip, image }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
+    expect(image.downloaded).toHaveLength(1);
+    expect(image.downloaded[0]?.filename).toBe('Спальный мешок.png');
+    expect(screen.getByText('Картинка сохранена')).toBeInTheDocument();
+  });
+
+  it('says the picture could not be saved either, distinct from the generic failure (D15, paid off)', async () => {
+    const clip = fakeClipboard({ fail: true });
+    const image = fakeImage({ failDownload: true });
+    render(App, { env: at('ci1', { clipboard: clip, image }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать изображение' }));
+    expect(screen.getByText('Не удалось получить картинку')).toBeInTheDocument();
+    expect(screen.queryByText('Не удалось скопировать')).not.toBeInTheDocument();
   });
 
   it('says nothing when somebody dismisses their own share sheet', async () => {

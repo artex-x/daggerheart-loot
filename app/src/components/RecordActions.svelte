@@ -18,7 +18,7 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import { artSrc } from '../lib/desc.js';
-  import { share, shareName, type ShareBlock } from '../lib/share.js';
+  import { imageFileName, share, shareName, type ShareBlock } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Index } from '../lib/data.js';
   import type { Record_ } from '../lib/types.js';
@@ -49,21 +49,65 @@
     await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.textCopied);
   }
 
+  /**
+   * D10/D14/D15: three levels, not two. `pngOf` rejecting at all (a tainted
+   * canvas under `file://`, or any other draw failure) means no picture can
+   * ever leave the canvas - falling back to the clipboard's generic
+   * `copyFailed` would be reporting a dead end as though it might work next
+   * time, so this falls back to the text instead, with its own `imgTainted`
+   * wording. Once a blob exists, a clipboard that still refuses it (no
+   * `ClipboardItem`, a permission refusal) gets the live app's other
+   * fallback: a download, `imgSaved`/`imgFailed` rather than `copyFailed`.
+   */
   async function copyImage(): Promise<void> {
     const src = artSrc(it.img, app.artBroken(it.id));
-    await app.copied(
-      () => app.env.clipboard.writeImage(() => app.env.image.pngOf(src)),
-      t.imgCopied
-    );
+    let blob: Blob;
+    try {
+      blob = await app.env.image.pngOf(src);
+    } catch {
+      const { text, html } = share(it, index, app.lang, { extra });
+      await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.imgTainted);
+      return;
+    }
+    const copied = await app.env.clipboard.writeImage(() => Promise.resolve(blob));
+    if (copied) {
+      app.say(t.imgCopied);
+      return;
+    }
+    try {
+      await app.env.image.download(blob, imageFileName(it, app.lang));
+      app.say(t.imgSaved);
+    } catch {
+      app.say(t.imgFailed, { error: true });
+    }
   }
 
   async function copyLink(): Promise<void> {
     await app.copied(() => app.env.clipboard.writeText(link), t.linkCopied);
   }
 
+  /**
+   * D22: the same three-level payload the live `sendItem` builds - the full
+   * share text always, a picture attached where there is art and the
+   * environment can take a file (`SharePort` itself decides that with
+   * `canShare`; this only ever offers one when there is a picture to offer).
+   */
   async function send(): Promise<void> {
     const name = shareName(it, app.lang);
-    const r = await app.env.share.share({ title: name, text: name, url: link });
+    const { text } = share(it, index, app.lang, { extra });
+    const hasArt = it.img && !app.artBroken(it.id);
+    const file = hasArt
+      ? async (): Promise<File> => {
+          const blob = await app.env.image.pngOf(artSrc(it.img, false));
+          return new File([blob], imageFileName(it, app.lang), { type: 'image/png' });
+        }
+      : undefined;
+    const r = await app.env.share.share({
+      title: name,
+      text,
+      url: link,
+      ...(file ? { file } : {})
+    });
     /* A dismissal is somebody changing their mind, not a failure, and saying
        anything about it would be nagging. Where there is no share sheet at all
        the link goes to the clipboard instead, which is what they reached for. */

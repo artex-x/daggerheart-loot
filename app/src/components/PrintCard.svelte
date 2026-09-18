@@ -28,9 +28,14 @@
     lang: Lang;
     bw: boolean;
     artBroken: boolean;
+    /** R6: reported back to `PrintPage`/`app.markArtBroken`, the same as
+     *  `RecordCard`'s own `onerror` - a print sheet reached directly (a
+     *  shared `#/print/...` address) has no other page that could have
+     *  already caught a missing picture. */
+    onartfail: (id: string) => void;
   }
 
-  const { it, lang, bw, artBroken }: Props = $props();
+  const { it, lang, bw, artBroken, onartfail }: Props = $props();
 
   const t = $derived(dict(lang));
   const eq = $derived(it.eq ?? null);
@@ -256,7 +261,13 @@
           src={artSrc(it.img, artBroken)}
           alt=""
           aria-hidden="true"
-        /><img class="pc-img" src={artSrc(it.img, artBroken)} alt="" />{:else}<svg
+          onerror={() => onartfail(it.id)}
+        /><img
+          class="pc-img"
+          src={artSrc(it.img, artBroken)}
+          alt=""
+          onerror={() => onartfail(it.id)}
+        />{:else}<svg
           class="pc-glyph"
           viewBox="0 0 48 50"
           aria-hidden="true"><path d={PRINT_GLYPH[kindKey]} /></svg

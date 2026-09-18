@@ -217,8 +217,14 @@ export interface DataPort {
  * is why this is a port rather than a helper.
  */
 export interface ImagePort {
-  /** A PNG of whatever is at `src`. Rejects if it cannot be drawn. */
+  /** A PNG of whatever is at `src`. Rejects if it cannot be drawn - a tainted
+   *  canvas (D10) among the reasons, indistinguishable here from any other
+   *  failure: the caller falls back the same way regardless of why. */
   pngOf(src: string): Promise<Blob>;
+  /** D14: saves a blob as a file, the fallback for a clipboard that will not
+   *  take the picture. Resolves once the download was triggered - there is
+   *  no way to know whether the browser's own save dialog then completed. */
+  download(blob: Blob, filename: string): Promise<void>;
 }
 
 export interface Env {

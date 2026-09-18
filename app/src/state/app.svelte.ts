@@ -221,6 +221,12 @@ export class AppState {
    *  two `tables` addresses, so a component-local field would survive a
    *  session but not explain where the persisted value lives. */
   #tablesView = $state<'list' | 'grid'>('list');
+  /** The print page's colour/black-and-white choice (D21, paid off: kept as
+   *  session memory over the rewrite's own page-local reset, the way live's
+   *  `S.printBW` was - `STATE.md`'s "Print" group). Never written to
+   *  storage: it resets on reload like every other memory-only field here,
+   *  `kinds` included. */
+  printBW = $state(false);
   /** The packed payload a failed expansion is stuck on, or `''` - R10/S3/D2.
    *  Compared against `route.payload` by whoever draws the bad-link state, so
    *  a later navigation to a *different* packed link is not mistaken for the

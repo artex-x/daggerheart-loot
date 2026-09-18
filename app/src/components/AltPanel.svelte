@@ -87,8 +87,9 @@
   );
 
   async function copyRoll(one: { index: Index; pool: Record_[] }): Promise<void> {
+    /* D13, paid off: its own toast, distinct from a plain text copy. */
     const { text, html } = shareRoll(one.pool, one.index, app.lang, t.or);
-    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.textCopied);
+    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.rollCopied);
   }
 </script>
 

@@ -50,10 +50,36 @@ export function browserShare(nav: ShareNav = navigator): SharePort {
   };
 }
 
-export function fakeShare(opts: { available?: boolean; result?: ShareResult } = {}): SharePort {
+interface FakeShareLast {
+  title?: string;
+  text?: string;
+  url?: string;
+  hasFile: boolean;
+  /** The file callback itself, for a test that wants to invoke it and read
+   *  back what it produces - `hasFile` alone only proves one was offered. */
+  file: (() => Promise<File>) | undefined;
+}
+
+interface FakeShare extends SharePort {
+  /** What the last `share()` call was asked to send, for a test to read back -
+   *  D22: whether a caller ever attaches a file is only visible here, since
+   *  a real `SharePort` decides on its own whether to call `Shareable.file`. */
+  readonly last: FakeShareLast;
+}
+
+export function fakeShare(opts: { available?: boolean; result?: ShareResult } = {}): FakeShare {
   const available = opts.available ?? true;
+  const last: FakeShareLast = { hasFile: false, file: undefined };
   return {
     available: () => available,
-    share: () => Promise.resolve(available ? (opts.result ?? 'shared') : 'unsupported')
+    last,
+    share: (what) => {
+      last.title = what.title;
+      last.text = what.text;
+      last.url = what.url;
+      last.hasFile = !!what.file;
+      last.file = what.file;
+      return Promise.resolve(available ? (opts.result ?? 'shared') : 'unsupported');
+    }
   };
 }

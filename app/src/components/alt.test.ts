@@ -203,6 +203,13 @@ describe('handing the roll over', () => {
     expect(text.match(/— ИЛИ —/g)).toHaveLength(3);
   });
 
+  it('toasts its own wording, not the generic text-copied message (D13, paid off)', async () => {
+    render(App, { env: at({ clipboard: fakeClipboard() }) });
+    await press('Скопировать все варианты');
+    expect(screen.getByText('Варианты скопированы')).toBeInTheDocument();
+    expect(screen.queryByText('Текст скопирован')).not.toBeInTheDocument();
+  });
+
   it('reports a copied name from a card, which the panel announces', async () => {
     const clip = fakeClipboard();
     render(App, { env: at({ clipboard: clip }) });

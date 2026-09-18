@@ -342,10 +342,9 @@
     transition: transform 0.25s;
   }
 
-  .card-media:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: -2px;
-  }
+  /* D18, paid off: this component's own inset-offset override deleted - the
+     global `:focus-visible` rule (tokens.css) already reaches every
+     control, at the one radius and offset the owner chose. */
 
   .card-body {
     padding: 13px 15px 14px;

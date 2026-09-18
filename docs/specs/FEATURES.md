@@ -186,6 +186,18 @@ Six modes. Each keeps its own input in memory only.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
   asterisks are deliberately not used.
+- Copying the image has three outcomes, each with its own toast. A canvas
+  that cannot be read back at all (a `file://` document's own picture always
+  taints it) falls back to copying the record's text instead, worded to say
+  so (`DEBT.md` D10, paid off). A picture the canvas can produce but the
+  clipboard refuses falls back to downloading it as a PNG file, saved or
+  failed each with their own wording (D14/D15, paid off) - distinct from the
+  clipboard's own generic "could not copy".
+- Sharing a record attaches its picture where there is one and the share
+  sheet can take a file, and always carries the full share text (stats and
+  description included), not just the name (D22, paid off).
+- Copying every option of a roll toasts its own wording, not the generic
+  text-copied message (D13, paid off).
 - Consumables get a "(consumable)" suffix outside the app, where the badge is
   not visible.
 - A compact card's art zooms slightly on hover, guarded by `@media
@@ -242,6 +254,27 @@ Six modes. Each keeps its own input in memory only.
   separately: each rarity section is now an `<h2>` (`SectionHead`'s own
   `heading` prop, only passed here) and the Hope/Fear column pair under it
   demoted to `<h3>` (`DEBT.md` D8, paid off).
+- The black-and-white choice is session memory on `AppState` - it survives
+  leaving the print page and coming back - matching the live app's own
+  `S.printBW` rather than resetting to colour on every fresh entry, which is
+  what the page-local `$state` this replaced did (`DEBT.md` D21, paid off).
+- A missing picture (a partial deploy, a cold cache, a `file://` copy short
+  one file) falls back to the same drawn glyph a record with no art gets,
+  the same way `RecordCard` does - reached from a print sheet opened
+  directly at a shared `#/print/...` address, where nothing has already
+  caught the failure (`DEBT.md` R6, paid off).
+- An open record dialog and an action toast both stay hidden under print
+  media, the way the live app's `#modal`/`#toast` rules did unconditionally -
+  neither had an equivalent rule in the rewrite (`DEBT.md` D20, paid off).
+- The card's own name (`.pc-name`) is not part of `fit()`'s shrink ladder -
+  P16, inspected rather than assumed (owner decision Q2, "look first, then
+  shrink"): the four longest names measured against the design
+  (`#/print/cm26-f60-hi62-ci81` at 1100px, both languages, both layouts) all
+  render at one line, so nothing needed shrinking and none was added.
+  `tests/app/print.js` pins `cm26`'s name at one line so a future name (or a
+  data edit lengthening this one) that pushes past it fails loudly rather
+  than silently. No deviation from Figma nodes `714-42387`/`3773-90792` was
+  needed.
 
 ## Chrome
 
@@ -265,7 +298,11 @@ Six modes. Each keeps its own input in memory only.
 - No tab is lit on a record, a list page or a print sheet - the live
   `renderTabs` compared against the raw route string, and none of those three
   route kinds was ever that string.
-- Under `prefers-reduced-motion: reduce` the card's entrance and the section
-  outline's fade are off (the outline is static); every other transition and
-  animation runs. Ported from the live app and owed a real policy:
-  `DEBT.md`, D1.
+- Under `prefers-reduced-motion: reduce` every transition and animation stops
+  moving - a blanket kill (`tokens.css`), not the live app's own two named
+  exceptions. A deliberate improvement over parity: `DEBT.md`, D1, paid off.
+- Every focusable control gets the same gold keyboard-focus ring, at one
+  radius (`--r-sm`) - a global rule (`tokens.css`) rather than the live app's
+  closed list of 18 selectors at an 8px radius, with everything outside that
+  list falling back to the browser's own outline. Broader coverage was the
+  owner's call: `DEBT.md`, D18, paid off.
