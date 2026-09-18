@@ -107,12 +107,19 @@ async function addToListMenuStaysInModal() {
   ok(await d.has('Добавить в список'), '23 (menu in the modal): the modal did not open');
   await d.press('Добавить в список');
 
-  const scrollTop = await page.evaluate(
-    () => document.querySelector('.card')?.scrollTop ?? null
+  /* B7-R2: `.card` is `overflow: clip` (RecordCard.svelte), which creates no
+     scroll container, so a `.card.scrollTop` reading would be 0 regardless
+     of what the placement effect does - it stopped being able to fail and
+     is not what D6's fix actually measures. The real invariant is that
+     `:scope > .btn` (AddToList.svelte's own selector for the toggle) finds
+     exactly one direct child of `.seldrop`, so it cannot accidentally
+     resolve to a `.dropmenu` button instead. */
+  const toggleCount = await page.evaluate(
+    () => document.querySelectorAll('.seldrop > .btn').length
   );
   ok(
-    scrollTop === 0,
-    '23 (menu in the modal): .card.scrollTop = ' + scrollTop + ', expected 0'
+    toggleCount === 1,
+    '23 (menu in the modal): .seldrop > .btn matched ' + toggleCount + ', expected 1'
   );
 
   const box = (sel) =>
@@ -387,7 +394,7 @@ async function copyTextThroughClipboard() {
  *  `canvas.toDataURL()` throws "Tainted canvases may not be exported" on
  *  both apps for the identical picture; `toBlob()` does not throw in this
  *  Chromium build, it simply never calls back, which is what made this
- *  invisible before B12 (`tests/app/driver.js`'s `clipboardImage()`
+ *  invisible before B8 (`tests/app/driver.js`'s `clipboardImage()`
  *  reads a *pending promise*'s absent `.arrayBuffer` as `null` on both
  *  sides, so parity's own `copiedImage` spec has been comparing two
  *  identical nulls). D10, paid off: `RecordActions.svelte`'s `copyImage`
@@ -960,7 +967,9 @@ async function moneyHelpAndPressedPicker() {
  *  card's entrance and the section outline's fade `RecordCard.svelte`/
  *  `TablesPage.svelte` killed by name. Explicit here even though `prepare()`
  *  already emulates the same media feature for every other case
- *  (`driver.js`, timing out the pixel comparisons) - this is the one case
+ *  (`driver.js`'s own comment: D1 is the app's shipped behaviour for a
+ *  visitor who asked for less motion, and this is what makes every suite
+ *  exercise that branch, not a timing convenience) - this is the one case
  *  whose whole point is proving the policy itself, not relying on it as a
  *  side effect of something else. Hovers a button (the transition class) and
  *  crosses the 600px breakpoint (the responsive class) in the same pass. */
@@ -976,6 +985,44 @@ async function reducedMotionKillsEverything() {
     running === 0,
     '24 (reduced motion, D1): animations are still running under reduce - ' + running
   );
+  await ctx.close();
+}
+
+/** 25. The storage-notice dismiss button stays hit-testable while its
+ *  `<details>` is folded - real-browser coverage of exactly the regression
+ *  class D3's fix could only be verified against by eye (B7-N2): jsdom does
+ *  not implement `<details>`'s native closed-content suppression at all, so
+ *  every vitest test for the dismiss button passed against the *old*,
+ *  button-hidden structure the first time it was tried. `.warn-x` is a
+ *  sibling of `<details>`, not a child (StorageNotice.svelte), so folding
+ *  the disclosure must not hide or unhit-test it. */
+async function storageNoticeDismissWhileFolded() {
+  const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
+  await d.open('#/lists');
+  const open = await page.evaluate(() => document.querySelector('.warn details')?.open ?? null);
+  ok(open === false, '25 (notice dismiss while folded): <details> is not closed on arrival');
+  const box = await page.evaluate(() => {
+    const x = document.querySelector('.warn-x');
+    if (!x) return null;
+    const r = x.getBoundingClientRect();
+    return { x: r.x, y: r.y, w: r.width, h: r.height };
+  });
+  ok(!!box, '25 (notice dismiss while folded): .warn-x not found');
+  if (box) {
+    ok(
+      box.w > 0 && box.h > 0,
+      '25 (notice dismiss while folded): .warn-x has zero size (' + box.w + 'x' + box.h + ')'
+    );
+    const hit = await page.evaluate(
+      (cx, cy) => !!document.elementFromPoint(cx, cy)?.closest('.warn-x'),
+      box.x + box.w / 2,
+      box.y + box.h / 2
+    );
+    ok(
+      hit,
+      '25 (notice dismiss while folded): the center of .warn-x is not hit-testable there'
+    );
+  }
   await ctx.close();
 }
 
@@ -1002,7 +1049,8 @@ const CASES = [
   ['21 (button focus)', buttonFocusSurvivesRerender],
   ['22 (help and list pick)', moneyHelpAndPressedPicker],
   ['23 (menu in the modal)', addToListMenuStaysInModal],
-  ['24 (reduced motion)', reducedMotionKillsEverything]
+  ['24 (reduced motion)', reducedMotionKillsEverything],
+  ['25 (notice dismiss while folded)', storageNoticeDismissWhileFolded]
 ];
 
 (async () => {

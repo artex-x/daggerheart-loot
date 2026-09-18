@@ -661,55 +661,43 @@ disables at its exact pre-existing sites rather than a directory-wide off.
 Full detail and the CI watch's result: `git show <sha>`, or
 `issues/phase-8/handoff.md`.
 
-### B12d - the browser-gated rows and the three measurements this phase owes
+### B12d - the browser-gated rows and the three measurements this phase owes - SHIPPED `<pending, see B12d sha-citation follow-up>`
 
-**Criterion**: a different route and filter set (seam table above).
+Outcome: all 15 live rows landed as real edits, one commit for the coupled
+trio (`B7-N1`, `B11-N2`, `B11-N3` - `help.ts:544` and
+`inventory.js:150-151` both straightened to ASCII, checked against
+`tests/app/snapshots/` first, zero hits, confirmed with two `--only=`
+probes after). `B6-N1` (stale fixture count), `B7-N4` (two dead LABELS
+keys), `B7-N13` (a driver doc-comment gap), `B7-N15` (an English hyphen
+made consistent with its neighbour), `B8-R6` (two documented hazards,
+neither has a cheap real fix), `B8-N4` (a stale batch citation), `B8.1-N2`
+(a stale reasoning citation) and `B8.1-N3` (a missing `addressSettled()`
+call) all landed as comment/test edits with no behaviour change. `B7-R2`
+replaced a dead assertion (`.card.scrollTop`, always 0 since `.card` became
+`overflow: clip`) with one that can actually fail
+(`.seldrop > .btn` count). `B7-R1`'s comment was corrected from "fixed" to
+`position: sticky`, and its own measurement was taken (a selection pushes
+the footer down by exactly the bar's own height; at maximum scroll the bar
+rests above the footer with a ~20px gap, at both 1180 and 375 - not an
+overlap). The other two owed measurements: `sweep.js 1180` ran clean with
+both languages, the English axe path included for the first time as its
+own gate; `B7-R4`'s 44x44 overlap reproduced (7px into the note textarea,
+2px above the notice box, measured at 1180x900) - not redesigned, not
+shrunk below 44px, `docs/specs/DEBT.md` gained `D27` with the measurement,
+routed to the UI/UX ticket. `help.test.ts` needed a matching fix (found by
+the full gate, not by the pre-check) - the one other place naming the
+straightened string literally. The one check nothing in this repository
+can perform (`.card-media`'s focus ring inside `.card`) stays recorded as
+owed, under `handoff.md`'s Blockers, not silently closed. No row
+re-recorded a golden. No deviation. One discrepancy corrected, not
+silently carried: `nits.md`'s "Carried, needing confirmation" table still
+showed `B2-5` as `verify` though the census table already had it
+`done e52f5de` - re-checked, the census was right, the stale row removed.
+Full detail: `git show <sha>`, or `issues/phase-8/handoff.md`.
 
-**Rows**: `B6-N1`, `B7-N1`, `B7-N2`, `B7-R1`, `B7-R2`, `B7-R4`, `B7-N4`,
-`B7-N13`, `B7-N15`, `B8-R6`, `B8-N4`, `B8.1-N2`, `B8.1-N3`, `B11-N2`,
-`B11-N3`.
-
-**Coupled rows that must ship in one commit**: `B7-N1` (`help.ts:544`'s
-`Players’ link`), `B11-N2` (`inventory.js:150-151`'s value and its false
-comment) and `B11-N3` (the coupling itself). Straightening one without the
-other leaves the driver's name lookup and the live label disagreeing in the
-opposite direction. `help.ts` is `app/src` but rides here, because this is
-the piece that can prove the string moves no golden.
-
-**The three measurements**, each its own acceptance line - they are owed from
-B7 and B8 and have never been run:
-
-1. `node tests/app/sweep.js 1180` with the English axe path exercised, which
-   the `allow` removal was never proved against (`sweep.js` runs axe on
-   Russian only at that width).
-2. The scroll-to-bottom measurement of `.selbarwrap` and `.foot` with a
-   selection at 1180 **and** 375 - the measurement P10's own acceptance line
-   asked for and `B7-R1` shows was never taken. Both existing instruments
-   measure the unscrolled page, which is the one position where the
-   difference cannot appear.
-3. `B7-R4`'s 44x44 overlap: measure `.note-x::after` against the note
-   `<textarea>` and `.warn-x::after` against the notice box. If the overlap
-   reproduces, `DEBT.md` entry with the measurement; do not redesign, do not
-   shrink below 44px.
-
-**One check nothing in this repository can perform** stays owed and is
-recorded as owed, not silently closed: confirming `.card-media`'s focus ring
-is drawn inside `.card` at both `.full` and `.compact` needs a human eye or a
-screenshot. `focusWalk` reads computed style, goldens read structure, axe
-checks neither. `B12d` records it under Blockers as an owner/human action,
-with the exact route and widths to look at.
-
-**Gates**: `rtk npm run check`; `npm run check:built`; `node
-tests/run-all.js app/states,app/print,app/contracts`; `node
-tests/app/sweep.js 1180`; two `node tests/app/golden.js --only=<sub>` probes
-for the string rows. **All four golden shards only if a row re-records** -
-and a re-record in a nit batch is a stop-and-report first
-(`COVERAGE.md`'s B8.1 gate rule requires all four shards, not one, when a
-golden moves).
-
-**Closeout.** After `B12d` and its review, `nits.md`'s "Outstanding" table is
-empty and the task is retirable per `.claude/skills/handoff/SKILL.md`,
-"Retirement". Nothing in this plan follows it.
+**Closeout.** `nits.md`'s "Outstanding" table is now empty and the task is
+retirable per `.claude/skills/handoff/SKILL.md`, "Retirement" - retirement
+itself is the orchestrator's. Nothing in this plan follows `B12d`.
 
 **Standing rule this batch establishes**: a review's nits are appended to
 `nits.md` when the review lands, not when somebody gets to them. The findings

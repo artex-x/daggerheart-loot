@@ -1530,6 +1530,13 @@ const { ok } = rep;
     await d.media(undefined);
   }
 
+  /* `seed()` registers an `evaluateOnNewDocument` handler that survives every
+     later `d.open()` on this page, not only the next one - there is no
+     unseed. Harmless here because everything below reads a print route,
+     which shows no lists; a case appended later that opens a list-bearing
+     route on this same `d` would silently inherit list `a` (B8-R6). If that
+     ever matters, open a fresh driver for the later case rather than fight
+     this one's residual seed. */
   await d.seed({
     'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
   });
@@ -1537,6 +1544,11 @@ const { ok } = rep;
   await d.click('Убрать из списка');
   await d.media('print');
   try {
+    /* The assertion below depends on the action toast still being alive -
+       `say()` gives an action toast 7000ms (dict.ts/AppState), and the two
+       round trips above (open + click) are comfortable inside that window,
+       but it is a real flake budget on a contended host, not a guaranteed
+       margin (B8-R6). */
     const toast = await d.computed('.toast', ['display']);
     ok(
       toast && toast.display === 'none',

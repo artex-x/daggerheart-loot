@@ -248,6 +248,14 @@ function makeDriver(page, target) {
      * `nth` picks among several controls that share one accessible name in
      * the same tier - several sections each carry their own "Скопировать
      * ссылку на этот раздел" button, for instance.
+     *
+     * Two ranking edges this method does not resolve correctly for a
+     * checkbox, and does not need to: `exact[idx]` and `boxExact[idx]` index
+     * two different arrays, so `click(name, 1)` can silently land on the
+     * second checkbox when only one exact non-checkbox match exists; and a
+     * substring non-checkbox match still pre-empts an exact checkbox, so a
+     * box whose exact name is a substring of any button's name is
+     * unreachable here at all. For a checkbox, always `tick()`.
      */
     async click(name, nth = 0) {
       const ok = await page.evaluate(

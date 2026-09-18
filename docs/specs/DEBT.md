@@ -70,12 +70,13 @@ Unlike the sections above, these were never a parity question - they are
 real bugs a phase-8 batch review caught in code this same phase wrote or
 touched, each one bounded (`CLAUDE.md`'s campsite rule) to more than a nit
 can fix in the batch that found it: a public-contract change, a new spec
-sentence, or a new `app/src/ports/` surface, none of which fits alongside
-the nit-sized fixes `issues/phase-8/nits.md` cleared in the same pass
-(`plan.md`, "Rows this plan moves to Deferred"). Entered in the commit that
-makes the deferral decision, per this file's own rule above; paid off by
-whichever task lands the real fix, most likely the consistent-storage
-ticket (D24) or a dedicated batch (D25, D26).
+sentence, a new `app/src/ports/` surface, or (D27) a layout redesign the
+owner's own scope fence bars this task from doing - none of which fits
+alongside the nit-sized fixes `issues/phase-8/nits.md` cleared in the same
+pass (`plan.md`, "Rows this plan moves to Deferred"). Entered in the commit
+that makes the deferral decision, per this file's own rule above; paid off
+by whichever task lands the real fix, most likely the consistent-storage
+ticket (D24), a dedicated batch (D25, D26), or the UI/UX ticket (D27).
 
 ### D24 - a second `dhloot.lists.v2` corruption is never backed up, and the first backup is orphaned forever
 
@@ -145,4 +146,38 @@ ticket (D24) or a dedicated batch (D25, D26).
   rather than eased - `document.getAnimations()` (or, once a `matchMedia`
   port exists, a mocked-`matchMedia` Vitest assertion on the branch it
   picks) is the same instrument D1's own entry used.
+
+### D27 - two P12 44x44 hit targets overlap an editable neighbour
+
+- **Where**: `app/src/components/ListPage.svelte` (`.note-x::after`, the note
+  clear button's extended target) and `app/src/components/StorageNotice.svelte`
+  (`.warn-x::after`, the notice dismiss button's extended target).
+- **What**: both are the same P12 shape as `PageHead.svelte`'s `.homebtn::after`
+  - a 20px or 26px button given an invisible, centred 44x44 tap target via
+  `position: absolute; ... transform: translate(-50%, -50%)` - but unlike
+  `.homebtn`, both buttons sit flush against an editable or interactive
+  neighbour, so the extended target spills into it. Measured on this host at
+  1180x900 (`dist/`, real Chromium, issues/phase-8 B12d): `.note-x::after`
+  extends **7px** into the note `<textarea>` immediately below it
+  (`.nfield`'s label/textarea pair, `ListPage.svelte`); `.warn-x::after`
+  extends **2px** above the notice box's own top edge (`.warn`,
+  `StorageNotice.svelte`). Both overlaps reproduce B7-R4's finding (which
+  estimated ~12px and ~3px respectively from the CSS alone, before any
+  browser measured it). A tap in the overlap clears the note or dismisses
+  the notice instead of focusing the textarea or landing inside the box -
+  low severity (the note case needs a tap within a few px of the button, not
+  inside the textarea generally; the notice case needs a tap just above the
+  box, mostly empty page background), but real.
+- **Why deferred**: P12's own acceptance line forbids both obvious fixes -
+  shrinking the target below 44px, and this task is not scoped for a
+  redesign (`CLAUDE.md`'s campsite rule; `context.md`'s scope fence bars
+  UI/UX redesign work). A real fix needs a layout change - moving the button
+  away from the editable neighbour, or giving the neighbour a matching
+  inset/margin so the target has room - which belongs with the UI/UX ticket
+  that already owns the redesign work this phase excluded.
+- **How to verify the fix**: repeat this entry's own measurement (a
+  `getBoundingClientRect()` comparison of the button's computed 44x44 target
+  against its neighbour, at 1180x900) and confirm zero overlap in both
+  directions, with the target still at 44x44 and the button unmoved in
+  every other respect.
 

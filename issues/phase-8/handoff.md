@@ -2,14 +2,18 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `639f7eb`, **B12c** itself, one
-  commit past B12b's own sha-citation follow-up (`24297a8`), which was one
-  commit past **B12b** (`607b252`).
-  `rtk npm run check` is green on B12c (all suites, coverage thresholds
-  unchanged) - see "Verification". Pushed and CI-watched: see
-  "Verification" for the run id and what the deploy log shows for the
-  stub-count line.
-- Last agent: implementer (2026-09-18, B12c: harness, tooling and CI).
+- Task status: in_progress, ready for closeout. HEAD is
+  `<pending, see B12d sha-citation follow-up>`, **B12d** itself - the
+  fourth and terminal piece of B12, one commit past B12c's own
+  sha-citation follow-up (`18d4294`), which was one commit past **B12c**
+  (`639f7eb`).
+  `rtk npm run check` is green on B12d (all suites, coverage thresholds
+  unchanged at 97.04/89.02/98.04/97.83) - see "Verification". `npm run
+  check:built`, the three named browser suites, `sweep.js 1180` and two
+  golden probes all green too. Not yet pushed as of this text - see
+  "Verification" for the push confirmation once it lands.
+- Last agent: implementer (2026-09-18, B12d: the browser-gated rows and
+  the three measurements this phase owes).
 - Branch: `main`.
 - Base / starting commit: `e7ce2ad` (this task's planning pass, B12
   designed as four consecutive pieces).
@@ -18,15 +22,29 @@
   is itself the remediation stage for B1-B11's eleven reviews, and
   reviewing it would open a second-order review -> remediate loop with no
   natural floor. Not "not required (no trigger fired)" - a trigger did
-  fire (CI workflow and tooling changes), the review was declined.
-- No open deviations. Same discrepancy carried from B12a, not re-resolved
-  here (unchanged, `plan.md`'s B12a step 7 undercounts the Deferred table
-  by one row - see `nits.md`'s note under its Deferred table).
+  fire (browser-suite and `app/src` changes), the review was declined.
+- No deviation in scope. One discrepancy corrected in this piece rather
+  than silently resolved: `nits.md`'s "Carried, needing confirmation"
+  table still showed `B2-5` as `verify` although the census table above it
+  already recorded `B2-5 done e52f5de` - re-checked directly against
+  `.claude/README.md:108` (it does read "covered paths"), the census entry
+  was right, and the stale `verify` row is removed - see `nits.md`.
+  Also carried, not re-resolved: `plan.md`'s B12a step 7 undercounts the
+  Deferred table by one row - see `nits.md`'s note under its Deferred
+  table.
 - Last planning pass: planner, 2026-09-18, at `78981b2` - designed B12 as
   four consecutive pieces.
-- NEEDS_HUMAN_CONFIRMATION: no.
-- Next batch: **B12d** - the browser-gated rows and the three measurements
-  this phase owes - per `plan.md`, "B12d".
+- NEEDS_HUMAN_CONFIRMATION: no runtime decision needed from B12d itself,
+  but see "Blockers" - one check nothing in this repository can perform is
+  recorded there as an owed owner/human action.
+- Next batch: **none**. B12d is B12's terminal piece and B12 is phase-8's
+  terminal batch (`plan.md`, "B12d", "Closeout"). `nits.md`'s "Outstanding"
+  table is now empty (every row `done`, `closed`, or moved to "Deferred out
+  of phase-8" with a reason) - the task is retirable per
+  `.claude/skills/handoff/SKILL.md`, "Retirement". Retirement itself is the
+  orchestrator's, not this implementer's - see this task's own dispatch
+  ("Do not perform the task-directory retirement or the closeout - those
+  are the orchestrator's and come after you").
 
 ## Completed
 
@@ -442,12 +460,173 @@ pre-compaction text.
   narrowed to `files: ['tests/**/*.js', 'tools/**/*.js']` (`B9-N11`).
   `npx eslint .` clean throughout. No row moved rendered output or changed
   a public contract. No deviation.
+- **B12d - the browser-gated rows and the three measurements this phase
+  owes** - `<pending, see B12d sha-citation follow-up>`. Review: not run
+  (owner's decision, 2026-09-18 - see `context.md`, "Review and nit policy
+  for this task"). All 15 live rows landed as real edits (`B6-N1`, `B7-N1`,
+  `B7-N2`, `B7-R1`, `B7-R2`, `B7-R4`, `B7-N4`, `B7-N13`, `B7-N15`, `B8-R6`,
+  `B8-N4`, `B8.1-N2`, `B8.1-N3`, `B11-N2`, `B11-N3`), one commit: the
+  coupled rows shipped together (`B7-N1`'s `app/src/lib/help.ts:544`
+  straightened to ASCII `"Players' link"`, `B11-N2`'s
+  `tests/app/inventory.js:150-151` value and false "curly apostrophe"
+  comment moved with it, `B11-N3` being the coupling itself) - checked
+  first against `tests/app/snapshots/` for the curly form (zero hits), so
+  no golden was at risk before the edit landed, and two `--only=` probes
+  confirmed it after. `tests/app/contracts.js`'s stale "28 fixtures" count
+  corrected to 30 (`B6-N1`); `states.js` gained case 25 (real-Chromium
+  coverage that the storage-notice dismiss button stays hit-testable while
+  `<details>` is folded, `B7-N2`) and case 23's dead `.card.scrollTop`
+  assertion (always 0 since `.card` became `overflow: clip`) replaced with
+  a `.seldrop > .btn` count pinning the toggle AddToList.svelte's own
+  selector actually finds (`B7-R2`); two dead LABELS keys deleted
+  (`selected`, `importPh`, ru and en, zero readers confirmed first,
+  `B7-N4`); `driver.js`'s `click()` doc comment gained its two unresolved
+  ranking edges and "for a checkbox, always `tick()`" (`B7-N13`);
+  `dict.ts`'s English `droppedItems` now uses an em dash, matching
+  `noLists` (`B7-N15`, checked against snapshots first, zero hits - the
+  string carries `%n` and is never rendered literally in a golden);
+  `print.js`'s D20 block gained two comments naming the seed-persistence
+  and toast-flake hazards rather than "fixing" either away, since neither
+  has a cheap real fix (`B8-R6`); `states.js:390`'s stale "before B12"
+  citation corrected to "before B8" (`B8-N4`); `states.js` case 24's
+  comment re-pointed at `driver.js`'s own current `prepare()` reasoning
+  instead of the retired parity-era one (`B8.1-N2`); `contracts.js` gained
+  an `await d.addressSettled()` before the owned-list hash read, with a
+  comment (`B8.1-N3`). `Shell.svelte`'s P10 comment corrected from "fixed"
+  to `position: sticky` (`B7-R1`), and the three owed measurements were
+  taken for real (numbers below, "Verification"): `sweep.js 1180` (English
+  axe path exercised - clean, both languages); the scroll-to-bottom
+  position of `.selbarwrap` against `.foot` at 1180 and 375, with a
+  selection open (confirms the bar rests above the footer with a ~20px
+  gap, never overlapping it, and that a selection pushes the footer down
+  by exactly the bar's own height); and the 44x44 hit-target overlap of
+  `.note-x::after`/`.warn-x::after` against their editable neighbours -
+  both reproduce (7px into the note textarea, 2px above the notice box),
+  so `docs/specs/DEBT.md` gained `D27` with the measurement, per the
+  plan's own instruction: no redesign, no shrink below 44px, routed to the
+  UI/UX ticket. One check nothing in this repository can perform - whether
+  `.card-media`'s focus ring draws inside `.card` at both `.full` and
+  `.compact` - stays owed, recorded under "Blockers" as an owner/human
+  action, not silently closed. `nits.md`'s "Outstanding" table is empty:
+  every row this piece did not land was already `done`/`closed`/Deferred
+  by B12a-B12c. No deviation.
 
 ## Verification
 
-Latest pass (B12c, sha in "Completed" above); earlier passes' exact
+Latest pass (B12d, sha in "Completed" above); earlier passes' exact
 commands/results are in git history per "Completed" above, and the B9-
 remediation, B10 and B10-remediation runs are preserved below.
+
+### B12d's own verification
+
+**The three measurements this phase owes, exact commands and results:**
+
+1. **`node tests/app/sweep.js 1180`** (English axe path exercised - no
+   `--only`/lang argument means both `ru` and `en`, per `sweep.js`'s own
+   header comment; CI splits this same width into two shard rows for
+   balance, but the single-process run here drives both languages,
+   English included) - `npm run build` first (dist/ had gone stale after
+   the `app/src` edits below), then: `page sweep (dist/): clean at 1180
+   (ru, en)`. Green, including axe on English - this specific command had
+   never been run as its own gate before (only the per-language CI shard
+   rows and other widths had).
+2. **The scroll-to-bottom position of `.selbarwrap` against `.foot`, with
+   a selection, at 1180 and 375** - a scratch probe (session scratchpad,
+   not committed) against `dist/` using `tests/app/lib.js`'s own `fresh()`:
+   opened `#/tables/core_item`, ticked one row, `window.scrollTo(0,
+   document.body.scrollHeight)`, read both elements' `getBoundingClientRect()`
+   after a 150ms settle.
+   - At 1180: page height with no selection **5885px**, with one **5938px**
+     - a **53px** difference, exactly `.selbarwrap`'s own measured height
+     (`h: 53`) at that width. At max scroll, `.selbarwrap`'s bottom
+     (704.09-757.09) sits **above** `.foot`'s top (777.09-900.09) with a
+     ~20px gap - it rests above the footer, it does not overlap it.
+   - At 375: the same shape - `.selbarwrap` wraps to more lines (`h: 137`,
+     top 480.31-bottom 617.31) and still sits above `.foot` (top 637.31),
+     a ~20px gap.
+   - Both widths confirm `Shell.svelte`'s corrected comment (`B7-R1`): the
+     bar is `position: sticky`, not fixed; opening a selection pushes the
+     footer down in flow by exactly the bar's own height; at maximum
+     scroll the bar rests above the footer rather than overlapping it.
+3. **`B7-R4`'s 44x44 hit-target overlap** - a second scratch probe, same
+   method: computed each button's own extended `::after` rect from its
+   `getBoundingClientRect()` (centred on the button, 44x44, matching the
+   CSS `left:50%;top:50%;transform:translate(-50%,-50%)` shape) and
+   compared it against the neighbour's own rect, at 1180x900.
+   - `.note-x::after` (`ListPage.svelte`, the note clear button, on a list
+     seeded with a list-level note so `<details class="lnote">` opens by
+     default) extends **7px** into the note `<textarea>` immediately below
+     it.
+   - `.warn-x::after` (`StorageNotice.svelte`, the notice dismiss button,
+     on `#/lists` with no seed) extends **2px** above `.warn`'s own top
+     edge.
+   - Both overlaps **reproduce** (smaller than B7-R4's own CSS-only
+     estimate of ~12px/~3px, but real). Per the plan's own instruction:
+     not redesigned, not shrunk below 44px. `docs/specs/DEBT.md` gained
+     `D27` with this measurement, routed to the UI/UX ticket for the real
+     fix.
+
+**The coupled rows, string-vs-snapshot check before editing** (per the
+plan's own rule, "A user-visible string is a golden question before it is
+an edit"): `git grep -F 'Players’' -- tests/app/snapshots` (via a small
+node script walking the snapshot files for the exact U+2019 string) -
+**zero hits** in all 112 golden files before either `help.ts:544` or
+`inventory.js:150-151` was touched, so the row was check-gated and stayed
+in this piece rather than moving to a re-record. `app/src/lib/help.test.ts`
+pinned the old curly form directly (`toEqual(['Players’ link', ...])`) -
+found by the full gate, not by the pre-check - and updated to the ASCII
+value in the same commit, since it is the one place beyond `help.ts` itself
+that names the string literally.
+
+**Full gate run, in order:**
+
+- `npm run build` (after the `app/src` edits: `help.ts`, `dict.ts`,
+  `Shell.svelte`) - green, 251 modules, `dist/assets/app.js` 313.68 kB.
+- `rtk npm run check` - first attempt caught two things the pre-check
+  passes had not: `tests/app/states.js` needed `npx prettier --write`
+  (one reflow, the replaced `scrollTop`/`toggleCount` block), and
+  `app/src/lib/help.test.ts:149` failed on the now-straightened
+  `Players' link` (`AssertionError: expected [ 'Players\' link', ... ] to
+  deeply equal [ 'Players’ link', ... ]`) - fixed in place, both in the
+  same pass, no other file touched. Second run: green - `format:check`,
+  `lint`, `typecheck` (551 files, 0 errors/warnings), `node --check
+  tools/check-site.mjs`, `npm run data`, `node tests/derived.js`, `node
+  .claude/hooks/selftest.mjs` (430/430), every `node --test` suite
+  (`tools/tg-preview/lib.test.mjs` 110/110, `tools/artwork/lib.test.mjs`
+  26/26, `tools/check-site.test.mjs` 10/10, `tests/app/golden.test.mjs`
+  21/21), `npm run test` - 45 test files / **1138** tests passed
+  (unchanged from B12c - this piece added no vitest test beyond the one
+  string fix), coverage 97.04% statements / 89.02% branches / 98.04%
+  functions / 97.83% lines, unchanged.
+- `npm run build` again (the check's own `npm run data` step can touch
+  `data.json`/`catalog.csv` mtimes even when content is unchanged) - green.
+- `npm run check:built` (`npm run build && npm run smoke && npm run
+  budget`) - green: build 251 modules; smoke "the built page opens from a
+  folder"; budget 91.4 kB within the 120 kB gzip budget.
+- `node tests/run-all.js app/states,app/print,app/contracts` - all three
+  green: `app/contracts` 263.3s, `app/print` 178.8s, `app/states` 118.7s
+  (includes the new case 25 and the replaced case 23 assertion).
+- `node tests/app/sweep.js 1180` - green, both languages (measurement 1
+  above).
+- `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only="#/lists"` - 21
+  states compared, `structural snapshots (dist/): unchanged`.
+- `MSYS_NO_PATHCONV=1 node tests/app/golden.js --only="#/l/"` - 6 states
+  compared, `structural snapshots (dist/): unchanged`. Two probes, per the
+  gate list, both covering the routes the coupled string change and the
+  new case 25 touch; neither moved, so all four golden shards were not
+  required (`COVERAGE.md`'s B8.1 gate rule).
+- `git status --short` (final, before staging): `app/src/components/
+  Shell.svelte`, `app/src/lib/dict.ts`, `app/src/lib/help.test.ts`,
+  `app/src/lib/help.ts`, `docs/specs/DEBT.md`, `tests/app/contracts.js`,
+  `tests/app/driver.js`, `tests/app/inventory.js`, `tests/app/print.js`,
+  `tests/app/states.js` modified - exactly the files "Completed" above
+  names; `.claude/agents/reviewer.md` (unstaged, foreign), `issues/56/`
+  (untracked, foreign) and `remediate` (untracked, foreign, 0 bytes)
+  untouched and unstaged, per "preserve unrelated working-tree changes" -
+  staged explicitly by path, not `git add -A`.
+- Push: `git push origin main` - see "Notes" for confirmation once this
+  section's placeholder sha is replaced by the follow-up commit, per this
+  task's own two-commit convention (B9-B12c all followed it).
 
 ### B12c's own verification
 
@@ -1012,12 +1191,30 @@ first-ever Prettier run on these files.
 
 ## Blockers
 
-None. B12c shipped with no deviation in scope - see "Completed" and
-"Verification". `rtk npm run check` is green, confirmed for real (twice,
-after the `addressSettled()` call-site test was added). CI is green on
-every job for the pushed commit, confirmed by `gh run watch --exit-status`
-and by reading the deploy log directly for the stub-count line - see
-"Verification".
+**One check nothing in this repository can perform - an owed owner/human
+action, not silently closed.** Confirming `.card-media`'s focus ring is
+drawn *inside* `.card` at both `.full` and `.compact` needs a human eye or
+a screenshot: `focusWalk` (`tests/app/sweep.js`) reads computed style,
+which still reports a ring an ancestor clips; goldens read structure, not
+paint; axe checks neither. This is B8's own `BL-1` finding (`nits.md`,
+"From B8's review") - the fix (`.card-media:focus-visible { outline-offset:
+-2px }`, restored `480c380`) was made by reasoning about `.card`'s
+`overflow: clip`, not by any instrument seeing it, and B12a/b/c/d have
+found no new instrument since. **What to look at**: `#/i/ci1` (`.full`
+layout, the record page) and any tables/search page's tile row (`.compact`
+layout, e.g. `#/tables/core_item`), at any width - Tab to the card's own
+picture/media control (`.card-media`, a real `<button>`) and confirm the
+gold focus ring paints entirely inside the card's own border, not clipped
+on any side. This is the fourth phase-8 finding of the class "a check that
+stayed green while measuring nothing" (context.md, "Review and nit policy
+for this task") - recording it here rather than inventing a fourth false
+verification is the point.
+
+B12d itself shipped with no deviation in scope - see "Completed" and
+"Verification". `rtk npm run check` is green (twice - the second run after
+the Prettier reflow and the `help.test.ts` fix were applied). `npm run
+check:built`, the three named browser suites, `sweep.js 1180` and both
+golden probes are all green too - see "Verification".
 
 ## Deferred
 
@@ -1033,13 +1230,17 @@ and by reading the deploy log directly for the stub-count line - see
   needs a new port surface), `B6-N4` (product copy, the owner's voice) and
   `B8-N6` (a policy edit to a rule the owner approved under Q5). The first
   three are live defects and got `docs/specs/DEBT.md` entries (`D24`-`D26`)
-  in **B12b, done this pass**, so they survive this task directory's
-  retirement; the last two are taste and policy and get none.
-- **One check nothing in this repository can perform, still owed**:
-  confirming `.card-media`'s focus ring is drawn inside `.card` at both
-  `.full` and `.compact` needs a human eye or a screenshot (`focusWalk`
-  reads computed style, goldens read structure, axe checks neither).
-  `B12d` records it as an owner/human action with the route and widths.
+  in **B12b**, so they survive this task directory's retirement; the last
+  two are taste and policy and get none.
+- **A sixth row, found and measured by B12d itself**: `B7-R4`'s 44x44
+  overlap (`.note-x::after` into the note textarea, `.warn-x::after` above
+  the notice box) reproduced when measured - 7px and 2px respectively at
+  1180x900. Not redesigned and not shrunk below 44px, per the plan's own
+  instruction; `docs/specs/DEBT.md` gained `D27` with the measurement,
+  routed to the UI/UX ticket for the real fix.
+- **One check nothing in this repository can perform, still owed** - see
+  "Blockers" above for the full record (route, widths, and why no
+  instrument here can see it).
 - See `plan.md`, "Deferred to the two excluded tickets, and to tasks of
   their own" (the consistent-storage-layer ticket, the UI/UX-redesign
   ticket, and several costed tasks of their own).
@@ -1063,7 +1264,12 @@ and by reading the deploy log directly for the stub-count line - see
   `canvas.toBlob`) was written to and read from the session scratchpad, not
   the repository, and a throwaway `python -m http.server` over the repo's
   own `img/` was stopped before this piece's gate ran - neither is in the
-  tree.
+  tree. **New this pass**: B12d's own two measurement scripts (the
+  scroll-to-bottom probe and the 44x44 overlap probe, both `node` scripts
+  against `dist/` using `tests/app/lib.js`'s `fresh()`) were likewise
+  written to and read from the session scratchpad, not the repository -
+  neither is in the tree; their exact numbers are recorded in
+  "Verification" instead of the scripts themselves.
 - **New this pass**: two more foreign, untracked/unstaged items are now
   present alongside the two already recorded (`.claude/agents/reviewer.md`,
   `issues/56/`) - a second session was actively editing
@@ -1079,6 +1285,7 @@ and by reading the deploy log directly for the stub-count line - see
   rule exists exactly because a second session's edits can make the first
   session's gate results look like a bug in its own work, which is what
   happened here (see "Verification").
-- Session end partial progress: none - `main` is at a committed, pushed,
-  gate-verified boundary (B12b's own sha `607b252`, sha-citation follow-up
-  `24297a8`, see "Completed").
+- Session end partial progress: none - `main` is at a committed,
+  gate-verified boundary (B12d's own sha, see "Completed" once the
+  sha-citation follow-up commit lands); push confirmation follows in that
+  same follow-up per this task's own two-commit convention.

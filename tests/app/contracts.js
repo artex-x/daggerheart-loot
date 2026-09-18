@@ -42,6 +42,11 @@ function stampOf(parts) {
       storage: { 'dhloot.lists.v2': JSON.stringify([fx.list]) }
     });
     await d.open('#/lists/' + fx.list.id);
+    /* B8.1-N3: the owned-list address is debounce-written (ListPage.svelte),
+       so reading location.hash right after open() rests on ready()'s own
+       wait happening to already exceed the 150ms debounce, not on anything
+       here asserting settlement - addressSettled() makes that explicit. */
+    await d.addressSettled();
     const inBar = (await page.evaluate(() => location.hash)).replace('#/l/', '');
     ok(
       inBar === fx.player.payload,
@@ -143,12 +148,12 @@ function stampOf(parts) {
 
   console.log('the address grammar');
   const routes = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'routes.json'), 'utf8'));
-  /* One context reused across all 28 fixtures rather than one per fixture
+  /* One context reused across all 30 fixtures rather than one per fixture
    * (issues/phase-8, T3) - none of them seed storage, so `d.open`'s full
    * navigation (driver.js:151-153) and `prepare()`'s per-navigation
    * localStorage.clear() (lib.js/driver.js) already give every fixture the
    * same clean slate a fresh context would, without paying puppeteer's
-   * ~1.8s-per-context floor (tests/app/golden.js's measured cost) 28 times. */
+   * ~1.8s-per-context floor (tests/app/golden.js's measured cost) 30 times. */
   const { ctx: rCtx, page: rPage, d: rD } = await fresh({ width: 1280, height: 900 });
   for (const fx of routes) {
     await rD.open(fx.hash);

@@ -541,7 +541,7 @@ const LISTS: Record<Lang, Help> = {
       {
         parts: [
           'Hence the two buttons. ',
-          { b: 'Players’ link' },
+          { b: "Players' link" },
           ' is the one to drop into the party chat. ',
           { b: 'Your own link' },
           ' is a full snapshot with every note — which is also how you keep a list to restore later or open on another device. The browser’s address bar holds the players’ link, so copying it from there is safe too.'

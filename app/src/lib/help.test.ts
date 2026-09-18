@@ -146,7 +146,7 @@ describe('the help for a section', () => {
       helpFor('lists', 'en')
         ?.paragraphs[2]?.parts.filter(isBold)
         .map((b) => b.b)
-    ).toEqual(['Players’ link', 'Your own link']);
+    ).toEqual(["Players' link", 'Your own link']);
   });
 
   it('bolds the three-unit list and the three worked examples in the money help', () => {

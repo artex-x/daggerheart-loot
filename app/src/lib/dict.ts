@@ -618,7 +618,7 @@ const en: Dict = {
   listDeleted: 'List "%s" deleted',
   playersLinkCopied: "Players' link copied — it carries no GM notes",
   badShare: 'The link is damaged or was built from a different data version.',
-  droppedItems: 'Skipped %n items - no longer in the data',
+  droppedItems: 'Skipped %n items — no longer in the data',
 
   rename: 'List name',
   sharePlayers: "Players' link",
