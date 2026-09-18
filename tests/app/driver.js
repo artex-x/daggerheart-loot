@@ -219,16 +219,26 @@ function makeDriver(page, target) {
     /**
      * Clicks the control a person would click, by what it says.
      *
-     * Includes `input` so a checkbox with an `aria-label` - the row selection
-     * box, which carries no text of its own - answers to the same verb as a
+     * Includes `input` so a checkbox with an `aria-label` - a standalone
+     * toggle that carries no text of its own - answers to the same verb as a
      * button. `has()` already searched inputs; `click()` had not.
      *
-     * `nth` picks among several controls that share one accessible name - every
-     * row checkbox on a table is named "Выбрано", and select-all has no
-     * accessible name of its own for a spec to grip at all, so a second row is
-     * reached by index rather than by naming select-all. The loose `includes`
-     * fallback only applies at `nth` 0, matching the exact-match behaviour this
-     * always had before a second match could exist.
+     * P2 named every row checkbox after its own record, the same name
+     * pressing the row itself opens - a name this method used to resolve by
+     * "first exact match, DOM order", which now means the checkbox (an exact
+     * match) pre-empts the row (whose own name usually carries a roll number
+     * or a stat line too, so it is only ever a substring match) before the
+     * `includes` fallback that would have found the row ever runs. Ranked in
+     * three tiers instead: an exact non-checkbox match, then a substring
+     * non-checkbox match, then an exact checkbox match - "click the row" now
+     * means the row whenever a row exists to mean, and only falls back to a
+     * bare checkbox for the controls that were always checkbox-only (a
+     * standalone toggle with no competing row). `tick()` is the checkbox's
+     * own door regardless of what else shares its name.
+     *
+     * `nth` picks among several controls that share one accessible name in
+     * the same tier - several sections each carry their own "Скопировать
+     * ссылку на этот раздел" button, for instance.
      */
     async click(name, nth = 0) {
       const ok = await page.evaluate(
@@ -239,8 +249,14 @@ function makeDriver(page, target) {
               'button, a[href], [role="button"], input, summary'
             )
           ];
-          const exact = els.filter((e) => nameOf(e) === n);
-          const el = exact[idx] ?? (idx === 0 ? els.find((e) => nameOf(e).includes(n)) : undefined);
+          const isBox = (e) => e.tagName === 'INPUT' && e.type === 'checkbox';
+          const nonBox = els.filter((e) => !isBox(e));
+          const exact = nonBox.filter((e) => nameOf(e) === n);
+          const boxExact = els.filter((e) => isBox(e) && nameOf(e) === n);
+          const el =
+            exact[idx] ??
+            (idx === 0 ? nonBox.find((e) => nameOf(e).includes(n)) : undefined) ??
+            boxExact[idx];
           if (!el) return false;
           el.click();
           return true;
@@ -250,6 +266,34 @@ function makeDriver(page, target) {
         NAME_FN
       );
       if (!ok) throw new Error(`${target}: no control named "${name}"${nth ? ` (nth ${nth})` : ''}`);
+      d.pressed.add(name);
+      await settle(page);
+      return true;
+    },
+
+    /**
+     * Ticks (or unticks) the checkbox named `name` - a row's own tick box,
+     * which `click()` no longer resolves to when the same name also opens
+     * the row (P2). Used wherever a spec means the box specifically, not
+     * whatever else on the row shares its name.
+     */
+    async tick(name, nth = 0) {
+      const ok = await page.evaluate(
+        (n, idx, nameSrc) => {
+          const nameOf = eval(nameSrc);
+          const boxes = [...document.querySelectorAll('input[type="checkbox"]')].filter(
+            (e) => nameOf(e) === n
+          );
+          const el = boxes[idx];
+          if (!el) return false;
+          el.click();
+          return true;
+        },
+        name,
+        nth,
+        NAME_FN
+      );
+      if (!ok) throw new Error(`${target}: no checkbox named "${name}"${nth ? ` (nth ${nth})` : ''}`);
       d.pressed.add(name);
       await settle(page);
       return true;
@@ -291,8 +335,16 @@ function makeDriver(page, target) {
               'button, a[href], [role="button"], input, summary'
             )
           ];
-          const exact = els.filter((e) => nameOf(e) === n);
-          return exact[idx] ?? (idx === 0 ? els.find((e) => nameOf(e).includes(n)) : undefined);
+          /* Same three-tier ranking as `click()` - see its own comment. */
+          const isBox = (e) => e.tagName === 'INPUT' && e.type === 'checkbox';
+          const nonBox = els.filter((e) => !isBox(e));
+          const exact = nonBox.filter((e) => nameOf(e) === n);
+          const boxExact = els.filter((e) => isBox(e) && nameOf(e) === n);
+          return (
+            exact[idx] ??
+            (idx === 0 ? nonBox.find((e) => nameOf(e).includes(n)) : undefined) ??
+            boxExact[idx]
+          );
         },
         name,
         nth,

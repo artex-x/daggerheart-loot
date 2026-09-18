@@ -99,11 +99,18 @@ const at = (hash: string, over: Partial<Env> = {}): Env =>
 const withTwo = (hash: string, over: Partial<Env> = {}): Env =>
   at(hash, { storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) }), ...over });
 
+/** Every row's own tick checkbox, in document order - P2 named each one
+ *  after its own record instead of the generic "Выбрано", so the group is
+ *  found by elimination: every checkbox except select-all's own (which
+ *  keeps a name, "Выбрать все (N)", from its wrapping `<label>`). */
+const rowCheckboxes = (): HTMLElement[] =>
+  screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
+
 const readLists = (storage: { get: (k: string) => string | null }): StoredList[] =>
   JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
 
 describe('heading and sub', () => {
-  it('draws the name, the sub as one text node, the add button and nothing to select', () => {
+  it('draws the name, the sub as one text node, the add button and a way to select every row (P8)', () => {
     const { container } = render(App, {
       env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
     });
@@ -117,8 +124,17 @@ describe('heading and sub', () => {
       'aria-expanded',
       'false'
     );
-    expect(screen.queryByText(/Выбрать все/)).not.toBeInTheDocument();
+    /* P8, paid off: printing a shared list used to mean ticking every row by
+       hand - `ontoggleall` now reaches the shared `AppState.toggleAllIn`,
+       the same one the tables and search pages already used. */
+    expect(screen.getByRole('checkbox', { name: 'Выбрать все (2)' })).toBeInTheDocument();
     expect(container.querySelector('.selbarwrap')).not.toBeInTheDocument();
+  });
+
+  it('ticks every row from select-all (P8)', async () => {
+    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
+    expect(screen.getByText('Выбрано 2')).toBeInTheDocument();
   });
 });
 
@@ -209,7 +225,7 @@ describe('selection', () => {
     const { container } = render(App, {
       env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
     });
-    const box = screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement;
+    const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
 
     expect(container.querySelector('[data-row="ci1"]')).toHaveClass('sel');
@@ -398,7 +414,7 @@ describe('accessibility', () => {
     const { container } = render(App, {
       env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
     });
-    const box = screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement;
+    const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     await expectNoA11yViolations(container);
   });

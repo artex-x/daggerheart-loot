@@ -16,11 +16,7 @@
 
   const t = $derived(app.t);
 
-  function dismiss(e: MouseEvent): void {
-    /* The cross sits inside the summary, so a plain click would also toggle
-       the disclosure - the live `hideWarn` calls this first for the same
-       reason. */
-    e.preventDefault();
+  function dismiss(): void {
     app.hideWarn();
   }
 </script>
@@ -41,18 +37,34 @@
        `[data-keep]` elements - this is not one. Keyed on `app.lang` so the
        rewrite's own `<details>` is destroyed and re-created the same way. -->
   {#key app.lang}
-    <details class="warn">
-      <summary
-        ><b>{t.localOnlyTitle}</b><i>{t.readMore}</i><button
-          type="button"
-          class="warn-x"
-          title={t.dismiss}
-          aria-label={t.dismiss}
-          onclick={dismiss}>&times;</button
-        ></summary
+    <!-- D3, paid off: the dismiss cross used to sit inside `<summary>`, which
+         is itself the disclosure's own interactive control - a button
+         nested inside another interactive element, invalid HTML that also
+         forced `expectNoA11yViolations`'s `nested-interactive` rule off at
+         every call site that could reach this component. Moving it to a
+         sibling of `<summary>` but still inside `<details>` was tried first
+         and reads right in the accessibility tree, but a closed `<details>`
+         does not only hide its content visually the way `display: none` on
+         one child would - the browser's own rendering suppresses every
+         non-summary child at once, so the button painted nothing and had no
+         hit target either, silently undoing P12's 44x44 target along with
+         it. `<details>` moves inside `.warn` instead, carrying only the
+         disclosure itself; the button sits beside it, a sibling of
+         `<details>` rather than a child, and still visible with the
+         disclosure closed. -->
+    <div class="warn">
+      <details>
+        <summary><b>{t.localOnlyTitle}</b><i>{t.readMore}</i></summary>
+        <p>{t.localOnly}</p>
+      </details>
+      <button
+        type="button"
+        class="warn-x"
+        title={t.dismiss}
+        aria-label={t.dismiss}
+        onclick={dismiss}>&times;</button
       >
-      <p>{t.localOnly}</p>
-    </details>
+    </div>
   {/key}
 {/if}
 
@@ -98,7 +110,7 @@
     text-decoration: underline;
   }
 
-  .warn[open] summary i {
+  .warn details[open] summary i {
     visibility: hidden;
   }
 
@@ -132,5 +144,17 @@
     outline: 2px solid var(--gold);
     outline-offset: 2px;
     border-radius: 8px;
+  }
+
+  /* P12: 26px of paint, 44px of target - the same `PageHead.svelte`
+     `.homebtn::after` shape, off `PageHead.svelte:133-141`. */
+  .warn-x::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
   }
 </style>

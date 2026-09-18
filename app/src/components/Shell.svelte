@@ -5,6 +5,8 @@
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
   import Toast from './Toast.svelte';
+  import { SECTION_LABEL } from '../lib/dict.js';
+  import { nameOf } from '../lib/i18n.js';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Lang } from '../lib/types.js';
@@ -21,16 +23,37 @@
     { value: 'en', label: 'EN' }
   ];
 
-  /* D5/O3 (the per-route tab title) was implemented and then backed out of
-     this batch: `tests/app/golden.js`'s accessibility snapshot captures
-     `document.title` as the RootWebArea's own name (verified: every golden
-     with a record/section/list route shows it), so a per-route title moves
-     dozens of existing goldens beyond the two this batch is allowed to
-     move. Left as the plain title, unchanged, pending a decision - see
-     `issues/phase-8/handoff.md`, B6's own report. */
+  /**
+   * D5/O3, paid off: a record, a section or an owned list titles the tab
+   * with its own name ahead of the app's - `<name> — <docTitle>` - and every
+   * other route keeps the plain title. B6 built this, then backed it out of
+   * that batch once `tests/app/golden.js`'s own capture proved a problem
+   * that belongs to the harness, not to this fix: `page.accessibility
+   * .snapshot()` reports `document.title` as the RootWebArea node's own
+   * accessible name, so a per-route title moves every golden whose route has
+   * one - expected and accounted for, since B7 is the batch that already
+   * re-records (`issues/phase-8/handoff.md`, B6's report; `docs/specs/
+   * DEBT.md` D5).
+   *
+   * Keyed off `app.openList` rather than `route.kind === 'storedList'`:
+   * `ListPage`'s own mount effect rewrites a `#/lists/<id>` address to the
+   * players' payload (`#/l/<payload>`) before anything downstream, this
+   * effect included, can see the original `storedList` kind - `openList`
+   * is what survives that rewrite.
+   */
   $effect(() => {
     document.documentElement.lang = app.lang;
-    document.title = app.t.docTitle;
+    const route = app.route;
+    const own = app.openList ? app.lists.get(app.openList) : undefined;
+    const named = route.kind === 'record' ? app.index?.byId.get(route.id) : undefined;
+    const name = named
+      ? nameOf(named, app.lang)
+      : own
+        ? own.name
+        : app.section
+          ? app.t[SECTION_LABEL[app.section]]
+          : undefined;
+    document.title = name ? `${name} — ${app.t.docTitle}` : app.t.docTitle;
   });
 
   /** The skip link's own activation, off `#skip` in the live stylesheet's
@@ -79,6 +102,13 @@
   {@render children()}
 </main>
 
+<!-- P10: the selection bar comes before the footer now, not after - it is
+     fixed to the bottom of the viewport and visually sits over the footer
+     whenever it is open, so a keyboard user tabbing forward used to reach
+     the footer's licence link before the bar's own buttons, the reverse of
+     what is on top of what on screen. -->
+<SelBar {app} />
+
 <!-- The licence notice is on every page on purpose: the terms ask for it, and
      a page that can be linked to directly has to carry it. -->
 <footer class="foot">
@@ -88,8 +118,6 @@
     >{app.t.footAfter}
   </p>
 </footer>
-
-<SelBar {app} />
 
 <Toast {app} />
 

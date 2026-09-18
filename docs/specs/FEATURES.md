@@ -58,7 +58,11 @@ Six modes. Each keeps its own input in memory only.
 - 15 tables (`TABLE_IDS`), each with its own search box and a list/grid switch.
 - Search covers all 1091 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
-  page's alone, a table's own box is not capped.
+  page's alone, a table's own box is not capped. Once a query exceeds 300
+  hits, a "300 из <n>" line - the same shown-of-total wording the table
+  filter strip's own count already uses - says so above the rows (P7, paid
+  off); under the cap nothing is said, because the count on screen already
+  is the whole answer.
 - Search folds case, `ё`/`е`, typographic apostrophes (U+2019, U+02BC), Latin
   diacritics (`ä`/`ö` etc., NFD-stripped - Cyrillic is excluded so `й` never
   merges into `и`) and the Unicode minus sign (U+2212 -> `-`) on both the
@@ -101,9 +105,13 @@ Six modes. Each keeps its own input in memory only.
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
   and its cancel; a search box appears from the eighth list; the menu opens on
-  the side of the button with room in the window, re-measured from its default
-  side whenever it opens or grows (DEBT.md D6 records what that gets wrong
-  inside the modal).
+  the side of the toggle button with room in the clipping box it sits in - the
+  record modal's own card where there is one, the window everywhere else -
+  re-measured from the toggle itself (not whichever button happens to render
+  first) whenever it opens or grows, so it neither spills past the modal's
+  edge nor drags the card's own scroll position along with it (DEBT.md D6,
+  paid off). Escape closes it and returns focus to the toggle, the same as
+  any other disclosure on the page.
 - Optional quantity and price per entry; both travel into copied text.
 - Prices display as book units (default) or coins; the mode is per list and
   rides in the link.
@@ -141,7 +149,10 @@ Six modes. Each keeps its own input in memory only.
   survives a create and a delete, where the live whole-page re-render
   re-folded it - the rewrite's deliberate deviation, invisible to the old
   parity harness because every one of its states started folded (deleted at
-  R0c, issue 47).
+  R0c, issue 47). The dismiss cross is a sibling control positioned over the
+  disclosure's corner, not nested inside the `<summary>` that opens and
+  closes it (`DEBT.md` D3, paid off) - the two presses no longer have to
+  fight over the same click.
 
 ## Records
 
@@ -163,11 +174,15 @@ Six modes. Each keeps its own input in memory only.
   table, a section, a list of results).
 - `#/i/<id>` for an id the data does not know draws "Предмет не найден", the
   sub line and a "На главную" button to `#/roll/std` (the live
-  `renderItemPage` shape). The tab title on a record page is the app's name
-  alone, on both apps - `DEBT.md` D5. When `data.js` itself did not load,
-  every page draws the "data did not load" line in place of its content
-  (`NoData.svelte`) - the rewrite's own state; the live app threw on a
-  missing `window.LOOT` and drew nothing.
+  `renderItemPage` shape) and keeps the plain tab title, the same as any
+  other route with nothing of its own to name. A record that is found, a
+  section, and an owned list each title the tab with their own name ahead of
+  the app's - `<name> — <docTitle>` (`DEBT.md` D5/O3, paid off; the live app
+  wrote the name and then overwrote it with the plain title on the very same
+  render, on both `#/i/<id>` and every other route that could have named
+  itself). When `data.js` itself did not load, every page draws the "data did
+  not load" line in place of its content (`NoData.svelte`) - the rewrite's
+  own state; the live app threw on a missing `window.LOOT` and drew nothing.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
   asterisks are deliberately not used.
@@ -184,14 +199,14 @@ Six modes. Each keeps its own input in memory only.
   and the others opening that tier's record over whatever is on screen. A line
   of one is not a ladder and is not drawn. Each rung is named for the piece it
   leads to, because its own content is a bare digit.
-- A campaign-frame record (`isFrameRecord`) prints no tier word and no tier
-  ladder anywhere it appears, and its source label gives where it comes from
-  rather than its book - even when the record carries ordinary equipment
-  metadata (a tier, thresholds, armour score) that an equivalent record in
-  the equipment tables does print. Whether that is correct is an open
-  question, not a settled one: `DEBT.md` D11, which carries the `f33`/`q313`
-  comparison and records that no reason for the suppression is written down
-  anywhere.
+- A campaign-frame record with equipment metadata (a tier, thresholds, armour
+  score) prints its tier word and its tier ladder exactly as an equivalent
+  `eq` record does (`DEBT.md` D11, paid off, Q6) - `f33` "Quilted Clothing"
+  and `q313` "Gambeson Armor" now agree, where the live app printed one and
+  hid the other with no stated reason. Its source label still names the frame
+  itself, the same tag any other book's own equipment gets (`isFrameRecord`
+  now only answers "which table" and "what does the source line say", never
+  "what does this hide").
 - Referenced Core cards render as a collapsed block and travel with the item
   into copies and shares. Each block links out to `daggerheart.su` for the
   full card, the subdomain matching the language on screen (`ru.` in Russian,
@@ -222,9 +237,11 @@ Six modes. Each keeps its own input in memory only.
 - `Назад` steps back in browser history; with nowhere to step back to it goes to
   `#/lists` instead.
 - A card's own name is drawn as `<h2 class="pc-name">`, a heading-level fix:
-  the live app's `printCardHTML` wrote `<h3>` there. `docs/specs/DEBT.md` D8
-  (the alternate-tables page jumping `<h1>` to `<h4>`) is a different screen
-  and is unaffected.
+  the live app's `printCardHTML` wrote `<h3>` there - unrelated to the
+  alternate-tables page's own heading jump, `<h1>` straight to `<h4>`, fixed
+  separately: each rarity section is now an `<h2>` (`SectionHead`'s own
+  `heading` prop, only passed here) and the Hope/Fear column pair under it
+  demoted to `<h3>` (`DEBT.md` D8, paid off).
 
 ## Chrome
 

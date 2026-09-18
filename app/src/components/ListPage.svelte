@@ -919,7 +919,7 @@
             ><input
               type="checkbox"
               checked={lsel.has(it.id)}
-              aria-label={t.pickRow}
+              aria-label={nameOf(it, app.lang)}
               onchange={(e) => {
                 pickRow(it.id, e.currentTarget.checked);
               }}
@@ -1256,11 +1256,24 @@
     align-items: center;
     justify-content: center;
     transition: 0.15s;
+    position: relative;
   }
 
   .note-x:hover {
     background: var(--surface);
     color: var(--txt);
+  }
+
+  /* P12: 20px of paint, 44px of target - the same `PageHead.svelte`
+     `.homebtn::after` shape, off `PageHead.svelte:133-141`. */
+  .note-x::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
   }
 
   .nfield:has(textarea:placeholder-shown) .note-x {

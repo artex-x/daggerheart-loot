@@ -123,11 +123,24 @@
     justify-content: center;
     padding: 0;
     transition: 0.15s;
+    position: relative;
   }
 
   .selx:hover {
     background: rgb(216 171 94 / 16%);
     border-color: var(--gold);
+  }
+
+  /* P12: 26px of paint, 44px of target - the same `PageHead.svelte`
+     `.homebtn::after` shape, off `PageHead.svelte:133-141`. */
+  .selx::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
   }
 
   .selacts {

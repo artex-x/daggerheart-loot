@@ -362,14 +362,7 @@ async function focusWalk(page, where) {
          * a live-shared defect ported on purpose, checked against
          * index.html before it was recorded. */
         if (width === 1180 || lang === 'ru') {
-          const allow = [];
-          /* D3 - the storage notice's dismiss button lives inside its own
-           * <summary>, drawn on both lists routes. */
-          if (/^#\/lists(\/|$)/.test(asked)) allow.push('nested-interactive');
-          /* D8 - the alternate tables' column headers skip from <h1> to <h4>. */
-          if (asked === '#/tables/alt_item' || asked === '#/tables/alt_consumable')
-            allow.push('heading-order');
-          const violations = await axe(page, { allow });
+          const violations = await axe(page);
           for (const v of violations) {
             ok(false, where + ': axe ' + v.id + ' (' + String(v.impact) + ') x' + String(v.nodes.length));
           }

@@ -6,7 +6,7 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (B11's
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Twenty-two cases, no ancestor. */
+ * real second tab to mean anything at all. Twenty-three cases, no ancestor. */
 const fs = require('fs');
 const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
@@ -55,7 +55,7 @@ async function newListFromCard() {
 async function newListFromBar() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables');
-  await d.click('Выбрано'); // ticking a row is not this case's point
+  await d.tick('Первоклассный Спальный Мешок'); // ticking a row is not this case's point
   await d.press('Добавить в список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
@@ -85,6 +85,50 @@ async function newListFromModal() {
   ok(!!card, '3 (модалка): .modal-card не найден');
   if (box && card) {
     ok(inside(box, card), '3 (модалка): поле ввода лежит вне .modal-card (DEBT.md D6)');
+  }
+  await ctx.close();
+}
+
+/** 23. The add-to-list menu inside the record modal must not force a scroll
+ *  on the card article, nor spill outside the modal - DEBT.md D6, paid off:
+ *  the toggle (`:scope > .btn`), not whichever button happens to render
+ *  first, is what the placement effect measures, and the modal's own card is
+ *  what it clips against. Кольцо Тишины at 1100x900 with no lists seeded is
+ *  the exact case D6's own evidence measured (`.card.scrollTop` 109). */
+async function addToListMenuStaysInModal() {
+  const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
+  await d.open('#/tables');
+  await d.press('Кольцо Тишины');
+  ok(await d.has('Добавить в список'), '23 (меню в модалке): модалка не открылась');
+  await d.press('Добавить в список');
+
+  const scrollTop = await page.evaluate(
+    () => document.querySelector('.card')?.scrollTop ?? null
+  );
+  ok(scrollTop === 0, '23 (меню в модалке): .card.scrollTop = ' + scrollTop + ', ожидали 0');
+
+  const box = (sel) =>
+    page.evaluate((s) => {
+      const el = document.querySelector(s);
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: r.x, y: r.y, w: r.width, h: r.height };
+    }, sel);
+
+  const card = await box('.modal-card');
+  ok(!!card, '23 (меню в модалке): .modal-card не найден');
+  const menu = await box('.dropmenu');
+  ok(!!menu, '23 (меню в модалке): .dropmenu не найден');
+  if (menu && card) {
+    ok(inside(menu, card), '23 (меню в модалке): меню лежит вне .modal-card (DEBT.md D6)');
+  }
+
+  await d.press('+ Новый список');
+  const input = await newListInputBox(page);
+  ok(!!input, '23 (меню в модалке): форма нового списка не открылась');
+  ok(!!input?.focused, '23 (меню в модалке): поле ввода не в фокусе');
+  if (input && card) {
+    ok(inside(input, card), '23 (меню в модалке): поле ввода лежит вне .modal-card (DEBT.md D6)');
   }
   await ctx.close();
 }
@@ -515,7 +559,7 @@ async function historyBackForward() {
 async function selectionBarGeometry() {
   const { ctx, page, d } = await fresh({ width: 1000, height: 900 });
   await d.open('#/tables/core_item');
-  await d.click('Выбрано');
+  await d.tick('Первоклассный Спальный Мешок');
   const gap = await page.evaluate(() => {
     const w = document.querySelector('.selbarwrap');
     return w ? Math.abs(w.getBoundingClientRect().bottom - window.innerHeight) : null;
@@ -525,7 +569,7 @@ async function selectionBarGeometry() {
 
   const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 360, height: 840 });
   await d2.open('#/tables/core_item');
-  await d2.click('Выбрано');
+  await d2.tick('Первоклассный Спальный Мешок');
   const spill = await page2.evaluate((w) => {
     const out = [];
     document.querySelectorAll('.selbarwrap .btn').forEach((b) => {
@@ -798,7 +842,8 @@ const CASES = [
   ['19 (плитки без картинок)', tileGeometryNoArt],
   ['20 (предупреждение на 320)', storageNoticeAt320],
   ['21 (фокус кнопки)', buttonFocusSurvivesRerender],
-  ['22 (справка и выбор списка)', moneyHelpAndPressedPicker]
+  ['22 (справка и выбор списка)', moneyHelpAndPressedPicker],
+  ['23 (меню в модалке)', addToListMenuStaysInModal]
 ];
 
 (async () => {
@@ -817,6 +862,6 @@ const CASES = [
   }
 
   await closeBrowser().catch(() => {});
-  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nсостояния реального ввода (dist/): все двадцать два пройдены');
+  console.log(rep.failed ? '\n' + rep.failed + ' FAILED' : '\nсостояния реального ввода (dist/): все двадцать три пройдены');
   process.exit(rep.failed ? 1 : 0);
 })();

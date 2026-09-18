@@ -10,7 +10,7 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { descOf, eqLine, nameOf } from '../lib/i18n.js';
-  import { cardBadges, isFrameRecord, srcLabel } from '../lib/label.js';
+  import { cardBadges, srcLabel } from '../lib/label.js';
   import type { Index } from '../lib/data.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
@@ -76,7 +76,7 @@
           it,
           lang,
           { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore },
-          { noType: true, noTier: isFrameRecord(it) }
+          { noType: true }
         )}</span
       >{/if}{#if descOf(it, lang)}{@const parts = descParts(it, lang)}<span
         >{#each parts as part, i (i)}{#if i > 0}<br

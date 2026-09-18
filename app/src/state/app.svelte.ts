@@ -179,6 +179,22 @@ export class AppState {
   readonly sel = new SvelteSet<string>();
 
   /**
+   * "Select all" for whatever ids are on screen - always all of one list: the
+   * whole table for a plain body, one section's own rows where the body is
+   * split, or a shared list's own rows. Ticks every id if any of them is not
+   * already ticked, unticks them otherwise. P8: `TablesPage` and `SearchPage`
+   * each carried an identical copy of this; moved here once `SharedListPage`
+   * became a third caller, rather than adding a fourth.
+   */
+  toggleAllIn(ids: readonly string[]): void {
+    const on = ids.some((id) => !this.sel.has(id));
+    for (const id of ids) {
+      if (on) this.sel.add(id);
+      else this.sel.delete(id);
+    }
+  }
+
+  /**
    * What the open shared page shows - the live `S.shared` (app.js 51,
    * 3140-3141). Set by `SharedListPage` while mounted, null on every other
    * page: the route gate the live `metaForKey` applies (`route is l/ and no

@@ -108,6 +108,10 @@ const withA = (hash = '#/lists/a', over: Partial<Env> = {}): Env =>
 const readLists = (storage: { get: (k: string) => string | null }): StoredList[] =>
   JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
 
+/** listA's rows in order (P2 - each row checkbox is now named after its own
+ *  record, not the generic "Выбрать позицию"). */
+const ROW_NAMES = ['Спальный мешок', 'Зелье', 'Меч'];
+
 describe('the address', () => {
   it('rewrites #/lists/<id> to the players’ payload on mount', async () => {
     /* R4-1/PF3: the rewrite is debounced 150ms trailing, so this now waits
@@ -451,7 +455,7 @@ describe('select-all', () => {
     render(App, { env: withA() });
     expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toBeInTheDocument();
 
-    const rows = screen.getAllByRole('checkbox', { name: 'Выбрать позицию' });
+    const rows = ROW_NAMES.map((name) => screen.getByRole('checkbox', { name }));
     expect(rows).toHaveLength(3);
     await userEvent.click(rows[0] as HTMLElement);
     expect(screen.getByText('Выбрано 1')).toBeInTheDocument();
@@ -474,7 +478,7 @@ describe('select-all', () => {
       })
     });
 
-    await userEvent.click(screen.getAllByRole('checkbox', { name: 'Выбрать позицию' })[0]!);
+    await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[0]! }));
     expect(screen.getByText('Выбрано 1')).toBeInTheDocument();
 
     router.navigate('#/lists/b');
@@ -489,8 +493,7 @@ describe('select-all', () => {
 describe('the actions under a ticked selection', () => {
   /* listA's rows in order: ci1 (unpriced), cc1 (750 gold), q1 (unpriced). */
   const tickRow = async (n: number): Promise<void> => {
-    const rows = screen.getAllByRole('checkbox', { name: 'Выбрать позицию' });
-    await userEvent.click(rows[n] as HTMLElement);
+    await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[n]! }));
   };
 
   it('shows Цены and Удалить (N) once a row is ticked, and hides them again', async () => {
@@ -620,8 +623,7 @@ describe('the actions under a ticked selection', () => {
     await tickRow(0);
     await tickRow(1);
     await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
-    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
-    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
+    await expectNoA11yViolations(container);
   });
 });
 
@@ -933,15 +935,13 @@ describe('the textarea seed', () => {
 describe('accessibility', () => {
   it('has no violations on the page as it stands, priced and noted', async () => {
     const { container } = render(App, { env: withA() });
-    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
-    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
+    await expectNoA11yViolations(container);
   });
 
   it('has no violations with the roll panel open and a hit shown', async () => {
     const { container } = render(App, { env: withA() });
     await userEvent.click(screen.getByText('Бросок по списку'));
     await userEvent.click(screen.getByRole('button', { name: 'На единицу больше' }));
-    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
-    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
+    await expectNoA11yViolations(container);
   });
 });

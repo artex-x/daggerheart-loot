@@ -74,7 +74,16 @@
   let lastTable = $state<TableId>('core_item');
   $effect(() => {
     const route = app.route;
-    if (route.kind === 'tables' && route.table) lastTable = route.table;
+    if (route.kind === 'tables' && route.table) {
+      /* Style only: this effect's own dependency is `app.route`, never
+         `lastTable` itself, but writing a `$state` from inside an effect
+         that also reads reactive state reads better with the "this is a
+         write, not a two-way binding" intent made explicit, the same as
+         `SearchPage.svelte`'s reset effect already does. */
+      untrack(() => {
+        lastTable = route.table as TableId;
+      });
+    }
   });
   const table = $derived(
     app.route.kind === 'tables' ? (app.route.table ?? lastTable) : lastTable
@@ -201,18 +210,6 @@
     if (!query) return facPassed;
     return facPassed.filter((it) => matches(it, query, statLine, hay));
   });
-
-  /** "Select all" always means all of one list - the whole table for the
-   *  plain body, or one section's own rows where the body is split.
-   *  `TableRows` computes its own checkbox state; this only has to carry the
-   *  toggle out to the shared selection. */
-  function toggleAllIn(ids: readonly string[]): void {
-    const on = ids.some((id) => !app.sel.has(id));
-    for (const id of ids) {
-      if (on) app.sel.add(id);
-      else app.sel.delete(id);
-    }
-  }
 
   async function copyTableLink(): Promise<void> {
     await app.copied(
@@ -530,12 +527,13 @@
           <SectionHead
             label={s.label}
             title={t.copySection}
+            heading={2}
             oncopy={() => {
               void copySectionLink(s.key);
             }}
           />
           {#each s.cols as col (col.key)}
-            <h4 class="altcol {col.key}">{col.label}</h4>
+            <h3 class="altcol {col.key}">{col.label}</h3>
             <TableRows
               entries={col.entries}
               {view}
@@ -598,7 +596,7 @@
             open = it;
           }}
           ontoggleall={(ids: string[]) => {
-            toggleAllIn(ids);
+            app.toggleAllIn(ids);
           }}
         />
       </div>
@@ -622,7 +620,7 @@
         open = it;
       }}
       ontoggleall={(ids: string[]) => {
-        toggleAllIn(ids);
+        app.toggleAllIn(ids);
       }}
     />
   {/if}

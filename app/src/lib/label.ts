@@ -30,8 +30,19 @@ export function badgeKind(it: Record_): 'item' | 'cons' {
   return it.kind === 'consumable' ? 'cons' : 'item';
 }
 
-/** Campaign-frame records are presented as setting material even when a
- * starter (notably f95) carries ordinary equipment metadata too. */
+/** Whether a record belongs to a campaign frame - `it.frame` names it, or
+ *  `it.src` marks the table as a whole one.
+ *
+ *  D11, paid off: this used to guard six sites that hid a frame record's tier
+ *  and switched its source label to a full path, on the strength of a comment
+ *  ("presented as setting material") that turned out to assert intent with no
+ *  evidence behind it - an identical piece of armour prints its tier when it
+ *  sits in `eq` and hides it when it sits in a frame table, and nothing a
+ *  reader can see explains the difference. The owner settled on printing the
+ *  tier like any other equipment (Q6); this predicate is kept for what still
+ *  legitimately needs it - locating a frame record in a fixture or a test,
+ *  and `whereFrom`'s own path-building, which is a different question (where
+ *  a record sits in the navigation, not what it hides). */
 export function isFrameRecord(it: Record_): boolean {
   return !!it.frame || it.src === 'frame';
 }
@@ -109,10 +120,14 @@ export function srcName(key: string, lang: Lang): string {
  *
  * A table row's badge names the community, because other communities sit
  * beside it and the book is obvious. A card leaves the table and goes to the
- * table alone, so a community record also names the book it came from.
+ * table alone, so a community record also names the book it came from. A
+ * frame record used to get the same treatment (D11, paid off) - the tag
+ * `srcLabel` gives it is already the frame's own name, not a generic word, so
+ * it names the card's source exactly as any other piece of equipment's tag
+ * does.
  */
 export function printSrc(it: Record_, lang: Lang): string {
-  return isFrameRecord(it) || it.src === 'community' ? whereFrom(it, lang) : srcLabel(it, lang);
+  return it.src === 'community' ? whereFrom(it, lang) : srcLabel(it, lang);
 }
 
 export function srcLabel(it: Record_, lang: Lang): string {

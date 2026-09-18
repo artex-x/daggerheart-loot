@@ -170,7 +170,7 @@ describe('arrival, colour', () => {
     expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм - как у обычной игральной.'
+        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной игральной.'
       )
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
@@ -422,7 +422,7 @@ describe('a second sheet', () => {
     expect(sheets[0]?.querySelectorAll('.pcard.blank')).toHaveLength(0);
     expect(
       screen.getByText(
-        'Карточек: 10. Листов A4: 2. Размер карты 63×88 мм - как у обычной игральной.'
+        'Карточек: 10. Листов A4: 2. Размер карты 63×88 мм — как у обычной игральной.'
       )
     ).toBeInTheDocument();
     expect(document.querySelector('.warnnote')).toBeNull();

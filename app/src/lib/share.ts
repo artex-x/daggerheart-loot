@@ -18,7 +18,6 @@ import { dict, type Dict } from './dict.js';
 import type { Index } from './data.js';
 import { descHtml, esc } from './desc.js';
 import { descOf, eqLine, nameOf } from './i18n.js';
-import { isFrameRecord } from './label.js';
 import type { ListEntryMeta, ListShape } from './listLink.js';
 import { moneyMode, priceText } from './money.js';
 import type { Lang, Record_ } from './types.js';
@@ -83,12 +82,7 @@ export function shareName(it: Record_, lang: Lang): string {
 
 function statLine(it: Record_, lang: Lang): string {
   const t = dict(lang);
-  return eqLine(
-    it,
-    lang,
-    { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore },
-    { noTier: isFrameRecord(it) }
-  );
+  return eqLine(it, lang, { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore });
 }
 
 /**

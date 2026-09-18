@@ -154,7 +154,7 @@ const gap = (a, b) => {
   console.log('заливка выбранной плитки');
   await d.open('#/tables/eq_weapon');
   await d.press('Сеткой');
-  await d.click('Выбрано');
+  await d.tick('Палаш');
   const selFill = await page.evaluate(() => {
     const el = document.querySelector('.tilewrap.sel .tile');
     return el ? getComputedStyle(el).backgroundColor : null;

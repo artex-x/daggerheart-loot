@@ -92,11 +92,18 @@ const at = (over: Partial<Env> = {}): Env =>
 const type = (text: string): Promise<void> =>
   userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию…'), text);
 
+/** Every row's own tick checkbox, in document order - P2 named each one
+ *  after its own record instead of the generic "Выбрано", so the group is
+ *  found by elimination: every checkbox except select-all's own (which
+ *  keeps a name, "Выбрать все (N)", from its wrapping `<label>`). */
+const rowCheckboxes = (): HTMLElement[] =>
+  screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
+
 describe('arrival', () => {
   it('draws the head, the focused box and the hint - no results, no help button', () => {
     render(App, { env: at() });
     expect(screen.getByRole('heading', { name: 'Поиск' })).toBeInTheDocument();
-    expect(screen.getByText(/Поиск по всем 1091 позиции сразу/)).toBeInTheDocument();
+    expect(screen.getByText(/Поиск сразу по 1091 позиции/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Открывать этот раздел/ })).toBeInTheDocument();
 
@@ -128,6 +135,9 @@ describe('a query narrows, in catalogue order', () => {
     ]);
     expect(screen.getByRole('checkbox', { name: 'Выбрать все (2)' })).toBeInTheDocument();
     expect(screen.queryByText('Начните вводить запрос')).not.toBeInTheDocument();
+    /* P7: the shown-of-total line only earns its place once the cap bites -
+       two results out of two has nothing to say. */
+    expect(screen.queryByText(/из 2/)).not.toBeInTheDocument();
   });
 });
 
@@ -154,7 +164,7 @@ describe('the stat line', () => {
     render(App, { env: at() });
     await type('Вплотную');
     expect(screen.getByRole('button', { name: /Клинок Эха/ })).toBeInTheDocument();
-    expect(screen.getAllByRole('checkbox', { name: 'Выбрано' })).toHaveLength(1);
+    expect(rowCheckboxes()).toHaveLength(1);
   });
 });
 
@@ -196,6 +206,9 @@ describe('the cap', () => {
     expect(shown[0]).toHaveAttribute('data-row', 'm0');
     expect(shown[299]).toHaveAttribute('data-row', 'm299');
     expect(container.querySelector('[data-row="m300"]')).not.toBeInTheDocument();
+    /* P7: the unsliced count, so a broad query says which of "these are all
+       the matches" and "these are the first 300 of 305" it is. */
+    expect(screen.getByText('300 из 305')).toBeInTheDocument();
     expect(screen.getByText('Выбрать все (300)')).toBeInTheDocument();
     await fireEvent.click(container.querySelector('.selall input') as HTMLInputElement);
     await tick();
@@ -266,9 +279,7 @@ describe('selection', () => {
     const env = at();
     const { container } = render(App, { env });
     await type('Ветра');
-    await userEvent.click(
-      screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
-    );
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
     env.router.navigate('#/tables');
     await tick();
@@ -326,9 +337,7 @@ describe('axe', () => {
   it('has no violations with results and a row ticked', async () => {
     const { container } = render(App, { env: at() });
     await type('Ветра');
-    await userEvent.click(
-      screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
-    );
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     await expectNoA11yViolations(container);
   });
 

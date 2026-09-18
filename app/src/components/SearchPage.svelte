@@ -46,30 +46,25 @@
   const query = $derived(foldQuery(q.trim()));
   const statLine = $derived(statLineFor(app.lang, t));
   const hay = $derived(hayFor(statLine));
-  const found = $derived.by(() =>
+  /* P7: the unsliced match count, kept so a broad query can say "these are
+     the first 300 of N" instead of stopping at 300 with nothing on screen to
+     tell that apart from "this is all of them" - the same shown-of-total
+     line the table filter strip already prints (`FilterBar.svelte`'s
+     `.fcount`, `t.outOf`). */
+  const matched = $derived.by(() =>
     !index || !query
       ? []
-      : index.searchable
-          .filter((it) => app.kinds[kindOf(it)] && matches(it, query, statLine, hay))
-          .slice(0, 300)
+      : index.searchable.filter(
+          (it) => app.kinds[kindOf(it)] && matches(it, query, statLine, hay)
+        )
   );
+  const found = $derived(matched.slice(0, 300));
 
   const KIND_LABEL: Record<Kind, keyof Dict> = {
     item: 'fItems',
     consumable: 'fCons',
     equip: 'fEquip'
   };
-
-  /** "Select all" ticks whatever is on screen and unticks it if it already
-   *  was - `TablesPage.svelte`'s own copy; a third use is where this moves
-   *  to `AppState` (recorded in the handoff's Deferred). */
-  function toggleAllIn(ids: readonly string[]): void {
-    const on = ids.some((id) => !app.sel.has(id));
-    for (const id of ids) {
-      if (on) app.sel.add(id);
-      else app.sel.delete(id);
-    }
-  }
 </script>
 
 <PageHead {app} title={t.search} sub={t.subSearch} help={null} />
@@ -109,6 +104,9 @@
   {:else if !found.length}
     <Empty>{t.nothing}</Empty>
   {:else}
+    {#if matched.length > found.length}
+      <p class="scount">{found.length} {t.outOf} {matched.length}</p>
+    {/if}
     <TableRows
       entries={found.map((it) => ({ it }))}
       view="list"
@@ -125,7 +123,9 @@
       onopen={(it: Record_) => {
         open = it;
       }}
-      ontoggleall={toggleAllIn}
+      ontoggleall={(toggled: string[]) => {
+        app.toggleAllIn(toggled);
+      }}
     />
   {/if}
 {/if}
@@ -145,5 +145,14 @@
 {/if}
 
 <!-- `.miss` moved to `NoData.svelte`, `.panel` to `Panel.svelte` (B10) - the
-     16px margin-bottom is the live inline attribute, passed as `style`. No
-     rule of this component's own remains. -->
+     16px margin-bottom is the live inline attribute, passed as `style`. -->
+
+<style>
+  /* P7 - off `FilterBar.svelte`'s `.fcount`, the shown-of-total line the
+     table filter strip already had: same font, same muted colour. */
+  .scount {
+    margin: 0 0 10px;
+    font: 600 12px/1 var(--mono);
+    color: var(--muted2);
+  }
+</style>

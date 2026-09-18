@@ -137,6 +137,7 @@
             bind:value={draft}
             bind:this={nameInput}
             placeholder={t.listNamePh}
+            aria-label={t.newList}
           />
         </div>
         <Button variant="primary" onclick={create}>{t.create}</Button>
@@ -145,7 +146,12 @@
     <Field label={t.importList}>
       <NumRow>
         <div class="grow">
-          <input type="text" bind:value={importDraft} placeholder={t.importPh} />
+          <input
+            type="text"
+            bind:value={importDraft}
+            placeholder={t.importPh}
+            aria-label={t.importList}
+          />
         </div>
         <Button onclick={restore}>{t.importBtn}</Button>
       </NumRow>

@@ -168,6 +168,13 @@ const at = (over: Partial<Env> = {}): Env =>
 const rows = (): HTMLElement[] =>
   screen.getAllByRole('button', { name: /Кольцо|Плащ|Клинок|Осколок|Пыль/ });
 
+/** Every row's own tick checkbox, in document order - P2 named each one
+ *  after its own record instead of the generic "Выбрано", so the group is
+ *  found by elimination: every checkbox except select-all's own (which
+ *  keeps a name, "Выбрать все (N)", from its wrapping `<label>`). */
+const rowCheckboxes = (): HTMLElement[] =>
+  screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
+
 describe('the index', () => {
   it('opens on core_item, with the book chip on and its two sub-chips shown', () => {
     render(App, { env: at() });
@@ -284,7 +291,7 @@ describe('the view switch', () => {
 describe('selection', () => {
   it('ticks a row, and select-all ticks every row shown', async () => {
     render(App, { env: at() });
-    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     expect(boxes[0]).toBeChecked();
     await userEvent.click(screen.getByRole('checkbox', { name: /Выбрать все/ }));
@@ -293,7 +300,7 @@ describe('selection', () => {
 
   it('unticks a row that was already ticked', async () => {
     render(App, { env: at() });
-    const box = screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement;
+    const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     expect(box).toBeChecked();
     await userEvent.click(box);
@@ -304,7 +311,7 @@ describe('selection', () => {
     render(App, { env: at() });
     const all = screen.getByRole('checkbox', { name: /Выбрать все/ });
     await userEvent.click(all);
-    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    const boxes = rowCheckboxes();
     for (const b of boxes) expect(b).toBeChecked();
     await userEvent.click(screen.getByRole('checkbox', { name: /Выбрать все/ }));
     for (const b of boxes) expect(b).not.toBeChecked();
@@ -313,14 +320,14 @@ describe('selection', () => {
   it('belongs to the table it was made on: a hash change drops it', async () => {
     const env = at();
     render(App, { env });
-    const box = screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement;
+    const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     expect(box).toBeChecked();
     env.router.navigate('#/tables/hnf_item');
     await tick();
     env.router.navigate('#/tables');
     await tick();
-    const again = screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement;
+    const again = rowCheckboxes()[0] as HTMLElement;
     expect(again).not.toBeChecked();
   });
 });
@@ -345,7 +352,7 @@ describe('the selection bar', () => {
 
   it('reads the count, and offers add-to-list, print and copy for one tick', async () => {
     const { container } = render(App, { env: at() });
-    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
 
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
@@ -362,7 +369,7 @@ describe('the selection bar', () => {
 
   it('carries every ticked id, in tick order, on the print link', async () => {
     render(App, { env: at() });
-    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    const boxes = rowCheckboxes();
     await userEvent.click(boxes[1] as HTMLElement);
     await userEvent.click(boxes[0] as HTMLElement);
 
@@ -372,7 +379,7 @@ describe('the selection bar', () => {
 
   it('the cross clears every tick and folds the bar', async () => {
     const { container } = render(App, { env: at() });
-    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
     await userEvent.click(screen.getByRole('button', { name: 'Снять выделение' }));
@@ -390,9 +397,7 @@ describe('the selection bar', () => {
   it('the menu names a single ticked record "лежит в списках"', async () => {
     Element.prototype.scrollIntoView = vi.fn();
     render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) }) });
-    await userEvent.click(
-      screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
-    );
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
     expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
   });
@@ -400,7 +405,7 @@ describe('the selection bar', () => {
   it('the menu names two or more ticked records "Добавить в"', async () => {
     Element.prototype.scrollIntoView = vi.fn();
     render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) }) });
-    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
     await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
@@ -411,7 +416,7 @@ describe('the selection bar', () => {
     Element.prototype.scrollIntoView = vi.fn();
     const storage = memoryStorage({ 'dhloot.lists.v2': TWO_LISTS });
     render(App, { env: at({ storage }) });
-    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
     await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
@@ -426,7 +431,7 @@ describe('the selection bar', () => {
   it('copies both flavours of every ticked record, joined with no OR, and toasts', async () => {
     const clip = fakeClipboard();
     render(App, { env: at({ clipboard: clip }) });
-    const boxes = screen.getAllByRole('checkbox', { name: 'Выбрано' });
+    const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
@@ -440,9 +445,7 @@ describe('the selection bar', () => {
 
   it('toasts an alert when the clipboard refuses', async () => {
     render(App, { env: at({ clipboard: fakeClipboard({ fail: true }) }) });
-    await userEvent.click(
-      screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
-    );
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Не удалось скопировать');
   });
@@ -467,9 +470,7 @@ describe('the selection bar', () => {
     const { container } = render(App, {
       env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) })
     });
-    await userEvent.click(
-      screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
-    );
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
     await expectNoA11yViolations(container);
   });
@@ -569,7 +570,7 @@ describe('the filter', () => {
   });
 
   it('hides reset and the copy-link button while the filter is empty, and keeps both reachable with the panel folded', async () => {
-    render(App, { env: wond() });
+    const { container } = render(App, { env: wond() });
     expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ссылка на фильтры' })).not.toBeInTheDocument();
 
@@ -583,7 +584,10 @@ describe('the filter', () => {
        and .flink outside FilterBar's {#if open} block is that folding the
        panel does not take them with it. */
     await userEvent.click(toggle);
-    expect(screen.queryByRole('button', { name: 'Предметы' })).not.toBeInTheDocument();
+    /* Scoped to the panel: the pill above it also reads "Предметы" now that
+       P2's pill fix hid the pill's own "×" from its accessible name, and the
+       pill is the one control here that is supposed to survive the fold. */
+    expect(container.querySelector('.ffilter')).toBeNull();
     expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ссылка на фильтры' })).toBeInTheDocument();
   });
@@ -603,7 +607,7 @@ describe('the filter', () => {
   });
 
   it('arriving at a filter link opens the panel with that value picked', () => {
-    render(App, {
+    const { container } = render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/wondrous/f_kind-item'),
         data: fakeData(LOOT)
@@ -613,10 +617,13 @@ describe('the filter', () => {
       'aria-expanded',
       'true'
     );
-    expect(screen.getByRole('button', { name: 'Предметы' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+    /* Scoped to the panel: the pill above it also reads "Предметы" now that
+       P2's pill fix hid the pill's own "×" from its accessible name. */
+    expect(
+      within(container.querySelector('.ffilter') as HTMLElement).getByRole('button', {
+        name: 'Предметы'
+      })
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('changing table clears the filter and folds the panel', async () => {
@@ -636,19 +643,19 @@ describe('the filter', () => {
   it('keeps the selection (and the bar) on a filter pick, and drops both on a navigation', async () => {
     const env = wond();
     const { container } = render(App, { env });
-    const box = screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement;
+    const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     expect(box).toBeChecked();
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
 
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
-    expect(screen.getAllByRole('checkbox', { name: 'Выбрано' })[0]).toBeChecked();
+    expect(rowCheckboxes()[0]).toBeChecked();
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
 
     env.router.navigate('#/tables/wondrous');
     await tick();
-    expect(screen.getAllByRole('checkbox', { name: 'Выбрано' })[0]).not.toBeChecked();
+    expect(rowCheckboxes()[0]).not.toBeChecked();
     expect(container.querySelector('.selcount')).not.toBeInTheDocument();
   });
 
@@ -783,7 +790,7 @@ describe('the equipment tables', () => {
   });
 
   it('a filter link arrives with the panel open and both chips pressed', () => {
-    render(App, {
+    const { container } = render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/eq_weapon/f_tier-2.cls-mag'),
         data: fakeData(LOOT)
@@ -793,8 +800,12 @@ describe('the equipment tables', () => {
       'aria-expanded',
       'true'
     );
-    expect(screen.getByRole('button', { name: '2' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: 'Магическое' })).toHaveAttribute(
+    /* Scoped to the filter panel: the pill above it also reads "Магическое"
+       now that P2's pill fix hid the pill's own "×" from its accessible
+       name, so the bare name is ambiguous over the whole screen. */
+    const panel = within(container.querySelector('.ffilter') as HTMLElement);
+    expect(panel.getByRole('button', { name: '2' })).toHaveAttribute('aria-pressed', 'true');
+    expect(panel.getByRole('button', { name: 'Магическое' })).toHaveAttribute(
       'aria-pressed',
       'true'
     );

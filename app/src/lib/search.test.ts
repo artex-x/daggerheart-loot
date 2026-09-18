@@ -228,21 +228,21 @@ describe('the stat line the pages search with', () => {
     expect(ru).not.toBe(en);
   });
 
-  it('drops the tier word for a frame record, matching the live app', () => {
-    /* R0b.4's fifth divergence: statLineFor called eqLine with no `noTier`,
-       so a frame record's search text kept "Ранг N" where live's matches()
-       (app.js:2854) never can - app.js:612's `if (e.tier &&
-       !isFrameRecord(it))` is baked into eqParts itself, so every live
-       consumer of the stat line drops the word for a frame record. Built
-       through statLineFor itself (not a call that mirrors production, the
-       way this file's own top-level `statLine` helper does), so removing
-       the `noTier` argument in search.ts fails this test. */
+  it('keeps the tier word for a frame record (D11, paid off)', () => {
+    /* R0b.4 (2026-09-16) once made this match the live app, which dropped the
+       tier word for frame equipment - app.js:612's `if (e.tier &&
+       !isFrameRecord(it))`. D11 named that a defect, not a rule: an
+       identical piece of armour prints its tier when it sits in `eq` and hid
+       it when it sat in a frame table, with nothing a reader can see to
+       explain the difference. The owner settled on printing it like any
+       other equipment (Q6), so `statLineFor` no longer passes `noTier` at
+       all - this is the inverse of the case R0b.4 added. */
     const frame = index.searchable.find((r) => isFrameRecord(r) && r.eq?.tier === 1) as Record_;
     expect(frame).toBeDefined();
     const line = statLineFor('ru', dict('ru'))(frame);
-    expect(line).not.toContain('Ранг');
+    expect(line).toContain('Ранг');
     expect(
       search(index.searchable, 'ранг 1', statLineFor('ru', dict('ru'))).map((r) => r.id)
-    ).not.toContain(frame.id);
+    ).toContain(frame.id);
   });
 });

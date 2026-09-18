@@ -124,11 +124,12 @@ const AXE_PATH = require.resolve('axe-core/axe.min.js');
  * rule `app/src/test/a11y.ts` cannot answer honestly in jsdom, and the whole
  * reason this suite exists rather than another vitest case.
  *
- * `allow` disables named rules for this one call, the same contract
- * `expectNoA11yViolations` carries - for `nested-interactive` on
- * `#/lists`/`#/lists/a`, where `StorageNotice.svelte`'s dismiss button lives
- * inside its own `<summary>` (`docs/specs/DEBT.md` D3, live-shared markup,
- * ported on purpose). Every other page runs with nothing disabled.
+ * `allow` disables named rules for this one call - kept general for a future
+ * live-shared defect ported on purpose, the same contract
+ * `expectNoA11yViolations` carries. `#/lists`/`#/lists/a` used to need it for
+ * `nested-interactive` (`StorageNotice.svelte`'s dismiss button sat inside
+ * its own `<summary>`, `docs/specs/DEBT.md` D3); paid off, so every caller
+ * currently runs with nothing disabled.
  *
  * Returns violations only - a suite reads `.length` for "found anything" and
  * the array itself to print what.

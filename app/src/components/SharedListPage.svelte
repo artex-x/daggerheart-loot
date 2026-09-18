@@ -121,6 +121,9 @@
     onopen={(r: Record_) => {
       open = r;
     }}
+    ontoggleall={(ids: string[]) => {
+      app.toggleAllIn(ids);
+    }}
   >
     {#snippet after(it: Record_)}
       <HitNote icon="eye" label={t.notePub} text={metaOf(it.id).note} />

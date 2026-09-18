@@ -15,7 +15,7 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
-  import { cardBadges, isFrameRecord, srcLabel } from '../lib/label.js';
+  import { cardBadges, srcLabel } from '../lib/label.js';
   import { upgradeLine } from '../lib/data.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { AltCol, Index } from '../lib/data.js';
@@ -85,7 +85,7 @@
       it,
       lang,
       { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore },
-      { noType: true, noTier: isFrameRecord(it) }
+      { noType: true }
     )
   );
   const parts = $derived(descParts(it, lang));
@@ -176,7 +176,7 @@
       {/each}
     </div>
 
-    {#if ladder.length && !isFrameRecord(it)}
+    {#if ladder.length}
       <!-- Улучшенный / Продвинутый / Легендарный are the same weapon four
            times over, so the card offers the ladder rather than making a
            person search for the next rung. The one they are on is a label
@@ -267,7 +267,13 @@
     background: linear-gradient(180deg, var(--surface2), var(--surface));
     border: 1px solid var(--line);
     border-radius: var(--r);
-    overflow: hidden;
+    /* `clip` rather than `hidden` (D6, paid off): the add-to-list menu's
+       placement effect no longer calls `scrollIntoView` on the wrong button
+       and pulls this article's own scroll position along with it, but
+       `clip` is what stops a programmatic scroll from moving the content at
+       all - `hidden` still creates a scroll container a script can scroll.
+       The rounded corners still clip either way. */
+    overflow: clip;
     display: flex;
     box-shadow: var(--shadow);
     animation: pop 0.28s cubic-bezier(0.2, 0.8, 0.3, 1) both;

@@ -48,7 +48,7 @@ describe('the book a record comes from', () => {
   it('names the frame, not its raw id', () => {
     expect(srcLabel(rec({ src: 'frame', frame: 'beast_feast' }), 'ru')).toBe('Пир зверей');
     expect(srcLabel(rec({ src: 'frame', frame: 'beast_feast' }), 'en')).toBe('Beast Feast');
-    expect(srcLabel(rec({ src: 'frame' }), 'ru')).toBe('Фрейм');
+    expect(srcLabel(rec({ src: 'frame' }), 'ru')).toBe('Сеттинг');
   });
 
   it('names the community, in the language on screen', () => {
@@ -81,6 +81,16 @@ describe("the print card's source line", () => {
     const c = rec({ src: 'community', community: 'Highborne', community_ru: 'Великородное' });
     expect(printSrc(c, 'ru')).toBe('Сообщества · Великородное');
     expect(printSrc(c, 'en')).toBe('Communities · Highborne');
+  });
+
+  it('names only the frame for a campaign-frame record (D11, paid off)', () => {
+    /* Used to print the full path (`Снаряжение · Сеттинги · <frame>`), the
+       same special case the stat line's tier word got - both dropped
+       together once the owner settled on treating frame equipment like any
+       other equipment. */
+    const f = rec({ src: 'frame', frame: 'beast_feast' });
+    expect(printSrc(f, 'ru')).toBe('Пир зверей');
+    expect(printSrc(f, 'en')).toBe('Beast Feast');
   });
 });
 

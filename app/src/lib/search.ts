@@ -12,7 +12,6 @@
  * Pure module: it is handed the records and the stat line, and returns records. */
 
 import { eqLine } from './i18n.js';
-import { isFrameRecord } from './label.js';
 import type { Dict } from './dict.js';
 import type { Lang, Record_ } from './types.js';
 
@@ -31,7 +30,7 @@ export type StatLine = (it: Record_) => string;
  */
 export function statLineFor(lang: Lang, t: Pick<Dict, 'tier' | 'eqTh' | 'eqScore'>): StatLine {
   const labels = { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
-  return (it: Record_): string => eqLine(it, lang, labels, { noTier: isFrameRecord(it) });
+  return (it: Record_): string => eqLine(it, lang, labels);
 }
 
 /**

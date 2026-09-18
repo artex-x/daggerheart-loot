@@ -96,6 +96,23 @@ const LOOT: Loot = {
         rud: 'Знак крови.'
       }
     ],
+    /* A campaign-frame equipment record, shaped like the real f33 - D11,
+       paid off: it used to hide its tier and show a full path instead of a
+       tag, the same special-casing an otherwise identical `eq` record never
+       got. */
+    frames: [
+      {
+        id: 'f1',
+        src: 'frame',
+        frame: 'beast_feast',
+        kind: 'equip',
+        en: 'Quilted Clothing',
+        ende: 'Flexible: +1 to Evasion',
+        ru: 'Стеганая Одежда',
+        rud: 'Гибкое: +1 к Уклонению',
+        eq: { t: 'armor', tier: 1, as: 3, th: [5, 11], line: '' }
+      }
+    ],
     /* Vault of Ages carries the tier word `app.js:3237` prints but the
        Svelte rewrite dropped - an artifact and a cursed object, the two
        shapes the word takes. */
@@ -418,6 +435,14 @@ describe('the path at the top of the page, and the tag on the badge', () => {
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Проклятый предмет');
   });
 
+  it('prints the tier for campaign-frame equipment, and the frame as a tag (D11, paid off)', () => {
+    const { container } = render(App, { env: at('f1') });
+    const sub = container.querySelector('p.page-sub');
+    expect(sub?.childNodes[0]?.textContent?.trim()).toBe(
+      'Прочее · Сеттинги · Пир зверей · Ранг 1'
+    );
+  });
+
   it('has no axe violations on a community record or a Vault of Ages artifact', async () => {
     const { container, unmount } = render(App, { env: at('cm1') });
     await expectNoA11yViolations(container);
@@ -620,6 +645,24 @@ describe('the tier ladder', () => {
       'aria-expanded',
       'false'
     );
+  });
+
+  it('closes the add-to-list menu on Escape and returns focus to its toggle, leaving the modal open (P4a)', async () => {
+    render(App, { env: at('q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
+    const toggle = within(screen.getByRole('dialog')).getByRole('button', {
+      name: 'Добавить в список'
+    });
+    await userEvent.click(toggle);
+    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveFocus();
+    /* Only the menu closed - a second, unclaimed Escape is what closes the
+       modal, the native <dialog> behaviour this must not fight. */
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });
 

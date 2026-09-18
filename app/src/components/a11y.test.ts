@@ -128,10 +128,6 @@ const STATES: {
   route: string;
   storage?: Record<string, string>;
   enter?: (() => Promise<void>) | undefined;
-  /** D3: rules to disable for this state alone - the lists index and the
-   *  list page both draw the storage notice, whose dismiss button lives
-   *  inside its own `<summary>` (ported live markup, not an accident). */
-  allow?: string[];
 }[] = [
   {
     what: 'the record over the page, which has the focus trap',
@@ -240,10 +236,13 @@ const STATES: {
         { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
       ])
     },
-    /* `press` grips buttons; the row checkbox is reached by role instead. */
+    /* `press` grips buttons; the row checkbox is reached by role instead -
+       P2 named it after its own record rather than the generic "Выбрано",
+       so the first one is found by excluding select-all's own (named
+       "Выбрать все (N)" by its wrapping `<label>`). */
     enter: async () => {
       await userEvent.click(
-        screen.getAllByRole('checkbox', { name: 'Выбрано' })[0] as HTMLElement
+        screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'))[0] as HTMLElement
       );
       await press('Добавить в список');
     }
@@ -260,8 +259,7 @@ const STATES: {
     /* `press` grips buttons; "подробнее" sits in an `<i>` inside the
        disclosure's `<summary>`, which jsdom toggles open the same way a
        browser does on a click. */
-    enter: () => userEvent.click(screen.getByText('подробнее')),
-    allow: ['nested-interactive']
+    enter: () => userEvent.click(screen.getByText('подробнее'))
   },
   {
     what: 'a list page with a priced, noted entry and the roll panel open',
@@ -287,8 +285,7 @@ const STATES: {
        which jsdom does not expose as role "button" the way a browser does -
        the same reason the lists index's own disclosure above is clicked by
        its text. */
-    enter: () => userEvent.click(screen.getByText('Бросок по списку')),
-    allow: ['nested-interactive']
+    enter: () => userEvent.click(screen.getByText('Бросок по списку'))
   },
   {
     what: "a list page with a row's note box open",
@@ -296,8 +293,7 @@ const STATES: {
     storage: {
       'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
     },
-    enter: () => press('Заметка'),
-    allow: ['nested-interactive']
+    enter: () => press('Заметка')
   },
   {
     what: 'a list from another player, with both notes and a noted entry',
@@ -327,16 +323,13 @@ const STATES: {
 ];
 
 describe('states reached by pressing something', () => {
-  it.each(STATES)(
-    'has no axe violations on $what',
-    async ({ route, storage, enter, allow }) => {
-      const { container } = render(App, {
-        env: at(route, storage ? { storage: memoryStorage(storage) } : {})
-      });
-      await enter?.();
-      await expectNoA11yViolations(container, allow ? { allow } : {});
-    }
-  );
+  it.each(STATES)('has no axe violations on $what', async ({ route, storage, enter }) => {
+    const { container } = render(App, {
+      env: at(route, storage ? { storage: memoryStorage(storage) } : {})
+    });
+    await enter?.();
+    await expectNoA11yViolations(container);
+  });
 });
 
 /**

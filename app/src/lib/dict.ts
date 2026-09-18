@@ -13,7 +13,7 @@
  * advance - an unused string is a translation somebody maintains for nothing,
  * and the old dictionary accumulated five of those. */
 
-import type { Lang } from './types.js';
+import type { Lang, Section } from './types.js';
 
 const ru = {
   /* The chrome that has no text of its own, and so has no other place to be
@@ -58,7 +58,11 @@ const ru = {
   srcWond: 'Wondrous',
   srcDread: 'Dread',
   srcVoa: 'Vault of Ages',
-  srcFrame: 'Фрейм',
+  /* P13: matches `frameF`/`subFrames` below - one word for the concept in
+     Russian, verified against ru.daggerheart.su/frame ("Сеттинги" is both
+     that page's own title and its term for one entry on it), where it used
+     to read "Фрейм" here alone. */
+  srcFrame: 'Сеттинг',
   srcComm: 'Сообщества',
   copyLink: 'Скопировать ссылку',
   sendAll: 'Отправить',
@@ -144,7 +148,7 @@ const ru = {
   voaArtifact1: 'Артефакт',
   voaCursed1: 'Проклятый предмет',
   unique: 'Уникальное',
-  uniqueHint: 'В книге стоит одним рангом - лестницы улучшений у этой вещи нет',
+  uniqueHint: 'В книге стоит одним рангом — лестницы улучшений у этой вещи нет',
   homeHint: 'Открывать этот раздел при запуске',
   /* The same button once it is on: the live app renames it rather than only
      filling it in, so a screen reader hears the state and not just the offer. */
@@ -200,8 +204,12 @@ const ru = {
   subTables:
     'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.',
   subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
+  /* P15: "по всем 1091 позициям" would agree "всем" with the numeral, but a
+     compound numeral ending in "один" (1091, not 11) takes the singular
+     regardless - dropping "всем" removes the clash instead of forcing a
+     disagreement either way. */
   subSearch:
-    'Поиск по всем 1091 позиции сразу — добыча, расходники и снаряжение, на русском и на английском.',
+    'Поиск сразу по 1091 позиции — добыча, расходники и снаряжение, на русском и на английском.',
 
   searchPh: 'Поиск по названию или описанию…',
   tableLink: 'Ссылка на таблицу',
@@ -261,7 +269,7 @@ const ru = {
   printNow: 'Отправить на печать',
   printLink: 'Ссылка на набор',
   printTitle: 'Печать карточек',
-  printSub: 'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм - как у обычной игральной.',
+  printSub: 'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм — как у обычной игральной.',
   printNote:
     'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
   printEmpty: 'Печатать нечего: в адресе не нашлось ни одной вещи.',
@@ -314,7 +322,7 @@ const ru = {
   listNotFound: 'Список не найден',
   listNotFoundSub: 'Возможно, он удалён или открыт в другом браузере.',
   rollBy: 'Бросок по списку',
-  rollHint: 'Бросьте кубик и введите результат - или нажмите кнопку',
+  rollHint: 'Бросьте кубик и введите результат — или нажмите кнопку',
   clear: 'Сбросить',
   note: 'Заметка',
   listNote: 'Заметки',
@@ -332,7 +340,6 @@ const ru = {
   qty: 'Кол-во',
   gold: 'Золото',
   position: 'Позиция в списке',
-  pickRow: 'Выбрать позицию',
   dragHint: 'Перетащите, чтобы изменить порядок',
   removeItem: 'Убрать из списка',
   removedItem: '«%s» убран',
@@ -354,7 +361,7 @@ const ru = {
   batchDeleted: 'Убрано из списка',
   guessApply: 'Проставить эти цены',
   guessWhy:
-    'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества - у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
+    'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества — у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
   guessNoTier: 'нечем оценить',
   guessNoRarity: 'редкость не указана',
   guessDone: 'Цены проставлены'
@@ -578,7 +585,7 @@ const en: Dict = {
   importPh: 'Paste a list link',
   dismiss: 'Dismiss',
   readMore: 'more',
-  listCreated: 'List “%s” created',
+  listCreated: 'List "%s" created',
   noLists: 'No lists yet — create one above',
   share: 'Share',
   del: 'Delete',
@@ -591,20 +598,20 @@ const en: Dict = {
     'Something else on this site - another build, a browser extension, or another tab - seems to have written them. The original content was kept under a separate key rather than lost; further changes save again from a clean list.',
   localOnlyTitle: 'Lists live in this browser only.',
   localOnly:
-    'The app has no server. Clearing site data, a private window or another device, and the lists are gone. To keep one, press “Your own link”: the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone — it carries whatever you wrote under “GM only”. Send players the “Players’ link” or the result of “Copy text”: only what is written under “For players” goes there. The browser’s own address bar holds the players’ link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
+    'The app has no server. Clearing site data, a private window or another device, and the lists are gone. To keep one, press "Your own link": the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone — it carries whatever you wrote under "GM only". Send players the "Players\' link" or the result of "Copy text": only what is written under "For players" goes there. The browser\'s own address bar holds the players\' link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
   deleteConfirm: 'Delete the list "%s"? This cannot be undone.',
   listDeleted: 'List "%s" deleted',
-  playersLinkCopied: 'Players’ link copied — it carries no GM notes',
+  playersLinkCopied: "Players' link copied — it carries no GM notes",
   badShare: 'The link is damaged or was built from a different data version.',
   droppedItems: 'Skipped %n items - no longer in the data',
 
   rename: 'List name',
-  sharePlayers: 'Players’ link',
+  sharePlayers: "Players' link",
   shareGm: 'Your own link',
   gmLinkCopied: 'Link with every note copied — this one is for you',
   listCopied: 'List copied',
   listEmptyHint:
-    'Nothing here yet. Open Tables or Search, tick what you need and press “Add to list” — or do it straight from an item card.',
+    'Nothing here yet. Open Tables or Search, tick what you need and press "Add to list" — or do it straight from an item card.',
   listNotFound: 'List not found',
   listNotFoundSub: 'It may have been deleted, or it lives in another browser.',
   rollBy: 'Roll on this list',
@@ -615,7 +622,7 @@ const en: Dict = {
   noteHead: 'Note',
   notePub: 'For players',
   noteHid: 'GM only',
-  notePubHint: 'travels with the text and the players’ link',
+  notePubHint: "travels with the text and the players' link",
   noteHidHint: 'stays with you',
   listNotePhPub: 'e.g. the shop is shut until morning',
   listNotePhHid: 'e.g. entries 9-10 are kept under the counter',
@@ -626,10 +633,9 @@ const en: Dict = {
   qty: 'Qty',
   gold: 'Gold',
   position: 'Position in the list',
-  pickRow: 'Select entry',
   dragHint: 'Drag to reorder',
   removeItem: 'Remove from the list',
-  removedItem: '“%s” removed',
+  removedItem: '"%s" removed',
   undo: 'Undo',
   pickAll: 'Select all',
   pickedN: 'Selected',
@@ -659,3 +665,19 @@ const DICTS: Record<Lang, Dict> = { ru, en };
 export function dict(lang: Lang): Dict {
   return DICTS[lang];
 }
+
+/** D5/O3, paid off: which dictionary key names a section, for the tab title
+ *  (`<section label> — <docTitle>`). Mirrors `TabBar.svelte`'s own `TABS`
+ *  pairing exactly - the exhaustive `Record<Section, ...>` is what keeps the
+ *  two from drifting apart the moment a tenth section arrives. */
+export const SECTION_LABEL: Record<Section, keyof Dict> = {
+  'roll/std': 'std',
+  'roll/alt': 'alt',
+  'roll/wondrous': 'wondrous',
+  'roll/dread': 'dread',
+  'roll/voa': 'voa',
+  'roll/community': 'community',
+  tables: 'tables',
+  lists: 'lists',
+  search: 'search'
+};

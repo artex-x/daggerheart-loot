@@ -20,6 +20,7 @@
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import { printHash } from '../lib/hash.js';
+  import { nameOf } from '../lib/i18n.js';
   import type { ShareBlock } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
@@ -70,7 +71,7 @@
      browser's, and reaches `close` the same way. -->
 <dialog
   bind:this={dialog}
-  aria-label={app.t.close}
+  aria-label={nameOf(it, app.lang)}
   onclose={handleClose}
   onclick={(e) => {
     if (e.target === dialog) dialog?.close();

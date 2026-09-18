@@ -12,7 +12,7 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TRAIT, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
-  import { isFrameRecord, printSrc } from '../lib/label.js';
+  import { printSrc } from '../lib/label.js';
   import {
     cardArt,
     CARD_DIR,
@@ -38,11 +38,7 @@
   const armor = $derived(!!(eq && eq.t === 'armor'));
   const burden = $derived(eq && !armor && eq.bu ? eq.bu : 0);
   const tier = $derived(
-    eq?.tier && !isFrameRecord(it)
-      ? String(eq.tier)
-      : typeof it.tier === 'number'
-        ? String(it.tier)
-        : ''
+    eq?.tier ? String(eq.tier) : typeof it.tier === 'number' ? String(it.tier) : ''
   );
   const artifact = $derived((it.tier === 'A' || it.tier === 'C') && !eq);
   const tag1 = $derived(

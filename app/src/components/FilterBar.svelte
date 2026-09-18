@@ -85,7 +85,7 @@
         title={t.dropValue}
         onclick={() => {
           onpick(c.group, c.value);
-        }}>{c.label}<i>&times;</i></button
+        }}>{c.label}<i aria-hidden="true">&times;</i></button
       >
     {/each}
     {#if chosen.length}

@@ -77,8 +77,7 @@ describe('the head and the panel', () => {
     expect(screen.getByPlaceholderText('Например: клад дракона')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Ссылка на список')).toBeInTheDocument();
     expect(screen.getByText('Списков пока нет — создайте первый выше')).toBeInTheDocument();
-    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
-    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
+    await expectNoA11yViolations(container);
   });
 
   it('opens the four help paragraphs, two of them with two bold runs', async () => {
@@ -125,12 +124,14 @@ describe('the head and the panel', () => {
   it('folds the notice again on a language switch, as the live re-render does', async () => {
     const { container } = render(App, { env: at() });
     await userEvent.click(screen.getByText('подробнее'));
-    expect(container.querySelector<HTMLDetailsElement>('details.warn')?.open).toBe(true);
+    /* D3, paid off: `<details>` moved to a plain child of `.warn`, which now
+       carries the dismiss button as a sibling rather than as a class of its
+       own. */
+    expect(container.querySelector<HTMLDetailsElement>('.warn details')?.open).toBe(true);
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(container.querySelector<HTMLDetailsElement>('details.warn')?.open).toBe(false);
+    expect(container.querySelector<HTMLDetailsElement>('.warn details')?.open).toBe(false);
     expect(screen.getByText('more')).toBeInTheDocument();
-    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
-    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
+    await expectNoA11yViolations(container);
   });
 });
 
@@ -172,8 +173,7 @@ describe('a card per list', () => {
       'Лавка в порту0Список пуст'
     ]);
 
-    // D3: the notice's dismiss button lives inside its own <summary>, ported live markup.
-    await expectNoA11yViolations(container, { allow: ['nested-interactive'] });
+    await expectNoA11yViolations(container);
   });
 });
 

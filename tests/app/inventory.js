@@ -109,7 +109,6 @@ const NAME = {
     whatIsThis: 'Как это работает',
     printHint: 'Собрать карточки для печати: девять на лист A4',
     printLink: 'Ссылка на набор',
-    pickRow: 'Выбрать позицию',
     prices: 'Цены',
     /* Exact, not the default fuzzy match: the action row's own delete-list
        button is named exactly "Удалить", and `d.click()` prefers an exact
@@ -159,7 +158,6 @@ const NAME = {
     whatIsThis: 'How this works',
     printHint: 'Lay these out for printing: nine to an A4 sheet',
     printLink: 'Link to this set',
-    pickRow: 'Select entry',
     prices: 'Prices',
     delOne: 'Delete (1)',
     clearPriceOne: 'Clear price (1)',
@@ -222,6 +220,12 @@ const noted = {
 
 /* The empty list, on its own - `#/lists/b`. */
 const oneEmpty = { 'dhloot.lists.v2': JSON.stringify([LISTS[1]]) };
+
+/** P2: a list row's checkbox is now named after its own record rather than
+ *  the generic "Выбрать позицию", so a spec ticking `seven`/`noted`'s row 1
+ *  or row 2 has to click the record's own Russian name (ci1, ci2). */
+const ROW1_CI1 = 'Первоклассный Спальный Мешок';
+const ROW2_CI2 = 'Пронзительная Свирель';
 
 const STATES = [
   { id: '#/i/ci1', route: '#/i/ci1', why: 'a loot record' },
@@ -565,7 +569,7 @@ const STATES = [
     route: '#/tables',
     why: 'the bar, one row ticked',
     enter: async (d) => {
-      await d.click('Выбрано');
+      await d.tick(ROW1_CI1);
     }
   },
   {
@@ -574,8 +578,8 @@ const STATES = [
     why: "the bar's own add-to-list menu, above it, right-aligned",
     storage: two,
     enter: async (d) => {
-      await d.click('Выбрано');
-      await d.click('Выбрано', 1);
+      await d.tick(ROW1_CI1);
+      await d.tick(ROW2_CI2);
       await d.click('Добавить в список');
     }
   },
@@ -584,7 +588,7 @@ const STATES = [
     route: '#/tables',
     why: 'what the app says after copying the selection',
     enter: async (d) => {
-      await d.click('Выбрано');
+      await d.tick(ROW1_CI1);
       await d.click('Скопировать');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
@@ -852,7 +856,7 @@ const STATES = [
     storage: seven,
     why: 'the bar on, "Выбрано 1", Цены with its caret, Удалить (1) - at 375 the 640px override drops the pair to its own full-width line',
     enter: async (d) => {
-      await d.click(NAME.ru.pickRow);
+      await d.tick(ROW1_CI1);
     }
   },
   {
@@ -861,7 +865,7 @@ const STATES = [
     storage: noted,
     why: 'row 2 (750, bags) ticked: the percentage row at -20 with "Сделать скидку" and the hint, the note, one guess row with its band, "Проставить эти цены", "Убрать цену (1)"',
     enter: async (d) => {
-      await d.click(NAME.ru.pickRow, 1);
+      await d.tick(ROW2_CI2);
       await d.click(NAME.ru.prices);
     }
   },
@@ -871,7 +875,7 @@ const STATES = [
     storage: seven,
     why: 'row 1 ticked: no percentage row, no clear button - the two `priced` branches off',
     enter: async (d) => {
-      await d.click(NAME.ru.pickRow);
+      await d.tick(ROW1_CI1);
       await d.click(NAME.ru.prices);
     }
   },
@@ -881,7 +885,7 @@ const STATES = [
     storage: seven,
     why: 'the panel folded, row 1 priced, the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"',
     enter: async (d) => {
-      await d.click(NAME.ru.pickRow);
+      await d.tick(ROW1_CI1);
       await d.click(NAME.ru.prices);
       await d.click(NAME.ru.applyPrices);
     },
@@ -894,7 +898,7 @@ const STATES = [
     storage: seven,
     why: 'six rows, the bar off, the toast "Убрано из списка (1)" with "Вернуть"',
     enter: async (d) => {
-      await d.click(NAME.ru.pickRow);
+      await d.tick(ROW1_CI1);
       await d.click(NAME.ru.delOne);
     },
     /* a 7000ms toast; arrived at afresh per language - see this file's header */
@@ -993,7 +997,7 @@ const STATES = [
   {
     id: '#/search ~ capped',
     route: '#/search',
-    why: 'the 300 cap: "Выбрать все (300)" over the first 300',
+    why: 'the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it (P7)',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'а');
     }
@@ -1012,7 +1016,10 @@ const STATES = [
     why: 'the bar over search',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'меч');
-      await d.click('Выбрано');
+      /* P2: the first hit for "меч" - verified against the real catalogue,
+         `search.ts`'s own matcher (`node -e` against `data.json`, both
+         directly and through `buildIndex`/`matches`/`hayFor`). */
+      await d.tick('Камень Доблести');
     }
   },
   {

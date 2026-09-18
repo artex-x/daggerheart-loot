@@ -9,13 +9,24 @@
     label: string;
     title: string;
     oncopy: () => void;
+    /** D8, paid off: the alternate tables follow this label with their own
+     *  `<h3 class="altcol">` column pair, which used to sit straight under
+     *  the page's `<h1>` with nothing between - a two-level jump `axe`'s
+     *  `heading-order` rule caught. Every other caller leaves this unset and
+     *  keeps the plain label: none of them has a heading following it, so
+     *  there is no sequence to complete. */
+    heading?: 2 | 3;
   }
 
-  const { label, title, oncopy }: Props = $props();
+  const { label, title, oncopy, heading }: Props = $props();
 </script>
 
 <div class="tsec-head">
-  <span class="lbl">{label}</span>
+  {#if heading}
+    <svelte:element this={'h' + String(heading)} class="lbl">{label}</svelte:element>
+  {:else}
+    <span class="lbl">{label}</span>
+  {/if}
   <button type="button" class="tsec-link" {title} aria-label={title} onclick={oncopy}>
     <Icon name="link" />
   </button>
@@ -30,7 +41,10 @@
   }
 
   .tsec-head .lbl {
-    margin-bottom: 8px;
+    /* Zeroes a heading element's own default top/bottom margin too - D8's
+       `<h2>`/`<h3>` need to read exactly like the plain `<span>` every other
+       caller still gets. */
+    margin: 0 0 8px;
   }
 
   .tsec-link {

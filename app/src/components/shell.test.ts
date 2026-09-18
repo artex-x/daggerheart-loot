@@ -3,21 +3,83 @@
  * Every one of these would need a browser, a real localStorage and a real
  * address bar without them. With them it is a function of an Env, which is the
  * whole argument for Phase 3 in one file. */
-import { cleanup, render, screen } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import Toast from './Toast.svelte';
 import { expectNoA11yViolations } from '../test/a11y.js';
-import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import {
+  brokenStorage,
+  fakeData,
+  fakeEnv,
+  memoryRouter,
+  memoryStorage
+} from '../ports/index.js';
 import type { Env } from '../ports/index.js';
+import type { Loot } from '../lib/data.js';
+import type { StoredList } from '../lib/lists.js';
 import { AppState } from '../state/app.svelte.js';
 
 afterEach(cleanup);
 
 const at = (hash: string, over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter(hash), ...over });
+
+const LOOT: Loot = {
+  items: {
+    core_item: [
+      {
+        id: 'ci1',
+        src: 'core',
+        kind: 'item',
+        roll: 1,
+        en: 'Bedroll',
+        ende: '',
+        ru: 'Спальный мешок',
+        rud: ''
+      }
+    ]
+  },
+  eq: [],
+  refs: {}
+};
+
+const listA: StoredList = { id: 'a', name: 'Тайник', ids: ['ci1'], created: 1 };
+
+describe('the tab title (D5/O3)', () => {
+  it("titles a record page with the record's own name", () => {
+    render(App, { env: at('#/i/ci1', { data: fakeData(LOOT) }) });
+    expect(document.title).toBe('Спальный мешок — Генератор лута — Daggerheart');
+  });
+
+  it('keeps the plain title on a record that is not found', () => {
+    render(App, { env: at('#/i/nope', { data: fakeData(LOOT) }) });
+    expect(document.title).toBe('Генератор лута — Daggerheart');
+  });
+
+  it("titles an owned list page with the list's own name", async () => {
+    render(App, {
+      env: at('#/lists/a', {
+        data: fakeData(LOOT),
+        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) })
+      })
+    });
+    /* R4-1/PF3: `app.openList` is only set once ListPage's own debounced
+       URL sync runs, 150ms after mount. */
+    await waitFor(() => {
+      expect(document.title).toBe('Тайник — Генератор лута — Daggerheart');
+    });
+  });
+
+  it('keeps the plain title on a page that is neither a record, a section, nor a list', () => {
+    /* A print sheet lights no tab (`AppState.section` is null for `route.kind
+       === 'print'`) and opens no one's own list either. */
+    render(App, { env: at('#/print/ci1', { data: fakeData(LOOT) }) });
+    expect(document.title).toBe('Генератор лута — Daggerheart');
+  });
+});
 
 describe('the frame', () => {
   it('names the tab bar and the language group for a screen reader', () => {
@@ -53,7 +115,10 @@ describe('the frame', () => {
     expect(document.documentElement.lang).toBe('ru');
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(document.documentElement.lang).toBe('en');
-    expect(document.title).toBe('Daggerheart Loot Generator');
+    /* D5/O3: a section titles the tab with its own name too, not only a
+       record - "Standard rules — Daggerheart Loot Generator", not the plain
+       title alone. */
+    expect(document.title).toBe('Standard rules — Daggerheart Loot Generator');
   });
 });
 

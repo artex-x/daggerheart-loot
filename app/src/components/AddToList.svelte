@@ -182,13 +182,20 @@
     void tick().then(() => {
       if (!root) return;
       const menu = root.querySelector<HTMLElement>('.dropmenu');
-      /* The first `.btn` inside `.seldrop`, as `placeMenu` reads it: the
-         toggle while the menu shows chips, the form's own "Создать" once the
-         form is open. This is the live reading, kept on purpose (D6) - the
-         more correct measurement (the toggle itself) is Phase 8's. */
-      const btn = root.querySelector<HTMLElement>('.btn');
+      /* D6, paid off: the toggle, not whichever `.btn` happens to render
+         first - `.dropmenu` now sits after the toggle in the markup, but
+         `:scope >` makes the intent explicit rather than relying on order. */
+      const btn = root.querySelector<HTMLElement>(':scope > .btn');
       if (!menu || !btn) return;
-      const below = window.innerHeight - btn.getBoundingClientRect().bottom;
+      /* D6, paid off: measured against the nearest clipping box - the
+         record modal's own card where there is one, the window everywhere
+         else - rather than always against the window, which is what let the
+         menu's own placement effect send `scrollIntoView` looking for room
+         past the modal's edge and drag the card's scroll position along
+         with it. */
+      const clip = root.closest<HTMLElement>('.modal-card');
+      const clipBottom = clip ? clip.getBoundingClientRect().bottom : window.innerHeight;
+      const below = clipBottom - btn.getBoundingClientRect().bottom;
       const need = menu.getBoundingClientRect().height + 16;
       up = below < need;
       /* `classList.toggle` precedes `scrollIntoView` in `placeMenu` - the class
@@ -197,6 +204,28 @@
       menu.scrollIntoView({ block: 'nearest' });
     });
   });
+
+  /* P4(a): Escape closes the menu and returns focus to the toggle that
+     opened it, the way any other disclosure on this page already does -
+     without it, the browser's own default (nothing, since a plain `<div>`
+     menu has no dismissal of its own) left a keyboard user with no way out
+     but Tab. A `<svelte:window>` listener rather than one on `.seldrop`
+     itself - a `<div>` with its own key handler is a non-interactive
+     element eslint-plugin-svelte's a11y rules flag either way (a role that
+     satisfies one rule trips the other), and `app.menuFor` is a single
+     global value, so only the one instance whose own menu is actually open
+     ever does anything here. `preventDefault` on top of the early return -
+     not `stopPropagation`, which only matters between listeners on the same
+     target - keeps the record modal's own native Escape-to-close from also
+     firing on the same press when this menu is open inside it; a second,
+     unclaimed Escape then closes the modal normally. */
+  function onKeydown(e: KeyboardEvent): void {
+    if (e.key !== 'Escape' || !open) return;
+    e.preventDefault();
+    app.menuFor = '';
+    newListFor = false;
+    root?.querySelector<HTMLElement>(':scope > .btn')?.focus();
+  }
 
   /* Any click outside `.seldrop`/`.dropmenu` closes the menu - checked
      against `app.menuFor === key` at the moment the click arrives, so a press
@@ -243,8 +272,17 @@
 </script>
 
 <svelte:document onclick={onDocumentClick} />
+<svelte:window onkeydown={onKeydown} />
 
 <div class="seldrop" bind:this={root}>
+  <Button
+    size="sm"
+    variant={primary ? 'primary' : 'plain'}
+    on={open}
+    expanded={open}
+    caret
+    onclick={toggle}><Icon name="plus" />{t.addToList}</Button
+  >
   {#if open}
     <div class="dropmenu" class:long={showSearch} class:up>
       <span class="lbl">{label}</span>
@@ -282,6 +320,7 @@
             bind:this={newInput}
             value={draft}
             placeholder={t.listNamePh}
+            aria-label={t.newList}
             oninput={(e) => {
               draft = e.currentTarget.value;
             }}
@@ -294,14 +333,6 @@
       {/if}
     </div>
   {/if}
-  <Button
-    size="sm"
-    variant={primary ? 'primary' : 'plain'}
-    on={open}
-    expanded={open}
-    caret
-    onclick={toggle}><Icon name="plus" />{t.addToList}</Button
-  >
 </div>
 
 <style>
