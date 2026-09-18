@@ -2611,3 +2611,13 @@ tree but not landed.
   (untracked, another task's) left untouched throughout.
 - Session end partial progress (if any): none - this remediation is a
   committed, pushed, gate-verified single-commit boundary (`6b841f5`).
+- Cleanup performed / retained artifacts (orchestrator, session of
+  2026-09-18): nothing written into the tree. CI failure artifacts for runs
+  `35318680003`, `35324207396` and `35325098367` were downloaded by the owner
+  and unpacked in this session's temp directory only - the three
+  `test-output/app-golden---shard-{2,3,4}-4.log` files are what the decoded
+  payload table in `context.md` was read from. They are **not** retained
+  anywhere durable, deliberately: the decoded evidence and the run ids are in
+  `context.md`, and GitHub expires the artifacts themselves. `issues/56/`
+  (untracked, another task's) left untouched all session. No branches, no
+  probe PRs, no `_site/`.
