@@ -100,7 +100,12 @@ export function browserClipboard(win: ClipboardWin = window): ClipboardPort {
       if (!rich) return false;
       try {
         /* The promise is handed to ClipboardItem rather than awaited first:
-           Safari drops the user gesture if anything is awaited in between. */
+           Safari drops the user gesture if anything is awaited in between.
+           That guarantee only holds end to end if the caller does the same -
+           `png` has to be the still-pending promise from the click handler,
+           not one already awaited on the way here (RecordActions.svelte's
+           `copyImage` awaits it only after this call, to tell a tainted
+           canvas apart from a clipboard refusal). */
         await rich.write([new rich.Item({ 'image/png': png() })]);
         return true;
       } catch {
@@ -130,9 +135,18 @@ export function fakeClipboard(opts: { fail?: boolean } = {}): FakeClipboard {
       last.text = t.plain;
       return Promise.resolve(ok);
     },
-    writeImage: () => {
+    /* Mirrors `browserClipboard`'s own contract: the promise is awaited here,
+       inside the write, not by the caller - a caller relies on that to tell a
+       rejected `png()` (nothing was ever offered) apart from a clipboard that
+       saw a real blob and still declined it. */
+    writeImage: async (png) => {
+      try {
+        await png();
+      } catch {
+        return false;
+      }
       last.image = true;
-      return Promise.resolve(ok);
+      return ok;
     }
   };
 }

@@ -1119,15 +1119,17 @@ const { ok } = rep;
   pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
   await cardFit(dEn, bwEn, colourEn, ' en');
 
-  /* ---------- the card's own name (P16, Q2 settled) ----------
+  /* ---------- the card's own name, capped at two lines (P16, Q2 settled) ----------
      "Look first, then shrink": inspected before any code was written, at
      1100px, both languages, both layouts, against the design's four longest
      names (`docs/specs/FEATURES.md`, "Print") - every one rendered at one
      line, so `.pc-name` was left out of `fit()`'s shrink ladder rather than
-     given a floor nothing needs yet. This pins the longest of the four so a
-     future name (or a data edit lengthening this one) that pushes past one
-     line fails loudly instead of silently. */
-  console.log('имя карточки в одну строку (P16)');
+     given a floor nothing needs yet. Q2 set the cap at two lines, not one -
+     this pins all four so a future name (or a data edit lengthening one of
+     these) that pushes past the two-line cap fails loudly instead of
+     silently; the "all four at one line" measurement itself stays in
+     `docs/specs/FEATURES.md`, "Print". */
+  console.log('имя карточки не длиннее двух строк (P16)');
   async function nameLines(d2, page2, langTag, restoreW, restoreH) {
     await d2.viewport(1100, 900);
     try {
@@ -1137,8 +1139,13 @@ const { ok } = rep;
           await d2.click(langTag === ' en' ? 'Black and white' : 'Чёрно-белая');
           await d2.settle();
         }
-        const lines = await page2.$eval('.pcard[data-pid="cm26"] .pc-name', (e) => e.getClientRects().length);
-        ok(lines === 1, 'имя cm26' + langTag + (bwOn ? ' ч/б' : '') + ' заняло больше одной строки: ' + lines);
+        for (const pid of ['cm26', 'f60', 'hi62', 'ci81']) {
+          const lines = await page2.$eval(`.pcard[data-pid="${pid}"] .pc-name`, (e) => e.getClientRects().length);
+          ok(
+            lines <= 2,
+            'имя ' + pid + langTag + (bwOn ? ' ч/б' : '') + ' превысило потолок в две строки: ' + lines
+          );
+        }
       }
     } finally {
       /* This driver is reused below at its own original width - leaving it

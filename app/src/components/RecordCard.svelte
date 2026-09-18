@@ -342,9 +342,15 @@
     transition: transform 0.25s;
   }
 
-  /* D18, paid off: this component's own inset-offset override deleted - the
-     global `:focus-visible` rule (tokens.css) already reaches every
-     control, at the one radius and offset the owner chose. */
+  /* D18 mostly paid off, but this one override was not a no-op: `.card-media`
+     is a real button flush against `.card`, and `.card` is `overflow: clip`.
+     The global rule's `+2px` offset (tokens.css) draws the ring outside this
+     button's border box, which is outside `.card`'s padding box, so it is
+     clipped on three sides and survives as a single line on one interior
+     edge. The inset `-2px` keeps the ring inside the button instead. */
+  .card-media:focus-visible {
+    outline-offset: -2px;
+  }
 
   .card-body {
     padding: 13px 15px 14px;

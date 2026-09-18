@@ -271,9 +271,10 @@ Six modes. Each keeps its own input in memory only.
   shrink"): the four longest names measured against the design
   (`#/print/cm26-f60-hi62-ci81` at 1100px, both languages, both layouts) all
   render at one line, so nothing needed shrinking and none was added.
-  `tests/app/print.js` pins `cm26`'s name at one line so a future name (or a
-  data edit lengthening this one) that pushes past it fails loudly rather
-  than silently. No deviation from Figma nodes `714-42387`/`3773-90792` was
+  `tests/app/print.js` pins all four ids at a two-line cap (Q2's actual
+  setting, not the one-line measurement) so a future name (or a data edit
+  lengthening one of these) that pushes past it fails loudly rather than
+  silently. No deviation from Figma nodes `714-42387`/`3773-90792` was
   needed.
 
 ## Chrome

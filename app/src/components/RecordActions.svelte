@@ -58,20 +58,29 @@
    * wording. Once a blob exists, a clipboard that still refuses it (no
    * `ClipboardItem`, a permission refusal) gets the live app's other
    * fallback: a download, `imgSaved`/`imgFailed` rather than `copyFailed`.
+   *
+   * `pngOf`'s promise reaches `writeImage` unawaited, same as `clipboard.ts`'s
+   * own `writeImage`->`ClipboardItem` handoff and for the same reason -
+   * awaiting anything before touching the clipboard drops the user gesture on
+   * Safari. `writeImage` already turns a rejected `png()` into `copied ===
+   * false`, so awaiting the same promise afterwards is what tells "tainted"
+   * (the canvas itself failed) apart from "refused" (a real blob existed and
+   * the clipboard declined it) - not a second attempt.
    */
   async function copyImage(): Promise<void> {
     const src = artSrc(it.img, app.artBroken(it.id));
+    const png = app.env.image.pngOf(src);
+    const copied = await app.env.clipboard.writeImage(() => png);
+    if (copied) {
+      app.say(t.imgCopied);
+      return;
+    }
     let blob: Blob;
     try {
-      blob = await app.env.image.pngOf(src);
+      blob = await png;
     } catch {
       const { text, html } = share(it, index, app.lang, { extra });
       await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.imgTainted);
-      return;
-    }
-    const copied = await app.env.clipboard.writeImage(() => Promise.resolve(blob));
-    if (copied) {
-      app.say(t.imgCopied);
       return;
     }
     try {
