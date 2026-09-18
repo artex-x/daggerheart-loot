@@ -196,7 +196,9 @@ byte-identical, nine cards per A4, colour and black-and-white still distinct.
 **Three blockers are NOT in this table and are NOT B12's** - they go to B8's
 own one remediation cycle, with `B8-R1` and `B8-R2` riding along because both
 touch `tests/app/print.js`, which that pass already opens. Recorded here only
-so the register shows they were seen:
+so the register shows they were seen. **All five, `done 480c380`** - B8's one
+remediation cycle is now spent; see `issues/phase-8/handoff.md`, "B8
+remediation".
 
 - **BL-1**: D18 deleted the one `:focus-visible` override that was not
   redundant. `.card-media` (`RecordCard.svelte:345-347`) is a real `<button>`
@@ -206,6 +208,12 @@ so the register shows they were seen:
   sides. The plan's step 10 said "the five **8px** overrides" - this one was
   not 8px. No instrument here can see it: `sweep.js`'s `focusWalk` reads
   `getComputedStyle().outline`, which still reports a ring an ancestor clips.
+  `done 480c380`: the `.card-media:focus-visible { outline-offset: -2px }`
+  rule restored with the reason stated inline. Fixed by reasoning, not by any
+  gate - no instrument in this repository can see an outline clipped by an
+  ancestor (`focusWalk` reads computed style, goldens read structure, axe
+  checks neither); a human eye or a screenshot still confirms it, and that
+  confirmation is owed, not done here.
 - **BL-2**: `RecordActions.svelte:72` now awaits `pngOf` **before** touching
   the clipboard, defeating the gesture rule `ports/clipboard.ts:102-104`
   documents ("the promise is handed to ClipboardItem rather than awaited
@@ -215,15 +223,29 @@ so the register shows they were seen:
   copy to a download. Every gate runs Chromium and the fallback masks it, so
   nothing would ever report it. The comment in `clipboard.ts` is now false for
   its only caller, which is the worse half.
+  `done 480c380`: `copyImage()` restructured to the reviewer's shape -
+  `pngOf`'s promise reaches `writeImage` unawaited, and is only awaited
+  afterwards to tell a tainted canvas apart from a clipboard refusal.
+  `clipboard.ts`'s comment gained the caller-side half of the invariant.
+  The existing D10/D14/D15 tests initially **failed** under the restructure -
+  not because the restructure was wrong, but because `fakeClipboard.writeImage`
+  ignored its `png` argument entirely and always reported success, which is
+  not how the real `browserClipboard.writeImage` behaves. Fixed the fake, not
+  the tests, per the dispatch's own instruction: `writeImage` now actually
+  awaits `png()` and returns `false` on rejection, mirroring the real port.
+  All three tests then passed unchanged.
 - **BL-3**: `docs/specs/COVERAGE.md:67` (the `noart` row) still calls "share
   attaches no file" an impossible case that "never passes a file". D22 makes
   `send()` pass one, so the spec is false on both the fact and the reason a
   case was dropped.
+  `done 480c380`: the clause replaced with a pointer to `record.test.ts`'s
+  "attaches no file for a record with no art" / "attaches the picture where
+  there is art" cases; the stale line citation dropped.
 
 | id | where | what |
 |---|---|---|
-| B8-R1 | `tests/app/print.js:1141` | *(rides B8's remediation)* Asserts `lines === 1`, but owner decision Q2 set the cap at **two** lines and the plan's own wording was "pinning `cm26` at two lines". As shipped it is a change-detector where a cap was asked for: a legitimately longer name, or a data edit lengthening this one within the design's tolerance, fails the browser suite though the layout is correct. `ok(lines <= 2, ...)` with a message naming the two-line cap. Keep the measured "all four at one line, 2026-09-18" fact where it is, in `FEATURES.md` "Print". |
-| B8-R2 | `tests/app/print.js:1131-1155` | *(rides B8's remediation)* The committed `nameLines()` **is** the P16 measurement (same route, same 1100px, same `getClientRects().length`, both languages, both layouts), so the uncommitted scratchpad script costs nothing for `cm26`. But the route renders `cm26-f60-hi62-ci81` and the helper reads only `cm26`, so "the four longest names all render at one line" rests on a deleted script. Loop the four ids inside the existing `$eval` - two lines, zero extra page loads. |
+| B8-R1 | `tests/app/print.js:1141` | *(rides B8's remediation)* Asserts `lines === 1`, but owner decision Q2 set the cap at **two** lines and the plan's own wording was "pinning `cm26` at two lines". As shipped it is a change-detector where a cap was asked for: a legitimately longer name, or a data edit lengthening this one within the design's tolerance, fails the browser suite though the layout is correct. `ok(lines <= 2, ...)` with a message naming the two-line cap. Keep the measured "all four at one line, 2026-09-18" fact where it is, in `FEATURES.md` "Print". `done 480c380`. |
+| B8-R2 | `tests/app/print.js:1131-1155` | *(rides B8's remediation)* The committed `nameLines()` **is** the P16 measurement (same route, same 1100px, same `getClientRects().length`, both languages, both layouts), so the uncommitted scratchpad script costs nothing for `cm26`. But the route renders `cm26-f60-hi62-ci81` and the helper reads only `cm26`, so "the four longest names all render at one line" rests on a deleted script. Loop the four ids inside the existing `$eval` - two lines, zero extra page loads. `done 480c380`: looped `cm26`/`f60`/`hi62`/`ci81` inside the same `$eval`/`ok` pair. |
 | B8-R3 | `app/src/ports/image.ts:45-51`, `RecordActions.svelte` | The 2000 ms `toBlob` watchdog can fire on a slow-but-fine encode, and `copyImage` maps *any* `pngOf` rejection to `imgTainted` - so a contended machine encoding a large source gives the user a tainted-canvas story for a slow encode and silently loses the picture. 2000 ms is defensible for card art; the residual risk is the wording. The code already builds distinct `Error` messages and `copyImage` discards them - name the two causes apart, or raise the watchdog and document the measured encode time. |
 | B8-R4 | `app/src/ports/image.ts` (`browserImage().download`), `vite.config.mts` | New code exercised by nothing: no unit test imports `browserImage`, the file is coverage-excluded, and the browser path cannot reach it (`states.js` case 10 runs on a build that taints, so `writeImage` is never reached, let alone refused). The comment updated in the same commit now overstates the exclusion - "exercised for real by `states.js`'s copy-image case" is true of `pngOf`, not of `download`. The plan's step 1 offered "narrow the exclusion **or** add the rejection-path test"; the rejection path got real browser coverage, the download did not. A jsdom test on `download` with `URL.createObjectURL`/`revokeObjectURL` stubbed (asserting the `<a download>` name, the click, and the element's removal), and trim the comment's claim to `pngOf`. |
 | B8-R5 | (proof, not a file) | D1 and D18 are **global CSS** reaching every rendered page, but B8's local gates were `app/states`, `app/print`, `sweep 1180` and two golden probes. `app/hues`, `app/typo`, `app/contracts`, `stub`, the other sweep widths and the four golden shards have not run against this tree. Nothing in the review's reading suggests movement (goldens are structure-only; hues reads computed colours, which a 0s transition only stabilises). **CI is the outstanding proof** - check the full browser matrix on the B8 commits or the remediation. |

@@ -2,33 +2,58 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress - **B7's one remediation cycle is spent and
-  pushed.** B1-B8 committed and pushed as before (`e7c7b50`, `44b1761`,
-  `3bc605d`, the B2-review remediation batch, `0a3d9fb`/`446e45b`,
-  `112bd07`/`571b041`, `370fec2`/`11066f0`, `e80a793`/`dba6755`, B7's own
-  review `8e43c92`, `3c0fff8`/`d946f8b`). This session fixed B7 review's
-  four blockers (BL-0..BL-3) - the only items that cycle authorised - as one
-  commit, `6b50945 fix(phase-8): B7 remediation - CI fixture, stale coverage
-  docs, ladder coverage`, on top of `d946f8b`. Nits were explicitly out of
-  scope for this pass and were not touched.
+- Task status: in_progress - **B8's one remediation cycle is spent and
+  pushed.** B1-B8 plus B7's remediation committed and pushed as before
+  (`e7c7b50`, `44b1761`, `3bc605d`, the B2-review remediation batch,
+  `0a3d9fb`/`446e45b`, `112bd07`/`571b041`, `370fec2`/`11066f0`,
+  `e80a793`/`dba6755`, B7's own review `8e43c92`, `3c0fff8`/`d946f8b`,
+  `6b50945`/`17e23ac`, `8de4698`). This session fixed B8 review's three
+  blockers (BL-1..BL-3) plus its two riders (B8-R1, B8-R2, both in
+  `tests/app/print.js`) - the full set that cycle authorised - as one
+  commit, `480c380 fix(phase-8): B8 remediation - focus ring clipping,
+  gesture-safe copy, stale spec/test claims`. Nits (`B8-R3`..`B8-R6`,
+  `B8-N1`..`B8-N8`) were explicitly out of scope for this pass and were not
+  touched - they stay in `issues/phase-8/nits.md`, "Outstanding - B12's
+  scope".
+- An untracked, unrelated commit (`c90f082 docs(phase-8): record the timed
+  owned-list golden flake, with decoded evidence`, `issues/phase-8/
+  context.md` only, 57 lines) appeared on `origin/main` between this
+  remediation's dispatch (HEAD `8de4698`) and its first `git push` - it
+  landed mid-session, timestamped inside this session's own `npm run check`
+  run. It is docs-only and touches no file this remediation touches, so the
+  push was a clean fast-forward with no conflict, but its presence means
+  `CLAUDE.md`'s "one session at a time per working tree" rule may not have
+  held here - flagging for the orchestrator to confirm nothing else is
+  running against this tree, not re-investigated further by this pass.
 - Gate basis for this land: `rtk npm run check` (one foreground call,
   timeout 600000, no pipe) - green: 45 test files, 1131/1131 tests, coverage
-  96.75 stmts / 89.05 branch / 97.15 funcs / 97.41 lines, every threshold
+  96.77 stmts / 89.05 branch / 97.21 funcs / 97.42 lines, every threshold
   green, format/lint/svelte-check/derived/selftest/tools all green. Also
-  `node tests/run-all.js app/contracts` (the suite that caught BL-0 on CI) -
-  green, 252.1s: "все наборы прошли за 252с (в 8 потока)".
-- Last agent: implementer (2026-09-18, B7 remediation - full implementation,
+  `rtk node tests/run-all.js app/print` (its own foreground call) - green,
+  164.3s: "все наборы прошли за 164с (в 8 потока)". Two cheap golden probes
+  (`node tests/app/golden.js --only=#/i/`, 13 states; `--only=#/print/`, 9
+  states - both need `MSYS_NO_PATHCONV=1` on this Windows/git-bash host, or
+  the leading `#/i/`/`#/print/` gets mangled by MSYS path conversion) both
+  came back "без изменений" - no golden moved, confirming the review's own
+  "no golden can have moved" claim for this remediation's changes too.
+- Last agent: implementer (2026-09-18, B8 remediation - full implementation,
   commit, push, handoff update).
 - Branch: `main`
-- Base / starting commit for this remediation: `d946f8b` (HEAD at dispatch,
-  = `origin/main`, CI-red on `fa56576` for BL-0 only). HEAD is now
-  `6b50945`, pushed and confirmed equal to `origin/main`. CI can be expected
-  green on this push: `app/contracts` - the suite CI failed on - passed
-  locally against the fixed fixture, and nothing else in this remediation
-  touches CI-relevant files.
+- Base / starting commit for this remediation: `8de4698` (HEAD at dispatch,
+  = `origin/main` per the orchestrator). HEAD is now `480c380`, pushed and
+  confirmed equal to `origin/main` (`git rev-parse HEAD origin/main` agree).
 - Review: not required for this remediation (no trigger fired - it is a
-  fixture/doc/test-coverage fix inside an already-reviewed batch's own
-  remediation cycle, not a new batch). B8's own review has not run yet.
+  CSS-only fix, a promise-ordering fix with no name/role/control moved, and
+  two doc/test corrections inside an already-reviewed batch's own
+  remediation cycle, not a new batch).
+- **One thing this pass cannot prove and does not claim proved**: BL-1's fix
+  is correct by reasoning (the CSS cascade/clipping argument in the commit
+  message and in `nits.md`), not by any gate. No instrument in this
+  repository can see an outline clipped by an ancestor - `sweep.js`'s
+  `focusWalk` reads `getComputedStyle().outline`, which still reports a ring
+  an ancestor clips; goldens read structure; axe checks neither. A human eye
+  or a screenshot confirming `.card-media`'s ring is drawn inside `.card` at
+  both `.full` and `.compact` is still owed.
 - Next batch: **B9** - language and format: `tests/` and `tools/`. See
   `plan.md`, "B9" and "Next batch (implement-ready)" below.
 
@@ -2060,21 +2085,137 @@ tree but not landed.
   run list --branch main --limit 1` before starting B9 if that confirmation
   matters to the next session.
 
+### B8 remediation - the review's three blockers (BL-1..BL-3), plus B8-R1/B8-R2
+- What this fixed, by blocker:
+  - **BL-1:** `RecordCard.svelte`'s `.card-media:focus-visible` inset offset,
+    deleted by D18 as one of five redundant overrides, restored on its own -
+    the other four (`RowMain`, `Seg`, `ListPage`, `StorageNotice`) stayed
+    deleted; they are genuine no-ops. `.card-media` is a real `<button>`
+    flush against `.card`, and `.card` is `overflow: clip` - the global
+    rule's `+2px` offset (`tokens.css:160-164`) draws the ring outside the
+    button's border box and so outside `.card`'s padding box, clipped on
+    three sides; the restored `-2px` keeps it inside. The new rule carries a
+    comment stating the reason inline, and notes the plan's step 10 mislabeled
+    this override as one of "the five 8px overrides" (it was not 8px). CSS
+    only - no golden can move, and the golden probe below confirms none did.
+    **Not verified visually** - see "Status", "One thing this pass cannot
+    prove".
+  - **BL-2:** `RecordActions.svelte`'s `copyImage()` restructured to the
+    reviewer's shape: `const png = app.env.image.pngOf(src);` starts the
+    promise without awaiting it, `const copied = await
+    app.env.clipboard.writeImage(() => png);` hands that still-pending
+    promise straight to the clipboard call (preserving the user gesture on
+    Safari, per `clipboard.ts:102-104`'s own documented invariant), and only
+    after that call settles is `png` awaited again (`try { blob = await png;
+    } catch { ... }`) to tell a tainted canvas (`pngOf` itself rejected, the
+    `imgTainted` text fallback) apart from a clipboard refusal of a real blob
+    (the `imgSaved`/`imgFailed` download fallback). `clipboard.ts`'s own
+    `writeImage` comment gained a clause naming the caller-side half of the
+    gesture invariant it had stated only from its own side, so this exact
+    regression (a caller awaiting `pngOf` before calling `writeImage`, as B8
+    shipped) is harder to reintroduce silently.
+    **The dispatch's own instruction was tested for real**: the existing
+    D10/D14/D15 tests in `record.test.ts` initially **failed** under the
+    restructure - one assertion (`clip.last.image` expected `undefined`, got
+    `true`) in the D10 "tainted canvas" case. Per the dispatch ("if they do
+    not [pass unchanged], the restructure is wrong, not the tests"), this was
+    read as a signal to stop and re-read rather than to edit the test. The
+    actual cause: `fakeClipboard.writeImage` in `clipboard.ts` ignored its
+    `png` argument entirely and always reported success, unlike the real
+    `browserClipboard.writeImage`, which awaits `png()` inside `rich.write`
+    and lets a rejection propagate to its own `catch`. The fake was not a
+    faithful double of the port it doubles for - fixed there: `writeImage`
+    now `await`s its `png` argument and returns `false` on rejection before
+    ever touching `last.image`, matching the real port's actual contract.
+    With that one-function fix, all three of D10/D14/D15 (`copies the
+    picture`, `falls back to the text when the canvas cannot be read back at
+    all (D10)`, `offers a download when the picture exists but the clipboard
+    refuses it (D14)`, `says the picture could not be saved either (D15)`)
+    passed **unchanged** - confirmed both in isolation (`npx vitest run
+    app/src/components/record.test.ts app/src/ports/ports.test.ts
+    --coverage=false`, 120/120) and inside the full `npm run check` run
+    below.
+  - **BL-3:** `docs/specs/COVERAGE.md`'s `noart` row still called "share
+    attaches no file" an impossible case ("`RecordActions.svelte:68-75`
+    never passes a file"), both the fact and the citation stale - D22 (this
+    task's own earlier work, already shipped) makes `send()` pass a file
+    where there is art. Verified the two tests actually exist and cover it
+    (`record.test.ts`, "attaches no file for a record with no art" /
+    "attaches the picture where there is art (D22, paid off)") before
+    rewriting the clause to point at them instead of the old citation.
+  - **B8-R1/B8-R2** (riders, both in `tests/app/print.js`'s `nameLines()`,
+    the P16 helper): the `lines === 1` assertion became `lines <= 2` -
+    matching owner decision Q2's actual cap of two lines, not the one-line
+    measurement the plan's step wording ("pinning `cm26` at two lines")
+    already implied should be the assertion - with the failure message
+    naming the two-line cap by name. The loop now checks all four ids the
+    route actually renders (`cm26`, `f60`, `hi62`, `ci81`), not only `cm26` -
+    the earlier "all four longest names render at one line" claim rested on
+    a scratchpad script that no longer exists in the repository; this closes
+    that gap inside the same `$eval`/`ok` pair, at zero extra page loads.
+    `docs/specs/FEATURES.md`'s "Print" section corrected in the same commit
+    to match (it said "`tests/app/print.js` pins `cm26`'s name at one line",
+    now "pins all four ids at a two-line cap") - the measured "all four at
+    one line, 2026-09-18" **fact** itself was left exactly where it was, per
+    the dispatch; only the sentence describing what the test asserts moved.
+- Files changed: `app/src/components/RecordActions.svelte`,
+  `app/src/components/RecordCard.svelte`, `app/src/ports/clipboard.ts`,
+  `docs/specs/COVERAGE.md`, `docs/specs/FEATURES.md`, `tests/app/print.js`.
+- Commit: `480c380 fix(phase-8): B8 remediation - focus ring clipping,
+  gesture-safe copy, stale spec/test claims` - pushed.
+- Deviations and rationale: the `fakeClipboard.writeImage` fix (above, under
+  BL-2) is the one piece of work beyond the dispatch's literal file list
+  (`app/src/ports/clipboard.ts` was already in scope for the comment fix,
+  so no new file was opened) - recorded here in detail because the dispatch
+  explicitly anticipated and warned against the alternative (editing the
+  test instead), and this is the proof that alternative was not taken.
+- Verification commands and results:
+  - `rtk npm run check` (one foreground call, Bash timeout 600000, no pipe) -
+    green: `format:check`, `lint`, `typecheck`/`svelte-check` (550 files, 0
+    errors, 0 warnings), `npm run data`, `node tests/derived.js`,
+    `.claude/hooks/selftest.mjs` (373 passed), the `node --test` suites,
+    `npm run test` (45 files, 1131/1131 tests, coverage
+    96.77/89.05/97.21/97.42 - thresholds green, at or above the pre-existing
+    96.75/89.05/97.15/97.41).
+  - `rtk node tests/run-all.js app/print` (its own foreground call) - green:
+    "ok  app/print dist/: card printing  164.3s" / "все наборы прошли за
+    164с (в 8 потока)".
+  - `MSYS_NO_PATHCONV=1 rtk node tests/app/golden.js --only=#/i/` - 13
+    record-page states compared, "структурные образцы (dist/): без
+    изменений" (unchanged) - covers every state touched by `RecordCard.svelte`/
+    `RecordActions.svelte`.
+  - `MSYS_NO_PATHCONV=1 rtk node tests/app/golden.js --only=#/print/` - 9
+    print states compared, "без изменений" - confirms the `print.js` test
+    edits (assertions only, no app code touched) moved no rendered output.
+  - Gates: `npm run check` (full); `node tests/run-all.js app/print`; both
+    golden probes above (not individually mandated by the dispatch, run as
+    the cheap "does not move" proof `context.md` recommends).
+- Push and tree check: `git push origin main` (`c90f082..480c380` - see
+  "Status" for the unexplained `c90f082` between dispatch and push); `git
+  rev-parse HEAD origin/main` printed the same sha twice, confirming the
+  push landed and `origin/main` matches this session's `HEAD`. CI not
+  separately watched this session - `npm run check` and the two suites
+  above are the local proof; nothing in the diff touches a CI-relevant file
+  (workflow, deploy guard, generated data), so CI can be expected green.
+
 ## Next batch (implement-ready)
-- **B7's remediation is committed and pushed** (`6b50945`, on `main` at
-  `origin/main`) - its one remediation cycle is now spent; BL-0..BL-3 are
-  `done 6b50945` in `issues/phase-8/nits.md`, and B7-R3 rode along, also
-  `done 6b50945`. **B9 is next**: language and format, `tests/` and
-  `tools/` (H1, T7, H13, H16, H15, T12, H11). Objective, files, the
-  four-commit split, acceptance, gates: `plan.md`, "B9". Re-derive every
-  line number from the file at HEAD before starting - this remediation
-  touched `docs/specs/COVERAGE.md` and `app/src/components/record.test.ts`,
-  neither named in B9's own file list, but B9's other file-list line numbers
-  should still be re-derived from HEAD per this task's standing practice.
-- B8's own review has not run yet (see "Status", "Review"); it is owed
-  before or alongside B9 per this task's standing review policy. Do not fold
-  B8's review nits into B9 - route them through `issues/phase-8/nits.md` the
-  same way B7's were, per "Why this file exists" in that register.
+- **B8's remediation is committed and pushed** (`480c380`, on `main` at
+  `origin/main`) - its one remediation cycle is now spent; BL-1, BL-2, BL-3,
+  B8-R1 and B8-R2 are all `done 480c380` in `issues/phase-8/nits.md`. B8's
+  remaining review findings (`B8-R3`..`B8-R6`, `B8-N1`..`B8-N8`) were not
+  touched - they stay `outstanding` under "Outstanding - B12's scope" in
+  that register, per this task's "nits are processed immediately" policy
+  not applying to blockers-and-riders-only remediation cycles.
+- **B9 is next**: language and format, `tests/` and `tools/` (H1, T7, H13,
+  H16, H15, T12, H11). Objective, files, the four-commit split, acceptance,
+  gates: `plan.md`, "B9". Re-derive every line number from the file at HEAD
+  before starting - this remediation touched `docs/specs/COVERAGE.md`,
+  `docs/specs/FEATURES.md` and `tests/app/print.js`; none are named in B9's
+  own file list, but B9's other file-list line numbers should still be
+  re-derived from HEAD per this task's standing practice.
+- Do not fold B8's remaining review nits into B9 - route them through
+  `issues/phase-8/nits.md` the same way B4-B7's were, per "Why this file
+  exists" in that register. B12 is where the whole outstanding table clears.
 
 ## Notes
 - Mocks path: none (no new UI element).
