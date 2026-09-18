@@ -232,6 +232,9 @@ Six modes. Each keeps its own input in memory only.
   app, whose card the keyboard never actually enters. The one visible
   consequence is that the modal's close button carries a focus ring the live
   app's does not.
+- A real navigation to a different address closes an open modal; a filter
+  pick or a list mutation, which rewrite the address in place rather than
+  navigating to it, do not.
 
 ## Print
 

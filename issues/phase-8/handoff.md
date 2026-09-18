@@ -2,28 +2,25 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is `0686bb6` (B9 review remediation - two
-  blockers, six record corrections), one commit past `506a6ba` (B10's docs
-  commit), plus this docs-only follow-up. `rtk npm run check` and `node
-  tests/run-all.js app/states` are green on `0686bb6` - see "Verification".
-  B1-B10 plus this remediation are on `main` locally in full. Pushed to
-  `origin/main` - see "Verification", "Push".
-- Last agent: implementer (2026-09-18, B9 review remediation: one code/docs
-  commit, one docs-only sha-citation follow-up - a commit cannot cite its
-  own hash inside its own tree).
+- Task status: in_progress. HEAD is the B10 review remediation commit (two
+  blockers - a false verification claim corrected, the batch's one
+  behaviour change given coverage - plus B10-N6's spec line), one commit
+  past `f441ffe` (the B9-remediation sha-citation follow-up) - see
+  "Completed" for its sha. `rtk npm run check` is green on it - see
+  "Verification". B1-B10 plus both remediation passes are on `main` locally
+  in full. Pushed to `origin/main` - see "Verification", "Push".
+- Last agent: implementer (2026-09-18, B10 review remediation: one commit).
 - Branch: `main`.
-- Base / starting commit: `506a6ba`.
+- Base / starting commit: `f441ffe`.
 - Review: standing policy for this task (`context.md`, "Review and nit
   policy") - every phase-8 batch gets a reviewer regardless of the standard
   triggers; nits are logged immediately to `issues/phase-8/nits.md` and
-  cleared in B12, not folded into whichever batch is next. B10 has not been
-  reviewed yet. B9's review remediation is this pass - see "Completed" and
-  `issues/phase-8/nits.md`, "From B9's review".
-- No open deviations. Every fix in this pass matched the dispatch exactly;
-  the record corrections routed to "Status"/"Notes" wording were checked
-  against the current file and found already superseded by B10's own
-  routine Status rewrite, so no separate edit was made there - see
-  "Completed".
+  cleared in B12, not folded into whichever batch is next. B10's review
+  landed with two blockers plus B10-N6 routed to this remediation pass and
+  B10-N1..B10-N5 routed to B12 - see "Completed" and `issues/phase-8/nits.md`,
+  "From B10's review".
+- No open deviations. Both fixes and the spec line matched the dispatch
+  exactly; the test was proved to bite (see "Completed").
 - Next batch: **B11** - equipment apostrophes (O2), per `plan.md`. Last
   batch before closeout (B12 clears the outstanding nits table).
 
@@ -258,12 +255,72 @@ pre-compaction text.
   routine Status rewrite - verified, not re-done. `nits.md` updated:
   B9-BL-1, B9-BL-2 and the six record corrections marked `done 0686bb6`
   and moved out of "Outstanding". No deviation.
+- **B10 review remediation** - (sha recorded in the follow-up docs commit,
+  below, to avoid a commit citing its own hash inside its own tree). Two
+  blockers: this handoff's own "B10's own verification" recorded
+  `git grep -c "let open = \$state<Record_" -- app/src` as "no matches
+  (acceptance line 1)" - the command does not reproduce that. It actually
+  returns `app/src/components/RecordHost.svelte:2` (the host's own
+  declaration at `:42` and its header comment quoting the same text at
+  `:3`); `git grep -l` for the same pattern returns `RecordHost.svelte`
+  alone, so the acceptance line's *intent* - no page owns its own `open`
+  state any more - is met, but the recorded command output was false. The
+  line is corrected in place (B10-B1). And the batch's one behaviour change
+  - `RecordHost.svelte:44-49`'s close-on-navigation effect, newly on six of
+  the eight pages it now runs on - shipped with zero coverage; every
+  existing modal-close test closed the modal via the close button or the
+  backdrop, never via a navigation. Added one jsdom test,
+  `app/src/components/record.test.ts` ("closes on a real navigation, but a
+  filter pick or a list mutation would not (RecordHost, C6)"): opens the
+  record modal on `#/i/q1`, drives a real `router.navigate()`-shaped
+  navigation (the `app.navigations`-bumping kind, not a `replace()`-shaped
+  address rewrite), asserts the dialog is gone. Proved to bite: the
+  effect's body was temporarily swapped for a no-op, the new test failed on
+  exactly that assertion, then reverted (`git diff --stat --
+  app/src/components/RecordHost.svelte` empty afterward) (B10-B2). Plus
+  B10-N6: one sentence added to `docs/specs/FEATURES.md` near line 229 -
+  a real navigation closes the modal, a filter pick (`replace()`-shaped)
+  does not. `nits.md` updated: B10-B1, B10-B2 and B10-N6 marked done (sha
+  in the follow-up docs commit) and moved out of "Outstanding"; B10-N1..
+  B10-N5 stay there for B12. No deviation.
 
 ## Verification
 
-Latest pass (B9 review remediation, `0686bb6`); earlier batches' exact
-commands/results are in git history per "Completed" above, and B10's own
-run is preserved below.
+Latest pass (B10 review remediation, sha recorded in the follow-up docs
+commit - a commit cannot cite its own hash inside its own tree); earlier
+passes' exact commands/results are in git history per "Completed" above,
+and the B9-remediation and B10 runs are preserved below.
+
+- `git grep -c "let open = \$state<Record_" -- app/src` (re-run for real,
+  B10-B1) - `app/src/components/RecordHost.svelte:2`, not "no matches" as
+  B10's own handoff wrongly recorded (corrected in place below, under
+  "B10's own verification"). Two hits, both in that one file: the header
+  comment quoting the pattern (`:3`) and the host's own declaration
+  (`:42`). `git grep -l` for the same pattern - `RecordHost.svelte` alone.
+  Acceptance line 1's intent (no *page* owns its own `open` any more) is
+  met.
+- New test proved to bite (B10-B2): `app/src/components/RecordHost.svelte`'s
+  close-on-navigation effect body was temporarily swapped for a no-op; the
+  new `record.test.ts` test ("closes on a real navigation, but a filter
+  pick or a list mutation would not (RecordHost, C6)") then failed, on
+  exactly the dialog-still-present assertion it exists to guard; reverted,
+  `git diff --stat -- app/src/components/RecordHost.svelte` empty
+  afterward.
+- `rtk npm run check` (format:check, lint, typecheck, `node --check
+  tools/check-site.mjs`, `npm run data`, `node tests/derived.js`, `node
+  .claude/hooks/selftest.mjs`, `node --test tools/tg-preview/lib.test.mjs`,
+  `node --test tools/artwork/lib.test.mjs`, `node --test
+  tools/check-site.test.mjs`, `node --test tests/app/golden.test.mjs`
+  17/17, `npm run test`) - green: 45 test files / **1132** tests passed (+1,
+  the new test), coverage 97.04% statements / 89.05% branches / 98.04%
+  functions / 97.82% lines, unchanged.
+- No golden shard, `check:built`, or browser suite is implicated by this
+  pass (one test file, one spec sentence, task documents - no rendered
+  output touched) and none was re-run, per the dispatch's own gate list.
+- Push: `git push origin main` - `git rev-parse HEAD origin/main` confirmed
+  to agree after the push.
+
+### B9 review remediation's own verification (preserved, not re-run this pass)
 
 - `npx eslint .claude/hooks/tree-key.mjs` (pre-fix, sanity check) - "File
   ignored because of a matching ignore pattern", confirming B9-BL-1 before
@@ -273,18 +330,13 @@ run is preserved below.
   `selftest`, `session-start`, `session-stop`, `tree-key`), 0 errors / 0
   warnings each; `.claude/worktrees/` not among them.
 - `npx eslint .` (whole repo, post both fixes) - clean, no output.
-- `rtk npm run check` (format:check, lint, typecheck, `node --check
-  tools/check-site.mjs`, `npm run data`, `node tests/derived.js`, `node
-  .claude/hooks/selftest.mjs`, `node --test tools/tg-preview/lib.test.mjs`,
-  `node --test tools/artwork/lib.test.mjs`, `node --test
-  tools/check-site.test.mjs`, `node --test tests/app/golden.test.mjs`
-  17/17, `npm run test`) - green: 45 test files / 1131 tests passed;
-  coverage 97.04% statements / 89.05% branches / 98.04% functions / 97.82%
-  lines, unchanged from B10's own run.
+- `rtk npm run check` - green: 45 test files / 1131 tests passed; coverage
+  97.04% statements / 89.05% branches / 98.04% functions / 97.82% lines,
+  unchanged from B10's own run.
 - `node tests/run-all.js app/states` - green, 125.8s (the one-token
   `page` deletion in `tests/app/states.js:154`). The rest of the browser
-  suites and the four golden shards are untouched by this pass - not
-  re-run, per the dispatch's own gate list.
+  suites and the four golden shards were untouched by that pass - not
+  re-run, per that pass's own gate list.
 - Push: `git push origin main` - `git rev-parse HEAD origin/main` confirmed
   to agree after the push.
 
@@ -305,8 +357,16 @@ run is preserved below.
 - `node tests/app/golden.js --shard=3/4` - 28 states compared, unchanged.
 - `node tests/app/golden.js --shard=4/4` - 28 states compared, unchanged.
   112 states total across all four shards, none moved, no `--update` run.
-- `git grep -c "let open = \$state<Record_" -- app/src` - no matches
-  (acceptance line 1).
+- `git grep -c "let open = \$state<Record_" -- app/src` -
+  **correction (B10 review remediation): this line was wrong as recorded.**
+  The command actually returns `app/src/components/RecordHost.svelte:2`, not
+  "no matches" - two hits, both in that one file: line 3 (the header comment
+  quoting the pattern) and line 42 (the host's own `let open =
+  $state<Record_ | null>(null)` declaration). `git grep -l` for the same
+  pattern returns only `RecordHost.svelte`. The acceptance line's intent -
+  no *page* owns its own `open` state any more - is met; the command as
+  literally written is not the falsifiable proof of it the handoff claimed.
+  See "B10 review remediation" below for the fix.
 - Push: `git push origin main` - `git rev-parse HEAD origin/main` confirmed
   to agree after the push.
 

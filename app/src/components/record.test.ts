@@ -771,6 +771,23 @@ describe('the tier ladder', () => {
     );
   });
 
+  it('closes on a real navigation, but a filter pick or a list mutation would not (RecordHost, C6)', async () => {
+    /* RecordHost's close-on-navigation effect (components.md C6) is shared
+       by all eight pages now, pinned here on the one it came from.
+       app.navigations bumps on go() and on an external hash change only
+       (app.svelte.ts:312,460) - replace() never touches it, so a filter
+       pick or a list mutation (both replace()-shaped address rewrites) must
+       leave the modal open; only a real navigation like this one closes it. */
+    const router = memoryRouter('#/i/q1');
+    render(App, { env: at('q1', { router }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    router.navigate('#/i/ci1');
+    await tick();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('closes the add-to-list menu on Escape and returns focus to its toggle, leaving the modal open (P4a)', async () => {
     render(App, { env: at('q1') });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));

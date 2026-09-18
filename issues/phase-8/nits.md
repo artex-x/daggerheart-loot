@@ -447,6 +447,116 @@ remediation".
   unrun suites, and the reviewer's grep closes it: no Russian (a) message
   remains anywhere in the tree. No action needed.
 
+### From B10's review (the record-modal host)
+
+Verdict **fix-then-continue**. Two blockers (B10-B1, B10-B2) and B10-N6 were
+sent to a remediation pass; B10-N1..B10-N5 below are B12's. The reviewer ran
+no heavy gate by dispatch (B9's remediation held the tree), so every finding
+is from the commits (`56dabbc`, `506a6ba`) plus cheap read-only greps.
+
+**Both blockers and B10-N6 are done (sha in the follow-up docs commit)** -
+B10's one remediation cycle is now spent; see `issues/phase-8/handoff.md`,
+"B10 review remediation".
+
+- **B10-B1**: `issues/phase-8/handoff.md`'s "B10's own verification" recorded
+  `git grep -c "let open = \$state<Record_" -- app/src` as "no matches
+  (acceptance line 1)" - a recorded acceptance result that does not
+  reproduce. Re-run, it returns **two** matches, both in
+  `app/src/components/RecordHost.svelte` - the host's own declaration and
+  its header comment quoting it. The acceptance line's *intent* is met
+  perfectly: no page owns its own `open` any more, and `git grep -l` returns
+  `RecordHost.svelte` alone - but the handoff recorded a green on a command
+  that anyone can falsify in one second, in a file whose own text invokes
+  this task's standing rule against unverified verification claims. The
+  exact failure mode this phase has now found three times.
+  done (sha in the follow-up docs commit): the false line replaced with the
+  command's true result (`app/src/components/RecordHost.svelte:2`) and its
+  reading, in place.
+- **B10-B2**: the batch's one behaviour change ships with zero coverage.
+  `app/src/components/RecordHost.svelte:44-49` puts the close-on-navigation
+  effect on eight pages; six of them (`AltPanel`, `ListPage`, `RecordPage`,
+  `RollPanel`, `SharedListPage`, `StdPanel`) never had it. No test anywhere
+  opens a modal and then navigates - every existing modal-close test
+  (`searchPage.test.ts:295`, `roll.test.ts:246,260,268`,
+  `record.test.ts:744,764`, `sharedListPage.test.ts:354-358`,
+  `listPage.test.ts:846`) closes it via the close button or the backdrop.
+  The effect's lines are covered because it runs once on mount, so
+  `perFile` coverage cannot see this hole.
+  done (sha in the follow-up docs commit): one jsdom test added,
+  `app/src/components/record.test.ts` ("closes on a real navigation, but a
+  filter pick or a list mutation would not (RecordHost, C6)") - opens the
+  record modal on `#/i/q1`, drives a real `router.navigate()`-shaped
+  navigation (the `app.navigations`-bumping kind - `app.navigations` bumps
+  on `go()` and on an external hash change only, never on `replace()`),
+  asserts the dialog is gone. Proved to bite: the effect's body was
+  temporarily swapped for a no-op, the new test failed on exactly that
+  assertion, then reverted (`git diff --stat --
+  app/src/components/RecordHost.svelte` empty afterward).
+- **B10-N6**: `docs/specs/FEATURES.md:229-233` described the record modal
+  but said nothing about what closes it beyond the user's own action;
+  `STATE.md:89` lists `modal` under UI memory with no lifetime rule. No
+  spec claim was false, but B10 is the commit that made the rule app-wide,
+  and a test asserting undocumented app-wide behaviour is half the job.
+  done (sha in the follow-up docs commit): one sentence added near
+  `FEATURES.md:229` - a real navigation closes the modal, a filter pick
+  (which rewrites the address with `replace()`) does not.
+
+| id | where | what |
+|---|---|---|
+| B10-N1 | `app/src/components/RecordHost.svelte:9-18` | A load-bearing rejected alternative was deleted rather than moved. `TablesPage.svelte:105-121` at `56dabbc^` carried: "Route strings cannot tell one table from another on their own - they all read `tables` - which is why a hash-only move needs this signal rather than `app.hash` itself." Most of the surrounding rationale survives at the definition (`app.svelte.ts:136-145` says `go()` counts, `replace()` does not, and names "an open modal" as a watcher), but the `app.hash` rejection and its reason are now nowhere in the tree. One sentence back into `RecordHost.svelte`'s header comment. |
+| B10-N2 | `app/src/components/RecordHost.svelte:36` | `extra`'s return type is wider than anything can produce: `extra?: ((it: Record_) => readonly ShareBlock[] \| undefined) \| undefined`. `entryNoteBlock` (`app/src/lib/share.ts:200`) returns `ShareBlock[]` and never `undefined` - `share.test.ts:247-248` pins that it returns `[]` for an entry with no visible note. The `\| undefined` on the *return* is dead: `extra?.(open)` already yields `\| undefined` from the optional call, which is what `RecordModal`'s `extra?: readonly ShareBlock[] \| undefined` wants. Narrow to `((it: Record_) => readonly ShareBlock[]) \| undefined`. The prop being a *function* rather than a value is the right call and should not change - the doc comment at `:31-35` gives the reason. |
+| B10-N3 | `app/src/components/RecordHost.svelte:28` | `index: Index \| null \| undefined` is wider than any caller. Seven callers pass `const index = $derived(app.index)`, typed `Index \| null` (`app.svelte.ts:111`); the eighth (`SharedListPage`) passes a non-nullable `Index`. Nothing can pass `undefined` and the prop is not optional. Narrow to `index: Index \| null`. |
+| B10-N4 | `app/src/components/ListPage.svelte:684,706` | Nested hosts on the shared-list route: `ListPage` opens `<RecordHost>` at `:684` and renders `<SharedListPage>` inside it at `:706`, which opens its own. Two `open` states and two navigation effects are alive on `#/l/<payload>`; the outer one can never be set, because `SharedListPage` uses its own host's `openRecord`. Harmless today, and harmless even if `metaOf` were reached there (`ListPage.svelte:239-241` returns `{}` when `own` is null, so `extra` would return `[]`). But the invariant that keeps it harmless - "nothing passes the outer `openRecord` into `SharedListPage`" - is invisible and easy to break. Either one sentence recording it, or move `ListPage`'s `<RecordHost>` inside the `{:else}` branch so the shared route never mounts two. |
+| B10-N5 | `app/src/components/{StdPanel,AltPanel,RollPanel}.svelte` | The batch's "none fell out clean without a new prop" claim is under-argued for the three roll panels. Their `{#snippet cardOf(...)}` blocks are byte-identical apart from `it={pick.it}` and two **existing** `RecordCard` props being forwarded (`col={pick.col}`, `rollLabel={pick.n}`) - so the batch's own stated criterion does not actually rule the extraction out, and three copies is well past `CLAUDE.md`'s "extract shared UI on its second real use". Against it: `plan.md`'s "do not over-extract", and a fourth prop (`{#key}` or not) would have to be threaded. The reviewer would not reopen B10 for this, but the rejection and its three-way comparison should be written down, or it will be re-derived by whoever reads `AltPanel` and `StdPanel` side by side. |
+
+**Verified sound in B10's review, recorded so it is not re-derived:**
+
+- **No caller loses a legitimately-open modal.** `app.navigations` fires on
+  `go()` and on an external hash change only (`app/src/state/app.svelte.ts:312`,
+  `:460`); `replace()` never touches it and `#expectHash` (`:307`) already
+  de-duplicates `go()`'s own echo.
+- **`ListPage` was the sharpest suspect and is immune**: `app.syncListUrl`
+  (`app.svelte.ts:562-568`) writes the packed list with `replace()`, so
+  mutating a list while the modal is open - including adding the open record
+  to a list from inside the modal - does not bump `navigations`. The 150 ms
+  debounce (`ListPage.svelte:141-146`) is likewise invisible to the effect.
+- **No in-modal add can navigate**: `AddToList`'s single `app.go()`
+  (`AddToList.svelte:148`) is gated on `key === N_SHARED`, and inside the
+  modal `AddToList` is always `key={it.id}`. The other three `app.go()` call
+  sites in `app/src/components` are unreachable while the modal has the page
+  inert (`showModal()`).
+- **`RecordPage` is an improvement, not a loss.** On `#/i/a`, opening the
+  tier-ladder rung for `b` and clicking the modal's own name link goes to
+  `#/i/b` without remounting `RecordPage`. Before B10 the modal stayed open
+  showing `b` over a page that had just become `b` - the same card twice.
+  Same reasoning for `#/lists/a`->`#/lists/b` and `#/l/p`->`#/l/q`.
+- **First mount is a no-op**: the effect assigns `open = null` when `open` is
+  already `null`, and `untrack` (`RecordHost.svelte:46`) stops it
+  re-triggering itself.
+- **`ListPage` already set the precedent**: `ListPage.svelte:203-209` (D23)
+  clears `lsel` on `app.navigations` for exactly the "same route kind, no
+  remount" case.
+- **All eight swaps are faithful.** Focus handling, restore, Escape, backdrop
+  close, the `app.menuFor = ''` fold ahead of `onclose` and scroll/inert
+  behaviour all live in `RecordModal.svelte`, untouched. Two per-site quirks,
+  both no-ops: `SharedListPage` alone rendered `{#if open}` without
+  `&& index` (its own `index` prop is a non-nullable `Index`, and it mounts
+  only once `app.index` is confirmed), and `RollPanel` alone passed
+  `index={app.index}` to the modal while passing `shown.index` to the card
+  (in that file `const index = $derived(app.index)` - same value).
+- **Moving `AltPanel`/`StdPanel`'s `{#snippet cardOf(...)}` inside the
+  `children` snippet moves no DOM and no style** - a snippet emits no wrapper
+  element and CSS scoping is per component file, not per snippet.
+- **The golden claim's falsifiable half checks out**:
+  `git show --stat 56dabbc -- tests/app/snapshots` returns nothing - not one
+  golden file changed in the commit.
+- **Coverage is real, not linter-shaped**: `vite.config.mts:170-186` sets
+  `perFile: true` over `src/**/!(Button|DiceBar|Badge).svelte`, so
+  `RecordHost.svelte` cleared a per-file bar rather than merely being named
+  `COVERED`. Its **open** state is reached under axe by `a11y.test.ts`'s
+  first `STATES` entry (`:132-136`) and by "the record modal over a table"
+  (`:198-201`).
+
 ### Carried, needing confirmation before B12 edits anything
 
 | id | where | what |
