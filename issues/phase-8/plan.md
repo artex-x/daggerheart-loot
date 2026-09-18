@@ -182,7 +182,7 @@ otherwise in the file (`Показатель Брони`, `Призрачный 
 `.claude/` ignored) with a `disableTypeChecked` + node-globals block and
 targeted rule turn-offs for real pre-existing patterns a format-only
 commit could not otherwise touch, then `npx prettier --write tests tools`,
-no hand edits. **Correction (B9 review remediation): the
+no hand edits. **Correction (B9 review remediation, `0686bb6`): the
 ignore-pattern pair this commit shipped (`'.claude/**'` +
 `'!.claude/hooks/**'`) never actually un-ignored the hooks - `.claude/**`
 prunes the directory itself before the negation can apply, so

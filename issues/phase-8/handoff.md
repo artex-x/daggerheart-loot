@@ -2,13 +2,15 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress. HEAD is the B9 review remediation commit (two
+- Task status: in_progress. HEAD is `0686bb6` (B9 review remediation - two
   blockers, six record corrections), one commit past `506a6ba` (B10's docs
-  commit) - see "Completed" for its sha. `rtk npm run check` and `node
-  tests/run-all.js app/states` are green on it - see "Verification". B1-B10
-  plus this remediation are on `main` locally in full. Pushed to
+  commit), plus this docs-only follow-up. `rtk npm run check` and `node
+  tests/run-all.js app/states` are green on `0686bb6` - see "Verification".
+  B1-B10 plus this remediation are on `main` locally in full. Pushed to
   `origin/main` - see "Verification", "Push".
-- Last agent: implementer (2026-09-18, B9 review remediation, one commit).
+- Last agent: implementer (2026-09-18, B9 review remediation: one code/docs
+  commit, one docs-only sha-citation follow-up - a commit cannot cite its
+  own hash inside its own tree).
 - Branch: `main`.
 - Base / starting commit: `506a6ba`.
 - Review: standing policy for this task (`context.md`, "Review and nit
@@ -232,9 +234,7 @@ pre-compaction text.
   extracted; all eight `let open = $state<Record_ | null>(null)` sites
   (`AltPanel`, `ListPage`, `RecordPage`, `RollPanel`, `SearchPage`,
   `SharedListPage`, `StdPanel`, `TablesPage`) replaced with it; no deviation.
-- **B9 review remediation** - (sha recorded in the follow-up docs commit,
-  below, to avoid a commit citing its own hash inside its own tree). Two
-  blockers: `eslint.config.mjs:24-25`'s
+- **B9 review remediation** - `0686bb6`. Two blockers: `eslint.config.mjs:24-25`'s
   `'.claude/**'` + `'!.claude/hooks/**'` ignore pair never actually
   un-ignored the hooks (`.claude/**` prunes the directory before the
   negation applies), fixed to `'.claude/*'` + `'!.claude/hooks'` -
@@ -256,12 +256,12 @@ pre-compaction text.
   `d882707`/`5602ca9` wording in B9's own Status/Notes text) were checked
   against the current file and found already superseded by B10's own
   routine Status rewrite - verified, not re-done. `nits.md` updated:
-  B9-BL-1, B9-BL-2 and the six record corrections marked done (sha in the
-  follow-up docs commit) and moved out of "Outstanding". No deviation.
+  B9-BL-1, B9-BL-2 and the six record corrections marked `done 0686bb6`
+  and moved out of "Outstanding". No deviation.
 
 ## Verification
 
-Latest pass (B9 review remediation); earlier batches' exact
+Latest pass (B9 review remediation, `0686bb6`); earlier batches' exact
 commands/results are in git history per "Completed" above, and B10's own
 run is preserved below.
 
@@ -496,4 +496,4 @@ and the branch is pushed.
   `npm run data`/`npm run build` outputs (`i/`, `dist/`) are gitignored or
   untracked as usual and regenerate on demand.
 - Session end partial progress: none - `main` is at a committed, pushed,
-  gate-verified boundary (sha in the follow-up docs commit).
+  gate-verified boundary (`0686bb6`).

@@ -358,7 +358,7 @@ gate by dispatch (B10's implementer held the tree), so every measurement
 below is from `git show`/`git archive` against committed shas and from
 `npx eslint` runs in a scratch directory outside the repository.
 
-**Both blockers and all six record corrections are done (sha in the follow-up docs commit)** - B9's
+**Both blockers and all six record corrections are `done 0686bb6`** - B9's
 remediation cycle is now spent; see `issues/phase-8/handoff.md`, "B9
 remediation".
 
@@ -370,7 +370,7 @@ remediation".
   before dispatch (`npx eslint .claude/hooks/tree-key.mjs` returned "File
   ignored because of a matching ignore pattern") and three other
   formulations tried and rejected, all still ignored.
-  done (sha in the follow-up docs commit): fixed to `'.claude/*'` + `'!.claude/hooks'` - `npx eslint
+  `done 0686bb6`: fixed to `'.claude/*'` + `'!.claude/hooks'` - `npx eslint
   .claude` now lints exactly the nine hook files (`bash-guard`,
   `check-observer`, `edit-followup`, `edit-guard`, `lib`, `selftest`,
   `session-start`, `session-stop`, `tree-key`), zero errors/warnings, and
@@ -385,13 +385,13 @@ remediation".
   `tools/check-site.test.mjs:79,112`'s destructure-to-drop-a-key idiom) -
   two of which are exactly what the rule's own `^_` options exist for and
   the third a one-token deletion.
-  done (sha in the follow-up docs commit): rule re-armed as `'error'` with
+  `done 0686bb6`: rule re-armed as `'error'` with
   `{ argsIgnorePattern: '^_', varsIgnorePattern: '^_',
   caughtErrorsIgnorePattern: '^_' }`; `page` dropped from the
   `twoFramesPicked` destructure in `tests/app/states.js:154` (unused for
   the rest of the function - the case drives everything through `d`).
   `npx eslint .` clean afterward.
-- **Record corrections, all done (sha in the follow-up docs commit)**: the acceptance-grep table's
+- **Record corrections, all `done 0686bb6`**: the acceptance-grep table's
   missing `tests/app/typo.js` row (9 lines, all (b)) added to
   `handoff.md`; the commit-4 verification bullet's wrong "141 across 15
   files" restated as "259 findings across 34 files" with the full
@@ -469,4 +469,4 @@ remediation".
 - **B2 review** blockers B-1, B-2, B-3 and nits 1-3 - `c8cc38e`.
 - **B3 review** N1 (`COVERAGE.md`'s stale `golden` job name) - `c8cc38e`, routed mid-flight.
 - **B3 review** N2-N8 - B5 (`112bd07`), after B4 skipped them.
-- **B9 review** blockers BL-1, BL-2 and record corrections N1/N2/N4/N7/N8/N9  (sha in the follow-up docs commit).
+- **B9 review** blockers BL-1, BL-2 and record corrections N1/N2/N4/N7/N8/N9 - `0686bb6`.
