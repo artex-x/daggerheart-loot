@@ -89,7 +89,7 @@ jobs:
   # 84% of that job plus a separate `golden` matrix that then sat idle for
   # 9m21s waiting on it. `--shard=n/4` packs the whole pool, goldens
   # included; see tests/run-all.js's weight comment and
-  # issues/phase-8/plan.md, "B3".
+  # issues/phase-8/handoff.md, "B3".
   browser:
     runs-on: ubuntu-latest
     # See `check`'s own comment above (issues/phase-8, DP1) - same reasoning,

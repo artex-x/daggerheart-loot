@@ -24,7 +24,7 @@
 
    `--shard` (added issues/phase-8, B3) is what ci.yml's `browser` matrix
    uses instead of a single `check`-job step plus a separate `golden` job -
-   see the weight comment below and issues/phase-8/plan.md, "B3". */
+   see the weight comment below and issues/phase-8/handoff.md, "B3". */
 const { spawn } = require('child_process');
 const fs = require('fs');
 const os = require('os');
@@ -135,7 +135,7 @@ let queue = SUITES.filter(
    exhaustive by construction - every suite lands in exactly one bin - the
    same promise tests/app/golden.js's own --shard=n/of makes for its states,
    generalised here from one suite's states to the whole pool. ci.yml's
-   `browser` matrix is four calls of this (issues/phase-8/plan.md, "B3").
+   `browser` matrix is four calls of this (issues/phase-8/handoff.md, "B3").
 
    Four separate `node` processes, one per matrix job, each sort and pack
    this same array independently and have to agree on the result without

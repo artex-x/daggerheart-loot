@@ -96,7 +96,7 @@ ticket (D24), a dedicated batch (D25, D26), or the UI/UX ticket (D27).
   timestamped key grows `localStorage` without bound, and dropping `.bad`
   the moment a read succeeds discards the one copy of the first loss before
   anyone could reach it - plus a way for a person to actually reach a
-  backup at all, which today has no UI anywhere. `issues/phase-8/plan.md`
+  backup at all, which today has no UI anywhere. `issues/phase-8/context.md`
   already routes ".bad-key recovery beyond a notice" to the consistent-
   storage ticket; this is that same design question, not a second one.
 - **How to verify the fix**: corrupt `dhloot.lists.v2` twice in a row (a

@@ -30,9 +30,13 @@ to ride - the premise behind `orchestrate.prompt.md`'s "defer nits mid-plan"
 does not hold here. A dedicated batch where the nits **are** the acceptance
 criteria is the answer.
 
-## Outstanding - B12's scope
+## Outstanding
 
-### Census, 2026-09-18, at `e7ce2ad` (B12a, planner's sweep confirmed)
+None. Every row B12 was scoped for is resolved; the census below is the
+index and "Review findings, by batch" (below it) holds the reasoning behind
+each verdict.
+
+## Census, 2026-09-18, at `e7ce2ad` (B12a, planner's sweep confirmed)
 
 One verdict per live row, per `plan.md`'s "The census" - a scripted sweep
 (session scratchpad, not committed), one discriminating check per id against
@@ -152,6 +156,14 @@ live in their own review section below, not repeated here.
 | B1-N9 | closed (no change - this piece, B12b) - `matches`'s union third argument touches ten-odd call sites across `SearchPage.svelte`, `TablesPage.svelte` (twice) and `search.test.ts` (eight), past the plan's own six-call-site/no-type-gymnastics budget; `search.ts`'s own doc comment on `matches` now records the risk and the reason instead |
 | B2-4 | done `607b252`, this piece - `app/src/state/app.test.ts:106-115`'s comment reworded to drop the dead `TAB_LIST` identifier, keeping the substance in prose |
 | B2-5 | done `e52f5de`, this piece (`.claude/README.md:109`'s commit-gate description now says "covered paths", not "the tree") |
+
+## Review findings, by batch - detail behind the census, all resolved
+
+Every row below is resolved; see the census above for the verdict. Most rows
+here were left exactly as the originating review wrote them, without an
+inline marker restating the census - only rows this task's later pieces
+edited in place carry a `done <sha>` note. Absence of a marker is not an
+open item; the census is authoritative.
 
 ### From B4's review (deploy and gate correctness)
 
@@ -526,7 +538,7 @@ remediation".
 
 | id | where | what |
 |---|---|---|
-| B9-R1 | (risk, recorded) | The pre-compaction plan's commit-4 step was "`npx prettier --write tests tools` **and the lint fixes**" (`git show c0ff1d0^:issues/phase-8/plan.md`). What shipped is eight rule turn-offs *instead of* the lint fixes - a third deviation, unrecorded alongside the two that were. Not hidden (each turn-off carries a rationale in the config), but the substitution is standing policy where the plan authorised only a `disableTypeChecked` block. |
+| B9-R1 | (risk, recorded) | The pre-compaction plan's commit-4 step was "`npx prettier --write tests tools` **and the lint fixes**" (`git show d882707:issues/phase-8/plan.md`, `c0ff1d0`'s parent). What shipped is eight rule turn-offs *instead of* the lint fixes - a third deviation, unrecorded alongside the two that were. Not hidden (each turn-off carries a rationale in the config), but the substitution is standing policy where the plan authorised only a `disableTypeChecked` block. |
 | B9-R2 | `eslint.config.mjs:184-191` | Four code-rule turn-offs suppress **11 real findings**, and the written rationales enumerate only 6 of the 11 sites. Measured: `no-regex-spaces` 5 (`tests/derived.js:798,819,821,841`; `tests/app/golden.test.mjs:231` - rationale names derived.js only); `preserve-caught-error` 3 (`tools/artwork/run.mjs:124`; `tools/tg-preview/run.mjs:47`; **`tests/app/driver.js:369`** - rationale names the first two); `@typescript-eslint/no-extraneous-class` 2 (`tools/capture-share-fixture.mjs:97`; **`tests/app/driver.js:859`** - rationale names the first); `no-useless-assignment` 1 (`tools/tg-preview/live.mjs:75` - correct). None is a live defect. Reviewer's per-rule recommendation: `no-regex-spaces` narrow or fix (` {2}` is byte-equivalent for the ci.yml indentation regexes); `preserve-caught-error` prefer three inline disables or `{ cause }` over a directory-wide off, because a *new* catch/rethrow in `tests/`/`tools/` will now pass silently; the other two are 3 lines total, prefer the fix. |
 | B9-R3 | (verified sound, no action) | The three structural turn-offs should stand unchanged: `no-console` (118 findings - every suite's reporting mechanism; the repo rule at `eslint.config.mjs:44` is a browser-bundle policy), `@typescript-eslint/no-require-imports` (60 - all in `.js` CommonJS suites), `@typescript-eslint/explicit-module-boundary-types` (67 - all in `tools/**/*.mjs`, untyped JS with no annotation to write). |
 | B9-N3 | `tests/ok.js:1` and `tests/contracts.js:23-28` | The new module's comment names four users - "derived, dataint, craft, contracts" - but `contracts.js` still carries its own identical inline copy (`let fail = 0; const ok = ...`). Either wire it to `./ok.js` (6 deleted lines; it already ends `process.exit(failed() ? 1 : 0)` in the same shape at `:116-117`) or drop `contracts` from the comment. Reviewer prefers the former - `CLAUDE.md`'s "remove both inline copies". |

@@ -536,3 +536,96 @@ should do, and would otherwise be re-derived at full cost.
   equal weights (currently two ties). Four separate node processes each
   recompute the partition and agree only because of that. Load-bearing and
   invisible; a comment is queued as a nit.
+
+## The first plan's B2-B20 shape, and the merge to B2-B11
+
+Moved from `plan.md` at task retirement (2026-09-18) - kept because
+`.claude/README.md`'s batch-sizing section cites this merge as its worked
+example of "too small". The first planning pass (2026-09-17) split roughly a
+hundred critique/register findings across twenty batches - eighteen
+`npm run check` runs, ~2.5h of gate time before any of the work itself was
+reviewed. The owner had it merged to eleven (`B2`-`B11`; `B12` was added
+later, for nit clearing, after every review had landed). `plan.md`'s own
+"Where every finding landed" table mapped all twenty original batch ids onto
+their merged home, id by id, so nothing fell out in the merge; that table is
+not reproduced here - it is planning bookkeeping, fully superseded by what
+actually shipped, which `handoff.md`'s "Completed" section records batch by
+batch with its commit(s).
+
+## Findings dropped without a batch, with reasons (moved from `plan.md` at retirement)
+
+The planner's audit list of critique findings that got no batch. "Not a
+problem" means verified against the tree or accepted from the report's own
+measurement.
+
+| Finding | Reason | Note |
+|---|---|---|
+| PF1 (browser probe for search) | superseded | The only fix its number could justify beyond PF2 is virtualisation, excluded on golden grounds; PF2 was justified by O1's design and has shipped. |
+| PF5, PF6 | not a problem | The report's own verdict, with measurements. |
+| PF4 as a phase-8 batch | deferred to its own task | Contract change; not dropped - see "Deferred to the two excluded tickets" below. |
+| T13, T14, T15, T17 | not a problem | Measured in the report; off the critical path. |
+| C3 option 1 (`htmlWhitespaceSensitivity: strict`) | cure worse than disease | Reflows ~45 files permanently for a hazard with four sites; option 2 taken. |
+| P6 via `Field` emitting `<label>` | cure worse than disease | `Field` wraps chip rows and segmented switches; a `<label>` around buttons is wrong. |
+| D16 | not a problem | The idle toast region is `display: none` on both apps - never in the accessibility tree either way. |
+| `components.md` "not worth it" (`panel` class on `ffilter`/`tablenav`, `Panel`'s inline copies, `PageHead`/`PageTitle` `.page-h`, `DiceBar`, `Shell` writing `document.title`, `app.env.*` reads, `PageTitle` branching, `ListPage` size) | not a problem / cure worse | Each has its reason at the site; the `ListPage` split is deferred. |
+| A10, A12 | not a problem | Map facts; nothing proposed. |
+| A11 `pick`/`Panel` naming, `isLastOn`'s home | cure worse than disease | Renames across route-level components for a word collision. |
+| `open.md`: `listLink.ts` `btoa`/`atob`, `.nvmrc` vs `engines` | not a problem | Both `globalThis`, Node-safe; CI pins from `.nvmrc`. |
+| `resilience.md`: truncated-note checksum | cure worse than disease | A payload-grammar change for a failure the reader can see. |
+| `window.confirm` in a sandboxed iframe; unguarded `showModal()` | not a problem | Below the app's floor. |
+| `state.md` `$state.raw` | cure worse than disease | The report's own verdict. |
+| `load()` ignoring the v1-migration write's result | not a problem | The undismissable notice already shows. |
+| `deploy.md`: the 60s retry, `cp -r` comment, `workflow_dispatch`, burst-cancel, `[skip ci]` | not a problem | Measured or inherent to the right setting. SHA-pinning `actions/*` dropped as cure worse; `gitleaks` pinned (B4). |
+| `hygiene.md`: 102 `app.js:NNNN` citations, `tools/` orphans, `test-output/` logs, `issues/` pruning, `numField.ts` comment density | not a problem | `CLAUDE.md:16-18` resolves the citations once; `app.js` is frozen. |
+| `product.md`: two rarity vocabularies | unverified | Needs the Core book. Owner may confirm and add one `FEATURES.md` sentence. |
+| `product.md`: a shared list with an empty name | not a problem | Correct fallback. |
+| `product.md`: search help panel | owner's content | Listed under the UI/UX ticket. |
+| `product.md`: roll live region summary, money-picker discoverability, undo toast focus | deferred to the UI/UX ticket | Design changes. |
+| TL3 family 2 | cure worse than disease | Rewards a dead citation; recorded in the README. |
+| DC14 (`issues/56`, `issues/59` cite `docs/parity.md`) | outside this task's write scope | The orchestrator passes it on. |
+| The first plan's "fact 3" (`CLAUDE.md` names `eqtest,qa`) | not a problem - retracted | The injected copy was stale; the file on disk is right (see "Reasons already disproved", above). |
+| T7's and H1's batch splits | superseded | Replaced by B9's four commits. |
+| T8 | superseded | Dissolves under T1 (B3). |
+
+R8 (`404.html`) moved from "not planned" to B4 on the owner's decision - see
+"Two further owner decisions", above.
+
+## Deferred to the two excluded tickets, and to tasks of their own (moved from `plan.md` at retirement)
+
+The scope fence (above, "Constraints") excludes a consistent storage layer
+and a significant UI/UX redesign from phase-8 itself. What each of those two
+future tickets inherits from this phase's critique sweep, plus what is
+costed as its own separate task rather than dropped:
+
+**Consistent storage layer** (owner's ticket) inherits: R1's general form
+(versioned envelope, schema validation on read, migration chain) - B6
+patched the destructive symptom only; S4's deeper half (whole-list
+last-writer-wins; per-entry or per-field reconciliation);
+`dhloot.lang.v1`/`home.v1`/`warn.v1` not watched across tabs; the
+`.bad`-key recovery beyond a notice (`docs/specs/DEBT.md` `D24`); PF3's
+`save()` debounce (measure first with the probe `performance.md` describes);
+a list export/backup file (`resilience.md`; no upload service, a local
+`.json` download - product decision).
+
+**UI/UX redesign** (owner's ticket) inherits: the focus-management pass
+(toast actions unreachable by keyboard, a labelled selection region, menu
+focus) - P4 and P10 were its cheap edges and shipped in B7; the roll
+results live region reading four whole cards; the money picker hidden until
+a price exists and the "Золото" header over "3 мешка" values; a help panel
+for Search (owner-written content); an inlined first-paint skeleton (PF5); a
+`<svelte:boundary>` reporting framework beyond B6's minimal boundary; the
+two P12 44x44 hit-target overlaps (`docs/specs/DEBT.md` `D27`); the D25/D26
+user-visible-state and reduced-motion fixes deferred out of B12
+(`docs/specs/DEBT.md` `D25`, `D26`) once their own small batches land.
+
+**Tasks of their own** (costed, not dropped): PF4 image derivatives (a
+192px variant under a new asset path; `CONTRACTS.md`, `docs/fixtures/`,
+`tests/contracts.js`, `llms.txt` in one commit; ~2MB of files); splitting
+`ListPage.svelte` (1692 lines; a golden plan per seam; after B10, which has
+shipped); A2's remaining half (every port through `AppState`); decomposing
+`AppState`; `Record_.tier` -> `voaTier` (wire-name adapter, contract);
+branded id types; one home for the shared-link wire constants (contract docs
++ fixtures); the release-shape change of publishing the artefact `check`
+proved (`deploy.md`); a replacement heavy-run lock (`.claude/README.md`,
+"'One heavy run at a time' retired with the parity harness"); the Playwright
+decision (issue 47 handoff, "Phase 8 opening inputs").

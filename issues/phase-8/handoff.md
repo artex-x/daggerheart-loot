@@ -2,49 +2,47 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress, ready for closeout. HEAD is
-  `bb20a0d`, **B12d** itself - the
-  fourth and terminal piece of B12, one commit past B12c's own
-  sha-citation follow-up (`18d4294`), which was one commit past **B12c**
-  (`639f7eb`).
-  `rtk npm run check` is green on B12d (all suites, coverage thresholds
-  unchanged at 97.04/89.02/98.04/97.83) - see "Verification". `npm run
+- Task status: **done**. Phase-8 is complete and this pass retires the
+  task directory. HEAD entering this pass was `9d0f139` (docs, citing
+  B12d's own sha) = `origin/main`, one commit past **B12d** (`bb20a0d`),
+  B12's fourth and terminal piece. `rtk npm run check` was green on B12d
+  (all suites, coverage thresholds 97.04/89.02/98.04/97.83); `npm run
   check:built`, the three named browser suites, `sweep.js 1180` and two
-  golden probes all green too. Pushed: `git rev-parse HEAD origin/main`
-  both `bb20a0d`.
-- Last agent: implementer (2026-09-18, B12d: the browser-gated rows and
-  the three measurements this phase owes).
+  golden probes were all green too - see "Verification" for every batch's
+  exact commands and results, preserved in full.
+- Last agent: orchestrator (2026-09-18) - closeout and retirement per
+  `.claude/skills/handoff/SKILL.md`, "Retirement", and
+  `.claude/prompts/orchestrate.prompt.md`, "Task closeout and cleanup",
+  step 6. B12d (the last implementer batch) shipped in the prior commit,
+  `bb20a0d`.
 - Branch: `main`.
-- Base / starting commit: `e7ce2ad` (this task's planning pass, B12
-  designed as four consecutive pieces).
-- Review: **not run (owner's decision, 2026-09-18 - see context.md,
-  "Review and nit policy for this task")**. B12a-B12d get no reviewer; B12
-  is itself the remediation stage for B1-B11's eleven reviews, and
-  reviewing it would open a second-order review -> remediate loop with no
-  natural floor. Not "not required (no trigger fired)" - a trigger did
-  fire (browser-suite and `app/src` changes), the review was declined.
-- No deviation in scope. One discrepancy corrected in this piece rather
-  than silently resolved: `nits.md`'s "Carried, needing confirmation"
-  table still showed `B2-5` as `verify` although the census table above it
-  already recorded `B2-5 done e52f5de` - re-checked directly against
-  `.claude/README.md:108` (it does read "covered paths"), the census entry
-  was right, and the stale `verify` row is removed - see `nits.md`.
-  Also carried, not re-resolved: `plan.md`'s B12a step 7 undercounts the
-  Deferred table by one row - see `nits.md`'s note under its Deferred
-  table.
-- Last planning pass: planner, 2026-09-18, at `78981b2` - designed B12 as
-  four consecutive pieces.
-- NEEDS_HUMAN_CONFIRMATION: no runtime decision needed from B12d itself,
-  but see "Blockers" - one check nothing in this repository can perform is
-  recorded there as an owed owner/human action.
-- Next batch: **none**. B12d is B12's terminal piece and B12 is phase-8's
-  terminal batch (`plan.md`, "B12d", "Closeout"). `nits.md`'s "Outstanding"
-  table is now empty (every row `done`, `closed`, or moved to "Deferred out
-  of phase-8" with a reason) - the task is retirable per
-  `.claude/skills/handoff/SKILL.md`, "Retirement". Retirement itself is the
-  orchestrator's, not this implementer's - see this task's own dispatch
-  ("Do not perform the task-directory retirement or the closeout - those
-  are the orchestrator's and come after you").
+- Base / starting commit: `e7ce2ad` (the planning pass that designed B12
+  as four consecutive pieces); the task itself opened from issue 47's
+  closeout, `d5e3e5a`.
+- Review: B1-B11 were each reviewed (`context.md`, "Review and nit policy
+  for this task"); B12a-B12d were not, by the owner's explicit decision,
+  2026-09-18 - B12 is itself the remediation stage for the eleven prior
+  reviews, so reviewing it would open a second-order review -> remediate
+  loop with no natural floor.
+- No deviation in scope in this closeout pass. One structural defect fixed
+  first, per the dispatch: `nits.md`'s `## Outstanding - B12's scope`
+  heading held both the census (fully resolved, a verdict for all 103 live
+  rows) and the eleven per-batch detail tables below it - 54 of their 102
+  rows carried no inline resolution marker at all, so a reader opening
+  "Outstanding" saw what looked like unresolved work, though every one of
+  those rows **is** resolved per the census. Fixed by retitling, not by
+  editing any row's content: `## Outstanding` now holds no rows (a short
+  note pointing at the census); the census got its own `## Census, ...`
+  heading, staying positionally where it was, as the index; the eleven
+  detail tables moved under a new `## Review findings, by batch - detail
+  behind the census, all resolved` heading, with a note explaining that an
+  absent inline marker is not an open item. No verdict was re-litigated -
+  a spot sample of detail rows against the census found no mismatch.
+- NEEDS_HUMAN_CONFIRMATION: no. One check nothing in this repository can
+  perform stays owed - see "Blockers", carried forward unchanged from
+  B12d.
+- Next batch: **none**. Phase-8 is retired; see "Next batch
+  (implement-ready)" below.
 
 ## Completed
 
@@ -1134,59 +1132,16 @@ first-ever Prettier run on these files.
 
 ## Next batch (implement-ready)
 
-- **Name**: B12d - the browser-gated rows and the three measurements this
-  phase owes. The fourth and **terminal** piece of B12 (`plan.md`,
-  "B12d"). B12c shipped this pass.
-- **Rows**: `B6-N1`, `B7-N1`, `B7-N2`, `B7-R1`, `B7-R2`, `B7-R4`, `B7-N4`,
-  `B7-N13`, `B7-N15`, `B8-R6`, `B8-N4`, `B8.1-N2`, `B8.1-N3`, `B11-N2`,
-  `B11-N3` - each its own acceptance line, per `plan.md`, "B12d".
-- **Coupled rows that must ship in one commit** (`plan.md`, "B12d"):
-  `B7-N1` (`help.ts:544`'s `Players' link` still carries a curly
-  apostrophe), `B11-N2` (`inventory.js:150-151`'s value and its false
-  "curly apostrophe" comment) and `B11-N3` (the coupling itself - B7/P14
-  already straightened `dict.ts:624` to ASCII, so `help.ts` disagrees with
-  the shipped app, and `inventory.js`'s driver-facing copy must move with
-  it or the driver's name lookup and the live label disagree in the
-  opposite direction). `help.ts` is `app/src` but rides here because this
-  is the piece that can prove the string moves no golden.
-- **The three measurements this phase owes, each its own acceptance line**
-  (`plan.md`, "B12d"):
-  1. `node tests/app/sweep.js 1180` with the English axe path exercised -
-     `sweep.js` only runs axe on Russian at 1180, so B7's `allow` removal
-     has never been proved against English.
-  2. The scroll-to-bottom measurement of `.selbarwrap` and `.foot` with a
-     selection, at 1180 **and** 375 (`B7-R1`) - both existing instruments
-     measure the unscrolled page, the one position where the sticky-vs-
-     fixed divergence cannot appear.
-  3. `B7-R4`'s 44x44 hit-target overlap: measure `.note-x::after` against
-     the note `<textarea>` and `.warn-x::after` against the notice box. If
-     it reproduces, a `DEBT.md` entry with the measurement - do not
-     redesign the target and do not shrink below 44px (P12's own
-     acceptance forbids both); route the redesign to the UI/UX ticket in
-     the same commit.
-- **One check nothing in this repository can perform, recorded as owed,
-  not silently closed**: confirming `.card-media`'s focus ring is drawn
-  inside `.card` at both `.full` and `.compact` needs a human eye or a
-  screenshot (`focusWalk` reads computed style, goldens read structure,
-  axe checks neither) - record it under Blockers as an owner/human action,
-  with the exact route and widths to look at.
-- **Criterion for this seam** (`plan.md`, "Shape: four consecutive
-  pieces"): a different route and filter set - `B12d`'s gates
-  (`app/states`, `app/print`, `app/contracts`, `sweep.js 1180`, golden
-  probes, `check:built`) share nothing with `B12a`-`B12c`.
-- **Gates** (`plan.md`, "B12d"): `rtk npm run check`; `npm run
-  check:built`; `node tests/run-all.js app/states,app/print,app/contracts`;
-  `node tests/app/sweep.js 1180`; two `node tests/app/golden.js
-  --only=<sub>` probes for the string rows. **All four golden shards only
-  if a row re-records** - and a re-record in a nit batch is a stop-and-
-  report first (`COVERAGE.md`'s B8.1 gate rule requires all four shards,
-  not one, when a golden moves).
-- **Closeout**: after `B12d` and its review, `nits.md`'s "Outstanding"
-  table is empty and the task is retirable per
-  `.claude/skills/handoff/SKILL.md`, "Retirement". Nothing follows `B12d`.
-- **Standing rule this batch establishes** (`plan.md`, "B12"): a review's
-  nits are appended to `nits.md` when the review lands, not when somebody
-  gets to them.
+None. Phase-8 is complete and this task directory is retired in this pass.
+`nits.md`'s `## Outstanding` heading holds no rows (see "Status"); every
+batch B1-B12d shipped (see "Completed"). This section used to carry B12d's
+implement-ready brief; it is collapsed now that B12d has shipped and is
+recorded there instead, per `.claude/skills/handoff/SKILL.md`, "Collapse
+actions", "a shipped batch's implement-ready brief collapses to its outcome
+and commit." A future phase-8-adjacent need opens its own task rather than
+reopening this one - `.claude/skills/handoff/SKILL.md`, "Retirement":
+"Never retire a directory the human still calls active" (and, symmetrically,
+never un-retire one either).
 
 ## Blockers
 
@@ -1219,7 +1174,7 @@ golden probes are all green too - see "Verification".
 
 - **Five register rows this planning pass moves out of B12's scope**, each
   with a reason the owner can overrule in one line - full table in
-  `plan.md`, "Rows this plan moves to Deferred": `B6-R1` (the `.bad`
+  `nits.md`, "Deferred out of phase-8, with reasons": `B6-R1` (the `.bad`
   second-corruption backup - the consistent-storage ticket already owns
   ".bad-key recovery beyond a notice"), `B6-R5` (telling a damaged link
   apart from one whose items are all gone - a new user-visible outcome, so
@@ -1240,9 +1195,10 @@ golden probes are all green too - see "Verification".
 - **One check nothing in this repository can perform, still owed** - see
   "Blockers" above for the full record (route, widths, and why no
   instrument here can see it).
-- See `plan.md`, "Deferred to the two excluded tickets, and to tasks of
+- See `context.md`, "Deferred to the two excluded tickets, and to tasks of
   their own" (the consistent-storage-layer ticket, the UI/UX-redesign
-  ticket, and several costed tasks of their own).
+  ticket, and several costed tasks of their own) - moved there from
+  `plan.md` at this pass's retirement.
 - `issues/56/context.md:38` and `issues/59/context.md:25` cite the deleted
   `docs/parity.md` (DC14) - other tasks' files; this task's orchestrator
   passes it on, untouched.
@@ -1284,6 +1240,90 @@ golden probes are all green too - see "Verification".
   rule exists exactly because a second session's edits can make the first
   session's gate results look like a bug in its own work, which is what
   happened here (see "Verification").
-- Session end partial progress: none - `main` is at a committed, pushed,
-  gate-verified boundary (B12d's own sha `bb20a0d`, see "Completed"). B12
-  is now fully shipped; retirement is the orchestrator's next step.
+- **Retirement pass (2026-09-18, orchestrator) - cleanup performed and
+  artifacts retained, per `orchestrate.prompt.md` step 7.** Last commit
+  touching this directory before this pass began: `9d0f139` (`git log
+  --oneline -3 -- issues/phase-8/`); its own pre-retirement text is there
+  and in every sha this file's "Completed" section names.
+  - **Removed**: this task's own `plan.md`, in the same commit as the
+    citation retargeting below (`bash-guard.mjs`'s retirement guard denies
+    the deletion otherwise). One internal citation to it, in `nits.md:541`,
+    used a `git show <sha>^:...` parent form the guard's `SHA_CITE_RE`
+    cannot parse (it has no rule for a caret before the colon); rewritten
+    to cite the plain parent sha (`d882707`) directly, rather than left to
+    block the deletion.
+  - **Durable content relocated, first** (`plan.md`'s own content, judged
+    section by section against `.claude/skills/handoff/SKILL.md`,
+    "Never drop"/"Always drop"):
+    - `.claude/README.md` gained a second worked example of the
+      batch-sizing seams (alongside issue 47's), the B12 four-piece split
+      and its three seam criteria - the "batch-sizing criteria and the
+      four-piece seam reasoning" this dispatch asked to judge.
+    - `issues/phase-8/context.md` gained three sections: "The first plan's
+      B2-B20 shape, and the merge to B2-B11" (the owner-decision history
+      `.claude/README.md`'s "too small" bullet cites as its worked
+      example); "Findings dropped without a batch, with reasons" (the
+      rejected-options table, ~27 rows, moved verbatim - a rejected-
+      options list is exactly what `SKILL.md`'s "Never drop" names); and
+      "Deferred to the two excluded tickets, and to tasks of their own"
+      (what the consistent-storage-layer ticket and the UI/UX-redesign
+      ticket inherit, plus the standalone costed tasks - PF4 image
+      derivatives, splitting `ListPage.svelte`, decomposing `AppState`,
+      and the rest).
+    - **Judged and left to die with `plan.md`, not moved**: "Verified
+      facts that change what the reports proposed" (12 of its 13 items
+      were already duplicated in `context.md`'s "Planner findings"
+      section verbatim - D7's opacity cause, the `#/search` golden count,
+      the stale-`CLAUDE.md`-injection retraction (twice), `dhloot.prefs.v1`
+      holding `{ view }` only, D16, D8's real location, P4(b)/D6, the
+      cross-report identities; the remaining item, B1's `hayFor` design
+      improvement, already had its correct home named in `plan.md` itself,
+      `handoff.md`'s own B1 entry); "Architecture and constraints that
+      hold for every batch" (restates `CLAUDE.md`'s own standing rules
+      with no phase-8-specific content); "Owner decisions - settled" (a
+      pointer to `context.md`'s own "Settled owner decisions" table,
+      already there); the per-batch "Gate cost, both shapes" table (a
+      pre-batch time *estimate*, since superseded by every batch's own
+      real measured numbers in this file's "Verification" section - the
+      one reusable number in it, `sweep1180-ru`'s ~372s, is preserved via
+      the citation retarget below, not by copying the table).
+  - **Citations retargeted** (a fixed-string search for this task's own
+    `plan.md` path outside `issues/phase-8/` was 6 hits before this pass,
+    across 4 files; 0 after):
+    `.claude/README.md:309,319` (the `sweep1180-ru` cost-table row and the
+    CI-job-fixed-cost paragraph) and `.github/workflows/ci.yml:92`,
+    `tests/run-all.js:27,138` all now cite `issues/phase-8/handoff.md`,
+    "B3" (which already carries the real measured numbers, 371.9s(ru)/
+    172.7s(en)); `.claude/README.md:332` (the "twenty batches merged to
+    eleven" fact) now cites `issues/phase-8/context.md`'s new section by
+    name; `docs/specs/DEBT.md:99` (`D24`'s cross-reference) now cites
+    `issues/phase-8/context.md`. Within `issues/phase-8/` itself,
+    `handoff.md`'s and `nits.md`'s remaining bare "`plan.md`" mentions
+    (no `issues/phase-8/` prefix, ~20 across the two files) are left as
+    provenance pointers, per this dispatch's own instruction - they do
+    not block the guard and `context.md`/`handoff.md`/`nits.md` all
+    survive retirement, unlike `plan.md`. Two of `handoff.md`'s own
+    pointers (in "Deferred", above) were retargeted anyway, to the exact
+    sections that now hold the content they pointed at, since the correct
+    target was already in hand.
+  - **Retained, not retired**: `issues/phase-8/context.md`,
+    `issues/phase-8/handoff.md` (this file), `issues/phase-8/nits.md` and
+    `issues/phase-8/critique/*.md` (the seven read-only sweep reports) -
+    this dispatch retires `plan.md` alone, not the directory. `nits.md`
+    also had a structural fix this pass (see "Status") but no content
+    removed - every row it held stays, just correctly headed.
+  - **Retained, foreign, confirmed untouched and unstaged one more time**:
+    `.claude/agents/reviewer.md` (modified, another session's - the owner
+    is tracking it separately), `issues/56/` (untracked, another task's),
+    `remediate` (untracked, 0 bytes, origin unknown - the owner is raising
+    it with its author separately; not this task's to delete). `git status
+    --porcelain` before this pass's own first edit and again just before
+    its commit both show only these three foreign paths beside this pass's
+    own changes.
+  - Nothing else was found or removed: no scratch files, probe branches,
+    or manually-built `_site/` anywhere in the tree at any point this pass
+    checked - consistent with every prior batch's own note here.
+- Session end partial progress: none. `main` is at a committed, pushed,
+  gate-verified boundary once this pass's retirement commit lands (see
+  "Status" and "Completed"). Phase-8 is fully shipped and retired; no
+  further session should open `issues/phase-8/` as an active task.

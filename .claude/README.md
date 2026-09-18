@@ -306,7 +306,7 @@ documented; the parity rows below are replaced by the gates that survive.
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | longer; `app/sweep` as a whole (`run-all.js app/sweep`, all four widths) is past the cap and must run width by width |
 | `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | longer; the four shards must run separately, never as one bare `node tests/app/golden.js` call |
-| `node tests/run-all.js <suites> --shard=n/m` | varies with what the packer bins together - measured up to ~372s for one bin (`sweep1180-ru`, `issues/phase-8/plan.md`, "B3") | longer; a shard's own bins are not interchangeable with `ci.yml`'s matrix count (`tests/derived.js` asserts the two agree) |
+| `node tests/run-all.js <suites> --shard=n/m` | varies with what the packer bins together - measured up to ~372s for one bin (`sweep1180-ru`, `issues/phase-8/handoff.md`, "B3": 371.9s(ru)/172.7s(en)) | longer; a shard's own bins are not interchangeable with `ci.yml`'s matrix count (`tests/derived.js` asserts the two agree) |
 
 `check:built` and the `tests/app/` filters are paid once per batch; `npm run
 check` is paid once per commit inside it. None of these scale with the
@@ -316,7 +316,7 @@ This table is about a **local** foreground call. A CI job's fixed cost is
 about twenty seconds (checkout, setup-node, `npm ci`, `npm run build`), not
 minutes - `tests/run-all.js`'s `--shard=n/m` and `ci.yml`'s `browser` matrix
 split the real-Chrome suites across four such jobs for exactly that reason
-(issues/phase-8/plan.md, "B3"). Merging work to share a CI job's fixed cost
+(issues/phase-8/handoff.md, "B3"). Merging work to share a CI job's fixed cost
 follows the opposite logic from merging a batch to share this table's local
 one.
 
@@ -329,8 +329,8 @@ one.
    Phase 8's first plan (2026-09-17) split about a hundred findings into
    twenty batches - eighteen `npm run check` runs, roughly 2.5 hours of gate
    time before any test of the work - and was merged to eleven on the
-   owner's instruction (`issues/phase-8/plan.md`, "Where every finding
-   landed").
+   owner's instruction (`issues/phase-8/context.md`, "The first plan's
+   B2-B20 shape, and the merge to B2-B11").
 2. *Too big.* A batch whose `npm run check` cannot finish inside one
    foreground call on the host as it is, or whose review cannot be held in
    one pass, forfeits everything when the host stalls: B5.3 (26 paths)
@@ -361,6 +361,22 @@ Aim for one `tests/app/` filter group and one green check per batch; a
 worked application is issue 47's `plan.md` (commit `fdd015f` onward),
 "The batches, and why three rather than one", which cuts R0b at two of the
 seams above and says which.
+
+A second worked application, at the opposite extreme: phase-8's `B12`
+(`issues/phase-8/handoff.md`, "B12a" through "B12d") was one terminal
+103-row nit-clearing batch that could not be one commit, so it split into
+four consecutive pieces at exactly three seams, each named in this
+section's own terms rather than by feel:
+
+| seam | criterion |
+|---|---|
+| `B12a` \| `B12b` | a commit boundary the harness could not yet reach - `B12a` added the fail-closed stale-`dist/` guard every later piece's browser proof depends on, so it had to land first, on its own commit |
+| `B12b` \| `B12c` | a review that could not be held in one pass - production source (judged against the architecture boundaries and able to move rendered output) and harness/tooling/CI (judged against `COVERAGE.md`, unable to move rendered output) are two different judgement frames over ~51 one-line rows |
+| `B12c` \| `B12d` | a different route and filter set - `B12d`'s gates (`app/states`, `app/print`, `app/contracts`, a `sweep.js` width, golden probes) share nothing with `B12a`-`B12c`, and it alone carried the phase's three owed real-browser measurements |
+
+Merging *inside* each piece stayed deliberate throughout: `B12c` alone
+carried 21 unrelated tooling rows across ~15 files on one `check` and one
+CI watch, because none of the three seams above cut between them.
 
 **"One heavy run at a time" retired with the parity harness (R0c,
 2026-09-17).** `tests/parity.js` used to write `test-output/parity.lock`
