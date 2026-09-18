@@ -100,6 +100,64 @@ below are B12's.
 | B7-N1 | `app/src/lib/help.ts:544` | `{ b: 'Players’ link' }` still carries the curly apostrophe P14's editorial pass straightened everywhere in `dict.ts` (`sharePlayers`, `notePubHint`, `playersLinkCopied`). Out of P14's literal scope (named as a `dict.ts` pass), but the same inconsistency in a sibling file. |
 | B7-N2 | `tests/app/states.js` (new case needed), `app/src/components/StorageNotice.svelte` | D3's fix (the dismiss button moved from inside `<summary>` to a `.warn`-wrapped sibling of `<details>`) was verified once by eye against a real `dist/` build, not by any gate - jsdom does not implement `<details>`'s native closed-content suppression at all (every vitest test passed against the *wrong*, button-hidden structure the first time), and neither `tests/app/states.js` nor `tests/app/sweep.js` has an existing case asserting the button's visibility/hit-testability while the notice is folded, even though both drive a real Chromium. No permanent test guards against this exact regression recurring. Add a `states.js` case: open `#/lists`, confirm `<details>` is closed, read `.warn-x`'s `getBoundingClientRect()`, assert non-zero width/height (and, ideally, that it is actually clickable). |
 
+### From B7's review (accessible names, product text, structure)
+
+Verdict **fix-then-continue**. Appended when the review landed, per the
+standing rule below. Ids continue this task's scheme: the review's own
+`R-1`-`R-4` are `B7-R1`-`B7-R4`, and its `N1`-`N13` are `B7-N3`-`B7-N15`
+(`B7-N1`/`B7-N2` were already taken by the two nits found while implementing
+B7, above).
+
+**Four blockers are NOT in this table and are NOT B12's** - they go to B7's
+own one remediation cycle, per `orchestrate.prompt.md`, "Blockers do not go
+to a nit batch". Recorded here only so the register shows they were seen:
+
+- **BL-0** (found by CI, not by the review): `docs/fixtures/statlines/equipment.json`
+  still holds frame record `f7`'s pre-D11 stat line, so `app/contracts` fails
+  in a real browser (`f7/ru`, `f7/en`). `app/src/lib/i18n.test.ts:56` hides it
+  by passing `noTier: isFrameRecord(record)`, which is why `npm run check`
+  stayed green. CI run `35318680003` on `fa56576`, job `browser (3)`.
+- **BL-1**: `docs/specs/COVERAGE.md:162-165` documents the
+  `expectNoA11yViolations(container, { allow })` parameter this commit deleted.
+- **BL-2**: `docs/specs/COVERAGE.md:64` asserts the opposite of what shipped -
+  it still says `share.ts` passes `noTier: isFrameRecord(it)` and that the
+  fixture was recaptured *losing* the tier word.
+- **BL-3**: the tier ladder on frame records (`RecordCard.svelte:177`, the
+  guard dropped) is visible on **56 frame records** and covered by nothing -
+  the only frame record in a golden and in `record.test.ts`'s fixture is `f1`,
+  whose `eq.line` is empty.
+
+| id | where | what |
+|---|---|---|
+| B7-R1 | `app/src/components/Shell.svelte:105-109`, `SelBar.svelte:75-79` | P10's comment says the bar "is fixed to the bottom of the viewport"; it is `position: sticky`. The z-index half of the argument is right (a positioned `z-index: 45` box paints over the unpositioned footer whatever the DOM order), but a sticky box also has a **flow** position, and that moved from after `<footer>` to before it. Two consequences the recorded evidence cannot see: with a selection the footer is pushed down by the bar's height, and at **maximum scroll** the bar un-sticks *above* the footer instead of resting below it. Both the 1180x900 measurement and `states.js` case 16 measure the unscrolled page - the one position where the difference cannot appear. The plan's own acceptance line asked for the page-bottom overlap at 1180 and 375. Benign either way; the claim is unevidenced and the word "fixed" is what makes it read as proved. |
+| B7-R2 | `tests/app/states.js` (case 23, `addToListMenuStaysInModal`) | `ok(scrollTop === 0, ...)` can no longer fail: `RecordCard.svelte:270` changed `.card` to `overflow: clip`, which creates no scroll container, so `scrollTop` is 0 whatever the placement effect does - a stray `scrollIntoView` would scroll the nearest *scrollable* ancestor and this assertion would still pass. The D6 evidence it names (`.card.scrollTop` 109) is not what it measures any more. The real assertion is `inside(menu, card)`. Drop the scrollTop line or replace it with one pinning `:scope > .btn`. |
+| B7-R3 | `app/src/lib/i18n.ts:120,126,147` | After B7, `noTier` has **zero production callers** - only `i18n.test.ts:56,75-80` (the old-app parity fixture, which legitimately still needs it). Nothing says so at either site, so a later reader applying `CLAUDE.md`'s "add no variant before something uses it" deletes it and breaks the parity fixture for a reason that takes an hour to find. One clause closes it. Interacts with BL-0's fix. |
+| B7-R4 | `app/src/components/ListPage.svelte:1267-1276`, `StorageNotice.svelte` | P12's 44x44 targets overlap editable neighbours: `.note-x::after` extends ~12px beyond a 20px button into the note `<textarea>`; `.warn-x::after` ~3px above the notice box. The `.homebtn` precedent it copies has no editable neighbour. A tap 12px from the cross clears the note instead of placing a caret. Unmeasured, low severity. |
+| B7-N3 | `tests/app/lib.js:124-135` | `axe(page, { allow })` is kept "for a future live-shared defect" with no caller - in the same commit whose `app/src/test/a11y.ts` comment argues that a parameter with no caller is a maintained shape for nothing. Pick one: delete it here too, or state why the browser suite differs. |
+| B7-N4 | `tests/app/inventory.js:94,142` and `:98,146` | `selected: 'Выбрано'/'Selected'` and `importPh: 'Ссылка на список'/'Paste a list link'` are dead keys - no reader. `pickRow` was deleted in this very batch for exactly that reason. `importPh` is also now wrong: after P6 that field's accessible name is `t.importList`. |
+| B7-N5 | `issues/phase-8/handoff.md` (`### B7`) | The entry still opens "**Not yet committed**", says files are "all currently in the working tree; most already `git add`ed", and calls the Escape test "the one unstaged file". All three are false as of `fa56576`, and the entry's own last bullet contradicts them. |
+| B7-N6 | `issues/phase-8/handoff.md` (`### B7`) | No `Review:` line inside the batch entry - it sits in `## Status`. Identical placement miss to `B4-8`, against the rule shipped in `c8cc38e`. |
+| B7-N7 | `issues/phase-8/handoff.md` | No `## Verification` section; `.claude/templates/handoff.template.md` has one. The content exists (inside `### B7` -> "Gates run") but not where the template puts it. |
+| B7-N8 | `issues/phase-8/handoff.md` (golden category 6) | Category 6 reaches ~40 files, not the three named: frame equipment also sits in `#/tables/eq_weapon`, `eq_armor`, `eq_secondary`, `other_starting`, the `#/search` states and the roll states. The category *text* covers it; the parenthetical examples undersell it by an order of magnitude. |
+| B7-N9 | `app/src/components/TablesPage.svelte:84` | `lastTable = route.table as TableId` - the assertion exists only because narrowing is lost inside the `untrack` callback. `const t = route.table;` before `untrack(...)` removes the cast. |
+| B7-N10 | `app/src/components/SectionHead.svelte:26` | `this={'h' + String(heading)}` widens to `string`; `heading === 2 ? 'h2' : 'h3'` keeps the literal union the prop declares. *(taste)* |
+| B7-N11 | `app/src/components/tables.test.ts` (folded-panel case) | `expect(container.querySelector('.ffilter')).toBeNull()` replaced a role+name assertion with a class probe. `expect(screen.queryAllByRole('button', { name: 'Предметы' })).toHaveLength(1)` keeps it at role level and still disambiguates the pill. *(taste)* |
+| B7-N12 | `docs/specs/FEATURES.md:174-183`, `app/src/components/shell.test.ts` | A shared list (`#/l/<payload>`) shows a name on screen but keeps the plain tab title, because the effect keys off `app.openList`. Deliberate and documented, but it is the one case a reader expects to be titled and no test pins the negative. One `shell.test.ts` line. |
+| B7-N13 | `tests/app/driver.js` (`click`/`press`) | Two ranking edges nothing exercises: (a) with `nth > 0`, `exact[idx]` and `boxExact[idx]` index two *different* arrays, so `click(name, 1)` can silently land on the second checkbox when exactly one exact non-checkbox match exists; (b) a substring non-checkbox match still pre-empts an exact checkbox, so a box whose exact name is a substring of any button's name is unreachable through `click()`. That is why `tick()` exists - one sentence saying "for a checkbox, always `tick()`" stops the next author re-deriving it. |
+| B7-N14 | `issues/phase-8/handoff.md` (the `npm run check` bullet) | The attempt-by-attempt chronology is session narration; the load-bearing facts (a run past 600s auto-backgrounds and cannot arm the gate; two heavy runs on one tree contend; isolation cleared the two failing files) are already in `context.md`'s "Reasons already disproved". **The D3 first-attempt account is the opposite and must stay** - it is a live trap with the symptom that identifies it. *(never a blocker)* |
+| B7-N15 | `app/src/lib/dict.ts` (en) | P14 straightened English quotes but left standalone hyphens in English strings (`droppedItems: 'Skipped %n items - no longer in the data'`) while `noLists` beside it uses an em dash. Pre-existing and outside P14's stated scope. *(taste, `deferred-scope` if B12 prefers)* |
+
+**Two checks B7's review could not run** (read-only, and B8 was live on the
+tree) - they belong to whoever next has the tree:
+
+- `node tests/app/sweep.js 1180`. The `allow` removal was proved at 768, where
+  `sweep.js`'s `width === 1180 || lang === 'ru'` guard runs axe on Russian
+  only. `nested-interactive` and `heading-order` are language-independent, so
+  the risk is low, but the English axe path has not run without the two allows.
+- One scroll-to-bottom measurement of `.selbarwrap` and `.foot` with a
+  selection at 1180 and 375 (B7-R1) - the measurement P10's acceptance line
+  actually asked for.
+
 ### Carried, needing confirmation before B12 edits anything
 
 | id | where | what |
