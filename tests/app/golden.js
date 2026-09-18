@@ -357,12 +357,13 @@ if (require.main === module) {
     return { tree, controls };
   };
 
-  /** Polls for the toast a `timed` state's `enter` raised - the toast's own
-   *  entrance transition is not one of the two reduced-motion stays this app
-   *  turns off (`docs/specs/FEATURES.md`, "Chrome"), so by the time the click
-   *  that raised it has settled (every driver press already waits on that)
-   *  the toast should already be visible; this is the assertion in place of
-   *  the coin flip a fixed pause would be. */
+  /** Polls for the toast a `timed` state's `enter` raised. Since B8's D1
+   *  (the blanket reduced-motion kill) the toast's own entrance transition is
+   *  one of the stays this app turns off too, so under the driver's emulated
+   *  reduced motion it is up within a frame of the click that raised it -
+   *  which makes this poll cheap, not wrong: it is still the assertion in
+   *  place of the coin flip a fixed pause would be, for a machine slow enough
+   *  that even that frame is not guaranteed. */
   const waitForToast = async (page, id, lang) => {
     const start = Date.now();
     for (;;) {
@@ -412,8 +413,10 @@ if (require.main === module) {
       try {
         await d.open(state.route);
         if (state.enter) await state.enter(d);
+        await d.addressSettled();
         const ru = await captureLang(page, d);
         await d.click('EN');
+        await d.addressSettled();
         const en = await captureLang(page, d);
         return render(state, ru, en);
       } finally {
@@ -421,6 +424,14 @@ if (require.main === module) {
       }
     }
 
+    /* `addressSettled()` runs unconditionally here too, not gated on the
+     * route: the harness cannot know in general which `enter` mutated a
+     * list, and a state with no pending sync pays one quiet window
+     * (URL_DEBOUNCE_MS + 100ms, ~250ms - or up to ~430ms if a sync lands
+     * mid-window) and returns, against the shortest toast lifetime of
+     * 1600ms. It comes after `waitForToast`, not before: the toast is what
+     * this state exists to capture, so the address wait has to stay inside
+     * the toast's own window rather than push the capture past it. */
     const oneLang = async (lang) => {
       const { ctx, page, d } = await fresh({ width: WIDTH, height: HEIGHT, storage: state.storage });
       try {
@@ -428,6 +439,7 @@ if (require.main === module) {
         if (state.enter) await state.enter(d);
         if (lang !== 'ru') await d.click('EN');
         await waitForToast(page, state.id, lang);
+        await d.addressSettled();
         return await captureLang(page, d);
       } finally {
         await ctx.close();

@@ -9,7 +9,12 @@
 */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import golden from './golden.js';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 const { collapse, normUrl, clean, elisionOf, capName, headerOf, sectionsOf, compareGolden } = golden;
 
@@ -176,5 +181,34 @@ describe('compareGolden', () => {
     });
     assert.equal(failures.length, 1);
     assert.match(failures[0], /ru :: tree: расходится со строки 2/);
+  });
+});
+
+describe('URL_DEBOUNCE_MS - coupled to ListPage.svelte\'s own debounce (issues/phase-8, B8.1)', () => {
+  /* driver.js's addressSettled() waits `URL_DEBOUNCE_MS + 100ms` of address
+   * quiet before a golden capture, so it stays a real wait rather than a
+   * guess only while the two numbers agree. tests/derived.js parsing
+   * ci.yml for the shard/divisor coupling (B3 review finding) is the
+   * precedent for reading a file as text to assert two numbers that could
+   * silently drift apart never do. */
+  it('agrees with the 150ms trailing debounce scheduleUrlSync actually sets', () => {
+    const listPage = readFileSync(
+      path.join(HERE, '..', '..', 'app', 'src', 'components', 'ListPage.svelte'),
+      'utf8'
+    );
+    const fnMatch = listPage.match(/function scheduleUrlSync[\s\S]*?\}, (\d+)\);/);
+    assert.ok(fnMatch, 'could not find scheduleUrlSync\'s own setTimeout in ListPage.svelte');
+    const debounceMs = Number(fnMatch[1]);
+
+    const driverSrc = readFileSync(path.join(HERE, 'driver.js'), 'utf8');
+    const constMatch = driverSrc.match(/const URL_DEBOUNCE_MS = (\d+);/);
+    assert.ok(constMatch, 'could not find URL_DEBOUNCE_MS in driver.js');
+    const urlDebounceMs = Number(constMatch[1]);
+
+    assert.equal(
+      urlDebounceMs,
+      debounceMs,
+      'the debounce moved - update URL_DEBOUNCE_MS and re-run all four golden shards'
+    );
   });
 });

@@ -20,6 +20,10 @@ const TARGETS = {
   next: 'file://' + path.join(ROOT, 'dist', 'index.html')
 };
 
+/* ListPage.svelte's scheduleUrlSync debounces the address write this long.
+   tests/app/golden.test.mjs asserts the two still agree. */
+const URL_DEBOUNCE_MS = 150;
+
 /** Waits until the app has drawn something. */
 async function ready(page) {
   await page.waitForFunction(() => {
@@ -75,13 +79,19 @@ async function ready(page) {
 /**
  * Waits for whatever a press started to finish moving.
  *
- * A fixed pause is the wrong instrument here: the modal opens with a 0.22s
- * `pop` animation (`RecordModal.svelte:159`, ported from the live app's
- * `style.css:591` - B9 deleted the rewrite's blanket reduced-motion kill, so
- * this now runs under reduced motion too, matching live), and a screenshot
- * taken on a timer catches the app mid-flight, with the number moving with
- * how busy the machine is. Asking the browser which animations are running
- * answers exactly the question. The cap is for anything that loops forever.
+ * A fixed pause is the wrong instrument here in principle, but as of B8
+ * (`tokens.css`'s blanket reduced-motion kill, D1) it is nearly what this
+ * has become in practice: under `prepare()`'s emulated
+ * `prefers-reduced-motion: reduce` plus that blanket rule,
+ * `document.getAnimations()` reports only 0.01ms animations, so the wait
+ * above resolves immediately and `settle()` returns after its own 80ms frame
+ * alone (measured: ~127ms from a click that finishes dispatching at ~19ms -
+ * `issues/phase-8/context.md`, "The mechanism, measured 2026-09-18"). It is
+ * kept anyway because it is still the correct instrument for an animation
+ * the CSS rule cannot reach, and for whenever the emulation is scoped down.
+ * What it does NOT do any more is stand in for anything a press defers past
+ * 80ms - a debounce, a timer. Those need their own assertion, the way
+ * `addressSettled()` below is one for `ListPage`'s URL sync.
  */
 async function settle(page) {
   await page.evaluate(async () => {
@@ -372,6 +382,44 @@ function makeDriver(page, target) {
     /** Waits for whatever is in flight - a resize, or a press. */
     settle() {
       return settle(page);
+    },
+
+    /**
+     * Waits for the address bar to stop changing - specifically for
+     * `ListPage.svelte`'s 150ms-debounced URL sync (`URL_DEBOUNCE_MS` above)
+     * to land, which `settle()` no longer waits long enough to catch (see its
+     * own doc comment). Polls `location.hash` every 40ms (the same cadence
+     * `golden.js`'s `waitForToast` uses) and returns once it has been
+     * unchanged for `quiet` ms.
+     *
+     * Two properties worth stating, because they are what makes this an
+     * assertion rather than a papered-over failure:
+     *  - it cannot hang - `cap` is an absolute ceiling, not a retry budget;
+     *  - it cannot mask a genuine failure to sync - an app that never writes
+     *    the address is quiet from the very first read, so this returns at
+     *    once and whatever reads the hash next still fails on content, same
+     *    as today. The only thing it waits for is a write that is already on
+     *    its way.
+     */
+    async addressSettled({ quiet = URL_DEBOUNCE_MS + 100, cap = 2000 } = {}) {
+      const start = Date.now();
+      let prev = await page.evaluate(() => location.hash);
+      let last = prev;
+      let lastChange = start;
+      for (;;) {
+        const now = Date.now();
+        if (now - lastChange >= quiet) return;
+        if (now - start > cap) {
+          throw new Error(`addressSettled: still changing after ${cap}ms (${prev} -> ${last})`);
+        }
+        await new Promise((r) => setTimeout(r, 40));
+        const cur = await page.evaluate(() => location.hash);
+        if (cur !== last) {
+          prev = last;
+          last = cur;
+          lastChange = Date.now();
+        }
+      }
     },
 
     /**
@@ -768,10 +816,25 @@ function makeDriver(page, target) {
    difference in what comes back is a difference in the app rather than in the
    conditions it was run under. */
 async function prepare(page) {
-  /* Both apps fade a card in over 0.28s, and both stop doing it when the
-     visitor has asked for less motion. Asking for it here takes timing out of
-     the pixel comparison entirely: without it the screenshot lands mid-fade and
-     the number moves by half a percent depending on how busy the machine is. */
+  /* This emulation predates B8 and its original reasoning (parity-era: "both
+     apps fade a card in over 0.28s... takes timing out of the pixel
+     comparison") died with the parity harness at R0c. It stays for a better
+     reason: D1 (`tokens.css`'s blanket reduced-motion kill) is the app's
+     shipped behaviour for a visitor who asked for less motion, and only under
+     this emulation does every browser suite exercise that branch - drop it
+     and D1 is covered by `states.js` case 24 alone. It also keeps every run
+     deterministic and fast: without it, every `settle()` wait would be a real
+     0.2-0.28s instead of near-instant, and `sweep1180-ru` (already CI's
+     longest row, ~372s, pressing hundreds of controls) would gain minutes.
+     `print.js`/`driver.js` screenshots still mean a "lands mid-fade" hazard
+     is not entirely gone.
+
+     What it costs, so a later session can re-decide with the ledger in
+     front of it rather than by guessing what this line was for: it blinds
+     `settle()`'s animation wait (see that function's own comment) for
+     anything a press defers past 80ms - a debounce or a timer needs its own
+     assertion, e.g. `addressSettled()`. Do not flip this to fix a timing
+     defect; add an assertion for what actually needs to be waited on. */
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
 
   await page.evaluateOnNewDocument(() => {

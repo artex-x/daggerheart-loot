@@ -347,6 +347,32 @@ puppeteer-only, and is what the CI `browser` matrix's golden shards actually
 exercise - this suite is not a substitute for that, only for the arithmetic
 around it that a golden run was proving by accident.
 
+`golden.test.mjs` also carries a coupling assertion (issues/phase-8, B8.1):
+`URL_DEBOUNCE_MS` in `tests/app/driver.js` must equal the trailing debounce
+`ListPage.svelte`'s own `scheduleUrlSync` sets, read from both files as text
+(the same shape as `tests/derived.js` parsing `ci.yml` for the shard/divisor
+coupling). If the two ever disagree the failure names both files and what to
+do - the debounce moved, so `URL_DEBOUNCE_MS` and every golden shard need
+re-running.
+
+**The gate rule for "no golden moved" (issues/phase-8, B8.1).** A batch's
+claim that a change moved no golden is proved by at least one
+`--shard=n/4` run, or by `--only=` probes that between them reach every route
+kind the change can touch - a hand-picked `--only=` proves only what it
+measured. B8 claimed no movement with `--only=#/i/ci1` and `--only=print`;
+both were true, and both missed three failing `#/lists/a` states, because
+neither reaches an owned-list route.
+
+**The capture wait.** `golden.js`'s `captureState` calls
+`driver.js`'s `d.addressSettled()` immediately before every snapshot - the
+ordinary two-language capture and the `timed` toast capture alike - because
+`settle()` no longer waits long enough to catch a debounced address write
+(see that function's own comment in `driver.js`). This is a harness fix, not
+a production one: do not shorten `ListPage.svelte`'s 150ms debounce or flip
+`prepare()`'s reduced-motion emulation to make a golden pass faster - read
+`prepare()`'s own comment first, it states what the emulation costs and why
+it stays.
+
 Three of those fixtures are replayed by `contracts` as well, against the live
 app. That is what makes them evidence rather than a record of what the new code
 happens to do.
