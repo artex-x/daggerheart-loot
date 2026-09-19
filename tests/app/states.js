@@ -970,6 +970,35 @@ async function dragReorder() {
     '17 (drag reorder): an open note box hides the gold line mid-list - ' + midGold + '/600'
   );
 
+  /* Defect (git log --grep=dnd3): `.row`'s `transition: 0.15s` shorthand
+   * animates the base `.lrow.drop-after` mark, but the `.rnote` copy of it
+   * used to declare no transition of its own - transitions do not inherit,
+   * so the noted row's line snapped in while the plain row's line faded.
+   * Both halves of one mark must share one onset. `prepare()` emulates
+   * `prefers-reduced-motion: reduce` for every case, and `tokens.css`'s
+   * blanket kill (`DEBT.md` D1, paid off) reports both sides as `0s` under
+   * it - equal, but not the invariant this guards - so the real durations
+   * are read with the emulation briefly switched to `no-preference`, then
+   * restored: the suite shares one page and a later case must still see
+   * `reduce`. */
+  await notePage.emulateMediaFeatures([
+    { name: 'prefers-reduced-motion', value: 'no-preference' }
+  ]);
+  const gapTransitions = await notePage.evaluate(() => {
+    const row = document.querySelectorAll('.lrow')[2];
+    const rnote = row.querySelector('.rnote');
+    return {
+      row: getComputedStyle(row).transitionDuration,
+      rnote: rnote ? getComputedStyle(rnote).transitionDuration : null
+    };
+  });
+  await notePage.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  ok(
+    gapTransitions.rnote === gapTransitions.row && gapTransitions.row !== '0s',
+    '17 (drag reorder): the gap mark on a noted row has a different onset than the row - ' +
+      JSON.stringify(gapTransitions)
+  );
+
   // End of the list: the last row marked drop-after, note open.
   await notePage.evaluate(() => {
     const rows = [...document.querySelectorAll('.lrow')];

@@ -1571,6 +1571,10 @@
     border-top: 1px solid var(--line);
     background: var(--bg2);
     padding: 9px 11px;
+    /* Match `.row`'s 0.15s so the drop-gap mark's redrawn half below
+       (`.lrow.drop-after .rnote`) shares one onset with `.lrow`. Named
+       `box-shadow`, not `.row`'s shorthand, as the property this depends on. */
+    transition: box-shadow 0.15s;
   }
 
   .lrow.has-note {
