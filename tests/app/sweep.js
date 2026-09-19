@@ -32,6 +32,7 @@ const TABLES = [
   'wondrous',
   'dread',
   'voa',
+  'dv',
   'frames',
   'community',
   'alt_item',
@@ -50,6 +51,7 @@ const PAGES = [
   ['#/roll/wondrous', 'wondrous'],
   ['#/roll/dread', 'dread'],
   ['#/roll/voa', 'vault of ages'],
+  ['#/roll/dv', "dragon's vault"],
   ['#/roll/community', 'сообщества'],
   ['#/lists', 'списки'],
   ['#/lists/a', 'список'],
@@ -64,6 +66,9 @@ const PAGES = [
   ['#/i/q1', 'карточка снаряжения'],
   ['#/i/voa2_a6', 'карточка Vault of Ages'],
   ['#/i/voa1_t1a', 'карточка снаряжения Vault of Ages'],
+  ['#/i/dve25', 'карточка с цепочкой улучшений в обе стороны'],
+  ['#/i/dve30', 'карточка со сдвоенным хватом'],
+  ['#/i/dve50', 'карточка с Характеристикой Заклинателя'],
   ['#/i/cc1', 'карточка сообщества'],
   ['#/i/f1', 'карточка фрейма'],
   ['#/i/nope', 'предмета нет'],
@@ -359,7 +364,7 @@ async function focusWalk(page, where) {
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
             const known =
-              /^(roll\/(std|alt|wondrous|dread|voa|community)|tables|lists|search|print\/|i\/|l\/|lists\/)/.test(
+              /^(roll\/(std|alt|wondrous|dread|voa|dv|community)|tables|lists|search|print\/|i\/|l\/|lists\/)/.test(
                 h
               );
             if (!known) out.badLinks.push(h);

@@ -1,12 +1,15 @@
 /* What a roll page explains about itself. */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import type { Loot } from './data.js';
 import { helpFor, isBold, isBreak, isLink, moneyHelpFor } from './help.js';
 import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
-const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'community'];
+const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'community'];
 
 /** What one part reads as, so a paragraph can be compared as plain text. */
 const partText = (part: HelpPart): string => {
@@ -179,5 +182,45 @@ describe('the help for a section', () => {
       '9 bags',
       '8 bags'
     ]);
+  });
+});
+
+describe('the tables help against the data', () => {
+  /* Every book whose equipment also rolls on its own table is named where the
+     help says so; Vault of Ages was once left out of that list. */
+  const LOOT = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const BOOK: Record<string, string> = {
+    wondrous: 'Wondrous Loot',
+    dread: 'Dread',
+    voa: 'Vault of Ages',
+    dv: "The Dragon's Vault"
+  };
+  const rolled = [
+    ...new Set(
+      Object.values(LOOT.items)
+        .flat()
+        .filter((it) => it.eq && it.roll != null)
+        .map((it) => it.src)
+    )
+  ].sort();
+
+  it('knows every book with rolled equipment', () => {
+    expect(rolled).toEqual(Object.keys(BOOK).sort());
+  });
+
+  it.each([
+    ['ru', /номер/],
+    ['en', /roll number/]
+  ] as const)('names each of them wherever %s mentions a roll number', (lang, mark) => {
+    const help = helpFor('tables', lang);
+    const paras = (help?.paragraphs ?? [])
+      .map((_, i) => textOf(help, i))
+      .filter((text) => mark.test(text) && text.includes('Wondrous Loot'));
+    expect(paras.length).toBe(2);
+    for (const text of paras) {
+      for (const src of rolled) expect(text, src).toContain(BOOK[src]);
+    }
   });
 });

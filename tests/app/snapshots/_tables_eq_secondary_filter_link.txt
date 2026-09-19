@@ -17,6 +17,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -32,6 +33,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -46,18 +48,18 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Магическое" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "21 из 108"
+    StaticText "24 из 119"
     ... StaticText x17 of 21 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x23 of 27 same-shape siblings elided
+    ... button x24 of 28 same-shape siblings elided
     button "Магическое" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (3)" [checked=false]
+    checkbox "Выбрать все (5)" [checked=false]
     checkbox "Рунный Щит" [checked=false]
-    ... button x19 of 23 same-shape siblings elided
-    ... checkbox x21 of 25 same-shape siblings elided
+    ... button x22 of 26 same-shape siblings elided
+    ... checkbox x24 of 28 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
@@ -68,19 +70,23 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Легендарный Священный Щит" [checked=false]
     button "Легендарный Священный Щит Ранг 4 · Инстинкт · Вплотную · d4+6 ма..." [namelen=216 namehash=0a157cd0]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
 1
+120Кинжал СангромантииРанг 1 · Влияние · Вплотную · d6 маг · Одн... [namelen=259 namehash=386d4830]
 2
 3
 4
 6Ритуальный Клинок СехметРанг 3 · Искусность · Вплотную · d8+4 м... [namelen=287 namehash=6b1358d7]
 6Щит СолнцаРанг 3 · Сила · Вплотную · d4+4 маг · ОдноручноеСолне... [namelen=190 namehash=60405fbc]
 7Арканный СкальпельРанг 3 · Искусность · Далеко · d6+2 маг · Одн... [namelen=184 namehash=2bd082f4]
+87Пылающий БраслетРанг 1 · Искусность · Далеко · d6 маг · Однору... [namelen=250 namehash=dba63b48]
+97ИскраРанг 2 · Проворность · Вплотную · d8+2 маг · ОдноручноеОг... [namelen=300 namehash=4620b1f9]
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -102,9 +108,11 @@ daggerheart.com
 Жуткий НаручРанг 2 · Инстинкт · Вплотную · d8 маг · ОдноручноеОт... [namelen=240 namehash=03f0f778]
 Знание
 Инстинкт
+Искра
 Искусность
 К содержимому
 Как это работает
+Кинжал Сангромантии
 Клинок Эха
 Клинок ЭхаРанг 4 · Влияние · Вплотную · d4+6 маг · ОдноручноеУдв... [namelen=203 namehash=68ff8d2f]
 Колоссы Сухоземья
@@ -134,6 +142,7 @@ daggerheart.com
 Продвинутый Священный Щит
 Продвинутый Священный ЩитРанг 3 · Инстинкт · Вплотную · d4+4 маг... [namelen=212 namehash=2ccd8117]
 Прочее
+Пылающий Браслет
 Ритуальный Клинок Сехмет
 Рунный Щит
 Рунный ЩитРанг 1 · Знание · Вплотную · d4 маг · ОдноручноеЗащитн... [namelen=116 namehash=94e78804]
@@ -186,6 +195,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -201,6 +211,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -215,18 +226,18 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     button "Magic" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "21 of 108"
+    StaticText "24 of 119"
     ... StaticText x17 of 21 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x23 of 27 same-shape siblings elided
+    ... button x24 of 28 same-shape siblings elided
     button "Magic" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (3)" [checked=false]
+    checkbox "Select all (5)" [checked=false]
     checkbox "Rune Shield" [checked=false]
-    ... button x19 of 23 same-shape siblings elided
-    ... checkbox x21 of 25 same-shape siblings elided
+    ... button x22 of 26 same-shape siblings elided
+    ... checkbox x24 of 28 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
@@ -237,18 +248,21 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     checkbox "Legendary Hallowed Shield" [checked=false]
     button "Legendary Hallowed Shield Tier 4 · Instinct · Melee · d4+6 mag ·..." [namelen=211 namehash=9661ab54]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## en :: controls
 1
+120Sangromancy DaggerTier 1 · Presence · Melee · d6 mag · One-Ha... [namelen=218 namehash=e4851889]
 2
 3
 4
 6Ritual Blade of SekhmetTier 3 · Finesse · Melee · d8+4 mag · On... [namelen=266 namehash=586550e2]
 6Shield of the SunTier 3 · Strength · Melee · d4+4 mag · One-Han... [namelen=185 namehash=3635a78d]
 7Arcane ScalpelTier 3 · Finesse · Far · d6+2 mag · One-HandedInc... [namelen=188 namehash=bee7341d]
+87Burning BraceletTier 1 · Finesse · Far · d6 mag · One-HandedWa... [namelen=217 namehash=c25e3c80]
+97SparkTier 2 · Agility · Melee · d8+2 mag · One-HandedFiery Rip... [namelen=291 namehash=338cc56b]
 Advanced Focus Runes
 Advanced Focus RunesTier 3 · Instinct · Very Close · d6+4 mag · ... [namelen=172 namehash=f23bbe05]
 Advanced Hallowed Shield
@@ -262,12 +276,14 @@ Armor
 Beast Feast
 Blackblood Tendril
 Blackblood TendrilTier 4 · Instinct · Close · d6+8 mag · One-Han... [namelen=229 namehash=3c3b4bea]
+Burning Bracelet
 Close
 Colossus of the Drylands
 Communities
 Copy a link to this section
 Core
 Dark Heart of Andaluria
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -318,12 +334,14 @@ Reset all
 Ritual Blade of Sekhmet
 Rune Shield
 Rune ShieldTier 1 · Knowledge · Melee · d4 mag · One-HandedProte... [namelen=115 namehash=cce204a6]
+Sangromancy Dagger
 Search
 Secondary
 Shield of the Sun
 Skip to content
 Soul Chain
 Soul ChainTier 3 · Presence · Very Close · d6+5 mag · One-Handed... [namelen=221 namehash=3b87e5ae]
+Spark
 Standard rules
 Strength
 Tables

@@ -9,7 +9,8 @@
      alternate tables roll two dice, so both have panels of their own. */
   const ROLL_TABLE: Partial<Record<Section, { table: string; title: keyof Dict }>> = {
     'roll/wondrous': { table: 'wondrous', title: 'pageWondrous' },
-    'roll/dread': { table: 'dread', title: 'pageDread' }
+    'roll/dread': { table: 'dread', title: 'pageDread' },
+    'roll/dv': { table: 'dv', title: 'pageDv' }
   };
 </script>
 

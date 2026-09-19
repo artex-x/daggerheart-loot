@@ -2,13 +2,14 @@
   /* A roll on one list of records: pick a number, or let the dice pick it, and
      read what came up.
 
-     This is the shape four sections share. Wondrous and Dread roll over a whole
-     table; Vault of Ages and Communities roll inside a part of one, and pass a
-     `picker` row that chooses which part. Core rules and the alternate tables
-     roll several cards at once and get their own panels; what they share with
-     this one is the number field and the result card.
+     This is the shape five sections share. Wondrous, Dread and The Dragon's
+     Vault roll over a whole table; Vault of Ages and Communities roll inside
+     a part of one, and pass a `picker` row that chooses which part. Core
+     rules and the alternate tables roll several cards at once and get their
+     own panels; what they share with this one is the number field and the
+     result card.
 
-     The rows are a prop rather than a table name, because two of the four
+     The rows are a prop rather than a table name, because two of the five
      callers do not have a table name to give - their rows are a slice. */
   import { untrack } from 'svelte';
   import Button from './Button.svelte';

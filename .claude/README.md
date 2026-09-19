@@ -154,6 +154,10 @@ Host and tool facts behind this design, kept so nobody re-derives them:
   Vite cannot write `.vite-temp` through the read-only junction, and the
   failure looks like a real diagnostics error. A private dependency copy
   inside the worktree fixes it.
+- A worktree-isolated session calls `git.exe`, not `git`: the RTK hook
+  rewrites a line that starts with `git` into `rtk git ...`, and the
+  isolation guard then refuses it because it cannot read which root the
+  launcher targets. `git.exe` matches neither. Measured 2026-09-19.
 - A second session editing `.claude/hooks/**` concurrently makes this
   session's `npm run check` fail in ways that read as its own bug:
   `selftest.mjs`'s pass count changes between consecutive runs with no edit
@@ -597,6 +601,15 @@ Proof by isolation, on a surviving test: `sharedListPage.test.ts:296` failed
 in 2 of 6 full-suite runs on one tree and passed alone 20/20 in 63.8 s -
 failing only under full-suite load and passing alone is the signature of
 contention, not regression.
+
+**A runaway `svelte-language-server` is the one software-side starver found.**
+Measured 2026-09-23: one such process, alive for ~8 CPU-hours since the night
+before, held ~1.35 cores without a break. Symptom: `npm run check`'s vitest
+step took 566-612 s, past the 600 s cap, and five runs failed only on
+timeouts (`searchPage.test.ts` "the cap" at 32-44 s against 30 s, once
+`sharedListPage.test.ts`); both files passed alone. Check Task Manager for
+the process before a gated batch; a restart cleared it and the next check
+was green.
 
 **A check reporting zero coverage everywhere ran no test at all.** Vitest's
 fork-pool worker start timeout is 60s and hardcoded (`START_TIMEOUT` in

@@ -10,8 +10,11 @@
   import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
   import Seg from './Seg.svelte';
+  import { setBonusOf, setOf } from '../lib/data.js';
   import { PRINT_MAX, printHash, sectionHash } from '../lib/hash.js';
+  import { namesOf } from '../lib/i18n.js';
   import { pages } from '../lib/print.js';
+  import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -38,6 +41,18 @@
    *  card - an index array, built here so the template needs no unused
    *  item binding of its own. */
   const blankKeys = $derived(Array.from({ length: sheet.blanks }, (_, k) => k));
+
+  /** The set's shared bonus as a card's last text line. The label names the
+   *  members, so a card read alone still says the bonus needs the others. */
+  function setLine(it: Record_): { label: string; body: string } | undefined {
+    const bonus = index ? setBonusOf(index, it) : undefined;
+    if (!index || !bonus) return undefined;
+    const ru = app.lang === 'ru';
+    return {
+      label: `${ru ? bonus.ru : bonus.en} (${t.setLabel}: ${namesOf(setOf(index, it), app.lang)})`,
+      body: ru ? bonus.rud : bonus.ende
+    };
+  }
 
   /* Kept as session memory on `AppState`, the way live's
      `S.printBW` (app.js:49) was - it survives leaving the page, unlike
@@ -112,6 +127,7 @@
           lang={app.lang}
           bw={app.printBW}
           qty={qty[it.id]}
+          setLine={setLine(it)}
           artBroken={app.artBroken(it.id)}
           onartfail={(bad: string) => {
             app.markArtBroken(bad);

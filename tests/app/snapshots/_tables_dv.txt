@@ -1,0 +1,753 @@
+# #/tables/dv
+# route: #/tables/dv
+# why: a plain body with a kind row, 145 rows: the tenth table's loot, then its equipment
+
+## ru :: tree
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/dv]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры" [expanded=false]
+    StaticText "145"
+    checkbox "Выбрать все (145)" [checked=false]
+    StaticText "Выбрать все (145)"
+    checkbox "Святилище Оградителя" [checked=false]
+    button "1 Святилище Оградителя Пока вы носите это кольцо, вы получаете б..." [namelen=338 namehash=8fb5948b]
+    ... checkbox x142 of 146 same-shape siblings elided
+    ... button x142 of 146 same-shape siblings elided
+    checkbox "Чешуя Ордена Дракона" [checked=false]
+    button "144 Чешуя Ордена Дракона Ранг 3 · Пороги 13/31 · Броня 6 Драконь..." [namelen=282 namehash=7d03cc14]
+    checkbox "Оберег Теней" [checked=false]
+    button "145 Оберег Теней Ранг 2 · Пороги 9/20 · Броня 4 Укрытое тенями: ..." [namelen=169 namehash=b9c93161]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
+101Фроствирд (Дремлющий)Ранг 2 · Физическое · Сила · Вплотную · ... [namelen=327 namehash=82ab925e]
+102Фроствирд (Пробуждённый)Ранг 3 · Физическое · Сила · Вплотную... [namelen=566 namehash=49e3d597]
+103Фроствирд (Возвышенный)Ранг 4 · Физическое · Сила · Вплотную ... [namelen=618 namehash=66a5c526]
+104Студенистый МолотРанг 3 · Физическое · Сила · Вплотную · d10+... [namelen=307 namehash=cb5b06e0]
+105Меч Призрачного КасанияРанг 2 · Физическое · Проворность · Вп... [namelen=272 namehash=10ff9a0b]
+106Духовая Трубка Скорбного ЕжаРанг 2 · Искусность · Средне · d4... [namelen=240 namehash=2c527445]
+107Молот ГрифонаРанг 2 · Физическое · Сила · Вплотную · d10+4 фи... [namelen=319 namehash=584e1cb0]
+108Меч Адского ПламениРанг 4 · Магическое · Сила · Вплотную · d1... [namelen=458 namehash=6e5aa49f]
+109Метеор ХиларадаРанг 4 · Физическое · Сила · Близко · d12+12 ф... [namelen=382 namehash=5ff0c239]
+10Мантия Кровавого АнгелаПолучая урон от падения, отметьте на 1 ... [namelen=403 namehash=c83157de]
+110Крючок, Леска и ГрузилоРанг 2 · Проворность · Средне · d6 физ... [namelen=252 namehash=3830209b]
+111Клинок ГидрыРанг 3 · Физическое · Проворность · Вплотную · d8... [namelen=309 namehash=b25fec3f]
+112Инфернальные КастетыРанг 1 · Физическое · Сила · Вплотную · d... [namelen=241 namehash=a67ab2b1]
+113Кинетическое ЛезвиеРанг 2 · Физическое · Проворность · Вплотн... [namelen=335 namehash=588f7fbd]
+114Рукавицы УбийцыРанг 2 · Физическое · Сила · Вплотную · d10+4 ... [namelen=395 namehash=053b8b2a]
+115Падение ПриродыРанг 3 · Физическое · Инстинкт · Вплотную · d8... [namelen=420 namehash=1c717015]
+116Неугомонное ВозмездиеРанг 3 · Физическое · Сила · Вплотную · ... [namelen=454 namehash=414955ac]
+117Жезл Пылающих ЧереповРанг 2 · Магическое · Влияние · Далеко ·... [namelen=367 namehash=69d4bf2d]
+118Розовый КлинокРанг 2 · Физическое · Влияние · Вплотную · d8+4... [namelen=421 namehash=c972cdd2]
+119ПробникРанг 2 · Физическое · Искусность · Вплотную · d4+5 физ... [namelen=358 namehash=4f928604]
+11Книга ЛитарисПока эта книга находится у вас, вашей костью преи... [namelen=132 namehash=a893339c]
+120Кинжал СангромантииРанг 1 · Влияние · Вплотную · d6 маг · Одн... [namelen=259 namehash=386d4830]
+121Меч-РазрушительРанг 3 · Физическое · Проворность · Вплотную ·... [namelen=446 namehash=d0a43f69]
+122Щит ПредвиденияРанг 2 · Инстинкт · Вплотную · d4+2 физ · Одно... [namelen=240 namehash=5b983997]
+123Щит НебесРанг 2 · Сила · Вплотную · d8+2 физ · ОдноручноеСиян... [namelen=312 namehash=074c0212]
+124Кирка Небесного ГномаРанг 2 · Физическое · Сила · Вплотную · ... [namelen=267 namehash=3c2a891b]
+125Клинок СомнусаРанг 3 · Физическое · Сила · Вплотную · d10+7 ф... [namelen=339 namehash=6e29eaff]
+126Боевой Посох Душевного ОгняРанг 2 · Магическое · Инстинкт · В... [namelen=466 namehash=7276aed2]
+127Заклинательный КлинокРанг 2 · Магическое · Характеристика Зак... [namelen=394 namehash=fb84c2c0]
+128Защита Королевы ПауковРанг 1 · Сила · Вплотную · d4 физ · Одн... [namelen=332 namehash=2946c09e]
+129Посох ЛейтисаРанг 3 · Магическое · Влияние · Далеко · d6+9 ма... [namelen=429 namehash=af73d404]
+12Сапоги ВозмездияНадев эти сапоги, вы должны отметить 3 Стресса... [namelen=288 namehash=fde122ac]
+130Звёздное КопьёРанг 2 · Физическое · Сила · Близко · d10+4 физ... [namelen=375 namehash=3c838613]
+131Паровые РукавицыРанг 2 · Физическое · Сила · Вплотную · d10+4... [namelen=375 namehash=18f9fae7]
+132Разящие КлыкиРанг 1 · Физическое · Проворность · Близко · d8+... [namelen=259 namehash=759c5181]
+133Меч АнгеловРанг 4 · Физическое · Проворность · Вплотную · d10... [namelen=389 namehash=fbdd75b8]
+134Меч НежитиРанг 1 · Физическое · Проворность · Вплотную · d8 ф... [namelen=216 namehash=8c756826]
+135Сухожильный ЛукРанг 2 · Физическое · Сила · Очень далеко · d6... [namelen=300 namehash=50f68480]
+136Триединая ПалицаРанг 2 · Физическое · Сила · Вплотную · d8+6 ... [namelen=447 namehash=6801058d]
+137Глефа ТиранаРанг 2 · Физическое · Сила · Близко · d10+5 физ ·... [namelen=242 namehash=50ff0aa8]
+138Двуручный Меч ВайатыРанг 2 · Физическое · Сила · Вплотную · d... [namelen=307 namehash=0d066e24]
+139Жезл Нестабильной АрканыРанг 2 · Магическое · Знание · Далеко... [namelen=391 namehash=9fac253c]
+13Накидка из Драконьей ЧешуиОдин раз за сессию, когда по вам поп... [namelen=337 namehash=b148179a]
+140Жало ОсыРанг 2 · Физическое · Влияние · Вплотную · d8+3 физ ·... [namelen=370 namehash=eec2e006]
+141Дротик Гребня ВолныРанг 3 · Физическое · Проворность · Средне... [namelen=349 namehash=8d7b7620]
+142Непробиваемые ОдеянияРанг 4 · Пороги 15/38 · Броня 5Защищённы... [namelen=237 namehash=e1d05451]
+143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=622 namehash=e24b781b]
+144Чешуя Ордена ДраконаРанг 3 · Пороги 13/31 · Броня 6Драконья ч... [namelen=276 namehash=867eceff]
+145Оберег ТенейРанг 2 · Пороги 9/20 · Броня 4Укрытое тенями: Пок... [namelen=163 namehash=96e791e6]
+14Чаша ХаосаОдин раз до следующего Продолжительного отдыха вы мо... [namelen=776 namehash=bc980b9a]
+15Поножи ЦикадыПока вы носите эти поножи, вы получаете преимущес... [namelen=366 namehash=a9fd9e04]
+16Плащ Едкого ДымаОдин раз до следующего отдыха можете потратить... [namelen=331 namehash=e38dec08]
+17Плащ ДюнОдин раз до следующего Продолжительного отдыха вы може... [namelen=352 namehash=2328cdd2]
+18Плащ ВолнОдин раз до следующего Продолжительного отдыха вы мож... [namelen=371 namehash=bb196b69]
+19Кольцо Облачного ДраконаПеремещаясь сквозь туман, дымку или об... [namelen=273 namehash=6d798bdb]
+1Святилище ОградителяПока вы носите это кольцо, вы получаете бон... [namelen=334 namehash=0f8a0894]
+20Переливающийся АмулетСамоцвет в этом амулете хранит свет звёзд... [namelen=384 namehash=880889f1]
+21Перчатка Ползучего КороляЧтобы использовать этот предмет, позв... [namelen=563 namehash=1f76777b]
+22Плащ СтарицыОдин раз до следующего отдыха после успешной атаки... [namelen=193 namehash=50f5e373]
+23Корона Утраченной Линии ЛейОдин раз за сцену можете заставить ... [namelen=180 namehash=f2b5104d]
+24Хрустальная ЧашаОдин раз в день во время Отдыха персонаж может... [namelen=178 namehash=42a60c8b]
+25Указ ОтрицанияНа этом пергаменте записано 5 эдиктов-возражений... [namelen=247 namehash=0ee8cb10]
+26Драконье ЯйцоСъев это яйцо, до конца сцены увеличьте свой Пока... [namelen=157 namehash=698fe981]
+27Ключ-ШпионОдин раз до следующего Продолжительного отдыха может... [namelen=235 namehash=a870c166]
+28Безликая БрошьПока вы носите эту брошь, можете потратить Надеж... [namelen=127 namehash=390c39a4]
+29Флейта ТранспозицииЧтобы сыграть на этой флейте, совершите Бро... [namelen=275 namehash=18cfa467]
+2Браслет ПриключенцаПока вы носите этот браслет, вы получаете пр... [namelen=163 namehash=dcbb51c7]
+30Укреплённое Янтарное КольцоПока вы носите это кольцо, вы получ... [namelen=190 namehash=ff3d1714]
+31Масло Лягушачьего ЯдаЭтот флакон содержит концентрированные вы... [namelen=380 namehash=e72e22bf]
+32Амулет ГорнилаКогда вы носите этот амулет и совершаете Бросок ... [namelen=353 namehash=b6e3b144]
+33Самоцвет Солнечного ОгняВнутри этого необработанного янтаря за... [namelen=272 namehash=53088816]
+34Одеяло от ПризраковПока вы спите или отдыхаете под этим одноме... [namelen=146 namehash=00f32274]
+35Позолоченные СапогиПока вы носите эти сапоги, вы получаете бон... [namelen=201 namehash=d79cf449]
+36Кольцо Ухмыляющегося ЧерепаПока вы носите это кольцо, Стоимост... [namelen=268 namehash=5d698c5a]
+37Шлем Ужасающих СтраданийОдин раз до следующего Продолжительног... [namelen=607 namehash=87d2aef4]
+38Шлем Великого КальцениПока вы носите этот шлем, когда видимый ... [namelen=257 namehash=7be442df]
+39Шлем Великаньей КровиМожете потратить 3 Надежды, чтобы принять... [namelen=349 namehash=d1b10316]
+3Агатовый ПаукВы можете приказать украшению в виде паука прыгнут... [namelen=262 namehash=16569d42]
+40Кольцо ХирлоинаОдин раз за сцену, когда свойство противника вы... [namelen=251 namehash=6aeeb14e]
+41Рог Звериных КриковОдин раз до следующего Продолжительного отд... [namelen=388 namehash=72d12822]
+42Рог ГневаОдин раз до следующего Продолжительного отдыха протру... [namelen=221 namehash=ab033935]
+43Подслушивающие МонетыЭти две монеты мистически связаны. На обо... [namelen=321 namehash=8b04bb44]
+44Ложка ЛюбвиЭту искусно вырезанную деревянную ложку дарят в зна... [namelen=278 namehash=a20af3a1]
+45Брошь Туманного ПлетенияЭту застёжку окружают тонкие пряди тум... [namelen=306 namehash=53495045]
+46Удача МонархаОдин раз до следующего Продолжительного отдыха, к... [namelen=175 namehash=45a86ac7]
+47Зелье Сокрушения МонстровВыпив это зелье, до конца сцены получ... [namelen=177 namehash=c0558e49]
+48Ожерелье Мнимой МаскировкиПока вы носите это ожерелье, каждое ... [namelen=351 namehash=937ea448]
+49Шкура Морозного МедведяПока вы закутаны в этот плащ, вы получа... [namelen=259 namehash=8b10c33e]
+4Амулет Праведной ЯростиПризовите заключённую в амулете небесную... [namelen=296 namehash=4620947c]
+50Кулон ПокаянияЧтобы снять кулон, отметьте 3 Стресса. Вы получа... [namelen=242 namehash=e622b36d]
+51Сердце ФениксаОдин раз до следующего Продолжительного отдыха м... [namelen=296 namehash=fb621da0]
+52Призматический КамертонИграя на музыкальном инструменте, настр... [namelen=258 namehash=aa46606a]
+53Сияющая ДиадемаОдин раз до следующего Продолжительного отдыха ... [namelen=389 namehash=122b185e]
+54Рог Красного ДраконаКогда вы трубите в этот рог, он издаёт дра... [namelen=340 namehash=3b6e6eef]
+55Резонирующий ТорквесПока вы носите этот торквес, ваш голос маг... [namelen=296 namehash=e910aa1e]
+56Кольцо БедствияЧтобы снять это кольцо, отметьте 3 Стресса. Пок... [namelen=335 namehash=ed5a1d81]
+57Кольцо Священного ЗнанияПока вы носите это кольцо, вы получает... [namelen=166 namehash=a06d0a37]
+58Кольцо Разящей МолнииПопав физической атакой, можете потратить... [namelen=357 namehash=0c08a9c3]
+59Кольцо Пепельной Летучей МышиОдин раз до следующего Продолжите... [namelen=287 namehash=db49fd02]
+5Амулет Кровавого ОхотникаПока вы носите этот амулет, каждый раз... [namelen=384 namehash=4a14bd0d]
+60Кольцо ФениксаПока вы носите это кольцо, в качестве Предсмертн... [namelen=306 namehash=009109d4]
+61Жезл ПовеленияОдин раз за сцену совершите Бросок Влияния проти... [namelen=353 namehash=182b7be6]
+62Мантия ПрезренияПока вы носите этот плащ, уменьшайте любой пол... [namelen=231 namehash=f60ac50d]
+63Свиток Могучего ЗаклинанияОтметьте 3 Стресса и прочитайте этот... [namelen=246 namehash=51731364]
+64Кулон Теневого ОбликаКогда атака попадает по вам, можете потра... [namelen=177 namehash=1bbb7a23]
+65Осколок ПризракаОтметьте Стресс, чтобы стать Бестелесными. Пок... [namelen=275 namehash=a001582e]
+66Посох ПроклятыхПотратьте Надежду, чтобы оживить тело недавно у... [namelen=256 namehash=27fdee6d]
+67Штормовой КолчанОдин раз за сцену, когда вы попадаете по сущес... [namelen=287 namehash=4dda9d67]
+68Стигийский ПесокСовершая Бросок со Страхом, положите жетон на ... [namelen=317 namehash=0dfc91a5]
+69Сокрушитель Солнечной ЛадониЗа каждый полный день, проведённый... [namelen=343 namehash=0de519d9]
+6Магический НакопительКаждый раз, когда вы перемещаете карту Зак... [namelen=554 namehash=c9a4a1da]
+70ПрыгунОдин раз за сцену при успешном Броске Атаки против цели ... [namelen=158 namehash=1291eb91]
+71Белый ПлащПока вы носите этот плащ, вы получаете преимущество ... [namelen=317 namehash=738de4a5]
+72Громовой КаменьБросьте камень в точку в пределах Далекой диста... [namelen=297 namehash=15d9690b]
+73Жабий КаменьЕсли положить этот камень в содержащую яд субстанц... [namelen=196 namehash=c9ef5375]
+74Трансмутационная Подзорная ТрубаОдин раз до следующего Продолж... [namelen=430 namehash=fe18bdb5]
+75Клыкастая КоронаПока вы носите эту корону, ваши атаки Вплотную... [namelen=280 namehash=ed7f8030]
+76Теневая ПризмаБросьте d8 и положите её на эту карту как Теневу... [namelen=483 namehash=e77ab9d0]
+77Жезл ЦилиняОдин раз до следующего Продолжительного отдыха потр... [namelen=276 namehash=400c5be8]
+78Тысяча ПорезовРанг 3 · Искусность · Вплотную · d8+4 физ · Одно... [namelen=427 namehash=42aa75d8]
+79Кислотное ЛезвиеРанг 2 · Физическое · Проворность · Вплотную ·... [namelen=242 namehash=5e6d0aa5]
+7Соль ПрорицанияПогрузив лицо в воду с этими кристаллами, задайт... [namelen=306 namehash=1ac1604c]
+80Янтарный МолотРанг 3 · Физическое · Сила · Вплотную · d8+7 физ... [namelen=237 namehash=26ecab45]
+81Крюк АнанимусаРанг 3 · Магическое · Влияние · Вплотную · d8+6 ... [namelen=358 namehash=b0d2bfc7]
+82Клеймор Дуговой МолнииРанг 3 · Физическое · Сила · Вплотную · ... [namelen=395 namehash=fb5e61c4]
+83Астральная ГлефаРанг 3 · Магическое · Знание · Близко · d10+5 ... [namelen=304 namehash=44f0526b]
+84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
+85КровоглотРанг 2 · Физическое · Сила · Вплотную · d10+6 физ · Д... [namelen=370 namehash=9ec2e2de]
+86Арбалет Костяных ОсколковРанг 3 · Физическое · Искусность · Да... [namelen=256 namehash=03731e03]
+87Пылающий БраслетРанг 1 · Искусность · Далеко · d6 маг · Однору... [namelen=250 namehash=dba63b48]
+88ХладноклинокРанг 3 · Физическое · Искусность · Вплотную · d8+4... [namelen=366 namehash=30fe1136]
+89Меч Хрустального ДухаРанг 4 · Физическое · Искусность · Вплотн... [namelen=278 namehash=bbbe90ef]
+8Слава БардаЛюбую Кость Сплочения, полученную благодаря барду, н... [namelen=304 namehash=b552bc51]
+90Клинок из Драконьей КостиРанг 1 · Сила · Вплотную · d6 физ · О... [namelen=270 namehash=68beaf35]
+91Драконий КлыкРанг 2 · Физическое · Сила · Вплотную · d8+4 физ ... [namelen=302 namehash=d67916fb]
+92Шип ДриадыРанг 2 · Физическое · Искусность · Вплотную · d8+5 ф... [namelen=386 namehash=6941a503]
+93Дука СаламетРанг 3 · Физическое · Сила · Вплотную · d8+6 физ ·... [namelen=474 namehash=0f081ce2]
+94Сумеречное КрылоРанг 2 · Физическое · Сила · Вплотную · d10+6 ... [namelen=252 namehash=ca1a4459]
+95Стихийный Длинный ЛукРанг 3 · Физическое · Проворность · Очень... [namelen=501 namehash=24bc8a83]
+96УголёкРанг 3 · Магическое · Проворность · Вплотную · d8+5 маг ... [namelen=232 namehash=8a18d037]
+97ИскраРанг 2 · Проворность · Вплотную · d8+2 маг · ОдноручноеОг... [namelen=300 namehash=4620b1f9]
+98Булава СкверныРанг 3 · Физическое · Сила · Вплотную · d8+6 физ... [namelen=404 namehash=fa3a857f]
+99Ослепляющий ДротикРанг 1 · Искусность · Далеко · d4 физ · Одно... [namelen=225 namehash=d544d46e]
+9Хвост Чёрного КотаОдин раз до следующего Продолжительного отдых... [namelen=218 namehash=9b30bbb3]
+Core
+Dragon's Vault
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Агатовый Паук
+Альт. таблицы
+Амулет Горнила
+Амулет Кровавого Охотника
+Амулет Праведной Ярости
+Арбалет Костяных Осколков
+Астральная Глефа
+Безликая Брошь
+Белый Плащ
+Боевой Посох Душевного Огня
+Браслет Приключенца
+Брошь Туманного Плетения
+Булава Скверны
+Глефа Тирана
+Громовой Камень
+Двуручный Меч Вайаты
+Драконий Клык
+Драконье Яйцо
+Дротик Гребня Волны
+Дука Саламет
+Духовая Трубка Скорбного Ежа
+Жабий Камень
+Жало Осы
+Жезл Нестабильной Арканы
+Жезл Повеления
+Жезл Пылающих Черепов
+Жезл Цилиня
+Заклинательный Клинок
+Защита Королевы Пауков
+Звёздное Копьё
+Зелье Сокрушения Монстров
+Инфернальные Кастеты
+Искра
+К содержимому
+Как это работает
+Кинетическое Лезвие
+Кинжал Сангромантии
+Кирка Небесного Гнома
+Кислотное Лезвие
+Клеймор Дуговой Молнии
+Клинок Гидры
+Клинок Сомнуса
+Клинок из Драконьей Кости
+Клыкастая Корона
+Ключ-Шпион
+Книга Литарис
+Кольцо Бедствия
+Кольцо Облачного Дракона
+Кольцо Пепельной Летучей Мыши
+Кольцо Разящей Молнии
+Кольцо Священного Знания
+Кольцо Ухмыляющегося Черепа
+Кольцо Феникса
+Кольцо Хирлоина
+Корона Утраченной Линии Лей
+Кровоглот
+Крюк Ананимуса
+Крючок, Леска и Грузило
+Кулон Покаяния
+Кулон Теневого Облика
+Ложка Любви
+ЛутDaggerheart
+Магический Накопитель
+Мантия Кровавого Ангела
+Мантия Презрения
+Масло Лягушачьего Яда
+Метеор Хиларада
+Меч Адского Пламени
+Меч Ангелов
+Меч Нежити
+Меч Призрачного Касания
+Меч Хрустального Духа
+Меч-Разрушитель
+Молот Грифона
+Накидка из Драконьей Чешуи
+Непробиваемые Одеяния
+Неугомонное Возмездие
+Ночной Покров
+Оберег Теней
+Обычные правила
+Одеяло от Призраков
+Ожерелье Мнимой Маскировки
+Осколок Призрака
+Ослепляющий Дротик
+Открывать этот раздел при запуске
+Падение Природы
+Паровые Рукавицы
+Переливающийся Амулет
+Перчатка Ползучего Короля
+Плащ Волн
+Плащ Дюн
+Плащ Едкого Дыма
+Плащ Старицы
+Подслушивающие Монеты
+Позолоченные Сапоги
+Поиск
+Поножи Цикады
+Посох Лейтиса
+Посох Проклятых
+Призматический Камертон
+Пробник
+Прочее
+Прыгун
+Пылающий Браслет
+Разящие Клыки
+Резонирующий Торквес
+Рог Гнева
+Рог Звериных Криков
+Рог Красного Дракона
+Розовый Клинок
+Рукавицы Убийцы
+Самоцвет Солнечного Огня
+Сапоги Возмездия
+Свиток Могучего Заклинания
+Святилище Оградителя
+Сердце Феникса
+Сеткой
+Сияющая Диадема
+Слава Барда
+Снаряжение
+Сокрушитель Солнечной Ладони
+Соль Прорицания
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Стигийский Песок
+Стихийный Длинный Лук
+Студенистый Молот
+Сумеречное Крыло
+Сухожильный Лук
+Таблицы
+Теневая Призма
+Топор Чёрной Порчи
+Трансмутационная Подзорная Труба
+Триединая Палица
+Тысяча Порезов
+Уголёк
+Удача Монарха
+Указ Отрицания
+Укреплённое Янтарное Кольцо
+Фильтры
+Флейта Транспозиции
+Фрикционные Обмотки
+Фроствирд (Возвышенный)
+Фроствирд (Дремлющий)
+Фроствирд (Пробуждённый)
+Хвост Чёрного Кота
+Хладноклинок
+Хрустальная Чаша
+Чаша Хаоса
+Чешуя Ордена Дракона
+Шип Дриады
+Шкура Морозного Медведя
+Шлем Великаньей Крови
+Шлем Великого Кальцени
+Шлем Ужасающих Страданий
+Штормовой Колчан
+Щит Небес
+Щит Предвидения
+Янтарный Молот
+
+## en :: tree
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/dv]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters" [expanded=false]
+    StaticText "145"
+    checkbox "Select all (145)" [checked=false]
+    StaticText "Select all (145)"
+    checkbox "Abjurer's Fane" [checked=false]
+    button "1 Abjurer's Fane You have a +1 bonus to Spellcast Rolls for Arca..." [namelen=284 namehash=41556339]
+    ... checkbox x142 of 146 same-shape siblings elided
+    ... button x142 of 146 same-shape siblings elided
+    checkbox "Ordo Draconis Scale" [checked=false]
+    button "144 Ordo Draconis Scale Tier 3 · Thresholds 13/31 · Armor 6 Drag..." [namelen=242 namehash=0b41984f]
+    checkbox "Ward of Shadows" [checked=false]
+    button "145 Ward of Shadows Tier 2 · Thresholds 9/20 · Armor 4 Shrouded:..." [namelen=153 namehash=03d57ffc]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=246 namehash=036eb4fb]
+101Frostwyrd (Dormant)Tier 2 · Physical · Strength · Melee · d10... [namelen=326 namehash=a632c2ba]
+102Frostwyrd (Awakened)Tier 3 · Physical · Strength · Melee · d1... [namelen=544 namehash=0c03e217]
+103Frostwyrd (Exalted)Tier 4 · Physical · Strength · Melee · d10... [namelen=588 namehash=79da0266]
+104Gelatinous HammerTier 3 · Physical · Strength · Melee · d10+6... [namelen=298 namehash=a97d0fbe]
+105Ghost Touch SwordTier 2 · Physical · Agility · Melee · d8+3 p... [namelen=226 namehash=b780e009]
+106Grief Urchin BlowgunTier 2 · Finesse · Close · d4 phy · One-H... [namelen=233 namehash=111dff41]
+107Gryphon HammerTier 2 · Physical · Strength · Melee · d10+4 ph... [namelen=255 namehash=5c7328ad]
+108Hellfire SwordTier 4 · Magic · Strength · Melee · d10+12 mag ... [namelen=408 namehash=c859312f]
+109Hilarad's MeteorTier 4 · Physical · Strength · Very Close · d... [namelen=315 namehash=439e73e8]
+10Bloody Angel MantleWhen you take fall damage, you mark one les... [namelen=345 namehash=457f9724]
+110Hook Line 'N' SinkerTier 2 · Agility · Close · d6 phy · One-H... [namelen=250 namehash=33b84288]
+111Hydra BladeTier 3 · Physical · Agility · Melee · d8+6 phy · O... [namelen=291 namehash=b1ed5ad7]
+112Infernal KnucklesTier 1 · Physical · Strength · Melee · d8+1 ... [namelen=236 namehash=c577bde1]
+113Kinetic EdgeTier 2 · Physical · Agility · Melee · d8+4 phy · ... [namelen=308 namehash=06e85ecb]
+114Murderer's GauntletsTier 2 · Physical · Strength · Melee · d1... [namelen=393 namehash=e6390473]
+115Nature's FallTier 3 · Physical · Instinct · Melee · d8+6 mag ... [namelen=390 namehash=45d89586]
+116Restless VengeanceTier 3 · Physical · Strength · Melee · d10+... [namelen=462 namehash=3dedac99]
+117Rod of Flaming SkullsTier 2 · Magic · Presence · Far · d6+3 m... [namelen=336 namehash=140ede75]
+118RosebladeTier 2 · Physical · Presence · Melee · d8+4 phy · On... [namelen=325 namehash=b24066ca]
+119SamplerTier 2 · Physical · Finesse · Melee · d4+5 phy · One-H... [namelen=325 namehash=8982aa3c]
+11Book of LitarisWhile you possess this book, your advantage die... [namelen=119 namehash=18e32964]
+120Sangromancy DaggerTier 1 · Presence · Melee · d6 mag · One-Ha... [namelen=218 namehash=e4851889]
+121ShatterswordTier 3 · Physical · Agility · Melee · d10+5 phy ·... [namelen=382 namehash=c93d3632]
+122Shield of ForesightTier 2 · Instinct · Melee · d4+2 phy · One... [namelen=231 namehash=583aa8b9]
+123Shield of the HeavensTier 2 · Strength · Melee · d8+2 phy · O... [namelen=323 namehash=f0b44b58]
+124Sky Gnome PickaxeTier 2 · Physical · Strength · Melee · d8+5 ... [namelen=233 namehash=b4ea7cc2]
+125Somnus BladeTier 3 · Physical · Strength · Melee · d10+7 phy ... [namelen=344 namehash=423cb1bb]
+126Soulfire QuarterstaffTier 2 · Magic · Instinct · Melee · d10+... [namelen=433 namehash=f77675ae]
+127SpellbladeTier 2 · Magic · Spellcast · Melee · d10+4 mag · Tw... [namelen=337 namehash=206ae616]
+128Spider Queen's ProtectionTier 1 · Strength · Melee · d4 phy ·... [namelen=298 namehash=ad48c00e]
+129Staff of LaethysTier 3 · Magic · Presence · Far · d6+9 mag · ... [namelen=386 namehash=c37ce58b]
+12Boots of VengeanceOnce you have donned these boots, you must m... [namelen=338 namehash=36159a6c]
+130Star LanceTier 2 · Physical · Strength · Very Close · d10+4 p... [namelen=349 namehash=4d694d7e]
+131Steampowered GauntletsTier 2 · Physical · Strength · Melee · ... [namelen=328 namehash=0a73ecb6]
+132Striking FangsTier 1 · Physical · Agility · Very Close · d8+2... [namelen=256 namehash=d8b9474b]
+133Sword of AngelsTier 4 · Physical · Agility · Melee · d10+4 ph... [namelen=322 namehash=586dc763]
+134Sword of UndeathTier 1 · Physical · Agility · Melee · d8 phy ... [namelen=229 namehash=5f212d3e]
+135Tendon BowTier 2 · Physical · Strength · Very Far · d6+6 phy ... [namelen=294 namehash=ddf6cb21]
+136Trinity ClubTier 2 · Physical · Strength · Melee · d8+6 phy ·... [namelen=414 namehash=2bc0fc6f]
+137Tyrant's GlaiveTier 2 · Physical · Strength · Very Close · d1... [namelen=225 namehash=cbb179cd]
+138Waiata GreatswordTier 2 · Physical · Strength · Melee · d10+6... [namelen=303 namehash=959aa40e]
+139Wand of Unstable ArcanaTier 2 · Magic · Knowledge · Far · d6+... [namelen=333 namehash=c59778ff]
+13Caplet of DragonscalesOnce per session, when you are hit by an... [namelen=316 namehash=722419b2]
+140Wasp's StingTier 2 · Physical · Presence · Melee · d8+3 phy ·... [namelen=360 namehash=b96e37eb]
+141Wavecrest JavelinTier 3 · Physical · Agility · Close · d8+4 p... [namelen=294 namehash=43b82b11]
+142Impervious VestmentsTier 4 · Thresholds 15/38 · Armor 5Warded... [namelen=215 namehash=e6620189]
+143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=588 namehash=08b835c8]
+144Ordo Draconis ScaleTier 3 · Thresholds 13/31 · Armor 6Dragon ... [namelen=236 namehash=b77d1998]
+145Ward of ShadowsTier 2 · Thresholds 9/20 · Armor 4Shrouded: Wh... [namelen=147 namehash=61584e08]
+14Chalice of ChaosYou can spend a Hope to drink from the chalice... [namelen=698 namehash=1b6312b2]
+15Cicada GreavesWhile you wear these, you have advantage on Agil... [namelen=324 namehash=9d0805e7]
+16Cloak of Acrid SmokeOnce per rest, you can spend a Hope to cau... [namelen=295 namehash=1a1b5c9c]
+17Cloak of the DunesOnce per long rest, you can become a swirlin... [namelen=338 namehash=1a17e26e]
+18Cloak of the WavesOnce per long rest, you can become the shift... [namelen=350 namehash=bb112fc6]
+19Cloud Dragon RingWhile moving through fog, mist, or clouds, yo... [namelen=260 namehash=9a69a5e7]
+1Abjurer's FaneYou have a +1 bonus to Spellcast Rolls for Arcana... [namelen=280 namehash=122a2957]
+20Coruscating AmuletThe gem in this amulet contains the light of... [namelen=361 namehash=434a417f]
+21Crawling King's GauntletTo use this item, you must allow it to... [namelen=513 namehash=af0a0834]
+22Crone CloakOnce per rest, on a successful attack, mark a Stres... [namelen=164 namehash=8a00d5e9]
+23Crown of the Lost Ley LineOnce per scene, you can force a targ... [namelen=191 namehash=eb83c615]
+24Crystal ChaliceOnce per day during a rest, a PC can drink from... [namelen=160 namehash=4c6b96bd]
+25Decree of DenialThis parchment lists 5 edicts of objection. Wh... [namelen=258 namehash=39d52009]
+26Dragon EggWhen you eat this egg, for the scene your Armor Scor... [namelen=158 namehash=4569b2a2]
+27Eye-Spy KeyOnce per long rest, you can use this key to unlock ... [namelen=228 namehash=a244a2cf]
+28Faceless BroochWhile wearing this brooch, you can spend a Hope... [namelen=135 namehash=cbe07ea0]
+29Flute of TranspositionYou can play this flute by making a Pres... [namelen=236 namehash=db87c4a9]
+2Adventurer's WristbandWhile wearing this bracelet, you have adv... [namelen=146 namehash=971feea5]
+30Fortified Amber RingWhile you are wearing this ring, you gain ... [namelen=158 namehash=2df07334]
+31Frog Toxin OilThis vial contains the concentrated secretions o... [namelen=346 namehash=269f71fa]
+32Furnace AmuletWhile wearing this amulet, when you take the Ris... [namelen=342 namehash=c023986b]
+33Gem of SunfireThis uncut amber gemstone contains the captured ... [namelen=278 namehash=f4740561]
+34Ghostproof BlanketWhile you sleep or rest underneath this one-... [namelen=138 namehash=9407b9eb]
+35Gilded BootsWhile wearing these boots, you have a +1 bonus to ... [namelen=184 namehash=47fa024b]
+36Grinning Skull RingWhile wearing this ring, the Recall Cost of... [namelen=259 namehash=331abdaf]
+37Helm of Fearful MiseryOnce per long rest, you can add a token ... [namelen=541 namehash=77a5bf9a]
+38Helm of Grand CalceniWhile you wear this helm, when an ally yo... [namelen=248 namehash=2795a62d]
+39Helmet of GiantkinYou can spend 3 Hope to take on the size of ... [namelen=305 namehash=380671a9]
+3Agate SpiderYou can command this spider ornament to leap onto a... [namelen=237 namehash=ddd0528e]
+40Hirloin's RingOnce per scene, when targeted by an adversary fe... [namelen=253 namehash=7b095528]
+41Horn of Bestial CriesOnce per long rest, you can blow into thi... [namelen=304 namehash=b750f747]
+42Horn of WrathOnce per long rest, blow into the horn, releasing... [namelen=221 namehash=7586eeb9]
+43Listening CoinsThis pair of coins is mystically connected. One... [namelen=308 namehash=c3c6024c]
+44Love SpoonThis beautifully carved wooden spoon is given to an ... [namelen=257 namehash=39953ee2]
+45Mistweave BroochThin wisps of mist surround this clasp. When p... [namelen=287 namehash=3dfe3127]
+46Monarch's FortuneOnce per long rest, when hit by an attack, yo... [namelen=129 namehash=c22e4aa4]
+47Monster-Squashing PotionWhen you drink this potion, until the ... [namelen=207 namehash=06e7e9b1]
+48Necklace of Perceived DisguiseWhile wearing this necklace, any... [namelen=313 namehash=22d3528a]
+49Pelt of the Frost BearWrapped in this cloak, you have advantag... [namelen=254 namehash=bd416fbc]
+4Amulet of Righteous FuryWhen you invoke the celestial power imb... [namelen=284 namehash=9c34148f]
+50Penance PendantYou must mark 3 Stress to remove the pendant. Y... [namelen=237 namehash=f1057648]
+51Phoenix HeartOnce per long rest, you can clear a temporary con... [namelen=258 namehash=d5e85fd8]
+52Prismatic ForkWhen you play a musical instrument tuned with th... [namelen=213 namehash=c3413323]
+53Radiant DiademOnce per long rest, spend a Hope to create an au... [namelen=313 namehash=8d064ca2]
+54Red Dragon HornWhen you blow on this horn, it emits the sound ... [namelen=350 namehash=9e5bf1ac]
+55Resonant TorcWhile wearing this torc, your voice is magically ... [namelen=255 namehash=3caffe0b]
+56Ring of CalamityYou must mark 3 Stress to remove this ring. Wh... [namelen=331 namehash=923b1ab6]
+57Ring of Sacred KnowledgeWhile wearing this ring, you have adva... [namelen=157 namehash=568de3d0]
+58Ring of Striking LightningWhen you hit with a physical attack,... [namelen=314 namehash=86483484]
+59Ring of the CinderbatOnce per long rest, you can activate the ... [namelen=229 namehash=112f1917]
+5Amulet of the Bloody HunterWhile wearing this amulet, whenever ... [namelen=315 namehash=d9222cc5]
+60Ring of the PhoenixWhile wearing this ring, as a death move, y... [namelen=293 namehash=40cdd97e]
+61Rod of CommandOnce per scene, make a Presence Roll against a c... [namelen=330 namehash=a3152d6d]
+62Scorn MantleWearing this cloak, reduce any magic damage you ta... [namelen=198 namehash=74a2be7d]
+63Scroll of Mighty IncantationMark 3 Stress and read this scroll... [namelen=237 namehash=53effea4]
+64Shadeform PendantWhen you are hit by an attack, you can spend ... [namelen=165 namehash=d11f2d47]
+65Specter ShardMark a Stress to turn Incorporeal. While Incorpor... [namelen=258 namehash=283742e0]
+66Staff of the DamnedSpend a Hope to reanimate the body of a rec... [namelen=257 namehash=c1dfcf7e]
+67Storm QuiverWhen you hit a creature with an attack from a proj... [namelen=250 namehash=1c1f85fa]
+68Stygian SandWhen you roll with Fear, place a token on this car... [namelen=284 namehash=1a232a60]
+69Sunpalm ObliteratorWhenever you spend a full day outside, add ... [namelen=301 namehash=a6d982cf]
+6Arcane CapacitorWhenever you recall a spell card, add a number ... [namelen=458 namehash=ab998e87]
+70The SpringerOnce per scene, when you succeed on an attack roll... [namelen=179 namehash=4f8b356e]
+71The White CloakWhile wearing this cloak, you gain advantage on... [namelen=300 namehash=fb17a49a]
+72ThunderstoneThrow the stone at a point within Far range. Upon ... [namelen=276 namehash=49b37386]
+73ToadstoneWhen placed in a substance that contains a poison, th... [namelen=207 namehash=66e3c388]
+74Transmutative SpyglassOnce per long rest, you can make a Prese... [namelen=396 namehash=2246e50b]
+75Tusked CrownWhile you are wearing this crown, you deal an addi... [namelen=294 namehash=4ea0c895]
+76Umbral PrismRoll a d8 and place it on this card as the Umbral ... [namelen=452 namehash=ff956f00]
+77Wand of the QilinOnce per long rest, spend a Hope to conjure a... [namelen=258 namehash=52569b7b]
+78A Thousand CutsTier 3 · Finesse · Melee · d8+4 phy · One-Hande... [namelen=406 namehash=04e58c39]
+79Acid EdgeTier 2 · Physical · Agility · Melee · d8+3 phy · One-... [namelen=230 namehash=dfb3dbeb]
+7Augury SaltWhen you submerge your face in water infused with th... [namelen=347 namehash=f014a9eb]
+80Amber HammerTier 3 · Physical · Strength · Melee · d8+7 phy · ... [namelen=226 namehash=a5d06dea]
+81Ananimus HookTier 3 · Magic · Presence · Melee · d8+6 mag · On... [namelen=333 namehash=dfa6d2e6]
+82Arc-Lightning ClaymoreTier 3 · Physical · Strength · Melee · d... [namelen=391 namehash=814b776f]
+83Astral GlaiveTier 3 · Magic · Knowledge · Very Close · d10+5 m... [namelen=317 namehash=a543f963]
+84Black Corruption AxeTier 4 · Physical · Presence · Very Close ... [namelen=452 namehash=18cf1bda]
+85BloodgorgerTier 2 · Physical · Strength · Melee · d10+6 phy · ... [namelen=360 namehash=263b33e4]
+86Boneshard CrossbowTier 3 · Physical · Finesse · Far · d6+15 ph... [namelen=247 namehash=af1d14b5]
+87Burning BraceletTier 1 · Finesse · Far · d6 mag · One-HandedWa... [namelen=217 namehash=c25e3c80]
+88ChillbladeTier 3 · Physical · Finesse · Melee · d8+4 phy · One... [namelen=325 namehash=6e0ebad6]
+89Crystal Spirit SwordTier 4 · Physical · Finesse · Melee · d10+... [namelen=253 namehash=83de67b4]
+8Bard's GloryAny Rally Die from a bard that wears this pendant c... [namelen=242 namehash=df63d2a0]
+90Dragonbone BladeTier 1 · Strength · Melee · d6 phy · One-Hande... [namelen=269 namehash=a128986f]
+91DraketoothTier 2 · Physical · Strength · Melee · d8+4 phy · On... [namelen=286 namehash=676b7851]
+92Dryad's ThornTier 2 · Physical · Finesse · Melee · d8+5 phy · ... [namelen=320 namehash=0bf6442f]
+93Duka SalametTier 3 · Physical · Strength · Melee · d8+6 phy · ... [namelen=481 namehash=1870c728]
+94Dusk WingTier 2 · Physical · Strength · Melee · d10+6 phy · Tw... [namelen=232 namehash=0ce62139]
+95Elemental LongbowTier 3 · Physical · Agility · Very Far · d6+8... [namelen=425 namehash=3a74cb69]
+96EmberTier 3 · Magic · Agility · Melee · d8+5 mag · One-HandedF... [namelen=210 namehash=ecce1e58]
+97SparkTier 2 · Agility · Melee · d8+2 mag · One-HandedFiery Rip... [namelen=291 namehash=338cc56b]
+98Filth MaceTier 3 · Physical · Strength · Melee · d8+6 phy · On... [namelen=393 namehash=b273f269]
+99Flash DartTier 1 · Finesse · Far · d4 phy · One-HandedBlinding... [namelen=206 namehash=13a9573b]
+9Black Cat's TailOnce per long rest, when a creature within Clos... [namelen=171 namehash=543f21ba]
+A Thousand Cuts
+Abjurer's Fane
+Acid Edge
+Adventurer's Wristband
+Agate Spider
+Alt. tables
+Amber Hammer
+Amulet of Righteous Fury
+Amulet of the Bloody Hunter
+Ananimus Hook
+Arc-Lightning Claymore
+Arcane Capacitor
+Astral Glaive
+Augury Salt
+Bard's Glory
+Black Cat's Tail
+Black Corruption Axe
+Bloodgorger
+Bloody Angel Mantle
+Boneshard Crossbow
+Book of Litaris
+Boots of Vengeance
+Burning Bracelet
+Caplet of Dragonscales
+Chalice of Chaos
+Chillblade
+Cicada Greaves
+Cloak of Acrid Smoke
+Cloak of the Dunes
+Cloak of the Waves
+Cloud Dragon Ring
+Communities
+Core
+Coruscating Amulet
+Crawling King's Gauntlet
+Crone Cloak
+Crown of the Lost Ley Line
+Crystal Chalice
+Crystal Spirit Sword
+Decree of Denial
+Dragon Egg
+Dragon's Vault
+Dragonbone Blade
+Draketooth
+Dread
+Dread GM Toolbox
+Dryad's Thorn
+Duka Salamet
+Dusk Wing
+EN
+Elemental Longbow
+Ember
+Equipment
+Eye-Spy Key
+Faceless Brooch
+Filters
+Filth Mace
+Flash Dart
+Flute of Transposition
+Fortified Amber Ring
+Friction Wraps
+Frog Toxin Oil
+Frostwyrd (Awakened)
+Frostwyrd (Dormant)
+Frostwyrd (Exalted)
+Furnace Amulet
+Gelatinous Hammer
+Gem of Sunfire
+Ghost Touch Sword
+Ghostproof Blanket
+Gilded Boots
+Grid
+Grief Urchin Blowgun
+Grinning Skull Ring
+Gryphon Hammer
+Hellfire Sword
+Helm of Fearful Misery
+Helm of Grand Calceni
+Helmet of Giantkin
+Hilarad's Meteor
+Hirloin's Ring
+Hook Line 'N' Sinker
+Hope & Fear
+Horn of Bestial Cries
+Horn of Wrath
+How this works
+Hydra Blade
+Impervious Vestments
+Infernal Knuckles
+Kinetic Edge
+Link to this table
+List
+Listening Coins
+Lists
+Love Spoon
+Mistweave Brooch
+Monarch's Fortune
+Monster-Squashing Potion
+Murderer's Gauntlets
+Nature's Fall
+Necklace of Perceived Disguise
+Nightshroud
+Open this section on start
+Ordo Draconis Scale
+Other
+Pelt of the Frost Bear
+Penance Pendant
+Phoenix Heart
+Prismatic Fork
+RU
+Radiant Diadem
+Red Dragon Horn
+Resonant Torc
+Restless Vengeance
+Ring of Calamity
+Ring of Sacred Knowledge
+Ring of Striking Lightning
+Ring of the Cinderbat
+Ring of the Phoenix
+Rod of Command
+Rod of Flaming Skulls
+Roseblade
+Sampler
+Sangromancy Dagger
+Scorn Mantle
+Scroll of Mighty Incantation
+Search
+Shadeform Pendant
+Shattersword
+Shield of Foresight
+Shield of the Heavens
+Skip to content
+Sky Gnome Pickaxe
+Somnus Blade
+Soulfire Quarterstaff
+Spark
+Specter Shard
+Spellblade
+Spider Queen's Protection
+Staff of Laethys
+Staff of the Damned
+Standard rules
+Star Lance
+Steampowered Gauntlets
+Storm Quiver
+Striking Fangs
+Stygian Sand
+Sunpalm Obliterator
+Sword of Angels
+Sword of Undeath
+Tables
+Tendon Bow
+The Springer
+The White Cloak
+Thunderstone
+Toadstone
+Transmutative Spyglass
+Trinity Club
+Tusked Crown
+Tyrant's Glaive
+Umbral Prism
+Vault of Ages
+Waiata Greatsword
+Wand of Unstable Arcana
+Wand of the Qilin
+Ward of Shadows
+Wasp's Sting
+Wavecrest Javelin
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

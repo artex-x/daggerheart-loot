@@ -37,6 +37,11 @@ const LOOT = require('../../data.json');
 const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
 const LONG = '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
 const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + String(i + 1)).join('-');
+/* Dragon's Vault's own worst cases: Frostwyrd's longest rung, the
+ * One/Two-Handed grip mark, the Spellcast trait cell, two second strips
+ * (Ember, Steampowered Gauntlets), the set line on both members, and a loot
+ * card with a folded GM box. */
+const DV_SET = '#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14';
 const TOO_MANY =
   '#/print/' +
   Object.values(LOOT.items)
@@ -439,6 +444,15 @@ const STATES = [
     }
   },
   { id: '#/roll/voa', route: '#/roll/voa', why: 'Vault of Ages' },
+  { id: '#/roll/dv', route: '#/roll/dv', why: "a roll on Dragon's Vault, the tenth section" },
+  {
+    id: '#/roll/dv ~ help',
+    route: '#/roll/dv',
+    why: 'the help panel, unfolded: why the table has no die, and where the equipment half lives',
+    enter: async (d) => {
+      await d.click('Как это работает');
+    }
+  },
   { id: '#/roll/community', route: '#/roll/community', why: 'communities' },
 
   /* The picker is the whole point of these two, and it is a state: the length
@@ -609,7 +623,7 @@ const STATES = [
   {
     id: '#/tables/eq_weapon',
     route: '#/tables/eq_weapon',
-    why: 'the biggest table: four tier sections, .fcount 317, the strip folded'
+    why: 'the biggest table: four tier sections, .fcount 370, the strip folded'
   },
   {
     id: '#/tables/eq_secondary',
@@ -655,7 +669,7 @@ const STATES = [
   {
     id: '#/tables/eq_armor ~ nothing found',
     route: '#/tables/eq_armor',
-    why: 'the three-row panel open, a pill, 0 из 90, the empty state with its own reset',
+    why: 'the three-row panel open, a pill, 0 из 94, the empty state with its own reset',
     enter: async (d) => {
       await d.click('Фильтры');
       await d.click('Уникальные');
@@ -663,6 +677,11 @@ const STATES = [
     }
   },
   { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
+  {
+    id: '#/tables/dv',
+    route: '#/tables/dv',
+    why: "a plain body with a kind row, 145 rows: the tenth table's loot, then its equipment"
+  },
   {
     id: '#/tables/other_starting',
     route: '#/tables/other_starting',
@@ -750,6 +769,31 @@ const STATES = [
     id: '#/i/voa2_a1',
     route: '#/i/voa2_a1',
     why: 'an artifact - the tier word belongs in the path line, and no state opened one'
+  },
+
+  /* Dragon's Vault's own new mechanics: a craft chain that runs through a
+     record (Frostwyrd), a weapon the book prints both One- and Two-Handed
+     (Gryphon Hammer), a weapon with a `d0` blade and no die glyph
+     (Spellblade), and the set line a record with company draws. */
+  {
+    id: '#/i/dve25',
+    route: '#/i/dve25',
+    why: 'a craft chain in both directions'
+  },
+  {
+    id: '#/i/dve30',
+    route: '#/i/dve30',
+    why: 'a weapon the book prints both One- and Two-Handed'
+  },
+  {
+    id: '#/i/dve50',
+    route: '#/i/dve50',
+    why: "a weapon that uses its wielder's Spellcast trait"
+  },
+  {
+    id: '#/i/dve19',
+    route: '#/i/dve19',
+    why: "the set line and the set's shared bonus: every member listed, the record itself inert"
   },
 
   /* The lists index, off `renderLists`/`storageWarning` in app.js. */
@@ -1018,7 +1062,7 @@ const STATES = [
   {
     id: '#/search ~ searched',
     route: '#/search',
-    why: '87 rows of loot and gear together in catalogue order, "Выбрать все (87)"',
+    why: '113 rows of loot and gear together in catalogue order, "Выбрать все (113)"',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'меч');
     }
@@ -1026,7 +1070,7 @@ const STATES = [
   {
     id: '#/search ~ kind off',
     route: '#/search',
-    why: '34 rows, no equipment badge left, the chip off',
+    why: '41 rows, no equipment badge left, the chip off',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'меч');
       await d.click('Снаряжение');
@@ -1125,6 +1169,21 @@ const STATES = [
     id: TOO_MANY_ID,
     route: TOO_MANY,
     why: 'the cap: 180 cards on twenty sheets and the red note about the one left out'
+  },
+  {
+    id: DV_SET,
+    route: DV_SET,
+    whole: true,
+    why: "the Dragon's Vault worst cases: Frostwyrd's longest rung, the One/Two-Handed grip mark, the Spellcast trait cell, two second strips (Ember, Steampowered Gauntlets), the set line on both members, and a folded GM box"
+  },
+  {
+    id: DV_SET + ' ~ black and white',
+    route: DV_SET,
+    whole: true,
+    why: 'the same seven, the other layout',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+    }
   },
   {
     id: '#/print/nope',

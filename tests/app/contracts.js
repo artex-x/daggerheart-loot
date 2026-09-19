@@ -262,9 +262,11 @@ function stampOf(parts) {
     ['voa', 'tier-A'],
     ['other_frames', 'frame-colossus'],
     ['community', 'comm-Seaborne'],
-    ['wondrous', 'kind-consumable']
+    ['wondrous', 'kind-consumable'],
+    ['dv', 'kind-consumable'],
+    ['dv', 'kind-equip']
   ];
-  /* One context reused across all 18 opens - same
+  /* One context reused across all 21 opens (14 probes, 7 whole tables) - same
    * reasoning as the address-grammar loop above: no probe here seeds
    * storage, so a full `d.open` navigation already starts each one clean. */
   const { ctx: pCtx, page: pPage, d: pD } = await fresh({ width: 1280, height: 900 });

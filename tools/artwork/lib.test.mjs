@@ -23,6 +23,7 @@ describe('normalizeName', () => {
   it('folds typographic apostrophes to a plain one', () => {
     assert.equal(normalizeName('Ranger’s Bow'), normalizeName("Ranger's Bow"));
     assert.equal(normalizeName('Rangerʼs Bow'), normalizeName("Ranger's Bow"));
+    assert.equal(normalizeName('Hook Line ‘N’ Sinker'), normalizeName("Hook Line 'N' Sinker"));
   });
 
   it('strips a trailing " v<N>" suffix', () => {

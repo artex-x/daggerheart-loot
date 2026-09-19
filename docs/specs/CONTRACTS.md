@@ -18,7 +18,7 @@ matched against the live app at `cf96e6f` (`docs/specs/COVERAGE.md`, "flows
 
 Frozen as written in `ROUTES.md`. In particular:
 
-- the nine section names, and the three legacy ones that fold into `roll/std`
+- the ten section names, and the three legacy ones that fold into `roll/std`
 - the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
@@ -37,6 +37,7 @@ shared list. Never renumber a record that has shipped.
 | `w` | Wondrous Loot |
 | `di` | Dread GM Toolbox |
 | `voa` | Vault of Ages (`voa<vol>_<tier><n>`) |
+| `dv` / `dve` | The Dragon's Vault loot / equipment |
 | `cm` | Community items |
 | `f` | Campaign frame equipment |
 | `q` | Core and Hope & Fear equipment |
@@ -94,12 +95,14 @@ plain form, so everything downstream sees one format.
 
 ## 4. Machine-readable data
 
-- `data.json` - `{ items: {...}, eq: [...], refs: {...}, alt: {...} }`, the same
+- `data.json` - `{ items: {...}, eq: [...], refs: {...}, alt: {...}, sets: {...} }`, the same
   content as `data.js`: `tools/derived.js`'s `dataJson(L)` is
   `JSON.stringify(L) + '\n'`, nothing stripped, and `tests/derived.js` holds
   `data.json` to that output byte for byte inside `npm run check`. An empty
   description is `rud: ""`/`ende: ""` in both files alike (112 such literals
-  in `data.json`, verified). Field meanings are in `README.md`.
+  in `data.json`, verified). `sets` maps a set key to its shared bonus
+  (`en`, `ru`, `ende`, `rud`); a record names its set in `set`. Field
+  meanings are in `README.md`.
 - `catalog.csv` - one row per record, with the stat line.
 - `i/<id>.html` - a stub page per record with Open Graph markup.
 

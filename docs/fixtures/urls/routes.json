@@ -74,6 +74,17 @@
     }
   },
   {
+    "hash": "#/roll/dv",
+    "why": "Dragon's Vault",
+    "resolves": {
+      "hash": "#/roll/dv",
+      "tab": "#/roll/dv",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/roll/community",
     "why": "communities",
     "resolves": {
@@ -146,10 +157,22 @@
     "resolves": {
       "hash": "#/tables/eq_weapon",
       "tab": "#/tables",
-      "rows": 317,
+      "rows": 370,
       "printCards": 0,
       "picked": [],
-      "count": "317"
+      "count": "370"
+    }
+  },
+  {
+    "hash": "#/tables/dv",
+    "why": "a plain table by name, the tenth book chip",
+    "resolves": {
+      "hash": "#/tables/dv",
+      "tab": "#/tables",
+      "rows": 145,
+      "printCards": 0,
+      "picked": [],
+      "count": "145"
     }
   },
   {
@@ -181,13 +204,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-2.cls-mag",
       "tab": "#/tables",
-      "rows": 36,
+      "rows": 40,
       "printCards": 0,
       "picked": [
         "tier:2",
         "cls:mag"
       ],
-      "count": "36 из 317"
+      "count": "40 из 370"
     }
   },
   {
@@ -196,12 +219,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_range-melee",
       "tab": "#/tables",
-      "rows": 140,
+      "rows": 180,
       "printCards": 0,
       "picked": [
         "range:melee"
       ],
-      "count": "140 из 317"
+      "count": "180 из 370"
     }
   },
   {
@@ -210,12 +233,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_burden-2",
       "tab": "#/tables",
-      "rows": 166,
+      "rows": 195,
       "printCards": 0,
       "picked": [
         "burden:2"
       ],
-      "count": "166 из 317"
+      "count": "195 из 370"
     }
   },
   {
@@ -224,13 +247,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1-2",
       "tab": "#/tables",
-      "rows": 150,
+      "rows": 178,
       "printCards": 0,
       "picked": [
         "tier:1",
         "tier:2"
       ],
-      "count": "150 из 317"
+      "count": "178 из 370"
     }
   },
   {
@@ -277,13 +300,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
       "tab": "#/tables",
-      "rows": 41,
+      "rows": 45,
       "printCards": 0,
       "picked": [
         "tier:1",
         "cls:phy"
       ],
-      "count": "41 из 317"
+      "count": "45 из 370"
     }
   },
   {
@@ -292,10 +315,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_nosuch-1",
       "tab": "#/tables",
-      "rows": 317,
+      "rows": 370,
       "printCards": 0,
       "picked": [],
-      "count": "317"
+      "count": "370"
     }
   },
   {

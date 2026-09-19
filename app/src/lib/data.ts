@@ -11,13 +11,15 @@
  * (docs/specs/CONTRACTS.md, section 4). */
 
 import type { Rarity } from './money.js';
-import type { EquipKind, Record_, RefCard } from './types.js';
+import { CHARACTER_TRAITS } from './types.js';
+import type { EquipKind, Record_, RefCard, SetCard } from './types.js';
 
 /** The shape of `window.LOOT`. */
 export interface Loot {
   items: Record<string, Record_[]>;
   eq?: Record_[];
   refs?: Record<string, RefCard>;
+  sets?: Record<string, SetCard>;
   alt?: Partial<Record<'item' | 'consumable', Partial<Record<Rarity, AltColumns>>>>;
 }
 
@@ -51,6 +53,14 @@ export interface Index {
   allEquip: readonly Record_[];
   /** `id of the upgrade` -> `id it is made from`. The reverse of `craft`. */
   craftedFrom: ReadonlyMap<string, string>;
+  /**
+   * A set's key -> its members, in `[...eq, ...all]` order - the same source
+   * list `allEquip` is built from, so a set's members read in the order the
+   * equipment tables already use. Derived rather than stored, the way
+   * `craftedFrom` is: a record names its own set, and nothing keeps a sibling
+   * list that could drift from it.
+   */
+  setMembers: ReadonlyMap<string, readonly Record_[]>;
   /** A loot record's rarity, where the alternate tables give it one. */
   rarityOf: (id: string) => Rarity | undefined;
   /**
@@ -71,6 +81,8 @@ export interface Index {
   altColumn: (kind: AltKind, rarity: Rarity, col: AltCol) => { it: Record_; n: number }[];
   /** Referenced rulebook cards, by the key a record names in `refs`. */
   refs: Record<string, RefCard>;
+  /** A set's shared bonus by set key. */
+  sets: Record<string, SetCard>;
 }
 
 export function buildIndex(loot: Loot): Index {
@@ -111,6 +123,17 @@ export function buildIndex(loot: Loot): Index {
     if (it.craft && byId.has(it.craft)) craftedFrom.set(it.craft, it.id);
   }
 
+  /* Grouped from the same concatenation `allEquip` filters down from, before
+     that filter runs - a set is not only ever equipment, even though every
+     member today happens to be. */
+  const setMembers = new Map<string, Record_[]>();
+  for (const it of [...eq, ...all]) {
+    if (!it.set) continue;
+    const members = setMembers.get(it.set) ?? [];
+    members.push(it);
+    setMembers.set(it.set, members);
+  }
+
   /* The alternate tables are the only place a loot record's rarity is written
      down, so the index is those tables read backwards. Records outside them -
      Wondrous, Dread, community - have none, and the caller decides what to do
@@ -144,6 +167,7 @@ export function buildIndex(loot: Loot): Index {
     searchable: [...all, ...eq],
     allEquip,
     craftedFrom,
+    setMembers,
     rarityOf: (id) => rarity.get(id),
     altRow: (kind, r, col, n) => altCols.get(`${kind}/${r}/${col}`)?.[n - 1],
     altColumn: (kind, r, col) => {
@@ -153,7 +177,8 @@ export function buildIndex(loot: Loot): Index {
       });
       return out;
     },
-    refs: loot.refs ?? {}
+    refs: loot.refs ?? {},
+    sets: loot.sets ?? {}
   };
 }
 
@@ -186,8 +211,11 @@ export function srcOf(it: Record_): string {
   return it.src === 'frame' ? (it.frame ?? it.src) : it.src;
 }
 
-/** The facet values a record answers with, for the equipment tables. */
-export function equipFacets(it: Record_): Record<string, string> {
+/** The facet values a record answers with, for the equipment tables. Burden
+ *  answers two values at once for `'any'`: the record fits under either
+ *  chip, because the book prints it both ways. A `spellcast` weapon answers
+ *  all six traits. */
+export function equipFacets(it: Record_): Record<string, string | readonly string[]> {
   const e = it.eq;
   if (!e) return {};
   return {
@@ -195,9 +223,9 @@ export function equipFacets(it: Record_): Record<string, string> {
     src: srcOf(it),
     line: e.line ? 'line' : 'uniq',
     cls: e.cls ?? '',
-    trait: e.tr ?? '',
+    trait: e.tr === 'spellcast' ? CHARACTER_TRAITS : (e.tr ?? ''),
     range: e.rg ?? '',
-    burden: e.bu == null ? '' : String(e.bu)
+    burden: e.bu == null ? '' : e.bu === 'any' ? ['1', '2'] : String(e.bu)
   };
 }
 
@@ -222,4 +250,16 @@ export function upgradeLine(index: Index, it: Record_): Record_[] {
 
 export function equipOfKind(index: Index, kind: EquipKind): Record_[] {
   return index.allEquip.filter((it) => it.eq?.t === kind);
+}
+
+/** Every member of the set a record belongs to, itself included - empty
+ *  where the record belongs to no set or to a set of one. */
+export function setOf(index: Index, it: Record_): readonly Record_[] {
+  const members = it.set ? (index.setMembers.get(it.set) ?? []) : [];
+  return members.length > 1 ? members : [];
+}
+
+/** The shared bonus of the set a record belongs to, where the set has one. */
+export function setBonusOf(index: Index, it: Record_): SetCard | undefined {
+  return it.set && setOf(index, it).length ? index.sets[it.set] : undefined;
 }

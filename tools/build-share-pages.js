@@ -20,6 +20,7 @@ if (!global.window) global.window = {};
 if (!global.window.LOOT) require(path.join(ROOT, 'data.js'));
 const DATA = global.window.LOOT.items;
 const EQ = global.window.LOOT.eq || [];
+const SETS = global.window.LOOT.sets || {};
 
 const esc = (s) =>
   String(s == null ? '' : s)
@@ -40,7 +41,14 @@ const COMMUNITY_RU = {
   Wanderborne: 'Кочевое',
   Wildborne: 'Лесное'
 };
-const SRC_LABEL = { core: 'Core', hnf: 'Hope & Fear', wondrous: 'Wondrous Loot' };
+const SRC_LABEL = {
+  core: 'Core',
+  hnf: 'Hope & Fear',
+  wondrous: 'Wondrous Loot',
+  dread: 'Dread GM Toolbox',
+  voa: 'Vault of Ages',
+  dv: "Dragon's Vault"
+};
 const FRAME_LABEL = {
   beast_feast: 'Пир зверей',
   colossus: 'Колоссы Сухоземья',
@@ -58,7 +66,8 @@ const EQ_TRAIT = {
   finesse: 'Искусность',
   instinct: 'Инстинкт',
   presence: 'Влияние',
-  knowledge: 'Знание'
+  knowledge: 'Знание',
+  spellcast: 'Характеристика Заклинателя'
 };
 const EQ_RANGE = {
   melee: 'Вплотную',
@@ -69,7 +78,7 @@ const EQ_RANGE = {
 };
 const EQ_DT = { phy: 'физ', mag: 'маг', any: 'физ/маг' };
 const EQ_CLS = { phy: 'Физическое', mag: 'Магическое' };
-const EQ_BURDEN = { 1: 'Одноручное', 2: 'Двуручное' };
+const EQ_BURDEN = { 1: 'Одноручное', 2: 'Двуручное', any: 'Одноручное/двуручное' };
 
 function eqLine(it) {
   const e = it.eq,
@@ -124,6 +133,20 @@ ALL.forEach((it) => {
   if (it.craft && BY_ID[it.craft]) CRAFTED_FROM[it.craft] = it.id;
 });
 
+const SET_MEMBERS = {};
+EQ.concat(ALL).forEach((it) => {
+  if (it.set) (SET_MEMBERS[it.set] = SET_MEMBERS[it.set] || []).push(it);
+});
+
+function setLines(it) {
+  const members = (it.set && SET_MEMBERS[it.set]) || [];
+  if (members.length < 2) return [];
+  const out = ['Комплект: ' + members.map((m) => m.ru || m.en).join(', ')];
+  const b = SETS[it.set];
+  if (b) out.push(b.ru + ': ' + b.rud);
+  return out;
+}
+
 function craftLines(it) {
   const out = [];
   const into = BY_ID[it.craft];
@@ -146,6 +169,7 @@ function descHtml(raw) {
 function page(it) {
   const name = it.ru || it.en;
   const craft = craftLines(it);
+  const set = setLines(it);
   const rawDesc = it.rud || it.ende || '';
   // the unfurl preview is one flat string, so the chain joins the description
   const from = provenance(it);
@@ -153,7 +177,8 @@ function page(it) {
     (from ? from + '. ' : '') +
     (it.eq ? eqLine(it) + '. ' : '') +
     rawDesc.replace(/\s*\n\s*/g, ' ') +
-    (craft.length ? ' ' + craft.join(' ') + '.' : '');
+    (craft.length ? ' ' + craft.join(' ') + '.' : '') +
+    (set.length ? ' ' + set.join('. ') : '');
   // JPEG copy: some Telegram clients will not render a WebP og:image.
   // An entry without art still needs one, or the unfurl comes out blank.
   const img = SITE + 'og/' + (it.img ? it.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
@@ -204,7 +229,10 @@ function page(it) {
     <h1>${esc(name)}</h1>
     <p class="s">${esc(subtitle(it))}</p>
     ${descHtml(rawDesc)}
-${craft.map((c) => `    <p class="c">${esc(c)}</p>\n`).join('')}    <a href="${esc(app)}">Открыть в генераторе лута</a>
+${craft
+  .concat(set)
+  .map((c) => `    <p class="c">${esc(c)}</p>\n`)
+  .join('')}    <a href="${esc(app)}">Открыть в генераторе лута</a>
   </div>
   <script>location.replace(${JSON.stringify(app)});</script>
 </body>
@@ -212,7 +240,7 @@ ${craft.map((c) => `    <p class="c">${esc(c)}</p>\n`).join('')}    <a href="${e
 `;
 }
 
-/* Exported so the test can render all 1091 into memory and compare with what is
+/* Exported so the test can render all 1236 into memory and compare with what is
    on disk: that catches a change to this generator that was never rebuilt, not
    just data that moved on. */
 module.exports = { page, EQ_TYPE, EQ_TRAIT, EQ_RANGE, EQ_DT, EQ_CLS, EQ_BURDEN };

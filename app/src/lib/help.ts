@@ -241,6 +241,42 @@ const VOA: Record<Lang, Help> = {
   }
 };
 
+const DV_LINK: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault',
+  label: "The Dragon's Vault"
+};
+
+const DV: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      p(
+        'В таблице 145 позиций — 68 предметов, 9 расходников и 68 единиц оружия и брони. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Сначала идёт добыча, потом оружие и броня, и то и другое в порядке книги. Дополнение прямо говорит, что своей таблицы броска у него нет: находку стоит подбирать по истории, а не бросать вслепую — кнопка здесь только на случай, когда бросок всё же нужен.'
+      ),
+      p(
+        'Оружие и броня из этой книги есть и в таблицах снаряжения — там их отбирает фильтр «Источник». Фроствирд улучшается в два шага, от Дремлющего до Возвышенного. Уголёк и Искра — комплект: на карточке каждого есть строка «Комплект» и их общее свойство «Пылающие близнецы».'
+      ),
+      { parts: ['Источник: дополнение ', DV_LINK, '.'] }
+    ]
+  },
+  en: {
+    paragraphs: [
+      p(
+        'The table holds 145 entries — 68 items, 9 consumables and 68 weapons and armor. No die covers that range, so the button picks an entry at random.'
+      ),
+      p(
+        "Loot comes first, then the weapons and armor, each in the book's own order. The supplement says outright that it has no roll table of its own: pick a find for the story rather than rolling it blind — the button here is only for when a roll is still wanted."
+      ),
+      p(
+        'The weapons and armor from this book are in the equipment tables too — the "Source" filter picks them out there. Frostwyrd upgrades in two steps, Dormant to Exalted. Ember and Spark are a set: each card carries a "Set" line and their shared Blazing Twins bonus.'
+      ),
+      { parts: ['Source: the ', DV_LINK, ' supplement.'] }
+    ]
+  }
+};
+
 const COMMUNITY_LINK: HelpLink = {
   href: 'https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit',
   label: 'Community Magic Items'
@@ -396,16 +432,16 @@ const TABLES: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу.'
+        "Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу."
       ),
       {
         lead: 'Снаряжение',
         parts: [
-          ' собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages и фреймах. Отобрать нужную книгу можно фильтром «Источник».'
+          " собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault и фреймах. Отобрать нужную книгу можно фильтром «Источник»."
         ]
       },
       p(
-        'Снаряжение устроено иначе, чем добыча: у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании.'
+        "Снаряжение устроено иначе, чем добыча: вне Wondrous Loot, Dread, Vault of Ages и The Dragon's Vault у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании."
       ),
       p(
         'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope & Fear.'
@@ -432,7 +468,7 @@ const TABLES: Record<Lang, Help> = {
         'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
       ),
       p(
-        'Одиннадцать предметов из Wondrous Loot на самом деле оружие. В этих таблицах их нет — они остались в своей таблице Wondrous, но выглядят и копируются как снаряжение.'
+        "Оружие и броня из Wondrous Loot, Dread, Vault of Ages и The Dragon's Vault лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
       ),
       {
         parts: [
@@ -446,16 +482,16 @@ const TABLES: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.'
+        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own.'
       ),
       {
         lead: 'Equipment',
         parts: [
-          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages and the campaign frames too. Narrow it to one book with the "Source" filter.'
+          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages, The Dragon\'s Vault and the campaign frames too. Narrow it to one book with the "Source" filter.'
         ]
       },
       p(
-        'Equipment works differently from loot: it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it.'
+        "Equipment works differently from loot: outside Wondrous Loot, Dread, Vault of Ages and The Dragon's Vault it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
       ),
       p(
         'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope & Fear.'
@@ -482,7 +518,7 @@ const TABLES: Record<Lang, Help> = {
         'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
       ),
       p(
-        'Eleven Wondrous Loot entries are really weapons. They are not in these tables — they stayed in the Wondrous one, but they look and copy like equipment.'
+        "The weapons and armor of Wondrous Loot, Dread, Vault of Ages and The Dragon's Vault sit in two places: in their book's table, with a roll number, and here."
       ),
       p('Sources: the Daggerheart Core Set and Hope & Fear, with the errata applied.')
     ]
@@ -613,6 +649,7 @@ const HELP: Record<string, Record<Lang, Help>> = {
   wondrous: WONDROUS,
   dread: DREAD,
   voa: VOA,
+  dv: DV,
   community: COMMUNITY,
   tables: TABLES,
   lists: LISTS

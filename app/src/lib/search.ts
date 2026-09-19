@@ -5,7 +5,7 @@
  * descriptions and - for equipment - the stat line, so "Двуручное" or "melee"
  * finds things too.
  *
- * A substring match, not a fuzzy one. 1091 records is small enough that the
+ * A substring match, not a fuzzy one. 1236 records is small enough that the
  * filtering is instant, and a fuzzy library would be a dependency bought with
  * results nobody asked for: a search for "лук" should not offer "клык".
  *

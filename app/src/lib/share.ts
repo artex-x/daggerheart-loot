@@ -15,9 +15,9 @@
  * clipboard; that is `ClipboardPort`'s job. */
 
 import { dict, type Dict } from './dict.js';
-import type { Index } from './data.js';
+import { setBonusOf, setOf, type Index } from './data.js';
 import { descHtml, esc } from './desc.js';
-import { descOf, eqLine, nameOf } from './i18n.js';
+import { descOf, eqLine, nameOf, namesOf } from './i18n.js';
 import type { ListEntryMeta, ListShape } from './listLink.js';
 import { moneyMode, priceText } from './money.js';
 import type { Lang, Record_ } from './types.js';
@@ -37,6 +37,13 @@ export interface ShareBlock {
  * where a thing comes from - but in a message to players it is the recipe for
  * something already in their hands.
  *
+ * The upgrade's body carries only the lines of its description that this
+ * record's own description does not already carry: a chain's rungs repeat
+ * the features they keep, and a message should say only what the next rung adds.
+ *
+ * A set's shared bonus is not a record, so `skip` never drops it: it is written
+ * under each member, also when both members are in one message.
+ *
  * `skip` holds ids already present elsewhere in the same message, which is how a
  * copied roll of several records avoids repeating a shared upgrade target.
  */
@@ -51,9 +58,13 @@ export function shareBlocks(
 
   const into = it.craft ? index.byId.get(it.craft) : undefined;
   if (into && !skip.has(into.id)) {
+    const own = new Set(descOf(it, lang).split('\n'));
     out.push({
       head: `${t.craftInto}: ${nameOf(into, lang)}`,
-      body: descOf(into, lang) || ''
+      body: descOf(into, lang)
+        .split('\n')
+        .filter((line) => line && !own.has(line))
+        .join('\n')
     });
   }
 
@@ -66,6 +77,20 @@ export function shareBlocks(
         : { head: `${r.en} · ${r.ensub}`, body: r.ende }
     );
   }
+
+  const members = setOf(index, it);
+  if (members.length) {
+    const bonus = setBonusOf(index, it);
+    out.push({
+      head: `${t.setLabel}: ${namesOf(members, lang)}`,
+      body: !bonus
+        ? ''
+        : lang === 'ru'
+          ? `${bonus.ru}: ${bonus.rud}`
+          : `${bonus.en}: ${bonus.ende}`
+    });
+  }
+
   return out;
 }
 
@@ -131,7 +156,7 @@ export function share(
     name +
     (stats ? '\n' + stats : '') +
     (desc ? '\n\n' + desc : '') +
-    blocks.map((b) => `\n\n${b.head}\n${b.body}`).join('');
+    blocks.map((b) => '\n\n' + b.head + (b.body ? '\n' + b.body : '')).join('');
 
   const html =
     '<b>' +
@@ -140,7 +165,13 @@ export function share(
     (stats ? '<br>' + esc(stats) : '') +
     (desc ? '<br><br>' + descHtml(it, lang) : '') +
     blocks
-      .map((b) => '<br><br><i>' + esc(b.head) + '</i><br>' + esc(b.body).replace(/\n/g, '<br>'))
+      .map(
+        (b) =>
+          '<br><br><i>' +
+          esc(b.head) +
+          '</i>' +
+          (b.body ? '<br>' + esc(b.body).replace(/\n/g, '<br>') : '')
+      )
       .join('');
 
   return { text, html };

@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* The nine sections.
+  /* The ten sections.
    *
    * Real links, not buttons: middle-click, copy-link and open-in-new-tab all
    * work for free, and the address is the state. The separator before Tables
@@ -22,6 +22,7 @@
     ['roll/wondrous', 'wondrous'],
     ['roll/dread', 'dread'],
     ['roll/voa', 'voa'],
+    ['roll/dv', 'dv'],
     ['roll/community', 'community'],
     ['tables', 'tables'],
     ['lists', 'lists'],

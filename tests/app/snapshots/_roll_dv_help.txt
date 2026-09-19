@@ -1,0 +1,165 @@
+# #/roll/dv ~ help
+# route: #/roll/dv
+# why: the help panel, unfolded: why the table has no die, and where the equipment half lives
+
+## ru :: tree
+RootWebArea "Dragon's Vault — Генератор лута — Daggerheart" [url=#/roll/dv]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "The Dragon's Vault" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=true]
+    StaticText "Введите результат броска или получите случайную позицию."
+    StaticText "В таблице 145 позиций — 68 предметов, 9 расходников и 68 единиц ..." [namelen=156 namehash=48e82bb7]
+    ... StaticText x3 of 7 same-shape siblings elided
+    link "The Dragon's Vault" [url=https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault]
+    StaticText "."
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–145)"
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Случайно 1–145"
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ПРЕДМЕТ"
+      StaticText "DRAGON'S VAULT"
+      link "Святилище Оградителя" [description=Страница url=#/i/dv1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Пока вы носите это кольцо, вы получаете бонус +1 к Броскам Закли..." [namelen=292 namehash=aa1e347c]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+The Dragon's Vault
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+Как это работает
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывать этот раздел при запуске
+Отправить
+Поиск
+Результат броска
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Случайно 1–145
+Сообщества
+Списки
+Страница
+Таблицы
+
+## en :: tree
+RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "The Dragon's Vault" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=true]
+    StaticText "Enter your roll result, or pick a random entry."
+    StaticText "The table holds 145 entries — 68 items, 9 consumables and 68 wea..." [namelen=145 namehash=42e95203]
+    ... StaticText x3 of 7 same-shape siblings elided
+    link "The Dragon's Vault" [url=https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault]
+    StaticText " supplement."
+    StaticText "ROLL RESULT (1–145)"
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Random 1–145"
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "ITEM"
+      StaticText "DRAGON'S VAULT"
+      link "Abjurer's Fane" [description=Page url=#/i/dv1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "You have a +1 bonus to Spellcast Rolls for Arcana Domain spells ..." [namelen=247 namehash=910f9a4d]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dragon's Vault
+Dread
+EN
+How this works
+Lists
+One higher
+One lower
+Open this section on start
+Page
+RU
+Random 1–145
+Roll result
+Search
+Share
+Skip to content
+Standard rules
+Tables
+The Dragon's Vault
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

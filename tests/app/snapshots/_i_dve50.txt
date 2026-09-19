@@ -1,0 +1,137 @@
+# #/i/dve50
+# route: #/i/dve50
+# why: a weapon that uses its wielder's Spellcast trait
+
+## ru :: tree
+RootWebArea "Заклинательный Клинок — Генератор лута — Daggerheart" [url=#/i/dve50]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Заклинательный Клинок" [level=1]
+    StaticText "Dragon's Vault · номер 127 "
+    link "показать в таблице" [url=#/tables/dv/dve50]
+    button "Страница"
+    StaticText "127"
+    ... StaticText x10 of 14 same-shape siblings elided
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    StaticText "Призвать клинок:"
+    StaticText " У этого оружия нет лезвия. Совершите Бросок Заклинания (12), чт..." [namelen=232 namehash=c7165f3d]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/dve50]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Добавить в список
+К содержимому
+ЛутDaggerheart
+Обычные правила
+Отправить
+Поиск
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Списки
+Страница
+Таблицы
+показать в таблице
+
+## en :: tree
+RootWebArea "Spellblade — Daggerheart Loot Generator" [url=#/i/dve50]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Spellblade" [level=1]
+    StaticText "Dragon's Vault · roll 127 "
+    link "show in the table" [url=#/tables/dv/dve50]
+    button "Page"
+    StaticText "127"
+    ... StaticText x10 of 14 same-shape siblings elided
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    StaticText "Emblade:"
+    StaticText " This weapon has no blade. You can make a Spellcast Roll (12) to..." [namelen=223 namehash=f9839c1a]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/dve50]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Add to list
+Alt. tables
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dragon's Vault
+Dread
+EN
+Lay these out for printing: nine to an A4 sheet
+Lists
+Page
+RU
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+show in the table
+ЛутDaggerheart

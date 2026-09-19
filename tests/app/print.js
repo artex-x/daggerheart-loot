@@ -337,6 +337,19 @@ const { ok } = rep;
     (await burden()) === 'burden-1.svg',
     'the one-handed grip has the wrong mark: ' + (await burden())
   );
+
+  /* `bu: 'any'` draws the one-handed mark captioned "1/2": no two-handed pair
+   * is exported (docs/DECISIONS.md, "Gryphon Hammer `bu: 'any'`"). */
+  await d.open('#/print/dve30');
+  ok(
+    (await burden()) === 'burden-1.svg',
+    'the One/Two-Handed grip has the wrong mark: ' + (await burden())
+  );
+  const burdenCaption = await page.$eval('.pc-burden small', (e) => e.textContent.trim());
+  ok(
+    burdenCaption === '1/2',
+    'the One/Two-Handed caption does not read the value: ' + burdenCaption
+  );
   ok(
     /Daggerheart/.test(parts.bottom) && /Core/i.test(parts.bottom),
     'the caption is missing the book: ' + parts.bottom
@@ -375,6 +388,61 @@ const { ok } = rep;
   );
   const dice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
   ok(dice.join() === 'd6,d8', "the two strips' dice are not from the book: " + dice.join());
+
+  /* A feature that swaps the stat set draws the same second strip, and a
+     set's shared bonus is the last text line of every member. */
+  console.log('stat-swapping weapons and the set bonus');
+  await d.open('#/print/dve19');
+  const emberStrips = await page.$$eval('.pc-strip .pc-cells', (e) =>
+    e.map((x) => x.textContent)
+  );
+  ok(emberStrips.length === 2, 'Ember does not have two strips: ' + emberStrips.length);
+  ok(/Близко/i.test(emberStrips[1] || ''), 'Ember second strip: ' + emberStrips[1]);
+  const emberDice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
+  ok(emberDice.join() === 'd8,d12', 'Ember dice: ' + emberDice.join());
+  const emberLast = await page.$$eval('.pc-text i', (e) => e.map((x) => x.textContent).pop());
+  ok(
+    emberLast === 'Пылающие близнецы (Комплект: Уголёк, Искра):',
+    'Ember set line label: ' + emberLast
+  );
+  await d.open('#/print/dve54');
+  const gauntletDice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
+  ok(gauntletDice.join() === 'd10,d12', 'Steampowered Gauntlets dice: ' + gauntletDice.join());
+  await d.open('#/print/dve20');
+  const sparkText = await page.$eval('.pc-text', (e) => e.textContent);
+  ok(
+    sparkText.split('Пылающие близнецы').length === 2 && !/вместе с Угольком/.test(sparkText),
+    'Spark carries the bonus other than once, in the set line: ' + sparkText
+  );
+
+  /* The Spellcast trait cell uses the print-only short form, and fits. */
+  for (const isBw of [false, true]) {
+    await d.open('#/print/dve50');
+    if (isBw) {
+      await bw();
+      await d.settle();
+    }
+    const trait = await page.$eval('.pc-c2 .pc-box b', (e) => e.textContent.trim());
+    ok(
+      trait === 'Хар. Заклинателя',
+      (isBw ? 'bw: ' : 'colour: ') + 'Spellblade trait: ' + trait
+    );
+    const clipped = await page.$$eval('.pc-strip .pc-box b', (all) => {
+      const rng = document.createRange();
+      return all
+        .filter((v) => {
+          rng.selectNodeContents(v);
+          return rng.getBoundingClientRect().width > v.clientWidth + 1;
+        })
+        .map((v) => v.textContent);
+    });
+    ok(
+      !clipped.length,
+      (isBw ? 'bw: ' : 'colour: ') + 'Spellblade strip text is clipped: ' + clipped.join(', ')
+    );
+  }
+  await colour();
+  await d.settle();
 
   /* Each die has its own shape, and colour follows the damage type: physical
      gold, magical blue-violet. */

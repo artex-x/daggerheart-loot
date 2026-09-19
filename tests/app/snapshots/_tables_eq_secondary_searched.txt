@@ -17,6 +17,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -32,6 +33,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -43,14 +45,14 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "108"
+    StaticText "119"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (25)" [checked=false]
+    checkbox "Выбрать все (30)" [checked=false]
     checkbox "Короткий Меч" [checked=false]
     button "Короткий Меч Ранг 1 · Проворность · Вплотную · d8 физ · Одноручн..." [namelen=149 namehash=891fd0c7]
-    ... checkbox x108 of 112 same-shape siblings elided
-    ... button x105 of 109 same-shape siblings elided
+    ... checkbox x119 of 123 same-shape siblings elided
+    ... button x116 of 120 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
@@ -61,20 +63,32 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Голодный Кулачный Клинок" [checked=false]
     button "23 Голодный Кулачный Клинок Ранг 4 · Искусность · Вплотную · d6+..." [namelen=419 namehash=0a74c7f7]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
+106Духовая Трубка Скорбного ЕжаРанг 2 · Искусность · Средне · d4... [namelen=240 namehash=2c527445]
+110Крючок, Леска и ГрузилоРанг 2 · Проворность · Средне · d6 физ... [namelen=252 namehash=3830209b]
+120Кинжал СангромантииРанг 1 · Влияние · Вплотную · d6 маг · Одн... [namelen=259 namehash=386d4830]
+122Щит ПредвиденияРанг 2 · Инстинкт · Вплотную · d4+2 физ · Одно... [namelen=240 namehash=5b983997]
+123Щит НебесРанг 2 · Сила · Вплотную · d8+2 физ · ОдноручноеСиян... [namelen=312 namehash=074c0212]
+128Защита Королевы ПауковРанг 1 · Сила · Вплотную · d4 физ · Одн... [namelen=332 namehash=2946c09e]
 15Рассекатель ЗавесыРанг 4 · Влияние · Вплотную · d6+9 физ · Одн... [namelen=381 namehash=fae3f03c]
 22Щит Охотника на ЖуковРанг 2 · Сила · Вплотную · d4 физ · Однор... [namelen=230 namehash=1e9e88ac]
 23Голодный Кулачный КлинокРанг 4 · Искусность · Вплотную · d6+7 ... [namelen=411 namehash=5d38bac7]
 57Кандальные БоласРанг 2 · Искусность · Средне · d4+1 физ · Одно... [namelen=263 namehash=ed3ae9bd]
 6Ритуальный Клинок СехметРанг 3 · Искусность · Вплотную · d8+4 м... [namelen=287 namehash=6b1358d7]
 6Щит СолнцаРанг 3 · Сила · Вплотную · d4+4 маг · ОдноручноеСолне... [namelen=190 namehash=60405fbc]
+78Тысяча ПорезовРанг 3 · Искусность · Вплотную · d8+4 физ · Одно... [namelen=427 namehash=42aa75d8]
 7Арканный СкальпельРанг 3 · Искусность · Далеко · d6+2 маг · Одн... [namelen=184 namehash=2bd082f4]
 7Щит ОтталкиванияРанг 3 · Сила · Вплотную · d4+4 физ · Одноручно... [namelen=352 namehash=56acab87]
+87Пылающий БраслетРанг 1 · Искусность · Далеко · d6 маг · Однору... [namelen=250 namehash=dba63b48]
+90Клинок из Драконьей КостиРанг 1 · Сила · Вплотную · d6 физ · О... [namelen=270 namehash=68beaf35]
+97ИскраРанг 2 · Проворность · Вплотную · d8+2 маг · ОдноручноеОг... [namelen=300 namehash=4620b1f9]
+99Ослепляющий ДротикРанг 1 · Искусность · Далеко · d4 физ · Одно... [namelen=225 namehash=d544d46e]
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -105,15 +119,20 @@ daggerheart.com
 Голодный Кулачный Клинок
 Деревянный Кол
 Деревянный КолРанг 1 · Сила · Вплотную · d8 физ · ОдноручноеПарн... [namelen=197 namehash=785ad3c3]
+Духовая Трубка Скорбного Ежа
 Жуткий Наруч
 Жуткий НаручРанг 2 · Инстинкт · Вплотную · d8 маг · ОдноручноеОт... [namelen=240 namehash=03f0f778]
+Защита Королевы Пауков
 Игла Пустоты
 Игла ПустотыРанг 4 · Искусность · Вплотную · d4+6 физ · Одноручн... [namelen=182 namehash=192ac693]
+Искра
 К содержимому
 Как это работает
 Кандальные Болас
+Кинжал Сангромантии
 Клинок Эха
 Клинок ЭхаРанг 4 · Влияние · Вплотную · d4+6 маг · ОдноручноеУдв... [namelen=203 namehash=68ff8d2f]
+Клинок из Драконьей Кости
 Колючая Проволока
 Колючая ПроволокаРанг 2 · Искусность · Близко · d6+3 физ · Однор... [namelen=253 namehash=d2e290bd]
 Короткий Меч
@@ -124,6 +143,7 @@ daggerheart.com
 Крюк для Буксировки
 Крюк для БуксировкиРанг 1 · Искусность · Средне · d6 физ · Однор... [namelen=176 namehash=53b743b0]
 КрюкРанг 1 · Искусность · Средне · d6 физ · ОдноручноеЦепляющее:... [namelen=144 namehash=7869b9b1]
+Крючок, Леска и Грузило
 Лассо
 ЛассоРанг 1 · Проворность · Близко · d4 физ · ОдноручноеЗааркане... [namelen=393 namehash=e59f058f]
 Легендарное Лассо
@@ -181,6 +201,7 @@ daggerheart.com
 Осколок ВорпалаРанг 3 · Знание · Вплотную · d4 маг · ОдноручноеН... [namelen=207 namehash=05ebd8c7]
 Осколок Основания
 Осколок ОснованияРанг 4 · Инстинкт · Близко · d4 физ · Одноручно... [namelen=228 namehash=cedecb0a]
+Ослепляющий Дротик
 Открывать этот раздел при запуске
 Парирующий Кинжал
 Парирующий КинжалРанг 2 · Искусность · Вплотную · d6+2 физ · Одн... [namelen=354 namehash=7d234f90]
@@ -224,6 +245,7 @@ daggerheart.com
 Продвинутый Цепной Хлыст
 Продвинутый Цепной ХлыстРанг 3 · Влияние · Близко · d6+5 физ · О... [namelen=182 namehash=b4d9595d]
 Прочее
+Пылающий Браслет
 Рассекатель Завесы
 Ритуальный Клинок Сехмет
 Рунный Щит
@@ -254,6 +276,7 @@ daggerheart.com
 ТомагавкРанг 1 · Проворность · Вплотную · d8 физ · ОдноручноеПос... [namelen=219 namehash=82603489]
 Тройной Цепной Посох
 Тройной Цепной ПосохРанг 2 · Проворность · Близко · d6+4 физ · О... [namelen=196 namehash=a6c63fb1]
+Тысяча Порезов
 Улучшенное Лассо
 Улучшенное ЛассоРанг 2 · Проворность · Близко · d4+3 физ · Однор... [namelen=406 namehash=45ed5385]
 Улучшенные Метательные Ножи
@@ -301,8 +324,10 @@ daggerheart.com
 Цепной ХлыстРанг 1 · Влияние · Близко · d6+1 физ · ОдноручноеЦеп... [namelen=170 namehash=7d94cfe7]
 Шипастый Щит
 Шипастый ЩитРанг 2 · Сила · Вплотную · d6+2 физ · ОдноручноеДвой... [namelen=180 namehash=3ace72ca]
+Щит Небес
 Щит Отталкивания
 Щит Охотника на Жуков
+Щит Предвидения
 Щит Солнца
 Щит Храбреца
 Щит ХрабрецаРанг 4 · Проворность · Вплотную · d4+6 физ · Одноруч... [namelen=233 namehash=346251af]
@@ -328,6 +353,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -343,6 +369,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -354,10 +381,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "108"
+    StaticText "119"
     StaticText "Nothing found"
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -366,6 +393,7 @@ Alt. tables
 Armor
 Communities
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN

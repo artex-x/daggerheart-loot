@@ -16,7 +16,7 @@
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
   import { cardBadges, srcLabel } from '../lib/label.js';
-  import { upgradeLine } from '../lib/data.js';
+  import { setBonusOf, setOf, upgradeLine } from '../lib/data.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { AltCol, Index } from '../lib/data.js';
   import type { Lang, Record_ } from '../lib/types.js';
@@ -103,6 +103,12 @@
   const madeFrom = $derived.by(() => {
     const from = index.craftedFrom.get(it.id);
     return from ? index.byId.get(from) : undefined;
+  });
+  const setMembers = $derived(setOf(index, it));
+  const setBonus = $derived.by(() => {
+    const b = setBonusOf(index, it);
+    if (!b) return undefined;
+    return lang === 'ru' ? { name: b.ru, text: b.rud } : { name: b.en, text: b.ende };
   });
   const refs = $derived(
     (it.refs ?? []).map((k) => index.refs[k]).filter((r) => r !== undefined)
@@ -205,7 +211,7 @@
       </div>
     {/if}
 
-    {#if upgrade || madeFrom}
+    {#if upgrade || madeFrom || setMembers.length}
       <!-- Both directions on the card: where a thing goes, and where it came
            from. Only the forward one travels into a copied message. -->
       <div class="craft">
@@ -222,6 +228,33 @@
             <span class="craft-l">{t.craftFrom}</span>
             <a href={recordHash(madeFrom.id)}>{nameOf(madeFrom, lang)}</a>
           </p>
+        {/if}
+        {#if setMembers.length}
+          <!-- Every member in catalogue order, the record itself inert:
+               the tier ladder's own rule for the rung you are on
+               (`.step.on[aria-current]` above), reused here for the piece
+               of the set you are looking at. One flex item holding the
+               whole comma-joined run, so the punctuation flows as prose
+               rather than each name picking up the row's own flex gap. -->
+          <p>
+            <Icon name="craft" />
+            <span class="craft-l">{t.setLabel}</span>
+            <span
+              >{#each setMembers as member, i (member.id)}{i > 0
+                  ? ', '
+                  : ''}{#if member.id === it.id}<span aria-current="true"
+                    >{nameOf(member, lang)}</span
+                  >{:else}<a href={recordHash(member.id)}>{nameOf(member, lang)}</a
+                  >{/if}{/each}</span
+            >
+          </p>
+          {#if setBonus}
+            <!-- One span, so the row's flex gap does not split the label from
+                 the text. -->
+            <p>
+              <span><i>{setBonus.name}:</i> {setBonus.text}</span>
+            </p>
+          {/if}
         {/if}
       </div>
     {/if}

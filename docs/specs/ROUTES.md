@@ -16,13 +16,14 @@ The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
 | `#/roll/wondrous` | Wondrous Loot, 1-119 |
 | `#/roll/dread` | Dread GM Toolbox, 1-29 |
 | `#/roll/voa` | Vault of Ages, by section |
+| `#/roll/dv` | The Dragon's Vault, 1-145 |
 | `#/roll/community` | Community items, community plus 1-10 |
 | `#/tables` | Tables index |
 | `#/lists` | Lists index |
 | `#/search` | Search |
 
-These nine are also the tab bar (`SECTIONS`) and the nine a person may pin as
-their starting section - eight pin as their own hash; `#/tables` pins as
+These ten are also the tab bar (`SECTIONS`) and the ten a person may pin as
+their starting section - nine pin as their own hash; `#/tables` pins as
 whichever table is on screen (`#/tables/<table>`), never as the bare tab
 address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
 stores and reads back.
@@ -45,7 +46,7 @@ working and keeps its own text.
 `TABLES_RE` is `/^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/`.
 
 Table names (`TABLE_IDS`): `core_item`, `core_consumable`, `hnf_item`,
-`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `other_starting`, `other_frames`, `alt_item`,
+`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `dv`, `other_starting`, `other_frames`, `alt_item`,
 `alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`.
 
 `frames` is an alias for `other_frames` (`TABLE_ALIASES`, `hash.ts:39`):
@@ -85,6 +86,7 @@ Group keys, by table:
 | `eq_secondary` | `tier`, `src`, `cls`, `trait`, `range`, `line` |
 | `eq_armor` | `tier`, `src`, `line` |
 | `voa` | `kind`, `tier` |
+| `dv` | `kind` |
 | `other_starting` | none |
 | `other_frames` | `kind`, `frame` |
 | `community` | `comm` |

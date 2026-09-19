@@ -4,6 +4,8 @@
  * shrug - a roll test that can only check that something appeared is the test
  * that lets a wrong table through. */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -158,6 +160,41 @@ describe('choosing the number by hand', () => {
     await userEvent.click(down);
     expect(field().value).toBe('1');
     expect(down).toBeDisabled();
+  });
+});
+
+describe("The Dragon's Vault over the real data", () => {
+  /* The book's equipment rolls after its loot, 78-145, and keeps its stat
+     block in the result card. */
+  const REAL = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const field = (): HTMLInputElement =>
+    screen.getByRole<HTMLInputElement>('textbox', { name: 'Результат броска' });
+  const typed = async (n: string): Promise<void> => {
+    render(App, { env: fakeEnv({ router: memoryRouter('#/roll/dv'), data: fakeData(REAL) }) });
+    await userEvent.clear(field());
+    await userEvent.type(field(), n);
+    await userEvent.tab();
+  };
+
+  it('names the whole range on the button', () => {
+    render(App, { env: fakeEnv({ router: memoryRouter('#/roll/dv'), data: fakeData(REAL) }) });
+    expect(screen.getByRole('button', { name: 'Случайно 1–145' })).toBeInTheDocument();
+  });
+
+  it('draws the first piece of equipment, stat line and all, at 78', async () => {
+    await typed('78');
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Тысяча Порезов' })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/d8\+4/)).toBeInTheDocument();
+  });
+
+  it('draws the last piece of equipment at 145', async () => {
+    await typed('145');
+    expect(field().value).toBe('145');
+    expect(screen.getByRole('heading', { level: 2, name: 'Оберег Теней' })).toBeInTheDocument();
   });
 });
 

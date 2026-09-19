@@ -11,7 +11,7 @@
    * whitespace of any kind between the tags in that block. */
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
-  import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TRAIT, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
+  import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
   import { printSrc } from '../lib/label.js';
   import { qtySuffix } from '../lib/share.js';
   import {
@@ -20,8 +20,10 @@
     dmgParts,
     DICE_WITH_ART,
     glyphKey,
-    PRINT_GLYPH
+    PRINT_GLYPH,
+    printTrait
   } from '../lib/print.js';
+  import type { DescPart } from '../lib/desc.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
   interface Props {
@@ -29,16 +31,19 @@
     lang: Lang;
     bw: boolean;
     artBroken: boolean;
-    /** R6: reported back to `PrintPage`/`app.markArtBroken`, the same as
+    /** Reported back to `PrintPage`/`app.markArtBroken`, the same as
      *  `RecordCard`'s own `onerror` - a print sheet reached directly (a
      *  shared `#/print/...` address) has no other page that could have
      *  already caught a missing picture. */
     onartfail: (id: string) => void;
     /** The list's count for this card - FEATURES.md, Print. */
     qty?: number | undefined;
+    /** A set's shared bonus, drawn as the last text line. `PrintPage` builds
+     *  it: the card has no index. */
+    setLine?: { label: string; body: string } | undefined;
   }
 
-  const { it, lang, bw, artBroken, onartfail, qty }: Props = $props();
+  const { it, lang, bw, artBroken, onartfail, qty, setLine }: Props = $props();
 
   const t = $derived(dict(lang));
   const counter = $derived(qtySuffix(qty));
@@ -62,7 +67,14 @@
           : t.item
   );
   const tag2 = $derived(eq && eq.t !== 'armor' && eq.cls ? eqWord(EQ_CLS, eq.cls, lang) : '');
-  const parts = $derived(descParts(it, lang));
+  const parts = $derived<DescPart[]>(
+    setLine
+      ? [
+          ...descParts(it, lang),
+          { kind: 'line', label: setLine.label, body: ' ' + setLine.body }
+        ]
+      : descParts(it, lang)
+  );
   const src = $derived(printSrc(it, lang));
   const hasArt = $derived(!!it.img && !artBroken);
   const pkClass = $derived(
@@ -158,6 +170,7 @@
     void bw;
     void it;
     void qty;
+    void setLine;
     if (card) fit(card);
   });
 </script>
@@ -184,9 +197,11 @@
       ><img src={cardArt('shield', bw)} alt="" /><b>{String(eq.as)}</b><i>{t.pcArmor}</i></span
     >
   {:else if burden}
+    <!-- `bu: 'any'` draws the one-handed mark captioned "1/2"; no two-handed
+         pair is exported (docs/DECISIONS.md, "Gryphon Hammer `bu: 'any'`"). -->
     <span class="pc-burden"
-      ><small>{t.eqBurden}</small><img
-        src={cardArt(burden > 1 ? 'burden-2' : 'burden-1', bw)}
+      ><small>{burden === 'any' ? '1/2' : t.eqBurden}</small><img
+        src={cardArt(burden === 2 ? 'burden-2' : 'burden-1', bw)}
         alt=""
       /></span
     >
@@ -229,7 +244,7 @@
             t.pcDmg,
             eqWord(EQ_DT, e.dt, lang) || '—'
           )}</span
-        ><span class="pc-c2">{@render box(t.pcTrait, eqWord(EQ_TRAIT, e.tr, lang))}</span><span
+        ><span class="pc-c2">{@render box(t.pcTrait, printTrait(e.tr, lang))}</span><span
           class="pc-c3">{@render box(t.pcRange, eqWord(EQ_RANGE, e.rg, lang))}</span
         ></span
       ></span

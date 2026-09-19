@@ -17,6 +17,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -32,6 +33,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -58,7 +60,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Шкура Йети" [checked=false]
     button "118 Шкура Йети Пока вы носите эту шкуру, вы получаете половину у..." [namelen=282 namehash=c9dc228e]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -80,7 +82,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 30РасстроительОдин раз за продолжительный отдых вы можете потрат... [namelen=293 namehash=e196ae60]
 33Сапоги Жуткого ПлетенияПока вы носите эти сапоги, вы получаете... [namelen=150 namehash=bdc14671]
 34Осколок СновидцаВо время продолжительного отдыха вы можете исп... [namelen=342 namehash=95b3a529]
-36Чёрная НитьВы можете разматывать эту нить до 500 футов в пути,... [namelen=228 namehash=d651977c]
+36Чёрная НитьВы можете разматывать эту нить до 150 метров в пути... [namelen=229 namehash=1bfef12f]
 38Эфирный ЯкорьПока вы несёте этот якорь, вы можете отметить 2 С... [namelen=207 namehash=db4f8b4f]
 3ЭфироцветЭтот цветок чувствителен к магии и указывает в направл... [namelen=225 namehash=d51ca413]
 40МерцацветПока вы несёте этот цветок, вы получаете преимущество... [namelen=186 namehash=2f7f9605]
@@ -92,7 +94,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 4Алконитовый КристаллВы можете использовать энергию этого криста... [namelen=201 namehash=9adc2f46]
 50Фонарь ТенейПока вы используете этот фонарь, вы можете распозн... [namelen=266 namehash=c7a9c474]
 55Громовой СкарабейКогда вы получаете электрический урон, вы мож... [namelen=249 namehash=3c76e897]
-56Жуки-ВлюблённыеПоместите одного из этих керамических жуков в л... [namelen=206 namehash=061e85b7]
+56Жуки-ВлюблённыеПоместите одного из этих керамических жуков в л... [namelen=221 namehash=9365b7da]
 59Маска ПодражателяПока вы носите эту маску, один раз за сцену в... [namelen=343 namehash=e5ea7d06]
 5Удерживающий КрюкКогда вы совершаете Бросок Реакции, чтобы избе... [namelen=225 namehash=e866eceb]
 64Гроссбух ПервопроходцаЕсли вы записываете свой путь в эту книг... [namelen=248 namehash=7cc09e1f]
@@ -113,6 +115,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 94ВремястеклоОдин раз за сессию вы можете смотреть в эту подзорн... [namelen=221 namehash=f88a8591]
 97Рог ЧерепахиЕсли вы используете этот костяной фрагмент как нав... [namelen=252 namehash=56988e4f]
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -208,6 +211,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -223,6 +227,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -249,7 +254,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
     checkbox "Yeti Coat" [checked=false]
     button "118 Yeti Coat While wearing this coat you take half damage from ..." [namelen=239 namehash=3040652f]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -317,6 +322,7 @@ Consumables
 Core
 Croakroot Pad
 Detuner
+Dragon's Vault
 Dread
 Dread GM Toolbox
 Dread-Weave Boots

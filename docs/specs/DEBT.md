@@ -278,27 +278,6 @@ ticket (D24), a dedicated batch (D25, D26), or the UI/UX ticket (D27).
   only, and confirm the undo control is reachable (and used) before the
   toast's own timeout closes it.
 
-### D41 (idea, not built) - the apostrophe splits perfectly along the data's ingest seam, unreconciled
-
-- **Where**: `data.js`, and therefore `data.json`, `catalog.csv` and
-  `i/*.html`.
-- **What**: all 381 equipment records (`eq`, ids `q*`/`f*`) use the
-  typographic apostrophe (U+2019); all 710 loot-table records use the ASCII
-  apostrophe. Zero records mix the two - two ingests never reconciled, not
-  editorial drift. Visible in search: a query can return a U+2019 name and
-  an ASCII-apostrophe name in the same result list.
-- **Why deferred**: a data-pipeline question, not a Phase 8 batch - `#/search`
-  already folds the difference for matching (`app/src/lib/search.ts`
-  `foldQuery`, "O1" in the same review), so this is now purely cosmetic and
-  defensible to defer indefinitely once that folding is in place, or to
-  resolve the other way (normalise everything *to* U+2019) without losing
-  anything.
-- **How to verify the fix**: one substitution over the `en`/`ende` fields of
-  `d.eq` in `data.js`, rebuild the derived files, and re-seed the six
-  affected goldens (`_search_searched.txt`, `_search_a_row_ticked.txt`,
-  `_tables_eq_armor.txt`, `_tables_eq_secondary.txt`, `_tables_eq_weapon.txt`,
-  `_tables_eq_weapon_panel_open.txt`).
-
 ## Routed elsewhere, not paid
 
 Findings a review raised that were routed to an existing ticket, a new task
@@ -314,10 +293,10 @@ reading four whole cards, money-picker discoverability, a Search help panel,
 an inlined first-paint skeleton, boundary reporting.
 
 **Own tasks** (costed rather than folded into a review batch): generated
-image derivatives (`img/` ships 640x640 originals - 876 files, 30 MB, mean
-34,719 B - into 60px rows and 168px tiles; scrolling `#/tables/eq_weapon` in
-grid view pulls ~11 MB against a 243 kB first load; the fix is a generated
-~192px derivative under a new asset path, which `CONTRACTS.md` would
+image derivatives (`img/` ships 640x640 originals - 1021 files, 35 MB, mean
+33,912 B - into 60px rows and 168px tiles; scrolling `#/tables/eq_weapon` in
+grid view pulled ~11 MB at 317 rows (370 now) against a 243 kB first load;
+the fix is a generated ~192px derivative under a new asset path, which `CONTRACTS.md` would
 freeze); splitting `ListPage.svelte`; decomposing `AppState`; `Record_.tier`
 -> `voaTier`; branded ids; one home for the shared-link wire constants;
 publishing the artefact `check` proves; a replacement heavy-run lock, weighed
@@ -345,7 +324,7 @@ deferral discipline.
 - **What**: `provenance()` returns a full breadcrumb only for frame and
   starting records; every other record's stub keeps the old `Предмет · Core
   · №12` tag form instead of a path.
-- **Why deferred**: making it a path for all 1091 records needs a full stub
+- **Why deferred**: making it a path for all 1236 records needs a full stub
   regeneration plus its own public-contract commit (`i/*.html` is generated,
   frozen output) - not a nit-sized fix in a batch that touched only the two
   tables that already agree.
@@ -420,6 +399,27 @@ deferral discipline.
 - **How to verify the fix**: replace the participle with a gender-free form,
   remove a feminine record from a list, and confirm that the toast reads
   correctly in Russian.
+
+### D46 - a secondary weapon's class shows only on the print card and in the filter
+
+- **Where**: `app/src/lib/i18n.ts`, `eqParts` (the class for `t === 'weapon'`
+  only); `app/src/components/PrintCard.svelte`, `tag2` (any non-armour);
+  `app/src/lib/facets.ts`, the `cls` row (labelled «Тип урона» on
+  `eq_secondary`).
+- **What**: all 119 secondary weapons have `cls === dt`. The record card,
+  the table row, copied text and the share stub never name the class; the
+  print card does («Магическое»), and the filter reads `cls`.
+- **Why deferred**: not a Dragon's Vault defect, and either fix moves the
+  copied text of 119 records (the share fixture is re-captured) and 119
+  stubs - its own reviewed change.
+- **Fix**: recommended - print the class on a secondary weapon's stat line
+  as on a primary one (`eqParts`: `e.t !== 'armor'`), because the print card
+  follows the Figma node and the stat line is this app's own; the cost is a
+  line that says «Магическое» and «маг» for the same fact. The other option:
+  drop `tag2` from secondary print cards - cheaper, but it departs from the
+  print design.
+- **How to verify the fix**: `#/i/<a secondary id>` and `#/print/<same id>`
+  name the class the same way.
 
 ## Hook and tooling defects, kept open
 

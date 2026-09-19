@@ -38,6 +38,7 @@ export const EQ_TABLE: Record<string, EquipKind> = {
 const PLAIN_GROUPS: Partial<Record<TableId, readonly string[]>> = {
   wondrous: ['kind'],
   dread: ['kind'],
+  dv: ['kind'],
   voa: ['kind', 'tier'],
   other_frames: ['kind', 'frame'],
   community: ['comm']
@@ -107,9 +108,18 @@ export function groupIsAny(state: FilterState, group: string): boolean {
   return !state[group]?.length;
 }
 
-/** Values inside one group are OR'd. */
-export function groupHits(state: FilterState, group: string, value: string): boolean {
-  return groupIsAny(state, group) || (state[group]?.includes(value) ?? false);
+/** Values inside one group are OR'd. A record that answers with more than one
+ *  value (a burden of `'any'` answers `'1'` and `'2'` at once) hits the group
+ *  if any of them does. */
+export function groupHits(
+  state: FilterState,
+  group: string,
+  value: string | readonly string[]
+): boolean {
+  if (groupIsAny(state, group)) return true;
+  const selected = state[group] ?? [];
+  const values = typeof value === 'string' ? [value] : value;
+  return values.some((v) => selected.includes(v));
 }
 
 /**
@@ -121,7 +131,7 @@ export function groupHits(state: FilterState, group: string, value: string): boo
 export function passes(
   state: FilterState,
   groups: readonly string[],
-  valueOf: (group: string) => string
+  valueOf: (group: string) => string | readonly string[]
 ): boolean {
   return groups.every((g) => groupHits(state, g, valueOf(g)));
 }

@@ -2,7 +2,7 @@
  *
  * Two separate things live here, and docs/specs/I18N.md says why they must stay
  * separate: the interface dictionary is small, typed and reviewed, while record
- * text is 1091 pairs maintained with the data. This module only handles the
+ * text is 1236 pairs maintained with the data. This module only handles the
  * second kind - picking the right field off a record, and turning a stat block
  * into words.
  *
@@ -42,7 +42,8 @@ export const EQ_TRAIT: Record<Trait, Pair> = {
   finesse: ['Искусность', 'Finesse'],
   instinct: ['Инстинкт', 'Instinct'],
   presence: ['Влияние', 'Presence'],
-  knowledge: ['Знание', 'Knowledge']
+  knowledge: ['Знание', 'Knowledge'],
+  spellcast: ['Характеристика Заклинателя', 'Spellcast']
 };
 
 export const EQ_RANGE: Record<Range, Pair> = {
@@ -61,7 +62,8 @@ export const EQ_DT: Record<DamageType, Pair> = {
 
 export const EQ_BURDEN: Record<string, Pair> = {
   '1': ['Одноручное', 'One-Handed'],
-  '2': ['Двуручное', 'Two-Handed']
+  '2': ['Двуручное', 'Two-Handed'],
+  any: ['Одноручное/двуручное', 'One/Two-Handed']
 };
 
 export const EQ_CLS: Record<EquipClass, Pair> = {
@@ -92,6 +94,11 @@ export function nameOf(it: Record_, lang: Lang): string {
 
 export function descOf(it: Record_, lang: Lang): string {
   return lang === 'ru' ? it.rud || it.ende : it.ende;
+}
+
+/** The names of several records, comma-separated, in the given order. */
+export function namesOf(list: readonly Record_[], lang: Lang): string {
+  return list.map((it) => nameOf(it, lang)).join(', ');
 }
 
 /* ---------- the stat line ---------- */

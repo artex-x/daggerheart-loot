@@ -17,7 +17,18 @@ export type DamageType = 'phy' | 'mag' | 'any';
 /** Which section of the book a weapon is printed in. Not the damage type. */
 export type EquipClass = 'phy' | 'mag';
 
-export type Trait = 'agility' | 'strength' | 'finesse' | 'instinct' | 'presence' | 'knowledge';
+export const CHARACTER_TRAITS = [
+  'agility',
+  'strength',
+  'finesse',
+  'instinct',
+  'presence',
+  'knowledge'
+] as const;
+
+/** `spellcast` is a weapon that uses its wielder's Spellcast trait, whichever
+ *  of the six that is. */
+export type Trait = (typeof CHARACTER_TRAITS)[number] | 'spellcast';
 
 export type Range = 'melee' | 'veryclose' | 'close' | 'far' | 'veryfar';
 
@@ -36,6 +47,7 @@ export const TABLE_IDS = [
   'community',
   'dread',
   'voa',
+  'dv',
   'other_starting',
   'other_frames',
   'alt_item',
@@ -51,13 +63,14 @@ export function isTableId(v: string): v is TableId {
   return (TABLE_IDS as readonly string[]).includes(v);
 }
 
-/** The nine sections: also the tabs, also what may be pinned as the start. */
+/** The ten sections: also the tabs, also what may be pinned as the start. */
 export const SECTIONS = [
   'roll/std',
   'roll/alt',
   'roll/wondrous',
   'roll/dread',
   'roll/voa',
+  'roll/dv',
   'roll/community',
   'tables',
   'lists',
@@ -79,15 +92,17 @@ export interface Equip {
   rg?: Range;
   dmg?: string;
   dt?: DamageType;
-  /** Burden: 1 one-handed, 2 two-handed. */
-  bu?: 1 | 2;
+  /** Burden: 1 one-handed, 2 two-handed, 'any' either way (the book prints
+   *  both; the print card draws the one-handed mark captioned `1/2`). */
+  bu?: 1 | 2 | 'any';
   /** Armour Score and base thresholds - armour only. */
   as?: number | null;
   /** Minor and major damage thresholds - the pair the data actually carries. */
   th?: readonly [number, number] | null;
   /** `id` of the first item in the upgrade line; empty on one-offs. */
   line?: string;
-  /** A versatile weapon's second stat block - the print card draws both. */
+  /** A second stat set - a Versatile weapon's, or one the weapon's own
+   *  feature switches to. The print card draws both strips. */
   alt?: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>;
 }
 
@@ -104,6 +119,14 @@ export interface RefCard {
   rusub: string;
   rud: string;
   url: string;
+}
+
+/** A set's shared bonus, stored once and drawn on every member. */
+export interface SetCard {
+  en: string;
+  ru: string;
+  ende: string;
+  rud: string;
 }
 
 export interface Record_ {
@@ -132,4 +155,7 @@ export interface Record_ {
   starting?: boolean;
   community?: string;
   community_ru?: string;
+  /** The set this record belongs to; members are derived by grouping, never
+   *  stored. A lowercase key, `[a-z0-9-]+`. */
+  set?: string;
 }

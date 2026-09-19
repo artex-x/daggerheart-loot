@@ -18,7 +18,7 @@
  *
  * Pure module: no DOM, no data beyond what is handed in. */
 
-import { kindOf, srcOf, type Index } from './data.js';
+import { equipFacets, kindOf, srcOf, type Index } from './data.js';
 import { EQ_GROUPS, EQ_TABLE, groupsFor } from './filters.js';
 import { FRAME_ORDER, frameName } from './frames.js';
 import { srcName } from './label.js';
@@ -69,7 +69,15 @@ function kindRow(index: Index, table: TableId, t: Dict): FacetRow | null {
    in book order, then the campaign frames. `motherboard` never survives the
    presence filter below - no equipment of any kind carries it - so it is
    never restated separately from `FRAME_ORDER`. */
-const EQ_SRC: readonly string[] = ['core', 'hnf', 'wondrous', 'dread', 'voa', ...FRAME_ORDER];
+const EQ_SRC: readonly string[] = [
+  'core',
+  'hnf',
+  'wondrous',
+  'dread',
+  'voa',
+  'dv',
+  ...FRAME_ORDER
+];
 
 /**
  * The equipment tables' facet rows, off `eqFacets` in app.js. Walks
@@ -104,10 +112,18 @@ export function eqFacetRows(index: Index, kind: EquipKind, t: Dict, lang: Lang):
     trait: () => ({
       group: 'trait',
       label: t.eqTrait,
-      values: (Object.keys(EQ_TRAIT) as (keyof typeof EQ_TRAIT)[]).map((k) => ({
-        value: k,
-        label: eqWord(EQ_TRAIT, k, lang)
-      }))
+      values: (Object.keys(EQ_TRAIT) as (keyof typeof EQ_TRAIT)[])
+        /* A chip is drawn only for a trait some record of this kind answers:
+           the Spellblade answers all six, so `spellcast` never gets one. */
+        .filter((k) =>
+          index.allEquip.some(
+            (it) => it.eq?.t === kind && [equipFacets(it)['trait'] ?? ''].flat().includes(k)
+          )
+        )
+        .map((k) => ({
+          value: k,
+          label: eqWord(EQ_TRAIT, k, lang)
+        }))
     }),
     range: () => ({
       group: 'range',

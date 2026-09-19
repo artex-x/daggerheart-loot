@@ -8,6 +8,8 @@
  * refusal is reported rather than swallowed, and that the markup is one a
  * screen reader can follow. */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
@@ -244,6 +246,31 @@ const LOOT: Loot = {
         bu: 1,
         line: 'broadsword'
       }
+    },
+    /* A two-member set, off the real Ember/Spark pair (`docs/DECISIONS.md`,
+       "Set membership"): two records that name the same `set` key, with no
+       craft link between them at all - the set line is its own mechanism. */
+    {
+      id: 's1',
+      src: 'core',
+      kind: 'equip',
+      en: 'First Blade',
+      ende: 'Half of a pair.',
+      ru: 'Первый клинок',
+      rud: 'Половина пары.',
+      set: 'twin-blades',
+      eq: { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'melee', dmg: 'd6', bu: 1 }
+    },
+    {
+      id: 's2',
+      src: 'core',
+      kind: 'equip',
+      en: 'Second Blade',
+      ende: 'The other half.',
+      ru: 'Второй клинок',
+      rud: 'Другая половина.',
+      set: 'twin-blades',
+      eq: { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'melee', dmg: 'd6', bu: 1 }
     }
   ],
   refs: {
@@ -257,6 +284,14 @@ const LOOT: Loot = {
       rusub: 'Мудрость · Уровень 1 · Заклинание',
       rud: 'Корни вырываются из-под земли.\nОни хватают за лодыжки.',
       url: 'https://ru.daggerheart.su/domain/vicious-entangle'
+    }
+  },
+  sets: {
+    'twin-blades': {
+      en: 'Twin Edge',
+      ru: 'Двойное лезвие',
+      ende: 'Both blades strike as one.',
+      rud: 'Оба клинка бьют как один.'
     }
   }
 };
@@ -804,6 +839,105 @@ describe('the tier ladder', () => {
     /* Only the menu closed - a second, unclaimed Escape is what closes the
        modal, the native <dialog> behaviour this must not fight. */
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+});
+
+describe('a craft chain that runs through the record', () => {
+  /* Frostwyrd (Awakened) from the real data: made from Dormant, upgrades to
+     Exalted, and a named weapon rather than a rung of a tier ladder. */
+  const REAL = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const awakened = (): Env =>
+    fakeEnv({ router: memoryRouter('#/i/dve25'), data: fakeData(REAL) });
+
+  it('draws both directions, the unique badge, and no ladder', async () => {
+    const { container } = render(App, { env: awakened() });
+    const into = screen.getByText('Улучшается до').parentElement;
+    const from = screen.getByText('Получается из').parentElement;
+    expect(into).not.toBeNull();
+    expect(from).not.toBeNull();
+    if (!into || !from) return;
+    expect(within(into).getByRole('link', { name: 'Фроствирд (Возвышенный)' })).toHaveAttribute(
+      'href',
+      '#/i/dve26'
+    );
+    expect(within(from).getByRole('link', { name: 'Фроствирд (Дремлющий)' })).toHaveAttribute(
+      'href',
+      '#/i/dve24'
+    );
+    expect(screen.getByText('Уникальное')).toBeInTheDocument();
+    expect(container.querySelector('.step')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+});
+
+describe('the set line', () => {
+  it('lists every member, the one you are on inert and the rest linked', () => {
+    render(App, { env: at('s1') });
+    const line = screen.getByText('Комплект').parentElement;
+    expect(line).not.toBeNull();
+    if (!line) return;
+    const own = within(line).getByText('Первый клинок');
+    expect(own.tagName).toBe('SPAN');
+    expect(own).toHaveAttribute('aria-current', 'true');
+    expect(within(line).getByRole('link', { name: 'Второй клинок' })).toHaveAttribute(
+      'href',
+      '#/i/s2'
+    );
+    /* Svelte's whitespace collapsing at a tag boundary can eat the space
+       after the comma, so the test reads the whole line's text. */
+    expect(line.textContent.replace(/\s+/g, ' ').trim()).toBe(
+      'Комплект Первый клинок, Второй клинок'
+    );
+  });
+
+  it('reads the same set from the other half, itself inert this time', () => {
+    /* Membership is symmetric: opening Spark's own page marks Spark inert and
+       links back to Ember, the same pair read from its other end. */
+    render(App, { env: at('s2') });
+    const line = screen.getByText('Комплект').parentElement;
+    expect(line).not.toBeNull();
+    if (!line) return;
+    expect(within(line).getByText('Второй клинок')).toHaveAttribute('aria-current', 'true');
+    expect(within(line).getByRole('link', { name: 'Первый клинок' })).toHaveAttribute(
+      'href',
+      '#/i/s1'
+    );
+  });
+
+  it("draws the set's shared bonus under the set line on both members", () => {
+    for (const id of ['s1', 's2']) {
+      render(App, { env: at(id) });
+      const label = screen.getByText('Двойное лезвие:');
+      const line = label.closest('p');
+      expect(line?.previousElementSibling?.textContent).toContain('Комплект');
+      expect(line?.textContent.replace(/\s+/g, ' ').trim()).toBe(
+        'Двойное лезвие: Оба клинка бьют как один.'
+      );
+      cleanup();
+    }
+  });
+
+  it('draws no set line for a record outside any set', () => {
+    render(App, { env: at('q1') });
+    expect(screen.queryByText('Комплект')).not.toBeInTheDocument();
+  });
+
+  it('draws the real Ember and Spark bonus on Ember', async () => {
+    const REAL = JSON.parse(
+      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+    ) as Loot;
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/i/dve19'), data: fakeData(REAL) })
+    });
+    expect(screen.getByText('Пылающие близнецы:')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations with the set line on the page', async () => {
+    const { container } = render(App, { env: at('s1') });
+    await expectNoA11yViolations(container);
   });
 });
 

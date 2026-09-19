@@ -7,7 +7,10 @@
  * broken. The grammar itself is frozen - docs/specs/ROUTES.md - and the golden
  * side of it is replayed against the live app by tests/contracts.js. */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { equipFacets, type Loot } from './data.js';
 import {
   chosenCount,
   decodeFilter,
@@ -18,7 +21,11 @@ import {
   groupsFor,
   passes
 } from './filters.js';
-import { TABLE_IDS } from './types.js';
+import { CHARACTER_TRAITS, TABLE_IDS } from './types.js';
+
+const LOOT = JSON.parse(
+  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+) as Loot;
 
 describe('which groups a table offers', () => {
   it('gives equipment tables the groups their kind has', () => {
@@ -193,6 +200,13 @@ describe('what the filter lets through', () => {
     expect(groupHits({}, 'tier', 'whatever')).toBe(true);
   });
 
+  it('hits under either value when a record answers with more than one - a burden of "any"', () => {
+    const state = { burden: ['1'] };
+    expect(groupHits(state, 'burden', ['1', '2'])).toBe(true);
+    expect(groupHits({ burden: ['2'] }, 'burden', ['1', '2'])).toBe(true);
+    expect(groupHits({ burden: ['3'] }, 'burden', ['1', '2'])).toBe(false);
+  });
+
   it('ANDs the groups against each other', () => {
     const row: Record<string, string> = { tier: '1', cls: 'mag', src: 'core' };
     const of = (g: string): string => row[g] ?? '';
@@ -209,6 +223,16 @@ describe('what the filter lets through', () => {
     const row: Record<string, string> = { tier: '1' };
     const of = (g: string): string => row[g] ?? '';
     expect(passes({ tier: ['1'], burden: ['2'] }, ['tier'], of)).toBe(true);
+  });
+
+  it('lets a Spellcast weapon through under each of the six traits', () => {
+    const spellblade = LOOT.items['dv']?.find((it) => it.id === 'dve50');
+    expect(spellblade).toBeDefined();
+    if (!spellblade) return;
+    const of = (g: string) => equipFacets(spellblade)[g] ?? '';
+    for (const trait of CHARACTER_TRAITS) {
+      expect(passes({ trait: [trait] }, ['trait'], of), trait).toBe(true);
+    }
   });
 });
 
