@@ -1,0 +1,572 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T00:00:00.000Z",
+  "title": "Design System: Daggerheart Loot Generator",
+  "extensions": {
+    "colorMeta": {
+      "seal-gold": {
+        "role": "primary",
+        "displayName": "Seal Gold",
+        "canonical": "oklch(76.6% 0.109 79.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.065 79.4)",
+          "oklch(26.0% 0.109 79.4)",
+          "oklch(37.0% 0.109 79.4)",
+          "oklch(48.0% 0.109 79.4)",
+          "oklch(59.0% 0.109 79.4)",
+          "oklch(70.0% 0.109 79.4)",
+          "oklch(82.0% 0.109 79.4)",
+          "oklch(95.0% 0.060 79.4)"
+        ]
+      },
+      "seal-gold-soft": {
+        "role": "primary",
+        "displayName": "Seal Gold Soft",
+        "canonical": "oklch(87.0% 0.088 83.8)",
+        "tonalRamp": [
+          "oklch(15.0% 0.053 83.8)",
+          "oklch(26.0% 0.088 83.8)",
+          "oklch(37.0% 0.088 83.8)",
+          "oklch(48.0% 0.088 83.8)",
+          "oklch(59.0% 0.088 83.8)",
+          "oklch(70.0% 0.088 83.8)",
+          "oklch(82.0% 0.088 83.8)",
+          "oklch(95.0% 0.048 83.8)"
+        ]
+      },
+      "ink-on-gold": {
+        "role": "primary",
+        "displayName": "Ink on Gold",
+        "canonical": "oklch(18.9% 0.026 77.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.016 77.5)",
+          "oklch(26.0% 0.026 77.5)",
+          "oklch(37.0% 0.026 77.5)",
+          "oklch(48.0% 0.026 77.5)",
+          "oklch(59.0% 0.026 77.5)",
+          "oklch(70.0% 0.026 77.5)",
+          "oklch(82.0% 0.026 77.5)",
+          "oklch(95.0% 0.014 77.5)"
+        ]
+      },
+      "vault-ink": {
+        "role": "neutral",
+        "displayName": "Vault Ink",
+        "canonical": "oklch(16.2% 0.019 294.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.011 294.4)",
+          "oklch(26.0% 0.019 294.4)",
+          "oklch(37.0% 0.019 294.4)",
+          "oklch(48.0% 0.019 294.4)",
+          "oklch(59.0% 0.019 294.4)",
+          "oklch(70.0% 0.019 294.4)",
+          "oklch(82.0% 0.019 294.4)",
+          "oklch(95.0% 0.010 294.4)"
+        ]
+      },
+      "vault-ink-deep": {
+        "role": "neutral",
+        "displayName": "Vault Ink Deep",
+        "canonical": "oklch(18.7% 0.024 295.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.015 295.4)",
+          "oklch(26.0% 0.024 295.4)",
+          "oklch(37.0% 0.024 295.4)",
+          "oklch(48.0% 0.024 295.4)",
+          "oklch(59.0% 0.024 295.4)",
+          "oklch(70.0% 0.024 295.4)",
+          "oklch(82.0% 0.024 295.4)",
+          "oklch(95.0% 0.013 295.4)"
+        ]
+      },
+      "vault-wall": {
+        "role": "neutral",
+        "displayName": "Vault Wall",
+        "canonical": "oklch(21.3% 0.031 295.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.019 295.1)",
+          "oklch(26.0% 0.031 295.1)",
+          "oklch(37.0% 0.031 295.1)",
+          "oklch(48.0% 0.031 295.1)",
+          "oklch(59.0% 0.031 295.1)",
+          "oklch(70.0% 0.031 295.1)",
+          "oklch(82.0% 0.031 295.1)",
+          "oklch(95.0% 0.017 295.1)"
+        ]
+      },
+      "vault-wall-lit": {
+        "role": "neutral",
+        "displayName": "Vault Wall Lit",
+        "canonical": "oklch(24.6% 0.038 295.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.023 295.0)",
+          "oklch(26.0% 0.038 295.0)",
+          "oklch(37.0% 0.038 295.0)",
+          "oklch(48.0% 0.038 295.0)",
+          "oklch(59.0% 0.038 295.0)",
+          "oklch(70.0% 0.038 295.0)",
+          "oklch(82.0% 0.038 295.0)",
+          "oklch(95.0% 0.021 295.0)"
+        ]
+      },
+      "seam": {
+        "role": "neutral",
+        "displayName": "Seam",
+        "canonical": "oklch(30.5% 0.048 295.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.029 295.3)",
+          "oklch(26.0% 0.048 295.3)",
+          "oklch(37.0% 0.048 295.3)",
+          "oklch(48.0% 0.048 295.3)",
+          "oklch(59.0% 0.048 295.3)",
+          "oklch(70.0% 0.048 295.3)",
+          "oklch(82.0% 0.048 295.3)",
+          "oklch(95.0% 0.027 295.3)"
+        ]
+      },
+      "seam-lit": {
+        "role": "neutral",
+        "displayName": "Seam Lit",
+        "canonical": "oklch(36.0% 0.057 294.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.034 294.5)",
+          "oklch(26.0% 0.057 294.5)",
+          "oklch(37.0% 0.057 294.5)",
+          "oklch(48.0% 0.057 294.5)",
+          "oklch(59.0% 0.057 294.5)",
+          "oklch(70.0% 0.057 294.5)",
+          "oklch(82.0% 0.057 294.5)",
+          "oklch(95.0% 0.031 294.5)"
+        ]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "canonical": "oklch(93.8% 0.019 299.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.012 299.1)",
+          "oklch(26.0% 0.019 299.1)",
+          "oklch(37.0% 0.019 299.1)",
+          "oklch(48.0% 0.019 299.1)",
+          "oklch(59.0% 0.019 299.1)",
+          "oklch(70.0% 0.019 299.1)",
+          "oklch(82.0% 0.019 299.1)",
+          "oklch(95.0% 0.011 299.1)"
+        ]
+      },
+      "ash-violet": {
+        "role": "neutral",
+        "displayName": "Ash Violet",
+        "canonical": "oklch(68.1% 0.047 296.6)",
+        "tonalRamp": [
+          "oklch(15.0% 0.028 296.6)",
+          "oklch(26.0% 0.047 296.6)",
+          "oklch(37.0% 0.047 296.6)",
+          "oklch(48.0% 0.047 296.6)",
+          "oklch(59.0% 0.047 296.6)",
+          "oklch(70.0% 0.047 296.6)",
+          "oklch(82.0% 0.047 296.6)",
+          "oklch(95.0% 0.026 296.6)"
+        ]
+      },
+      "ash-violet-low": {
+        "role": "neutral",
+        "displayName": "Ash Violet Low",
+        "canonical": "oklch(62.7% 0.048 295.0)",
+        "tonalRamp": [
+          "oklch(15.0% 0.029 295.0)",
+          "oklch(26.0% 0.048 295.0)",
+          "oklch(37.0% 0.048 295.0)",
+          "oklch(48.0% 0.048 295.0)",
+          "oklch(59.0% 0.048 295.0)",
+          "oklch(70.0% 0.048 295.0)",
+          "oklch(82.0% 0.048 295.0)",
+          "oklch(95.0% 0.026 295.0)"
+        ]
+      },
+      "relic-blue": {
+        "role": "secondary",
+        "displayName": "Relic Blue",
+        "canonical": "oklch(66.6% 0.124 272.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.074 272.3)",
+          "oklch(26.0% 0.124 272.3)",
+          "oklch(37.0% 0.124 272.3)",
+          "oklch(48.0% 0.124 272.3)",
+          "oklch(59.0% 0.124 272.3)",
+          "oklch(70.0% 0.124 272.3)",
+          "oklch(82.0% 0.124 272.3)",
+          "oklch(95.0% 0.068 272.3)"
+        ]
+      },
+      "philtre-green": {
+        "role": "secondary",
+        "displayName": "Philtre Green",
+        "canonical": "oklch(78.4% 0.132 129.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.079 129.1)",
+          "oklch(26.0% 0.132 129.1)",
+          "oklch(37.0% 0.132 129.1)",
+          "oklch(48.0% 0.132 129.1)",
+          "oklch(59.0% 0.132 129.1)",
+          "oklch(70.0% 0.132 129.1)",
+          "oklch(82.0% 0.132 129.1)",
+          "oklch(95.0% 0.073 129.1)"
+        ]
+      },
+      "forge-copper": {
+        "role": "secondary",
+        "displayName": "Forge Copper",
+        "canonical": "oklch(70.9% 0.099 47.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.059 47.9)",
+          "oklch(26.0% 0.099 47.9)",
+          "oklch(37.0% 0.099 47.9)",
+          "oklch(48.0% 0.099 47.9)",
+          "oklch(59.0% 0.099 47.9)",
+          "oklch(70.0% 0.099 47.9)",
+          "oklch(82.0% 0.099 47.9)",
+          "oklch(95.0% 0.054 47.9)"
+        ]
+      },
+      "sigil-rose": {
+        "role": "secondary",
+        "displayName": "Sigil Rose",
+        "canonical": "oklch(69.2% 0.110 349.7)",
+        "tonalRamp": [
+          "oklch(15.0% 0.066 349.7)",
+          "oklch(26.0% 0.110 349.7)",
+          "oklch(37.0% 0.110 349.7)",
+          "oklch(48.0% 0.110 349.7)",
+          "oklch(59.0% 0.110 349.7)",
+          "oklch(70.0% 0.110 349.7)",
+          "oklch(82.0% 0.110 349.7)",
+          "oklch(95.0% 0.060 349.7)"
+        ]
+      },
+      "patina-teal": {
+        "role": "secondary",
+        "displayName": "Patina Teal",
+        "canonical": "oklch(77.2% 0.099 191.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.059 191.2)",
+          "oklch(26.0% 0.099 191.2)",
+          "oklch(37.0% 0.099 191.2)",
+          "oklch(48.0% 0.099 191.2)",
+          "oklch(59.0% 0.099 191.2)",
+          "oklch(70.0% 0.099 191.2)",
+          "oklch(82.0% 0.099 191.2)",
+          "oklch(95.0% 0.054 191.2)"
+        ]
+      },
+      "hope-amber": {
+        "role": "tertiary",
+        "displayName": "Hope Amber",
+        "canonical": "oklch(80.9% 0.138 85.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.083 85.2)",
+          "oklch(26.0% 0.138 85.2)",
+          "oklch(37.0% 0.138 85.2)",
+          "oklch(48.0% 0.138 85.2)",
+          "oklch(59.0% 0.138 85.2)",
+          "oklch(70.0% 0.138 85.2)",
+          "oklch(82.0% 0.138 85.2)",
+          "oklch(95.0% 0.076 85.2)"
+        ]
+      },
+      "fear-violet": {
+        "role": "tertiary",
+        "displayName": "Fear Violet",
+        "canonical": "oklch(61.9% 0.148 292.6)",
+        "tonalRamp": [
+          "oklch(15.0% 0.089 292.6)",
+          "oklch(26.0% 0.148 292.6)",
+          "oklch(37.0% 0.148 292.6)",
+          "oklch(48.0% 0.148 292.6)",
+          "oklch(59.0% 0.148 292.6)",
+          "oklch(70.0% 0.148 292.6)",
+          "oklch(82.0% 0.148 292.6)",
+          "oklch(95.0% 0.081 292.6)"
+        ]
+      },
+      "alarm-red": {
+        "role": "tertiary",
+        "displayName": "Alarm Red",
+        "canonical": "oklch(66.1% 0.152 26.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.091 26.4)",
+          "oklch(26.0% 0.152 26.4)",
+          "oklch(37.0% 0.152 26.4)",
+          "oklch(48.0% 0.152 26.4)",
+          "oklch(59.0% 0.152 26.4)",
+          "oklch(70.0% 0.152 26.4)",
+          "oklch(82.0% 0.152 26.4)",
+          "oklch(95.0% 0.083 26.4)"
+        ]
+      },
+      "tag-ground": {
+        "role": "neutral",
+        "displayName": "Tag Ground",
+        "canonical": "rgb(10 8 16 / 50%)"
+      }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "The page title. One per route." },
+      "title": {
+        "displayName": "Title",
+        "purpose": "A record name on a card. 19px on a full card."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "The page default, inherited by every control. Prose caps at 70ch."
+      },
+      "body-small": {
+        "displayName": "Body Small",
+        "purpose": "Record descriptions and secondary prose. Notes cap at 62ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase field captions and section headings, in Ash Violet Low."
+      },
+      "badge": {
+        "displayName": "Badge",
+        "purpose": "Every tag: kind, tier, source, unique, Hope and Fear."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Monospace for any number a person compares: roll numbers, stat lines, step rungs, the number field at 20px."
+      }
+    },
+    "shadows": [
+      {
+        "name": "plate",
+        "value": "0 10px 34px -14px rgb(0 0 0 / 85%)",
+        "purpose": "The only elevation token. Panels and cards, at rest."
+      },
+      {
+        "name": "float",
+        "value": "0 12px 30px -10px rgb(0 0 0 / 70%)",
+        "purpose": "The toast alone, which is not a plate but a top-layer element."
+      },
+      {
+        "name": "paper",
+        "value": "0 0 0 1px rgb(0 0 0 / 50%), 0 14px 40px rgb(0 0 0 / 45%)",
+        "purpose": "The A4 print sheet on screen. Removed under print media."
+      },
+      {
+        "name": "focus-glow",
+        "value": "0 0 0 3px rgb(216 171 94 / 14%)",
+        "purpose": "The gold glow on a focused input well. Takes the die's own colour on the duality fields."
+      },
+      {
+        "name": "pressed-inset",
+        "value": "inset 0 2px 5px rgb(0 0 0 / 35%)",
+        "purpose": "The one pushed-in state in the system: a primary button while its menu is open."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state",
+        "value": "0.15s",
+        "purpose": "Every control state change: border, colour, background. No transform."
+      },
+      {
+        "name": "card-in",
+        "value": "0.28s cubic-bezier(0.2, 0.8, 0.3, 1)",
+        "purpose": "A record card entering: 10px up and 0.985 to 1."
+      },
+      {
+        "name": "toast-in",
+        "value": "0.2s ease",
+        "purpose": "The toast rising 10px into place."
+      },
+      {
+        "name": "image-zoom",
+        "value": "transform 0.25s",
+        "purpose": "A compact card image scaling to 1.05 on hover. The only scale in the system, and only under (hover: hover)."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation-duration: 0.01ms; transition-duration: 0s",
+        "purpose": "Reduced motion uses a zero duration rather than removing transitions, so the print card's synchronous fitting read-back still sees the end state."
+      }
+    ],
+    "breakpoints": [
+      { "name": "tabs-scroll", "value": "640px" },
+      { "name": "touch", "value": "600px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action of a panel. One per panel.",
+      "html": "<button class='ds-btn ds-btn-primary'>Бросить 2d12</button>",
+      "css": ".ds-btn { border: 1px solid var(--line2, #3f3758); background: var(--surface, #1a1626); color: var(--txt, #ece8f6); padding: 0 18px; height: 46px; border-radius: var(--r-sm, 9px); font-size: 14px; font-weight: 600; font-family: var(--ui, Inter, system-ui, sans-serif); display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.15s; } .ds-btn-primary { background: linear-gradient(180deg, #e2b76c, var(--gold, #d8ab5e)); border-color: #e8c27c; color: var(--ink-on-gold, #1a1206); font-weight: 700; } .ds-btn-primary:hover { filter: brightness(1.07); } .ds-btn-primary:active { background: linear-gradient(180deg, #c99b52, #b8873f); border-color: #c99b52; box-shadow: inset 0 2px 5px rgb(0 0 0 / 35%); } .ds-btn:focus-visible { outline: 2px solid var(--gold, #d8ab5e); outline-offset: 2px; border-radius: var(--r-sm, 9px); }"
+    },
+    {
+      "name": "Plain Button",
+      "kind": "button",
+      "refersTo": "button-plain",
+      "description": "The default button. Hover moves the border to gold and never lifts the control.",
+      "html": "<button class='ds-btn2'>Скопировать ссылку<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M3.9 12a5.1 5.1 0 015.1-5.1h3v1.9h-3A3.2 3.2 0 105.8 12a3.2 3.2 0 003.2 3.2h3v1.9h-3A5.1 5.1 0 013.9 12zm4.1-1h8v2H8v-2zm7-4.1h3A5.1 5.1 0 0118 17.1h-3v-1.9h3a3.2 3.2 0 000-6.4h-3V6.9z'/></svg></button>",
+      "css": ".ds-btn2 { border: 1px solid var(--line2, #3f3758); background: var(--surface, #1a1626); color: var(--txt, #ece8f6); padding: 0 18px; height: 46px; border-radius: var(--r-sm, 9px); font-size: 14px; font-weight: 600; font-family: var(--ui, Inter, system-ui, sans-serif); display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: 0.15s; } .ds-btn2 svg { width: 15px; height: 15px; fill: currentcolor; flex: none; } .ds-btn2:hover { border-color: var(--gold, #d8ab5e); background: var(--surface2, #221d31); } .ds-btn2:focus-visible { outline: 2px solid var(--gold, #d8ab5e); outline-offset: 2px; }"
+    },
+    {
+      "name": "Chip Row",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "One choice in a row of them. Muted outline at rest, gold fill when chosen.",
+      "html": "<div class='ds-chiprow'><button class='ds-chip ds-chip-on'>Обычный<small>Уровень 1</small></button><button class='ds-chip'>Необычный<small>Уровень 1-2</small></button><button class='ds-chip'>Редкий<small>Уровень 2-3</small></button></div>",
+      "css": ".ds-chiprow { display: flex; gap: 6px; flex-wrap: wrap; font-family: var(--ui, Inter, system-ui, sans-serif); } .ds-chip { border: 1px solid var(--line2, #3f3758); background: var(--surface, #1a1626); color: var(--muted, #9b93b3); padding: 7px 12px; border-radius: 999px; font-size: 13px; font-weight: 540; cursor: pointer; transition: 0.15s; } .ds-chip small { display: block; font-size: 10.5px; font-weight: 500; letter-spacing: 0.02em; } .ds-chip:hover { border-color: var(--gold, #d8ab5e); color: var(--txt, #ece8f6); } .ds-chip-on { background: var(--gold, #d8ab5e); border-color: var(--gold, #d8ab5e); color: var(--ink-on-gold, #1a1206); font-weight: 650; } .ds-chip:focus-visible { outline: 2px solid var(--gold, #d8ab5e); outline-offset: 2px; }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "chip-on",
+      "description": "The language switch and the list/grid view switch. A pill track holding pill buttons.",
+      "html": "<div class='ds-seg' role='group' aria-label='Язык'><button class='ds-seg-on' aria-pressed='true'>RU</button><button aria-pressed='false'>EN</button></div>",
+      "css": ".ds-seg { display: inline-flex; background: var(--surface, #1a1626); border: 1px solid var(--line, #312a45); border-radius: 999px; padding: 3px; font-family: var(--ui, Inter, system-ui, sans-serif); } .ds-seg button { border: 0; background: transparent; color: var(--muted, #9b93b3); padding: 5px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 650; letter-spacing: 0.05em; cursor: pointer; transition: 0.16s; } .ds-seg button:not(.ds-seg-on):hover { color: var(--txt, #ece8f6); } .ds-seg-on { background: var(--gold, #d8ab5e); color: var(--ink-on-gold, #1a1206); } .ds-seg button:focus-visible { outline: 2px solid var(--gold, #d8ab5e); outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "A well cut into the plate: darker than the surface it sits in, gold on focus.",
+      "html": "<input class='ds-search' type='search' placeholder='Поиск по 1091 записи'>",
+      "css": ".ds-search { width: 100%; height: 46px; padding: 0 14px; border-radius: var(--r-sm, 9px); background: var(--bg2, #14111d); border: 1px solid var(--line2, #3f3758); color: var(--txt, #ece8f6); font: 15.5px/1.6 var(--ui, Inter, system-ui, sans-serif); } .ds-search::placeholder { color: var(--muted2, #8a83a3); opacity: 0.7; } .ds-search:focus { outline: none; border-color: var(--gold, #d8ab5e); box-shadow: 0 0 0 3px rgb(216 171 94 / 14%); }"
+    },
+    {
+      "name": "Number Field",
+      "kind": "input",
+      "refersTo": "number-field",
+      "description": "The roll input: a monospace value between two steppers. The whole row takes the focus treatment.",
+      "html": "<div class='ds-num'><button aria-label='На единицу меньше'>−</button><input type='text' value='17' inputmode='numeric'><button aria-label='На единицу больше'>+</button></div>",
+      "css": ".ds-num { display: inline-flex; align-items: center; background: var(--bg2, #14111d); border: 1px solid var(--line2, #3f3758); border-radius: var(--r-sm, 9px); overflow: hidden; } .ds-num input { width: 74px; height: 46px; padding: 0; border: 0; background: transparent; color: var(--txt, #ece8f6); text-align: center; font: 650 20px/1 var(--mono, ui-monospace, Consolas, monospace); } .ds-num input:focus { outline: none; } .ds-num:focus-within { border-color: var(--gold, #d8ab5e); box-shadow: 0 0 0 3px rgb(216 171 94 / 14%); } .ds-num button { border: 0; background: transparent; color: var(--muted, #9b93b3); width: 40px; height: 46px; font-size: 19px; line-height: 1; cursor: pointer; transition: 0.14s; } .ds-num button:hover { background: var(--surface2, #221d31); color: var(--gold, #d8ab5e); }"
+    },
+    {
+      "name": "Record Badges",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "The tag strip on a card or a row. Kind hue, tier, source, roll number, unique.",
+      "html": "<div class='ds-badges'><span class='ds-badge ds-badge-item'>Предмет</span><span class='ds-badge ds-badge-cons'>Расходник</span><span class='ds-badge ds-badge-armor'>Броня</span><span class='ds-badge ds-badge-tier'>Уровень 2</span><span class='ds-badge ds-badge-uniq'>Уникальный</span><span class='ds-badge ds-badge-num'>42</span></div>",
+      "css": ".ds-badges { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; font-family: var(--ui, Inter, system-ui, sans-serif); } .ds-badge { font-size: 10.5px; font-weight: 650; letter-spacing: 0.07em; text-transform: uppercase; padding: 3px 7px; border-radius: 6px; background: var(--badge-bg, rgb(10 8 16 / 50%)); border: 1px solid var(--line2, #3f3758); color: var(--muted, #9b93b3); } .ds-badge-item { color: var(--item, #7a8ee0); border-color: #7a8ee073; } .ds-badge-cons { color: var(--cons, #9ec96a); border-color: #9ec96a73; } .ds-badge-armor { color: var(--eq-armor, #5ec9c4); border-color: #5ec9c473; } .ds-badge-tier { color: var(--muted, #9b93b3); } .ds-badge-uniq { color: var(--gold-soft, #f0d091); border-color: rgb(216 171 94 / 45%); border-style: dashed; } .ds-badge-num { font-family: var(--mono, ui-monospace, Consolas, monospace); font-size: 11px; letter-spacing: 0; color: var(--gold-soft, #f0d091); border-color: rgb(216 171 94 / 50%); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The plate every roll mode and every list sits on: a top-down gradient inside one seam, with the only shadow in the system.",
+      "html": "<div class='ds-panel'><span class='ds-lbl'>Результат броска</span><div class='ds-panel-body'>Панель держит одно поле или несколько; последнее поле теряет нижний отступ.</div></div>",
+      "css": ".ds-panel { background: linear-gradient(180deg, var(--surface2, #221d31), var(--surface, #1a1626)); border: 1px solid var(--line, #312a45); border-radius: var(--r, 14px); padding: 18px; box-shadow: 0 10px 34px -14px rgb(0 0 0 / 85%); font-family: var(--ui, Inter, system-ui, sans-serif); color: var(--txt, #ece8f6); } .ds-lbl { display: block; font-size: 11.5px; font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted2, #8a83a3); margin-bottom: 8px; } .ds-panel-body { font-size: 15.5px; line-height: 1.6; }"
+    },
+    {
+      "name": "Navigation Tabs",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Nine real links. The current route lights its label and its 2px underline; rolling and browsing are split by auto margin.",
+      "html": "<nav class='ds-tabs' aria-label='Разделы'><a href='#' class='ds-tab ds-tab-on' aria-current='page'>Основные</a><a href='#' class='ds-tab'>Альтернативные</a><a href='#' class='ds-tab'>Диковинки</a><a href='#' class='ds-tab ds-tab-sep'>Таблицы</a><a href='#' class='ds-tab'>Списки</a></nav>",
+      "css": ".ds-tabs { display: flex; gap: 4px; flex-wrap: wrap; font-family: var(--ui, Inter, system-ui, sans-serif); border-bottom: 1px solid var(--line, #312a45); } .ds-tab { flex: none; text-decoration: none; color: var(--muted, #9b93b3); padding: 9px 13px 10px; border-bottom: 2px solid transparent; font-size: 13.5px; font-weight: 560; white-space: nowrap; transition: 0.15s; } .ds-tab:hover { color: var(--txt, #ece8f6); } .ds-tab-on { color: var(--gold-soft, #f0d091); border-bottom-color: var(--gold, #d8ab5e); } .ds-tab-sep { margin-left: auto; }"
+    },
+    {
+      "name": "Filter Pill",
+      "kind": "chip",
+      "refersTo": "filter-pill",
+      "description": "A chosen filter value, visible outside the folded panel, beside a text reset and a copy-link button.",
+      "html": "<div class='ds-fbar'><button class='ds-fpill'>Уровень 2<i>×</i></button><button class='ds-fpill'>Маг<i>×</i></button><button class='ds-fclear'>Сбросить</button></div>",
+      "css": ".ds-fbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-family: var(--ui, Inter, system-ui, sans-serif); } .ds-fpill { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 8px 0 11px; border: 1px solid rgb(216 171 94 / 45%); border-radius: 8px; background: rgb(216 171 94 / 12%); color: var(--gold-soft, #f0d091); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: 0.15s; } .ds-fpill i { font-style: normal; font-size: 15px; line-height: 1; color: var(--muted, #9b93b3); width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 5px; } .ds-fpill:hover { border-color: var(--gold, #d8ab5e); } .ds-fpill:hover i { background: rgb(255 255 255 / 10%); color: var(--txt, #ece8f6); } .ds-fclear { height: 32px; padding: 0 9px; border: 0; border-radius: 8px; background: transparent; color: var(--muted, #9b93b3); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: 0.15s; } .ds-fclear:hover { background: rgb(255 255 255 / 6%); color: var(--txt, #ece8f6); }"
+    },
+    {
+      "name": "Print Card",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "The signature component and the product's second world: 63x88 mm of white paper, every dimension in cqw so the composition scales with the card.",
+      "html": "<div class='ds-pcard'><div class='ds-pc-art'><svg class='ds-pc-glyph' viewBox='0 0 24 24' aria-hidden='true'><path d='M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z'/></svg></div><div class='ds-pc-body'><b class='ds-pc-name'>Плетёная лоза</b><p class='ds-pc-desc'>Каждое измерение карты записано в cqw, поэтому вёрстка масштабируется вместе с картой, а не с окном.</p></div></div>",
+      "css": ".ds-pcard { box-sizing: border-box; position: relative; overflow: hidden; container-type: size; width: 238px; height: 333px; border: 0.4mm dashed #c9c4d2; background: #fff; color: #000; display: flex; flex-direction: column; justify-content: flex-end; font-family: var(--ui, Inter, system-ui, sans-serif); } .ds-pc-art { position: absolute; left: 0; right: 0; top: 0; height: 100cqw; display: flex; align-items: center; justify-content: center; background: #0a0810; } .ds-pc-glyph { width: 34cqw; height: 36cqw; fill: #e6e3ec; } .ds-pc-body { position: relative; z-index: 2; padding: 4cqw 6cqw 5cqw; } .ds-pc-name { display: block; font-size: 7cqw; font-weight: 680; letter-spacing: -0.01em; line-height: 1.15; } .ds-pc-desc { margin: 2cqw 0 0; font-size: 4.2cqw; line-height: 1.35; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Vault Index",
+    "overview": "The product is a treasury seen through its index. The ground is a deep violet ink, almost black, lit by two wide radial washes that never resolve into an object. On that ground sit the index cards: panels, record cards and table rows, each one a slightly lighter violet plate inside a single hairline seam. Every artefact carries a coloured tag that says what kind of thing it is, and a numbered seal in monospace that says where it stands in its book. Gold is the seal wax. It appears on the thing a person has chosen, and almost nowhere else.\n\nThe mood is quiet, exact and solemn. Nothing here is staged: the type scale is small and even, the contrast values were measured rather than guessed, and the one accent is rationed. The catalogue holds 1091 records in two languages, so density is a requirement, not a preference. The design earns its ceremony from the numbering and the tagging, which are real information, and never from ornament.\n\nThere are no webfonts. The font stacks are lists of locally installed families, so the first paint is the final paint. This is a load-bearing property of the world, not an omission: the app also runs from file://, and the print sheet must measure identically on a machine that has never been online.",
+    "keyCharacteristics": [
+      "One accent colour, spent only on the chosen thing.",
+      "A five-hue tag system that lives on badges alone.",
+      "Tonal depth from a four-step surface ramp, plus exactly one shadow.",
+      "A locked type scale of sixteen sizes, enforced by a test.",
+      "Monospace for every number a person compares.",
+      "Two worlds in one product: the dark screen, and the white printed card."
+    ],
+    "rules": [
+      {
+        "name": "The Seal Rule",
+        "body": "Seal Gold marks what the person chose: a chip they picked, the tab they are on, the control they focused, the main action of the panel they are in. Gold on something nobody selected is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tag Rule",
+        "body": "The five kind hues live on the badge and nowhere else. A stat line stays secondary text. A row does not take a kind colour, and neither does a card border. The tag is the only place a category becomes a colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink Rule",
+        "body": "Text on a gold fill is Ink on Gold (#1a1206), never a page surface colour and never white.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sixteen Steps Rule",
+        "body": "The scale is exactly 23, 20, 19, 18, 17, 16, 15.5, 14, 13.5, 13, 12.5, 12, 11.5, 11, 10.5 and 9.5 px. tests/app/typo.js measures every rendered element on thirteen routes against that list and fails on a size that is not in it. A new step is a decision, and it lands in both places or not at all.",
+        "section": "typography"
+      },
+      {
+        "name": "The Numerals Rule",
+        "body": "A number a person compares is monospace: a roll number, a stat line, a rung in an upgrade chain, the value in a number field. A number a person reads as prose is not.",
+        "section": "typography"
+      },
+      {
+        "name": "The Local Font Rule",
+        "body": "No @font-face and no font service, ever. The families are lists of locally installed names. Anything else breaks the file:// case and moves the print measurements.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Width Rule",
+        "body": "Anything that spans the page takes var(--wrap). A new full-width element does not invent its own container or its own gutter.",
+        "section": "layout"
+      },
+      {
+        "name": "The Two Breakpoints Rule",
+        "body": "The system has two. At 640px the tab strip stops wrapping and becomes a horizontal scroller that keeps the current tab centred. At 600px touch targets grow. Every other media query in the code belongs to one component and its own measured problem. Do not add a third system breakpoint.",
+        "section": "layout"
+      },
+      {
+        "name": "The One Shadow Rule",
+        "body": "New work uses the Plate shadow or no shadow. A second elevation step is a change to the system, not a component decision.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Pill Rule",
+        "body": "A pill means one of these, choosable. A rounded rectangle means a thing. Do not round a card to a pill or square a chip.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do spend Seal Gold only on the chosen thing: a picked chip, the current tab, a focused control, the main action of a panel.",
+      "Do take a new text size from the sixteen-step scale, and add the step to tests/app/typo.js in the same change when a new one is truly needed.",
+      "Do build depth from the four surface steps and the one-pixel seam, and reach for the Plate shadow when a plate has to lift.",
+      "Do set every number a person compares in the monospace face.",
+      "Do keep the five kind hues on badges alone.",
+      "Do span the page with var(--wrap) and nothing else.",
+      "Do let the global :focus-visible ring reach the control. Override outline-offset alone, and only where clipping proves it necessary.",
+      "Do grow touch targets at 600px rather than shipping a pointer-sized target to a phone."
+    ],
+    "donts": [
+      "Don't drift toward a neon dark mode: no saturated purple or cyan glow, no gradient text, no coloured drop shadow. The ground is violet, which makes this a short slide, and the palette's restraint is what keeps 1091 records legible.",
+      "Don't drift toward a SaaS dashboard: no generic blue accent, no oversized rounded cards, no illustrated empty states, no marketing gradient. The density these tables need is the opposite of that language.",
+      "Don't add a second shadow step, a third system breakpoint, or a sixth radius.",
+      "Don't move a control on hover. Hover changes colour and border, never position or scale.",
+      "Don't declare an @font-face or link a font service.",
+      "Don't put a kind colour on a row, a card border, or body text.",
+      "Don't set white text on a gold fill. Ink on Gold is the only text colour there."
+    ]
+  }
+}

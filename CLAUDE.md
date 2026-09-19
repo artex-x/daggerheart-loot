@@ -98,7 +98,7 @@ in the same commit. Behaviour changes update their specs in the same commit.
 - `app/src/lib/` is pure logic: no DOM, storage, Svelte, or network.
 - Browser APIs belong behind `app/src/ports/` adapters.
 - Shared UI belongs in `app/src/components/`; expose only differences real callers need.
-- `app/src/styles/tokens.css` owns global colours, spacing, radii, and type steps.
+- `app/src/styles/tokens.css` owns global colours, spacing, radii, and type steps. `DESIGN.md` records the visual system those tokens express; the code wins any conflict with it.
   Components compose tokens; they do not invent near-duplicate values.
 - Preserve relative asset paths and the classic-script data adapter required by `file://`; do not use runtime `fetch()` for local data.
 
