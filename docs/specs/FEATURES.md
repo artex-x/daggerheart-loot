@@ -127,6 +127,13 @@ Six modes. Each keeps its own input in memory only.
   frame, driven off `requestAnimationFrame` (`app/src/ports/drag.ts`) -
   untested by any suite (no test drags near a viewport edge);
   `docs/specs/COVERAGE.md` names the gap, this line the constants.
+- A completed reorder is announced in a visually hidden live region, by
+  either path (drag or a typed position); a move that changes nothing stays
+  silent. The drop mark itself appears at once on both of its halves, with no
+  fade. The drag grip is drawn only where an input device can hover - on a
+  device whose every pointer is coarse and cannot hover, HTML5 drag never
+  starts from a touch, so the position field is the one reorder control left,
+  and it works everywhere.
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
   and its cancel; a search box appears from the eighth list; the menu opens on

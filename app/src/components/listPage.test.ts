@@ -986,6 +986,61 @@ describe('drag', () => {
   });
 });
 
+describe('announcing a reorder', () => {
+  /* Both movers funnel through store.move(), which answers "did anything
+     move" - the live region fires on true and stays silent on false
+     (context.md, "Measured this pass"). */
+  it('announces a drag that lands an entry elsewhere, and would stay silent for a no-op drop', async () => {
+    const drag = fakeDrag();
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { container } = render(App, { env: at('#/lists/a', { storage, drag }) });
+    const region = screen.getByRole('status');
+    expect(region).toHaveTextContent('');
+
+    drag.handlers?.onDrop(0, 2);
+    await tick();
+    expect(region).toHaveTextContent('«Спальный мешок» — позиция 3 из 3');
+
+    await expectNoA11yViolations(container);
+  });
+
+  it('announces a committed position that moves a row, and stays silent when the position is its own', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    const region = screen.getByRole('status');
+
+    const pos = screen.getAllByRole('spinbutton', { name: 'Позиция в списке' });
+    await userEvent.click(pos[0] as HTMLElement);
+    await userEvent.clear(pos[0] as HTMLElement);
+    await userEvent.type(pos[0] as HTMLElement, '1');
+    await userEvent.tab();
+    expect(region).toHaveTextContent(''); // ci1 was already position 1
+
+    const posAfter = screen.getAllByRole('spinbutton', { name: 'Позиция в списке' });
+    await userEvent.click(posAfter[2] as HTMLElement);
+    await userEvent.clear(posAfter[2] as HTMLElement);
+    await userEvent.type(posAfter[2] as HTMLElement, '1');
+    await userEvent.tab();
+    expect(region).toHaveTextContent('«Меч» — позиция 1 из 3');
+  });
+
+  it('announces the same typed move in English under dhloot.lang.v1: en', async () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([listA]),
+      'dhloot.lang.v1': 'en'
+    });
+    render(App, { env: at('#/lists/a', { storage }) });
+    const region = screen.getByRole('status');
+
+    const pos = screen.getAllByRole('spinbutton', { name: 'Position in the list' });
+    await userEvent.click(pos[2] as HTMLElement);
+    await userEvent.clear(pos[2] as HTMLElement);
+    await userEvent.type(pos[2] as HTMLElement, '1');
+    await userEvent.tab();
+    expect(region).toHaveTextContent('"Sword" - position 1 of 3');
+  });
+});
+
 describe('no data', () => {
   it('draws the paragraph rather than a broken page', () => {
     render(App, { env: at('#/lists/a', { data: noData() }) });

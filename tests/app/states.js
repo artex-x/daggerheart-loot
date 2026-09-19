@@ -6,7 +6,7 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Twenty-three cases, no ancestor. */
+ * real second tab to mean anything at all. Twenty-five cases, no ancestor. */
 const fs = require('fs');
 const { PNG } = require('pngjs');
 const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
@@ -970,17 +970,23 @@ async function dragReorder() {
     '17 (drag reorder): an open note box hides the gold line mid-list - ' + midGold + '/600'
   );
 
-  /* Defect (git log --grep=dnd3): `.row`'s `transition: 0.15s` shorthand
-   * animates the base `.lrow.drop-after` mark, but the `.rnote` copy of it
-   * used to declare no transition of its own - transitions do not inherit,
-   * so the noted row's line snapped in while the plain row's line faded.
-   * Both halves of one mark must share one onset. `prepare()` emulates
-   * `prefers-reduced-motion: reduce` for every case, and `tokens.css`'s
-   * blanket kill (`DEBT.md` D1, paid off) reports both sides as `0s` under
-   * it - equal, but not the invariant this guards - so the real durations
-   * are read with the emulation briefly switched to `no-preference`, then
-   * restored: the suite shares one page and a later case must still see
-   * `reduce`. */
+  /* Defect superseded (git log --grep=dnd4, was dnd3): the mark used to fade
+   * in over 150ms, and `.rnote`'s copy of the fade used to lag `.row`'s -
+   * fixed by making the whole mark instant instead: `.row`'s transition list
+   * is narrowed off `box-shadow` (so the base half no longer fades) and
+   * `.rnote` is left with no transition of its own (so the redrawn half does
+   * not either). `prepare()` emulates `prefers-reduced-motion: reduce` for
+   * every case, and `tokens.css`'s blanket kill (`DEBT.md` D1, paid off)
+   * forces every `transition-duration` to `0s` under it, which would make a
+   * duration read here vacuous - true before this fix and after it alike
+   * (COVERAGE.md, "app/states"). `transition-property` is not flattened by
+   * that emulation, so `.row`'s is read directly; `.rnote`'s box-shadow
+   * transition is checked by duration instead, with the emulation briefly
+   * switched to `no-preference` for the one read, since an element with no
+   * declared transition also reports `transition-property: all` by the CSS
+   * default, which a property check cannot tell apart from `.row`'s old
+   * shorthand. Restored after: the suite shares one page and a later case
+   * must still see `reduce`. */
   await notePage.emulateMediaFeatures([
     { name: 'prefers-reduced-motion', value: 'no-preference' }
   ]);
@@ -988,14 +994,22 @@ async function dragReorder() {
     const row = document.querySelectorAll('.lrow')[2];
     const rnote = row.querySelector('.rnote');
     return {
-      row: getComputedStyle(row).transitionDuration,
-      rnote: rnote ? getComputedStyle(rnote).transitionDuration : null
+      rowProperty: getComputedStyle(row).transitionProperty,
+      rnoteDuration: rnote ? getComputedStyle(rnote).transitionDuration : null
     };
   });
   await notePage.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  const rowProps = gapTransitions.rowProperty.split(',').map((s) => s.trim());
   ok(
-    gapTransitions.rnote === gapTransitions.row && gapTransitions.row !== '0s',
-    '17 (drag reorder): the gap mark on a noted row has a different onset than the row - ' +
+    !rowProps.includes('all') &&
+      !rowProps.includes('box-shadow') &&
+      rowProps.includes('border-color'),
+    '17 (drag reorder): the row still transitions box-shadow, so the mark fades in - ' +
+      JSON.stringify(gapTransitions)
+  );
+  ok(
+    gapTransitions.rnoteDuration === '0s',
+    '17 (drag reorder): the noted row half of the mark still fades in - ' +
       JSON.stringify(gapTransitions)
   );
 
@@ -1305,6 +1319,79 @@ async function storageNoticeDismissWhileFolded() {
   await ctx.close();
 }
 
+/** 26. Two device-capability defects fixed together (git log --grep=dnd4):
+ *  a completed reorder was announced nowhere, and the drag grip stayed drawn
+ *  on a device that can never start an HTML5 drag from a touch. Both read
+ *  through a touch-emulated viewport - `page.emulateMediaFeatures` cannot
+ *  move `hover`/`pointer` at all (context.md, "Measured this pass"), only
+ *  `setViewport({ isMobile, hasTouch })` does - and a second, untouched
+ *  viewport proves the grip is not hidden by width alone. */
+async function announceOnTouchAndHideInertGrip() {
+  const seed = {
+    'dhloot.lists.v2': JSON.stringify([
+      { id: 'a', name: 'Тайник', ids: ['ci1', 'ci2', 'ci3', 'ci4'], created: 1 }
+    ])
+  };
+
+  const { ctx, page, d } = await fresh({ width: 390, height: 900, storage: seed });
+  await page.setViewport({ width: 390, height: 900, isMobile: true, hasTouch: true });
+  await d.open('#/lists/a');
+
+  const grip = await page.evaluate(() => {
+    const g = document.querySelector('.lrow-grip');
+    return g && getComputedStyle(g).display;
+  });
+  ok(grip === 'none', '26 (touch device): the drag grip is still drawn - display ' + grip);
+
+  await page.evaluate(() => {
+    const pos = document.querySelectorAll('.lrow-n')[3];
+    pos.value = '1';
+    pos.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await d.settle();
+
+  const said = await page.evaluate(() => {
+    const r = document.querySelector('.lsaid');
+    if (!r) return null;
+    const rect = r.getBoundingClientRect();
+    return {
+      text: r.textContent,
+      role: r.getAttribute('role'),
+      position: getComputedStyle(r).position,
+      w: rect.width,
+      h: rect.height
+    };
+  });
+  ok(!!said, '26 (announce on touch): the live region .lsaid was not found');
+  if (said) {
+    ok(
+      said.role === 'status' && (said.text ?? '').includes('позиция 1 из 4'),
+      '26 (announce on touch): the region did not announce the move - ' + JSON.stringify(said)
+    );
+    ok(
+      said.position === 'absolute' && said.w <= 1 && said.h <= 1,
+      '26 (announce on touch): the region is visible on screen - ' + JSON.stringify(said)
+    );
+  }
+  await ctx.close();
+
+  const {
+    ctx: ctx2,
+    page: page2,
+    d: d2
+  } = await fresh({ width: 1180, height: 900, storage: seed });
+  await d2.open('#/lists/a');
+  const gripHover = await page2.evaluate(() => {
+    const g = document.querySelector('.lrow-grip');
+    return g && getComputedStyle(g).display;
+  });
+  ok(
+    gripHover === 'flex',
+    '26 (no touch): the drag grip is hidden on a device that can hover - display ' + gripHover
+  );
+  await ctx2.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -1329,7 +1416,8 @@ const CASES = [
   ['22 (help and list pick)', moneyHelpAndPressedPicker],
   ['23 (menu in the modal)', addToListMenuStaysInModal],
   ['24 (reduced motion)', reducedMotionKillsEverything],
-  ['25 (notice dismiss while folded)', storageNoticeDismissWhileFolded]
+  ['25 (notice dismiss while folded)', storageNoticeDismissWhileFolded],
+  ['26 (announce on touch, inert grip)', announceOnTouchAndHideInertGrip]
 ];
 
 (async () => {
@@ -1351,7 +1439,7 @@ const CASES = [
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\nreal-input states (dist/): all twenty-four passed'
+      : '\nreal-input states (dist/): all ' + CASES.length + ' cases passed'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

@@ -32,6 +32,7 @@ RootWebArea "Лавка в порту — Генератор лута — Dagger
     button "Скрыть" [description=Скрыть]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=145 namehash=3bed4bc8]
+    status ""
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -89,6 +90,7 @@ RootWebArea "Лавка в порту — Daggerheart Loot Generator" [url=#/l/0
     button "Dismiss" [description=Dismiss]
     DisclosureTriangle "NOTES" [expanded=false]
     StaticText "Nothing here yet. Open Tables or Search, tick what you need and ..." [namelen=122 namehash=61cdcb8f]
+    status ""
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

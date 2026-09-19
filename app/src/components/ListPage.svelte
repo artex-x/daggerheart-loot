@@ -227,6 +227,7 @@
   let rowsEl = $state<HTMLDivElement | undefined>(undefined);
   let dragFrom = $state(-1);
   let dragMark = $state<{ over: number; where: 'before' | 'after' } | null>(null);
+  let said = $state('');
 
   /* "after 3" and "before 4" are one insertion point, so both sides of the
      gap light. `dropGap` is the number of rows above that place. */
@@ -423,7 +424,21 @@
       el.value = String(i + 1);
       return;
     }
-    store.move(l.id, it.id, n - 1);
+    if (store.move(l.id, it.id, n - 1)) announceMove(it.id, n - 1);
+  }
+
+  /** Fills the live region with the record's new position, after a move that
+   *  actually happened. Both facts are plain nominals - a name and two
+   *  numbers - so no Russian word has to agree with the record's gender
+   *  (docs/specs/I18N.md, "Rules"). */
+  function announceMove(id: string, to: number): void {
+    const l = own;
+    const it = byId(id);
+    if (!l || !it) return;
+    said = t.movedItem
+      .replace('%s', nameOf(it, app.lang))
+      .replace('%n', String(to + 1))
+      .replace('%m', String(l.ids.length));
   }
 
   function setQty(id: string, e: Event): void {
@@ -574,7 +589,7 @@
     return app.env.drag.bind(el, {
       onDrop: (from, to) => {
         const id = l.ids[from];
-        if (id !== undefined) store.move(l.id, id, to);
+        if (id !== undefined && store.move(l.id, id, to)) announceMove(id, to);
       },
       onDrag: (from) => {
         dragFrom = from;
@@ -1041,6 +1056,7 @@
       {:else}
         <Empty>{t.listEmptyHint}</Empty>
       {/if}
+      <div class="lsaid" role="status" aria-live="polite">{said}</div>
     {/if}
   {/snippet}
 </RecordHost>
@@ -1529,7 +1545,9 @@
   }
 
   /* off `.rows`, `.row`, the `(hover:hover)` `.row:hover` (style.css:547-553)
-     - the third copy of three short rules. */
+     - the third copy of three short rules. This copy's transition list
+     diverges from `TableRows.svelte`'s: only a list row carries the drop-gap
+     mark, so `box-shadow` is left out here and the mark paints at once. */
   .rows {
     display: flex;
     flex-direction: column;
@@ -1543,7 +1561,9 @@
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 11px;
-    transition: 0.15s;
+    transition:
+      border-color 0.15s,
+      opacity 0.15s;
     overflow: hidden;
   }
 
@@ -1559,6 +1579,15 @@
     border-top-right-radius: 0;
   }
 
+  .lsaid {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   /* the `.lrow` family: `.lrow`, `.rnote`, `.lrow.has-note`,
      `.lrow-acts .lrow-note`, `.on`, `svg` (style.css:618-623) */
   .lrow {
@@ -1571,10 +1600,6 @@
     border-top: 1px solid var(--line);
     background: var(--bg2);
     padding: 9px 11px;
-    /* Match `.row`'s 0.15s so the drop-gap mark's redrawn half below
-       (`.lrow.drop-after .rnote`) shares one onset with `.lrow`. Named
-       `box-shadow`, not `.row`'s shorthand, as the property this depends on. */
-    transition: box-shadow 0.15s;
   }
 
   .lrow.has-note {
@@ -1616,6 +1641,18 @@
 
   .lrow-grip:active {
     cursor: grabbing;
+  }
+
+  /* HTML5 drag never starts from a touch, so the grip is inert on a device
+     whose every input device is coarse and cannot hover. `any-*`, not
+     `hover`/`pointer`: those two describe only the primary input, and would
+     also hide the grip on a touchscreen laptop where a mouse drags it fine.
+     The position field beside it reorders on every device
+     (docs/specs/FEATURES.md, "Lists"). */
+  @media (any-hover: none) and (any-pointer: coarse) {
+    .lrow-grip {
+      display: none;
+    }
   }
 
   .lrow-n {

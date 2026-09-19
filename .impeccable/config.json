@@ -1,0 +1,16 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "app/src/components/ListPage.svelte"
+        ],
+        "createdAt": "2026-09-19T10:51:40.314Z"
+      }
+    ]
+  }
+}

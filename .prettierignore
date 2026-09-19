@@ -30,15 +30,18 @@ docs/fixtures/
 .claude/.check-index
 .claude/.hook-state.json
 
-# Same class: the impeccable skill's hook rewrites these three during a
-# session, and Prettier does not read the .git/info/exclude entries that
-# ignore them locally today, so format:check trips on them same as the
-# entries above. Listed individually, not as the whole .impeccable/
-# directory: design.json also lives there, is tracked, hand-authored
-# project data, and has to stay checked.
+# Same class: the impeccable skill's hook and CLI rewrite these four during
+# a session, and Prettier does not read the .git/info/exclude entries that
+# ignore some of them locally today, so format:check trips on them same as
+# the entries above. config.json is the CLI's own store - `impeccable hooks
+# ignore-value` writes it unformatted, which reddens format:check the moment
+# a finding is suppressed. Listed individually, not as the whole
+# .impeccable/ directory: design.json also lives there, is tracked,
+# hand-authored project data, and has to stay checked.
 .impeccable/hook.cache.json
 .impeccable/hook.pending.json
 .impeccable/config.local.json
+.impeccable/config.json
 
 # A dispatched agent's isolated worktree is host infrastructure, not source,
 # and can land nested under this tree's own .claude/ directory unpredictably

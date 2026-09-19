@@ -12,6 +12,82 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-19 - A reorder is announced through a permanently mounted live region, not the shared toast
+
+- Task: `dnd4` (find the commit with `git log --grep=dnd4`).
+- Decision: `ListPage.svelte` mounts `<div class="lsaid" role="status"
+  aria-live="polite">{said}</div>` beside `.lrows`, always present and empty
+  until a move succeeds. Both movers (`setPos`, the drag port's `onDrop`)
+  call one function that fills it, guarded by `store.move()`'s own return
+  value - it already answers "did anything move" - so a drop or a typed
+  position that changes nothing stays silent, with no new predicate. The
+  Russian and English strings name the record and its new position out of
+  the list's own length (`%s`, `%n`, `%m`), with no participle: a participle
+  would have to agree with the record's gender, which the dictionary cannot
+  know (`docs/specs/I18N.md`, "Rules").
+- Rejected: the existing toast (`app.say`) - one shared slot with one timer
+  would silently drop a pending undo prompt, and puts a visible pill on
+  screen for a change the sighted reader already watched happen; rendering
+  the region only while it holds text - the half-mounted region is the
+  unreliable half of this pattern, and it would also keep every list-page
+  golden blind to the fix; a region in `Shell`, shared app-wide - adds the
+  node to all 110 goldens for one page's need; announcing a rejected
+  out-of-range typed position too - the human approved "announce a reorder",
+  and a rejected entry is not one (recorded in `issues/dnd4/handoff.md`,
+  Deferred, at the time this shipped).
+- Evidence: `page.accessibility.snapshot()` keeps an empty `role="status"`
+  element as `status ""`, so the region's mount re-seeds every list-page
+  golden (`_lists_a*.txt`, `_lists_b.txt`, `_l_own_list.txt`) - read at
+  closeout, not assumed.
+
+## 2026-09-19 - The drop-gap mark is made instant by narrowing `.row`'s transition, not by overriding the drop classes
+
+- Task: `dnd4` (find the commit with `git log --grep=dnd4`).
+- Decision: `.row`'s shorthand `transition: 0.15s` (which includes
+  `box-shadow`, the mark's own property) is narrowed to `border-color 0.15s,
+  opacity 0.15s`, keeping the hover border and the dragged row's fade;
+  `.rnote`'s own `transition: box-shadow 0.15s` (added by TASK `dnd3` to
+  match the base half's onset) is deleted outright, since removing the fade
+  from the base half alone would otherwise reintroduce `dnd3`'s exact
+  stagger, inverted. `dnd3`'s own commit wrote no `docs/DECISIONS.md` entry,
+  so nothing here is superseded in place - this entry is the only record of
+  `.rnote`'s transition history.
+- Rejected: overriding the duration on `.lrow.drop-before`/`.lrow.drop-after`
+  (`transition-duration: 0s`) and leaving `.row`'s shorthand alone - a
+  transition is computed off the style being transitioned *to*, so leaving
+  the drop class puts the element back under `.row`'s 0.15s and the mark
+  fades on exit instead of on entry, the same defect moved rather than fixed.
+- Evidence: measured against `dist/` built at `919d3a2` and again after this
+  fix - before: `.lrow` computed `transitionProperty: 'all'`, `.rnote`
+  `'box-shadow'` at `'0.15s'`; after: `.lrow` `'border-color, opacity'`,
+  `.rnote` defaults to `'all'` at `'0s'` (the CSS initial value for an
+  element with no declared transition - a property read cannot tell that
+  apart from `dnd3`'s old shorthand, which is why `tests/app/states.js` case
+  17 reads `.rnote`'s duration instead).
+
+## 2026-09-19 - The drag grip is hidden by an `any-hover`/`any-pointer` capability query, not `hover`/`pointer`
+
+- Task: `dnd4` (find the commit with `git log --grep=dnd4`).
+- Decision: `@media (any-hover: none) and (any-pointer: coarse) { .lrow-grip {
+  display: none; } }` in `ListPage.svelte`. HTML5 drag never fires from a
+  touch, so the grip is an inert affordance on a device whose every pointer
+  is coarse and cannot hover. `any-hover`/`any-pointer` ask whether *any*
+  available device can hover/is fine, not only the primary one, so a
+  touchscreen laptop or a tablet with a paired mouse keeps the grip - the
+  false positive `hover`/`pointer` alone would produce.
+- Rejected: `(hover: none)` or `(pointer: coarse)` alone - both describe only
+  the primary input and would hide the grip on a touchscreen laptop where a
+  mouse drags it fine; a script feature test (`'draggable' in
+  document.createElement('div')` is true in mobile Chrome, `'ontouchstart' in
+  window` is true on a touchscreen laptop) - neither is honest, and either
+  would put a browser-capability check into a component, past
+  `app/src/ports/`; hiding on a width - a 390px viewport with no touch still
+  reports `hover: hover`, so width never correlates with the defect.
+- Evidence: `page.emulateMediaFeatures` refuses `hover`/`pointer` outright;
+  only `page.setViewport({ isMobile: true, hasTouch: true })` moves
+  `any-hover`/`any-pointer` (`docs/specs/COVERAGE.md`, "two harness facts a
+  device-capability case runs into").
+
 ## 2026-09-19 - A drop indicator redraws on a row's own note box when one is open
 
 - Task: `dnd2` (find the commit with `git log --grep=dnd2`).
