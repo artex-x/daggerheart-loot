@@ -918,7 +918,7 @@ describe('drag', () => {
     expect(container.querySelector('.lrow-grip')).toHaveAttribute('draggable', 'true');
   });
 
-  it('follows the port’s onDrag/onOver/onEnd with the dragging/drop-before/drop-after classes', async () => {
+  it('follows the port’s onDrag/onOver/onEnd with the dragging/drop-before/drop-after classes, both sides of the gap', async () => {
     const drag = fakeDrag();
     const { container } = render(App, { env: withA('#/lists/a', { drag }) });
     const rowAt = (i: number): HTMLElement =>
@@ -929,25 +929,60 @@ describe('drag', () => {
     expect(rowAt(0)).toHaveClass('dragging');
     expect(rowAt(1)).not.toHaveClass('dragging');
 
+    /* The list's own edges have one side only - nothing sits past either end
+       for its partner to light. */
     drag.handlers?.onOver?.(2, 'after');
     await tick();
     expect(rowAt(2)).toHaveClass('drop-after');
     expect(rowAt(2)).not.toHaveClass('drop-before');
-
-    drag.handlers?.onOver?.(2, 'before');
-    await tick();
-    expect(rowAt(2)).toHaveClass('drop-before');
-    expect(rowAt(2)).not.toHaveClass('drop-after');
-
-    drag.handlers?.onOver?.(0, null);
-    await tick();
-    expect(rowAt(0)).not.toHaveClass('drop-before');
     expect(rowAt(0)).not.toHaveClass('drop-after');
+    expect(rowAt(1)).not.toHaveClass('drop-before');
+
+    drag.handlers?.onOver?.(-1, null);
+    await tick();
+    expect(rowAt(2)).not.toHaveClass('drop-after');
 
     drag.handlers?.onEnd?.();
     await tick();
     expect(rowAt(0)).not.toHaveClass('dragging');
+
+    /* The symmetric top edge: dragging a later row, a gap at 0 lights row 0
+       alone - there is no row above it for a partner. */
+    drag.handlers?.onDrag?.(2);
+    drag.handlers?.onOver?.(0, 'before');
+    await tick();
+    expect(rowAt(0)).toHaveClass('drop-before');
+    expect(rowAt(0)).not.toHaveClass('drop-after');
+    expect(rowAt(1)).not.toHaveClass('drop-after');
     expect(rowAt(2)).not.toHaveClass('drop-before');
+
+    drag.handlers?.onOver?.(-1, null);
+    drag.handlers?.onEnd?.();
+    await tick();
+
+    /* "after 1" and "before 2" are one insertion point, so both rows beside
+       the gap light at once. */
+    drag.handlers?.onDrag?.(0);
+    drag.handlers?.onOver?.(1, 'after');
+    await tick();
+    expect(rowAt(1)).toHaveClass('drop-after');
+    expect(rowAt(1)).not.toHaveClass('drop-before');
+    expect(rowAt(2)).toHaveClass('drop-before');
+
+    /* Feeding the port's own callbacks directly (via fakeDrag) drives the
+       derivation past what the real port would ever report here: row 0 is
+       still marked `dragging` from the `onDrag(0)` above, and the real port
+       never reports a mark on either gap touching the dragged row (both
+       resolve to `onOver(-1, null)`), so `dragging` and `drop-after` on the
+       same row is not a reachable combination - only the class derivation is
+       under test. */
+    drag.handlers?.onOver?.(1, 'before');
+    await tick();
+    expect(rowAt(1)).toHaveClass('drop-before');
+    expect(rowAt(1)).not.toHaveClass('drop-after');
+    expect(rowAt(0)).toHaveClass('drop-after');
+
+    await expectNoA11yViolations(container);
   });
 });
 

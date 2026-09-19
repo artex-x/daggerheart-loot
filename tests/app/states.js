@@ -748,6 +748,111 @@ async function dragReorder() {
   ok(order === 'ci2,ci3,ci1,ci4', '17 (drag reorder): final order ' + order);
   const stillDragging = await d.count('.lrow.dragging');
   ok(stillDragging === 0, '17 (drag reorder): the row remained in the dragging state');
+
+  /* The dead zone the human reported: a release aimed inside the real 8px
+   * `.rows` gap between two rows must land there too, with both rows beside
+   * it marked at once - "after 2" and "before 3" are one insertion point.
+   * The `dragover`/`drop` fire on `document` itself, not on a row: the gap
+   * is not any one row's own element to target, and the port's capturing
+   * document listener sees it either way. */
+  await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const grip = rows[0].querySelector('[data-drag]');
+    const dt = new DataTransfer();
+    window.__dragDT = dt;
+    grip.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
+  });
+  await d.settle();
+
+  await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const clientY = rows[2].getBoundingClientRect().bottom + 4;
+    document.dispatchEvent(
+      new DragEvent('dragover', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: window.__dragDT,
+        clientY
+      })
+    );
+  });
+  await d.settle();
+  const gapMarks = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    return [rows[2].className, rows[3].className];
+  });
+  ok(
+    /drop-after/.test(gapMarks[0]) && /drop-before/.test(gapMarks[1]),
+    '17 (drag reorder): the gap between two rows is not marked on both sides - ' +
+      gapMarks.join(' | ')
+  );
+
+  await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const clientY = rows[2].getBoundingClientRect().bottom + 4;
+    document.dispatchEvent(
+      new DragEvent('drop', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: window.__dragDT,
+        clientY
+      })
+    );
+  });
+  await d.settle();
+  const gapOrder = await page.evaluate(() => {
+    const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
+    const list = stored.find((l) => l.id === 'a');
+    return list ? list.ids.join(',') : '';
+  });
+  ok(gapOrder === 'ci3,ci1,ci2,ci4', '17 (drag reorder): gap-drop final order ' + gapOrder);
+
+  /* Leaving the drag with no `drop` - Escape, or a release outside the zone
+   * - must change nothing and clear both marks. */
+  await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const grip = rows[0].querySelector('[data-drag]');
+    const dt = new DataTransfer();
+    window.__dragDT = dt;
+    grip.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
+  });
+  await d.settle();
+
+  await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const clientY = rows[2].getBoundingClientRect().bottom + 4;
+    document.dispatchEvent(
+      new DragEvent('dragover', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: window.__dragDT,
+        clientY
+      })
+    );
+  });
+  await d.settle();
+
+  await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const grip = rows[0].querySelector('[data-drag]');
+    grip.dispatchEvent(
+      new DragEvent('dragend', { bubbles: true, dataTransfer: window.__dragDT })
+    );
+  });
+  await d.settle();
+
+  const cancelledOrder = await page.evaluate(() => {
+    const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
+    const list = stored.find((l) => l.id === 'a');
+    return list ? list.ids.join(',') : '';
+  });
+  ok(
+    cancelledOrder === gapOrder,
+    '17 (drag reorder): a cancelled drag changed the order - ' + cancelledOrder
+  );
+  const leftoverMarks = await d.count('.lrow.drop-before, .lrow.drop-after');
+  ok(leftoverMarks === 0, '17 (drag reorder): a cancelled drag left a mark behind');
+
   await ctx.close();
 }
 

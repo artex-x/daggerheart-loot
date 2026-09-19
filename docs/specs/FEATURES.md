@@ -112,7 +112,12 @@ Six modes. Each keeps its own input in memory only.
 ## Lists
 
 - Create, rename, reorder (drag handle or by typing a position), remove with
-  undo, delete with undo (P5). Dragging near a viewport edge auto-scrolls:
+  undo, delete with undo (P5). A drag lands in a gap between two rows, not on
+  a row: the pointer resolves to the nearest gap, and both rows beside it
+  light, because "after 3" and "before 4" are one place. The drop zone is the
+  rows' own extent plus one measured row gap at each end. Leaving the zone,
+  releasing outside it, and Escape all cancel the drag and change nothing.
+  Dragging near a viewport edge auto-scrolls:
   a 120px band at either edge, up to 22px per frame, driven off
   `requestAnimationFrame` (`app/src/ports/drag.ts`) - untested by any suite
   (no test drags near a viewport edge); `docs/specs/COVERAGE.md` names the

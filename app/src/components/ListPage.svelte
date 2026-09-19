@@ -228,6 +228,12 @@
   let dragFrom = $state(-1);
   let dragMark = $state<{ over: number; where: 'before' | 'after' } | null>(null);
 
+  /* "after 3" and "before 4" are one insertion point, so both sides of the
+     gap light. `dropGap` is the number of rows above that place. */
+  const dropGap = $derived(
+    dragMark === null ? -1 : dragMark.where === 'before' ? dragMark.over : dragMark.over + 1
+  );
+
   const hit = $derived(roll >= 1 && roll <= items.length ? (items[roll - 1] ?? null) : null);
   const rollLabel = $derived(rollLabelFor(items.length, t));
 
@@ -926,8 +932,8 @@
               class="row lrow"
               class:has-note={hasNote}
               class:dragging={dragFrom === i}
-              class:drop-before={dragMark?.over === i && dragMark.where === 'before'}
-              class:drop-after={dragMark?.over === i && dragMark.where === 'after'}
+              class:drop-before={dropGap === i}
+              class:drop-after={dropGap === i + 1}
               data-index={i}
             >
               <span

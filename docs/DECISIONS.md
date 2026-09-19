@@ -12,6 +12,43 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-19 - A list drag resolves to a gap, from the document, not to a row
+
+- Task: `dnd` (find the commit with `git log --grep=dnd`).
+- Decision: `nativeDrag` resolves the pointer to a gap index - the number of
+  rows above the landing place - from the capturing document `dragover` it
+  already binds for edge-scroll, against row midpoints cached at `dragstart`
+  in document coordinates. The drop zone is the rows box grown by one
+  measured row gap above the first row and below the last. There is no
+  horizontal test, so the zone is a band. `drop` moves to the same document
+  listener, so every position the highlight promises also accepts a release.
+- Rejected: keeping the row-level `dragover` and widening what counts as a
+  hit (the 8px `.rows` gap is not a row, so the early return that is the
+  defect survives in some form); recomputing row rectangles on every
+  `dragover` (a forced layout per frame, and rows cannot move during a
+  drag); a horizontal bound on the zone (a person aiming between rows drifts
+  vertically, and nothing sits beside the rows on this page).
+- Evidence: the comment above `onDocOver` already recorded that the pointer
+  spends most of a drag over the gaps between rows; only the scroll was
+  moved to the document, never the targeting.
+
+## 2026-09-19 - Both sides of the gap light, and a cancelled drag is shown, not worded
+
+- Task: `dnd` (find the commit with `git log --grep=dnd`).
+- Decision: "after 3" and "before 4" are one place, so both rows beside the
+  gap carry the existing gold inset. The component derives the pair from the
+  unchanged `onOver(over, where)` callback, so no port contract moves.
+  Cancelling is signalled rather than worded: outside the zone the
+  highlights go out and the cursor refuses the drop, which is what Escape, a
+  release outside the list and a drag off the page all look like.
+- Rejected: one line drawn in the gap itself (it needs a node inside a flex
+  column whose rows are `overflow: hidden`, so it either shifts every row
+  below it or forces `position: relative` onto a shared `.rows` rule); an
+  explicit Escape key handler (the native drag already consumes Escape and
+  fires `dragend`, and a second mechanism for one effect is a second thing
+  to keep true); a hint string in `dict.ts` (a tooltip is read before the
+  drag, not during it, which is when cancelling is decided).
+
 ## 2026-09-18 - Task documents stay tracked; closeout deletes them, never pushed
 
 - Task: `workflow-hygiene` (find the commit with `git log --grep=workflow-hygiene`).

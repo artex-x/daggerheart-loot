@@ -2,9 +2,15 @@
  *
  * The grip is what a person grabs; the whole row is what moves - dragging a
  * small handle and dropping on a big target is easier than the other way
- * round. A line marks where the entry would land, above or below the pointer's
- * own midpoint, and the page scrolls itself from either edge so a drag past
- * the fold does not have to fight the browser's own few-pixel scroll strip.
+ * round. The pointer resolves to a gap between rows, not to a row itself, so
+ * "after 3" and "before 4" are the same target and the 8px space between rows
+ * accepts a drop like everywhere else (docs/specs/FEATURES.md, "Lists"). The
+ * drop zone is the rows' own extent grown by one row gap at each end, and
+ * resolution runs off the capturing document `dragover` the port already
+ * binds for edge-scroll, because that is the listener that sees every
+ * position, gaps included. The page also scrolls itself from either edge so
+ * a drag past the fold does not have to fight the browser's own few-pixel
+ * scroll strip.
  *
  * Dragging is not the only way to reorder, and deliberately not the primary
  * one: every row carries a position field, so moving entry 40 to position 20 is
@@ -44,7 +50,8 @@ export function nativeDrag(): DragPort {
   return {
     bind(container, handlers: DragHandlers) {
       let from = -1;
-      let mark: { over: number; where: 'before' | 'after' } | null = null;
+      let gap = -1;
+      let zone: { mids: number[]; top: number; bottom: number } | null = null;
       let speed = 0;
       let frame = 0;
 
@@ -66,20 +73,56 @@ export function nativeDrag(): DragPort {
       };
 
       /* Capturing, and bound only while a drag is live: the pointer spends
-         most of a drag over the gaps between rows, where the bubbling
-         `dragover` below returns early - the scroll has to be driven from
-         every `dragover`, not only the ones that land on a row (app.js
-         4483-4485). */
+         most of a drag over the gaps between rows, where a row-level
+         `dragover` would return early - both the edge-scroll and the gap
+         resolution below have to be driven from every `dragover`, not only
+         the ones that land on a row (app.js 4483-4485, and
+         docs/specs/FEATURES.md, "Lists"). */
       const onDocOver = (e: Event): void => {
-        speed = edgeSpeed((e as DragEvent).clientY, window.innerHeight);
+        const clientY = (e as DragEvent).clientY;
+        speed = edgeSpeed(clientY, window.innerHeight);
         if (speed && !frame) frame = requestAnimationFrame(step);
+        if (from < 0 || !zone) return;
+        const y = clientY + window.scrollY;
+        const inside = y >= zone.top && y <= zone.bottom;
+        if (inside) {
+          e.preventDefault();
+          const dt = (e as DragEvent).dataTransfer;
+          if (dt) dt.dropEffect = 'move';
+        }
+        let next = -1;
+        if (inside) {
+          let g = 0;
+          for (const mid of zone.mids) if (mid < y) g++;
+          next = g === from || g === from + 1 ? -1 : g;
+        }
+        if (next === gap) return;
+        gap = next;
+        if (gap < 0) handlers.onOver?.(-1, null);
+        else if (gap < from) handlers.onOver?.(gap, 'before');
+        else handlers.onOver?.(gap - 1, 'after');
+      };
+
+      /* The same capturing document listener as `onDocOver`: every position
+         the highlight promises must also accept a release, including the
+         band above the first row and below the last, which a container-level
+         `drop` could never see. */
+      const onDocDrop = (e: Event): void => {
+        stopScroll();
+        if (from >= 0 && gap >= 0) {
+          e.preventDefault();
+          handlers.onDrop(from, gap > from ? gap - 1 : gap);
+        }
+        reset();
       };
 
       const reset = (): void => {
         document.removeEventListener('dragover', onDocOver, true);
+        document.removeEventListener('drop', onDocDrop, true);
         stopScroll();
         from = -1;
-        mark = null;
+        gap = -1;
+        zone = null;
         handlers.onEnd?.();
       };
 
@@ -93,7 +136,18 @@ export function nativeDrag(): DragPort {
         if (!grip) return;
         const row = grip.closest('[data-index]');
         from = indexOf(row);
-        mark = null;
+        gap = -1;
+        const boxes = Array.from(container.querySelectorAll<HTMLElement>('[data-index]')).map(
+          (r) => r.getBoundingClientRect()
+        );
+        const y0 = window.scrollY;
+        const rowGap =
+          boxes.length > 1 ? Math.max(0, (boxes[1]?.top ?? 0) - (boxes[0]?.bottom ?? 0)) : 0;
+        zone = {
+          mids: boxes.map((b) => b.top + b.height / 2 + y0),
+          top: (boxes[0]?.top ?? 0) + y0 - rowGap,
+          bottom: (boxes[boxes.length - 1]?.bottom ?? 0) + y0 + rowGap
+        };
         const dt = (e as DragEvent).dataTransfer;
         if (dt) {
           dt.effectAllowed = 'move';
@@ -111,66 +165,21 @@ export function nativeDrag(): DragPort {
         }
         handlers.onDrag?.(from);
         document.addEventListener('dragover', onDocOver, true);
-      };
-
-      /* Without preventDefault on dragover the drop never fires at all - the
-         browser's default is to refuse the drop. */
-      const onOver = (e: Event): void => {
-        /* app.js 4492: nothing of ours is being dragged - a file from the
-           desktop, an image from another tab - so leave the browser's own
-           drop handling alone. */
-        if (from < 0) return;
-        const row = (e.target as HTMLElement).closest('[data-index]');
-        if (!row) return;
-        e.preventDefault();
-        const dt = (e as DragEvent).dataTransfer;
-        if (dt) dt.dropEffect = 'move';
-        const over = indexOf(row);
-        if (over === from) {
-          mark = null;
-          handlers.onOver?.(over, null);
-          return;
-        }
-        const box = row.getBoundingClientRect();
-        const where: 'before' | 'after' =
-          (e as DragEvent).clientY < box.top + box.height / 2 ? 'before' : 'after';
-        mark = { over, where };
-        handlers.onOver?.(over, where);
+        document.addEventListener('drop', onDocDrop, true);
       };
 
       const onDragEnd = (): void => {
         reset();
       };
 
-      const onDrop = (e: Event): void => {
-        stopScroll();
-        const start = from;
-        const at = mark;
-        /* app.js 4509: the same "nothing of ours is being dragged" guard as
-           onOver, and preventDefault only once it is known there is a drop to
-           make - a stray drop from outside must fall through to the
-           browser's own handling. */
-        if (start >= 0 && at) {
-          e.preventDefault();
-          let to = at.over;
-          if (at.where === 'after' && to < start) to += 1;
-          if (at.where === 'before' && to > start) to -= 1;
-          if (to !== start) handlers.onDrop(start, to);
-        }
-        reset();
-      };
-
       container.addEventListener('dragstart', onStart);
-      container.addEventListener('dragover', onOver);
-      container.addEventListener('drop', onDrop);
       container.addEventListener('dragend', onDragEnd);
 
       return () => {
         container.removeEventListener('dragstart', onStart);
-        container.removeEventListener('dragover', onOver);
-        container.removeEventListener('drop', onDrop);
         container.removeEventListener('dragend', onDragEnd);
         document.removeEventListener('dragover', onDocOver, true);
+        document.removeEventListener('drop', onDocDrop, true);
         stopScroll();
       };
     }

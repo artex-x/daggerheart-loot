@@ -170,7 +170,9 @@ export interface DragHandlers {
   onDrop(from: number, to: number): void;
   /** dragstart: which row is being dragged. */
   onDrag?(from: number): void;
-  /** dragover on a row: where the entry would land; `null` over the dragged row itself. */
+  /** dragover: where the entry would land; `null` when it would not move, or
+   *  when the pointer has left the list. `over` is always `-1` when `where`
+   *  is `null`, not only for the "left the list" case. */
   onOver?(over: number, where: 'before' | 'after' | null): void;
   /** dragend, and after a drop: no row is dragged, no row is marked. */
   onEnd?(): void;

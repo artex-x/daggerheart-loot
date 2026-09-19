@@ -2,7 +2,7 @@
    browser says no, and every one of them is a thing that actually happens to
    somebody: a private window, a page opened from a folder, an older browser, a
    share sheet dismissed on purpose. */
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { browserClipboard, fakeClipboard } from './clipboard.js';
 import { browserCompress, plainCompress } from './compress.js';
 import { browserDialog, fakeDialog } from './dialog.js';
@@ -13,6 +13,7 @@ import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 import { browserData, fakeData, noData } from './data.js';
 import { browserImage } from './image.js';
 import { browserEnv, fakeEnv } from './index.js';
+import type { DragHandlers } from './types.js';
 
 describe('storage that works', () => {
   it('round-trips a value', () => {
@@ -427,18 +428,19 @@ describe('confirming', () => {
 });
 
 describe('dragging', () => {
-  /* Each row is 40px tall, stacked in index order - `top: i * 40, height: 40`
-     - so a `clientY` can be aimed above or below any row's own midpoint. Each
-     row also carries a real `[data-drag]` grip plus a plain body child - the
-     live row's thumbnail/note/number-input content, none of it a grip - so a
-     fixture that starts a drag on the wrong child is caught the same way a
-     real row would catch it. */
+  /* Each row is 48px apart and 40px tall, so there is a real 8px gap between
+     any two of them - `top: i * 48, height: 40`, matching `.rows { gap: 8px
+     }` - and the container's own rect is stubbed to the rows' full extent,
+     `n * 48 - 8`. Each row also carries a real `[data-drag]` grip plus a
+     plain body child - the live row's thumbnail/note/number-input content,
+     none of it a grip - so a fixture that starts a drag on the wrong child is
+     caught the same way a real row would catch it. */
   const rows = (n: number): HTMLElement => {
     const box = document.createElement('div');
     for (let i = 0; i < n; i++) {
       const row = document.createElement('div');
       row.dataset['index'] = String(i);
-      row.getBoundingClientRect = () => new DOMRect(0, i * 40, 0, 40);
+      row.getBoundingClientRect = () => new DOMRect(0, i * 48, 0, 40);
       const grip = document.createElement('span');
       grip.dataset['drag'] = String(i);
       row.appendChild(grip);
@@ -447,6 +449,7 @@ describe('dragging', () => {
       row.appendChild(body);
       box.appendChild(row);
     }
+    box.getBoundingClientRect = () => new DOMRect(0, 0, 0, n * 48 - 8);
     document.body.appendChild(box);
     return box;
   };
@@ -480,26 +483,49 @@ describe('dragging', () => {
     return e;
   };
 
-  /** The three-event shape every case below drives: start, one dragover at
-   *  `clientY`, then the drop on the same row and the same `clientY` - the
-   *  live app reads `after` off the row's own class state at drop time, which
-   *  is exactly what the last `dragover` on that row just set. */
-  const dragAt = (box: HTMLElement, from: number, to: number, clientY: number): void => {
+  /** A `dragover` on the container itself, at document `clientY` - the
+   *  capturing document listener sees it either way, and a gap is not any
+   *  one row's own element to target. */
+  const hover = (box: HTMLElement, clientY: number): Event =>
+    fire(box, 'dragover', { clientY });
+
+  /** A `drop` on the container itself, at the `clientY` a `hover` used. */
+  const release = (box: HTMLElement, clientY: number): Event => fire(box, 'drop', { clientY });
+
+  /** The three-event shape most cases below drive: start from row `from`,
+   *  one `dragover` at `clientY`, then the `drop` at the same `clientY`. */
+  const dragAt = (box: HTMLElement, from: number, clientY: number): void => {
     fire(gripOf(box, from), 'dragstart');
-    fire(box.children[to] as Element, 'dragover', { clientY });
-    fire(box.children[to] as Element, 'drop', { clientY });
+    hover(box, clientY);
+    release(box, clientY);
   };
 
-  /** Before the target's own midpoint - the shape these three cases were
-   *  written against, before the midpoint rule was added. */
+  /** Before the target row's own midpoint, aimed at row `to`'s own top - the
+   *  shape these three cases were written against, before the midpoint rule
+   *  was added. */
   const drag = (box: HTMLElement, from: number, to: number): void => {
-    dragAt(box, from, to, to * 40);
+    dragAt(box, from, to * 48);
+  };
+
+  /* The resolver lives on the shared `document`, not a per-test container,
+     so a bind() nothing ever unbinds would still be listening for a later
+     test's own events - the leak an explicit `dragend` call works around in
+     several cases below. Routing every `bind()` through here makes the
+     unbind structural rather than a rule each new case has to remember. */
+  const unbinds: Array<() => void> = [];
+  afterEach(() => {
+    while (unbinds.length) unbinds.pop()?.();
+  });
+  const bindDrag = (box: HTMLElement, handlers: DragHandlers): (() => void) => {
+    const unbind = nativeDrag().bind(box, handlers);
+    unbinds.push(unbind);
+    return unbind;
   };
 
   it('reports where an entry was dropped', () => {
     const box = rows(5);
     const onDrop = vi.fn();
-    nativeDrag().bind(box, { onDrop });
+    bindDrag(box, { onDrop });
     drag(box, 4, 1);
     expect(onDrop).toHaveBeenCalledWith(4, 1);
   });
@@ -507,7 +533,7 @@ describe('dragging', () => {
   it('says nothing when an entry is dropped where it started', () => {
     const box = rows(3);
     const onDrop = vi.fn();
-    nativeDrag().bind(box, { onDrop });
+    bindDrag(box, { onDrop });
     drag(box, 1, 1);
     expect(onDrop).not.toHaveBeenCalled();
   });
@@ -515,7 +541,7 @@ describe('dragging', () => {
   it('stops listening once unbound', () => {
     const box = rows(3);
     const onDrop = vi.fn();
-    nativeDrag().bind(box, { onDrop })();
+    bindDrag(box, { onDrop })();
     drag(box, 0, 2);
     expect(onDrop).not.toHaveBeenCalled();
   });
@@ -523,9 +549,13 @@ describe('dragging', () => {
   it('reports which row started dragging', () => {
     const box = rows(3);
     const onDrag = vi.fn();
-    nativeDrag().bind(box, { onDrop: vi.fn(), onDrag });
+    bindDrag(box, { onDrop: vi.fn(), onDrag });
     fire(gripOf(box, 2), 'dragstart');
     expect(onDrag).toHaveBeenCalledWith(2);
+    /* Ends the drag: the resolver now lives on `document`, shared by every
+       test in this file, so a dragstart left dangling here would still be
+       bound for a later test's own stray dragover. */
+    fire(box, 'dragend');
   });
 
   it('does not start a drag from anything but the grip', () => {
@@ -534,7 +564,7 @@ describe('dragging', () => {
        reorder - see drag.ts, onStart. */
     const box = rows(3);
     const onDrag = vi.fn();
-    nativeDrag().bind(box, { onDrop: vi.fn(), onDrag });
+    bindDrag(box, { onDrop: vi.fn(), onDrag });
     fire(bodyOf(box, 1), 'dragstart');
     expect(onDrag).not.toHaveBeenCalled();
   });
@@ -544,83 +574,169 @@ describe('dragging', () => {
        must not paint a drop mark or suppress the browser's own drop. */
     const box = rows(3);
     const onOver = vi.fn();
-    nativeDrag().bind(box, { onDrop: vi.fn(), onOver });
+    bindDrag(box, { onDrop: vi.fn(), onOver });
     const e = fire(box.children[0] as Element, 'dragover', { clientY: 5 });
     expect(onOver).not.toHaveBeenCalled();
     expect(e.defaultPrevented).toBe(false);
   });
 
   it('leaves a stray drop alone when none of our rows is being dragged', () => {
-    /* app.js 4509: the same guard as onOver, for the same reason. */
+    /* app.js 4509: the same guard as above, for the same reason. */
     const box = rows(3);
     const onDrop = vi.fn();
-    nativeDrag().bind(box, { onDrop });
+    bindDrag(box, { onDrop });
     const e = fire(box.children[0] as Element, 'drop', { clientY: 5 });
     expect(onDrop).not.toHaveBeenCalled();
     expect(e.defaultPrevented).toBe(false);
   });
 
-  it('marks before above a row’s midpoint and after below it', () => {
+  it('drops in the empty gap between two rows, where the browser used to refuse it', () => {
+    /* The reported dead zone: `.rows { gap: 8px }` sits between every pair of
+       rows, and clientY 92 lands inside it for this fixture - row 1 ends at
+       88, row 2 starts at 96. */
     const box = rows(3);
+    const onDrop = vi.fn();
     const onOver = vi.fn();
-    nativeDrag().bind(box, { onDrop: vi.fn(), onOver });
+    bindDrag(box, { onDrop, onOver });
     fire(gripOf(box, 0), 'dragstart');
-    fire(box.children[2] as Element, 'dragover', { clientY: 2 * 40 + 5 }); // top 80, mid 100
-    expect(onOver).toHaveBeenLastCalledWith(2, 'before');
-    fire(box.children[2] as Element, 'dragover', { clientY: 2 * 40 + 35 });
-    expect(onOver).toHaveBeenLastCalledWith(2, 'after');
+    const e = hover(box, 92);
+    expect(e.defaultPrevented).toBe(true);
+    expect(onOver).toHaveBeenLastCalledWith(1, 'after');
+    release(box, 92);
+    expect(onDrop).toHaveBeenCalledWith(0, 1);
   });
 
-  it('reports null over the row being dragged', () => {
+  it('a release above the first row moves the entry to position 0', () => {
+    const box = rows(3);
+    const onDrop = vi.fn();
+    bindDrag(box, { onDrop });
+    dragAt(box, 2, -4);
+    expect(onDrop).toHaveBeenCalledWith(2, 0);
+  });
+
+  it('a release below the last row moves the entry to the end', () => {
+    const box = rows(3);
+    const onDrop = vi.fn();
+    bindDrag(box, { onDrop });
+    dragAt(box, 0, 140);
+    expect(onDrop).toHaveBeenCalledWith(0, 2);
+  });
+
+  it('the drop zone reaches exactly one measured row gap past each end, and reports leaving it', () => {
     const box = rows(3);
     const onOver = vi.fn();
-    nativeDrag().bind(box, { onDrop: vi.fn(), onOver });
+    bindDrag(box, { onDrop: vi.fn(), onOver });
     fire(gripOf(box, 1), 'dragstart');
-    fire(box.children[1] as Element, 'dragover', { clientY: 1 * 40 });
-    expect(onOver).toHaveBeenCalledWith(1, null);
+
+    const atTop = hover(box, -8); // one measured row gap above the first row
+    expect(atTop.defaultPrevented).toBe(true);
+    expect(onOver).toHaveBeenLastCalledWith(0, 'before');
+
+    const pastTop = hover(box, -9);
+    expect(pastTop.defaultPrevented).toBe(false);
+    expect(onOver).toHaveBeenLastCalledWith(-1, null);
+
+    const atBottom = hover(box, 144); // one measured row gap below the last row
+    expect(atBottom.defaultPrevented).toBe(true);
+    expect(onOver).toHaveBeenLastCalledWith(2, 'after');
+
+    const pastBottom = hover(box, 145);
+    expect(pastBottom.defaultPrevented).toBe(false);
+    expect(onOver).toHaveBeenLastCalledWith(-1, null);
+
+    fire(box, 'dragend'); // ends the drag; see the note on the same cleanup above
+  });
+
+  it('reports nothing for the gap directly above the dragged row, and a release there moves nothing', () => {
+    const box = rows(4);
+    const onDrop = vi.fn();
+    const onOver = vi.fn();
+    bindDrag(box, { onDrop, onOver });
+    fire(gripOf(box, 1), 'dragstart');
+    hover(box, 179); // a real gap first, so the no-op below is a reported change
+    hover(box, 53); // the gap directly above the dragged row - already there
+    expect(onOver).toHaveBeenLastCalledWith(-1, null);
+    release(box, 53);
+    expect(onDrop).not.toHaveBeenCalled();
+  });
+
+  it('reports nothing for the gap directly below the dragged row, and a release there moves nothing', () => {
+    const box = rows(4);
+    const onDrop = vi.fn();
+    const onOver = vi.fn();
+    bindDrag(box, { onDrop, onOver });
+    fire(gripOf(box, 1), 'dragstart');
+    hover(box, -4); // a real gap first, so the no-op below is a reported change
+    hover(box, 83); // the gap directly below the dragged row - already there
+    expect(onOver).toHaveBeenLastCalledWith(-1, null);
+    release(box, 83);
+    expect(onDrop).not.toHaveBeenCalled();
+  });
+
+  it('a dragend with no drop calls onEnd and never onDrop', () => {
+    const box = rows(3);
+    const onDrop = vi.fn();
+    const onEnd = vi.fn();
+    bindDrag(box, { onDrop, onEnd });
+    fire(gripOf(box, 0), 'dragstart');
+    hover(box, 92);
+    fire(box, 'dragend');
+    expect(onEnd).toHaveBeenCalledTimes(1);
+    expect(onDrop).not.toHaveBeenCalled();
+  });
+
+  it('reports onOver once for two dragovers that resolve to the same gap', () => {
+    const box = rows(3);
+    const onOver = vi.fn();
+    bindDrag(box, { onDrop: vi.fn(), onOver });
+    fire(gripOf(box, 0), 'dragstart');
+    hover(box, 92);
+    hover(box, 95); // still the gap between row 1 and row 2
+    expect(onOver).toHaveBeenCalledTimes(1);
+    fire(box, 'dragend'); // ends the drag; see the note on the same cleanup above
   });
 
   it('adjusts the target index for the entry’s own removal, both directions', () => {
     const box = rows(5);
     const onDrop = vi.fn();
-    nativeDrag().bind(box, { onDrop });
+    bindDrag(box, { onDrop });
 
     /* after, to < from: the entry leaving index 4 shifts everything below it
        up by one, so landing after row 1 is really index 2. */
-    dragAt(box, 4, 1, 1 * 40 + 35);
+    dragAt(box, 4, 1 * 48 + 35);
     expect(onDrop).toHaveBeenLastCalledWith(4, 2);
 
     /* after, to > from: nothing between `from` and the target moves. */
-    dragAt(box, 1, 3, 3 * 40 + 35);
+    dragAt(box, 1, 3 * 48 + 35);
     expect(onDrop).toHaveBeenLastCalledWith(1, 3);
 
     /* before, to > from: the entry leaving index 1 shifts the target up by
        one before it lands ahead of it. */
-    dragAt(box, 1, 3, 3 * 40 + 5);
+    dragAt(box, 1, 3 * 48 + 5);
     expect(onDrop).toHaveBeenLastCalledWith(1, 2);
 
     /* before, to < from: landing ahead of an earlier row needs no shift. */
-    dragAt(box, 4, 1, 1 * 40 + 5);
+    dragAt(box, 4, 1 * 48 + 5);
     expect(onDrop).toHaveBeenLastCalledWith(4, 1);
   });
 
   it('reports the drag ending, from a drop and from a plain dragend', () => {
     const box = rows(3);
     const onEnd = vi.fn();
-    nativeDrag().bind(box, { onDrop: vi.fn(), onEnd });
+    bindDrag(box, { onDrop: vi.fn(), onEnd });
 
-    dragAt(box, 0, 1, 1 * 40 + 35);
+    dragAt(box, 0, 1 * 48 + 35);
     expect(onEnd).toHaveBeenCalledTimes(1);
 
     fire(gripOf(box, 2), 'dragstart');
-    fire(box.children[2] as Element, 'dragend');
+    fire(box, 'dragend');
     expect(onEnd).toHaveBeenCalledTimes(2);
   });
 
   it('stops driving the edge scroll once unbound', () => {
     const box = rows(3);
     const raf = vi.spyOn(window, 'requestAnimationFrame');
-    const unbind = nativeDrag().bind(box, { onDrop: vi.fn() });
+    const unbind = bindDrag(box, { onDrop: vi.fn() });
     fire(gripOf(box, 0), 'dragstart');
     unbind();
     raf.mockClear();
@@ -645,7 +761,7 @@ describe('dragging', () => {
         return 1;
       });
     const scrollBy = vi.spyOn(window, 'scrollBy').mockImplementation(() => undefined);
-    const unbind = nativeDrag().bind(box, { onDrop: vi.fn() });
+    const unbind = bindDrag(box, { onDrop: vi.fn() });
 
     fire(gripOf(box, 0), 'dragstart');
     fire(document, 'dragover', { clientY: 0 }); // the top edge, full speed

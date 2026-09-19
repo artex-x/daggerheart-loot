@@ -353,6 +353,48 @@ deferral discipline.
   `i/<id>.html` subtitle reads as a full table path, matching the record
   page's own heading line for the same id.
 
+### D42 - cached drag midpoints go stale under a two-tab storage merge mid-drag
+
+- **Where**: `app/src/ports/drag.ts`, the `onStart` cache (`zone.mids`).
+- **What**: row midpoints are measured once, at `dragstart`, and cached in
+  document coordinates so the resolver does not re-read every row's rect on
+  each `dragover` (~60 times a second). A second tab writing to the same
+  list mid-drag re-renders the rows through the storage merge, which
+  invalidates the cache: the highlight, and the eventual drop, then land at
+  the old layout's gap rather than the new one. The old per-`dragover` rect
+  read this design replaced was immune, since it read live layout on every
+  event. The window is a fraction of a second and needs a second tab
+  actively editing the very list being dragged.
+- **Why deferred**: kept on purpose, in exchange for not recomputing every
+  row's rectangle on every `dragover` - a cost this task's own plan weighed
+  against the two-tab window (`docs/DECISIONS.md`, "A list drag resolves to
+  a gap, from the document, not to a row"). A real fix needs either a
+  mid-drag `onExternalChange` hook the port does not have today, or
+  re-measuring per `dragover`, which undoes the caching decision.
+- **How to verify the fix**: start a drag in one tab, write a reorder to the
+  same list from a second tab mid-drag, and confirm the highlight and the
+  eventual drop track the post-merge row order rather than the cached one.
+
+### D43 (unverified) - a release over the dragged row's own note textarea may leak the row index into the note
+
+- **Where**: `app/src/ports/drag.ts`, `onDocDrop`.
+- **What**: a release over the dragged row's own note `<textarea>` resolves
+  `gap = -1` (the entry is already there), so `onDocDrop` never calls
+  `preventDefault`; the textarea's own `dragover` handling already prevented
+  the drag there, and `dataTransfer` carries `text/plain = String(from)` (set
+  at `dragstart` for Firefox), so the browser may fall through to its native
+  text-drop behaviour and insert the row's index into the note. Pre-existing:
+  the old `mark === null` branch had the same hole, so this is not a
+  regression from the gap-based redesign.
+- **Why deferred**: unverified - Chrome's actual behaviour needs a browser to
+  confirm before anyone acts on a reviewer's read of the code alone. A
+  one-line change (`preventDefault` whenever `from >= 0`, regardless of
+  `gap`) would close it if confirmed, but should not land speculatively.
+- **How to verify the fix**: in a real browser, start a drag from a row's
+  grip and release directly over that same row's own note textarea; confirm
+  whether the row index text is inserted into the note, then, only if
+  confirmed, add the unconditional `preventDefault` and re-check.
+
 ## Hook and tooling defects, kept open
 
 Not a parity question and not a phase-8 review finding - a real gap in a
