@@ -8,6 +8,7 @@
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
  * real second tab to mean anything at all. Twenty-three cases, no ancestor. */
 const fs = require('fs');
+const { PNG } = require('pngjs');
 const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
 
@@ -727,6 +728,28 @@ async function dragReorder() {
     '17 (drag reorder): the drop position is not highlighted - ' + dragged
   );
 
+  /* Defect 2 (git log --grep=dnd2): a `dragenter` fired crossing into one
+   * of row 2's own children - not only a `dragover` - must be prevented
+   * too, or the drop is refused until the next throttled `dragover`
+   * restores it (docs/specs/FEATURES.md, "Lists"). */
+  const enterPrevented = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const child = rows[2].querySelector('input, textarea, button, svg') || rows[2];
+    const box = rows[2].getBoundingClientRect();
+    const e = new DragEvent('dragenter', {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer: window.__dragDT,
+      clientY: box.top + box.height - 2
+    });
+    child.dispatchEvent(e);
+    return e.defaultPrevented;
+  });
+  ok(
+    enterPrevented,
+    "17 (drag reorder): a dragenter crossing into a row's own child is not prevented"
+  );
+
   await page.evaluate(() => {
     const rows = [...document.querySelectorAll('.lrow')];
     const box = rows[2].getBoundingClientRect();
@@ -854,6 +877,129 @@ async function dragReorder() {
   ok(leftoverMarks === 0, '17 (drag reorder): a cancelled drag left a mark behind');
 
   await ctx.close();
+
+  /* Defect 1 (git log --grep=dnd2): an inset box-shadow paints below its
+   * element's children, and an open note box is `.rnote`, a row's own last
+   * child, so it used to cover the bottom gold line entirely
+   * (docs/specs/FEATURES.md, "Lists"). A note on every row opens every box
+   * by default (`boxHidden` in ListPage.svelte); a 200x3 px strip at a
+   * `drop-after` row's bottom edge should then read mostly `--gold`
+   * (`216,171,94`), at the end of the list and in the middle of it.
+   * Viewport height 1600, not 900: the port's own 120px edge-scroll band
+   * moves the page under a probe placed any closer to either edge - the
+   * measured harness trap at docs/specs/COVERAGE.md, "app/states - the
+   * drag pixel probe's viewport trap"; the 400/600 pass value is measured
+   * at docs/DECISIONS.md, "A drop indicator redraws...". */
+  const notedIds = ['ci1', 'ci2', 'ci3', 'ci4'];
+  const {
+    ctx: noteCtx,
+    page: notePage,
+    d: noteD
+  } = await fresh({
+    width: 1180,
+    height: 1600,
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        {
+          id: 'a',
+          name: 'Тайник',
+          ids: notedIds,
+          created: 1,
+          meta: Object.fromEntries(notedIds.map((id) => [id, { note: 'x' }]))
+        }
+      ])
+    }
+  });
+  await noteD.open('#/lists/a');
+
+  /** Gold pixels (within 24/255 of `--gold`, `216,171,94`) in a 200x3 px
+   *  strip at row `i`'s bottom edge - the same probe docs/DECISIONS.md,
+   *  "A drop indicator redraws...", measured against `dist/`. */
+  async function goldStripAt(i) {
+    /* `getBoundingClientRect()` returns a `DOMRect` whose fields are
+       prototype getters, not own properties - puppeteer's own JSON
+       serialization drops them, so the return value has to be a plain
+       object built from them, not the `DOMRect` itself. */
+    const rect = await notePage.evaluate((idx) => {
+      const r = document.querySelectorAll('.lrow')[idx].getBoundingClientRect();
+      return { x: r.x, bottom: r.bottom };
+    }, i);
+    const clip = {
+      x: Math.round(rect.x),
+      y: Math.round(rect.bottom - 3),
+      width: 200,
+      height: 3
+    };
+    const png = PNG.sync.read(await notePage.screenshot({ type: 'png', clip }));
+    let n = 0;
+    for (let p = 0; p < png.width * png.height; p++) {
+      const r = png.data[p * 4];
+      const g = png.data[p * 4 + 1];
+      const b = png.data[p * 4 + 2];
+      if (Math.abs(r - 216) <= 24 && Math.abs(g - 171) <= 24 && Math.abs(b - 94) <= 24) n++;
+    }
+    return n;
+  }
+
+  await notePage.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const grip = rows[0].querySelector('[data-drag]');
+    const dt = new DataTransfer();
+    window.__dragDT = dt;
+    grip.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
+  });
+  await noteD.settle();
+
+  // Mid-list: row 2 marked drop-after, note open.
+  await notePage.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const box = rows[2].getBoundingClientRect();
+    rows[2].dispatchEvent(
+      new DragEvent('dragover', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: window.__dragDT,
+        clientY: box.top + box.height - 2
+      })
+    );
+  });
+  await noteD.settle();
+  const midGold = await goldStripAt(2);
+  ok(
+    midGold > 300,
+    '17 (drag reorder): an open note box hides the gold line mid-list - ' + midGold + '/600'
+  );
+
+  // End of the list: the last row marked drop-after, note open.
+  await notePage.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const clientY = rows[3].getBoundingClientRect().bottom + 4;
+    document.dispatchEvent(
+      new DragEvent('dragover', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: window.__dragDT,
+        clientY
+      })
+    );
+  });
+  await noteD.settle();
+  const endGold = await goldStripAt(3);
+  ok(
+    endGold > 300,
+    '17 (drag reorder): an open note box hides the gold line at the end of the list - ' +
+      endGold +
+      '/600'
+  );
+
+  await notePage.evaluate(() => {
+    const rows = [...document.querySelectorAll('.lrow')];
+    const grip = rows[0].querySelector('[data-drag]');
+    grip.dispatchEvent(
+      new DragEvent('dragend', { bubbles: true, dataTransfer: window.__dragDT })
+    );
+  });
+  await noteCtx.close();
 }
 
 /** 18. A folded `<details>` surviving a select-all/money-mode re-render,

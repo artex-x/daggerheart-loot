@@ -41,6 +41,18 @@ coverage/
 # tripping but still leaves the path inside every fingerprint.
 work/
 
+# The impeccable skill's own hook rewrites these three during a session;
+# only this host's .git/info/exclude ignores them today, which a fresh
+# clone or CI does not carry, so they need the tracked entry the
+# worktrees line above does. Named individually, not as .impeccable/
+# itself: design.json also lives there and is tracked project data, not
+# hook runtime state. config.local.json is the one that matters most - a
+# local config file with no tracked ignore is how a credential gets
+# committed by accident.
+.impeccable/hook.cache.json
+.impeccable/hook.pending.json
+.impeccable/config.local.json
+
 # The share stubs: 1091 files regenerated from data.js by tools/build.js,
 # which the deploy job runs (npm run build) before it copies i/ into _site.
 # Published, never committed, and never hand-edited (.claude/hooks/edit-guard.mjs).

@@ -1655,6 +1655,14 @@
     box-shadow: inset 0 -3px 0 0 var(--gold);
   }
 
+  /* An inset box-shadow paints above `.lrow`'s own background but below its
+     children; an open note box is `.rnote`, the row's last child, and covers
+     the line above (docs/specs/FEATURES.md, "Lists"). Redraw the same inset
+     on it so a noted row shows the mark too. */
+  .lrow.drop-after .rnote {
+    box-shadow: inset 0 -3px 0 0 var(--gold);
+  }
+
   /* off `.lrow-meta` and its nine, including `.goldhint` and the
      `:hover`/`:focus-within` pair (style.css:750-776) */
   .lrow-meta {

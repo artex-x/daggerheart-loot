@@ -114,14 +114,19 @@ Six modes. Each keeps its own input in memory only.
 - Create, rename, reorder (drag handle or by typing a position), remove with
   undo, delete with undo (P5). A drag lands in a gap between two rows, not on
   a row: the pointer resolves to the nearest gap, and both rows beside it
-  light, because "after 3" and "before 4" are one place. The drop zone is the
-  rows' own extent plus one measured row gap at each end. Leaving the zone,
-  releasing outside it, and Escape all cancel the drag and change nothing.
-  Dragging near a viewport edge auto-scrolls:
-  a 120px band at either edge, up to 22px per frame, driven off
-  `requestAnimationFrame` (`app/src/ports/drag.ts`) - untested by any suite
-  (no test drags near a viewport edge); `docs/specs/COVERAGE.md` names the
-  gap, this line the constants.
+  light, because "after 3" and "before 4" are one place. On the row above the
+  gap, the highlight is drawn on that row's own last visible line, so a row
+  whose note box is open shows it there rather than losing it under the note;
+  the row below the gap is marked on its own first line, unaffected either
+  way. The drop zone is the rows' own extent plus one measured row gap at
+  each end. The list accepts a release at every moment the highlight is
+  shown, including while the pointer crosses a row's own controls (grip,
+  inputs, note) on the way through. Leaving the zone, releasing outside it,
+  and Escape all cancel the drag and change nothing. Dragging near a
+  viewport edge auto-scrolls: a 120px band at either edge, up to 22px per
+  frame, driven off `requestAnimationFrame` (`app/src/ports/drag.ts`) -
+  untested by any suite (no test drags near a viewport edge);
+  `docs/specs/COVERAGE.md` names the gap, this line the constants.
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
   and its cancel; a search box appears from the eighth list; the menu opens on

@@ -492,6 +492,12 @@ describe('dragging', () => {
   /** A `drop` on the container itself, at the `clientY` a `hover` used. */
   const release = (box: HTMLElement, clientY: number): Event => fire(box, 'drop', { clientY });
 
+  /** A `dragenter` on the container itself, at the given `clientY` - what the
+   *  pointer fires crossing into a row's own element, not only the `dragover`
+   *  a `hover` sends. */
+  const enter = (box: HTMLElement, clientY: number): Event =>
+    fire(box, 'dragenter', { clientY });
+
   /** The three-event shape most cases below drive: start from row `from`,
    *  one `dragover` at `clientY`, then the `drop` at the same `clientY`. */
   const dragAt = (box: HTMLElement, from: number, clientY: number): void => {
@@ -696,7 +702,7 @@ describe('dragging', () => {
     fire(box, 'dragend'); // ends the drag; see the note on the same cleanup above
   });
 
-  it('adjusts the target index for the entry’s own removal, both directions', () => {
+  it("adjusts the target index for the entry's own removal, both directions", () => {
     const box = rows(5);
     const onDrop = vi.fn();
     bindDrag(box, { onDrop });
@@ -788,8 +794,52 @@ describe('dragging', () => {
     scrollBy.mockRestore();
   });
 
+  it("prevents a dragenter inside the drop zone, on the document and on a row's own child", () => {
+    /* This is defect 2 itself: an unprevented `dragenter` refuses the drop
+       until the next `dragover` restores it (docs/specs/FEATURES.md,
+       "Lists"). Fails today - only `dragover` is bound. */
+    const box = rows(3);
+    bindDrag(box, { onDrop: vi.fn() });
+    fire(gripOf(box, 0), 'dragstart');
+    expect(enter(box, 92).defaultPrevented).toBe(true);
+    expect(fire(bodyOf(box, 1), 'dragenter', { clientY: 92 }).defaultPrevented).toBe(true);
+    fire(box, 'dragend'); // ends the drag; see the note on the same cleanup above
+  });
+
+  it('leaves a dragenter outside the drop zone alone', () => {
+    const box = rows(3);
+    bindDrag(box, { onDrop: vi.fn() });
+    fire(gripOf(box, 1), 'dragstart');
+    expect(enter(box, -9).defaultPrevented).toBe(false); // one past the measured zone
+    fire(box, 'dragend'); // ends the drag; see the note on the same cleanup above
+  });
+
+  it('leaves a stray dragenter alone when none of our rows is being dragged', () => {
+    const box = rows(3);
+    const onOver = vi.fn();
+    bindDrag(box, { onDrop: vi.fn(), onOver });
+    const e = enter(box, 5);
+    expect(onOver).not.toHaveBeenCalled();
+    expect(e.defaultPrevented).toBe(false);
+  });
+
+  it('stops preventing dragenter once the drag ends, and again once unbound', () => {
+    const box = rows(3);
+    const unbind = bindDrag(box, { onDrop: vi.fn() });
+
+    fire(gripOf(box, 0), 'dragstart');
+    expect(enter(box, 92).defaultPrevented).toBe(true);
+    fire(box, 'dragend');
+    expect(enter(box, 92).defaultPrevented).toBe(false);
+
+    fire(gripOf(box, 0), 'dragstart');
+    expect(enter(box, 92).defaultPrevented).toBe(true);
+    unbind();
+    expect(enter(box, 92).defaultPrevented).toBe(false);
+  });
+
   describe('the edge-scroll speed, off a pointer position alone', () => {
-    it('tops out at each edge’s own band and stands still in the middle', () => {
+    it("tops out at each edge's own band and stands still in the middle", () => {
       expect(edgeSpeed(0, 900)).toBe(-22);
       expect(edgeSpeed(60, 900)).toBe(-11);
       expect(edgeSpeed(899, 900)).toBe(22);

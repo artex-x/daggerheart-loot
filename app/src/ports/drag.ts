@@ -77,7 +77,11 @@ export function nativeDrag(): DragPort {
          `dragover` would return early - both the edge-scroll and the gap
          resolution below have to be driven from every `dragover`, not only
          the ones that land on a row (app.js 4483-4485, and
-         docs/specs/FEATURES.md, "Lists"). */
+         docs/specs/FEATURES.md, "Lists"). Bound to `dragenter` too: a drop is
+         accepted only while `preventDefault()` runs on both events, and a
+         row's own children - thumbnail, inputs, note - are what the pointer
+         crosses into on the way through. `onDocOver` is idempotent already,
+         so the extra calls cost nothing. */
       const onDocOver = (e: Event): void => {
         const clientY = (e as DragEvent).clientY;
         speed = edgeSpeed(clientY, window.innerHeight);
@@ -118,6 +122,7 @@ export function nativeDrag(): DragPort {
 
       const reset = (): void => {
         document.removeEventListener('dragover', onDocOver, true);
+        document.removeEventListener('dragenter', onDocOver, true);
         document.removeEventListener('drop', onDocDrop, true);
         stopScroll();
         from = -1;
@@ -165,6 +170,7 @@ export function nativeDrag(): DragPort {
         }
         handlers.onDrag?.(from);
         document.addEventListener('dragover', onDocOver, true);
+        document.addEventListener('dragenter', onDocOver, true);
         document.addEventListener('drop', onDocDrop, true);
       };
 
@@ -179,6 +185,7 @@ export function nativeDrag(): DragPort {
         container.removeEventListener('dragstart', onStart);
         container.removeEventListener('dragend', onDragEnd);
         document.removeEventListener('dragover', onDocOver, true);
+        document.removeEventListener('dragenter', onDocOver, true);
         document.removeEventListener('drop', onDocDrop, true);
         stopScroll();
       };
