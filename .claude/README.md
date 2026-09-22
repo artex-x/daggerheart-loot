@@ -3,9 +3,9 @@
 | Agent | Prompt | Default model frontmatter |
 |-------|--------|---------------------------|
 | planner | prompts/plan.prompt.md | opus |
-| implementer | prompts/implement.prompt.md | sonnet |
+| implementer | prompts/implement.prompt.md | opus |
 | reviewer | prompts/review.prompt.md | opus |
-| add-source | prompts/add-source.prompt.md | sonnet |
+| add-source | prompts/add-source.prompt.md | opus |
 | refresh-artwork | prompts/refresh-artwork.prompt.md | sonnet |
 
 Orchestrator: prompts/orchestrate.prompt.md
@@ -22,7 +22,8 @@ bounded low-risk mechanical or read-only helper. `medium` is the default and
 `high` the only escalation. See prompts/orchestrate.prompt.md. The planner's
 tier can be escalated to `fable` for one dispatch under the named tests in
 prompts/orchestrate.prompt.md, "Planner tier"; the frontmatter stays `opus`,
-and a resume keeps its tier.
+and a resume keeps its tier. An implementer batch runs on `sonnet` only when
+it passes every test in "Writer tier" in the same prompt.
 
 The orchestrator owns final reconciliation and cleanup: wait for workers, align context/plan/handoff, preserve evidence and unrelated work, and remove only clearly disposable task-scoped scratch artifacts.
 

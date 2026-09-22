@@ -15,6 +15,7 @@ This prompt is agent-agnostic (Claude Code, Codex, or similar).
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
 Do not select models - the orchestrator chooses models.
 Only one writer should own this working tree at a time.
+Spawn a subagent only for a wide, independent track; do reads, checks and verification in this session.
 
 Prefer one coherent pass (this operation is rare). Split only on a hard verification boundary or missing inputs.
 When durable notes help multi-session recovery, write `plan.md` / `handoff.md` under TASK_DIR using `.claude/templates/handoff.template.md` headings.

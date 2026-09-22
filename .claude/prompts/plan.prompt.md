@@ -17,10 +17,12 @@ Write only under `<TASK_DIR>/` (`plan.md`, `handoff.md`, optional `mocks/`; refr
 This prompt is agent-agnostic (Claude Code, Codex, or similar).
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
 
-Assume a stronger model is planning and a cheaper model may implement.
 Write plans that a smaller implementation model can execute without redesigning.
+The orchestrator may run a fully specified, mechanical batch on a smaller model,
+so name every file and edit shape in a batch that could qualify.
 
 Do not select or recommend models for implementation or review. The orchestrator chooses models.
+Spawn a subagent only for a wide, independent investigation; do the rest in this session.
 
 Before doing anything else:
 

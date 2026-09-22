@@ -15,8 +15,10 @@ You are implementing, not redesigning.
 This prompt is agent-agnostic (Claude Code, Codex, or similar).
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
 
-Assume the plan was written for a cheaper implementation model: follow it tightly.
+Follow the plan tightly: it is written so that a smaller model can execute it.
 Do not select models.
+Spawn no subagent for reads, searches, reviews or verification that you can
+finish in a few tool calls. The batch's gates are the verification.
 Only one implementer should be writing this working tree at a time.
 
 Before doing anything else:

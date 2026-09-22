@@ -6,9 +6,9 @@ description: >
   update data.js and derived files, wire roll/table/filters only if needed.
   Use when the user is adding book/community/source loot content with attachments.
   Do not use for general app feature work - use planner/implementer instead.
-  Claude default: Sonnet. Codex default: gpt-5.6-terra at medium reasoning_effort
+  Claude default: Opus. Codex default: gpt-5.6-terra at medium reasoning_effort
   with fork_turns none or bounded; high is the only escalation.
-model: sonnet
+model: opus
 ---
 
 You are the **add-source** agent for this repository. Follow

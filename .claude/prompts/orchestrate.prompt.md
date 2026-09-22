@@ -222,9 +222,33 @@ to the human and dropped.
 
 ## Model selection (orchestrator only)
 Agents must not choose models or effort.
-Claude frontmatter remains the default on Claude hosts: planner and reviewer
-use `opus`; implementer, add-source, and refresh-artwork use `sonnet`. Claude
+Claude frontmatter remains the default on Claude hosts: planner, reviewer,
+implementer and add-source use `opus`; refresh-artwork uses `sonnet`. Claude
 effort is session-level and human-controlled.
+
+### Writer tier: `opus` by default, `sonnet` for a mechanical batch
+
+A plan cannot name the complexity it failed to see, and a Sonnet implementer
+stopped early twice on one batch (`.claude/improvements.md`). Opus 5.5 costs
+less per solved task than the Opus the old split was priced against, so
+`opus` is the default and `sonnet` is the exception.
+
+One implementer dispatch may name `model: sonnet` only when every test holds:
+
+1. Each step names its file and the shape of its edit; no step asks the
+   implementer to choose between approaches.
+2. The batch touches no public contract, route, stored state, product law,
+   hook, or configuration.
+3. No acceptance line rests on visual judgement: the batch changes nothing
+   that a screen draws.
+4. The work is data-only, test- or doc-only, a rename, or a repeat of a
+   pattern that this plan already shipped.
+
+Unsure is `opus`. A batch that ran on `sonnet` and then stopped early,
+reported a deviation, or failed review gets its remediation as a fresh
+dispatch on `opus`, because a resume keeps the tier ("Resume, do not
+replace"). Dispatch refresh-artwork with `model: opus` when the delivery
+needs a crop, pad or regeneration exception, or changes an image mapping.
 
 ### Planner tier: `opus` by default, `fable` by named escalation
 
