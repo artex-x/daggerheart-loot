@@ -18,6 +18,9 @@ import type { MoneyMode } from './money.js';
    that import - it only keeps the list-entry vocabulary in one place. */
 export type { MoneyMode };
 
+/** The list quantity field's own `max`: a quantity read from any address is clamped to it. */
+export const QTY_MAX = 99;
+
 /** One entry: everything optional, older lists knew none of these fields. */
 export interface ListEntryMeta {
   qty?: number;
@@ -174,7 +177,7 @@ function parseItems(
        (`ListPage.svelte`'s qty/gold inputs, `max="99"`/`max="99999"`) - a
        crafted or hand-edited link is otherwise a way to write a value past
        what typing into the field could ever produce. */
-    if (qty > 1) m.qty = Math.min(qty, 99);
+    if (qty > 1) m.qty = Math.min(qty, QTY_MAX);
     if (gold > 0) m.gold = Math.min(gold, 99999);
     if (Object.keys(m).length) meta[id] = m;
   }

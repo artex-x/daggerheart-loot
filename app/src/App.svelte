@@ -87,7 +87,7 @@
     {:else if app.route.kind === 'storedList' || app.route.kind === 'sharedList'}
       <ListPage {app} />
     {:else if app.route.kind === 'print'}
-      <PrintPage {app} ids={app.route.ids} dropped={app.route.dropped} />
+      <PrintPage {app} ids={app.route.ids} dropped={app.route.dropped} qty={app.route.qty} />
     {:else}
       <!-- R7: `#fallback` keeps `app.hash` readable at boot and on every
            navigation, so a route kind with no branch above should not be

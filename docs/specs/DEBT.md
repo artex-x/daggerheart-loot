@@ -375,6 +375,18 @@ deferral discipline.
   same list from a second tab mid-drag, and confirm the highlight and the
   eventual drop track the post-merge row order rather than the cached one.
 
+### D43 - a typed list quantity is stored unclamped, so copied text and print disagree
+
+- **Where**: `app/src/components/ListPage.svelte`, `setQty`.
+- **What**: the quantity field carries `max="99"`, but `setQty` stores the
+  typed value as parsed, with no `Math.min`. Typing 150 stores 150: the
+  copied list text says ` ×150`, while the list link and the print address
+  clamp to 99 (`QTY_MAX` in `listLink.ts`), so the print card says ` ×99`.
+- **Why deferred**: it predates the print counter and sits outside its
+  path; the print side already clamps, as the list link always did.
+- **How to verify the fix**: type 150 in a list row's quantity field, copy
+  the list's text and open its print sheet; both should read ` ×99`.
+
 ### D44 - a drag released on the list's own note bypasses both drop guards
 
 - **Where**: `app/src/ports/drag.ts`, `onDocOver` and `onDocDrop`; the

@@ -558,6 +558,50 @@ describe('the link', () => {
   });
 });
 
+describe('a count from a list', () => {
+  const expectCounted = (): void => {
+    const counted = document.querySelector('.pcard[data-pid="ci1"]');
+    expect(counted?.querySelector('.pc-name')?.textContent).toBe('Вещь С Картинкой ×3');
+    expect(counted?.querySelector('.pc-qty')?.textContent).toBe(' ×3');
+    /* jsdom's name computation trims the span's leading space; the Chrome
+       tree in the `#/print/ci1*3-q1` golden keeps it. */
+    expect(screen.getByRole('heading', { name: /^Вещь С Картинкой ?×3$/ })).toBeInTheDocument();
+    expect(document.querySelector('.pcard[data-pid="q1"] .pc-qty')).toBeNull();
+    expect(
+      screen.getByText(
+        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной игральной.'
+      )
+    ).toBeInTheDocument();
+  };
+
+  it('follows the counted name and leaves an uncounted card bare, in colour', async () => {
+    const { container } = render(App, { env: at('#/print/ci1*3-q1') });
+    expectCounted();
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps the count in black and white', async () => {
+    const { container } = render(App, { env: at('#/print/ci1*3-q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    expect(document.querySelector('.psheet.bw')).not.toBeNull();
+    expectCounted();
+    await expectNoA11yViolations(container);
+  });
+
+  it('copies the counts with the set link', async () => {
+    const clip = fakeClipboard();
+    render(App, { env: at('#/print/ci1*3-q1', { clipboard: clip }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Ссылка на набор' }));
+    expect(clip.last.text).toBe('https://example.test/#/print/ci1*3-q1');
+  });
+
+  it('keeps the first count of a repeated id', () => {
+    render(App, { env: at('#/print/ci1*3-ci1*5') });
+    expect(document.querySelectorAll('.pcard[data-pid]')).toHaveLength(1);
+    expect(document.querySelector('.pcard[data-pid="ci1"] .pc-qty')?.textContent).toBe(' ×3');
+  });
+});
+
 describe('the fit is wired', () => {
   /* jsdom lays nothing out - clientWidth/clientHeight/offsetTop and a
      Range's rect are all zero - so every loop in `fit()` would exit at once

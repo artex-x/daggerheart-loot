@@ -17,6 +17,7 @@ import { dict } from './dict.js';
 import type { ListShape } from './listLink.js';
 import {
   entryNoteBlock,
+  qtySuffix,
   share,
   shareBlocks,
   shareList,
@@ -246,6 +247,18 @@ describe('entryNoteBlock, the one contextNote block (app.js 568-573)', () => {
   it('is empty when the entry carries no players’ note', () => {
     expect(entryNoteBlock({}, dict('ru'))).toEqual([]);
     expect(entryNoteBlock({ hnote: 'Только для мастера' }, dict('ru'))).toEqual([]);
+  });
+});
+
+describe('qtySuffix, the count after a name in copied text and on a print card', () => {
+  it('is empty for no count, zero or one', () => {
+    expect(qtySuffix(undefined)).toBe('');
+    expect(qtySuffix(0)).toBe('');
+    expect(qtySuffix(1)).toBe('');
+  });
+
+  it('is a space, the multiplication sign and the count over 1', () => {
+    expect(qtySuffix(3)).toBe(' ×3');
   });
 });
 

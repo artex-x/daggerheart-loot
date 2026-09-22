@@ -27,7 +27,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Ссылка игрокам"
     button "Ссылка себе"
     ... button x13 of 17 same-shape siblings elided
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2*2-ci3-ci4-ci5-ci6-ci7]
     DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
     button "Скрыть" [description=Скрыть]
     StaticText "ОТОБРАЖЕНИЕ ЦЕН"
@@ -177,7 +177,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "Players' link"
     button "Your own link"
     ... button x13 of 17 same-shape siblings elided
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2*2-ci3-ci4-ci5-ci6-ci7]
     DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
     button "Dismiss" [description=Dismiss]
     StaticText "PRICE DISPLAY"

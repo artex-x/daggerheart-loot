@@ -8,6 +8,7 @@
  * Pure module: `location` never appears; the address arrives as a string. */
 
 import { decodeFilter, encodeFilter, groupsFor, type FilterState } from './filters.js';
+import { QTY_MAX } from './listLink.js';
 import { isSection, isTableId, type Section, type TableId } from './types.js';
 
 /** A packed link is marked with "~": base64url has no tilde and never can. */
@@ -22,7 +23,13 @@ export type Route =
   | { kind: 'record'; id: string }
   /** `dropped` is how many known ids the cap threw away - the red note on
    *  the bar counts them, off `printTooMany`. */
-  | { kind: 'print'; ids: string[]; dropped: number }
+  | {
+      kind: 'print';
+      ids: string[];
+      dropped: number;
+      /** Counts over 1 by id, off `*<n>` - the list link's own quantity grammar. */
+      qty: Record<string, number>;
+    }
   | { kind: 'storedList'; listId: string }
   | { kind: 'sharedList'; payload: string; packed: boolean }
   /** Nothing could be read - the caller replaces it with the home section. */
@@ -53,17 +60,31 @@ export function legacySource(hash: string): { core: boolean; hnf: boolean } | nu
   return LEGACY[stripHash(hash)] ?? null;
 }
 
-/** Ids the address asks for: known ones only, no repeats, uncapped - off
- *  `printAsked` in app.js. */
-export function printAsked(segment: string, knows: (id: string) => boolean): string[] {
+/** Reads a print segment: known ids without repeats, and each kept id's
+ *  count over 1, clamped. A repeated id keeps its first count. */
+function readPrint(
+  segment: string,
+  knows: (id: string) => boolean
+): { ids: string[]; qty: Record<string, number> } {
   const seen = new Set<string>();
-  const out: string[] = [];
-  for (const id of segment.split('-')) {
+  const ids: string[] = [];
+  const qty: Record<string, number> = {};
+  for (const token of segment.split('-')) {
+    const star = token.indexOf('*');
+    const id = star < 0 ? token : token.slice(0, star);
     if (!id || seen.has(id) || !knows(id)) continue;
     seen.add(id);
-    out.push(id);
+    ids.push(id);
+    const n = star < 0 ? NaN : parseInt(token.slice(star + 1), 10);
+    if (n > 1) qty[id] = Math.min(n, QTY_MAX);
   }
-  return out;
+  return { ids, qty };
+}
+
+/** Ids the address asks for: known ones only, no repeats, uncapped - off
+ *  `printAsked` in app.js. A `*<n>` count is read, not part of the id. */
+export function printAsked(segment: string, knows: (id: string) => boolean): string[] {
+  return readPrint(segment, knows).ids;
 }
 
 /** Ids to print: `printAsked`, capped at the limit. */
@@ -82,10 +103,15 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
     return { kind: 'sharedList', payload: h.slice(2), packed: true };
   }
   if (/^i\/[\w-]+$/.test(h)) return { kind: 'record', id: h.slice(2) };
-  if (/^print\/[\w-]+$/.test(h)) {
-    const asked = printAsked(h.slice(6), knows);
-    const ids = asked.slice(0, PRINT_MAX);
-    return { kind: 'print', ids, dropped: asked.length - ids.length };
+  if (/^print\/[\w*-]+$/.test(h)) {
+    const asked = readPrint(h.slice(6), knows);
+    const ids = asked.ids.slice(0, PRINT_MAX);
+    const qty: Record<string, number> = {};
+    for (const id of ids) {
+      const n = asked.qty[id];
+      if (n) qty[id] = n;
+    }
+    return { kind: 'print', ids, dropped: asked.ids.length - ids.length, qty };
   }
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
   /* Was `/^l\/[A-Za-z0-9_-]+$/`: a stray character after the payload - a chat
@@ -138,8 +164,20 @@ export function recordHash(id: string): string {
   return '#/i/' + id;
 }
 
-export function printHash(ids: readonly string[]): string {
-  return '#/print/' + ids.join('-');
+/** Writes `*<n>` only for a count over 1, so a bare address stays byte-identical. */
+export function printHash(
+  ids: readonly string[],
+  qty: Readonly<Record<string, number>> = {}
+): string {
+  return (
+    '#/print/' +
+    ids
+      .map((id) => {
+        const n = qty[id] ?? 0;
+        return n > 1 ? `${id}*${String(Math.min(n, QTY_MAX))}` : id;
+      })
+      .join('-')
+  );
 }
 
 export function sharedListHash(payload: string): string {

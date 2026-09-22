@@ -282,6 +282,13 @@ Six modes. Each keeps its own input in memory only.
 - Reached from an item page, a list, or a table selection; the address is
   shareable and independent of where it came from.
 - Colour and black-and-white are two different cards, not one with a switch.
+- A card printed from a list shows the list's count after its name as ` ×N`
+  (a space, U+00D7, the number), only for a count over 1 - the same suffix
+  the list's copied text puts after the name (`qtySuffix` in `share.ts`). The
+  count rides in the address as `*<n>` per id (`ROUTES.md`), so it survives a
+  reload and the copied set link. Only the list page's print button writes
+  it; the record, table and search print links carry none. The counter sits
+  in a `nowrap` span, so it wraps with the name's last word, never alone.
 - Fitting is measured in the browser after render: rules text steps its font
   down, then the top padding, then the stat values, and text width is measured
   with a `Range` because `text-overflow` hides overflow from `scrollWidth`.
@@ -311,13 +318,17 @@ Six modes. Each keeps its own input in memory only.
   neither had an equivalent rule in the rewrite (`DEBT.md` D20, paid off).
 - The card's own name (`.pc-name`) is not part of `fit()`'s shrink ladder -
   P16, inspected rather than assumed (owner decision Q2, "look first, then
-  shrink"): the four longest names measured against the design
-  (`#/print/cm26-f60-hi62-ci81` at 1100px, both languages, both layouts) all
-  render at one line, so nothing needed shrinking and none was added.
-  `tests/app/print.js` pins all four ids at a two-line cap (Q2's actual
-  setting, not the one-line measurement) so a future name (or a data edit
-  lengthening one of these) that pushes past it fails loudly rather than
-  silently. No deviation from Figma nodes `714-42387`/`3773-90792` was
+  shrink"). The four longest names (`#/print/cm26-f60-hi62-ci81`), measured
+  on the Windows host on 2026-09-22 as the distinct line tops of a `Range`
+  over the name: in Russian cm26, f60 and hi62 wrap to three lines and ci81
+  to two, three with a ` ×99` counter; in English all four wrap to two. An
+  earlier claim that all four render at one line came from a
+  `getClientRects()` check on the block, which can never report more than
+  one line. `fit()` already takes the name's height from the rules text, so
+  the cap is three lines (owner decision, 2026-09-22), not a shrink step.
+  `tests/app/print.js` pins it for both routes (bare and
+  `#/print/cm26*99-f60*99-hi62*99-ci81*99`), both languages and both
+  layouts. No deviation from Figma nodes `714-42387`/`3773-90792` was
   needed.
 
 ## Chrome

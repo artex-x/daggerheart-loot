@@ -1146,7 +1146,8 @@ const { ok } = rep;
 
   await d.seed({
     'dhloot.lists.v2': JSON.stringify([
-      { id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 }
+      { id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 },
+      { id: 'p2', name: 'Счёт', ids: ['ci1', 'q1'], created: 2, meta: { ci1: { qty: 3 } } }
     ])
   });
   await d.open('#/lists/p');
@@ -1154,6 +1155,14 @@ const { ok } = rep;
     (await page.$eval('.card-acts a[href^="#/print/"]', (e) => e.getAttribute('href'))) ===
       '#/print/ci1-q1',
     'the list does not print itself'
+  );
+  await d.open('#/lists/p2');
+  const countedHref = await page.$eval('.card-acts a[href^="#/print/"]', (e) =>
+    e.getAttribute('href')
+  );
+  ok(
+    countedHref === '#/print/ci1*3-q1',
+    'the list print link does not carry the count: ' + countedHref
   );
 
   /* Garbage in the address must not drop the page - only say there is
@@ -1327,40 +1336,49 @@ const { ok } = rep;
   pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
   await cardFit(dEn, bwEn, colourEn, ' en');
 
-  /* ---------- the card's own name, capped at two lines ----------
-     "Look first, then shrink": inspected before any code was written, at
-     1100px, both languages, both layouts, against the design's four longest
-     names (`docs/specs/FEATURES.md`, "Print") - every one rendered at one
-     line, so `.pc-name` was left out of `fit()`'s shrink ladder rather than
-     given a floor nothing needs yet. The cap was set at two lines, not one -
-     this pins all four so a future name (or a data edit lengthening one of
-     these) that pushes past the two-line cap fails loudly instead of
-     silently; the "all four at one line" measurement itself stays in
-     `docs/specs/FEATURES.md`, "Print". */
-  console.log('card name no longer than two lines (P16)');
+  /* ---------- the card's own name, capped at three lines ----------
+     "Look first, then shrink": `.pc-name` stays out of `fit()`'s shrink
+     ladder. The four longest names, bare and with ` ×99`, both languages,
+     both layouts, are pinned at three lines so a longer name fails loudly;
+     the measurement is in `docs/specs/FEATURES.md`, "Print". */
+  console.log('card name no longer than three lines (P16)');
   async function nameLines(d2, page2, langTag, restoreW, restoreH) {
     await d2.viewport(1100, 900);
     try {
-      for (const bwOn of [false, true]) {
-        await d2.open('#/print/cm26-f60-hi62-ci81');
-        if (bwOn) {
-          await d2.click(langTag === ' en' ? 'Black and white' : 'Чёрно-белая');
-          await d2.settle();
-        }
-        for (const pid of ['cm26', 'f60', 'hi62', 'ci81']) {
-          const lines = await page2.$eval(
-            `.pcard[data-pid="${pid}"] .pc-name`,
-            (e) => e.getClientRects().length
-          );
-          ok(
-            lines <= 2,
-            'name ' +
-              pid +
-              langTag +
-              (bwOn ? ' bw' : '') +
-              ' exceeded the two-line cap: ' +
-              lines
-          );
+      for (const route of [
+        '#/print/cm26-f60-hi62-ci81',
+        '#/print/cm26*99-f60*99-hi62*99-ci81*99'
+      ]) {
+        for (const bwOn of [false, true]) {
+          await d2.open(route);
+          if (bwOn) {
+            await d2.click(langTag === ' en' ? 'Black and white' : 'Чёрно-белая');
+            await d2.settle();
+          }
+          for (const pid of ['cm26', 'f60', 'hi62', 'ci81']) {
+            /* A block has one client rect however many lines it wraps to:
+               count the distinct line tops of its contents instead. */
+            const lines = await page2.$eval(`.pcard[data-pid="${pid}"] .pc-name`, (e) => {
+              const r = document.createRange();
+              r.selectNodeContents(e);
+              const tops = [];
+              for (const rect of r.getClientRects()) {
+                if (!tops.some((t) => Math.abs(t - rect.top) < 2)) tops.push(rect.top);
+              }
+              return tops.length;
+            });
+            ok(
+              lines <= 3,
+              'name ' +
+                pid +
+                langTag +
+                (bwOn ? ' bw' : '') +
+                ' at ' +
+                route +
+                ' exceeded the three-line cap: ' +
+                lines
+            );
+          }
         }
       }
     } finally {
@@ -1571,6 +1589,14 @@ const { ok } = rep;
   const clip = await d.clipboard();
   const hash = clip.text ? clip.text.slice(clip.text.indexOf('#')) : null;
   ok(hash === '#/print/ci1-q1', 'the copied set link is wrong: ' + hash);
+
+  console.log('the set link, copied with a count');
+  await d.open('#/print/ci1*3-q1');
+  await d.resetClipboard();
+  await d.click('Ссылка на набор');
+  const clipQty = await d.clipboard();
+  const hashQty = clipQty.text ? clipQty.text.slice(clipQty.text.indexOf('#')) : null;
+  ok(hashQty === '#/print/ci1*3-q1', 'the copied set link lost the count: ' + hashQty);
 
   console.log('the set link, copied (en)');
   await dEn.open('#/print/ci1-q1');

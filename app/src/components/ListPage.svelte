@@ -88,6 +88,7 @@
   const items = $derived(
     own ? own.ids.map(byId).filter((it): it is Record_ => it != null) : []
   );
+  const qtyById = $derived(Object.fromEntries(items.map((x) => [x.id, metaOf(x.id).qty ?? 0])));
 
   /**
    * Reading `own`'s fields (through `encodeList`, inside `syncListUrl`)
@@ -774,8 +775,14 @@
           ><Icon name="copy" />{t.copyText}</Button
         >
         {#if items.length}
-          <Button size="sm" href={printHash(items.map((x) => x.id))} sameTab title={t.printHint}
-            ><Icon name="print" />{t.print}</Button
+          <Button
+            size="sm"
+            href={printHash(
+              items.map((x) => x.id),
+              qtyById
+            )}
+            sameTab
+            title={t.printHint}><Icon name="print" />{t.print}</Button
           >
         {/if}
         <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>

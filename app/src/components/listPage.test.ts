@@ -214,7 +214,21 @@ describe('the heading and the action row', () => {
     expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Удалить' })).toBeInTheDocument();
     const print = screen.getByTitle('Собрать карточки для печати: девять на лист A4');
-    expect(print).toHaveAttribute('href', '#/print/ci1-cc1-q1');
+    expect(print).toHaveAttribute('href', '#/print/ci1-cc1*2-q1');
+  });
+
+  it('writes each count over 1 into the print link and leaves the rest bare', () => {
+    const counted: StoredList = {
+      ...listA,
+      meta: { ci1: { qty: 3 }, q1: { qty: 1, gold: 10 } }
+    };
+    render(App, {
+      env: at('#/lists/a', {
+        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([counted]) })
+      })
+    });
+    const print = screen.getByTitle('Собрать карточки для печати: девять на лист A4');
+    expect(print).toHaveAttribute('href', '#/print/ci1*3-cc1-q1');
   });
 
   it('has no print link on an empty list', () => {

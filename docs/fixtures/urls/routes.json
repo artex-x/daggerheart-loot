@@ -343,6 +343,18 @@
     }
   },
   {
+    "hash": "#/print/ci1*3-cc1-q26*150",
+    "why": "a print sheet with a count per card: ci1 reads x3, q26 is clamped to 99, cc1 has none",
+    "resolves": {
+      "hash": "#/print/ci1*3-cc1-q26*150",
+      "tab": null,
+      "rows": 0,
+      "printCards": 3,
+      "printQty": { "ci1": 3, "q26": 99 },
+      "picked": []
+    }
+  },
+  {
     "hash": "#/nonsense",
     "why": "an unreadable address is replaced by the home section",
     "resolves": {

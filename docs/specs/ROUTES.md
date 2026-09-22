@@ -115,7 +115,7 @@ silent, which is why the key names above are a contract: `f_rg-melee` on
 | Hash | Meaning |
 |---|---|
 | `#/i/<id>` | one record |
-| `#/print/<id>-<id>-...` | a print sheet of those records, up to 180 |
+| `#/print/<id>[*<n>]-<id>[*<n>]-...` | a print sheet of those records, up to 180, each with an optional count |
 | `#/lists/<listId>` | a locally stored list, by its local id |
 | `#/l/<payload>` | a shared list, encoded in full (see `CONTRACTS.md`) |
 | `#/l/~<payload>` | the same, deflate-compressed; expanded and rewritten to the plain form on open |
@@ -130,6 +130,13 @@ rather than silently leaving for a different page.
 `#/print/...` reads its ids from the address rather than from memory, because
 printing is reached from three places and the set has to survive a reload and
 being handed to another GM.
+
+An id may carry a count as `*<n>`, the list link's own `id*qty` spelling
+(`CONTRACTS.md` section 3): `#/print/ci1*3-q1`. A count over 1 is shown after
+the card's name, clamped to 99. A missing, `0`, `1` or unreadable count shows
+no counter, and the card still prints. A repeated id keeps its first
+occurrence and that occurrence's count. Only the list page's print button
+writes counts; an address written without them reads as it always did.
 
 ## Fallback
 

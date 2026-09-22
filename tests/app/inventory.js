@@ -1082,6 +1082,11 @@ const STATES = [
     }
   },
   {
+    id: '#/print/ci1*3-q1',
+    route: '#/print/ci1*3-q1',
+    why: 'a sheet printed from a counted list entry: the loot card named with " ×3" beside a weapon card with no count'
+  },
+  {
     id: NINE,
     route: NINE,
     whole: true,

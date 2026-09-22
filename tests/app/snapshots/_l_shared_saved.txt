@@ -27,7 +27,7 @@ RootWebArea "Лавка — Генератор лута — Daggerheart" [url=#/
     button "Ссылка игрокам"
     button "Ссылка себе"
     ... button x3 of 7 same-shape siblings elided
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-cc21-q337]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1*2-cc21*5-q337]
     DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
     button "Скрыть" [description=Скрыть]
     StaticText "ОТОБРАЖЕНИЕ ЦЕН"
@@ -134,7 +134,7 @@ RootWebArea "Лавка — Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAo
     button "Players' link"
     button "Your own link"
     ... button x3 of 7 same-shape siblings elided
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-cc21-q337]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1*2-cc21*5-q337]
     DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
     button "Dismiss" [description=Dismiss]
     StaticText "PRICE DISPLAY"

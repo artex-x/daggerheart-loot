@@ -13,6 +13,7 @@
   import { dict } from '../lib/dict.js';
   import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TRAIT, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
   import { printSrc } from '../lib/label.js';
+  import { qtySuffix } from '../lib/share.js';
   import {
     cardArt,
     CARD_DIR,
@@ -33,11 +34,14 @@
      *  shared `#/print/...` address) has no other page that could have
      *  already caught a missing picture. */
     onartfail: (id: string) => void;
+    /** The list's count for this card - FEATURES.md, Print. */
+    qty?: number | undefined;
   }
 
-  const { it, lang, bw, artBroken, onartfail }: Props = $props();
+  const { it, lang, bw, artBroken, onartfail, qty }: Props = $props();
 
   const t = $derived(dict(lang));
+  const counter = $derived(qtySuffix(qty));
   const eq = $derived(it.eq ?? null);
   const kindKey = $derived(glyphKey(it));
   const armor = $derived(!!(eq && eq.t === 'armor'));
@@ -153,6 +157,7 @@
     void lang;
     void bw;
     void it;
+    void qty;
     if (card) fit(card);
   });
 </script>
@@ -275,7 +280,7 @@
     >{@render band()}{@render mark()}{/if}<div class="pc-content"
     >{#if bw}<div class="pc-head" class:withtier={!!tier}
         >{@render band()}{@render tags()}{@render mark()}</div
-      >{:else}{@render tags()}{/if}<h2 class="pc-name">{nameOf(it, lang)}</h2
+      >{:else}{@render tags()}{/if}<h2 class="pc-name">{nameOf(it, lang)}{#if counter}<span class="pc-qty">{counter}</span>{/if}</h2
     >{#if armor && eq}{@render thStrip(eq)}{:else if eq}{@render dmgStrip(
         eq
       )}{#if eq.alt}{@render dmgStrip(eq.alt)}{/if}{/if}<div class="pc-text"
@@ -476,6 +481,10 @@
     font: 900 5.8cqw/1.1 var(--ui);
     text-transform: uppercase;
     letter-spacing: -0.01em;
+  }
+
+  .pc-qty {
+    white-space: nowrap;
   }
 
   .pc-strip {

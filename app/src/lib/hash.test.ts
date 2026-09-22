@@ -34,6 +34,7 @@ interface RouteFixture {
     tab: string | null;
     rows: number;
     printCards: number;
+    printQty?: Record<string, number>;
     picked: string[];
     source?: string[];
   };
@@ -61,6 +62,10 @@ describe('golden route fixtures', () => {
         expect(route.kind).toBe('tables');
       } else if (fx.resolves.printCards > 0) {
         expect(route.kind).toBe('print');
+      }
+      if (fx.resolves.printQty) {
+        expect(route.kind).toBe('print');
+        if (route.kind === 'print') expect(route.qty).toEqual(fx.resolves.printQty);
       }
 
       /* The pills on screen are the selection narrowed to the groups the table
@@ -274,6 +279,27 @@ describe('print', () => {
       expect(r180.dropped).toBe(0);
     }
   });
+
+  it('reads a count over 1 per id, clamped, first occurrence winning', () => {
+    const r = parseHash('#/print/ci1*3-q26-ci1*5-zzz*4-q33*1-ci2*x-q27*0-q28*150', knows);
+    expect(r.kind).toBe('print');
+    if (r.kind === 'print') {
+      expect(r.ids).toEqual(['ci1', 'q26', 'q33', 'ci2', 'q27', 'q28']);
+      expect(r.qty).toEqual({ ci1: 3, q28: 99 });
+      expect(r.dropped).toBe(0);
+    }
+  });
+
+  it('keeps no count for an id past the cap', () => {
+    const asked = Array.from({ length: 181 }, (_, i) => 'ci' + String(i + 1) + '*5').join('-');
+    const r = parseHash('#/print/' + asked, knows);
+    expect(r.kind).toBe('print');
+    if (r.kind === 'print') {
+      expect(r.dropped).toBe(1);
+      expect(Object.keys(r.qty)).toHaveLength(PRINT_MAX);
+      expect(r.qty).not.toHaveProperty('ci181');
+    }
+  });
 });
 
 describe('an unreadable address', () => {
@@ -390,6 +416,19 @@ describe('writing an address', () => {
     const r = parseHash(h);
     expect(r.kind).toBe('print');
     if (r.kind === 'print') expect(r.ids).toEqual(ids);
+  });
+
+  it('writes a count only over 1, clamped, and reads it back', () => {
+    expect(printHash(['w1', 'w2'], { w1: 3, w2: 1 })).toBe('#/print/w1*3-w2');
+    const h = printHash(['w1'], { w1: 150 });
+    expect(h).toBe('#/print/w1*99');
+    expect(parseHash(printHash(['w1', 'w2'], { w1: 3, w2: 1 }))).toEqual({
+      kind: 'print',
+      ids: ['w1', 'w2'],
+      dropped: 0,
+      qty: { w1: 3 }
+    });
+    expect(parseHash(h)).toEqual({ kind: 'print', ids: ['w1'], dropped: 0, qty: { w1: 99 } });
   });
 
   it('writes a table with a filter that reads back as the same filter', () => {

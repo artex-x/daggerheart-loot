@@ -18,9 +18,10 @@
     app: AppState;
     ids: string[];
     dropped: number;
+    qty: Record<string, number>;
   }
 
-  const { app, ids, dropped }: Props = $props();
+  const { app, ids, dropped, qty }: Props = $props();
 
   const t = $derived(app.t);
   const index = $derived(app.index);
@@ -70,7 +71,7 @@
 
   async function copyLink(): Promise<void> {
     await app.copied(
-      () => app.env.clipboard.writeText(app.linkTo(printHash(ids))),
+      () => app.env.clipboard.writeText(app.linkTo(printHash(ids, qty))),
       t.linkCopied
     );
   }
@@ -110,6 +111,7 @@
           {it}
           lang={app.lang}
           bw={app.printBW}
+          qty={qty[it.id]}
           artBroken={app.artBroken(it.id)}
           onartfail={(bad: string) => {
             app.markArtBroken(bad);

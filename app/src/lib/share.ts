@@ -201,6 +201,11 @@ export function entryNoteBlock(meta: ListEntryMeta, t: Dict): ShareBlock[] {
   return meta.note ? [{ head: t.noteHead, body: meta.note }] : [];
 }
 
+/** Returns the count that follows a name in copied text and on a print card. */
+export function qtySuffix(qty: number | undefined): string {
+  return qty && qty > 1 ? ` ×${String(qty)}` : '';
+}
+
 /**
  * A whole list as one message - the live `listAsText`/`listAsHtml` (app.js
  * 1609-1647). The list's own note (the players' one; the GM's stays home)
@@ -228,8 +233,7 @@ export function shareList(
     .map((it) => {
       const meta: ListEntryMeta = list.meta?.[it.id] ?? {};
       const suffix =
-        (meta.qty && meta.qty > 1 ? ` ×${String(meta.qty)}` : '') +
-        (meta.gold ? ` — ${priceText(meta.gold, mode, lang)}` : '');
+        qtySuffix(meta.qty) + (meta.gold ? ` — ${priceText(meta.gold, mode, lang)}` : '');
       return share(it, index, lang, { skip, suffix, extra: entryNoteBlock(meta, t) });
     });
 

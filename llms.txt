@@ -168,7 +168,9 @@ of two or three usually plays better than assigning one each.
   plain table link carries no `f_` part at all. Links written with the old `_`
   separator are still read
 - `#/print/<id>-<id>-...` — a print sheet of those records as cards, nine to an
-  A4 page at 63x88 mm. Reachable from an item page, a list, or a table selection
+  A4 page at 63x88 mm. Reachable from an item page, a list, or a table selection.
+  An id may carry a count as `*<n>`, shown after the card's name:
+  `#/print/ci1*3-q1`
 - `#/i/<id>` — one record
 - `#/search` — search
 - `#/l/<payload>` — a list (see below)

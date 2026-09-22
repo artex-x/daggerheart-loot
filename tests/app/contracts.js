@@ -148,12 +148,12 @@ function stampOf(parts) {
 
   console.log('the address grammar');
   const routes = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'routes.json'), 'utf8'));
-  /* One context reused across all 30 fixtures rather than one per fixture -
+  /* One context reused across all 31 fixtures rather than one per fixture -
    * none of them seed storage, so `d.open`'s full
    * navigation (driver.js's own) and `prepare()`'s per-navigation
    * localStorage.clear() (lib.js/driver.js) already give every fixture the
    * same clean slate a fresh context would, without paying puppeteer's
-   * ~1.8s-per-context floor (tests/app/golden.js's measured cost) 30 times. */
+   * ~1.8s-per-context floor (tests/app/golden.js's measured cost) 31 times. */
   const { ctx: rCtx, page: rPage, d: rD } = await fresh({ width: 1280, height: 900 });
   for (const fx of routes) {
     await rD.open(fx.hash);
@@ -167,6 +167,14 @@ function stampOf(parts) {
         tab: on ? on.getAttribute('href') : null,
         rows: document.querySelectorAll('.rows .row[data-row]').length,
         printCards: document.querySelectorAll('.pcard:not(.blank)').length,
+        printQty: Object.fromEntries(
+          [...document.querySelectorAll('.pcard[data-pid]')].flatMap((card) => {
+            const q = card.querySelector('.pc-qty');
+            return q
+              ? [[card.dataset.pid, parseInt(q.textContent.replace(/\D/g, ''), 10)]]
+              : [];
+          })
+        ),
         picked: [...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),
         source: srcBtns.length
           ? srcBtns.map(
@@ -186,6 +194,14 @@ function stampOf(parts) {
     ok(
       seen.printCards === want.printCards,
       fx.hash + ': ' + seen.printCards + ' cards, the fixture says ' + want.printCards
+    );
+    ok(
+      JSON.stringify(seen.printQty) === JSON.stringify(want.printQty ?? {}),
+      fx.hash +
+        ': counts ' +
+        JSON.stringify(seen.printQty) +
+        ', the fixture says ' +
+        JSON.stringify(want.printQty ?? {})
     );
     ok(
       JSON.stringify(seen.picked) === JSON.stringify(want.picked),
