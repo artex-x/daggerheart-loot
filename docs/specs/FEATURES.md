@@ -163,9 +163,13 @@ Six modes. Each keeps its own input in memory only.
   either link form, plain or packed.
 - A shared link (`#/l/<payload>`) that is nobody's own list draws the shared
   page: the name, the shared-list line with the count as one text node, one
-  add-to-list control that takes the whole list into a new or an existing
-  list (quantity, price and a row's public note travel; the GM's note never
-  does), the list's own notes, and the rows; a payload that cannot be decoded
+  "Сохранить себе" / "Save to my lists" button, drawn whatever the selection,
+  that saves the whole list as a new list of one's own - entries, quantity,
+  price, every note the link carries and the money mode - and opens it, the
+  list's own notes, and the rows; taking some rows, or all of them after
+  "select all", into a new or an existing list is the selection bar's
+  add-to-list control, which carries quantity, price and a row's public note
+  but never the GM's note. A payload that cannot be decoded
   draws "Предмет не найден", the bad-link line and a "На главную" button to
   `#/roll/std`. A **packed** link (`#/l/~<payload>`) that cannot be expanded
   draws the same bad-link page without replacing the address - the live

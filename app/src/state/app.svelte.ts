@@ -199,9 +199,8 @@ export class AppState {
    * 3140-3141). Set by `SharedListPage` while mounted, null on every other
    * page: the route gate the live `metaForKey` applies (`route is l/ and no
    * openList`, 1874-1877), done here by mount instead. Every add-to-list menu
-   * on the shared page - the page's own, the bar's, a card's - reads this to
-   * copy the entry's qty, price and players' note along, and `+ Новый
-   * список` on it takes the whole list.
+   * on the shared page - the bar's, a card's - reads this to copy the
+   * entry's qty, price and players' note along.
    */
   shared = $state<DecodedList | null>(null);
 

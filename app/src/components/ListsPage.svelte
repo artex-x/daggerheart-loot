@@ -17,7 +17,7 @@
   import { sharedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import { decodeList, encodeList, encodeListRaw } from '../lib/listLink.js';
-  import type { StoredList } from '../lib/lists.js';
+  import { copyInit, type StoredList } from '../lib/lists.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -101,16 +101,7 @@
       app.say(t.badShare, { error: true });
       return;
     }
-    /* The list's own two notes and its money mode used to be dropped
-       here - decodeList returns all three and ListStore.create's own init
-       already accepts them, so passing them through is the whole fix. */
-    const l = app.lists.create(data.name, {
-      ids: data.ids,
-      ...(data.money ? { money: data.money } : {}),
-      ...(data.note ? { note: data.note } : {}),
-      ...(data.hnote ? { hnote: data.hnote } : {}),
-      ...(data.meta ? { meta: data.meta } : {})
-    });
+    const l = app.lists.create(data.name, copyInit(data));
     importDraft = '';
     app.go(sharedListHash(encodeList(l, true)));
     /* This call site must not proceed silently - once created, a dropped

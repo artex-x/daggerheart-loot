@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { encodeList } from './listLink.js';
+import { encodeList, type DecodedList } from './listLink.js';
 import {
+  copyInit,
   findListByPayload,
   itemMeta,
   keepLists,
@@ -180,5 +181,35 @@ describe('findListByPayload', () => {
 
   it('is null for a payload that will not decode', () => {
     expect(findListByPayload([stored], 'not-a-real-payload', knows)).toBeNull();
+  });
+});
+
+describe('copyInit', () => {
+  it('copiesIdsMetaMoneyAndBothNotes', () => {
+    const meta = { ci1: { qty: 5, gold: 50, note: 'Видно игрокам' } };
+    const decoded: DecodedList = {
+      name: 'Тайник',
+      ids: ['ci1', 'ci2'],
+      money: 'coin',
+      note: 'Видно игрокам',
+      hnote: 'Только для ГМ',
+      meta,
+      dropped: 0
+    };
+    const init = copyInit(decoded);
+    expect(init).toEqual({
+      ids: ['ci1', 'ci2'],
+      money: 'coin',
+      note: 'Видно игрокам',
+      hnote: 'Только для ГМ',
+      meta
+    });
+    expect(init.meta?.['ci1']).not.toBe(meta.ci1);
+    expect(init.ids).not.toBe(decoded.ids);
+  });
+
+  it('leavesOutWhatTheLinkDoesNotCarry', () => {
+    const decoded: DecodedList = { name: 'X', ids: ['ci1'], dropped: 0 };
+    expect(copyInit(decoded)).toEqual({ ids: ['ci1'] });
   });
 });

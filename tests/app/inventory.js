@@ -1,4 +1,4 @@
-/* "Everything a person can reach" - the 110 states tests/app/golden.js
+/* "Everything a person can reach" - the 112 states tests/app/golden.js
  * captures a structural snapshot of on both languages. Originated (issue 47)
  * as an independent copy of tests/parity/specs.js's STATES array plus the
  * module-level constants it read: the print routes, PACKED, the button-name
@@ -955,9 +955,32 @@ const STATES = [
     route: '#/l/' + QTY_AND_PRICE.player.payload,
     storage: two,
     why:
-      'a list from another player: heading "Лавка", the sub, the add control, three rows with ' +
-      'their tails (×2; ×5 · price; price), no notes, no bar. Seeded so addedSharedToList has a ' +
-      'list to add to; the lists are not drawn here, so the seed costs no pixel'
+      'a list from another player: heading "Лавка", the sub, the save button, three rows with ' +
+      'their tails (×2; ×5 · price; price), no notes, no bar. Seeded with two lists, which this ' +
+      'page does not draw'
+  },
+  {
+    id: '#/l/ ~ shared, a row ticked',
+    route: '#/l/' + QTY_AND_PRICE.player.payload,
+    storage: two,
+    why:
+      'issue 58: the save button above, row 1 ticked, the bar with "Выбрано 1" and the only ' +
+      '"Добавить в список"',
+    enter: async (d) => {
+      await d.tick(ROW1_CI1);
+    }
+  },
+  {
+    id: '#/l/ ~ shared, saved',
+    route: '#/l/' + QTY_AND_PRICE.player.payload,
+    why:
+      'after "Сохранить себе": the own page of the new "Лавка", its player link on the bar, the ' +
+      'toast "Список «Лавка» создан"',
+    enter: async (d) => {
+      await d.click('Сохранить себе');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: '#/l/ ~ shared, noted',

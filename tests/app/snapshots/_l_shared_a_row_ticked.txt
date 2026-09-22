@@ -1,6 +1,6 @@
-# #/l/ ~ shared
+# #/l/ ~ shared, a row ticked
 # route: #/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg
-# why: a list from another player: heading "Лавка", the sub, the save button, three rows with their tails (×2; ×5 · price; price), no notes, no bar. Seeded with two lists, which this page does not draw
+# why: issue 58: the save button above, row 1 ticked, the bar with "Выбрано 1" and the only "Добавить в список"
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
@@ -27,12 +27,17 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
     button "Сохранить себе"
     checkbox "Выбрать все (3)" [checked=false]
     StaticText "Выбрать все (3)"
-    checkbox "Первоклассный Спальный Мешок" [checked=false]
+    checkbox "Первоклассный Спальный Мешок" [checked=true]
     button "1 Первоклассный Спальный Мешок ×2 Во время отдыха вы автоматичес..." [namelen=96 namehash=57957f25]
     checkbox "Доспешный Сшиватель" [checked=false]
     button "21 Доспешный Сшиватель ×5 · 5 горстей Вы можете использовать это..." [namelen=173 namehash=33e9d882]
     checkbox "Туника из Паучьего Шелка" [checked=false]
     button "Туника из Паучьего Шелка 1 горсть Ранг 2 · Пороги 9/20 · Броня 4..." [namelen=179 namehash=3cf5fc1d]
+  StaticText "Выбрано 1"
+  button "Снять выделение" [description=Снять выделение]
+  button "Добавить в список" [expanded=false]
+  link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1]
+  button "Скопировать"
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -48,12 +53,16 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Добавить в список
 Доспешный Сшиватель
 К содержимому
 ЛутDaggerheart
 Обычные правила
 Первоклассный Спальный Мешок
 Поиск
+Скопировать
+Снять выделение
+Собрать карточки для печати: девять на лист A4
 Сообщества
 Сохранить себе
 Списки
@@ -86,12 +95,17 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
     button "Save to my lists"
     checkbox "Select all (3)" [checked=false]
     StaticText "Select all (3)"
-    checkbox "Premium Bedroll" [checked=false]
+    checkbox "Premium Bedroll" [checked=true]
     button "1 Premium Bedroll ×2 During downtime, you automatically clear a ..." [namelen=81 namehash=69caf8d4]
     checkbox "Armor Stitcher" [checked=false]
     button "21 Armor Stitcher ×5 · 5 handfuls You can use this stitcher to s..." [namelen=136 namehash=7813561e]
     checkbox "Spidersilk Tunic" [checked=false]
     button "Spidersilk Tunic 1 handful Tier 2 · Thresholds 9/20 · Armor 4 Wa..." [namelen=163 namehash=c645fc16]
+  StaticText "Selected 1"
+  button "Clear selection" [description=Clear selection]
+  button "Add to list" [expanded=false]
+  link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1]
+  button "Copy"
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -100,11 +114,15 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
 ## en :: controls
 1Premium Bedroll×2During downtime, you automatically clear a Str... [namelen=76 namehash=6f2fe0c6]
 21Armor Stitcher×5 · 5 handfulsYou can use this stitcher to spen... [namelen=131 namehash=fb0e945f]
+Add to list
 Alt. tables
 Armor Stitcher
+Clear selection
 Communities
+Copy
 Dread
 EN
+Lay these out for printing: nine to an A4 sheet
 Lists
 Premium Bedroll
 RU
