@@ -375,6 +375,40 @@ deferral discipline.
   same list from a second tab mid-drag, and confirm the highlight and the
   eventual drop track the post-merge row order rather than the cached one.
 
+### D44 - a drag released on the list's own note bypasses both drop guards
+
+- **Where**: `app/src/ports/drag.ts`, `onDocOver` and `onDocDrop`; the
+  list's own `.lnote` in `ListPage.svelte`, which sits above `.rows`.
+- **What**: the port prevents `dragenter`/`dragover` and sets `dropEffect =
+  'move'` only inside the drop zone (`zone.top` to `zone.bottom`). A release
+  on `.lnote`, above `zone.top`, gets neither, and `dataTransfer` carries
+  `text/plain` set to the row index. The native drop may insert that index
+  into the note. Unverified: no trusted drag has reproduced the insert there
+  (`git show dcc8c8d` refutes it only inside the zone).
+- **Why deferred**: the one-line fix, `dropEffect = 'move'` for every
+  `dragover`, makes the cursor read "move" outside the list too, which
+  removes the cancellation signal a release outside the zone gives
+  (`docs/DECISIONS.md`, "A list drag resolves to a gap, from the document,
+  not to a row"). A fix needs its own behaviour decision.
+- **How to verify the fix**: with a trusted drag (`page.mouse.dragAndDrop`),
+  drag a row's grip onto `.lnote` and release. Confirm that the note text
+  and the row order do not change, and that a release outside the list still
+  shows the "no drop" cursor.
+
+### D45 - the removal toast's Russian participle agrees with a masculine record only
+
+- **Where**: `app/src/lib/dict.ts`, `removedItem: '«%s» убран'`; called from
+  `ListPage.svelte`'s single-row removal toast.
+- **What**: `убран` is masculine, so the toast for a feminine or neuter
+  record name has a wrong ending. This violates `docs/specs/I18N.md`,
+  "Rules" (a message that names a record avoids a word that must agree with
+  the record's gender).
+- **Why deferred**: the fix changes shipped product text, and that change
+  was not approved when the rule was written (TASK `dnd4`).
+- **How to verify the fix**: replace the participle with a gender-free form,
+  remove a feminine record from a list, and confirm that the toast reads
+  correctly in Russian.
+
 ## Hook and tooling defects, kept open
 
 Not a parity question and not a phase-8 review finding - a real gap in a

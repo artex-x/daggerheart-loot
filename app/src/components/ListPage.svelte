@@ -217,6 +217,7 @@
   $effect(() => {
     void app.navigations;
     lsel.clear();
+    said = '';
   });
 
   let roll = $state(0);

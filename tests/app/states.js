@@ -6,7 +6,7 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Twenty-five cases, no ancestor. */
+ * real second tab to mean anything at all. Twenty-six cases, no ancestor. */
 const fs = require('fs');
 const { PNG } = require('pngjs');
 const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
@@ -990,15 +990,19 @@ async function dragReorder() {
   await notePage.emulateMediaFeatures([
     { name: 'prefers-reduced-motion', value: 'no-preference' }
   ]);
-  const gapTransitions = await notePage.evaluate(() => {
-    const row = document.querySelectorAll('.lrow')[2];
-    const rnote = row.querySelector('.rnote');
-    return {
-      rowProperty: getComputedStyle(row).transitionProperty,
-      rnoteDuration: rnote ? getComputedStyle(rnote).transitionDuration : null
-    };
-  });
-  await notePage.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  let gapTransitions;
+  try {
+    gapTransitions = await notePage.evaluate(() => {
+      const row = document.querySelectorAll('.lrow')[2];
+      const rnote = row.querySelector('.rnote');
+      return {
+        rowProperty: getComputedStyle(row).transitionProperty,
+        rnoteDuration: rnote ? getComputedStyle(rnote).transitionDuration : null
+      };
+    });
+  } finally {
+    await notePage.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  }
   const rowProps = gapTransitions.rowProperty.split(',').map((s) => s.trim());
   ok(
     !rowProps.includes('all') &&
@@ -1323,7 +1327,8 @@ async function storageNoticeDismissWhileFolded() {
  *  a completed reorder was announced nowhere, and the drag grip stayed drawn
  *  on a device that can never start an HTML5 drag from a touch. Both read
  *  through a touch-emulated viewport - `page.emulateMediaFeatures` cannot
- *  move `hover`/`pointer` at all (context.md, "Measured this pass"), only
+ *  move `hover`/`pointer` at all (docs/specs/COVERAGE.md, "app/states - two
+ *  harness facts a device-capability case runs into"), only
  *  `setViewport({ isMobile, hasTouch })` does - and a second, untouched
  *  viewport proves the grip is not hidden by width alone. */
 async function announceOnTouchAndHideInertGrip() {

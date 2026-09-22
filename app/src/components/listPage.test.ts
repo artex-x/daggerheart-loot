@@ -988,13 +988,16 @@ describe('drag', () => {
 
 describe('announcing a reorder', () => {
   /* Both movers funnel through store.move(), which answers "did anything
-     move" - the live region fires on true and stays silent on false
-     (context.md, "Measured this pass"). */
-  it('announces a drag that lands an entry elsewhere, and would stay silent for a no-op drop', async () => {
+     move" - the live region fires on true and stays silent on false. */
+  it('announces a drag that lands an entry elsewhere, and stays silent for a no-op drop', async () => {
     const drag = fakeDrag();
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     const { container } = render(App, { env: at('#/lists/a', { storage, drag }) });
     const region = screen.getByRole('status');
+    expect(region).toHaveTextContent('');
+
+    drag.handlers?.onDrop(0, 0);
+    await tick();
     expect(region).toHaveTextContent('');
 
     drag.handlers?.onDrop(0, 2);
@@ -1002,6 +1005,29 @@ describe('announcing a reorder', () => {
     expect(region).toHaveTextContent('«Спальный мешок» — позиция 3 из 3');
 
     await expectNoA11yViolations(container);
+  });
+
+  it('clears the announcement when history moves to a different list', async () => {
+    const listB: StoredList = { id: 'b', name: 'Другой', ids: ['q1'], created: 2 };
+    const drag = fakeDrag();
+    const router = memoryRouter('#/lists/a');
+    render(App, {
+      env: at('#/lists/a', {
+        router,
+        drag,
+        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA, listB]) })
+      })
+    });
+
+    drag.handlers?.onDrop(0, 2);
+    await tick();
+    expect(screen.getByRole('status')).toHaveTextContent('позиция 3 из 3');
+
+    router.navigate('#/lists/b');
+    await waitFor(() => {
+      expect(screen.getByText('1 позиция')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('status')).toHaveTextContent('');
   });
 
   it('announces a committed position that moves a row, and stays silent when the position is its own', async () => {
