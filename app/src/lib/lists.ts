@@ -6,14 +6,13 @@
  *
  * Pure module: no localStorage, no DOM. */
 
-import { decodeList, type KnowsId, type ListEntryMeta, type MoneyMode } from './listLink.js';
-
-/** Not an id either: the menu key for taking a shared list whole - app.js
- *  1356's comment. `AddToList`'s `key` prop reads this the way it reads a
- *  record id or the selection bar's own key, but `pick`'s single-record
- *  toggle is skipped for it and `AppState.shared` is what a "whole list"
- *  add pulls its meta from. */
-export const N_SHARED = '@';
+import {
+  decodeList,
+  type DecodedList,
+  type KnowsId,
+  type ListEntryMeta,
+  type MoneyMode
+} from './listLink.js';
 
 export interface StoredList {
   id: string;
@@ -24,6 +23,25 @@ export interface StoredList {
   note?: string;
   hnote?: string;
   meta?: Record<string, ListEntryMeta>;
+}
+
+/** Returns the `ListStore.create` init for an own copy of a decoded list:
+ *  its ids, every entry's meta, the money mode and both list notes. Fresh
+ *  arrays and objects, so a reactive proxy is never stored. */
+export function copyInit(d: DecodedList): Partial<Omit<StoredList, 'id' | 'name' | 'created'>> {
+  const init: Partial<Omit<StoredList, 'id' | 'name' | 'created'>> = { ids: [...d.ids] };
+  if (d.money) init.money = d.money;
+  if (d.note) init.note = d.note;
+  if (d.hnote) init.hnote = d.hnote;
+  if (d.meta && Object.keys(d.meta).length) {
+    const meta: Record<string, ListEntryMeta> = {};
+    for (const id of Object.keys(d.meta)) {
+      const m = d.meta[id];
+      if (m) meta[id] = { ...m };
+    }
+    init.meta = meta;
+  }
+  return init;
 }
 
 /** The shape before the note split. Kept because v1 data is still read once. */

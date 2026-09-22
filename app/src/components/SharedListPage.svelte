@@ -6,17 +6,17 @@
      non-null. */
   import { onDestroy } from 'svelte';
   import Actions from './Actions.svelte';
-  import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import HitNote from './HitNote.svelte';
+  import Icon from './Icon.svelte';
   import PageTitle from './PageTitle.svelte';
   import RecordHost from './RecordHost.svelte';
   import TableRows from './TableRows.svelte';
   import type { Index } from '../lib/data.js';
-  import { sectionHash } from '../lib/hash.js';
+  import { sectionHash, sharedListHash } from '../lib/hash.js';
   import { itemsWord } from '../lib/i18n.js';
-  import { decodeList, type ListEntryMeta } from '../lib/listLink.js';
-  import { N_SHARED } from '../lib/lists.js';
+  import { decodeList, encodeList, type ListEntryMeta } from '../lib/listLink.js';
+  import { copyInit } from '../lib/lists.js';
   import { moneyMode, priceText } from '../lib/money.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -65,16 +65,25 @@
     `${t.sharedList} · ${String(items.length)} ${itemsWord(items.length, app.lang)}`
   );
 
-  /* The live `S.shared` (app.js 51, 3140-3141): what every add-to-list menu
-     on this page reads its meta from, and what "+ Новый список" takes
-     whole. The same two-part shape `ListPage.svelte` uses for
-     `syncListUrl`/`clearOpenList`, for the same reason. */
+  /* The live `S.shared` (app.js 51, 3140-3141): every add-to-list menu on
+     this page - the bar's, a card's - reads its meta from it. The same
+     two-part shape `ListPage.svelte` uses for `syncListUrl`/`clearOpenList`,
+     for the same reason. */
   $effect(() => {
     app.shared = shared;
   });
   onDestroy(() => {
     app.shared = null;
   });
+
+  function saveShared(): void {
+    const s = shared;
+    if (!s) return;
+    const l = app.lists.create(s.name, copyInit(s));
+    /* `ListStore.save()` has already toasted `saveFailed` on a refusal. */
+    if (app.lists.saved) app.say(t.listCreated.replace('%s', l.name));
+    app.go(sharedListHash(encodeList(l, true)));
+  }
 
   /* Toasted once per distinct payload, not once per component instance -
      this page is never remounted between two plain shared-list addresses,
@@ -97,7 +106,9 @@
     {:else}
       <PageTitle title={shared.name || t.untitled} {sub} />
       <Actions style="margin-bottom:18px">
-        <AddToList {app} key={N_SHARED} ids={shared.ids} primary />
+        <Button size="sm" variant="primary" onclick={saveShared}
+          ><Icon name="plus" />{t.saveShared}</Button
+        >
       </Actions>
       {#if shared.note || shared.hnote}
         <div class="notes">

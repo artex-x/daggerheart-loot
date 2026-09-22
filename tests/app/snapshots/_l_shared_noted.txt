@@ -24,7 +24,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3Qu
   main ""
     heading "Тайник" [level=1]
     StaticText "Список от другого игрока · 2 позиции"
-    button "Добавить в список" [expanded=false]
+    button "Сохранить себе"
     StaticText "ДЛЯ ИГРОКОВ"
     ... StaticText x6 of 10 same-shape siblings elided
     checkbox "Выбрать все (2)" [checked=false]
@@ -49,7 +49,6 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
-Добавить в список
 Зелье Быстрого Шага
 К содержимому
 ЛутDaggerheart
@@ -57,6 +56,7 @@ daggerheart.com
 Первоклассный Спальный Мешок
 Поиск
 Сообщества
+Сохранить себе
 Списки
 Таблицы
 
@@ -82,7 +82,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaT
   main ""
     heading "Тайник" [level=1]
     StaticText "A list from another player · 2 items"
-    button "Add to list" [expanded=false]
+    button "Save to my lists"
     StaticText "FOR PLAYERS"
     ... StaticText x6 of 10 same-shape siblings elided
     checkbox "Select all (2)" [checked=false]
@@ -100,7 +100,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaT
 ## en :: controls
 1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=74 namehash=dc485a4a]
 1Stride PotionYou gain a +1 bonus to your next Agility Roll.Cons... [namelen=74 namehash=a70c8c55]
-Add to list
 Alt. tables
 Communities
 Dread
@@ -108,6 +107,7 @@ EN
 Lists
 Premium Bedroll
 RU
+Save to my lists
 Search
 Skip to content
 Standard rules

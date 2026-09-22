@@ -110,7 +110,7 @@ const readLists = (storage: { get: (k: string) => string | null }): StoredList[]
   JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
 
 describe('heading and sub', () => {
-  it('draws the name, the sub as one text node, the add button and a way to select every row', () => {
+  it('draws the name, the sub as one text node, the save button and a way to select every row', () => {
     const { container } = render(App, {
       env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
     });
@@ -120,10 +120,10 @@ describe('heading and sub', () => {
     expect(sub).toHaveTextContent('Список от другого игрока · 2 позиции');
     expect(sub?.childNodes).toHaveLength(1);
 
-    expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
-      'aria-expanded',
-      'false'
+    expect(screen.getByRole('button', { name: 'Сохранить себе' })).not.toHaveAttribute(
+      'aria-expanded'
     );
+    expect(screen.queryByRole('button', { name: 'Добавить в список' })).not.toBeInTheDocument();
     /* Printing a shared list used to mean ticking every row by
        hand - `ontoggleall` now reaches the shared `AppState.toggleAllIn`,
        the same one the tables and search pages already used. */
@@ -135,6 +135,24 @@ describe('heading and sub', () => {
     render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
     expect(screen.getByText('Выбрано 2')).toBeInTheDocument();
+  });
+});
+
+describe('with a row ticked', () => {
+  it('shows one add-to-list control, in the bar, and the save button above', async () => {
+    const { container } = render(App, {
+      env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
+    });
+    const box = rowCheckboxes()[0] as HTMLElement;
+    await userEvent.click(box);
+
+    const addButtons = screen.getAllByRole('button', { name: 'Добавить в список' });
+    expect(addButtons).toHaveLength(1);
+    const bar = container.querySelector('.selbarwrap') as HTMLElement;
+    expect(bar).toContainElement(addButtons[0] ?? null);
+
+    const save = screen.getByRole('button', { name: 'Сохранить себе' });
+    expect(bar).not.toContainElement(save);
   });
 });
 
@@ -158,7 +176,7 @@ describe('untitled', () => {
 });
 
 describe('the notes', () => {
-  it('draws both list notes above the rows, and each entry’s own after its row', () => {
+  it("draws both list notes above the rows, and each entry's own after its row", () => {
     const { container } = render(App, {
       env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
     });
@@ -260,9 +278,10 @@ describe('adding to an existing list', () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) });
     render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { storage }) });
 
-    const cardActs = document.querySelector('.card-acts') as HTMLElement;
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (3)' }));
+    const bar = document.querySelector('.selbarwrap') as HTMLElement;
+    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'Клад дракона' }));
 
     const [a] = readLists(storage);
     expect(a?.ids).toEqual(['ci1', 'cc21', 'q337']);
@@ -275,42 +294,61 @@ describe('adding to an existing list', () => {
     expect(a?.hnote).toBeUndefined();
     expect(screen.getByText('Добавлено в «Клад дракона»: 3')).toBeInTheDocument();
     /* The chip poured the list without closing the menu it came from. */
-    expect(within(cardActs).getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
+    expect(within(bar).getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
       'aria-expanded',
       'true'
     );
   });
 
-  it('leaves the GM’s own note behind', async () => {
+  it("leaves the GM's own note behind", async () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) });
     render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload, { storage }) });
 
-    const cardActs = document.querySelector('.card-acts') as HTMLElement;
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
+    const bar = document.querySelector('.selbarwrap') as HTMLElement;
+    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'Клад дракона' }));
 
     const [a] = readLists(storage);
     expect(a?.meta).toEqual({ ci1: { note: 'Видно игрокам' } });
     expect(a?.note).toBeUndefined();
     expect(a?.hnote).toBeUndefined();
   });
+
+  it("the bar's new list carries the shared meta too", async () => {
+    const storage = memoryStorage();
+    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { storage }) });
+
+    const rowCheckbox = document
+      .querySelector('[data-row="cc21"]')
+      ?.querySelector('input[type="checkbox"]') as HTMLElement;
+    await userEvent.click(rowCheckbox);
+
+    const bar = document.querySelector('.selbarwrap') as HTMLElement;
+    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: '+ Новый список' }));
+
+    const input = screen.getByPlaceholderText('Например: клад дракона');
+    await userEvent.clear(input);
+    await userEvent.type(input, 'Сундук');
+    await userEvent.click(within(bar).getByRole('button', { name: 'Создать' }));
+
+    const [l] = readLists(storage);
+    expect(l).toMatchObject({
+      name: 'Сундук',
+      ids: ['cc21'],
+      meta: { cc21: { qty: 5, gold: 50 } }
+    });
+  });
 });
 
-describe('taking the whole list', () => {
+describe('saving the whole list', () => {
   it('creates a new list with the name, ids, both notes and the entry meta', async () => {
     const storage = memoryStorage();
     const router = memoryRouter('#/l/' + NOTES_BOTH_KINDS.gm.payload);
     render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload, { storage, router }) });
 
-    const cardActs = document.querySelector('.card-acts') as HTMLElement;
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(cardActs).getByRole('button', { name: '+ Новый список' }));
-
-    const input = screen.getByPlaceholderText('Например: клад дракона');
-    expect(input).toHaveValue('Тайник');
-    expect(input).toHaveFocus();
-
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Создать' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
 
     const [l] = readLists(storage);
     expect(l).toMatchObject({
@@ -320,7 +358,7 @@ describe('taking the whole list', () => {
       hnote: 'Хозяин - контрабандист',
       meta: { ci1: { note: 'Видно игрокам', hnote: 'Подделка' } }
     });
-    expect(screen.getByText('Добавлено в «Тайник»')).toBeInTheDocument();
+    expect(screen.getByText('Список «Тайник» создан')).toBeInTheDocument();
     expect(router.hash()).toBe('#/l/' + NOTES_BOTH_KINDS.player.payload);
 
     /* The own list page now, not the shared one - a title input, no
@@ -329,21 +367,26 @@ describe('taking the whole list', () => {
     expect(screen.queryByText('Список от другого игрока')).not.toBeInTheDocument();
   });
 
-  it('refuses a blank name', async () => {
+  it('keeps the money mode', async () => {
     const storage = memoryStorage();
-    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload, { storage }) });
+    render(App, { env: at('#/l/' + MONEY_COIN_MODE.player.payload, { storage }) });
 
-    const cardActs = document.querySelector('.card-acts') as HTMLElement;
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(cardActs).getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
 
-    const input = screen.getByPlaceholderText('Например: клад дракона');
-    await userEvent.clear(input);
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Создать' }));
+    const [l] = readLists(storage);
+    expect(l?.name).toBe('Монеты');
+    expect(l?.money).toBe('coin');
+  });
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Сначала назовите список');
-    expect(readLists(storage)).toHaveLength(0);
-    expect(screen.getByPlaceholderText('Например: клад дракона')).toBeInTheDocument();
+  it('saves a nameless list as Без названия', async () => {
+    const storage = memoryStorage();
+    const payload = encodeList({ name: '', ids: ['ci1'] }, true);
+    render(App, { env: at('#/l/' + payload, { storage }) });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
+
+    const [l] = readLists(storage);
+    expect(l?.name).toBe('Без названия');
   });
 });
 
@@ -371,11 +414,12 @@ describe('the bad link', () => {
     const link = screen.getByRole('link', { name: 'На главную' });
     expect(link).toHaveAttribute('href', '#/roll/std');
     expect(screen.queryByRole('button', { name: 'Добавить в список' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Сохранить себе' })).not.toBeInTheDocument();
   });
 });
 
 describe('English', () => {
-  it('reads the sub, the note labels and the add button in English', async () => {
+  it('reads the sub, the note labels and the save button in English', async () => {
     render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
 
@@ -383,7 +427,7 @@ describe('English', () => {
     /* The list note and ci1's own entry note both carry the label. */
     expect(screen.getAllByText('For players').length).toBeGreaterThan(0);
     expect(screen.getAllByText('GM only').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'Add to list' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save to my lists' })).toBeInTheDocument();
   });
 });
 
@@ -404,9 +448,11 @@ describe('accessibility', () => {
     const { container } = render(App, {
       env: withTwo('#/l/' + NOTES_BOTH_KINDS.gm.payload)
     });
-    const cardActs = document.querySelector('.card-acts') as HTMLElement;
-    await userEvent.click(within(cardActs).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(cardActs).getByRole('button', { name: '+ Новый список' }));
+    const box = rowCheckboxes()[0] as HTMLElement;
+    await userEvent.click(box);
+    const bar = container.querySelector('.selbarwrap') as HTMLElement;
+    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: '+ Новый список' }));
     await expectNoA11yViolations(container);
   });
 
