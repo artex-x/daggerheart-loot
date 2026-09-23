@@ -6,8 +6,10 @@ import {
   itemMeta,
   keepLists,
   liftNotes,
+  matchLists,
   mergeLists,
   moveEntry,
+  pickerOrder,
   stockLeft,
   takenQty,
   takenTotal,
@@ -259,5 +261,52 @@ describe('a selection taken count', () => {
         () => 1
       )
     ).toEqual({ coins: 0, unpriced: 0 });
+  });
+});
+
+describe('finding a list by name', () => {
+  const named = (id: string, name: string, created?: number): StoredList =>
+    created === undefined ? { id, name, ids: [] } : { id, name, ids: [], created };
+  const lists = [
+    named('a', 'Порт Ветров'),
+    named('b', 'Рынок'),
+    named('c', 'Трофеи ёжа'),
+    named('d', 'Лавка в порту')
+  ];
+
+  it('keeps every list, in order, for an empty or blank query', () => {
+    expect(matchLists(lists, '').map((l) => l.id)).toEqual(['a', 'b', 'c', 'd']);
+    expect(matchLists(lists, '   ').map((l) => l.id)).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('folds case and ё the way search does', () => {
+    expect(matchLists(lists, 'ЕЖ').map((l) => l.id)).toEqual(['c']);
+  });
+
+  it('matches a part of the name, not a list without it', () => {
+    expect(matchLists(lists, 'порт').map((l) => l.id)).toEqual(['a', 'd']);
+  });
+
+  it('puts the lists that pass first ahead of the rest, each group newest first', () => {
+    const mixed = [
+      named('old', 'a', 1),
+      named('held-old', 'b', 2),
+      named('none', 'c'),
+      named('new', 'd', 4),
+      named('held-new', 'e', 3)
+    ];
+    const held = new Set(['held-old', 'held-new']);
+    expect(pickerOrder(mixed, (l) => held.has(l.id)).map((l) => l.id)).toEqual([
+      'held-new',
+      'held-old',
+      'new',
+      'old',
+      'none'
+    ]);
+  });
+
+  it('is plain newest first when no list passes', () => {
+    const three = [named('x', 'x', 1), named('y', 'y', 3), named('z', 'z', 2)];
+    expect(pickerOrder(three, () => false).map((l) => l.id)).toEqual(['y', 'z', 'x']);
   });
 });

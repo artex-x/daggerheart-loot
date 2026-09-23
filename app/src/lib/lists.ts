@@ -13,6 +13,13 @@ import {
   type ListEntryMeta,
   type MoneyMode
 } from './listLink.js';
+import { foldQuery } from './search.js';
+
+/** The list count from which both the add-to-list menu and the lists index draw a search box. */
+export const LIST_SEARCH_AT = 8;
+
+/** How many cards the lists index draws before «Показать ещё», and how many each press adds (issue 68). */
+export const LIST_PAGE = 24;
 
 export interface StoredList {
   id: string;
@@ -124,6 +131,23 @@ export function mergeLists(
   const seen = new Set(mine.map((l) => l.id));
   const theirs = stored.filter((l) => !seen.has(l.id) && !deleted[l.id]);
   return [...mine, ...theirs];
+}
+
+/* ---------- finding a list (docs/specs/FEATURES.md, "Lists") ---------- */
+
+/** Returns the lists whose name holds the query, folded the way search folds it; a blank query keeps every list. */
+export function matchLists(lists: readonly StoredList[], query: string): StoredList[] {
+  const q = foldQuery(query.trim());
+  return q ? lists.filter((l) => foldQuery(l.name).includes(q)) : [...lists];
+}
+
+/** Returns a copy with the `first` lists ahead of the rest, each group newest created first. */
+export function pickerOrder(
+  lists: readonly StoredList[],
+  first: (l: StoredList) => boolean
+): StoredList[] {
+  const rank = (l: StoredList): number => (first(l) ? 0 : 1);
+  return [...lists].sort((a, b) => rank(a) - rank(b) || (b.created ?? 0) - (a.created ?? 0));
 }
 
 /* ---------- entries ---------- */

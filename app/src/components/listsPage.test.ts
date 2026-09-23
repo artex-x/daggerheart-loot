@@ -400,6 +400,162 @@ describe("another tab's write while the index is mounted (R2)", () => {
   });
 });
 
+/** `n` lists in store order, «Список 1» first; the names in `names` replace
+ *  the first few. */
+const many = (n: number, names: string[] = []): string =>
+  JSON.stringify(
+    Array.from({ length: n }, (_, i) => ({
+      id: 'm' + String(i),
+      name: names[i] ?? 'Список ' + String(i + 1),
+      ids: [],
+      created: n - i
+    }))
+  );
+
+const cardNames = (container: HTMLElement): string[] =>
+  [...container.querySelectorAll('.listcard-top b')].map((b) => b.textContent);
+
+/* The box is named by its placeholder alone, which Chrome's accessible name
+   reads and jsdom's does not. */
+const findBox = (): HTMLElement => screen.getByPlaceholderText('Найти список');
+
+describe('the name filter', () => {
+  it('draws no filter under eight lists', () => {
+    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) }) });
+    expect(screen.queryByPlaceholderText('Найти список')).not.toBeInTheDocument();
+  });
+
+  it('draws the filter from the eighth list and narrows by folded name, in store order', async () => {
+    const names = ['Порт Ветров', 'Рынок', 'Лавка в порту', 'Логово'];
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': many(8, names) }) })
+    });
+    expect(container.querySelectorAll('.listcard')).toHaveLength(8);
+
+    await userEvent.type(findBox(), 'ПОРТ');
+    expect(cardNames(container)).toEqual(['Порт Ветров', 'Лавка в порту']);
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws «Ничего не найдено» and no card for a query nothing matches', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': many(8) }) })
+    });
+    await userEvent.type(findBox(), 'zzz');
+    expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
+    expect(container.querySelectorAll('.listcard')).toHaveLength(0);
+    await expectNoA11yViolations(container);
+  });
+
+  it('clears the query on a create and shows the new card first', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': many(8) }) })
+    });
+    await userEvent.type(findBox(), 'zzz');
+    await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+
+    expect(findBox()).toHaveValue('');
+    expect(cardNames(container)[0]).toBe('Тайник');
+    expect(container.querySelectorAll('.listcard')).toHaveLength(9);
+  });
+});
+
+describe('«Показать ещё»', () => {
+  const more = (n: number): HTMLElement =>
+    screen.getByRole('button', { name: 'Показать ещё (' + String(n) + ')' });
+
+  it('draws every card and no button at 24 lists', () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': many(24) }) })
+    });
+    expect(container.querySelectorAll('.listcard')).toHaveLength(24);
+    expect(screen.queryByRole('button', { name: /Показать ещё/ })).not.toBeInTheDocument();
+  });
+
+  it('draws 24 of 30, and a press draws the rest, drops the button and focuses the 25th card', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': many(30) }) })
+    });
+    expect(container.querySelectorAll('.listcard')).toHaveLength(24);
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(more(6));
+    expect(container.querySelectorAll('.listcard')).toHaveLength(30);
+    expect(screen.queryByRole('button', { name: /Показать ещё/ })).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(container.querySelectorAll('.listcard-main')[24]);
+  });
+
+  it('adds 24 a press: two presses reach 60', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': many(60) }) })
+    });
+    await userEvent.click(more(36));
+    expect(container.querySelectorAll('.listcard')).toHaveLength(48);
+    await userEvent.click(more(12));
+    expect(container.querySelectorAll('.listcard')).toHaveLength(60);
+  });
+
+  it("folds the filter's result by the same rule, and a query edit folds it back to 24", async () => {
+    // ten «Логово» lists, then thirty «Список» ones
+    const lairs = Array.from({ length: 10 }, (_, i) => 'Логово ' + String(i + 1));
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': many(40, lairs) }) })
+    });
+    await userEvent.type(findBox(), 'спис');
+    expect(container.querySelectorAll('.listcard')).toHaveLength(24);
+    await userEvent.click(more(6));
+    expect(container.querySelectorAll('.listcard')).toHaveLength(30);
+
+    await userEvent.type(findBox(), 'о');
+    expect(container.querySelectorAll('.listcard')).toHaveLength(24);
+    expect(more(6)).toBeInTheDocument();
+  });
+
+  it('keeps the drawn count across a visit to a list and back, and starts the query over', async () => {
+    const router = memoryRouter('#/lists');
+    const { container } = render(App, {
+      env: fakeEnv({
+        router,
+        data: fakeData(LOOT),
+        storage: memoryStorage({ 'dhloot.lists.v2': many(30) })
+      })
+    });
+    await userEvent.click(more(6));
+    // the address the 26th card links to, as a press on it would open
+    const card = container.querySelectorAll('.listcard-main')[25];
+    router.navigate(card?.getAttribute('href') ?? '');
+    await waitFor(() => {
+      expect(container.querySelector('.listcard')).not.toBeInTheDocument();
+    });
+    router.navigate('#/lists');
+    await waitFor(() => {
+      expect(container.querySelectorAll('.listcard')).toHaveLength(30);
+    });
+    expect(findBox()).toHaveValue('');
+  });
+
+  it('puts a card created on a folded page first, and the button counts one more', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': many(30) }) })
+    });
+    await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    expect(cardNames(container)[0]).toBe('Тайник');
+    expect(container.querySelectorAll('.listcard')).toHaveLength(24);
+    expect(more(7)).toBeInTheDocument();
+  });
+
+  it('reads "Show more (N)" in English', async () => {
+    render(App, {
+      env: at({
+        storage: memoryStorage({ 'dhloot.lists.v2': many(30), 'dhloot.lang.v1': 'en' })
+      })
+    });
+    expect(await screen.findByRole('button', { name: 'Show more (6)' })).toBeInTheDocument();
+  });
+});
+
 describe('a dataset that did not load', () => {
   it('draws noData and no panel', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/lists'), data: noData() }) });

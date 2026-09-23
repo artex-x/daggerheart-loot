@@ -61,6 +61,11 @@ cache restore), neither of which names a key, so both are treated the same
 as a `storage` event with none - `localStorage.clear()`'s own shape, also
 now redrawn rather than silently ignored.
 
+A signal that finds in storage the very string the tab's lists were drawn
+from redraws nothing, and a save does not parse the string it last read or
+wrote again (`docs/DECISIONS.md`, 2026-09-23, "The list store is raw
+state...", for the measured cost).
+
 ## The list migration
 
 `dhloot.lists.v1` had one note per object plus a `noteShow` flag meaning "copy
@@ -84,7 +89,7 @@ state exists, by what it was for:
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `comm {c, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}` |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |
-| Lists | `lists`, `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `importDraft`, `pickQ`, `shared {ids, meta}` |
+| Lists | `lists`, `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `importDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session) |
 | Prices | `rp`, `guess`, `moneyHelp` |
 | Print | `printIds`, `printBW`, `printCompact` |
 | UI | `sel`, `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen` |

@@ -12,6 +12,62 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-23 - The list store is raw state; an unchanged stored value is not parsed again
+
+- Task: `68`.
+- Decision: `ListStore.lists` is `$state.raw`: every writer already replaces
+  the array and the list it changes. The store remembers the
+  `dhloot.lists.v2` string it last read or wrote: `save()` does not parse it
+  again, and an external-change signal that finds the string `lists` was
+  drawn from redraws nothing. The stored format does not change.
+- Evidence (this host, 2026-09-23): a list-title keystroke costs 6.8/19/55
+  ms at 50/200/500 lists, storage and JSON 1.2/5.4/11 ms of it; the save
+  under Svelte 5.57, deep 14/44/94 ms, raw 1.3/5.7/16 ms. An unchanged
+  re-read on `#/lists` costs 13/47/128 ms on each return to the tab.
+  Measured after the change (built `dist/`, 1100x900): a keystroke at 200
+  lists 22 -> 2.5 ms; an unchanged `storage` signal 62 -> under 1 ms with
+  no DOM mutation; opening `#/lists` at 500 lists 467 -> 32 ms (24 cards).
+- Rejected: a `save()` debounce (the consistent-storage ticket owns it,
+  `DEBT.md` "Routed elsewhere"); one key per list (a stored-format change
+  and a new two-tab merge).
+- Accepted trade-off: an in-place write to a stored list redraws nothing -
+  the reason phase 8 kept deep state; writers stay immutable.
+
+## 2026-09-23 - Many lists: a name filter on the index, a pinned search and create control in the menu
+
+- Task: `68`. Design target 200 lists; nothing may break before the quota.
+- Decision: from the eighth list (`LIST_SEARCH_AT`, the menu's own
+  threshold) the index draws a name filter, folded as search folds
+  (`foldQuery`), memory only; a create clears it; no match draws «Ничего не
+  найдено». Cards, their order and their actions stay. The add-to-list menu
+  scrolls its chips only: the label, the search and «+ Новый список» stay in
+  view. The menu's search folds the same way, and the new-list form starts
+  with the typed query as its name.
+- Evidence (2026-09-23): at 50 lists the index is 3447 px at 1100 wide and
+  9096 px at 375; «+ Новый список» sits 2209 px down a 338 px menu, and
+  already 412 px down at 8 lists.
+- Rejected: a new filter string (`findList` reads «Найти список»); a
+  shown-of-total count (a second `.fcount`; the cards are the answer); the
+  menu's search taking focus on open (a phone's keyboard covers the chips).
+- The owner's answers on paging and menu order: the next entry.
+
+## 2026-09-23 - Many lists: the index shows 24 cards at a time; a record's own lists lead its menu
+
+- Task: `68`, the owner's answers to the planner's Q1 and Q2.
+- Decision (Q1 = B): the index draws 24 cards (`LIST_PAGE`) of what the
+  filter leaves, then «Показать ещё (N)» / "Show more (N)", N still hidden;
+  a press adds 24 and focuses the first new card; a query edit folds back
+  to 24. The count is session memory (`AppState.listsShown`, as `printBW`
+  is): a return from a list keeps it, a reload does not.
+- Decision (Q2 = A): a one-record menu puts the lists holding the record
+  first, newest first in each group, in the order taken when it opens.
+- Rejected, Q1: A, every card drawn (the planner's pick; 11 phone screens
+  at 50 lists); C, a compact view in `dhloot.prefs.v1` (stored state, a
+  second layout); page numbers (lost on Back without a route change);
+  folding back on every return; the count in the address or storage.
+- Rejected, Q2: B, newest first everywhere (at 50 lists, membership spread
+  over 2200 px); re-sorting on a press (the chip moves under the pointer).
+
 ## 2026-09-23 - The black-and-white card grows its rules text to a cap under the name
 
 - Task: `61`, human decision (find it with `git log --grep="Task: 61"`).
@@ -643,6 +699,8 @@ entry to its first line before adding another.
   virtualising the row lists (370 is the largest list drawn, and it moves
   goldens); SHA-pinning the `actions/*` tags (maintenance beyond its value;
   `gitleaks` alone is pinned).
+- Superseded in part by "The list store is raw state; an unchanged stored
+  value is not parsed again" (2026-09-23): `$state.raw` for `lists`.
 
 ## 2026-09-18 - `data.json`/`catalog.csv` staying tracked was not solved by a pretest step
 

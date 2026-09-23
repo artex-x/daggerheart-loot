@@ -1,4 +1,4 @@
-/* "Everything a person can reach" - the 135 states tests/app/golden.js
+/* "Everything a person can reach" - the 141 states tests/app/golden.js
  * captures a structural snapshot of on both languages. Originated (issue 47)
  * as an independent copy of tests/parity/specs.js's STATES array plus the
  * module-level constants it read: the print routes, PACKED, the button-name
@@ -193,6 +193,44 @@ const eight = {
   ])
 };
 
+/* Twelve lists, past the search threshold of both the menu and the index:
+   `ci1` lies in «Клад дракона», «Порт Ветров» and «Сундук мага». */
+const TWELVE = [
+  { ...LISTS[0], ids: ['ci1'] },
+  LISTS[1],
+  ...[
+    'Храм Солнца',
+    'Рынок',
+    'Порт Ветров',
+    'Логово',
+    'Трофеи',
+    'Кузнец',
+    'Сессия 3',
+    'Сессия 4',
+    'Сундук мага',
+    'Ёлочная ярмарка'
+  ].map((name, i) => ({
+    id: 'y' + String(i),
+    name,
+    ids: i === 2 || i === 6 ? ['ci1'] : [],
+    created: 20 + i
+  }))
+];
+const twelve = { 'dhloot.lists.v2': JSON.stringify(TWELVE) };
+/* Thirty lists: in store order the index draws `a`, `b`, `y0`..`y9` and
+   `z0`..`z11`, and folds `z12`..`z17` under «Показать ещё (6)». */
+const thirty = {
+  'dhloot.lists.v2': JSON.stringify([
+    ...TWELVE,
+    ...Array.from({ length: 18 }, (_, i) => ({
+      id: 'z' + String(i),
+      name: 'Сессия ' + String(5 + i),
+      ids: [],
+      created: 40 + i
+    }))
+  ])
+};
+
 /* The lists index's own seed: one card with six thumbnails and a badge of 7,
    one empty card. */
 const seven = {
@@ -362,6 +400,26 @@ const STATES = [
     storage: two,
     enter: async (d) => {
       await d.click('Добавить в список');
+      await d.click('+ Новый список');
+    }
+  },
+  {
+    id: '#/i/ci1 ~ in several lists',
+    route: '#/i/ci1',
+    why: 'the three lists holding the record first, lit; the label, search and new-list chip pinned over the scrolling chips',
+    storage: twelve,
+    enter: async (d) => {
+      await d.click('Добавить в список');
+    }
+  },
+  {
+    id: '#/i/ci1 ~ new list from a search',
+    route: '#/i/ci1',
+    why: 'the new-list form started with the query nothing matched',
+    storage: twelve,
+    enter: async (d) => {
+      await d.click('Добавить в список');
+      await d.type('Найти список', 'Шкатулка');
       await d.click('+ Новый список');
     }
   },
@@ -859,6 +917,39 @@ const STATES = [
       'the folded "lists live only here" disclosure - no lists on screen, the value backed up ' +
       'under its own key rather than lost',
     storage: { 'dhloot.lists.v2': '{' }
+  },
+  {
+    id: '#/lists ~ many lists',
+    route: '#/lists',
+    why: 'the name filter, 24 cards and «Показать ещё (6)»',
+    storage: thirty
+  },
+  {
+    id: '#/lists ~ shown more',
+    route: '#/lists',
+    why: 'all 30 cards after one press, and no button',
+    storage: thirty,
+    enter: async (d) => {
+      await d.click('Показать ещё (6)');
+    }
+  },
+  {
+    id: '#/lists ~ filtered',
+    route: '#/lists',
+    why: 'the two cards whose name holds «порт», and no button',
+    storage: thirty,
+    enter: async (d) => {
+      await d.type('Найти список', 'порт');
+    }
+  },
+  {
+    id: '#/lists ~ nothing found',
+    route: '#/lists',
+    why: '«Ничего не найдено» in place of the grid',
+    storage: thirty,
+    enter: async (d) => {
+      await d.type('Найти список', 'zzz');
+    }
   },
 
   /* The list page, off `renderOneList` and everything it draws in the

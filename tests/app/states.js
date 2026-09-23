@@ -6,7 +6,7 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Twenty-six cases, no ancestor. */
+ * real second tab to mean anything at all. Twenty-seven cases, no ancestor. */
 const fs = require('fs');
 const { PNG } = require('pngjs');
 const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
@@ -1397,6 +1397,93 @@ async function announceOnTouchAndHideInertGrip() {
   await ctx2.close();
 }
 
+/** 27. At 50 lists the menu keeps its label, search and «+ Новый список» in
+ *  view and scrolls only its chips; the lists holding the record lead
+ *  (docs/specs/FEATURES.md, "Lists"). */
+async function listMenuKeepsItsControlsInView() {
+  const seed = {
+    'dhloot.lists.v2': JSON.stringify(
+      Array.from({ length: 50 }, (_, i) => ({
+        id: 'm' + String(i),
+        name: 'Лавка ' + String(i + 1),
+        ids: i % 10 === 0 ? ['ci1'] : [],
+        created: i + 1
+      }))
+    )
+  };
+  for (const [width, height] of [
+    [1100, 900],
+    [360, 740]
+  ]) {
+    const at = '27 (' + String(width) + '): ';
+    const { ctx, page, d } = await fresh({ width, height, storage: seed });
+    await d.open('#/i/ci1');
+    await d.press('Добавить в список');
+    await d.settle();
+
+    const m = await page.evaluate(() => {
+      /* `shown`: what a press at the centre reaches - a clipping ancestor
+         can hide a box that still reads inside the menu and the window. */
+      const box = (el) => {
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return { x: r.x, y: r.y, w: r.width, h: r.height, shown: !!hit && el.contains(hit) };
+      };
+      const menu = document.querySelector('.dropmenu');
+      const chips = menu?.querySelector('.pickchips');
+      const newChip = [...(menu?.querySelectorAll(':scope > .chip') ?? [])].find(
+        (c) => c.textContent === '+ Новый список'
+      );
+      return {
+        menu: box(menu),
+        search: box(menu?.querySelector('input[type="search"]')),
+        newChip: box(newChip),
+        scrolls: !!chips && chips.scrollHeight > chips.clientHeight,
+        firstOn: [...(chips?.querySelectorAll('.chip') ?? [])]
+          .slice(0, 6)
+          .map((c) => c.classList.contains('on')),
+        view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+      };
+    });
+    ok(!!m.menu, at + 'the menu did not open');
+    if (m.menu) {
+      ok(m.menu.h <= 342, at + 'the menu is ' + String(m.menu.h) + ' px tall, over 342');
+      for (const [name, b] of [
+        ['the search box', m.search],
+        ['«+ Новый список»', m.newChip]
+      ]) {
+        ok(
+          !!b && inside(b, m.menu),
+          at + name + ' lies outside the menu - ' + JSON.stringify(b)
+        );
+        ok(
+          !!b && inside(b, m.view),
+          at + name + ' lies outside the window - ' + JSON.stringify(b)
+        );
+        ok(!!b && b.shown, at + name + ' is covered or clipped - ' + JSON.stringify(b));
+      }
+    }
+    ok(m.scrolls, at + 'the chips do not scroll on their own');
+    ok(
+      JSON.stringify(m.firstOn) === JSON.stringify([true, true, true, true, true, false]),
+      at + 'the five lists holding the record do not lead - ' + JSON.stringify(m.firstOn)
+    );
+
+    await d.type('Найти список', 'Шкатулка');
+    await d.press('+ Новый список');
+    const input = await page.evaluate(() => {
+      const el = document.querySelector('.picker-new input[type="text"]');
+      return el && { value: el.value, focused: el === document.activeElement };
+    });
+    ok(
+      !!input && input.value === 'Шкатулка' && input.focused,
+      at + 'the new-list input does not hold the query with focus - ' + JSON.stringify(input)
+    );
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -1422,7 +1509,8 @@ const CASES = [
   ['23 (menu in the modal)', addToListMenuStaysInModal],
   ['24 (reduced motion)', reducedMotionKillsEverything],
   ['25 (notice dismiss while folded)', storageNoticeDismissWhileFolded],
-  ['26 (announce on touch, inert grip)', announceOnTouchAndHideInertGrip]
+  ['26 (announce on touch, inert grip)', announceOnTouchAndHideInertGrip],
+  ['27 (list menu at 50 lists)', listMenuKeepsItsControlsInView]
 ];
 
 (async () => {

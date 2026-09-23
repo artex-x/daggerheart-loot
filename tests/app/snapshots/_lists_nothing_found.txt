@@ -1,0 +1,131 @@
+# #/lists ~ nothing found
+# route: #/lists
+# why: «Ничего не найдено» in place of the grid
+
+## ru :: tree
+RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Списки" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
+    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
+    button "Скрыть" [description=Скрыть]
+    StaticText "НОВЫЙ СПИСОК"
+    textbox "Новый список" [multiline=false readonly=false required=false]
+    button "Создать"
+    StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
+    textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
+    button "Восстановить"
+    searchbox "Найти список" [value=zzz focused=true]
+    StaticText "Ничего не найдено"
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Восстановить
+Восстановить из ссылки
+К содержимому
+Как это работает
+ЛутDaggerheart
+Новый список
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Скрыть
+Создать
+Сообщества
+Списки
+Таблицы
+
+## en :: tree
+RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Lists" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
+    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
+    button "Dismiss" [description=Dismiss]
+    StaticText "NEW LIST"
+    textbox "New list" [multiline=false readonly=false required=false]
+    button "Create"
+    StaticText "RESTORE FROM A LINK"
+    textbox "Restore from a link" [multiline=false readonly=false required=false]
+    button "Restore"
+    searchbox "Find a list" [value=zzz focused=true]
+    StaticText "Nothing found"
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Communities
+Create
+Dismiss
+Dragon's Vault
+Dread
+EN
+How this works
+Lists
+New list
+Open this section on start
+RU
+Restore
+Restore from a link
+Search
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

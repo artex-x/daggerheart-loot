@@ -1,6 +1,6 @@
-# #/i/ci1 ~ in a list
+# #/i/ci1 ~ in several lists
 # route: #/i/ci1
-# why: the chip lit for a list the record is already in
+# why: the three lists holding the record first, lit; the label, search and new-list chip pinned over the scrolling chips
 
 ## ru :: tree
 RootWebArea "Первоклассный Спальный Мешок — Генератор лута — Daggerheart" [url=#/i/ci1]
@@ -37,7 +37,13 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
+    searchbox "Найти список"
+    button "✓ Сессия 3" [pressed=true]
+    button "✓ Порт Ветров" [pressed=true]
     button "✓ Клад дракона" [pressed=true]
+    button "Ёлочная ярмарка" [pressed=false]
+    button "Сундук мага" [pressed=false]
+    ... button x6 of 10 same-shape siblings elided
     button "Лавка в порту" [pressed=false]
     button "+ Новый список" [pressed=false]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1]
@@ -55,14 +61,20 @@ RU
 Vault of Ages
 Wondrous
 daggerheart.com
+Ёлочная ярмарка
 Альт. таблицы
 Добавить в список
 К содержимому
+Кузнец
 Лавка в порту
+Логово
 ЛутDaggerheart
+Найти список
 Обычные правила
 Отправить
 Поиск
+Рынок
+Сессия 4
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
@@ -71,9 +83,14 @@ daggerheart.com
 Сообщества
 Списки
 Страница
+Сундук мага
 Таблицы
+Трофеи
+Храм Солнца
 показать в таблице
 ✓ Клад дракона
+✓ Порт Ветров
+✓ Сессия 3
 
 ## en :: tree
 RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]

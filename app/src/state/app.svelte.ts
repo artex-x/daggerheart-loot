@@ -31,7 +31,7 @@ import {
   type Site
 } from '../lib/hash.js';
 import { encodeList, type DecodedList } from '../lib/listLink.js';
-import type { StoredList } from '../lib/lists.js';
+import { LIST_PAGE, type StoredList } from '../lib/lists.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Section } from '../lib/types.js';
 import type { Env } from '../ports/index.js';
@@ -250,6 +250,10 @@ export class AppState {
   /** The print page's standard/compact sheet choice - session memory beside
    *  `printBW`, for the same reason (D21); never written to storage. */
   printCompact = $state(false);
+  /** How many lists the index draws - kept for the session so a return from
+   *  a list page shows the same cards, the way `printBW` is kept; a reload
+   *  starts at `LIST_PAGE` (`STATE.md`'s "Lists" group). */
+  listsShown = $state(LIST_PAGE);
   /** The packed payload a failed expansion is stuck on, or `''` - R10/S3/D2.
    *  Compared against `route.payload` by whoever draws the bad-link state, so
    *  a later navigation to a *different* packed link is not mistaken for the

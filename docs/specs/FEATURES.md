@@ -137,14 +137,34 @@ Seven modes. Each keeps its own input in memory only.
   and it works everywhere.
 - Add from a table or search selection, or from an item card. The card menu stays
   open so one item can go into several lists, and through the new-list form
-  and its cancel; a search box appears from the eighth list; the menu opens on
-  the side of the toggle button with room in the clipping box it sits in - the
-  record modal's own card where there is one, the window everywhere else -
+  and its cancel. From the eighth list (`LIST_SEARCH_AT`) it draws a search
+  box, folded as search folds (case, `ё` as `е`); only the chips scroll, so
+  the label, the search and «+ Новый список» (or the open form) stay in view.
+  «+ Новый список» starts the form with the trimmed query as the name, and a
+  create clears the query. A one-record menu puts the lists holding the
+  record first, newest first in each group, in the order taken when it
+  opens: a pressed chip keeps its place until the menu opens again, and a
+  list that appears while it is open (created here or in another tab)
+  joins the first group. A selection's menu
+  stays newest first. The menu opens on
+  the side of the toggle button with room in the tightest clipping box it
+  sits in - the record card, the record modal's own card, the window -
   re-measured from the toggle itself (not whichever button happens to render
   first) whenever it opens or grows, so it neither spills past the modal's
   edge nor drags the card's own scroll position along with it (DEBT.md D6,
   paid off). Escape closes it and returns focus to the toggle, the same as
   any other disclosure on the page.
+- The index, from the eighth list, draws a name filter («Найти список») under
+  the create and import panel: it matches the list name, folded as search
+  folds, keeps store order, lives in memory only and starts empty on every
+  visit; a create clears it; no match draws «Ничего не найдено». The index
+  draws the first 24 cards (`LIST_PAGE`) of what the filter leaves, then
+  «Показать ещё (N)» / "Show more (N)", N still hidden; each press draws 24
+  more and moves focus to the first card it revealed, and the button goes
+  when none remain. Any edit to the query folds the result back to 24. The
+  drawn count is session memory (`AppState.listsShown`): a return from a
+  list page shows the same cards, a reload starts at 24. A new card goes
+  first and pushes the last drawn card under the button.
 - Optional quantity and price per entry; both travel into copied text.
 - Prices display as book units (default) or coins; the mode is per list and
   rides in the link.

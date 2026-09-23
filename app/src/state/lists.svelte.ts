@@ -35,7 +35,10 @@ function random36(n: number, random: () => number): string {
 }
 
 export class ListStore {
-  lists = $state<StoredList[]>([]);
+  /* Raw, not deep: a proxy on every list made each save cost what 200 lists
+     weigh (docs/DECISIONS.md, 2026-09-23, "The list store is raw state...").
+     A writer must replace the array and the list it changes, never mutate. */
+  lists = $state.raw<StoredList[]>([]);
   /** Whether the last `save()` actually wrote. The live `createList.saved` -
    *  a refused write has already toasted `saveFailed`, and a caller must not
    *  follow it with a cheerful "created". */
@@ -64,11 +67,25 @@ export class ListStore {
    * writer. */
   readonly #deleted: Record<string, boolean> = {};
 
+  /* What `dhloot.lists.v2` held at this tab's last read or write, and its
+     parse - an unchanged value is not parsed again. */
+  #lastRaw: string | null = null;
+  #lastParsed: StoredList[] = [];
+  /* The stored string `lists` was last drawn from or saved as, less `#deleted`.
+     After a refused write `lists` runs ahead of it until a save succeeds, so a
+     signal that finds it in storage keeps this tab's unsaved edit on screen. */
+  #shownRaw: string | null = null;
+
   constructor(env: Env, say: (msg: string, error?: boolean) => void, dict: () => Dict) {
     this.#env = env;
     this.#say = say;
     this.#dict = dict;
+    this.#reload();
+  }
+
+  #reload(): void {
     this.lists = this.load();
+    this.#shownRaw = this.#lastRaw;
   }
 
   /**
@@ -87,12 +104,22 @@ export class ListStore {
    */
   #readCurrent(): StoredList[] | null {
     const raw = this.#env.storage.get(LISTS_KEY);
-    if (raw === null) return null;
-    try {
-      const parsed = keepLists(JSON.parse(raw)).filter((l) => !this.#deleted[l.id]);
+    if (raw === null) {
+      this.#lastRaw = null;
+      return null;
+    }
+    if (raw === this.#lastRaw) {
       this.unreadable = false;
-      return parsed;
+      return this.#lastParsed.filter((l) => !this.#deleted[l.id]);
+    }
+    try {
+      const all = keepLists(JSON.parse(raw));
+      this.#lastRaw = raw;
+      this.#lastParsed = all;
+      this.unreadable = false;
+      return all.filter((l) => !this.#deleted[l.id]);
     } catch {
+      this.#lastRaw = null;
       this.unreadable = true;
       /* Backed up once: a second bad read (this tab's own next save,
          another tab writing something else unreadable) must not overwrite
@@ -123,7 +150,11 @@ export class ListStore {
     } catch {
       return [];
     }
-    this.#env.storage.set(LISTS_KEY, JSON.stringify(moved));
+    const json = JSON.stringify(moved);
+    if (this.#env.storage.set(LISTS_KEY, json)) {
+      this.#lastRaw = json;
+      this.#lastParsed = moved;
+    }
     return moved;
   }
 
@@ -137,12 +168,18 @@ export class ListStore {
   save(): boolean {
     const storedNow = this.#readCurrent() ?? [];
     const merged = mergeLists(this.lists, storedNow, this.#deleted);
-    const ok = this.#env.storage.set(LISTS_KEY, JSON.stringify(merged));
+    const json = JSON.stringify(merged);
+    const ok = this.#env.storage.set(LISTS_KEY, json);
     this.saved = ok;
     if (!ok) {
       this.#say(this.#dict().saveFailed, true);
       return false;
     }
+    this.#lastRaw = json;
+    this.#lastParsed = merged;
+    /* A merge that appended another tab's lists leaves `lists` short of
+       storage, so the next signal must reload. */
+    this.#shownRaw = merged.length === this.lists.length ? json : null;
     return true;
   }
 
@@ -171,13 +208,7 @@ export class ListStore {
     };
     this.lists = [l, ...this.lists];
     this.save();
-    /* Not `l`: `this.lists` is `$state`, and Svelte wraps a stored object in
-       a reactive proxy - the array's own [0] is what a caller actually
-       shares identity with the store on, `l` itself never being written to
-       again. The `?? l` fallback is never actually reached - `this.lists`
-       was just unshifted with `l` at the front - it only satisfies the
-       indexed-access type without a non-null assertion. */
-    return this.lists[0] ?? l;
+    return l;
   }
 
   /**
@@ -265,7 +296,10 @@ export class ListStore {
    *  with an empty `theirs`). */
   watch(): () => void {
     return this.#env.storage.onExternalChange((key) => {
-      if (key === LISTS_KEY || key === null) this.lists = this.load();
+      if (key !== LISTS_KEY && key !== null) return;
+      const raw = this.#env.storage.get(LISTS_KEY);
+      if (raw !== null && raw === this.#shownRaw) return;
+      this.#reload();
     });
   }
 

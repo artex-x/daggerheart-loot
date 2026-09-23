@@ -10,6 +10,12 @@
           "app/src/components/ListPage.svelte"
         ],
         "createdAt": "2026-09-19T10:51:40.314Z"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-09-23T08:39:06.719Z",
+        "reason": "the app ships Inter by design (app/src/styles/tokens.css UI font stack)"
       }
     ]
   }

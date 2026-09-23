@@ -143,11 +143,8 @@ describe('creating a list', () => {
     const l = store.create('  Клад дракона  ');
     expect(l.name).toBe('Клад дракона');
     expect(l.created).toBe(1000);
-    /* `toBe`, not `toEqual` (ride-along): `create()` used to hand back
-       the plain object built before `this.lists` wrapped it in `$state`'s
-       own reactive proxy - a different reference from what the store
-       actually holds. It now returns `this.lists[0]` instead, so the two
-       are the same object. */
+    /* `toBe`, not `toEqual`: the store is raw state, so the list a caller
+       gets back is the very object the store holds. */
     expect(store.lists[0]).toBe(l);
     expect(store.lists[1]).toEqual(existing);
     vi.restoreAllMocks();
@@ -358,6 +355,85 @@ describe('watching for another tab', () => {
     );
     storage.fireExternalChange(null);
     expect(store.lists).toEqual([{ id: 'b', name: 'B', ids: [], created: 2 }]);
+  });
+
+  it('keeps the same array when an external signal finds nothing new in storage', () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'A', ids: [], created: 1 }])
+    });
+    const store = new ListStore(at({ storage }), say, t);
+    store.watch();
+    store.rename('a', 'Б');
+    const drawn = store.lists;
+
+    storage.fireExternalChange(null);
+    expect(store.lists).toBe(drawn);
+    storage.fireExternalChange('dhloot.lists.v2');
+    expect(store.lists).toBe(drawn);
+  });
+
+  it('keeps a refused edit on screen when a signal finds storage unchanged', () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'A', ids: [], created: 1 }])
+    });
+    const store = new ListStore(at({ storage }), say, t);
+    store.watch();
+    storage.set = () => false;
+    store.rename('a', 'Б');
+    expect(store.saved).toBe(false);
+
+    storage.fireExternalChange(null);
+    expect(store.lists).toEqual([{ id: 'a', name: 'Б', ids: [], created: 1 }]);
+  });
+
+  it('reloads when another tab changed the stored value since this tab drew it', () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'A', ids: [], created: 1 }])
+    });
+    const store = new ListStore(at({ storage }), say, t);
+    store.watch();
+    store.rename('a', 'Б');
+
+    storage.set(
+      'dhloot.lists.v2',
+      JSON.stringify([{ id: 'a', name: 'В', ids: [], created: 1 }])
+    );
+    storage.fireExternalChange(null);
+    expect(store.lists).toEqual([{ id: 'a', name: 'В', ids: [], created: 1 }]);
+  });
+
+  it("shows another tab's list on the next signal after a save merged it in", () => {
+    const mine = { id: 'a', name: 'A', ids: [], created: 1 };
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([mine]) });
+    const store = new ListStore(at({ storage }), say, t);
+    store.watch();
+
+    // another tab's list lands in storage with no signal yet
+    const theirs = { id: 'x', name: 'X', ids: [], created: 2 };
+    storage.set('dhloot.lists.v2', JSON.stringify([mine, theirs]));
+    store.rename('a', 'Б');
+    expect(store.lists.map((l) => l.id)).toEqual(['a']);
+
+    storage.fireExternalChange(null);
+    expect(store.lists.map((l) => l.id)).toEqual(['a', 'x']);
+  });
+
+  it('does not parse the stored value it last wrote', () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'A', ids: [], created: 1 }])
+    });
+    const store = new ListStore(at({ storage }), say, t);
+    const parse = vi.spyOn(JSON, 'parse');
+    try {
+      store.rename('a', 'Б');
+      store.rename('a', 'БВ');
+      expect(parse).not.toHaveBeenCalled();
+    } finally {
+      parse.mockRestore();
+    }
+    expect(JSON.parse(storage.get('dhloot.lists.v2') ?? '')).toEqual([
+      { id: 'a', name: 'БВ', ids: [], created: 1 }
+    ]);
   });
 
   it('stops on unsubscribe', () => {

@@ -3,6 +3,7 @@
    * `storageWarning`/`hideWarn` (2865-2886, 4175) and `listCardHTML`
    * (2888-2907). The storage notice lives here and on the list page,
    * nowhere else - `Shell.svelte`'s own copy was the rewrite's invention. */
+  import { tick } from 'svelte';
   import Badge from './Badge.svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
@@ -12,12 +13,19 @@
   import NumRow from './NumRow.svelte';
   import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
+  import SearchBox from './SearchBox.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import { artSrc } from '../lib/desc.js';
   import { sharedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import { decodeList, encodeList, encodeListRaw } from '../lib/listLink.js';
-  import { copyInit, type StoredList } from '../lib/lists.js';
+  import {
+    copyInit,
+    LIST_PAGE,
+    LIST_SEARCH_AT,
+    matchLists,
+    type StoredList
+  } from '../lib/lists.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -34,6 +42,31 @@
   let draft = $state('');
   let importDraft = $state('');
   let nameInput = $state<HTMLInputElement | undefined>(undefined);
+
+  /* The name filter and the fold (docs/specs/FEATURES.md, "Lists"). The
+     query is page memory and starts empty on a return; the drawn count is
+     `app.listsShown`, kept for the session. */
+  let findQ = $state('');
+  let grid = $state<HTMLDivElement | undefined>(undefined);
+  const filtering = $derived(lists.length >= LIST_SEARCH_AT);
+  const found = $derived(filtering ? matchLists(lists, findQ) : lists);
+  const drawn = $derived(found.slice(0, app.listsShown));
+  const hidden = $derived(found.length - drawn.length);
+
+  /* Any edit to the query starts the new result folded. */
+  function setQuery(v: string): void {
+    findQ = v;
+    app.listsShown = LIST_PAGE;
+  }
+
+  /* Focus goes to the first card the press revealed, so a keyboard user
+     continues there and is not lost when the button goes. */
+  async function showMore(): Promise<void> {
+    const from = drawn.length;
+    app.listsShown = from + LIST_PAGE;
+    await tick();
+    grid?.querySelectorAll<HTMLElement>('.listcard-main')[from]?.focus();
+  }
 
   /* The ids the data still knows, in list order - what the badge counts and
      the thumbs draw from, not `l.ids` itself: a deleted or renamed record
@@ -52,6 +85,7 @@
     }
     const l = app.lists.create(draft);
     draft = '';
+    if (findQ) setQuery('');
     /* `ListStore.save()` has already toasted `saveFailed` on a refusal - a
        "created" on top of it would bury the one message that matters. */
     if (app.lists.saved) app.say(t.listCreated.replace('%s', l.name));
@@ -148,14 +182,22 @@
     </Field>
   </Panel>
   {#if lists.length}
-    <div class="listgrid">
-      {#each lists as l (l.id)}
-        {@const items = knownItems(l)}
-        <div class="listcard">
-          <!-- Whitespace below is content, covering the whole link - see
+    {#if filtering}
+      <div class="listfind">
+        <SearchBox value={findQ} placeholder={t.findList} oninput={setQuery} />
+      </div>
+    {/if}
+    {#if !found.length}
+      <Empty>{t.nothing}</Empty>
+    {:else}
+      <div class="listgrid" bind:this={grid}>
+        {#each drawn as l (l.id)}
+          {@const items = knownItems(l)}
+          <div class="listcard">
+            <!-- Whitespace below is content, covering the whole link - see
                docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
-          <!-- prettier-ignore -->
-          <a class="listcard-main" href={sharedListHash(encodeList(l, false))}
+            <!-- prettier-ignore -->
+            <a class="listcard-main" href={sharedListHash(encodeList(l, false))}
             ><div class="listcard-top"><b>{l.name}</b><Badge cls="num"
                 >{items.length}</Badge
               ></div
@@ -171,21 +213,27 @@
                   />{/each}</div
               >{:else}<p class="listcard-empty">{t.listEmpty}</p>{/if}</a
           >
-          <div class="listcard-acts">
-            <Button size="sm" onclick={() => void share(l)}
-              ><Icon name="link" />{t.share}</Button
-            >
-            <Button
-              size="sm"
-              variant="danger"
-              onclick={() => {
-                del(l);
-              }}>{t.del}</Button
-            >
+            <div class="listcard-acts">
+              <Button size="sm" onclick={() => void share(l)}
+                ><Icon name="link" />{t.share}</Button
+              >
+              <Button
+                size="sm"
+                variant="danger"
+                onclick={() => {
+                  del(l);
+                }}>{t.del}</Button
+              >
+            </div>
           </div>
-        </div>
-      {/each}
-    </div>
+        {/each}
+      </div>
+    {/if}
+    {#if hidden > 0}
+      <div class="listmore">
+        <Button onclick={() => void showMore()}>{`${t.showMore} (${String(hidden)})`}</Button>
+      </div>
+    {/if}
   {:else}
     <Empty>{t.noLists}</Empty>
   {/if}
@@ -221,6 +269,18 @@
     outline: none;
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
+  }
+
+  /* The grid's own top margin, which the filter takes over. */
+  .listfind {
+    margin-top: 18px;
+  }
+
+  /* The grid's own gap above the button. */
+  .listmore {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
   }
 
   /* off `.listgrid`..`.listcard-acts` in style.css. No `@media` override

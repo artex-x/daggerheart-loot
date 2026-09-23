@@ -425,6 +425,19 @@ deferral discipline.
   confirm the computed size of both in a browser and the selection-bar
   geometry case in `tests/app/states.js`.
 
+### D48 - a refused write near the storage quota says storage is blocked, not full
+
+- **Where**: `app/src/ports/storage.ts`, `set`; `app/src/lib/dict.ts`,
+  `saveFailed`.
+- **What**: `set` reports only that a write failed. Near the origin's quota
+  a list edit toasts `saveFailed`, whose text blames a browser that blocks
+  local storage, not a full one.
+- **Why deferred**: to tell the two apart, `StoragePort.set` must report the
+  error (a port change). The design target of issue 68, 200 lists, stays
+  near 0.7 MiB, far under the quota.
+- **How to verify the fix**: fill the origin's quota, edit a list, and read
+  the toast.
+
 ## Hook and tooling defects, kept open
 
 Not a parity question and not a phase-8 review finding - a real gap in a

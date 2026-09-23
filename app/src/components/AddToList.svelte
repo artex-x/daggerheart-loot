@@ -12,12 +12,14 @@
   import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
   import type { ListEntryMeta } from '../lib/listLink.js';
-  import { itemMeta, type StoredList } from '../lib/lists.js';
+  import {
+    itemMeta,
+    LIST_SEARCH_AT,
+    matchLists,
+    pickerOrder,
+    type StoredList
+  } from '../lib/lists.js';
   import type { AppState } from '../state/app.svelte.js';
-
-  /** `S.lists.length >= PICKER_SEARCH_AT` in app.js - the picker grows a
-   *  search box once there are more lists than fit without one. */
-  const PICKER_SEARCH_AT = 8;
 
   interface Props {
     app: AppState;
@@ -43,17 +45,24 @@
   const one = $derived(ids.length === 1 ? ids[0] : undefined);
   const label = $derived(one !== undefined ? t.inLists : t.addTo);
 
-  /* Newest first, off `listMenuHTML`'s own `created` descending sort. */
+  /* Taken when the menu opens, so a pressed chip keeps its place until the
+     menu opens again: the lists holding `one`, and every list there was. */
+  let held = $state.raw(new Set<string>());
+  let known = $state.raw(new Set<string>());
+
+  /* Newest first, off `listMenuHTML`'s own `created` descending sort; a
+     one-record menu puts the lists holding the record first (issue 68), and
+     a list created while it is open joins them. */
   const sorted = $derived(
-    [...app.lists.lists].sort((a, b) => (b.created ?? 0) - (a.created ?? 0))
+    pickerOrder(
+      app.lists.lists,
+      (l) => one !== undefined && (held.has(l.id) || !known.has(l.id))
+    )
   );
-  const showSearch = $derived(sorted.length >= PICKER_SEARCH_AT);
+  const showSearch = $derived(sorted.length >= LIST_SEARCH_AT);
 
   let pickQ = $state('');
-  const query = $derived(pickQ.trim().toLowerCase());
-  const shown = $derived(
-    query ? sorted.filter((l) => l.name.toLowerCase().includes(query)) : sorted
-  );
+  const shown = $derived(showSearch ? matchLists(sorted, pickQ) : sorted);
 
   const inList = (l: StoredList): boolean => one !== undefined && l.ids.includes(one);
 
@@ -65,6 +74,14 @@
   let up = $state(false);
 
   function toggle(): void {
+    if (!open) {
+      const all = app.lists.lists;
+      const record = one;
+      known = new Set(all.map((l) => l.id));
+      held = new Set(
+        record === undefined ? [] : all.filter((l) => l.ids.includes(record)).map((l) => l.id)
+      );
+    }
     app.menuFor = open ? '' : key;
     newListFor = false;
   }
@@ -106,9 +123,10 @@
     }
   }
 
+  /* The search already holds the name a person looked for and did not find. */
   function openNew(): void {
     newListFor = true;
-    draft = '';
+    draft = showSearch ? pickQ.trim() : '';
   }
 
   function cancelNew(): void {
@@ -133,6 +151,7 @@
     }
     newListFor = false;
     draft = '';
+    pickQ = '';
   }
 
   /* Focuses the new-list input the moment its form appears - the live app's
@@ -162,14 +181,19 @@
          `:scope >` makes the intent explicit rather than relying on order. */
       const btn = root.querySelector<HTMLElement>(':scope > .btn');
       if (!menu || !btn) return;
-      /* D6, paid off: measured against the nearest clipping box - the
-         record modal's own card where there is one, the window everywhere
-         else - rather than always against the window, which is what let the
-         menu's own placement effect send `scrollIntoView` looking for room
-         past the modal's edge and drag the card's scroll position along
-         with it. */
-      const clip = root.closest<HTMLElement>('.modal-card');
-      const clipBottom = clip ? clip.getBoundingClientRect().bottom : window.innerHeight;
+      /* D6, paid off: measured against the tightest clipping box - the
+         record card (`overflow: clip` in RecordCard.svelte), the modal's own
+         card, the window - rather than always against the window, which let
+         `scrollIntoView` look for room past the modal's edge and drag the
+         card's scroll position along, and let a menu on a record page at 360
+         wide open down past the card and lose its lower part (issue 68). */
+      const from = root;
+      const clipBottom = Math.min(
+        window.innerHeight,
+        ...['.card', '.modal-card'].map(
+          (sel) => from.closest(sel)?.getBoundingClientRect().bottom ?? Infinity
+        )
+      );
       const below = clipBottom - btn.getBoundingClientRect().bottom;
       const need = menu.getBoundingClientRect().height + 16;
       up = below < need;
@@ -371,10 +395,14 @@
   }
 
   /* off `.dropmenu.long` - the picker grows a search box once there are more
-     lists than fit without one. */
+     lists than fit without one. Only the chips scroll, so the label, the
+     search and «+ Новый список» stay in view (issue 68). */
   .dropmenu.long {
     max-height: min(60vh, 340px);
-    overflow: auto;
+  }
+
+  .dropmenu > :global(*) {
+    flex-shrink: 0;
   }
 
   input.pickq {
@@ -397,8 +425,20 @@
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }
 
+  /* The padding and the equal negative margin keep a chip's 2px + 2px focus
+     ring (tokens.css) inside the scroll box, which would clip it. */
   .pickchips {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 4px;
+    margin: -4px;
+  }
+
+  .dropmenu.long > .pickchips {
+    overflow: auto;
+    min-height: 0;
+    flex: 1 1 auto;
   }
 
   .picker-none {

@@ -905,6 +905,16 @@ touches the named file to fold in:
   `ci.yml`'s own "HOW TO UNDO A BAD DEPLOY" block - out of scope for a
   `.md`-only batch, parked here instead.
 
+Facts settled during measurement (issue 68, 2026-09-23), the Browser pane:
+
+- A `file://` tab is a static snapshot the page tools cannot script.
+  Measure a built `dist/` over HTTP: `python -m http.server <port> --bind
+  127.0.0.1 --directory <dist>`.
+- The pane's embedded Chromium accepted 20 M characters in one
+  `localStorage` key, so it cannot measure a real browser's quota.
+- A hidden pane returns blank screenshots; read geometry with
+  `read_page` or a script, or show the pane first.
+
 ## Persistence era: decided now, activated at Phase 0
 
 Moved here verbatim from `config-audit`'s plan at that task's retirement

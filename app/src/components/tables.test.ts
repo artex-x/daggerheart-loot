@@ -434,6 +434,21 @@ describe('the selection bar', () => {
     expect(screen.getByText('Добавить в')).toBeInTheDocument();
   });
 
+  it('keeps the menu newest first for two ticked records, even where a list holds one of them', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const holding = JSON.stringify([
+      { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 },
+      { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+    ]);
+    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': holding }) }) });
+    const boxes = rowCheckboxes();
+    await userEvent.click(boxes[0] as HTMLElement);
+    await userEvent.click(boxes[1] as HTMLElement);
+    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    const chips = screen.getAllByRole('button', { name: /Клад дракона|Лавка в порту/ });
+    expect(chips.map((c) => c.textContent)).toEqual(['Лавка в порту', 'Клад дракона']);
+  });
+
   it('a chip adds every ticked id in one press, keeps the ticks, and toasts the count', async () => {
     Element.prototype.scrollIntoView = vi.fn();
     const storage = memoryStorage({ 'dhloot.lists.v2': TWO_LISTS });

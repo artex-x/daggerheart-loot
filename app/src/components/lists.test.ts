@@ -269,6 +269,116 @@ describe('the row under a full card', () => {
   });
 });
 
+/** Eight lists, the menu's search threshold; `ci1` lies in «Сундук мага» (the
+ *  oldest) and «Порт Ветров», never in the newest. */
+const EIGHT = JSON.stringify(
+  [
+    'Сундук мага',
+    'Рынок',
+    'Порт Ветров',
+    'Трофеи ёжа',
+    'Кузнец',
+    'Логово',
+    'Храм Солнца',
+    'Лавка в порту'
+  ].map((name, i) => ({
+    id: 'l' + String(i),
+    name,
+    ids: i === 0 || i === 2 ? ['ci1'] : [],
+    created: i + 1
+  }))
+);
+
+const chipNames = (container: HTMLElement): string[] =>
+  [...container.querySelectorAll('.pickchips .chip')].map((c) => c.textContent);
+
+describe('many lists in the menu', () => {
+  it('puts the lists holding the record first, newest first in each group', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
+    });
+    await openMenu();
+    expect(chipNames(container)).toEqual([
+      '✓ Порт Ветров',
+      '✓ Сундук мага',
+      'Лавка в порту',
+      'Храм Солнца',
+      'Логово',
+      'Кузнец',
+      'Трофеи ёжа',
+      'Рынок'
+    ]);
+  });
+
+  it('keeps a pressed chip in its place until the menu opens again', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
+    });
+    await openMenu();
+    await userEvent.click(screen.getByRole('button', { name: 'Кузнец' }));
+    await userEvent.click(screen.getByRole('button', { name: '✓ Порт Ветров' }));
+    expect(chipNames(container)).toEqual([
+      'Порт Ветров',
+      '✓ Сундук мага',
+      'Лавка в порту',
+      'Храм Солнца',
+      'Логово',
+      '✓ Кузнец',
+      'Трофеи ёжа',
+      'Рынок'
+    ]);
+
+    await openMenu();
+    await openMenu();
+    expect(chipNames(container).slice(0, 3)).toEqual([
+      '✓ Кузнец',
+      '✓ Сундук мага',
+      'Лавка в порту'
+    ]);
+  });
+
+  it('finds a list with ё from a query typed with е', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
+    });
+    await openMenu();
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Найти список' }), 'ежа');
+    expect(chipNames(container)).toEqual(['Трофеи ёжа']);
+  });
+
+  it('scrolls the chips only: the search and the new-list chip sit outside them', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
+    });
+    await openMenu();
+    const chips = container.querySelector('.pickchips');
+    expect(chips).not.toBeNull();
+    expect(chips?.contains(screen.getByRole('searchbox', { name: 'Найти список' }))).toBe(
+      false
+    );
+    expect(chips?.contains(screen.getByRole('button', { name: '+ Новый список' }))).toBe(false);
+    expect(chips?.contains(screen.getByRole('button', { name: 'Рынок' }))).toBe(true);
+  });
+
+  it('starts the new-list form with the query, and a create clears the query', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': EIGHT });
+    const { container } = render(App, { env: at({ storage }) });
+    await openMenu();
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Найти список' }), 'Сундук ');
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+
+    const input = screen.getByPlaceholderText('Например: клад дракона');
+    expect(input).toHaveValue('Сундук');
+    expect(input).toHaveFocus();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    expect(screen.getByRole('searchbox', { name: 'Найти список' })).toHaveValue('');
+    expect(readLists(storage)[0]).toMatchObject({ name: 'Сундук', ids: ['ci1'] });
+    // a list created while the menu is open joins the lists holding the record
+    expect(chipNames(container)[0]).toBe('✓ Сундук');
+  });
+});
+
 describe('accessibility', () => {
   it('has no axe violations with the menu open', async () => {
     const { container } = render(App, {
@@ -293,6 +403,15 @@ describe('accessibility', () => {
     });
     await openMenu();
     await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations with eight lists, the search drawn and a query typed', async () => {
+    const { container } = render(App, {
+      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
+    });
+    await openMenu();
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Найти список' }), 'порт');
     await expectNoA11yViolations(container);
   });
 });
