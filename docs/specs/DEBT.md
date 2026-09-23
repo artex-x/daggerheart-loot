@@ -409,22 +409,6 @@ deferral discipline.
 - **How to verify the fix**: `#/i/<a secondary id>` and `#/print/<same id>`
   name the class the same way.
 
-### D47 - the selection bar's count font declaration is invalid and dropped
-
-- **Where**: `app/src/components/SelBar.svelte`, `.selcount`,
-  `font: 650 13.5px/1 inherit`.
-- **What**: `inherit` is not a valid family inside the `font` shorthand, so
-  the browser drops the whole declaration. "Выбрано N" draws in the bar's
-  inherited font (15.5px, weight 400; measured 2026-09-23 on this host), not
-  the 13.5px/650 the rule names. The selection total beside it
-  (`.seltotal`) matches what is drawn, not what the rule names.
-- **Why deferred**: the fix changes the bar's type on every page with a
-  selection.
-- **How to verify the fix**: write the shorthand with a real family (or set
-  only `font-size` and `font-weight`), give `.seltotal` the same type, and
-  confirm the computed size of both in a browser and the selection-bar
-  geometry case in `tests/app/states.js`.
-
 ### D48 - a refused write near the storage quota says storage is blocked, not full
 
 - **Where**: `app/src/ports/storage.ts`, `set`; `app/src/lib/dict.ts`,
@@ -452,6 +436,21 @@ deferral discipline.
 - **How to verify the fix**: grep `rud` for `броски [А-Я]` and
   `Бросками? Заклинания` after a plural; neither matches, and
   `node tests/derived.js` passes.
+
+### D51 - the dropped-items toast reads as one item at 21, 31, 101
+
+- **Where**: `app/src/lib/dict.ts`, Russian `droppedItems`; shown by the
+  `ListsPage.svelte` and `SharedListPage.svelte` toasts.
+- **What**: `plural()` picks the `one` form for 21, 31 and 101, so the toast
+  reads "Пропущена 21 позиция — её больше нет в данных". The count agrees,
+  but "её" refers to 21 records as to one.
+- **Why deferred**: the owner approved the three forms in `plural()`'s own
+  change, and a fix changes shipped product text. The toast needs a stored
+  or shared list with 21 or more records gone from the data.
+- **Fix**: remove the pronoun from all three forms ("— больше нет в данных"),
+  or give the `one` form a clause without a pronoun.
+- **How to verify the fix**: `plural(21, dict('ru').droppedItems, 'ru')` has
+  no singular pronoun; `plural.test.ts` covers 1, 2, 5 and 21.
 
 ## Hook and tooling defects, kept open
 

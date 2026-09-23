@@ -26,6 +26,7 @@
     matchLists,
     type StoredList
   } from '../lib/lists.js';
+  import { plural } from '../lib/plural.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -141,7 +142,7 @@
     /* This call site must not proceed silently - once created, a dropped
        entry is gone from the copy for good even if the data later knows it
        again. */
-    if (data.dropped) app.say(t.droppedItems.replace('%n', String(data.dropped)));
+    if (data.dropped) app.say(plural(data.dropped, t.droppedItems, app.lang));
   }
 </script>
 

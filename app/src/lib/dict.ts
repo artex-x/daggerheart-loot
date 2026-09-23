@@ -235,6 +235,9 @@ const ru = {
   startTyping: 'Начните вводить запрос',
   selectAll: 'Выбрать все',
   selected: 'Выбрано',
+  /* A `|` string is a form set for `plural()` (I18N.md, "Rules"). */
+  selectedN: 'Выбрана %n позиция|Выбрано %n позиции|Выбрано %n позиций',
+  itemsN: '%n позиция|%n позиции|%n позиций',
   clearSel: 'Снять выделение',
   copySel: 'Скопировать',
   selCopied: 'Выбранное скопировано',
@@ -296,7 +299,7 @@ const ru = {
   printEmpty: 'Печатать нечего: в адресе не нашлось ни одной вещи.',
   back: 'Назад',
   printTooMany:
-    'За один раз печатается %n карточек, остальные %d в лист не попали. Разделите набор на части.',
+    'Карточек за один раз: не больше %n. Не попали на лист: %d. Разделите набор на части.',
   homeSet: 'Приложение будет открываться на этом разделе',
   homeReset: 'Приложение снова будет открываться на обычных правилах',
 
@@ -329,7 +332,8 @@ const ru = {
   /* An old link naming a renumbered or deleted record would otherwise lose
      those entries with no sign anything was missing - toasted once, on the
      shared page and after restoring a copy. */
-  droppedItems: 'Пропущено позиций: %n — их больше нет в данных',
+  droppedItems:
+    'Пропущена %n позиция — её больше нет в данных|Пропущено %n позиции — их больше нет в данных|Пропущено %n позиций — их больше нет в данных',
 
   /* The list page - app.js 114-195, the address, the actions, the notes,
      the roll panel and a row's own controls. */
@@ -367,13 +371,15 @@ const ru = {
   movedItem: '«%s» — позиция %n из %m',
   undo: 'Вернуть',
   pickAll: 'Выбрать все',
-  pickedN: 'Выбрано',
-  /* A selection's taken count and total - colon forms, so a count and a
-     record name never have to agree with a word (I18N.md, "Rules"). */
+  /* A selection's total and taken pieces - a colon form or an invariant
+     abbreviation, so no count has to agree with a word (I18N.md, "Rules"). */
   total: 'Итого',
   unpricedN: 'без цены: %n',
-  pickQty: 'Сколько',
-  pickQtyOf: 'Сколько: %s',
+  pickQty: 'Взять',
+  pickQtyOf: 'Взять: %s',
+  pickOf: 'из %n',
+  pcsN: '%n шт.',
+  eachPrice: 'по %s',
   moneyAs: 'Отображение цен',
   money_bag: 'Как в книге',
   money_coin: 'Монетами',
@@ -566,6 +572,8 @@ const en: Dict = {
   startTyping: 'Start typing',
   selectAll: 'Select all',
   selected: 'Selected',
+  selectedN: 'Selected %n item|Selected %n items',
+  itemsN: '%n item|%n items',
   clearSel: 'Clear selection',
   copySel: 'Copy',
   selCopied: 'Selection copied',
@@ -645,7 +653,8 @@ const en: Dict = {
   listDeleted: 'List "%s" deleted',
   playersLinkCopied: "Players' link copied — it carries no GM notes",
   badShare: 'The link is damaged or was built from a different data version.',
-  droppedItems: 'Skipped %n items — no longer in the data',
+  droppedItems:
+    'Skipped %n item - no longer in the data|Skipped %n items - no longer in the data',
 
   rename: 'List name',
   sharePlayers: "Players' link",
@@ -681,11 +690,13 @@ const en: Dict = {
   movedItem: '"%s" - position %n of %m',
   undo: 'Undo',
   pickAll: 'Select all',
-  pickedN: 'Selected',
   total: 'Total',
   unpricedN: 'no price: %n',
-  pickQty: 'How many',
-  pickQtyOf: 'How many: %s',
+  pickQty: 'Take',
+  pickQtyOf: 'Take: %s',
+  pickOf: 'of %n',
+  pcsN: '%n pcs',
+  eachPrice: '%s each',
   moneyAs: 'Price display',
   money_bag: 'As in the book',
   money_coin: 'In coins',

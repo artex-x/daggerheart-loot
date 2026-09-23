@@ -14,6 +14,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
+import { dict } from './dict.js';
 import {
   descOf,
   eqLine,
@@ -25,7 +26,7 @@ import {
   EQ_TRAIT,
   EQ_TYPE,
   eqWord,
-  itemsWord,
+  selCountText,
   nameOf,
   type StatLabels
 } from './i18n.js';
@@ -254,24 +255,23 @@ describe('a stat block with gaps in it', () => {
   });
 });
 
-describe('itemsWord', () => {
-  it('picks the Russian form by the last digits, with the 11-14 exception', () => {
-    expect(itemsWord(1, 'ru')).toBe('позиция');
-    expect(itemsWord(21, 'ru')).toBe('позиция');
-    expect(itemsWord(2, 'ru')).toBe('позиции');
-    expect(itemsWord(4, 'ru')).toBe('позиции');
-    expect(itemsWord(5, 'ru')).toBe('позиций');
-    expect(itemsWord(0, 'ru')).toBe('позиций');
-    expect(itemsWord(11, 'ru')).toBe('позиций');
-    expect(itemsWord(14, 'ru')).toBe('позиций');
+describe('selCountText', () => {
+  it('agrees the verb and the noun with the entries and adds the pieces only when they differ', () => {
+    const ru = dict('ru');
+    expect(selCountText(1, 1, 'ru', ru)).toBe('Выбрана 1 позиция');
+    expect(selCountText(2, 2, 'ru', ru)).toBe('Выбрано 2 позиции');
+    expect(selCountText(4, 9, 'ru', ru)).toBe('Выбрано 4 позиции · 9 шт.');
+    expect(selCountText(5, 7, 'ru', ru)).toBe('Выбрано 5 позиций · 7 шт.');
+    expect(selCountText(11, 11, 'ru', ru)).toBe('Выбрано 11 позиций');
+    expect(selCountText(21, 30, 'ru', ru)).toBe('Выбрана 21 позиция · 30 шт.');
   });
 
-  it('only ever singular or plural in English', () => {
-    expect(itemsWord(1, 'en')).toBe('item');
-    expect(itemsWord(0, 'en')).toBe('items');
-    expect(itemsWord(2, 'en')).toBe('items');
-    expect(itemsWord(11, 'en')).toBe('items');
-    expect(itemsWord(21, 'en')).toBe('items');
+  it('reads the same shape in English', () => {
+    const en = dict('en');
+    expect(selCountText(1, 1, 'en', en)).toBe('Selected 1 item');
+    expect(selCountText(1, 3, 'en', en)).toBe('Selected 1 item · 3 pcs');
+    expect(selCountText(4, 9, 'en', en)).toBe('Selected 4 items · 9 pcs');
+    expect(selCountText(21, 21, 'en', en)).toBe('Selected 21 items');
   });
 });
 

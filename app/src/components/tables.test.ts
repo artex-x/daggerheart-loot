@@ -377,7 +377,9 @@ describe('the selection bar', () => {
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
 
-    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
+    expect(container.querySelector('.selcount')).toHaveTextContent(/^Выбрано 1$/);
+    expect(container.querySelector('.selsumm')).not.toHaveAttribute('aria-live');
+    expect(container.querySelector('.seltotal')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Снять выделение' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
       'aria-expanded',

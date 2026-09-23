@@ -172,12 +172,19 @@ Seven modes. Each keeps its own input in memory only.
   drawn count is session memory (`AppState.listsShown`): a return from a
   list page shows the same cards, a reload starts at 24. A new card goes
   first and pushes the last drawn card under the button.
-- Optional quantity and price per entry; both travel into copied text.
+- Optional quantity and price per entry; both travel into copied text. The
+  price is the price of one unit: after a count over 1 the copied line reads
+  "×2 — по 7 мешков 5 горстей" / "×2 — 7 bags 5 handfuls each", in the
+  selection copy and in "Скопировать текст" alike.
 - Prices display as book units (default) or coins; the mode is per list and
   rides in the link.
 - Batch actions over a selection within a list: set prices, clear prices, shift
   all by a percentage, suggest prices from tier or rarity, copy, remove. The
-  batch bar shows the selection total beside "Выбрано N". "Скопировать" copies
+  batch bar's select-all box keeps the name "Выбрать все"; it shows the mixed
+  state while some but not all rows are ticked, and its visible label is
+  dropped while anything is ticked. A ticked row takes the gold selected style
+  of a ticked table row. The batch bar shows the selection summary and the
+  total. "Скопировать" copies
   the ticked entries in list order with each taken count and unit price after
   the name, and ends with the total line. "Удалить (N)" removes by the taken
   count: an entry taken whole leaves the list, an entry taken in part keeps
@@ -186,16 +193,25 @@ Seven modes. Each keeps its own input in memory only.
   removal too, and one "Вернуть" restores every row it touched, in place.
 - A selection on a list page - the own list and the shared page - carries a
   taken count per ticked entry. Ticking takes the whole quantity. A ticked
-  entry with a quantity over 1 draws a "Сколько" field in a strip right under
-  its row, which narrows the count to 1..quantity; an emptied field puts its
-  value back on commit. The count lives in memory only and clears with its
+  entry with a quantity over 1 draws a take line inside its row, under the
+  art: "Взять [2] из 5 = 1 мешок" / "Take [2] of 5 = 1 bag", the line sum
+  (price x taken count) only for a priced entry. The field narrows the count
+  to 1..quantity; an emptied field puts its value back on commit. The count lives in memory only and clears with its
   tick, on "clear selection", and on a navigation. The total is the sum of
   price x taken count over the priced ticked entries, in coins, read once in
   the list's money mode: `Итого: 1 мешок 1 горсть`. Unpriced ticked entries
   add nothing and are counted after it: `(без цены: 1)`. With no priced
   entry ticked, no total is drawn. The rounded total can differ from the sum
-  of the rounded row prices. A table or search selection has no taken count
-  and no total.
+  of the rounded row prices. The summary on a list page names entries and
+  pieces apart: "Выбрано 4 позиции · 9 шт." / "Selected 4 items · 9 pcs",
+  the pieces part only when the taken pieces differ from the entries. The
+  verb agrees with the count: "Выбрана 1 позиция" / "Выбрано 4 позиции". Summary
+  and total sit in one `aria-live="polite"` region at 13.5px, the count and
+  the total's value at weight 650, so a changed count is announced. The
+  region is mounted while nothing is ticked, so the first tick is announced
+  too. A table
+  or search selection has no taken count and no total, and its bar reads
+  "Выбрано N".
 - A typed quantity is held to 99, the most a list link carries, and a
   negative one to none; the field then shows the held value.
 - A list has its own roll button, folded by default and opened on its
@@ -219,9 +235,10 @@ Seven modes. Each keeps its own input in memory only.
   "select all", into a new or an existing list is the selection bar's
   add-to-list control, which carries the taken count as the quantity (none
   for a count of 1), the price and a row's public note but never the GM's
-  note. The bar shows the selection total beside "Выбрано N", and its
+  note. The bar shows the selection summary and the total, its
   "Скопировать" carries each taken count and unit price and ends with the
-  total line. A payload that cannot be decoded
+  total line, and its "Печать" writes each taken count into the print
+  address. A payload that cannot be decoded
   draws "Предмет не найден", the bad-link line and a "На главную" button to
   `#/roll/std`. A **packed** link (`#/l/~<payload>`) that cannot be expanded
   draws the same bad-link page without replacing the address - the live
@@ -360,8 +377,9 @@ Seven modes. Each keeps its own input in memory only.
   (a space, U+00D7, the number), only for a count over 1 - the same suffix
   the list's copied text puts after the name (`qtySuffix` in `share.ts`). The
   count rides in the address as `*<n>` per id (`ROUTES.md`), so it survives a
-  reload and the copied set link. Only the list page's print button writes
-  it; the record, table and search print links carry none. The counter sits
+  reload and the copied set link. The list page's print button writes the
+  list's counts, and the shared page's selection bar writes the taken counts;
+  the record, table and search print links carry none. The counter sits
   in a `nowrap` span, so it wraps with the name's last word, never alone.
 - Fitting is measured in the browser after render: rules text steps its font
   down, then the top padding, then the stat values, and text width is measured

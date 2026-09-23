@@ -129,8 +129,10 @@ styleSheets[n].cssRules` throws over `file://`, so a probe reads computed
 values, not matched rules.
 
 `NAME_FN` is `aria-label || title || textContent`, with recurring
-consequences: the print link is gripped by its long `title`; select-all
-cannot be gripped (no `aria-label`/`title` on the label); every row's own box
+consequences: the print link is gripped by its long `title`; a table's select-all
+cannot be gripped (no `aria-label`/`title` on the label); the own list's
+select-all is gripped by its `aria-label` "Выбрать все", which
+`tests/app/inventory.js` depends on; every row's own box
 is named "Выбрано", so a second row needs `d.click(name, nth)`; a card's
 accessible name has no spaces because the live markup had none between
 `<b>`, the badge and the empty `<p>` - a Svelte template newline there would

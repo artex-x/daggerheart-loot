@@ -175,20 +175,23 @@ export function stockLeft(meta: ListEntryMeta, taken: number): number {
   return Math.max(0, stockOf(meta) - taken);
 }
 
-/** Returns the coins the priced taken entries cost and how many taken entries have no price. */
+/** Returns the coins the priced taken entries cost, how many taken entries have no price, and the taken pieces over all entries. */
 export function takenTotal(
   ids: readonly string[],
   metaOf: (id: string) => ListEntryMeta,
   takenOf: (id: string) => number
-): { coins: number; unpriced: number } {
+): { coins: number; unpriced: number; pieces: number } {
   let coins = 0;
   let unpriced = 0;
+  let pieces = 0;
   for (const id of ids) {
     const gold = metaOf(id).gold ?? 0;
-    if (gold > 0) coins += gold * takenOf(id);
+    const taken = takenOf(id);
+    pieces += taken;
+    if (gold > 0) coins += gold * taken;
     else unpriced++;
   }
-  return { coins, unpriced };
+  return { coins, unpriced, pieces };
 }
 
 /**

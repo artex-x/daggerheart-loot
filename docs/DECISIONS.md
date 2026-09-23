@@ -12,6 +12,38 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-23 - A take line inside the ticked row; the summary names entries and pieces; the shared print and copied prices carry the count
+
+- Task: `67`, round 2, human decision (options 1A, 2A, 3A, 4A).
+- Decision: the taken count is a take line inside the ticked row, under the
+  art: "Взять [2] из 5 = 1 мешок"; a ticked own row takes the selected style.
+  A list page's summary reads "Выбрано 4 позиции · 9 шт.", the pieces only
+  when they differ. The shared page's "Печать" writes the taken counts. A
+  copied priced line with a count over 1 reads "×2 — по 7 мешков 5 горстей",
+  in the selection copy and the whole-list copy.
+- Rejected: the count field in the row itself (Кол-во turns into "Взять"
+  while ticked) - one cell with two meanings; a `− 2 +` stepper - a second
+  quantity control shape; pieces first ("Выбрано 9 шт. в 4 позициях") -
+  "Удалить (4)" then sits beside a different number; a captioned stat group
+  - two lines in the sticky bar; a print with no counts or with the stock -
+  disagrees with the copy; "по" in the selection copy only - two line shapes
+  for one list; the old copied text - reads as the price of the whole stack.
+
+## 2026-09-23 - One plural() over Intl.PluralRules counts every number beside a word
+
+- Task: `67`, round 2, human decision (option A).
+- Decision: one `plural(n, forms, lang)` in `app/src/lib/plural.ts` picks
+  the form by the built-in `Intl.PluralRules`. A form set is one dictionary
+  string split by `|` (Russian `one|few|many`, English `one|other`, `%n` the
+  number), so `Dict` stays `Record<key, string>`. A verb that agrees with
+  the count is inside the form: "Выбрана 1 позиция" / "Выбрано 4 позиции".
+  Colon forms ("Карточек: %n") stay. Rule: `docs/specs/I18N.md`, "Rules".
+- Rejected: an i18n library - outside the approved dependency baseline
+  (`I18N.md`, "No i18n framework") for one function; the hand-written rule -
+  two copies (the list count in `i18n.ts`, the money words in `money.ts`)
+  and no English rule beyond `n === 1`; ICU MessageFormat strings - a
+  parser for three keys.
+
 ## 2026-09-23 - Vault of Ages Volume 4: the source errata policy
 
 - Task: `voa4`, human decision (Q1, option C).
@@ -239,21 +271,7 @@ entry to its first line before adding another.
 
 ## 2026-09-23 - The taken count sits in a strip under a ticked row; the total sits beside the selected count
 
-- Task: `50`, human decision.
-- Decision: a ticked list entry whose quantity is over 1 grows a thin strip
-  right under its row with a "Сколько" / "How many" field (1..quantity). An
-  entry at 1 draws no strip, and an untouched page draws nothing new. The
-  total sits beside "Выбрано N" in each page's own bar: the shared page's
-  selection bar and the own list's batch bar. One `PickQty.svelte` serves
-  both pages.
-- Rejected: a "Продажа" panel under the bar listing every ticked row with a
-  field, like the "Цены" panel - on the shared page it opens above the sticky
-  bottom bar and covers the rows it counts on a phone; a third field in the
-  row's Кол-во/Золото column - crowds the row at 375px and puts two quantity
-  fields side by side on the own list.
-- Accepted trade-off: a ticked row grows by one line. At 375px the shared
-  page's total wraps under "Выбрано N" and the own list's "Удалить (N)" wraps
-  under the other batch buttons; the human kept both wraps as drawn.
+- Superseded by "A take line inside the ticked row; the summary names entries and pieces; the shared print and copied prices carry the count" (2026-09-23).
 
 ## 2026-09-22 - The print address carries a list's count as `*<n>` per id
 
@@ -261,7 +279,9 @@ entry to its first line before adding another.
 - Decision: `#/print/<id>[*<n>]-...`. A count over 1 is drawn after the
   card's name as ` ×N`, clamped to 99; anything else draws no counter. `*<n>`
   is the list link's own `id*qty` spelling, so one spelling means "quantity"
-  in both public formats. Only the list page's print button writes it.
+  in both public formats. Only the list page's print button writes it
+  (amended 2026-09-23: the shared page's selection bar writes the taken
+  counts too).
 - Rejected: the count from memory (the open list) - lost on reload and on
   the copied set link, against `ROUTES.md`'s reason for reading print from
   the address; a repeated id as a count (`ci1-ci1-ci1`) - changes addresses

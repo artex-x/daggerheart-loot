@@ -250,7 +250,24 @@ describe('a selection taken count', () => {
         (id) => meta[id] ?? {},
         (id) => taken[id] ?? 1
       )
-    ).toEqual({ coins: 112, unpriced: 1 });
+    ).toEqual({ coins: 112, unpriced: 1, pieces: 5 });
+  });
+
+  it('counts the taken pieces over priced and unpriced entries alike', () => {
+    const meta: Record<string, { qty?: number; gold?: number }> = {
+      a: { qty: 3, gold: 40 },
+      b: { qty: 2, gold: 750 },
+      c: { gold: 120 },
+      d: { qty: 5 }
+    };
+    const taken: Record<string, number> = { a: 1, b: 2, c: 1, d: 5 };
+    expect(
+      takenTotal(
+        ['a', 'b', 'c', 'd'],
+        (id) => meta[id] ?? {},
+        (id) => taken[id] ?? 1
+      )
+    ).toEqual({ coins: 1660, unpriced: 1, pieces: 9 });
   });
 
   it('is zero with nothing ticked', () => {
@@ -260,7 +277,7 @@ describe('a selection taken count', () => {
         () => ({}),
         () => 1
       )
-    ).toEqual({ coins: 0, unpriced: 0 });
+    ).toEqual({ coins: 0, unpriced: 0, pieces: 0 });
   });
 });
 

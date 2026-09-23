@@ -415,7 +415,7 @@ describe('a list selection, with its taken counts and total', () => {
     const a = rec('ci1');
     const b = rec('ci2');
     const { text, html } = shareSelection([a, b], index, 'ru', priced({ ci1: 2, ci2: 3 }));
-    const pa = share(a, index, 'ru', { suffix: ' ×2 — 5 горстей' });
+    const pa = share(a, index, 'ru', { suffix: ' ×2 — по 5 горстей' });
     const pb = share(b, index, 'ru', { suffix: ' ×3' });
     expect(text).toBe([pa.text, pb.text, 'Итого: 1 мешок (без цены: 1)'].join('\n\n'));
     expect(html).toBe(
@@ -431,6 +431,12 @@ describe('a list selection, with its taken counts and total', () => {
       priced({ ci1: 2 }, { total: 'A & B' })
     );
     expect(html.endsWith('<br><br><b>A &amp; B: 1 мешок</b>')).toBe(true);
+  });
+
+  it('marks the unit price "по" only for a taken count over 1', () => {
+    const a = rec('ci1');
+    const { text } = shareSelection([a], index, 'ru', priced({ ci1: 1 }));
+    expect(text.startsWith(share(a, index, 'ru', { suffix: ' — 5 горстей' }).text)).toBe(true);
   });
 
   it('writes no total line when no taken entry has a price', () => {
@@ -485,7 +491,7 @@ describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
     const a = share(ci1, index, 'ru', { skip: new Set(l.ids) });
     const b = share(ci2, index, 'ru', {
       skip: new Set(l.ids),
-      suffix: ' ×2 — 7 мешков 5 горстей',
+      suffix: ' ×2 — по 7 мешков 5 горстей',
       extra: [{ head: t.noteHead, body: 'Светится в темноте' }]
     });
 
@@ -516,6 +522,11 @@ describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
     const l: ListShape = { ...list(), money: 'coin' };
     const { text } = shareList(l, index, 'ru', t);
     expect(text).toContain('750 зол.');
+  });
+
+  it('writes the English unit price with "each" after a count over 1', () => {
+    const { text } = shareList(list(), index, 'en', dict('en'));
+    expect(text).toContain(' ×2 — 7 bags 5 handfuls each');
   });
 
   it('drops an id the data does not know, silently', () => {

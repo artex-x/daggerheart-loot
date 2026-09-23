@@ -15,7 +15,8 @@
   import TableRows from './TableRows.svelte';
   import type { Index } from '../lib/data.js';
   import { sectionHash, sharedListHash } from '../lib/hash.js';
-  import { itemsWord, nameOf } from '../lib/i18n.js';
+  import { nameOf } from '../lib/i18n.js';
+  import { plural } from '../lib/plural.js';
   import { decodeList, encodeList, type ListEntryMeta } from '../lib/listLink.js';
   import { copyInit, takenQty } from '../lib/lists.js';
   import { moneyMode, priceText } from '../lib/money.js';
@@ -62,9 +63,7 @@
       return tail === undefined ? { it } : { it, tail };
     })
   );
-  const sub = $derived(
-    `${t.sharedList} · ${String(items.length)} ${itemsWord(items.length, app.lang)}`
-  );
+  const sub = $derived(`${t.sharedList} · ${plural(items.length, t.itemsN, app.lang)}`);
 
   /* The live `S.shared` (app.js 51, 3140-3141): every add-to-list menu on
      this page - the bar's, a card's - reads its meta from it. The same
@@ -94,7 +93,7 @@
     const s = shared;
     if (s && s.dropped > 0 && toldFor !== payload) {
       toldFor = payload;
-      app.say(t.droppedItems.replace('%n', String(s.dropped)));
+      app.say(plural(s.dropped, t.droppedItems, app.lang));
     }
   });
 </script>
@@ -135,14 +134,17 @@
           app.toggleAllIn(ids);
         }}
       >
-        {#snippet after(it: Record_)}
+        {#snippet inside(it: Record_)}
           {@const m = metaOf(it.id)}
           {#if app.sel.has(it.id) && (m.qty ?? 0) > 1}
+            {@const taken = takenQty(m, app.picked.get(it.id))}
             <div class="pickrow">
               <PickQty
-                value={takenQty(m, app.picked.get(it.id))}
+                value={taken}
                 max={m.qty ?? 1}
                 label={t.pickQty}
+                ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
+                sum={priceText((m.gold ?? 0) * taken, mode, app.lang)}
                 name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
                 onchange={(n: number) => {
                   app.pick(it.id, n);
@@ -150,6 +152,8 @@
               />
             </div>
           {/if}
+        {/snippet}
+        {#snippet after(it: Record_)}
           <HitNote icon="eye" label={t.notePub} text={metaOf(it.id).note} />
           <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(it.id).hnote} />
         {/snippet}
@@ -167,11 +171,20 @@
     margin-bottom: 18px;
   }
 
-  /* The taken-count strip under a ticked row, right-aligned under the row's
-     own tail (docs/specs/FEATURES.md, "Lists"). */
+  /* The take line inside a ticked row, under the art: the 42px select box
+     plus the row's 11px inset (docs/specs/FEATURES.md, "Lists"). No fill -
+     the row's own selected wash shows through. */
   .pickrow {
+    flex: 0 0 100%;
     display: flex;
-    justify-content: flex-end;
-    padding: 0 11px;
+    align-items: center;
+    border-top: 1px solid rgb(216 171 94 / 22%);
+    padding: 8px 11px 8px 53px;
+  }
+
+  @media (max-width: 600px) {
+    .pickrow {
+      padding-left: 49px;
+    }
   }
 </style>

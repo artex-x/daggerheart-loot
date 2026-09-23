@@ -15,6 +15,8 @@
  *
  * Pure module: the language arrives as an argument. */
 
+import type { Dict } from './dict.js';
+import { plural } from './plural.js';
 import type {
   DamageType,
   EquipClass,
@@ -164,18 +166,15 @@ export function eqLine(
   return eqParts(it, lang, labels, opts).join(' · ');
 }
 
-/* ---------- the list page's count line ---------- */
+/* ---------- the list page's selection summary ---------- */
 
 /**
- * How many entries a list has, off the live `plural` (app.js 3168-3175):
- * Russian needs one of three forms by the last digits (with the 11-14
- * exception), English needs two.
+ * Returns a list page's selection summary: the ticked entries, verb and noun
+ * agreed with the count, then the taken pieces when they differ -
+ * "Выбрана 1 позиция", "Выбрано 4 позиции · 9 шт." (docs/specs/FEATURES.md,
+ * "Lists").
  */
-export function itemsWord(n: number, lang: Lang): string {
-  if (lang !== 'ru') return n === 1 ? 'item' : 'items';
-  const a = n % 10;
-  const b = n % 100;
-  if (a === 1 && b !== 11) return 'позиция';
-  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return 'позиции';
-  return 'позиций';
+export function selCountText(entries: number, pieces: number, lang: Lang, t: Dict): string {
+  const head = plural(entries, t.selectedN, lang);
+  return pieces === entries ? head : `${head} · ${t.pcsN.replace('%n', String(pieces))}`;
 }

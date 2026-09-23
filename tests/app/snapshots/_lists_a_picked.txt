@@ -1,6 +1,6 @@
 # #/lists/a ~ picked
 # route: #/lists/a
-# why: row 2 (x2, 750) ticked and taken at 1: the strip at 1, "Итого: 7 мешков 5 горстей" beside "Выбрано 1", Цены, Скопировать, Удалить (1)
+# why: row 2 (x2, 750) ticked and taken at 1: the take line "Взять [1] из 2 = 7 мешков 5 горстей", "Выбрана 1 позиция" (pieces equal entries) and "Итого: 7 мешков 5 горстей", Цены, Скопировать, Удалить (1)
 
 ## ru :: tree
 RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy4xZGo5fmNpMSxjaTIqMio3NTAsY2kzLGNpNCxjaTUsY2k2LGNpNwoeK34f0JvQsNCy0LrQsCDQt9Cw0LrRgNGL0YLQsCDQtNC-INGD0YLRgNCwHitjaTIf0KHQstC10YLQuNGC0YHRjyDQsiDRgtC10LzQvdC-0YLQtQ]
@@ -36,12 +36,16 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Монетами" [pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=true]
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x24 of 28 same-shape siblings elided
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Например: лавка закрыта до утра" [value=Лавка закрыта до утра multiline=true readonly=false required=false]
     textbox "Например: позиции 9-10 лежат под прилавком" [multiline=true readonly=false required=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "ВЫБРАНО 1" [checked=false]
+    checkbox "Выбрать все" [checked=mixed]
+    generic ""
+      StaticText "Выбрана 1 позиция"
+      StaticText "Итого: "
+      StaticText "7 мешков 5 горстей"
     button "Цены" [expanded=false]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
@@ -55,17 +59,18 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     spinbutton "ЗОЛОТО ?" [value=750 description=7 мешков 5 горстей valuetext=750 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
-    spinbutton "Сколько: Пронзительная Свирель" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
+    spinbutton "Взять: Пронзительная Свирель" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Как предмет выглядит, что о нём знают" [value=Светится в темноте multiline=true readonly=false required=false]
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Хоумбрю, подвох, что знает только мастер" [value=Проклят multiline=true readonly=false required=false]
-    ... checkbox x3 of 7 same-shape siblings elided
+    checkbox "Заряжающий Колчан" [checked=false]
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
+    ... checkbox x2 of 6 same-shape siblings elided
     spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
     ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
@@ -102,6 +107,8 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Взять: Пронзительная Свирель
+Выбрать все
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
@@ -131,7 +138,6 @@ daggerheart.com
 Разговаривающие СферыЭта пара сфер позволяет существам, которые ... [namelen=129 namehash=ce76c23a]
 Результат броска
 Светится в темноте
-Сколько: Пронзительная Свирель
 Скопировать
 Скопировать текст
 Скрыть
@@ -183,12 +189,16 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "In coins" [pressed=false]
     button "How this works" [description=How this works expanded=false]
     DisclosureTriangle "NOTES" [expanded=true]
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x24 of 28 same-shape siblings elided
     button "Clear the note" [description=Clear the note]
     textbox "e.g. the shop is shut until morning" [value=Лавка закрыта до утра multiline=true readonly=false required=false]
     textbox "e.g. entries 9-10 are kept under the counter" [multiline=true readonly=false required=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "SELECTED 1" [checked=false]
+    checkbox "Select all" [checked=mixed]
+    generic ""
+      StaticText "Selected 1 item"
+      StaticText "Total: "
+      StaticText "7 bags 5 handfuls"
     button "Prices" [expanded=false]
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
@@ -202,17 +212,18 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     spinbutton "GOLD ?" [value=750 description=7 bags 5 handfuls valuetext=750 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
-    spinbutton "How many: Piper Whistle" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
+    spinbutton "Take: Piper Whistle" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
     button "Clear the note" [description=Clear the note]
     textbox "What it looks like, what is known about it" [value=Светится в темноте multiline=true readonly=false required=false]
     button "Clear the note" [description=Clear the note]
     textbox "Homebrew, the catch, what only the GM knows" [value=Проклят multiline=true readonly=false required=false]
-    ... checkbox x3 of 7 same-shape siblings elided
+    checkbox "Charging Quiver" [checked=false]
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
+    ... checkbox x2 of 6 same-shape siblings elided
     spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
     ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
@@ -259,7 +270,6 @@ Dismiss
 Dragon's Vault
 Dread
 EN
-How many: Piper Whistle
 How this works
 In coins
 Lay these out for printing: nine to an A4 sheet
@@ -282,11 +292,13 @@ Random 1–7
 Remove from the list
 Roll result
 Search
+Select all
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
 Standard rules
 Tables
+Take: Piper Whistle
 Vault of Ages
 Wondrous
 Your own link

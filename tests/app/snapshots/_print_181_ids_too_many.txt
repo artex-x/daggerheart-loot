@@ -32,7 +32,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-ci2-c
     button "Обычная" [pressed=true]
     button "Компактная" [pressed=false]
     button "Ссылка на набор"
-    StaticText "За один раз печатается 180 карточек, остальные 1 в лист не попал..." [namelen=92 namehash=34eda716]
+    StaticText "Карточек за один раз: не больше 180. Не попали на лист: 1. Разде..." [namelen=84 namehash=84ffff20]
     ... StaticText x719 of 723 same-shape siblings elided
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
     heading "ПРОНЗИТЕЛЬНАЯ СВИРЕЛЬ" [level=2]

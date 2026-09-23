@@ -10,6 +10,7 @@ import {
   MONEY_DEFAULT,
   priceText,
   reprice,
+  totalParts,
   totalText,
   type Rarity
 } from './money.js';
@@ -302,5 +303,15 @@ describe('the selection total', () => {
     expect(totalText({ coins: 112, unpriced: 1 }, 'bag', 'ru', ru)).toBe(
       'Итого: 1 мешок 1 горсть (без цены: 1)'
     );
+  });
+
+  it('splits the line into its label, value and unpriced count for a bar', () => {
+    expect(totalParts({ coins: 0, unpriced: 1 }, 'bag', 'ru', ru)).toBeNull();
+    expect(totalParts({ coins: 112, unpriced: 1 }, 'bag', 'ru', ru)).toEqual({
+      label: 'Итого:',
+      value: '1 мешок 1 горсть',
+      unpriced: '(без цены: 1)'
+    });
+    expect(totalParts({ coins: 112, unpriced: 0 }, 'bag', 'ru', ru)?.unpriced).toBe('');
   });
 });

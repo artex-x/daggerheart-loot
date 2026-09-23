@@ -139,7 +139,8 @@ An id may carry a count as `*<n>`, the list link's own `id*qty` spelling
 the card's name, clamped to 99. A missing, `0`, `1` or unreadable count shows
 no counter, and the card still prints. A repeated id keeps its first
 occurrence and that occurrence's count. Only the list page's print button
-writes counts; an address written without them reads as it always did.
+and the shared page's selection bar (the taken counts) write counts; an
+address written without them reads as it always did.
 
 ## Fallback
 

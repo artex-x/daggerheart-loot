@@ -36,7 +36,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Монетами" [pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=true]
-    ... StaticText x30 of 34 same-shape siblings elided
+    ... StaticText x31 of 35 same-shape siblings elided
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Например: лавка закрыта до утра" [value=Лавка закрыта до утра multiline=true readonly=false required=false]
     textbox "Например: позиции 9-10 лежат под прилавком" [multiline=true readonly=false required=false]
@@ -47,7 +47,8 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Скопировать ссылку" [description=Скопировать ссылку]
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
-    checkbox "ВЫБРАТЬ ВСЕ" [checked=false]
+    checkbox "Выбрать все" [checked=false]
+    generic ""
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
@@ -105,6 +106,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Выбрать все
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
@@ -188,7 +190,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "In coins" [pressed=false]
     button "How this works" [description=How this works expanded=false]
     DisclosureTriangle "NOTES" [expanded=true]
-    ... StaticText x30 of 34 same-shape siblings elided
+    ... StaticText x31 of 35 same-shape siblings elided
     button "Clear the note" [description=Clear the note]
     textbox "e.g. the shop is shut until morning" [value=Лавка закрыта до утра multiline=true readonly=false required=false]
     textbox "e.g. entries 9-10 are kept under the counter" [multiline=true readonly=false required=false]
@@ -199,7 +201,8 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "Copy link" [description=Copy link]
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
-    checkbox "SELECT ALL" [checked=false]
+    checkbox "Select all" [checked=false]
+    generic ""
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
@@ -291,6 +294,7 @@ Random 1–7
 Remove from the list
 Roll result
 Search
+Select all
 Share
 Skip to content
 Speaking Orbs

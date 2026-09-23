@@ -138,13 +138,14 @@ describe('heading and sub', () => {
        hand - `ontoggleall` now reaches the shared `AppState.toggleAllIn`,
        the same one the tables and search pages already used. */
     expect(screen.getByRole('checkbox', { name: 'Выбрать все (2)' })).toBeInTheDocument();
-    expect(container.querySelector('.selbarwrap')).not.toBeInTheDocument();
+    expect(container.querySelector('.selbarwrap')).toHaveClass('idle');
+    expect(screen.queryByRole('button', { name: 'Снять выделение' })).not.toBeInTheDocument();
   });
 
   it('ticks every row from select-all', async () => {
     render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
-    expect(screen.getByText('Выбрано 2')).toBeInTheDocument();
+    expect(screen.getByText('Выбрано 2 позиции')).toBeInTheDocument();
   });
 });
 
@@ -171,7 +172,7 @@ describe('a dropped entry (P9)', () => {
     const payload = encodeList({ name: 'X', ids: ['ci1', 'nope999'] }, true);
     render(App, { env: at('#/l/' + payload) });
     expect(
-      screen.getByText('Пропущено позиций: 1 — их больше нет в данных')
+      screen.getByText('Пропущена 1 позиция — её больше нет в данных')
     ).toBeInTheDocument();
     expect(screen.getByText('Спальный мешок')).toBeInTheDocument();
   });
@@ -257,7 +258,7 @@ describe('selection', () => {
     await userEvent.click(box);
 
     expect(container.querySelector('[data-row="ci1"]')).toHaveClass('sel');
-    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрана 1 позиция');
 
     await userEvent.click(box);
     expect(container.querySelector('[data-row="ci1"]')).not.toHaveClass('sel');
@@ -361,7 +362,7 @@ describe('the taken count and the total', () => {
     await userEvent.click(box);
   };
   const countOf = (name: string): HTMLElement =>
-    screen.getByRole('spinbutton', { name: 'Сколько: ' + name });
+    screen.getByRole('spinbutton', { name: 'Взять: ' + name });
   const setCount = async (name: string, n: string): Promise<void> => {
     const field = countOf(name);
     await userEvent.clear(field);
@@ -376,12 +377,12 @@ describe('the taken count and the total', () => {
 
   it('draws a count field at the whole quantity only under a ticked entry over 1', async () => {
     render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
-    expect(screen.queryByRole('spinbutton', { name: /^Сколько/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton', { name: /^Взять/ })).not.toBeInTheDocument();
 
     await tick('ci1');
     expect(countOf('Спальный мешок')).toHaveValue(2);
     await tick('q337');
-    expect(screen.getAllByRole('spinbutton', { name: /^Сколько/ })).toHaveLength(1);
+    expect(screen.getAllByRole('spinbutton', { name: /^Взять/ })).toHaveLength(1);
   });
 
   it('shows the total beside the selected count, with the unpriced count', async () => {
@@ -395,6 +396,43 @@ describe('the taken count and the total', () => {
     expect(container.querySelector('.seltotal')).toHaveTextContent(
       'Итого: 1 мешок 1 горсть (без цены: 1)'
     );
+  });
+
+  it('draws the take line inside the ticked row, with the stock and the line sum', async () => {
+    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await tick('cc21');
+    await setCount('Эликсир ярости', '2');
+    const line = container.querySelector('[data-row="cc21"] .pickrow');
+    expect(line).toHaveTextContent('Взять из 5 = 1 мешок');
+    await expectNoA11yViolations(container);
+  });
+
+  it('mounts the empty live region before the first tick, so the first tick is announced', async () => {
+    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    const summ = container.querySelector('.selsumm');
+    expect(summ).toHaveAttribute('aria-live', 'polite');
+    expect(summ).toBeEmptyDOMElement();
+    expect(screen.queryByRole('button', { name: 'Снять выделение' })).not.toBeInTheDocument();
+
+    await tick('ci1');
+    expect(container.querySelector('.selsumm')).toBe(summ);
+    expect(summ).toHaveTextContent('Выбрана 1 позиция · 2 шт.');
+    await expectNoA11yViolations(container);
+  });
+
+  it('names entries and pieces apart in a live region, and prints the taken counts', async () => {
+    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await tickAllAndTakeTwo();
+    const summ = container.querySelector('.selsumm');
+    expect(summ).toHaveAttribute('aria-live', 'polite');
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 3 позиции · 5 шт.');
+    expect(summ?.querySelector('.selx')).toBeNull();
+    const bar = document.querySelector('.selbarwrap') as HTMLElement;
+    expect(within(bar).getByRole('link', { name: 'Печать' })).toHaveAttribute(
+      'href',
+      '#/print/ci1*2-cc21*2-q337'
+    );
+    await expectNoA11yViolations(container);
   });
 
   it('holds a typed count to the quantity, and puts the value back on an emptied commit', async () => {
@@ -438,7 +476,7 @@ describe('the taken count and the total', () => {
     const rec = (id: string) => index.byId.get(id)!;
     const parts = [
       share(rec('ci1'), index, 'ru', { suffix: ' ×2' }),
-      share(rec('cc21'), index, 'ru', { suffix: ' ×2 — ' + priceText(50, 'bag', 'ru') }),
+      share(rec('cc21'), index, 'ru', { suffix: ' ×2 — по ' + priceText(50, 'bag', 'ru') }),
       share(rec('q337'), index, 'ru', { suffix: ' — ' + priceText(12, 'bag', 'ru') })
     ];
     expect(clip.last.text).toBe(

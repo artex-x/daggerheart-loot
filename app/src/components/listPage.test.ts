@@ -509,14 +509,14 @@ describe('select-all', () => {
     const rows = ROW_NAMES.map((name) => screen.getByRole('checkbox', { name }));
     expect(rows).toHaveLength(3);
     await userEvent.click(rows[0] as HTMLElement);
-    expect(screen.getByText('Выбрано 1')).toBeInTheDocument();
+    expect(screen.getByText('Выбрана 1 позиция')).toBeInTheDocument();
 
     // untick the same row - its own name never changes with selection state
     await userEvent.click(rows[0] as HTMLElement);
     expect(screen.getByText('Выбрать все')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
-    expect(screen.getByText('Выбрано 3')).toBeInTheDocument();
+    expect(screen.getByText('Выбрано 3 позиции · 4 шт.')).toBeInTheDocument();
   });
 
   it('clears when history moves to a different list, not just a different page', async () => {
@@ -530,7 +530,7 @@ describe('select-all', () => {
     });
 
     await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[0]! }));
-    expect(screen.getByText('Выбрано 1')).toBeInTheDocument();
+    expect(screen.getByText('Выбрана 1 позиция')).toBeInTheDocument();
 
     router.navigate('#/lists/b');
     await waitFor(() => {
@@ -688,7 +688,7 @@ describe('the taken count, the total and a partial removal', () => {
     await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[n]! }));
   };
   const takeOne = async (): Promise<void> => {
-    const field = screen.getByRole('spinbutton', { name: 'Сколько: Зелье' });
+    const field = screen.getByRole('spinbutton', { name: 'Взять: Зелье' });
     await userEvent.clear(field);
     await userEvent.type(field, '1');
   };
@@ -696,20 +696,52 @@ describe('the taken count, the total and a partial removal', () => {
   it('draws the count field at the stock under a ticked row over 1, and the total beside the count', async () => {
     const { container } = render(App, { env: withA() });
     await tickRow(0);
-    expect(screen.queryByRole('spinbutton', { name: /^Сколько/ })).not.toBeInTheDocument();
-    expect(container.querySelector('.batch-sum')).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton', { name: /^Взять/ })).not.toBeInTheDocument();
+    expect(container.querySelector('.batch-total')).not.toBeInTheDocument();
 
     await tickRow(1);
-    expect(screen.getByRole('spinbutton', { name: 'Сколько: Зелье' })).toHaveValue(2);
-    expect(container.querySelector('.batch-sum')).toHaveTextContent(
+    expect(screen.getByRole('spinbutton', { name: 'Взять: Зелье' })).toHaveValue(2);
+    expect(container.querySelector('.batch-total')).toHaveTextContent(
       'Итого: 1 сундук 5 мешков (без цены: 1)'
     );
 
     await tickRow(0);
     await takeOne();
-    expect(container.querySelector('.batch-sum')).toHaveTextContent(
+    expect(container.querySelector('.batch-total')).toHaveTextContent(
       'Итого: 7 мешков 5 горстей'
     );
+  });
+
+  it('draws the take line inside the ticked row with its stock and line sum, and styles the row', async () => {
+    const { container } = render(App, { env: withA() });
+    await tickRow(1);
+    const row = container.querySelectorAll('.lrow')[1];
+    expect(row).toHaveClass('sel');
+    expect(container.querySelectorAll('.lrow')[0]).not.toHaveClass('sel');
+    const take = row?.querySelector('.lrow-take');
+    expect(take).toHaveTextContent('Взять из 2 = 1 сундук 5 мешков');
+    await takeOne();
+    expect(take).toHaveTextContent('Взять из 2 = 7 мешков 5 горстей');
+    await expectNoA11yViolations(container);
+  });
+
+  it('shows the mixed select-all box and names entries and pieces apart in a live region', async () => {
+    const { container } = render(App, { env: withA() });
+    const all = screen.getByRole('checkbox', { name: 'Выбрать все' });
+    await tickRow(1);
+    expect(all).toHaveProperty('indeterminate', true);
+    expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toBe(all);
+    const summ = container.querySelector('.batch-summ');
+    expect(summ).toHaveAttribute('aria-live', 'polite');
+    expect(summ).toHaveTextContent('Выбрана 1 позиция · 2 шт. Итого: 1 сундук 5 мешков');
+    await tickRow(0);
+    expect(summ).toHaveTextContent(
+      'Выбрано 2 позиции · 3 шт. Итого: 1 сундук 5 мешков (без цены: 1)'
+    );
+    await tickRow(2);
+    expect(all).toHaveProperty('indeterminate', false);
+    expect(all).toBeChecked();
+    await expectNoA11yViolations(container);
   });
 
   it('lowers a partly taken row, and one undo gives the stock back', async () => {
@@ -726,7 +758,7 @@ describe('the taken count, the total and a partial removal', () => {
       note: 'Светится в темноте',
       hnote: 'Проклят'
     });
-    expect(screen.queryByRole('spinbutton', { name: /^Сколько/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton', { name: /^Взять/ })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBe(2);
@@ -774,7 +806,7 @@ describe('the taken count, the total and a partial removal', () => {
     await takeOne();
     await tickRow(1);
     await tickRow(1);
-    expect(screen.getByRole('spinbutton', { name: 'Сколько: Зелье' })).toHaveValue(2);
+    expect(screen.getByRole('spinbutton', { name: 'Взять: Зелье' })).toHaveValue(2);
   });
 
   it('forgets the count on a navigation to another list and back, and when select-all clears', async () => {
@@ -798,13 +830,13 @@ describe('the taken count, the total and a partial removal', () => {
       expect(screen.getByRole('checkbox', { name: ROW_NAMES[1]! })).toBeInTheDocument();
     });
     await tickRow(1);
-    expect(screen.getByRole('spinbutton', { name: 'Сколько: Зелье' })).toHaveValue(2);
+    expect(screen.getByRole('spinbutton', { name: 'Взять: Зелье' })).toHaveValue(2);
 
     await takeOne();
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрано 1' }));
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрано 3' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
     await tickRow(1);
-    expect(screen.getByRole('spinbutton', { name: 'Сколько: Зелье' })).toHaveValue(2);
+    expect(screen.getByRole('spinbutton', { name: 'Взять: Зелье' })).toHaveValue(2);
   });
 
   it('has no violations with the count field and the total on screen', async () => {

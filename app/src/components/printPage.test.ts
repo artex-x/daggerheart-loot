@@ -688,8 +688,8 @@ describe('the cap', () => {
     });
     expect(document.querySelectorAll('.pcard:not(.blank)')).toHaveLength(180);
     expect(document.querySelectorAll('.psheet')).toHaveLength(20);
-    expect(screen.getByText(/За один раз печатается 180 карточек/)).toHaveTextContent(
-      'За один раз печатается 180 карточек, остальные 1 в лист не попали. Разделите набор на части.'
+    expect(screen.getByText(/Карточек за один раз: не больше 180/)).toHaveTextContent(
+      'Карточек за один раз: не больше 180. Не попали на лист: 1. Разделите набор на части.'
     );
   });
 

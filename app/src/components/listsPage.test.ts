@@ -362,7 +362,7 @@ describe('restoring a list', () => {
     expect(stored?.note).toBe('Для игроков');
     expect(stored?.hnote).toBeUndefined();
     expect(
-      screen.getByText('Пропущено позиций: 1 — их больше нет в данных')
+      screen.getByText('Пропущена 1 позиция — её больше нет в данных')
     ).toBeInTheDocument();
   });
 

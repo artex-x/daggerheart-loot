@@ -1,6 +1,6 @@
 # #/l/ ~ shared, picked
 # route: #/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg
-# why: all three rows ticked, row 2 taken at 2 of 5: two taken-count fields (2 and 2), the bar with "Выбрано 3" and "Итого: 1 мешок 1 горсть (без цены: 1)"
+# why: all three rows ticked, row 2 taken at 2 of 5: two take lines inside their rows (2 of 2; 2 of 5 = 1 мешок), the bar with "Выбрано 3 позиции · 5 шт." and "Итого: 1 мешок 1 горсть (без цены: 1)", the print link with the taken counts
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
@@ -30,19 +30,24 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
     StaticText "Выбрать все (3)"
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     button "1 Первоклассный Спальный Мешок ×2 Во время отдыха вы автоматичес..." [namelen=96 namehash=57957f25]
-    StaticText "СКОЛЬКО"
-    spinbutton "Сколько: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    ... StaticText x3 of 7 same-shape siblings elided
+    spinbutton "Взять: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     checkbox "Доспешный Сшиватель" [checked=true]
     button "21 Доспешный Сшиватель ×5 · 5 горстей Вы можете использовать это..." [namelen=173 namehash=33e9d882]
-    StaticText "СКОЛЬКО"
-    spinbutton "Сколько: Доспешный Сшиватель" [value=2 valuetext=2 focused=true required=false valuemin=1 valuemax=5]
+    spinbutton "Взять: Доспешный Сшиватель" [value=2 valuetext=2 focused=true required=false valuemin=1 valuemax=5]
+    StaticText "из 5"
+    StaticText "= 1 мешок"
     checkbox "Туника из Паучьего Шелка" [checked=true]
     button "Туника из Паучьего Шелка 1 горсть Ранг 2 · Пороги 9/20 · Броня 4..." [namelen=179 namehash=3cf5fc1d]
-  StaticText "Выбрано 3"
+  generic ""
+    StaticText "Выбрано 3 позиции · 5 шт."
+    StaticText "Итого: "
+    StaticText "1 мешок 1 горсть"
+    StaticText " "
+    StaticText "(без цены: 1)"
   button "Снять выделение" [description=Снять выделение]
-  StaticText "Итого: 1 мешок 1 горсть (без цены: 1)"
   button "Добавить в список" [expanded=false]
-  link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-cc21-q337]
+  link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1*2-cc21*2-q337]
   button "Скопировать"
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
@@ -60,6 +65,8 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Взять: Доспешный Сшиватель
+Взять: Первоклассный Спальный Мешок
 Добавить в список
 Доспешный Сшиватель
 К содержимому
@@ -67,8 +74,6 @@ daggerheart.com
 Обычные правила
 Первоклассный Спальный Мешок
 Поиск
-Сколько: Доспешный Сшиватель
-Сколько: Первоклассный Спальный Мешок
 Скопировать
 Снять выделение
 Собрать карточки для печати: девять на лист A4
@@ -107,19 +112,24 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
     StaticText "Select all (3)"
     checkbox "Premium Bedroll" [checked=true]
     button "1 Premium Bedroll ×2 During downtime, you automatically clear a ..." [namelen=81 namehash=69caf8d4]
-    StaticText "HOW MANY"
-    spinbutton "How many: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    ... StaticText x3 of 7 same-shape siblings elided
+    spinbutton "Take: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
     checkbox "Armor Stitcher" [checked=true]
     button "21 Armor Stitcher ×5 · 5 handfuls You can use this stitcher to s..." [namelen=136 namehash=7813561e]
-    StaticText "HOW MANY"
-    spinbutton "How many: Armor Stitcher" [value=2 valuetext=2 focused=true required=false valuemin=1 valuemax=5]
+    spinbutton "Take: Armor Stitcher" [value=2 valuetext=2 focused=true required=false valuemin=1 valuemax=5]
+    StaticText "of 5"
+    StaticText "= 1 bag"
     checkbox "Spidersilk Tunic" [checked=true]
     button "Spidersilk Tunic 1 handful Tier 2 · Thresholds 9/20 · Armor 4 Wa..." [namelen=163 namehash=c645fc16]
-  StaticText "Selected 3"
+  generic ""
+    StaticText "Selected 3 items · 5 pcs"
+    StaticText "Total: "
+    StaticText "1 bag 1 handful"
+    StaticText " "
+    StaticText "(no price: 1)"
   button "Clear selection" [description=Clear selection]
-  StaticText "Total: 1 bag 1 handful (no price: 1)"
   button "Add to list" [expanded=false]
-  link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-cc21-q337]
+  link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1*2-cc21*2-q337]
   button "Copy"
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
@@ -138,8 +148,6 @@ Copy
 Dragon's Vault
 Dread
 EN
-How many: Armor Stitcher
-How many: Premium Bedroll
 Lay these out for printing: nine to an A4 sheet
 Lists
 Premium Bedroll
@@ -151,6 +159,8 @@ Spidersilk Tunic
 Spidersilk Tunic1 handfulTier 2 · Thresholds 9/20 · Armor 4Wall-... [namelen=157 namehash=d6f04d1b]
 Standard rules
 Tables
+Take: Armor Stitcher
+Take: Premium Bedroll
 Vault of Ages
 Wondrous
 daggerheart.com

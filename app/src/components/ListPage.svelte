@@ -34,7 +34,8 @@
   import StorageNotice from './StorageNotice.svelte';
   import { moneyHelpFor } from '../lib/help.js';
   import { printHash, sectionHash, sharedListHash } from '../lib/hash.js';
-  import { itemsWord, nameOf } from '../lib/i18n.js';
+  import { nameOf, selCountText } from '../lib/i18n.js';
+  import { plural } from '../lib/plural.js';
   import { encodeListRaw, QTY_MAX } from '../lib/listLink.js';
   import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
   import {
@@ -52,7 +53,7 @@
     moneyMode,
     priceText,
     reprice,
-    totalText
+    totalParts
   } from '../lib/money.js';
   import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
   import { entryNoteBlock, shareList, shareSelection } from '../lib/share.js';
@@ -264,7 +265,8 @@
   const ticked = $derived(own ? own.ids.filter((id) => lsel.has(id)) : []);
   const pricedCount = $derived(ticked.filter((id) => (metaOf(id).gold ?? 0) > 0).length);
   const takenOf = (id: string): number => takenQty(metaOf(id), picked.get(id));
-  const total = $derived(totalText(takenTotal(ticked, metaOf, takenOf), mode, app.lang, t));
+  const taken = $derived(takenTotal(ticked, metaOf, takenOf));
+  const total = $derived(totalParts(taken, mode, app.lang, t));
 
   /** The live `hidden` default (no note → hidden), with a person's own
    *  fold/unfold winning once they have touched it - the live `keepOpen`. */
@@ -808,10 +810,7 @@
           oninput={rename}
         />
       {/snippet}
-      <PageTitle
-        title={renameTitle}
-        sub={`${String(items.length)} ${itemsWord(items.length, app.lang)}`}
-      />
+      <PageTitle title={renameTitle} sub={plural(items.length, t.itemsN, app.lang)} />
       <Actions style="margin-bottom:16px">
         <Button size="sm" onclick={() => void sharePlayers()}
           ><Icon name="link" />{t.sharePlayers}</Button
@@ -930,13 +929,23 @@
           <label class="batch-all"
             ><input
               type="checkbox"
+              aria-label={t.pickAll}
               checked={lsel.size > 0 && lsel.size === own.ids.length}
+              indeterminate={lsel.size > 0 && lsel.size < own.ids.length}
               onchange={(e) => {
                 pickAll(e.currentTarget.checked);
               }}
-            />{lsel.size ? `${t.pickedN} ${String(lsel.size)}` : t.pickAll}</label
+            />{#if !ticked.length}{t.pickAll}{/if}</label
           >
-          {#if total}<span class="batch-sum">{total}</span>{/if}
+          <!-- Mounted while empty, so the first tick is announced too. -->
+          <span class="batch-summ" aria-live="polite"
+            >{#if ticked.length}<span class="batch-count"
+                >{selCountText(ticked.length, taken.pieces, app.lang, t)}</span
+              >&#32;{#if total}<span class="batch-total"
+                  >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
+                    <span class="np">{total.unpriced}</span>{/if}</span
+                >{/if}{/if}</span
+          >
           {#if ticked.length}
             <span class="batch-acts">
               <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
@@ -1004,6 +1013,7 @@
             {@const hasNote = !!(m.note || m.hnote)}
             <div
               class="row lrow"
+              class:sel={lsel.has(it.id)}
               class:has-note={hasNote}
               class:dragging={dragFrom === i}
               class:drop-before={dropGap === i}
@@ -1108,11 +1118,14 @@
                 >
               </div>
               {#if lsel.has(it.id) && (m.qty ?? 0) > 1}
+                {@const n = takenOf(it.id)}
                 <div class="lrow-take">
                   <PickQty
-                    value={takenOf(it.id)}
+                    value={n}
                     max={m.qty ?? 1}
                     label={t.pickQty}
+                    ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
+                    sum={priceText((m.gold ?? 0) * n, mode, app.lang)}
                     name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
                     onchange={(n: number) => {
                       picked.set(it.id, n);
@@ -1468,10 +1481,7 @@
     background: rgb(216 171 94 / 7%);
   }
 
-  /* `.batch-sum` is the selection total, in the selected count's own type;
-     the bar is always on while a total shows. */
-  .batch-all,
-  .batch-sum {
+  .batch-all {
     font: 650 11px/1 var(--mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1485,9 +1495,33 @@
     cursor: pointer;
   }
 
-  .batch.on .batch-all,
-  .batch.on .batch-sum {
+  .batch.on .batch-all {
     color: var(--gold-soft);
+  }
+
+  /* The selection summary, in the shared bar's type (`SelBar.svelte`
+     `.selsumm`): the count and the total, one live region. */
+  .batch-summ {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 6px;
+    font: 400 13.5px/1.3 var(--ui);
+    color: var(--gold-soft);
+  }
+
+  .batch-count,
+  .batch-total b {
+    font-weight: 650;
+  }
+
+  .batch-count {
+    white-space: nowrap;
+  }
+
+  .batch-total .np {
+    color: var(--muted);
   }
 
   /* off `.batch-acts` (style.css:1059) */
@@ -1507,7 +1541,13 @@
     align-items: center;
   }
 
+  /* The summary keeps its line beside the box and wraps inside itself. */
   @media (max-width: 640px) {
+    .batch-summ {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
     .batch-acts {
       margin-left: 0;
       width: 100%;
@@ -1685,15 +1725,21 @@
     border-color: var(--line2);
   }
 
-  /* The taken-count strip under a ticked row (docs/specs/FEATURES.md,
-     "Lists"): a full-width line like `.rnote`, the field right-aligned. No
-     fill: a background would cover the `drop-after` inset mark. */
+  /* off `TableRows.svelte` `.row.sel` */
+  .lrow.sel {
+    border-color: rgb(216 171 94 / 55%);
+    background: rgb(216 171 94 / 5%);
+  }
+
+  /* The take line inside a ticked row (docs/specs/FEATURES.md, "Lists"),
+     starting under the art: 107px, measured 2026-09-23 at 1180. No fill: a
+     background would cover the `drop-after` inset mark. */
   .lrow-take {
     flex: 0 0 100%;
     display: flex;
-    justify-content: flex-end;
-    border-top: 1px solid var(--line);
-    padding: 9px 11px;
+    justify-content: flex-start;
+    border-top: 1px solid rgb(216 171 94 / 22%);
+    padding: 8px 11px 8px 107px;
   }
 
   .lrow-acts .lrow-note {
@@ -1954,6 +2000,10 @@
     .lrow-acts .row-x {
       border-top: 0;
       border-left: 1px solid var(--line);
+    }
+
+    .lrow-take {
+      padding-left: 11px;
     }
   }
 </style>

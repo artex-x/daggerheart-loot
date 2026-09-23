@@ -218,7 +218,7 @@ export function shareRoll(
  * Two kinds of caller. The selection bar on a table or search page passes no
  * `priced`, and the message is the live one, byte for byte. The shared list
  * page's bar and the own list's batch bar pass `priced`: each name then
- * carries its taken count and unit price, the way `shareList` writes them,
+ * carries its taken count and unit price (`priceTail`), the way `shareList` writes them,
  * and the message ends with the total line when any taken entry has a price.
  */
 export function shareSelection(
@@ -234,10 +234,10 @@ export function shareSelection(
 ): { text: string; html: string } {
   const parts = items.map((it) => {
     if (!priced) return share(it, index, lang);
-    const gold = priced.metaOf(it.id).gold;
+    const taken = priced.takenOf(it.id);
     const suffix =
-      qtySuffix(priced.takenOf(it.id)) +
-      (gold ? ` — ${priceText(gold, priced.mode, lang)}` : '');
+      qtySuffix(taken) +
+      priceTail(priced.metaOf(it.id).gold, taken, priced.mode, lang, priced.t);
     return share(it, index, lang, { suffix });
   });
   let text = parts.map((p) => p.text).join('\n\n');
@@ -275,6 +275,23 @@ export function qtySuffix(qty: number | undefined): string {
 }
 
 /**
+ * Returns the price that follows a name and its count in copied text: the
+ * unit price, marked "по" / "each" when the count is over 1, so a pasted line
+ * never reads as the price of the whole stack.
+ */
+export function priceTail(
+  gold: number | undefined,
+  qty: number | undefined,
+  mode: MoneyMode,
+  lang: Lang,
+  t: Dict
+): string {
+  if (!gold) return '';
+  const price = priceText(gold, mode, lang);
+  return ` — ${qty && qty > 1 ? t.eachPrice.replace('%s', price) : price}`;
+}
+
+/**
  * A whole list as one message - the live `listAsText`/`listAsHtml` (app.js
  * 1609-1647). The list's own note (the players' one; the GM's stays home)
  * sits right under the name as a preamble, then every known entry, each
@@ -300,8 +317,7 @@ export function shareList(
     .filter((it): it is Record_ => it != null)
     .map((it) => {
       const meta: ListEntryMeta = list.meta?.[it.id] ?? {};
-      const suffix =
-        qtySuffix(meta.qty) + (meta.gold ? ` — ${priceText(meta.gold, mode, lang)}` : '');
+      const suffix = qtySuffix(meta.qty) + priceTail(meta.gold, meta.qty, mode, lang, t);
       return share(it, index, lang, { skip, suffix, extra: entryNoteBlock(meta, t) });
     });
 

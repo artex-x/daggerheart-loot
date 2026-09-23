@@ -1,6 +1,6 @@
 # #/lists/a ~ prices set
 # route: #/lists/a
-# why: the panel folded, row 1 priced and still ticked, so its total beside "Выбрано 1", the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"
+# why: the panel folded, row 1 priced and still ticked, so its total beside "Выбрана 1 позиция", the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"
 
 ## ru :: tree
 RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy5yMzV6fmNpMSoxKjEwMCxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
@@ -37,11 +37,15 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Как это работает" [description=Как это работает expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "ВЫБРАНО 1" [checked=false]
-    ... StaticText x14 of 18 same-shape siblings elided
+    checkbox "Выбрать все" [checked=mixed]
+    generic ""
+      StaticText "Выбрана 1 позиция"
+      StaticText "Итого: "
+      StaticText "1 мешок"
     button "Цены" [expanded=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
+    ... StaticText x13 of 17 same-shape siblings elided
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО ?" [value=100 description=1 мешок valuetext=100 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -52,12 +56,13 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
-    ... checkbox x3 of 7 same-shape siblings elided
+    checkbox "Заряжающий Колчан" [checked=false]
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     ... spinbutton x3 of 7 same-shape siblings elided
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
+    ... checkbox x2 of 6 same-shape siblings elided
     spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
@@ -97,6 +102,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Вернуть
+Выбрать все
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
@@ -174,11 +180,15 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "How this works" [description=How this works expanded=false]
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "SELECTED 1" [checked=false]
-    ... StaticText x14 of 18 same-shape siblings elided
+    checkbox "Select all" [checked=mixed]
+    generic ""
+      StaticText "Selected 1 item"
+      StaticText "Total: "
+      StaticText "1 bag"
     button "Prices" [expanded=false]
     checkbox "Premium Bedroll" [checked=true]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
+    ... StaticText x13 of 17 same-shape siblings elided
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD ?" [value=100 description=1 bag valuetext=100 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -189,12 +199,13 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
-    ... checkbox x3 of 7 same-shape siblings elided
+    checkbox "Charging Quiver" [checked=false]
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     ... spinbutton x3 of 7 same-shape siblings elided
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
+    ... checkbox x2 of 6 same-shape siblings elided
     spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
@@ -264,6 +275,7 @@ Random 1–7
 Remove from the list
 Roll result
 Search
+Select all
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]

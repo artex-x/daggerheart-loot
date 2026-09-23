@@ -37,10 +37,11 @@ RootWebArea "Лавка — Генератор лута — Daggerheart" [url=#/
     button "Как это работает" [description=Как это работает expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "ВЫБРАТЬ ВСЕ" [checked=false]
+    checkbox "Выбрать все" [checked=false]
+    ... StaticText x7 of 11 same-shape siblings elided
+    generic ""
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=3]
-    ... StaticText x6 of 10 same-shape siblings elided
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -80,6 +81,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Выбрать все
 Доспешный Сшиватель
 Доспешный СшивательВы можете использовать этот швейный аппарат, ... [namelen=152 namehash=8d323e65]
 Заметка
@@ -146,10 +148,11 @@ RootWebArea "Лавка — Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAo
     button "How this works" [description=How this works expanded=false]
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "SELECT ALL" [checked=false]
+    checkbox "Select all" [checked=false]
+    ... StaticText x7 of 11 same-shape siblings elided
+    generic ""
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=3]
-    ... StaticText x6 of 10 same-shape siblings elided
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -209,6 +212,7 @@ Random 1–3
 Remove from the list
 Roll result
 Search
+Select all
 Skip to content
 Spidersilk Tunic
 Spidersilk TunicTier 2 · Thresholds 9/20 · Armor 4Wall-Crawling:... [namelen=148 namehash=319e3625]

@@ -1052,7 +1052,7 @@ const STATES = [
     id: '#/lists/a ~ a row ticked',
     route: '#/lists/a',
     storage: seven,
-    why: 'the bar on, "Выбрано 1", Цены with its caret, Скопировать, Удалить (1) - at 375 the 640px override drops the three to their own full-width block, Удалить (1) wrapping under the other two; no total, row 1 has no price',
+    why: 'the bar on, the select-all box mixed and named "Выбрать все", "Выбрана 1 позиция", row 1 in the selected gold style, Цены with its caret, Скопировать, Удалить (1) - at 375 the 640px override drops the three to their own full-width block, Удалить (1) wrapping under the other two; no total, row 1 has no price',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
     }
@@ -1061,7 +1061,7 @@ const STATES = [
     id: '#/lists/a ~ prices',
     route: '#/lists/a',
     storage: noted,
-    why: 'row 2 (750, bags) ticked: the taken-count strip at 2, "Итого: 1 сундук 5 мешков" beside "Выбрано 1", Скопировать, the percentage row at -20 with "Сделать скидку" and the hint, the note, one guess row with its band, "Проставить эти цены", "Убрать цену (1)"',
+    why: 'row 2 (750, bags) ticked: the take line inside the row, "Взять [2] из 2 = 1 сундук 5 мешков", "Выбрана 1 позиция · 2 шт." and "Итого: 1 сундук 5 мешков", Скопировать, the percentage row at -20 with "Сделать скидку" and the hint, the note, one guess row with its band, "Проставить эти цены", "Убрать цену (1)"',
     enter: async (d) => {
       await d.tick(ROW2_CI2);
       await d.click(NAME.ru.prices);
@@ -1081,7 +1081,7 @@ const STATES = [
     id: '#/lists/a ~ prices set',
     route: '#/lists/a',
     storage: seven,
-    why: 'the panel folded, row 1 priced and still ticked, so its total beside "Выбрано 1", the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"',
+    why: 'the panel folded, row 1 priced and still ticked, so its total beside "Выбрана 1 позиция", the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
       await d.click(NAME.ru.prices);
@@ -1094,20 +1094,20 @@ const STATES = [
     id: '#/lists/a ~ picked',
     route: '#/lists/a',
     storage: noted,
-    why: 'row 2 (x2, 750) ticked and taken at 1: the strip at 1, "Итого: 7 мешков 5 горстей" beside "Выбрано 1", Цены, Скопировать, Удалить (1)',
+    why: 'row 2 (x2, 750) ticked and taken at 1: the take line "Взять [1] из 2 = 7 мешков 5 горстей", "Выбрана 1 позиция" (pieces equal entries) and "Итого: 7 мешков 5 горстей", Цены, Скопировать, Удалить (1)',
     enter: async (d) => {
       await d.tick(ROW2_CI2);
-      await d.type('Сколько: ' + ROW2_CI2, '1');
+      await d.type('Взять: ' + ROW2_CI2, '1');
     }
   },
   {
     id: '#/lists/a ~ sold part',
     route: '#/lists/a',
     storage: noted,
-    why: 'row 2 taken at 1 of 2 and deleted: seven rows, row 2 with an empty Кол-во and 750, the bar off, the toast "Убрано из списка (1)" with "Вернуть"',
+    why: 'row 2 taken at 1 of 2 on its take line and deleted: seven rows, row 2 with an empty Кол-во and 750, the bar off, the toast "Убрано из списка (1)" with "Вернуть"',
     enter: async (d) => {
       await d.tick(ROW2_CI2);
-      await d.type('Сколько: ' + ROW2_CI2, '1');
+      await d.type('Взять: ' + ROW2_CI2, '1');
       await d.click(NAME.ru.delOne);
     },
     /* a 7000ms toast; arrived at afresh per language - see this file's header */
@@ -1161,8 +1161,9 @@ const STATES = [
     route: '#/l/' + QTY_AND_PRICE.player.payload,
     storage: two,
     why:
-      'issue 58: the save button above, row 1 ticked with its taken-count field at 2 under it, ' +
-      'the bar with "Выбрано 1" and the only "Добавить в список"; no total, row 1 has no price',
+      'issue 58: the save button above, row 1 ticked with its take line "Взять [2] из 2" inside ' +
+      'the row, the bar with "Выбрана 1 позиция · 2 шт." and the only "Добавить в список"; no ' +
+      'total, row 1 has no price',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
     }
@@ -1172,13 +1173,14 @@ const STATES = [
     route: '#/l/' + QTY_AND_PRICE.player.payload,
     storage: two,
     why:
-      'all three rows ticked, row 2 taken at 2 of 5: two taken-count fields (2 and 2), the bar ' +
-      'with "Выбрано 3" and "Итого: 1 мешок 1 горсть (без цены: 1)"',
+      'all three rows ticked, row 2 taken at 2 of 5: two take lines inside their rows (2 of 2; ' +
+      '2 of 5 = 1 мешок), the bar with "Выбрано 3 позиции · 5 шт." and "Итого: 1 мешок 1 ' +
+      'горсть (без цены: 1)", the print link with the taken counts',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
       await d.tick('Доспешный Сшиватель');
       await d.tick('Туника из Паучьего Шелка');
-      await d.type('Сколько: Доспешный Сшиватель', '2');
+      await d.type('Взять: Доспешный Сшиватель', '2');
     }
   },
   {

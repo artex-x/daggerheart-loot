@@ -36,8 +36,9 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–7)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [multiline=false readonly=false required=false]
-    ... StaticText x13 of 17 same-shape siblings elided
-    checkbox "ВЫБРАТЬ ВСЕ" [checked=false]
+    ... StaticText x14 of 18 same-shape siblings elided
+    checkbox "Выбрать все" [checked=false]
+    generic ""
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
@@ -88,6 +89,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Выбрать все
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
@@ -158,8 +160,9 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     StaticText "ROLL RESULT (1–7)"
     button "One lower" [disabled=true]
     textbox "Roll result" [multiline=false readonly=false required=false]
-    ... StaticText x13 of 17 same-shape siblings elided
-    checkbox "SELECT ALL" [checked=false]
+    ... StaticText x14 of 18 same-shape siblings elided
+    checkbox "Select all" [checked=false]
+    generic ""
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
@@ -235,6 +238,7 @@ Random 1–7
 Remove from the list
 Roll result
 Search
+Select all
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]

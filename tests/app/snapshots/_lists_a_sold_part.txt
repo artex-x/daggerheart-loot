@@ -1,6 +1,6 @@
 # #/lists/a ~ sold part
 # route: #/lists/a
-# why: row 2 taken at 1 of 2 and deleted: seven rows, row 2 with an empty Кол-во and 750, the bar off, the toast "Убрано из списка (1)" with "Вернуть"
+# why: row 2 taken at 1 of 2 on its take line and deleted: seven rows, row 2 with an empty Кол-во and 750, the bar off, the toast "Убрано из списка (1)" with "Вернуть"
 
 ## ru :: tree
 RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy4xZzk0fmNpMSxjaTIqMSo3NTAsY2kzLGNpNCxjaTUsY2k2LGNpNwoeK34f0JvQsNCy0LrQsCDQt9Cw0LrRgNGL0YLQsCDQtNC-INGD0YLRgNCwHitjaTIf0KHQstC10YLQuNGC0YHRjyDQsiDRgtC10LzQvdC-0YLQtQ]
@@ -36,12 +36,13 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Монетами" [pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=true]
-    ... StaticText x21 of 25 same-shape siblings elided
+    ... StaticText x22 of 26 same-shape siblings elided
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Например: лавка закрыта до утра" [value=Лавка закрыта до утра multiline=true readonly=false required=false]
     textbox "Например: позиции 9-10 лежат под прилавком" [multiline=true readonly=false required=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "ВЫБРАТЬ ВСЕ" [checked=false]
+    checkbox "Выбрать все" [checked=false]
+    generic ""
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
@@ -102,6 +103,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Вернуть
+Выбрать все
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
@@ -179,12 +181,13 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "In coins" [pressed=false]
     button "How this works" [description=How this works expanded=false]
     DisclosureTriangle "NOTES" [expanded=true]
-    ... StaticText x21 of 25 same-shape siblings elided
+    ... StaticText x22 of 26 same-shape siblings elided
     button "Clear the note" [description=Clear the note]
     textbox "e.g. the shop is shut until morning" [value=Лавка закрыта до утра multiline=true readonly=false required=false]
     textbox "e.g. entries 9-10 are kept under the counter" [multiline=true readonly=false required=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "SELECT ALL" [checked=false]
+    checkbox "Select all" [checked=false]
+    generic ""
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
@@ -273,6 +276,7 @@ Random 1–7
 Remove from the list
 Roll result
 Search
+Select all
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]

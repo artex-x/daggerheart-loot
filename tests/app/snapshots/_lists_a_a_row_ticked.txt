@@ -1,6 +1,6 @@
 # #/lists/a ~ a row ticked
 # route: #/lists/a
-# why: the bar on, "Выбрано 1", Цены with its caret, Скопировать, Удалить (1) - at 375 the 640px override drops the three to their own full-width block, Удалить (1) wrapping under the other two; no total, row 1 has no price
+# why: the bar on, the select-all box mixed and named "Выбрать все", "Выбрана 1 позиция", row 1 in the selected gold style, Цены with its caret, Скопировать, Удалить (1) - at 375 the 640px override drops the three to their own full-width block, Удалить (1) wrapping under the other two; no total, row 1 has no price
 
 ## ru :: tree
 RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
@@ -33,7 +33,9 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Скрыть" [description=Скрыть]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "ВЫБРАНО 1" [checked=false]
+    checkbox "Выбрать все" [checked=mixed]
+    generic ""
+      StaticText "Выбрана 1 позиция"
     button "Цены" [expanded=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
@@ -49,12 +51,13 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
-    ... checkbox x3 of 7 same-shape siblings elided
+    checkbox "Заряжающий Колчан" [checked=false]
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     ... spinbutton x3 of 7 same-shape siblings elided
     ... spinbutton x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
+    ... checkbox x2 of 6 same-shape siblings elided
     spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     checkbox "Наручники" [checked=false]
@@ -88,6 +91,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Выбрать все
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
@@ -158,7 +162,9 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "Dismiss" [description=Dismiss]
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "SELECTED 1" [checked=false]
+    checkbox "Select all" [checked=mixed]
+    generic ""
+      StaticText "Selected 1 item"
     button "Prices" [expanded=false]
     checkbox "Premium Bedroll" [checked=true]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
@@ -174,12 +180,13 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
-    ... checkbox x3 of 7 same-shape siblings elided
+    checkbox "Charging Quiver" [checked=false]
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
     ... spinbutton x3 of 7 same-shape siblings elided
     ... spinbutton x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
+    ... checkbox x2 of 6 same-shape siblings elided
     spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     checkbox "Manacles" [checked=false]
@@ -241,6 +248,7 @@ Random 1–7
 Remove from the list
 Roll result
 Search
+Select all
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]

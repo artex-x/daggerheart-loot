@@ -33,12 +33,13 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Скрыть" [description=Скрыть]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
-    checkbox "ВЫБРАТЬ ВСЕ" [checked=false]
+    checkbox "Выбрать все" [checked=false]
+    StaticText "ВЫБРАТЬ ВСЕ"
+    generic ""
     checkbox "Пронзительная Свирель" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=6]
-    StaticText "КОЛ-ВО"
+    ... StaticText x10 of 14 same-shape siblings elided
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    ... StaticText x9 of 13 same-shape siblings elided
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
@@ -90,6 +91,7 @@ daggerheart.com
 Альт. таблицы
 Бросить d6
 Вернуть
+Выбрать все
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
@@ -154,12 +156,13 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "Dismiss" [description=Dismiss]
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
-    checkbox "SELECT ALL" [checked=false]
+    checkbox "Select all" [checked=false]
+    StaticText "SELECT ALL"
+    generic ""
     checkbox "Piper Whistle" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=6]
-    StaticText "QTY"
+    ... StaticText x10 of 14 same-shape siblings elided
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    ... StaticText x9 of 13 same-shape siblings elided
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
@@ -232,6 +235,7 @@ Remove from the list
 Roll d6
 Roll result
 Search
+Select all
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]

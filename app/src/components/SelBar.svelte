@@ -1,21 +1,24 @@
 <script lang="ts">
   /* The selection bar - ticking any row on a table raises it at the bottom of
-     the window: a count with a cross that clears everything, and three
-     actions on the right. Reproduced from `renderSelBar` (app.js 3706-3721)
+     the window: a count, on a list page a total, a cross that clears
+     everything, and three actions on the right. Reproduced from `renderSelBar` (app.js 3706-3721)
      and `#selBar` in index.html, right after `</footer>` and before the
      modal - `Shell.svelte` keeps that order.
 
      `{#if n}` is the honest equivalent of the live app's `hidden` plus an
      emptied `innerHTML`: it unmounts the bar's own `AddToList` and its
      document click listener when nothing is ticked, rather than leaving them
-     idle for no reason. */
+     idle for no reason. The shared page keeps the bar mounted, visually
+     hidden while empty, so its live region exists before the first tick
+     and announces it. */
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import { printHash } from '../lib/hash.js';
   import type { ListEntryMeta } from '../lib/listLink.js';
+  import { selCountText } from '../lib/i18n.js';
   import { takenQty, takenTotal } from '../lib/lists.js';
-  import { moneyMode, totalText } from '../lib/money.js';
+  import { moneyMode, totalParts } from '../lib/money.js';
   import { shareSelection } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
@@ -40,8 +43,17 @@
   const shared = $derived(app.shared);
   const metaOf = (id: string): ListEntryMeta => shared?.meta?.[id] ?? {};
   const takenOf = (id: string): number => takenQty(metaOf(id), app.picked.get(id));
+  const taken = $derived(shared ? takenTotal(ids, metaOf, takenOf) : null);
   const total = $derived(
-    shared ? totalText(takenTotal(ids, metaOf, takenOf), moneyMode(shared), app.lang, t) : ''
+    shared && taken ? totalParts(taken, moneyMode(shared), app.lang, t) : null
+  );
+  /* A list page names entries and pieces apart; a table or search selection
+     has no stock, so it keeps the bare count. */
+  const countText = $derived(
+    taken ? selCountText(n, taken.pieces, app.lang, t) : `${t.selected} ${String(n)}`
+  );
+  const printHref = $derived(
+    printHash(ids, shared ? Object.fromEntries(ids.map((id) => [id, takenOf(id)])) : undefined)
   );
   const takenMeta = $derived(
     shared
@@ -60,11 +72,15 @@
   }
 </script>
 
-{#if n}
-  <div class="selbarwrap">
+{#if n || shared}
+  <div class="selbarwrap" class:idle={!n}>
     <div class="selbar">
-      <span class="selcount"
-        >{t.selected + ' ' + String(n)}<button
+      <span class="selsumm" aria-live={shared ? 'polite' : undefined}
+        >{#if n}<span class="selcount">{countText}</span>&#32;{#if total}<span class="seltotal"
+              >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
+                <span class="np">{total.unpriced}</span>{/if}</span
+            >{/if}{/if}</span
+      >{#if n}<button
           type="button"
           class="selx"
           title={t.clearSel}
@@ -72,17 +88,16 @@
           onclick={() => {
             app.clearSel();
           }}>&times;</button
-        ></span
-      >
-      {#if total}<span class="seltotal">{total}</span>{/if}
-      <div class="selacts">
-        <AddToList {app} key="sel" {ids} meta={takenMeta} primary />
-        <Button size="sm" href={printHash(ids)} sameTab title={t.printHint}
-          ><Icon name="print" />{t.print}</Button
         >
-        <Button size="sm" onclick={() => void copySel()}><Icon name="copy" />{t.copySel}</Button
-        >
-      </div>
+        <div class="selacts">
+          <AddToList {app} key="sel" {ids} meta={takenMeta} primary />
+          <Button size="sm" href={printHref} sameTab title={t.printHint}
+            ><Icon name="print" />{t.print}</Button
+          >
+          <Button size="sm" onclick={() => void copySel()}
+            ><Icon name="copy" />{t.copySel}</Button
+          >
+        </div>{/if}
     </div>
   </div>
 {/if}
@@ -104,6 +119,15 @@
     -webkit-backdrop-filter: blur(12px);
   }
 
+  .selbarwrap.idle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   /* off `.selbar` plus `.wrap` (style.css 52-53) - the rewrite has no global
      `.wrap` class; every frame element composes the same four properties off
      `--wrap` instead, as `Shell.svelte`'s `.foot` and `TabBar` already do. */
@@ -119,20 +143,31 @@
     padding-right: env(safe-area-inset-right);
   }
 
-  .selcount {
+  /* On a list page, a live region: a changed taken count re-reads the
+     count and the total. A table keeps its old tree; the clear button stays
+     outside the region. */
+  .selsumm {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 7px;
-    font: 650 13.5px/1 inherit;
+    column-gap: 12px;
+    row-gap: 6px;
+    font-size: 13.5px;
+    line-height: 1.3;
     color: var(--gold-soft);
+  }
+
+  .selcount {
+    font-weight: 650;
     white-space: nowrap;
   }
 
-  /* `.selcount`'s colour, and its font as drawn: the `font` shorthand above
-     names `inherit` as a family, which drops the whole declaration, so the
-     count inherits the bar's font (docs/specs/DEBT.md, D47). */
-  .seltotal {
-    color: var(--gold-soft);
+  .seltotal b {
+    font-weight: 650;
+  }
+
+  .seltotal .np {
+    color: var(--muted);
   }
 
   .selx {
@@ -179,6 +214,12 @@
   }
 
   @media (max-width: 600px) {
+    /* The summary wraps inside itself, so the clear button keeps its line. */
+    .selsumm {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
     .selx {
       width: 32px;
       height: 32px;

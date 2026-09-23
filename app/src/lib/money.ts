@@ -8,6 +8,7 @@
  * Pure module: the language arrives as an argument, not from any state. */
 
 import type { Dict } from './dict.js';
+import { plural } from './plural.js';
 import type { Lang, Record_, VoaTier } from './types.js';
 
 export type MoneyMode = 'bag' | 'coin';
@@ -27,31 +28,15 @@ export function moneyMode(list: { money?: MoneyMode } | null | undefined): Money
     : MONEY_DEFAULT;
 }
 
-interface Step {
-  n: number;
-  ru: [string, string, string];
-  en: [string, string];
-}
+/* Each unit word is a form set for `plural()` (docs/specs/I18N.md, "Rules"). */
+type Step = { n: number } & Record<Lang, string>;
 
 const MONEY_STEP: readonly Step[] = [
-  { n: 1000, ru: ['сундук', 'сундука', 'сундуков'], en: ['chest', 'chests'] },
-  { n: 100, ru: ['мешок', 'мешка', 'мешков'], en: ['bag', 'bags'] },
-  { n: 10, ru: ['горсть', 'горсти', 'горстей'], en: ['handful', 'handfuls'] },
-  { n: 1, ru: ['монета', 'монеты', 'монет'], en: ['coin', 'coins'] }
+  { n: 1000, ru: '%n сундук|%n сундука|%n сундуков', en: '%n chest|%n chests' },
+  { n: 100, ru: '%n мешок|%n мешка|%n мешков', en: '%n bag|%n bags' },
+  { n: 10, ru: '%n горсть|%n горсти|%n горстей', en: '%n handful|%n handfuls' },
+  { n: 1, ru: '%n монета|%n монеты|%n монет', en: '%n coin|%n coins' }
 ];
-
-/**
- * Russian needs one of three forms by the last digits; English needs two.
- * Anything that counts things in Russian needs this - do not write "3 монета".
- */
-function moneyWord(step: Step, n: number, lang: Lang): string {
-  if (lang !== 'ru') return step.en[n === 1 ? 0 : 1];
-  const a = n % 10;
-  const b = n % 100;
-  if (a === 1 && b !== 11) return step.ru[0];
-  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return step.ru[1];
-  return step.ru[2];
-}
 
 /**
  * How a price reads: at most two units, rounded to the nearest, the way money
@@ -87,7 +72,7 @@ export function priceText(
   for (const st of steps) {
     if (out.length >= 2 || left < st.n) continue;
     const v = Math.floor(left / st.n);
-    out.push(`${String(v)} ${moneyWord(st, v, lang)}`);
+    out.push(plural(v, st[lang], lang));
     left -= v * st.n;
   }
   return out.join(' ');
@@ -105,11 +90,25 @@ export function totalText(
   lang: Lang,
   t: Dict
 ): string {
-  if (total.coins <= 0) return '';
-  const line = `${t.total}: ${priceText(total.coins, mode, lang)}`;
-  return total.unpriced > 0
-    ? `${line} (${t.unpricedN.replace('%n', String(total.unpriced))})`
-    : line;
+  const p = totalParts(total, mode, lang, t);
+  if (!p) return '';
+  return p.unpriced ? `${p.label} ${p.value} ${p.unpriced}` : `${p.label} ${p.value}`;
+}
+
+/** Returns `totalText`'s three parts for a bar that sets the value apart:
+ *  "Итого:", the price, and "(без цены: N)" or ''. Null with no total. */
+export function totalParts(
+  total: { coins: number; unpriced: number },
+  mode: MoneyMode,
+  lang: Lang,
+  t: Dict
+): { label: string; value: string; unpriced: string } | null {
+  if (total.coins <= 0) return null;
+  return {
+    label: `${t.total}:`,
+    value: priceText(total.coins, mode, lang),
+    unpriced: total.unpriced > 0 ? `(${t.unpricedN.replace('%n', String(total.unpriced))})` : ''
+  };
 }
 
 /* ---------- what a thing is worth ----------
