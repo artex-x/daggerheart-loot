@@ -414,15 +414,16 @@ entry to its first line before adding another.
 
 ## 2026-09-18 - One commit per task, amended per batch, pushed once at closeout
 
-- Task: `workflow-hygiene`.
+- Task: `workflow-hygiene` (human decision).
 - Decision: a task's first batch runs `git commit`; every later batch and
   the closeout amend it (`git commit --amend`, message rewritten to cover
   the whole task so far); the commit gate (rule 2e) runs on each amend. The
   branch is pushed once, at closeout, after the task directory is deleted;
-  the amend window closes at that push - never force-push after it.
-- Rejected: pushing at every batch's committed boundary (the prior rule) -
-  it produced many small commits per task and made "push once" impossible
-  to reconcile with amending.
+  the amend window closes at that push. Never force-push, in any form.
+- Rejected: pushing at every batch's committed boundary (`CLAUDE.md`'s
+  prior rule) - it produced many small commits per task, and a pushed
+  commit cannot be amended without a force-push, so the two rules were
+  incompatible as soon as amending was adopted.
 - Evidence: the reviewer diffs a batch as `git diff <previous sha> HEAD`,
   both shas recorded in the handoff's Completed section.
 
@@ -486,14 +487,7 @@ entry to its first line before adding another.
 
 ## 2026-09-18 - One commit per task, amend freely, push once - replaces the per-batch push rule
 
-- Task: `workflow-hygiene` (human decision).
-- Decision: this task's commit protocol (see the amend-window entry above)
-  replaces `CLAUDE.md`'s prior rule, "push the branch once a batch's
-  commits pass their gates." Never force-push, in any form.
-- Rejected: keeping per-batch pushes alongside amending - a pushed commit
-  cannot be amended without a force-push, which the standing rule already
-  forbids, so the two rules were incompatible as soon as amending was
-  adopted.
+- Superseded by "One commit per task, amended per batch, pushed once at closeout" (2026-09-18), which restated the same decision.
 
 ## 2026-09-17 - Nits are processed immediately, per batch, not deferred to a terminal pass
 
