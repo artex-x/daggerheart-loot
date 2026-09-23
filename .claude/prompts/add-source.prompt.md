@@ -41,7 +41,9 @@ Orientation
 6. Inspect id prefixes, `craft`, `refs`, equipment (`eq`) fields, image and `i/` stub conventions
 7. Inspect `tools/build.js` and tests that pin counts, images, stubs, routes, i18n
 
-Canonical data source of truth: `data.js` (`window.LOOT`).
+Canonical data source of truth: `data.js` (`window.LOOT`). The file is
+exactly `window.LOOT=` + `JSON.stringify(L)` + `;\n`, so a merge script can
+load it, mutate `L` and write it back without changing an unrelated byte.
 Derived: run `node tools/build.js` for `data.json`, `catalog.csv`, `i/*.html`.
 Art: `img/<asset-id>.webp` and `og/<asset-id>.jpg` are outside the JS build but
 required when records have art. The asset id is the basename of a record's
@@ -49,7 +51,10 @@ required when records have art. The asset id is the basename of a record's
 asset, and a record joining one gets no `img/` or `og/` file of its own. A
 record may legitimately ship with `img: ''`, which renders `_none.webp`. Use
 `node tools/artwork/run.mjs ingest` to install and validate art - never
-hand-convert; see `docs/artwork.md` for the tool and its settings.
+hand-convert; see `docs/artwork.md` for the tool and its settings, and its
+"The ingest path" for the drop: image files only, counted against the
+records first and again just before `ingest`, no renaming pass for
+`<Name> v<N>.png`, and `unarted` named per record.
 
 ----------------------------------------
 How data is organized today (do not reinvent this)
@@ -57,7 +62,8 @@ How data is organized today (do not reinvent this)
 
 `window.LOOT` has several parts:
 
-1) `items` - loot tables keyed by table id (e.g. core items/consumables, wondrous, dread, voa, community, ...).
+1) `items` - loot tables keyed by table id (e.g. core items/consumables, wondrous, dread, voa, dv, community, ...).
+   A record that rolls on its book's table and also has a stat block lives here, with its `eq` block (the Wondrous, Dread and Dragon's Vault model): it rolls with its book and still appears in the equipment tables.
    Typical loot record fields (names may be short forms in data.js):
    - `id` - stable public id
    - `src` / source
@@ -69,8 +75,10 @@ How data is organized today (do not reinvent this)
    - optional `craft` - id of what this recipe/item produces
    - optional other source-specific fields already used by similar sets (tier/rarity/community/etc.)
 
-2) `eq` - equipment list (weapons, secondary, armor, and some dual-listed wondrous gear).
+2) `eq` - equipment with no roll (weapons, secondary, armor).
    Equipment carries structured combat/stat fields and may participate in upgrade **lines** (tier ladder UI), which is separate from `craft`.
+   `eq.line` is only the four-tier ladder: `tests/dataint.js` holds every line at tiers `1,2,3,4`.
+   `eq.alt` holds a second stat set that the weapon's own feature switches to (Versatile, and any paid or conditional swap); the print card draws it as a second strip. `Универсальное:` names Versatile only (`docs/specs/I18N.md`, "Rules").
 
 3) `alt` - alternate-table rarity layout data used by the rarity roll mode.
 
@@ -85,12 +93,29 @@ How data is organized today (do not reinvent this)
    - inspect real `refs` entries and the render path in `app/src/components/RecordCard.svelte` before adding new ones
 
 5) `craft` relationships:
-   - on a record, `craft: "<id>"` means "this thing crafts/produces that id"
+   - on a record, `craft: "<id>"` means "this thing crafts into / upgrades to that id"; the card reads "Upgrades to" and the target reads "Made from"
    - reverse links (`crafted from`) are computed at load - do not hand-maintain a second reverse index unless the codebase already requires it
-   - craft is not the equipment tier ladder; do not model upgrade lines as `craft` unless the book is truly a recipe-to-output relationship
+   - a chain of named items (Frostwyrd Dormant -> Awakened -> Exalted) is a craft chain; the four-tier ladder is `eq.line`, and nothing else is
 
-Id prefixes are frozen public contracts (`ci`/`cc`, `hi`/`hc`, `w`, `di`, `voa...`, `cm`, `f`, `q`, ...).
+6) `sets` - a bonus shared by several records (Ember and Spark's Blazing Twins).
+   - each member names its set in `set: "<key>"`; members are derived at load, never stored as a sibling list
+   - `LOOT.sets[key]` holds the bonus once (`en`, `ru`, `ende`, `rud`); every member's card, copy, print card, stub and `catalog.csv` row carries it
+   - never copy the bonus into one member's text; design the wording for N members before the field exists
+
+Id prefixes are frozen public contracts (`ci`/`cc`, `hi`/`hc`, `w`, `di`, `voa...`, `dv`/`dve`, `cm`, `f`, `q`, ...).
 Never renumber shipped ids. A new source may need a new prefix/scheme - justify it and keep it stable.
+
+----------------------------------------
+Contributor drafts and delivery notes
+----------------------------------------
+A source often arrives as a package: a draft data file, a review, a patch ledger, integration notes, an art folder.
+
+- Read the review and the patch ledger first. Check whether each ledger edit is already applied (its `to` string present) before applying anything.
+- Read integration notes for book facts, never for where to edit. Notes written against an older renderer name files that no longer exist (`app.js`, `TABLE_OF`, `EQ_SRC` were deleted at `23c00a6`); the checklist in Phase 2 is the current list.
+- A contributor's claim about a repository rule is a claim. Find the rule in `tests/` or `types.ts` before you design around it: a four-tier `line` rule taken for a schema rule once produced a parallel `upgrade_line` field, where relaxing or reusing the real mechanism was the answer.
+- Extra draft fields default to drop (`page`, `lore_*`, `state`, ...). A GM sidebar that is rules text folds into the record text as a final line. Lore is a product question: raise it, do not ship it silently.
+- Where the book's overview table and its detailed entry disagree, the entry wins; confirm each case on the rendered PDF page, and measure the printed-page offset once per book.
+- Normalise draft punctuation to the catalogue's: `docs/DECISIONS.md`, "Text normalisation for an ingest, and its guard"; `tests/dataint.js` enforces it.
 
 ----------------------------------------
 New mechanics the app does not support yet
@@ -154,16 +179,21 @@ Do:
    `node tools/artwork/run.mjs ingest` per `docs/artwork.md`; never
    hand-convert. Records must be in `data.js` before or in the same change
    as running `ingest`, or its `og/` orphan gate fails
-6. Run `node tools/build.js` and fix derived drift
-7. Wire roll mode / table / filters / i18n only if required
-8. Update docs and copy that publish counts or source lists when they change - every file `tests/derived.js`'s `COUNTERS` list names (`app/index.html`, `README.md`, `README.ru.md`, `llms.txt`, `robots.txt`, and the `app/src/lib/*.ts` count sources)
-9. Update tests/fixtures/specs only if behaviour or public contracts change
-10. Run verification:
+6. Run `node tools/build.js` and fix derived drift. Then search `i/` for `undefined`: a source missing from a generator's label map prints it into the stub
+7. Wire roll mode / table / filters / i18n only if required. A new source key, table or roll section is registered in all of these (grep an existing key such as `voa` or `dv` to confirm the list is still complete):
+    - app: `app/src/lib/types.ts` (`TABLE_IDS`, `SECTIONS`), `tables.ts`, `label.ts` (`srcName`, `srcLabel`, `tableOf`), `dict.ts` (tab, page, `src*`, `footBefore`, section labels), `help.ts` (the help box and its product link), `facets.ts`, `filters.ts` (`PLAIN_GROUPS`), `sections.ts`, `desc.ts`; `App.svelte` (`ROLL_TABLE`), `TabBar.svelte`, `TablesPage.svelte`, `FilterBar.svelte`
+    - generators: `tools/derived.js` (`SRC`), `tools/build-share-pages.js` (`SRC_LABEL`)
+    - tests: `tests/dataint.js`, `tests/derived.js` (per-source pins), the unit tests beside each app file above, `tests/app/sweep.js`, `typo.js`, `hues.js`, `contracts.js`, `inventory.js`
+    - contracts and docs: `docs/fixtures/urls/routes.json`, `docs/specs/CONTRACTS.md`, `ROUTES.md`, `STATE.md`, `FEATURES.md`, `COVERAGE.md`, `README.md`, `README.ru.md`, `llms.txt`, `PRODUCT.md`
+8. Update docs and copy that publish counts or source lists when they change - every file `tests/derived.js`'s `COUNT_BEARING_FILES` names. A new document that publishes a count gets an entry there in the same change, or it goes stale silently
+9. Update tests/fixtures/specs only if behaviour or public contracts change. Fixture counts (the `routes.json` row counts) move with every equipment ingest: compute them from the merged data with a script, never by hand
+10. A new word on the print card (a trait, a range) is measured in the built app against the cell at the `2.2cqw` floor before it ships; a word that does not fit gets a print-only short form (`app/src/lib/print.ts`)
+11. Run verification:
     - `node tests/run-all.js dataint` - ids, images, `og/` orphans, stubs
     - `npm run check` when code/app surface changed
     - `npm run check:built` when screen/dist output may change (per CLAUDE.md)
     - focused tests for new routes/filters/mechanics
-11. Update TASK_DIR handoff/plan when useful (template headings)
+12. Update TASK_DIR handoff/plan when useful (template headings)
 
 Follow standing rules in `CLAUDE.md`.
 
@@ -171,7 +201,7 @@ Do not:
 - renumber shipped ids
 - invent book text
 - duplicate existing refs under new keys
-- model upgrade ladders as `craft` or `craft` as set bonuses
+- model the four-tier ladder as `craft`, a named-item chain as `eq.line`, or a set bonus as `craft`
 - leave derived files stale
 - add unrelated refactors
 

@@ -11,11 +11,13 @@ import {
   kindOf,
   otherTableRows,
   plainFacets,
+  setBonusOf,
+  setOf,
   srcOf,
   upgradeLine,
   type Loot
 } from './data.js';
-import type { Record_ } from './types.js';
+import { CHARACTER_TRAITS, type Record_ } from './types.js';
 
 const LOOT = JSON.parse(
   readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
@@ -64,12 +66,12 @@ function expectRollPools(loot: Loot): void {
 
 describe('the index over the real dataset', () => {
   it('holds every record under its id', () => {
-    expect(index.byId.size).toBe(1091);
-    expect(index.searchable).toHaveLength(1091);
+    expect(index.byId.size).toBe(1236);
+    expect(index.searchable).toHaveLength(1236);
   });
 
   it('separates loot from equipment the way the data does', () => {
-    expect(index.all).toHaveLength(710);
+    expect(index.all).toHaveLength(855);
     expect(LOOT.eq).toHaveLength(381);
   });
 
@@ -80,8 +82,8 @@ describe('the index over the real dataset', () => {
     expect(frames).toHaveLength(95);
     expect(new Set([...starting, ...frames]).size).toBe(124);
     expect(index.rows.get('frames')).toHaveLength(94);
-    expect(index.all).toHaveLength(710);
-    expect(index.searchable).toHaveLength(1091);
+    expect(index.all).toHaveLength(855);
+    expect(index.searchable).toHaveLength(1236);
   });
 
   it('keeps roll numbers only in complete, independent roll pools', () => {
@@ -123,11 +125,11 @@ describe('the index over the real dataset', () => {
   });
 
   it('finds equipment wherever it lives, not only in eq', () => {
-    /* 381 in `eq`, and another 155 keeping their source-table placement. */
+    /* 381 in `eq`, and another 202 keeping their source-table placement. */
     expect(index.allEquip.length).toBeGreaterThan(LOOT.eq?.length ?? 0);
-    expect(equipOfKind(index, 'weapon')).toHaveLength(317);
-    expect(equipOfKind(index, 'secondary')).toHaveLength(108);
-    expect(equipOfKind(index, 'armor')).toHaveLength(90);
+    expect(equipOfKind(index, 'weapon')).toHaveLength(370);
+    expect(equipOfKind(index, 'secondary')).toHaveLength(119);
+    expect(equipOfKind(index, 'armor')).toHaveLength(94);
   });
 
   it('narrows to the two books through the source, as the tables do', () => {
@@ -184,7 +186,7 @@ describe('the index over the real dataset', () => {
 
 describe('upgrade chains', () => {
   it('derives the reverse link rather than storing it', () => {
-    expect(index.craftedFrom.size).toBe(15);
+    expect(index.craftedFrom.size).toBe(17);
   });
 
   it('points back at something that exists, every time', () => {
@@ -286,16 +288,86 @@ describe('facet values', () => {
   it('give a record with no stat block no equipment facets', () => {
     expect(equipFacets(index.byId.get('ci1') as Record_)).toEqual({});
   });
+
+  it('answers both burden values for a weapon the book prints both ways', () => {
+    /* The Gryphon Hammer is printed One/Two-Handed, so it answers both
+       burden chips. */
+    const gryphon = index.byId.get('dve30') as Record_;
+    expect(equipFacets(gryphon)['burden']).toEqual(['1', '2']);
+  });
+});
+
+describe('set membership', () => {
+  it('groups a set from the records that name it, in allEquip order', () => {
+    const ember = index.byId.get('dve19') as Record_;
+    const spark = index.byId.get('dve20') as Record_;
+    expect(setOf(index, ember)).toEqual([ember, spark]);
+    expect(setOf(index, spark)).toEqual([ember, spark]);
+  });
+
+  it('answers no members for a record outside any set', () => {
+    const gryphon = index.byId.get('dve30') as Record_;
+    expect(setOf(index, gryphon)).toEqual([]);
+  });
+
+  const member = (id: string, set: string): Record_ => ({
+    id,
+    src: 'core',
+    kind: 'item',
+    en: id,
+    ende: '',
+    ru: id,
+    rud: '',
+    set
+  });
+
+  it('answers no members for a set of one', () => {
+    const solo = member('x1', 'solo');
+    const small = buildIndex({ items: { core_item: [solo, member('x2', 'pair')] } });
+    expect(setOf(small, solo)).toEqual([]);
+    expect(setBonusOf(small, solo)).toBeUndefined();
+  });
+
+  it("answers the set's shared bonus for each member, and nothing outside a set", () => {
+    const bonus = LOOT.sets?.['ember-spark'];
+    expect(bonus).toBeDefined();
+    expect(setBonusOf(index, index.byId.get('dve19') as Record_)).toBe(bonus);
+    expect(setBonusOf(index, index.byId.get('dve20') as Record_)).toBe(bonus);
+    expect(setBonusOf(index, index.byId.get('dve30') as Record_)).toBeUndefined();
+  });
+
+  it('answers no bonus for a set that has no entry in sets', () => {
+    const a = member('x1', 'pair');
+    const small = buildIndex({ items: { core_item: [a, member('x2', 'pair')] } });
+    expect(setOf(small, a)).toHaveLength(2);
+    expect(setBonusOf(small, a)).toBeUndefined();
+  });
+});
+
+describe("a weapon that uses its wielder's Spellcast trait", () => {
+  it('answers all six traits', () => {
+    expect(equipFacets(index.byId.get('dve50') as Record_)['trait']).toEqual(CHARACTER_TRAITS);
+  });
 });
 
 describe('referenced cards', () => {
   it('are kept beside the items that point at them', () => {
-    expect(Object.keys(index.refs)).toHaveLength(5);
+    expect(Object.keys(index.refs)).toHaveLength(12);
   });
 
   it('are pointed at by records that exist', () => {
+    /* `index.all` holds the roll tables, equipment with a roll included:
+       w88, dve38 and dve59 carry a stat block, dve66 an adversary feature. */
     const pointing = index.all.filter((it) => it.refs?.length);
-    expect(pointing).toHaveLength(5);
+    expect(pointing).toHaveLength(12);
+    for (const it of pointing) {
+      for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
+    }
+  });
+
+  it('are pointed at by equipment that exists', () => {
+    const pointing = index.allEquip.filter((it) => it.refs?.length);
+    expect(pointing.map((it) => it.id)).toEqual(['w88', 'dve38', 'dve59', 'dve66']);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }

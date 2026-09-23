@@ -17,6 +17,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -32,6 +33,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -52,7 +54,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Пояс Единства" [checked=false]
     button "60 Пояс Единства Belt of Unity"
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -118,6 +120,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 8Плетёная СетьWoven Net
 9Банка с ОгнёмFire Jar
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -220,6 +223,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -235,6 +239,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -255,7 +260,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     checkbox "Belt of Unity" [checked=false]
     button "60 Belt of Unity Пояс Единства"
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -341,6 +346,7 @@ Consumables
 Control Relic
 Core
 Corrector Sprite
+Dragon's Vault
 Dread
 Dread GM Toolbox
 Dual Flask

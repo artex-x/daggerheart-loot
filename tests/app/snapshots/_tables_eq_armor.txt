@@ -17,6 +17,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -32,6 +33,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -43,35 +45,40 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "90"
+    StaticText "94"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (16)" [checked=false]
     checkbox "Стеганый Доспех" [checked=false]
     button "Стеганый Доспех Ранг 1 · Пороги 5/11 · Броня 3 Гибкое: +1 к Укло..." [namelen=80 namehash=1a6d1d56]
-    ... checkbox x90 of 94 same-shape siblings elided
-    ... button x87 of 91 same-shape siblings elided
+    ... checkbox x94 of 98 same-shape siblings elided
+    ... button x91 of 95 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (24)"
-    checkbox "Легендарная Среброшелковая Броня" [checked=false]
-    button "Легендарная Среброшелковая Броня Ранг 4 · Пороги 11/32 · Броня 6..." [namelen=242 namehash=7ffa9f95]
+    StaticText "Выбрать все (25)"
     checkbox "Латный Доспех Демоностража" [checked=false]
     button "19 Латный Доспех Демоностража Ранг 4 · Пороги 17/44 · Броня 7 Ст..." [namelen=333 namehash=7fbb54c1]
+    checkbox "Непробиваемые Одеяния" [checked=false]
+    button "142 Непробиваемые Одеяния Ранг 4 · Пороги 15/38 · Броня 5 Защищё..." [namelen=243 namehash=095f0d24]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
 12Одеяние ПосланникаРанг 2 · Пороги 11/24 · Броня 5Стоимость При... [namelen=286 namehash=3d407477]
+142Непробиваемые ОдеянияРанг 4 · Пороги 15/38 · Броня 5Защищённы... [namelen=237 namehash=e1d05451]
+143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=297 namehash=a94aca4a]
+144Чешуя Ордена ДраконаРанг 3 · Пороги 13/31 · Броня 6Драконья ч... [namelen=276 namehash=867eceff]
+145Оберег ТенейРанг 2 · Пороги 9/20 · Броня 4Укрытое тенями: Пок... [namelen=163 namehash=96e791e6]
 17Одеяния Повелителя ТруповРанг 2 · Пороги 9/19 · Броня 3Стоимос... [namelen=410 namehash=b0da6c4d]
 19Латный Доспех ДемоностражаРанг 4 · Пороги 17/44 · Броня 7Стоим... [namelen=326 namehash=973b56c2]
 24Панцирь Подземного ОбитателяРанг 2 · Пороги 10/22 · Броня 4Сто... [namelen=260 namehash=a24f855b]
 3Доспех Морозного ПоцелуяРанг 1 · Пороги 7/14 · Броня 3Стоимость... [namelen=219 namehash=b4f7e7ce]
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -165,6 +172,9 @@ daggerheart.com
 Нагрудник из ПротивняРанг 1 · Пороги 8/17 · Броня 4Очень тяжелое... [namelen=123 namehash=896a28a9]
 Наряд Грандминстра
 Наряд ГрандминстраРанг 3 · Пороги 11/27 · Броня 2Превосходное: В... [namelen=150 namehash=1ffa25f1]
+Непробиваемые Одеяния
+Ночной Покров
+Оберег Теней
 Обычные правила
 Одеяние Посланника
 Одеяния Повелителя Трупов
@@ -270,6 +280,7 @@ daggerheart.com
 Хабит ШтормаРанг 2 · Пороги 9/20 · Броня 4Поглощающее: Один раз ... [namelen=168 namehash=5a540b00]
 Чешуйчатый Доспех
 Чешуйчатый ДоспехРанг 1 · Пороги 7/14 · Броня 3Громоздкое: −1 к ... [namelen=90 namehash=c5278236]
+Чешуя Ордена Дракона
 Шипованный Латный Доспех
 Шипованный Латный ДоспехРанг 3 · Пороги 10/25 · Броня 5Острое: П... [namelen=146 namehash=15cb0803]
 Шёлковая Кольчуга Дунамиса
@@ -292,6 +303,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -307,6 +319,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -318,30 +331,34 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "90"
+    StaticText "94"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (16)" [checked=false]
     checkbox "Gambeson Armor" [checked=false]
     button "Gambeson Armor Tier 1 · Thresholds 5/11 · Armor 3 Flexible: +1 t..." [namelen=84 namehash=86e0c136]
-    ... checkbox x90 of 94 same-shape siblings elided
-    ... button x87 of 91 same-shape siblings elided
+    ... checkbox x94 of 98 same-shape siblings elided
+    ... button x91 of 95 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "Select all (24)"
-    checkbox "Legendary Silverweave Armor" [checked=false]
-    button "Legendary Silverweave Armor Tier 4 · Thresholds 11/32 · Armor 6 ..." [namelen=200 namehash=832b89ab]
+    StaticText "Select all (25)"
     checkbox "Demonguard Platemail" [checked=false]
     button "19 Demonguard Platemail Tier 4 · Thresholds 17/44 · Armor 7 Reca..." [namelen=308 namehash=11715abd]
+    checkbox "Impervious Vestments" [checked=false]
+    button "142 Impervious Vestments Tier 4 · Thresholds 15/38 · Armor 5 War..." [namelen=221 namehash=3b0d6d12]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## en :: controls
 12Envoy's AttireTier 2 · Thresholds 11/24 · Armor 5Recall Cost: ... [namelen=251 namehash=4ba6f07f]
+142Impervious VestmentsTier 4 · Thresholds 15/38 · Armor 5Warded... [namelen=215 namehash=e6620189]
+143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=277 namehash=a005c78d]
+144Ordo Draconis ScaleTier 3 · Thresholds 13/31 · Armor 6Dragon ... [namelen=236 namehash=b77d1998]
+145Ward of ShadowsTier 2 · Thresholds 9/20 · Armor 4Shrouded: Wh... [namelen=147 namehash=61584e08]
 17Corpse Lord's RaimentsTier 2 · Thresholds 9/19 · Armor 3Recall... [namelen=360 namehash=2789c1d4]
 19Demonguard PlatemailTier 4 · Thresholds 17/44 · Armor 7Recall ... [namelen=301 namehash=916e1970]
 24Underdweller CarapaceTier 2 · Thresholds 10/22 · Armor 4Recall... [namelen=239 namehash=2e95d7fb]
@@ -403,6 +420,7 @@ Darkweave ShroudTier 4 · Thresholds 13/36 · Armor 5Ghostwalker: ... [namelen=1
 Deep-Forged Coral Armor
 Deep-Forged Coral ArmorTier 3 · Thresholds 13/35 · Armor 6Aquati... [namelen=168 namehash=4a208610]
 Demonguard Platemail
+Dragon's Vault
 Dragonscale Armor
 Dragonscale ArmorTier 3 · Thresholds 11/27 · Armor 5Impenetrable... [namelen=173 namehash=f25fd3a8]
 Dread
@@ -441,6 +459,7 @@ Hawkguard's Mantle
 Hawkguard's MantleTier 2 · Thresholds 9/20 · Armor 4Gliding: You... [namelen=151 namehash=365dbcbd]
 Hope & Fear
 How this works
+Impervious Vestments
 Improved Banded Armor
 Improved Banded ArmorTier 2 · Thresholds 13/27 · Armor 5Bulky: −... [namelen=146 namehash=1660110e]
 Improved Brigandine Armor
@@ -500,7 +519,9 @@ Mage Robes
 Mage RobesTier 1 · Thresholds 4/10 · Armor 2Enchanted: Gain a bo... [namelen=140 namehash=66dcf68d]
 Monett's Cloak
 Monett's CloakTier 3 · Thresholds 16/39 · Armor 6Magic: You can'... [namelen=126 namehash=f001f396]
+Nightshroud
 Open this section on start
+Ordo Draconis Scale
 Other
 Quilted Clothing
 Quilted ClothingTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 t... [namelen=95 namehash=a59647cc]
@@ -544,6 +565,7 @@ Underdweller Carapace
 Vault of Ages
 Veritas Opal Armor
 Veritas Opal ArmorTier 4 · Thresholds 13/36 · Armor 6Truthseekin... [namelen=152 namehash=459303b3]
+Ward of Shadows
 Weapons
 Wondrous
 Wondrous Loot

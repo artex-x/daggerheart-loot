@@ -108,7 +108,8 @@ export function srcName(key: string, lang: Lang): string {
     hnf: t.srcHnf,
     wondrous: t.srcWond,
     dread: t.srcDread,
-    voa: t.srcVoa
+    voa: t.srcVoa,
+    dv: t.srcDv
   };
   /* Anything not one of the five books above is assumed to be a frame id -
      the same assumption `EQ_SRC` bakes into the facet's own value list. */
@@ -139,6 +140,7 @@ export function srcLabel(it: Record_, lang: Lang): string {
     case 'wondrous':
     case 'dread':
     case 'voa':
+    case 'dv':
       return srcName(it.src, lang);
     case 'frame':
       /* `it.frame` is checked, and returned on, above - reachable here only
@@ -174,6 +176,7 @@ export function tableOf(it: Record_): TableId | null {
   if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';
+  if (it.src === 'dv') return 'dv';
   if (it.src === 'community') return 'community';
 
   /* What is left is the roll tables, which are keyed by book and by kind. */

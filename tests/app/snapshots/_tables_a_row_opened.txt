@@ -82,6 +82,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=187 namehash=548690a6]
 9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=165 namehash=8235d08d]
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -284,6 +285,7 @@ Copy name
 Copy text
 Core
 Corrector Sprite
+Dragon's Vault
 Dread
 Dread GM Toolbox
 Dual Flask

@@ -148,9 +148,54 @@ const LOOT: Loot = {
       en: 'Plate',
       ru: 'Латы',
       eq: { t: 'armor', tier: 2, as: 3, th: [5, 11] }
+    }),
+    /* A two-member set with a shared bonus; the first member also swaps its
+       stat set, so its card draws a second strip. */
+    row({
+      id: 'st1',
+      en: 'Ember Blade',
+      ru: 'Угольный Клинок',
+      rud: 'Раздуть: сменить характеристики.',
+      ende: 'Fan: change the statistics.',
+      set: 'pair',
+      eq: {
+        t: 'weapon',
+        tier: 3,
+        cls: 'mag',
+        tr: 'agility',
+        rg: 'melee',
+        dmg: 'd8+5',
+        dt: 'mag',
+        bu: 1,
+        alt: { tr: 'agility', rg: 'veryclose', dmg: 'd12+5', dt: 'mag' }
+      }
+    }),
+    row({
+      id: 'st2',
+      en: 'Spark Blade',
+      ru: 'Искристый Клинок',
+      set: 'pair',
+      eq: {
+        t: 'secondary',
+        tier: 2,
+        cls: 'mag',
+        tr: 'agility',
+        rg: 'melee',
+        dmg: 'd8+2',
+        dt: 'mag',
+        bu: 1
+      }
     })
   ],
-  refs: {}
+  refs: {},
+  sets: {
+    pair: {
+      en: 'Twin Flame',
+      ru: 'Двойное пламя',
+      ende: 'Both burn together.',
+      rud: 'Оба горят вместе.'
+    }
+  }
 };
 
 const at = (hash: string, over: Partial<Env> = {}): Env =>
@@ -294,6 +339,35 @@ describe('the versatile magic weapon', () => {
     expect(card?.querySelector('.pc-ribbon')).toHaveAttribute('src', 'card/ribbon-mag.svg');
     expect(card?.querySelector('.pc-burden img')).toHaveAttribute('src', 'card/burden-2.svg');
     expect(card?.querySelector('.pc-tag.out')?.textContent).toBe('Магическое');
+  });
+});
+
+describe('a set member', () => {
+  it("draws the set's shared bonus as the last text line, labelled with the members", async () => {
+    const { container } = render(App, { env: at('#/print/st1-st2') });
+    for (const id of ['st1', 'st2']) {
+      const labels = document.querySelectorAll(`.pcard[data-pid="${id}"] .pc-text i`);
+      const last = labels[labels.length - 1];
+      expect(last?.textContent, id).toBe(
+        'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок):'
+      );
+      expect(
+        document
+          .querySelector(`.pcard[data-pid="${id}"] .pc-text`)
+          ?.textContent.endsWith(': Оба горят вместе.'),
+        id
+      ).toBe(true);
+    }
+    expect(document.querySelectorAll('.pcard[data-pid="st1"] .pc-strip')).toHaveLength(2);
+    expect(document.querySelectorAll('.pcard[data-pid="st2"] .pc-strip')).toHaveLength(1);
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws no set line for a record outside any set', () => {
+    render(App, { env: at('#/print/q1') });
+    expect(document.querySelector('.pcard[data-pid="q1"] .pc-text')?.textContent).not.toContain(
+      'Комплект'
+    );
   });
 });
 

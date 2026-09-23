@@ -385,8 +385,8 @@ ok(
   'equipment grew a new kind: ' + Object.keys(BY_T).join()
 );
 ok(
-  EVERY_EQ.length === L.eq.length + 134,
-  'equipment outside the two base books is not 134, but ' + (EVERY_EQ.length - L.eq.length)
+  EVERY_EQ.length === L.eq.length + 202,
+  'equipment outside the two base books is not 202, but ' + (EVERY_EQ.length - L.eq.length)
 );
 /* Every piece of equipment must carry a tier. Wondrous's is derived from the
    book: the "Loot items by environment" table ties an item to a location,
@@ -579,11 +579,18 @@ ok(
       .map((x) => x.id)
       .join()
 );
+/* A feature that swaps the weapon's stat set gets the same second strip
+   (docs/DECISIONS.md, "A feature that swaps a weapon's stat set ..."). */
+const SWAP_ALT = ['dve19', 'dve54'].map((id) => ALL.find((x) => x.id === id));
 ok(
-  ALL.filter((x) => x.eq && x.eq.alt).length === VERSATILE.length,
-  'a second stat set showed up on more than just versatile weapons'
+  SWAP_ALT.every((x) => x && x.eq && x.eq.alt),
+  'a stat-swapping weapon is missing its second stat set'
 );
-VERSATILE.forEach(function (x) {
+ok(
+  ALL.filter((x) => x.eq && x.eq.alt).length === VERSATILE.length + SWAP_ALT.length,
+  'a second stat set showed up outside the versatile and stat-swapping weapons'
+);
+VERSATILE.concat(SWAP_ALT.filter(Boolean)).forEach(function (x) {
   const a = x.eq.alt;
   ok(
     a.tr && a.rg && /^d\d+([+-]\d+)?$/.test(a.dmg || ''),
@@ -722,7 +729,9 @@ const COUNT_BEARING_FILES = [
   'app/src/lib/dict.ts',
   'app/src/lib/i18n.ts',
   'app/src/lib/search.ts',
-  'tools/bundle-budget.mjs'
+  'tools/bundle-budget.mjs',
+  'DESIGN.md',
+  'PRODUCT.md'
 ];
 COUNT_BEARING_FILES.forEach(function (file) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
@@ -792,7 +801,7 @@ const CITE =
    footAfter) rather than one string with markup - the whole verbatim
    citation lives entirely in footBefore. */
 const dictTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dict.ts'), 'utf8');
-const feet = dictTs.match(/footBefore:\s*\n?\s*'([^']*)'/g) || [];
+const feet = dictTs.match(/footBefore:\s*\n?\s*(?:'[^']*'|"[^"]*")/g) || [];
 ok(feet.length === 2, 'footers are not two, but ' + feet.length);
 feet.forEach(function (f, i) {
   ok(
@@ -807,6 +816,7 @@ const OUTSIDE = [
   'Wondrous Environments',
   'Dread GM Toolbox',
   'Vault of Ages',
+  "The Dragon's Vault",
   'Community Magic Items',
   'Alternate Loot & Consumable Tables'
 ];
@@ -892,6 +902,162 @@ if (shardList && shardRun) {
     'browser matrix: shard list is ' + JSON.stringify(list) + ', expected exactly 1..' + divisor
   );
 }
+
+console.log("Dragon's Vault");
+const dv = L.items.dv;
+ok(dv.length === 145, 'items.dv is not 145, but ' + dv.length);
+ok(dv.filter((x) => x.kind === 'item').length === 68, 'items.dv items are not 68');
+ok(dv.filter((x) => x.kind === 'consumable').length === 9, 'items.dv consumables are not 9');
+ok(
+  dv.every((x, i) => x.roll === i + 1),
+  'items.dv rolls are not 1..145 in order'
+);
+/* Equipment rolls after the loot: dve<n> is roll 77 + n. */
+const dvEq = dv.filter((x) => x.eq);
+ok(dvEq.length === 68, 'dv equipment records are not 68, but ' + dvEq.length);
+ok(
+  dvEq.every((x) => x.kind === 'equip' && x.roll === 77 + Number(x.id.slice(3))),
+  'dv equipment rolls are not 77 + the id number'
+);
+ok(!L.eq.some((x) => x.src === 'dv'), 'dv equipment is still in the eq array');
+const dvByKind = { weapon: 0, secondary: 0, armor: 0 };
+dvEq.forEach((x) => dvByKind[x.eq.t]++);
+ok(
+  dvByKind.weapon === 53 && dvByKind.secondary === 11 && dvByKind.armor === 4,
+  'dv equipment by kind: ' + JSON.stringify(dvByKind)
+);
+ok(!dvEq.some((x) => x.eq.line), "a Dragon's Vault record carries an upgrade line");
+const dvById = Object.fromEntries(dv.map((x) => [x.id, x]));
+ok(
+  dvById.dve24.craft === 'dve25' && dvById.dve25.craft === 'dve26' && !dvById.dve26.craft,
+  'Frostwyrd is not the craft chain dve24 -> dve25 -> dve26'
+);
+ok(
+  !dv.some((x) => /Vestige/.test(x.ende) || /реликви/.test(x.rud)),
+  "a Dragon's Vault record still carries the Vestige paragraph"
+);
+const dve50 = dvById.dve50;
+ok(
+  !!dve50 && dve50.eq.tr === 'spellcast' && dve50.eq.dmg === 'd10+4',
+  "dve50 is not the summoned blade: 'spellcast', d10+4"
+);
+ok(
+  JSON.stringify(dvById.dve19.eq.alt) ===
+    JSON.stringify({ tr: 'agility', rg: 'veryclose', dmg: 'd12+5', dt: 'mag' }),
+  'dve19 second stat set: ' + JSON.stringify(dvById.dve19.eq.alt)
+);
+ok(
+  JSON.stringify(dvById.dve54.eq.alt) ===
+    JSON.stringify({ tr: 'strength', rg: 'melee', dmg: 'd12+4', dt: 'phy' }),
+  'dve54 second stat set: ' + JSON.stringify(dvById.dve54.eq.alt)
+);
+ok(
+  !/Blazing Twins/.test(dvById.dve20.ende) && !/Пылающие/.test(dvById.dve20.rud),
+  "Spark's own text still carries the set bonus"
+);
+ok(
+  JSON.stringify(Object.keys(L.sets || {})) === JSON.stringify(['ember-spark']),
+  'sets are not exactly ember-spark: ' + Object.keys(L.sets || {}).join()
+);
+['dve19', 'dve20'].forEach((id) => {
+  ok(
+    fs.readFileSync(path.join(ROOT, 'i', id + '.html'), 'utf8').indexOf('Пылающие близнецы') >=
+      0,
+    'i/' + id + '.html does not carry the set bonus'
+  );
+  const csvRow = rows.find((r) => r.startsWith(id + ','));
+  ok(
+    !!csvRow && csvRow.indexOf('Blazing Twins (Set: Ember, Spark):') >= 0,
+    'catalog.csv row ' + id + ' does not carry the set bonus'
+  );
+});
+ok(dvById.dv55.ru === 'Резонирующий Торквес', 'dv55 is not «Резонирующий Торквес»');
+const currency = ALL.filter((x) => /гривн/i.test(x.ru) || /гривн/i.test(x.rud));
+ok(currency.length === 0, '«гривна» in Russian text: ' + currency.map((x) => x.id).join());
+const dve30 = dvById.dve30;
+ok(!!dve30 && dve30.eq.bu === 'any', "dve30 burden is not 'any'");
+const crossClass = dvEq.filter((x) => x.eq.cls !== x.eq.dt);
+ok(
+  crossClass.length === 2 && crossClass.every((x) => ['dve38', 'dve39'].includes(x.id)),
+  'expected only dve38 and dve39 to have cls !== dt, got ' +
+    crossClass.map((x) => x.id).join(', ')
+);
+/* The drop is a strict one-to-one mapping: every one of the 145 records
+   gets a real img, none ships ''. */
+dv.forEach((x) =>
+  ok(x.img === x.id + '.webp', x.id + ': expected img === ' + x.id + '.webp, got ' + x.img)
+);
+const DV_REFS = {
+  'pack-predator': 'dv71',
+  'elemental-breath': 'dv26',
+  vampire: 'dve38',
+  enrapture: 'dve59',
+  'huge-green-ooze': 'dv14',
+  'shambling-zombie': 'dv66',
+  slow: 'dve66'
+};
+Object.entries(DV_REFS).forEach(([key, id]) => {
+  const rec = dvById[id];
+  ok(!!rec, key + ': naming record ' + id + ' not found');
+  ok(!!rec && (rec.refs || []).indexOf(key) >= 0, id + ': expected to reference ' + key);
+});
+ok(
+  !/\n/.test(dvById.dve66.ende) && !/\n/.test(dvById.dve66.rud),
+  'dve66: Slow is folded into the record text; it belongs in the slow ref'
+);
+ok(
+  (L.refs.slow || {}).url === 'https://ru.daggerheart.su/adversary/huge-green-ooze',
+  'slow: expected the Huge Green Ooze page'
+);
+
+console.log('Russian record text');
+/* Distances are rounded metric in Russian text (docs/specs/I18N.md, "Rules"). */
+const IMPERIAL =
+  /(^|[^а-яё])(фут(а|у|ом|е|ов|ам|ами|ах)?|мил(ь|и|ю|е|я|ей|ям|ями|ях)|фунт(а|у|ом|е|ов|ам|ами|ах)?|ярд(а|у|ом|е|ов|ам|ами|ах)?|дюйм(а|у|ом|е|ов|ам|ами|ах)?)(?![а-яё])/i;
+ok(
+  IMPERIAL.test('в футах') &&
+    IMPERIAL.test('в милях') &&
+    IMPERIAL.test('футом') &&
+    IMPERIAL.test('милям') &&
+    !IMPERIAL.test('футляр'),
+  'IMPERIAL misses an oblique form or matches «футляр»'
+);
+/* A set bonus is record text too: it prints on every member's card. */
+const SETS = Object.entries(L.sets || {}).map(([key, s]) => ({ id: 'sets.' + key, ...s }));
+const imperial = [...ALL, ...SETS].filter((x) => IMPERIAL.test(x.ru) || IMPERIAL.test(x.rud));
+ok(imperial.length === 0, 'imperial unit in Russian text: ' + imperial.map((x) => x.id).join());
+/* Mid-sentence these seven terms are lowercase, as daggerheart.su writes
+   them (docs/specs/I18N.md, "Rules"). */
+const CAPITAL_TERM =
+  /(?<=[а-яё0-9,;)»] )(Состояни[а-яё]*|Преимуществ[а-яё]*|Помех[а-яё]*|Активаци[а-яё]*|Свойств[а-яё]*|Карт(?:а|ы|у|ой|е|ам|ами|ах)?(?![а-яё])|Домен[а-яё]*)/;
+const CAPITAL_ALLOWED = {
+  q124: 'site-verbatim equipment text',
+  q328: 'site-verbatim equipment text',
+  hi60: 'a named feature, «Свойство Надежды»'
+};
+Object.keys(CAPITAL_ALLOWED).forEach((id) => {
+  const rec = ALL.find((x) => x.id === id);
+  ok(
+    !!rec && CAPITAL_TERM.test(rec.rud),
+    'CAPITAL_ALLOWED.' + id + ' no longer matches; drop it'
+  );
+});
+const capitalTerms = [...ALL, ...SETS].filter(
+  (x) => !CAPITAL_ALLOWED[x.id] && CAPITAL_TERM.test(x.rud)
+);
+ok(
+  capitalTerms.length === 0,
+  'capitalised mid-sentence term in rud: ' + capitalTerms.map((x) => x.id).join()
+);
+const stubDir = path.join(ROOT, 'i');
+const badStubs = fs
+  .readdirSync(stubDir)
+  .filter(
+    (f) =>
+      f.endsWith('.html') &&
+      fs.readFileSync(path.join(stubDir, f), 'utf8').indexOf('undefined') >= 0
+  );
+ok(badStubs.length === 0, 'stubs containing "undefined": ' + badStubs.slice(0, 5).join(', '));
 
 console.log(failed() ? '\n' + failed() + ' FAILED' : '\nderived files: everything matches');
 process.exit(failed() ? 1 : 0);

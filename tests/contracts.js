@@ -107,6 +107,22 @@ const N_REC = '\x1e',
     ok(machine.indexOf(g) < 0, 'llms.txt still carries the non-existent group ' + g);
   });
 
+  /* ---------- data.json top-level keys ---------- */
+  /* `CONTRACTS.md` section 4 publishes the key list; a key added to or dropped
+     from `data.js` without that line moving is a silent contract change. */
+  console.log('data.json keys');
+  const contractsDoc = fs.readFileSync(path.join(FIX, '..', 'specs', 'CONTRACTS.md'), 'utf8');
+  const shape = /`data\.json` - `\{([^`]*)\}`/.exec(contractsDoc);
+  ok(!!shape, 'CONTRACTS.md no longer states the data.json shape');
+  const documented = shape ? [...shape[1].matchAll(/(\w+):/g)].map((m) => m[1]) : [];
+  const shipped = Object.keys(
+    JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data.json'), 'utf8'))
+  );
+  ok(
+    documented.slice().sort().join() === shipped.slice().sort().join(),
+    'data.json keys ' + shipped.join() + ' differ from CONTRACTS.md ' + documented.join()
+  );
+
   console.log(failed() ? '\n' + failed() + ' FAILED' : '\ncontracts match the fixtures');
   process.exit(failed() ? 1 : 0);
 })();

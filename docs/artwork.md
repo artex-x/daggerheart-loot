@@ -174,6 +174,24 @@ and by the record ids waiting on it. Like `unarted`, it does not stop the
 run - a partially-arted ingest is normal - but unlike `unarted` it usually
 means the ingest is not finished yet.
 
+**The drop.** `--uploads` is a scratch directory that holds image files
+only. A delivery folder also carries the draft data, notes, backups and the
+book; copy the pictures out of it. Before any other step, count the files
+against the records they are for: a delivery note's count is a claim (one
+said 142 for a 132-file folder). Deliveries arrive incomplete and are
+refilled mid-task, so measure again immediately before `ingest`, never from
+a figure taken at planning time.
+
+**No renaming pass.** `normalizeName` already folds the typographic
+apostrophes (U+2018, U+2019, U+02BC, U+2032) and strips a trailing
+` v<N>` suffix, so a drop named `<Name> v<N>.png` matches its record as
+delivered. Use `--map`'s `assign` only for a name that `plan` still lists
+as unmatched.
+
+**`unarted` is a normal outcome.** Name each unarted record in the
+handoff; the record ships with `img: ''` and renders `_none.webp` until its
+art arrives.
+
 **Ordering.** A record's `img` value must already be in `data.js` before or
 in the same change as running `ingest`, because `ingest` reads `data.js` to
 know what to create; running it against files without the records to match

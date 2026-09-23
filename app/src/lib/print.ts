@@ -8,7 +8,8 @@
  *
  * Pure module: no DOM, no `S.printBW` - `bw` arrives as an argument. */
 
-import type { Record_ } from './types.js';
+import { EQ_TRAIT, eqWord } from './i18n.js';
+import type { Lang, Record_, Trait } from './types.js';
 
 /** Where the exported vectors live, junctioned into `dist/` alongside `img/`
  *  and `og/` - CONTRACTS.md section 5 freezes this as a public asset path. */
@@ -70,4 +71,17 @@ export function pages<T>(items: readonly T[]): { pages: T[][]; blanks: number } 
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += 9) out.push(items.slice(i, i + 9));
   return { pages: out, blanks: (9 - (items.length % 9)) % 9 };
+}
+
+/* The full «Характеристика Заклинателя» is 92 px against a 59 px trait cell at
+   the 2.2cqw floor (measured 2026-09-23 on this host), so the card abbreviates. */
+const SHORT_TRAIT: Partial<Record<Trait, readonly [string, string]>> = {
+  spellcast: ['Хар. Заклинателя', 'Spellcast']
+};
+
+/** The trait word the print card's trait cell draws: a short form where the
+ *  full one does not fit, else the stat line's own word. */
+export function printTrait(tr: Trait | undefined, lang: Lang): string {
+  const short = tr ? SHORT_TRAIT[tr] : undefined;
+  return short ? short[lang === 'ru' ? 0 : 1] : eqWord(EQ_TRAIT, tr, lang);
 }

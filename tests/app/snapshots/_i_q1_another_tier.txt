@@ -24,6 +24,7 @@ RootWebArea "Палаш — Генератор лута — Daggerheart" [url=#/
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/q38]
 
 ## ru :: controls
+Dragon's Vault
 Dread
 EN
 RU
@@ -85,6 +86,7 @@ Copy image
 Copy link
 Copy name
 Copy text
+Dragon's Vault
 Dread
 EN
 Improved Broadsword

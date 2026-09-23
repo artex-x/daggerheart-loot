@@ -188,6 +188,13 @@ describe('which tab is lit', () => {
       'aria-current',
       'page'
     );
+    cleanup();
+
+    render(App, { env: at('#/roll/dv') });
+    expect(screen.getByRole('link', { name: "Dragon's Vault" })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 
   it('lights Tables for a table, and nothing for a list', () => {

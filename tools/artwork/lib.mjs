@@ -14,8 +14,9 @@
 */
 
 // Typographic apostrophes a source or a record name may use in place of a
-// plain ASCII one - folded so "Ranger's Bow" and "Ranger’s Bow" match.
-const APOSTROPHES = /[’ʼ′]/g;
+// plain ASCII one - folded so "Ranger's Bow" and "Ranger’s Bow" match. U+2018
+// is here because a drop name used it as an apostrophe ("Hook Line ‘N’ Sinker").
+const APOSTROPHES = /[‘’ʼ′]/g;
 
 // A trailing " v2" / " v10" is a delivery's own provenance suffix, not part of
 // the name - stripped only at the end, so "Halberd v2 Blade" (v2 in the

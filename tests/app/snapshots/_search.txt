@@ -17,6 +17,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -24,7 +25,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1091 позиции — добыча, расходники и снаряжение, н..." [namelen=90 namehash=4b580bdf]
+    StaticText "Поиск сразу по 1236 позициям — добыча, расходники и снаряжение, ..." [namelen=91 namehash=07169775]
     searchbox "Поиск по названию или описанию…" [focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
@@ -32,11 +33,12 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     button "Снаряжение" [pressed=true]
     StaticText "Начните вводить запрос"
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
+Dragon's Vault
 Dread
 EN
 RU
@@ -71,6 +73,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -78,7 +81,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1091 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=9837439f]
+    StaticText "Search all 1236 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=b5fda367]
     searchbox "Search by name or description…" [focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
@@ -86,7 +89,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     button "Equipment" [pressed=true]
     StaticText "Start typing"
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -94,6 +97,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 Alt. tables
 Communities
 Consumables
+Dragon's Vault
 Dread
 EN
 Equipment

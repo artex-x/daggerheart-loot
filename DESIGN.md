@@ -1,6 +1,6 @@
 ---
 name: Daggerheart Loot Generator
-description: A dark bilingual catalogue of 1091 Daggerheart records, with one gold accent that marks only what was chosen.
+description: A dark bilingual catalogue of 1236 Daggerheart records, with one gold accent that marks only what was chosen.
 colors:
   seal-gold: "#d8ab5e"
   seal-gold-soft: "#f0d091"
@@ -183,7 +183,7 @@ seal wax. It appears on the thing a person has chosen, and almost nowhere else.
 
 The mood is quiet, exact and solemn. Nothing here is staged: the type scale is
 small and even, the contrast values were measured rather than guessed, and the
-one accent is rationed. The catalogue holds 1091 records in two languages, so
+one accent is rationed. The catalogue holds 1236 records in two languages, so
 density is a requirement, not a preference. The design earns its ceremony from
 the numbering and the tagging, which are real information, and never from
 ornament.
@@ -468,7 +468,7 @@ means "a thing". Do not round a card to a pill or square a chip.
 
 ### Navigation
 
-- **Tabs:** nine real links at 13.5px weight 560 in Ash Violet, each with a 2px
+- **Tabs:** ten real links at 13.5px weight 560 in Ash Violet, each with a 2px
   transparent bottom border. The current route turns that border gold and the
   label Seal Gold Soft. Rolling and browsing are separated by `margin-left:
   auto`, not by a divider.
@@ -531,7 +531,7 @@ colour removed.
 
 - **Don't** drift toward a neon dark mode: no saturated purple or cyan glow, no
   gradient text, no coloured drop shadow. The ground is violet, which makes this
-  a short slide, and the palette's restraint is what keeps 1091 records legible.
+  a short slide, and the palette's restraint is what keeps 1236 records legible.
 - **Don't** drift toward a SaaS dashboard: no generic blue accent, no oversized
   rounded cards, no illustrated empty states, no marketing gradient. The density
   these tables need is the opposite of that language.

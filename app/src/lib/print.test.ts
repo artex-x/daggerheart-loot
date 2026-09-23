@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { cardArt, dmgParts, glyphKey, pages, PRINT_GLYPH } from './print.js';
+import { cardArt, dmgParts, glyphKey, pages, PRINT_GLYPH, printTrait } from './print.js';
 import type { Record_ } from './types.js';
+
+describe("the trait cell's word", () => {
+  it('abbreviates the Spellcast trait in Russian, where the full term does not fit', () => {
+    expect(printTrait('spellcast', 'ru')).toBe('Хар. Заклинателя');
+    expect(printTrait('spellcast', 'en')).toBe('Spellcast');
+  });
+
+  it("keeps the stat line's word for every other trait", () => {
+    expect(printTrait('agility', 'ru')).toBe('Проворность');
+    expect(printTrait(undefined, 'ru')).toBe('');
+  });
+});
 
 describe('a vector file name', () => {
   it('is plain in colour', () => {

@@ -17,6 +17,7 @@ RootWebArea "Лавка в порту — Генератор лута — Dagger
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -34,11 +35,12 @@ RootWebArea "Лавка в порту — Генератор лута — Dagger
     StaticText "Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное гало..." [namelen=145 namehash=3bed4bc8]
     status ""
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
+Dragon's Vault
 Dread
 EN
 RU
@@ -75,6 +77,7 @@ RootWebArea "Лавка в порту — Daggerheart Loot Generator" [url=#/l/0
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -92,7 +95,7 @@ RootWebArea "Лавка в порту — Daggerheart Loot Generator" [url=#/l/0
     StaticText "Nothing here yet. Open Tables or Search, tick what you need and ..." [namelen=122 namehash=61cdcb8f]
     status ""
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -102,6 +105,7 @@ Communities
 Copy text
 Delete
 Dismiss
+Dragon's Vault
 Dread
 EN
 List name

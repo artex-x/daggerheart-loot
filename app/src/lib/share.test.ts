@@ -22,6 +22,7 @@ import {
   shareBlocks,
   shareList,
   shareName,
+  shareRoll,
   shareSelection
 } from './share.js';
 import type { Lang, Record_ } from './types.js';
@@ -160,6 +161,21 @@ describe('what travels with a record', () => {
     });
   });
 
+  it("carries Slow as a referenced card, not in Nightshroud's text", () => {
+    const nightshroud = rec('dve66');
+    const ref = index.refs['slow'];
+    expect(ref).toBeDefined();
+    if (!ref) return;
+    expect(nightshroud.rud).not.toContain('\n');
+    expect(nightshroud.ende).not.toContain('\n');
+    expect(shareBlocks(nightshroud, index, 'ru')).toEqual([
+      { head: `${ref.ru} · ${ref.rusub}`, body: ref.rud }
+    ]);
+    expect(shareBlocks(nightshroud, index, 'en')).toEqual([
+      { head: `${ref.en} · ${ref.ensub}`, body: ref.ende }
+    ]);
+  });
+
   it('ignores a reference key the data does not have', () => {
     const orphan: Record_ = {
       id: 'x1',
@@ -172,6 +188,116 @@ describe('what travels with a record', () => {
       refs: ['no-such-card']
     };
     expect(shareBlocks(orphan, index, 'ru')).toEqual([]);
+  });
+
+  it('lists every member of a set the record belongs to, with the shared bonus', () => {
+    const ember = rec('dve19');
+    const spark = rec('dve20');
+    const bonus = LOOT.sets?.['ember-spark'];
+    expect(bonus).toBeDefined();
+    if (!bonus) return;
+    const ru = shareBlocks(ember, index, 'ru');
+    expect(ru.at(-1)).toEqual({
+      head: `Комплект: ${ember.ru}, ${spark.ru}`,
+      body: `${bonus.ru}: ${bonus.rud}`
+    });
+    const en = shareBlocks(ember, index, 'en');
+    expect(en.at(-1)).toEqual({
+      head: `Set: ${ember.en}, ${spark.en}`,
+      body: `${bonus.en}: ${bonus.ende}`
+    });
+    /* Symmetric: Spark's own block names Ember back, in the same order. */
+    expect(shareBlocks(spark, index, 'ru').at(-1)).toEqual({
+      head: `Комплект: ${ember.ru}, ${spark.ru}`,
+      body: `${bonus.ru}: ${bonus.rud}`
+    });
+  });
+
+  it('writes the set bonus under each member, also when both are in one roll', () => {
+    const { text } = shareRoll([rec('dve19'), rec('dve20')], index, 'ru', 'ИЛИ');
+    expect(text.split('Пылающие близнецы:')).toHaveLength(3);
+  });
+
+  it('copies Ember whole, the set and its bonus last, in both languages', () => {
+    const ru = share(rec('dve19'), index, 'ru');
+    expect(ru.text.split('\n').slice(-2)).toEqual([
+      'Комплект: Уголёк, Искра',
+      'Пылающие близнецы: При критическом успехе на Броске Атаки цель временно начинает Пылать. Пока она Пылает, она должна отметить 1 Рану во время своей активации.'
+    ]);
+    expect(ru.text).toBe(
+      'Уголёк\n' +
+        'Основное оружие · Ранг 3 · Магическое · Проворность · Вплотную · d8+5 маг · Одноручное\n\n' +
+        'Раздуть пламя: Потратьте 2 Надежды, чтобы до конца сцены изменить характеристики Уголька: Проворность, Близко, d12+5.\n\n' +
+        'Комплект: Уголёк, Искра\n' +
+        'Пылающие близнецы: При критическом успехе на Броске Атаки цель временно начинает Пылать. Пока она Пылает, она должна отметить 1 Рану во время своей активации.'
+    );
+    expect(
+      ru.html.endsWith(
+        '<br><br><i>Комплект: Уголёк, Искра</i><br>Пылающие близнецы: При критическом успехе на Броске Атаки цель временно начинает Пылать. Пока она Пылает, она должна отметить 1 Рану во время своей активации.'
+      )
+    ).toBe(true);
+    const en = share(rec('dve19'), index, 'en');
+    expect(en.text).toBe(
+      'Ember\n' +
+        'Primary weapon · Tier 3 · Magic · Agility · Melee · d8+5 mag · One-Handed\n\n' +
+        "Fan the Flames: Spend 2 Hope to change Ember's statistics until the end of the scene. Agility, Very Close, d12+5.\n\n" +
+        'Set: Ember, Spark\n' +
+        'Blazing Twins: When you critically succeed on an attack roll, set the target temporarily Ablaze. While Ablaze, they must mark 1 HP when spotlighted.'
+    );
+    expect(
+      en.html.endsWith(
+        '<br><br><i>Set: Ember, Spark</i><br>Blazing Twins: When you critically succeed on an attack roll, set the target temporarily Ablaze. While Ablaze, they must mark 1 HP when spotlighted.'
+      )
+    ).toBe(true);
+  });
+
+  it('writes no body line for a set with no bonus', () => {
+    const member = (id: string): Record_ => ({
+      id,
+      src: 'core',
+      kind: 'item',
+      en: id,
+      ende: 'Text.',
+      ru: id,
+      rud: 'Текст.',
+      set: 'pair'
+    });
+    const small = buildIndex({ items: { core_item: [member('a'), member('b')] } });
+    const out = share(member('a'), small, 'ru');
+    expect(out.text.endsWith('\n\nКомплект: a, b')).toBe(true);
+    expect(out.html.endsWith('<br><br><i>Комплект: a, b</i>')).toBe(true);
+  });
+
+  it("carries only what the next rung of a chain adds, and no 'made from'", () => {
+    for (const lang of LANGS) {
+      const t = dict(lang);
+      for (const [id, next] of [
+        ['dve24', 'dve25'],
+        ['dve25', 'dve26']
+      ] as const) {
+        const own = new Set((lang === 'ru' ? rec(id).rud : rec(id).ende).split('\n'));
+        const added = (lang === 'ru' ? rec(next).rud : rec(next).ende)
+          .split('\n')
+          .filter((line) => !own.has(line));
+        expect(added, `${id} ${lang}`).toHaveLength(1);
+        const blocks = shareBlocks(rec(id), index, lang);
+        const into = blocks.find((b) => b.head.startsWith(t.craftInto));
+        expect(into?.body, `${id} ${lang}`).toBe(added[0]);
+        expect(
+          blocks.some((b) => b.head.startsWith(t.craftFrom)),
+          `${id} ${lang}`
+        ).toBe(false);
+      }
+    }
+  });
+
+  it('says nothing about a set for a record outside one', () => {
+    const lone = index.searchable.find((r) => !r.set);
+    expect(lone).toBeDefined();
+    if (!lone) return;
+    expect(shareBlocks(lone, index, 'ru').some((b) => b.head.startsWith('Комплект'))).toBe(
+      false
+    );
   });
 
   it('appends what the caller adds after what it derived', () => {

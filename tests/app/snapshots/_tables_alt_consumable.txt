@@ -17,6 +17,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -32,6 +33,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -66,7 +68,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Зеркало Златоцвета" [checked=false]
     button "12 Зеркало Златоцвета Когда вы получаете урон, вы можете потрати..." [namelen=148 namehash=f1d96a23]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -192,6 +194,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 9Тоник Львиного СердцаВыпейте этот тоник, чтобы получить +1 к Ма... [namelen=130 namehash=2fb59c06]
 9Цветок СплетенПосадите это семя в землю. Оно мгновенно вырастае... [namelen=216 namehash=a96ded46]
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -355,6 +358,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_consumable
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -370,6 +374,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_consumable
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -404,7 +409,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_consumable
     checkbox "Mirror of Marigold" [checked=false]
     button "12 Mirror of Marigold When you take damage, you can spend a Hope..." [namelen=136 namehash=b2150af9]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -558,6 +563,7 @@ Death Tea
 Deathseer's Powder
 Demiurge's Draught
 Displacement Token
+Dragon's Vault
 Dragonbloom Tea
 Drakemantle
 Dread

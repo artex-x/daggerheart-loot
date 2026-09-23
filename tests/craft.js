@@ -25,7 +25,7 @@ ALL.forEach((x) => {
 const withCraft = ALL.filter((x) => x.craft);
 
 console.log('data (' + withCraft.length + ' chains)');
-ok(withCraft.length === 15, 'expected 15 chains, got ' + withCraft.length);
+ok(withCraft.length === 17, 'expected 17 chains, got ' + withCraft.length);
 
 const targets = {};
 withCraft.forEach((x) => {
@@ -68,7 +68,7 @@ const leftover = ALL.filter((x) =>
 ok(leftover.length === 0, 'stale craft sentence in: ' + leftover.map((x) => x.id).join(', '));
 
 // nothing else got damaged while rewriting data.js
-ok(ALL.length === 710, 'expected 710 records, got ' + ALL.length);
+ok(ALL.length === 855, 'expected 855 records, got ' + ALL.length);
 ALL.forEach((x) => {
   ok(!!(x.id && x.en && x.ru), x.id + ': empty field');
   /* Equipment from a campaign frame carries no feature from the book at all -
@@ -97,10 +97,16 @@ ok(
   /Улучшается до: Чай Эфироцвета/.test(stub),
   'i/w3.html: og description missing the craft line'
 );
+ok(
+  /Получается из: Фроствирд \(Дремлющий\)\. Улучшается до: Фроствирд \(Возвышенный\)\./.test(
+    fs.readFileSync(path.join(ROOT, 'i', 'dve25.html'), 'utf8')
+  ),
+  'i/dve25.html: og description must name made-from before upgrades-to'
+);
 /* loot + consumables + the equipment tables */
 ok(
-  fs.readdirSync(path.join(ROOT, 'i')).filter((f) => f.endsWith('.html')).length === 1091,
-  'i/: expected 1091 stubs'
+  fs.readdirSync(path.join(ROOT, 'i')).filter((f) => f.endsWith('.html')).length === 1236,
+  'i/: expected 1236 stubs'
 );
 const stale = ALL.filter((x) => {
   const p = path.join(ROOT, 'i', x.id + '.html');
@@ -121,7 +127,7 @@ ok(
       .join(', ')
 );
 
-/* 98 of 1091 stub pages (every record whose rud carries a newline) render a
+/* 108 of 1236 stub pages (every record whose rud carries a newline) render a
    multi-line description, and nothing pins the new shape - the staleness
    probe above only proves a stub isn't stale, not what a fresh one actually
    renders. Pin it directly: descHtml() in tools/build-share-pages.js renders

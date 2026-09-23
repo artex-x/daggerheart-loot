@@ -43,6 +43,7 @@ describe('the book a record comes from', () => {
     expect(srcLabel(rec({ src: 'wondrous' }), 'ru')).toBe('Wondrous');
     expect(srcLabel(rec({ src: 'dread' }), 'ru')).toBe('Dread');
     expect(srcLabel(rec({ src: 'voa' }), 'ru')).toBe('Vault of Ages');
+    expect(srcLabel(rec({ src: 'dv' }), 'ru')).toBe("Dragon's Vault");
   });
 
   it('names the frame, not its raw id', () => {
@@ -101,6 +102,7 @@ describe('naming a source key with no record behind it', () => {
     expect(srcName('wondrous', 'ru')).toBe('Wondrous');
     expect(srcName('dread', 'ru')).toBe('Dread');
     expect(srcName('voa', 'ru')).toBe('Vault of Ages');
+    expect(srcName('dv', 'ru')).toBe("Dragon's Vault");
   });
 
   it('falls through to a frame name', () => {
@@ -145,8 +147,16 @@ describe('which table a record is printed in', () => {
     expect(tableOf(rec({ src: 'hnf', kind: 'consumable' }))).toBe('hnf_consumable');
   });
 
+  it("sends Dragon's Vault loot and equipment to its own table", () => {
+    expect(tableOf(rec({ src: 'dv', kind: 'item' }))).toBe('dv');
+    /* The equipment rolls on the book's table, so the roll number wins. */
+    expect(tableOf(index.byId.get('dve1') as Record_)).toBe('dv');
+  });
+
   it('places every record in the data somewhere', () => {
-    for (const it of index.searchable) expect(tableOf(it), it.id).not.toBe(null);
+    for (const it of index.searchable) {
+      expect(tableOf(it), it.id).not.toBe(null);
+    }
   });
 
   it('has nowhere to send a source it does not know', () => {

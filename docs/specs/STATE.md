@@ -81,7 +81,7 @@ state exists, by what it was for:
 | Group | Fields |
 |---|---|
 | Session | `lang`, `route` |
-| Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `comm {c, n}` |
+| Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `comm {c, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}` |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |
 | Lists | `lists`, `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `importDraft`, `pickQ`, `shared {ids, meta}` |

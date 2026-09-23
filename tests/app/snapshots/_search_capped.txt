@@ -17,6 +17,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -24,13 +25,13 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1091 позиции — добыча, расходники и снаряжение, н..." [namelen=90 namehash=4b580bdf]
+    StaticText "Поиск сразу по 1236 позициям — добыча, расходники и снаряжение, ..." [namelen=91 namehash=07169775]
     searchbox "Поиск по названию или описанию…" [value=а focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    StaticText "300 из 1091"
+    StaticText "300 из 1236"
     checkbox "Выбрать все (300)" [checked=false]
     StaticText "Выбрать все (300)"
     checkbox "Первоклассный Спальный Мешок" [checked=false]
@@ -43,7 +44,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     checkbox "Слизь Скользкости" [checked=false]
     button "60 Слизь Скользкости Вы можете нанести эту слизь на тело в качес..." [namelen=212 namehash=281bbba4]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -192,7 +193,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 36Осколок АрктицитаВыберите точку в пределах Далекой дистанции. ... [namelen=241 namehash=1f32f1c8]
 36Перчатки из Кожи ГуляПока вы носите эти перчатки, ваш урон от ... [namelen=148 namehash=e6cf1242]
 36Семя ПорталаВы можете посадить это семя в землю, чтобы вырасти... [namelen=330 namehash=4226acbf]
-36Чёрная НитьВы можете разматывать эту нить до 500 футов в пути,... [namelen=228 namehash=d651977c]
+36Чёрная НитьВы можете разматывать эту нить до 150 метров в пути... [namelen=229 namehash=1bfef12f]
 37Лепесток Эхо-ОрхидеиУпотребление лепестка при взгляде на сущес... [namelen=224 namehash=90caf93c]
 37Осколок ФульгуритаВыберите точку в пределах Далекой дистанции.... [namelen=258 namehash=7ea94675]
 37Перчатки РасторопностиКогда вы должны отметить Стресс, чтобы п... [namelen=122 namehash=4847aa54]
@@ -299,7 +300,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 55Колокол НекроплясунаРазбейте о землю этот ржавый колокол без я... [namelen=189 namehash=8cfb9fc6]
 55Самоцвет ТочностиВы можете прикрепить этот самоцвет к оружию, ... [namelen=150 namehash=292ff85d]
 56Драконья МантияЭта зачарованная шкура древнего дракона даёт ва... [namelen=225 namehash=bb0544fb]
-56Жуки-ВлюблённыеПоместите одного из этих керамических жуков в л... [namelen=206 namehash=061e85b7]
+56Жуки-ВлюблённыеПоместите одного из этих керамических жуков в л... [namelen=221 namehash=9365b7da]
 56ИглошальЕсли противник атакует вас Вплотную, он должен преуспе... [namelen=125 namehash=af30bf13]
 56Самоцвет ЧутьяВы можете прикрепить этот самоцвет к оружию, что... [namelen=145 namehash=ec23a1a7]
 56Сладкий МохВы можете съесть этот мох во время отдыха, чтобы оч... [namelen=110 namehash=770b0cfe]
@@ -348,6 +349,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 9Пакетик Космической ПылиВсё, что покрыто этой пылью, становится... [namelen=179 namehash=934712ed]
 9Перо ЧернокрылаВ этом пере никогда не кончаются чернила, и его ... [namelen=102 namehash=277cfa47]
 9Яд СкрежетозубаВы можете нанести этот яд на оружие, наносящее ф... [namelen=158 namehash=e9fbcb5a]
+Dragon's Vault
 Dread
 EN
 RU
@@ -682,6 +684,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -689,13 +692,13 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1091 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=9837439f]
+    StaticText "Search all 1236 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=b5fda367]
     searchbox "Search by name or description…" [value=а focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    StaticText "300 of 1055"
+    StaticText "300 of 1200"
     checkbox "Select all (300)" [checked=false]
     StaticText "Select all (300)"
     checkbox "Premium Bedroll" [checked=false]
@@ -708,7 +711,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     checkbox "Mucin of Slipperiness" [checked=false]
     button "60 Mucin of Slipperiness You can apply this slime to your body a..." [namelen=200 namehash=77dcd91d]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -1101,6 +1104,7 @@ Detuner
 Devil's Smithing Hammer
 Displacement Token
 Doomsday Potion
+Dragon's Vault
 Dragonbloom Tea
 Drakemantle
 Dread

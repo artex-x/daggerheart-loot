@@ -130,7 +130,7 @@
 
   /* `.selcount`'s colour, and its font as drawn: the `font` shorthand above
      names `inherit` as a family, which drops the whole declaration, so the
-     count inherits the bar's font (docs/specs/DEBT.md, D46). */
+     count inherits the bar's font (docs/specs/DEBT.md, D47). */
   .seltotal {
     color: var(--gold-soft);
   }

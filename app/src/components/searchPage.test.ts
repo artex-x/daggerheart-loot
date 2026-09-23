@@ -103,7 +103,7 @@ describe('arrival', () => {
   it('draws the head, the focused box and the hint - no results, no help button', () => {
     render(App, { env: at() });
     expect(screen.getByRole('heading', { name: 'Поиск' })).toBeInTheDocument();
-    expect(screen.getByText(/Поиск сразу по 1091 позиции/)).toBeInTheDocument();
+    expect(screen.getByText(/Поиск сразу по 1236 позициям/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Открывать этот раздел/ })).toBeInTheDocument();
 
@@ -314,7 +314,7 @@ describe('English', () => {
     render(App, { env: at() });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('heading', { name: 'Search' })).toBeInTheDocument();
-    expect(screen.getByText(/Search all 1091 entries at once/)).toBeInTheDocument();
+    expect(screen.getByText(/Search all 1236 entries at once/)).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Search by name or description…')).toBeInTheDocument();
     expect(screen.getByText('Start typing')).toBeInTheDocument();
     for (const label of ['Items', 'Consumables', 'Equipment']) {

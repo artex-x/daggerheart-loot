@@ -19,7 +19,8 @@ const SRC = {
   community: 'Community',
   dread: 'Dread GM Toolbox',
   frame: 'Campaign Frames',
-  voa: 'Vault of Ages'
+  voa: 'Vault of Ages',
+  dv: "The Dragon's Vault"
 };
 const RANGE = {
   melee: 'Melee',
@@ -34,9 +35,10 @@ const TRAIT = {
   finesse: 'Finesse',
   instinct: 'Instinct',
   presence: 'Presence',
-  knowledge: 'Knowledge'
+  knowledge: 'Knowledge',
+  spellcast: 'Spellcast'
 };
-const BURDEN = { 1: 'One-Handed', 2: 'Two-Handed' };
+const BURDEN = { 1: 'One-Handed', 2: 'Two-Handed', any: 'One/Two-Handed' };
 const CLS = { phy: 'physical', mag: 'magic' };
 const DT = { phy: 'phy', mag: 'mag', any: 'phy/mag' };
 
@@ -96,8 +98,10 @@ function cell(v) {
    physical armour and primary weapons" without parsing 450 KB of JSON. */
 function catalogCsv(L) {
   const rarity = rarityIndex(L);
+  const sets = setGroups(L);
   const rows = everything(L).map(function (x) {
     const e = x.eq;
+    const set = setText(L, sets, x);
     return [
       x.id,
       e ? e.t : x.kind,
@@ -120,13 +124,34 @@ function catalogCsv(L) {
       x.craft || '',
       x.community || '',
       SITE + 'i/' + x.id + '.html',
-      x.rud || '',
-      x.ende || ''
+      (x.rud || '') + set.ru,
+      (x.ende || '') + set.en
     ]
       .map(cell)
       .join(',');
   });
   return CSV_HEAD.join(',') + '\n' + rows.join('\n') + '\n';
+}
+
+/* A set's members in the app's `[...eq, ...all]` order, keyed by set. */
+function setGroups(L) {
+  const out = {};
+  [].concat(L.eq, ...Object.values(L.items)).forEach(function (x) {
+    if (x.set) (out[x.set] = out[x.set] || []).push(x);
+  });
+  return out;
+}
+
+/* The bonus rides on every member's text, in the print card's label shape. */
+function setText(L, sets, x) {
+  const members = (x.set && sets[x.set]) || [];
+  if (members.length < 2) return { ru: '', en: '' };
+  const b = (L.sets || {})[x.set];
+  const ru = members.map((m) => m.ru || m.en).join(', ');
+  const en = members.map((m) => m.en).join(', ');
+  return b
+    ? { ru: `\n${b.ru} (Комплект: ${ru}): ${b.rud}`, en: `\n${b.en} (Set: ${en}): ${b.ende}` }
+    : { ru: `\nКомплект: ${ru}`, en: `\nSet: ${en}` };
 }
 
 function dataJson(L) {

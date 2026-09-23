@@ -1,6 +1,6 @@
 # #/tables/eq_armor ~ nothing found
 # route: #/tables/eq_armor
-# why: the three-row panel open, a pill, 0 из 90, the empty state with its own reset
+# why: the three-row panel open, a pill, 0 из 94, the empty state with its own reset
 
 ## ru :: tree
 RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/eq_armor/f_line-uniq]
@@ -17,6 +17,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -32,6 +33,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -46,10 +48,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Уникальные" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "0 из 90"
+    StaticText "0 из 94"
     ... StaticText x4 of 8 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x7 of 11 same-shape siblings elided
+    ... button x8 of 12 same-shape siblings elided
     button "Тёмное сердце Андалурии" [pressed=false]
     StaticText "ЛИНЕЙКА"
     button "Улучшаемые" [pressed=false]
@@ -57,7 +59,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     StaticText "Ничего не найдено"
     button "Сбросить всё"
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -67,6 +69,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 3
 4
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -118,6 +121,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -133,6 +137,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -147,10 +152,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
     button "Unique" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "0 of 90"
+    StaticText "0 of 94"
     ... StaticText x4 of 8 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x7 of 11 same-shape siblings elided
+    ... button x8 of 12 same-shape siblings elided
     button "Dark Heart of Andaluria" [pressed=false]
     StaticText "LINE"
     button "Upgradable" [pressed=false]
@@ -158,7 +163,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
     StaticText "Nothing found"
     button "Reset all"
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -173,6 +178,7 @@ Beast Feast
 Communities
 Core
 Dark Heart of Andaluria
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN

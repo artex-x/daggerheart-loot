@@ -106,6 +106,14 @@ describe('the pieces of the line', () => {
     expect(parts).not.toContain('Вплотную');
   });
 
+  it("name a Spellcast weapon's trait with the site's term", () => {
+    const spellblade = index.byId.get('dve50') as Record_;
+    expect(eqLine(spellblade, 'ru', LABELS.ru)).toContain(
+      'Характеристика Заклинателя · Вплотную · d10+4 маг'
+    );
+    expect(eqLine(spellblade, 'en', LABELS.en)).toContain('Spellcast · Melee · d10+4 mag');
+  });
+
   it('produce nothing at all for a record with no stat block', () => {
     expect(eqParts(index.byId.get('ci1') as Record_, 'ru', LABELS.ru)).toEqual([]);
     expect(eqLine(index.byId.get('ci1') as Record_, 'ru', LABELS.ru)).toBe('');

@@ -12,6 +12,20 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-23 - A feature an item grants an adversary is a referenced card
+
+- Task: `dv-review` (human review of The Dragon's Vault, 2026-09-23).
+- Decision: Nightshroud's (dve66) Slow leaves `ende`/`rud` for the ref
+  `slow`, linked to the page that prints it (`adversary/huge-green-ooze`,
+  as `elemental-breath` links to the Drakona page). The record text stops
+  where the book's does; the ref keeps the site's name and the GM as the
+  actor. Rule: `docs/specs/I18N.md`, "Rules".
+- Rejected: the fold (text the book does not print, on the card and in the
+  print); the Ooze's whole stat block as the ref (one feature under nine
+  lines); no Slow text at all (the reader goes looking).
+- Accepted trade-off: the print card and the share stub carry no Slow
+  text, as dv14 and dv66 print without their stat blocks.
+
 ## 2026-09-23 - A list entry's price is the price of one unit; a selection's total is summed in coins
 
 - Task: `50` (find it with `git log --grep="Task: 50"`).
@@ -112,6 +126,194 @@ entry to its first line before adding another.
   "Клонировать список" / "Clone list" - developer jargon in Russian UI.
 - Evidence: issue 58's screenshot, two identical gold "+ Добавить в список"
   buttons on screen at once with rows ticked.
+
+## 2026-09-22 - Russian record text: metric distances, the site's lowercase terms, granted adversary features folded in
+
+- Task: `dragons-vault` (human review of the built app).
+- Decision: distances in `ru`/`rud` are rounded metric, as Core, Hope &
+  Fear and Vault of Ages already print them (dv39, w36, w56 were the three
+  left). Mid-sentence `состояние`, `преимущество`, `помеха`, `активация`,
+  `свойство`, `карта`, `домен` are lowercase, as daggerheart.su and the
+  rest of the catalogue write them; text that repeats the site verbatim
+  keeps the site's casing (q124, q328). A feature an item grants an
+  adversary (Nightshroud's Slow) is folded in as its own line under the
+  site's name, the GM as the actor. Rules: `docs/specs/I18N.md`.
+- Rejected: one casing rule for every term (the site itself is mixed on
+  «бросок», «атака», «урон», «реакция» - measured 2026-09-22); re-casing
+  site-verbatim text; a ref for Slow (a feature has no page; the Ooze's
+  whole block would bury it); rewording the English (it stays the book's).
+- Superseded in part by "A feature an item grants an adversary is a
+  referenced card" (2026-09-23): the fold of Nightshroud's Slow.
+
+## 2026-09-22 - A feature that swaps a weapon's stat set gets the Versatile second strip
+
+- Task: `dragons-vault` (human review).
+- Decision: `eq.alt` holds any second stat set a weapon's own feature
+  switches to, not only Versatile's: Ember's Fan the Flames (Agility, Very
+  Close, d12+5 mag) and the Steampowered Gauntlets' Supercharge (Strength,
+  Melee, d12+4 phy; the -1 Evasion and the Stress to move stay in the
+  text). The print card draws it as the second strip. The text stays as
+  the book prints it: `eq.alt` is stored data, nothing parses the text at
+  render time. `tests/derived.js` names every non-Versatile record that
+  carries one.
+- Rejected: rewording Ember as "Versatile" (a paid swap is not a free
+  choice, and `Универсальное` stays reserved for Versatile); a render-time
+  parser; the Spellblade (its summoned stats are its main stats, above).
+
+## 2026-09-19 - Dragon's Vault: source `dv`, table `dv`, section `roll/dv`, ids `dv`/`dve`, one roll over all 145 records
+
+- Task: `dragons-vault` (equipment joined the roll at the human's review,
+  2026-09-22).
+- Decision: source key `dv`, table id `dv`, section `roll/dv`, loot ids
+  `dv1`-`dv77` in the order the detailed entries print (pp. 30-47),
+  equipment ids `dve1`-`dve68` in page order (pp. 9-27), Frostwyrd as three
+  records. All 145 live in `items.dv` on the Wondrous and Dread model: a
+  piece of equipment keeps its stat block, rolls on its book's table and
+  still appears in the equipment tables. `roll` is the id's number for loot
+  and 77 + the number for equipment ("Random 1-145"). The book has no random
+  table by design (p. 29); the help box says so.
+- Rejected: `dragons_vault` as the key (every table id here is one short
+  word, `voa` the precedent); equipment first, in page order (moves every
+  loot roll off its id number for a table the book never prints); a `roll`
+  on records left in `eq` (a second mechanism for what `items` already
+  does); no roll tab (the help box is the only surface for a source link).
+
+## 2026-09-19 - Dragon's Vault: the detailed entries win over the overview tables
+
+- Task: `dragons-vault`.
+- Decision: where pp. 7-8 disagree with an entry (twelve cases, the
+  contributor's `dragons_vault_source_issues.md`, each re-read on the PDF
+  page), the record carries the entry. `eq.cls` comes from the table's TYPE
+  column where the entry prints no class: Nature's Fall and Restless
+  Vengeance are Physical with magical damage, Rod of Flaming Skulls Magic.
+- Rejected: the tables (the entry is the card a player reads, and its text
+  and its stat line are printed together); a per-case pick (Frostwyrd
+  Exalted is the one case where the table's `d10+13` is more plausible
+  than the entry's `d10+10`, equal to Awakened - a one-off pick makes the
+  rule unstatable, so the entry stays and the doubt is recorded here for
+  the author's errata).
+
+## 2026-09-19 - Frostwyrd is a two-step craft chain; every upgrade line stays at four tiers
+
+- Task: `dragons-vault` (was a three-rung `eq.line` until 2026-09-22).
+- Decision: `craft: 'dve25'` on Dormant and `craft: 'dve26'` on Awakened,
+  no `line`; the card reads "Upgrades to" / "Made from" and keeps the
+  "Unique" badge. Each rung keeps the lower rungs' features in its own text
+  (the book: a rung retains them), so a copied rung's "Upgrades to" block
+  carries only the target's lines the rung lacks. `craft` means "upgrades
+  to", so a chain of named items fits it; `line` stays the four-tier
+  ladder, and `tests/dataint.js` keeps every line at tiers `1,2,3,4` (58).
+- Rejected: a three-rung `line` with a relaxed invariant (it cost the
+  "Unique" badge); the draft's `upgrade_line` field (nothing renders it);
+  three unlinked one-offs (the book prints one weapon that "improves to a
+  new tier"); the target's full text in a copy (repeats two of three
+  lines); a "Made from" block in a copy (a copy is for players, forward only).
+
+## 2026-09-19 - Gryphon Hammer `bu: 'any'`; the Spellblade carries its summoned stats
+
+- Task: `dragons-vault` (Spellblade and print mark: reviews of 2026-09-22).
+- Decision: `Equip.bu` gains `'any'` ("Одноручное/двуручное" /
+  "One/Two-Handed"); the burden facet matches it under `1` and `2`; the
+  print card draws the one-handed mark with `1/2` as its caption. The
+  Spellblade carries the stats the book gives it once summoned: `tr:
+  'spellcast'` ("Характеристика Заклинателя" / "Spellcast"), Melee,
+  `d10+4`; its trait facet answers all six traits. The print card's trait
+  cell reads «Хар. Заклинателя»: the full term does not fit the cell
+  (measured 2026-09-23). A trait chip is drawn only where a record of that
+  kind answers it, so no `spellcast` chip exists.
+- Rejected: two stacked grip marks (no exported vector for the pair,
+  `CLAUDE.md` "Export vectors"; `tests/app/print.js` pins one mark per
+  card); `bu: 1` plus `burden_options` (nothing reads it); the book's
+  printed `Special` trait and `d0` (every surface showed a weapon nobody
+  can attack with); a trait chip that selects one record.
+
+## 2026-09-19 - Draft fields `page`, `lore_*`, `gm_note_*`, `state`, `trait_original`, `burden_options`
+
+- Task: `dragons-vault`.
+- Decision: `page`, `state`, `trait_original` and `burden_options` are
+  dropped (the name and the schema carry their content). `lore_en`/
+  `lore_ru` (144 records, ~85 KB) are dropped: no shipped source carries
+  flavour text, nothing renders it, and `data.js` is 149 KB gzip on first
+  load (`docs/specs/META.md` section 4); adding it later is additive.
+  The Chalice of Chaos box (`gm_note_*`, p. 33) is folded verbatim into
+  `ende`/`rud` as a final line: it is rules text printed beside the item.
+  Frostwyrd's Vestige sidebar (p. 14) is dropped: the book explains
+  Vestiges, and three cards repeated it (human review, 2026-09-22).
+- Rejected: a folded "Lore" block on the card (a new surface with its own
+  dictionary, goldens and print decision, for text the book itself says a
+  GM may ignore); keeping the fields in `data.js` unrendered (`CLAUDE.md`:
+  add no export before something uses it).
+
+## 2026-09-19 - Dragon's Vault refs: four cards and two adversaries fetched, rules excluded
+
+- Task: `dragons-vault` (adversaries added at the human's review,
+  2026-09-22).
+- Decision: `refs` gains `pack-predator` (dv71, beastform),
+  `elemental-breath` (dv26, Drakona ancestry feature), `vampire` (dve38,
+  transformation card), `enrapture` (dve59, Grace spell), and the adversary
+  stat blocks `huge-green-ooze` (dv14 turns a character into one) and
+  `shambling-zombie` (dv66 raises them), each fetched from
+  `ru.`/`en.daggerheart.su` in the `RefCard` shape; a stat block is lines
+  of text there, as a beastform's is. No existing ref is reused.
+- Rejected: death moves and class features (Risk It All, Blaze of Glory,
+  Rally Die - core rules the site does not carry; `llms.txt` sends rules
+  questions to the SRD); Counterspell (dv1 names it but does not depend on
+  its text).
+- Evidence: "Dragon's Breath", named at dispatch, appears in no Dragon's
+  Vault text; the nearest is Drakona's "Elemental Breath" on dv26.
+
+## 2026-09-19 - The product link lives in the roll tab's help box
+
+- Task: `dragons-vault`.
+- Decision: `https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault`
+  is a link in `help.ts`'s Dragon's Vault box, the surface every shipped
+  source uses, and a row in both README source tables.
+- Rejected: a hover tooltip on the source badge (`Badge` takes a `title`,
+  but a `title` cannot hold a link and never shows on touch; a link the
+  reader cannot follow is a citation, not a source - `help.test.ts`).
+
+## 2026-09-19 - Text normalisation for an ingest, and its guard
+
+- Task: `dragons-vault`.
+- Decision: in `en`/`ende`/`ru`/`rud`, U+2018/U+2019 become `'`;
+  U+201C/U+201D become `"` in English and `«»` in Russian; U+2014, U+2212
+  and `«»` stay as the catalogue already carries them (33, 57 and 18
+  records). `tests/dataint.js`'s apostrophe guard widens to the four
+  quotation marks. Dropped fields are not normalised.
+- Rejected: normalising to U+2019 (the other way DEBT D41 offered; the
+  catalogue is already ASCII, so D41 was stale and is deleted); ASCII for
+  the dash, the minus and the Russian quotes (search folds U+2212 and the
+  shipped data carries all three).
+
+## 2026-09-19 - Dragon's Vault art: 145 files, every record arted, one asset per Frostwyrd rung
+
+- Task: `dragons-vault`.
+- Decision: the drop is the ledger (`docs/artwork.md`'s three
+  preconditions hold: every name resolves to one record, no duplicate
+  bytes, all 1254x1254). The human refilled the art drop twice mid-batch;
+  the shipped state is 145 files for 145 records, none with `img: ''`.
+  Frostwyrd's rungs each take their own asset: the drop delivers three
+  distinct renders.
+- Rejected: leaving any record out until art arrives (a record may ship
+  without art and renders `_none.webp`); any hand conversion.
+
+## 2026-09-19 - Set membership: a named set on the record, members derived, a shared bonus on every member, no filter
+
+- Task: `dragons-vault` (human decisions: structured and designed for N
+  members; the bonus first-class at the review of 2026-09-22).
+- Decision: `Record_.set?: string` names a record's set (`ember-spark` on
+  dve19 and dve20); members are grouped at load (`buildIndex`), never
+  stored. The card lists every member in catalogue order, the record itself
+  inert: `Комплект: Уголёк, Искра` / `Set: Ember, Spark`. A set's bonus is
+  `LOOT.sets[key]` (`en`, `ru` name; `ende`, `rud` text), drawn under that
+  line on every member, carried in copied text, share stubs and
+  `catalog.csv`, and printed as the last text line, `<name> (<Set>:
+  <members>): <text>`. Listing all members needs no Russian case agreement.
+- Rejected: the bonus in one member's text (the book's layout; it left
+  Ember's holder blind); a copy in each member (two texts to keep equal); a
+  stored sibling list; indexing the bonus for search (refs and craft
+  targets are not indexed either); a `set` filter group or set page until a
+  second source brings sets.
 
 ## 2026-09-19 - A reorder is announced through a permanently mounted live region, not the shared toast
 
@@ -292,15 +494,16 @@ entry to its first line before adding another.
 
 ## 2026-09-18 - One commit per task, amended per batch, pushed once at closeout
 
-- Task: `workflow-hygiene`.
+- Task: `workflow-hygiene` (human decision).
 - Decision: a task's first batch runs `git commit`; every later batch and
   the closeout amend it (`git commit --amend`, message rewritten to cover
   the whole task so far); the commit gate (rule 2e) runs on each amend. The
   branch is pushed once, at closeout, after the task directory is deleted;
-  the amend window closes at that push - never force-push after it.
-- Rejected: pushing at every batch's committed boundary (the prior rule) -
-  it produced many small commits per task and made "push once" impossible
-  to reconcile with amending.
+  the amend window closes at that push. Never force-push, in any form.
+- Rejected: pushing at every batch's committed boundary (`CLAUDE.md`'s
+  prior rule) - it produced many small commits per task, and a pushed
+  commit cannot be amended without a force-push, so the two rules were
+  incompatible as soon as amending was adopted.
 - Evidence: the reviewer diffs a batch as `git diff <previous sha> HEAD`,
   both shas recorded in the handoff's Completed section.
 
@@ -364,14 +567,7 @@ entry to its first line before adding another.
 
 ## 2026-09-18 - One commit per task, amend freely, push once - replaces the per-batch push rule
 
-- Task: `workflow-hygiene` (human decision).
-- Decision: this task's commit protocol (see the amend-window entry above)
-  replaces `CLAUDE.md`'s prior rule, "push the branch once a batch's
-  commits pass their gates." Never force-push, in any form.
-- Rejected: keeping per-batch pushes alongside amending - a pushed commit
-  cannot be amended without a force-push, which the standing rule already
-  forbids, so the two rules were incompatible as soon as amending was
-  adopted.
+- Superseded by "One commit per task, amended per batch, pushed once at closeout" (2026-09-18), which restated the same decision.
 
 ## 2026-09-17 - Nits are processed immediately, per batch, not deferred to a terminal pass
 
@@ -407,7 +603,7 @@ entry to its first line before adding another.
   (a cheap present-cost win traded for a silent failure if anyone later
   mutates in place); extending the truncation checksum over the notes (a
   payload-grammar contract change for a failure the reader can see anyway);
-  virtualising the row lists (317 is the largest list drawn, and it moves
+  virtualising the row lists (370 is the largest list drawn, and it moves
   goldens); SHA-pinning the `actions/*` tags (maintenance beyond its value;
   `gitleaks` alone is pinned).
 

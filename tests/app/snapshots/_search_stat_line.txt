@@ -17,6 +17,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -24,32 +25,54 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1091 позиции — добыча, расходники и снаряжение, н..." [namelen=90 namehash=4b580bdf]
+    StaticText "Поиск сразу по 1236 позициям — добыча, расходники и снаряжение, ..." [namelen=91 namehash=07169775]
     searchbox "Поиск по названию или описанию…" [value=двуручное focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    checkbox "Выбрать все (166)" [checked=false]
-    StaticText "Выбрать все (166)"
+    checkbox "Выбрать все (195)" [checked=false]
+    StaticText "Выбрать все (195)"
     checkbox "Гарпун Левиафана" [checked=false]
     button "51 Гарпун Левиафана Ранг 2 · Физическое · Искусность · Далеко · ..." [namelen=367 namehash=48191761]
-    ... checkbox x163 of 167 same-shape siblings elided
+    ... checkbox x192 of 196 same-shape siblings elided
     button "79 Лук Искателя Ранг 2 · Физическое · Искусность · Далеко · d6+4..." [namelen=378 namehash=c5bce097]
-    ... button x162 of 166 same-shape siblings elided
+    ... button x191 of 195 same-shape siblings elided
     checkbox "Эфирный Двуручный Меч" [checked=false]
     button "Эфирный Двуручный Меч Ранг 4 · Магическое · Инстинкт · Близко · ..." [namelen=218 namehash=a589eccb]
     checkbox "Арбалет Гравитации" [checked=false]
     button "Арбалет Гравитации Ранг 4 · Магическое · Знание · Далеко · d8+6 ..." [namelen=367 namehash=4123f644]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
+100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
+101Фроствирд (Дремлющий)Ранг 2 · Физическое · Сила · Вплотную · ... [namelen=327 namehash=82ab925e]
+102Фроствирд (Пробуждённый)Ранг 3 · Физическое · Сила · Вплотную... [namelen=566 namehash=6bb308f9]
+103Фроствирд (Возвышенный)Ранг 4 · Физическое · Сила · Вплотную ... [namelen=618 namehash=66a5c526]
+104Студенистый МолотРанг 3 · Физическое · Сила · Вплотную · d10+... [namelen=307 namehash=cb5b06e0]
+107Молот ГрифонаРанг 2 · Физическое · Сила · Вплотную · d10+4 фи... [namelen=319 namehash=584e1cb0]
+108Меч Адского ПламениРанг 4 · Магическое · Сила · Вплотную · d1... [namelen=458 namehash=6e5aa49f]
+109Метеор ХиларадаРанг 4 · Физическое · Сила · Близко · d12+12 ф... [namelen=382 namehash=5ff0c239]
 10НимойрасРанг 4 · Физическое · Искусность · Близко · d10+6 физ ... [namelen=382 namehash=ffd4f90a]
+114Рукавицы УбийцыРанг 2 · Физическое · Сила · Вплотную · d10+4 ... [namelen=395 namehash=053b8b2a]
+116Неугомонное ВозмездиеРанг 3 · Физическое · Сила · Вплотную · ... [namelen=454 namehash=414955ac]
+117Жезл Пылающих ЧереповРанг 2 · Магическое · Влияние · Далеко ·... [namelen=367 namehash=69d4bf2d]
 11Воля ГлашатаяРанг 4 · Магическое · Знание · Далеко · d6+9 маг ... [namelen=558 namehash=65c8f0a4]
+125Клинок СомнусаРанг 3 · Физическое · Сила · Вплотную · d10+7 ф... [namelen=339 namehash=6e29eaff]
+126Боевой Посох Душевного ОгняРанг 2 · Магическое · Инстинкт · В... [namelen=466 namehash=7276aed2]
+127Заклинательный КлинокРанг 2 · Магическое · Характеристика Зак... [namelen=394 namehash=fb84c2c0]
+129Посох ЛейтисаРанг 3 · Магическое · Влияние · Далеко · d6+9 ма... [namelen=429 namehash=af73d404]
 12Посох Мохового ЦветкаРанг 3 · Магическое · Инстинкт · Вплотную... [namelen=354 namehash=29641108]
+130Звёздное КопьёРанг 2 · Физическое · Сила · Близко · d10+4 физ... [namelen=375 namehash=3c838613]
+131Паровые РукавицыРанг 2 · Физическое · Сила · Вплотную · d10+4... [namelen=375 namehash=18f9fae7]
+132Разящие КлыкиРанг 1 · Физическое · Проворность · Близко · d8+... [namelen=259 namehash=759c5181]
+133Меч АнгеловРанг 4 · Физическое · Проворность · Вплотную · d10... [namelen=389 namehash=fbdd75b8]
+135Сухожильный ЛукРанг 2 · Физическое · Сила · Очень далеко · d6... [namelen=300 namehash=50f68480]
+137Глефа ТиранаРанг 2 · Физическое · Сила · Близко · d10+5 физ ·... [namelen=242 namehash=50ff0aa8]
+138Двуручный Меч ВайатыРанг 2 · Физическое · Сила · Вплотную · d... [namelen=307 namehash=0d066e24]
 13ХаррокливРанг 3 · Физическое · Сила · Вплотную · d12+7 физ · Д... [namelen=315 namehash=ef4478d5]
 17Клинок БраксусаРанг 3 · Физическое · Сила · Вплотную · d10+9 ф... [namelen=395 namehash=f9d03c4f]
 19Мясницкий ТесакРанг 3 · Физическое · Влияние · Близко · d8+7 ф... [namelen=491 namehash=f7f4f0bc]
@@ -61,7 +84,15 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 5Посох Тайного ПламениРанг 3 · Магическое · Инстинкт · Далеко · ... [namelen=243 namehash=d3394cc0]
 6Последний РубежРанг 2 · Физическое · Искусность · Близко · d10+... [namelen=258 namehash=c42440cb]
 79Лук ИскателяРанг 2 · Физическое · Искусность · Далеко · d6+4 ф... [namelen=372 namehash=eff71575]
+82Клеймор Дуговой МолнииРанг 3 · Физическое · Сила · Вплотную · ... [namelen=395 namehash=fb5e61c4]
+83Астральная ГлефаРанг 3 · Магическое · Знание · Близко · d10+5 ... [namelen=304 namehash=44f0526b]
+84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
+85КровоглотРанг 2 · Физическое · Сила · Вплотную · d10+6 физ · Д... [namelen=370 namehash=9ec2e2de]
 88Посох Шепчущего АрхиваРанг 2 · Магическое · Знание · Далеко · ... [namelen=309 namehash=5153694b]
+89Меч Хрустального ДухаРанг 4 · Физическое · Искусность · Вплотн... [namelen=278 namehash=bbbe90ef]
+94Сумеречное КрылоРанг 2 · Физическое · Сила · Вплотную · d10+6 ... [namelen=252 namehash=ca1a4459]
+95Стихийный Длинный ЛукРанг 3 · Физическое · Проворность · Очень... [namelen=501 namehash=24bc8a83]
+Dragon's Vault
 Dread
 EN
 RU
@@ -75,11 +106,13 @@ daggerheart.com
 Арбалет ГравитацииРанг 4 · Магическое · Знание · Далеко · d8+6 м... [namelen=362 namehash=87ed6dc0]
 Аркебуза
 АркебузаРанг 4 · Физическое · Знание · Далеко · d8+10 физ · Двур... [namelen=235 namehash=8d72a13d]
+Астральная Глефа
 Боевая Коса
 Боевая КосаРанг 2 · Физическое · Искусность · Близко · d8+5 физ ... [namelen=132 namehash=6b1f6e4d]
 Боевой Молот
 Боевой МолотРанг 1 · Физическое · Сила · Вплотную · d12+3 физ · ... [namelen=115 namehash=9de2a9e2]
 Боевой Посох
+Боевой Посох Душевного Огня
 Боевой ПосохРанг 1 · Физическое · Инстинкт · Вплотную · d10+3 фи... [namelen=96 namehash=dce1dc4b]
 Большой Лук
 Большой ЛукРанг 2 · Физическое · Сила · Далеко · d6+6 физ · Двур... [namelen=205 namehash=c6fff4ed]
@@ -91,11 +124,13 @@ daggerheart.com
 ВинтовкаРанг 1 · Физическое · Проворность · Очень далеко · d8+2 ... [namelen=188 namehash=a46e5371]
 Воля Глашатая
 Гарпун Левиафана
+Глефа Тирана
 Двойной Посох
 Двойной ПосохРанг 1 · Магическое · Инстинкт · Далеко · d6+3 маг ... [namelen=94 namehash=558e0fec]
 Двойной Цеп
 Двойной ЦепРанг 3 · Физическое · Проворность · Близко · d10+8 фи... [namelen=213 namehash=853d5ae6]
 Двуручный Меч
+Двуручный Меч Вайаты
 Двуручный МечРанг 1 · Физическое · Сила · Вплотную · d10+3 физ ·... [namelen=219 namehash=de9b781d]
 Двуручный Посох
 Двуручный ПосохРанг 1 · Магическое · Знание · Очень далеко · d6 ... [namelen=205 namehash=71a5dfa5]
@@ -108,6 +143,8 @@ daggerheart.com
 Древний ЛукРанг 2 · Магическое · Инстинкт · Далеко · d6+4 маг · ... [namelen=209 namehash=b54ae232]
 Дробовик
 ДробовикРанг 1 · Физическое · Сила · Близко · d6+2 физ · Двуручн... [namelen=204 namehash=6d8ab543]
+Жезл Пылающих Черепов
+Заклинательный Клинок
 Заколдованные Браслеты
 Заколдованные БраслетыРанг 2 · Магическое · Знание · Вплотную · ... [namelen=121 namehash=7fe18a70]
 Заточенные Грабли
@@ -122,6 +159,7 @@ daggerheart.com
 Зачарованный БумерангРанг 1 · Магическое · Инстинкт · Далеко · d... [namelen=118 namehash=fe7b3b1a]
 Зачарованный Воздушный Змей
 Зачарованный Воздушный ЗмейРанг 1 · Магическое · Влияние · Далек... [namelen=227 namehash=071b0746]
+Звёздное Копьё
 К содержимому
 Кастеты с лезвиями
 Кастеты с лезвиямиРанг 2 · Физическое · Сила · Вплотную · d10+6 ... [namelen=213 namehash=2024fe39]
@@ -131,12 +169,14 @@ daggerheart.com
 Кинжал на ВеревкеРанг 1 · Физическое · Инстинкт · Средне · d6+1 ... [namelen=105 namehash=62b93649]
 Клевец
 КлевецРанг 4 · Физическое · Проворность · Близко · d10+9 физ · Д... [namelen=234 namehash=2098b8c2]
+Клеймор Дуговой Молнии
 Клинки-Когти
 Клинки-КогтиРанг 3 · Физическое · Искусность · Средне · d10+7 фи... [namelen=211 namehash=154994d5]
 Клинок Браксуса
 Клинок Живущих
 Клинок Света и Пламени
 Клинок Света и ПламениРанг 4 · Магическое · Сила · Вплотную · d1... [namelen=160 namehash=1134387b]
+Клинок Сомнуса
 Кованый Крюк
 Кованый КрюкРанг 1 · Физическое · Сила · Близко · d8+2 физ · Дву... [namelen=105 namehash=ad8a5907]
 Колдующий Меч
@@ -153,6 +193,7 @@ daggerheart.com
 КосаРанг 1 · Физическое · Искусность · Близко · d8+2 физ · Двуру... [namelen=103 namehash=4652d252]
 Кровавый Лук Ютари
 Кровавый Лук ЮтариРанг 2 · Магическое · Искусность · Далеко · d6... [namelen=216 namehash=0c84c238]
+Кровоглот
 Кувалда
 КувалдаРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуру... [namelen=231 namehash=ba57fede]
 Кулаки Разорителя
@@ -208,16 +249,21 @@ daggerheart.com
 Магическая ВинтовкаРанг 1 · Магическое · Проворность · Очень дал... [namelen=300 namehash=c9066e07]
 Магические Наручи
 Магические НаручиРанг 1 · Магическое · Сила · Вплотную · d10+3 м... [namelen=97 namehash=f39090e6]
+Метеор Хиларада
+Меч Адского Пламени
+Меч Ангелов
 Меч Света
 Меч СветаРанг 1 · Магическое · Сила · Вплотную · d10+3 маг · Дву... [namelen=96 namehash=52fcd087]
 Меч Храбрости
 Меч ХрабростиРанг 3 · Физическое · Сила · Вплотную · d12+7 физ ·... [namelen=154 namehash=29d54f31]
+Меч Хрустального Духа
 Многозарядный Арбалет
 Многозарядный АрбалетРанг 1 · Физическое · Искусность · Далеко ·... [namelen=248 namehash=90aafa8b]
 Молниеносный Молот
 Молниеносный МолотРанг 3 · Физическое · Сила · Вплотную · d10+7 ... [namelen=244 namehash=a19827ad]
 Молот Гнева
 Молот ГневаРанг 3 · Физическое · Сила · Вплотную · d10+7 физ · Д... [namelen=227 namehash=3e5ee22c]
+Молот Грифона
 Молот Экзоты
 Молот ЭкзотыРанг 2 · Магическое · Инстинкт · Вплотную · d8+6 маг... [namelen=283 namehash=64b0b490]
 Мушкетон
@@ -225,11 +271,13 @@ daggerheart.com
 Мясницкий Тесак
 Мясницкий Топор
 Мясницкий ТопорРанг 1 · Физическое · Сила · Вплотную · d12+3 физ... [namelen=134 namehash=9c5c02de]
+Неугомонное Возмездие
 Нимойрас
 Обоюдоострый Меч
 Обоюдоострый МечРанг 4 · Физическое · Проворность · Вплотную · d... [namelen=235 namehash=bf5328f9]
 Обычные правила
 Открывать этот раздел при запуске
+Паровые Рукавицы
 Перчатки Слияния
 Перчатки СлиянияРанг 4 · Магическое · Знание · Очень далеко · d6... [namelen=175 namehash=a23e8dc3]
 Поглощающие Рукавицы
@@ -244,6 +292,7 @@ daggerheart.com
 Посох БесконечностиРанг 4 · Физическое · Влияние · Вплотную · d1... [namelen=360 namehash=6d83b35a]
 Посох Крови
 Посох КровиРанг 4 · Магическое · Инстинкт · Далеко · d20+7 маг ·... [namelen=190 namehash=8778e7cb]
+Посох Лейтиса
 Посох Мохового Цветка
 Посох Огня
 Посох ОгняРанг 3 · Магическое · Инстинкт · Далеко · d6+7 маг · Д... [namelen=178 namehash=6b72ef26]
@@ -300,11 +349,13 @@ daggerheart.com
 Продвинутый СкипетрРанг 3 · Магическое · Влияние · Далеко · d6+6... [namelen=206 namehash=fb7ca35b]
 Разрушительный Колун
 Разрушительный КолунРанг 4 · Физическое · Сила · Вплотную · d12+... [namelen=231 namehash=b73491c5]
+Разящие Клыки
 Расходники
 Расщепляющийся Лук
 Расщепляющийся ЛукРанг 2 · Магическое · Проворность · Далеко · d... [namelen=261 namehash=0151ade3]
 Рогатка
 РогаткаРанг 1 · Физическое · Искусность · Далеко · d6+3 физ · Дв... [namelen=106 namehash=c74ce571]
+Рукавицы Убийцы
 Сверкающий Посох
 Сверкающий ПосохРанг 1 · Магическое · Знание · Очень далеко · d6... [namelen=222 namehash=20f994f2]
 Святой Дробовик
@@ -328,9 +379,14 @@ daggerheart.com
 Списки
 Стальная Алебарда
 Стальная АлебардаРанг 2 · Физическое · Сила · Близко · d8+4 физ ... [namelen=172 namehash=f15728dc]
+Стихийный Длинный Лук
+Студенистый Молот
+Сумеречное Крыло
+Сухожильный Лук
 Таблицы
 Топор Лабрис
 Топор ЛабрисРанг 3 · Физическое · Сила · Вплотную · d10+7 физ · ... [namelen=133 namehash=b72600d1]
+Топор Чёрной Порчи
 Топоры Рикошета
 Топоры РикошетаРанг 4 · Физическое · Проворность · Далеко · d6+1... [namelen=210 namehash=c3af308c]
 Тяжелое Копье
@@ -387,6 +443,10 @@ daggerheart.com
 Ускользающее ЛезвиеРанг 2 · Магическое · Искусность · Вплотную ·... [namelen=203 namehash=78be7788]
 Установка для Фейерверков
 Установка для ФейерверковРанг 1 · Физическое · Проворность · Оче... [namelen=158 namehash=c2f08aaa]
+Фрикционные Обмотки
+Фроствирд (Возвышенный)
+Фроствирд (Дремлющий)
+Фроствирд (Пробуждённый)
 Харроклив
 Шипастый Лук
 Шипастый ЛукРанг 3 · Физическое · Проворность · Очень далеко · d... [namelen=224 namehash=2cc80352]
@@ -413,6 +473,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -420,7 +481,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1091 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=9837439f]
+    StaticText "Search all 1236 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=b5fda367]
     searchbox "Search by name or description…" [value=двуручное focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
@@ -428,7 +489,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     button "Equipment" [pressed=true]
     StaticText "Nothing found"
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
@@ -436,6 +497,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 Alt. tables
 Communities
 Consumables
+Dragon's Vault
 Dread
 EN
 Equipment

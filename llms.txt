@@ -1,9 +1,9 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1091
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1236
 > records covering items, consumables, weapons and armour from the Core Set,
-> Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages and community
-> sets. Static site, no server, no API, no accounts.
+> Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon's
+> Vault and community sets. Static site, no server, no API, no accounts.
 
 Site: https://artex-x.github.io/daggerheart-loot/
 Source: https://github.com/artex-x/daggerheart-loot
@@ -42,22 +42,27 @@ text, not the rules those items refer to.
 
 ## Data
 
-- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1091
+- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1236
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
-  crafts_into, community, url, text_ru, text_en`.
+  crafts_into, community, url, text_ru, text_en`. A set member's `text_ru`
+  and `text_en` end with the set's shared bonus: `<bonus name> (Set:
+  <members>): <text>`, with `Комплект` for `Set` in Russian.
 - [data.json](https://artex-x.github.io/daggerheart-loot/data.json) — the same
-  records in full, plus the rarity tables (`alt`) and the text of domain cards
-  that some loot refers to (`refs`).
+  records in full, plus the rarity tables (`alt`), the text of the twelve
+  rulebook cards some records refer to (`refs`: domain cards, two beastforms,
+  an ancestry feature, an adversary feature, a transformation and two
+  adversary stat blocks), and
+  the shared bonus of an item set (`sets`).
 - `i/<id>.html` — one record as a readable page, e.g.
   [i/q26.html](https://artex-x.github.io/daggerheart-loot/i/q26.html).
 
 `kind` is one of `item`, `consumable`, `weapon`, `secondary`, `armor`.
 
-## The seven sources, and when to reach for each
+## The eight sources, and when to reach for each
 
 `source` is not decoration on the record — it is the best single predictor of
-whether a thing will fit the table you are furnishing. The seven sets are not
+whether a thing will fit the table you are furnishing. The eight sets are not
 interchangeable, and mixing them without saying so is how a selection goes
 wrong.
 
@@ -66,9 +71,10 @@ wrong.
 | `Core` | 346 | The Daggerheart Core Set: the full tier 1–4 equipment ladders and the two baseline loot tables. | Always. This is the default unless there is a reason for something else — everything below is measured against it. |
 | `Hope & Fear` | 275 | The Hope & Fear expansion. More equipment on the same ladders, more loot in the same shape, deliberately on the same curve. | You want variety without changing the maths. Safe to shuffle together with Core. |
 | `Campaign Frames` | 94 | Equipment written for one campaign frame each (Beast Feast, Colossus, Dark Heart, Motherboard). Tied to that frame's premise and often to its special mechanics. | The table is running that frame. Outside it, the item is usually inert or unbalanced — the text assumes rules the party does not have. |
-| `Wondrous Loot` | 119 | A third-party book of magical oddities. Items and consumables only. | You want a memorable object. Several entries rewrite a scene rather than colour it, so read the text before handing it over. |
+| `Wondrous Loot` | 119 | A third-party book of magical oddities, mostly items and consumables, with eleven pieces of equipment. | You want a memorable object. Several entries rewrite a scene rather than colour it, so read the text before handing it over. |
 | `Dread GM Toolbox` | 29 | A third-party horror supplement. Cthulhu-mythos material: Mi-go equipment, cursed relics, things with a cost attached. | The campaign is horror-flavoured. In heroic fantasy these read as tonal noise, and some carry a drawback that only makes sense in a horror game. |
 | `Vault of Ages` | 108 | Three third-party volumes by one author, sorted by tier: 24-25 per tier plus 6 artifacts and 5 cursed objects. Deliberately stronger than Core, which is why most entries carry a Recall Cost. | You want a reward that bends the story rather than the numbers. Read the tier off the record: unlike every other loot set, it has one. |
+| `The Dragon's Vault` | 145 | A third-party supplement: 77 loot entries and 68 pieces of equipment, including a Frostwyrd upgrade chain and the paired Ember/Spark weapons. | You want more of the same shape as Wondrous Loot plus named, feature-heavy equipment. |
 | `Community` | 90 | A fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
 
 Three practical consequences:
@@ -76,9 +82,10 @@ Three practical consequences:
 - **Only `Core` and `Hope & Fear` are official and balanced against each other.**
   If a request is for "official items", it means those two. The rest were not
   written by Darrington Press.
-- **Equipment lives in `Core`, `Hope & Fear` and `Campaign Frames`.** A question
-  about weapons or armour has no answer in Wondrous Loot, Dread or Community —
-  do not go looking there.
+- **Equipment lives in `Core`, `Hope & Fear`, `Campaign Frames` and
+  `The Dragon's Vault`.** Wondrous Loot, Dread and Vault of Ages carry a few
+  pieces each. A question about weapons or armour has no answer in
+  Community — do not go looking there.
 - **`Campaign Frames` is the one to filter out by default.** Its entries look
   ordinary in a list and stop making sense the moment they leave their frame.
 
@@ -154,9 +161,9 @@ of two or three usually plays better than assigning one each.
 ## URL grammar
 
 - `#/roll/std` — roll on the book tables; `#/roll/alt` — roll by rarity;
-  `#/roll/wondrous`; `#/roll/dread`; `#/roll/voa`; `#/roll/community`
+  `#/roll/wondrous`; `#/roll/dread`; `#/roll/voa`; `#/roll/dv`; `#/roll/community`
 - `#/tables/<table>` — `core_item`, `core_consumable`, `hnf_item`,
-  `hnf_consumable`, `wondrous`, `dread`, `voa`, `community`, `other_starting`, `other_frames`,
+  `hnf_consumable`, `wondrous`, `dread`, `voa`, `dv`, `community`, `other_starting`, `other_frames`,
   `eq_weapon`, `eq_secondary`, `eq_armor`
 - `#/tables/eq_weapon/f_tier-1-2.cls-phy.src-core` — filters, on every table
   rather than only on equipment. After `f_`, parts are separated by `.` and
@@ -367,6 +374,6 @@ Gaming (DPCGL) License. More information can be found at
 https://www.daggerheart.com. There are no previous modifications by others.
 
 Core and Hope & Fear are covered by that licence; Wondrous Loot, Dread GM
-Toolbox, Vault of Ages, Community Magic Items and the Alternate Loot &
-Consumable Tables are not - they belong to their own authors. The project code
-is MIT.
+Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items and the
+Alternate Loot & Consumable Tables are not - they belong to their own authors.
+The project code is MIT.

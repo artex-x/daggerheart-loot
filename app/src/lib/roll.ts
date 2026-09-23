@@ -1,6 +1,6 @@
 /* The roll engines.
  *
- * Six modes, and the only thing they share is that a person may also type the
+ * Seven modes, and the only thing they share is that a person may also type the
  * number instead of rolling for it. Randomness arrives as an argument so the
  * engines can be tested for what they guarantee - the range, the clamping, the
  * carry - rather than for what they happened to produce.

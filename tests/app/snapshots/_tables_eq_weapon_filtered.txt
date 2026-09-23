@@ -17,6 +17,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -32,6 +33,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -47,36 +49,39 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Двуручное" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "37 из 317"
+    StaticText "39 из 370"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
-    ... button x24 of 28 same-shape siblings elided
+    ... button x25 of 29 same-shape siblings elided
     button "Двуручное" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
     StaticText "РАНГ 1"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (37)" [checked=false]
-    StaticText "Выбрать все (37)"
+    checkbox "Выбрать все (39)" [checked=false]
+    StaticText "Выбрать все (39)"
     checkbox "Длинный Меч" [checked=false]
-    ... button x35 of 39 same-shape siblings elided
-    ... checkbox x34 of 38 same-shape siblings elided
-    checkbox "Святой Дробовик" [checked=false]
-    button "Святой Дробовик Ранг 1 · Магическое · Проворность · Близко · d6+..." [namelen=228 namehash=d7ece941]
-    checkbox "Многозарядный Арбалет" [checked=false]
-    button "Многозарядный Арбалет Ранг 1 · Физическое · Искусность · Далеко ..." [namelen=252 namehash=02123885]
+    ... button x37 of 41 same-shape siblings elided
+    ... checkbox x36 of 40 same-shape siblings elided
+    checkbox "Фрикционные Обмотки" [checked=false]
+    button "100 Фрикционные Обмотки Ранг 1 · Физическое · Проворность · Впло..." [namelen=268 namehash=bd6250e4]
+    checkbox "Разящие Клыки" [checked=false]
+    button "132 Разящие Клыки Ранг 1 · Физическое · Проворность · Близко · d..." [namelen=265 namehash=c70cb0df]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
 1
+100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
+132Разящие КлыкиРанг 1 · Физическое · Проворность · Близко · d8+... [namelen=259 namehash=759c5181]
 2
 3
 4
 Core
+Dragon's Vault
 Dread
 Dread GM Toolbox
 EN
@@ -169,6 +174,7 @@ daggerheart.com
 Походная ПалкаРанг 1 · Физическое · Инстинкт · Вплотную · d10+3 ... [namelen=114 namehash=71d486bb]
 Проворность
 Прочее
+Разящие Клыки
 Рогатка
 РогаткаРанг 1 · Физическое · Искусность · Далеко · d6+3 физ · Дв... [namelen=106 namehash=c74ce571]
 Сбросить всё
@@ -203,6 +209,7 @@ daggerheart.com
 Установка для ФейерверковРанг 1 · Физическое · Проворность · Оче... [namelen=158 namehash=c2f08aaa]
 Физическое
 Фильтры (2)
+Фрикционные Обмотки
 
 ## en :: tree
 RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_tier-1.burden-2]
@@ -219,6 +226,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
       link "Wondrous" [url=#/roll/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -234,6 +242,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -249,32 +258,34 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "Two-Handed" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "37 of 317"
+    StaticText "39 of 370"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
-    ... button x24 of 28 same-shape siblings elided
+    ... button x25 of 29 same-shape siblings elided
     button "Two-Handed" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
     StaticText "TIER 1"
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (37)" [checked=false]
-    StaticText "Select all (37)"
+    checkbox "Select all (39)" [checked=false]
+    StaticText "Select all (39)"
     checkbox "Longsword" [checked=false]
-    ... button x35 of 39 same-shape siblings elided
-    ... checkbox x34 of 38 same-shape siblings elided
-    checkbox "Holy Shotgun" [checked=false]
-    button "Holy Shotgun Tier 1 · Magic · Agility · Very Close · d6+2 mag · ..." [namelen=202 namehash=445d3662]
-    checkbox "Repeating Crossbow" [checked=false]
-    button "Repeating Crossbow Tier 1 · Physical · Finesse · Far · d6+2 phy ..." [namelen=210 namehash=0b2a72a1]
+    ... button x37 of 41 same-shape siblings elided
+    ... checkbox x36 of 40 same-shape siblings elided
+    checkbox "Friction Wraps" [checked=false]
+    button "100 Friction Wraps Tier 1 · Physical · Agility · Melee · d8 phy ..." [namelen=252 namehash=af6335fd]
+    checkbox "Striking Fangs" [checked=false]
+    button "132 Striking Fangs Tier 1 · Physical · Agility · Very Close · d8..." [namelen=262 namehash=06204c97]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
 
 ## en :: controls
 1
+100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=246 namehash=036eb4fb]
+132Striking FangsTier 1 · Physical · Agility · Very Close · d8+2... [namelen=256 namehash=d8b9474b]
 2
 3
 4
@@ -300,6 +311,7 @@ Core
 Crop Scythe
 Crop ScytheTier 1 · Physical · Finesse · Very Close · d8+2 phy ·... [namelen=106 namehash=b6a427df]
 Dark Heart of Andaluria
+Dragon's Vault
 Dread
 Dread GM Toolbox
 Dualstaff
@@ -324,6 +336,7 @@ Fishing Rod
 Fishing RodTier 1 · Physical · Agility · Far · d6+3 phy · Two-Ha... [namelen=99 namehash=14015ba9]
 Forge Poker
 Forge PokerTier 1 · Physical · Strength · Very Close · d8+2 phy ... [namelen=107 namehash=645396aa]
+Friction Wraps
 Glowing Rings
 Glowing RingsTier 1 · Magic · Agility · Very Close · d10+2 mag ·... [namelen=93 namehash=1bac227d]
 Greatstaff
@@ -389,6 +402,7 @@ Spear
 SpearTier 1 · Physical · Finesse · Very Close · d8+3 phy · Two-H... [namelen=87 namehash=f321c681]
 Standard rules
 Strength
+Striking Fangs
 Tables
 Two-Handed
 Unique

@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1091 pairs maintained with
+ * small, typed and reviewed, while record text is 1236 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -25,12 +25,13 @@ const ru = {
   langLabel: 'Язык',
   close: 'Закрыть',
 
-  /* The nine sections, in tab order */
+  /* The ten sections, in tab order */
   std: 'Обычные правила',
   alt: 'Альт. таблицы',
   wondrous: 'Wondrous',
   dread: 'Dread',
   voa: 'Vault of Ages',
+  dv: "Dragon's Vault",
   community: 'Сообщества',
   tables: 'Таблицы',
   lists: 'Списки',
@@ -41,6 +42,9 @@ const ru = {
   cons: 'Расходник',
   craftInto: 'Улучшается до',
   craftFrom: 'Получается из',
+  /* The set line on a card: names the set, not a count, so one word covers
+     any number of members (`docs/DECISIONS.md`, "Set membership"). */
+  setLabel: 'Комплект',
 
   /* The record card's actions, and what each one says when it is done */
   copyName: 'Скопировать название',
@@ -58,10 +62,10 @@ const ru = {
   srcWond: 'Wondrous',
   srcDread: 'Dread',
   srcVoa: 'Vault of Ages',
-  /* P13: matches `frameF`/`subFrames` below - one word for the concept in
+  srcDv: "Dragon's Vault",
+  /* Matches `frameF`/`subFrames` below - one word for the concept in
      Russian, verified against ru.daggerheart.su/frame ("Сеттинги" is both
-     that page's own title and its term for one entry on it), where it used
-     to read "Фрейм" here alone. */
+     that page's own title and its term for one entry on it). */
   srcFrame: 'Сеттинг',
   srcComm: 'Сообщества',
   copyLink: 'Скопировать ссылку',
@@ -94,7 +98,7 @@ const ru = {
      markup in a string. The verbatim citation lives entirely in the first
      part - tests/derived.js pins it in app.js, and it must read the same here. */
   footBefore:
-    'Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ',
+    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
 
@@ -104,6 +108,7 @@ const ru = {
   pageWondrous: 'Wondrous Loot',
   pageDread: 'Dread GM Toolbox',
   pageVoa: 'Vault of Ages',
+  pageDv: "The Dragon's Vault",
   pageCommunity: 'Предметы сообществ',
   pageStd: 'Обычные правила',
   subStd: 'Бросок по таблицам корника и дополнения Hope & Fear.',
@@ -173,7 +178,7 @@ const ru = {
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
   noData: 'Данные не загрузились. Обновите страницу.',
-  /* The smallest error boundary (S2/R7): a page that throws mid-render draws
+  /* The smallest error boundary: a page that throws mid-render draws
      this instead of leaving a blank middle under a working tab bar. */
   pageError: 'Что-то пошло не так на этой странице.',
   reloadPage: 'Обновить страницу',
@@ -215,12 +220,10 @@ const ru = {
   subTables:
     'Все таблицы целиком, включая оружие и броню, — можно листать, фильтровать и открывать карточки.',
   subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
-  /* P15: "по всем 1091 позициям" would agree "всем" with the numeral, but a
-     compound numeral ending in "один" (1091, not 11) takes the singular
-     regardless - dropping "всем" removes the clash instead of forcing a
-     disagreement either way. */
+  /* "по всем N позициям" needs "всем" to agree with the numeral, so the
+     sentence leaves it out and reads for any count. */
   subSearch:
-    'Поиск сразу по 1091 позиции — добыча, расходники и снаряжение, на русском и на английском.',
+    'Поиск сразу по 1236 позициям — добыча, расходники и снаряжение, на русском и на английском.',
 
   searchPh: 'Поиск по названию или описанию…',
   tableLink: 'Ссылка на таблицу',
@@ -314,13 +317,13 @@ const ru = {
   localOnly:
     'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас — в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново.',
   deleteConfirm: 'Удалить список «%s»? Это действие необратимо.',
-  /* P5: delete gets an undo, like every other destructive action. */
+  /* Delete gets an undo, like every other destructive action. */
   listDeleted: 'Список «%s» удалён',
   playersLinkCopied: 'Ссылка для игроков скопирована — заметок мастера в ней нет',
   badShare: 'Ссылка повреждена или собрана в другой версии данных.',
-  /* P9: an old link naming a renumbered or deleted record used to lose those
-     entries with no sign anything was missing - toasted once, on the shared
-     page and after restoring a copy. */
+  /* An old link naming a renumbered or deleted record would otherwise lose
+     those entries with no sign anything was missing - toasted once, on the
+     shared page and after restoring a copy. */
   droppedItems: 'Пропущено позиций: %n — их больше нет в данных',
 
   /* The list page - app.js 114-195, the address, the actions, the notes,
@@ -402,6 +405,7 @@ const en: Dict = {
   wondrous: 'Wondrous',
   dread: 'Dread',
   voa: 'Vault of Ages',
+  dv: "Dragon's Vault",
   community: 'Communities',
   tables: 'Tables',
   lists: 'Lists',
@@ -411,6 +415,7 @@ const en: Dict = {
   cons: 'Consumable',
   craftInto: 'Upgrades to',
   craftFrom: 'Made from',
+  setLabel: 'Set',
 
   copyName: 'Copy name',
   copyText: 'Copy text',
@@ -426,6 +431,7 @@ const en: Dict = {
   srcWond: 'Wondrous',
   srcDread: 'Dread',
   srcVoa: 'Vault of Ages',
+  srcDv: "Dragon's Vault",
   srcFrame: 'Frame',
   srcComm: 'Communities',
   copyLink: 'Copy link',
@@ -447,13 +453,14 @@ const en: Dict = {
   stepUp: 'One higher',
 
   footBefore:
-    'Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ',
+    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
 
   pageWondrous: 'Wondrous Loot',
   pageDread: 'Dread GM Toolbox',
   pageVoa: 'Vault of Ages',
+  pageDv: "The Dragon's Vault",
   pageCommunity: 'Community items',
   pageStd: 'Standard rules',
   subStd: 'A roll over the core book and the Hope & Fear tables.',
@@ -542,7 +549,7 @@ const en: Dict = {
   subTables: 'Every table in full, weapons and armor included — browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
-    'Search all 1091 entries at once — loot, consumables and equipment, in Russian and English.',
+    'Search all 1236 entries at once — loot, consumables and equipment, in Russian and English.',
 
   searchPh: 'Search by name or description…',
   tableLink: 'Link to this table',
@@ -706,6 +713,7 @@ export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/wondrous': 'wondrous',
   'roll/dread': 'dread',
   'roll/voa': 'voa',
+  'roll/dv': 'dv',
   'roll/community': 'community',
   tables: 'tables',
   lists: 'lists',

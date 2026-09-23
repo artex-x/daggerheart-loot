@@ -1,0 +1,141 @@
+# #/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14 ~ black and white
+# route: #/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14
+# why: the same seven, the other layout
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Печать карточек" [level=1]
+    StaticText "Карточек: 7. Листов A4: 1. Размер карты 63×88 мм — как у обычной..." [namelen=75 namehash=0aa3a3bf]
+    button "Назад"
+    button "Отправить на печать"
+    button "Цветная" [pressed=false]
+    button "Чёрно-белая" [pressed=true]
+    button "Ссылка на набор"
+    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
+    ... StaticText x138 of 142 same-shape siblings elided
+    heading "УГОЛЁК" [level=2]
+    LineBreak " "
+    heading "ИСКРА" [level=2]
+    LineBreak " "
+    ... heading x3 of 7 same-shape siblings elided
+    ... LineBreak x2 of 6 same-shape siblings elided
+    LineBreak " "
+    heading "ПАРОВЫЕ РУКАВИЦЫ" [level=2]
+    heading "ЧАША ХАОСА" [level=2]
+    LineBreak " "
+    StaticText "Daggerheart"
+    StaticText "Dragon's Vault"
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+ЛутDaggerheart
+Назад
+Обычные правила
+Отправить на печать
+Поиск
+Сообщества
+Списки
+Ссылка на набор
+Таблицы
+Цветная
+Чёрно-белая
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Printing cards" [level=1]
+    StaticText "Cards: 7. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=34335542]
+    button "Back"
+    button "Send to printer"
+    button "Colour" [pressed=false]
+    button "Black and white" [pressed=true]
+    button "Link to this set"
+    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
+    ... StaticText x138 of 142 same-shape siblings elided
+    heading "EMBER" [level=2]
+    LineBreak " "
+    heading "SPARK" [level=2]
+    LineBreak " "
+    ... heading x3 of 7 same-shape siblings elided
+    ... LineBreak x2 of 6 same-shape siblings elided
+    LineBreak " "
+    heading "STEAMPOWERED GAUNTLETS" [level=2]
+    heading "CHALICE OF CHAOS" [level=2]
+    LineBreak " "
+    StaticText "Daggerheart"
+    StaticText "Dragon's Vault"
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+Alt. tables
+Back
+Black and white
+Colour
+Communities
+Dragon's Vault
+Dread
+EN
+Link to this set
+Lists
+RU
+Search
+Send to printer
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

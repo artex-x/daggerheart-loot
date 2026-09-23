@@ -44,10 +44,13 @@ describe('what it looks at', () => {
   });
 
   it('searches the stat line of equipment', () => {
-    /* "Двуручное" is on no record as text - it is assembled from `bu` */
+    /* "Двуручное" is on no record as text - it is assembled from `bu`.
+       A `bu: 'any'` record's line reads "Одноручное/двуручное" and matches
+       too - the word is still assembled, only now from a burden that reads
+       both ways (`docs/DECISIONS.md`, "Gryphon Hammer bu: 'any'"). */
     const twoHanded = find('Двуручное');
     expect(twoHanded.length).toBeGreaterThan(10);
-    expect(twoHanded.every((x) => x.eq?.bu === 2)).toBe(true);
+    expect(twoHanded.every((x) => x.eq?.bu === 2 || x.eq?.bu === 'any')).toBe(true);
   });
 
   it('does not invent a stat line for loot', () => {
@@ -153,7 +156,7 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
 
   it('finds a name with a Latin diacritic typed in plain ASCII', () => {
     /* Owner-approved: "Ethereal Zweihänder" (q238) and "Möbius Orb"
-       (q311) were unreachable by ordinary typing across all 1091 records. */
+       (q311) were unreachable by ordinary typing across all 1236 records. */
     expect(find('Zweihander').map((x) => x.id)).toContain('q238');
     expect(find('Mobius').map((x) => x.id)).toContain('q311');
   });

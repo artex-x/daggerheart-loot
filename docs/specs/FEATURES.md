@@ -6,7 +6,7 @@ in `CONTRACTS.md`.
 
 ## Rolling
 
-Six modes. Each keeps its own input in memory only.
+Seven modes. Each keeps its own input in memory only.
 
 | Mode | Input | Produces | State |
 |---|---|---|---|
@@ -15,6 +15,7 @@ Six modes. Each keeps its own input in memory only.
 | Wondrous | 1-119 | 1 | `wond {n}` |
 | Dread | 1-29 | 1 | `dread {n}` |
 | Vault of Ages | section + roll within it | 1 | `voa {k, n}` |
+| The Dragon's Vault | 1-145 | 1 | `dv {n}` |
 | Communities | community + 1-10 | 1 | `comm {c, n}` |
 
 - The source switch on Core rules cannot be emptied - unticking the last one is
@@ -64,8 +65,8 @@ Six modes. Each keeps its own input in memory only.
 
 ## Tables and search
 
-- 15 tables (`TABLE_IDS`), each with its own search box and a list/grid switch.
-- Search covers all 1091 records: names, descriptions and stat lines, both
+- 16 tables (`TABLE_IDS`), each with its own search box and a list/grid switch.
+- Search covers all 1236 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
   hits, a "300 из <n>" line - the same shown-of-total wording the table
@@ -94,9 +95,9 @@ Six modes. Each keeps its own input in memory only.
   re-play them - the live app re-rendered and re-scrolled on each, a defect
   not reproduced.
 - **The three equipment tables hold equipment from every source, not only the
-  two books**: 317 weapons, 108 secondary, 90 armour. The `src` facet is how you
-  narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages, Wondrous
-  and Dread equipment appears there too.
+  two books**: 370 weapons, 119 secondary, 94 armour. The `src` facet is how you
+  narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages,
+  The Dragon's Vault, Wondrous and Dread equipment appears there too.
 - The filter panel is one component across all tables; where a table has nothing
   to filter by, there is no panel. Nothing is selected by default and an empty
   row means "any". Chosen values show as pills outside the panel, with a reset
@@ -269,7 +270,13 @@ Six modes. Each keeps its own input in memory only.
   art never zooms.
 - Upgrade chains render both directions; the reverse is computed at load. That
   is `craft` - one thing made from another - and it is not the tier ladder
-  below.
+  below. A chain may run through a record, which then draws both lines:
+  Frostwyrd (Awakened) is made from Dormant and upgrades to Exalted. The card
+  and the table row draw "Made from" first, then "Upgrades to", so the lines
+  follow the chain; "Made from" has a left arrow and "Upgrades to" a right
+  arrow. The share stub keeps the same order. The copied text of a chain
+  record carries only what the next rung adds: the lines of the target's
+  description that its own description does not already carry.
 - Equipment that belongs to an upgrade **line** carries a tier ladder: one rung
   per tier of that line, in tier order, the rung you are on marked and inert
   and the others opening that tier's record over whatever is on screen. A line
@@ -283,10 +290,22 @@ Six modes. Each keeps its own input in memory only.
   itself, the same tag any other book's own equipment gets (`isFrameRecord`
   now only answers "which table" and "what does the source line say", never
   "what does this hide").
-- Referenced Core cards render as a collapsed block and travel with the item
-  into copies and shares. Each block links out to `daggerheart.su` for the
-  full card, the subdomain matching the language on screen (`ru.` in Russian,
-  `en.` in English), and its text keeps the source's own line breaks.
+- Referenced cards - a Core card, an adversary stat block, or one feature
+  printed on another page (an ancestry feature, an adversary feature) - render
+  as a collapsed block and travel with the item into copies and shares. Each
+  block links out to the `daggerheart.su` page that prints it, the subdomain
+  matching the language on screen (`ru.` in Russian, `en.` in English), and
+  its text keeps the source's own line breaks.
+- A record that belongs to a set (`Record_.set`, two members so far - Ember
+  and Spark, The Dragon's Vault) draws a set line naming every member in
+  catalogue order, the record itself inert and the rest linked. A set's
+  shared bonus (`LOOT.sets[key]`) is drawn under the set line on every
+  member and travels into copied text (the set block's body), the print card
+  (the last text line, `<name> (<Set>: <members>): <text>`), the share stub
+  and `catalog.csv`; a set with no bonus copies its line alone, with no blank
+  line after it. The set is derived by grouping at load, never stored as a
+  sibling list, and a set of one is not a set. No set filter and no set page
+  exist yet.
 - A record with no artwork falls back to `_none.webp` and hides the image
   button; so does a record whose file fails to load, and the app remembers that
   for the session.

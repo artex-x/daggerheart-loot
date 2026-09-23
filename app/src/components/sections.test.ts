@@ -171,6 +171,14 @@ describe('a dataset that did not load', () => {
     expect(screen.getByRole('heading', { level: 1, name: heading })).toBeInTheDocument();
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
   });
+
+  it('says so on #/roll/dv, a whole-table roll with no picker', () => {
+    render(App, { env: fakeEnv({ router: memoryRouter('#/roll/dv'), data: noData() }) });
+    expect(
+      screen.getByRole('heading', { level: 1, name: "The Dragon's Vault" })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
+  });
 });
 
 describe('accessibility', () => {

@@ -4,7 +4,7 @@ import { dict } from './dict.js';
 import { facetRows } from './facets.js';
 import { FRAME_ORDER } from './frames.js';
 import { groupsFor } from './filters.js';
-import type { EquipKind, Record_, TableId } from './types.js';
+import { CHARACTER_TRAITS, type EquipKind, type Record_, type TableId } from './types.js';
 
 const row = (over: Partial<Record_>): Record_ => ({
   id: over.id ?? 'x',
@@ -212,6 +212,42 @@ describe('the equipment tables', () => {
         { value: '2', label: 'Двуручное' }
       ]
     });
+  });
+
+  it('offers a trait chip only where a record of this kind answers it', () => {
+    const traits = (table: TableId): string[] =>
+      facetRows(index, table, t, 'ru')
+        .find((r) => r.group === 'trait')
+        ?.values.map((v) => v.value) ?? [];
+    expect(traits('eq_weapon')).toEqual(['agility', 'strength']);
+    expect(traits('eq_secondary')).toEqual(['finesse']);
+  });
+
+  it('offers all six trait chips for a Spellcast weapon and no spellcast chip', () => {
+    const spell = buildIndex({
+      items: {},
+      eq: [
+        row({
+          id: 'sb',
+          src: 'dv',
+          kind: 'equip',
+          eq: { t: 'weapon', tier: 2, cls: 'mag', tr: 'spellcast', rg: 'melee', bu: 2 }
+        }),
+        row({
+          id: 's1',
+          src: 'core',
+          kind: 'equip',
+          eq: { t: 'secondary', tier: 1, cls: 'phy', tr: 'finesse', rg: 'close' }
+        })
+      ]
+    });
+    const traits = (table: TableId): string[] =>
+      facetRows(spell, table, t, 'ru')
+        .find((r) => r.group === 'trait')
+        ?.values.map((v) => v.value) ?? [];
+    expect(traits('eq_weapon')).toEqual([...CHARACTER_TRAITS]);
+    expect(traits('eq_secondary')).toEqual(['finesse']);
+    expect(traits('eq_secondary')).not.toContain('spellcast');
   });
 
   it("labels the line row's two values", () => {

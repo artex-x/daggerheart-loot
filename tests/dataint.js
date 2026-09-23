@@ -20,7 +20,7 @@ ALL.forEach((x) => {
   ok(!byId[x.id], 'duplicate id: ' + x.id);
   byId[x.id] = x;
 });
-ok(ALL.length === 1091, 'records are not 1091, but ' + ALL.length);
+ok(ALL.length === 1236, 'records are not 1236, but ' + ALL.length);
 /* Vault of Ages numbers its cards by book volume and section, not straight
    through: voa2_a1 - volume two, first artifact. Links, filenames and list
    codes all hang on id, so the book's own scheme is different but just as
@@ -43,13 +43,13 @@ ALL.forEach((x) => {
   });
   ok(['item', 'consumable', 'equip'].indexOf(x.kind) >= 0, x.id + ': unknown kind ' + x.kind);
   ok(
-    ['core', 'hnf', 'wondrous', 'dread', 'voa', 'frame', 'community'].indexOf(x.src) >= 0,
+    ['core', 'hnf', 'wondrous', 'dread', 'voa', 'dv', 'frame', 'community'].indexOf(x.src) >= 0,
     x.id + ': unknown src ' + x.src
   );
 });
 
 console.log('text hygiene');
-ALL.forEach((x) => {
+function hygiene(x) {
   ['en', 'ende', 'ru', 'rud'].forEach((k) => {
     const v = x[k] || '';
     ok(v === v.trim(), x.id + '.' + k + ': whitespace at the edges');
@@ -73,11 +73,14 @@ ALL.forEach((x) => {
        good measure) in both languages; the catalogue was normalised to ASCII
        but that added no guard, so the next ingest could silently reintroduce
        them. This covers the whole class rather than only en/ende. */
-    ok(!/[’ʼ]/.test(v), x.id + '.' + k + ': typographic apostrophe');
+    ok(!/[‘’ʼ“”]/.test(v), x.id + '.' + k + ': typographic apostrophe or quotation mark');
   });
   ok(!/^[a-z]/.test(x.en), x.id + ': English name starts lowercase — ' + x.en);
   ok(!/^[а-яё]/.test(x.ru), x.id + ': Russian name starts lowercase — ' + x.ru);
-});
+}
+ALL.forEach(hygiene);
+/* A set's bonus is record text too, drawn on every member's card. */
+Object.entries(L.sets || {}).forEach(([key, s]) => hygiene(Object.assign({ id: key }, s)));
 
 console.log('table numbering');
 const ROLL_POOLS = [];
@@ -163,11 +166,25 @@ Object.keys(REFS).forEach((k) => {
 });
 
 console.log('equipment');
-const TRAITS = ['agility', 'strength', 'finesse', 'instinct', 'presence', 'knowledge'];
+const TRAITS = [
+  'agility',
+  'strength',
+  'finesse',
+  'instinct',
+  'presence',
+  'knowledge',
+  'spellcast'
+];
 const RANGES = ['melee', 'veryclose', 'close', 'far', 'veryfar'];
+/* A book's equipment that rolls on its own table lives in items.<book> with
+   its stat block; the eq array holds the two base books only. */
 EQ.forEach((x) => {
+  ok(!!x.eq, x.id + ': no eq block');
+  ok(['core', 'hnf'].indexOf(x.src) >= 0, x.id + ': eq record from ' + x.src);
+});
+const EQUIP = ALL.filter((x) => x.eq);
+EQUIP.forEach((x) => {
   const e = x.eq;
-  ok(!!e, x.id + ': no eq block');
   ok(['weapon', 'secondary', 'armor'].indexOf(e.t) >= 0, x.id + ': unknown type ' + e.t);
   ok(e.tier >= 1 && e.tier <= 4, x.id + ': tier outside 1-4');
   if (e.t === 'armor') {
@@ -186,7 +203,7 @@ EQ.forEach((x) => {
     ok(/^d\d+(\+\d+)?$/.test(e.dmg || ''), x.id + ': damage ' + e.dmg);
     ok(['phy', 'mag', 'any'].indexOf(e.dt) >= 0, x.id + ': damage type ' + e.dt);
     ok(['phy', 'mag'].indexOf(e.cls) >= 0, x.id + ': class ' + e.cls);
-    ok(e.bu === 1 || e.bu === 2, x.id + ': burden ' + e.bu);
+    ok(e.bu === 1 || e.bu === 2 || e.bu === 'any', x.id + ': burden ' + e.bu);
     ok(e.as === null && e.th === null, x.id + ': weapon has armour fields filled in');
   }
   if (e.line) {
@@ -197,13 +214,15 @@ EQ.forEach((x) => {
     );
   }
 });
-/* four steps per line, and the head is its own first step */
+/* four steps per line, and the head is its own first step; a named chain
+   outside Core and Hope & Fear is a craft chain (DECISIONS, "Frostwyrd is a
+   two-step craft chain") */
 const lines = {};
 EQ.filter((x) => x.eq.line).forEach((x) => {
   (lines[x.eq.line] = lines[x.eq.line] || []).push(x);
 });
 Object.keys(lines).forEach((head) => {
-  const tiers = lines[head].map((x) => x.eq.tier).sort();
+  const tiers = lines[head].map((x) => x.eq.tier).sort((a, b) => a - b);
   ok(tiers.join() === '1,2,3,4', 'line ' + head + ': tiers ' + tiers.join());
   ok(byId[head].eq.tier === 1, 'line ' + head + ' does not start at tier 1');
 });
@@ -211,6 +230,23 @@ ok(
   Object.keys(lines).length === 58,
   'upgrade lines are not 58, but ' + Object.keys(lines).length
 );
+
+console.log('sets');
+const sets = {};
+ALL.forEach((x) => {
+  if (x.set == null) return;
+  ok(/^[a-z0-9-]+$/.test(x.set), x.id + ': odd set key ' + x.set);
+  (sets[x.set] = sets[x.set] || []).push(x);
+});
+Object.entries(sets).forEach(([key, members]) =>
+  ok(members.length >= 2, 'set ' + key + ' has fewer than two members')
+);
+Object.entries(L.sets || {}).forEach(([key, s]) => {
+  ok((sets[key] || []).length >= 2, 'sets.' + key + ' is carried by fewer than two records');
+  ['en', 'ru', 'ende', 'rud'].forEach((f) =>
+    ok(typeof s[f] === 'string' && s[f].length > 0, 'sets.' + key + ' is missing field ' + f)
+  );
+});
 
 console.log('files');
 ALL.forEach((x) => {

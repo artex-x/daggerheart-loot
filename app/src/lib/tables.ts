@@ -50,6 +50,7 @@ export const TABLE_GROUPS: readonly TableGroup[] = [
   { id: 'wond', label: 'pageWondrous', top: 'wondrous', subs: ['wondrous'] },
   { id: 'dread', label: 'pageDread', top: 'dread', subs: ['dread'] },
   { id: 'voa', label: 'voa', top: 'voa', subs: ['voa'] },
+  { id: 'dv', label: 'dv', top: 'dv', subs: ['dv'] },
   { id: 'comm', label: 'community', top: 'community', subs: ['community'] },
   {
     id: 'eq',

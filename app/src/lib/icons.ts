@@ -47,6 +47,12 @@ export const ICONS = {
     d: 'M4 11h11.2l-3.6-3.6L13 6l6 6-6 6-1.4-1.4 3.6-3.6H4v-2z',
     size: 13
   },
+  /* Not in app.js: the `craft` arrow mirrored, so "Made from" points back
+     along the chain (FEATURES.md, "Records"). */
+  craftFrom: {
+    d: 'M20 11H8.8l3.6-3.6L11 6l-6 6 6 6 1.4-1.4-3.6-3.6H20v-2z',
+    size: 13
+  },
   home: {
     d: 'M12 3 2 11h3v9h5v-6h4v6h5v-9h3L12 3z',
     size: 15
