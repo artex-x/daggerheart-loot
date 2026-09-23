@@ -509,6 +509,16 @@ In black and white the rules text also grows into the space the picture would
 have taken, to a cap under the name's size. An opt-in compact sheet lays
 sixteen cards at 44x63 mm in a 4x4 grid with the same 2 mm gutters and 19.5 by
 14 mm margins, in either layout; the card is the same composition at 70%.
+Small text has a paper floor under its `cqw` size, `max(<design>cqw, 4.5pt)`
+for labels and 5pt for values and numbers, so a field over the floor keeps
+its Figma size. The weights step down from 900 (the name and the tier number)
+through 700 for numbers and 600 for strip values to 500 for labels. The
+damage strip's cells sit between the ribbon's own dividers and ornament
+lines, so the ribbon frames every label and value instead of crossing it.
+Labels print in tracked capitals and values as the data writes them, so case
+tells the two apart. Each threshold arrow grows from its box's right notch:
+a dark arrow in a gold rim that continues the frame in colour, a solid black
+arrow in black and white.
 
 Colour and black-and-white are two distinct layouts, not one layout with the
 colour removed.

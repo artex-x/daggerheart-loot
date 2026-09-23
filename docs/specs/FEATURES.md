@@ -389,9 +389,53 @@ Seven modes. Each keeps its own input in memory only.
   list's counts, and the shared page's selection bar writes the taken counts;
   the record, table and search print links carry none. The counter sits
   in a `nowrap` span, so it wraps with the name's last word, never alone.
-- Fitting is measured in the browser after render: rules text steps its font
-  down, then the top padding, then the stat values, and text width is measured
-  with a `Range` because `text-overflow` hides overflow from `scrollWidth`.
+- Fitting is measured in the browser after render. The damage strip goes
+  first: each value first tries one line, shrinking in 0.1cqw steps from its
+  computed size down to the 4.5 pt label floor; a value that still does not
+  fit wraps and shrinks the same way down to no less than 2.2cqw, until its
+  widest line fits its cell in at most two lines (width measured with a
+  `Range`), and a value on two lines gets 1.2 leading; then the damage-type
+  label beside a modifier shrinks the same way until it fits its box; then
+  a strip whose tallest block is taller than the ribbon's inner band grows
+  until the band holds it. The rules text then steps its font down, then
+  the top padding.
+- Small text has a paper floor in every view, written `max(<design>cqw,
+  <floor>)` so a field already over it keeps its Figma size: labels 4.5 pt,
+  values and numbers 5 pt, the tier word 4 pt (`DECISIONS.md`, "Print card
+  small text keeps the ribbon and gets one paper floor in every view").
+  Named shortfalls, set by the ribbon's cells on the compact sheet: a Russian
+  value kept on one line (`Проворность` and `Очень далеко` 4.8 pt), the
+  English `DAMAGE` beside a modifier (3.1-3.7 pt), and the d4 value (4.5 pt,
+  the triangle is narrow). Measured 2026-09-23 on the Windows host (Segoe
+  UI).
+- Weights: 900 for the name and the tier number only; 700 for the die
+  value, the modifier, the threshold numbers and the armour score; 600 for
+  the strip values; 500 for labels, captions and tags; 400 italic for the
+  source line. Text on the white of a card is `#000`; the black-and-white
+  kind tag is white on `#000`, and its threshold frame is `#000`.
+- A strip value has no clipping box: a printed sheet in Inter lost the tops
+  of its capitals to the old one. Labels print in capitals tracked 0.06em
+  (not the label beside a modifier, which the fit shrinks) with 0.25em under
+  them; values print as the data writes them, and the one-word damage type
+  starts with a capital (`Маг`, `Phy`). The die value has 0.12em after its `d`.
+- The strip keeps its ribbon and has five cells: the die; the modifier, with
+  no label, against the die and on its centre; then the damage type, trait
+  and range as label-over-value blocks centred in the band between the
+  ribbon's ornament lines, each inside the ribbon's dividers. The strip is
+  `max(14cqw, 20pt)` tall - the design's 8.8 mm on the standard card,
+  7.05 mm on the compact one - and a wrapped value raises it (11.3 mm on the
+  compact card for `Хар. Заклинателя`).
+- The die value, and the colour card's armour and burden labels over the
+  picture, carry their halo as a vector stroke (`-webkit-text-stroke` with
+  `paint-order: stroke fill`): a blurred `text-shadow` printed as a raster
+  patch. A compact black-and-white sheet holds no raster image.
+- The threshold diamonds are at least 1.3 mm tall and sit 0.6 mm clear of
+  the frame; each caption fits its cell. Each arrow grows from its box's
+  right notch, the same size on both sheets (tip 4.27 pt past the notch, at
+  least 1.3 mm wide): in colour a dark arrow in a gold rim that continues
+  the frame, in black and white a solid black arrow. CSS draws it at
+  `card/arrow.svg`'s 7:12 proportion; the image stays in the markup,
+  hidden. The burden label sits under its mark.
 - In black and white the rules text first grows, in 0.1cqw steps from its
   3.5cqw default to at most 5cqw (8.9 pt), while it still fits its box: the
   space a colour card gives its picture is blank paper there (issue 61). Text

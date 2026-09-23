@@ -762,6 +762,13 @@ Not blocking, recorded so they are not mistaken for coverage:
   checks geometry against the design's numbers and one pixel property (the
   art edge); it would not catch a purely cosmetic regression elsewhere on
   the card.
+- `app/print`'s "leaves the band" check on the damage strip reads each
+  label's and value's line box, not its ink: a `Range` spans the font's whole
+  ascent and flags clean capitals. Ink outside the line box - a descender
+  under `line-height: 1`, a glyph taller than the capitals - can cross the
+  ribbon's ornament lines unseen. The label-to-value ink gap is measured by
+  hand only (0.50-0.58 mm under a tall first letter on the compact sheet,
+  measured 2026-09-23 in Segoe UI).
 - `tests/app/states.js` walks click-only states but does not assert much
   about them beyond "did not throw and rendered something".
 - The success paths of `clipboard`, `share` and `compress` cannot run in jsdom:

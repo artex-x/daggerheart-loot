@@ -94,13 +94,21 @@
   let card = $state<HTMLElement | undefined>(undefined);
 
   /**
-   * `fitPrintCards`'s loop body for one card, ported verbatim: the same
-   * constants, the same `-= 0.1` / `-= 1.5` steps, the same `toFixed(1)` and
-   * the same exits. The measured `2.2cqw` floor on every strip value is a
-   * floating-point outcome of eight subtractions of 0.1 from 3 - copy the
-   * arithmetic, do not "improve" it. One rung is new, not ported: before the
-   * shrink ladder, a black-and-white card's rules text grows in 0.1cqw steps
-   * while it fits, capped at `GROW_CAP`.
+   * `fitPrintCards`'s loop body for one card. The rules-text ladder is ported
+   * verbatim: the same constants, the same `-= 0.1` / `-= 1.5` steps, the
+   * same `toFixed(1)` and the same exits. One rung of it is new, not ported:
+   * before the shrink ladder, a black-and-white card's rules text grows in
+   * 0.1cqw steps while it fits, capped at `GROW_CAP`.
+   *
+   * The strip is fitted first, because the rules text measures the space it
+   * leaves (FEATURES.md, "Print"). Each value first tries one line: it
+   * shrinks in 0.1cqw steps from its computed size (its paper floor can be
+   * over 3cqw on the compact card) while it is too wide, down to 4.5pt. If
+   * one line does not fit, it wraps and shrinks the same way down to 2.2cqw,
+   * until it fits its cell's width in at most two lines; two lines get 1.2
+   * leading. Beside a modifier, the damage-type label shrinks the same way
+   * until it fits its box. Last, a strip whose tallest block is taller than
+   * the ribbon's inner band grows until the band holds it.
    *
    * The two values the ladders read back through - `.pc-text`'s font size and
    * `.pc-content`'s `--pcpad` - are reset first: the live app fits against a
@@ -127,22 +135,69 @@
     const art = el.querySelector<HTMLElement>('.pc-art');
     const box = el.querySelector<HTMLElement>('.pc-content');
 
-    const cells = el.querySelectorAll<HTMLElement>('.pc-strip .pc-cells');
-    for (const cell of cells) {
-      const vals = cell.querySelectorAll<HTMLElement>('.pc-box b');
-      const rng = document.createRange();
-      const over = (): boolean => {
-        for (const v of vals) {
-          rng.selectNodeContents(v);
-          if (rng.getBoundingClientRect().width > v.clientWidth - 2) return true;
+    const cq = (px: number): number => (px / el.clientWidth) * 100;
+    const rng = document.createRange();
+    /* Integer tenths of a cqw, so the 2.2cqw floor is exact, not a
+       floating-point outcome of the steps. */
+    const shrink = (e: HTMLElement, over: () => boolean): void => {
+      e.style.fontSize = '';
+      const px = parseFloat(getComputedStyle(e).fontSize);
+      let z = el.clientWidth > 0 && Number.isFinite(px) ? Math.round(cq(px) * 10) : 30;
+      while (over() && z > 22) {
+        z -= 1;
+        e.style.fontSize = (z / 10).toFixed(1) + 'cqw';
+      }
+    };
+    const lines = (v: HTMLElement): { wide: number; tops: number } => {
+      rng.selectNodeContents(v);
+      const tops: number[] = [];
+      let wide = 0;
+      for (const r of rng.getClientRects()) {
+        if (r.width <= 0) continue;
+        wide = Math.max(wide, r.width);
+        if (!tops.some((t) => Math.abs(t - r.top) < 1)) tops.push(r.top);
+      }
+      return { wide, tops: tops.length };
+    };
+    for (const strip of el.querySelectorAll<HTMLElement>('.pc-strip')) {
+      for (const v of strip.querySelectorAll<HTMLElement>('.pc-box b')) {
+        v.style.lineHeight = '';
+        /* One line first, down to the label floor: 0.2pt under the value
+           floor costs less than a third line. */
+        v.style.whiteSpace = 'nowrap';
+        v.style.fontSize = '';
+        const px = parseFloat(getComputedStyle(v).fontSize);
+        let z = el.clientWidth > 0 && Number.isFinite(px) ? Math.round(cq(px) * 10) : 30;
+        const pt = (tenths: number): number => (tenths / 1000) * el.clientWidth * 0.75;
+        while (lines(v).wide > v.clientWidth && pt(z - 1) >= 4.5) {
+          z -= 1;
+          v.style.fontSize = (z / 10).toFixed(1) + 'cqw';
         }
-        return false;
-      };
-      let sz = 3;
-      for (const v of vals) v.style.fontSize = '';
-      while (over() && sz > 2.2) {
-        sz -= 0.1;
-        for (const v of vals) v.style.fontSize = sz.toFixed(1) + 'cqw';
+        if (lines(v).wide > v.clientWidth) {
+          v.style.whiteSpace = '';
+          shrink(v, () => {
+            const l = lines(v);
+            return l.wide > v.clientWidth || l.tops > 2;
+          });
+          if (lines(v).tops === 2) v.style.lineHeight = '1.2';
+        }
+      }
+      const lab = strip.querySelector<HTMLElement>('.pc-c1.wbonus .pc-box small');
+      if (lab) {
+        shrink(lab, () => {
+          rng.selectNodeContents(lab);
+          return rng.getBoundingClientRect().width > lab.clientWidth;
+        });
+      }
+      /* `.pc-cells` is the ribbon's inner band, 56% of the strip's height. */
+      strip.style.height = '';
+      const band = strip.querySelector<HTMLElement>('.pc-cells');
+      let tall = 0;
+      for (const b of strip.querySelectorAll<HTMLElement>('.pc-box, .pc-bonus')) {
+        tall = Math.max(tall, b.getBoundingClientRect().height);
+      }
+      if (band && tall > band.clientHeight) {
+        strip.style.height = (Math.ceil(cq(tall / 0.56) * 10) / 10).toFixed(1) + 'cqw';
       }
     }
 
@@ -180,7 +235,6 @@
     }
 
     if (art && box) {
-      const cq = (px: number): number => (px / el.clientWidth) * 100;
       const line = cq(box.offsetTop) + pad;
       const top = cq(art.offsetTop);
       art.style.height = `${String(Math.max(0, line - top + 6))}cqw`;
@@ -361,6 +415,10 @@
     flex-direction: column;
     justify-content: flex-end;
     font-family: var(--ui);
+    /* The paper floor for small text (docs/DECISIONS.md, "Print card small
+       text keeps the ribbon and gets one paper floor in every view"). */
+    --pc-min-label: 4.5pt;
+    --pc-min-value: 5pt;
   }
 
   .pc-art {
@@ -441,9 +499,9 @@
     left: 0;
     top: 9.6cqw;
     width: 100%;
-    font: 700 2.6cqw/1 var(--ui);
+    font: 500 max(2.6cqw, 4pt) / 1 var(--ui);
     font-style: normal;
-    letter-spacing: 0.04em;
+    letter-spacing: 0;
     text-transform: uppercase;
   }
 
@@ -465,15 +523,15 @@
     position: absolute;
     left: 0;
     right: 0;
-    bottom: -3.2cqw;
+    top: 100%;
+    margin-top: 0.3cqw;
     text-align: center;
-    font: 700 2.4cqw/1 var(--ui);
-    letter-spacing: 0.04em;
+    font: 500 max(2.4cqw, var(--pc-min-label)) / 1 var(--ui);
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     color: #fff;
-    text-shadow:
-      0 0 0.6cqw #000,
-      0 0 1.2cqw #000;
+    -webkit-text-stroke: 0.9cqw #000;
+    paint-order: stroke fill;
   }
 
   .pc-content {
@@ -506,8 +564,8 @@
     padding: 0.6cqw 2.3cqw;
     border-radius: 9cqw;
     white-space: nowrap;
-    font: 600 2.9cqw/1.2 var(--ui);
-    letter-spacing: 0.06em;
+    font: 500 max(2.9cqw, var(--pc-min-label)) / 1.2 var(--ui);
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #000;
   }
@@ -533,9 +591,11 @@
     white-space: nowrap;
   }
 
+  /* 14cqw is the design height; the compact card needs 20pt so a label
+     and a value fit between the ribbon's ornament lines. */
   .pc-strip {
     position: relative;
-    height: 14cqw;
+    height: max(14cqw, 20pt);
     margin: 1.2cqw 0 0.6cqw;
   }
 
@@ -559,22 +619,29 @@
 
   .pc-thstrip {
     position: relative;
-    height: 9cqw;
+    height: max(10.4cqw, 18.5pt);
     margin: 1.6cqw 0 0.8cqw;
     border: 0.28cqw solid #75788a;
     border-radius: 2.4cqw;
   }
 
+  .bw .pc-thstrip {
+    border-color: #000;
+  }
+
   .pc-thstrip .pc-cells {
     gap: 0;
-    padding: 0 1.6cqw;
+    padding: 0 0.4cqw;
     justify-content: space-between;
   }
 
+  /* Top-aligned, so the diamonds sit 0.6 mm clear of the frame's inner
+     edge on either sheet. */
   .pc-th-lab {
-    flex: 1 1 0;
+    flex: 1 1 auto;
+    align-self: stretch;
     min-width: 0;
-    max-width: 13cqw;
+    padding-top: max(1cqw, 0.6mm);
     text-align: center;
     line-height: 1;
   }
@@ -582,27 +649,70 @@
   .pc-th-lab img {
     display: block;
     width: auto;
-    height: 1.2cqw;
-    margin: 0 auto 0.4cqw;
+    height: max(2.6cqw, 1.3mm);
+    margin: 0 auto max(0.9cqw, 0.4mm);
   }
 
   .pc-th-lab small {
     display: block;
-    font: 800 1.9cqw/1.15 var(--ui);
-    letter-spacing: 0.03em;
+    font: 500 max(1.9cqw, var(--pc-min-label)) / 1.1 var(--ui);
+    letter-spacing: -0.01em;
     text-transform: uppercase;
-    color: #18171c;
+    color: #000;
     white-space: normal;
   }
 
   .pc-th-box {
     position: relative;
     flex: none;
-    width: 9.6cqw;
-    height: 9.6cqw;
+    width: 8.8cqw;
+    height: max(11.2cqw, 20pt);
+    /* Room for the arrow's tip, 4.27pt right of the notch (x 33 of 36). */
+    margin-right: calc(4.27pt - 0.733cqw + 0.2cqw);
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* The arrow grows from the box's right notch (docs/DECISIONS.md, "Print
+     card small text keeps the ribbon and gets one paper floor in every
+     view"). The box is 36x36 units at 20pt tall on both sheets, so the %
+     heights match. Outer: base on the notch stroke (x 33), corners inside
+     its diagonals. Inner: a rim of the frame's 2 units; its base at x 30,
+     inside the box, so no hairline shows. */
+  .pc-th-box::before,
+  .pc-th-box::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    aspect-ratio: 7 / 12;
+    transform: translateY(-50%);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+
+  .pc-th-box::before {
+    left: 91.667%;
+    height: 36.59%;
+    background: #18171c;
+  }
+
+  .pc-th-box::after {
+    left: 83.333%;
+    width: calc(0.7333cqw + 2.97pt);
+    background: #18171c;
+  }
+
+  /* The frame's gradient over the rim's height, as an SVG: a CSS gradient
+     prints as tiled images. */
+  .pcard:not(.bw) .pc-th-box::before {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1' preserveAspectRatio='none'%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop stop-color='%23f7df85'/%3E%3Cstop offset='1' stop-color='%23f1d16c'/%3E%3C/linearGradient%3E%3Crect width='1' height='1' fill='url(%23g)'/%3E%3C/svg%3E")
+      0 0 / 100% 100% no-repeat;
+  }
+
+  /* Black and white: a solid arrow in the box stroke's ink. */
+  .bw .pc-th-box::after {
+    display: none;
   }
 
   .pc-th-box img {
@@ -615,19 +725,17 @@
   .pc-th-box b {
     position: relative;
     z-index: 2;
-    font: 900 3.4cqw/1 var(--ui);
+    font: 700 max(3.4cqw, var(--pc-min-value)) / 1 var(--ui);
     color: #fff;
   }
 
   .bw .pc-th-box b {
-    color: #18171c;
+    color: #000;
   }
 
+  /* Kept in the markup; the box's `::before` draws the arrow. */
   .pc-th-arrow {
-    flex: none;
-    width: 1.5cqw;
-    height: auto;
-    margin: 0 0.4cqw 0 0.2cqw;
+    display: none;
   }
 
   .pc-shield {
@@ -652,7 +760,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font: 900 4cqw/1 var(--ui);
+    font: 700 max(4cqw, var(--pc-min-value)) / 1 var(--ui);
     color: #fff;
   }
 
@@ -661,14 +769,13 @@
     left: -2cqw;
     right: -2cqw;
     top: 109%;
-    font: 800 2.2cqw/1 var(--ui);
+    font: 500 max(2.2cqw, var(--pc-min-label)) / 1 var(--ui);
     font-style: normal;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     color: #fff;
-    text-shadow:
-      0 0 0.6cqw #000,
-      0 0 1.2cqw #000;
+    -webkit-text-stroke: 0.9cqw #000;
+    paint-order: stroke fill;
   }
 
   .pcard.bw {
@@ -720,7 +827,7 @@
 
   .bw .pc-tier i {
     top: 6.6cqw;
-    font-size: 2cqw;
+    font-size: max(2cqw, 4pt);
   }
 
   .bw .pc-shield {
@@ -728,18 +835,18 @@
   }
 
   .bw .pc-shield b {
-    font-size: 3.6cqw;
-    color: #18171c;
+    font-size: max(3.6cqw, var(--pc-min-value));
+    color: #000;
   }
 
   .bw .pc-shield i,
   .bw .pc-burden small {
-    color: #18171c;
-    text-shadow: none;
+    color: #000;
+    -webkit-text-stroke: 0;
   }
 
   .bw .pc-shield i {
-    font-size: 1.9cqw;
+    font-size: max(1.9cqw, var(--pc-min-label));
   }
 
   .bw .pc-burden {
@@ -751,20 +858,15 @@
   }
 
   .bw .pc-burden small {
-    bottom: -2.6cqw;
-    font-size: 1.9cqw;
+    font-size: max(1.9cqw, var(--pc-min-label));
   }
 
   .pc-head {
     padding-bottom: 3cqw;
   }
 
-  .pc-tag.on {
-    background: linear-gradient(180deg, #fcec9c 10%, #edc659 100%);
-  }
-
   .bw .pc-tag.on {
-    background: #75788a;
+    background: #000;
     color: #fff;
   }
 
@@ -785,43 +887,50 @@
     gap: 0.9cqw;
   }
 
+  /* The cells sit on the ribbon SVG's own geometry (275.5x47.9): its top
+     ornament lines end at y 10.4 (22%), and the band is symmetric about the
+     die's centre, so it ends at 78% - above the lower lines (y 38.9, 81.2%)
+     and the diagonal at x 53.75-58.25 (y 36.9, 77%). The brackets span
+     x 83.25-85.25 and 175.25-177.25, so the cells stop short of 30.2% and
+     63.6%. `fit()` reads the 56% band. */
   .pc-strip .pc-cells {
-    padding: 0 3% 0 7%;
+    top: 22%;
+    bottom: 22%;
+    padding: 0;
     gap: 0;
   }
 
   .pc-strip .pc-c1,
   .pc-strip .pc-c2,
   .pc-strip .pc-c3 {
+    position: absolute;
+    top: 0;
+    bottom: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.9cqw;
+    gap: 0;
     min-width: 0;
-    flex-basis: 0;
   }
 
   .pc-strip .pc-c1 {
-    flex-grow: 23.8;
+    left: 6%;
+    right: 70.4%;
   }
 
   .pc-strip .pc-c2 {
-    flex-grow: 32.9;
+    left: 31.5%;
+    right: 37%;
   }
 
   .pc-strip .pc-c3 {
-    flex-grow: 33.3;
+    left: 65%;
+    right: 2%;
   }
 
   .pc-strip .pc-c1.wbonus {
-    justify-content: space-between;
-    padding-right: 1.6cqw;
-  }
-
-  .pc-strip .pc-box {
-    flex: 0 1 auto;
-    min-width: 0;
-    padding: 0 0.6cqw;
+    justify-content: flex-start;
+    gap: 0.5cqw;
   }
 
   .pc-die {
@@ -855,27 +964,28 @@
   .pc-die b {
     position: relative;
     z-index: 2;
-    font: 900 3.6cqw/1 var(--ui);
-    color: #18171c;
+    font: 700 max(3.6cqw, var(--pc-min-value)) / 1 var(--ui);
+    color: #000;
   }
 
+  /* Air after the `d` only: spacing the whole value reads `d10` as `d 1 0`. */
+  .pc-die b::first-letter {
+    margin-right: 0.12em;
+  }
+
+  /* A vector halo: a blurred `text-shadow` prints as a raster patch. */
   .pc-die.own b {
-    text-shadow:
-      0 0 0.5cqw #fff,
-      0 0 0.5cqw #fff,
-      0 0 1cqw #fff;
+    -webkit-text-stroke: 0.6cqw #fff;
+    paint-order: stroke fill;
   }
 
   .pcard:not(.bw) .pc-die.mag.own b {
-    text-shadow:
-      0 0 0.5cqw #1b1535,
-      0 0 0.5cqw #1b1535,
-      0 0 1cqw #1b1535;
+    -webkit-text-stroke-color: #1b1535;
   }
 
   .pc-die.own[data-die='d4'] b {
     margin-left: -2.1cqw;
-    font-size: 2.9cqw;
+    font-size: max(2.9cqw, var(--pc-min-label));
   }
 
   .pcard:not(.bw) .pc-die.mag.own b {
@@ -905,37 +1015,52 @@
   .pc-die.own[data-die='d10'] b,
   .pc-die.own[data-die='d12'] b,
   .pc-die.own[data-die='d20'] b {
-    font-size: 3.1cqw;
+    font-size: max(3.1cqw, var(--pc-min-value));
   }
 
   .pc-bonus {
     flex: none;
-    font: 900 3.2cqw/1 var(--ui);
-    color: #18171c;
+    font: 700 max(3.2cqw, var(--pc-min-value)) / 1 var(--ui);
+    color: #000;
   }
 
   .pc-box {
-    flex: 1 1 0;
+    display: block;
+    flex: 1 1 auto;
     min-width: 0;
     text-align: center;
-    line-height: 1.05;
   }
 
+  /* Labels in tracked capitals, values as the data writes them, so the two
+     read apart (docs/DECISIONS.md, "Print card small text keeps the ribbon
+     and gets one paper floor in every view"). */
   .pc-box small {
     display: block;
-    font: 600 2.2cqw/1.1 var(--ui);
-    letter-spacing: 0.05em;
+    margin-bottom: 0.25em;
+    font: 500 max(2.2cqw, var(--pc-min-label)) / 1.05 var(--ui);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #2f2f37;
+    color: #000;
   }
 
+  /* `fit()` shrinks this one label to its width beside the modifier. */
+  .pc-strip .pc-c1.wbonus .pc-box small {
+    letter-spacing: 0;
+  }
+
+  /* No clipping box: a clip cut the tops of the capitals on paper. A value
+     keeps one line or wraps to two, and `fit()` shrinks it. */
   .pc-box b {
     display: block;
-    font: 800 3cqw/1.1 var(--ui);
-    text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font: 600 max(3cqw, var(--pc-min-value)) / 1 var(--ui);
+    text-transform: none;
+    color: #000;
+  }
+
+  /* The damage type is one word; `::first-letter` would break `fit()`'s
+     `Range` width. */
+  .pc-strip .pc-c1 .pc-box b {
+    text-transform: capitalize;
   }
 
   .pc-text {
@@ -974,8 +1099,8 @@
     justify-content: space-between;
     gap: 2cqw;
     padding-top: 1.4cqw;
-    font: 600 italic 2.9cqw/1.4 var(--ui);
-    color: #2f2f37;
+    font: italic 400 max(2.9cqw, var(--pc-min-label)) / 1.4 var(--ui);
+    color: #000;
     white-space: nowrap;
   }
 

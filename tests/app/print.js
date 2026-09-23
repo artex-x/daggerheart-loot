@@ -374,10 +374,10 @@ const { ok } = rep;
   ok(/Надёжное/.test(parts.text), 'no property text');
   ok(parts.die === 'd8', 'the die does not show the right damage: ' + parts.die);
   ok(parts.ribbon, 'the stat strip has no frame');
-  /* Values sit at the frame's own partitions, not wherever: the dividers are
-     at 30.4% and 64.1% of its width, and the cells' shares repeat them. The
-     damage die with its bonus stands outside - inside, it took space from the
-     first cell. */
+  /* Values sit between the frame's own partitions, not wherever: the
+     dividers span 30.2-30.9% and 63.6-64.3% of its width, and each cell
+     stops just short of one. The damage die stands outside - inside, it took space from
+     the first cell. */
   ok(!(await page.$('.pc-cells .pc-die')), 'the damage die sits inside the frame');
   const cells = await page.evaluate(() => {
     const f = document.querySelector('.pc-frame').getBoundingClientRect();
@@ -391,9 +391,16 @@ const { ok } = rep;
   });
   ok(cells.length === 3, 'the stat strip does not have three cells: ' + cells.length);
   ok(
-    Math.abs(cells[0].r - 30.8) < 1 && Math.abs(cells[1].r - 63.7) < 1,
-    "cells do not line up with the frame's dividers: " +
-      cells.map((c) => c.r.toFixed(1)).join(', ')
+    cells[0].r >= 29 &&
+      cells[0].r <= 30.2 &&
+      cells[1].l >= 30.9 &&
+      cells[1].l <= 32 &&
+      cells[1].r >= 62.5 &&
+      cells[1].r <= 63.6 &&
+      cells[2].l >= 64.3 &&
+      cells[2].l <= 65.5,
+    "cells do not sit against the frame's dividers: " +
+      cells.map((c) => c.l.toFixed(1) + '-' + c.r.toFixed(1)).join(', ')
   );
   ok(
     /Проворность/i.test(parts.cells) && /Вплотную/i.test(parts.cells),
@@ -613,11 +620,11 @@ const { ok } = rep;
   });
   ok(seam < 0, 'the frame does not reach behind the die: gap ' + seam.toFixed(1));
   /* And the damage bonus sits inside the first cell, pressed against the die,
-     while the damage type sits at the divider. With no bonus the type
-     centres in the cell: nothing to press it against then. */
+     with the damage type beside it. With no bonus the type centres in the
+     cell: nothing to press it against then. */
   ok(await page.$('.pc-c1.wbonus .pc-bonus'), 'the damage bonus is outside the frame again');
   const spread = await page.$eval('.pc-c1', (e) => getComputedStyle(e).justifyContent);
-  ok(spread === 'space-between', 'the bonus is not pressed against the die: ' + spread);
+  ok(spread === 'flex-start', 'the bonus is not pressed against the die: ' + spread);
   await d.open('#/print/q1'); // damage with no bonus
   ok(!(await page.$('.pc-c1.wbonus')), 'a die with no bonus has spacing turned on');
   ok(
@@ -858,9 +865,9 @@ const { ok } = rep;
   await d.open('#/print/q35');
   await bw();
   await d.settle();
-  /* A faceted die, as in the design, and a light halo saves the digit from
-     the facets. The facets were once simply removed, and the die stopped
-     looking like a die. */
+  /* A faceted die, as in the design, and a light outline saves the digit
+     from the facets. The facets were once simply removed, and the die
+     stopped looking like a die. */
   const bwDie = await page.$eval('.pc-die img', (e) => e.getAttribute('src'));
   ok(/-bw\.svg$/.test(bwDie), 'black-and-white uses a colour die: ' + bwDie);
   const bwFile = svgFile(bwDie);
@@ -869,8 +876,12 @@ const { ok } = rep;
     "the black-and-white die's facets are missing"
   );
   ok(/0 0 [\d.]+ [\d.]+/.test(bwFile), 'the black-and-white die has no frame');
-  const halo = await page.$eval('.pc-die b', (e) => getComputedStyle(e).textShadow);
-  ok(halo && halo !== 'none', 'the number on the die has no halo: ' + halo);
+  /* The outline is a vector stroke: Chrome prints a blurred `text-shadow` as
+     a raster patch. */
+  const halo = await page.$eval('.pc-die b', (e) =>
+    parseFloat(getComputedStyle(e).webkitTextStrokeWidth)
+  );
+  ok(halo > 0, 'the number on the die has no outline: ' + halo);
   const dieInk = await page.$eval('.pc-die b', (e) => getComputedStyle(e).color);
   const dl =
     (dieInk.match(/\d+/g) || [])
@@ -1136,41 +1147,58 @@ const { ok } = rep;
     'caption left': ['.pc-bottom', 'left', 24]
   };
   /* Design units are shares of the card, so the compact card holds the same
-     numbers at 70%. */
+     numbers at 70% - except the damage strip, which keeps a 20pt paper floor
+     there (docs/DECISIONS.md, "Print card small text keeps the ribbon and
+     gets one paper floor in every view"). */
+  const COMPACT_SPEC = { ...SPEC };
+  delete COMPACT_SPEC['damage strip height'];
   for (const isCompact of [false, true]) {
     for (const isBw of [false, true]) {
       for (const id of ['q1', 'q313']) {
         await openAs(d, '#/print/' + id, isBw, isCompact, bw, compact);
-        const off = await page.evaluate((spec) => {
-          const c = document.querySelector('.pcard'),
-            b = c.getBoundingClientRect();
-          const cr = {
-            left: b.left + c.clientLeft,
-            top: b.top + c.clientTop,
-            right: b.left + c.clientLeft + c.clientWidth
-          };
-          const k = 344 / c.clientWidth,
-            out = [];
-          for (const name in spec) {
-            const [sel, what, ideal] = spec[name];
-            const e = c.querySelector(sel);
-            if (!e) continue;
-            const r = e.getBoundingClientRect();
-            const v =
-              what === 'left'
-                ? (r.left - cr.left) * k
-                : what === 'right'
-                  ? (cr.right - r.right) * k
-                  : what === 'top'
-                    ? (r.top - cr.top) * k
-                    : what === 'width'
-                      ? r.width * k
-                      : r.height * k;
-            if (Math.abs(v - ideal) > 1.5)
-              out.push(name + ': ' + v.toFixed(1) + ' instead of ' + ideal);
-          }
-          return out;
-        }, SPEC);
+        if (isCompact && id === 'q1') {
+          const stripPt = await page.$eval(
+            '.pc-strip',
+            (e) => e.getBoundingClientRect().height * 0.75
+          );
+          ok(
+            Math.abs(stripPt - 20) < 0.3,
+            'compact ' + (isBw ? 'bw' : 'colour') + ' q1: the strip is not 20pt: ' + stripPt
+          );
+        }
+        const off = await page.evaluate(
+          (spec) => {
+            const c = document.querySelector('.pcard'),
+              b = c.getBoundingClientRect();
+            const cr = {
+              left: b.left + c.clientLeft,
+              top: b.top + c.clientTop,
+              right: b.left + c.clientLeft + c.clientWidth
+            };
+            const k = 344 / c.clientWidth,
+              out = [];
+            for (const name in spec) {
+              const [sel, what, ideal] = spec[name];
+              const e = c.querySelector(sel);
+              if (!e) continue;
+              const r = e.getBoundingClientRect();
+              const v =
+                what === 'left'
+                  ? (r.left - cr.left) * k
+                  : what === 'right'
+                    ? (cr.right - r.right) * k
+                    : what === 'top'
+                      ? (r.top - cr.top) * k
+                      : what === 'width'
+                        ? r.width * k
+                        : r.height * k;
+              if (Math.abs(v - ideal) > 1.5)
+                out.push(name + ': ' + v.toFixed(1) + ' instead of ' + ideal);
+            }
+            return out;
+          },
+          isCompact ? COMPACT_SPEC : SPEC
+        );
         ok(
           !off.length,
           (isCompact ? 'compact ' : '') +
@@ -1502,6 +1530,369 @@ const { ok } = rep;
     );
   }
 
+  /* ---------- small fields readable on paper ----------
+     Every view, both languages, on the routes with the longest strip values
+     and the artifact weapon. The floors and the named shortfalls are in
+     docs/specs/FEATURES.md, "Print". */
+  console.log('small fields readable on paper');
+  const SMALL_ROUTES = [
+    '#/print/dve50-di1-w51-f33-w22-di7-f23-q1-w7',
+    '#/print/f44-f64-voa1_t2f-di7-w82-f77-di3-f7-q23-voa4_a3'
+  ];
+  async function smallFields(d2, page2, langTag, bwFn, compactFn) {
+    for (const route of SMALL_ROUTES) {
+      for (const isCompact of [false, true]) {
+        for (const isBw of [false, true]) {
+          await openAs(d2, route, isBw, isCompact, bwFn, compactFn);
+          const tag =
+            route.slice(8, 20) +
+            (isCompact ? ' compact' : '') +
+            (isBw ? ' bw' : ' colour') +
+            langTag +
+            ': ';
+          const bad = await page2.evaluate(
+            (ru, compactSheet) => {
+              const out = [];
+              const MM = 96 / 25.4;
+              const pt = (e) => parseFloat(getComputedStyle(e).fontSize) * 0.75;
+              const rects = (e) => {
+                const r = document.createRange();
+                r.selectNodeContents(e);
+                return [...r.getClientRects()].filter((x) => x.width > 0);
+              };
+              const span = (e) => {
+                const rs = rects(e);
+                return {
+                  left: Math.min(...rs.map((x) => x.left)),
+                  right: Math.max(...rs.map((x) => x.right)),
+                  top: Math.min(...rs.map((x) => x.top)),
+                  bottom: Math.max(...rs.map((x) => x.bottom)),
+                  wide: Math.max(...rs.map((x) => x.width)),
+                  lines: new Set(rs.map((x) => Math.round(x.top))).size
+                };
+              };
+              const LABEL = [
+                '.pc-box small',
+                '.pc-th-lab small',
+                '.pc-shield i',
+                '.pc-burden small',
+                '.pc-tag',
+                '.pc-bottom',
+                ".pc-die.own[data-die='d4'] b"
+              ];
+              const VALUE = [
+                '.pc-box b',
+                '.pc-bonus',
+                '.pc-die b',
+                '.pc-th-box b',
+                '.pc-shield b'
+              ];
+              for (const c of document.querySelectorAll('.pcard:not(.blank)')) {
+                const id = c.dataset.pid + ' ';
+                const cqw = c.clientWidth / 100;
+                /* The floors: labels 4.5pt, values and numbers 5pt, the
+                   tier word 4pt. The ribbon's cells set two shortfalls on
+                   the compact sheet: a Russian value that is one long word,
+                   and the English damage-type label beside a modifier. */
+                for (const sel of LABEL) {
+                  for (const e of c.querySelectorAll(sel)) {
+                    const beside = !ru && compactSheet && e.matches('.pc-c1.wbonus small');
+                    const floor = beside ? 3.0 : 4.5;
+                    if (pt(e) < floor - 0.01)
+                      out.push(id + sel + ' ' + pt(e).toFixed(2) + 'pt');
+                  }
+                }
+                for (const sel of VALUE) {
+                  for (const e of c.querySelectorAll(sel)) {
+                    if (e.matches(".pc-die.own[data-die='d4'] b")) continue;
+                    /* A value kept on one line may go down to the label
+                       floor: a third line costs more than 0.5pt. */
+                    if (e.matches('.pc-box b') && e.style.whiteSpace === 'nowrap') {
+                      if (pt(e) < 4.49 || span(e).lines !== 1)
+                        out.push(
+                          id + 'one-line value ' + e.textContent + ' ' + pt(e).toFixed(2) + 'pt'
+                        );
+                      continue;
+                    }
+                    const word = ru && compactSheet && e.matches('.pc-box b');
+                    const floor = word ? 4.1 : 5;
+                    if (pt(e) < floor - 0.01)
+                      out.push(id + sel + ' ' + pt(e).toFixed(2) + 'pt');
+                  }
+                }
+                for (const e of c.querySelectorAll('.pc-tier i')) {
+                  if (pt(e) < 3.99) out.push(id + 'tier word ' + pt(e).toFixed(2) + 'pt');
+                }
+                /* The weight scale: only the name and the tier number are
+                   900. */
+                const WEIGHT = {
+                  '.pc-name': 900,
+                  '.pc-tier b': 900,
+                  '.pc-die b': 700,
+                  '.pc-bonus': 700,
+                  '.pc-th-box b': 700,
+                  '.pc-shield b': 700,
+                  '.pc-box b': 600,
+                  '.pc-box small': 500,
+                  '.pc-th-lab small': 500,
+                  '.pc-shield i': 500,
+                  '.pc-burden small': 500,
+                  '.pc-tier i': 500,
+                  '.pc-tag': 500,
+                  '.pc-bottom': 400
+                };
+                for (const [sel, w] of Object.entries(WEIGHT)) {
+                  for (const e of c.querySelectorAll(sel)) {
+                    const got = +getComputedStyle(e).fontWeight;
+                    if (got !== w) out.push(id + sel + ' weight ' + got);
+                  }
+                }
+                /* A value has no clipping box: one cut the tops of the
+                   capitals on a printed sheet. */
+                for (const e of c.querySelectorAll('.pc-box b')) {
+                  const s = getComputedStyle(e);
+                  if (s.overflow !== 'visible' || s.textOverflow === 'ellipsis') {
+                    out.push(id + 'a value clips: ' + s.overflow + ' ' + s.textOverflow);
+                  }
+                  /* Two lines get 1.2 leading; one line keeps 1. */
+                  const n = span(e).lines;
+                  const lh = parseFloat(s.lineHeight) / parseFloat(s.fontSize);
+                  if (n > 2 || Math.abs(lh - (n === 2 ? 1.2 : 1)) > 0.01) {
+                    out.push(
+                      id + e.textContent + ' ' + n + ' lines at leading ' + lh.toFixed(2)
+                    );
+                  }
+                  /* 2A: values as written, the damage type capitalised. */
+                  const want = e.closest('.pc-c1') ? 'capitalize' : 'none';
+                  if (s.textTransform !== want)
+                    out.push(id + e.textContent + ' case ' + s.textTransform);
+                }
+                /* A gap under each label; labels stay in tracked capitals,
+                   except the one beside a modifier, which the fit shrinks. */
+                for (const e of c.querySelectorAll('.pc-box small')) {
+                  const s = getComputedStyle(e);
+                  const em = parseFloat(s.fontSize);
+                  if (parseFloat(s.marginBottom) < 0.2 * em - 0.01)
+                    out.push(id + e.textContent + ' label gap ' + s.marginBottom);
+                  if (s.textTransform !== 'uppercase')
+                    out.push(id + e.textContent + ' label case ' + s.textTransform);
+                  const track = e.matches('.pc-c1.wbonus small') ? 0 : 0.06 * em;
+                  if (Math.abs((parseFloat(s.letterSpacing) || 0) - track) > 0.01)
+                    out.push(id + e.textContent + ' label tracking ' + s.letterSpacing);
+                }
+                /* Air between the die's `d` and its number, read from the
+                   glyph boxes: a computed `::first-letter` style reads the
+                   declared margin even with no first-letter box. */
+                for (const e of c.querySelectorAll('.pc-die b')) {
+                  const node = e.firstChild;
+                  const box = (i) => {
+                    const r = document.createRange();
+                    r.setStart(node, i);
+                    r.setEnd(node, i + 1);
+                    return r.getBoundingClientRect();
+                  };
+                  const em = parseFloat(getComputedStyle(e).fontSize);
+                  if (!node || node.length < 2 || box(1).left - box(0).right < 0.1 * em)
+                    out.push(id + 'no gap after the die d in ' + e.textContent);
+                }
+                /* A blurred text-shadow prints as a raster patch; the halos
+                   are vector strokes. */
+                for (const e of c.querySelectorAll('*')) {
+                  if (getComputedStyle(e).textShadow !== 'none') {
+                    out.push(id + 'text-shadow on ' + (e.className || e.tagName));
+                  }
+                }
+                for (const e of c.querySelectorAll('.pc-die.own b')) {
+                  if (!(parseFloat(getComputedStyle(e).webkitTextStrokeWidth) > 0)) {
+                    out.push(id + 'the die value has no outline');
+                  }
+                }
+                /* The strip: each text inside its ribbon cell and its own
+                   block, below the top ornament lines (y 10.4 of 47.9) and
+                   above the band's bottom edge (78%). */
+                const CELL = {
+                  'pc-c1': [0.06, 0.296],
+                  'pc-c2': [0.315, 0.63],
+                  'pc-c3': [0.65, 0.98]
+                };
+                for (const st of c.querySelectorAll('.pc-strip')) {
+                  const rib = st.querySelector('.pc-ribbon');
+                  const rr = rib && rib.getBoundingClientRect();
+                  if (!rr || rr.width === 0 || getComputedStyle(rib).display === 'none') {
+                    out.push(id + 'the ribbon is not drawn');
+                  }
+                  const sr = st.getBoundingClientRect();
+                  const fr = st.querySelector('.pc-frame').getBoundingClientRect();
+                  const top = sr.top + sr.height * 0.218;
+                  const bottom = st.querySelector('.pc-cells').getBoundingClientRect().bottom;
+                  for (const t of st.querySelectorAll('.pc-box small, .pc-box b')) {
+                    const cell = t.closest('.pc-c1, .pc-c2, .pc-c3');
+                    const k = cell.classList.contains('pc-c1')
+                      ? 'pc-c1'
+                      : cell.classList.contains('pc-c2')
+                        ? 'pc-c2'
+                        : 'pc-c3';
+                    const [l, r] = CELL[k];
+                    const s = span(t);
+                    const word = t.textContent.trim();
+                    if (
+                      s.left < fr.left + l * fr.width - 0.5 ||
+                      s.right > fr.left + r * fr.width + 0.5
+                    ) {
+                      out.push(id + word + ' leaves its ribbon cell');
+                    }
+                    /* Its own block too: in the first cell a value that
+                       spills left would run onto the modifier. */
+                    const own = t.closest('.pc-box').getBoundingClientRect();
+                    if (s.left < own.left - 0.5 || s.right > own.right + 0.5) {
+                      out.push(id + word + ' leaves its block');
+                    }
+                    /* Vertically the line box, not the Range: a Range spans
+                       the font's whole ascent, above the capitals' ink. */
+                    const lb = t.getBoundingClientRect();
+                    if (lb.top < top - 0.5 || lb.bottom > bottom + 0.5) {
+                      out.push(id + word + ' leaves the band');
+                    }
+                  }
+                  /* The modifier sits against the die, on its centre; each
+                     label-value block is centred in the band. */
+                  const die = st.querySelector('.pc-die').getBoundingClientRect();
+                  const mid = (x) => (x.top + x.bottom) / 2;
+                  const bo = st.querySelector('.pc-bonus');
+                  if (bo) {
+                    const br = bo.getBoundingClientRect();
+                    if (br.left - die.right > 1.5 * cqw)
+                      out.push(id + 'the modifier is off the die');
+                    if (Math.abs(mid(br) - mid(die)) > 0.1 * MM) {
+                      out.push(id + 'the modifier is off the die centre');
+                    }
+                  }
+                  const band = st.querySelector('.pc-cells').getBoundingClientRect();
+                  for (const b of st.querySelectorAll('.pc-box')) {
+                    if (Math.abs(mid(b.getBoundingClientRect()) - mid(band)) > 0.25 * MM) {
+                      out.push(id + b.textContent + ' block is off the band centre');
+                    }
+                  }
+                  /* A value on two lines raises the strip, and the block
+                     stays inside the band. */
+                  const wrapped = [...st.querySelectorAll('.pc-box b')].some(
+                    (v) => span(v).lines > 1
+                  );
+                  const base = Math.max(14 * cqw, (20 * 96) / 72);
+                  if (!wrapped && Math.abs(sr.height - base) > 0.5) {
+                    out.push(
+                      id + 'the strip is ' + sr.height.toFixed(1) + 'px, not ' + base.toFixed(1)
+                    );
+                  }
+                  if (wrapped) {
+                    if (sr.height <= base)
+                      out.push(id + 'a wrapped value did not raise the strip');
+                    for (const b of st.querySelectorAll('.pc-box')) {
+                      const r = b.getBoundingClientRect();
+                      if (r.top < band.top - 0.5 || r.bottom > band.bottom + 0.5) {
+                        out.push(id + b.textContent + ' block leaves the raised band');
+                      }
+                    }
+                  }
+                }
+                /* Thresholds: diamonds 1.3mm or taller, 0.5mm clear of the
+                   frame, above their caption; arrows 1.3mm wide. */
+                for (const th of c.querySelectorAll('.pc-thstrip')) {
+                  const f = th.getBoundingClientRect();
+                  const inner = f.top + parseFloat(getComputedStyle(th).borderTopWidth);
+                  const frameInk = getComputedStyle(th).borderTopColor;
+                  if (c.classList.contains('bw') && frameInk !== 'rgb(0, 0, 0)') {
+                    out.push(id + 'the black-and-white threshold frame is ' + frameInk);
+                  }
+                  for (const lab of th.querySelectorAll('.pc-th-lab')) {
+                    const img = lab.querySelector('img').getBoundingClientRect();
+                    const cap = lab.querySelector('small');
+                    const s = span(cap);
+                    const word = cap.textContent;
+                    if (img.height < 1.3 * MM - 0.05)
+                      out.push(id + 'diamonds ' + (img.height / MM).toFixed(2) + 'mm');
+                    if (img.top - inner < 0.5 * MM)
+                      out.push(id + 'diamonds touch the frame over ' + word);
+                    if (img.bottom > s.top + 0.1) out.push(id + 'diamonds touch ' + word);
+                    if (s.wide > lab.clientWidth + 0.5)
+                      out.push(id + word + ' is wider than its cell');
+                    if (s.bottom > f.bottom || img.top < f.top)
+                      out.push(id + word + ' leaves the frame');
+                  }
+                  /* The arrow grows from the box's notch: the box's own
+                     `::before`; the arrow image stays in the markup, hidden.
+                     Colour outlines it (a dark `::after` inside a gold rim),
+                     black and white draws it solid. */
+                  for (const a of th.querySelectorAll('.pc-th-arrow')) {
+                    if (getComputedStyle(a).display !== 'none')
+                      out.push(id + 'the arrow image is drawn');
+                  }
+                  for (const b of th.querySelectorAll('.pc-th-box')) {
+                    const br = b.getBoundingClientRect();
+                    if (br.height <= f.height)
+                      out.push(id + 'a threshold box does not overhang');
+                    const o = getComputedStyle(b, '::before');
+                    const w = parseFloat(o.width);
+                    if (!(w >= 1.3 * MM - 0.05))
+                      out.push(id + 'arrow ' + (w / MM).toFixed(2) + 'mm');
+                    if (o.clipPath === 'none') out.push(id + 'the arrow is not a triangle');
+                    const at = parseFloat(o.left) / br.width;
+                    if (at < 0.91 || at > 0.925)
+                      out.push(id + 'the arrow starts at ' + (at * 100).toFixed(1) + '%');
+                    const inner = getComputedStyle(b, '::after');
+                    if (c.classList.contains('bw')) {
+                      if (inner.display !== 'none') out.push(id + 'a bw arrow is outlined');
+                    } else if (
+                      inner.display === 'none' ||
+                      inner.backgroundColor !== 'rgb(24, 23, 28)'
+                    ) {
+                      out.push(id + 'a colour arrow has no dark inside');
+                    }
+                  }
+                }
+                /* The burden and armour labels clear their marks; the line
+                   box starts above the ink, hence 0.2em. */
+                for (const m of c.querySelectorAll('.pc-burden, .pc-shield')) {
+                  const img = m.querySelector('img').getBoundingClientRect();
+                  const lab = m.querySelector('small, i');
+                  const em = parseFloat(getComputedStyle(lab).fontSize);
+                  if (span(lab).top < img.bottom - 0.2 * em)
+                    out.push(id + lab.textContent + ' sits on its mark');
+                }
+              }
+              return out;
+            },
+            langTag === '',
+            isCompact
+          );
+          ok(!bad.length, tag + bad.slice(0, 8).join('; '));
+        }
+      }
+    }
+    /* Vector text only: a compact black-and-white sheet prints no raster,
+       and neither does a colour sheet once its pictures and the gold tag's
+       gradient are hidden - Chrome can tile that gradient as small images
+       (measured 2026-09-23 on this host). The sheet with pictures goes
+       last, as a proof that the count sees an image. */
+    if (langTag === '') {
+      const images = async () => {
+        const pdf = Buffer.from(await page2.pdf({ format: 'A4', printBackground: true }));
+        return (pdf.toString('latin1').match(/\/Subtype\s*\/Image/g) || []).length;
+      };
+      await openAs(d2, SMALL_ROUTES[0], true, true, bwFn, compactFn);
+      ok((await images()) === 0, 'a compact black-and-white sheet prints a raster');
+      await openAs(d2, SMALL_ROUTES[0], false, true, bwFn, compactFn);
+      const hide = await page2.addStyleTag({
+        content:
+          '.pc-art { display: none !important; } .pc-tag.on { background: none !important; }'
+      });
+      ok((await images()) === 0, 'a colour sheet without pictures still prints a raster');
+      await hide.evaluate((e) => e.remove());
+      ok((await images()) > 0, 'a colour sheet with pictures shows no image in its PDF');
+    }
+  }
+  await smallFields(d, page, '', bw, compact);
+
   /* ---------- the fit, as the numbers it wrote (`cardFit`) ----------
      What `fitPrintCards` actually wrote onto each card - the only instrument
      that reads the *decision*, not its pixel consequence. Per width, unlike
@@ -1574,8 +1965,10 @@ const { ok } = rep;
         strip.forEach((v) => {
           if (!v.style['font-size']) return;
           const n = parseFloat(v.style['font-size']);
+          /* The ladder starts at the computed size: 5pt is about 4.1cqw on
+             the compact card. */
           ok(
-            n >= 2.2 && n <= 3,
+            n >= 2.2 && n <= 4.1,
             tag + 'strip text size is off the ladder: ' + v.style['font-size']
           );
         });
@@ -1614,6 +2007,7 @@ const { ok } = rep;
   const pageErrsEn = [];
   pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
   await cardFit(dEn, bwEn, colourEn, compactEn, ' en');
+  await smallFields(dEn, pageEn, ' en', bwEn, compactEn);
 
   /* ---------- the card's own name, capped at three lines ----------
      "Look first, then shrink": `.pc-name` stays out of `fit()`'s shrink

@@ -37,7 +37,8 @@ afterEach(cleanup);
  * is filling an environment gap, not changing behaviour: `over()` reads
  * `false` immediately, same as it would off a genuine zero rect, and the
  * "fit is wired" case below still overrides this locally to drive the
- * loops. */
+ * loops. `getClientRects` has the same gap: an empty list is what a real
+ * browser gives an empty range. */
 Range.prototype.getBoundingClientRect = function (): DOMRect {
   return {
     width: 0,
@@ -50,6 +51,9 @@ Range.prototype.getBoundingClientRect = function (): DOMRect {
     y: 0,
     toJSON: () => ({})
   };
+};
+Range.prototype.getClientRects = function (): DOMRectList {
+  return [] as unknown as DOMRectList;
 };
 
 const row = (over: Partial<Record_>): Record_ => ({
@@ -820,10 +824,14 @@ describe('the fit is wired', () => {
      Range's rect are all zero - so every loop in `fit()` would exit at once
      and the art arithmetic would divide by zero. Faked here exactly enough
      to walk every branch: `.pc-text`'s scrollHeight comes from the case,
-     everything else measures 100 tall, and a Range reads as the case sets. */
+     everything else measures 100 tall, and a Range reads as the case sets,
+     one line wide, by the text it holds. */
   const fakeLayout = (
     textScroll: (text: HTMLElement) => number,
-    rangeWidth: number
+    rangeWidth: number | ((text: string) => number),
+    /* A value's line rects by its inline `whiteSpace` and `fontSize`; null
+       falls back to one line of `rangeWidth`. */
+    lineRects?: (value: HTMLElement) => { width: number; top: number }[] | null
   ): (() => void) => {
     const widthDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth');
     const heightDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight');
@@ -831,6 +839,10 @@ describe('the fit is wired', () => {
     const scrollDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollHeight');
     // eslint-disable-next-line @typescript-eslint/unbound-method -- restored, never called unbound
     const rectFn = Range.prototype.getBoundingClientRect;
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- restored, never called unbound
+    const rectsFn = Range.prototype.getClientRects;
+    const widthOf = (r: Range): number =>
+      typeof rangeWidth === 'number' ? rangeWidth : rangeWidth(r.toString());
 
     Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
       configurable: true,
@@ -856,8 +868,13 @@ describe('the fit is wired', () => {
         return this.classList.contains('pc-text') ? textScroll(this) : 100;
       }
     });
-    Range.prototype.getBoundingClientRect = function () {
-      return { width: rangeWidth } as DOMRect;
+    Range.prototype.getBoundingClientRect = function (this: Range) {
+      return { width: widthOf(this) } as DOMRect;
+    };
+    Range.prototype.getClientRects = function (this: Range) {
+      const host = this.startContainer;
+      const own = lineRects && host instanceof HTMLElement ? lineRects(host) : null;
+      return (own ?? [{ width: widthOf(this), top: 0 }]) as unknown as DOMRectList;
     };
 
     return () => {
@@ -866,6 +883,7 @@ describe('the fit is wired', () => {
       if (topDesc) Object.defineProperty(HTMLElement.prototype, 'offsetTop', topDesc);
       if (scrollDesc) Object.defineProperty(HTMLElement.prototype, 'scrollHeight', scrollDesc);
       Range.prototype.getBoundingClientRect = rectFn;
+      Range.prototype.getClientRects = rectsFn;
     };
   };
 
@@ -900,6 +918,72 @@ describe('the fit is wired', () => {
         compact?.querySelector<HTMLElement>('.pc-content')?.style.getPropertyValue('--pcpad')
       ).toBe('8cqw');
       expect(compact?.querySelector<HTMLElement>('.pc-art')?.style.display).toBe('none');
+    } finally {
+      restore();
+    }
+  });
+
+  it('shrinks each strip value on its own, and the label beside a modifier', async () => {
+    const restore = fakeLayout(
+      () => 50,
+      (text) => (text === 'Сила' || text === 'Урон' ? 9999 : 0)
+    );
+    try {
+      const { container } = render(App, { env: at('#/print/q8b3') });
+      const strip = document.querySelector<HTMLElement>('.pcard[data-pid="q8b3"] .pc-strip');
+      const size = (sel: string): string | undefined =>
+        strip?.querySelector<HTMLElement>(sel)?.style.fontSize;
+      expect(strip?.querySelector('.pc-c2 b')?.textContent).toBe('Сила');
+      expect(size('.pc-c2 b')).toBe('2.2cqw');
+      /* It never fitted one line, so it wraps. */
+      expect(strip?.querySelector<HTMLElement>('.pc-c2 b')?.style.whiteSpace).toBe('');
+      expect(size('.pc-c1 b')).toBe('');
+      expect(size('.pc-c3 b')).toBe('');
+      expect(strip?.querySelector('.pc-c1 small')?.textContent).toBe('Урон');
+      expect(size('.pc-c1 small')).toBe('2.2cqw');
+      /* Only the label that shares its cell with the modifier shrinks. */
+      expect(size('.pc-c2 small')).toBe('');
+      expect(strip?.style.height).toBe('');
+      await expectNoA11yViolations(container);
+    } finally {
+      restore();
+    }
+  });
+
+  it('keeps a value on one line down to the label floor, else wraps it at 1.2 leading', async () => {
+    const restore = fakeLayout(
+      () => 50,
+      0,
+      (v) => {
+        const one = v.style.whiteSpace === 'nowrap';
+        const size = parseFloat(v.style.fontSize || '3');
+        /* Fits one line only at 2.8cqw (5pt on a 238px card) and below. */
+        if (v.textContent === 'Вплотную')
+          return [{ width: one && size > 2.8 ? 9999 : 100, top: 0 }];
+        /* Never fits one line; wrapped, it takes two. */
+        if (v.textContent === 'Сила')
+          return one
+            ? [{ width: 9999, top: 0 }]
+            : [
+                { width: 100, top: 0 },
+                { width: 100, top: 20 }
+              ];
+        return null;
+      }
+    );
+    try {
+      const { container } = render(App, { env: at('#/print/q8b3') });
+      const strip = document.querySelector<HTMLElement>('.pcard[data-pid="q8b3"] .pc-strip');
+      const range = strip?.querySelector<HTMLElement>('.pc-c3 b');
+      expect(range?.textContent).toBe('Вплотную');
+      expect(range?.style.whiteSpace).toBe('nowrap');
+      expect(range?.style.fontSize).toBe('2.8cqw');
+      expect(range?.style.lineHeight).toBe('');
+      const trait = strip?.querySelector<HTMLElement>('.pc-c2 b');
+      expect(trait?.style.whiteSpace).toBe('');
+      expect(trait?.style.fontSize).toBe('');
+      expect(trait?.style.lineHeight).toBe('1.2');
+      await expectNoA11yViolations(container);
     } finally {
       restore();
     }
