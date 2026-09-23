@@ -13,7 +13,7 @@ import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 import { browserData, fakeData, noData } from './data.js';
 import { browserImage } from './image.js';
 import { browserEnv, fakeEnv } from './index.js';
-import { browserPwa, fakePwa, linkManifest, registerWith } from './pwa.js';
+import { browserPwa, fakePwa, linkManifest, persistWith, registerWith } from './pwa.js';
 import type { DragHandlers } from './types.js';
 
 describe('storage that works', () => {
@@ -1165,5 +1165,85 @@ describe('the installable app', () => {
     expect(pwa.registrations).toBe(2);
     expect(fakePwa().standalone()).toBe(false);
     expect(await fakePwa().register()).toBe('registered');
+  });
+
+  const storage = (persisted: () => Promise<boolean>, persist: () => Promise<boolean>) => ({
+    persisted: vi.fn(persisted),
+    persist: vi.fn(persist)
+  });
+
+  it('skips the storage request where the browser has no storage manager', async () => {
+    expect(await persistWith(undefined, 'https:', true)).toBe('skipped');
+  });
+
+  it('never asks for persistent storage from a folder or outside the installed app', async () => {
+    const sm = storage(
+      () => Promise.resolve(false),
+      () => Promise.resolve(true)
+    );
+    expect(await persistWith(sm, 'file:', true)).toBe('skipped');
+    expect(await persistWith(sm, 'https:', false)).toBe('skipped');
+    expect(sm.persisted).not.toHaveBeenCalled();
+    expect(sm.persist).not.toHaveBeenCalled();
+  });
+
+  it('does not ask again when the storage is already persisted', async () => {
+    const sm = storage(
+      () => Promise.resolve(true),
+      () => Promise.resolve(false)
+    );
+    expect(await persistWith(sm, 'https:', true)).toBe('persisted');
+    expect(sm.persist).not.toHaveBeenCalled();
+  });
+
+  it('asks once in the installed app and reports the answer', async () => {
+    const granted = storage(
+      () => Promise.resolve(false),
+      () => Promise.resolve(true)
+    );
+    expect(await persistWith(granted, 'http:', true)).toBe('persisted');
+    expect(granted.persist).toHaveBeenCalledTimes(1);
+    const refused = storage(
+      () => Promise.resolve(false),
+      () => Promise.resolve(false)
+    );
+    expect(await persistWith(refused, 'https:', true)).toBe('denied');
+  });
+
+  it('answers denied when the storage manager rejects', async () => {
+    const sm = storage(
+      () => Promise.reject(new Error('refused')),
+      () => Promise.resolve(true)
+    );
+    expect(await persistWith(sm, 'https:', true)).toBe('denied');
+    expect(sm.persist).not.toHaveBeenCalled();
+  });
+
+  it('skips the storage request under jsdom, which is not the installed app', async () => {
+    expect(await browserPwa().persist()).toBe('skipped');
+  });
+
+  it('asks the browser storage manager when the page runs as the installed app', async () => {
+    /* jsdom has neither matchMedia nor navigator.storage; both are stubbed. */
+    const sm = storage(
+      () => Promise.resolve(false),
+      () => Promise.resolve(true)
+    );
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: q === '(display-mode: standalone)'
+    }));
+    Object.defineProperty(navigator, 'storage', { value: sm, configurable: true });
+    try {
+      expect(await browserPwa().persist()).toBe('persisted');
+      expect(sm.persist).toHaveBeenCalledTimes(1);
+    } finally {
+      Reflect.deleteProperty(navigator, 'storage');
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('has a fake storage request that answers what it is told', async () => {
+    expect(await fakePwa({ persistence: 'denied' }).persist()).toBe('denied');
+    expect(await fakePwa().persist()).toBe('skipped');
   });
 });

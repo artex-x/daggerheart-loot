@@ -6,10 +6,15 @@
  * request (docs/specs/META.md sections 4 and 9). */
 
 import { hostedProtocol } from './router.js';
-import type { PwaPort, Registration } from './types.js';
+import type { Persistence, PwaPort, Registration } from './types.js';
 
 interface WorkerContainer {
   register(url: string): Promise<unknown>;
+}
+
+interface StorageManagerLike {
+  persisted(): Promise<boolean>;
+  persist(): Promise<boolean>;
 }
 
 /** The decision, with the browser handed in so jsdom can cover every branch. */
@@ -22,6 +27,27 @@ export function registerWith(
     (): Registration => 'registered',
     (): Registration => 'failed'
   );
+}
+
+/**
+ * The storage request, with the browser handed in so jsdom can cover every
+ * branch. Only the installed app asks: Firefox documents a prompt for
+ * `persist()` in a tab. `persisted()` first, so a granted origin is never
+ * asked again.
+ */
+export function persistWith(
+  sm: StorageManagerLike | undefined,
+  protocol: string,
+  standalone: boolean
+): Promise<Persistence> {
+  if (!sm || !hostedProtocol(protocol) || !standalone) return Promise.resolve('skipped');
+  return sm
+    .persisted()
+    .then((done) => done || sm.persist())
+    .then(
+      (granted): Persistence => (granted ? 'persisted' : 'denied'),
+      (): Persistence => 'denied'
+    );
 }
 
 /**
@@ -39,6 +65,9 @@ export function linkManifest(doc: Document, protocol: string): void {
 }
 
 export function browserPwa(): PwaPort {
+  const standalone = () =>
+    (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) ||
+    Reflect.get(navigator, 'standalone') === true;
   return {
     register: () => {
       linkManifest(document, location.protocol);
@@ -49,14 +78,20 @@ export function browserPwa(): PwaPort {
         location.protocol
       );
     },
-    standalone: () =>
-      (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) ||
-      Reflect.get(navigator, 'standalone') === true
+    standalone,
+    persist: () =>
+      persistWith(
+        /* Absent outside a secure context and in older browsers, whatever the
+           DOM typings say. */
+        'storage' in navigator ? navigator.storage : undefined,
+        location.protocol,
+        standalone()
+      )
   };
 }
 
 export function fakePwa(
-  opts: { standalone?: boolean; result?: Registration } = {}
+  opts: { standalone?: boolean; result?: Registration; persistence?: Persistence } = {}
 ): PwaPort & { readonly registrations: number } {
   let registrations = 0;
   return {
@@ -67,6 +102,7 @@ export function fakePwa(
       registrations++;
       return Promise.resolve(opts.result ?? 'registered');
     },
-    standalone: () => opts.standalone ?? false
+    standalone: () => opts.standalone ?? false,
+    persist: () => Promise.resolve(opts.persistence ?? 'skipped')
   };
 }

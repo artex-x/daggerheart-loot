@@ -217,10 +217,10 @@ boot through `PwaPort`, as `./sw.js`, so its scope is the site folder.
 | Request (path relative to the scope) | Policy |
 |---|---|
 | `./`, `assets/app.js`, `data.js`, `manifest.webmanifest`, the three manifest icons, `img/_none.webp`, `img/thumb/_none.webp` | Precached into `dhloot-shell-v1` on install |
-| `img/thumb/` | Cache first in `dhloot-thumb-v1`, capped at 1500 entries, above the whole thumbnail set; the same seven-day revalidation; an offline miss rejects as for `img/`, and the app's `onerror` swaps in `img/thumb/_none.webp`, answered from the shell cache's precached copy |
-| `img/` except `img/thumb/` | Cache first in `dhloot-img-v1`, capped at 300 entries (the oldest goes first); a hit older than seven days by its `Date` header is answered and refetched in the background; an offline miss rejects, the app's `onerror` then swaps in `img/_none.webp`, which is answered from the shell cache's precached copy |
+| `img/thumb/` | Cache first in `dhloot-thumb-v1`, capped at 1500 entries, above the whole thumbnail set; the same revalidation on every hit; an offline miss is answered with the cached `img/<x>.webp` from `dhloot-img-v1` when there is one, else it rejects as for `img/`, and the app's `onerror` swaps in `img/thumb/_none.webp`, answered from the shell cache's precached copy |
+| `img/` except `img/thumb/` | Cache first in `dhloot-img-v1`, capped at 300 entries (the oldest goes first); a hit is answered from the cache at once and revalidated in the background: an ok answer with the cached `ETag` writes nothing, a different or absent `ETag` replaces the entry, a failed fetch keeps it; a miss is answered as soon as the network answers, and stored and trimmed in the background; an offline miss rejects, the app's `onerror` then swaps in `img/_none.webp`, which is answered from the shell cache's precached copy |
 | `og/`, `i/`, `data.json`, `catalog.csv`, `llms.txt`, `robots.txt`, `404.html`, another origin, a path outside the scope, any method but `GET` | Not handled: the browser's own network, so the stubs, the previews and the 404 fallback (section 7) behave as before |
-| Everything else (the shell, `card/`, `icons/`, `pages/`) | Network first with a 5 s timeout, stored on every successful answer under its URL without the query (`?fbclid=...` adds no entry); the cached copy when the network fails; a navigation to the scope root or `index.html` falls back to the cached `./` |
+| Everything else (the shell, `card/`, `icons/`, `pages/`) | Network first with a 5 s timeout, a navigation taking the navigation preload response where the browser has it (enabled on activate), stored on every successful answer under its URL without the query (`?fbclid=...` adds no entry); the cached copy when the network fails; a navigation to the scope root or `index.html` falls back to the cached `./` |
 
 - Every hash route is the one document, so the cached `./` answers every
   list link, section, record page and print sheet offline.
@@ -232,9 +232,17 @@ boot through `PwaPort`, as `./sw.js`, so its scope is the site folder.
   activate. That is safe because the app is one IIFE plus `data.js`, both
   loaded at start, so an open page never lazy-loads a chunk from a newer
   build. There is no "update available" prompt.
-- The seven-day revalidation replaces a manual cache bump after an artwork
-  refresh: a phone that holds a replaced picture can show the old one for
-  up to seven days. A response with no `Date` header is never refreshed.
+- The installed app asks for persistent storage once per boot
+  (`navigator.storage.persist()`, only when not yet persisted), so under
+  storage pressure the browser keeps the caches and the lists; a browser
+  tab keeps best-effort storage. Chrome grants an installed app without a
+  prompt; other browsers are not measured here.
+- Revalidation on every hit replaces a manual cache bump after an artwork
+  refresh. The background fetch goes through the browser's HTTP cache
+  (Pages sends `max-age=600` and an `ETag`), so a picture replaced at the
+  same path shows from the second view after that entry expires, at most
+  about ten minutes after the deploy. Online, a view past the `max-age`
+  costs one conditional request, usually a 304 (not measured on a device).
 - Each shell entry is refreshed on its own. On a slow link one load can
   pair a fresh `assets/app.js` with a timed-out cached `data.js`, or the
   reverse, until the next online load; that is comparable to the ten-minute
@@ -270,11 +278,17 @@ JavaScript and without a hash route (the route grammar is frozen,
   with a `<section lang="ru">`, an `<hr />` and a `<section lang="en">`.
   Outputs are `pages/<id>.html`, written by `tools/build-pages.js` through
   `node tools/build.js`, gitignored like `i/`. The template adds the head
-  (`noindex, nofollow`, section 1), the style and `<main id="app-page">`.
+  (`noindex, nofollow`, section 1), the style, `<main id="app-page">` and
+  a back link at its top and its bottom.
 - Both languages sit on one page, Russian first, like `404.html`: no
   script reads the language preference there.
 - Links are relative (`../` is the app), unlike `404.html` (section 7): a
   page here is always served at its own path.
+- The back link reads «Назад к генератору / Back to the generator»,
+  `href="../"`. A small inline script calls `history.back()` instead when
+  the referrer is the app document (same origin, the scope root or
+  `index.html`) and the tab has history, so the reader returns to the
+  exact hash route; a direct visit, a new tab or no JavaScript opens `../`.
 - `pages/src/` is never published: `ci.yml` copies `pages/*.html` only
   and refuses `_site/pages/src`. `vite.config.mts` junctions `pages/`
   into `dist/` with the artwork, so the built app serves the pages too.

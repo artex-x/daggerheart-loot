@@ -13,7 +13,6 @@ const IMAGE_CAP = 300;
 const THUMBS = 'dhloot-thumb-v1';
 const THUMB_CAP = 1500;
 const KEEP = [SHELL, IMAGES, THUMBS];
-const IMAGE_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
 const NETWORK_MS = 5000;
 const PRECACHE = [
   './',
@@ -38,8 +37,8 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches
-      .keys()
+    enablePreload()
+      .then(() => caches.keys())
       .then((keys) =>
         Promise.all(
           keys
@@ -50,6 +49,16 @@ self.addEventListener('activate', (e) => {
       .then(() => self.clients.claim())
   );
 });
+
+/* Absent in older Safari: a navigation then waits for the worker to
+   start, as before. */
+async function enablePreload() {
+  try {
+    if (self.registration.navigationPreload) await self.registration.navigationPreload.enable();
+  } catch {
+    /* A refused enable leaves the plain fetch. */
+  }
+}
 
 /* 'pass' | 'image' | 'thumb' | 'shell', from the path relative to the scope. */
 function policy(url) {
@@ -66,16 +75,25 @@ function policy(url) {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const p = policy(new URL(e.request.url));
-  if (p === 'pass') return;
-  if (p === 'shell') e.respondWith(networkFirst(e.request));
+  if (p === 'pass') {
+    /* Settled, so a passed navigation's unread preload is not cancelled with
+       a console warning; the browser still answers it. */
+    if (e.preloadResponse) e.waitUntil(e.preloadResponse.catch(() => {}));
+    return;
+  }
+  if (p === 'shell') e.respondWith(networkFirst(e));
   else if (p === 'thumb') e.respondWith(imageFirst(e, THUMBS, THUMB_CAP));
   else e.respondWith(imageFirst(e, IMAGES, IMAGE_CAP));
 });
 
-async function networkFirst(req) {
+async function networkFirst(e) {
+  const req = e.request;
+  /* Kept open, so a preload that the timeout outran is not cancelled
+     with a console warning. */
+  if (e.preloadResponse) e.waitUntil(e.preloadResponse.catch(() => {}));
   const cache = await caches.open(SHELL);
   try {
-    const res = await withTimeout(fetch(req), NETWORK_MS);
+    const res = await withTimeout(preloadOrFetch(e), NETWORK_MS);
     /* Keyed without the query: `?fbclid=...` must not add a shell entry per visit. */
     if (res.ok) await cache.put(req.url.split('?')[0], res.clone());
     return res;
@@ -90,11 +108,17 @@ async function networkFirst(req) {
   }
 }
 
+/* `preloadResponse` resolves to undefined off a navigation or with
+   preload off, and is absent where the browser has no preload. */
+async function preloadOrFetch(e) {
+  return (await e.preloadResponse) || fetch(e.request);
+}
+
 async function imageFirst(e, name, cap) {
   const cache = await caches.open(name);
   const hit = await cache.match(e.request);
   if (hit) {
-    if (ageOf(hit) > IMAGE_MAX_AGE_MS) e.waitUntil(refresh(cache, e.request));
+    e.waitUntil(revalidate(cache, e.request, hit.headers.get('etag')));
     return hit;
   }
   let res;
@@ -104,14 +128,15 @@ async function imageFirst(e, name, cap) {
     /* An offline miss rejects; the app's `onerror` then asks for
        `img/_none.webp` (or `img/thumb/_none.webp`), which this same lookup
        answers from the shell cache's precached copy. */
+    if (name === THUMBS) {
+      const full = await caches.match(fullOf(e.request.url), { cacheName: IMAGES });
+      if (full) return full;
+    }
     const precached = await caches.match(e.request);
     if (precached) return precached;
     throw err;
   }
-  if (res.ok) {
-    await cache.put(e.request, res.clone());
-    await trim(cache, cap);
-  }
+  if (res.ok) e.waitUntil(store(cache, e.request, res.clone(), cap));
   return res;
 }
 
@@ -123,19 +148,35 @@ function isRoot(href) {
   return path === scope || path === scope + 'index.html';
 }
 
-/* 0 without a `Date` header, so such a response is never refreshed on a loop. */
-function ageOf(res) {
-  const date = Date.parse(res.headers.get('date') || '');
-  return Number.isNaN(date) ? 0 : Date.now() - date;
-}
-
-async function refresh(cache, req) {
+/* Through the browser's HTTP cache: within Pages' `max-age` nothing goes
+   out, after it a conditional request usually answers 304. The same
+   `ETag` writes nothing, so a view costs no cache write. */
+async function revalidate(cache, req, etag) {
   try {
     const res = await fetch(req);
-    if (res.ok) await cache.put(req, res);
+    if (!res.ok) return;
+    const fresh = res.headers.get('etag');
+    if (fresh && fresh === etag) return;
+    await cache.put(req, res);
   } catch {
-    /* Offline or failing: the cached picture stays until the next attempt. */
+    /* Offline or failing: the cached picture stays until the next hit. */
   }
+}
+
+/* Off the answer's path: `trim` reads every key, up to THUMB_CAP. */
+async function store(cache, req, res, cap) {
+  try {
+    await cache.put(req, res);
+    await trim(cache, cap);
+  } catch {
+    /* Quota or a failed write: the picture is fetched again next time. */
+  }
+}
+
+/* A thumbnail keeps its picture's name: `img/thumb/<x>` is `img/<x>`. */
+function fullOf(href) {
+  const scope = self.registration.scope;
+  return scope + 'img/' + href.slice((scope + 'img/thumb/').length);
 }
 
 /* `cache.keys()` returns insertion order, so the front is the oldest. */

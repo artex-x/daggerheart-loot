@@ -1,7 +1,7 @@
 /*
   Builds the site's static pages into pages/<id>.html from the authored body
   fragments in pages/src/<id>.html. One template for all of them: the head,
-  the style and the <main id="app-page"> shell. Both languages sit on one
+  the style, the <main id="app-page"> shell and its two back links. Both languages sit on one
   page, Russian first, as 404.html does.
 
   One more page is one PAGES entry below (its id and its two titles), one
@@ -33,6 +33,12 @@ const esc = (s) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
+/* Both languages in one link: it sits above and below the two
+   sections. The script below turns it into history.back(). */
+const BACK =
+  '<a class="back" href="../" data-back><span lang="ru">Назад к генератору</span>' +
+  ' / <span lang="en">Back to the generator</span></a>';
+
 /* Links inside a page are relative ("../" is the app): unlike 404.html, a page
    here is always served at its own path. */
 function page({ title, body }) {
@@ -58,12 +64,30 @@ function page({ title, body }) {
   ol{margin:0 0 12px;padding-left:22px}
   hr{border:none;border-top:1px solid #2a2438;margin:28px 0}
   a{color:#d8ab5e}
-  .back{display:inline-block;margin-top:8px}
+  .back{display:inline-block;margin:8px 0 16px}
 </style>
 </head>
 <body>
 <main id="app-page">
-${body}</main>
+${BACK}
+${body}${BACK}
+</main>
+<script>
+  /* A referrer carries no fragment; history.back() returns to the exact
+     hash route. docs/specs/META.md section 9, "Static pages". */
+  document.addEventListener('click', function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target instanceof Element ? e.target.closest('a[data-back]') : null;
+    if (!a || !document.referrer || history.length < 2) return;
+    var app = new URL('../', location.href);
+    var from = new URL(document.referrer);
+    if (from.origin !== app.origin || from.pathname.indexOf(app.pathname) !== 0) return;
+    var rel = from.pathname.slice(app.pathname.length);
+    if (rel !== '' && rel !== 'index.html') return;
+    e.preventDefault();
+    history.back();
+  });
+</script>
 </body>
 </html>
 `;
@@ -79,7 +103,7 @@ function render(id) {
 
 /* Exported so tests/derived.js can compare every page on disk with a fresh
    render, the way it compares the share stubs. */
-module.exports = { PAGES, page, render };
+module.exports = { PAGES, BACK, page, render };
 
 if (require.main === module) {
   fs.mkdirSync(OUT, { recursive: true });

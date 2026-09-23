@@ -6,7 +6,7 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Twenty-eight cases, no ancestor. */
+ * real second tab to mean anything at all. Twenty-nine cases, no ancestor. */
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
@@ -1668,6 +1668,69 @@ async function installedShellOffline() {
   }
 }
 
+/** 29. The install guide links back to the screen the reader left: from
+ *  `#/lists` its top back link returns to `index.html#/lists`, and on a
+ *  direct visit it opens `../` (docs/specs/META.md section 9, "Static
+ *  pages"). */
+async function guideBackLink() {
+  const at = '29 (guide back link): ';
+  const server = await serveDist();
+  const { ctx, page } = await fresh({ width: 1180, height: 900 });
+  try {
+    const root = 'http://127.0.0.1:' + String(server.address().port) + '/';
+    await page.goto(root + 'index.html#/lists', { waitUntil: 'load' });
+    await page.waitForSelector('.foot-nav a');
+    await page.click('.foot-nav a');
+    await page.waitForFunction(() => location.pathname.endsWith('/pages/install.html'));
+    await page.waitForSelector('#app-page');
+    ok(
+      await page.evaluate(() => {
+        const main = document.getElementById('app-page');
+        const first = main.firstElementChild;
+        const last = main.lastElementChild;
+        return (
+          first !== last &&
+          [first, last].every((a) => a.matches('a.back') && a.getAttribute('href') === '../')
+        );
+      }),
+      at + 'the guide does not draw a back link as the first and the last child of #app-page'
+    );
+    await page.click('#app-page > a.back');
+    ok(
+      await page
+        .waitForFunction(
+          () =>
+            location.pathname === '/index.html' &&
+            location.hash === '#/lists' &&
+            !!document.querySelector('#app')?.childElementCount,
+          { timeout: 30_000 }
+        )
+        .then(() => true)
+        .catch(() => false),
+      at + 'the back link did not return to index.html#/lists'
+    );
+    await page.goto(root + 'pages/install.html', { waitUntil: 'load' });
+    await page.click('#app-page > a.back');
+    ok(
+      await page
+        .waitForFunction(
+          () =>
+            location.pathname === '/' &&
+            location.hash === '' &&
+            !!document.querySelector('#app')?.childElementCount,
+          { timeout: 30_000 }
+        )
+        .then(() => true)
+        .catch(() => false),
+      at + 'the back link on a direct visit did not open ../'
+    );
+  } finally {
+    await ctx.close();
+    server.closeAllConnections();
+    server.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -1695,7 +1758,8 @@ const CASES = [
   ['25 (notice dismiss while folded)', storageNoticeDismissWhileFolded],
   ['26 (announce on touch, inert grip)', announceOnTouchAndHideInertGrip],
   ['27 (list menu at 50 lists)', listMenuKeepsItsControlsInView],
-  ['28 (offline shell)', installedShellOffline]
+  ['28 (offline shell)', installedShellOffline],
+  ['29 (guide back link)', guideBackLink]
 ];
 
 (async () => {

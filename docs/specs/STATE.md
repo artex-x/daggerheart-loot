@@ -6,7 +6,7 @@ implementation detail.
 | Where | Holds | Survives a reload |
 |---|---|---|
 | URL hash | anything shareable: route, table, anchor, filters, the whole contents of a shared list, what to print | yes, and travels to other people |
-| `localStorage` | preferences and the person's own lists | yes, on this browser only |
+| `localStorage` | preferences and the person's own lists | yes, on this browser only; kept under storage pressure in the installed app (`META.md` section 9) |
 | Memory (`S`) | everything else | no |
 
 **The rule: how a page looks is remembered, what was asked on it is not.** A

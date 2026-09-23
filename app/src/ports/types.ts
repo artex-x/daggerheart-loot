@@ -220,12 +220,17 @@ export interface DataPort {
  */
 export type Registration = 'registered' | 'unsupported' | 'failed';
 
+export type Persistence = 'persisted' | 'denied' | 'skipped';
+
 export interface PwaPort {
   /** Links the manifest and registers `./sw.js` where a server serves the
    *  page; a no-op from a folder. */
   register(): Promise<Registration>;
   /** Whether the page runs as an installed app (standalone display mode). */
   standalone(): boolean;
+  /** Asks the browser to keep this origin's storage under storage pressure;
+   *  only in the installed app over http(s). */
+  persist(): Promise<Persistence>;
 }
 
 /**

@@ -7,8 +7,10 @@ const target = document.getElementById('app');
 if (!target) throw new Error('no #app element');
 
 const env = browserEnv();
-/* A boot concern beside `mount`, not a component's; the port keeps it a
-   no-op from a folder (docs/specs/META.md sections 4 and 9). */
+/* Registration and the storage request are boot concerns beside `mount`, not
+   a component's; the port keeps both no-ops from a folder (docs/specs/META.md
+   sections 4 and 9). */
 void env.pwa.register();
+void env.pwa.persist();
 
 export default mount(App, { target, props: { env } });

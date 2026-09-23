@@ -201,8 +201,13 @@ SITE_PAGES.PAGES.forEach(function ({ id }) {
   );
   ok(html.includes('id="app-page"'), 'pages/' + id + '.html has lost its id="app-page" marker');
   ok(
-    html.split('href="../"').length - 1 >= 2,
-    'pages/' + id + '.html does not link back to the app ("../") from both languages'
+    html.split(SITE_PAGES.BACK).length - 1 === 2,
+    'pages/' + id + '.html does not draw the back link at the top and the bottom'
+  );
+  ok(html.includes('history.back()'), 'pages/' + id + '.html has lost the back link script');
+  ok(
+    !fs.readFileSync(src, 'utf8').includes('class="back"'),
+    'pages/src/' + id + '.html draws its own back link; the template owns it'
   );
   /* The opposite of 404.html's rule below, for the opposite reason: a site
      page is served at its own path, so a relative link works on Pages and on

@@ -358,6 +358,10 @@ Seven modes. Each keeps its own input in memory only.
   draws, and hides the image button; so does a record whose picture or
   thumbnail fails to load, and the app remembers that for the session, so a
   failed thumbnail also shows the placeholder on the record's card.
+  Offline, where the service worker runs, a thumbnail the worker never
+  cached is answered with the cached 640 px picture when there is one, so
+  the row draws that picture and nothing is remembered as failed
+  (`META.md` section 9).
 - The record modal is a native `<dialog>` opened with `showModal()`, so it is
   modal, the page behind it is inert, and focus moves into it on open and
   returns to the opener on close - a deliberate improvement over the live
@@ -474,6 +478,9 @@ Seven modes. Each keeps its own input in memory only.
   http(s) and is not already the installed app (`display-mode: standalone`,
   or iOS `navigator.standalone`): nothing installs from a folder, and inside
   the installed app the step is done.
+- Each site page links back to the app at its top and its bottom and
+  returns to the screen the reader left (`META.md` section 9, "Static
+  pages").
 - No tab is lit on a record, a list page or a print sheet - the live
   `renderTabs` compared against the raw route string, and none of those three
   route kinds was ever that string.
