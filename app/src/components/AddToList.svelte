@@ -11,6 +11,7 @@
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
+  import type { ListEntryMeta } from '../lib/listLink.js';
   import { itemMeta, type StoredList } from '../lib/lists.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -24,9 +25,11 @@
     ids: readonly string[];
     /** The card's own control is primary; a future bar's is not. */
     primary?: boolean;
+    /** The meta to copy along in place of the shared page's own - the bar's taken counts. */
+    meta?: Readonly<Record<string, ListEntryMeta>> | undefined;
   }
 
-  const { app, key, ids, primary }: Props = $props();
+  const { app, key, ids, primary, meta }: Props = $props();
 
   const t = $derived(app.t);
   const open = $derived(app.menuFor === key);
@@ -34,6 +37,7 @@
      for this key - `app.shared` is the route gate, set only while the shared
      page is mounted. */
   const shared = $derived(app.shared);
+  const carried = $derived(meta ?? shared?.meta);
   /* A single record's menu names it - `t.inLists` even where it lies in no
      list at all, matching the live app's own reading of `listMenuHTML`. */
   const one = $derived(ids.length === 1 ? ids[0] : undefined);
@@ -94,7 +98,7 @@
       return;
     }
     const knows = (id: string): boolean => !!app.index?.byId.has(id);
-    const fresh = app.lists.addIds(l, ids, knows, shared?.meta);
+    const fresh = app.lists.addIds(l, ids, knows, carried);
     if (app.lists.save()) {
       app.say(
         t.addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + String(fresh.length) : '')
@@ -121,7 +125,7 @@
     }
     const l = app.lists.create(draft);
     const knows = (id: string): boolean => !!app.index?.byId.has(id);
-    const fresh = app.lists.addIds(l, ids, knows, shared?.meta);
+    const fresh = app.lists.addIds(l, ids, knows, carried);
     if (app.lists.save()) {
       app.say(
         t.addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + String(fresh.length) : '')

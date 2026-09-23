@@ -13,6 +13,9 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import { printHash } from '../lib/hash.js';
+  import type { ListEntryMeta } from '../lib/listLink.js';
+  import { takenQty, takenTotal } from '../lib/lists.js';
+  import { moneyMode, totalText } from '../lib/money.js';
   import { shareSelection } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
@@ -30,12 +33,29 @@
      already matches. */
   const ids = $derived<string[]>([...app.sel]);
 
+  /* Non-null only on the shared page - the same route gate `AddToList`
+     reads. There, a ticked entry carries its taken count and price into the
+     total, the copy and the add-to-list; a table or search selection
+     carries none of them. */
+  const shared = $derived(app.shared);
+  const metaOf = (id: string): ListEntryMeta => shared?.meta?.[id] ?? {};
+  const takenOf = (id: string): number => takenQty(metaOf(id), app.picked.get(id));
+  const total = $derived(
+    shared ? totalText(takenTotal(ids, metaOf, takenOf), moneyMode(shared), app.lang, t) : ''
+  );
+  const takenMeta = $derived(
+    shared
+      ? Object.fromEntries(ids.map((id) => [id, { ...metaOf(id), qty: takenOf(id) }]))
+      : undefined
+  );
+
   async function copySel(): Promise<void> {
     const index = app.index;
     if (!index) return;
     const items = ids.map((id) => index.byId.get(id)).filter((it): it is Record_ => !!it);
     if (!items.length) return;
-    const { text, html } = shareSelection(items, index, app.lang);
+    const priced = shared ? { metaOf, takenOf, mode: moneyMode(shared), t } : undefined;
+    const { text, html } = shareSelection(items, index, app.lang, priced);
     await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.selCopied);
   }
 </script>
@@ -54,8 +74,9 @@
           }}>&times;</button
         ></span
       >
+      {#if total}<span class="seltotal">{total}</span>{/if}
       <div class="selacts">
-        <AddToList {app} key="sel" {ids} primary />
+        <AddToList {app} key="sel" {ids} meta={takenMeta} primary />
         <Button size="sm" href={printHash(ids)} sameTab title={t.printHint}
           ><Icon name="print" />{t.print}</Button
         >
@@ -105,6 +126,13 @@
     font: 650 13.5px/1 inherit;
     color: var(--gold-soft);
     white-space: nowrap;
+  }
+
+  /* `.selcount`'s colour, and its font as drawn: the `font` shorthand above
+     names `inherit` as a family, which drops the whole declaration, so the
+     count inherits the bar's font (docs/specs/DEBT.md, D46). */
+  .seltotal {
+    color: var(--gold-soft);
   }
 
   .selx {

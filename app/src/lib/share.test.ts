@@ -236,6 +236,48 @@ describe('a ticked selection, off selAsText/selAsHtml in app.js', () => {
   });
 });
 
+describe('a list selection, with its taken counts and total', () => {
+  const t = dict('ru');
+  const meta: Record<string, { qty?: number; gold?: number }> = {
+    ci1: { qty: 5, gold: 50 },
+    ci2: { qty: 3 }
+  };
+  const priced = (taken: Record<string, number>, over: Partial<typeof t> = {}) => ({
+    metaOf: (id: string) => meta[id] ?? {},
+    takenOf: (id: string) => taken[id] ?? 1,
+    mode: 'bag' as const,
+    t: { ...t, ...over }
+  });
+
+  it('carries the taken count and unit price after each name and ends with the total', () => {
+    const a = rec('ci1');
+    const b = rec('ci2');
+    const { text, html } = shareSelection([a, b], index, 'ru', priced({ ci1: 2, ci2: 3 }));
+    const pa = share(a, index, 'ru', { suffix: ' ×2 — 5 горстей' });
+    const pb = share(b, index, 'ru', { suffix: ' ×3' });
+    expect(text).toBe([pa.text, pb.text, 'Итого: 1 мешок (без цены: 1)'].join('\n\n'));
+    expect(html).toBe(
+      [pa.html, pb.html, '<b>Итого: 1 мешок (без цены: 1)</b>'].join('<br><br>')
+    );
+  });
+
+  it('escapes the total line in the rich flavour', () => {
+    const { html } = shareSelection(
+      [rec('ci1')],
+      index,
+      'ru',
+      priced({ ci1: 2 }, { total: 'A & B' })
+    );
+    expect(html.endsWith('<br><br><b>A &amp; B: 1 мешок</b>')).toBe(true);
+  });
+
+  it('writes no total line when no taken entry has a price', () => {
+    const b = rec('ci2');
+    const { text } = shareSelection([b], index, 'ru', priced({ ci2: 2 }));
+    expect(text).toBe(share(b, index, 'ru', { suffix: ' ×2' }).text);
+  });
+});
+
 describe('entryNoteBlock, the one contextNote block (app.js 568-573)', () => {
   it('is a single block off the players’ note, never the GM one', () => {
     const t = dict('ru');

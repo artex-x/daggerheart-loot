@@ -25,6 +25,7 @@
   import NumRow from './NumRow.svelte';
   import OrGrid from './OrGrid.svelte';
   import PageTitle from './PageTitle.svelte';
+  import PickQty from './PickQty.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
@@ -34,19 +35,27 @@
   import { moneyHelpFor } from '../lib/help.js';
   import { printHash, sectionHash, sharedListHash } from '../lib/hash.js';
   import { itemsWord, nameOf } from '../lib/i18n.js';
-  import { encodeListRaw } from '../lib/listLink.js';
+  import { encodeListRaw, QTY_MAX } from '../lib/listLink.js';
   import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
-  import { findListByPayload, itemMeta, type StoredList } from '../lib/lists.js';
+  import {
+    findListByPayload,
+    itemMeta,
+    stockLeft,
+    takenQty,
+    takenTotal,
+    type StoredList
+  } from '../lib/lists.js';
   import {
     guessPrice,
     guessWhy,
     MONEY_MODES,
     moneyMode,
     priceText,
-    reprice
+    reprice,
+    totalText
   } from '../lib/money.js';
   import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
-  import { entryNoteBlock, shareList } from '../lib/share.js';
+  import { entryNoteBlock, shareList, shareSelection } from '../lib/share.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -208,6 +217,10 @@
      drops a scoped rule no template element can match and `npm run check`
      fails it as dead CSS if the port toggled them itself. */
   const lsel = new SvelteSet<string>();
+  /* A ticked row's taken count, when the person narrowed it below the stock
+     - the twin of `app.picked` for this page's own selection, cleared with
+     it. */
+  const picked = new SvelteMap<string, number>();
 
   /* Back/Forward between two different list addresses does not remount
      this component - Svelte only remounts between two different *route
@@ -218,6 +231,7 @@
   $effect(() => {
     void app.navigations;
     lsel.clear();
+    picked.clear();
     said = '';
   });
 
@@ -249,6 +263,8 @@
   /** The ticked ids, in list order - the live `batchBarHTML`'s own `ids`. */
   const ticked = $derived(own ? own.ids.filter((id) => lsel.has(id)) : []);
   const pricedCount = $derived(ticked.filter((id) => (metaOf(id).gold ?? 0) > 0).length);
+  const takenOf = (id: string): number => takenQty(metaOf(id), picked.get(id));
+  const total = $derived(totalText(takenTotal(ticked, metaOf, takenOf), mode, app.lang, t));
 
   /** The live `hidden` default (no note → hidden), with a person's own
    *  fold/unfold winning once they have touched it - the live `keepOpen`. */
@@ -443,9 +459,15 @@
       .replace('%m', String(l.ids.length));
   }
 
+  /* Held to 0..QTY_MAX, the most a list link carries, so the stored stock and
+     the address never disagree. The field is written back because a clamp
+     that stores an unchanged value draws nothing new ("99" then "0"). */
   function setQty(id: string, e: Event): void {
     const el = e.currentTarget as HTMLInputElement;
-    if (own) store.setMeta(own.id, id, 'qty', parseInt(el.value, 10) || 0);
+    const typed = parseInt(el.value, 10) || 0;
+    const qty = Math.max(0, Math.min(typed, QTY_MAX));
+    if (qty !== typed) el.value = qty ? String(qty) : '';
+    if (own) store.setMeta(own.id, id, 'qty', qty);
   }
   function setGold(id: string, e: Event): void {
     const el = e.currentTarget as HTMLInputElement;
@@ -464,11 +486,25 @@
 
   function pickRow(id: string, on: boolean): void {
     if (on) lsel.add(id);
-    else lsel.delete(id);
+    else {
+      lsel.delete(id);
+      picked.delete(id);
+    }
   }
   function pickAll(on: boolean): void {
     lsel.clear();
+    picked.clear();
     if (on && own) for (const id of own.ids) lsel.add(id);
+  }
+
+  /** Copies the ticked rows, in list order, with each taken count and unit
+   *  price and the total line - the shared page's bar copy, on this page. */
+  async function copyTicked(): Promise<void> {
+    if (!index) return;
+    const recs = ticked.map(byId).filter((it): it is Record_ => it != null);
+    if (!recs.length) return;
+    const { text, html } = shareSelection(recs, index, app.lang, { metaOf, takenOf, mode, t });
+    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.selCopied);
   }
 
   /* ---------- the actions under a ticked selection (app.js 3986-4083) ---------- */
@@ -556,24 +592,35 @@
     );
   }
 
-  /** The live `data-batch-del` handler (4061-4083): remembers every ticked
-   *  row's own position and meta, so the undo puts each back exactly where it
-   *  was. */
+  /** The live `data-batch-del` handler (4061-4083), by the taken count: a
+   *  row taken whole leaves the list, a row taken in part keeps the rest of
+   *  its stock. Remembers every ticked row's own position and meta, so the
+   *  one undo puts a removed row back exactly where it was and gives a
+   *  lowered row its stock back. */
   function batchDelete(): void {
     const l = own;
     if (!l) return;
-    const gone: { id: string; at: number; meta: ListEntryMeta }[] = [];
+    const gone: { id: string; at: number; meta: ListEntryMeta; left: number }[] = [];
     l.ids.forEach((id, i) => {
-      if (lsel.has(id)) gone.push({ id, at: i, meta: { ...itemMeta(l, id) } });
+      if (!lsel.has(id)) return;
+      const meta = { ...itemMeta(l, id) };
+      gone.push({ id, at: i, meta, left: stockLeft(meta, takenOf(id)) });
     });
     if (!gone.length) return;
-    for (const g of gone) store.removeEntry(l.id, g.id);
+    for (const g of gone) {
+      if (g.left > 0) store.setMeta(l.id, g.id, 'qty', g.left > 1 ? g.left : 0);
+      else store.removeEntry(l.id, g.id);
+    }
     lsel.clear();
+    picked.clear();
     app.say(`${t.batchDeleted} (${String(gone.length)})`, {
       action: {
         label: t.undo,
         run: () => {
-          for (const g of gone) store.restoreEntry(l.id, g.id, g.at, g.meta);
+          for (const g of gone) {
+            if (g.left > 0) store.setMeta(l.id, g.id, 'qty', g.meta.qty ?? 0);
+            else store.restoreEntry(l.id, g.id, g.at, g.meta);
+          }
         }
       }
     });
@@ -889,10 +936,14 @@
               }}
             />{lsel.size ? `${t.pickedN} ${String(lsel.size)}` : t.pickAll}</label
           >
+          {#if total}<span class="batch-sum">{total}</span>{/if}
           {#if ticked.length}
             <span class="batch-acts">
               <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
                 >{t.batchMoney}</Button
+              >
+              <Button size="sm" onclick={() => void copyTicked()}
+                ><Icon name="copy" />{t.copySel}</Button
               >
               <Button size="sm" variant="danger" onclick={batchDelete}
                 >{t.del} ({String(ticked.length)})</Button
@@ -1056,6 +1107,19 @@
                   }}>&times;</button
                 >
               </div>
+              {#if lsel.has(it.id) && (m.qty ?? 0) > 1}
+                <div class="lrow-take">
+                  <PickQty
+                    value={takenOf(it.id)}
+                    max={m.qty ?? 1}
+                    label={t.pickQty}
+                    name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
+                    onchange={(n: number) => {
+                      picked.set(it.id, n);
+                    }}
+                  />
+                </div>
+              {/if}
               <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
               <div class="rnote" hidden={boxHidden(it.id, m)}>{@render notePair(m, it.id)}</div>
             </div>
@@ -1404,18 +1468,25 @@
     background: rgb(216 171 94 / 7%);
   }
 
-  .batch-all {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
+  /* `.batch-sum` is the selection total, in the selected count's own type;
+     the bar is always on while a total shows. */
+  .batch-all,
+  .batch-sum {
     font: 650 11px/1 var(--mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted2);
   }
 
-  .batch.on .batch-all {
+  .batch-all {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .batch.on .batch-all,
+  .batch.on .batch-sum {
     color: var(--gold-soft);
   }
 
@@ -1612,6 +1683,17 @@
 
   .lrow.has-note {
     border-color: var(--line2);
+  }
+
+  /* The taken-count strip under a ticked row (docs/specs/FEATURES.md,
+     "Lists"): a full-width line like `.rnote`, the field right-aligned. No
+     fill: a background would cover the `drop-after` inset mark. */
+  .lrow-take {
+    flex: 0 0 100%;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--line);
+    padding: 9px 11px;
   }
 
   .lrow-acts .lrow-note {

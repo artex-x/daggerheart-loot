@@ -1,4 +1,4 @@
-/* "Everything a person can reach" - the 112 states tests/app/golden.js
+/* "Everything a person can reach" - the 118 states tests/app/golden.js
  * captures a structural snapshot of on both languages. Originated (issue 47)
  * as an independent copy of tests/parity/specs.js's STATES array plus the
  * module-level constants it read: the print routes, PACKED, the button-name
@@ -878,7 +878,7 @@ const STATES = [
     id: '#/lists/a ~ a row ticked',
     route: '#/lists/a',
     storage: seven,
-    why: 'the bar on, "Выбрано 1", Цены with its caret, Удалить (1) - at 375 the 640px override drops the pair to its own full-width line',
+    why: 'the bar on, "Выбрано 1", Цены with its caret, Скопировать, Удалить (1) - at 375 the 640px override drops the three to their own full-width block, Удалить (1) wrapping under the other two; no total, row 1 has no price',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
     }
@@ -887,7 +887,7 @@ const STATES = [
     id: '#/lists/a ~ prices',
     route: '#/lists/a',
     storage: noted,
-    why: 'row 2 (750, bags) ticked: the percentage row at -20 with "Сделать скидку" and the hint, the note, one guess row with its band, "Проставить эти цены", "Убрать цену (1)"',
+    why: 'row 2 (750, bags) ticked: the taken-count strip at 2, "Итого: 1 сундук 5 мешков" beside "Выбрано 1", Скопировать, the percentage row at -20 with "Сделать скидку" and the hint, the note, one guess row with its band, "Проставить эти цены", "Убрать цену (1)"',
     enter: async (d) => {
       await d.tick(ROW2_CI2);
       await d.click(NAME.ru.prices);
@@ -907,13 +907,36 @@ const STATES = [
     id: '#/lists/a ~ prices set',
     route: '#/lists/a',
     storage: seven,
-    why: 'the panel folded, row 1 priced, the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"',
+    why: 'the panel folded, row 1 priced and still ticked, so its total beside "Выбрано 1", the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
       await d.click(NAME.ru.prices);
       await d.click(NAME.ru.applyPrices);
     },
     /* a 7000ms toast (it carries an undo); arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/lists/a ~ picked',
+    route: '#/lists/a',
+    storage: noted,
+    why: 'row 2 (x2, 750) ticked and taken at 1: the strip at 1, "Итого: 7 мешков 5 горстей" beside "Выбрано 1", Цены, Скопировать, Удалить (1)',
+    enter: async (d) => {
+      await d.tick(ROW2_CI2);
+      await d.type('Сколько: ' + ROW2_CI2, '1');
+    }
+  },
+  {
+    id: '#/lists/a ~ sold part',
+    route: '#/lists/a',
+    storage: noted,
+    why: 'row 2 taken at 1 of 2 and deleted: seven rows, row 2 with an empty Кол-во and 750, the bar off, the toast "Убрано из списка (1)" with "Вернуть"',
+    enter: async (d) => {
+      await d.tick(ROW2_CI2);
+      await d.type('Сколько: ' + ROW2_CI2, '1');
+      await d.click(NAME.ru.delOne);
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -964,10 +987,24 @@ const STATES = [
     route: '#/l/' + QTY_AND_PRICE.player.payload,
     storage: two,
     why:
-      'issue 58: the save button above, row 1 ticked, the bar with "Выбрано 1" and the only ' +
-      '"Добавить в список"',
+      'issue 58: the save button above, row 1 ticked with its taken-count field at 2 under it, ' +
+      'the bar with "Выбрано 1" and the only "Добавить в список"; no total, row 1 has no price',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
+    }
+  },
+  {
+    id: '#/l/ ~ shared, picked',
+    route: '#/l/' + QTY_AND_PRICE.player.payload,
+    storage: two,
+    why:
+      'all three rows ticked, row 2 taken at 2 of 5: two taken-count fields (2 and 2), the bar ' +
+      'with "Выбрано 3" and "Итого: 1 мешок 1 горсть (без цены: 1)"',
+    enter: async (d) => {
+      await d.tick(ROW1_CI1);
+      await d.tick('Доспешный Сшиватель');
+      await d.tick('Туника из Паучьего Шелка');
+      await d.type('Сколько: Доспешный Сшиватель', '2');
     }
   },
   {

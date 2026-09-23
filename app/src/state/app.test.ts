@@ -594,6 +594,32 @@ describe('the selection', () => {
     expect(app.sel.size).toBe(0);
   });
 
+  it('drops every taken count on go() and on clearSel()', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.sel.add('ci1');
+    app.pick('ci1', 2);
+    app.go('#/lists');
+    expect(app.picked.size).toBe(0);
+
+    app.sel.add('ci1');
+    app.pick('ci1', 2);
+    app.clearSel();
+    expect(app.picked.size).toBe(0);
+  });
+
+  it('drops the taken count of an id unticked through toggleSel or toggleAllIn', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.toggleSel('ci1');
+    app.toggleSel('q1');
+    app.pick('ci1', 2);
+    app.pick('q1', 3);
+    app.toggleSel('ci1');
+    expect([...app.picked]).toEqual([['q1', 3]]);
+
+    app.toggleAllIn(['q1']);
+    expect(app.picked.size).toBe(0);
+  });
+
   it('shared starts null', () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
     expect(app.shared).toBeNull();

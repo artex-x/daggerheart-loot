@@ -93,6 +93,25 @@ export function priceText(
   return out.join(' ');
 }
 
+/**
+ * Returns the total line of a selection, or '' when no taken entry has a
+ * price. The sum is rounded once, so it can differ from the sum of the
+ * rounded line prices (docs/DECISIONS.md, "A list entry's price is the price
+ * of one unit").
+ */
+export function totalText(
+  total: { coins: number; unpriced: number },
+  mode: MoneyMode,
+  lang: Lang,
+  t: Dict
+): string {
+  if (total.coins <= 0) return '';
+  const line = `${t.total}: ${priceText(total.coins, mode, lang)}`;
+  return total.unpriced > 0
+    ? `${line} (${t.unpricedN.replace('%n', String(total.unpriced))})`
+    : line;
+}
+
 /* ---------- what a thing is worth ----------
    A suggestion, not a price list. Equipment is read off its tier, loot off its
    rarity; where there is no rarity the middle of the scale is honester than a

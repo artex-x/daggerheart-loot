@@ -3,7 +3,7 @@
  * index: the address rewrite, the tab bar and the modal all live above this
  * component. */
 
-import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -12,7 +12,8 @@ import { buildIndex } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { encodeList } from '../lib/listLink.js';
 import type { Loot } from '../lib/data.js';
-import { shareList } from '../lib/share.js';
+import { priceText } from '../lib/money.js';
+import { share, shareList } from '../lib/share.js';
 import type { StoredList } from '../lib/lists.js';
 import {
   fakeClipboard,
@@ -559,15 +560,19 @@ describe('the actions under a ticked selection', () => {
     expect(screen.queryByRole('button', { name: /Удалить \(/ })).not.toBeInTheDocument();
   });
 
-  it('holds exactly two buttons in the batch bar, with no percentage widget', async () => {
+  it('holds exactly three buttons in the batch bar, with no percentage widget', async () => {
     /* Ported from tests/lists2.js's own batch-bar shape check: the reprice
        percentage field lives in the separate .guess panel, not in
-       .batch-acts alongside Цены/Удалить. */
+       .batch-acts alongside Цены/Скопировать/Удалить. */
     const { container } = render(App, { env: withA() });
     await tickRow(0);
     const bar = container.querySelector('.batch-acts');
     expect(bar).toBeInTheDocument();
-    expect(within(bar as HTMLElement).getAllByRole('button')).toHaveLength(2);
+    expect(
+      within(bar as HTMLElement)
+        .getAllByRole('button')
+        .map((b) => b.textContent)
+    ).toEqual(['Цены', 'Скопировать', 'Удалить (1)']);
     expect((bar as HTMLElement).querySelector('input')).toBeNull();
   });
 
@@ -677,6 +682,140 @@ describe('the actions under a ticked selection', () => {
   });
 });
 
+describe('the taken count, the total and a partial removal', () => {
+  /* listA's rows in order: ci1 (unpriced), cc1 (x2 at 750 gold), q1 (unpriced). */
+  const tickRow = async (n: number): Promise<void> => {
+    await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[n]! }));
+  };
+  const takeOne = async (): Promise<void> => {
+    const field = screen.getByRole('spinbutton', { name: 'Сколько: Зелье' });
+    await userEvent.clear(field);
+    await userEvent.type(field, '1');
+  };
+
+  it('draws the count field at the stock under a ticked row over 1, and the total beside the count', async () => {
+    const { container } = render(App, { env: withA() });
+    await tickRow(0);
+    expect(screen.queryByRole('spinbutton', { name: /^Сколько/ })).not.toBeInTheDocument();
+    expect(container.querySelector('.batch-sum')).not.toBeInTheDocument();
+
+    await tickRow(1);
+    expect(screen.getByRole('spinbutton', { name: 'Сколько: Зелье' })).toHaveValue(2);
+    expect(container.querySelector('.batch-sum')).toHaveTextContent(
+      'Итого: 1 сундук 5 мешков (без цены: 1)'
+    );
+
+    await tickRow(0);
+    await takeOne();
+    expect(container.querySelector('.batch-sum')).toHaveTextContent(
+      'Итого: 7 мешков 5 горстей'
+    );
+  });
+
+  it('lowers a partly taken row, and one undo gives the stock back', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    await tickRow(1);
+    await takeOne();
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
+
+    const [l] = readLists(storage);
+    expect(l?.ids).toEqual(['ci1', 'cc1', 'q1']);
+    expect(l?.meta?.['cc1']).toEqual({
+      gold: 750,
+      note: 'Светится в темноте',
+      hnote: 'Проклят'
+    });
+    expect(screen.queryByRole('spinbutton', { name: /^Сколько/ })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBe(2);
+  });
+
+  it('removes a whole row and lowers a partial one in one step, and undoes both into place', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    await tickRow(0);
+    await tickRow(1);
+    await takeOne();
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
+
+    expect(screen.getByText('Убрано из списка (2)')).toBeInTheDocument();
+    expect(readLists(storage)[0]?.ids).toEqual(['cc1', 'q1']);
+    expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBeUndefined();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)[0]).toEqual(listA);
+  });
+
+  it('copies the ticked rows with their taken counts and the total', async () => {
+    const clip = fakeClipboard();
+    render(App, { env: withA('#/lists/a', { clipboard: clip }) });
+    await tickRow(1);
+    await tickRow(2);
+    await takeOne();
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать' }));
+
+    const index = buildIndex(LOOT);
+    const rec = (id: string) => index.byId.get(id)!;
+    const parts = [
+      share(rec('cc1'), index, 'ru', { suffix: ' — ' + priceText(750, 'bag', 'ru') }),
+      share(rec('q1'), index, 'ru')
+    ];
+    expect(clip.last.text).toBe(
+      [...parts.map((p) => p.text), 'Итого: 7 мешков 5 горстей (без цены: 1)'].join('\n\n')
+    );
+    expect(screen.getByText('Выбранное скопировано')).toBeInTheDocument();
+  });
+
+  it('forgets the count when its row is unticked', async () => {
+    render(App, { env: withA() });
+    await tickRow(1);
+    await takeOne();
+    await tickRow(1);
+    await tickRow(1);
+    expect(screen.getByRole('spinbutton', { name: 'Сколько: Зелье' })).toHaveValue(2);
+  });
+
+  it('forgets the count on a navigation to another list and back, and when select-all clears', async () => {
+    const listB: StoredList = { id: 'b', name: 'Другой', ids: ['q1'], created: 2 };
+    const router = memoryRouter('#/lists/a');
+    render(App, {
+      env: at('#/lists/a', {
+        router,
+        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA, listB]) })
+      })
+    });
+    await tickRow(1);
+    await takeOne();
+
+    router.navigate('#/lists/b');
+    await waitFor(() => {
+      expect(screen.queryByRole('checkbox', { name: ROW_NAMES[1]! })).not.toBeInTheDocument();
+    });
+    router.navigate('#/lists/a');
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: ROW_NAMES[1]! })).toBeInTheDocument();
+    });
+    await tickRow(1);
+    expect(screen.getByRole('spinbutton', { name: 'Сколько: Зелье' })).toHaveValue(2);
+
+    await takeOne();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрано 1' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрано 3' }));
+    await tickRow(1);
+    expect(screen.getByRole('spinbutton', { name: 'Сколько: Зелье' })).toHaveValue(2);
+  });
+
+  it('has no violations with the count field and the total on screen', async () => {
+    const { container } = render(App, { env: withA() });
+    await tickRow(0);
+    await tickRow(1);
+    await takeOne();
+    await expectNoA11yViolations(container);
+  });
+});
+
 describe('a row', () => {
   it('moves on a committed position and resets on an out-of-range one', async () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
@@ -713,6 +852,34 @@ describe('a row', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Монетами' }));
     expect(screen.queryByTitle(/мешк/)).not.toBeInTheDocument();
+  });
+
+  it('holds a typed quantity to the most a list link carries', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    const qty = screen.getAllByRole('spinbutton', { name: 'Кол-во' })[0] as HTMLElement;
+    await userEvent.type(qty, '150');
+    expect(readLists(storage)[0]?.meta?.['ci1']?.qty).toBe(99);
+    expect(qty).toHaveValue(99);
+  });
+
+  it('draws the held quantity back into the field when a key after 99 changes nothing stored', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    const qty = screen.getAllByRole('spinbutton', { name: 'Кол-во' })[0] as HTMLElement;
+    await userEvent.type(qty, '99');
+    await userEvent.type(qty, '0');
+    expect(readLists(storage)[0]?.meta?.['ci1']?.qty).toBe(99);
+    expect(qty).toHaveValue(99);
+  });
+
+  it('holds a negative quantity at none and empties the field', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    const qty = screen.getAllByRole('spinbutton', { name: 'Кол-во' })[1] as HTMLElement;
+    await fireEvent.input(qty, { target: { value: '-5' } });
+    expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBeUndefined();
+    expect(qty).toHaveValue(null);
   });
 });
 

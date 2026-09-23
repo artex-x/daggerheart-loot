@@ -360,6 +360,12 @@ const ru = {
   undo: 'Вернуть',
   pickAll: 'Выбрать все',
   pickedN: 'Выбрано',
+  /* A selection's taken count and total - colon forms, so a count and a
+     record name never have to agree with a word (I18N.md, "Rules"). */
+  total: 'Итого',
+  unpricedN: 'без цены: %n',
+  pickQty: 'Сколько',
+  pickQtyOf: 'Сколько: %s',
   moneyAs: 'Отображение цен',
   money_bag: 'Как в книге',
   money_coin: 'Монетами',
@@ -659,6 +665,10 @@ const en: Dict = {
   undo: 'Undo',
   pickAll: 'Select all',
   pickedN: 'Selected',
+  total: 'Total',
+  unpricedN: 'no price: %n',
+  pickQty: 'How many',
+  pickQtyOf: 'How many: %s',
   moneyAs: 'Price display',
   money_bag: 'As in the book',
   money_coin: 'In coins',

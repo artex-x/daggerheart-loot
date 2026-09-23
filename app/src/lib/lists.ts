@@ -132,6 +132,41 @@ export function itemMeta(l: StoredList, id: string): ListEntryMeta {
   return l.meta?.[id] ?? {};
 }
 
+/* ---------- a selection's taken counts (docs/specs/FEATURES.md, "Lists") ---------- */
+
+/** An entry with no `qty` is one of a thing. */
+function stockOf(meta: ListEntryMeta): number {
+  return Math.max(1, meta.qty ?? 1);
+}
+
+/** Returns how many of an entry a selection takes: the picked count held to 1..stock, or the whole stock. */
+export function takenQty(meta: ListEntryMeta, picked?: number): number {
+  const stock = stockOf(meta);
+  if (picked === undefined) return stock;
+  return Math.min(stock, Math.max(1, Math.floor(picked) || 1));
+}
+
+/** Returns the stock an entry keeps after `taken` of it leave; 0 means the entry leaves the list. */
+export function stockLeft(meta: ListEntryMeta, taken: number): number {
+  return Math.max(0, stockOf(meta) - taken);
+}
+
+/** Returns the coins the priced taken entries cost and how many taken entries have no price. */
+export function takenTotal(
+  ids: readonly string[],
+  metaOf: (id: string) => ListEntryMeta,
+  takenOf: (id: string) => number
+): { coins: number; unpriced: number } {
+  let coins = 0;
+  let unpriced = 0;
+  for (const id of ids) {
+    const gold = metaOf(id).gold ?? 0;
+    if (gold > 0) coins += gold * takenOf(id);
+    else unpriced++;
+  }
+  return { coins, unpriced };
+}
+
 /**
  * Move an entry to a new position.
  *

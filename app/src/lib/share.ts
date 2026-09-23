@@ -19,7 +19,8 @@ import type { Index } from './data.js';
 import { descHtml, esc } from './desc.js';
 import { descOf, eqLine, nameOf } from './i18n.js';
 import type { ListEntryMeta, ListShape } from './listLink.js';
-import { moneyMode, priceText } from './money.js';
+import { takenTotal } from './lists.js';
+import { moneyMode, priceText, totalText, type MoneyMode } from './money.js';
 import type { Lang, Record_ } from './types.js';
 
 /** An attached paragraph: a heading and a body, both of them plain text. */
@@ -177,17 +178,48 @@ export function shareRoll(
  * between entries. A roll offers options a player picks one of; a selection
  * is a list of things somebody is actually taking, so a craft target two of
  * them share is written out under each rather than once for the group.
+ *
+ * Two kinds of caller. The selection bar on a table or search page passes no
+ * `priced`, and the message is the live one, byte for byte. The shared list
+ * page's bar and the own list's batch bar pass `priced`: each name then
+ * carries its taken count and unit price, the way `shareList` writes them,
+ * and the message ends with the total line when any taken entry has a price.
  */
 export function shareSelection(
   items: readonly Record_[],
   index: Index,
-  lang: Lang
+  lang: Lang,
+  priced?: {
+    metaOf: (id: string) => ListEntryMeta;
+    takenOf: (id: string) => number;
+    mode: MoneyMode;
+    t: Dict;
+  }
 ): { text: string; html: string } {
-  const parts = items.map((it) => share(it, index, lang));
-  return {
-    text: parts.map((p) => p.text).join('\n\n'),
-    html: parts.map((p) => p.html).join('<br><br>')
-  };
+  const parts = items.map((it) => {
+    if (!priced) return share(it, index, lang);
+    const gold = priced.metaOf(it.id).gold;
+    const suffix =
+      qtySuffix(priced.takenOf(it.id)) +
+      (gold ? ` — ${priceText(gold, priced.mode, lang)}` : '');
+    return share(it, index, lang, { suffix });
+  });
+  let text = parts.map((p) => p.text).join('\n\n');
+  let html = parts.map((p) => p.html).join('<br><br>');
+  if (priced) {
+    const ids = items.map((it) => it.id);
+    const line = totalText(
+      takenTotal(ids, priced.metaOf, priced.takenOf),
+      priced.mode,
+      lang,
+      priced.t
+    );
+    if (line) {
+      text += '\n\n' + line;
+      html += '<br><br><b>' + esc(line) + '</b>';
+    }
+  }
+  return { text, html };
 }
 
 /**

@@ -1,6 +1,6 @@
 # #/lists/a ~ a row ticked
 # route: #/lists/a
-# why: the bar on, "Выбрано 1", Цены with its caret, Удалить (1) - at 375 the 640px override drops the pair to its own full-width line
+# why: the bar on, "Выбрано 1", Цены with its caret, Скопировать, Удалить (1) - at 375 the 640px override drops the three to their own full-width block, Удалить (1) wrapping under the other two; no total, row 1 has no price
 
 ## ru :: tree
 RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
@@ -26,7 +26,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     StaticText "7 позиций"
     button "Ссылка игрокам"
     button "Ссылка себе"
-    ... button x8 of 12 same-shape siblings elided
+    ... button x9 of 13 same-shape siblings elided
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
     DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
     button "Скрыть" [description=Скрыть]
@@ -108,6 +108,7 @@ daggerheart.com
 Разговаривающие Сферы
 Разговаривающие СферыЭта пара сфер позволяет существам, которые ... [namelen=129 namehash=ce76c23a]
 Результат броска
+Скопировать
 Скопировать текст
 Скрыть
 Случайно 1–7
@@ -148,7 +149,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     StaticText "7 items"
     button "Players' link"
     button "Your own link"
-    ... button x8 of 12 same-shape siblings elided
+    ... button x9 of 13 same-shape siblings elided
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
     DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
     button "Dismiss" [description=Dismiss]
@@ -209,6 +210,7 @@ Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121
 Charging Quiver
 Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=149 namehash=2b36c062]
 Communities
+Copy
 Copy text
 Delete
 Delete (1)

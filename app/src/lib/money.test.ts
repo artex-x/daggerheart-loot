@@ -10,6 +10,7 @@ import {
   MONEY_DEFAULT,
   priceText,
   reprice,
+  totalText,
   type Rarity
 } from './money.js';
 import type { Record_ } from './types.js';
@@ -262,5 +263,28 @@ describe('shifting prices by a percentage', () => {
     /* A price of zero is not a discount, it is a price that went missing */
     expect(reprice(1, -99)).toBe(1);
     expect(reprice(2, -100)).toBe(1);
+  });
+});
+
+describe('the selection total', () => {
+  const ru = dict('ru');
+
+  it('draws nothing when no taken entry has a price', () => {
+    expect(totalText({ coins: 0, unpriced: 2 }, 'bag', 'ru', ru)).toBe('');
+  });
+
+  it('reads the sum once, in the list money mode', () => {
+    expect(totalText({ coins: 112, unpriced: 0 }, 'bag', 'ru', ru)).toBe(
+      'Итого: 1 мешок 1 горсть'
+    );
+    expect(totalText({ coins: 112, unpriced: 0 }, 'coin', 'en', dict('en'))).toBe(
+      'Total: 112 gp'
+    );
+  });
+
+  it('counts the unpriced taken entries after the sum', () => {
+    expect(totalText({ coins: 112, unpriced: 1 }, 'bag', 'ru', ru)).toBe(
+      'Итого: 1 мешок 1 горсть (без цены: 1)'
+    );
   });
 });

@@ -375,18 +375,6 @@ deferral discipline.
   same list from a second tab mid-drag, and confirm the highlight and the
   eventual drop track the post-merge row order rather than the cached one.
 
-### D43 - a typed list quantity is stored unclamped, so copied text and print disagree
-
-- **Where**: `app/src/components/ListPage.svelte`, `setQty`.
-- **What**: the quantity field carries `max="99"`, but `setQty` stores the
-  typed value as parsed, with no `Math.min`. Typing 150 stores 150: the
-  copied list text says ` ×150`, while the list link and the print address
-  clamp to 99 (`QTY_MAX` in `listLink.ts`), so the print card says ` ×99`.
-- **Why deferred**: it predates the print counter and sits outside its
-  path; the print side already clamps, as the list link always did.
-- **How to verify the fix**: type 150 in a list row's quantity field, copy
-  the list's text and open its print sheet; both should read ` ×99`.
-
 ### D44 - a drag released on the list's own note bypasses both drop guards
 
 - **Where**: `app/src/ports/drag.ts`, `onDocOver` and `onDocDrop`; the
@@ -420,6 +408,22 @@ deferral discipline.
 - **How to verify the fix**: replace the participle with a gender-free form,
   remove a feminine record from a list, and confirm that the toast reads
   correctly in Russian.
+
+### D46 - the selection bar's count font declaration is invalid and dropped
+
+- **Where**: `app/src/components/SelBar.svelte`, `.selcount`,
+  `font: 650 13.5px/1 inherit`.
+- **What**: `inherit` is not a valid family inside the `font` shorthand, so
+  the browser drops the whole declaration. "Выбрано N" draws in the bar's
+  inherited font (15.5px, weight 400; measured 2026-09-23 on this host), not
+  the 13.5px/650 the rule names. The selection total beside it
+  (`.seltotal`) matches what is drawn, not what the rule names.
+- **Why deferred**: the fix changes the bar's type on every page with a
+  selection.
+- **How to verify the fix**: write the shorthand with a real family (or set
+  only `font-size` and `font-weight`), give `.seltotal` the same type, and
+  confirm the computed size of both in a browser and the selection-bar
+  geometry case in `tests/app/states.js`.
 
 ## Hook and tooling defects, kept open
 

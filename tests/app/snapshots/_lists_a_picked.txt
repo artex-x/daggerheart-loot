@@ -1,9 +1,9 @@
-# #/lists/a ~ prices set
+# #/lists/a ~ picked
 # route: #/lists/a
-# why: the panel folded, row 1 priced and still ticked, so its total beside "Выбрано 1", the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"
+# why: row 2 (x2, 750) ticked and taken at 1: the strip at 1, "Итого: 7 мешков 5 горстей" beside "Выбрано 1", Цены, Скопировать, Удалить (1)
 
 ## ru :: tree
-RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy5yMzV6fmNpMSoxKjEwMCxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
+RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy4xZGo5fmNpMSxjaTIqMio3NTAsY2kzLGNpNCxjaTUsY2k2LGNpNwoeK34f0JvQsNCy0LrQsCDQt9Cw0LrRgNGL0YLQsCDQtNC-INGD0YLRgNCwHitjaTIf0KHQstC10YLQuNGC0YHRjyDQsiDRgtC10LzQvdC-0YLQtQ]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -27,37 +27,46 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Ссылка игрокам"
     button "Ссылка себе"
     ... button x9 of 13 same-shape siblings elided
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2*2-ci3-ci4-ci5-ci6-ci7]
     DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
     button "Скрыть" [description=Скрыть]
     StaticText "ОТОБРАЖЕНИЕ ЦЕН"
     button "Как в книге" [pressed=true]
     button "Монетами" [pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
-    DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
+    DisclosureTriangle "ЗАМЕТКИ" [expanded=true]
+    ... StaticText x23 of 27 same-shape siblings elided
+    button "Очистить заметку" [description=Очистить заметку]
+    textbox "Например: лавка закрыта до утра" [value=Лавка закрыта до утра multiline=true readonly=false required=false]
+    textbox "Например: позиции 9-10 лежат под прилавком" [multiline=true readonly=false required=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
     checkbox "ВЫБРАНО 1" [checked=false]
-    ... StaticText x14 of 18 same-shape siblings elided
     button "Цены" [expanded=false]
-    checkbox "Первоклассный Спальный Мешок" [checked=true]
+    checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
-    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "ЗОЛОТО ?" [value=100 description=1 мешок valuetext=100 required=false valuemin=0 valuemax=99999]
-    button "Заметка" [description=Заметка]
-    button "Убрать из списка" [description=Убрать из списка]
-    checkbox "Пронзительная Свирель" [checked=false]
-    spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
+    checkbox "Пронзительная Свирель" [checked=true]
+    spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
+    spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
+    spinbutton "ЗОЛОТО ?" [value=750 description=7 мешков 5 горстей valuetext=750 required=false valuemin=0 valuemax=99999]
+    button "Заметка" [description=Заметка]
+    button "Убрать из списка" [description=Убрать из списка]
+    spinbutton "Сколько: Пронзительная Свирель" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
+    button "Очистить заметку" [description=Очистить заметку]
+    textbox "Как предмет выглядит, что о нём знают" [value=Светится в темноте multiline=true readonly=false required=false]
+    button "Очистить заметку" [description=Очистить заметку]
+    textbox "Хоумбрю, подвох, что знает только мастер" [value=Проклят multiline=true readonly=false required=false]
     ... checkbox x3 of 7 same-shape siblings elided
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
-    ... spinbutton x3 of 7 same-shape siblings elided
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
     spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
+    ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     checkbox "Наручники" [checked=false]
@@ -81,12 +90,9 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=444 namehash=861a7e51]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
-  status ""
-    StaticText "Цены проставлены (1)"
-    button "Вернуть"
 
 ## ru :: controls
-1 мешок
+7 мешков 5 горстей
 Dread
 EN
 RU
@@ -94,13 +100,13 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
-Вернуть
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
 К содержимому
 Как в книге
 Как это работает
+Лавка закрыта до утра
 ЛутDaggerheart
 Мистический Плащ
 Мистический ПлащСущество с Характеристикой Заклинателя, носящее ... [namelen=147 namehash=0cc59311]
@@ -111,15 +117,19 @@ daggerheart.com
 Наручники
 НаручникиЭта пара наручников с замком поставляется с ключом.Пред... [namelen=71 namehash=de6825cb]
 Обычные правила
+Очистить заметку
 Первоклассный Спальный Мешок
 Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
 Позиция в списке
 Поиск
+Проклят
 Пронзительная Свирель
 Пронзительная СвирельЭта свирель ручной работы имеет характерный... [namelen=165 namehash=9d32035b]
 Разговаривающие Сферы
 Разговаривающие СферыЭта пара сфер позволяет существам, которые ... [namelen=129 namehash=ce76c23a]
 Результат броска
+Светится в темноте
+Сколько: Пронзительная Свирель
 Скопировать
 Скопировать текст
 Скрыть
@@ -138,7 +148,7 @@ daggerheart.com
 Цены
 
 ## en :: tree
-RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy5yMzV6fmNpMSoxKjEwMCxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
+RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy4xZGo5fmNpMSxjaTIqMio3NTAsY2kzLGNpNCxjaTUsY2k2LGNpNwoeK34f0JvQsNCy0LrQsCDQt9Cw0LrRgNGL0YLQsCDQtNC-INGD0YLRgNCwHitjaTIf0KHQstC10YLQuNGC0YHRjyDQsiDRgtC10LzQvdC-0YLQtQ]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -162,37 +172,46 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "Players' link"
     button "Your own link"
     ... button x9 of 13 same-shape siblings elided
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2*2-ci3-ci4-ci5-ci6-ci7]
     DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
     button "Dismiss" [description=Dismiss]
     StaticText "PRICE DISPLAY"
     button "As in the book" [pressed=true]
     button "In coins" [pressed=false]
     button "How this works" [description=How this works expanded=false]
-    DisclosureTriangle "NOTES" [expanded=false]
+    DisclosureTriangle "NOTES" [expanded=true]
+    ... StaticText x23 of 27 same-shape siblings elided
+    button "Clear the note" [description=Clear the note]
+    textbox "e.g. the shop is shut until morning" [value=Лавка закрыта до утра multiline=true readonly=false required=false]
+    textbox "e.g. entries 9-10 are kept under the counter" [multiline=true readonly=false required=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
     checkbox "SELECTED 1" [checked=false]
-    ... StaticText x14 of 18 same-shape siblings elided
     button "Prices" [expanded=false]
-    checkbox "Premium Bedroll" [checked=true]
+    checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
-    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "GOLD ?" [value=100 description=1 bag valuetext=100 required=false valuemin=0 valuemax=99999]
-    button "Note" [description=Note]
-    button "Remove from the list" [description=Remove from the list]
-    checkbox "Piper Whistle" [checked=false]
-    spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
+    checkbox "Piper Whistle" [checked=true]
+    spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
+    spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
+    spinbutton "GOLD ?" [value=750 description=7 bags 5 handfuls valuetext=750 required=false valuemin=0 valuemax=99999]
+    button "Note" [description=Note]
+    button "Remove from the list" [description=Remove from the list]
+    spinbutton "How many: Piper Whistle" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
+    button "Clear the note" [description=Clear the note]
+    textbox "What it looks like, what is known about it" [value=Светится в темноте multiline=true readonly=false required=false]
+    button "Clear the note" [description=Clear the note]
+    textbox "Homebrew, the catch, what only the GM knows" [value=Проклят multiline=true readonly=false required=false]
     ... checkbox x3 of 7 same-shape siblings elided
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=7]
-    ... spinbutton x3 of 7 same-shape siblings elided
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     ... button x3 of 7 same-shape siblings elided
     ... button x3 of 7 same-shape siblings elided
     spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=7]
+    ... spinbutton x2 of 6 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=7]
     checkbox "Manacles" [checked=false]
@@ -216,12 +235,9 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=443 namehash=f6834d6a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
-  status ""
-    StaticText "Цены проставлены (1)"
-    button "Вернуть"
 
 ## en :: controls
-1 bag
+7 bags 5 handfuls
 Alistair's Torch
 Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
 Alt. tables
@@ -230,6 +246,7 @@ Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121
 As in the book
 Charging Quiver
 Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=149 namehash=2b36c062]
+Clear the note
 Communities
 Copy
 Copy text
@@ -238,6 +255,7 @@ Delete (1)
 Dismiss
 Dread
 EN
+How many: Piper Whistle
 How this works
 In coins
 Lay these out for printing: nine to an A4 sheet
@@ -269,5 +287,7 @@ Vault of Ages
 Wondrous
 Your own link
 daggerheart.com
-Вернуть
+Лавка закрыта до утра
 ЛутDaggerheart
+Проклят
+Светится в темноте

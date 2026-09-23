@@ -374,6 +374,8 @@ const COVERED: Record<string, string> = {
   'PageTitle.svelte':
     "record.test.ts's record and not-found pages, listPage/printPage/sharedListPage.test.ts",
   'Panel.svelte': 'every roll page state above, the lists index and search',
+  'PickQty.svelte':
+    "the taken-count fields in listPage.test.ts's and sharedListPage.test.ts's own a11y cases",
   'RecordActions.svelte': 'record.test.ts, and inside the modal above',
   'RecordCard.svelte': 'record.test.ts, and inside the modal above',
   'RecordHost.svelte':

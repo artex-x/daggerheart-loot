@@ -10,13 +10,14 @@
   import HitNote from './HitNote.svelte';
   import Icon from './Icon.svelte';
   import PageTitle from './PageTitle.svelte';
+  import PickQty from './PickQty.svelte';
   import RecordHost from './RecordHost.svelte';
   import TableRows from './TableRows.svelte';
   import type { Index } from '../lib/data.js';
   import { sectionHash, sharedListHash } from '../lib/hash.js';
-  import { itemsWord } from '../lib/i18n.js';
+  import { itemsWord, nameOf } from '../lib/i18n.js';
   import { decodeList, encodeList, type ListEntryMeta } from '../lib/listLink.js';
-  import { copyInit } from '../lib/lists.js';
+  import { copyInit, takenQty } from '../lib/lists.js';
   import { moneyMode, priceText } from '../lib/money.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -135,6 +136,20 @@
         }}
       >
         {#snippet after(it: Record_)}
+          {@const m = metaOf(it.id)}
+          {#if app.sel.has(it.id) && (m.qty ?? 0) > 1}
+            <div class="pickrow">
+              <PickQty
+                value={takenQty(m, app.picked.get(it.id))}
+                max={m.qty ?? 1}
+                label={t.pickQty}
+                name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
+                onchange={(n: number) => {
+                  app.pick(it.id, n);
+                }}
+              />
+            </div>
+          {/if}
           <HitNote icon="eye" label={t.notePub} text={metaOf(it.id).note} />
           <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(it.id).hnote} />
         {/snippet}
@@ -150,5 +165,13 @@
      rule of this component's own. */
   .notes {
     margin-bottom: 18px;
+  }
+
+  /* The taken-count strip under a ticked row, right-aligned under the row's
+     own tail (docs/specs/FEATURES.md, "Lists"). */
+  .pickrow {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 11px;
   }
 </style>

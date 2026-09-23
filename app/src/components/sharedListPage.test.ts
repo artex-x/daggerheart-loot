@@ -6,13 +6,23 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
+import { buildIndex } from '../lib/data.js';
+import { dict } from '../lib/dict.js';
 import { encodeList } from '../lib/listLink.js';
 import { priceText } from '../lib/money.js';
 import type { StoredList } from '../lib/lists.js';
-import { fakeData, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import { share } from '../lib/share.js';
+import {
+  fakeClipboard,
+  fakeData,
+  fakeEnv,
+  memoryRouter,
+  memoryStorage
+} from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
@@ -339,6 +349,121 @@ describe('adding to an existing list', () => {
       ids: ['cc21'],
       meta: { cc21: { qty: 5, gold: 50 } }
     });
+  });
+});
+
+describe('the taken count and the total', () => {
+  /* qty-and-price.json: ci1 x2 unpriced, cc21 x5 at 50, q337 at 12. */
+  const tick = async (id: string): Promise<void> => {
+    const box = document
+      .querySelector(`[data-row="${id}"]`)
+      ?.querySelector('input[type="checkbox"]') as HTMLElement;
+    await userEvent.click(box);
+  };
+  const countOf = (name: string): HTMLElement =>
+    screen.getByRole('spinbutton', { name: 'Сколько: ' + name });
+  const setCount = async (name: string, n: string): Promise<void> => {
+    const field = countOf(name);
+    await userEvent.clear(field);
+    await userEvent.type(field, n);
+  };
+  const tickAllAndTakeTwo = async (): Promise<void> => {
+    await tick('ci1');
+    await tick('cc21');
+    await tick('q337');
+    await setCount('Эликсир ярости', '2');
+  };
+
+  it('draws a count field at the whole quantity only under a ticked entry over 1', async () => {
+    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    expect(screen.queryByRole('spinbutton', { name: /^Сколько/ })).not.toBeInTheDocument();
+
+    await tick('ci1');
+    expect(countOf('Спальный мешок')).toHaveValue(2);
+    await tick('q337');
+    expect(screen.getAllByRole('spinbutton', { name: /^Сколько/ })).toHaveLength(1);
+  });
+
+  it('shows the total beside the selected count, with the unpriced count', async () => {
+    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await tick('ci1');
+    expect(container.querySelector('.seltotal')).not.toBeInTheDocument();
+
+    await tick('cc21');
+    await tick('q337');
+    await setCount('Эликсир ярости', '2');
+    expect(container.querySelector('.seltotal')).toHaveTextContent(
+      'Итого: 1 мешок 1 горсть (без цены: 1)'
+    );
+  });
+
+  it('holds a typed count to the quantity, and puts the value back on an emptied commit', async () => {
+    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await tick('cc21');
+    await setCount('Эликсир ярости', '9');
+    expect(countOf('Эликсир ярости')).toHaveValue(5);
+
+    await setCount('Эликсир ярости', '3');
+    await userEvent.clear(countOf('Эликсир ярости'));
+    await userEvent.tab();
+    expect(countOf('Эликсир ярости')).toHaveValue(3);
+  });
+
+  it('adds the taken count to a list, with the price and no count of 1', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) });
+    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { storage }) });
+    await tickAllAndTakeTwo();
+
+    const bar = document.querySelector('.selbarwrap') as HTMLElement;
+    await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'Клад дракона' }));
+
+    const [a] = readLists(storage);
+    expect(a?.meta).toEqual({
+      ci1: { qty: 2 },
+      cc21: { qty: 2, gold: 50 },
+      q337: { gold: 12 }
+    });
+  });
+
+  it('copies each taken count and unit price, then the total line', async () => {
+    const clip = fakeClipboard();
+    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { clipboard: clip }) });
+    await tickAllAndTakeTwo();
+
+    const bar = document.querySelector('.selbarwrap') as HTMLElement;
+    await userEvent.click(within(bar).getByRole('button', { name: 'Скопировать' }));
+
+    const index = buildIndex(LOOT);
+    const rec = (id: string) => index.byId.get(id)!;
+    const parts = [
+      share(rec('ci1'), index, 'ru', { suffix: ' ×2' }),
+      share(rec('cc21'), index, 'ru', { suffix: ' ×2 — ' + priceText(50, 'bag', 'ru') }),
+      share(rec('q337'), index, 'ru', { suffix: ' — ' + priceText(12, 'bag', 'ru') })
+    ];
+    expect(clip.last.text).toBe(
+      [...parts.map((p) => p.text), 'Итого: 1 мешок 1 горсть (без цены: 1)'].join('\n\n')
+    );
+    expect(screen.getByText(dict('ru').selCopied)).toBeInTheDocument();
+  });
+
+  it('forgets the count on a navigation', async () => {
+    const router = memoryRouter('#/l/' + QTY_AND_PRICE.player.payload);
+    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { router }) });
+    await tick('cc21');
+    await setCount('Эликсир ярости', '2');
+
+    router.navigate('#/lists');
+    router.navigate('#/l/' + QTY_AND_PRICE.player.payload);
+    flushSync();
+    await tick('cc21');
+    expect(countOf('Эликсир ярости')).toHaveValue(5);
+  });
+
+  it('has no violations with the count fields and the total on screen', async () => {
+    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await tickAllAndTakeTwo();
+    await expectNoA11yViolations(container);
   });
 });
 

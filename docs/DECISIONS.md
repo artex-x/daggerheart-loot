@@ -12,6 +12,70 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-23 - A list entry's price is the price of one unit; a selection's total is summed in coins
+
+- Task: `50` (find it with `git log --grep="Task: 50"`).
+- Decision: `gold` on a list entry is what one unit costs. A selection's total
+  is the sum of `gold x taken count` over the ticked, priced entries, in whole
+  coins, read once through `priceText` in the list's own money mode - so the
+  rounding to two units applies to the total, never line by line. An unpriced
+  ticked entry adds nothing and is counted aloud: "Итого: 1 мешок 1 горсть
+  (без цены: 1)". With no priced entry ticked, no total is drawn.
+- Rejected: `gold` as the price of the whole stack - the price guess
+  (`guessPrice`) and the percentage shift already treat it as one record's
+  price; summing only the priced rows with no word about the rest - reads as
+  a complete total when it is not; no total while any row is unpriced -
+  useless for a shop that prices part of its stock; rounding each line
+  before summing - the sum of rounded lines drifts from the real price.
+
+## 2026-09-23 - A selection on a list page carries a taken count per entry, in memory, defaulting to the whole stock
+
+- Task: `50`.
+- Decision: ticking an entry takes its whole quantity; a count field narrows
+  it to 1..quantity. The count lives in memory beside the selection it
+  belongs to (`AppState` for the shared page, `ListPage` for an own list) and
+  is cleared with it. Removing the selection from an own list takes the
+  counts: a partial count lowers the entry's quantity, a full one removes the
+  entry, and one undo restores both. Adding the shared page's selection to a
+  list carries the taken count as the new entry's quantity.
+- Rejected: a default of 1 - silently changes what "Удалить (N)" and the
+  bar's add-to-list already do for a ticked stack; turning `app.sel` into a
+  map - touches every table and search caller for a list-only need; a count
+  in the address or the list link - a public-contract change for state
+  `STATE.md` keeps out of storage and links; a separate cart - a second
+  selection model beside the one the pages already have.
+
+## 2026-09-23 - The total rides in a selection's copied text, not in a whole list's
+
+- Task: `50`.
+- Decision: "Скопировать" on the shared page's selection bar, and a new
+  "Скопировать" in the own list's batch bar, copy the ticked records with
+  each one's taken count and unit price after the name (the `shareList` line
+  shape) and end with the total line. "Скопировать текст" for a whole list
+  stays as it is. A table's or search's selection copy is unchanged.
+- Rejected: a total at the end of every copied list - changes a pasted
+  format nobody can edit afterwards for every list, priced or not; both - two
+  totals for the same list read as a disagreement when a selection is part
+  of it.
+
+## 2026-09-23 - The taken count sits in a strip under a ticked row; the total sits beside the selected count
+
+- Task: `50`, human decision.
+- Decision: a ticked list entry whose quantity is over 1 grows a thin strip
+  right under its row with a "Сколько" / "How many" field (1..quantity). An
+  entry at 1 draws no strip, and an untouched page draws nothing new. The
+  total sits beside "Выбрано N" in each page's own bar: the shared page's
+  selection bar and the own list's batch bar. One `PickQty.svelte` serves
+  both pages.
+- Rejected: a "Продажа" panel under the bar listing every ticked row with a
+  field, like the "Цены" panel - on the shared page it opens above the sticky
+  bottom bar and covers the rows it counts on a phone; a third field in the
+  row's Кол-во/Золото column - crowds the row at 375px and puts two quantity
+  fields side by side on the own list.
+- Accepted trade-off: a ticked row grows by one line. At 375px the shared
+  page's total wraps under "Выбрано N" and the own list's "Удалить (N)" wraps
+  under the other batch buttons; the human kept both wraps as drawn.
+
 ## 2026-09-22 - The print address carries a list's count as `*<n>` per id
 
 - Task: `67`, human decision (find it with `git log --grep="Task: 67"`).

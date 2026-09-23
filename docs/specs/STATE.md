@@ -15,8 +15,9 @@ looks broken. Table view, language and starting section describe the app's
 behaviour, so they persist; a roll, a search, a rarity, a ticked row and an open
 help panel start over.
 
-Do not persist filters, search text or selections. Filters are shared by link
-instead - that is what the `f_` segment is for.
+Do not persist filters, search text or selections, a selection's taken counts
+included. Filters are shared by link instead - that is what the `f_` segment
+is for.
 
 ## localStorage keys
 
@@ -83,10 +84,10 @@ state exists, by what it was for:
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `comm {c, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}` |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |
-| Lists | `lists`, `openList`, `urlPayload`, `deleted`, `lsel`, `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `importDraft`, `pickQ`, `shared {ids, meta}` |
+| Lists | `lists`, `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `importDraft`, `pickQ`, `shared {ids, meta}` |
 | Prices | `rp`, `guess`, `moneyHelp` |
 | Print | `printIds`, `printBW` |
-| UI | `sel`, `modal`, `menuFor`, `help`, `keepOpen` |
+| UI | `sel`, `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen` |
 
 `fSeg` is the filter segment already read back from the address. Reading the
 address on every render froze the filter at whatever the link said: the panel

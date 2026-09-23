@@ -16,7 +16,7 @@
  * Everything outside arrives as an `Env`. That is what makes this testable and
  * what stops a component reaching past it. */
 
-import { SvelteSet } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict } from '../lib/dict.js';
 import {
@@ -179,6 +179,24 @@ export class AppState {
   readonly sel = new SvelteSet<string>();
 
   /**
+   * The count a person narrowed a ticked shared-list entry to - a taken
+   * count (docs/specs/FEATURES.md, "Lists"). An id with no count here takes
+   * its whole stock. Memory only, and cleared with `sel`: a count never
+   * outlives the tick it belongs to.
+   */
+  readonly picked = new SvelteMap<string, number>();
+
+  /** Sets the taken count of one ticked entry. */
+  pick(id: string, n: number): void {
+    this.picked.set(id, n);
+  }
+
+  #clearTicks(): void {
+    this.sel.clear();
+    this.picked.clear();
+  }
+
+  /**
    * "Select all" for whatever ids are on screen - always all of one list: the
    * whole table for a plain body, one section's own rows where the body is
    * split, or a shared list's own rows. Ticks every id if any of them is not
@@ -190,7 +208,10 @@ export class AppState {
     const on = ids.some((id) => !this.sel.has(id));
     for (const id of ids) {
       if (on) this.sel.add(id);
-      else this.sel.delete(id);
+      else {
+        this.sel.delete(id);
+        this.picked.delete(id);
+      }
     }
   }
 
@@ -310,7 +331,7 @@ export class AppState {
       this.hash = this.#fallback(h);
       this.navigations++;
       this.menuFor = '';
-      this.sel.clear();
+      this.#clearTicks();
       this.#applySource();
       this.#expand();
     });
@@ -464,22 +485,24 @@ export class AppState {
     this.hash = this.#fallback(hash);
     this.navigations++;
     this.menuFor = '';
-    this.sel.clear();
+    this.#clearTicks();
     this.#applySource();
     this.#expand();
   }
 
   /** Clears the selection and folds its menu - the live `clearSel` action. */
   clearSel(): void {
-    this.sel.clear();
+    this.#clearTicks();
     this.menuFor = '';
   }
 
   /** Ticks or unticks one row - `TablesPage.svelte`'s own copy moved here on
    *  its second use (the shared page). */
   toggleSel(id: string): void {
-    if (this.sel.has(id)) this.sel.delete(id);
-    else this.sel.add(id);
+    if (this.sel.has(id)) {
+      this.sel.delete(id);
+      this.picked.delete(id);
+    } else this.sel.add(id);
   }
 
   /**

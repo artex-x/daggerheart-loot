@@ -8,6 +8,9 @@ import {
   liftNotes,
   mergeLists,
   moveEntry,
+  stockLeft,
+  takenQty,
+  takenTotal,
   type LegacyList,
   type StoredList
 } from './lists.js';
@@ -211,5 +214,50 @@ describe('copyInit', () => {
   it('leavesOutWhatTheLinkDoesNotCarry', () => {
     const decoded: DecodedList = { name: 'X', ids: ['ci1'], dropped: 0 };
     expect(copyInit(decoded)).toEqual({ ids: ['ci1'] });
+  });
+});
+
+describe('a selection taken count', () => {
+  it('takes the whole stock when nothing was picked', () => {
+    expect(takenQty({ qty: 5 })).toBe(5);
+    expect(takenQty({})).toBe(1);
+  });
+
+  it('holds a picked count to 1..stock and drops a fraction', () => {
+    expect(takenQty({ qty: 5 }, 0)).toBe(1);
+    expect(takenQty({ qty: 5 }, 9)).toBe(5);
+    expect(takenQty({ qty: 5 }, 2.7)).toBe(2);
+  });
+
+  it('leaves the rest of the stock, and 0 when all of it is taken', () => {
+    expect(stockLeft({ qty: 5 }, 2)).toBe(3);
+    expect(stockLeft({ qty: 2 }, 2)).toBe(0);
+    expect(stockLeft({}, 1)).toBe(0);
+  });
+
+  it('sums the priced taken entries in coins and counts the unpriced ones', () => {
+    const meta: Record<string, { qty?: number; gold?: number }> = {
+      a: { qty: 2 },
+      b: { qty: 5, gold: 50 },
+      c: { gold: 12 }
+    };
+    const taken: Record<string, number> = { a: 2, b: 2, c: 1 };
+    expect(
+      takenTotal(
+        ['a', 'b', 'c'],
+        (id) => meta[id] ?? {},
+        (id) => taken[id] ?? 1
+      )
+    ).toEqual({ coins: 112, unpriced: 1 });
+  });
+
+  it('is zero with nothing ticked', () => {
+    expect(
+      takenTotal(
+        [],
+        () => ({}),
+        () => 1
+      )
+    ).toEqual({ coins: 0, unpriced: 0 });
   });
 });
