@@ -108,7 +108,12 @@ export function shareName(it: Record_, lang: Lang): string {
 
 function statLine(it: Record_, lang: Lang): string {
   const t = dict(lang);
-  return eqLine(it, lang, { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore });
+  return eqLine(it, lang, {
+    tier: t.tier,
+    thresholds: t.eqTh,
+    armorScore: t.eqScore,
+    artifact: t.voaArtifact1
+  });
 }
 
 /** A record's name, safe to use as a downloaded or shared file's name - the

@@ -739,6 +739,40 @@ describe('the equipment tables', () => {
     expect(document.getElementById('sec-t3')).not.toBeNull();
     expect(document.getElementById('sec-t4')).not.toBeNull();
     expect(document.querySelectorAll('.tsec-head .lbl')[0]).toHaveTextContent('Ранг 1');
+    expect(document.getElementById('sec-tA')).toBeNull();
+  });
+
+  it('draws an Artifacts section after tier 4 when an artifact weapon exists', async () => {
+    const withArtifact: Loot = {
+      ...LOOT,
+      items: {
+        ...LOOT.items,
+        voa: [
+          ...(LOOT.items['voa'] ?? []),
+          row({
+            id: 'v3',
+            src: 'voa',
+            kind: 'equip',
+            tier: 'A',
+            ru: 'Клятва Равновесия',
+            eq: { t: 'weapon', tier: 'A', cls: 'phy', tr: 'strength', rg: 'melee', bu: 2 }
+          })
+        ]
+      }
+    };
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(withArtifact) })
+    });
+    const labels = [...document.querySelectorAll('.tsec-head .lbl')].map(
+      (el) => el.textContent
+    );
+    expect(labels).toEqual(['Ранг 1', 'Ранг 2', 'Ранг 3', 'Ранг 4', 'Артефакты']);
+    const section = document.getElementById('sec-tA');
+    expect(section).not.toBeNull();
+    expect(
+      within(section?.closest('.tsection') as HTMLElement).getByText('Клятва Равновесия')
+    ).toBeInTheDocument();
+    await expectNoA11yViolations(container);
   });
 
   it('drops a tier with no rows - armour has none in tier 3 or 4', () => {

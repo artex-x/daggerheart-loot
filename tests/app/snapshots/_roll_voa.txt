@@ -34,11 +34,11 @@ RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url
     button "Ранг 4" [pressed=false]
     button "Артефакты" [pressed=false]
     button "Проклятые предметы" [pressed=false]
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–24)"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–30)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    button "Случайно 1–24"
+    button "Случайно 1–30"
     status ""
       button "Страница"
       StaticText "1"
@@ -86,7 +86,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Случайно 1–24
+Случайно 1–30
 Сообщества
 Списки
 Страница
@@ -124,11 +124,11 @@ RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
     button "Tier 4" [pressed=false]
     button "Artifacts" [pressed=false]
     button "Cursed objects" [pressed=false]
-    StaticText "ROLL RESULT (1–24)"
+    StaticText "ROLL RESULT (1–30)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    button "Random 1–24"
+    button "Random 1–30"
     status ""
       button "Page"
       StaticText "1"
@@ -166,7 +166,7 @@ One lower
 Open this section on start
 Page
 RU
-Random 1–24
+Random 1–30
 Roll result
 Search
 Share

@@ -42,6 +42,11 @@ const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + String(i + 
  * (Ember, Steampowered Gauntlets), the set line on both members, and a loot
  * card with a folded GM box. */
 const DV_SET = '#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14';
+/* Vault of Ages Volume 4's worst cases: the artifact weapon card, the three
+ * set members, a consumable artifact, a weapon with a referenced adversary,
+ * a folded condition line, and two bulleted lists. */
+const VOA4_SET =
+  '#/print/voa4_a3-voa4_t3d-voa4_t3e-voa4_t3f-voa4_a2-voa4_t1b-voa4_t2e-voa4_t4i-voa4_a1';
 const TOO_MANY =
   '#/print/' +
   Object.values(LOOT.items)
@@ -681,7 +686,12 @@ const STATES = [
   {
     id: '#/tables/eq_weapon',
     route: '#/tables/eq_weapon',
-    why: 'the biggest table: four tier sections, .fcount 370, the strip folded'
+    why: 'the biggest table: four tier sections and the artifacts, .fcount 381, the strip folded'
+  },
+  {
+    id: '#/tables/eq_weapon/f_tier-A',
+    route: '#/tables/eq_weapon/f_tier-A',
+    why: 'the artifact chip on the equipment tier row, one row'
   },
   {
     id: '#/tables/eq_secondary',
@@ -727,7 +737,7 @@ const STATES = [
   {
     id: '#/tables/eq_armor ~ nothing found',
     route: '#/tables/eq_armor',
-    why: 'the three-row panel open, a pill, 0 из 94, the empty state with its own reset',
+    why: 'the three-row panel open, a pill, 0 из 100, the empty state with its own reset',
     enter: async (d) => {
       await d.click('Фильтры');
       await d.click('Уникальные');
@@ -858,6 +868,29 @@ const STATES = [
     id: '#/i/dve19',
     route: '#/i/dve19',
     why: "the set line and the set's shared bonus: every member listed, the record itself inert"
+  },
+
+  /* Vault of Ages Volume 4: the first artifact with a stat block, a
+     three-member set, a referenced adversary card, a consumable artifact. */
+  {
+    id: '#/i/voa4_a3',
+    route: '#/i/voa4_a3',
+    why: "an artifact weapon: the Artifact badge, the stat line's artifact word, the strip, roll 9"
+  },
+  {
+    id: '#/i/voa4_t3d',
+    route: '#/i/voa4_t3d',
+    why: 'a three-member set: the set line with two links, the shared bonus'
+  },
+  {
+    id: '#/i/voa4_t1b',
+    route: '#/i/voa4_t1b',
+    why: 'a weapon with a referenced adversary card'
+  },
+  {
+    id: '#/i/voa4_a2',
+    route: '#/i/voa4_a2',
+    why: 'a consumable artifact'
   },
 
   /* The lists index, off `renderLists`/`storageWarning` in app.js. */
@@ -1196,7 +1229,7 @@ const STATES = [
   {
     id: '#/search ~ searched',
     route: '#/search',
-    why: '113 rows of loot and gear together in catalogue order, "Выбрать все (113)"',
+    why: '121 rows of loot and gear together in catalogue order, "Выбрать все (121)"',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'меч');
     }
@@ -1204,7 +1237,7 @@ const STATES = [
   {
     id: '#/search ~ kind off',
     route: '#/search',
-    why: '41 rows, no equipment badge left, the chip off',
+    why: '43 rows, no equipment badge left, the chip off',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'меч');
       await d.click('Снаряжение');
@@ -1315,6 +1348,21 @@ const STATES = [
     route: DV_SET,
     whole: true,
     why: 'the same seven, the other layout',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+    }
+  },
+  {
+    id: VOA4_SET,
+    route: VOA4_SET,
+    whole: true,
+    why: "Volume 4's worst cases: the artifact weapon card, the three set cards, a consumable artifact, a folded condition line, two lists"
+  },
+  {
+    id: VOA4_SET + ' ~ black and white',
+    route: VOA4_SET,
+    whole: true,
+    why: 'the same nine, the other layout',
     enter: async (d) => {
       await d.click('Чёрно-белая');
     }

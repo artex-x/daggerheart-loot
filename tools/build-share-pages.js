@@ -83,7 +83,8 @@ const EQ_BURDEN = { 1: 'Одноручное', 2: 'Двуручное', any: 'О
 function eqLine(it) {
   const e = it.eq,
     out = [EQ_TYPE[e.t]];
-  if (!isFrame(it)) out.push(e.tier ? 'Ранг ' + e.tier : 'Wondrous');
+  if (!isFrame(it))
+    out.push(e.tier === 'A' ? 'Артефакт' : e.tier ? 'Ранг ' + e.tier : 'Wondrous');
   if (e.t === 'armor') {
     if (e.th) out.push('Пороги ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push('Броня ' + e.as);
@@ -241,7 +242,7 @@ ${craft
 `;
 }
 
-/* Exported so the test can render all 1236 into memory and compare with what is
+/* Exported so the test can render all 1272 into memory and compare with what is
    on disk: that catches a change to this generator that was never rebuilt, not
    just data that moved on. */
 module.exports = { page, EQ_TYPE, EQ_TRAIT, EQ_RANGE, EQ_DT, EQ_CLS, EQ_BURDEN };

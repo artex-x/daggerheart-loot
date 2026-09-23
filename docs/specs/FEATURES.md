@@ -66,7 +66,7 @@ Seven modes. Each keeps its own input in memory only.
 ## Tables and search
 
 - 16 tables (`TABLE_IDS`), each with its own search box and a list/grid switch.
-- Search covers all 1236 records: names, descriptions and stat lines, both
+- Search covers all 1272 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
   hits, a "300 из <n>" line - the same shown-of-total wording the table
@@ -95,9 +95,16 @@ Seven modes. Each keeps its own input in memory only.
   re-play them - the live app re-rendered and re-scrolled on each, a defect
   not reproduced.
 - **The three equipment tables hold equipment from every source, not only the
-  two books**: 370 weapons, 119 secondary, 94 armour. The `src` facet is how you
+  two books**: 381 weapons, 123 secondary, 100 armour. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages,
   The Dragon's Vault, Wondrous and Dread equipment appears there too.
+- An equipment table is sectioned by tier, `Ранг 1` to `Ранг 4`, then
+  `Артефакты` (key `tA`) for equipment the book prints in its Artifacts
+  section (`eq.tier: 'A'`); a section with no rows is not drawn. The stat
+  line, copied text and the stub page read `Артефакт` / `Artifact` where the
+  rank goes; the tier facet offers an `A` chip, `Артефакты` / `Artifacts`
+  (the section's label, as on the `voa` table), only on a table whose kind has
+  such a record; the suggested price is the legendary item band.
 - The filter panel is one component across all tables; where a table has nothing
   to filter by, there is no panel. Nothing is selected by default and an empty
   row means "any". Chosen values show as pills outside the panel, with a reset
@@ -316,8 +323,9 @@ Seven modes. Each keeps its own input in memory only.
   block links out to the `daggerheart.su` page that prints it, the subdomain
   matching the language on screen (`ru.` in Russian, `en.` in English), and
   its text keeps the source's own line breaks.
-- A record that belongs to a set (`Record_.set`, two members so far - Ember
-  and Spark, The Dragon's Vault) draws a set line naming every member in
+- A record that belongs to a set (`Record_.set`; two sets so far - Ember
+  and Spark, The Dragon's Vault; Saint's Ensemble, three members, Vault of
+  Ages Volume 4) draws a set line naming every member in
   catalogue order, the record itself inert and the rest linked. A set's
   shared bonus (`LOOT.sets[key]`) is drawn under the set line on every
   member and travels into copied text (the set block's body), the print card
@@ -325,7 +333,7 @@ Seven modes. Each keeps its own input in memory only.
   and `catalog.csv`; a set with no bonus copies its line alone, with no blank
   line after it. The set is derived by grouping at load, never stored as a
   sibling list, and a set of one is not a set. No set filter and no set page
-  exist yet.
+  exist yet (`docs/DECISIONS.md`, 2026-09-23, "The second set").
 - A record with no artwork falls back to `_none.webp` and hides the image
   button; so does a record whose file fails to load, and the app remembers that
   for the session.
@@ -346,6 +354,8 @@ Seven modes. Each keeps its own input in memory only.
 - Reached from an item page, a list, or a table selection; the address is
   shareable and independent of where it came from.
 - Colour and black-and-white are two different cards, not one with a switch.
+- An artifact weapon (`eq.tier: 'A'`) prints as a loot artifact card does: the
+  tag `Артефакт`, then its class tag, no tier band, and its damage strip.
 - A card printed from a list shows the list's count after its name as ` ×N`
   (a space, U+00D7, the number), only for a count over 1 - the same suffix
   the list's copied text puts after the name (`qtySuffix` in `share.ts`). The

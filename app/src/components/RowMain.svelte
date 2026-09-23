@@ -75,7 +75,7 @@
         >{eqLine(
           it,
           lang,
-          { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore },
+          { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore, artifact: t.voaArtifact1 },
           { noType: true }
         )}</span
       >{/if}{#if descOf(it, lang)}{@const parts = descParts(it, lang)}<span

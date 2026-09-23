@@ -9,7 +9,7 @@
 
 **Открыть: https://artex-x.github.io/daggerheart-loot/**
 
-Всего 1236 записей - 855 предметов и расходников плюс 381 единица снаряжения, - у
+Всего 1272 записи - 891 предмет и расходник плюс 381 единица снаряжения, - у
 каждой название, описание, строка характеристик, если она есть, и картинка.
 Сборки нет, сервера нет, регистрации нет, слежки нет.
 
@@ -31,7 +31,7 @@
 | Альт. таблицы | редкость + Кость Надежды + Кость Страха | 4 варианта; при крите - ссылка на таблицу ступенью выше |
 | Wondrous | 1-119 | 1 предмет |
 | Dread | 1-29 | 1 предмет |
-| Vault of Ages | 1-108 | 1 предмет |
+| Vault of Ages | 1-144 | 1 предмет |
 | The Dragon's Vault | 1-145 | 1 предмет |
 | Сообщества | сообщество + 1-10 | 1 предмет |
 
@@ -50,7 +50,7 @@
 
 **Таблицы** - это все таблицы целиком, включая альтернативные и три таблицы
 снаряжения (оружие, вторичное оружие, броня), у каждой свой поиск и переключение
-списком или сеткой. **Поиск** идёт сразу по 1236 записям: названия,
+списком или сеткой. **Поиск** идёт сразу по 1272 записям: названия,
 описания и характеристики, на обоих языках.
 
 Разделы адресуются напрямую, и у каждого заголовка есть кнопка копирования
@@ -267,9 +267,9 @@ app/src/styles/       tokens.css и общие стили
 app/index.html        входной документ, собирается в dist/index.html
 data.js               данные: window.LOOT
 card/*.svg            36 векторов для печатных карточек, экспорт из Figma
-img/*.webp            1021 картинка, 640x640, ~33 МБ
-og/*.jpg              те же картинки в JPEG для превью ссылок, ~45 МБ
-i/*.html              1236 страниц-заглушек с Open Graph разметкой, генерируется, не в репозитории
+img/*.webp            1057 картинок, 640x640, ~34 МБ
+og/*.jpg              те же картинки в JPEG для превью ссылок, ~47 МБ
+i/*.html              1272 страницы-заглушки с Open Graph разметкой, генерируется, не в репозитории
 data.json             те же данные простым JSON, для чтения извне
 catalog.csv           по строке на запись, с характеристиками
 llms.txt              что это за сайт, грамматика адресов, формат ссылки
@@ -452,7 +452,7 @@ build`) - `npm run check` не собирает.
 единиц оружия и брони The Dragon's Vault, всё снаряжение фреймов, часть Vault
 of Ages и Dread несут такой же блок `eq`,
 оставаясь в `items`; фреймы кампаний не образуют таблицу бросков. Три таблицы снаряжения собирают их
-все: основного оружия там 370, вторичного 119, брони 94. До двух книг их сужает
+все: основного оружия там 381, вторичного 123, брони 100. До двух книг их сужает
 фильтр по источнику (239 / 73 / 69).
 
 ## Цвета категорий
@@ -476,7 +476,7 @@ of Ages и Dread несут такой же блок `eq`,
 | Hope & Fear - расходники | 60 | Daggerheart: Hope & Fear | любительский перевод |
 | Wondrous Loot | 119 | [Wondrous Environments](https://www.drivethrurpg.com/en/product/552648/wondrous-environments) | любительский перевод |
 | Dread GM Toolbox | 29 | [Dread GM Toolbox](https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart) | любительский перевод |
-| Vault of Ages | 108 | Vault of Ages [1](https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1), [2](https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2), [3](https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3) | любительский перевод |
+| Vault of Ages | 144 | Vault of Ages [1](https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1), [2](https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2), [3](https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3), [4](https://www.drivethrurpg.com/en/product/582544/vault-of-ages-volume-4) | любительский перевод |
 | The Dragon's Vault | 145 | [The Dragon's Vault](https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault) | любительский перевод |
 | Предметы сообществ | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | любительский перевод, названия сообществ по [daggerheart.su](https://ru.daggerheart.su/community) |
 | Снаряжение фреймов | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | любительский перевод |

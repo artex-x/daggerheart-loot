@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1236 pairs maintained with
+ * small, typed and reviewed, while record text is 1272 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -223,7 +223,7 @@ const ru = {
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
   subSearch:
-    'Поиск сразу по 1236 позициям — добыча, расходники и снаряжение, на русском и на английском.',
+    'Поиск сразу по 1272 позициям — добыча, расходники и снаряжение, на русском и на английском.',
 
   searchPh: 'Поиск по названию или описанию…',
   tableLink: 'Ссылка на таблицу',
@@ -554,7 +554,7 @@ const en: Dict = {
   subTables: 'Every table in full, weapons and armor included — browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
-    'Search all 1236 entries at once — loot, consumables and equipment, in Russian and English.',
+    'Search all 1272 entries at once — loot, consumables and equipment, in Russian and English.',
 
   searchPh: 'Search by name or description…',
   tableLink: 'Link to this table',

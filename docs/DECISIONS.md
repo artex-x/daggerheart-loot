@@ -12,6 +12,78 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-23 - Vault of Ages Volume 4: the source errata policy
+
+- Task: `voa4`, human decision (Q1, option C).
+- Decision: the book (v1.0, 47 audited defects, the author silent) ships
+  with tiered minimal fixes. Typos and the site's line for a core feature
+  are fixed in `ende` (T); the description page wins over the card, the
+  card only where the page is malformed (`d86+7`, Vengeance Helm's clause
+  order) (D, V); a rule is edited only where the book contradicts itself -
+  Horrified and Saint's Ensemble (R); every printed balance stays (B).
+  Every departure is a row in `docs/provenance/voa4-errata.md`.
+- Rejected: verbatim English with the rule in Russian only (the two
+  languages state different rules, and `d86+7` cannot be stored); the
+  audit's fixes throughout (rules the author never printed; a v1.1 becomes
+  a three-way merge).
+- Trade-off: the English is no longer a byte-for-byte quote of the book.
+
+## 2026-09-23 - Artifact equipment: `eq.tier: 'A'`, printed as a loot artifact card
+
+- Task: `voa4` (print card: human decision, Q3 option 2).
+- Decision: Oath of Balance (`voa4_a3`) is printed in the book's Artifacts
+  section, so `Equip.tier` is `Tier | 'A'`: the stat line reads `Артефакт`
+  where the rank goes, the equipment tables draw an `Артефакты` section
+  after tier 4, the tier facet offers `A` only where a record answers it,
+  and the price guess uses the legendary item band. The print card is the
+  loot artifact card: the artifact tag, the class tag, no tier band, the
+  damage strip. `dataint` allows `'A'` only on a record of that section.
+- Rejected: `eq.tier: 4` (an inferred tier, against the product law); the
+  stats in the text (hidden from tables, filters and the strip); an
+  optional `eq.tier` with `it.tier` fallbacks in every reader; a tier band
+  `A` on the print card (a new caption to measure for one card).
+
+## 2026-09-23 - The second set: Saint's Ensemble, a loadout bonus, still no set filter
+
+- Task: `voa4`, human decision (Q2).
+- Decision: `set: 'saints-ensemble'` on Saintly Guard, Blade and Vestments;
+  the book's per-item line leaves their text and becomes the set bonus,
+  worded with the p. 5 Item Sets rule: `When every piece of this set is in
+  your loadout, gain +1 Evasion.` Stated once, it cannot stack; worded for
+  N members, it needs no member names.
+- The 2026-09-19 trigger for a set filter (a second source with sets)
+  fired and was declined: two sets, five members, all equipment, and every
+  member's card lists and links the rest. Re-open when a set spans loot and
+  equipment, or at three sets.
+- Rejected: the item's `possess` wording (the book's own rule says
+  loadout); a `set` filter group on the equipment tables now.
+
+## 2026-09-23 - A book condition is folded in as a line under the book's name
+
+- Task: `voa4`, human decision (Q4: `Устрашён`).
+- Decision: Horrified, a condition from Volume 4's optional rules page, is
+  the last line of Horrid Specimen, `Horrified: ...`, in the p. 5 table's
+  words; the item's own paraphrase of the condition is dropped. The book prints
+  the condition, so the fold adds no text the book lacks. The Russian
+  name is `Устрашён`, one word that declines like `Обездвижен`.
+- Rejected: a ref (a book condition has no site page); the item's
+  paraphrase (it states a different rule from the table); folding
+  Dominated, Marked and Paranoid into the Volume 1-3 records that use them
+  (product text of shipped records, its own task).
+
+## 2026-09-23 - Vault of Ages Volume 4: the Russian names the draft guessed
+
+- Task: `voa4`, human decision (Q4).
+- Decision: «Губитель из Сухостоя», «Идол из Плавника», «Свеча Зова Душ»,
+  «Пылестранник», «Тенеруб», «Амулет из Пальца Дьявола», the set «Убранство
+  Святого»; «Посох Чёрной Дыры» with `ё`, as 8 of 10 «Чёрн-» names write it.
+  Every other draft name is kept.
+- Rejected: «Сухостойный Губитель»; «Идол из Топляка» (loses the shore);
+  «Фитиль» for Taper (voa2_t2d uses it, but the text says «свеча»);
+  «Жнец Теней»; «Амулет Дьявольского Пальца» (it is a severed finger on a
+  string); «Облачение Святого» (the Vestments already carry «Облачение»;
+  «Комплект» is the set line's own word).
+
 ## 2026-09-23 - The list store is raw state; an unchanged stored value is not parsed again
 
 - Task: `68`.
@@ -237,6 +309,8 @@ entry to its first line before adding another.
   whole block would bury it); rewording the English (it stays the book's).
 - Superseded in part by "A feature an item grants an adversary is a
   referenced card" (2026-09-23): the fold of Nightshroud's Slow.
+- Narrowed by: 2026-09-23 "Vault of Ages Volume 4: the source errata
+  policy" - a book with audited defects gets registered English fixes.
 
 ## 2026-09-22 - A feature that swaps a weapon's stat set gets the Versatile second strip
 

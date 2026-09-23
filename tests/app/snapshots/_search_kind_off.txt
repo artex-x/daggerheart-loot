@@ -1,6 +1,6 @@
 # #/search ~ kind off
 # route: #/search
-# why: 41 rows, no equipment badge left, the chip off
+# why: 43 rows, no equipment badge left, the chip off
 
 ## ru :: tree
 RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
@@ -25,19 +25,19 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1236 позициям — добыча, расходники и снаряжение, ..." [namelen=91 namehash=07169775]
+    StaticText "Поиск сразу по 1272 позициям — добыча, расходники и снаряжение, ..." [namelen=91 namehash=23c2f564]
     searchbox "Поиск по названию или описанию…" [value=меч focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=false]
-    checkbox "Выбрать все (41)" [checked=false]
-    StaticText "Выбрать все (41)"
+    checkbox "Выбрать все (43)" [checked=false]
+    StaticText "Выбрать все (43)"
     checkbox "Камень Доблести" [checked=false]
     button "15 Камень Доблести Вы можете прикрепить этот камень к доспеху, к..." [namelen=294 namehash=3a18a57a]
-    ... checkbox x38 of 42 same-shape siblings elided
+    ... checkbox x40 of 44 same-shape siblings elided
     button "29 Успокаивающий Кулон Когда вы должны отметить последний Стресс..." [namelen=135 namehash=be066c33]
-    ... button x37 of 41 same-shape siblings elided
+    ... button x39 of 43 same-shape siblings elided
     checkbox "Амулет Горнила" [checked=false]
     button "32 Амулет Горнила Когда вы носите этот амулет и совершаете Бросо..." [namelen=357 namehash=740a7666]
     checkbox "Теневая Призма" [checked=false]
@@ -72,6 +72,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 2Стекло Разбитой СудьбыСущество, заглянувшее в это зеркало, види... [namelen=720 namehash=1079953f]
 32Амулет ГорнилаКогда вы носите этот амулет и совершаете Бросок ... [namelen=353 namehash=b6e3b144]
 32Зелье Судного ДняБросьте d12 за каждую ячейку Надежды по очере... [namelen=398 namehash=0d8c3e39]
+33Шлем ВозмездияСтоимость Призыва: 2Вы можете потратить Надежду,... [namelen=447 namehash=1d05c950]
 35Осколок ЭмберитаВыберите точку в пределах Далекой дистанции. В... [namelen=391 namehash=1a5a2456]
 37Перчатки РасторопностиКогда вы должны отметить Стресс, чтобы п... [namelen=122 namehash=4847aa54]
 3Агатовый ПаукВы можете приказать украшению в виде паука прыгнут... [namelen=262 namehash=16569d42]
@@ -86,6 +87,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 6Пифийская ВилкаСтоимость Призыва: 3Выберите место для путешеств... [namelen=382 namehash=a467e3e4]
 71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=267 namehash=47fce802]
 76Теневая ПризмаБросьте d8 и положите её на эту карту как Теневу... [namelen=483 namehash=e77ab9d0]
+7Амулет из Пальца ДьяволаСтоимость Призыва: 3Вражда: Когда вы ил... [namelen=517 namehash=ebfd1e29]
 9Пиратская Карта СокровищЭта зачарованная карта постоянно перери... [namelen=298 namehash=088f36f6]
 9Часы Хранителя ВремениСтоимость Призыва: 2Если у вас 6 Надежды,... [namelen=314 namehash=d64b7daf]
 Dragon's Vault
@@ -101,6 +103,7 @@ daggerheart.com
 Амулет Горнила
 Амулет Кровавого Охотника
 Амулет Праведной Ярости
+Амулет из Пальца Дьявола
 Бутыль с Духом
 Взгляд Ваэт
 Временной Фитиль
@@ -149,6 +152,7 @@ daggerheart.com
 Успокаивающий Кулон
 Часы Хранителя Времени
 Шлем Белого Когтя
+Шлем Возмездия
 
 ## en :: tree
 RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
@@ -173,19 +177,19 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1236 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=b5fda367]
+    StaticText "Search all 1272 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=8e85a9b0]
     searchbox "Search by name or description…" [value=меч focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=false]
-    checkbox "Select all (41)" [checked=false]
-    StaticText "Select all (41)"
+    checkbox "Select all (43)" [checked=false]
+    StaticText "Select all (43)"
     checkbox "Valorstone" [checked=false]
     button "15 Valorstone You can attach this stone to armor that doesn't al..." [namelen=280 namehash=54949b9f]
-    ... checkbox x38 of 42 same-shape siblings elided
+    ... checkbox x40 of 44 same-shape siblings elided
     button "29 Calming Pendant When you would mark your last Stress, roll a ..." [namelen=120 namehash=0f6ccaaa]
-    ... button x37 of 41 same-shape siblings elided
+    ... button x39 of 43 same-shape siblings elided
     checkbox "Furnace Amulet" [checked=false]
     button "32 Furnace Amulet While wearing this amulet, when you take the R..." [namelen=346 namehash=31f5fe6f]
     checkbox "Umbral Prism" [checked=false]
@@ -220,6 +224,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 2Glass of Shattered FateA creature peering into this mirror sees... [namelen=693 namehash=1fd2ef5f]
 32Doomsday PotionRoll a d12 for each of your Hope Slots in turn.... [namelen=422 namehash=dc8b568b]
 32Furnace AmuletWhile wearing this amulet, when you take the Ris... [namelen=342 namehash=c023986b]
+33Vengeance HelmRecall Cost: 2You can spend a Hope to gain power... [namelen=436 namehash=ee266bfb]
 35Emberite ShardChoose a point within Far range. All targets wit... [namelen=374 namehash=c631c064]
 37Gloves of AlacrityWhen you would mark a Stress to reload a wea... [namelen=102 namehash=47157714]
 3Agate SpiderYou can command this spider ornament to leap onto a... [namelen=237 namehash=ddd0528e]
@@ -234,6 +239,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 6Pythian ForkRecall Cost: 3Choose a location to travel to on any... [namelen=340 namehash=716a8df7]
 71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=276 namehash=b8ac17aa]
 76Umbral PrismRoll a d8 and place it on this card as the Umbral ... [namelen=452 namehash=ff956f00]
+7Devil-Finger CharmRecall Cost: 3Enmity: When you or an ally mak... [namelen=493 namehash=b976e705]
 9Pirate's Treasure MapThis enchanted map constantly redraws itse... [namelen=297 namehash=64e65874]
 9Timekeeper's WatchRecall Cost: 2If you have 6 Hope, you can sto... [namelen=263 namehash=753f1cc9]
 Agate Spider
@@ -249,6 +255,7 @@ Communities
 Consumables
 Crawling King's Gauntlet
 Cursed Head
+Devil-Finger Charm
 Doomsday Potion
 Dragon's Vault
 Dread
@@ -292,6 +299,7 @@ Treacherous Knuckle-Duster
 Umbral Prism
 Valorstone
 Vault of Ages
+Vengeance Helm
 Votive Bloom Nectar
 White Talon Helm
 Wondrous

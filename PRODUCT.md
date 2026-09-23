@@ -22,7 +22,7 @@ is always complete.
 ## Product Purpose
 
 The product turns the published Daggerheart loot tables into a tool for play. A
-person rolls on any table, browses a table in full, searches all 1236 records,
+person rolls on any table, browses a table in full, searches all 1272 records,
 collects records into a list, hands that list to the players as one link, or
 prints the list as cards. Success has two parts. The GM gets a result without
 leaving the session. The players read and keep what they received.
@@ -59,7 +59,7 @@ The app also runs from `file://`, so a person can keep a local copy.
   a roll mode.
 - 16 tables with per-table search, a list and grid switch, addressable sections,
   copy-link buttons and a filter panel driven from the address.
-- One search across all 1236 records, over names, descriptions and stat lines, in
+- One search across all 1272 records, over names, descriptions and stat lines, in
   both languages at once.
 - Lists: create, rename, reorder, remove with undo, share as a link, copy as
   text, print as cards.
@@ -101,8 +101,8 @@ The app also runs from `file://`, so a person can keep a local copy.
 
 ## Evidence on Hand
 
-- 1236 records, each with a name, a description, a stat line where it has one,
-  and an illustration. 855 items and consumables, 381 pieces of equipment.
+- 1272 records, each with a name, a description, a stat line where it has one,
+  and an illustration. 891 items and consumables, 381 pieces of equipment.
 - Published machine-readable artefacts: `catalog.csv`, `data.json`, `llms.txt`.
 - Behaviour specifications in `docs/specs/`, decisions in `docs/DECISIONS.md`,
   artwork provenance in `docs/provenance/`.

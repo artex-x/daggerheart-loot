@@ -1,6 +1,6 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1236
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1272
 > records covering items, consumables, weapons and armour from the Core Set,
 > Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon's
 > Vault and community sets. Static site, no server, no API, no accounts.
@@ -42,7 +42,7 @@ text, not the rules those items refer to.
 
 ## Data
 
-- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1236
+- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1272
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
   crafts_into, community, url, text_ru, text_en`. A set member's `text_ru`
@@ -73,7 +73,7 @@ wrong.
 | `Campaign Frames` | 94 | Equipment written for one campaign frame each (Beast Feast, Colossus, Dark Heart, Motherboard). Tied to that frame's premise and often to its special mechanics. | The table is running that frame. Outside it, the item is usually inert or unbalanced — the text assumes rules the party does not have. |
 | `Wondrous Loot` | 119 | A third-party book of magical oddities, mostly items and consumables, with eleven pieces of equipment. | You want a memorable object. Several entries rewrite a scene rather than colour it, so read the text before handing it over. |
 | `Dread GM Toolbox` | 29 | A third-party horror supplement. Cthulhu-mythos material: Mi-go equipment, cursed relics, things with a cost attached. | The campaign is horror-flavoured. In heroic fantasy these read as tonal noise, and some carry a drawback that only makes sense in a horror game. |
-| `Vault of Ages` | 108 | Three third-party volumes by one author, sorted by tier: 24-25 per tier plus 6 artifacts and 5 cursed objects. Deliberately stronger than Core, which is why most entries carry a Recall Cost. | You want a reward that bends the story rather than the numbers. Read the tier off the record: unlike every other loot set, it has one. |
+| `Vault of Ages` | 144 | Four third-party volumes by one author, sorted by tier: 30-34 per tier plus 9 artifacts and 5 cursed objects. Deliberately stronger than Core, which is why most entries carry a Recall Cost. | You want a reward that bends the story rather than the numbers. Read the tier off the record: unlike every other loot set, it has one. |
 | `The Dragon's Vault` | 145 | A third-party supplement: 77 loot entries and 68 pieces of equipment, including a Frostwyrd upgrade chain and the paired Ember/Spark weapons. | You want more of the same shape as Wondrous Loot plus named, feature-heavy equipment. |
 | `Community` | 90 | A fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
 
@@ -97,7 +97,9 @@ the table.
 
 **`tier` (1–4) belongs to equipment, and to Vault of Ages.** Weapons and armour
 are tiered because a tier 3 sword is numerically stronger than a tier 1 one, and
-every piece of equipment here carries one, whichever book it came from. Wondrous
+every piece of equipment here carries one, whichever book it came from. An
+artifact weapon carries `A` instead of a number, and `tier` takes `A` on an
+equipment table that holds one. Wondrous
 Loot is the awkward case: it prints no tier beside the item, but its "Loot items
 by environment" table binds each piece to a location, and the location has a
 tier — so the tier is read off the book rather than guessed from the damage.
@@ -167,7 +169,8 @@ of two or three usually plays better than assigning one each.
   `eq_weapon`, `eq_secondary`, `eq_armor`
 - `#/tables/eq_weapon/f_tier-1-2.cls-phy.src-core` — filters, on every table
   rather than only on equipment. After `f_`, parts are separated by `.` and
-  values inside a part by `-`. Equipment keys: `tier`, `cls` (`phy`/`mag`),
+  values inside a part by `-`. Equipment keys: `tier` (`1`–`4`, and `A` where
+  the table holds an artifact), `cls` (`phy`/`mag`),
   `src`, `trait`, `range`, `burden`, `line`. Other tables: `kind`
   (`item`/`consumable`/`equip`), plus `tier` on `voa` (`1`–`4`, `A`, `C`),
   `frame` on `other_frames`, `comm` on `community`. Other separates non-rollable

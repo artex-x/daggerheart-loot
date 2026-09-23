@@ -239,13 +239,15 @@ export function plainFacets(it: Record_): Record<string, string> {
   };
 }
 
-/** Every piece in one upgrade line, in tier order. */
+/** Every piece in one upgrade line, in tier order; an artifact sorts last. */
 export function upgradeLine(index: Index, it: Record_): Record_[] {
   const line = it.eq?.line;
   if (!line) return [];
-  return index.allEquip
-    .filter((x) => x.eq?.line === line)
-    .sort((a, b) => (a.eq?.tier ?? 0) - (b.eq?.tier ?? 0));
+  const rank = (x: Record_): number => {
+    const tier = x.eq?.tier ?? 0;
+    return tier === 'A' ? 5 : tier;
+  };
+  return index.allEquip.filter((x) => x.eq?.line === line).sort((a, b) => rank(a) - rank(b));
 }
 
 export function equipOfKind(index: Index, kind: EquipKind): Record_[] {

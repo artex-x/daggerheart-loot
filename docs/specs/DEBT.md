@@ -295,7 +295,7 @@ an inlined first-paint skeleton, boundary reporting.
 **Own tasks** (costed rather than folded into a review batch): generated
 image derivatives (`img/` ships 640x640 originals - 1021 files, 35 MB, mean
 33,912 B - into 60px rows and 168px tiles; scrolling `#/tables/eq_weapon` in
-grid view pulled ~11 MB at 317 rows (370 now) against a 243 kB first load;
+grid view pulled ~11 MB at 317 rows (381 now) against a 243 kB first load;
 the fix is a generated ~192px derivative under a new asset path, which `CONTRACTS.md` would
 freeze); splitting `ListPage.svelte`; decomposing `AppState`; `Record_.tier`
 -> `voaTier`; branded ids; one home for the shared-link wire constants;
@@ -324,7 +324,7 @@ deferral discipline.
 - **What**: `provenance()` returns a full breadcrumb only for frame and
   starting records; every other record's stub keeps the old `Предмет · Core
   · №12` tag form instead of a path.
-- **Why deferred**: making it a path for all 1236 records needs a full stub
+- **Why deferred**: making it a path for all 1272 records needs a full stub
   regeneration plus its own public-contract commit (`i/*.html` is generated,
   frozen output) - not a nit-sized fix in a batch that touched only the two
   tables that already agree.
@@ -394,11 +394,11 @@ deferral discipline.
   only); `app/src/components/PrintCard.svelte`, `tag2` (any non-armour);
   `app/src/lib/facets.ts`, the `cls` row (labelled «Тип урона» on
   `eq_secondary`).
-- **What**: all 119 secondary weapons have `cls === dt`. The record card,
+- **What**: all 123 secondary weapons have `cls === dt`. The record card,
   the table row, copied text and the share stub never name the class; the
   print card does («Магическое»), and the filter reads `cls`.
 - **Why deferred**: not a Dragon's Vault defect, and either fix moves the
-  copied text of 119 records (the share fixture is re-captured) and 119
+  copied text of 123 records (the share fixture is re-captured) and 123
   stubs - its own reviewed change.
 - **Fix**: recommended - print the class on a secondary weapon's stat line
   as on a primary one (`eqParts`: `e.t !== 'armor'`), because the print card
@@ -437,6 +437,21 @@ deferral discipline.
   near 0.7 MiB, far under the quota.
 - **How to verify the fix**: fill the origin's quota, edit a list, and read
   the toast.
+
+### D49 - Vault of Ages Volume 4 writes three Russian roll terms unlike the catalogue
+
+- **Where**: `data.js`, `rud` of voa4_t2i («броски Инстинкта»), voa4_t1f
+  («броски Характеристик»), and voa4_t1d, voa4_t3b, voa4_a2 (plural «Броски
+  Заклинания», «Броскам Заклинания»).
+- **What**: the catalogue writes «Броски Инстинкта» (w43, w100) with a
+  capital, and Proving's core line reads «Броскам Заклинаний» (ci17,
+  voa4_t4d). The five records use a lowercase «броски» or a singular
+  «Заклинания» after a plural roll.
+- **Why deferred**: the approved Russian text shipped as the plan's `rud`;
+  a casing and number pass is its own reviewed change of product text.
+- **How to verify the fix**: grep `rud` for `броски [А-Я]` and
+  `Бросками? Заклинания` after a plural; neither matches, and
+  `node tests/derived.js` passes.
 
 ## Hook and tooling defects, kept open
 
@@ -518,3 +533,17 @@ rather than warning; not filed today.
 - **Why deferred**: an idea, not a defect hit in practice - reopen only if
   the friction is actually hit.
 
+
+### D50 - the Saint's Ensemble set guard does not check the old set name
+
+- **Where**: `tests/derived.js`, the Vault of Ages Volume 4 block (the
+  check that voa4_t3d, voa4_t3e and voa4_t3f carry no set bonus in their
+  own text).
+- **What**: the check rejects `Saint's Ensemble` and «Убранство Святого»
+  in the record text, but not «Облачение Святого:», the set name of the
+  source draft. A re-sync from that draft can put the old line back, and
+  the guard passes.
+- **Why deferred**: found at the final review, when no record carries the
+  old name; a guard change belongs with the next Volume 4 re-sync.
+- **How to verify the fix**: put «Облачение Святого: ...» into voa4_t3d's
+  `rud` and confirm that `node tests/derived.js` fails.

@@ -169,6 +169,22 @@ describe('the band label', () => {
     expect(guessWhy(weapon, none, ru)).toBe('Ранг 2 · 100–150 зол.');
   });
 
+  it('prices an artifact weapon as the artifact section, not as a rank', () => {
+    const weapon: Record_ = {
+      id: 'voa_a9',
+      src: 'voa',
+      kind: 'equip',
+      en: '',
+      ende: '',
+      ru: '',
+      rud: '',
+      tier: 'A',
+      eq: { t: 'weapon', tier: 'A' }
+    };
+    expect(guessBand(weapon, none)).toEqual([1500, 2500]);
+    expect(guessWhy(weapon, none, ru)).toBe('Артефакты · 1500–2500 зол.');
+  });
+
   it('names the rarity, for loot the alternate tables know', () => {
     const loot: Record_ = {
       id: 'ci1',

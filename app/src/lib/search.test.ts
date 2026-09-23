@@ -15,7 +15,12 @@ const LOOT = JSON.parse(
 ) as Loot;
 const index = buildIndex(LOOT);
 
-const LABELS = { tier: 'Ранг', thresholds: 'Пороги', armorScore: 'Броня' };
+const LABELS = {
+  tier: 'Ранг',
+  thresholds: 'Пороги',
+  armorScore: 'Броня',
+  artifact: 'Артефакт'
+};
 const statLine = (it: Record_): string => eqLine(it, 'ru', LABELS);
 
 const find = (q: string): Record_[] => search(index.searchable, q, statLine);
@@ -156,7 +161,7 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
 
   it('finds a name with a Latin diacritic typed in plain ASCII', () => {
     /* Owner-approved: "Ethereal Zweihänder" (q238) and "Möbius Orb"
-       (q311) were unreachable by ordinary typing across all 1236 records. */
+       (q311) were unreachable by ordinary typing across all 1272 records. */
     expect(find('Zweihander').map((x) => x.id)).toContain('q238');
     expect(find('Mobius').map((x) => x.id)).toContain('q311');
   });

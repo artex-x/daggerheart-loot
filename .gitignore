@@ -53,7 +53,7 @@ work/
 .impeccable/hook.pending.json
 .impeccable/config.local.json
 
-# The share stubs: 1236 files regenerated from data.js by tools/build.js,
+# The share stubs: 1272 files regenerated from data.js by tools/build.js,
 # which the deploy job runs (npm run build) before it copies i/ into _site.
 # Published, never committed, and never hand-edited (.claude/hooks/edit-guard.mjs).
 # data.json and catalog.csv stay tracked on purpose - seven vitest suites and

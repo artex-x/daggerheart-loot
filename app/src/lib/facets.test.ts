@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildIndex } from './data.js';
+import { buildIndex, equipFacets, equipOfKind } from './data.js';
 import { dict } from './dict.js';
-import { facetRows } from './facets.js';
+import { facetRows, type FacetValue } from './facets.js';
 import { FRAME_ORDER } from './frames.js';
-import { groupsFor } from './filters.js';
+import { decodeFilter, groupsFor, passes } from './filters.js';
 import { CHARACTER_TRAITS, type EquipKind, type Record_, type TableId } from './types.js';
 
 const row = (over: Partial<Record_>): Record_ => ({
@@ -175,6 +175,31 @@ describe('the equipment tables', () => {
         { value: '4', label: '4' }
       ]
     });
+  });
+
+  it('offers the artifact chip only on the kind an artifact record answers, and narrows to it', () => {
+    const artifact = row({
+      id: 'voa_a9',
+      src: 'voa',
+      kind: 'equip',
+      tier: 'A',
+      eq: { t: 'weapon', tier: 'A', cls: 'phy', tr: 'strength', rg: 'melee', bu: 2 }
+    });
+    const withArtifact = buildIndex({ items: { voa: [artifact] } });
+    const tierValues = (ix: typeof index, table: TableId): FacetValue[] =>
+      facetRows(ix, table, t, 'ru').find((r) => r.group === 'tier')?.values ?? [];
+    expect(tierValues(withArtifact, 'eq_weapon').at(-1)).toEqual({
+      value: 'A',
+      label: 'Артефакты'
+    });
+    expect(tierValues(withArtifact, 'eq_secondary').map((v) => v.value)).not.toContain('A');
+    expect(tierValues(index, 'eq_weapon').map((v) => v.value)).not.toContain('A');
+
+    const state = decodeFilter('f_tier-A', groupsFor('eq_weapon'));
+    const picked = equipOfKind(withArtifact, 'weapon').filter((it) =>
+      passes(state, groupsFor('eq_weapon'), (g) => equipFacets(it)[g] ?? '')
+    );
+    expect(picked.map((it) => it.id)).toEqual(['voa_a9']);
   });
 
   it('offers only sources with a record of this kind, in book order, naming a frame by frameName', () => {

@@ -66,12 +66,12 @@ function expectRollPools(loot: Loot): void {
 
 describe('the index over the real dataset', () => {
   it('holds every record under its id', () => {
-    expect(index.byId.size).toBe(1236);
-    expect(index.searchable).toHaveLength(1236);
+    expect(index.byId.size).toBe(1272);
+    expect(index.searchable).toHaveLength(1272);
   });
 
   it('separates loot from equipment the way the data does', () => {
-    expect(index.all).toHaveLength(855);
+    expect(index.all).toHaveLength(891);
     expect(LOOT.eq).toHaveLength(381);
   });
 
@@ -82,8 +82,8 @@ describe('the index over the real dataset', () => {
     expect(frames).toHaveLength(95);
     expect(new Set([...starting, ...frames]).size).toBe(124);
     expect(index.rows.get('frames')).toHaveLength(94);
-    expect(index.all).toHaveLength(855);
-    expect(index.searchable).toHaveLength(1236);
+    expect(index.all).toHaveLength(891);
+    expect(index.searchable).toHaveLength(1272);
   });
 
   it('keeps roll numbers only in complete, independent roll pools', () => {
@@ -125,11 +125,11 @@ describe('the index over the real dataset', () => {
   });
 
   it('finds equipment wherever it lives, not only in eq', () => {
-    /* 381 in `eq`, and another 202 keeping their source-table placement. */
+    /* 381 in `eq`, and another 223 keeping their source-table placement. */
     expect(index.allEquip.length).toBeGreaterThan(LOOT.eq?.length ?? 0);
-    expect(equipOfKind(index, 'weapon')).toHaveLength(370);
-    expect(equipOfKind(index, 'secondary')).toHaveLength(119);
-    expect(equipOfKind(index, 'armor')).toHaveLength(94);
+    expect(equipOfKind(index, 'weapon')).toHaveLength(381);
+    expect(equipOfKind(index, 'secondary')).toHaveLength(123);
+    expect(equipOfKind(index, 'armor')).toHaveLength(100);
   });
 
   it('narrows to the two books through the source, as the tables do', () => {
@@ -207,8 +207,22 @@ describe('upgrade chains', () => {
     expect(katana).toBeDefined();
     const line = upgradeLine(index, katana as Record_);
     expect(line.length).toBeGreaterThan(1);
-    const tiers = line.map((x) => x.eq?.tier);
-    expect(tiers).toEqual([...tiers].sort((a, b) => (a ?? 0) - (b ?? 0)));
+    expect(line.map((x) => x.eq?.tier)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('sorts an artifact after the numbered tiers of its line', () => {
+    const step = (id: string, tier: 1 | 2 | 'A'): Record_ => ({
+      id,
+      src: 'voa',
+      kind: 'equip',
+      en: id,
+      ende: '',
+      ru: id,
+      rud: '',
+      eq: { t: 'weapon', tier, line: 'x1' }
+    });
+    const mixed = { ...index, allEquip: [step('xA', 'A'), step('x2', 2), step('x1', 1)] };
+    expect(upgradeLine(mixed, step('x1', 1)).map((x) => x.id)).toEqual(['x1', 'x2', 'xA']);
   });
 
   it('gives a one-off record no line at all', () => {
@@ -352,14 +366,14 @@ describe("a weapon that uses its wielder's Spellcast trait", () => {
 
 describe('referenced cards', () => {
   it('are kept beside the items that point at them', () => {
-    expect(Object.keys(index.refs)).toHaveLength(12);
+    expect(Object.keys(index.refs)).toHaveLength(13);
   });
 
   it('are pointed at by records that exist', () => {
     /* `index.all` holds the roll tables, equipment with a roll included:
-       w88, dve38 and dve59 carry a stat block, dve66 an adversary feature. */
+       w88, voa4_t1b, dve38 and dve59 carry a stat block, dve66 an adversary feature. */
     const pointing = index.all.filter((it) => it.refs?.length);
-    expect(pointing).toHaveLength(12);
+    expect(pointing).toHaveLength(13);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }
@@ -367,7 +381,7 @@ describe('referenced cards', () => {
 
   it('are pointed at by equipment that exists', () => {
     const pointing = index.allEquip.filter((it) => it.refs?.length);
-    expect(pointing.map((it) => it.id)).toEqual(['w88', 'dve38', 'dve59', 'dve66']);
+    expect(pointing.map((it) => it.id)).toEqual(['w88', 'voa4_t1b', 'dve38', 'dve59', 'dve66']);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }

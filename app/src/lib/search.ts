@@ -5,7 +5,7 @@
  * descriptions and - for equipment - the stat line, so "Двуручное" or "melee"
  * finds things too.
  *
- * A substring match, not a fuzzy one. 1236 records is small enough that the
+ * A substring match, not a fuzzy one. 1272 records is small enough that the
  * filtering is instant, and a fuzzy library would be a dependency bought with
  * results nobody asked for: a search for "лук" should not offer "клык".
  *
@@ -28,8 +28,16 @@ export type StatLine = (it: Record_) => string;
  * typing "основное" finds every weapon - dropping the type word here would
  * silently narrow what a query can reach.
  */
-export function statLineFor(lang: Lang, t: Pick<Dict, 'tier' | 'eqTh' | 'eqScore'>): StatLine {
-  const labels = { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore };
+export function statLineFor(
+  lang: Lang,
+  t: Pick<Dict, 'tier' | 'eqTh' | 'eqScore' | 'voaArtifact1'>
+): StatLine {
+  const labels = {
+    tier: t.tier,
+    thresholds: t.eqTh,
+    armorScore: t.eqScore,
+    artifact: t.voaArtifact1
+  };
   return (it: Record_): string => eqLine(it, lang, labels);
 }
 

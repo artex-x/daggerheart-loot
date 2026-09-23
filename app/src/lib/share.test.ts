@@ -117,6 +117,13 @@ describe('the name outside the app', () => {
     expect(shareName(c, 'en')).toBe(`${c.en} (consumable)`);
   });
 
+  it('spells out a consumable artifact too, not only a ranked consumable', () => {
+    const narvik = rec('voa4_a2');
+    expect(narvik.tier).toBe('A');
+    expect(shareName(narvik, 'ru')).toBe('Контракт Нарвиков (расходник)');
+    expect(shareName(narvik, 'en')).toBe('Narvik Contract (consumable)');
+  });
+
   it('leaves the name of an item alone', () => {
     const i = index.searchable.find((r) => r.kind === 'item');
     expect(i).toBeDefined();
@@ -216,6 +223,35 @@ describe('what travels with a record', () => {
   it('writes the set bonus under each member, also when both are in one roll', () => {
     const { text } = shareRoll([rec('dve19'), rec('dve20')], index, 'ru', 'ИЛИ');
     expect(text.split('Пылающие близнецы:')).toHaveLength(3);
+  });
+
+  it('copies an artifact weapon with the artifact word where the tier goes', () => {
+    const blade: Record_ = {
+      id: 'voa_a9',
+      src: 'voa',
+      kind: 'equip',
+      tier: 'A',
+      en: 'Oath Blade',
+      ende: 'Keeps its word.',
+      ru: 'Клинок Клятвы',
+      rud: 'Держит слово.',
+      eq: {
+        t: 'weapon',
+        tier: 'A',
+        cls: 'phy',
+        tr: 'strength',
+        rg: 'melee',
+        dmg: 'd10+6',
+        dt: 'phy',
+        bu: 2
+      }
+    };
+    expect(share(blade, index, 'ru').text.split('\n')[1]).toBe(
+      'Основное оружие · Артефакт · Физическое · Сила · Вплотную · d10+6 физ · Двуручное'
+    );
+    expect(share(blade, index, 'en').text.split('\n')[1]).toBe(
+      'Primary weapon · Artifact · Physical · Strength · Melee · d10+6 phy · Two-Handed'
+    );
   });
 
   it('copies Ember whole, the set and its bonus last, in both languages', () => {

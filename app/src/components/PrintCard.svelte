@@ -53,10 +53,18 @@
   const kindKey = $derived(glyphKey(it));
   const armor = $derived(!!(eq && eq.t === 'armor'));
   const burden = $derived(eq && !armor && eq.bu ? eq.bu : 0);
+  /* An artifact weapon reads as a loot artifact card: the section tag, the
+     class tag, the damage strip, and no tier band (FEATURES.md, print). */
   const tier = $derived(
-    eq?.tier ? String(eq.tier) : typeof it.tier === 'number' ? String(it.tier) : ''
+    eq
+      ? eq.tier === 'A'
+        ? ''
+        : String(eq.tier)
+      : typeof it.tier === 'number'
+        ? String(it.tier)
+        : ''
   );
-  const artifact = $derived((it.tier === 'A' || it.tier === 'C') && !eq);
+  const artifact = $derived(it.tier === 'A' || it.tier === 'C');
   const tag1 = $derived(
     artifact
       ? it.tier === 'A'

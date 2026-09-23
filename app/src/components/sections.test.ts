@@ -116,8 +116,8 @@ describe('Vault of Ages', () => {
     render(App, { env: at('#/roll/voa') });
     await userEvent.click(screen.getByRole('button', { name: 'Как это работает' }));
     expect(screen.getByText(/Своей таблицы броска у книги нет/)).toBeInTheDocument();
-    /* All three volumes, not just the first. */
-    expect(screen.getByRole('link', { name: 'Volume 3' })).toBeInTheDocument();
+    /* All four volumes, not just the first. */
+    expect(screen.getByRole('link', { name: 'Volume 4' })).toBeInTheDocument();
   });
 });
 

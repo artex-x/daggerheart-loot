@@ -45,23 +45,23 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "119"
+    StaticText "123"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (30)" [checked=false]
     checkbox "Короткий Меч" [checked=false]
     button "Короткий Меч Ранг 1 · Проворность · Вплотную · d8 физ · Одноручн..." [namelen=149 namehash=891fd0c7]
-    ... checkbox x119 of 123 same-shape siblings elided
-    ... button x116 of 120 same-shape siblings elided
+    ... checkbox x123 of 127 same-shape siblings elided
+    ... button x120 of 124 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (27)"
-    checkbox "Рассекатель Завесы" [checked=false]
-    button "15 Рассекатель Завесы Ранг 4 · Влияние · Вплотную · d6+9 физ · О..." [namelen=388 namehash=9f8865c2]
+    StaticText "Выбрать все (28)"
     checkbox "Голодный Кулачный Клинок" [checked=false]
     button "23 Голодный Кулачный Клинок Ранг 4 · Искусность · Вплотную · d6+..." [namelen=419 namehash=0a74c7f7]
+    checkbox "Нож Единорога" [checked=false]
+    button "32 Нож Единорога Ранг 4 · Искусность · Вплотную · d8+6 физ · Одн..." [namelen=333 namehash=f73b9ae1]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -77,6 +77,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 15Рассекатель ЗавесыРанг 4 · Влияние · Вплотную · d6+9 физ · Одн... [namelen=381 namehash=fae3f03c]
 22Щит Охотника на ЖуковРанг 2 · Сила · Вплотную · d4 физ · Однор... [namelen=230 namehash=1e9e88ac]
 23Голодный Кулачный КлинокРанг 4 · Искусность · Вплотную · d6+7 ... [namelen=411 namehash=5d38bac7]
+25Зуб Аку-ХаптлекаРанг 2 · Проворность · Вплотную · d8+5 физ · О... [namelen=689 namehash=7f7a630b]
+27Щит Стекла СудьбыРанг 2 · Инстинкт · Вплотную · d6 физ · Однор... [namelen=491 namehash=8af6a272]
+28Святой ЩитРанг 3 · Инстинкт · Вплотную · d6+3 маг · Одноручное... [namelen=343 namehash=6211bf74]
+32Нож ЕдинорогаРанг 4 · Искусность · Вплотную · d8+6 физ · Однор... [namelen=325 namehash=7415e69b]
 57Кандальные БоласРанг 2 · Искусность · Средне · d4+1 физ · Одно... [namelen=263 namehash=ed3ae9bd]
 6Ритуальный Клинок СехметРанг 3 · Искусность · Вплотную · d8+4 м... [namelen=287 namehash=6b1358d7]
 6Щит СолнцаРанг 3 · Сила · Вплотную · d4+4 маг · ОдноручноеСолне... [namelen=190 namehash=60405fbc]
@@ -123,6 +127,7 @@ daggerheart.com
 Жуткий Наруч
 Жуткий НаручРанг 2 · Инстинкт · Вплотную · d8 маг · ОдноручноеОт... [namelen=240 namehash=03f0f778]
 Защита Королевы Пауков
+Зуб Аку-Хаптлека
 Игла Пустоты
 Игла ПустотыРанг 4 · Искусность · Вплотную · d4+6 физ · Одноручн... [namelen=182 namehash=192ac693]
 Искра
@@ -193,6 +198,7 @@ daggerheart.com
 Молоток МастераРанг 3 · Сила · Вплотную · d8+4 физ · ОдноручноеС... [namelen=150 namehash=d0647f0b]
 Наручные Когти
 Наручные КогтиРанг 4 · Сила · Вплотную · d6+8 физ · ОдноручноеДв... [namelen=203 namehash=a7d9052d]
+Нож Единорога
 Нож для Овощей
 Нож для ОвощейРанг 1 · Искусность · Вплотную · d8 физ · Одноручн... [namelen=161 namehash=edb18913]
 Обычные правила
@@ -256,6 +262,7 @@ daggerheart.com
 Ручная ПращаРанг 3 · Искусность · Очень далеко · d6+4 физ · Одно... [namelen=208 namehash=dc43c774]
 Ручной Арбалет
 Ручной АрбалетРанг 1 · Искусность · Далеко · d6+1 физ · Одноручн... [namelen=86 namehash=59b56eba]
+Святой Щит
 Священный Щит
 Священный ЩитРанг 1 · Инстинкт · Вплотную · d4 маг · ОдноручноеР... [namelen=198 namehash=61f45663]
 Сеткой
@@ -329,6 +336,7 @@ daggerheart.com
 Щит Охотника на Жуков
 Щит Предвидения
 Щит Солнца
+Щит Стекла Судьбы
 Щит Храбреца
 Щит ХрабрецаРанг 4 · Проворность · Вплотную · d4+6 физ · Одноруч... [namelen=233 namehash=346251af]
 Щит из Стола
@@ -381,7 +389,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "119"
+    StaticText "123"
     StaticText "Nothing found"
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]

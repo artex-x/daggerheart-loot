@@ -113,6 +113,34 @@ ok(
     ' — run node tools/build.js'
 );
 
+/* An artifact weapon's stub names its section where a rank would go. The
+   fixture keeps the line pinned if Oath of Balance (voa4_a3) ever moves. */
+const ARTIFACT_STUB = page({
+  id: 'voa_a0',
+  src: 'voa',
+  kind: 'equip',
+  tier: 'A',
+  en: 'Oath Blade',
+  ende: '',
+  ru: 'Клинок Клятвы',
+  rud: '',
+  eq: {
+    t: 'weapon',
+    tier: 'A',
+    cls: 'phy',
+    tr: 'strength',
+    rg: 'melee',
+    dmg: 'd10+6',
+    dt: 'phy',
+    bu: 2
+  }
+});
+ok(
+  ARTIFACT_STUB.indexOf('Основное оружие · Артефакт · Физическое') >= 0 &&
+    ARTIFACT_STUB.indexOf('Ранг A') < 0,
+  'the stub of an artifact weapon does not read Артефакт in place of the rank'
+);
+
 console.log('not indexed');
 /* A private tool: the pages must not show up in search results. This works
    only as a pair - crawling must stay allowed so noindex is even read, since
@@ -385,19 +413,22 @@ ok(
   'equipment grew a new kind: ' + Object.keys(BY_T).join()
 );
 ok(
-  EVERY_EQ.length === L.eq.length + 202,
-  'equipment outside the two base books is not 202, but ' + (EVERY_EQ.length - L.eq.length)
+  EVERY_EQ.length === L.eq.length + 223,
+  'equipment outside the two base books is not 223, but ' + (EVERY_EQ.length - L.eq.length)
 );
 /* Every piece of equipment must carry a tier. Wondrous's is derived from the
    book: the "Loot items by environment" table ties an item to a location,
    and the location carries a printed tier. As long as this rule holds, the
-   equipment table sorts into four tiers with nothing left over, so there is
-   no need to bring back a "no tier" section. */
+   equipment table sorts into four tiers and the artifacts with nothing left
+   over, so there is no need to bring back a "no tier" section. `A` is the
+   book's Artifacts section, so only an artifact record may carry it. */
 const noTierEq = EVERY_EQ.filter((x) => !x.eq.tier);
 ok(noTierEq.length === 0, 'equipment with no tier: ' + noTierEq.map((x) => x.id).join());
 ok(
-  EVERY_EQ.every((x) => [1, 2, 3, 4].indexOf(x.eq.tier) >= 0),
-  'an equipment tier is outside the range one to four'
+  EVERY_EQ.every(
+    (x) => [1, 2, 3, 4].indexOf(x.eq.tier) >= 0 || (x.eq.tier === 'A' && x.tier === 'A')
+  ),
+  'an equipment tier is outside one to four, or A on a record outside the Artifacts section'
 );
 /* Wondrous tiers are derived by hand from the location table - if an entry
    moves, its tier silently drifts too, so they are pinned here by name. */
@@ -436,12 +467,12 @@ console.log('Vault of Ages');
    the section heading in the book and duplicated in the id, so these two
    sources have to agree. */
 const VOA = L.items.voa;
-ok(VOA.length === 108, 'Vault of Ages does not have 108 entries, but ' + VOA.length);
+ok(VOA.length === 144, 'Vault of Ages does not have 144 entries, but ' + VOA.length);
 ok(
   VOA.every((x) => x.src === 'voa' && x.img),
   'Vault of Ages is missing a source or a picture'
 );
-const VOA_SIZE = { 1: 24, 2: 24, 3: 24, 4: 25, A: 6, C: 5 };
+const VOA_SIZE = { 1: 30, 2: 33, 3: 33, 4: 34, A: 9, C: 5 };
 Object.keys(VOA_SIZE).forEach(function (k) {
   const g = VOA.filter((x) => String(x.tier) === k);
   ok(
@@ -466,10 +497,10 @@ ok(
 /* The book labels equipment itself, and secondary weapons are a distinct
    kind - not a primary one with a tag */
 const voaEq = VOA.filter((x) => x.eq);
-ok(voaEq.length === 24, 'Vault of Ages does not have 24 equipment items, but ' + voaEq.length);
+ok(voaEq.length === 45, 'Vault of Ages does not have 45 equipment items, but ' + voaEq.length);
 ok(
-  voaEq.filter((x) => x.eq.t === 'secondary').length === 4,
-  'secondary weapons are not 4: ' + voaEq.filter((x) => x.eq.t === 'secondary').length
+  voaEq.filter((x) => x.eq.t === 'secondary').length === 8,
+  'secondary weapons are not 8: ' + voaEq.filter((x) => x.eq.t === 'secondary').length
 );
 ok(
   voaEq.every((x) => x.eq.tier === x.tier),
@@ -497,7 +528,7 @@ ok(
 /* Recall Cost ("Стоимость Призыва") is this book's own rule, and it stays in
    the text as a label */
 const rc = VOA.filter((x) => x.recall != null);
-ok(rc.length === 83, 'Recall Cost is not on 83 records, but on ' + rc.length);
+ok(rc.length === 115, 'Recall Cost is not on 115 records, but on ' + rc.length);
 ok(
   rc.every(
     (x) =>
@@ -511,7 +542,7 @@ ok(
    variants as a bulleted list. Read as one line they read as a solid wall,
    and «Кровавый Шип» mid-sentence stops being a property name. */
 const voaLists = VOA.filter((x) => x.rud.indexOf('\n- ') > 0);
-ok(voaLists.length === 5, 'Vault of Ages does not have 5 lists, but ' + voaLists.length);
+ok(voaLists.length === 7, 'Vault of Ages does not have 7 lists, but ' + voaLists.length);
 /* «Узы Души» prints the stone's three properties as a list, and they used to
    run together into one paragraph */
 ok(
@@ -560,10 +591,11 @@ fs.readdirSync(libDir)
   });
 /* `srcWond`-style guessing (deriving a tier by source when one is not stated)
    has no matching grep here: it cannot recur by construction, not just by
-   absence. `i18n.ts`'s `eqLine()` pushes `labels.tier`/`e.tier` unconditionally
-   whenever `!opts.noTier` (no ternary, no source check), so there is no branch
-   left where a rewrite author could slip a guess back in without touching this
-   one line, which every other equipment-line test already pins byte for byte. */
+   absence. `i18n.ts`'s `eqLine()` pushes `labels.tier`/`e.tier` whenever
+   `!opts.noTier`, branching only on the stored `A` (no source check), so there
+   is no branch left where a rewrite author could slip a guess back in without
+   touching this one line, which every other equipment-line test already pins
+   byte for byte. */
 
 /* "Универсальное" (Versatile) is a second set of stats hidden in a
    property's prose. It is parsed into `eq.alt` once and read as data from
@@ -956,8 +988,9 @@ ok(
   "Spark's own text still carries the set bonus"
 );
 ok(
-  JSON.stringify(Object.keys(L.sets || {})) === JSON.stringify(['ember-spark']),
-  'sets are not exactly ember-spark: ' + Object.keys(L.sets || {}).join()
+  JSON.stringify(Object.keys(L.sets || {})) ===
+    JSON.stringify(['ember-spark', 'saints-ensemble']),
+  'sets are not exactly ember-spark and saints-ensemble: ' + Object.keys(L.sets || {}).join()
 );
 ['dve19', 'dve20'].forEach((id) => {
   ok(
@@ -1009,6 +1042,47 @@ ok(
   (L.refs.slow || {}).url === 'https://ru.daggerheart.su/adversary/huge-green-ooze',
   'slow: expected the Huge Green Ooze page'
 );
+
+console.log('Vault of Ages Volume 4');
+const voa4ById = Object.fromEntries(
+  VOA.filter((x) => x.id.startsWith('voa4_')).map((x) => [x.id, x])
+);
+ok(Object.keys(voa4ById).length === 36, 'Volume 4 does not have 36 records');
+Object.values(voa4ById).forEach((x) =>
+  ok(x.img === x.id + '.webp', x.id + ': expected img === ' + x.id + '.webp, got ' + x.img)
+);
+const artifactEq = EVERY_EQ.filter((x) => x.eq.tier === 'A').map((x) => x.id);
+ok(
+  artifactEq.join() === 'voa4_a3',
+  'expected voa4_a3 alone to carry eq.tier A, got ' + artifactEq.join()
+);
+const VOA4_REFS = { 'rotted-zombie': 'voa4_t1b' };
+Object.entries(VOA4_REFS).forEach(([key, id]) => {
+  ok(!!L.refs[key], key + ': ref not found');
+  ok((voa4ById[id].refs || []).indexOf(key) >= 0, id + ': expected to reference ' + key);
+});
+/* The book prints the set bonus as a line on each member; it lives on the set. */
+['voa4_t3d', 'voa4_t3e', 'voa4_t3f'].forEach((id) => {
+  const x = voa4ById[id];
+  ok(x.set === 'saints-ensemble', id + ': not in saints-ensemble');
+  ok(
+    !/Saint's Ensemble/.test(x.ende) && !/Убранство Святого/.test(x.rud),
+    id + ': own text still carries the set bonus'
+  );
+  ok(
+    fs.readFileSync(path.join(ROOT, 'i', id + '.html'), 'utf8').indexOf('Убранство Святого') >=
+      0,
+    'i/' + id + '.html does not carry the set bonus'
+  );
+  const csvRow = rows.find((r) => r.startsWith(id + ','));
+  ok(
+    !!csvRow &&
+      csvRow.indexOf(
+        "Saint's Ensemble (Set: Saintly Guard, Saintly Blade, Saintly Vestments):"
+      ) >= 0,
+    'catalog.csv row ' + id + ' does not carry the set bonus'
+  );
+});
 
 console.log('Russian record text');
 /* Distances are rounded metric in Russian text (docs/specs/I18N.md, "Rules"). */

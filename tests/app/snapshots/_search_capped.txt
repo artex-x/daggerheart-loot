@@ -25,13 +25,13 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1236 позициям — добыча, расходники и снаряжение, ..." [namelen=91 namehash=07169775]
+    StaticText "Поиск сразу по 1272 позициям — добыча, расходники и снаряжение, ..." [namelen=91 namehash=23c2f564]
     searchbox "Поиск по названию или описанию…" [value=а focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    StaticText "300 из 1236"
+    StaticText "300 из 1272"
     checkbox "Выбрать все (300)" [checked=false]
     StaticText "Выбрать все (300)"
     checkbox "Первоклассный Спальный Мешок" [checked=false]
@@ -692,13 +692,13 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1236 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=b5fda367]
+    StaticText "Search all 1272 entries at once — loot, consumables and equipmen..." [namelen=90 namehash=8e85a9b0]
     searchbox "Search by name or description…" [value=а focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    StaticText "300 of 1200"
+    StaticText "300 of 1236"
     checkbox "Select all (300)" [checked=false]
     StaticText "Select all (300)"
     checkbox "Premium Bedroll" [checked=false]

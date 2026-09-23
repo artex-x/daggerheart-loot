@@ -89,6 +89,26 @@ const LOOT: Loot = {
         ru: 'Артефакт',
         rud: 'Стоимость Призыва: 2\nЭта колода даёт защиту.\n- Первый пункт\n- Второй пункт',
         ende: 'Recall Cost: 2\nThis deck grants protection.\n- First entry\n- Second entry'
+      }),
+      /* An artifact that carries a stat block: printed in the book's
+         Artifacts section, so `eq.tier` is 'A', not a rank. */
+      row({
+        id: 'af2',
+        src: 'voa',
+        kind: 'equip',
+        tier: 'A',
+        en: 'Oath Blade',
+        ru: 'Клинок Клятвы',
+        eq: {
+          t: 'weapon',
+          tier: 'A',
+          cls: 'phy',
+          tr: 'strength',
+          rg: 'melee',
+          dmg: 'd10+6',
+          dt: 'phy',
+          bu: 2
+        }
       })
     ]
   },
@@ -428,6 +448,24 @@ describe('the artifact', () => {
       '<i>Стоимость Призыва:</i> 2<br>Эта колода даёт защиту.' +
         '<ul class="dlist"><li>Первый пункт</li><li>Второй пункт</li></ul>'
     );
+  });
+});
+
+describe('the artifact weapon', () => {
+  it('reads as an artifact card: the artifact tag, the class tag, no tier band, the strip', async () => {
+    const { container } = render(App, { env: at('#/print/af2') });
+    const card = document.querySelector('.pcard[data-pid="af2"]');
+    expect(card?.querySelector('.pc-tier')).toBeNull();
+    const tags = card?.querySelectorAll('.pc-tag');
+    expect(tags?.[0]).toHaveClass('on');
+    expect(tags?.[0]?.textContent).toBe('Артефакт');
+    expect(tags?.[1]?.textContent).toBe('Физическое');
+    expect(card?.querySelectorAll('.pc-strip')).toHaveLength(1);
+    expect(card?.querySelector('.pc-cells')?.textContent).toBe(
+      '+6УронфизЧертаСилаДистанцияВплотную'
+    );
+    expect(card?.textContent).not.toContain('Ранг');
+    await expectNoA11yViolations(container);
   });
 });
 

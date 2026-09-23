@@ -252,6 +252,7 @@ function stampOf(parts) {
   console.log('filter group names select something');
   const PROBE = [
     ['eq_weapon', 'tier-2'],
+    ['eq_weapon', 'tier-A'],
     ['eq_weapon', 'src-core'],
     ['eq_weapon', 'cls-mag'],
     ['eq_weapon', 'trait-strength'],
@@ -266,7 +267,7 @@ function stampOf(parts) {
     ['dv', 'kind-consumable'],
     ['dv', 'kind-equip']
   ];
-  /* One context reused across all 21 opens (14 probes, 7 whole tables) - same
+  /* One context reused across all 22 opens (15 probes, 7 whole tables) - same
    * reasoning as the address-grammar loop above: no probe here seeds
    * storage, so a full `d.open` navigation already starts each one clean. */
   const { ctx: pCtx, page: pPage, d: pD } = await fresh({ width: 1280, height: 900 });

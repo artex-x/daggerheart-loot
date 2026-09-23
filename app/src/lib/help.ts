@@ -180,17 +180,21 @@ const VOA_V3: HelpLink = {
   href: 'https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3',
   label: 'Volume 3'
 };
+const VOA_V4: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/582544/vault-of-ages-volume-4',
+  label: 'Volume 4'
+};
 
-/** Three links in one sentence, which is why a paragraph is a run of parts. */
+/** Four links in one sentence, which is why a paragraph is a run of parts. */
 const voaSource = (before: string): HelpPara => ({
-  parts: [before, VOA_V1, ', ', VOA_V2, ', ', VOA_V3, '.']
+  parts: [before, VOA_V1, ', ', VOA_V2, ', ', VOA_V3, ', ', VOA_V4, '.']
 });
 
 const VOA: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'Три тома одного автора: 108 карточек, разложенных по рангам. Своей таблицы броска у книги нет, поэтому и разделов шесть — четыре ранга плюс артефакты и проклятые предметы, ровно как в самих томах. Бросок идёт внутри выбранного раздела: ранг 1 и артефакт — награды разного веса, и на одной кости им не место.'
+        'Четыре тома одного автора: 144 карточки, разложенные по рангам. Своей таблицы броска у книги нет, поэтому и разделов шесть — четыре ранга плюс артефакты и проклятые предметы, ровно как в самих томах. Бросок идёт внутри выбранного раздела: ранг 1 и артефакт — награды разного веса, и на одной кости им не место.'
       ),
       {
         lead: 'Стоимость Призыва.',
@@ -210,13 +214,15 @@ const VOA: Record<Lang, Help> = {
           ' Дают сильное преимущество, но не бесплатно. Когда персонаж запускает проклятие, карта немедленно занимает место одной из карт в его Руке, и предмет привязывается навсегда. Снять его можно только трудным заданием, мощной магией или особыми обстоятельствами — условие придумывает Мастер или стол. Носить несколько проклятых предметов можно, но неразумно.'
         ]
       },
-      voaSource('Источник: три тома Криса ДеШамплейна, версия 1.5 — ')
+      voaSource(
+        'Источник: четыре тома Криса ДеШамплейна, тома 1-3 в версии 1.5, том 4 в версии 1.0 — '
+      )
     ]
   },
   en: {
     paragraphs: [
       p(
-        'Three volumes by one author: 108 cards sorted by tier. The book has no roll table of its own, so there are six sections here — four tiers plus artifacts and cursed objects, exactly as the volumes are laid out. The roll happens inside the section you pick: a tier 1 item and an artifact are rewards of a different weight and do not belong on one die.'
+        'Four volumes by one author: 144 cards sorted by tier. The book has no roll table of its own, so there are six sections here — four tiers plus artifacts and cursed objects, exactly as the volumes are laid out. The roll happens inside the section you pick: a tier 1 item and an artifact are rewards of a different weight and do not belong on one die.'
       ),
       {
         lead: 'Recall Cost.',
@@ -236,7 +242,9 @@ const VOA: Record<Lang, Help> = {
           ' A strong benefit that is not free. The moment a character triggers the curse, the card takes the place of one of the cards in their loadout, and the item is bound to them permanently. Removing it takes a hard task, powerful magic or special circumstances — the GM or the table invents the condition. Carrying several cursed objects is possible but unwise.'
         ]
       },
-      voaSource('Source: three volumes by Chris DeChamplain, v1.5 — ')
+      voaSource(
+        'Source: four volumes by Chris DeChamplain, Volumes 1-3 at v1.5, Volume 4 at v1.0 — '
+      )
     ]
   }
 };

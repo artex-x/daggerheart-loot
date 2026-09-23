@@ -2,7 +2,7 @@
  *
  * Two separate things live here, and docs/specs/I18N.md says why they must stay
  * separate: the interface dictionary is small, typed and reviewed, while record
- * text is 1236 pairs maintained with the data. This module only handles the
+ * text is 1272 pairs maintained with the data. This module only handles the
  * second kind - picking the right field off a record, and turning a stat block
  * into words.
  *
@@ -103,11 +103,13 @@ export function namesOf(list: readonly Record_[], lang: Lang): string {
 
 /* ---------- the stat line ---------- */
 
-/** The three words the stat line needs that are not in the vocabulary maps. */
+/** The words the stat line needs that are not in the vocabulary maps. */
 export interface StatLabels {
   tier: string;
   thresholds: string;
   armorScore: string;
+  /** Stands in for `tier N` on equipment the book prints among its artifacts. */
+  artifact: string;
 }
 
 /**
@@ -135,7 +137,8 @@ export function eqParts(
   if (!e) return [];
 
   const out: string[] = opts.noType ? [] : [pick(EQ_TYPE[e.t], lang)];
-  if (!opts.noTier) out.push(`${labels.tier} ${String(e.tier)}`);
+  if (!opts.noTier)
+    out.push(e.tier === 'A' ? labels.artifact : `${labels.tier} ${String(e.tier)}`);
 
   if (e.t === 'armor') {
     if (e.th) out.push(`${labels.thresholds} ${String(e.th[0])}/${String(e.th[1])}`);

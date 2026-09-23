@@ -1,6 +1,6 @@
 # #/tables/eq_armor ~ nothing found
 # route: #/tables/eq_armor
-# why: the three-row panel open, a pill, 0 из 94, the empty state with its own reset
+# why: the three-row panel open, a pill, 0 из 100, the empty state with its own reset
 
 ## ru :: tree
 RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/eq_armor/f_line-uniq]
@@ -48,7 +48,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Уникальные" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "0 из 94"
+    StaticText "0 из 100"
     ... StaticText x4 of 8 same-shape siblings elided
     button "1" [pressed=false]
     ... button x8 of 12 same-shape siblings elided
@@ -152,7 +152,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
     button "Unique" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "0 of 94"
+    StaticText "0 of 100"
     ... StaticText x4 of 8 same-shape siblings elided
     button "1" [pressed=false]
     ... button x8 of 12 same-shape siblings elided

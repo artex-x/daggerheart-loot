@@ -493,6 +493,12 @@ const { ok } = rep;
     sparkText.split('Пылающие близнецы').length === 2 && !/вместе с Угольком/.test(sparkText),
     'Spark carries the bonus other than once, in the set line: ' + sparkText
   );
+  await d.open('#/print/voa4_t3d');
+  const guardLast = await page.$$eval('.pc-text i', (e) => e.map((x) => x.textContent).pop());
+  ok(
+    guardLast === 'Убранство Святого (Комплект: Святой Щит, Святой Клинок, Святое Облачение):',
+    'Saintly Guard set line label: ' + guardLast
+  );
 
   /* The Spellcast trait cell uses the print-only short form, and fits. */
   for (const isBw of [false, true]) {
@@ -750,6 +756,23 @@ const { ok } = rep;
   ok(
     /АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)),
     'the artifact is not named on the tag'
+  );
+  /* An artifact weapon reads like the loot artifact card and keeps its strip
+     (docs/specs/FEATURES.md, "Print"). */
+  await d.open('#/print/voa4_a3');
+  ok(!(await page.$('.pc-tier')), 'the artifact weapon grew a tier ribbon');
+  ok(
+    /АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)),
+    'the artifact weapon is not named on the tag'
+  );
+  const oathDice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
+  ok(oathDice.join() === 'd12', 'the artifact weapon die: ' + oathDice.join());
+  /* A consumable artifact is named by its section, not by its kind. */
+  await d.open('#/print/voa4_a2');
+  ok(!(await page.$('.pc-tier')), 'the consumable artifact grew a tier ribbon');
+  ok(
+    /АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)),
+    'the consumable artifact is not named on the tag'
   );
 
   /* An upgrade chain and links to other cards do not go to print: the card

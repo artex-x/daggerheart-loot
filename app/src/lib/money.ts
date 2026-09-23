@@ -181,6 +181,9 @@ export function guessBand(
   rarityOf: (id: string) => Rarity | undefined
 ): Band | null {
   if (it.eq) {
+    /* An artifact weapon has no equipment band; it prices as the artifact
+       section's loot does. */
+    if (it.eq.tier === 'A') return GUESS_RAR.item.legendary;
     const byKind = GUESS_EQ[it.eq.t];
     return byKind?.[it.eq.tier - 1] ?? null;
   }
@@ -239,7 +242,7 @@ export function guessWhy(
   if (!band) return t.guessNoTier;
   const rarity = rarityOf(it.id);
   const src = it.eq
-    ? `${t.tier} ${String(it.eq.tier)}`
+    ? voaTierName(it.eq.tier, t)
     : rarity
       ? t[RAR_KEY[rarity]]
       : it.tier != null

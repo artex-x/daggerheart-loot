@@ -1,0 +1,257 @@
+# #/tables/eq_weapon/f_tier-A
+# route: #/tables/eq_weapon/f_tier-A
+# why: the artifact chip on the equipment tier row, one row
+
+## ru :: tree
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/eq_weapon/f_tier-A]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    link "Оружие" [url=#/tables/eq_weapon]
+    link "Вторичное" [url=#/tables/eq_secondary]
+    link "Броня" [url=#/tables/eq_armor]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры (1)" [expanded=true]
+    button "Артефакты" [description=Убрать из фильтра]
+    button "Сбросить всё"
+    button "Ссылка на фильтры" [description=Ссылка на фильтры]
+    StaticText "1 из 381"
+    ... StaticText x13 of 17 same-shape siblings elided
+    button "1" [pressed=false]
+    ... button x27 of 31 same-shape siblings elided
+    button "Артефакты" [pressed=true]
+    button "Улучшаемые" [pressed=false]
+    button "Уникальные" [pressed=false]
+    StaticText "АРТЕФАКТЫ"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    checkbox "Выбрать все (1)" [checked=false]
+    StaticText "Выбрать все (1)"
+    checkbox "Клятва Равновесия" [checked=false]
+    button "9 Клятва Равновесия Артефакт · Магическое · Инстинкт · Далеко · ..." [namelen=847 namehash=70e32327]
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## ru :: controls
+1
+2
+3
+4
+9Клятва РавновесияАртефакт · Магическое · Инстинкт · Далеко · d1... [namelen=837 namehash=9d97f73b]
+Core
+Dragon's Vault
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Альт. таблицы
+Артефакты
+Близко
+Броня
+Влияние
+Вплотную
+Вторичное
+Далеко
+Двуручное
+Знание
+Инстинкт
+Искусность
+К содержимому
+Как это работает
+Клятва Равновесия
+Колоссы Сухоземья
+ЛутDaggerheart
+Магическое
+Обычные правила
+Одноручное
+Оружие
+Открывать этот раздел при запуске
+Очень далеко
+Пир зверей
+Поиск
+Проворность
+Прочее
+Сбросить всё
+Сеткой
+Сила
+Скопировать ссылку на этот раздел
+Снаряжение
+Сообщества
+Списки
+Списком
+Средне
+Ссылка на таблицу
+Ссылка на фильтры
+Таблицы
+Тёмное сердце Андалурии
+Убрать из фильтра
+Улучшаемые
+Уникальные
+Физическое
+Фильтры (1)
+
+## en :: tree
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_tier-A]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    link "Weapons" [url=#/tables/eq_weapon]
+    link "Secondary" [url=#/tables/eq_secondary]
+    link "Armor" [url=#/tables/eq_armor]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters (1)" [expanded=true]
+    button "Artifacts" [description=Remove from the filter]
+    button "Reset all"
+    button "Filter link" [description=Filter link]
+    StaticText "1 of 381"
+    ... StaticText x13 of 17 same-shape siblings elided
+    button "1" [pressed=false]
+    ... button x27 of 31 same-shape siblings elided
+    button "Artifacts" [pressed=true]
+    button "Upgradable" [pressed=false]
+    button "Unique" [pressed=false]
+    StaticText "ARTIFACTS"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (1)" [checked=false]
+    StaticText "Select all (1)"
+    checkbox "Oath of Balance" [checked=false]
+    button "9 Oath of Balance Artifact · Magic · Instinct · Far · d12+12 mag..." [namelen=762 namehash=4e67f12e]
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+
+## en :: controls
+1
+2
+3
+4
+9Oath of BalanceArtifact · Magic · Instinct · Far · d12+12 mag ·... [namelen=752 namehash=9a8afa74]
+Agility
+Alt. tables
+Armor
+Artifacts
+Beast Feast
+Close
+Colossus of the Drylands
+Communities
+Copy a link to this section
+Core
+Dark Heart of Andaluria
+Dragon's Vault
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Far
+Filter link
+Filters (1)
+Finesse
+Grid
+Hope & Fear
+How this works
+Instinct
+Knowledge
+Link to this table
+List
+Lists
+Magic
+Melee
+Oath of Balance
+One-Handed
+Open this section on start
+Other
+Physical
+Presence
+RU
+Remove from the filter
+Reset all
+Search
+Secondary
+Skip to content
+Standard rules
+Strength
+Tables
+Two-Handed
+Unique
+Upgradable
+Vault of Ages
+Very Close
+Very Far
+Weapons
+Wondrous
+Wondrous Loot
+daggerheart.com
+ЛутDaggerheart

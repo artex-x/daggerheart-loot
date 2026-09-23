@@ -92,7 +92,8 @@ Group keys, by table:
 | `community` | `comm` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
 
-Values: `tier` `1`-`4` (and `A`, `C` on `voa`); `cls` `phy`/`mag`; `trait`
+Values: `tier` `1`-`4` (and `A`, `C` on `voa`; `A` on an equipment table
+whose kind has an artifact record); `cls` `phy`/`mag`; `trait`
 `agility`, `strength`, `finesse`, `instinct`, `presence`, `knowledge`; `range`
 `melee`, `veryclose`, `close`, `far`, `veryfar`; `burden` `1`/`2`; `line`
 `line`/`uniq`; `kind` `item`/`consumable`/`equip`; `src` one of the source keys;

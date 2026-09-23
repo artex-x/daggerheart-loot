@@ -266,20 +266,18 @@
   });
 
   /* The equipment tables' own tier sections, off `renderEquipTable`
-     (app.js 2735-2761): `voa`'s tier body with a different key (`t1`-`t4`,
-     not `t1`-`t4`/`tA`/`tC`), a different label (`${t.tier} ${n}`, not
-     `voaSectionName`) and a different source field (`it.eq.tier`, not
-     `it.tier`). */
+     (app.js 2735-2761): `voa`'s tier body without cursed objects (`t1`-`t4`,
+     then `tA` for artifact equipment) and a different source field
+     (`it.eq.tier`, not `it.tier`). */
+  const EQ_SECTIONS = [1, 2, 3, 4, 'A'] as const;
   const eqSections = $derived.by<Section[]>(() =>
     bodyKind !== 'eq'
       ? []
-      : [1, 2, 3, 4]
-          .map((n) => ({
-            key: `t${String(n)}`,
-            label: `${t.tier} ${String(n)}`,
-            entries: filtered.filter((it) => it.eq?.tier === n).map((it) => ({ it }))
-          }))
-          .filter((s) => s.entries.length > 0)
+      : EQ_SECTIONS.map((n) => ({
+          key: `t${String(n)}`,
+          label: voaSectionName(n, t),
+          entries: filtered.filter((it) => it.eq?.tier === n).map((it) => ({ it }))
+        })).filter((s) => s.entries.length > 0)
   );
 
   /* One list, whichever of the four above is actually populated - `bodyKind`

@@ -9,7 +9,7 @@ cards.
 
 **Open it: https://artex-x.github.io/daggerheart-loot/**
 
-1236 records in all - 855 items and consumables plus 381 pieces of equipment -
+1272 records in all - 891 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
 illustration. No build step, no server, no account, no tracking.
 
@@ -30,7 +30,7 @@ illustration. No build step, no server, no account, no tracking.
 | Alternate tables | rarity + Hope Die + Fear Die | 4 results; on a critical success, a link to the table one rarity up |
 | Wondrous | 1-119 | 1 item |
 | Dread | 1-29 | 1 item |
-| Vault of Ages | 1-108 | 1 item |
+| Vault of Ages | 1-144 | 1 item |
 | The Dragon's Vault | 1-145 | 1 item |
 | Communities | community + 1-10 | 1 item |
 
@@ -48,7 +48,7 @@ next to rarities are a recommendation rather than a limit.
 
 **Tables** holds every table in full, including the alternate ones and the three
 equipment tables (weapons, secondary weapons, armour), each with its own search
-box and a list/grid switch. **Search** covers all 1236 records at once - names,
+box and a list/grid switch. **Search** covers all 1272 records at once - names,
 descriptions and stat lines, in both languages.
 
 Sections are addressable, and every heading has a copy-link button:
@@ -260,9 +260,9 @@ app/src/styles/       tokens.css and shared styles
 app/index.html        entry document, built into dist/index.html
 data.js               the data: window.LOOT
 card/*.svg            36 vectors for the print cards, exported from Figma
-img/*.webp            1021 pictures, 640x640, ~33 MB
-og/*.jpg              the same pictures as JPEG for link previews, ~45 MB
-i/*.html              1236 stub pages with Open Graph markup, generated, not committed
+img/*.webp            1057 pictures, 640x640, ~34 MB
+og/*.jpg              the same pictures as JPEG for link previews, ~47 MB
+i/*.html              1272 stub pages with Open Graph markup, generated, not committed
 data.json             the same data as plain JSON, for outside readers
 catalog.csv           one row per record, with stat lines
 llms.txt              what the site is, URL grammar, list-link format
@@ -441,7 +441,7 @@ Equipment is not only in `eq`. Eleven Wondrous Loot records, all 68 of The
 Dragon's Vault's weapons and armour, and every campaign frame entry, plus some of
 Vault of Ages and Dread, carry the same `eq` block
 while staying in `items`; campaign frames are not a roll table. The three equipment tables
-gather all of them: 370 weapons, 119 secondary weapons, 94 armour. The source
+gather all of them: 381 weapons, 123 secondary weapons, 100 armour. The source
 filter is what narrows those to the two books (239 / 73 / 69).
 
 ## Category colours
@@ -465,7 +465,7 @@ is a caption, not a category - and the stat line carries no colour of its own.
 | Hope & Fear - consumables | 60 | Daggerheart: Hope & Fear | fan translation |
 | Wondrous Loot | 119 | [Wondrous Environments](https://www.drivethrurpg.com/en/product/552648/wondrous-environments) | fan translation |
 | Dread GM Toolbox | 29 | [Dread GM Toolbox](https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart) | fan translation |
-| Vault of Ages | 108 | Vault of Ages [1](https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1), [2](https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2), [3](https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3) | fan translation |
+| Vault of Ages | 144 | Vault of Ages [1](https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1), [2](https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2), [3](https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3), [4](https://www.drivethrurpg.com/en/product/582544/vault-of-ages-volume-4) | fan translation |
 | The Dragon's Vault | 145 | [The Dragon's Vault](https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault) | fan translation |
 | Community items | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | fan translation, community names per [daggerheart.su](https://ru.daggerheart.su/community) |
 | Campaign frames | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | fan translation |

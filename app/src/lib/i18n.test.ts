@@ -26,7 +26,8 @@ import {
   EQ_TYPE,
   eqWord,
   itemsWord,
-  nameOf
+  nameOf,
+  type StatLabels
 } from './i18n.js';
 import type { Lang, Record_ } from './types.js';
 
@@ -38,11 +39,11 @@ const FIXTURE = JSON.parse(
   readFileSync(join(ROOT, 'docs', 'fixtures', 'statlines', 'equipment.json'), 'utf8')
 ) as Record<string, Record<Lang, string[]>>;
 
-/* The three words the stat line needs that are not in the vocabulary maps.
+/* The words the stat line needs that are not in the vocabulary maps.
    They live in the interface dictionary, so the caller supplies them. */
-const LABELS: Record<Lang, { tier: string; thresholds: string; armorScore: string }> = {
-  ru: { tier: 'Ранг', thresholds: 'Пороги', armorScore: 'Броня' },
-  en: { tier: 'Tier', thresholds: 'Thresholds', armorScore: 'Armor' }
+const LABELS: Record<Lang, StatLabels> = {
+  ru: { tier: 'Ранг', thresholds: 'Пороги', armorScore: 'Броня', artifact: 'Артефакт' },
+  en: { tier: 'Tier', thresholds: 'Thresholds', armorScore: 'Armor', artifact: 'Artifact' }
 };
 
 describe('the stat line matches the app it came from', () => {
@@ -84,8 +85,10 @@ describe('the pieces of the line', () => {
   });
 
   it('always carry a tier, because every piece has one from a book', () => {
+    /* An artifact's section is its tier word (Oath of Balance, voa4_a3). */
     for (const eq of index.allEquip) {
-      expect(eqParts(eq, 'ru', LABELS.ru).some((p) => p.startsWith('Ранг'))).toBe(true);
+      const want = eq.eq?.tier === 'A' ? 'Артефакт' : 'Ранг';
+      expect(eqParts(eq, 'ru', LABELS.ru).some((p) => p.startsWith(want))).toBe(true);
     }
   });
 
@@ -215,6 +218,16 @@ describe('a stat block with gaps in it', () => {
       noType: true
     });
     expect(parts.join(' ')).toContain(`${LABELS.ru.armorScore} 0`);
+  });
+
+  it('names an artifact weapon in place of its tier, in both languages', () => {
+    const weapon = gear({ t: 'weapon', tier: 'A', cls: 'phy', tr: 'strength', dmg: 'd10+6' });
+    const ru = eqLine(weapon, 'ru', LABELS.ru);
+    const en = eqLine(weapon, 'en', LABELS.en);
+    expect(ru).toContain(' · Артефакт · ');
+    expect(en).toContain(' · Artifact · ');
+    expect(ru).not.toContain('Ранг');
+    expect(en).not.toContain('Tier');
   });
 
   it('drops the damage entirely when there is none', () => {

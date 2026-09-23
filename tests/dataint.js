@@ -20,14 +20,14 @@ ALL.forEach((x) => {
   ok(!byId[x.id], 'duplicate id: ' + x.id);
   byId[x.id] = x;
 });
-ok(ALL.length === 1236, 'records are not 1236, but ' + ALL.length);
+ok(ALL.length === 1272, 'records are not 1272, but ' + ALL.length);
 /* Vault of Ages numbers its cards by book volume and section, not straight
    through: voa2_a1 - volume two, first artifact. Links, filenames and list
    codes all hang on id, so the book's own scheme is different but just as
    strict. */
 ALL.forEach((x) =>
   ok(
-    /^[a-z]+\d+$/.test(x.id) || /^voa[123]_(t[1-4]|a|c)[a-z0-9]+$/.test(x.id),
+    /^[a-z]+\d+$/.test(x.id) || /^voa[1-4]_(t[1-4]|a|c)[a-z0-9]+$/.test(x.id),
     'odd id: ' + x.id
   )
 );
@@ -186,7 +186,10 @@ const EQUIP = ALL.filter((x) => x.eq);
 EQUIP.forEach((x) => {
   const e = x.eq;
   ok(['weapon', 'secondary', 'armor'].indexOf(e.t) >= 0, x.id + ': unknown type ' + e.t);
-  ok(e.tier >= 1 && e.tier <= 4, x.id + ': tier outside 1-4');
+  /* `A` is the book's Artifacts section, printed there, never inferred. */
+  if (e.tier === 'A')
+    ok(x.tier === 'A', x.id + ': equipment tier A outside the Artifacts section');
+  else ok(e.tier >= 1 && e.tier <= 4, x.id + ': tier outside 1-4');
   if (e.t === 'armor') {
     ok(
       e.as > 0 && Array.isArray(e.th) && e.th.length === 2,

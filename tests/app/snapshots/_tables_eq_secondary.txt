@@ -45,23 +45,23 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "119"
+    StaticText "123"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (30)" [checked=false]
     checkbox "Короткий Меч" [checked=false]
     button "Короткий Меч Ранг 1 · Проворность · Вплотную · d8 физ · Одноручн..." [namelen=149 namehash=891fd0c7]
-    ... checkbox x119 of 123 same-shape siblings elided
-    ... button x116 of 120 same-shape siblings elided
+    ... checkbox x123 of 127 same-shape siblings elided
+    ... button x120 of 124 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (27)"
-    checkbox "Рассекатель Завесы" [checked=false]
-    button "15 Рассекатель Завесы Ранг 4 · Влияние · Вплотную · d6+9 физ · О..." [namelen=388 namehash=9f8865c2]
+    StaticText "Выбрать все (28)"
     checkbox "Голодный Кулачный Клинок" [checked=false]
     button "23 Голодный Кулачный Клинок Ранг 4 · Искусность · Вплотную · d6+..." [namelen=419 namehash=0a74c7f7]
+    checkbox "Нож Единорога" [checked=false]
+    button "32 Нож Единорога Ранг 4 · Искусность · Вплотную · d8+6 физ · Одн..." [namelen=333 namehash=f73b9ae1]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -77,6 +77,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 15Рассекатель ЗавесыРанг 4 · Влияние · Вплотную · d6+9 физ · Одн... [namelen=381 namehash=fae3f03c]
 22Щит Охотника на ЖуковРанг 2 · Сила · Вплотную · d4 физ · Однор... [namelen=230 namehash=1e9e88ac]
 23Голодный Кулачный КлинокРанг 4 · Искусность · Вплотную · d6+7 ... [namelen=411 namehash=5d38bac7]
+25Зуб Аку-ХаптлекаРанг 2 · Проворность · Вплотную · d8+5 физ · О... [namelen=689 namehash=7f7a630b]
+27Щит Стекла СудьбыРанг 2 · Инстинкт · Вплотную · d6 физ · Однор... [namelen=491 namehash=8af6a272]
+28Святой ЩитРанг 3 · Инстинкт · Вплотную · d6+3 маг · Одноручное... [namelen=343 namehash=6211bf74]
+32Нож ЕдинорогаРанг 4 · Искусность · Вплотную · d8+6 физ · Однор... [namelen=325 namehash=7415e69b]
 57Кандальные БоласРанг 2 · Искусность · Средне · d4+1 физ · Одно... [namelen=263 namehash=ed3ae9bd]
 6Ритуальный Клинок СехметРанг 3 · Искусность · Вплотную · d8+4 м... [namelen=287 namehash=6b1358d7]
 6Щит СолнцаРанг 3 · Сила · Вплотную · d4+4 маг · ОдноручноеСолне... [namelen=190 namehash=60405fbc]
@@ -123,6 +127,7 @@ daggerheart.com
 Жуткий Наруч
 Жуткий НаручРанг 2 · Инстинкт · Вплотную · d8 маг · ОдноручноеОт... [namelen=240 namehash=03f0f778]
 Защита Королевы Пауков
+Зуб Аку-Хаптлека
 Игла Пустоты
 Игла ПустотыРанг 4 · Искусность · Вплотную · d4+6 физ · Одноручн... [namelen=182 namehash=192ac693]
 Искра
@@ -193,6 +198,7 @@ daggerheart.com
 Молоток МастераРанг 3 · Сила · Вплотную · d8+4 физ · ОдноручноеС... [namelen=150 namehash=d0647f0b]
 Наручные Когти
 Наручные КогтиРанг 4 · Сила · Вплотную · d6+8 физ · ОдноручноеДв... [namelen=203 namehash=a7d9052d]
+Нож Единорога
 Нож для Овощей
 Нож для ОвощейРанг 1 · Искусность · Вплотную · d8 физ · Одноручн... [namelen=161 namehash=edb18913]
 Обычные правила
@@ -256,6 +262,7 @@ daggerheart.com
 Ручная ПращаРанг 3 · Искусность · Очень далеко · d6+4 физ · Одно... [namelen=208 namehash=dc43c774]
 Ручной Арбалет
 Ручной АрбалетРанг 1 · Искусность · Далеко · d6+1 физ · Одноручн... [namelen=86 namehash=59b56eba]
+Святой Щит
 Священный Щит
 Священный ЩитРанг 1 · Инстинкт · Вплотную · d4 маг · ОдноручноеР... [namelen=198 namehash=61f45663]
 Сеткой
@@ -329,6 +336,7 @@ daggerheart.com
 Щит Охотника на Жуков
 Щит Предвидения
 Щит Солнца
+Щит Стекла Судьбы
 Щит Храбреца
 Щит ХрабрецаРанг 4 · Проворность · Вплотную · d4+6 физ · Одноруч... [namelen=233 namehash=346251af]
 Щит из Стола
@@ -381,23 +389,23 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "119"
+    StaticText "123"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (30)" [checked=false]
     checkbox "Shortsword" [checked=false]
     button "Shortsword Tier 1 · Agility · Melee · d8 phy · One-Handed Paired..." [namelen=145 namehash=2547aef9]
-    ... checkbox x119 of 123 same-shape siblings elided
-    ... button x116 of 120 same-shape siblings elided
+    ... checkbox x123 of 127 same-shape siblings elided
+    ... button x120 of 124 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "Select all (27)"
-    checkbox "Veil Cutter" [checked=false]
-    button "15 Veil Cutter Tier 4 · Presence · Melee · d6+9 phy · One-Handed..." [namelen=347 namehash=6fefb0f3]
+    StaticText "Select all (28)"
     checkbox "Hungry Fist Blade" [checked=false]
     button "23 Hungry Fist Blade Tier 4 · Finesse · Melee · d6+7 phy · One-H..." [namelen=407 namehash=6b0e532c]
+    checkbox "Unicorn Knife" [checked=false]
+    button "32 Unicorn Knife Tier 4 · Finesse · Melee · d8+6 phy · One-Hande..." [namelen=301 namehash=61744ad3]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -413,6 +421,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
 15Veil CutterTier 4 · Presence · Melee · d6+9 phy · One-HandedRe... [namelen=340 namehash=dd1477af]
 22Bug Hunter's AegisTier 2 · Strength · Melee · d4 phy · One-Han... [namelen=216 namehash=084561eb]
 23Hungry Fist BladeTier 4 · Finesse · Melee · d6+7 phy · One-Han... [namelen=399 namehash=c41e8e5f]
+25Aku-Haptlek's ToothTier 2 · Agility · Melee · d8+5 phy · One-H... [namelen=631 namehash=23b5db47]
+27Fateglass ShieldTier 2 · Instinct · Melee · d6 phy · One-Hande... [namelen=422 namehash=661eb725]
+28Saintly GuardTier 3 · Instinct · Melee · d6+3 mag · One-Handed... [namelen=315 namehash=b4f4f457]
+32Unicorn KnifeTier 4 · Finesse · Melee · d8+6 phy · One-HandedR... [namelen=293 namehash=76d8f02b]
 57Manacle BolasTier 2 · Finesse · Close · d4+1 phy · One-HandedR... [namelen=234 namehash=0c0e966d]
 6Ritual Blade of SekhmetTier 3 · Finesse · Melee · d8+4 mag · On... [namelen=266 namehash=586550e2]
 6Shield of the SunTier 3 · Strength · Melee · d4+4 mag · One-Han... [namelen=185 namehash=3635a78d]
@@ -460,6 +472,7 @@ Advanced Whip
 Advanced WhipTier 3 · Presence · Very Close · d6+4 phy · One-Han... [namelen=195 namehash=be4c1394]
 Advanced Wooden Stake
 Advanced Wooden StakeTier 3 · Strength · Melee · d8+4 phy · One-... [namelen=208 namehash=d2a9adc1]
+Aku-Haptlek's Tooth
 Alt. tables
 Arcane Scalpel
 Armor
@@ -490,6 +503,7 @@ Echo BladeTier 4 · Presence · Melee · d4+6 mag · One-HandedDoubl... [namelen
 Eldritch Vambrace
 Eldritch VambraceTier 2 · Instinct · Melee · d8 mag · One-Handed... [namelen=236 namehash=ed0297a3]
 Equipment
+Fateglass Shield
 Festival Whip
 Festival WhipTier 1 · Presence · Very Close · d6 phy · One-Hande... [namelen=206 namehash=0fb5b409]
 Fighting Cloak
@@ -622,6 +636,7 @@ Round Shield
 Round ShieldTier 1 · Strength · Melee · d4 phy · One-HandedProte... [namelen=108 namehash=3de4b5a6]
 Rune Shield
 Rune ShieldTier 1 · Knowledge · Melee · d4 mag · One-HandedProte... [namelen=115 namehash=cce204a6]
+Saintly Guard
 Sangromancy Dagger
 Search
 Secondary
@@ -656,6 +671,7 @@ Tower Shield
 Tower ShieldTier 1 · Strength · Melee · d6 phy · One-HandedBarri... [namelen=120 namehash=50b00261]
 Towline Hook
 Towline HookTier 1 · Finesse · Close · d6 phy · One-HandedHooked... [namelen=173 namehash=7c0484e3]
+Unicorn Knife
 Vault of Ages
 Veil Cutter
 Void Needle

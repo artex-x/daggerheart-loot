@@ -50,13 +50,14 @@ describe('the help for a section', () => {
     }
   });
 
-  it('carries all three volumes of Vault of Ages, not just the first', () => {
-    /* One link where the live text has three would quietly drop two books. */
+  it('carries all four volumes of Vault of Ages, not just the first', () => {
+    /* One link where the live text has four would quietly drop three books. */
     const links = linksOf(helpFor('voa', 'ru'));
     expect(links.map((l) => l.label)).toEqual([
       'Vault of Ages Volume 1',
       'Volume 2',
-      'Volume 3'
+      'Volume 3',
+      'Volume 4'
     ]);
   });
 

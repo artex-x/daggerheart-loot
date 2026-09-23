@@ -157,10 +157,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon",
       "tab": "#/tables",
-      "rows": 370,
+      "rows": 381,
       "printCards": 0,
       "picked": [],
-      "count": "370"
+      "count": "381"
     }
   },
   {
@@ -210,7 +210,7 @@
         "tier:2",
         "cls:mag"
       ],
-      "count": "40 из 370"
+      "count": "40 из 381"
     }
   },
   {
@@ -219,12 +219,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_range-melee",
       "tab": "#/tables",
-      "rows": 180,
+      "rows": 186,
       "printCards": 0,
       "picked": [
         "range:melee"
       ],
-      "count": "180 из 370"
+      "count": "186 из 381"
     }
   },
   {
@@ -233,12 +233,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_burden-2",
       "tab": "#/tables",
-      "rows": 195,
+      "rows": 200,
       "printCards": 0,
       "picked": [
         "burden:2"
       ],
-      "count": "195 из 370"
+      "count": "200 из 381"
     }
   },
   {
@@ -247,13 +247,27 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1-2",
       "tab": "#/tables",
-      "rows": 178,
+      "rows": 180,
       "printCards": 0,
       "picked": [
         "tier:1",
         "tier:2"
       ],
-      "count": "178 из 370"
+      "count": "180 из 381"
+    }
+  },
+  {
+    "hash": "#/tables/eq_weapon/f_tier-A",
+    "why": "the artifact value on the equipment tier facet",
+    "resolves": {
+      "hash": "#/tables/eq_weapon/f_tier-A",
+      "tab": "#/tables",
+      "rows": 1,
+      "printCards": 0,
+      "picked": [
+        "tier:A"
+      ],
+      "count": "1 из 381"
     }
   },
   {
@@ -300,13 +314,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
       "tab": "#/tables",
-      "rows": 45,
+      "rows": 46,
       "printCards": 0,
       "picked": [
         "tier:1",
         "cls:phy"
       ],
-      "count": "45 из 370"
+      "count": "46 из 381"
     }
   },
   {
@@ -315,10 +329,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_nosuch-1",
       "tab": "#/tables",
-      "rows": 370,
+      "rows": 381,
       "printCards": 0,
       "picked": [],
-      "count": "370"
+      "count": "381"
     }
   },
   {
@@ -373,7 +387,10 @@
       "tab": null,
       "rows": 0,
       "printCards": 3,
-      "printQty": { "ci1": 3, "q26": 99 },
+      "printQty": {
+        "ci1": 3,
+        "q26": 99
+      },
       "picked": []
     }
   },

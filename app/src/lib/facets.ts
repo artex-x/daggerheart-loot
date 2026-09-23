@@ -89,7 +89,13 @@ export function eqFacetRows(index: Index, kind: EquipKind, t: Dict, lang: Lang):
     tier: () => ({
       group: 'tier',
       label: t.tier,
-      values: ['1', '2', '3', '4'].map((n) => ({ value: n, label: n }))
+      values: [
+        ...['1', '2', '3', '4'].map((n) => ({ value: n, label: n })),
+        /* Drawn, like a trait chip, only where a record of this kind answers it. */
+        ...(index.allEquip.some((it) => it.eq?.t === kind && it.eq.tier === 'A')
+          ? [{ value: 'A', label: t.voaArtifact }]
+          : [])
+      ]
     }),
     src: () => ({
       group: 'src',

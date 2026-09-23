@@ -165,6 +165,26 @@ const LOOT: Loot = {
        Svelte rewrite dropped - an artifact and a cursed object, the two
        shapes the word takes. */
     voa: [
+      /* An artifact with a stat block: `eq.tier` is the book's section, 'A'. */
+      {
+        id: 'voa_a3',
+        src: 'voa',
+        kind: 'equip',
+        tier: 'A',
+        en: 'Oath Blade',
+        ende: 'Keeps its word.',
+        ru: 'Клинок Клятвы',
+        rud: 'Держит слово.',
+        eq: {
+          t: 'weapon',
+          tier: 'A',
+          cls: 'phy',
+          tr: 'strength',
+          rg: 'melee',
+          dmg: 'd10+6',
+          bu: 2
+        }
+      },
       {
         id: 'voa_a1',
         src: 'voa',
@@ -514,6 +534,18 @@ describe('the path at the top of the page, and the tag on the badge', () => {
     // childNodes[0] is positional on purpose: it isolates the path's own
     // text node from the badges that follow it in the same element.
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Проклятый предмет');
+  });
+
+  it('names an artifact weapon an artifact on the badge, the path and the stat row', async () => {
+    const { container } = render(App, { env: at('voa_a3') });
+    const sub = container.querySelector('p.page-sub');
+    expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Vault of Ages · Артефакт');
+    const stats = [...container.querySelectorAll('.eqstats span')].map((el) => el.textContent);
+    expect(stats[0]).toBe('Артефакт');
+    expect(stats).toContain('d10+6');
+    expect(container.textContent).not.toContain('Ранг');
+    expect(container.querySelector('.badge.tier')).toHaveTextContent('Артефакт');
+    await expectNoA11yViolations(container);
   });
 
   it('prints the tier for campaign-frame equipment, and the frame as a tag (D11, paid off)', () => {
@@ -909,6 +941,23 @@ describe('a feature an item grants an adversary', () => {
     await expectNoA11yViolations(container);
     await userEvent.click(summary);
     expect(details.open).toBe(true);
+    await expectNoA11yViolations(container);
+  });
+});
+
+describe('a consumable artifact', () => {
+  /* Narvik Contract from the real data: the book prints it among the
+     artifacts, so its section names it, with its roll inside that section. */
+  it('names the Artifacts section and its roll in the path line', async () => {
+    const REAL = JSON.parse(
+      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+    ) as Loot;
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/i/voa4_a2'), data: fakeData(REAL) })
+    });
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Контракт Нарвиков');
+    expect(container.textContent).toContain('Vault of Ages · Артефакт · номер 8');
+    expect(container.textContent).not.toContain('Ранг');
     await expectNoA11yViolations(container);
   });
 });

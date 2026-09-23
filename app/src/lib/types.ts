@@ -86,7 +86,9 @@ export function isSection(v: string): v is Section {
 /** The stat block. Not only records in `eq` carry one. */
 export interface Equip {
   t: EquipKind;
-  tier: Tier;
+  /** `'A'` only for equipment the book prints in its Artifacts section; the
+   *  record's own `tier` is then `'A'` too. Never inferred from the stats. */
+  tier: Tier | 'A';
   cls?: EquipClass;
   tr?: Trait;
   rg?: Range;

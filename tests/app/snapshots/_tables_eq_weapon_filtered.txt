@@ -49,11 +49,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Двуручное" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "39 из 370"
+    StaticText "39 из 381"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
-    ... button x25 of 29 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
     button "Двуручное" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
@@ -94,6 +94,7 @@ daggerheart.com
 Алебарда
 АлебардаРанг 1 · Физическое · Сила · Близко · d10+2 физ · Двуруч... [namelen=113 namehash=09db8fd0]
 Альт. таблицы
+Артефакты
 Близко
 Боевой Молот
 Боевой МолотРанг 1 · Физическое · Сила · Вплотную · d12+3 физ · ... [namelen=115 namehash=9de2a9e2]
@@ -258,11 +259,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "Two-Handed" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "39 of 370"
+    StaticText "39 of 381"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
-    ... button x25 of 29 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
     button "Two-Handed" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
@@ -296,6 +297,7 @@ Arcane GauntletsTier 1 · Magic · Strength · Melee · d10+3 mag · ... [namele
 Arcane Rifle
 Arcane RifleTier 1 · Magic · Agility · Very Far · d10+3 mag · Tw... [namelen=271 namehash=aa2f1e8d]
 Armor
+Artifacts
 Battleaxe
 BattleaxeTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=88 namehash=f8180535]
 Beast Feast

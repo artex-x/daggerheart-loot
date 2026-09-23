@@ -48,7 +48,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Магическое" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "24 из 119"
+    StaticText "25 из 123"
     ... StaticText x17 of 21 same-shape siblings elided
     button "1" [pressed=false]
     ... button x24 of 28 same-shape siblings elided
@@ -58,8 +58,8 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (5)" [checked=false]
     checkbox "Рунный Щит" [checked=false]
-    ... button x22 of 26 same-shape siblings elided
-    ... checkbox x24 of 28 same-shape siblings elided
+    ... button x23 of 27 same-shape siblings elided
+    ... checkbox x25 of 29 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
@@ -78,6 +78,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 1
 120Кинжал СангромантииРанг 1 · Влияние · Вплотную · d6 маг · Одн... [namelen=259 namehash=386d4830]
 2
+28Святой ЩитРанг 3 · Инстинкт · Вплотную · d6+3 маг · Одноручное... [namelen=343 namehash=6211bf74]
 3
 4
 6Ритуальный Клинок СехметРанг 3 · Искусность · Вплотную · d8+4 м... [namelen=287 namehash=6b1358d7]
@@ -149,6 +150,7 @@ daggerheart.com
 Руны Концентрации
 Руны КонцентрацииРанг 1 · Инстинкт · Близко · d6 маг · Одноручно... [namelen=174 namehash=93311698]
 Сбросить всё
+Святой Щит
 Священный Щит
 Священный ЩитРанг 1 · Инстинкт · Вплотную · d4 маг · ОдноручноеР... [namelen=198 namehash=61f45663]
 Сеткой
@@ -226,7 +228,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     button "Magic" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "24 of 119"
+    StaticText "25 of 123"
     ... StaticText x17 of 21 same-shape siblings elided
     button "1" [pressed=false]
     ... button x24 of 28 same-shape siblings elided
@@ -236,8 +238,8 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (5)" [checked=false]
     checkbox "Rune Shield" [checked=false]
-    ... button x22 of 26 same-shape siblings elided
-    ... checkbox x24 of 28 same-shape siblings elided
+    ... button x23 of 27 same-shape siblings elided
+    ... checkbox x25 of 29 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
@@ -256,6 +258,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
 1
 120Sangromancy DaggerTier 1 · Presence · Melee · d6 mag · One-Ha... [namelen=218 namehash=e4851889]
 2
+28Saintly GuardTier 3 · Instinct · Melee · d6+3 mag · One-Handed... [namelen=315 namehash=b4f4f457]
 3
 4
 6Ritual Blade of SekhmetTier 3 · Finesse · Melee · d8+4 mag · On... [namelen=266 namehash=586550e2]
@@ -334,6 +337,7 @@ Reset all
 Ritual Blade of Sekhmet
 Rune Shield
 Rune ShieldTier 1 · Knowledge · Melee · d4 mag · One-HandedProte... [namelen=115 namehash=cce204a6]
+Saintly Guard
 Sangromancy Dagger
 Search
 Secondary

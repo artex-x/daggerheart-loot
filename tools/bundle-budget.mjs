@@ -1,6 +1,6 @@
 /* The bundle size budget.
  *
- * Gzip of the code, data excluded: `data.js` is 1236 records, big by definition
+ * Gzip of the code, data excluded: `data.js` is 1272 records, big by definition
  * and unaffected by how the app is written. The code, on the other hand, grows
  * invisibly - one convenient dependency at a time - and a number is the only way
  * to notice.
