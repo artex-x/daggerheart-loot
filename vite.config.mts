@@ -18,13 +18,16 @@ const ROOT = fileURLToPath(new URL('.', import.meta.url));
  * Linked rather than copied: 80 MB on every build is not a cost worth paying
  * for a folder that has not changed. `junction` is what makes that work on
  * Windows without elevation, and is ignored on everything else.
+ *
+ * The generated site pages (`pages/`) ride the same junction: they are written
+ * before `vite build`, because `npm run build` runs `npm run data` first.
  */
 function artwork(): Plugin {
   return {
     name: 'dhloot-artwork',
     apply: 'build',
     closeBundle() {
-      for (const dir of ['img', 'og', 'card']) {
+      for (const dir of ['img', 'og', 'card', 'pages']) {
         const at = join(ROOT, 'dist', dir);
         if (!existsSync(at)) symlinkSync(join(ROOT, dir), at, 'junction');
       }
@@ -84,7 +87,9 @@ function fileUrlBuild(): Plugin {
    `ci.yml`'s `deploy` job publishes. */
 export default defineConfig({
   root: 'app',
-  publicDir: false,
+  /* The manifest, the service worker and the icons, copied verbatim: the
+     worker must not pass through the bundle (docs/specs/META.md section 9). */
+  publicDir: 'public',
   /* A relative base, not '/daggerheart-loot/'. On GitHub Pages it behaves
      exactly the same, while an absolute one breaks every asset URL when the page
      is opened from a folder - see docs/specs/META.md section 4. */

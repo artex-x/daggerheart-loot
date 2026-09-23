@@ -7,7 +7,8 @@ any of them without the owner saying so.
 
 `<meta name="robots" content="noindex, nofollow">` is in `app/index.html` -
 the rewrite's entry document, which is what `dist/index.html` is built from -
-and in every generated stub (`tools/build-share-pages.js`). This is a personal
+and in every generated stub (`tools/build-share-pages.js`) and static page
+(`tools/build-pages.js`, section 9). This is a personal
 tool and is meant to stay out of search results. Do not remove it to improve
 SEO.
 
@@ -43,7 +44,7 @@ consequences are deliberate:
 - no accounts, no sync, no way to revoke a link
 - a link is as long as its contents, hence the checksum and the short form
 - the person's own lists are in `localStorage` and can be lost; the app says so
-  in the section, and the GM link doubles as the backup
+  in the section, and **Your own link** (`shareGm`) doubles as the backup
 
 Do not invent server-side list storage, an upload endpoint or a paste service.
 
@@ -159,3 +160,151 @@ still points at the same URL - this site's exact case; only the bot's
 throttles update attempts per user, independently of Telegram's flood
 control, and refuses further attempts of either kind - presses and sends -
 with "Sorry, too many attempts. Please try again in `<N>` seconds."
+
+## 9. Installable app (PWA)
+
+The published site installs as an app on Android and desktop Chrome and on
+iOS, and opens with no connection after one online visit. Under `file://`
+it stays the same folder app as before (section 4): nothing below loads
+there.
+
+### The manifest and the icons
+
+`app/public/manifest.webmanifest`, copied verbatim into `dist/` by Vite's
+`publicDir`:
+
+- One language, Russian, like the share stubs (`docs/specs/I18N.md`);
+  `name` equals `og:site_name`. `short_name` is "Лут DH": Android launchers
+  truncate past about 12 characters, and "Лут Daggerheart" is 15.
+- `id`, `start_url` and `scope` are `./`, relative to the manifest, so they
+  resolve to `/daggerheart-loot/` on Pages. An absolute base changes
+  nothing here.
+- `theme_color`, `background_color` and the head's `theme-color` are all
+  `--bg` from `tokens.css`; `tests/derived.js` pins the four to one value.
+- The icons are `app/public/icons/`: `icon.svg` is the source, and
+  `tools/artwork/icons.mjs` rasterises it into `icon-192.png`,
+  `icon-512.png`, `maskable-512.png` and `apple-touch-icon.png` (180 px),
+  committed like `card/*.svg` (`docs/artwork.md`, "Icons"). The drawing
+  stays inside the maskable safe zone, a centred circle of radius 40% of
+  the side, so the maskable icon is the same drawing. iOS reads the
+  `apple-touch-icon` link in `app/index.html`, not the manifest, for the
+  home-screen icon. The tab favicon is unchanged.
+- `app/index.html` also carries a static
+  `<meta name="apple-mobile-web-app-title" content="Лут DH">`: iOS takes the
+  home-screen label from it when it does not read the script-added manifest
+  link below. `tests/derived.js` pins it to the manifest's `short_name`.
+
+The `<link rel="manifest">` is not a static tag in `app/index.html`. Chrome
+fetches it from a folder too and refuses it with a CORS error and a failed
+request (measured 2026-09-23, `tools/smoke-file-url.mjs`). The PWA port
+(`app/src/ports/pwa.ts`) appends the tag at boot, only over `http:` or
+`https:`. Headless Chrome parses that manifest with no errors and finds
+the page installable with no error (`tests/app/states.js` case 28, through
+CDP, in the browser's default context; an incognito context always answers
+`in-incognito`). Not verified on a device: that the install prompt of
+Android Chrome and of desktop Chrome appears with a manifest link added by
+a script, and that iOS
+Safari reads such a link when "Add to Home Screen" runs; on iOS the
+`apple-touch-icon` and the `apple-mobile-web-app-title` tags cover the icon
+and the label either way.
+
+### The service worker
+
+`app/public/sw.js`, hand-written plain JS, copied verbatim, outside the
+bundle and the TypeScript project. `app/src/main.ts` registers it once at
+boot through `PwaPort`, as `./sw.js`, so its scope is the site folder.
+
+| Request (path relative to the scope) | Policy |
+|---|---|
+| `./`, `assets/app.js`, `data.js`, `manifest.webmanifest`, the three manifest icons, `img/_none.webp`, `img/thumb/_none.webp` | Precached into `dhloot-shell-v1` on install |
+| `img/thumb/` | Cache first in `dhloot-thumb-v1`, capped at 1500 entries, above the whole thumbnail set; the same seven-day revalidation; an offline miss rejects as for `img/`, and the app's `onerror` swaps in `img/thumb/_none.webp`, answered from the shell cache's precached copy |
+| `img/` except `img/thumb/` | Cache first in `dhloot-img-v1`, capped at 300 entries (the oldest goes first); a hit older than seven days by its `Date` header is answered and refetched in the background; an offline miss rejects, the app's `onerror` then swaps in `img/_none.webp`, which is answered from the shell cache's precached copy |
+| `og/`, `i/`, `data.json`, `catalog.csv`, `llms.txt`, `robots.txt`, `404.html`, another origin, a path outside the scope, any method but `GET` | Not handled: the browser's own network, so the stubs, the previews and the 404 fallback (section 7) behave as before |
+| Everything else (the shell, `card/`, `icons/`, `pages/`) | Network first with a 5 s timeout, stored on every successful answer under its URL without the query (`?fbclid=...` adds no entry); the cached copy when the network fails; a navigation to the scope root or `index.html` falls back to the cached `./` |
+
+- Every hash route is the one document, so the cached `./` answers every
+  list link, section, record page and print sheet offline.
+- Network first is why there is no version stamp: each successful online
+  load refreshes the shell entries, so a deploy shows on the next online
+  load. The browser reinstalls the worker only when `sw.js` changes; the
+  cache names carry a hand-bumped `v1` for the day their layout changes.
+- Updates are silent: `skipWaiting()` on install, `clients.claim()` on
+  activate. That is safe because the app is one IIFE plus `data.js`, both
+  loaded at start, so an open page never lazy-loads a chunk from a newer
+  build. There is no "update available" prompt.
+- The seven-day revalidation replaces a manual cache bump after an artwork
+  refresh: a phone that holds a replaced picture can show the old one for
+  up to seven days. A response with no `Date` header is never refreshed.
+- Each shell entry is refreshed on its own. On a slow link one load can
+  pair a fresh `assets/app.js` with a timed-out cached `data.js`, or the
+  reverse, until the next online load; that is comparable to the ten-minute
+  `max-age` Pages already sends, under which the two files can also come
+  from two deploys.
+- `card/*.svg` is cached on first use, not precached, so an offline print
+  needs one earlier online print.
+- Thumbnails and full pictures have separate caches. At 1500 the thumbnail
+  cache holds every row picture of every table (about 2 KB each), so no
+  table scroll evicts a row's own picture, and the 300 full pictures a GM
+  opened stay out of its way; `tests/sw.test.mjs` fails when `img/thumb/`
+  holds more files than the cap. The full-picture cache still keeps 300 by
+  insertion order, so a tile view of a table longer than 300 evicts its own
+  first tiles; they refetch online and show the placeholder offline.
+- The URL `sw.js` is stable: a registered worker keeps polling its own URL,
+  so a rename or a deletion leaves every installed copy on the old worker.
+  To retire it, ship a worker that unregisters itself at the same URL.
+
+When Phase 0 of the persistence design lands (hashed chunks, a versioned
+catalog snapshot, no `file://`), `sw.js` gains one rule - `assets/` and
+`catalog/` become cache first with no age check - and its precache list
+names the entry document only. The port, the manifest and the
+registration call do not change.
+
+### Static pages
+
+Pages outside the app - today the install guide, later the policy pages -
+are plain static files, so each has a plain URL that works without
+JavaScript and without a hash route (the route grammar is frozen,
+`CONTRACTS.md` section 1).
+
+- Sources are `pages/src/<id>.html`: authored, tracked, a body fragment
+  with a `<section lang="ru">`, an `<hr />` and a `<section lang="en">`.
+  Outputs are `pages/<id>.html`, written by `tools/build-pages.js` through
+  `node tools/build.js`, gitignored like `i/`. The template adds the head
+  (`noindex, nofollow`, section 1), the style and `<main id="app-page">`.
+- Both languages sit on one page, Russian first, like `404.html`: no
+  script reads the language preference there.
+- Links are relative (`../` is the app), unlike `404.html` (section 7): a
+  page here is always served at its own path.
+- `pages/src/` is never published: `ci.yml` copies `pages/*.html` only
+  and refuses `_site/pages/src`. `vite.config.mts` junctions `pages/`
+  into `dist/` with the artwork, so the built app serves the pages too.
+- `.claude/hooks/edit-guard.mjs` blocks a direct write to `pages/*.html`;
+  `tests/derived.js` compares each output with a fresh render, and
+  `tools/check-site.mjs` probes `pages/install.html`.
+- The worker treats `pages/` as shell: a page read once online is readable
+  offline; a page never opened shows the browser's own offline page,
+  because only the scope root and `index.html` fall back to the cached
+  `./`. The pages are not precached: the install guide is read before
+  installing, which happens online.
+- The footer's nav row links them, drawn only where its link can be used
+  (`FEATURES.md`, "Chrome").
+
+One more page is: one `PAGES` entry in `tools/build-pages.js` (the id and
+the two titles), one source `pages/src/<id>.html`, and one footer link (a
+`dict.ts` key pair and one `<a>` in `Shell.svelte`'s nav). The nav's
+`{#if app.showInstall}` guard covers the install link only, but today it
+wraps the whole `<nav>`: with a second link, move the guard onto the install
+`<a>`, or the installed app and a folder hide the new link too.
+
+### From a folder, and on iOS
+
+- `file://`: the port tests the protocol before it touches
+  `navigator.serviceWorker` or the head, so from a folder no worker
+  registers and no manifest link exists. `tools/smoke-file-url.mjs`
+  asserts no failed request, no console error and no controlling worker.
+- iOS has no install prompt: a site goes to the home screen only through
+  Safari's Share sheet, "Add to Home Screen". An iOS home-screen web app
+  keeps its own storage, separate from Safari's tabs, so lists saved in
+  Safari do not show in the installed app; a list link carries a list
+  across, and the app opens offline only after its first launch online.
+  These are platform facts, not measured here.

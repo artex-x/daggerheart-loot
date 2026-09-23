@@ -178,6 +178,52 @@ ok(
   'a sitemap came back, and it exists for exactly the indexing this rejects'
 );
 
+console.log('site pages match the generator');
+/* docs/specs/META.md section 9, "Static pages". Each page is re-rendered from
+   its source and compared in full, like the stubs above. */
+const SITE_PAGES = require(path.join(ROOT, 'tools', 'build-pages.js'));
+SITE_PAGES.PAGES.forEach(function ({ id }) {
+  const src = path.join(ROOT, 'pages', 'src', id + '.html');
+  const out = path.join(ROOT, 'pages', id + '.html');
+  ok(fs.existsSync(src), 'pages/src/' + id + '.html is missing');
+  if (!fs.existsSync(src)) return;
+  const html = fs.existsSync(out) ? fs.readFileSync(out, 'utf8') : null;
+  ok(html !== null, 'pages/' + id + '.html is missing — run node tools/build.js');
+  if (html === null) return;
+  ok(
+    html === SITE_PAGES.render(id),
+    'pages/' + id + '.html is stale — run node tools/build.js'
+  );
+  ok(NOINDEX.test(html), 'pages/' + id + '.html has no noindex');
+  ok(
+    html.includes('lang="ru"') && html.includes('lang="en"'),
+    'pages/' + id + '.html does not carry both languages'
+  );
+  ok(html.includes('id="app-page"'), 'pages/' + id + '.html has lost its id="app-page" marker');
+  ok(
+    html.split('href="../"').length - 1 >= 2,
+    'pages/' + id + '.html does not link back to the app ("../") from both languages'
+  );
+  /* The opposite of 404.html's rule below, for the opposite reason: a site
+     page is served at its own path, so a relative link works on Pages and on
+     any server. */
+  ok(
+    !html.includes('/daggerheart-loot/'),
+    'pages/' + id + '.html carries a root-anchored link; site pages link relatively'
+  );
+});
+const PAGE_IDS = SITE_PAGES.PAGES.map((p) => p.id);
+const orphanSources = fs.existsSync(path.join(ROOT, 'pages', 'src'))
+  ? fs
+      .readdirSync(path.join(ROOT, 'pages', 'src'))
+      .filter((f) => f.endsWith('.html') && PAGE_IDS.indexOf(f.slice(0, -5)) < 0)
+  : [];
+ok(
+  orphanSources.length === 0,
+  'pages/src has a source with no PAGES entry in tools/build-pages.js: ' +
+    orphanSources.join(', ')
+);
+
 console.log('app/index.html head reads clean');
 /* This used to compare two input pages - the root and app/index.html -
    while the old app lived alongside it. That page is gone now, so there is
@@ -186,7 +232,14 @@ console.log('app/index.html head reads clean');
    needs. `headFacts` reads only `<head>`, not the whole document - the body
    may mention `<meta`/`<title>` inside a code sample without risking being
    parsed. */
-const HEAD_META = ['description', 'robots', 'color-scheme', 'viewport'];
+const HEAD_META = [
+  'description',
+  'robots',
+  'color-scheme',
+  'viewport',
+  'theme-color',
+  'apple-mobile-web-app-title'
+];
 function headFacts(file) {
   const html = fs.readFileSync(path.join(ROOT, file), 'utf8');
   const head = (/<head[^>]*>([\s\S]*?)<\/head>/i.exec(html) || ['', ''])[1];
@@ -221,6 +274,72 @@ const ICON = /<link\s+rel="icon"\s+href="([^"]*)"/i;
 const icon = (ICON.exec(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8')) ||
   [])[1];
 ok(!!icon, 'the tab icon is missing on app/index.html');
+
+console.log('the installable app agrees with itself');
+/* docs/specs/META.md section 9. One colour in four places: the head's
+   theme-color, the manifest's two colours and tokens.css's --bg. */
+const APP_PUBLIC = path.join(ROOT, 'app', 'public');
+let manifest = null;
+try {
+  manifest = JSON.parse(fs.readFileSync(path.join(APP_PUBLIC, 'manifest.webmanifest'), 'utf8'));
+} catch (e) {
+  ok(false, 'app/public/manifest.webmanifest does not parse: ' + e.message);
+}
+if (manifest) {
+  ok(
+    manifest.start_url === './' && manifest.scope === './',
+    'the manifest start_url and scope are not both "./": ' +
+      manifest.start_url +
+      ', ' +
+      manifest.scope
+  );
+  (manifest.icons || []).forEach(function (i) {
+    ok(fs.existsSync(path.join(APP_PUBLIC, i.src)), 'a manifest icon is missing: ' + i.src);
+  });
+  ok(
+    (manifest.icons || []).some((i) => i.purpose === 'maskable'),
+    'the manifest has no maskable icon'
+  );
+  /* iOS labels the home-screen icon from this tag when it does not read the
+     script-added manifest link. */
+  ok(
+    shareFacts['apple-mobile-web-app-title'] === manifest.short_name,
+    'apple-mobile-web-app-title ' +
+      shareFacts['apple-mobile-web-app-title'] +
+      ' is not the manifest short_name ' +
+      manifest.short_name
+  );
+  const bg = (/--bg:\s*(#[0-9a-f]{3,8})\s*;/i.exec(
+    fs.readFileSync(path.join(ROOT, 'app', 'src', 'styles', 'tokens.css'), 'utf8')
+  ) || [])[1];
+  ok(!!bg, 'tokens.css has no --bg colour to compare against');
+  ok(
+    manifest.theme_color === bg &&
+      manifest.background_color === bg &&
+      shareFacts['theme-color'] === bg,
+    'theme colours disagree with --bg ' +
+      bg +
+      ': manifest theme_color ' +
+      manifest.theme_color +
+      ', background_color ' +
+      manifest.background_color +
+      ', head theme-color ' +
+      shareFacts['theme-color']
+  );
+}
+const indexHtml = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8');
+const TOUCH = /<link\s+rel="apple-touch-icon"\s+href="\.\/([^"]*)"/i;
+const touch = (TOUCH.exec(indexHtml) || [])[1];
+ok(
+  !!touch && fs.existsSync(path.join(APP_PUBLIC, touch)),
+  'app/index.html has no relative apple-touch-icon link to a file in app/public/'
+);
+/* The PWA port adds the manifest link when hosted; a static tag is refused
+   from a folder with a failed request (tools/smoke-file-url.mjs). */
+ok(
+  !/<link\s+rel="manifest"/i.test(indexHtml),
+  'app/index.html carries a static manifest link, which fails from a folder'
+);
 
 console.log('layout does not shift between a short and a long page');
 /* tokens.css reserves the scrollbar gutter whether or not the page needs

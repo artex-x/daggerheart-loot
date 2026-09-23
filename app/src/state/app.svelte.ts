@@ -263,6 +263,9 @@ export class AppState {
    *  delete) on every mount of `StorageNotice` cost the same round trip for
    *  nothing, since the answer cannot change while the page is open. */
   readonly storageWorks: boolean;
+  /** Whether the footer offers the install guide: nothing installs from a
+   *  folder, and inside the installed app it is done (`FEATURES.md`, "Chrome"). */
+  readonly showInstall: boolean;
   #stopRouter: (() => void) | null = null;
   #stopListWatch: (() => void) | null = null;
   /** The hash `go()` itself just wrote, so the router's own change handler
@@ -282,6 +285,7 @@ export class AppState {
     this.#warnHidden = env.storage.get(WARN_KEY) === '1';
     this.#tablesView = readTablesView(env);
     this.storageWorks = env.storage.works();
+    this.showInstall = env.router.hosted() && !env.pwa.standalone();
     this.lists = new ListStore(
       env,
       (msg, error) => {

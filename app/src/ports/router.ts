@@ -21,6 +21,9 @@ interface RouterWin {
   removeEventListener: (t: string, fn: () => void) => void;
 }
 
+/** Whether a page at this protocol is served by a server, not opened from a folder. */
+export const hostedProtocol = (protocol: string): boolean => /^https?:$/.test(protocol);
+
 export function hashRouter(win: RouterWin = window): RouterPort {
   return {
     hash: () => win.location.hash,
@@ -66,7 +69,7 @@ export function hashRouter(win: RouterWin = window): RouterPort {
     },
 
     base: () => (win.location.href.split('#')[0] ?? '').replace(/index\.html$/, ''),
-    hosted: () => /^https?:$/.test(win.location.protocol),
+    hosted: () => hostedProtocol(win.location.protocol),
 
     canGoBack: () => win.history.length > 1,
     back() {

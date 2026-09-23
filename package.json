@@ -20,7 +20,7 @@
     "test:legacy": "node tests/run-all.js",
     "budget": "node tools/bundle-budget.mjs",
     "check:fast": "npm run lint && npm run typecheck && npm run test",
-    "check": "npm run format:check && npm run lint && npm run typecheck && node --check tools/check-site.mjs && npm run data && node tests/derived.js && node .claude/hooks/selftest.mjs && node --test tools/tg-preview/lib.test.mjs && node --test tools/artwork/lib.test.mjs && node --test tools/check-site.test.mjs && node --test tests/app/golden.test.mjs && npm run test",
+    "check": "npm run format:check && npm run lint && npm run typecheck && node --check tools/check-site.mjs && npm run data && node tests/derived.js && node .claude/hooks/selftest.mjs && node --test tools/tg-preview/lib.test.mjs && node --test tools/artwork/lib.test.mjs && node --test tools/check-site.test.mjs && node --test tests/app/golden.test.mjs && node --test tests/sw.test.mjs && npm run test",
     "check:built": "npm run build && npm run smoke && npm run budget",
     "smoke": "node tools/smoke-file-url.mjs",
     "previews": "node tools/tg-preview/run.mjs"

@@ -15,6 +15,7 @@ import {
   brokenStorage,
   fakeData,
   fakeEnv,
+  fakePwa,
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
@@ -133,6 +134,36 @@ describe('the frame', () => {
        record - "Standard rules — Daggerheart Loot Generator", not the plain
        title alone. */
     expect(document.title).toBe('Standard rules — Daggerheart Loot Generator');
+  });
+});
+
+describe('the footer nav', () => {
+  const INSTALL = 'Установить как приложение';
+
+  it('links the install guide from a nav of site pages', () => {
+    render(App, { env: at('#/roll/std') });
+    const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
+    const link = screen.getByRole('link', { name: INSTALL });
+    expect(nav).toContainElement(link);
+    expect(link).toHaveAttribute('href', 'pages/install.html');
+  });
+
+  it('names the link in English', async () => {
+    render(App, { env: at('#/roll/std') });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('link', { name: 'Install as an app' })).toBeInTheDocument();
+  });
+
+  it('draws no install link inside the installed app', () => {
+    render(App, { env: at('#/roll/std', { pwa: fakePwa({ standalone: true }) }) });
+    expect(screen.queryByRole('link', { name: INSTALL })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Страницы сайта' })).toBeNull();
+  });
+
+  it('draws no install link from a folder', () => {
+    const router = { ...memoryRouter('#/roll/std'), hosted: () => false };
+    render(App, { env: fakeEnv({ router }) });
+    expect(screen.queryByRole('link', { name: INSTALL })).toBeNull();
   });
 });
 
@@ -401,6 +432,12 @@ describe('accessibility', () => {
   it('has no axe violations in English', async () => {
     const { container } = render(App, { env: at('#/tables/weapons') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations with the footer nav drawn', async () => {
+    const { container } = render(App, { env: at('#/roll/std') });
+    expect(screen.getByRole('navigation', { name: 'Страницы сайта' })).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 

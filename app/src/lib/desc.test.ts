@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
-import { descHtml, descParts, esc, hasLabels, lineHtml, splitLabel } from './desc.js';
+import { artSrc, descHtml, descParts, esc, hasLabels, lineHtml, splitLabel } from './desc.js';
 import type { Record_ } from './types.js';
 
 const LOOT = JSON.parse(
@@ -137,5 +137,19 @@ describe('escaping', () => {
   it('leaves a line with no label escaped and nothing more', () => {
     expect(splitLabel('no colon here')).toEqual({ label: '', body: 'no colon here' });
     expect(lineHtml('a < b')).toBe('a &lt; b');
+  });
+});
+
+describe('where a picture lives', () => {
+  it('draws the 640 px file by default, and its placeholder when missing or broken', () => {
+    expect(artSrc('a.webp')).toBe('img/a.webp');
+    expect(artSrc('')).toBe('img/_none.webp');
+    expect(artSrc('a.webp', true)).toBe('img/_none.webp');
+  });
+
+  it('draws the 160 px thumbnail for a row, and the thumbnail placeholder', () => {
+    expect(artSrc('a.webp', false, 'thumb')).toBe('img/thumb/a.webp');
+    expect(artSrc(undefined, false, 'thumb')).toBe('img/thumb/_none.webp');
+    expect(artSrc('a.webp', true, 'thumb')).toBe('img/thumb/_none.webp');
   });
 });

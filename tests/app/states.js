@@ -6,8 +6,10 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Twenty-seven cases, no ancestor. */
+ * real second tab to mean anything at all. Twenty-eight cases, no ancestor. */
 const fs = require('fs');
+const http = require('http');
+const path = require('path');
 const { PNG } = require('pngjs');
 const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
@@ -437,7 +439,8 @@ async function copyImage() {
 /** 11. A broken art path - the real <img> error path, not a data mutation:
  *  the request for one record's own picture is aborted, so the browser
  *  fires a genuine error event and the port's own onartfail/markArtBroken
- *  path runs for real. */
+ *  path runs for real. A second page does the same to a table row's
+ *  thumbnail, and proves the row never asks for the 640 px file. */
 async function brokenArtPath() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await page.setRequestInterception(true);
@@ -464,6 +467,44 @@ async function brokenArtPath() {
   );
   page.off('request', onReq);
   await ctx.close();
+
+  /* A table row asks for its 160 px thumbnail, never the full picture, and a
+   * failed thumbnail falls back to the thumbnail placeholder
+   * (docs/specs/FEATURES.md, "Records"). */
+  const row = await fresh({ width: 1180, height: 900 });
+  const asked = [];
+  await row.page.setRequestInterception(true);
+  row.page.on('request', (req) => {
+    asked.push(req.url());
+    if (/\/img\/thumb\/w3\.webp$/.test(req.url())) req.abort();
+    else req.continue();
+  });
+  await row.d.open('#/tables/wondrous/w3');
+  await row.page
+    .waitForFunction(
+      () =>
+        /\/_none\.webp$/.test(
+          document.querySelector('[data-row="w3"] .row-main img')?.getAttribute('src') || ''
+        ),
+      { timeout: 5000 }
+    )
+    .catch(() => {});
+  ok(
+    asked.some((u) => /\/img\/thumb\/w3\.webp$/.test(u)),
+    '11 (row thumbnail): the row did not ask for its thumbnail'
+  );
+  ok(
+    !asked.some((u) => /\/img\/w3\.webp$/.test(u)),
+    '11 (row thumbnail): the row downloaded the full picture'
+  );
+  const rowSrc = await row.page.evaluate(() =>
+    document.querySelector('[data-row="w3"] .row-main img')?.getAttribute('src')
+  );
+  ok(
+    rowSrc === 'img/thumb/_none.webp',
+    '11 (row thumbnail): instead of the thumbnail placeholder - ' + rowSrc
+  );
+  await row.ctx.close();
 }
 
 /** 12. Focus survives a tables keystroke - Svelte keeps the search box's
@@ -1484,6 +1525,149 @@ async function listMenuKeepsItsControlsInView() {
   }
 }
 
+const DIST = path.join(__dirname, '..', '..', 'dist');
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.css': 'text/css',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.webp': 'image/webp'
+};
+
+/** A static server over dist/ on a free port: files only, no listing, 404
+ *  for anything else. The worker registers only over http(s). */
+function serveDist() {
+  const server = http.createServer((req, res) => {
+    let rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    if (rel.endsWith('/')) rel += 'index.html';
+    const file = path.join(DIST, rel);
+    const type = TYPES[path.extname(file)];
+    if (!file.startsWith(DIST + path.sep) || !type || !fs.existsSync(file)) {
+      res.writeHead(404).end();
+      return;
+    }
+    res.writeHead(200, { 'content-type': type, date: new Date().toUTCString() });
+    res.end(fs.readFileSync(file));
+  });
+  return new Promise((resolve) => {
+    server.listen(0, '127.0.0.1', () => resolve(server));
+  });
+}
+
+/** 28. The installed shell opens offline: the worker registers over http,
+ *  controls the page after one reload, and answers the next reload with the
+ *  network gone. Over http the manifest parses and the page is installable,
+ *  and the footer links the install guide, which the server answers; from a
+ *  folder the footer draws no such link (docs/specs/META.md section 9,
+ *  FEATURES.md, "Chrome"). */
+async function installedShellOffline() {
+  const at = '28 (offline shell): ';
+  const server = await serveDist();
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  try {
+    await d.open('#/roll/std');
+    ok(
+      await page.evaluate(() => document.querySelector('.foot-nav') === null),
+      at + 'the install link is drawn from a folder'
+    );
+    const url = 'http://127.0.0.1:' + String(server.address().port) + '/index.html#/roll/std';
+    await page.goto(url, { waitUntil: 'load' });
+    ok(
+      await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)),
+      at + 'the service worker never became ready'
+    );
+    ok(
+      await page.evaluate(
+        () =>
+          document.head.querySelector('link[rel="manifest"]')?.getAttribute('href') ===
+          './manifest.webmanifest'
+      ),
+      at + 'the hosted page has no manifest link'
+    );
+    ok(
+      await page.evaluate(
+        () =>
+          document.querySelector('.foot-nav a')?.getAttribute('href') === 'pages/install.html'
+      ),
+      at + 'the hosted footer does not link pages/install.html'
+    );
+    ok(
+      await page.evaluate(() =>
+        fetch('pages/install.html')
+          .then((r) => (r.status === 200 ? r.text() : ''))
+          .then((body) => body.includes('id="app-page"'))
+      ),
+      at + 'pages/install.html is not served beside the app'
+    );
+    await page.reload({ waitUntil: 'load' });
+    ok(
+      await page.evaluate(() => navigator.serviceWorker.controller !== null),
+      at + 'the page is not controlled after one reload'
+    );
+    const cdp = await page.createCDPSession();
+    const manifest = await cdp.send('Page.getAppManifest');
+    ok(
+      manifest.errors.length === 0 && manifest.url.endsWith('/manifest.webmanifest'),
+      at + 'Chrome did not parse the manifest: ' + JSON.stringify(manifest.errors)
+    );
+    await cdp.detach();
+    /* Installability is asked on a page in the browser's default context:
+       Chrome answers `in-incognito` for `fresh()`'s own context whatever the
+       site does. The worker it registers there is removed afterwards. */
+    const shared = await sharedPage({ width: 1180, height: 900 });
+    try {
+      await shared.page.goto(url, { waitUntil: 'load' });
+      await shared.page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
+      const sharedCdp = await shared.page.createCDPSession();
+      const { installabilityErrors } = await sharedCdp.send('Page.getInstallabilityErrors');
+      await sharedCdp.detach();
+      fs.writeSync(
+        1,
+        at +
+          'installability error ids: ' +
+          JSON.stringify(installabilityErrors.map((e) => e.errorId)) +
+          '\n'
+      );
+      ok(
+        installabilityErrors.length === 0,
+        at + 'Chrome finds the page not installable: ' + JSON.stringify(installabilityErrors)
+      );
+      await shared.page.evaluate(() =>
+        navigator.serviceWorker.getRegistration().then((r) => r && r.unregister())
+      );
+    } finally {
+      await shared.page.close();
+    }
+    /* Both halves of "offline": the emulation for the page, and the server
+       itself gone, so the worker's own fetch fails too. */
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+    await page.setOfflineMode(true);
+    await page.reload({ waitUntil: 'load' });
+    const seen = await page.evaluate(() => ({
+      mounted: !!document.querySelector('#app')?.childElementCount,
+      data: typeof window.LOOT === 'object' && window.LOOT !== null,
+      title: document.title
+    }));
+    ok(seen.mounted, at + 'the app did not render offline');
+    ok(seen.data, at + 'the data did not arrive offline: window.LOOT is empty');
+    ok(
+      seen.title.endsWith('Генератор лута — Daggerheart'),
+      at + 'the offline document is not the app: ' + seen.title
+    );
+    await page.setOfflineMode(false);
+  } finally {
+    await ctx.close();
+    if (server.listening) {
+      server.closeAllConnections();
+      server.close();
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -1510,7 +1694,8 @@ const CASES = [
   ['24 (reduced motion)', reducedMotionKillsEverything],
   ['25 (notice dismiss while folded)', storageNoticeDismissWhileFolded],
   ['26 (announce on touch, inert grip)', announceOnTouchAndHideInertGrip],
-  ['27 (list menu at 50 lists)', listMenuKeepsItsControlsInView]
+  ['27 (list menu at 50 lists)', listMenuKeepsItsControlsInView],
+  ['28 (offline shell)', installedShellOffline]
 ];
 
 (async () => {

@@ -106,14 +106,19 @@ export function descHtml(it: Record_, lang: Lang): string {
 }
 
 /** The placeholder a record with no art, or with art that failed, falls back to. */
-const NO_ART = 'img/_none.webp';
+const NO_ART = '_none.webp';
 
 /**
  * Where a record's picture lives.
  *
  * A record with no art and one whose file is missing get the same placeholder,
- * so the layout does not shift when one turns into the other.
+ * so the layout does not shift when one turns into the other. Row-sized sites
+ * ask for `'thumb'`, the 160 px derivative (`docs/specs/FEATURES.md`, "Records").
  */
-export function artSrc(img: string | undefined, broken = false): string {
-  return img && !broken ? `img/${img}` : NO_ART;
+export function artSrc(
+  img: string | undefined,
+  broken = false,
+  size: 'full' | 'thumb' = 'full'
+): string {
+  return (size === 'thumb' ? 'img/thumb/' : 'img/') + (img && !broken ? img : NO_ART);
 }

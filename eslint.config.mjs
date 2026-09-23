@@ -132,6 +132,14 @@ export default ts.config(
     languageOptions: { globals: { ...globals.node } }
   },
   {
+    /* The service worker is plain JS outside the TypeScript project: the
+       `webworker` lib clashes with `dom` in one tsconfig, so the type-aware
+       rules have no project to resolve it against. */
+    files: ['app/public/**/*.js'],
+    extends: [ts.configs.disableTypeChecked],
+    languageOptions: { globals: { ...globals.serviceworker } }
+  },
+  {
     /* tests/** and tools/**: standalone node scripts that sit outside every
        tsconfig, so the type-aware rules have no project to resolve them
        against - same treatment as the root config files above.

@@ -10,7 +10,8 @@
   contract docs/specs/COVERAGE.md documents): this module holds every rule
   that can be stated over data - name normalisation, matching, destination resolution,
   shared-asset grouping, collision and duplicate detection, the
-  affected-stub-URL set, and the stale-set algebra.
+  affected-stub-URL set, the stale-set algebra, the thumbnail destination
+  and the thumbnail set.
 */
 
 // Typographic apostrophes a source or a record name may use in place of a
@@ -128,6 +129,28 @@ function matchSources({ sources, index, assign }) {
   return { candidates, unmatched, ambiguous, duplicateSources };
 }
 
+// The 160 px row thumbnail of a picture: one per `img/<asset>`, including
+// `_none.webp` (docs/artwork.md, "Thumbnails").
+export function thumbPath(asset) {
+  return 'img/thumb/' + asset;
+}
+
+// { targets, orphans } for the `thumbs` verb. `images` are the `.webp` names
+// in `img/`, `thumbs` the `.webp` names in `img/thumb/`. `targets` is one
+// { source, thumb } per picture, sorted by name; `orphans` is every thumbnail
+// whose picture is gone, sorted - the verb refuses them and never deletes.
+export function planThumbs({ images, thumbs }) {
+  const names = images.slice().sort();
+  const have = new Set(images);
+  return {
+    targets: names.map((name) => ({ source: 'img/' + name, thumb: thumbPath(name) })),
+    orphans: thumbs
+      .filter((name) => !have.has(name))
+      .sort()
+      .map(thumbPath)
+  };
+}
+
 // { pairs, unmatched, ambiguous, collisions, duplicateSources, counts }.
 //
 // - `sources` is [{ name, sha256, bytes }] - metadata only; run.mjs reads
@@ -176,6 +199,7 @@ export function planInstall({ sources, records, map }) {
       recordName: record.ru || record.en,
       asset,
       webp: 'img/' + asset,
+      thumb: thumbPath(asset),
       jpeg: 'og/' + asset.replace(/\.webp$/, '.jpg'),
       sharedWith
     });
@@ -300,6 +324,7 @@ export function planIngest({ sources, records, missingAssets, map }) {
         sourceSha256: source.sha256,
         asset,
         webp: 'img/' + asset,
+        thumb: thumbPath(asset),
         jpeg: 'og/' + asset.replace(/\.webp$/, '.jpg'),
         recordIds
       });

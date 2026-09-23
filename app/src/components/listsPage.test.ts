@@ -160,6 +160,7 @@ describe('a card per list', () => {
     const cardA = screen.getByRole('link', { name: /Клад дракона/ });
     expect(cardA).toHaveAttribute('href', '#/l/' + encodeList(listA, false));
     expect(cardA.querySelectorAll('img')).toHaveLength(1);
+    expect(cardA.querySelector('img')).toHaveAttribute('src', 'img/thumb/_none.webp');
 
     const cardB = screen.getByRole('link', { name: /Лавка в порту/ });
     expect(cardB).toHaveAttribute('href', '#/l/' + encodeList(listB, false));

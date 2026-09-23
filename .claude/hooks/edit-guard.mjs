@@ -23,6 +23,11 @@ const DENY = [
       'Blocked: i/*.html are generated share stubs. Edit data.js, then run `node tools/build.js`.'
   },
   {
+    test: (p) => p.startsWith('pages/') && !p.startsWith('pages/src/') && p.endsWith('.html'),
+    message:
+      'Blocked: pages/*.html are generated site pages. Edit pages/src/<id>.html, then run `node tools/build.js`.'
+  },
+  {
     test: (p) => p.startsWith('dist/'),
     message:
       'Blocked: dist/ is build output. Edit the source under app/src/ and run `npm run build`.'

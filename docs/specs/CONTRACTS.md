@@ -132,6 +132,24 @@ bundle become `dist/index.html` and `dist/assets/app.js`), and the deploy job
 publishes them from the build rather than from a committed file. Nothing about
 the frozen paths above changes with them.
 
+`manifest.webmanifest`, `sw.js` and `icons/` are build outputs too, published
+the same way as `assets/`: Vite copies them verbatim from `app/public/`. The
+URL `sw.js` stays stable once published, because every registered worker
+keeps polling it (`docs/specs/META.md` section 9).
+
+`pages/<name>.html` are the site's static pages (today `pages/install.html`).
+`tools/build-pages.js` generates them from `pages/src/<name>.html` through
+`node tools/build.js`, and the deploy job publishes them from the build, like
+`i/`; `pages/src/` is never published. A page URL is public once something
+outside links to it (`docs/specs/META.md` section 9, "Static pages").
+
+`img/thumb/<id>.webp` is a 160x160 derivative of `img/<id>.webp`, one per
+picture including `_none.webp`, committed and published with `img/`;
+`tools/artwork/` writes it (`docs/artwork.md`, "Thumbnails"). It is internal:
+the app draws it in rows, and nothing outside links to it, so
+`docs/fixtures/`, `tests/contracts.js` and `llms.txt` do not name it - on the
+same footing as the `tools/artwork/` paragraph below.
+
 `<id>` in `img/<id>.webp` and `og/<id>.jpg` is the **asset id**, not
 necessarily the record id: it is the basename of a record's `img` field, and
 several records may share one asset (`tools/build-share-pages.js` derives the

@@ -204,7 +204,7 @@
               ></div
             >{#if items.length}<div class="listcard-thumbs"
                 >{#each items.slice(0, 6) as it (it.id)}<img
-                    src={artSrc(it.img, app.artBroken(it.id))}
+                    src={artSrc(it.img, app.artBroken(it.id), 'thumb')}
                     alt=""
                     loading="lazy"
                     decoding="async"

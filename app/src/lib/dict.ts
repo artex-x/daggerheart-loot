@@ -101,6 +101,9 @@ const ru = {
     "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
+  /* The footer's nav row: the site's static pages (pages/<id>.html). */
+  footNavLabel: 'Страницы сайта',
+  installLink: 'Установить как приложение',
 
   /* The heading of each section, and the line under it. The heading is not
      always the tab's word: the tab says "Сообщества" and the page says
@@ -467,6 +470,8 @@ const en: Dict = {
     "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
+  footNavLabel: 'Site pages',
+  installLink: 'Install as an app',
 
   pageWondrous: 'Wondrous Loot',
   pageDread: 'Dread GM Toolbox',

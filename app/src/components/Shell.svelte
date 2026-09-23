@@ -114,6 +114,13 @@
 <!-- The licence notice is on every page on purpose: the terms ask for it, and
      a page that can be linked to directly has to carry it. -->
 <footer class="foot">
+  <!-- The home of the site's static pages, drawn only where its link can be
+       used (FEATURES.md, "Chrome"). -->
+  {#if app.showInstall}
+    <nav class="foot-nav" aria-label={app.t.footNavLabel}>
+      <a href="pages/install.html">{app.t.installLink}</a>
+    </nav>
+  {/if}
   <p>
     {app.t.footBefore}<a href="https://www.daggerheart.com" target="_blank" rel="noopener"
       >{app.t.footLink}</a
@@ -213,6 +220,15 @@
 
   .foot p {
     margin: 0;
+  }
+
+  /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap; the link
+     colour is the global `a` rule, the same one the licence link uses. */
+  .foot-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 0 0 10px;
   }
 
   main {

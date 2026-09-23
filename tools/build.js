@@ -4,6 +4,7 @@
     data.json     the same records, as plain JSON anything can parse
     catalog.csv   one row per record, for reading rather than parsing
     i/<id>.html   the share stubs
+    pages/<id>.html  the site pages (tools/build-pages.js)
 
   Run after every edit to data.js:   node tools/build.js
 
@@ -33,5 +34,8 @@ const L = global.window.LOOT;
 });
 
 execFileSync(process.execPath, [path.join(__dirname, 'build-share-pages.js')], {
+  stdio: 'inherit'
+});
+execFileSync(process.execPath, [path.join(__dirname, 'build-pages.js')], {
   stdio: 'inherit'
 });

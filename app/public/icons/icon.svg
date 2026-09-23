@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Every stroke stays inside the maskable safe zone, a centred circle of
+       radius 40% of the side (204.8 units here; the drawing reaches about 196),
+       so one drawing serves the "any" and "maskable" sizes. -->
+  <rect width="512" height="512" fill="#0e0c15"/>
+  <g fill="none" stroke="#d8ab5e" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="176" cy="256" r="76"/>
+    <path d="M252 256h170"/>
+    <path d="M356 256v58"/>
+    <path d="M412 256v78"/>
+  </g>
+</svg>

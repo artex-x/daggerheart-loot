@@ -52,8 +52,8 @@ before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
 
 | Suite | Kind | Fate | Responsible for |
 |---|---|---|---|
-| `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files, and (since art-tooling B3) an `og/*.jpg` orphan check mirroring the existing `img/*.webp` one |
-| `derived` | data | kept, re-pointed at R0c | `data.json` / `catalog.csv` / `i/*.html` rebuilt and compared byte for byte against what `npm run data` (run immediately before, in the same `npm run check`) just wrote - proving the generator agrees with its own output, not that a commit ships the matching bytes; in CI, a `git diff --exit-code` step after `npm run check` is what makes that second comparison bite (B4); counts spelled out in the files `tests/derived.js`'s `COUNT_BEARING_FILES` array names; `noindex` and the head (`headFacts`) read from `app/index.html` alone - before R0c this also compared it against the now-deleted root `index.html`'s head; the licence notice; die vectors read from `app/src/lib/dice.ts`'s `DIE_ART` (before R0c: parsed out of `app.js`); per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `browser` matrix |
+| `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files, and (since art-tooling B3) an `og/*.jpg` orphan check mirroring the existing `img/*.webp` one, and (task 69) the row thumbnails: one `img/thumb/*.webp` per `img/*.webp`, no orphan, each a 160x160 lossy WebP read from its header |
+| `derived` | data | kept, re-pointed at R0c | `data.json` / `catalog.csv` / `i/*.html` / `pages/*.html` (`tools/build-pages.js`) rebuilt and compared byte for byte against what `npm run data` (run immediately before, in the same `npm run check`) just wrote - proving the generator agrees with its own output, not that a commit ships the matching bytes; in CI, a `git diff --exit-code` step after `npm run check` is what makes that second comparison bite (B4); counts spelled out in the files `tests/derived.js`'s `COUNT_BEARING_FILES` array names; `noindex` and the head (`headFacts`) read from `app/index.html` alone - before R0c this also compared it against the now-deleted root `index.html`'s head; the licence notice; die vectors read from `app/src/lib/dice.ts`'s `DIE_ART` (before R0c: parsed out of `app.js`); per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `browser` matrix |
 | `parity` | migration | **deleted at R0c** (`23c00a6`) | was: the rewrite against the live app, the same script on both, differences reported - see "The rewrite against the app it replaces" below |
 | `contracts` | contract | pure half kept; browser half ported to `tests/app/contracts.js` | golden fixtures: list encode and decode, both link variants, truncation, hash grammar for 28 route shapes, the equipment stat line in both languages, filter group key names against the docs, `data.json` top-level keys against `CONTRACTS.md` section 4 |
 | `i18n` | source | **deleted at R0c**; superseded by a compile-time check | before R0c: dictionary parity in both directions, and no key the code asks for that is missing (`tests/i18n.js`, parsed out of `app.js`). Now: `app/src/lib/dict.ts`'s `Dict` type makes the same parity a `tsc`/`svelte-check` error in both directions - part of `npm run check`, not a separate suite. The one thing lost: the informational dead-key report (`I18N.md`) |
@@ -82,7 +82,7 @@ before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
 | `app/hues` | layout | colour read off rendered badges and the real roll button, not an injected span |
 | `app/contracts` | contract | the browser half of `contracts`, re-pointed: the link the app writes/reads, a truncated link, the llms.txt-described link, every route fixture, the stat line, filter group names |
 | `app/print` | feature | the deleted `tests/print.js`, transposed onto `dist/` and the moved driver: sheet grid, card size against the design (millimetres, not a tree), versatile weapons, dice by damage type, armour, black and white, art edges, text fitting, short black-and-white text growing to its cap without a spill (and colour never growing), the compact sheet (44x63 mm cards, four to a row on A4, the grow cap and the colour ceiling at 44 mm, the design measurements at 70%), entry points; plus the four print specs the deleted parity harness used to run (`sheetCounts`, `cardFit`, `printMedia`, `copiedPrintLink`) - the sheet's counts, the fit ladder's own written numbers at every width, the sheet under print media, and the copied set link; `sheetCounts` and `cardFit` run over the seven compact states, `printMedia` over `TEN ~ compact` (`copiedPrintLink` runs no compact state); an English pass added at R0c (`sheetCounts`/`printMedia` stay Russian-only, a comment in the file says why) |
-| `app/states` | journey | the twenty-seven states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two Other frame values picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path, focus surviving a keystroke, the note textarea's height (plus, R0b.2, the list note-field group's real CSS geometry), a roll's card `<img>` node replaced, real history Back/Forward, the selection bar pinned to the viewport at a narrow width, a real HTML5 drag reorder including a release inside the row gap marking both rows at once, a `dragenter` crossing into a row's own child reporting `defaultPrevented`, a `drop-after` row with its note box open painting gold in a measured strip at its bottom edge - pixel probe via `pngjs`, at the end of the list and in the middle of it, that same row's redrawn mark on its open note box declaring no transition of its own and the base mark's `transition-property` excluding `box-shadow` - read with reduced motion briefly relaxed then restored, and a cancelled drag (dragend, no drop) leaving the order and the marks untouched, a folded `<details>` surviving a select-all re-render, tile geometry with art blocked, the storage notice under 320px, a button keeping focus across a re-render, the money-help box plus the pressed picker's colour, and (case 26) a touch-emulated viewport where the drag grip is hidden and a committed position both moves a row and announces it through a visually hidden live region, plus that same grip drawn again for a pointer that can hover, and (case 27) the add-to-list menu at 50 lists, at 1100 and 360 wide: no taller than 342 px, its search and «+ Новый список» inside the menu and the window, the chips scrolling on their own, the five lists holding the record first, and the new-list form started with the query |
+| `app/states` | journey | the twenty-eight states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two Other frame values picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path (a record card's picture, then a table row's thumbnail: the row asks for `img/thumb/w3.webp`, never `img/w3.webp`, and shows `img/thumb/_none.webp` after the abort), focus surviving a keystroke, the note textarea's height (plus, R0b.2, the list note-field group's real CSS geometry), a roll's card `<img>` node replaced, real history Back/Forward, the selection bar pinned to the viewport at a narrow width, a real HTML5 drag reorder including a release inside the row gap marking both rows at once, a `dragenter` crossing into a row's own child reporting `defaultPrevented`, a `drop-after` row with its note box open painting gold in a measured strip at its bottom edge - pixel probe via `pngjs`, at the end of the list and in the middle of it, that same row's redrawn mark on its open note box declaring no transition of its own and the base mark's `transition-property` excluding `box-shadow` - read with reduced motion briefly relaxed then restored, and a cancelled drag (dragend, no drop) leaving the order and the marks untouched, a folded `<details>` surviving a select-all re-render, tile geometry with art blocked, the storage notice under 320px, a button keeping focus across a re-render, the money-help box plus the pressed picker's colour, and (case 26) a touch-emulated viewport where the drag grip is hidden and a committed position both moves a row and announces it through a visually hidden live region, plus that same grip drawn again for a pointer that can hover, and (case 27) the add-to-list menu at 50 lists, at 1100 and 360 wide: no taller than 342 px, its search and «+ Новый список» inside the menu and the window, the chips scrolling on their own, the five lists holding the record first, and the new-list form started with the query, and (case 28) the built app served over `http://127.0.0.1` by a local static server: the service worker ready, the manifest link added, the page controlled after one reload, and the app, `window.LOOT` and the app title back on a reload with the page offline and the server closed; the same case asserts the footer's install link absent from `file://` and present over http, `pages/install.html` fetched with status 200, and, through CDP, `Page.getAppManifest` with no errors and `Page.getInstallabilityErrors` with no errors on a page in the browser's default context (an incognito context answers `in-incognito`) |
 | `app/golden` | structural | one accessibility-tree-plus-controls text snapshot per state in `tests/app/inventory.js` (148 states, both languages, four shards), compared byte-for-byte against `tests/app/snapshots/*.txt` - a control gone, a heading moved or a label renamed is a line in `git diff`, not a percentage. Regenerate a golden only with `node tests/app/golden.js --update`; `.claude/hooks/edit-guard.mjs` refuses a hand edit. It says nothing about colour, spacing, or which picture sits behind a correct `alt` - that stays `tests/app/sweep.js`'s alone since R0c deleted the pixel harness that used to also watch it. The text a same-shape sibling run folds to its first two and last two occurrences (rule A) and the tail of a name past 64 code points (rule B, `namelen`/`namehash`) are both blind past that boundary. Mostly that is `data.js` catalogue text already owned by `tests/derived.js`, `tests/dataint.js` and the contract fixtures, **but not only**: retention is positional, so any node sharing a row's signature falls in the blind interior too. In `_tables_eq_weapon.txt` the tier 1 `checkbox "Выбрать все (N)"` and the last section's label and select-all (`АРТЕФАКТЫ`, since Volume 4) survive; the other select-alls and every `StaticText "РАНГ N"` are elided, and a rename of one of those is owned by no other suite now that `tests/parity.js` is deleted. What still fails: any attribute value change, any node added or removed (the group total moves), a role or tree-shape change, and a name change in a kept position or in any group of five or fewer. What does **not** fail: a rename inside an elided interior, and a **reorder of two same-signature siblings both inside it** - swapping them leaves the file byte-identical. |
 
 ### The golden format, and why
@@ -262,7 +262,10 @@ tracing a feature back through history).
 | Storage unavailable | `ports.test.ts`, `state/app.test.ts` |
 | `noindex`, robots | `derived` |
 | Data generation | `derived`, `dataint` |
-| `file://` | every `tests/app/` suite loads the app from `file://` |
+| `file://` | every `tests/app/` suite loads the app from `file://`, except `tests/app/states.js` case 28; `tools/smoke-file-url.mjs` |
+| Footer nav, install link | `shell.test.ts`, `state/app.test.ts`, `tests/app/states.js` case 28, `derived`, `tools/check-site.test.mjs` |
+| Row thumbnails | `desc.test.ts`, `tables.test.ts`, `listsPage.test.ts`, `dataint`, `tests/sw.test.mjs`, `tests/app/states.js` case 11 |
+| Installable app: manifest, icons, service worker, offline shell | `tests/sw.test.mjs`, `ports.test.ts`, `derived`, `tests/app/states.js` case 28, `tools/smoke-file-url.mjs`, `tools/check-site.test.mjs` |
 
 ## The rewrite against the app it replaces (history)
 
@@ -502,7 +505,9 @@ logic - name normalisation (typographic apostrophes, NFC, the trailing
 shared-asset groups), destination resolution keyed by a record's `img`
 value rather than its id, shared-asset grouping (one pair for four records
 sharing one asset, its `og/` file named after the asset and never after a
-sharing record), collision and duplicate-source-bytes detection, the
+sharing record), the thumbnail destination `img/thumb/<asset>` in both
+planners and `planThumbs` (one target per picture, orphans reported),
+collision and duplicate-source-bytes detection, the
 `--map`/`assign` override, the affected-stub-URL derivation (every matched
 record and every record it shares an asset with), and the stale-set algebra
 `verify-previews` runs on two `tools/tg-preview` `--stale-list` files.
@@ -511,6 +516,10 @@ encoder, atomic install, byte verification) is deliberately outside it - the
 same argument the tg-preview paragraph above makes for `client.mjs` and
 `live.mjs`: it is a thin wrapper around the filesystem and an encoder, where
 the only honest proof is a real image going in and a real file coming out.
+`tools/artwork/icons.mjs`, which rasterises the app icons
+(`docs/artwork.md`, "Icons"), is the same class of encoder wrapper and is
+outside the suite for the same reason. So is the `thumbs` verb, like the
+rest of `run.mjs`: a real run and `dataint` prove it.
 
 Since art-tooling B3 the same suite also covers `planIngest`, the ingest
 counterpart to `planInstall`: assets keyed by distinct asset in `missingAssets`
@@ -526,10 +535,10 @@ See `docs/artwork.md`.
 
 `tools/check-site.test.mjs` is the same pattern again:
 `tools/check-site.lib.mjs`'s `checks()`/`runChecks()` covers the assertion
-list itself - a good in-memory site producing no failures, three broken ones
+list itself - a good in-memory site producing no failures, five broken ones
 (a missing root falling through to the 404 fallback, a truncated
-`assets/app.js`, a share stub with no `og:image`) each producing exactly the
-expected failure message, and the 404-fallback probe both when it works and
+`assets/app.js`, a share stub with no `og:image`, a manifest with an
+absolute `start_url`, a site page `pages/install.html` with no `noindex`) each producing the expected failure message, and the 404-fallback probe both when it works and
 when no fallback exists at all - plus `dirReader`'s GitHub-Pages-missing-path
 emulation against a real temporary directory. `fetchReader` (the live-URL
 transport `tools/check-site.mjs` actually runs post-deploy) is deliberately
@@ -561,6 +570,26 @@ around it that a golden run was proving by accident.
 coupling). If the two ever disagree the failure names both files and what to
 do - the debounce moved, so `URL_DEBOUNCE_MS` and every golden shard need
 re-running.
+
+`tests/sw.test.mjs` covers `app/public/sw.js`, the real file, run under
+`node --test` in a `vm` context with a Map-backed fake `CacheStorage`
+(insertion-ordered, as Chrome's `keys()` is), a stub `fetch` and fake
+events: install precaches every `PRECACHE` entry and skips waiting;
+activate deletes an older `dhloot-` cache, keeps the current three and a
+foreign one, and claims; the shell answers online from the network and
+stores it under its URL without the query (two queries leave one entry),
+offline and on a timeout from the stored copy, and a navigation
+to `index.html` from the cached `./`; a stub navigation, `og/`, `data.json`,
+a POST, another origin and a path outside the scope are not answered; a
+picture miss is fetched and stored, a hit is not fetched, a hit older than
+seven days is answered and refetched once through `waitUntil`, an offline
+miss falls back to the precached placeholder, and the 301st picture evicts
+the first; a thumbnail miss is stored in `dhloot-thumb-v1` and not in
+`dhloot-img-v1`, 301 thumbnails evict nothing and leave the picture cache
+alone, the 1501st thumbnail evicts the first, and an offline thumbnail miss
+falls back to the precached `img/thumb/_none.webp`; one case fails when
+`img/thumb/` holds more files than `THUMB_CAP`. Registration, control and a real offline reload are
+`tests/app/states.js` case 28 (`docs/specs/META.md` section 9).
 
 **"No golden moved" is narrower than it sounds.** A
 golden snapshots the accessibility tree plus the control inventory
@@ -682,6 +711,15 @@ reading it); `.card :global(.card-acts ...)` raises specificity (0,3,0 ->
 
 Not blocking, recorded so they are not mistaken for coverage:
 
+- No harness exercises the real install prompt, the installed standalone
+  window, or iOS (the Share sheet, the home-screen app's separate storage,
+  a manifest link added by script). `ports.test.ts` covers `standalone()`
+  through a stubbed `matchMedia`, and a person confirms the rest on a
+  phone (`docs/specs/META.md` section 9).
+- No golden or sweep cell draws the footer nav: every `tests/app/` suite
+  but `tests/app/states.js` case 28 loads from `file://`, where the row is
+  not drawn. Its contrast rests on the global `a` rule, which the sweep
+  measures on the licence link in the same footer.
 - Across three reviewed batches, four of five real defects a review caught
   were caught by the reviewer, not a gate, and every one was inert
   verification - a check that stayed green while measuring nothing (a lint
@@ -823,8 +861,9 @@ is in `sweep.md`; grouped here so the list stays readable:
   reader anywhere) has no surviving replacement; `svelte-check` does not
   flag an unused object property (sweep Part E(iii)).
 - `tools/**` is outside every coverage gate: the "Coverage `include` covers
-  everything that ships" row above is `app/src/**` only. `tools/build.js` and
-  `tools/build-share-pages.js` are byte-compared by `tests/derived.js`, and
+  everything that ships" row above is `app/src/**` only. `tools/build.js`,
+  `tools/build-share-pages.js` and `tools/build-pages.js` are byte-compared
+  by `tests/derived.js`, and
   `tools/smoke-file-url.mjs`/`tools/bundle-budget.mjs` run on every CI build,
   but `tools/capture-share-fixture.mjs` is unmitigated - it produces
   `docs/fixtures/share/records.json`, the evidence `share.test.ts:69`'s

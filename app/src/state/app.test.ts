@@ -15,7 +15,13 @@ import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
 import { LOOT_KINDS } from '../lib/std.js';
 import { KINDS } from '../lib/types.js';
-import { brokenStorage, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import {
+  brokenStorage,
+  fakeEnv,
+  fakePwa,
+  memoryRouter,
+  memoryStorage
+} from '../ports/index.js';
 import type { CompressPort, Env, RouterPort } from '../ports/index.js';
 import { AppState } from './app.svelte.js';
 
@@ -261,6 +267,23 @@ describe('whether storage works, read once at construction', () => {
   it('is true for storage that works, false for storage that refuses', () => {
     expect(new AppState(at('#/lists')).storageWorks).toBe(true);
     expect(new AppState(at('#/lists', { storage: brokenStorage() })).storageWorks).toBe(false);
+  });
+});
+
+describe('the install link', () => {
+  it('is offered where a server serves the page and the app is not installed', () => {
+    expect(new AppState(at('#/roll/std')).showInstall).toBe(true);
+  });
+
+  it('is not offered inside the installed app', () => {
+    expect(
+      new AppState(at('#/roll/std', { pwa: fakePwa({ standalone: true }) })).showInstall
+    ).toBe(false);
+  });
+
+  it('is not offered from a folder', () => {
+    const router = { ...memoryRouter('#/roll/std'), hosted: () => false };
+    expect(new AppState(fakeEnv({ router })).showInstall).toBe(false);
   });
 });
 

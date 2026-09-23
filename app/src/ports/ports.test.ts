@@ -13,6 +13,7 @@ import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 import { browserData, fakeData, noData } from './data.js';
 import { browserImage } from './image.js';
 import { browserEnv, fakeEnv } from './index.js';
+import { browserPwa, fakePwa, linkManifest, registerWith } from './pwa.js';
 import type { DragHandlers } from './types.js';
 
 describe('storage that works', () => {
@@ -987,7 +988,7 @@ describe('the address bar', () => {
 
 describe('the environment', () => {
   it('assembles a real one with every port present', () => {
-    /* Seven ports, and a missing one is a crash on a page rather than here. */
+    /* Eight ports, and a missing one is a crash on a page rather than here. */
     const env = browserEnv();
     for (const k of [
       'storage',
@@ -996,7 +997,8 @@ describe('the environment', () => {
       'router',
       'compress',
       'drag',
-      'dialog'
+      'dialog',
+      'pwa'
     ] as const) {
       expect(env[k], k).toBeDefined();
     }
@@ -1088,5 +1090,80 @@ describe('where the page is', () => {
     expect(hashRouter(win('https://e.test/', 'https:')).hosted()).toBe(true);
     expect(hashRouter(win('http://e.test/', 'http:')).hosted()).toBe(true);
     expect(hashRouter(win('file:///tmp/index.html', 'file:')).hosted()).toBe(false);
+  });
+});
+
+describe('the installable app', () => {
+  const container = (register: (url: string) => Promise<unknown>) => ({
+    register: vi.fn(register)
+  });
+
+  it('answers unsupported where the browser has no service worker container', async () => {
+    expect(await registerWith(undefined, 'http:')).toBe('unsupported');
+  });
+
+  it('never registers from a folder', async () => {
+    const sw = container(() => Promise.resolve({}));
+    expect(await registerWith(sw, 'file:')).toBe('unsupported');
+    expect(sw.register).not.toHaveBeenCalled();
+  });
+
+  it('registers the relative worker where a server serves the page', async () => {
+    const sw = container(() => Promise.resolve({}));
+    expect(await registerWith(sw, 'https:')).toBe('registered');
+    expect(sw.register).toHaveBeenCalledWith('./sw.js');
+  });
+
+  it('answers failed when the browser refuses the worker', async () => {
+    const sw = container(() => Promise.reject(new Error('refused')));
+    expect(await registerWith(sw, 'http:')).toBe('failed');
+  });
+
+  it('registers nothing under jsdom and is not the installed app there', async () => {
+    const pwa = browserPwa();
+    expect(await pwa.register()).toBe('unsupported');
+    expect(pwa.standalone()).toBe(false);
+  });
+
+  it('links the manifest once where a server serves the page', async () => {
+    /* jsdom serves the page over http:, so this is the hosted branch. */
+    const pwa = browserPwa();
+    await pwa.register();
+    await pwa.register();
+    const links = document.head.querySelectorAll('link[rel="manifest"]');
+    expect(links).toHaveLength(1);
+    expect(links[0]!.getAttribute('href')).toBe('./manifest.webmanifest');
+    links[0]!.remove();
+  });
+
+  it('links no manifest from a folder', () => {
+    linkManifest(document, 'file:');
+    expect(document.head.querySelector('link[rel="manifest"]')).toBeNull();
+  });
+
+  it('reports the standalone display mode and the iOS flag', () => {
+    /* jsdom has no matchMedia at all; the port guards for that too. */
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: q === '(display-mode: standalone)'
+    }));
+    expect(browserPwa().standalone()).toBe(true);
+    vi.stubGlobal('matchMedia', undefined);
+    Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });
+    try {
+      expect(browserPwa().standalone()).toBe(true);
+    } finally {
+      Reflect.deleteProperty(navigator, 'standalone');
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('has a fake that answers what it is told and counts registrations', async () => {
+    const pwa = fakePwa({ standalone: true, result: 'failed' });
+    expect(pwa.standalone()).toBe(true);
+    expect(await pwa.register()).toBe('failed');
+    expect(await pwa.register()).toBe('failed');
+    expect(pwa.registrations).toBe(2);
+    expect(fakePwa().standalone()).toBe(false);
+    expect(await fakePwa().register()).toBe('registered');
   });
 });

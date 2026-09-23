@@ -6,10 +6,11 @@
 script behind in a task directory, since deleted and superseded by this
 tool. It is a sibling npm project, modelled on `tools/tg-preview/`: its own
 `package.json` and lockfile carry `sharp`, so the root `package.json` gains
-no dependency and root `npm ci` never installs an image encoder. Only
-`tools/artwork/run.mjs` imports `sharp`, and only lazily, so the verbs that
-need no encoder still run on a machine where `tools/artwork/node_modules/`
-does not exist.
+no dependency and root `npm ci` never installs an image encoder. It also
+makes the 160 px row thumbnails under `img/thumb/` ("Thumbnails", below).
+`tools/artwork/run.mjs` imports `sharp` only lazily, so the verbs that need
+no encoder still run on a machine where `tools/artwork/node_modules/` does
+not exist; `tools/artwork/icons.mjs` ("Icons", below) always needs it.
 
 This page covers both callers: the **replacement** path (installing new bytes
 over an already-cataloged item's picture) and the **ingest** path (installing
@@ -36,6 +37,7 @@ node tools/artwork/run.mjs install         --uploads <dir> [--repo <dir>] [--map
 node tools/artwork/run.mjs verify          --uploads <dir> [--repo <dir>] [--map <f>]
 node tools/artwork/run.mjs verify-previews --before <f> --after <f> --report <f>
 node tools/artwork/run.mjs ingest          --uploads <dir> [--repo <dir>] [--map <f>] [--report <f>] [--dry-run]
+node tools/artwork/run.mjs thumbs          [--repo <dir>] [--dry-run]
 ```
 
 `--repo <dir>` defaults to the repository root; point it at a scratch tree
@@ -55,16 +57,18 @@ and `og/` to "try it out" (Risks, below).
 - **`install`** - runs `plan`'s matching again, then refuses (prints every
   reason, writes nothing) if any name is ambiguous, any two sources collide
   on one asset, any two sources share bytes, any input is non-square, any
-  input carries a non-fully-opaque alpha channel, or **any destination
-  `img/<asset>.webp` or `og/<asset>.jpg` does not already exist** - this
-  verb replaces, it never creates. Past that gate: encodes both formats,
-  writes each to a `.tmp` sibling, decode-checks the temp files, renames
-  both into place, then re-encodes from the source a second time and
-  compares against what was just installed. `--dry-run` stops after the
+  input carries a non-fully-opaque alpha channel, or **any of the three
+  destinations `img/<asset>.webp`, `img/thumb/<asset>.webp` and
+  `og/<asset>.jpg` does not already exist** - this verb replaces, it never
+  creates. Past that gate: encodes both formats and the thumbnail,
+  decode-checks them, writes each to a `.tmp` sibling and renames it into
+  place, then re-encodes from the source a second time and compares all
+  three against what was just installed. `--dry-run` stops after the
   refusal checks and geometry/opacity decode, before any write.
 - **`verify`** - re-encodes every source in `--uploads` and compares the
   result byte-for-byte against what is currently installed at that pair's
-  destination, decode-checking format/mode/size on the installed file too.
+  destination (the WebP, its thumbnail and the JPEG), decode-checking
+  format/mode/size on the installed files too.
   Scoped to the pairs this source set resolves to, never the whole `img/`
   tree (see "Determinism is per-run" below) - a bare `verify` with no
   `--uploads` is not a full-catalog audit.
@@ -80,6 +84,14 @@ and `og/` to "try it out" (Risks, below).
 - **`ingest`** - the counterpart to `install` for a **new-source ingest**: it
   *creates* art for a record a source ingest just added; it never replaces.
   See "The ingest path" below for what it does and the command sequence.
+- **`thumbs`** - (re)generates the whole thumbnail set: one
+  `img/thumb/<asset>.webp` for every `img/*.webp`, `_none.webp` included.
+  It reads the committed 640 px files, not `data.js` and not an upload, and
+  writes only `img/thumb/`. A thumbnail whose picture is gone is refused
+  (`refused: orphan thumbnail ...`, nothing written); remove it with
+  `git rm` - the tool never deletes a committed file. After writing, it
+  re-encodes every thumbnail and compares it with the file just written.
+  `--dry-run` prints the count and writes nothing.
 
 ## The drop-is-the-ledger precondition
 
@@ -112,7 +124,15 @@ repository restates these numbers:
 - Resize to 640x640 with a Lanczos filter.
 - WebP: quality 85, maximum encoder effort, lossy.
 - JPEG: quality 80, progressive, 4:2:0 chroma subsampling, optimized.
+- Thumbnail: the 640 px WebP, resized to 160x160 with a Lanczos filter, WebP
+  quality 80, maximum encoder effort, lossy.
 - No metadata in the output (EXIF/ICC/XMP stripped).
+
+The thumbnail is made from the 640 px WebP, never from the upload, so
+`thumbs` reproduces from the committed file the exact bytes `install` and
+`ingest` wrote (on the same encoder build), and `verify` checks it against
+the WebP it re-encodes. The cost is two lossy passes; at a 4x downscale the
+first pass's artefacts do not survive.
 
 ## Determinism is per-run, not byte-identical with what is committed
 
@@ -148,7 +168,8 @@ source ingest just declared, and it never touches an existing asset.
 
 **The inverted precondition.** `install` replaces, so it refuses when a
 destination does not already exist. `ingest` creates, so it refuses when a
-destination `img/<asset>.webp` or `og/<asset>.jpg` **already exists** -
+destination `img/<asset>.webp`, `img/thumb/<asset>.webp` or
+`og/<asset>.jpg` **already exists** -
 writing over it would silently destroy another record's art. This is the
 same existence check as `install`'s, with the sense flipped.
 
@@ -157,7 +178,7 @@ same existence check as `install`'s, with the sense flipped.
 - **`creates`** - a source resolves to an asset that is missing from disk.
   Keyed by distinct asset, never by record, exactly like `install`'s `pairs`
   - two brand-new records sharing one not-yet-installed asset still produce
-  one file pair. This is what makes `og/<new-record-id>.jpg` structurally
+  one set of three files. This is what makes `og/<new-record-id>.jpg` structurally
   unreachable: the destination name only ever comes from the asset, never
   from a record id.
 - **`shares`** - a source was matched to a record whose asset already exists
@@ -214,6 +235,39 @@ must be provable before a write, not only before a decision to write.
 
 The conversion settings are exactly `install`'s, above - not restated here.
 
+## Thumbnails
+
+Rows draw `img/thumb/<asset>.webp` (`docs/specs/FEATURES.md`, "Records").
+The set is committed, not built: CI builds from the commit, and root
+`npm ci` carries no encoder. Measured 2026-09-23 on this host: 1057
+thumbnails, 2,361,628 bytes in total, a mean of 2,234 bytes, against a
+mean of about 34 KB for a 640 px picture; `thumbs` wrote the set in about
+60 s. A row draws its picture at 60 CSS px and the lists index strip at
+40, so 160 px is sharp up to a pixel ratio of 2.67 and 4; at 3 a row
+upsamples by 1.125, which the owner accepted with the size. `install` and
+`ingest` keep the set complete; `tests/dataint.js` fails on a missing,
+orphan or non-160x160 thumbnail.
+
+## Icons
+
+The installable app's icons (`docs/specs/META.md` section 9) are not item
+art, but they use the same encoder. `app/public/icons/icon.svg` is the
+source (a flat key, which the owner chose over an artwork-style render on
+2026-09-23); the four PNGs beside it are committed build inputs, like
+`card/*.svg`. After an edit to the SVG, run the one-time setup above, then:
+
+```text
+node tools/artwork/icons.mjs
+```
+
+Expected result: one line per file - `icon-192.png`, `icon-512.png`,
+`maskable-512.png` and `apple-touch-icon.png` (180x180) with its byte size.
+The SVG renders at 384 dpi and each size is a Lanczos downsample to PNG. The
+drawing must stay inside the maskable safe zone, a centred circle of radius
+40% of the side (204.8 units of the 512 viewBox), because the maskable icon
+is the same drawing. Commit the SVG and the four PNGs
+together.
+
 ## Risks
 
 - Never run `install`, `ingest` or `verify` against this repository's own
@@ -221,8 +275,18 @@ The conversion settings are exactly `install`'s, above - not restated here.
   `sharp`'s output differs from the currently committed Pillow-encoded bytes
   (see above); a real run here would rewrite or create committed assets for
   no reason.
-- `plan` and `verify-previews` need no encoder; `install`, `ingest` and
-  `verify` do. If `tools/artwork/npm ci` cannot resolve `sharp`'s prebuilt
+- `thumbs` is the one verb that runs against this repository's own `img/`,
+  because it writes only `img/thumb/` from the committed files. Run it when
+  the set is missing or the thumbnail settings change, never "to try it":
+  another encoder build rewrites every file. Commit the whole set.
+- A picture replaced outside `install` or `ingest` (a hand copy, another
+  tool) keeps its old thumbnail, and no gate sees it: `tests/dataint.js`
+  checks only that each thumbnail exists, has a picture and is 160x160,
+  because root `npm ci` carries no encoder to compare pixels. Change a
+  picture only through `install` or `ingest`, which write the thumbnail
+  from the new WebP.
+- `plan` and `verify-previews` need no encoder; `install`, `ingest`,
+  `verify` and `thumbs` do. If `tools/artwork/npm ci` cannot resolve `sharp`'s prebuilt
   binary on a given machine, the first two verbs are still useful there.
 - `og/` is not derived from `img/`: `tools/artwork/run.mjs`'s `encodePair`
   writes the WebP and the JPEG as siblings from one original delivery

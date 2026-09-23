@@ -245,6 +245,9 @@ jobs:
       # repository root (vite.config.mts, the artwork() plugin), and a symlink is
       # not what should reach the artifact. Those three folders are copied from
       # the repository below, like the rest of the static assets.
+      # `dist/manifest.webmanifest`, `dist/sw.js` and `dist/icons` are build
+      # outputs too, copied verbatim from app/public/ (docs/specs/META.md
+      # section 9).
       #
       # `i/` is not in the repository - the Build step
       # above regenerates it (npm run build -> npm run data ->
@@ -253,9 +256,13 @@ jobs:
       - name: Collect what the site is made of
         run: |
           mkdir -p _site
-          cp -r dist/index.html dist/assets dist/data.js _site/
+          cp -r dist/index.html dist/assets dist/data.js dist/manifest.webmanifest \
+                dist/sw.js dist/icons _site/
           cp -r data.json catalog.csv llms.txt robots.txt .nojekyll LICENSE \
                 404.html img og i card _site/
+          # Only the generated site pages: pages/src/ is their authored
+          # source, not site content (docs/specs/META.md section 9).
+          mkdir -p _site/pages && cp pages/*.html _site/pages/
 
       - name: Nothing private slipped in, and nothing public left out
         run: |
@@ -263,14 +270,16 @@ jobs:
           # old app was deleted at R0c, issue 47, 23c00a6) - if either turns up
           # in _site anyway, some other step re-created it, and a stray root
           # file like that must never reach _site.
-          for f in package.json node_modules app tests tools docs .git app.js style.css; do
+          for f in package.json node_modules app tests tools docs .git app.js style.css \
+                   pages/src; do
             if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
           done
           # The other half, and the deterministic detector for a dangling
           # symlink: [ -e ] is false for one, and [ -s ] / a non-empty listing
           # catches a link that resolved to nothing.
           for f in index.html assets/app.js data.js data.json catalog.csv \
-                   llms.txt robots.txt LICENSE 404.html; do
+                   llms.txt robots.txt LICENSE 404.html manifest.webmanifest \
+                   sw.js icons/icon-192.png pages/install.html; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
           # .nojekyll is empty by design - its presence here is the whole
@@ -286,7 +295,7 @@ jobs:
           # ever switched back to the legacy branch-based build, where a
           # missing .nojekyll lets Jekyll eat any file starting with `_`.
           if [ ! -e "_site/.nojekyll" ]; then echo "::error::.nojekyll is missing"; exit 1; fi
-          for d in img og i card; do
+          for d in img og i card pages; do
             if [ ! -d "_site/$d" ] || [ -z "$(ls -A "_site/$d")" ]; then
               echo "::error::$d is missing or empty"; exit 1
             fi
@@ -294,7 +303,8 @@ jobs:
           # One named file per symlinked or generated folder, not just "the
           # directory is non-empty" - the same by-name checks tools/check-site.mjs
           # makes against the live URL, made here first against the local copy.
-          for f in og/_share.jpg img/_none.webp card/die-d12-bw.svg i/w1.html; do
+          for f in og/_share.jpg img/_none.webp img/thumb/_none.webp card/die-d12-bw.svg \
+                   i/w1.html icons/maskable-512.png; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
           # `i/` is built output (npm run build -> npm run data ->

@@ -9,6 +9,7 @@ import {
   indexRecords,
   planInstall,
   planIngest,
+  planThumbs,
   affectedStubUrls,
   staleDelta
 } from './lib.mjs';
@@ -70,6 +71,7 @@ describe('planInstall', () => {
     const { pairs } = planInstall({ sources, records, map: null });
     assert.equal(pairs.length, 1);
     assert.equal(pairs[0].webp, 'img/legacy-name.webp');
+    assert.equal(pairs[0].thumb, 'img/thumb/legacy-name.webp');
     assert.equal(pairs[0].jpeg, 'og/legacy-name.jpg');
   });
 
@@ -149,6 +151,37 @@ describe('planInstall', () => {
   });
 });
 
+describe('planThumbs', () => {
+  it('plans one thumbnail per picture, _none.webp included, in name order', () => {
+    const { targets, orphans } = planThumbs({
+      images: ['b.webp', '_none.webp', 'a.webp'],
+      thumbs: []
+    });
+    assert.deepEqual(targets, [
+      { source: 'img/_none.webp', thumb: 'img/thumb/_none.webp' },
+      { source: 'img/a.webp', thumb: 'img/thumb/a.webp' },
+      { source: 'img/b.webp', thumb: 'img/thumb/b.webp' }
+    ]);
+    assert.deepEqual(orphans, []);
+  });
+
+  it('reports a thumbnail with no picture as an orphan and plans no target for it', () => {
+    const { targets, orphans } = planThumbs({
+      images: ['a.webp'],
+      thumbs: ['a.webp', 'gone.webp']
+    });
+    assert.deepEqual(orphans, ['img/thumb/gone.webp']);
+    assert.deepEqual(
+      targets.map((t) => t.thumb),
+      ['img/thumb/a.webp']
+    );
+  });
+
+  it('reports no orphans when no thumbnail exists yet', () => {
+    assert.deepEqual(planThumbs({ images: ['a.webp'], thumbs: [] }).orphans, []);
+  });
+});
+
 describe('affectedStubUrls', () => {
   it("includes every sharedWith record's stub, sorted and deduplicated", () => {
     const pairs = [
@@ -197,6 +230,7 @@ describe('planIngest', () => {
     assert.equal(creates[0].asset, 'new1.webp');
     assert.deepEqual(creates[0].recordIds.sort(), ['a', 'b']);
     assert.equal(creates[0].jpeg, 'og/new1.jpg');
+    assert.equal(creates[0].thumb, 'img/thumb/new1.webp');
   });
 
   it('a record with img: "" is unarted, not an error, and produces no creates entry', () => {

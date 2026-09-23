@@ -93,11 +93,46 @@ export function checks() {
 
     /* One probe per symlinked folder: img/, og/ and card/ are links the
      * build makes, and a broken link is served as a 404 rather than as an
-     * error. */
-    ...['img/_none.webp', 'og/_share.jpg', 'card/die-d12-bw.svg'].map((f) => ({
-      path: f,
-      ...status200(f)
-    })),
+     * error. The row thumbnails ride the img/ link. */
+    ...['img/_none.webp', 'img/thumb/_none.webp', 'og/_share.jpg', 'card/die-d12-bw.svg'].map(
+      (f) => ({
+        path: f,
+        ...status200(f)
+      })
+    ),
+
+    /* The installable app (docs/specs/META.md section 9): build outputs
+     * copied from app/public/, published by name. */
+    { path: 'manifest.webmanifest', ...status200('manifest.webmanifest') },
+    {
+      path: 'manifest.webmanifest',
+      test: (body) => {
+        try {
+          return JSON.parse(body).start_url === './';
+        } catch {
+          return false;
+        }
+      },
+      message: 'manifest.webmanifest does not parse as JSON with start_url "./"'
+    },
+    { path: 'sw.js', ...status200('sw.js') },
+    {
+      path: 'sw.js',
+      test: (body) => body.includes('dhloot-shell'),
+      message: 'sw.js is not the service worker - no dhloot-shell cache in it'
+    },
+    { path: 'icons/icon-192.png', ...status200('icons/icon-192.png') },
+
+    /* The generated site pages (docs/specs/META.md section 9, "Static
+     * pages"): a plain URL outside the app, kept out of search results too. */
+    { path: 'pages/install.html', ...status200('pages/install.html') },
+    {
+      path: 'pages/install.html',
+      test: (body) =>
+        /<meta\s+name="robots"\s+content="noindex/i.test(body) &&
+        body.includes('id="app-page"'),
+      message: 'pages/install.html lost its noindex or its id="app-page" marker'
+    },
 
     /* The 404 fallback, owner-approved: a hosted record link truncated by a
      * chat client, or a stub for a record a data change dropped, has to
@@ -145,9 +180,9 @@ export async function runChecks(read, list = checks()) {
  *  every request a hard ceiling so one stalled CDN socket cannot hang this
  *  step indefinitely (the existing catch below already
  *  treats an abort as a retry) - it bounds a single request, not the whole
- *  retry loop below: `checks()`'s 12 distinct paths, `TRIES=6` and
+ *  retry loop below: `checks()`'s 17 distinct paths, `TRIES=6` and
  *  `WAIT_MS=10_000` between attempts add up to a worst case of roughly
- *  12 x 15s x 6 + 5 x 10s, about 19 minutes, if every request on every try
+ *  17 x 15s x 6 + 5 x 10s, about 26 minutes, if every request on every try
  *  stalls to its own ceiling - past `deploy`'s own 10-minute job timeout.
  *  That worst case needs every request to fail
  *  identically on every attempt, unlike the few-seconds-of-stale-CDN read
@@ -205,5 +240,7 @@ function typeOf(rel) {
   if (rel.endsWith('.csv')) return 'text/csv';
   if (rel.endsWith('.txt')) return 'text/plain';
   if (rel.endsWith('.svg')) return 'image/svg+xml';
+  if (rel.endsWith('.webmanifest')) return 'application/manifest+json';
+  if (rel.endsWith('.png')) return 'image/png';
   return '';
 }

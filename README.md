@@ -9,6 +9,9 @@ cards.
 
 **Open it: https://artex-x.github.io/daggerheart-loot/**
 
+The site installs as an app on a phone or a desktop; the guide is at
+`pages/install.html`, linked in the footer.
+
 1272 records in all - 891 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
 illustration. No build step, no server, no account, no tracking.
@@ -114,13 +117,13 @@ A list, and every entry in it, carries two notes:
 
 | | Goes into |
 |---|---|
-| **For players** | the copied text, the player link, the GM link |
-| **GM only** | the GM link |
+| **For players** | the copied text, **Players' link**, **Your own link** |
+| **GM only** | **Your own link** |
 
-Hence two share buttons. **Player link** is what you drop in the party chat.
-**GM link** is a full snapshot including the GM notes, and doubles as a backup
+Hence two share buttons. **Players' link** is what you drop in the party chat.
+**Your own link** is a full snapshot including the GM notes, and doubles as a backup
 from which the list can be restored on another device. The address in the browser
-bar is always the player link.
+bar is always the Players' link.
 
 ### The link format
 
@@ -142,7 +145,7 @@ compatible.
 
 **In this browser's `localStorage`, and nowhere else.** There is no server and no
 sync. Clearing site data, a private window or a different browser means no lists.
-To keep one, press **GM link** and save the address: it restores the list whole,
+To keep one, press **Your own link** and save the address: it restores the list whole,
 both notes included.
 
 Two open tabs do not overwrite each other: a save re-reads storage and merges by
@@ -261,14 +264,18 @@ app/index.html        entry document, built into dist/index.html
 data.js               the data: window.LOOT
 card/*.svg            36 vectors for the print cards, exported from Figma
 img/*.webp            1057 pictures, 640x640, ~34 MB
+img/thumb/*.webp      one 160x160 thumbnail per picture, drawn in rows
 og/*.jpg              the same pictures as JPEG for link previews, ~47 MB
 i/*.html              1272 stub pages with Open Graph markup, generated, not committed
+pages/src/*.html      the site pages (install guide), authored, both languages
+pages/*.html          the site pages, generated from pages/src/, not committed
 data.json             the same data as plain JSON, for outside readers
 catalog.csv           one row per record, with stat lines
 llms.txt              what the site is, URL grammar, list-link format
 robots.txt            crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
 tools/build-share-pages.js  generates i/ from data.js
+tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
 tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
 tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js

@@ -45,10 +45,12 @@ Canonical data source of truth: `data.js` (`window.LOOT`). The file is
 exactly `window.LOOT=` + `JSON.stringify(L)` + `;\n`, so a merge script can
 load it, mutate `L` and write it back without changing an unrelated byte.
 Derived: run `node tools/build.js` for `data.json`, `catalog.csv`, `i/*.html`.
-Art: `img/<asset-id>.webp` and `og/<asset-id>.jpg` are outside the JS build but
-required when records have art. The asset id is the basename of a record's
+Art: `img/<asset-id>.webp`, its thumbnail `img/thumb/<asset-id>.webp` and
+`og/<asset-id>.jpg` are outside the JS build but required when records have
+art. The asset id is the basename of a record's
 `img` field, not necessarily the record id: several records may share one
-asset, and a record joining one gets no `img/` or `og/` file of its own. A
+asset, and a record joining one gets no `img/`, `img/thumb/` or `og/` file of
+its own. A
 record may legitimately ship with `img: ''`, which renders `_none.webp`. Use
 `node tools/artwork/run.mjs ingest` to install and validate art - never
 hand-convert; see `docs/artwork.md` for the tool and its settings, and its
@@ -189,7 +191,7 @@ Do:
 9. Update tests/fixtures/specs only if behaviour or public contracts change. Fixture counts (the `routes.json` row counts) move with every equipment ingest: compute them from the merged data with a script, never by hand
 10. A new word on the print card (a trait, a range) is measured in the built app against the cell at the `2.2cqw` floor before it ships; a word that does not fit gets a print-only short form (`app/src/lib/print.ts`)
 11. Run verification:
-    - `node tests/run-all.js dataint` - ids, images, `og/` orphans, stubs
+    - `node tests/run-all.js dataint` - ids, images, thumbnails, `og/` orphans, stubs
     - `npm run check` when code/app surface changed
     - `npm run check:built` when screen/dist output may change (per CLAUDE.md)
     - focused tests for new routes/filters/mechanics

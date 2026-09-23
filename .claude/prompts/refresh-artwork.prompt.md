@@ -57,7 +57,7 @@ Read the current repository rather than relying on memory:
 Current daggerheart-loot image contract, unless repository documentation has changed:
 
 - canonical records live in `data.js`; `data.json`, `catalog.csv`, and `i/*.html` are derived;
-- catalog art lives at `img/<asset-id>.webp`; social previews live at `og/<asset-id>.jpg` - dimensions and encoding are `tools/artwork/`'s documented defaults, see `docs/artwork.md`;
+- catalog art lives at `img/<asset-id>.webp`, with its row thumbnail at `img/thumb/<asset-id>.webp`; social previews live at `og/<asset-id>.jpg` - dimensions and encoding are `tools/artwork/`'s documented defaults, see `docs/artwork.md`;
 - built `dist/img` and `dist/og` may be links to the root asset directories;
 - image-only byte replacement does not require editing `data.js` or rebuilding `data.json`, `catalog.csv`, or `i/*.html` when every existing `img` mapping is unchanged.
 
@@ -65,9 +65,9 @@ Do not regenerate HTML merely because image bytes changed: stable stubs already 
 
 ## Phase 3: map approved art to asset targets
 
-Map through repository data, not through filenames alone. `node tools/artwork/run.mjs plan` (`docs/artwork.md`) does this mechanically: it resolves each approved artwork's record by name (never assuming `record.id + '.webp'` - the destination is the record's actual `img` field, and several records may share one asset), requires every destination WebP/JPEG counterpart to already exist, rejects two sources mapping to one destination, and prints the accepted-artwork, asset-pair, and record-link counts to report. Read its output rather than deriving the mapping by hand.
+Map through repository data, not through filenames alone. `node tools/artwork/run.mjs plan` (`docs/artwork.md`) does this mechanically: it resolves each approved artwork's record by name (never assuming `record.id + '.webp'` - the destination is the record's actual `img` field, and several records may share one asset), requires every destination (the WebP, its thumbnail and the JPEG) to already exist, rejects two sources mapping to one destination, and prints the accepted-artwork, asset-pair, and record-link counts to report. Read its output rather than deriving the mapping by hand.
 
-The one judgment call the tool cannot make: reconciling intentional shared-art policy with the repository's duplicate-byte invariant. If an approved generic tier line is meant to share one image but current records still name separate assets, point the later records at the line's anchor asset in `data.js`, remove only the newly orphaned duplicate pairs, and rebuild derived data/stubs. Do not manufacture byte differences to evade the test.
+The one judgment call the tool cannot make: reconciling intentional shared-art policy with the repository's duplicate-byte invariant. If an approved generic tier line is meant to share one image but current records still name separate assets, point the later records at the line's anchor asset in `data.js`, remove only the newly orphaned duplicate assets (each one's WebP, thumbnail and JPEG), and rebuild derived data/stubs. Do not manufacture byte differences to evade the test.
 
 ## Phase 4: convert and install
 
@@ -97,7 +97,7 @@ Do not distort aspect ratio, overwrite the approval sources, rename public asset
 2. When a before/after `--stale-list` pair exists, run
    `node tools/artwork/run.mjs verify-previews --before before.json --after after.json --report install.json`
    (`docs/artwork.md` has the exact two-`--stale-list`-runs sequence).
-3. Inspect the final git diff and verify that only intended `img/`, `og/`, and explicitly requested workflow documentation changed in this task. Keep pre-existing changes separate in the report.
+3. Inspect the final git diff and verify that only intended `img/` (with `img/thumb/`), `og/`, and explicitly requested workflow documentation changed in this task. Keep pre-existing changes separate in the report.
 4. Run focused repository gates first:
    - `node tests/run-all.js dataint,noart`
    - any image/stub checks identified by current docs

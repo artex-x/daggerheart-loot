@@ -107,6 +107,8 @@ function setupScratch() {
   writeFile('data.json', '[]\n');
   writeFile('catalog.csv', 'id\n');
   writeFile('i/cc1.html', '<html></html>\n');
+  writeFile('pages/install.html', '<html></html>\n');
+  writeFile('pages/src/install.html', '<section></section>\n');
   writeFile('dist/index.html', '<html></html>\n');
   writeFile('package-lock.json', '{}\n');
   writeFile('docs/specs/CONTRACTS.md', '# contracts\n');
@@ -1135,6 +1137,11 @@ function testEditGuard() {
     ['#31 data.json', path.join(scratchRoot, 'data.json'), 'node tools/build.js'],
     ['#32 catalog.csv', path.join(scratchRoot, 'catalog.csv'), null],
     ['#33 i/cc1.html', path.join(scratchRoot, 'i', 'cc1.html'), null],
+    [
+      '#33a pages/install.html',
+      path.join(scratchRoot, 'pages', 'install.html'),
+      'node tools/build.js'
+    ],
     ['#34 dist/index.html', path.join(scratchRoot, 'dist', 'index.html'), 'npm run build'],
     ['#35 package-lock.json', path.join(scratchRoot, 'package-lock.json'), 'npm install'],
     [
@@ -1193,6 +1200,10 @@ function testEditGuard() {
     [
       '#39g tests/app-snapshots/x.txt (near-miss dir name)',
       path.join(scratchRoot, 'tests', 'app-snapshots', 'x.txt')
+    ],
+    [
+      '#39h pages/src/install.html (authored)',
+      path.join(scratchRoot, 'pages', 'src', 'install.html')
     ]
   ];
   for (const [label, filePath] of silentCases) {

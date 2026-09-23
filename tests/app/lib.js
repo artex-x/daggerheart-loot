@@ -56,8 +56,9 @@ for (const f of BYTE_FILES) {
 /* Mtime half: newest mtime under app/src/ - excluding every *.test.ts file
    and the whole app/src/test/ directory, neither of which is bundled, so
    neither can make dist/ stale, and including them would demand a rebuild
-   after every test edit - plus app/index.html, vite.config.mts and
-   app/svelte.config.mjs, compared against dist/assets/app.js. Safe on CI:
+   after every test edit - plus app/public/ (copied into dist/ verbatim),
+   app/index.html, vite.config.mts and app/svelte.config.mjs, compared
+   against dist/assets/app.js. Safe on CI:
    ci.yml's browser job runs `npm ci` then `npm run build` before any suite,
    and checkout sets source mtimes ahead of the build, so this cannot fire
    falsely there. */
@@ -79,6 +80,7 @@ const APP_JS = path.join(DIST, 'assets', 'app.js');
 if (fs.existsSync(APP_JS)) {
   const sourceNewest = Math.max(
     newestMtimeUnder(path.join(ROOT, 'app', 'src')),
+    newestMtimeUnder(path.join(ROOT, 'app', 'public')),
     fs.statSync(path.join(ROOT, 'app', 'index.html')).mtimeMs,
     fs.statSync(path.join(ROOT, 'vite.config.mts')).mtimeMs,
     fs.statSync(path.join(ROOT, 'app', 'svelte.config.mjs')).mtimeMs

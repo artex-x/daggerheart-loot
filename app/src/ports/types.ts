@@ -212,6 +212,23 @@ export interface DataPort {
 }
 
 /**
+ * The installable app.
+ *
+ * The manifest and the service worker load only where a server serves the
+ * page, so from a folder `register` answers `'unsupported'` without touching
+ * the browser - docs/specs/META.md sections 4 and 9.
+ */
+export type Registration = 'registered' | 'unsupported' | 'failed';
+
+export interface PwaPort {
+  /** Links the manifest and registers `./sw.js` where a server serves the
+   *  page; a no-op from a folder. */
+  register(): Promise<Registration>;
+  /** Whether the page runs as an installed app (standalone display mode). */
+  standalone(): boolean;
+}
+
+/**
  * Redrawing a picture as something the clipboard will accept.
  *
  * The art is WebP and no browser will put WebP on a clipboard, so it goes
@@ -247,4 +264,5 @@ export interface Env {
   compress: CompressPort;
   drag: DragPort;
   dialog: DialogPort;
+  pwa: PwaPort;
 }

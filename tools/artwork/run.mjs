@@ -8,27 +8,36 @@
   each verb does and the runbook that drives this by hand.
 
   `sharp` is imported lazily, only by the verbs that encode (`install`,
-  `verify`, `ingest`), so `plan` and `verify-previews` run on a machine where
-  `tools/artwork/node_modules/` does not exist.
+  `verify`, `ingest`, `thumbs`), so `plan` and `verify-previews` run on a
+  machine where `tools/artwork/node_modules/` does not exist.
 */
 import { createHash } from 'node:crypto';
-import { readFileSync, writeFileSync, renameSync, readdirSync, existsSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  renameSync,
+  readdirSync,
+  existsSync,
+  mkdirSync
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { planInstall, planIngest, affectedStubUrls, staleDelta } from './lib.mjs';
+import { planInstall, planIngest, planThumbs, affectedStubUrls, staleDelta } from './lib.mjs';
 
 const require = createRequire(import.meta.url);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, '..', '..');
 
-const VERBS = ['plan', 'install', 'verify', 'verify-previews', 'ingest'];
+const VERBS = ['plan', 'install', 'verify', 'verify-previews', 'ingest', 'thumbs'];
 
 // The settings measured across three refreshes and documented once, in
 // docs/artwork.md - not restated anywhere else in the repository.
 const DIMENSION = 640;
 const WEBP_QUALITY = 85;
 const JPEG_QUALITY = 80;
+const THUMB_DIMENSION = 160;
+const THUMB_QUALITY = 80;
 
 function log(msg) {
   console.log(msg);
@@ -183,13 +192,22 @@ async function encodePair(sharpFn, buf) {
   return { webp, jpeg };
 }
 
-async function validateEncoded(sharpFn, buf, format) {
+async function validateEncoded(sharpFn, buf, format, size = DIMENSION) {
   const meta = await sharpFn(buf).metadata();
-  if (meta.format !== format || meta.width !== DIMENSION || meta.height !== DIMENSION) {
+  if (meta.format !== format || meta.width !== size || meta.height !== size) {
     throw new Error(
       'bad encoded asset: format=' + meta.format + ' size=' + meta.width + 'x' + meta.height
     );
   }
+}
+
+// Made from the 640 px WebP, never from the upload, so `thumbs` reproduces
+// what `install` wrote from the committed file (docs/artwork.md).
+async function encodeThumb(sharpFn, webpBuf) {
+  return sharpFn(webpBuf, { failOn: 'error' })
+    .resize(THUMB_DIMENSION, THUMB_DIMENSION, { kernel: 'lanczos3', fit: 'fill' })
+    .webp({ quality: THUMB_QUALITY, effort: 6, lossless: false })
+    .toBuffer();
 }
 
 function atomicWrite(path, buf) {
@@ -218,7 +236,7 @@ async function verbPlan(flags) {
 
 // The one installer code path shared by `install` and `ingest` - grep for
 // the temp-sibling rename and there is one implementation to find.
-// `entries` is [{ source, asset, webp, jpeg, label }] - `label` is what a
+// `entries` is [{ source, asset, webp, thumb, jpeg, label }] - `label` is what a
 // progress line and a verification-failure message name (the record id for
 // `install`, the asset for `ingest`, which has no single record to blame).
 async function installAndVerify(sharpFn, repo, entries, bytesByName) {
@@ -227,7 +245,13 @@ async function installAndVerify(sharpFn, repo, entries, bytesByName) {
     const { webp, jpeg } = await encodePair(sharpFn, buf);
     await validateEncoded(sharpFn, webp, 'webp');
     await validateEncoded(sharpFn, jpeg, 'jpeg');
+    const thumb = await encodeThumb(sharpFn, webp);
+    await validateEncoded(sharpFn, thumb, 'webp', THUMB_DIMENSION);
+    // Before the first write: a missing `img/thumb/` would otherwise leave a
+    // WebP without its thumbnail, a half set that a re-run no longer sees.
+    mkdirSync(dirname(join(repo, e.thumb)), { recursive: true });
     atomicWrite(join(repo, e.webp), webp);
+    atomicWrite(join(repo, e.thumb), thumb);
     atomicWrite(join(repo, e.jpeg), jpeg);
   }
 
@@ -237,10 +261,14 @@ async function installAndVerify(sharpFn, repo, entries, bytesByName) {
   for (const e of entries) {
     const buf = bytesByName.get(e.source);
     const { webp, jpeg } = await encodePair(sharpFn, buf);
+    const thumb = await encodeThumb(sharpFn, webp);
     const installedWebp = readFileSync(join(repo, e.webp));
+    const installedThumb = readFileSync(join(repo, e.thumb));
     const installedJpeg = readFileSync(join(repo, e.jpeg));
     if (!installedWebp.equals(webp))
       throw new Error(e.label + ': WebP re-encode verification failed');
+    if (!installedThumb.equals(thumb))
+      throw new Error(e.label + ': thumbnail re-encode verification failed');
     if (!installedJpeg.equals(jpeg))
       throw new Error(e.label + ': JPEG re-encode verification failed');
     log(
@@ -252,7 +280,9 @@ async function installAndVerify(sharpFn, repo, entries, bytesByName) {
         '|' +
         sha256(webp).slice(0, 16) +
         '|' +
-        sha256(jpeg).slice(0, 16)
+        sha256(jpeg).slice(0, 16) +
+        '|' +
+        sha256(thumb).slice(0, 16)
     );
   }
 }
@@ -286,14 +316,12 @@ async function verbInstall(flags) {
     } catch (err) {
       hardStops.push(err.message);
     }
-    const webpPath = join(repo, pair.webp);
-    const jpegPath = join(repo, pair.jpeg);
     // `install` replaces; it never creates - the inverted precondition
     // belongs to `ingest`, below.
-    if (!existsSync(webpPath))
-      hardStops.push('install refuses: destination does not exist: ' + pair.webp);
-    if (!existsSync(jpegPath))
-      hardStops.push('install refuses: destination does not exist: ' + pair.jpeg);
+    for (const dest of [pair.webp, pair.thumb, pair.jpeg]) {
+      if (!existsSync(join(repo, dest)))
+        hardStops.push('install refuses: destination does not exist: ' + dest);
+    }
   }
 
   if (hardStops.length) {
@@ -313,6 +341,7 @@ async function verbInstall(flags) {
       source: p.source,
       asset: p.asset,
       webp: p.webp,
+      thumb: p.thumb,
       jpeg: p.jpeg,
       label: p.recordId
     })),
@@ -411,14 +440,12 @@ async function verbIngest(flags) {
     } catch (err) {
       hardStops.push(err.message);
     }
-    const webpPath = join(repo, c.webp);
-    const jpegPath = join(repo, c.jpeg);
     // The inverted precondition: `ingest` creates, it never replaces. This is
     // `install`'s existence check with the sense flipped.
-    if (existsSync(webpPath))
-      hardStops.push('ingest refuses: destination already exists: ' + c.webp);
-    if (existsSync(jpegPath))
-      hardStops.push('ingest refuses: destination already exists: ' + c.jpeg);
+    for (const dest of [c.webp, c.thumb, c.jpeg]) {
+      if (existsSync(join(repo, dest)))
+        hardStops.push('ingest refuses: destination already exists: ' + dest);
+    }
   }
 
   if (hardStops.length) {
@@ -438,6 +465,7 @@ async function verbIngest(flags) {
       source: c.source,
       asset: c.asset,
       webp: c.webp,
+      thumb: c.thumb,
       jpeg: c.jpeg,
       label: c.asset
     })),
@@ -463,17 +491,25 @@ async function verbVerify(flags) {
     const buf = bytesByName.get(pair.source);
     const { webp, jpeg } = await encodePair(sharpFn, buf);
     const webpPath = join(repo, pair.webp);
+    const thumbPath = join(repo, pair.thumb);
     const jpegPath = join(repo, pair.jpeg);
-    if (!existsSync(webpPath) || !existsSync(jpegPath)) {
-      log('missing: ' + pair.webp + ' / ' + pair.jpeg);
+    if (!existsSync(webpPath) || !existsSync(thumbPath) || !existsSync(jpegPath)) {
+      log('missing: ' + pair.webp + ' / ' + pair.thumb + ' / ' + pair.jpeg);
       failures++;
       continue;
     }
     const installedWebp = readFileSync(webpPath);
+    const installedThumb = readFileSync(thumbPath);
     const installedJpeg = readFileSync(jpegPath);
     await validateEncoded(sharpFn, installedWebp, 'webp');
+    await validateEncoded(sharpFn, installedThumb, 'webp', THUMB_DIMENSION);
     await validateEncoded(sharpFn, installedJpeg, 'jpeg');
-    if (!installedWebp.equals(webp) || !installedJpeg.equals(jpeg)) {
+    const thumb = await encodeThumb(sharpFn, webp);
+    if (
+      !installedWebp.equals(webp) ||
+      !installedThumb.equals(thumb) ||
+      !installedJpeg.equals(jpeg)
+    ) {
       log('mismatch: ' + pair.recordId + ' (' + pair.asset + ')');
       failures++;
       continue;
@@ -481,6 +517,51 @@ async function verbVerify(flags) {
     log('ok: ' + pair.recordId + ' (' + pair.asset + ')');
   }
   return failures === 0 ? 0 : 1;
+}
+
+function webpNames(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((d) => d.isFile() && d.name.endsWith('.webp'))
+    .map((d) => d.name);
+}
+
+// (Re)generates the whole thumbnail set from the committed 640 px files. It
+// writes only `img/thumb/` and never loads data.js (docs/artwork.md, "Verbs").
+async function verbThumbs(flags) {
+  const repo = flags.repo || REPO_ROOT;
+  const thumbDir = join(repo, 'img', 'thumb');
+  const { targets, orphans } = planThumbs({
+    images: webpNames(join(repo, 'img')),
+    thumbs: webpNames(thumbDir)
+  });
+  if (orphans.length) {
+    for (const o of orphans)
+      log('refused: orphan thumbnail ' + o + ' - its picture is gone; remove it with git rm');
+    return 1;
+  }
+  if (flags.dryRun) {
+    log('dry run: ' + targets.length + ' thumbnail(s) would be written, nothing written');
+    return 0;
+  }
+
+  const sharpFn = await loadSharp();
+  mkdirSync(thumbDir, { recursive: true });
+  let bytes = 0;
+  for (const t of targets) {
+    const thumb = await encodeThumb(sharpFn, readFileSync(join(repo, t.source)));
+    await validateEncoded(sharpFn, thumb, 'webp', THUMB_DIMENSION);
+    atomicWrite(join(repo, t.thumb), thumb);
+    bytes += thumb.length;
+  }
+  // The per-run determinism proof, as in installAndVerify.
+  for (const t of targets) {
+    const thumb = await encodeThumb(sharpFn, readFileSync(join(repo, t.source)));
+    if (!readFileSync(join(repo, t.thumb)).equals(thumb))
+      throw new Error(t.thumb + ': thumbnail re-encode verification failed');
+  }
+  log('wrote ' + targets.length + ' thumbnails into img/thumb/, ' + bytes + ' bytes, verified');
+  return 0;
 }
 
 // Reads the `pairs` a prior `plan`/`install --report <f>` call wrote, so the
@@ -521,6 +602,7 @@ async function main() {
   else if (verb === 'verify') process.exitCode = await verbVerify(flags);
   else if (verb === 'verify-previews') process.exitCode = await verbVerifyPreviews(flags);
   else if (verb === 'ingest') process.exitCode = await verbIngest(flags);
+  else if (verb === 'thumbs') process.exitCode = await verbThumbs(flags);
 }
 
 main().catch((err) => {

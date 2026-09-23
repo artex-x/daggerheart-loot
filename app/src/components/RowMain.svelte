@@ -58,7 +58,7 @@
   }}
 >
   <img
-    src={artSrc(it.img, artBroken(it.id))}
+    src={artSrc(it.img, artBroken(it.id), 'thumb')}
     alt=""
     loading="lazy"
     decoding="async"

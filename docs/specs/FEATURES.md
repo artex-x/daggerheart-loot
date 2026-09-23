@@ -351,9 +351,13 @@ Seven modes. Each keeps its own input in memory only.
   line after it. The set is derived by grouping at load, never stored as a
   sibling list, and a set of one is not a set. No set filter and no set page
   exist yet (`docs/DECISIONS.md`, 2026-09-23, "The second set").
-- A record with no artwork falls back to `_none.webp` and hides the image
-  button; so does a record whose file fails to load, and the app remembers that
-  for the session.
+- A row - in a table, a search, a shared list or a list page - and the lists
+  index strip draw the 160 px thumbnail `img/thumb/<asset>`; tiles, cards,
+  the record page, print and copy-image draw the 640 px file.
+- A record with no artwork falls back to `_none.webp` at the size the site
+  draws, and hides the image button; so does a record whose picture or
+  thumbnail fails to load, and the app remembers that for the session, so a
+  failed thumbnail also shows the placeholder on the record's card.
 - The record modal is a native `<dialog>` opened with `showModal()`, so it is
   modal, the page behind it is inert, and focus moves into it on open and
   returns to the opener on close - a deliberate improvement over the live
@@ -463,6 +467,13 @@ Seven modes. Each keeps its own input in memory only.
 - Help panels under a `?` per section, folded by default, fold state remembered
   for the session only.
 - Toasts with an undo action for destructive things.
+- A footer nav row above the licence line links the site's static pages
+  (`META.md` section 9, "Static pages"). Today it has one link,
+  «Установить как приложение» / "Install as an app", to
+  `pages/install.html`. The row is drawn only when the page is served over
+  http(s) and is not already the installed app (`display-mode: standalone`,
+  or iOS `navigator.standalone`): nothing installs from a folder, and inside
+  the installed app the step is done.
 - No tab is lit on a record, a list page or a print sheet - the live
   `renderTabs` compared against the raw route string, and none of those three
   route kinds was ever that string.

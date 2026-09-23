@@ -1,6 +1,6 @@
 /*
   node:test over check-site.lib.mjs's `checks()`/`runChecks()` - an in-memory
-  good site and three broken ones, driven through the exact same injected-
+  good site and several broken ones, driven through the exact same injected-
   reader contract `fetchReader`/`dirReader` implement, so this is unit
   coverage for the assertions themselves rather than for either transport.
   `dirReader` itself is covered separately
@@ -55,8 +55,19 @@ const GOOD = {
   'robots.txt': { type: 'text/plain', body: 'User-agent: *\nAllow: /' },
   'i/w1.html': { type: 'text/html', body: '<meta property="og:image" content="og/1.jpg">' },
   'img/_none.webp': { type: 'image/webp', body: 'x' },
+  'img/thumb/_none.webp': { type: 'image/webp', body: 'x' },
   'og/_share.jpg': { type: 'image/jpeg', body: 'x' },
   'card/die-d12-bw.svg': { type: 'image/svg+xml', body: '<svg></svg>' },
+  'manifest.webmanifest': {
+    type: 'application/manifest+json',
+    body: '{"start_url":"./","scope":"./"}'
+  },
+  'sw.js': { type: 'application/javascript', body: "const SHELL = 'dhloot-shell-v1';" },
+  'icons/icon-192.png': { type: 'image/png', body: 'x' },
+  'pages/install.html': {
+    type: 'text/html',
+    body: '<meta name="robots" content="noindex, nofollow"><main id="app-page"></main>'
+  },
   '404.html': { type: 'text/html', body: `<!doctype html><div id="app-404"></div>` }
 };
 
@@ -74,7 +85,7 @@ describe('checks() against a good site', () => {
   });
 });
 
-describe('checks() against three broken sites', () => {
+describe('checks() against broken sites', () => {
   it('catches a root that does not return 200 (no index.html - falls through to 404.html)', async () => {
     const { 'index.html': _dropped, ...withoutIndex } = GOOD;
     const bad = await runChecks(memoryReader(withoutIndex));
@@ -106,6 +117,27 @@ describe('checks() against three broken sites', () => {
       bad.some((m) => /i\/w1\.html has lost its preview image/.test(m)),
       `expected an og:image failure, got: ${JSON.stringify(bad)}`
     );
+  });
+
+  it('catches a manifest whose start_url is absolute', async () => {
+    const broken = {
+      ...GOOD,
+      'manifest.webmanifest': {
+        type: 'application/manifest+json',
+        body: '{"start_url":"/daggerheart-loot/"}'
+      }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, ['manifest.webmanifest does not parse as JSON with start_url "./"']);
+  });
+
+  it('catches a site page that lost its noindex', async () => {
+    const broken = {
+      ...GOOD,
+      'pages/install.html': { type: 'text/html', body: '<main id="app-page"></main>' }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, ['pages/install.html lost its noindex or its id="app-page" marker']);
   });
 
   it('catches a site with no 404 fallback at all (status is still 404, but the body is not the way-home page)', async () => {
@@ -166,7 +198,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 21);
+    assert.equal(list.length, 29);
     const paths = [...new Set(list.map((c) => c.path))].sort();
     assert.deepEqual(paths, [
       '',
@@ -176,10 +208,15 @@ describe('checks() shape', () => {
       'data.js',
       'data.json',
       'i/w1.html',
+      'icons/icon-192.png',
       'img/_none.webp',
+      'img/thumb/_none.webp',
       'llms.txt',
+      'manifest.webmanifest',
       'og/_share.jpg',
+      'pages/install.html',
       'robots.txt',
+      'sw.js',
       UNKNOWN_PATH
     ]);
     for (const c of list) {

@@ -36,6 +36,11 @@ const page = await browser.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e.message)));
 page.on('requestfailed', (r) => errors.push('failed to load: ' + r.url()));
+/* A console error catches what raises no request event: the manifest link or
+   a service worker registration refused from a folder (META.md section 9). */
+page.on('console', (m) => {
+  if (m.type() === 'error') errors.push('console error: ' + m.text());
+});
 
 await page.goto(pathToFileURL(INDEX).href, { waitUntil: 'load' });
 await new Promise((r) => setTimeout(r, 400));
@@ -48,10 +53,12 @@ const seen = await page.evaluate(() => ({
   /* An absolute base would break exactly this: paths would start at the drive root */
   scripts: [...document.querySelectorAll('script[src]')].map((s) => s.getAttribute('src')),
   modules: [...document.querySelectorAll('script[type="module"]')].length,
-  defers: [...document.querySelectorAll('script[src]')].map((s) => s.hasAttribute('defer'))
+  defers: [...document.querySelectorAll('script[src]')].map((s) => s.hasAttribute('defer')),
+  controller: navigator.serviceWorker?.controller ?? null
 }));
 
 ok(seen.mounted, 'the app did not render from a folder');
+ok(seen.controller === null, 'a service worker controls the page opened from a folder');
 ok(seen.data, 'the data did not arrive: window.LOOT is empty');
 ok(
   seen.modules === 0,

@@ -308,6 +308,16 @@ describe('the view switch', () => {
     expect(tile?.querySelector('.tile-n')).toBeNull();
     expect(tile?.querySelector('.tile-k')).toHaveClass('cons');
   });
+
+  it('draws the thumbnail in a row and the full picture on a tile', async () => {
+    const { container } = render(App, { env: at() });
+    const rowEl = screen.getByText('Кольцо Тишины').closest('[data-row]');
+    expect(rowEl?.querySelector('img')).toHaveAttribute('src', 'img/thumb/_none.webp');
+    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    const tile = screen.getByText('Кольцо Тишины').closest('.tilewrap');
+    expect(tile?.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    await expectNoA11yViolations(container);
+  });
 });
 
 describe('selection', () => {

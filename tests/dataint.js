@@ -283,6 +283,45 @@ ok(
   'stubs in i/ do not equal the record count'
 );
 
+/* Rows draw img/thumb/ (docs/specs/FEATURES.md, "Records"), and a missing
+   thumbnail is a broken row picture no other gate sees. */
+console.log('thumbnails');
+const THUMB = path.join(ROOT, 'img', 'thumb');
+const pics = fs.readdirSync(path.join(ROOT, 'img')).filter((f) => f.endsWith('.webp'));
+ok(fs.existsSync(THUMB), 'img/thumb/ is missing - run node tools/artwork/run.mjs thumbs');
+if (fs.existsSync(THUMB)) {
+  const thumbs = fs.readdirSync(THUMB);
+  thumbs.forEach((f) => ok(f.endsWith('.webp'), 'img/thumb/' + f + ' is not a thumbnail'));
+  const have = new Set(thumbs);
+  pics.forEach((f) =>
+    ok(
+      have.has(f),
+      'img/' +
+        f +
+        ' has no thumbnail img/thumb/' +
+        f +
+        ' - run node tools/artwork/run.mjs thumbs, docs/artwork.md'
+    )
+  );
+  const picSet = new Set(pics);
+  thumbs
+    .filter((f) => f.endsWith('.webp'))
+    .forEach((f) => {
+      ok(picSet.has(f), 'thumbnail img/thumb/' + f + ' belongs to no picture');
+      const buf = fs.readFileSync(path.join(THUMB, f));
+      const lossy =
+        buf.length >= 30 &&
+        buf.toString('latin1', 0, 4) === 'RIFF' &&
+        buf.toString('latin1', 8, 12) === 'WEBP' &&
+        buf.toString('latin1', 12, 16) === 'VP8 ';
+      ok(lossy, 'img/thumb/' + f + ' is not a lossy WebP');
+      if (!lossy) return;
+      const w = buf.readUInt16LE(26) & 0x3fff;
+      const h = buf.readUInt16LE(28) & 0x3fff;
+      ok(w === 160 && h === 160, 'img/thumb/' + f + ' is ' + w + 'x' + h + ', not 160x160');
+    });
+}
+
 console.log('shared pictures');
 const shared = {};
 ALL.filter((x) => x.img).forEach((x) => {
