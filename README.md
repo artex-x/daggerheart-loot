@@ -392,7 +392,7 @@ its illustration exists; the same happens when a listed file fails to load.
 Seventeen records carry `craft`, the `id` of what they turn into - ingredients
 that become potions, the Core recipes, and the two Frostwyrd upgrades. Only one
 direction is stored; the reverse ("Made from") is built at load, so the two
-halves cannot drift apart. Eleven descriptions point at rulebook cards and
+halves cannot drift apart. Twelve descriptions point at rulebook cards and
 adversaries through `refs`; that text travels with the item into copies and
 shares, so a player gets everything in one message.
 

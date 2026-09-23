@@ -75,7 +75,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 1
 100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
 101Фроствирд (Дремлющий)Ранг 2 · Физическое · Сила · Вплотную · ... [namelen=327 namehash=82ab925e]
-102Фроствирд (Пробуждённый)Ранг 3 · Физическое · Сила · Вплотную... [namelen=566 namehash=49e3d597]
+102Фроствирд (Пробуждённый)Ранг 3 · Физическое · Сила · Вплотную... [namelen=566 namehash=6bb308f9]
 103Фроствирд (Возвышенный)Ранг 4 · Физическое · Сила · Вплотную ... [namelen=618 namehash=66a5c526]
 104Студенистый МолотРанг 3 · Физическое · Сила · Вплотную · d10+... [namelen=307 namehash=cb5b06e0]
 105Меч Призрачного КасанияРанг 2 · Физическое · Проворность · Вп... [namelen=272 namehash=10ff9a0b]
@@ -941,7 +941,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 1
 100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=246 namehash=036eb4fb]
 101Frostwyrd (Dormant)Tier 2 · Physical · Strength · Melee · d10... [namelen=326 namehash=a632c2ba]
-102Frostwyrd (Awakened)Tier 3 · Physical · Strength · Melee · d1... [namelen=544 namehash=0c03e217]
+102Frostwyrd (Awakened)Tier 3 · Physical · Strength · Melee · d1... [namelen=544 namehash=e9125870]
 103Frostwyrd (Exalted)Tier 4 · Physical · Strength · Melee · d10... [namelen=588 namehash=79da0266]
 104Gelatinous HammerTier 3 · Physical · Strength · Melee · d10+6... [namelen=298 namehash=a97d0fbe]
 105Ghost Touch SwordTier 2 · Physical · Agility · Melee · d8+3 p... [namelen=226 namehash=b780e009]

@@ -202,6 +202,28 @@ describe('the index', () => {
     expect(screen.getByText(/Получается из: Плащ Теней/)).toBeInTheDocument();
   });
 
+  it("draws a chain row's made-from before its upgrade, each with its own arrow", async () => {
+    /* ci1 -> ci2 -> ci3, so ci2 carries both directions. */
+    const CHAINED: Loot = {
+      ...LOOT,
+      items: {
+        ...LOOT.items,
+        core_item: (LOOT.items['core_item'] ?? []).map((r) =>
+          r.id === 'ci1' ? { ...r, craft: 'ci2' } : r
+        )
+      }
+    };
+    const { container } = render(App, { env: at({ data: fakeData(CHAINED) }) });
+    const craft = container.querySelector('[data-row="ci2"] .rcraft');
+    expect(craft).not.toBeNull();
+    if (!craft) return;
+    expect(craft.textContent).toBe('Получается из: Кольцо Тишины·Улучшается до: Плащ Бездны');
+    const paths = [...craft.querySelectorAll('svg path')].map((p) => p.getAttribute('d'));
+    expect(paths).toHaveLength(2);
+    expect(paths[0]).not.toBe(paths[1]);
+    await expectNoA11yViolations(container);
+  });
+
   it('draws a stat line instead of a roll number for equipment', () => {
     render(App, { env: at() });
     expect(screen.getByText(/Вплотную/)).toBeInTheDocument();

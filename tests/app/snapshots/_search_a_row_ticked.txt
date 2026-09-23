@@ -54,7 +54,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     StaticText ". There are no previous modifications by others."
 
 ## ru :: controls
-102Фроствирд (Пробуждённый)Ранг 3 · Физическое · Сила · Вплотную... [namelen=566 namehash=49e3d597]
+102Фроствирд (Пробуждённый)Ранг 3 · Физическое · Сила · Вплотную... [namelen=566 namehash=6bb308f9]
 103Фроствирд (Возвышенный)Ранг 4 · Физическое · Сила · Вплотную ... [namelen=618 namehash=66a5c526]
 104Студенистый МолотРанг 3 · Физическое · Сила · Вплотную · d10+... [namelen=307 namehash=cb5b06e0]
 105Меч Призрачного КасанияРанг 2 · Физическое · Проворность · Вп... [namelen=272 namehash=10ff9a0b]
@@ -72,7 +72,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 13Временной ФитильСтоимость Призыва: 2В качестве Хода Отдыха вы ... [namelen=484 namehash=5cae729d]
 13Кольцо Кровавой МатроныСтоимость Призыва: 2Кровавый Шип: Совер... [namelen=730 namehash=5a643486]
 13ХаррокливРанг 3 · Физическое · Сила · Вплотную · d12+7 физ · Д... [namelen=315 namehash=ef4478d5]
-143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=622 namehash=e24b781b]
+143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=297 namehash=a94aca4a]
 14Сфера БезумияСтоимость Призыва: 3Выберите знакомое существо на... [namelen=782 namehash=65f47e10]
 14Шлем Белого КогтяСтоимость Призыва: 1Этот шлем даёт вам кругов... [namelen=364 namehash=5b764708]
 15Камень ДоблестиВы можете прикрепить этот камень к доспеху, кот... [namelen=290 namehash=6a450524]
@@ -356,7 +356,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     StaticText ". There are no previous modifications by others."
 
 ## en :: controls
-102Frostwyrd (Awakened)Tier 3 · Physical · Strength · Melee · d1... [namelen=544 namehash=0c03e217]
+102Frostwyrd (Awakened)Tier 3 · Physical · Strength · Melee · d1... [namelen=544 namehash=e9125870]
 103Frostwyrd (Exalted)Tier 4 · Physical · Strength · Melee · d10... [namelen=588 namehash=79da0266]
 104Gelatinous HammerTier 3 · Physical · Strength · Melee · d10+6... [namelen=298 namehash=a97d0fbe]
 105Ghost Touch SwordTier 2 · Physical · Agility · Melee · d8+3 p... [namelen=226 namehash=b780e009]
@@ -374,7 +374,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 13HarrowcleaveTier 3 · Physical · Strength · Melee · d12+7 phy ·... [namelen=294 namehash=e28d778a]
 13Ring of the Blood MatronRecall Cost: 2Blood Spike: Make a Spel... [namelen=614 namehash=4f876560]
 13Temporal TaperRecall Cost: 2As a downtime move you can light t... [namelen=481 namehash=0c258fa4]
-143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=588 namehash=08b835c8]
+143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=277 namehash=a005c78d]
 14Sphere of InsanityRecall Cost: 3Pick a creature with whom you ... [namelen=743 namehash=490efa98]
 14White Talon HelmRecall Cost: 1This helm grants you 360-degree ... [namelen=304 namehash=68450ec7]
 15ValorstoneYou can attach this stone to armor that doesn't alre... [namelen=276 namehash=6f224513]

@@ -352,14 +352,14 @@ describe("a weapon that uses its wielder's Spellcast trait", () => {
 
 describe('referenced cards', () => {
   it('are kept beside the items that point at them', () => {
-    expect(Object.keys(index.refs)).toHaveLength(11);
+    expect(Object.keys(index.refs)).toHaveLength(12);
   });
 
   it('are pointed at by records that exist', () => {
     /* `index.all` holds the roll tables, equipment with a roll included:
-       w88, dve38 and dve59 carry a stat block. */
+       w88, dve38 and dve59 carry a stat block, dve66 an adversary feature. */
     const pointing = index.all.filter((it) => it.refs?.length);
-    expect(pointing).toHaveLength(11);
+    expect(pointing).toHaveLength(12);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }
@@ -367,7 +367,7 @@ describe('referenced cards', () => {
 
   it('are pointed at by equipment that exists', () => {
     const pointing = index.allEquip.filter((it) => it.refs?.length);
-    expect(pointing.map((it) => it.id)).toEqual(['w88', 'dve38', 'dve59']);
+    expect(pointing.map((it) => it.id)).toEqual(['w88', 'dve38', 'dve59', 'dve66']);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }

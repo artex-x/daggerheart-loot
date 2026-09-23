@@ -253,7 +253,7 @@ tracing a feature back through history).
 | Two tabs merge | `state/lists.test.ts` |
 | v1 storage and v1 links migrate | `state/lists.test.ts` |
 | Record card, modal, copy, share, image | `record.test.ts`, `share.test.ts`, `tests/app/states.js` |
-| Craft chains, referenced cards | `record.test.ts`, `share.test.ts`, `derived` |
+| Craft chains, referenced cards | `record.test.ts`, `tables.test.ts`, `share.test.ts`, `derived` |
 | Print | `app/print` |
 | Language switch | `i18n.test.ts`, `app/src/lib/dict.ts`'s compile-time check, `tests/app/sweep.js`, `tests/app/typo.js` |
 | Starting section | `state/app.test.ts`, `tests/app/states.js` |
@@ -793,12 +793,14 @@ is in `sweep.md`; grouped here so the list stays readable:
   `tests/app/sweep.js` checks only for sideways overflow (sweep Part E(i),
   `geometry`).
 - The craft-chain relationship (a record that upgrades into or comes from
-  another) is exercised on one synthetic pair (`record.test.ts`), never
-  across the full set of real chained records the way `tests/craft.js`
-  sections 2-5 did: the card's forward/reverse captions ("Улучшается до" /
-  "Получается из" and their English forms) are rendered by no golden state
-  at all, and no assertion says a chainless item's card or list export
-  carries *no* craft line (sweep Part E(ii-a), 13 rows).
+  another) is exercised on Frostwyrd (`record.test.ts`) and one synthetic
+  chain (`tables.test.ts`), never across the full set of real chained records
+  the way `tests/craft.js` sections 2-5 did, and no assertion says a
+  chainless item's card or list export carries *no* craft line (sweep Part
+  E(ii-a), 13 rows). The captions ("Получается из" / "Улучшается до") are
+  rendered by the goldens `#/i/dve25` (both) and `#/roll/wondrous ~ stepped`
+  (forward); chain order and the two arrows are pinned in `record.test.ts`
+  and `tables.test.ts`, and the share stub's order in `tests/craft.js`.
 - Three legacy suites carried an implicit "the page never threw" tripwire
   (a `pageerror` listener failing the run) that `tests/app/contracts.js`,
   `tests/app/hues.js` and `tests/app/typo.js` do not attach; `contracts.js`

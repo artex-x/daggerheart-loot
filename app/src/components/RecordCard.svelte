@@ -212,21 +212,22 @@
     {/if}
 
     {#if upgrade || madeFrom || setMembers.length}
-      <!-- Both directions on the card: where a thing goes, and where it came
-           from. Only the forward one travels into a copied message. -->
+      <!-- Both directions in chain order: where a thing came from, then where
+           it goes, each with its own arrow. Only the forward one travels into
+           a copied message. -->
       <div class="craft">
+        {#if madeFrom}
+          <p>
+            <Icon name="craftFrom" />
+            <span class="craft-l">{t.craftFrom}</span>
+            <a href={recordHash(madeFrom.id)}>{nameOf(madeFrom, lang)}</a>
+          </p>
+        {/if}
         {#if upgrade}
           <p>
             <Icon name="craft" />
             <span class="craft-l">{t.craftInto}</span>
             <a href={recordHash(upgrade.id)}>{nameOf(upgrade, lang)}</a>
-          </p>
-        {/if}
-        {#if madeFrom}
-          <p>
-            <Icon name="craft" />
-            <span class="craft-l">{t.craftFrom}</span>
-            <a href={recordHash(madeFrom.id)}>{nameOf(madeFrom, lang)}</a>
           </p>
         {/if}
         {#if setMembers.length}

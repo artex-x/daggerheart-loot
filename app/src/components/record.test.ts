@@ -851,13 +851,19 @@ describe('a craft chain that runs through the record', () => {
   const awakened = (): Env =>
     fakeEnv({ router: memoryRouter('#/i/dve25'), data: fakeData(REAL) });
 
-  it('draws both directions, the unique badge, and no ladder', async () => {
+  it('draws where it came from before where it goes, each with its own arrow, the unique badge, and no ladder', async () => {
     const { container } = render(App, { env: awakened() });
     const into = screen.getByText('Улучшается до').parentElement;
     const from = screen.getByText('Получается из').parentElement;
     expect(into).not.toBeNull();
     expect(from).not.toBeNull();
     if (!into || !from) return;
+    expect(from.compareDocumentPosition(into) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const fromPath = from.querySelector('svg path')?.getAttribute('d');
+    const intoPath = into.querySelector('svg path')?.getAttribute('d');
+    expect(fromPath).toBeTruthy();
+    expect(intoPath).toBeTruthy();
+    expect(fromPath).not.toBe(intoPath);
     expect(within(into).getByRole('link', { name: 'Фроствирд (Возвышенный)' })).toHaveAttribute(
       'href',
       '#/i/dve26'
@@ -868,6 +874,41 @@ describe('a craft chain that runs through the record', () => {
     );
     expect(screen.getByText('Уникальное')).toBeInTheDocument();
     expect(container.querySelector('.step')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+});
+
+describe('a feature an item grants an adversary', () => {
+  /* Nightshroud from the real data: its text stops where the book's does, and
+     Slow travels as a folded referenced card (I18N.md, "Rules"). */
+  const REAL = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const nightshroud = (): Env =>
+    fakeEnv({ router: memoryRouter('#/i/dve66'), data: fakeData(REAL) });
+
+  it('draws Slow as a folded referenced card that links to the page that prints it', async () => {
+    const { container } = render(App, { env: nightshroud() });
+    expect(container.querySelector('.card-desc')?.textContent).not.toContain(
+      'Медленный - Пассивный'
+    );
+    const summary = screen.getByText('Медленный', { selector: '.ref-n' }).closest('summary');
+    expect(summary).not.toBeNull();
+    if (!summary) return;
+    expect(summary).toHaveTextContent(
+      'Огромная Зелёная Слизь · Свойство противника · Пассивное'
+    );
+    const details = summary.closest('details');
+    expect(details).not.toBeNull();
+    if (!details) return;
+    expect(details.open).toBe(false);
+    expect(details.querySelector('a')).toHaveAttribute(
+      'href',
+      'https://ru.daggerheart.su/adversary/huge-green-ooze'
+    );
+    await expectNoA11yViolations(container);
+    await userEvent.click(summary);
+    expect(details.open).toBe(true);
     await expectNoA11yViolations(container);
   });
 });

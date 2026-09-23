@@ -70,7 +70,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 ## ru :: controls
 12Одеяние ПосланникаРанг 2 · Пороги 11/24 · Броня 5Стоимость При... [namelen=286 namehash=3d407477]
 142Непробиваемые ОдеянияРанг 4 · Пороги 15/38 · Броня 5Защищённы... [namelen=237 namehash=e1d05451]
-143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=622 namehash=e24b781b]
+143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=297 namehash=a94aca4a]
 144Чешуя Ордена ДраконаРанг 3 · Пороги 13/31 · Броня 6Драконья ч... [namelen=276 namehash=867eceff]
 145Оберег ТенейРанг 2 · Пороги 9/20 · Броня 4Укрытое тенями: Пок... [namelen=163 namehash=96e791e6]
 17Одеяния Повелителя ТруповРанг 2 · Пороги 9/19 · Броня 3Стоимос... [namelen=410 namehash=b0da6c4d]
@@ -356,7 +356,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
 ## en :: controls
 12Envoy's AttireTier 2 · Thresholds 11/24 · Armor 5Recall Cost: ... [namelen=251 namehash=4ba6f07f]
 142Impervious VestmentsTier 4 · Thresholds 15/38 · Armor 5Warded... [namelen=215 namehash=e6620189]
-143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=588 namehash=08b835c8]
+143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=277 namehash=a005c78d]
 144Ordo Draconis ScaleTier 3 · Thresholds 13/31 · Armor 6Dragon ... [namelen=236 namehash=b77d1998]
 145Ward of ShadowsTier 2 · Thresholds 9/20 · Armor 4Shrouded: Wh... [namelen=147 namehash=61584e08]
 17Corpse Lord's RaimentsTier 2 · Thresholds 9/19 · Armor 3Recall... [namelen=360 namehash=2789c1d4]

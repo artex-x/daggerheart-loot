@@ -993,13 +993,22 @@ const DV_REFS = {
   vampire: 'dve38',
   enrapture: 'dve59',
   'huge-green-ooze': 'dv14',
-  'shambling-zombie': 'dv66'
+  'shambling-zombie': 'dv66',
+  slow: 'dve66'
 };
 Object.entries(DV_REFS).forEach(([key, id]) => {
   const rec = dvById[id];
   ok(!!rec, key + ': naming record ' + id + ' not found');
   ok(!!rec && (rec.refs || []).indexOf(key) >= 0, id + ': expected to reference ' + key);
 });
+ok(
+  !/\n/.test(dvById.dve66.ende) && !/\n/.test(dvById.dve66.rud),
+  'dve66: Slow is folded into the record text; it belongs in the slow ref'
+);
+ok(
+  (L.refs.slow || {}).url === 'https://ru.daggerheart.su/adversary/huge-green-ooze',
+  'slow: expected the Huge Green Ooze page'
+);
 
 console.log('Russian record text');
 /* Distances are rounded metric in Russian text (docs/specs/I18N.md, "Rules"). */

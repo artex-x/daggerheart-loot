@@ -774,11 +774,17 @@ const STATES = [
   /* Dragon's Vault's own new mechanics: a craft chain that runs through a
      record (Frostwyrd), a weapon the book prints both One- and Two-Handed
      (Gryphon Hammer), a weapon with a `d0` blade and no die glyph
-     (Spellblade), and the set line a record with company draws. */
+     (Spellblade), the set line a record with company draws, and an adversary
+     feature an item grants, as a referenced card (Nightshroud). */
   {
     id: '#/i/dve25',
     route: '#/i/dve25',
     why: 'a craft chain in both directions'
+  },
+  {
+    id: '#/i/dve66',
+    route: '#/i/dve66',
+    why: 'an armour record with a referenced adversary feature, folded'
   },
   {
     id: '#/i/dve30',

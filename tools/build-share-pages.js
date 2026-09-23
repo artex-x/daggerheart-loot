@@ -147,12 +147,13 @@ function setLines(it) {
   return out;
 }
 
+// Chain order, as the app's record card draws it (FEATURES.md, "Records").
 function craftLines(it) {
   const out = [];
-  const into = BY_ID[it.craft];
-  if (into) out.push('Улучшается до: ' + (into.ru || into.en));
   const from = BY_ID[CRAFTED_FROM[it.id]];
   if (from) out.push('Получается из: ' + (from.ru || from.en));
+  const into = BY_ID[it.craft];
+  if (into) out.push('Улучшается до: ' + (into.ru || into.en));
   return out;
 }
 
@@ -177,7 +178,7 @@ function page(it) {
     (from ? from + '. ' : '') +
     (it.eq ? eqLine(it) + '. ' : '') +
     rawDesc.replace(/\s*\n\s*/g, ' ') +
-    (craft.length ? ' ' + craft.join(' ') + '.' : '') +
+    (craft.length ? ' ' + craft.join('. ') + '.' : '') +
     (set.length ? ' ' + set.join('. ') : '');
   // JPEG copy: some Telegram clients will not render a WebP og:image.
   // An entry without art still needs one, or the unfurl comes out blank.

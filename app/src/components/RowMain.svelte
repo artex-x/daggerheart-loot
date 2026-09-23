@@ -85,13 +85,12 @@
                 >{/if}{line.body}{/each}{:else}{#if part.label}<i>{part.label}:</i
               >{/if}{part.body}{/if}{/each}</span
       >{/if}{#if upgrade || madeFrom}<span class="rcraft"
-        ><Icon name="craft" />{#if upgrade}{t.craftInto}: {nameOf(
-            upgrade,
-            lang
-          )}{/if}{#if upgrade && madeFrom}·{/if}{#if madeFrom}{t.craftFrom}: {nameOf(
+        >{#if madeFrom}<Icon name="craftFrom" />{t.craftFrom}: {nameOf(
             madeFrom,
             lang
-          )}{/if}</span
+          )}{/if}{#if upgrade && madeFrom}<span class="rsep">·</span>{/if}{#if upgrade}<Icon
+            name="craft"
+          />{t.craftInto}: {nameOf(upgrade, lang)}{/if}</span
       >{/if}</span
   ><span class="rm"
     >{#each cardBadges(it, lang, t) as b, i (i)}<Badge cls={b.cls} title={b.title}
@@ -179,6 +178,17 @@
 
   .row-main .rt .rcraft :global(svg) {
     fill: var(--muted2);
+  }
+
+  /* Its own flex item, so the row gap spaces both sides of the dot; it undoes
+     the description-span rule above. */
+  .row-main .rt .rcraft .rsep {
+    display: block;
+    margin-top: 0;
+    font-size: inherit;
+    color: inherit;
+    line-height: inherit;
+    overflow: visible;
   }
 
   .row-main .rt .rstats {

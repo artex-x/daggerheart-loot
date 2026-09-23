@@ -97,6 +97,12 @@ ok(
   /Улучшается до: Чай Эфироцвета/.test(stub),
   'i/w3.html: og description missing the craft line'
 );
+ok(
+  /Получается из: Фроствирд \(Дремлющий\)\. Улучшается до: Фроствирд \(Возвышенный\)\./.test(
+    fs.readFileSync(path.join(ROOT, 'i', 'dve25.html'), 'utf8')
+  ),
+  'i/dve25.html: og description must name made-from before upgrades-to'
+);
 /* loot + consumables + the equipment tables */
 ok(
   fs.readdirSync(path.join(ROOT, 'i')).filter((f) => f.endsWith('.html')).length === 1236,

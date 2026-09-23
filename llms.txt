@@ -49,9 +49,10 @@ text, not the rules those items refer to.
   and `text_en` end with the set's shared bonus: `<bonus name> (Set:
   <members>): <text>`, with `Комплект` for `Set` in Russian.
 - [data.json](https://artex-x.github.io/daggerheart-loot/data.json) — the same
-  records in full, plus the rarity tables (`alt`), the text of the eleven
+  records in full, plus the rarity tables (`alt`), the text of the twelve
   rulebook cards some records refer to (`refs`: domain cards, two beastforms,
-  an ancestry feature, a transformation and two adversary stat blocks), and
+  an ancestry feature, an adversary feature, a transformation and two
+  adversary stat blocks), and
   the shared bonus of an item set (`sets`).
 - `i/<id>.html` — one record as a readable page, e.g.
   [i/q26.html](https://artex-x.github.io/daggerheart-loot/i/q26.html).

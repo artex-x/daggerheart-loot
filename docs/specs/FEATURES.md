@@ -247,10 +247,12 @@ Seven modes. Each keeps its own input in memory only.
 - Upgrade chains render both directions; the reverse is computed at load. That
   is `craft` - one thing made from another - and it is not the tier ladder
   below. A chain may run through a record, which then draws both lines:
-  Frostwyrd (Awakened) is made from Dormant and upgrades to Exalted. The
-  copied text of a chain record carries only what the next rung adds: the
-  lines of the target's description that its own description does not
-  already carry.
+  Frostwyrd (Awakened) is made from Dormant and upgrades to Exalted. The card
+  and the table row draw "Made from" first, then "Upgrades to", so the lines
+  follow the chain; "Made from" has a left arrow and "Upgrades to" a right
+  arrow. The share stub keeps the same order. The copied text of a chain
+  record carries only what the next rung adds: the lines of the target's
+  description that its own description does not already carry.
 - Equipment that belongs to an upgrade **line** carries a tier ladder: one rung
   per tier of that line, in tier order, the rung you are on marked and inert
   and the others opening that tier's record over whatever is on screen. A line
@@ -264,10 +266,12 @@ Seven modes. Each keeps its own input in memory only.
   itself, the same tag any other book's own equipment gets (`isFrameRecord`
   now only answers "which table" and "what does the source line say", never
   "what does this hide").
-- Referenced Core cards render as a collapsed block and travel with the item
-  into copies and shares. Each block links out to `daggerheart.su` for the
-  full card, the subdomain matching the language on screen (`ru.` in Russian,
-  `en.` in English), and its text keeps the source's own line breaks.
+- Referenced cards - a Core card, an adversary stat block, or one feature
+  printed on another page (an ancestry feature, an adversary feature) - render
+  as a collapsed block and travel with the item into copies and shares. Each
+  block links out to the `daggerheart.su` page that prints it, the subdomain
+  matching the language on screen (`ru.` in Russian, `en.` in English), and
+  its text keeps the source's own line breaks.
 - A record that belongs to a set (`Record_.set`, two members so far - Ember
   and Spark, The Dragon's Vault) draws a set line naming every member in
   catalogue order, the record itself inert and the rest linked. A set's

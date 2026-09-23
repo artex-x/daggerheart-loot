@@ -12,6 +12,20 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-23 - A feature an item grants an adversary is a referenced card
+
+- Task: `dv-review` (human review of The Dragon's Vault, 2026-09-23).
+- Decision: Nightshroud's (dve66) Slow leaves `ende`/`rud` for the ref
+  `slow`, linked to the page that prints it (`adversary/huge-green-ooze`,
+  as `elemental-breath` links to the Drakona page). The record text stops
+  where the book's does; the ref keeps the site's name and the GM as the
+  actor. Rule: `docs/specs/I18N.md`, "Rules".
+- Rejected: the fold (text the book does not print, on the card and in the
+  print); the Ooze's whole stat block as the ref (one feature under nine
+  lines); no Slow text at all (the reader goes looking).
+- Accepted trade-off: the print card and the share stub carry no Slow
+  text, as dv14 and dv66 print without their stat blocks.
+
 ## 2026-09-22 - The print address carries a list's count as `*<n>` per id
 
 - Task: `67`, human decision (find it with `git log --grep="Task: 67"`).
@@ -64,6 +78,8 @@ entry to its first line before adding another.
   «бросок», «атака», «урон», «реакция» - measured 2026-09-22); re-casing
   site-verbatim text; a ref for Slow (a feature has no page; the Ooze's
   whole block would bury it); rewording the English (it stays the book's).
+- Superseded in part by "A feature an item grants an adversary is a
+  referenced card" (2026-09-23): the fold of Nightshroud's Slow.
 
 ## 2026-09-22 - A feature that swaps a weapon's stat set gets the Versatile second strip
 

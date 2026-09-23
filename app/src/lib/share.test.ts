@@ -161,6 +161,21 @@ describe('what travels with a record', () => {
     });
   });
 
+  it("carries Slow as a referenced card, not in Nightshroud's text", () => {
+    const nightshroud = rec('dve66');
+    const ref = index.refs['slow'];
+    expect(ref).toBeDefined();
+    if (!ref) return;
+    expect(nightshroud.rud).not.toContain('\n');
+    expect(nightshroud.ende).not.toContain('\n');
+    expect(shareBlocks(nightshroud, index, 'ru')).toEqual([
+      { head: `${ref.ru} · ${ref.rusub}`, body: ref.rud }
+    ]);
+    expect(shareBlocks(nightshroud, index, 'en')).toEqual([
+      { head: `${ref.en} · ${ref.ensub}`, body: ref.ende }
+    ]);
+  });
+
   it('ignores a reference key the data does not have', () => {
     const orphan: Record_ = {
       id: 'x1',

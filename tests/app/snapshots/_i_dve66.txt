@@ -1,9 +1,9 @@
-# #/i/dve25
-# route: #/i/dve25
-# why: a craft chain in both directions
+# #/i/dve66
+# route: #/i/dve66
+# why: an armour record with a referenced adversary feature, folded
 
 ## ru :: tree
-RootWebArea "Фроствирд (Пробуждённый) — Генератор лута — Daggerheart" [url=#/i/dve25]
+RootWebArea "Ночной Покров — Генератор лута — Daggerheart" [url=#/i/dve66]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -23,23 +23,22 @@ RootWebArea "Фроствирд (Пробуждённый) — Генерато�
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
-    heading "Фроствирд (Пробуждённый)" [level=1]
-    StaticText "Dragon's Vault · номер 102 "
-    link "показать в таблице" [url=#/tables/dv/dve25]
+    heading "Ночной Покров" [level=1]
+    StaticText "Dragon's Vault · номер 143 "
+    link "показать в таблице" [url=#/tables/dv/dve66]
     button "Страница"
-    StaticText "102"
-    ... StaticText x16 of 20 same-shape siblings elided
+    StaticText "143"
+    ... StaticText x7 of 11 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "ПОЛУЧАЕТСЯ ИЗ"
-    link "Фроствирд (Дремлющий)" [url=#/i/dve24]
-    StaticText "УЛУЧШАЕТСЯ ДО"
-    link "Фроствирд (Возвышенный)" [url=#/i/dve26]
+    StaticText "Теневые оковы:"
+    StaticText " Когда вы отмечаете Ячейку Брони, можете потратить Надежду и зас..." [namelen=208 namehash=4202295e]
+    DisclosureTriangle "Медленный ОГРОМНАЯ ЗЕЛЁНАЯ СЛИЗЬ · СВОЙСТВО ПРОТИВНИКА · ПАССИВН..." [expanded=false namelen=66 namehash=48799063]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/dve25]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/dve66]
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -69,12 +68,10 @@ daggerheart.com
 Списки
 Страница
 Таблицы
-Фроствирд (Возвышенный)
-Фроствирд (Дремлющий)
 показать в таблице
 
 ## en :: tree
-RootWebArea "Frostwyrd (Awakened) — Daggerheart Loot Generator" [url=#/i/dve25]
+RootWebArea "Nightshroud — Daggerheart Loot Generator" [url=#/i/dve66]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -94,23 +91,22 @@ RootWebArea "Frostwyrd (Awakened) — Daggerheart Loot Generator" [url=#/i/dve25
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
-    heading "Frostwyrd (Awakened)" [level=1]
-    StaticText "Dragon's Vault · roll 102 "
-    link "show in the table" [url=#/tables/dv/dve25]
+    heading "Nightshroud" [level=1]
+    StaticText "Dragon's Vault · roll 143 "
+    link "show in the table" [url=#/tables/dv/dve66]
     button "Page"
-    StaticText "102"
-    ... StaticText x16 of 20 same-shape siblings elided
+    StaticText "143"
+    ... StaticText x7 of 11 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "MADE FROM"
-    link "Frostwyrd (Dormant)" [url=#/i/dve24]
-    StaticText "UPGRADES TO"
-    link "Frostwyrd (Exalted)" [url=#/i/dve26]
+    StaticText "Shadowbind:"
+    StaticText " When you mark an Armor Slot, you can spend a Hope to have the a..." [namelen=193 namehash=5c4d1c23]
+    DisclosureTriangle "Slow HUGE GREEN OOZE · ADVERSARY FEATURE · PASSIVE" [expanded=false]
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/dve25]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/dve66]
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -127,8 +123,6 @@ Copy text
 Dragon's Vault
 Dread
 EN
-Frostwyrd (Dormant)
-Frostwyrd (Exalted)
 Lay these out for printing: nine to an A4 sheet
 Lists
 Page
