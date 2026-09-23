@@ -4,7 +4,7 @@
  * Everything a card draws that is not text is a vector exported into `card/`
  * by the live app's author, not redrawn here - CLAUDE.md's "Export vectors;
  * do not redraw them." This module only names which file a card wants and
- * how the deck of cards is cut into nine-up sheets.
+ * how the deck of cards is cut into nine- or sixteen-up sheets.
  *
  * Pure module: no DOM, no `S.printBW` - `bw` arrives as an argument. */
 
@@ -14,6 +14,9 @@ import type { Lang, Record_, Trait } from './types.js';
 /** Where the exported vectors live, junctioned into `dist/` alongside `img/`
  *  and `og/` - CONTRACTS.md section 5 freezes this as a public asset path. */
 export const CARD_DIR = 'card/';
+
+/** Cards on the opt-in compact sheet: 4x4 of 44x63 mm - FEATURES.md, "Print". */
+export const COMPACT_PER_SHEET = 16;
 
 export type GlyphKey = 'weapon' | 'secondary' | 'armor' | 'item' | 'cons';
 
@@ -62,15 +65,15 @@ export function dmgParts(dmg: string | undefined): { die: string; bonus: string 
 }
 
 /**
- * The deck cut into nine-up sheets, blanks counted for the last one - off
- * `renderPrint` (app.js 3514-3522). Empty input makes no sheets at all: there
- * is nothing to pad a page that does not exist.
+ * The deck cut into sheets of `per` cards, blanks counted for the last one -
+ * off `renderPrint` (app.js 3514-3522). Empty input makes no sheets at all:
+ * there is nothing to pad a page that does not exist.
  */
-export function pages<T>(items: readonly T[]): { pages: T[][]; blanks: number } {
+export function pages<T>(items: readonly T[], per = 9): { pages: T[][]; blanks: number } {
   if (!items.length) return { pages: [], blanks: 0 };
   const out: T[][] = [];
-  for (let i = 0; i < items.length; i += 9) out.push(items.slice(i, i + 9));
-  return { pages: out, blanks: (9 - (items.length % 9)) % 9 };
+  for (let i = 0; i < items.length; i += per) out.push(items.slice(i, i + per));
+  return { pages: out, blanks: (per - (items.length % per)) % per };
 }
 
 /* The full «Характеристика Заклинателя» is 92 px against a 59 px trait cell at

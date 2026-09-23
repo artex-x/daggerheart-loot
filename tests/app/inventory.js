@@ -1,4 +1,4 @@
-/* "Everything a person can reach" - the 128 states tests/app/golden.js
+/* "Everything a person can reach" - the 135 states tests/app/golden.js
  * captures a structural snapshot of on both languages. Originated (issue 47)
  * as an independent copy of tests/parity/specs.js's STATES array plus the
  * module-level constants it read: the print routes, PACKED, the button-name
@@ -1226,6 +1226,69 @@ const STATES = [
     why: 'the same seven, the other layout',
     enter: async (d) => {
       await d.click('Чёрно-белая');
+    }
+  },
+  {
+    id: '#/print/ci1-q1 ~ compact',
+    route: '#/print/ci1-q1',
+    why: 'the compact sheet in colour: the size switch pressed, the compact subtitle, sixteen places, fourteen blank',
+    enter: async (d) => {
+      await d.click('Компактная');
+    }
+  },
+  {
+    id: '#/print/ci1-q1 ~ compact black and white',
+    route: '#/print/ci1-q1',
+    why: 'the compact sheet in black and white: both switches pressed away from their defaults',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+      await d.click('Компактная');
+    }
+  },
+  {
+    id: NINE + ' ~ compact',
+    route: NINE,
+    whole: true,
+    why: 'every card shape on the compact sheet, in colour',
+    enter: async (d) => {
+      await d.click('Компактная');
+    }
+  },
+  {
+    id: NINE + ' ~ compact black and white',
+    route: NINE,
+    whole: true,
+    why: 'every card shape on the compact sheet, in black and white: the grow rung at 44 mm',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+      await d.click('Компактная');
+    }
+  },
+  {
+    id: LONG + ' ~ compact',
+    route: LONG,
+    whole: true,
+    why: 'the colour fit ladder at 44 mm on the longest texts',
+    enter: async (d) => {
+      await d.click('Компактная');
+    }
+  },
+  {
+    id: LONG + ' ~ compact black and white',
+    route: LONG,
+    whole: true,
+    why: 'the black-and-white fit at 44 mm on the longest texts',
+    enter: async (d) => {
+      await d.click('Чёрно-белая');
+      await d.click('Компактная');
+    }
+  },
+  {
+    id: TEN + ' ~ compact',
+    route: TEN,
+    why: 'ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"',
+    enter: async (d) => {
+      await d.click('Компактная');
     }
   },
   {

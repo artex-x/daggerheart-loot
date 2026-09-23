@@ -26,6 +26,8 @@
   import type { DescPart } from '../lib/desc.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
+  const GROW_CAP = 5;
+
   interface Props {
     it: Record_;
     lang: Lang;
@@ -88,7 +90,9 @@
    * constants, the same `-= 0.1` / `-= 1.5` steps, the same `toFixed(1)` and
    * the same exits. The measured `2.2cqw` floor on every strip value is a
    * floating-point outcome of eight subtractions of 0.1 from 3 - copy the
-   * arithmetic, do not "improve" it.
+   * arithmetic, do not "improve" it. One rung is new, not ported: before the
+   * shrink ladder, a black-and-white card's rules text grows in 0.1cqw steps
+   * while it fits, capped at `GROW_CAP`.
    *
    * The two values the ladders read back through - `.pc-text`'s font size and
    * `.pc-content`'s `--pcpad` - are reset first: the live app fits against a
@@ -140,6 +144,19 @@
     const tight = (): boolean => text.scrollHeight > text.clientHeight + 1;
 
     let pct = 3.5;
+    /* Black and white only: the picture's space is blank paper there, so short
+       text grows until it would spill, under the name's 5.8cqw. Colour never
+       grows: the picture owns that space - FEATURES.md, "Print" (issue 61). */
+    if (bw && !tight()) {
+      while (!tight() && pct < GROW_CAP - 0.05) {
+        pct += 0.1;
+        text.style.fontSize = pct.toFixed(1) + 'cqw';
+      }
+      if (tight()) {
+        pct -= 0.1;
+        text.style.fontSize = pct.toFixed(1) + 'cqw';
+      }
+    }
     while (tight() && pct > 3) {
       pct -= 0.1;
       text.style.fontSize = pct.toFixed(1) + 'cqw';
@@ -192,9 +209,13 @@
 {/snippet}
 
 {#snippet mark()}
+  <!-- `width`/`height` reserve each mark's box before its image loads: in
+       black and white the mark sits in the head that `fit()` measures. -->
   {#if armor && eq && eq.as != null}
     <span class="pc-shield"
-      ><img src={cardArt('shield', bw)} alt="" /><b>{String(eq.as)}</b><i>{t.pcArmor}</i></span
+      ><img src={cardArt('shield', bw)} alt="" width="33" height="36" /><b>{String(eq.as)}</b><i
+        >{t.pcArmor}</i
+      ></span
     >
   {:else if burden}
     <!-- `bu: 'any'` draws the one-handed mark captioned "1/2"; no two-handed
@@ -203,6 +224,8 @@
       ><small>{burden === 'any' ? '1/2' : t.eqBurden}</small><img
         src={cardArt(burden === 2 ? 'burden-2' : 'burden-1', bw)}
         alt=""
+        width="62"
+        height="36"
       /></span
     >
   {/if}

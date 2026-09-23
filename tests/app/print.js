@@ -50,6 +50,9 @@ const svgFile = (src) => fs.readFileSync(path.join(CARD_DIR, src.replace(/^.*\//
  * `TEN`/`TOO_MANY`, rebuilt off `data.json` the way it built `TOO_MANY`. */
 const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
 const LONG = '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
+/* Six burden marks in the black-and-white head, and one loot card - the same
+ * route as `tests/app/inventory.js`'s `DV_SET`. */
+const DV_SET = '#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14';
 const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + (i + 1)).join('-');
 const TOO_MANY =
   '#/print/' +
@@ -59,11 +62,12 @@ const TOO_MANY =
     .map((x) => x.id)
     .join('-');
 
-/* The eight states that draw a sheet at all - `tests/parity/specs.js`'s
+/* The fifteen states that draw a sheet at all - `tests/parity/specs.js`'s
  * `PRINT_CARD_STATES`, minus `#/print/nope`, which draws no sheet for
- * `sheetCounts`/`cardFit` to read. `n` is each route's own id count, so the
- * sheet arithmetic below is computed, not copied as a magic number: printed
- * = min(n, 180), sheets = ceil(printed / 9). */
+ * `sheetCounts`/`cardFit` to read, plus the compact twins. `n` is each
+ * route's own id count, so the sheet arithmetic below is computed, not
+ * copied as a magic number: printed = min(n, 180), sheets = ceil(printed /
+ * per), per = 16 on the compact sheet and 9 otherwise. */
 const PRINT_CARD_STATES = [
   { route: NINE, bw: false, label: 'NINE', n: 9 },
   { route: NINE, bw: true, label: 'NINE ~ bw', n: 9 },
@@ -72,7 +76,14 @@ const PRINT_CARD_STATES = [
   { route: '#/print/ci1-q1', bw: false, label: 'ci1-q1', n: 2 },
   { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ bw', n: 2 },
   { route: TEN, bw: false, label: 'TEN', n: 10 },
-  { route: TOO_MANY, bw: false, label: 'TOO_MANY', n: 181 }
+  { route: TOO_MANY, bw: false, label: 'TOO_MANY', n: 181 },
+  { route: NINE, bw: false, compact: true, label: 'NINE ~ compact', n: 9 },
+  { route: NINE, bw: true, compact: true, label: 'NINE ~ compact bw', n: 9 },
+  { route: LONG, bw: false, compact: true, label: 'LONG ~ compact', n: 9 },
+  { route: LONG, bw: true, compact: true, label: 'LONG ~ compact bw', n: 9 },
+  { route: '#/print/ci1-q1', bw: false, compact: true, label: 'ci1-q1 ~ compact', n: 2 },
+  { route: '#/print/ci1-q1', bw: true, compact: true, label: 'ci1-q1 ~ compact bw', n: 2 },
+  { route: TEN, bw: false, compact: true, label: 'TEN ~ compact', n: 10 }
 ];
 
 /* style.css's own breakpoints, the same three widths `tests/parity/specs.js`
@@ -160,6 +171,20 @@ const { ok } = rep;
   const { ctx, page, d } = await fresh({ width: 1180, height: 950 });
   const bw = () => d.click('Чёрно-белая');
   const colour = () => d.click('Цветная');
+  const compact = () => d.click('Компактная');
+  /* Opens a route in the layout and sheet size a state names. `d.open`
+     reloads the page, so both switches start at colour and standard. */
+  const openAs = async (d2, route, isBw, isCompact, bwFn, compactFn) => {
+    await d2.open(route);
+    if (isCompact) {
+      await compactFn();
+      await d2.settle();
+    }
+    if (isBw) {
+      await bwFn();
+      await d2.settle();
+    }
+  };
 
   /* A page error would otherwise fail silently: every other tests/app/ suite
      that drives a real page collects one (sweep.js is the pattern), and this
@@ -206,6 +231,60 @@ const { ok } = rep;
   ok(
     gap / MM > 1 && gap / MM < 4,
     'gap between cards is not sized for the cut: ' + (gap / MM).toFixed(2) + ' mm'
+  );
+
+  /* The opt-in compact sheet: sixteen 44x63 mm cards on the same A4, four to
+     a row, with the same cut gap. */
+  console.log('compact size and grid');
+  await compact();
+  await d.settle();
+  const cBox = await page.$$eval('.pcard', (e) =>
+    e.map((x) => {
+      const r = x.getBoundingClientRect();
+      return {
+        w: r.width,
+        h: r.height,
+        top: r.top,
+        left: r.left,
+        right: r.right,
+        bottom: r.bottom
+      };
+    })
+  );
+  ok(
+    Math.abs(cBox[0].w / MM - 44) < 0.4,
+    'compact card width is not 44 mm: ' + (cBox[0].w / MM).toFixed(2)
+  );
+  ok(
+    Math.abs(cBox[0].h / MM - 63) < 0.4,
+    'compact card height is not 63 mm: ' + (cBox[0].h / MM).toFixed(2)
+  );
+  ok(cBox.length === 16, 'the compact sheet does not have sixteen slots: ' + cBox.length);
+  ok(
+    Math.abs(cBox[3].top - cBox[0].top) < 1 && Math.abs(cBox[4].top - cBox[0].top) > 1,
+    'the compact sheet does not lay four cards to a row'
+  );
+  const cGap = cBox[1].left - cBox[0].right;
+  ok(
+    cGap / MM > 1 && cGap / MM < 4,
+    'compact gap is not sized for the cut: ' + (cGap / MM).toFixed(2) + ' mm'
+  );
+  const cSheet = await page.$eval('.psheet.compact', (e) => {
+    const r = e.getBoundingClientRect();
+    return { w: r.width, h: r.height, right: r.right, bottom: r.bottom };
+  });
+  ok(
+    Math.abs(cSheet.w / MM - 210) < 0.6 && Math.abs(cSheet.h / MM - 297) < 0.6,
+    'compact sheet is not A4: ' + (cSheet.w / MM).toFixed(1) + 'x' + (cSheet.h / MM).toFixed(1)
+  );
+  /* A swapped `14mm 19.5mm` padding still lays a 4x4 grid, about 11 mm past
+     the right edge: the grid itself must stay inside the sheet box. */
+  ok(
+    cBox[15].right <= cSheet.right + 0.5 && cBox[15].bottom <= cSheet.bottom + 0.5,
+    'the last compact card spills past the sheet: right ' +
+      (cBox[15].right - cSheet.right).toFixed(2) +
+      ', bottom ' +
+      (cBox[15].bottom - cSheet.bottom).toFixed(2)
   );
 
   /* A tenth card starts a second sheet, and blanks pad it to nine: a full
@@ -1014,9 +1093,9 @@ const { ok } = rep;
   /* ---------- design measurements ----------
      The card in the design is 344x482, and everything on it sits by its own
      numbers. Checked in design units, not pixels: the card is one size on
-     screen and another on paper, but the shares are the same. A 1.5-point
-     tolerance is for the cut border, which the design has none of, and for
-     rounding. */
+     screen and another on paper, but the shares are the same. Measured
+     inside the cut border, which the design has none of and Chrome draws
+     1 px wide at any card size; the 1.5-point tolerance is for rounding. */
   console.log('measurements against the design');
   const SPEC = {
     'tier ribbon left': ['.pc-tier', 'left', 24],
@@ -1033,42 +1112,51 @@ const { ok } = rep;
     'text left': ['.pc-text', 'left', 24],
     'caption left': ['.pc-bottom', 'left', 24]
   };
-  for (const isBw of [false, true]) {
-    for (const id of ['q1', 'q313']) {
-      await d.open('#/print/' + id);
-      if (isBw) {
-        await bw();
-        await d.settle();
+  /* Design units are shares of the card, so the compact card holds the same
+     numbers at 70%. */
+  for (const isCompact of [false, true]) {
+    for (const isBw of [false, true]) {
+      for (const id of ['q1', 'q313']) {
+        await openAs(d, '#/print/' + id, isBw, isCompact, bw, compact);
+        const off = await page.evaluate((spec) => {
+          const c = document.querySelector('.pcard'),
+            b = c.getBoundingClientRect();
+          const cr = {
+            left: b.left + c.clientLeft,
+            top: b.top + c.clientTop,
+            right: b.left + c.clientLeft + c.clientWidth
+          };
+          const k = 344 / c.clientWidth,
+            out = [];
+          for (const name in spec) {
+            const [sel, what, ideal] = spec[name];
+            const e = c.querySelector(sel);
+            if (!e) continue;
+            const r = e.getBoundingClientRect();
+            const v =
+              what === 'left'
+                ? (r.left - cr.left) * k
+                : what === 'right'
+                  ? (cr.right - r.right) * k
+                  : what === 'top'
+                    ? (r.top - cr.top) * k
+                    : what === 'width'
+                      ? r.width * k
+                      : r.height * k;
+            if (Math.abs(v - ideal) > 1.5)
+              out.push(name + ': ' + v.toFixed(1) + ' instead of ' + ideal);
+          }
+          return out;
+        }, SPEC);
+        ok(
+          !off.length,
+          (isCompact ? 'compact ' : '') +
+            (isBw ? 'bw ' : 'colour ') +
+            id +
+            ' diverges from the design: ' +
+            off.join('; ')
+        );
       }
-      const off = await page.evaluate((spec) => {
-        const c = document.querySelector('.pcard'),
-          cr = c.getBoundingClientRect();
-        const k = 344 / cr.width,
-          out = [];
-        for (const name in spec) {
-          const [sel, what, ideal] = spec[name];
-          const e = c.querySelector(sel);
-          if (!e) continue;
-          const r = e.getBoundingClientRect();
-          const v =
-            what === 'left'
-              ? (r.left - cr.left) * k
-              : what === 'right'
-                ? (cr.right - r.right) * k
-                : what === 'top'
-                  ? (r.top - cr.top) * k
-                  : what === 'width'
-                    ? r.width * k
-                    : r.height * k;
-          if (Math.abs(v - ideal) > 1.5)
-            out.push(name + ': ' + v.toFixed(1) + ' instead of ' + ideal);
-        }
-        return out;
-      }, SPEC);
-      ok(
-        !off.length,
-        (isBw ? 'bw ' : 'colour ') + id + ' diverges from the design: ' + off.join('; ')
-      );
     }
   }
   await d.open('#/print/q1');
@@ -1154,6 +1242,108 @@ const { ok } = rep;
     !slivers.length,
     'a sliver of picture remains above the name: ' + slivers.map((v) => v.toFixed(1)).join(', ')
   );
+
+  /* ---------- short text grows in black and white ----------
+     Up to `GROW_CAP` (FEATURES.md, "Print"). Only short cards are pinned to
+     the cap: where a long card lands depends on the host's font metrics. */
+  console.log('short text grows in black and white');
+  const grown = async () =>
+    page.$$eval('.pcard:not(.blank) .pc-text', (e) =>
+      e.map((x) => ({
+        id: x.closest('.pcard').getAttribute('data-pid'),
+        size: x.style.fontSize,
+        over: x.scrollHeight - x.clientHeight
+      }))
+    );
+  const inGrowRange = (t) => {
+    if (!t.size) return true;
+    const v = parseFloat(t.size);
+    return v >= 2.6 && v <= 5;
+  };
+  for (const isCompact of [false, true]) {
+    const tag = isCompact ? 'NINE compact bw: ' : 'NINE bw: ';
+    await openAs(d, NINE, true, isCompact, bw, compact);
+    const nineBw = await grown();
+    for (const id of ['ci1', 'cc1', 'q1']) {
+      const t = nineBw.find((x) => x.id === id);
+      ok(
+        t && parseFloat(t.size) === 5,
+        tag + id + ' text did not grow to the cap: ' + (t && t.size)
+      );
+    }
+    ok(
+      nineBw.every((t) => t.over <= 1),
+      tag +
+        'grown text spilled off the card: ' +
+        nineBw
+          .filter((t) => t.over > 1)
+          .map((t) => t.id + ' ' + t.over)
+          .join(', ')
+    );
+    /* 2.6, not 3.5: `voa2_a3` is on this route and may be tight at 3.5cqw on
+       another host's fonts, which sends it down the shrink ladder instead. */
+    ok(
+      nineBw.every(inGrowRange),
+      tag +
+        'a text size is outside 2.6..5: ' +
+        nineBw.map((t) => t.id + ' ' + t.size).join(', ')
+    );
+  }
+  await d.open(LONG);
+  await bw();
+  await d.settle();
+  const longBw = await grown();
+  ok(
+    longBw.every((t) => t.over <= 1),
+    'LONG bw: text spilled off the card: ' +
+      longBw
+        .filter((t) => t.over > 1)
+        .map((t) => t.id + ' ' + t.over)
+        .join(', ')
+  );
+  ok(
+    longBw.every(inGrowRange),
+    'LONG bw: a text size is outside 2.6..5: ' +
+      longBw.map((t) => t.id + ' ' + t.size).join(', ')
+  );
+  await d.open(DV_SET);
+  await bw();
+  await d.settle();
+  const dvBw = await grown();
+  ok(
+    dvBw.every((t) => t.over <= 1),
+    'DV_SET bw: text spilled off the card: ' +
+      dvBw
+        .filter((t) => t.over > 1)
+        .map((t) => t.id + ' ' + t.over)
+        .join(', ')
+  );
+  ok(
+    dvBw.every(inGrowRange),
+    'DV_SET bw: a text size is outside 2.6..5: ' +
+      dvBw.map((t) => t.id + ' ' + t.size).join(', ')
+  );
+  for (const isCompact of [false, true]) {
+    const tag = isCompact ? 'NINE compact colour: ' : 'NINE colour: ';
+    await openAs(d, NINE, false, isCompact, bw, compact);
+    const nineColour = await grown();
+    ok(
+      nineColour.every((t) => !t.size || parseFloat(t.size) <= 3.5),
+      tag + 'text grew above 3.5cqw: ' + nineColour.map((t) => t.id + ' ' + t.size).join(', ')
+    );
+    ok(
+      nineColour.every((t) => t.over <= 1),
+      tag +
+        'text spilled off the card: ' +
+        nineColour
+          .filter((t) => t.over > 1)
+          .map((t) => t.id + ' ' + t.over)
+          .join(', ')
+    );
+  }
+  await d.open('#/print/q1');
+  await colour();
+  await d.settle();
 
   /* Print replaces the page it came from: with no "back" button there was
      nowhere to return to except browser history. */
@@ -1243,35 +1433,37 @@ const { ok } = rep;
   );
 
   /* ---------- the sheet, in counts (`sheetCounts`) ----------
-     `renderPrint`'s own arithmetic, off six counts rather than pixels - the
+     `renderPrint`'s own arithmetic, off seven counts rather than pixels - the
      fast, always-on half of what a print state checks. Every number below is
      computed from each state's own id count, not copied as a constant: a
-     future ninth PRINT_CARD_STATES entry inherits the check for free. */
+     future entry inherits the check for free. */
   console.log('the sheet, in counts');
   for (const s of PRINT_CARD_STATES) {
-    await d.open(s.route);
-    if (s.bw) {
-      await bw();
-      await d.settle();
-    }
+    await openAs(d, s.route, s.bw, s.compact, bw, compact);
     const counts = {
       sheets: await d.count('.psheet'),
       cards: await d.count('.pcard'),
       blanks: await d.count('.pcard.blank'),
       breaks: await d.count('.psheet[data-next]'),
       bw: await d.count('.psheet.bw'),
+      compact: await d.count('.psheet.compact'),
       warn: await d.count('.printnote.warnnote')
     };
+    const per = s.compact ? 16 : 9;
     const printed = Math.min(s.n, 180);
-    const sheets = Math.ceil(printed / 9);
+    const sheets = Math.ceil(printed / per);
     ok(counts.sheets === sheets, s.label + ': sheets are not ' + sheets + ': ' + counts.sheets);
     ok(
-      counts.cards === sheets * 9,
-      s.label + ': slots are not ' + sheets * 9 + ': ' + counts.cards
+      counts.cards === sheets * per,
+      s.label + ': slots are not ' + sheets * per + ': ' + counts.cards
     );
     ok(
-      counts.blanks === sheets * 9 - printed,
-      s.label + ': blank slots are not ' + (sheets * 9 - printed) + ': ' + counts.blanks
+      counts.blanks === sheets * per - printed,
+      s.label + ': blank slots are not ' + (sheets * per - printed) + ': ' + counts.blanks
+    );
+    ok(
+      counts.compact === (s.compact ? sheets : 0),
+      s.label + ': .psheet.compact count did not match: ' + counts.compact
     );
     ok(
       counts.breaks === sheets - 1,
@@ -1297,22 +1489,18 @@ const { ok } = rep;
      black-and-white (`{#if bw}`) - so their counts flip with `s.bw` rather
      than both landing on `printed`.
      Run twice: once in Russian on the shared page above, once in
-     English on a second page opened `lang: 'en'`, over the same eight
+     English on a second page opened `lang: 'en'`, over the same fifteen
      card-drawing states and all three widths - the one surface where a
      longer or shorter word can change what the fitting ladder decides.
      `sheetCounts` and `printMedia` below are driven in Russian only: sheet
      counts and the print-media rules are arithmetic and CSS, neither of
      which depends on text length in either language. */
   console.log('card fit, in numbers');
-  async function cardFit(d2, bwFn, colourFn, langTag) {
+  async function cardFit(d2, bwFn, colourFn, compactFn, langTag) {
     for (const width of WIDTHS) {
       await d2.viewport(width.w, width.h);
       for (const s of PRINT_CARD_STATES) {
-        await d2.open(s.route);
-        if (s.bw) {
-          await bwFn();
-          await d2.settle();
-        }
+        await openAs(d2, s.route, s.bw, s.compact, bwFn, compactFn);
         const printed = Math.min(s.n, 180);
         const tag = s.label + ' @ ' + width.w + langTag + ': ';
 
@@ -1324,11 +1512,10 @@ const { ok } = rep;
         text.forEach((t) => {
           if (!t.style['font-size']) return;
           const v = parseFloat(t.style['font-size']);
-          /* The text ladder's own floor (PrintCard.svelte's second `while (tight()
-             && pct > 2.6)`), not the strip box's 2.2 - the two ladders are
-             separate and this one never goes lower. */
+          /* The text ladder's floor is 2.6cqw, not the strip's 2.2; the top is
+             3.5cqw in colour and `GROW_CAP` (5cqw) in black and white. */
           ok(
-            v >= 2.6 && v <= 3.5,
+            v >= 2.6 && v <= (s.bw ? 5 : 3.5),
             tag + 'text size is off the ladder: ' + t.style['font-size']
           );
         });
@@ -1390,7 +1577,7 @@ const { ok } = rep;
     await colourFn();
     await d2.settle();
   }
-  await cardFit(d, bw, colour, '');
+  await cardFit(d, bw, colour, compact, '');
 
   console.log('card fit, in numbers (en)');
   const {
@@ -1400,9 +1587,10 @@ const { ok } = rep;
   } = await fresh({ width: 1180, height: 950, lang: 'en' });
   const bwEn = () => dEn.click('Black and white');
   const colourEn = () => dEn.click('Colour');
+  const compactEn = () => dEn.click('Compact');
   const pageErrsEn = [];
   pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
-  await cardFit(dEn, bwEn, colourEn, ' en');
+  await cardFit(dEn, bwEn, colourEn, compactEn, ' en');
 
   /* ---------- the card's own name, capped at three lines ----------
      "Look first, then shrink": `.pc-name` stays out of `fit()`'s shrink
@@ -1472,14 +1660,11 @@ const { ok } = rep;
     { route: '#/print/ci1-q1', bw: false, label: 'ci1-q1' },
     { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ bw' },
     { route: TEN, bw: false, label: 'TEN' },
+    { route: TEN, bw: false, compact: true, label: 'TEN ~ compact' },
     { route: '#/print/nope', bw: false, label: 'nope' }
   ];
   for (const s of MEDIA_STATES) {
-    await d.open(s.route);
-    if (s.bw) {
-      await bw();
-      await d.settle();
-    }
+    await openAs(d, s.route, s.bw, s.compact, bw, compact);
     await d.media('print');
     try {
       const chrome = {
@@ -1584,7 +1769,12 @@ const { ok } = rep;
         );
       }
 
-      if (s.route === TEN) {
+      if (s.route === TEN && s.compact) {
+        ok(
+          !(await d.computed('.psheet[data-next]', ['break-before'])),
+          s.label + ': ten cards on the compact sheet started a second print page'
+        );
+      } else if (s.route === TEN) {
         const next = await d.computed('.psheet[data-next]', ['break-before']);
         ok(
           next['break-before'] === 'page',

@@ -141,9 +141,10 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 - Lists live in the URL hash and localStorage; add no backend or upload service.
 - Keep `noindex` while allowing crawling; crawler blocks hide `noindex` and break previews.
 - Never infer equipment tier from stats; use the source book data.
-- Printing is nine 63x88 mm cards per A4 sheet. Colour and black-and-white are distinct layouts; preserve browser-measured fitting. See `FEATURES.md`.
+- Printing is nine 63x88 mm cards per A4 sheet, or sixteen 44x63 mm cards on the opt-in compact sheet. Colour and black-and-white are distinct layouts on either sheet; preserve browser-measured fitting. See `FEATURES.md`.
 - Print design: Figma `88Hhc89oY9Orcbvd2ok1Hx`, nodes `714-42387` (colour) and
-  `3773-90792` (black-and-white). Export vectors; do not redraw them.
+  `3773-90792` (black-and-white). Export vectors; do not redraw them. The
+  compact sheet has no node: it is each layout's card at 70%.
 
 ## Source and commit conventions
 

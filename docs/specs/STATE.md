@@ -86,7 +86,7 @@ state exists, by what it was for:
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |
 | Lists | `lists`, `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `importDraft`, `pickQ`, `shared {ids, meta}` |
 | Prices | `rp`, `guess`, `moneyHelp` |
-| Print | `printIds`, `printBW` |
+| Print | `printIds`, `printBW`, `printCompact` |
 | UI | `sel`, `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen` |
 
 `fSeg` is the filter segment already read back from the address. Reading the

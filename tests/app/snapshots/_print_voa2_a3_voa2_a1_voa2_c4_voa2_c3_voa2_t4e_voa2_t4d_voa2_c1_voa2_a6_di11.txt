@@ -29,6 +29,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/voa2_a3-v
     button "Отправить на печать"
     button "Цветная" [pressed=true]
     button "Чёрно-белая" [pressed=false]
+    button "Обычная" [pressed=true]
+    button "Компактная" [pressed=false]
     button "Ссылка на набор"
     StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
     ... StaticText x81 of 85 same-shape siblings elided
@@ -59,8 +61,10 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 К содержимому
+Компактная
 ЛутDaggerheart
 Назад
+Обычная
 Обычные правила
 Отправить на печать
 Поиск
@@ -98,6 +102,8 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/voa2_a3-voa2_a1-voa2_c4-vo
     button "Send to printer"
     button "Colour" [pressed=true]
     button "Black and white" [pressed=false]
+    button "Standard" [pressed=true]
+    button "Compact" [pressed=false]
     button "Link to this set"
     StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
     ... StaticText x81 of 85 same-shape siblings elided
@@ -124,6 +130,7 @@ Back
 Black and white
 Colour
 Communities
+Compact
 Dragon's Vault
 Dread
 EN
@@ -133,6 +140,7 @@ RU
 Search
 Send to printer
 Skip to content
+Standard
 Standard rules
 Tables
 Vault of Ages

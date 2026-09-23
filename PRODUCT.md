@@ -46,7 +46,7 @@ cheaply.
 | Session preparation | desktop or laptop | browses tables, filters, searches, builds a list, prints cards |
 | Live session | desktop or laptop | rolls a mode, reads the result, adds it to a list, shares the link |
 | Play and after play | player phone | opens a shared list, reads records, keeps the list as an inventory |
-| Table handout | paper | nine 63x88 mm cards per A4 sheet, in colour or in black and white |
+| Table handout | paper | nine 63x88 mm cards per A4 sheet, in colour or in black and white, or sixteen 44x63 mm on the opt-in compact sheet |
 
 The app also runs from `file://`, so a person can keep a local copy.
 

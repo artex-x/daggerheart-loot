@@ -13,7 +13,7 @@
   import { setBonusOf, setOf } from '../lib/data.js';
   import { PRINT_MAX, printHash, sectionHash } from '../lib/hash.js';
   import { namesOf } from '../lib/i18n.js';
-  import { pages } from '../lib/print.js';
+  import { COMPACT_PER_SHEET, pages } from '../lib/print.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -36,7 +36,8 @@
         })
       : []
   );
-  const sheet = $derived(pages(items));
+  const per = $derived(app.printCompact ? COMPACT_PER_SHEET : 9);
+  const sheet = $derived(pages(items, per));
   /** Just the keys `{#each}` needs for the blank places after the last
    *  card - an index array, built here so the template needs no unused
    *  item binding of its own. */
@@ -54,22 +55,26 @@
     };
   }
 
-  /* Kept as session memory on `AppState`, the way live's
-     `S.printBW` (app.js:49) was - it survives leaving the page, unlike
+  /* Both print switches are session memory on `AppState`, the way live's
+     `S.printBW` (app.js:49) was - they survive leaving the page, unlike
      search's `q` and TablesPage's `q`, which stay component-local on
-     purpose. `app.printBW` directly, not a local mirror: this page remounts
-     on every navigation, so a local copy would have to be re-synced from
-     `app.printBW` on mount anyway. */
+     purpose. `app.printBW` and `app.printCompact` directly, not local
+     mirrors: this page remounts on every navigation, so a local copy would
+     have to be re-synced from `app` on mount anyway. */
 
   const ART = $derived([
     { value: 'color', label: t.printColor },
     { value: 'bw', label: t.printBW }
   ] as const);
+  const SIZE = $derived([
+    { value: 'std', label: t.printStd },
+    { value: 'compact', label: t.printCompact }
+  ] as const);
 
   const sub = $derived(
-    t.printSub
+    (app.printCompact ? t.printSubCompact : t.printSub)
       .replace('%n', String(items.length))
-      .replace('%p', String(Math.ceil(items.length / 9)))
+      .replace('%p', String(Math.ceil(items.length / per)))
   );
   const tooMany = $derived(
     t.printTooMany.replace('%n', String(PRINT_MAX)).replace('%d', String(dropped))
@@ -112,6 +117,15 @@
           app.printBW = v === 'bw';
         }}
       />
+      <Seg
+        small
+        options={SIZE}
+        value={app.printCompact ? 'compact' : 'std'}
+        label={t.printSize}
+        onchange={(v: 'std' | 'compact') => {
+          app.printCompact = v === 'compact';
+        }}
+      />
       <Button onclick={() => void copyLink()}><Icon name="link" />{t.printLink}</Button>
     </Actions>
     {#if dropped}
@@ -119,28 +133,37 @@
     {/if}
     <p class="printnote">{t.printNote}</p>
   </div>
-  {#each sheet.pages as page, i (i)}
-    <div class="psheet" class:bw={app.printBW} data-next={i ? '1' : undefined}>
-      {#each page as it (it.id)}
-        <PrintCard
-          {it}
-          lang={app.lang}
-          bw={app.printBW}
-          qty={qty[it.id]}
-          setLine={setLine(it)}
-          artBroken={app.artBroken(it.id)}
-          onartfail={(bad: string) => {
-            app.markArtBroken(bad);
-          }}
-        />
-      {/each}
-      {#if i === sheet.pages.length - 1}
-        {#each blankKeys as k (k)}
-          <div class="pcard blank"></div>
+  <!-- A size change remounts every card, so `fit()` measures it at the size
+       it prints - PrintCard's effect does not track the sheet's size. -->
+  {#key per}
+    {#each sheet.pages as page, i (i)}
+      <div
+        class="psheet"
+        class:bw={app.printBW}
+        class:compact={app.printCompact}
+        data-next={i ? '1' : undefined}
+      >
+        {#each page as it (it.id)}
+          <PrintCard
+            {it}
+            lang={app.lang}
+            bw={app.printBW}
+            qty={qty[it.id]}
+            setLine={setLine(it)}
+            artBroken={app.artBroken(it.id)}
+            onartfail={(bad: string) => {
+              app.markArtBroken(bad);
+            }}
+          />
         {/each}
-      {/if}
-    </div>
-  {/each}
+        {#if i === sheet.pages.length - 1}
+          {#each blankKeys as k (k)}
+            <div class="pcard blank"></div>
+          {/each}
+        {/if}
+      </div>
+    {/each}
+  {/key}
 {/if}
 
 <style>
@@ -183,6 +206,14 @@
     box-shadow:
       0 0 0 1px rgb(0 0 0 / 50%),
       0 14px 40px rgb(0 0 0 / 45%);
+  }
+
+  /* The opt-in compact sheet: 4x4 cards of 44x63 mm, the same 2 mm gutters,
+     182x258 mm of cards centred on A4 - FEATURES.md, "Print". */
+  .psheet.compact {
+    padding: 19.5mm 14mm;
+    grid-template-columns: repeat(4, 44mm);
+    grid-template-rows: repeat(4, 63mm);
   }
 
   /* off `.pcard.blank` (style.css:1139) - this component's own element, so

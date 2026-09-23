@@ -321,7 +321,8 @@ Seven modes. Each keeps its own input in memory only.
 
 ## Print
 
-- `#/print/<ids>`, nine cards to an A4 page at 63x88 mm, up to 180 cards.
+- `#/print/<ids>`, nine cards to an A4 page at 63x88 mm, or sixteen at 44x63 mm
+  on the opt-in compact sheet; up to 180 cards either way.
 - Reached from an item page, a list, or a table selection; the address is
   shareable and independent of where it came from.
 - Colour and black-and-white are two different cards, not one with a switch.
@@ -335,6 +336,26 @@ Seven modes. Each keeps its own input in memory only.
 - Fitting is measured in the browser after render: rules text steps its font
   down, then the top padding, then the stat values, and text width is measured
   with a `Range` because `text-overflow` hides overflow from `scrollWidth`.
+- In black and white the rules text first grows, in 0.1cqw steps from its
+  3.5cqw default to at most 5cqw (8.9 pt), while it still fits its box: the
+  space a colour card gives its picture is blank paper there (issue 61). Text
+  that does not fit at 3.5cqw takes the shrink ladder unchanged. Colour never
+  grows - the picture owns that space and the ladder gives it up last.
+  Measured on the Windows host on 2026-09-23: a two-line card was 54-67% blank
+  and reaches the cap; the longest texts land at 3.6-4.3cqw. A one-line card
+  stays more than half blank at any size under the name's 5.8cqw; a 4x4 sheet
+  (44x63 mm) was measured as the same composition at 70% - the same blank
+  share at 4.3 pt - and rejected as a replacement for the 3x3 sheet
+  (`DECISIONS.md`).
+- Two independent switches: colour or black-and-white, standard or compact;
+  every combination prints. The compact card is the same card at 70% - every
+  dimension is `cqw` - so the ladders run unchanged: compact colour text is
+  4.3 pt by default and 3.2 pt at the floor, and the compact black-and-white
+  card reads at 6.2 pt where the grow rung reaches its cap. A size change
+  fits every card again at its new size. Measured 2026-09-23
+  (`DECISIONS.md`).
+- The compact subtitle says 44×63 mm and sixteen to a sheet; the print link's
+  title keeps "nine to an A4 sheet" - it names the default.
 - An address naming nothing the catalogue knows draws the heading, the "nothing
   to print" note and a link back to the lists - no bar, no sheet.
 - More than 180 known ids prints the first 180 and a red note counting how many
@@ -347,10 +368,11 @@ Seven modes. Each keeps its own input in memory only.
   separately: each rarity section is now an `<h2>` (`SectionHead`'s own
   `heading` prop, only passed here) and the Hope/Fear column pair under it
   demoted to `<h3>` (`DEBT.md` D8, paid off).
-- The black-and-white choice is session memory on `AppState` - it survives
-  leaving the print page and coming back - matching the live app's own
-  `S.printBW` rather than resetting to colour on every fresh entry, which is
-  what the page-local `$state` this replaced did (`DEBT.md` D21, paid off).
+- The black-and-white choice (`printBW`) and the sheet size (`printCompact`)
+  are session memory on `AppState` - they survive leaving the print page and
+  coming back - matching the live app's own `S.printBW` rather than resetting
+  on every fresh entry, which is what the page-local `$state` this replaced
+  did (`DEBT.md` D21, paid off). Neither is written to storage.
 - A missing picture (a partial deploy, a cold cache, a `file://` copy short
   one file) falls back to the same drawn glyph a record with no art gets,
   the same way `RecordCard` does - reached from a print sheet opened

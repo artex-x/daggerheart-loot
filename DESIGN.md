@@ -505,6 +505,10 @@ tier plate and the burden mark sit at fixed `cqw` offsets. Text is fitted by
 measuring the rendered box, which is why reduced motion sets transition duration
 to `0s` rather than removing transitions: a zero duration still applies the end
 state on the same frame, and the fitting routine reads layout back immediately.
+In black and white the rules text also grows into the space the picture would
+have taken, to a cap under the name's size. An opt-in compact sheet lays
+sixteen cards at 44x63 mm in a 4x4 grid with the same 2 mm gutters and 19.5 by
+14 mm margins, in either layout; the card is the same composition at 70%.
 
 Colour and black-and-white are two distinct layouts, not one layout with the
 colour removed.

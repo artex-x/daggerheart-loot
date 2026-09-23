@@ -29,6 +29,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-ci2-c
     button "Отправить на печать"
     button "Цветная" [pressed=true]
     button "Чёрно-белая" [pressed=false]
+    button "Обычная" [pressed=true]
+    button "Компактная" [pressed=false]
     button "Ссылка на набор"
     StaticText "За один раз печатается 180 карточек, остальные 1 в лист не попал..." [namelen=92 namehash=34eda716]
     ... StaticText x719 of 723 same-shape siblings elided
@@ -54,8 +56,10 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 К содержимому
+Компактная
 ЛутDaggerheart
 Назад
+Обычная
 Обычные правила
 Отправить на печать
 Поиск
@@ -93,6 +97,8 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci
     button "Send to printer"
     button "Colour" [pressed=true]
     button "Black and white" [pressed=false]
+    button "Standard" [pressed=true]
+    button "Compact" [pressed=false]
     button "Link to this set"
     StaticText "One run prints 180 cards; the remaining 1 did not make it onto a..." [namelen=93 namehash=b632966e]
     ... StaticText x719 of 723 same-shape siblings elided
@@ -114,6 +120,7 @@ Back
 Black and white
 Colour
 Communities
+Compact
 Dragon's Vault
 Dread
 EN
@@ -123,6 +130,7 @@ RU
 Search
 Send to printer
 Skip to content
+Standard
 Standard rules
 Tables
 Vault of Ages

@@ -247,6 +247,9 @@ export class AppState {
    *  storage: it resets on reload like every other memory-only field here,
    *  `kinds` included. */
   printBW = $state(false);
+  /** The print page's standard/compact sheet choice - session memory beside
+   *  `printBW`, for the same reason (D21); never written to storage. */
+  printCompact = $state(false);
   /** The packed payload a failed expansion is stuck on, or `''` - R10/S3/D2.
    *  Compared against `route.payload` by whoever draws the bad-link state, so
    *  a later navigation to a *different* packed link is not mistaken for the

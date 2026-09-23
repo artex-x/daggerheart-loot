@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { cardArt, dmgParts, glyphKey, pages, PRINT_GLYPH, printTrait } from './print.js';
+import {
+  cardArt,
+  COMPACT_PER_SHEET,
+  dmgParts,
+  glyphKey,
+  pages,
+  PRINT_GLYPH,
+  printTrait
+} from './print.js';
 import type { Record_ } from './types.js';
 
 describe("the trait cell's word", () => {
@@ -73,6 +81,36 @@ describe('nine-up sheets', () => {
     const r = pages(of(180));
     expect(r.pages).toHaveLength(20);
     expect(r.blanks).toBe(0);
+  });
+});
+
+describe('sixteen-up compact sheets', () => {
+  const of = (n: number): number[] => Array.from({ length: n }, (_, i) => i);
+
+  it('holds sixteen cards to a sheet', () => {
+    expect(COMPACT_PER_SHEET).toBe(16);
+  });
+
+  it('pads a short sheet up to sixteen', () => {
+    expect(pages(of(2), 16)).toEqual({ pages: [of(2)], blanks: 14 });
+  });
+
+  it('leaves a full sheet with no blanks', () => {
+    expect(pages(of(16), 16)).toEqual({ pages: [of(16)], blanks: 0 });
+  });
+
+  it('splits a second sheet and pads only it', () => {
+    const r = pages(of(17), 16);
+    expect(r.pages).toHaveLength(2);
+    expect(r.pages[1]).toHaveLength(1);
+    expect(r.blanks).toBe(15);
+  });
+
+  it('cuts the 180-card cap into twelve sheets, the last with four cards', () => {
+    const r = pages(of(180), 16);
+    expect(r.pages).toHaveLength(12);
+    expect(r.pages[11]).toHaveLength(4);
+    expect(r.blanks).toBe(12);
   });
 });
 

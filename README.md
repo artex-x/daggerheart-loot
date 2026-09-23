@@ -155,6 +155,7 @@ event redraws the other tab.
 63x88 mm each - the size of a playing card, so sleeves and card boxes fit. Up to
 180 cards, twenty sheets, at a time. The button appears wherever a set of records
 exists: an item page, a list, a table selection. The address itself is shareable.
+An opt-in compact sheet prints sixteen 44x63 mm cards per page, in either layout.
 
 Two sheet styles. The colour sheet keeps the artwork, the tier banner, the burden
 hands and the gold stat strip. The black-and-white sheet drops the artwork and

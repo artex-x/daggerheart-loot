@@ -1,9 +1,9 @@
-# #/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10
-# route: #/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10
-# why: a second sheet: eighteen places, eight blank, the second sheet a page break; "Листов A4: 2"
+# #/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11 ~ compact black and white
+# route: #/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11
+# why: the black-and-white fit at 44 mm on the longest texts
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10]
+RootWebArea "Генератор лута — Daggerheart" [url=#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -24,23 +24,28 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-ci2-c
       link "Поиск" [url=#/search]
   main ""
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 10. Листов A4: 2. Размер карты 63×88 мм — как у обычно..." [namelen=76 namehash=a5df22c7]
+    StaticText "Карточек: 9. Листов A4: 1. Размер карты 44×63 мм — шестнадцать н..." [namelen=71 namehash=79afa80e]
     button "Назад"
     button "Отправить на печать"
-    button "Цветная" [pressed=true]
-    button "Чёрно-белая" [pressed=false]
-    button "Обычная" [pressed=true]
-    button "Компактная" [pressed=false]
+    button "Цветная" [pressed=false]
+    button "Чёрно-белая" [pressed=true]
+    button "Обычная" [pressed=false]
+    button "Компактная" [pressed=true]
     button "Ссылка на набор"
     StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x38 of 42 same-shape siblings elided
-    heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
-    heading "ПРОНЗИТЕЛЬНАЯ СВИРЕЛЬ" [level=2]
-    ... heading x6 of 10 same-shape siblings elided
-    heading "БАНКА С ОГНЁМ" [level=2]
-    heading "ПОДВЕШЕННЫЙ ЖЕЗЛ" [level=2]
+    ... StaticText x81 of 85 same-shape siblings elided
+    heading "КОЛОДА СУМЕРЕК" [level=2]
+    LineBreak " "
+    heading "УЗЫ ДУШИ" [level=2]
+    LineBreak " "
+    ... LineBreak x7 of 11 same-shape siblings elided
+    ... heading x5 of 9 same-shape siblings elided
+    LineBreak " "
+    heading "СЛЁЗЫ ДЖЕЛЛ" [level=2]
+    LineBreak " "
+    heading "БРОШЮРА ПО ИСТОРИИ ИСКУССТВА" [level=2]
     StaticText "Daggerheart"
-    StaticText "Core"
+    StaticText "Dread"
   contentinfo ""
     StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
     link "daggerheart.com" [url=https://www.daggerheart.com/]
@@ -71,7 +76,7 @@ daggerheart.com
 Чёрно-белая
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10]
+RootWebArea "Daggerheart Loot Generator" [url=#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -92,23 +97,28 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci
       link "Search" [url=#/search]
   main ""
     heading "Printing cards" [level=1]
-    StaticText "Cards: 10. A4 sheets: 2. Card size 63×88 mm - the size of a play..." [namelen=73 namehash=56be6a9b]
+    StaticText "Cards: 9. A4 sheets: 1. Card size 44×63 mm - sixteen to a sheet."
     button "Back"
     button "Send to printer"
-    button "Colour" [pressed=true]
-    button "Black and white" [pressed=false]
-    button "Standard" [pressed=true]
-    button "Compact" [pressed=false]
+    button "Colour" [pressed=false]
+    button "Black and white" [pressed=true]
+    button "Standard" [pressed=false]
+    button "Compact" [pressed=true]
     button "Link to this set"
     StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x38 of 42 same-shape siblings elided
-    heading "PREMIUM BEDROLL" [level=2]
-    heading "PIPER WHISTLE" [level=2]
-    ... heading x6 of 10 same-shape siblings elided
-    heading "FIRE JAR" [level=2]
-    heading "SUSPENDED ROD" [level=2]
+    ... StaticText x81 of 85 same-shape siblings elided
+    heading "TWILIGHT DECK" [level=2]
+    LineBreak " "
+    heading "ANIMA COLLIGATIONEM" [level=2]
+    LineBreak " "
+    ... LineBreak x7 of 11 same-shape siblings elided
+    ... heading x5 of 9 same-shape siblings elided
+    LineBreak " "
+    heading "TEARS OF JHELL" [level=2]
+    LineBreak " "
+    heading "ART HISTORY BOOKLET" [level=2]
     StaticText "Daggerheart"
-    StaticText "Core"
+    StaticText "Dread"
   contentinfo ""
     StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
     link "daggerheart.com" [url=https://www.daggerheart.com/]

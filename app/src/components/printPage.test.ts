@@ -228,10 +228,15 @@ describe('arrival, colour', () => {
     const printNow = screen.getByRole('button', { name: 'Отправить на печать' });
     const color = screen.getByRole('button', { name: 'Цветная' });
     const bw = screen.getByRole('button', { name: 'Чёрно-белая' });
+    const std = screen.getByRole('button', { name: 'Обычная' });
+    const compact = screen.getByRole('button', { name: 'Компактная' });
     const link = screen.getByRole('button', { name: 'Ссылка на набор' });
     expect(color).toHaveAttribute('aria-pressed', 'true');
     expect(bw).toHaveAttribute('aria-pressed', 'false');
-    const order = [back, printNow, color, bw, link].map((el) =>
+    expect(std).toHaveAttribute('aria-pressed', 'true');
+    expect(compact).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('group', { name: 'Размер карты' })).toContainElement(std);
+    const order = [back, printNow, color, bw, std, compact, link].map((el) =>
       Array.from(document.querySelectorAll<HTMLElement>('button')).indexOf(el)
     );
     expect(order).toEqual([...order].sort((a, b) => a - b));
@@ -484,6 +489,20 @@ describe('black and white', () => {
     expect(document.querySelector('.pc-art')).toBeInTheDocument();
   });
 
+  it('sizes the head marks before their images load, so the fit measures the real head', async () => {
+    render(App, { env: at('#/print/q1-a1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    const marks = Array.from(
+      document.querySelectorAll('.pc-head .pc-shield img, .pc-head .pc-burden img')
+    );
+    expect(marks.map((img) => [img.getAttribute('width'), img.getAttribute('height')])).toEqual(
+      [
+        ['62', '36'],
+        ['33', '36']
+      ]
+    );
+  });
+
   it('survives leaving the print page and coming back (D21, paid off)', async () => {
     /* Session memory on AppState, the way live's own S.printBW was - not the
        page-local $state this replaces, which reset to colour on every fresh
@@ -498,6 +517,62 @@ describe('black and white', () => {
     env.router.navigate('#/print/q1-a1');
     await tick();
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
+  });
+});
+
+describe('compact', () => {
+  const pressed = (name: string): string | null =>
+    screen.getByRole('button', { name }).getAttribute('aria-pressed');
+
+  it('prints sixteen places to a sheet in either layout, independent of the colour switch', async () => {
+    render(App, { env: at('#/print/ci1-q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    expect(pressed('Компактная')).toBe('true');
+    expect(pressed('Обычная')).toBe('false');
+    expect(pressed('Цветная')).toBe('true');
+    expect(pressed('Чёрно-белая')).toBe('false');
+    expect(document.querySelector('.psheet.compact:not(.bw)')).toBeInTheDocument();
+    expect(document.querySelectorAll('.psheet')).toHaveLength(1);
+    expect(document.querySelectorAll('.pcard')).toHaveLength(16);
+    expect(document.querySelectorAll('.pcard.blank')).toHaveLength(14);
+    expect(document.querySelectorAll('.pc-art')).toHaveLength(2);
+    expect(
+      screen.getByText(
+        'Карточек: 2. Листов A4: 1. Размер карты 44×63 мм — шестнадцать на лист.'
+      )
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    expect(document.querySelector('.psheet.compact.bw')).toBeInTheDocument();
+    expect(document.querySelector('.pc-art')).toBeNull();
+    expect(pressed('Компактная')).toBe('true');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Обычная' }));
+    expect(document.querySelector('.psheet.compact')).toBeNull();
+    expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
+    expect(document.querySelectorAll('.pcard')).toHaveLength(9);
+    expect(pressed('Чёрно-белая')).toBe('true');
+    expect(
+      screen.getByText(
+        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной игральной.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('survives leaving the print page and coming back, and is off on a fresh start', async () => {
+    const env = at('#/print/q1-a1');
+    const first = render(App, { env });
+    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    env.router.navigate('#/roll/std');
+    await tick();
+    env.router.navigate('#/print/q1-a1');
+    await tick();
+    expect(document.querySelector('.psheet.compact')).toBeInTheDocument();
+    first.unmount();
+
+    render(App, { env: at('#/print/q1-a1') });
+    expect(document.querySelector('.psheet.compact')).toBeNull();
+    expect(pressed('Обычная')).toBe('true');
   });
 });
 
@@ -536,6 +611,21 @@ describe('a second sheet', () => {
     ).toBeInTheDocument();
     expect(document.querySelector('.warnnote')).toBeNull();
   });
+
+  it('fits the same ten on one compact sheet, six blank, with no page break', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/print/' + ids), data: fakeData(TEN) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    expect(document.querySelectorAll('.psheet.compact')).toHaveLength(1);
+    expect(document.querySelectorAll('.pcard.blank')).toHaveLength(6);
+    expect(document.querySelector('.psheet[data-next]')).toBeNull();
+    expect(
+      screen.getByText(
+        'Карточек: 10. Листов A4: 1. Размер карты 44×63 мм — шестнадцать на лист.'
+      )
+    ).toBeInTheDocument();
+  });
 });
 
 describe('the cap', () => {
@@ -563,6 +653,17 @@ describe('the cap', () => {
     expect(screen.getByText(/За один раз печатается 180 карточек/)).toHaveTextContent(
       'За один раз печатается 180 карточек, остальные 1 в лист не попали. Разделите набор на части.'
     );
+  });
+
+  it('prints the same 180 cards on twelve compact sheets', async () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/print/' + ids181), data: fakeData(MANY) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    expect(document.querySelectorAll('.pcard:not(.blank)')).toHaveLength(180);
+    expect(document.querySelectorAll('.psheet.compact')).toHaveLength(12);
+    expect(document.querySelectorAll('.pcard.blank')).toHaveLength(12);
+    expect(document.querySelector('.warnnote')).toBeInTheDocument();
   });
 
   it('drops an unknown and a repeated id before counting, raising no note', () => {
@@ -680,10 +781,12 @@ describe('the fit is wired', () => {
   /* jsdom lays nothing out - clientWidth/clientHeight/offsetTop and a
      Range's rect are all zero - so every loop in `fit()` would exit at once
      and the art arithmetic would divide by zero. Faked here exactly enough
-     to walk every branch: `.pc-text` is always "tight" (its scrollHeight
-     exceeds its clientHeight), everything else measures 100 wide and tall,
-     and a Range always reads over-width - matching what the ladder is for. */
-  it('reaches every step of the ladder and lands on the live floors', async () => {
+     to walk every branch: `.pc-text`'s scrollHeight comes from the case,
+     everything else measures 100 tall, and a Range reads as the case sets. */
+  const fakeLayout = (
+    textScroll: (text: HTMLElement) => number,
+    rangeWidth: number
+  ): (() => void) => {
     const widthDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth');
     const heightDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight');
     const topDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetTop');
@@ -712,13 +815,25 @@ describe('the fit is wired', () => {
     Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
       configurable: true,
       get(this: HTMLElement) {
-        return this.classList.contains('pc-text') ? 140 : 100;
+        return this.classList.contains('pc-text') ? textScroll(this) : 100;
       }
     });
     Range.prototype.getBoundingClientRect = function () {
-      return { width: 9999 } as DOMRect;
+      return { width: rangeWidth } as DOMRect;
     };
 
+    return () => {
+      if (widthDesc) Object.defineProperty(HTMLElement.prototype, 'clientWidth', widthDesc);
+      if (heightDesc) Object.defineProperty(HTMLElement.prototype, 'clientHeight', heightDesc);
+      if (topDesc) Object.defineProperty(HTMLElement.prototype, 'offsetTop', topDesc);
+      if (scrollDesc) Object.defineProperty(HTMLElement.prototype, 'scrollHeight', scrollDesc);
+      Range.prototype.getBoundingClientRect = rectFn;
+    };
+  };
+
+  /* `.pc-text` is always tight here, so the grow rung is skipped. */
+  it('reaches every step of the ladder and lands on the live floors', async () => {
+    const restore = fakeLayout(() => 140, 9999);
     try {
       render(App, { env: at('#/print/q1') });
       const card = document.querySelector('.pcard[data-pid="q1"]');
@@ -737,12 +852,59 @@ describe('the fit is wired', () => {
       expect(document.querySelector('.pcard[data-pid="q1"] .pc-text')).toHaveStyle({
         fontSize: '2.6cqw'
       });
+
+      /* The ladder is size-blind: every dimension is `cqw`. */
+      await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Цветная' }));
+      const compact = document.querySelector('.pcard[data-pid="q1"]');
+      expect(compact?.querySelector('.pc-text')).toHaveStyle({ fontSize: '2.6cqw' });
+      expect(
+        compact?.querySelector<HTMLElement>('.pc-content')?.style.getPropertyValue('--pcpad')
+      ).toBe('8cqw');
+      expect(compact?.querySelector<HTMLElement>('.pc-art')?.style.display).toBe('none');
     } finally {
-      if (widthDesc) Object.defineProperty(HTMLElement.prototype, 'clientWidth', widthDesc);
-      if (heightDesc) Object.defineProperty(HTMLElement.prototype, 'clientHeight', heightDesc);
-      if (topDesc) Object.defineProperty(HTMLElement.prototype, 'offsetTop', topDesc);
-      if (scrollDesc) Object.defineProperty(HTMLElement.prototype, 'scrollHeight', scrollDesc);
-      Range.prototype.getBoundingClientRect = rectFn;
+      restore();
+    }
+  });
+
+  it('grows short black-and-white text to the cap, and leaves colour alone', async () => {
+    const restore = fakeLayout(() => 50, 0);
+    try {
+      render(App, { env: at('#/print/q1') });
+      const text = (): HTMLElement | null =>
+        document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-text');
+      expect(text()?.style.fontSize).toBe('');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+      /* The CSSOM reads the written `5.0cqw` back as `5cqw`. */
+      expect(text()?.style.fontSize).toBe('5cqw');
+      const content = document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-content');
+      expect(content?.style.getPropertyValue('--pcpad')).toBe('');
+
+      /* A size change fits the card again at its new size. */
+      const before = text();
+      if (before) before.style.fontSize = '';
+      await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+      expect(text()?.style.fontSize).toBe('5cqw');
+    } finally {
+      restore();
+    }
+  });
+
+  it('steps back below the first size that spills', async () => {
+    /* Tight above 4.04cqw: 4.0 measures 100, 4.1 measures 102. */
+    const restore = fakeLayout(
+      (el) => Math.round(parseFloat(el.style.fontSize || '3.5') * 25),
+      0
+    );
+    try {
+      render(App, { env: at('#/print/q1') });
+      await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+      expect(
+        document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-text')?.style.fontSize
+      ).toBe('4cqw');
+    } finally {
+      restore();
     }
   });
 });
@@ -770,6 +932,9 @@ describe('English', () => {
     expect(screen.getByRole('button', { name: 'Send to printer' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Colour' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Black and white' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Standard' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Compact' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Card size' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Link to this set' })).toBeInTheDocument();
 
     const weapon = document.querySelector('.pcard[data-pid="q1"]');
@@ -791,11 +956,16 @@ describe('English', () => {
     expect(armour?.querySelector('.pc-tag')?.textContent).toBe('Armor');
 
     expect(document.title).toBe('Daggerheart Loot Generator');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Compact' }));
+    expect(
+      screen.getByText('Cards: 2. A4 sheets: 1. Card size 44×63 mm - sixteen to a sheet.')
+    ).toBeInTheDocument();
   });
 });
 
 describe('axe', () => {
-  it('has no violations on the colour sheet, the black-and-white sheet, or the empty page', async () => {
+  it('has no violations on either sheet size in either layout, or on the empty page', async () => {
     const colour = render(App, { env: at('#/print/ci1-q1') });
     await expectNoA11yViolations(colour.container);
     colour.unmount();
@@ -804,6 +974,18 @@ describe('axe', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     await expectNoA11yViolations(bwRender.container);
     bwRender.unmount();
+
+    const compactColour = render(App, { env: at('#/print/ci1-q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await expectNoA11yViolations(compactColour.container);
+    compactColour.unmount();
+
+    const compactBw = render(App, { env: at('#/print/ci1-q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    expect(document.querySelector('.psheet.compact.bw')).toBeInTheDocument();
+    await expectNoA11yViolations(compactBw.container);
+    compactBw.unmount();
 
     const empty = render(App, { env: at('#/print/zzz') });
     await expectNoA11yViolations(empty.container);
