@@ -647,6 +647,11 @@ function evaluateCloudPush(segList, cwd) {
         i++;
         continue;
       }
+      // A redirect (`2>&1`, `> log`) is not a refspec.
+      if (/^(?:\d*|&)[<>]/.test(t)) {
+        if (/^(?:\d*|&)[<>]{1,2}$/.test(t)) i++;
+        continue;
+      }
       if (!t.startsWith('-')) positional.push(t);
     }
     for (const refspec of positional.slice(1)) {

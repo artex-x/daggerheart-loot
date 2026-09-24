@@ -1087,29 +1087,57 @@ push the repository's value.
 
 A claude.ai/code cloud session runs in a VM the repository prepares with
 `.claude/cloud-setup.sh`. Facts relied on (code.claude.com cloud-environments
-documentation, read 2026-09-24; the ones marked *unverified* wait for the
-first cloud session to prove them): Ubuntu 24.04 x86_64, 4 vCPU, 16 GB,
-30 GB; Node 22 on PATH (the repository pins 24); Docker and dockerd
-preinstalled (*unverified*); no Chromium preinstalled; a root setup script
-(about 5 min, cached about 7 days) set in the environment dialog; repository
-`SessionStart` hooks run on every start; `CLAUDE_CODE_REMOTE=true`;
-environment variables are visible to the model; the Bash tool only; the
-session clones the current remote branch and can push only its own branch.
-Measured in one cloud container on 2026-09-24: a plain `npm run check`
-prints about 65 KB without `rtk` ("Run a long check").
+documentation, read 2026-09-24): Ubuntu 24.04 x86_64, 4 vCPU, 16 GB, 30 GB;
+Node 22 on PATH ahead of `/usr/local/bin` (the repository pins 24); a root
+setup script (about 5 min, cached about 7 days) set in the environment
+dialog; repository `SessionStart` hooks run on every start;
+`CLAUDE_CODE_REMOTE=true`; environment variables are visible to the model;
+the Bash tool only; the container is reclaimed after inactivity, so work
+that is not pushed is lost.
+
+Measured in the first cloud session, 2026-09-24 (section 15 step 20 of the
+persistence roadmap):
+
+- The setup script had not run: Node 22, no nvm, no gitleaks. Run by hand it
+  failed on `. nvm.sh` (exit 3 beside an uninstalled `.nvmrc` version); fixed
+  with `--no-use`. The Bash tool does not source nvm, so the script links
+  `node`, `npm` and `npx` into `~/.local/bin`, the first PATH entry.
+- `npm ci` downloads Chrome for Testing to `~/.cache/puppeteer` despite npm
+  11's `allowScripts` warning for puppeteer. Playwright's Chromium is also at
+  `/opt/pw-browsers/chromium`; nothing uses it.
+- `rtk` is not in the image; without it the reader rules of `bash-guard.mjs`
+  deny `grep -n` shapes with no rewrite to fall back on. The script installs
+  `rtk` 0.48.0 (checksum checked) and its hook (`rtk init -g --hook-only`).
+- `dockerd` is installed but not running, and a setup script cannot leave it
+  running. Start it once per session as root: `(dockerd > /tmp/dockerd.log
+  2>&1 &)`; `docker info` then answers. `session-start.mjs` prints that line
+  when the probe fails.
+- The network was not "Full": the proxy denied the test project
+  `rdjxcjkhsklhprmzxajq.supabase.co`, the image blob hosts
+  `d2glxqk2uabbnd.cloudfront.net` (`public.ecr.aws`) and
+  `pkg-containers.githubusercontent.com` (`ghcr.io`), and Docker Hub answered
+  429 (anonymous pull limit on a shared address). So `npm run check:db`
+  failed at `supabase start`, and the layer 4 probe could not run: no
+  cloud release until a session on "Full" passes both.
+- `npm run check` and `npm run check:built` passed on Node 24.21.0.
+- The session's branch is assigned by claude.ai/code (`claude/<name>`), not
+  named after the task id, and the session may push only that branch.
+- No `gh` CLI; GitHub is reached through the GitHub MCP tools.
+- The proxy lists each denied host under `recentRelayFailures` in
+  `curl -sS "$HTTPS_PROXY/__agentproxy/status"`.
 
 - **Layer rule.** A cloud session runs layers 1-3: `npm run check`,
   `npm run check:built`, the `tests/app/` suites (Chrome for Testing from
-  `npm ci`, *unverified*), golden re-seeds (the goldens are text, and ubuntu
-  CI already compares Windows-seeded goldens green) and `npm run check:db`
-  (Docker without the PowerShell detour, *unverified*). Layer 4 (hosted E2E)
+  `npm ci`), golden re-seeds (the goldens are text, and ubuntu CI already
+  compares Windows-seeded goldens green) and `npm run check:db` (Docker
+  without the PowerShell detour; needs the image blob hosts above). Layer 4 (hosted E2E)
   runs only after its fail-closed probe passes on that host. Sweep
   measurements there are advisory.
 - **Host rule.** A whole release (one task id) runs fully in the cloud or
   fully locally; batches never mix hosts within a release.
 - **Branch rule.** A cloud release starts from the pushed `main`, commits and
-  amends on its own branch named after the task id, and pushes that branch
-  once, at closeout. `bash-guard.mjs` rule 2o denies any other push in a
+  amends on the branch its session was given, and pushes that branch once,
+  at closeout. `bash-guard.mjs` rule 2o denies any other push in a
   cloud session. The owner fast-forwards `main` to it locally; the
   claude.ai/code merge button (a pull request and a merge commit) is not
   used.
@@ -1120,8 +1148,9 @@ prints about 65 KB without `rtk` ("Run a long check").
   `https://rdjxcjkhsklhprmzxajq.supabase.co`, attached by the proxy and never
   shown to the model.
 - **Setup script.** The environment dialog runs `bash .claude/cloud-setup.sh`:
-  Node from `.nvmrc` through nvm, `npm ci`, gitleaks 8.30.1 checked against
-  the release checksums, `npx supabase --version`, then the versions. It
+  Node from `.nvmrc` through nvm, linked into `~/.local/bin`, `npm ci`,
+  gitleaks 8.30.1 and rtk 0.48.0 checked against their release checksums,
+  the rtk hook, `npx supabase --version`, then the versions. It
   pulls no Docker image. `session-start.mjs` then reports each probe on every
   start.
 

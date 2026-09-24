@@ -1014,7 +1014,13 @@ async function testPersistenceGuards() {
         denyReason(result)
       );
     }
-    for (const command of ['git push -u origin task-x', 'git push origin HEAD', 'git push']) {
+    for (const command of [
+      'git push -u origin task-x',
+      'git push origin HEAD',
+      'git push',
+      'git push -u origin task-x 2>&1 | tail -3',
+      'git push origin task-x > push.log'
+    ]) {
       const result = runHook('bash-guard.mjs', bashPayload(command), cloud);
       check(`#217 cloud push of the current branch allowed: ${command}`, isSilent(result));
     }
@@ -2293,8 +2299,8 @@ function testSessionStart() {
       /Cloud session\./.test(cloudCtx)
     );
     check(
-      '#201 session-start: four probes, skipped',
-      (cloudCtx.match(/: skipped$/gm) || []).length === 4,
+      '#201 session-start: five probes, skipped',
+      (cloudCtx.match(/: skipped$/gm) || []).length === 5,
       cloudCtx
     );
     check(
