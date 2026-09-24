@@ -28,6 +28,8 @@ export const UNKNOWN_PATH = 'this-path-does-not-exist-9f2c.html';
  *  matching the convention `<div id="app">` already sets in index.html). */
 export const NOT_FOUND_MARKER = 'id="app-404"';
 
+const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
+
 export function checks() {
   const status200 = (name) => ({
     test: (body, meta) => meta.status === 200,
@@ -83,23 +85,39 @@ export function checks() {
       ...status200(f)
     })),
 
-    /* The stub is what a messenger fetches for a link preview. */
-    { path: 'i/w1.html', ...status200('i/w1.html') },
+    /* The stub is what a messenger fetches for a link preview, one per
+     * language (docs/specs/I18N.md). */
+    ...['i/w1.html', 'i/en/w1.html'].flatMap((f) => [
+      { path: f, ...status200(f) },
+      {
+        path: f,
+        test: (body) => body.includes('og:image'),
+        message: `the stub ${f} has lost its preview image (og:image)`
+      }
+    ]),
+
+    /* The English entry document: the English card of every link the app
+     * hands out in English (docs/specs/META.md section 2). */
+    { path: 'en/index.html', ...status200('en/index.html') },
     {
-      path: 'i/w1.html',
-      test: (body) => body.includes('og:image'),
-      message: 'the stub i/w1.html has lost its preview image (og:image)'
+      path: 'en/index.html',
+      test: (body) => NOINDEX.test(body) && body.includes('og:title'),
+      message: 'en/index.html lost its noindex or its og:title'
     },
 
     /* One probe per symlinked folder: img/, og/ and card/ are links the
      * build makes, and a broken link is served as a 404 rather than as an
      * error. The row thumbnails ride the img/ link. */
-    ...['img/_none.webp', 'img/thumb/_none.webp', 'og/_share.jpg', 'card/die-d12-bw.svg'].map(
-      (f) => ({
-        path: f,
-        ...status200(f)
-      })
-    ),
+    ...[
+      'img/_none.webp',
+      'img/thumb/_none.webp',
+      'og/_share.jpg',
+      'og/_share_en.jpg',
+      'card/die-d12-bw.svg'
+    ].map((f) => ({
+      path: f,
+      ...status200(f)
+    })),
 
     /* The installable app (docs/specs/META.md section 9): build outputs
      * copied from app/public/, published by name. */
@@ -124,15 +142,17 @@ export function checks() {
     { path: 'icons/icon-192.png', ...status200('icons/icon-192.png') },
 
     /* The generated site pages (docs/specs/META.md section 9, "Static
-     * pages"): a plain URL outside the app, kept out of search results too. */
-    { path: 'pages/install.html', ...status200('pages/install.html') },
-    {
-      path: 'pages/install.html',
-      test: (body) =>
-        /<meta\s+name="robots"\s+content="noindex/i.test(body) &&
-        body.includes('id="app-page"'),
-      message: 'pages/install.html lost its noindex or its id="app-page" marker'
-    },
+     * pages"): a plain URL outside the app, one copy per language, kept out
+     * of search results too. */
+    ...['pages/install.html', 'pages/en/install.html'].flatMap((f) => [
+      { path: f, ...status200(f) },
+      {
+        path: f,
+        test: (body) =>
+          NOINDEX.test(body) && body.includes('id="app-page"') && body.includes('og:title'),
+        message: `${f} lost its noindex, its id="app-page" marker or its og:title`
+      }
+    ]),
 
     /* The 404 fallback, owner-approved: a hosted record link truncated by a
      * chat client, or a stub for a record a data change dropped, has to
@@ -180,9 +200,9 @@ export async function runChecks(read, list = checks()) {
  *  every request a hard ceiling so one stalled CDN socket cannot hang this
  *  step indefinitely (the existing catch below already
  *  treats an abort as a retry) - it bounds a single request, not the whole
- *  retry loop below: `checks()`'s 17 distinct paths, `TRIES=6` and
+ *  retry loop below: `checks()`'s 21 distinct paths, `TRIES=6` and
  *  `WAIT_MS=10_000` between attempts add up to a worst case of roughly
- *  17 x 15s x 6 + 5 x 10s, about 26 minutes, if every request on every try
+ *  21 x 15s x 6 + 5 x 10s, about 32 minutes, if every request on every try
  *  stalls to its own ceiling - past `deploy`'s own 10-minute job timeout.
  *  That worst case needs every request to fail
  *  identically on every attempt, unlike the few-seconds-of-stale-CDN read

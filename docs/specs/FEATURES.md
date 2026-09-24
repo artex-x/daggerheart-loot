@@ -44,7 +44,9 @@ Seven modes. Each keeps its own input in memory only.
   face - hands over the whole rarity rather than a row: a link into each table
   that is switched on, at that rarity, plus a button that steps the rarity up
   one. There is no such button on legendary. With both kinds on the two links
-  name their tables apart; with one on the label stays general.
+  name their tables apart; with one on the label stays general. The table
+  links open the app at the site root in a new tab, in both languages: a way
+  into the tables, not an address to hand over.
 - Each card on the alternate tables says which die found it, and its number
   badge is the face that die showed rather than the row the record has in the
   book it was printed in.
@@ -226,6 +228,11 @@ Seven modes. Each keeps its own input in memory only.
   - opening the page, and after every writer on it.
 - Import: paste a link or a payload to take a copy of someone else's list -
   either link form, plain or packed.
+- Every other address the app copies - a list's players link, a table, a
+  filter, a section anchor, a print sheet - is `<site>#/...` in Russian and
+  `<site>en/#/...` in English on a host, so a messenger builds its preview in
+  that language (`CONTRACTS.md` section 3); from a folder it is
+  `index.html#/...` in both.
 - A shared link (`#/l/<payload>`) that is nobody's own list draws the shared
   page: the name, the shared-list line with the count as one text node, one
   "Сохранить себе" / "Save to my lists" button, drawn whatever the selection,
@@ -294,7 +301,10 @@ Seven modes. Each keeps its own input in memory only.
   own state; the live app threw on a missing `window.LOOT` and drew nothing.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
-  asterisks are deliberately not used.
+  asterisks are deliberately not used. Copy link and share carry the
+  record's stub in the language on screen - `i/<id>.html` in Russian,
+  `i/en/<id>.html` in English - on a host, and the in-app route
+  `index.html#/i/<id>` from a folder.
 - Copying the image has three outcomes, each with its own toast. A canvas
   that cannot be read back at all (a `file://` document's own picture always
   taints it) falls back to copying the record's text instead, worded to say
@@ -517,8 +527,10 @@ Seven modes. Each keeps its own input in memory only.
 - Toasts with an undo action for destructive things.
 - A footer nav row above the licence line links the site's static pages
   (`META.md` section 9, "Static pages"). Today it has one link,
-  «Установить как приложение» / "Install as an app", to
-  `pages/install.html`. The row is drawn only when the page is served over
+  «Установить как приложение» / "Install as an app". Every link opens the
+  copy of the page in the language on screen: `pages/install.html` in
+  Russian, `pages/en/install.html` in English (`Shell.svelte`'s
+  `pagesDir`). The row is drawn only when the page is served over
   http(s) and is not already the installed app (`display-mode: standalone`,
   or iOS `navigator.standalone`): nothing installs from a folder, and inside
   the installed app the step is done.

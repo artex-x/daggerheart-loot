@@ -54,9 +54,15 @@ const GOOD = {
   'llms.txt': { type: 'text/plain', body: 'ok' },
   'robots.txt': { type: 'text/plain', body: 'User-agent: *\nAllow: /' },
   'i/w1.html': { type: 'text/html', body: '<meta property="og:image" content="og/1.jpg">' },
+  'i/en/w1.html': { type: 'text/html', body: '<meta property="og:image" content="og/1.jpg">' },
+  'en/index.html': {
+    type: 'text/html',
+    body: '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">'
+  },
   'img/_none.webp': { type: 'image/webp', body: 'x' },
   'img/thumb/_none.webp': { type: 'image/webp', body: 'x' },
   'og/_share.jpg': { type: 'image/jpeg', body: 'x' },
+  'og/_share_en.jpg': { type: 'image/jpeg', body: 'x' },
   'card/die-d12-bw.svg': { type: 'image/svg+xml', body: '<svg></svg>' },
   'manifest.webmanifest': {
     type: 'application/manifest+json',
@@ -66,7 +72,15 @@ const GOOD = {
   'icons/icon-192.png': { type: 'image/png', body: 'x' },
   'pages/install.html': {
     type: 'text/html',
-    body: '<meta name="robots" content="noindex, nofollow"><main id="app-page"></main>'
+    body:
+      '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">' +
+      '<main id="app-page"></main>'
+  },
+  'pages/en/install.html': {
+    type: 'text/html',
+    body:
+      '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">' +
+      '<main id="app-page"></main>'
   },
   '404.html': { type: 'text/html', body: `<!doctype html><div id="app-404"></div>` }
 };
@@ -134,10 +148,47 @@ describe('checks() against broken sites', () => {
   it('catches a site page that lost its noindex', async () => {
     const broken = {
       ...GOOD,
-      'pages/install.html': { type: 'text/html', body: '<main id="app-page"></main>' }
+      'pages/install.html': {
+        type: 'text/html',
+        body: '<meta property="og:title" content="x"><main id="app-page"></main>'
+      }
     };
     const bad = await runChecks(memoryReader(broken));
-    assert.deepEqual(bad, ['pages/install.html lost its noindex or its id="app-page" marker']);
+    assert.deepEqual(bad, [
+      'pages/install.html lost its noindex, its id="app-page" marker or its og:title'
+    ]);
+  });
+
+  it('catches an English stub with no og:image', async () => {
+    const broken = {
+      ...GOOD,
+      'i/en/w1.html': { type: 'text/html', body: '<p>no preview here</p>' }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, ['the stub i/en/w1.html has lost its preview image (og:image)']);
+  });
+
+  it('catches an English entry document that lost its og:title', async () => {
+    const broken = {
+      ...GOOD,
+      'en/index.html': { type: 'text/html', body: '<meta name="robots" content="noindex">' }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, ['en/index.html lost its noindex or its og:title']);
+  });
+
+  it('catches a missing English site card and English site page', async () => {
+    const {
+      'og/_share_en.jpg': _card,
+      'pages/en/install.html': _page,
+      ...withoutEnglish
+    } = GOOD;
+    const bad = await runChecks(memoryReader(withoutEnglish));
+    assert.ok(
+      bad.some((m) => /og\/_share_en\.jpg/.test(m)) &&
+        bad.some((m) => /pages\/en\/install\.html/.test(m)),
+      `expected an English card and page failure, got: ${JSON.stringify(bad)}`
+    );
   });
 
   it('catches a site with no 404 fallback at all (status is still 404, but the body is not the way-home page)', async () => {
@@ -198,7 +249,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 29);
+    assert.equal(list.length, 36);
     const paths = [...new Set(list.map((c) => c.path))].sort();
     assert.deepEqual(paths, [
       '',
@@ -207,6 +258,8 @@ describe('checks() shape', () => {
       'catalog.csv',
       'data.js',
       'data.json',
+      'en/index.html',
+      'i/en/w1.html',
       'i/w1.html',
       'icons/icon-192.png',
       'img/_none.webp',
@@ -214,6 +267,8 @@ describe('checks() shape', () => {
       'llms.txt',
       'manifest.webmanifest',
       'og/_share.jpg',
+      'og/_share_en.jpg',
+      'pages/en/install.html',
       'pages/install.html',
       'robots.txt',
       'sw.js',

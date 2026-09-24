@@ -331,6 +331,28 @@ deferral discipline.
 - **How to verify the fix**: regenerate the stubs and confirm every
   `i/<id>.html` subtitle reads as a full table path, matching the record
   page's own heading line for the same id.
+- **Scope since issue 64**: applies to the English stubs `i/en/<id>.html` as
+  well - the same `provenance()` renders both languages, so a fix covers
+  both sets (`Item · Core · #12` in English).
+
+### D52 - a share stub hides the tier on frame equipment while the app prints it
+
+- **Where**: `tools/build-share-pages.js`, `eqLine()` (`if (!isFrame(it))`
+  around the tier word); `docs/specs/FEATURES.md` "Records" (a frame record
+  with equipment metadata prints its tier word exactly as an equivalent `eq`
+  record does).
+- **What**: the stub's subtitle and `og:description` drop the tier word
+  (`Ранг N` / `Tier N`) on frame equipment, while the app's record page
+  prints it. 92 of the 95 frame records carry `eq` (measured at `93b26af3`).
+- **Why deferred**: not a language gap, and the fix changes 92 Russian
+  `og:description` strings, which costs 92 Telegram pushes and presses
+  (`docs/specs/META.md` section 8, `docs/tg-preview.md`) - a separate,
+  budgeted change, not part of issue 64's per-language previews.
+- **Fix**: drop the `isFrame` guard in `eqLine()`, rebuild, and let
+  `previews.yml` push the 92 Russian and 92 English stubs.
+- **How to verify the fix**: `i/f33.html`'s subtitle reads the tier word the
+  app's record page prints for `#/i/f33`, and the `--stale-list` dry run
+  lists exactly the frame equipment stubs.
 
 ### D42 - cached drag midpoints go stale under a two-tab storage merge mid-drag
 
@@ -490,22 +512,6 @@ rather than warning; not filed today.
 - **How to verify the fix**: `npm run check` fails when `dataint.js` would,
   with no separate `run-all.js dataint` invocation needed.
 
-### D38 (idea, not built) - nothing pins `build-share-pages.js`'s equipment vocabulary to `i18n.ts`'s
-
-- **Where**: `app/src/lib/i18n.ts` (claims to be "the single place those
-  words live"); `tools/build-share-pages.js` (`EQ_TYPE`, `EQ_TRAIT`,
-  `EQ_RANGE`, `EQ_DT`, `EQ_CLS`, `EQ_BURDEN` - a second, unguarded copy).
-- **What**: `tests/derived.js` regenerates the stubs from
-  `build-share-pages.js` and compares against disk, so it catches a stale
-  stub, but nothing checks the generator's own tables against `i18n.ts`'s.
-  A renamed equipment word would ship as an app that says one thing and a
-  share preview that says another, silently.
-- **Why deferred**: an idea, not built - a real guard is a new derived-test
-  assertion (that the two tables agree), which is a separate item, not a
-  hygiene-pass fix.
-- **How to verify the fix**: rename one equipment word in `i18n.ts` only
-  and confirm `npm run check` fails on the mismatch.
-
 ### D39 (idea, not built) - `tests/` and `tools/` sit outside both lint and format, on a rationale that no longer holds
 
 - **Where**: `eslint.config.mjs`'s ignore comment for `tests/`/`tools/`
@@ -546,3 +552,20 @@ rather than warning; not filed today.
   old name; a guard change belongs with the next Volume 4 re-sync.
 - **How to verify the fix**: put «Облачение Святого: ...» into voa4_t3d's
   `rud` and confirm that `node tests/derived.js` fails.
+
+### D53 - a tg-preview path flag given last with no value is silently dropped
+
+- **Where**: `tools/tg-preview/lib.mjs`, `parseArgs()` (`opts[key] = value`
+  for the path flags).
+- **What**: `--apply`, `--result`, `--stale-list`, `--assets` and `--state`
+  given as the last argument read `argv[++i]` as `undefined`, and the run
+  goes on as if the flag were absent. `run.mjs --apply` with no path runs a
+  live refresh instead of recording a result. `--only` given last fails
+  with a `TypeError`, not a named error. `--adopt` is guarded since issue
+  64; the numeric flags and `--mode` already throw.
+- **Why deferred**: found in the issue 64 review; older than that task and
+  outside its batch. `previews.yml` always passes a value.
+- **Fix**: after reading `value`, throw `<flag> needs a value` when it is
+  `undefined` or starts with `--`, and add a `parseArgs` case per flag.
+- **How to verify the fix**: `node tools/tg-preview/run.mjs --apply` exits 1
+  with the named error and contacts nothing.

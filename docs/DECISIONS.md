@@ -12,6 +12,24 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-23 - Per-language previews: `i/en/<id>.html` and `en/`, seeded into the refresher's state; site cards rendered from one template; a static page is a page per language
+
+- Task: `64`; the owner settled `i/en/<id>.html`, the seed-when-absent rule,
+  the English root, two re-rendered cards and one copy per static page.
+- Decision: `i/<id>.html` and the root stay Russian and frozen; `i/en/<id>.html`
+  and `en/index.html` (`<site>en/`) are English redirect pages from one
+  generator, which store `dhloot.lang.v1=en` only when it is absent. The
+  new URLs enter `tools/tg-preview/state.json` by `--adopt`, never pushed.
+  `tools/artwork/cards.mjs` renders both site cards with a shipped Inter.
+  `pages/<id>.html` is Russian, `pages/en/<id>.html` English. DEBT D38 paid.
+- Rejected: `i/<id>.en.html`, `en/i/<id>.html`, `i/ru/`, `pages/ru/`; the
+  language in the hash; the app served from `en/`; a meta refresh on `en/`;
+  a hand-built state; a host font; one two-language page for `pages/`; a
+  per-path 404; `hreflang` on the stubs; a `url_en` column.
+- Evidence: an English link unfurled in Russian; the Telegram fingerprint
+  reads only the `og:` title, description and picture; `og/_share.jpg` had
+  Russian lettering and no generator (`7fd046c`); a submitted URL freezes.
+
 ## 2026-09-23 - Print card small text keeps the ribbon and gets one paper floor in every view
 
 - Task: `61`, human decision (find it with `git log --grep="Task: 61"`).
@@ -89,6 +107,8 @@ entry to its first line before adding another.
   plain URL for a verifier or a messenger; a hand-authored file per page -
   the owner asked for a shell the policy pages drop into; an About route; a
   menu - none exists, and the tab bar switches sections.
+- Superseded for "both languages on one page" by the 2026-09-23 per-language
+  previews entry (issue 64): one page per language, `pages/en/<id>.html`.
 
 ## 2026-09-23 - The install link is drawn only where it can be used
 
@@ -197,6 +217,9 @@ entry to its first line before adding another.
   (`pages/install.html?from=...`) - app code writes it and a page URL
   carries state; a link at the end of each language section - on a
   phone the reader scrolls the whole page to reach it.
+- Superseded in part by the 2026-09-23 per-language previews entry
+  (issue 64): each page's link carries its own language, and the script
+  takes the app root from the link's own href.
 
 ## 2026-09-23 - The installed app asks for persistent storage
 
@@ -1020,6 +1043,8 @@ entry to its first line before adding another.
   shallow-clone recommendation, or a history rewrite for repository size
   (the 146 MB `.git` is `img/` + `og/`, which stay tracked regardless of
   this choice; a rewrite breaks every clone and every sha the specs cite).
+- Superseded for i/ by f53f44d, which untracked the stubs (.gitignore,
+  CONTRACTS.md section 5); img/ and og/ stay tracked as decided.
 
 ## 2026-09-16 - Playwright: not now
 

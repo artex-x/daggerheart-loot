@@ -238,6 +238,20 @@ describe('the shell: network first, cache fallback', () => {
     assert.equal(await (await ev.response).text(), 'the shell');
   });
 
+  it('answers the English entry document from the network, stores it, and answers offline from it', async () => {
+    const w = load();
+    w.net.fn = async () => body('the English entry');
+    const online = dispatch(w, req('en/', { mode: 'navigate' }));
+    assert.equal(await (await online.response).text(), 'the English entry');
+    const stored = await w.caches.named.get('dhloot-shell-v1').match(SCOPE + 'en/');
+    assert.equal(await stored.text(), 'the English entry');
+    w.net.fn = async () => {
+      throw new TypeError('Failed to fetch');
+    };
+    const offline = dispatch(w, req('en/', { mode: 'navigate' }));
+    assert.equal(await (await offline.response).text(), 'the English entry');
+  });
+
   it('rejects an offline miss that is not the scope root', async () => {
     const w = load();
     await (await w.caches.open('dhloot-shell-v1')).put('./', body('the shell'));
@@ -249,6 +263,7 @@ describe('the shell: network first, cache fallback', () => {
 describe('paths the worker leaves to the browser', () => {
   for (const [what, request] of [
     ['a share stub navigation', req('i/w1.html', { mode: 'navigate' })],
+    ['an English share stub navigation', req('i/en/w1.html', { mode: 'navigate' })],
     ['a link preview picture', req('og/x.jpg')],
     ['data.json', req('data.json')],
     ['a POST', req('assets/app.js', { method: 'POST' })],

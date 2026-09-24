@@ -333,8 +333,8 @@ is steps A-D again with a new number. To **pause** the automation quietly: Actio
 to undo). To **stop it loudly**: delete the `TG_SESSION` secret - every run is
 then red with the variable named, on purpose, so a forgotten stop cannot pass
 for a healthy one. Deleting the state file is neither: it makes the next run
-treat all 1092 URLs as stale and start the whole reindex over, 50 presses per
-run.
+treat all 2546 URLs as stale (at issue 64: the two roots and two stubs per
+record) and start the whole reindex over, 50 presses per run.
 
 Two things GitHub does on its own, so a silent stop has a known cause:
 scheduled workflows are **disabled after 60 days without a push** to the
@@ -348,9 +348,10 @@ minutes at busy times.
   found not yet caught up - sends and writes nothing, needs no credentials.
   In CI the counts line is also written to the job summary, so a dispatched
   dry run answers "how big is the backlog?" without opening the step log.
-- `--only id1,id2` narrows to specific record ids; `root` means the site
-  root. Combine with `--dry-run` for a one-URL preview, or without it to
-  refresh one thing by hand.
+- `--only id1,id2` narrows to specific record ids; `root` names both roots,
+  `<site>` and `<site>en/`; a record id names both of its stubs. Combine
+  with `--dry-run` for a one-record preview, or without it to refresh one
+  thing by hand.
 - `--limit N` sends at most N messages, then stops (exit 0) with the rest
   left pending for the next run. `--limit` counts **sends** only, never
   presses: `--limit 0` is a press-only run - nothing new is sent, but any
@@ -417,6 +418,14 @@ minutes at busy times.
   which stub URLs a byte change invalidated, before and after: run it once
   before the change and once after, then diff the two files instead of
   re-deriving the set by hand.
+- `--adopt <prefix>` records the manifest's fingerprint for every URL under
+  `<site><prefix>` as current in the state, with no Telegram contact, and
+  logs `adopted N url(s) under <site><prefix>: A new, O overwritten, C
+  already current`. It refuses `i/` and the root (the Russian stubs and
+  root, which Telegram has cached), an empty prefix and a prefix that
+  matches nothing, and runs without `--apply` or `--dry-run`. It is for a
+  URL family Telegram has never cached (issue 64: `i/en/` and `en/`); a
+  later change to an adopted URL is pushed by the normal run.
 
 ## What CI does after a deploy
 

@@ -6,7 +6,9 @@
   Composes lib.mjs's pure buildManifest with the real repository tree:
   data.js -> derived.js's everything()/SITE, build-share-pages.js's page(),
   app/index.html (the deployed root's source), and og/<name> bytes read from
-  disk.
+  disk. The English root (the entry document en/, build-share-pages.js
+  rootPage()) is rendered in memory like the stubs, also under --assets:
+  en/ is not in dist/.
 */
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
@@ -47,13 +49,14 @@ export function buildFromTree({ assets } = {}) {
   const L = globalThis.window.LOOT;
 
   const { everything, SITE } = require(join(ROOT, 'tools', 'derived.js'));
-  const { page } = require(join(ROOT, 'tools', 'build-share-pages.js'));
+  const { page, rootPage } = require(join(ROOT, 'tools', 'build-share-pages.js'));
 
   return buildManifest({
     site: SITE,
     L: everything(L),
     renderStub: page,
     rootHtml: readFileSync(assets ? join(dir, 'index.html') : ROOT_HTML, 'utf8'),
+    rootHtmlEn: rootPage(),
     readImage: readImageFrom(dir)
   });
 }

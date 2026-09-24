@@ -238,6 +238,19 @@ describe('the other language', () => {
     await press('Fear Die: One lower');
     expect(screen.getByRole('button', { name: 'Bump to Uncommon' })).toBeInTheDocument();
   });
+
+  it('opens the tables at the site root in English too, not through en/', async () => {
+    const { container } = render(App, { env: at() });
+    await press('EN');
+    await press('Fear Die: One lower');
+    const links = [...container.querySelectorAll('a[href*="#/tables/alt_"]')].map(
+      (a) => a.getAttribute('href') ?? ''
+    );
+    expect(links.length).toBeGreaterThan(0);
+    for (const href of links)
+      expect(href.startsWith('https://example.test/#/'), href).toBe(true);
+    await expectNoA11yViolations(container);
+  });
 });
 
 describe('a rarity the data has no columns for', () => {

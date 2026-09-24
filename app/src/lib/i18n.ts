@@ -9,9 +9,8 @@
  * The equipment vocabulary follows daggerheart.su, which is the translation the
  * rest of the app quotes, so a weapon reads the same here and there. These maps
  * are not the only copy: `tools/build-share-pages.js`'s own `EQ_*` tables
- * duplicate them for the share stubs, and nothing asserts the two agree -
- * `tests/derived.js` catches a stale stub against its own generator, not a
- * generator that has drifted from this file.
+ * duplicate them for the share stubs in both languages, and `i18n.test.ts`
+ * pins the two equal pair for pair.
  *
  * Pure module: the language arrives as an argument. */
 

@@ -272,16 +272,24 @@ fs.readdirSync(path.join(ROOT, 'img')).forEach((f) => {
    record id, so this is the same `used` set, just re-suffixed. */
 const usedJpg = new Set(Array.from(used).map((f) => f.replace(/\.webp$/, '.jpg')));
 fs.readdirSync(path.join(ROOT, 'og')).forEach((f) => {
-  if (f === '_none.jpg' || f === '_share.jpg' || !f.endsWith('.jpg')) return;
+  if (f === '_none.jpg' || f === '_share.jpg' || f === '_share_en.jpg' || !f.endsWith('.jpg'))
+    return;
   ok(usedJpg.has(f), 'picture og/' + f + ' belongs to nobody');
 });
-ALL.forEach((x) =>
-  ok(fs.existsSync(path.join(ROOT, 'i', x.id + '.html')), x.id + ': no stub page')
-);
-ok(
-  fs.readdirSync(path.join(ROOT, 'i')).filter((f) => f.endsWith('.html')).length === ALL.length,
-  'stubs in i/ do not equal the record count'
-);
+// One stub per record per language: i/ Russian, i/en/ English.
+['i', 'i/en'].forEach(function (dir) {
+  ALL.forEach((x) =>
+    ok(
+      fs.existsSync(path.join(ROOT, dir, x.id + '.html')),
+      x.id + ': no stub page in ' + dir + '/'
+    )
+  );
+  ok(
+    fs.readdirSync(path.join(ROOT, dir)).filter((f) => f.endsWith('.html')).length ===
+      ALL.length,
+    'stubs in ' + dir + '/ do not equal the record count'
+  );
+});
 
 /* Rows draw img/thumb/ (docs/specs/FEATURES.md, "Records"), and a missing
    thumbnail is a broken row picture no other gate sees. */

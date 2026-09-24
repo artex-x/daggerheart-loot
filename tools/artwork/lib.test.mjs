@@ -11,7 +11,10 @@ import {
   planIngest,
   planThumbs,
   affectedStubUrls,
-  staleDelta
+  staleDelta,
+  shareCardSvg,
+  CARD_TEXT,
+  CARD_FONT
 } from './lib.mjs';
 
 const SITE = 'https://example.test/';
@@ -183,7 +186,7 @@ describe('planThumbs', () => {
 });
 
 describe('affectedStubUrls', () => {
-  it("includes every sharedWith record's stub, sorted and deduplicated", () => {
+  it('includes both language stubs of every matched and sharedWith record, sorted and deduplicated', () => {
     const pairs = [
       { recordId: 'q24', sharedWith: ['q70', 'q138', 'q205'] },
       { recordId: 'a', sharedWith: [] }
@@ -191,6 +194,11 @@ describe('affectedStubUrls', () => {
     const urls = affectedStubUrls(pairs, SITE);
     assert.deepEqual(urls, [
       SITE + 'i/a.html',
+      SITE + 'i/en/a.html',
+      SITE + 'i/en/q138.html',
+      SITE + 'i/en/q205.html',
+      SITE + 'i/en/q24.html',
+      SITE + 'i/en/q70.html',
       SITE + 'i/q138.html',
       SITE + 'i/q205.html',
       SITE + 'i/q24.html',
@@ -316,6 +324,16 @@ describe('planIngest', () => {
 describe('staleDelta', () => {
   const url = (id) => SITE + 'i/' + id + '.html';
 
+  it('accepts both language stubs going stale for one art change', () => {
+    const d = staleDelta({
+      before: [],
+      after: [SITE + 'i/q24.html', SITE + 'i/en/q24.html'],
+      expected: affectedStubUrls([{ recordId: 'q24', sharedWith: [] }], SITE)
+    });
+    assert.equal(d.ok, true);
+    assert.deepEqual(d.extra, []);
+  });
+
   it('is ok when exactly the expected set went newly stale', () => {
     const expected = [url('a'), url('b')];
     const result = staleDelta({
@@ -354,5 +372,45 @@ describe('staleDelta', () => {
     const result = staleDelta({ before: same, after: same, expected });
     assert.deepEqual(result.missing.sort(), expected.slice().sort());
     assert.equal(result.ok, false);
+  });
+});
+
+describe('shareCardSvg', () => {
+  it('draws a 1200x630 card', () => {
+    for (const lang of ['ru', 'en']) {
+      const svg = shareCardSvg(lang);
+      assert.match(svg, /viewBox="0 0 1200 630"/);
+      assert.match(svg, /width="1200" height="630"/);
+    }
+  });
+
+  it("carries each language's three strings", () => {
+    assert.deepEqual(CARD_TEXT.ru, {
+      title: 'Генератор лута',
+      brand: 'DAGGERHEART',
+      subtitle: 'Добыча, расходники, оружие и броня · RU / EN'
+    });
+    assert.deepEqual(CARD_TEXT.en, {
+      title: 'Loot Generator',
+      brand: 'DAGGERHEART',
+      subtitle: 'Loot, consumables, weapons and armour · RU / EN'
+    });
+    for (const lang of ['ru', 'en']) {
+      const svg = shareCardSvg(lang);
+      for (const line of Object.values(CARD_TEXT[lang])) assert.ok(svg.includes(line), line);
+    }
+    assert.ok(!shareCardSvg('en').includes(CARD_TEXT.ru.title));
+  });
+
+  it('names Inter as the font of every text element', () => {
+    assert.equal(CARD_FONT, 'Inter');
+    const svg = shareCardSvg('ru');
+    const texts = svg.match(/<text [^>]*>/g);
+    assert.equal(texts.length, 3);
+    for (const t of texts) assert.ok(t.includes('font-family="\'Inter\'"'), t);
+  });
+
+  it('throws for an unknown language', () => {
+    assert.throws(() => shareCardSvg('de'), /No share card text for language "de"/);
   });
 });

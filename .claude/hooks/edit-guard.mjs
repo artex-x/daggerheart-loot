@@ -20,12 +20,17 @@ const DENY = [
   {
     test: (p) => p.startsWith('i/'),
     message:
-      'Blocked: i/*.html are generated share stubs. Edit data.js, then run `node tools/build.js`.'
+      'Blocked: i/*.html and i/en/*.html are generated share stubs. Edit data.js, then run `node tools/build.js`.'
+  },
+  {
+    test: (p) => p.startsWith('en/'),
+    message:
+      'Blocked: en/index.html is the generated English entry document. Edit tools/build-share-pages.js, then run `node tools/build.js`.'
   },
   {
     test: (p) => p.startsWith('pages/') && !p.startsWith('pages/src/') && p.endsWith('.html'),
     message:
-      'Blocked: pages/*.html are generated site pages. Edit pages/src/<id>.html, then run `node tools/build.js`.'
+      'Blocked: pages/*.html and pages/en/*.html are generated site pages. Edit pages/src/<id>.html (Russian) or pages/src/en/<id>.html (English), then run `node tools/build.js`.'
   },
   {
     test: (p) => p.startsWith('dist/'),

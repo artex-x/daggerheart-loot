@@ -54,8 +54,12 @@ text, not the rules those items refer to.
   an ancestry feature, an adversary feature, a transformation and two
   adversary stat blocks), and
   the shared bonus of an item set (`sets`).
-- `i/<id>.html` — one record as a readable page, e.g.
+- `i/<id>.html` — one record as a readable page in Russian, e.g.
   [i/q26.html](https://artex-x.github.io/daggerheart-loot/i/q26.html).
+- `i/en/<id>.html` — the same page in English, e.g.
+  [i/en/q26.html](https://artex-x.github.io/daggerheart-loot/i/en/q26.html). Both
+  pages redirect a browser to `#/i/<id>`; a link preview reads the language of
+  the address.
 
 `kind` is one of `item`, `consumable`, `weapon`, `secondary`, `armor`.
 
@@ -249,6 +253,9 @@ of the payload are found by splitting on `\n`, so a stray break there truncates
 the list.
 
 The final address is `https://artex-x.github.io/daggerheart-loot/#/l/<payload>`.
+The same list in English is
+`https://artex-x.github.io/daggerheart-loot/en/#/l/<payload>`: it opens the same
+list, and a messenger shows an English preview for it.
 
 ### How long the link gets
 

@@ -49,6 +49,12 @@ replaced by `-`/`_`.
 
 The address bar always holds the **plain** form and the **player** variant.
 
+A list link opens from the site root, `<site>#/l/<payload>`, and from the
+English entry document, `<site>en/#/l/<payload>`: the second redirects to the
+first with the fragment kept, so both open the same list. The only difference
+is the link preview a messenger builds, Russian for the first and English for
+the second (section 5).
+
 ### The raw string
 
 ```
@@ -104,10 +110,14 @@ plain form, so everything downstream sees one format.
   (`en`, `ru`, `ende`, `rud`); a record names its set in `set`. Field
   meanings are in `README.md`.
 - `catalog.csv` - one row per record, with the stat line.
-- `i/<id>.html` - a stub page per record with Open Graph markup.
+- `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
+  `i/en/<id>.html` - the same page in English.
+- `en/index.html` - the English entry document, published at `<site>en/`:
+  the English preview card of the site, which redirects to the app at the
+  root with the fragment kept.
 
-All three are generated from `data.js` by `node tools/build.js` and compared
-byte for byte by `tests/derived.js`.
+All of them are generated from `data.js` by `node tools/build.js` and
+compared byte for byte by `tests/derived.js`.
 
 `data.js` assigns `window.LOOT` from a classic script. That is not decoration:
 `fetch()` of a local JSON is blocked under `file://`, so the dataset has to
@@ -122,12 +132,19 @@ grows past a few MB (433 KB measured).
 
 ## 5. Static asset paths
 
-`img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`. Referenced from
-outside (link previews, other people's bookmarks), so the layout is public.
+`img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`, `i/en/<id>.html`,
+`en/` (the file `en/index.html`), `og/_share.jpg` and `og/_share_en.jpg`.
+Referenced from outside (link previews, other people's bookmarks), so the
+layout is public. `i/<id>.html` and the site root keep a Russian preview;
+`i/en/<id>.html` and `en/` are their English counterparts (issue 64,
+`docs/specs/I18N.md`).
 
-`img/<id>.webp`, `og/<id>.jpg` and `card/*.svg` are committed and published as
-they are. `i/<id>.html`, the entry document and `assets/` are not: they are
-what the build emits (`node tools/build.js` for `i/`; `app/index.html` and the
+`img/<id>.webp`, `og/<id>.jpg`, `card/*.svg` and the two site cards
+`og/_share.jpg` and `og/_share_en.jpg` are committed and published as they
+are; `tools/artwork/cards.mjs` renders the two cards (`docs/artwork.md`, "The
+site share cards"). `i/<id>.html`, `i/en/<id>.html`, `en/index.html`, the
+entry document and `assets/` are not committed: they are what the build emits
+(`node tools/build.js` for `i/`, `i/en/` and `en/`; `app/index.html` and the
 bundle become `dist/index.html` and `dist/assets/app.js`), and the deploy job
 publishes them from the build rather than from a committed file. Nothing about
 the frozen paths above changes with them.
@@ -137,8 +154,10 @@ the same way as `assets/`: Vite copies them verbatim from `app/public/`. The
 URL `sw.js` stays stable once published, because every registered worker
 keeps polling it (`docs/specs/META.md` section 9).
 
-`pages/<name>.html` are the site's static pages (today `pages/install.html`).
-`tools/build-pages.js` generates them from `pages/src/<name>.html` through
+`pages/<name>.html` (Russian) and `pages/en/<name>.html` (English) are the
+site's static pages, one copy per language (today `pages/install.html` and
+`pages/en/install.html`). `tools/build-pages.js` generates them from
+`pages/src/<name>.html` and `pages/src/en/<name>.html` through
 `node tools/build.js`, and the deploy job publishes them from the build, like
 `i/`; `pages/src/` is never published. A page URL is public once something
 outside links to it (`docs/specs/META.md` section 9, "Static pages").

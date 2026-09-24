@@ -30,6 +30,7 @@ import {
   nameOf,
   type StatLabels
 } from './i18n.js';
+import { FRAME_ORDER, frameName } from './frames.js';
 import type { Lang, Record_ } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -276,26 +277,24 @@ describe('selCountText', () => {
 });
 
 /**
- * `tools/build-share-pages.js` hand-copies these six maps into its own
- * Russian-only `EQ_*` constants for the share stubs (this file's own header
- * comment says so, and says nothing pins the two equal). This is that pin:
- * a CJS `require` of the generator, checked key-for-key against the `ru` half
- * of each `Pair` here. Without it, editing a word in one place and not the
- * other is a silent divergence no test catches.
+ * `tools/build-share-pages.js` hand-copies these six maps and the frame names
+ * into its own `[ru, en]` tables for the share stubs in both languages. This
+ * is the pin: a CJS `require` of the generator, checked pair for pair against
+ * this file and `frames.ts`. Without it, editing a word in one place and not
+ * the other is a silent divergence no test catches.
  */
 describe('the share-stub generator quotes the same words', () => {
   const require_ = createRequire(import.meta.url);
+  type Pairs = Record<string, readonly [string, string]>;
   const stubs = require_('../../../tools/build-share-pages.js') as {
-    EQ_TYPE: Record<string, string>;
-    EQ_TRAIT: Record<string, string>;
-    EQ_RANGE: Record<string, string>;
-    EQ_DT: Record<string, string>;
-    EQ_CLS: Record<string, string>;
-    EQ_BURDEN: Record<string, string>;
+    EQ_TYPE: Pairs;
+    EQ_TRAIT: Pairs;
+    EQ_RANGE: Pairs;
+    EQ_DT: Pairs;
+    EQ_CLS: Pairs;
+    EQ_BURDEN: Pairs;
+    FRAME_LABEL: Pairs;
   };
-
-  const ru = (map: Record<string, readonly [string, string]>): Record<string, string> =>
-    Object.fromEntries(Object.entries(map).map(([k, v]) => [k, v[0]]));
 
   it.each([
     ['EQ_TYPE', EQ_TYPE, stubs.EQ_TYPE],
@@ -304,7 +303,17 @@ describe('the share-stub generator quotes the same words', () => {
     ['EQ_DT', EQ_DT, stubs.EQ_DT],
     ['EQ_CLS', EQ_CLS, stubs.EQ_CLS],
     ['EQ_BURDEN', EQ_BURDEN, stubs.EQ_BURDEN]
-  ] as const)('%s matches the generator word for word', (_name, dictMap, stubMap) => {
-    expect(stubMap).toEqual(ru(dictMap));
+  ] as const)(
+    '%s matches the generator word for word in both languages',
+    (_name, dictMap, stubMap) => {
+      expect(stubMap).toEqual(dictMap);
+    }
+  );
+
+  it('names every frame as frames.ts does, in both languages', () => {
+    const want = Object.fromEntries(
+      FRAME_ORDER.map((id) => [id, [frameName(id, 'ru'), frameName(id, 'en')]])
+    );
+    expect(stubs.FRAME_LABEL).toEqual(want);
   });
 });

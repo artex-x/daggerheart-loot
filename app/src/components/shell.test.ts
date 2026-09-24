@@ -148,10 +148,13 @@ describe('the footer nav', () => {
     expect(link).toHaveAttribute('href', 'pages/install.html');
   });
 
-  it('names the link in English', async () => {
+  it('names the link in English and links the English page', async () => {
     render(App, { env: at('#/roll/std') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(screen.getByRole('link', { name: 'Install as an app' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Install as an app' })).toHaveAttribute(
+      'href',
+      'pages/en/install.html'
+    );
   });
 
   it('draws no install link inside the installed app', () => {

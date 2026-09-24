@@ -249,7 +249,7 @@ jobs:
       # outputs too, copied verbatim from app/public/ (docs/specs/META.md
       # section 9).
       #
-      # `i/` is not in the repository - the Build step
+      # `i/` (with `i/en/`) and `en/` are not in the repository - the Build step
       # above regenerates it (npm run build -> npm run data ->
       # tools/build-share-pages.js) immediately before this step copies it, so
       # Collect must never be reordered ahead of Build.
@@ -259,10 +259,12 @@ jobs:
           cp -r dist/index.html dist/assets dist/data.js dist/manifest.webmanifest \
                 dist/sw.js dist/icons _site/
           cp -r data.json catalog.csv llms.txt robots.txt .nojekyll LICENSE \
-                404.html img og i card _site/
-          # Only the generated site pages: pages/src/ is their authored
-          # source, not site content (docs/specs/META.md section 9).
+                404.html img og i en card _site/
+          # Only the generated site pages, one copy per language: pages/src/
+          # is their authored source, not site content (docs/specs/META.md
+          # section 9).
           mkdir -p _site/pages && cp pages/*.html _site/pages/
+          mkdir -p _site/pages/en && cp pages/en/*.html _site/pages/en/
 
       - name: Nothing private slipped in, and nothing public left out
         run: |
@@ -279,7 +281,7 @@ jobs:
           # catches a link that resolved to nothing.
           for f in index.html assets/app.js data.js data.json catalog.csv \
                    llms.txt robots.txt LICENSE 404.html manifest.webmanifest \
-                   sw.js icons/icon-192.png pages/install.html; do
+                   sw.js icons/icon-192.png pages/install.html pages/en/install.html; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
           # .nojekyll is empty by design - its presence here is the whole
@@ -295,7 +297,7 @@ jobs:
           # ever switched back to the legacy branch-based build, where a
           # missing .nojekyll lets Jekyll eat any file starting with `_`.
           if [ ! -e "_site/.nojekyll" ]; then echo "::error::.nojekyll is missing"; exit 1; fi
-          for d in img og i card pages; do
+          for d in img og i i/en en card pages pages/en; do
             if [ ! -d "_site/$d" ] || [ -z "$(ls -A "_site/$d")" ]; then
               echo "::error::$d is missing or empty"; exit 1
             fi
@@ -303,25 +305,29 @@ jobs:
           # One named file per symlinked or generated folder, not just "the
           # directory is non-empty" - the same by-name checks tools/check-site.mjs
           # makes against the live URL, made here first against the local copy.
-          for f in og/_share.jpg img/_none.webp img/thumb/_none.webp card/die-d12-bw.svg \
-                   i/w1.html icons/maskable-512.png; do
+          for f in og/_share.jpg og/_share_en.jpg img/_none.webp img/thumb/_none.webp \
+                   card/die-d12-bw.svg i/w1.html i/en/w1.html en/index.html \
+                   icons/maskable-512.png; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
-          # `i/` is built output (npm run build -> npm run data ->
-          # tools/build-share-pages.js), one stub per data row - "the
-          # directory is non-empty" above would pass just as happily for one
-          # stub as for all 1091, so it cannot catch a partial generation.
-          # catalog.csv has exactly one header row plus one row per record
-          # (tests/derived.js proves catalog.csv's own row count against
-          # data.js already), so it is the count already on disk to compare
-          # against, with no extra source of truth to invent.
-          stub_count=$(ls -1 _site/i | wc -l)
+          # `i/` and `i/en/` are built output (npm run build -> npm run
+          # data -> tools/build-share-pages.js), one stub per data row per
+          # language - "the directory is non-empty" above would pass just as
+          # happily for one stub as for all of them, so it cannot catch a
+          # partial generation. catalog.csv has exactly one header row plus
+          # one row per record (tests/derived.js proves catalog.csv's own row
+          # count against data.js already), so it is the count already on
+          # disk to compare against, with no extra source of truth to invent.
+          # Only *.html counts: i/ also holds the en/ directory.
           csv_rows=$(($(wc -l < _site/catalog.csv) - 1))
-          echo "stub count: $stub_count, catalog.csv data rows: $csv_rows"
-          if [ "$stub_count" -ne "$csv_rows" ]; then
-            echo "::error::_site/i has $stub_count stub pages but catalog.csv has $csv_rows data rows - a partial generation would otherwise slip past the non-empty check above"
-            exit 1
-          fi
+          for d in i i/en; do
+            stub_count=$(find "_site/$d" -maxdepth 1 -name '*.html' | wc -l)
+            echo "$d stub count: $stub_count, catalog.csv data rows: $csv_rows"
+            if [ "$stub_count" -ne "$csv_rows" ]; then
+              echo "::error::_site/$d has $stub_count stub pages but catalog.csv has $csv_rows data rows - a partial generation would otherwise slip past the non-empty check above"
+              exit 1
+            fi
+          done
           # The collect step above only copies - byte-for-byte, not "a file of
           # the same name showed up".
           if ! cmp -s dist/index.html _site/index.html; then

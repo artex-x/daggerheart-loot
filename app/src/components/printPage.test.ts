@@ -21,6 +21,7 @@ import {
   fakeDialog,
   fakeEnv,
   memoryRouter,
+  memoryStorage,
   noData
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
@@ -765,6 +766,19 @@ describe('the link', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на набор' }));
     expect(clip.last.text).toBe('https://example.test/#/print/ci1-q1');
     expect(screen.getByText('Ссылка скопирована')).toBeInTheDocument();
+  });
+
+  it('copies the English address in English', async () => {
+    const clip = fakeClipboard();
+    const { container } = render(App, {
+      env: at('#/print/ci1-zzz-ci1-q1', {
+        clipboard: clip,
+        storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+      })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Link to this set' }));
+    expect(clip.last.text).toBe('https://example.test/en/#/print/ci1-q1');
+    await expectNoA11yViolations(container);
   });
 
   it('toasts the failure when the clipboard refuses', async () => {

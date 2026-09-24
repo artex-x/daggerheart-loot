@@ -25,7 +25,7 @@ is for.
 |---|---|
 | `dhloot.lists.v2` | lists, with contents, per-entry meta and both notes |
 | `dhloot.lists.v1` | the pre-split shape. Read once and migrated into v2, then **left untouched** so a rollback loses nothing. Never delete it. |
-| `dhloot.lang.v1` | `ru` or `en` |
+| `dhloot.lang.v1` | `ru` or `en`. Also written, as `en` and only when absent, by an English redirect page (`i/en/<id>.html`, `en/index.html`) before it opens the app (`docs/specs/I18N.md`) |
 | `dhloot.home.v1` | the pinned starting section, as a full hash - a section, or a named table (`#/tables/<table>`); reading also accepts a bare `#/tables` from an older pin, but the app itself always writes the named form. A stored `#/tables/frames` (the legacy alias, `hash.ts` `TABLE_ALIASES`) normalises to `#/tables/other_frames` on read only, with no write-back; the home control compares the active route against the canonical path, and the next explicit save writes the canonical id (`app.svelte.ts` `readHome`). |
 | `dhloot.prefs.v1` | `{ view: 'list' \| 'grid' }` |
 | `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |

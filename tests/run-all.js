@@ -178,7 +178,7 @@ if (
   !fs.existsSync(path.join(HERE, '..', 'i'))
 ) {
   console.log(
-    'i/ is missing - it is generated, not committed. Run `node tools/build.js` (or `npm run build`) first.'
+    'i/ is missing - it is generated, not committed, like i/en/, en/, pages/ and pages/en/. Run `node tools/build.js` (or `npm run build`) first.'
   );
   process.exit(1);
 }

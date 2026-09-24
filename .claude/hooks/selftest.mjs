@@ -1137,6 +1137,12 @@ function testEditGuard() {
     ['#31 data.json', path.join(scratchRoot, 'data.json'), 'node tools/build.js'],
     ['#32 catalog.csv', path.join(scratchRoot, 'catalog.csv'), null],
     ['#33 i/cc1.html', path.join(scratchRoot, 'i', 'cc1.html'), null],
+    ['#33b en/index.html', path.join(scratchRoot, 'en', 'index.html'), 'node tools/build.js'],
+    [
+      '#33c pages/en/install.html',
+      path.join(scratchRoot, 'pages', 'en', 'install.html'),
+      'pages/src/en/<id>.html'
+    ],
     [
       '#33a pages/install.html',
       path.join(scratchRoot, 'pages', 'install.html'),
@@ -1204,7 +1210,12 @@ function testEditGuard() {
     [
       '#39h pages/src/install.html (authored)',
       path.join(scratchRoot, 'pages', 'src', 'install.html')
-    ]
+    ],
+    [
+      '#39i pages/src/en/install.html (authored)',
+      path.join(scratchRoot, 'pages', 'src', 'en', 'install.html')
+    ],
+    ['#39j docs/en/x.html (near-miss dir name)', path.join(scratchRoot, 'docs', 'en', 'x.html')]
   ];
   for (const [label, filePath] of silentCases) {
     const result = runHook('edit-guard.mjs', editPayload(filePath));

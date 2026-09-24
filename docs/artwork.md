@@ -75,7 +75,9 @@ and `og/` to "try it out" (Risks, below).
 - **`verify-previews`** - the before/after preview-staleness proof. Reads
   two `tools/tg-preview --dry-run --stale-list` files and the `--report`
   a `plan` or `install` call wrote (for the `pairs` it resolved), computes
-  which stub URLs the change was expected to invalidate, and reports
+  which stub URLs the change was expected to invalidate - both languages,
+  `i/<id>.html` and `i/en/<id>.html`, because both show the same `og/`
+  picture - and reports
   `missing` (expected but never went stale - the change did not reach that
   stub) and `extra` (went stale but was not expected) as failures; a
   `disappeared` entry (stale before, not stale after, not expected) is
@@ -267,6 +269,64 @@ drawing must stay inside the maskable safe zone, a centred circle of radius
 40% of the side (204.8 units of the 512 viewBox), because the maskable icon
 is the same drawing. Commit the SVG and the four PNGs
 together.
+
+## The site share cards
+
+`og/_share.jpg` (Russian) and `og/_share_en.jpg` (English) are the 1200x630
+pictures of the site's own link previews: `app/index.html`'s head names the
+first, the English entry document `en/index.html` the second
+(`docs/specs/META.md` section 2). Both are rendered from one SVG template,
+`shareCardSvg(lang)` in `tools/artwork/lib.mjs`; the lettering of each
+language is the `CARD_TEXT` table beside it. The JPEGs are committed build
+inputs, like the icons: the deploy job never renders them.
+
+The text is set in Inter, the first family of the app's own stack
+(`app/src/styles/tokens.css`, `--ui`). `tools/artwork/fonts/` ships the two
+static faces the template uses and the licence (SIL Open Font License 1.1),
+taken from the Inter 4.1 release archive (`Inter-4.1.zip`,
+`github.com/rsms/inter/releases/tag/v4.1`, `extras/ttf/`):
+
+| File | sha256 |
+|---|---|
+| `Inter-Regular.ttf` | `40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82` |
+| `Inter-SemiBold.ttf` | `78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3` |
+| `LICENSE.txt` | `262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a` |
+
+`tools/artwork/cards.mjs` writes a `fonts.conf` that lists only that
+directory, and runs itself again with `FONTCONFIG_PATH` and
+`FONTCONFIG_FILE` pointing at it before `sharp` loads. On Windows the
+second process is necessary: fontconfig reads the variables through the C
+runtime, which never sees a `process.env` write made after start-up, and
+the render then silently used a host face (measured 2026-09-23). So no host
+font can stand in for Inter: with the fonts directory empty the render has
+no glyphs, and the script fails.
+
+To change the text or the layout, edit `CARD_TEXT` or `shareCardSvg`, run
+the one-time setup above, then:
+
+```text
+node tools/artwork/cards.mjs
+node tools/artwork/cards.mjs --check
+```
+
+Expected result: one line per card with its size, bytes and ink-pixel
+count, then `_share.jpg: ok` and `_share_en.jpg: ok`. `--check` renders both
+cards in memory and compares them with the files in `og/`: it fails when more
+than 0.5% of the pixels differ by more than 32 in a channel, or when a card
+has no text. Bytes are not compared, because encoder builds differ
+("Determinism is per-run", above). The script also checks where each title
+ends, so a host face that stands in for Inter fails in both modes, and write
+mode writes neither card when one fails. Open both files and look at them, then
+commit both.
+
+The encoding differs from the item pictures' on purpose, because a card is
+text: JPEG quality 85, progressive, 4:4:4 chroma subsampling, mozjpeg, no
+metadata, rendered at 72 dpi (one SVG unit is one pixel).
+
+A card's bytes are part of the Telegram fingerprint of the URL that names
+it (`docs/tg-preview.md`). After a re-render, the next `previews.yml` run
+finds the root (or the English root) stale, sends it and presses "Update
+with content"; no manual push is necessary.
 
 ## Risks
 

@@ -412,14 +412,18 @@ export class AppState {
     return { base: this.env.router.base(), hosted: this.env.router.hosted() };
   }
 
-  /** The app's own address, for a link to a section or a filtered table. */
+  /** The app's own address, for a link to a section or a filtered table. An
+   *  address to hand somebody else, in the language on screen, so a messenger
+   *  builds its preview in that language. */
   linkTo(hash: string): string {
-    return appUrl(this.site, hash);
+    return appUrl(this.site, hash, this.lang);
   }
 
-  /** A record's address, which on a host is its stub page rather than the app. */
+  /** A record's address, which on a host is its stub page rather than the app.
+   *  An address to hand somebody else, in the language on screen, so a
+   *  messenger builds its preview in that language. */
   linkToRecord(id: string): string {
-    return recordUrl(this.site, id);
+    return recordUrl(this.site, id, this.lang);
   }
 
   /* Art that failed to load, remembered for the session only: a missing file

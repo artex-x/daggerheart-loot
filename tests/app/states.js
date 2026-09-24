@@ -1668,14 +1668,16 @@ async function installedShellOffline() {
   }
 }
 
-/** 29. The install guide links back to the screen the reader left: from
- *  `#/lists` its top back link returns to `index.html#/lists`, and on a
- *  direct visit it opens `../` (docs/specs/META.md section 9, "Static
- *  pages"). */
+/** 29. The install guide links back to the screen the reader left, in both
+ *  languages: from `#/lists` the top back link of `pages/install.html`
+ *  (`../`) and of `pages/en/install.html` (`../../`) returns to
+ *  `index.html#/lists`, and on a direct visit it opens the app root
+ *  (docs/specs/META.md section 9, "Static pages"). */
 async function guideBackLink() {
   const at = '29 (guide back link): ';
   const server = await serveDist();
   const { ctx, page } = await fresh({ width: 1180, height: 900 });
+  let en = null;
   try {
     const root = 'http://127.0.0.1:' + String(server.address().port) + '/';
     await page.goto(root + 'index.html#/lists', { waitUntil: 'load' });
@@ -1724,7 +1726,65 @@ async function guideBackLink() {
         .catch(() => false),
       at + 'the back link on a direct visit did not open ../'
     );
+
+    // prepare() clears storage on every document, so English needs its own seeded context.
+    en = await fresh({ width: 1180, height: 900, lang: 'en' });
+    const enPage = en.page;
+    await enPage.goto(root + 'index.html#/lists', { waitUntil: 'load' });
+    await enPage.waitForSelector('.foot-nav a');
+    await enPage.click('.foot-nav a');
+    await enPage.waitForFunction(() => location.pathname.endsWith('/pages/en/install.html'));
+    await enPage.waitForSelector('#app-page');
+    ok(
+      await enPage.evaluate(() => {
+        const main = document.getElementById('app-page');
+        const first = main.firstElementChild;
+        const last = main.lastElementChild;
+        const second = first && first.nextElementSibling;
+        return (
+          first !== last &&
+          [first, last].every(
+            (a) => a.matches('a.back') && a.getAttribute('href') === '../../'
+          ) &&
+          !!second &&
+          second.matches('nav.lang') &&
+          second.querySelector('a')?.getAttribute('href') === '../install.html'
+        );
+      }),
+      at +
+        'the English guide does not draw its back links ("../../") first and last, with the language link second'
+    );
+    await enPage.click('#app-page > a.back');
+    ok(
+      await enPage
+        .waitForFunction(
+          () =>
+            location.pathname === '/index.html' &&
+            location.hash === '#/lists' &&
+            !!document.querySelector('#app')?.childElementCount,
+          { timeout: 30_000 }
+        )
+        .then(() => true)
+        .catch(() => false),
+      at + 'the English back link did not return to index.html#/lists'
+    );
+    await enPage.goto(root + 'pages/en/install.html', { waitUntil: 'load' });
+    await enPage.click('#app-page > a.back');
+    ok(
+      await enPage
+        .waitForFunction(
+          () =>
+            location.pathname === '/' &&
+            location.hash === '' &&
+            !!document.querySelector('#app')?.childElementCount,
+          { timeout: 30_000 }
+        )
+        .then(() => true)
+        .catch(() => false),
+      at + 'the English back link on a direct visit did not open the app root'
+    );
   } finally {
+    if (en) await en.ctx.close();
     await ctx.close();
     server.closeAllConnections();
     server.close();

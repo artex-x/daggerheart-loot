@@ -27,7 +27,7 @@ function realData() {
   return globalThis.window.LOOT;
 }
 const derived = require(join(ROOT, 'tools', 'derived.js'));
-const { page } = require(join(ROOT, 'tools', 'build-share-pages.js'));
+const { page, rootPage } = require(join(ROOT, 'tools', 'build-share-pages.js'));
 
 // Small Msg builders (the shape client.mjs's `plain()` mapper produces) -
 // shared by the matchButtons and runRefresh suites below.
@@ -46,13 +46,17 @@ function summaryMsg(id, text = 'Link previews was updated successfully. Check th
 }
 
 describe('urls', () => {
-  it('is the root plus one stub per record, each unique, root first', () => {
+  it('is both roots plus both language stubs per record, each unique, root first', () => {
     const records = derived.everything(realData());
     const list = lib.urls(records, derived.SITE);
-    assert.equal(list.length, records.length + 1);
+    assert.equal(list.length, 2 + 2 * records.length);
     assert.equal(list[0], derived.SITE);
+    assert.equal(list[1], derived.SITE + 'en/');
     assert.equal(new Set(list).size, list.length);
-    for (const it of records) assert.ok(list.includes(derived.SITE + 'i/' + it.id + '.html'));
+    for (const it of records) {
+      assert.ok(list.includes(derived.SITE + 'i/' + it.id + '.html'));
+      assert.ok(list.includes(derived.SITE + 'i/en/' + it.id + '.html'));
+    }
   });
 });
 
@@ -70,6 +74,17 @@ describe('extractMeta', () => {
     const meta = lib.extractMeta(html);
     assert.ok(meta.title.length > 0);
     assert.equal(meta.image, derived.SITE + 'og/_share.jpg');
+  });
+
+  it('reads the English root, rootPage()', () => {
+    const meta = lib.extractMeta(rootPage());
+    assert.equal(meta.title, 'Daggerheart Loot Generator');
+    assert.equal(meta.image, derived.SITE + 'og/_share_en.jpg');
+  });
+
+  it('reads an English stub', () => {
+    const it = derived.everything(realData())[0];
+    assert.equal(lib.extractMeta(page(it, 'en')).title, it.en);
   });
 
   it('decodes the entities esc() produces, and returns empty strings for a missing tag', () => {
@@ -113,10 +128,12 @@ describe('imageName', () => {
 
 describe('buildManifest', () => {
   const site = 'https://example.test/';
-  function stub(it) {
+  function stub(it, lang) {
     return (
       '<meta property="og:title" content="' +
       it.id +
+      '-' +
+      lang +
       '"><meta property="og:description" content="d-' +
       it.id +
       '"><meta property="og:image" content="' +
@@ -132,26 +149,48 @@ describe('buildManifest', () => {
     '<meta property="og:image" content="' +
     site +
     'og/_share.jpg">';
+  const rootHtmlEn =
+    '<meta property="og:title" content="root-en">' +
+    '<meta property="og:description" content="root-en-d">' +
+    '<meta property="og:image" content="' +
+    site +
+    'og/_share_en.jpg">';
 
-  it('fingerprints every record plus the root, and reports a missing image without throwing', () => {
+  it('fingerprints both roots and both stubs of every record, and reports a missing image without throwing', () => {
     const L = [
       { id: 'a', img: 'a.jpg' },
       { id: 'b', img: 'missing.jpg' }
     ];
-    const images = { 'a.jpg': Buffer.from('AAA'), '_share.jpg': Buffer.from('ROOT') };
+    const images = {
+      'a.jpg': Buffer.from('AAA'),
+      '_share.jpg': Buffer.from('ROOT'),
+      '_share_en.jpg': Buffer.from('ROOT-EN')
+    };
     const manifest = lib.buildManifest({
       site,
       L,
       renderStub: stub,
       rootHtml,
+      rootHtmlEn,
       readImage: (name) => images[name] || null
     });
     assert.equal(manifest.site, site);
-    assert.equal(Object.keys(manifest.urls).length, 2);
+    assert.equal(Object.keys(manifest.urls).length, 4);
     assert.ok(manifest.urls[site]);
+    assert.ok(manifest.urls[site + 'en/']);
     assert.ok(manifest.urls[site + 'i/a.html']);
+    assert.ok(manifest.urls[site + 'i/en/a.html']);
+    assert.notEqual(manifest.urls[site + 'i/a.html'], manifest.urls[site + 'i/en/a.html']);
     assert.equal(manifest.urls[site + 'i/b.html'], undefined);
-    assert.deepEqual(manifest.missing, [site + 'i/b.html']);
+    assert.deepEqual(manifest.missing, [site + 'i/b.html', site + 'i/en/b.html']);
+  });
+
+  it('throws without rootHtmlEn, the English entry document', () => {
+    assert.throws(
+      () =>
+        lib.buildManifest({ site, L: [], renderStub: stub, rootHtml, readImage: () => null }),
+      /buildManifest needs rootHtmlEn, the English entry document \(build-share-pages\.js rootPage\(\)\)/
+    );
   });
 });
 
@@ -339,6 +378,83 @@ describe('applyResult', () => {
   });
 });
 
+describe('adopt', () => {
+  const site = 'https://x/';
+  const manifest = {
+    site,
+    urls: {
+      [site]: 'root',
+      [site + 'en/']: 'root-en',
+      [site + 'i/a.html']: 'a',
+      [site + 'i/en/a.html']: 'a-en',
+      [site + 'i/en/b.html']: 'b-en',
+      [site + 'i/en/c.html']: 'c-en'
+    },
+    missing: []
+  };
+  const state = {
+    version: 1,
+    site,
+    urls: {
+      [site]: 'root-old',
+      [site + 'i/a.html']: 'a-old',
+      [site + 'i/en/b.html']: 'b-en',
+      [site + 'i/en/c.html']: 'c-old'
+    }
+  };
+
+  it('adds an absent URL, counts an equal fingerprint current and a different one overwritten', () => {
+    const r = lib.adopt(manifest, state, 'i/en/');
+    assert.equal(r.added, 1);
+    assert.equal(r.current, 1);
+    assert.equal(r.overwritten, 1);
+    assert.equal(r.state.urls[site + 'i/en/a.html'], 'a-en');
+    assert.equal(r.state.urls[site + 'i/en/b.html'], 'b-en');
+    assert.equal(r.state.urls[site + 'i/en/c.html'], 'c-en');
+  });
+
+  it('leaves a URL outside the prefix as the state had it, and adds none the state lacked', () => {
+    const r = lib.adopt(manifest, state, 'i/en/');
+    assert.equal(r.state.urls[site], 'root-old');
+    assert.equal(r.state.urls[site + 'i/a.html'], 'a-old');
+    assert.equal(site + 'en/' in r.state.urls, false);
+  });
+
+  it('takes <site>en/ for the prefix en/, and no English stub', () => {
+    const r = lib.adopt(manifest, state, 'en/');
+    assert.equal(r.added, 1);
+    assert.equal(r.state.urls[site + 'en/'], 'root-en');
+    assert.equal(site + 'i/en/a.html' in r.state.urls, false);
+  });
+
+  it('discards a state recorded for another site', () => {
+    const r = lib.adopt(manifest, { ...state, site: 'https://other/' }, 'i/en/');
+    assert.equal(r.added, 3);
+    assert.deepEqual(Object.keys(r.state.urls), [
+      site + 'i/en/a.html',
+      site + 'i/en/b.html',
+      site + 'i/en/c.html'
+    ]);
+  });
+
+  it('returns a version 1 state with sorted keys', () => {
+    const r = lib.adopt(manifest, state, 'i/en/');
+    assert.equal(r.state.version, 1);
+    assert.equal(r.state.site, site);
+    const keys = Object.keys(r.state.urls);
+    assert.deepEqual(keys, [...keys].sort());
+  });
+
+  it('refuses an empty prefix, a prefix that matches nothing, and a Russian stub', () => {
+    assert.throws(() => lib.adopt(manifest, state, ''), /--adopt needs a path under the site/);
+    assert.throws(() => lib.adopt(manifest, state, 'x/'), /--adopt x\/ matches no URL under/);
+    assert.throws(
+      () => lib.adopt(manifest, state, 'i/'),
+      /--adopt never seeds https:\/\/x\/i\/a\.html/
+    );
+  });
+});
+
 describe('botThrottle', () => {
   it('recognises the measured sentence and pulls out the seconds', () => {
     const t = lib.botThrottle('Sorry, too many attempts. Please try again in 3213 seconds.');
@@ -469,6 +585,24 @@ describe('parseArgs', () => {
     const o = lib.parseArgs(['--stale-list', 'x.json', '--dry-run']);
     assert.equal(o.staleListPath, 'x.json');
     assert.equal(o.dryRun, true);
+  });
+
+  it('--adopt with an empty or missing value throws instead of running a refresh', () => {
+    assert.throws(() => lib.parseArgs(['--adopt', '']), /--adopt needs a path under the site/);
+    assert.throws(() => lib.parseArgs(['--adopt']), /--adopt needs a path under the site/);
+  });
+
+  it('--adopt sets adopt, and runs on its own in either flag order', () => {
+    assert.equal(lib.parseArgs(['--adopt', 'i/en/']).adopt, 'i/en/');
+    assert.equal(lib.parseArgs([]).adopt, null);
+    for (const argv of [
+      ['--adopt', 'i/en/', '--apply', 'r.json'],
+      ['--apply', 'r.json', '--adopt', 'i/en/'],
+      ['--adopt', 'i/en/', '--dry-run'],
+      ['--dry-run', '--adopt', 'i/en/']
+    ]) {
+      assert.throws(() => lib.parseArgs(argv), /--adopt runs on its own/, argv.join(' '));
+    }
   });
 });
 
@@ -777,6 +911,23 @@ describe('runRefresh', () => {
     assert.deepEqual(
       deps.staleLists[0].stale,
       [manifest.site, manifest.site + 'i/r2.html'].sort()
+    );
+  });
+
+  it('a dry run with --only names both roots and both stubs of a record', async () => {
+    const manifest = fakeManifest(5);
+    manifest.urls[manifest.site + 'en/'] = 'root-en-fp';
+    manifest.urls[manifest.site + 'i/en/r2.html'] = 'fp2-en';
+    const deps = baseDeps(manifest, { withStaleList: true });
+    await runRefresh({ mode: 'full', dryRun: true, only: ['r2', 'root'] }, deps);
+    assert.deepEqual(
+      deps.staleLists[0].stale,
+      [
+        manifest.site,
+        manifest.site + 'en/',
+        manifest.site + 'i/r2.html',
+        manifest.site + 'i/en/r2.html'
+      ].sort()
     );
   });
 

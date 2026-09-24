@@ -113,14 +113,17 @@ function pick(map, keys) {
 
 // A shared link (.../#/i/<id>) is, to Telegram, the root URL - fragments
 // never reach the crawler - so the root's own preview needs refreshing too.
+// The two roots (<site>, <site>en/), then two stubs per record
+// (i/<id>.html Russian, i/en/<id>.html English).
 export function urls(records, site) {
-  const out = [site];
+  const out = [site, site + 'en/'];
   const seen = new Set(out);
   for (const it of records) {
-    const u = site + 'i/' + it.id + '.html';
-    if (!seen.has(u)) {
-      seen.add(u);
-      out.push(u);
+    for (const u of [site + 'i/' + it.id + '.html', site + 'i/en/' + it.id + '.html']) {
+      if (!seen.has(u)) {
+        seen.add(u);
+        out.push(u);
+      }
     }
   }
   return out;
@@ -163,14 +166,27 @@ export function imageName(meta, site) {
   return meta.image.slice(prefix.length);
 }
 
-// Fingerprints the root plus one stub per record. `L` is the flat record
-// list (`everything(window.LOOT)` in the real tree - see manifest.mjs);
-// `renderStub(it)` renders one record's stub HTML in memory. A record whose
-// image is missing on disk is reported in `missing` and left out of `urls`:
-// that is a data-integrity failure, not something to refresh around.
-export function buildManifest({ site, L, renderStub, rootHtml, readImage }) {
-  const entries = [[site, rootHtml]];
-  for (const it of L) entries.push([site + 'i/' + it.id + '.html', renderStub(it)]);
+// Fingerprints both roots (`rootHtml` Russian, `rootHtmlEn` the English entry
+// document `en/`) plus both stubs per record. `L` is the flat record list
+// (`everything(window.LOOT)` in the real tree - see manifest.mjs);
+// `renderStub(it, lang)` renders one record's stub HTML in memory. A record
+// whose image is missing on disk is reported in `missing` (both stubs) and
+// left out of `urls`: that is a data-integrity failure, not something to
+// refresh around.
+export function buildManifest({ site, L, renderStub, rootHtml, rootHtmlEn, readImage }) {
+  if (typeof rootHtmlEn !== 'string') {
+    throw new Error(
+      'buildManifest needs rootHtmlEn, the English entry document (build-share-pages.js rootPage())'
+    );
+  }
+  const entries = [
+    [site, rootHtml],
+    [site + 'en/', rootHtmlEn]
+  ];
+  for (const it of L) {
+    entries.push([site + 'i/' + it.id + '.html', renderStub(it, 'ru')]);
+    entries.push([site + 'i/en/' + it.id + '.html', renderStub(it, 'en')]);
+  }
 
   const out = {};
   const missing = [];
@@ -296,6 +312,42 @@ export function applyResult(state, result, site) {
   return { version: 1, site, urls: sortedMap(merged) };
 }
 
+// Declares every manifest URL under site + prefix current in the
+// state, with no send and no press: the one-time seed of URLs
+// Telegram has never cached (docs/tg-preview.md, "Operations").
+// Refuses the Russian root and the Russian stubs, which Telegram has
+// cached, and a prefix that matches nothing.
+export function adopt(manifest, state, prefix) {
+  if (!prefix) throw new Error('--adopt needs a path under the site, such as i/en/');
+  const base = state && state.site === manifest.site && state.urls ? state.urls : {};
+  const urls = { ...base };
+  const want = manifest.site + prefix;
+  let added = 0;
+  let overwritten = 0;
+  let current = 0;
+  for (const [url, fp] of Object.entries(manifest.urls)) {
+    if (!url.startsWith(want)) continue;
+    if (url === manifest.site || /^i\/[^/]+\.html$/.test(url.slice(manifest.site.length))) {
+      throw new Error(
+        '--adopt never seeds ' + url + ': Telegram has cached it, so a change is pushed'
+      );
+    }
+    if (!(url in base)) added++;
+    else if (base[url] === fp) current++;
+    else overwritten++;
+    urls[url] = fp;
+  }
+  if (added + overwritten + current === 0) {
+    throw new Error('--adopt ' + prefix + ' matches no URL under ' + manifest.site);
+  }
+  return {
+    state: { version: 1, site: manifest.site, urls: sortedMap(urls) },
+    added,
+    overwritten,
+    current
+  };
+}
+
 const FLAGS = {
   '--mode': 'mode',
   '--limit': 'limit',
@@ -307,7 +359,8 @@ const FLAGS = {
   '--result': 'resultPath',
   '--stale-list': 'staleListPath',
   '--assets': 'assets',
-  '--apply': 'apply'
+  '--apply': 'apply',
+  '--adopt': 'adopt'
 };
 
 export function parseArgs(argv) {
@@ -324,7 +377,8 @@ export function parseArgs(argv) {
     staleListPath: null,
     assets: null,
     noVerify: false,
-    apply: null
+    apply: null,
+    adopt: null
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -368,12 +422,20 @@ export function parseArgs(argv) {
   if (opts.staleListPath && !opts.dryRun) {
     throw new Error('--stale-list requires --dry-run');
   }
+  // An empty or missing --adopt value must not fall through to a live run.
+  if (opts.adopt !== null && !opts.adopt) {
+    throw new Error('--adopt needs a path under the site, such as i/en/');
+  }
+  if (opts.adopt && (opts.apply || opts.dryRun)) {
+    throw new Error('--adopt runs on its own: drop --apply and --dry-run');
+  }
   return opts;
 }
 
+// "root" names both roots; a record id names both of its stubs.
 function idOf(url, site) {
-  if (url === site) return 'root';
-  const m = url.slice(site.length).match(/^i\/(.+)\.html$/);
+  if (url === site || url === site + 'en/') return 'root';
+  const m = url.slice(site.length).match(/^i\/(?:en\/)?([^/]+)\.html$/);
   return m ? m[1] : null;
 }
 
@@ -387,8 +449,8 @@ function updateButtonData(m) {
 }
 
 // Matches the bot's button messages to the URLs a run cares about, by exact
-// `media.webpage.url` equality with one trailing-slash fallback - the root
-// is the only URL Telegram could plausibly canonicalise; nothing else is
+// `media.webpage.url` equality with one trailing-slash fallback - the two
+// roots are the only URLs Telegram could plausibly canonicalise; nothing else is
 // normalised. Never matches by position or count. The newest (highest id)
 // message wins when several answer the same URL. A message with text but no
 // webpage media is the bot's plain summary, collected verbatim for logging,

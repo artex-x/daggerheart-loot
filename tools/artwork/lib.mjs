@@ -11,7 +11,8 @@
   that can be stated over data - name normalisation, matching, destination resolution,
   shared-asset grouping, collision and duplicate detection, the
   affected-stub-URL set, the stale-set algebra, the thumbnail destination
-  and the thumbnail set.
+  and the thumbnail set. It also holds the SVG template of the two site
+  share cards, which cards.mjs renders.
 */
 
 // Typographic apostrophes a source or a record name may use in place of a
@@ -218,8 +219,9 @@ export function planInstall({ sources, records, map }) {
 }
 
 // Sorted unique stub URLs for every matched record and every sharedWith
-// record - the set a byte change is expected to invalidate. Same URL shape
-// as tools/derived.js (SITE + 'i/' + id + '.html') and
+// record - the set a byte change is expected to invalidate. Both languages:
+// i/en/<id>.html shows the same og/ picture as i/<id>.html (CONTRACTS.md
+// section 5), so a byte change invalidates both. Same URL shape as
 // tools/tg-preview/lib.mjs's `urls()`; not a second URL builder.
 export function affectedStubUrls(pairs, site) {
   const ids = new Set();
@@ -228,7 +230,7 @@ export function affectedStubUrls(pairs, site) {
     for (const id of p.sharedWith) ids.add(id);
   }
   return Array.from(ids)
-    .map((id) => site + 'i/' + id + '.html')
+    .flatMap((id) => [site + 'i/' + id + '.html', site + 'i/en/' + id + '.html'])
     .sort();
 }
 
@@ -262,6 +264,82 @@ export function staleDelta({ before, after, expected }) {
     disappeared: disappeared.slice().sort(),
     ok: missing.length === 0 && extra.length === 0
   };
+}
+
+// The lettering of the two site share cards, og/_share.jpg (ru) and
+// og/_share_en.jpg (en) - docs/artwork.md, "The site share cards".
+export const CARD_TEXT = {
+  ru: {
+    title: 'Генератор лута',
+    brand: 'DAGGERHEART',
+    subtitle: 'Добыча, расходники, оружие и броня · RU / EN'
+  },
+  en: {
+    title: 'Loot Generator',
+    brand: 'DAGGERHEART',
+    subtitle: 'Loot, consumables, weapons and armour · RU / EN'
+  }
+};
+
+export const CARD_FONT = 'Inter';
+
+function escXml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// A five-point star centred on (cx, cy), point up.
+function starPath(cx, cy, outer, inner) {
+  const pts = [];
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 ? inner : outer;
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    pts.push((cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1));
+  }
+  return 'M' + pts.join(' L') + ' Z';
+}
+
+// The 1200x630 SVG of one site share card. The layout is the one the
+// hand-made og/_share.jpg of 7fd046c carried; the colours are the share
+// stubs' stylesheet (tools/build-share-pages.js).
+export function shareCardSvg(lang) {
+  const text = CARD_TEXT[lang];
+  if (!text) throw new Error('No share card text for language "' + lang + '". Use ru or en');
+  const font = 'font-family="\'' + CARD_FONT + '\'"';
+  return [
+    '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">',
+    '<defs>',
+    '<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">',
+    '<stop offset="0" stop-color="#171425"/><stop offset="0.75" stop-color="#0e0c15"/>',
+    '</linearGradient>',
+    '<radialGradient id="violet" cx="150" cy="0" r="620" gradientUnits="userSpaceOnUse">',
+    '<stop offset="0" stop-color="#2c2248" stop-opacity="0.85"/><stop offset="1" stop-color="#2c2248" stop-opacity="0"/>',
+    '</radialGradient>',
+    '<radialGradient id="blue" cx="1180" cy="0" r="520" gradientUnits="userSpaceOnUse">',
+    '<stop offset="0" stop-color="#26334e" stop-opacity="0.85"/><stop offset="1" stop-color="#26334e" stop-opacity="0"/>',
+    '</radialGradient>',
+    '</defs>',
+    '<rect width="1200" height="630" fill="url(#bg)"/>',
+    '<rect width="1200" height="630" fill="url(#violet)"/>',
+    '<rect width="1200" height="630" fill="url(#blue)"/>',
+    '<path d="' + starPath(92, 301, 35, 15) + '" fill="#d8ab5e"/>',
+    '<text x="150" y="321" ' +
+      font +
+      ' font-size="64" font-weight="600" fill="#ece8f6">' +
+      escXml(text.title) +
+      '</text>',
+    '<text x="152" y="368" ' +
+      font +
+      ' font-size="30" font-weight="600" letter-spacing="2" fill="#d8ab5e">' +
+      escXml(text.brand) +
+      '</text>',
+    '<text x="152" y="418" ' +
+      font +
+      ' font-size="26" font-weight="400" fill="#9b93b3">' +
+      escXml(text.subtitle) +
+      '</text>',
+    '<rect y="624" width="1200" height="6" fill="#d8ab5e"/>',
+    '</svg>'
+  ].join('\n');
 }
 
 // { creates, shares, unarted, unsourced, unmatched, ambiguous, collisions,

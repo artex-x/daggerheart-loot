@@ -4,12 +4,14 @@
   tree (manifest.mjs), the committed state file, teleproto (client.mjs,
   loaded lazily) and the live check (live.mjs). See docs/tg-preview.md for
   what each flag does and the runbook that drives this by hand; see
-  .github/workflows/previews.yml for how CI drives it.
+  .github/workflows/previews.yml for how CI drives it. --adopt seeds the
+  state without Telegram; an error reaches main().catch (exit 1) and writes
+  nothing.
 */
 import { readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { parseArgs, runRefresh, applyResult, sameUrls } from './lib.mjs';
+import { parseArgs, runRefresh, applyResult, sameUrls, adopt } from './lib.mjs';
 import { buildFromTree } from './manifest.mjs';
 
 try {
@@ -142,6 +144,26 @@ async function main() {
     );
   }
   const state = readState(statePath);
+
+  if (opts.adopt) {
+    const r = adopt(manifest, state, opts.adopt);
+    writeStateSync(statePath, r.state);
+    log(
+      'adopted ' +
+        (r.added + r.overwritten + r.current) +
+        ' url(s) under ' +
+        manifest.site +
+        opts.adopt +
+        ': ' +
+        r.added +
+        ' new, ' +
+        r.overwritten +
+        ' overwritten, ' +
+        r.current +
+        ' already current'
+    );
+    return;
+  }
 
   const deps = {
     manifest,

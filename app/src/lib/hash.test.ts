@@ -478,15 +478,30 @@ describe('a link to hand somebody else', () => {
   it('sends a record to its stub page on a host', () => {
     /* The stub carries the record's Open Graph tags, which is what makes a
        pasted link unfurl in Telegram or Discord with the picture and the name. */
-    expect(recordUrl(host, 'w1')).toBe('https://e.test/loot/i/w1.html');
+    expect(recordUrl(host, 'w1', 'ru')).toBe('https://e.test/loot/i/w1.html');
   });
 
   it('sends a record to the app itself from a folder, where no stub exists', () => {
-    expect(recordUrl(disk, 'w1')).toBe('file:///tmp/loot/index.html#/i/w1');
+    expect(recordUrl(disk, 'w1', 'ru')).toBe('file:///tmp/loot/index.html#/i/w1');
+  });
+
+  it('sends an English record to its English stub on a host', () => {
+    expect(recordUrl(host, 'w1', 'en')).toBe('https://e.test/loot/i/en/w1.html');
+  });
+
+  it('sends an English address through the English entry document on a host', () => {
+    expect(appUrl(host, '#/lists', 'en')).toBe('https://e.test/loot/en/#/lists');
+    expect(appUrl(host, '#/lists', 'ru')).toBe('https://e.test/loot/#/lists');
+    expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
+  });
+
+  it('ignores the language from a folder, where no English page exists', () => {
+    expect(recordUrl(disk, 'w1', 'en')).toBe('file:///tmp/loot/index.html#/i/w1');
+    expect(appUrl(disk, '#/lists', 'en')).toBe('file:///tmp/loot/index.html#/lists');
   });
 
   it('lands on an address the app can read back', () => {
-    const r = parseHash(recordUrl(disk, 'w1').split('index.html')[1] ?? '');
+    const r = parseHash(recordUrl(disk, 'w1', 'ru').split('index.html')[1] ?? '');
     expect(r).toEqual({ kind: 'record', id: 'w1' });
   });
 });

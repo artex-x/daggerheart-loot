@@ -10,7 +10,8 @@ cards.
 **Open it: https://artex-x.github.io/daggerheart-loot/**
 
 The site installs as an app on a phone or a desktop; the guide is at
-`pages/install.html`, linked in the footer.
+`pages/install.html` (Russian) and `pages/en/install.html` (English), linked
+in the footer.
 
 1272 records in all - 891 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
@@ -266,15 +267,19 @@ card/*.svg            36 vectors for the print cards, exported from Figma
 img/*.webp            1057 pictures, 640x640, ~34 MB
 img/thumb/*.webp      one 160x160 thumbnail per picture, drawn in rows
 og/*.jpg              the same pictures as JPEG for link previews, ~47 MB
-i/*.html              1272 stub pages with Open Graph markup, generated, not committed
-pages/src/*.html      the site pages (install guide), authored, both languages
-pages/*.html          the site pages, generated from pages/src/, not committed
+i/*.html              1272 stub pages per language with Open Graph markup: i/ Russian,
+                      i/en/ English; generated, not committed
+en/index.html         the English entry document (the site's English preview card),
+                      generated, not committed
+pages/src/*.html      the site pages (install guide), authored, Russian; pages/src/en/ English
+pages/*.html          the site pages, generated from pages/src/, not committed: Russian,
+                      and pages/en/ English
 data.json             the same data as plain JSON, for outside readers
 catalog.csv           one row per record, with stat lines
 llms.txt              what the site is, URL grammar, list-link format
 robots.txt            crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
-tools/build-share-pages.js  generates i/ from data.js
+tools/build-share-pages.js  generates i/, i/en/ and en/ from data.js
 tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
 tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
@@ -323,7 +328,7 @@ Needs `puppeteer`, and `npm run build` first for the `tests/app/*` suites
 | `derived` | derived files match the generator, and the counts written into the docs match the data |
 | `contracts` | list encoding and route-grammar fixtures, decoded and re-derived by a second implementation |
 | `craft` | data invariants for upgrade chains, and the share stubs |
-| `stub` | the generated `i/*.html` share stubs do not scroll sideways |
+| `stub` | the generated pages (`i/`, `i/en/`, `en/`, `pages/`, `pages/en/`) do not scroll sideways |
 | `app/sweep` | every address the app has, at four widths and in both languages, over `dist/` |
 | `app/states` | states reachable only by a trusted click, a real clipboard, or a real second tab |
 | `app/golden` | one accessibility-tree-plus-controls snapshot per state; a control gone, moved or renamed is a line in `git diff` |

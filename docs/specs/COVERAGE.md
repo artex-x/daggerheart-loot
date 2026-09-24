@@ -24,12 +24,17 @@ language row at 1180):
 - Five `tests/*.js` files, fs/node-only: `contracts` (trimmed to its pure
   half - the list-encoding fixtures and the docs-name check), `craft`
   (trimmed to two sections - data invariants and the share stubs), `dataint`,
-  `derived`, `stub` (the generated `i/*.html` share stubs do not scroll
-  sideways - never tested either app). `craft`, `dataint`, `derived`, and
-  `stub` read `i/` off disk; `i/` is generated, not committed
-  (`docs/specs/CONTRACTS.md` section 5), so a clean checkout needs a build
-  (`node tools/build.js`, or `npm run check`, which runs it) before any of
-  these four run outside `npm run check`.
+  `derived`, `stub` (the generated pages - a share stub in `i/` and in
+  `i/en/`, the English entry document `en/index.html`, and a site page in
+  `pages/` and in `pages/en/` - do not scroll sideways at 320 and 390, read
+  with scripts off so the redirect pages stay put - never tested either
+  app). `craft`, `dataint`, `derived`, and `stub` read `i/`, `i/en/`,
+  `en/`, `pages/` and `pages/en/` off disk; all five are generated, not
+  committed (`docs/specs/CONTRACTS.md` section 5), so a clean checkout needs
+  a build (`node tools/build.js`, or `npm run check`, which runs it) before
+  any of these four run outside `npm run check`. `derived` re-renders every
+  page in both languages against disk and reads both site cards' JPEG size
+  off the file header.
 - Seven `tests/app/*.js` suites test the built rewrite (`dist/`) - what Pages
   serves - in a real Chrome: `app/sweep`, `app/golden`, `app/contracts`,
   `app/states`, `app/typo`, `app/hues`, `app/print`. This is the layer B12
@@ -82,7 +87,7 @@ before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
 | `app/hues` | layout | colour read off rendered badges and the real roll button, not an injected span |
 | `app/contracts` | contract | the browser half of `contracts`, re-pointed: the link the app writes/reads, a truncated link, the llms.txt-described link, every route fixture, the stat line, filter group names |
 | `app/print` | feature | the deleted `tests/print.js`, transposed onto `dist/` and the moved driver: sheet grid, card size against the design (millimetres, not a tree), versatile weapons, dice by damage type, armour, black and white, art edges, text fitting, short black-and-white text growing to its cap without a spill (and colour never growing), the compact sheet (44x63 mm cards, four to a row on A4, the grow cap and the colour ceiling at 44 mm, the design measurements at 70%), entry points; plus the four print specs the deleted parity harness used to run (`sheetCounts`, `cardFit`, `printMedia`, `copiedPrintLink`) - the sheet's counts, the fit ladder's own written numbers at every width, the sheet under print media, and the copied set link; `sheetCounts` and `cardFit` run over the seven compact states, `printMedia` over `TEN ~ compact` (`copiedPrintLink` runs no compact state); an English pass added at R0c (`sheetCounts`/`printMedia` stay Russian-only, a comment in the file says why) |
-| `app/states` | journey | the twenty-nine states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two Other frame values picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path (a record card's picture, then a table row's thumbnail: the row asks for `img/thumb/w3.webp`, never `img/w3.webp`, and shows `img/thumb/_none.webp` after the abort), focus surviving a keystroke, the note textarea's height (plus, R0b.2, the list note-field group's real CSS geometry), a roll's card `<img>` node replaced, real history Back/Forward, the selection bar pinned to the viewport at a narrow width, a real HTML5 drag reorder including a release inside the row gap marking both rows at once, a `dragenter` crossing into a row's own child reporting `defaultPrevented`, a `drop-after` row with its note box open painting gold in a measured strip at its bottom edge - pixel probe via `pngjs`, at the end of the list and in the middle of it, that same row's redrawn mark on its open note box declaring no transition of its own and the base mark's `transition-property` excluding `box-shadow` - read with reduced motion briefly relaxed then restored, and a cancelled drag (dragend, no drop) leaving the order and the marks untouched, a folded `<details>` surviving a select-all re-render, tile geometry with art blocked, the storage notice under 320px, a button keeping focus across a re-render, the money-help box plus the pressed picker's colour, and (case 26) a touch-emulated viewport where the drag grip is hidden and a committed position both moves a row and announces it through a visually hidden live region, plus that same grip drawn again for a pointer that can hover, and (case 27) the add-to-list menu at 50 lists, at 1100 and 360 wide: no taller than 342 px, its search and «+ Новый список» inside the menu and the window, the chips scrolling on their own, the five lists holding the record first, and the new-list form started with the query, and (case 28) the built app served over `http://127.0.0.1` by a local static server: the service worker ready, the manifest link added, the page controlled after one reload, and the app, `window.LOOT` and the app title back on a reload with the page offline and the server closed; the same case asserts the footer's install link absent from `file://` and present over http, `pages/install.html` fetched with status 200, and, through CDP, `Page.getAppManifest` with no errors and `Page.getInstallabilityErrors` with no errors on a page in the browser's default context (an incognito context answers `in-incognito`); (case 29) over the same served `dist/`, the install guide's top back link returns from `#/lists` to `#/lists`, and from a direct visit opens `../` |
+| `app/states` | journey | the twenty-nine states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two Other frame values picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path (a record card's picture, then a table row's thumbnail: the row asks for `img/thumb/w3.webp`, never `img/w3.webp`, and shows `img/thumb/_none.webp` after the abort), focus surviving a keystroke, the note textarea's height (plus, R0b.2, the list note-field group's real CSS geometry), a roll's card `<img>` node replaced, real history Back/Forward, the selection bar pinned to the viewport at a narrow width, a real HTML5 drag reorder including a release inside the row gap marking both rows at once, a `dragenter` crossing into a row's own child reporting `defaultPrevented`, a `drop-after` row with its note box open painting gold in a measured strip at its bottom edge - pixel probe via `pngjs`, at the end of the list and in the middle of it, that same row's redrawn mark on its open note box declaring no transition of its own and the base mark's `transition-property` excluding `box-shadow` - read with reduced motion briefly relaxed then restored, and a cancelled drag (dragend, no drop) leaving the order and the marks untouched, a folded `<details>` surviving a select-all re-render, tile geometry with art blocked, the storage notice under 320px, a button keeping focus across a re-render, the money-help box plus the pressed picker's colour, and (case 26) a touch-emulated viewport where the drag grip is hidden and a committed position both moves a row and announces it through a visually hidden live region, plus that same grip drawn again for a pointer that can hover, and (case 27) the add-to-list menu at 50 lists, at 1100 and 360 wide: no taller than 342 px, its search and «+ Новый список» inside the menu and the window, the chips scrolling on their own, the five lists holding the record first, and the new-list form started with the query, and (case 28) the built app served over `http://127.0.0.1` by a local static server: the service worker ready, the manifest link added, the page controlled after one reload, and the app, `window.LOOT` and the app title back on a reload with the page offline and the server closed; the same case asserts the footer's install link absent from `file://` and present over http, `pages/install.html` fetched with status 200, and, through CDP, `Page.getAppManifest` with no errors and `Page.getInstallabilityErrors` with no errors on a page in the browser's default context (an incognito context answers `in-incognito`); (case 29) over the same served `dist/`, in Russian and in English, the install guide's first and last children are back links (`../` on `pages/install.html`, `../../` on `pages/en/install.html`), the top one returns from `#/lists` to `#/lists`, and a direct visit opens the app root |
 | `app/golden` | structural | one accessibility-tree-plus-controls text snapshot per state in `tests/app/inventory.js` (148 states, both languages, four shards), compared byte-for-byte against `tests/app/snapshots/*.txt` - a control gone, a heading moved or a label renamed is a line in `git diff`, not a percentage. Regenerate a golden only with `node tests/app/golden.js --update`; `.claude/hooks/edit-guard.mjs` refuses a hand edit. It says nothing about colour, spacing, or which picture sits behind a correct `alt` - that stays `tests/app/sweep.js`'s alone since R0c deleted the pixel harness that used to also watch it. The text a same-shape sibling run folds to its first two and last two occurrences (rule A) and the tail of a name past 64 code points (rule B, `namelen`/`namehash`) are both blind past that boundary. Mostly that is `data.js` catalogue text already owned by `tests/derived.js`, `tests/dataint.js` and the contract fixtures, **but not only**: retention is positional, so any node sharing a row's signature falls in the blind interior too. In `_tables_eq_weapon.txt` the tier 1 `checkbox "Выбрать все (N)"` and the last section's label and select-all (`АРТЕФАКТЫ`, since Volume 4) survive; the other select-alls and every `StaticText "РАНГ N"` are elided, and a rename of one of those is owned by no other suite now that `tests/parity.js` is deleted. What still fails: any attribute value change, any node added or removed (the group total moves), a role or tree-shape change, and a name change in a kept position or in any group of five or fewer. What does **not** fail: a rename inside an elided interior, and a **reorder of two same-signature siblings both inside it** - swapping them leaves the file byte-identical. |
 
 ### The golden format, and why
@@ -478,22 +483,25 @@ The fallbacks, which is where the logic actually lives, are covered here.
 
 `tools/tg-preview/lib.test.mjs` is a separate suite again, run under
 `node --test` as its own step in `npm run check` rather than through vitest:
-it covers the Telegram preview refresher's pure logic (URL derivation,
-fingerprinting, what counts as stale, batching, the flood/fatal error table,
-button matching, and the two-phase send-and-press loop against a fake
-client, clock and live check), plus `@WebpageBot`'s own per-user attempt
-throttle: recognising its refusal text (`botThrottle`), the run-scoped press
-budget (`--press-limit`/`PRESS_LIMIT`) that spans both phases and stops a run
-before it overspends the bot's quota, and the warning when `--mode full`
-cannot finish the stale set on that budget. It also covers the
+it covers the Telegram preview refresher's pure logic (URL derivation in
+both languages, fingerprinting, what counts as stale, batching, the
+flood/fatal error table, button matching, and the two-phase
+send-and-press loop against a fake client, clock and live check), plus
+`@WebpageBot`'s own per-user attempt throttle: recognising its refusal text
+(`botThrottle`), the run-scoped press budget (`--press-limit`/`PRESS_LIMIT`)
+that spans both phases and stops a run before it overspends the bot's
+quota, and the warning when `--mode full` cannot finish the stale set on
+that budget. It also covers the
 `--stale-list` writer: `--stale-list` requires `--dry-run` and is rejected
 otherwise regardless of flag order, a dry run emits it exactly once whether
 or not anything is stale, `--only` narrows what it writes, a non-dry run
 never calls it even when the dependency is supplied, and an accidental
-`--apply` of its payload is a no-op because it carries no `urls` key. The
-real Telegram connection
-(`client.mjs`) and the real CDN fetch (`live.mjs`) are deliberately outside
-it - thin wrappers around a live network, where the only honest proof is
+`--apply` of its payload is a no-op because it carries no `urls` key. It
+covers the English seed (`adopt`: the added, overwritten and current
+counts, the prefix boundary, a foreign-site state, and the refusal of an
+empty or missing prefix, a prefix that matches nothing and a Russian stub).
+The real Telegram connection (`client.mjs`) and the real CDN fetch
+(`live.mjs`) are deliberately outside it - thin wrappers around a live network, where the only honest proof is
 Telegram and the CDN themselves. See `docs/tg-preview.md`.
 
 `tools/artwork/lib.test.mjs` is a separate suite again, run under `node
@@ -509,16 +517,21 @@ sharing record), the thumbnail destination `img/thumb/<asset>` in both
 planners and `planThumbs` (one target per picture, orphans reported),
 collision and duplicate-source-bytes detection, the
 `--map`/`assign` override, the affected-stub-URL derivation (every matched
-record and every record it shares an asset with), and the stale-set algebra
-`verify-previews` runs on two `tools/tg-preview` `--stale-list` files.
+record and every record it shares an asset with, in both languages), and
+the stale-set algebra `verify-previews` runs on two `tools/tg-preview`
+`--stale-list` files.
 `tools/artwork/run.mjs` (hashing uploads, decoding geometry, the `sharp`
 encoder, atomic install, byte verification) is deliberately outside it - the
 same argument the tg-preview paragraph above makes for `client.mjs` and
 `live.mjs`: it is a thin wrapper around the filesystem and an encoder, where
 the only honest proof is a real image going in and a real file coming out.
 `tools/artwork/icons.mjs`, which rasterises the app icons
-(`docs/artwork.md`, "Icons"), is the same class of encoder wrapper and is
-outside the suite for the same reason. So is the `thumbs` verb, like the
+(`docs/artwork.md`, "Icons"), and `tools/artwork/cards.mjs`, which renders
+the two site share cards ("The site share cards"), are the same class of
+encoder wrapper and are outside the suite for the same reason; its own
+`--check` compares a fresh render with `og/` by hand. The suite pins the
+cards' SVG template (`shareCardSvg`: the viewBox, both languages' text, the
+Inter family, an unknown language throwing). So is the `thumbs` verb, like the
 rest of `run.mjs`: a real run and `dataint` prove it.
 
 Since art-tooling B3 the same suite also covers `planIngest`, the ingest
@@ -538,7 +551,11 @@ See `docs/artwork.md`.
 list itself - a good in-memory site producing no failures, five broken ones
 (a missing root falling through to the 404 fallback, a truncated
 `assets/app.js`, a share stub with no `og:image`, a manifest with an
-absolute `start_url`, a site page `pages/install.html` with no `noindex`) each producing the expected failure message, and the 404-fallback probe both when it works and
+absolute `start_url`, a site page `pages/install.html` with no `noindex`,
+an English stub `i/en/w1.html` with no `og:image`, an English entry
+document `en/index.html` with no `og:title`, and a site with no
+`og/_share_en.jpg` and no `pages/en/install.html`) each producing the
+expected failure message, and the 404-fallback probe both when it works and
 when no fallback exists at all - plus `dirReader`'s GitHub-Pages-missing-path
 emulation against a real temporary directory. `fetchReader` (the live-URL
 transport `tools/check-site.mjs` actually runs post-deploy) is deliberately
@@ -579,7 +596,9 @@ activate deletes an older `dhloot-` cache, keeps the current three and a
 foreign one, and claims; the shell answers online from the network and
 stores it under its URL without the query (two queries leave one entry),
 offline and on a timeout from the stored copy, and a navigation
-to `index.html` from the cached `./`; a stub navigation, `og/`, `data.json`,
+to `index.html` from the cached `./`; the English entry document `en/` is
+answered from the network, stored, and answered offline from the stored
+copy; a stub navigation (`i/` and `i/en/`), `og/`, `data.json`,
 a POST, another origin and a path outside the scope are not answered, and
 a stub navigation's preload response is waited for, not answered; a
 picture miss is answered before it is stored and trimmed through
@@ -731,6 +750,11 @@ Not blocking, recorded so they are not mistaken for coverage:
   but `tests/app/states.js` case 28 loads from `file://`, where the row is
   not drawn. Its contrast rests on the global `a` rule, which the sweep
   measures on the licence link in the same footer.
+- No test covers a site page's back link after a switch to the other
+  language's copy (`META.md` section 9: the link then opens the app root,
+  not the screen left). `tests/app/states.js` case 29 covers each language
+  reached from the app; the switch-then-back path was left untested on
+  purpose at issue 64, because the limit is accepted, not a guarded rule.
 - Across three reviewed batches, four of five real defects a review caught
   were caught by the reviewer, not a gate, and every one was inert
   verification - a check that stayed green while measuring nothing (a lint

@@ -239,6 +239,22 @@ describe('sharing a list', () => {
     ).toBeInTheDocument();
   });
 
+  it('copies the English players link in English', async () => {
+    const clip = fakeClipboard();
+    const { container } = render(App, {
+      env: at({
+        storage: memoryStorage({ 'dhloot.lists.v2': TWO, 'dhloot.lang.v1': 'en' }),
+        clipboard: clip
+      })
+    });
+    const buttons = screen.getAllByRole('button', { name: 'Share' });
+    await userEvent.click(buttons[0] as HTMLElement);
+
+    const payload = await plainCompress().pack(encodeListRaw(listA, true));
+    expect(clip.last.text).toBe('https://example.test/en/#/l/' + payload);
+    await expectNoA11yViolations(container);
+  });
+
   it('toasts copyFailed as an alert when the clipboard refuses', async () => {
     render(App, {
       env: at({

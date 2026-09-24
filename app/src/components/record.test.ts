@@ -22,6 +22,7 @@ import {
   fakeImage,
   fakeShare,
   memoryRouter,
+  memoryStorage,
   noData
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
@@ -617,6 +618,18 @@ describe('taking a record somewhere else', () => {
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
     expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+  });
+
+  it('copies the English stub in English', async () => {
+    const clip = fakeClipboard();
+    const env = at('cc1', {
+      clipboard: clip,
+      storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+    });
+    const { container } = render(App, { env });
+    await userEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+    expect(clip.last.text).toBe('https://example.test/i/en/cc1.html');
+    await expectNoA11yViolations(container);
   });
 
   it('says what happened, in a region a screen reader is told about', async () => {

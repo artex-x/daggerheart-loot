@@ -543,6 +543,16 @@ describe('the table link', () => {
     expect(screen.getByText('Ссылка на таблицу скопирована')).toBeInTheDocument();
   });
 
+  it('copies the English address in English', async () => {
+    const clip = fakeClipboard();
+    const { container } = render(App, {
+      env: at({ clipboard: clip, storage: memoryStorage({ 'dhloot.lang.v1': 'en' }) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Link to this table' }));
+    expect(clip.last.text).toBe('https://example.test/en/#/tables/core_item');
+    await expectNoA11yViolations(container);
+  });
+
   it('says so when the clipboard refuses', async () => {
     render(App, { env: at({ clipboard: fakeClipboard({ fail: true }) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на таблицу' }));

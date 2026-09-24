@@ -106,6 +106,16 @@ const N_REC = '\x1e',
   ['`rg`', '`bu`'].forEach(function (g) {
     ok(machine.indexOf(g) < 0, 'llms.txt still carries the non-existent group ' + g);
   });
+  /* The English addresses are public paths too (CONTRACTS.md sections 3-5):
+     an agent reads llms.txt to build them. */
+  ok(
+    machine.includes('i/en/<id>.html'),
+    'llms.txt does not name the English stub i/en/<id>.html'
+  );
+  ok(
+    machine.includes('daggerheart-loot/en/'),
+    'llms.txt does not name the English address daggerheart-loot/en/'
+  );
 
   /* ---------- data.json top-level keys ---------- */
   /* `CONTRACTS.md` section 4 publishes the key list; a key added to or dropped

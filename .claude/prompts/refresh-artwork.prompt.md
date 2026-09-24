@@ -56,10 +56,10 @@ Read the current repository rather than relying on memory:
 
 Current daggerheart-loot image contract, unless repository documentation has changed:
 
-- canonical records live in `data.js`; `data.json`, `catalog.csv`, and `i/*.html` are derived;
+- canonical records live in `data.js`; `data.json`, `catalog.csv`, `i/*.html` and `i/en/*.html` are derived;
 - catalog art lives at `img/<asset-id>.webp`, with its row thumbnail at `img/thumb/<asset-id>.webp`; social previews live at `og/<asset-id>.jpg` - dimensions and encoding are `tools/artwork/`'s documented defaults, see `docs/artwork.md`;
 - built `dist/img` and `dist/og` may be links to the root asset directories;
-- image-only byte replacement does not require editing `data.js` or rebuilding `data.json`, `catalog.csv`, or `i/*.html` when every existing `img` mapping is unchanged.
+- image-only byte replacement does not require editing `data.js` or rebuilding `data.json`, `catalog.csv`, `i/*.html` or `i/en/*.html` when every existing `img` mapping is unchanged.
 
 Do not regenerate HTML merely because image bytes changed: stable stubs already reference stable asset paths. Rebuild derived files only when canonical data changed, including a deliberate shared-art mapping consolidation.
 

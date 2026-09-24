@@ -98,6 +98,12 @@ ok(
   'i/w3.html: og description missing the craft line'
 );
 ok(
+  /Upgrades to: Aetherflower Tea/.test(
+    fs.readFileSync(path.join(ROOT, 'i', 'en', 'w3.html'), 'utf8')
+  ),
+  'i/en/w3.html: og description missing the English craft line'
+);
+ok(
   /Получается из: Фроствирд \(Дремлющий\)\. Улучшается до: Фроствирд \(Возвышенный\)\./.test(
     fs.readFileSync(path.join(ROOT, 'i', 'dve25.html'), 'utf8')
   ),
@@ -107,6 +113,10 @@ ok(
 ok(
   fs.readdirSync(path.join(ROOT, 'i')).filter((f) => f.endsWith('.html')).length === 1272,
   'i/: expected 1272 stubs'
+);
+ok(
+  fs.readdirSync(path.join(ROOT, 'i', 'en')).filter((f) => f.endsWith('.html')).length === 1272,
+  'i/en/: expected 1272 stubs'
 );
 const stale = ALL.filter((x) => {
   const p = path.join(ROOT, 'i', x.id + '.html');

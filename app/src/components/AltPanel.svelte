@@ -23,7 +23,7 @@
   import { RARITIES, RARITY_TIERS, altPicks, altTables, bumpUp } from '../lib/alt.js';
   import type { AltPick } from '../lib/alt.js';
   import { helpFor } from '../lib/help.js';
-  import { tablesHash } from '../lib/hash.js';
+  import { appUrl, tablesHash } from '../lib/hash.js';
   import { isCrit, rollDuality } from '../lib/roll.js';
   import { rarityKey } from '../lib/label.js';
   import { shareRoll } from '../lib/share.js';
@@ -198,9 +198,11 @@
             </div>
             <div class="crit-acts">
               {#each altTables(app.kinds) as table (table.table)}
+                <!-- A way into the tables in a new tab, not an address to hand over: the root
+                     in both languages, because a never-visited en/ has no offline copy (FEATURES.md, "Rolling"). -->
                 <Button
                   size="sm"
-                  href={app.linkTo(tablesHash(table.table, { anchor: rarity }))}
+                  href={appUrl(app.site, tablesHash(table.table, { anchor: rarity }))}
                 >
                   {t[table.label]}<Icon name="external" />
                 </Button>

@@ -7,8 +7,10 @@ any of them without the owner saying so.
 
 `<meta name="robots" content="noindex, nofollow">` is in `app/index.html` -
 the rewrite's entry document, which is what `dist/index.html` is built from -
-and in every generated stub (`tools/build-share-pages.js`) and static page
-(`tools/build-pages.js`, section 9). This is a personal
+and in every generated page: the stubs in `i/` and `i/en/` and the English
+entry document `en/index.html` (`tools/build-share-pages.js`), and the
+static pages in `pages/` and `pages/en/` (`tools/build-pages.js`,
+section 9). This is a personal
 tool and is meant to stay out of search results. Do not remove it to improve
 SEO.
 
@@ -20,7 +22,9 @@ the preview card needs - title, description, robots, colour scheme, viewport,
 every `og:*` and `twitter:*`, and the icon. Before R0c (issue 47) this compared
 `app/index.html`'s head against the now-deleted root `index.html`'s; that
 second document is gone, so the check is a single-document read now. The
-published page is checked again after a deploy by `tools/check-site.mjs`.
+English entry document `en/index.html` gets the same read, less the two PWA
+tags (it is a redirect page, never the installed app's document). The
+published pages are checked again after a deploy by `tools/check-site.mjs`.
 
 ## 2. Crawling is allowed on purpose
 
@@ -31,6 +35,12 @@ it `noindex` is what actually keeps the page out.
 
 Link previews in messengers (Telegram, Discord, Slack) fetch the stub pages too,
 so a blanket `Disallow` would break those as well.
+
+A preview card has one language. `app/index.html` (the site root, and so
+every `#/...` link, since the fragment never reaches a crawler) and
+`i/<id>.html` carry the Russian card; `en/index.html`, published at
+`<site>en/`, and `i/en/<id>.html` carry the English one, with its own
+picture `og/_share_en.jpg` for the root (`docs/specs/I18N.md`).
 
 Bulk collection for training is a separate matter and is refused by name:
 `GPTBot`, `ClaudeBot`, `anthropic-ai`, `CCBot`, `Google-Extended`,
@@ -132,6 +142,12 @@ before this page shipped).
 It carries `noindex, nofollow` like every other page (section 1) and both
 languages on the one page at once (`docs/specs/I18N.md`) rather than
 switching on a stored preference, since there is no script here to read one.
+The English half sits in a `<div lang="en">`. There is no per-language 404
+(issue 64): Pages serves one `404.html` for every miss, whatever the path,
+so a variant could only be a script that picks a language from the path
+(`/en/` or `/i/en/`). That was rejected: the page is script-free by design,
+a dead end reads at a glance in either language, and its value is having no
+logic that can fail.
 Its two links are root-anchored (`/daggerheart-loot/#/roll/std` and
 `/daggerheart-loot/#/search`) rather than relative, unlike every other page
 in this repository: it can be served while the browser still shows an
@@ -160,6 +176,12 @@ still points at the same URL - this site's exact case; only the bot's
 throttles update attempts per user, independently of Telegram's flood
 control, and refuses further attempts of either kind - presses and sends -
 with "Sorry, too many attempts. Please try again in `<N>` seconds."
+
+The English URLs (`i/en/<id>.html`, `<site>en/`) entered the refresher's
+state with `run.mjs --adopt` at issue 64 and were never pushed: Telegram had
+no preview of them to correct. From then on a change to their `og:*` text or
+picture is stale by the normal rule and pushed. `--adopt` refuses the
+Russian root and the Russian stubs.
 
 ## 9. Installable app (PWA)
 
@@ -219,8 +241,8 @@ boot through `PwaPort`, as `./sw.js`, so its scope is the site folder.
 | `./`, `assets/app.js`, `data.js`, `manifest.webmanifest`, the three manifest icons, `img/_none.webp`, `img/thumb/_none.webp` | Precached into `dhloot-shell-v1` on install |
 | `img/thumb/` | Cache first in `dhloot-thumb-v1`, capped at 1500 entries, above the whole thumbnail set; the same revalidation on every hit; an offline miss is answered with the cached `img/<x>.webp` from `dhloot-img-v1` when there is one, else it rejects as for `img/`, and the app's `onerror` swaps in `img/thumb/_none.webp`, answered from the shell cache's precached copy |
 | `img/` except `img/thumb/` | Cache first in `dhloot-img-v1`, capped at 300 entries (the oldest goes first); a hit is answered from the cache at once and revalidated in the background: an ok answer with the cached `ETag` writes nothing, a different or absent `ETag` replaces the entry, a failed fetch keeps it; a miss is answered as soon as the network answers, and stored and trimmed in the background; an offline miss rejects, the app's `onerror` then swaps in `img/_none.webp`, which is answered from the shell cache's precached copy |
-| `og/`, `i/`, `data.json`, `catalog.csv`, `llms.txt`, `robots.txt`, `404.html`, another origin, a path outside the scope, any method but `GET` | Not handled: the browser's own network, so the stubs, the previews and the 404 fallback (section 7) behave as before |
-| Everything else (the shell, `card/`, `icons/`, `pages/`) | Network first with a 5 s timeout, a navigation taking the navigation preload response where the browser has it (enabled on activate), stored on every successful answer under its URL without the query (`?fbclid=...` adds no entry); the cached copy when the network fails; a navigation to the scope root or `index.html` falls back to the cached `./` |
+| `og/`, `i/` (so `i/en/` too), `data.json`, `catalog.csv`, `llms.txt`, `robots.txt`, `404.html`, another origin, a path outside the scope, any method but `GET` | Not handled: the browser's own network, so the stubs, the previews and the 404 fallback (section 7) behave as before |
+| Everything else (the shell, `card/`, `icons/`, `pages/` and `pages/en/`, `en/`) | Network first with a 5 s timeout, a navigation taking the navigation preload response where the browser has it (enabled on activate), stored on every successful answer under its URL without the query (`?fbclid=...` adds no entry); the cached copy when the network fails; a navigation to the scope root or `index.html` falls back to the cached `./`. An `en/#/...` link opened offline after one online visit to `en/` redirects into the cached `./`; a never-visited `en/` shows the browser's own offline page |
 
 - Every hash route is the one document, so the cached `./` answers every
   list link, section, record page and print sheet offline.
@@ -274,41 +296,82 @@ are plain static files, so each has a plain URL that works without
 JavaScript and without a hash route (the route grammar is frozen,
 `CONTRACTS.md` section 1).
 
-- Sources are `pages/src/<id>.html`: authored, tracked, a body fragment
-  with a `<section lang="ru">`, an `<hr />` and a `<section lang="en">`.
-  Outputs are `pages/<id>.html`, written by `tools/build-pages.js` through
+- One page per language: `pages/<id>.html` is Russian and keeps the URL,
+  `pages/en/<id>.html` is English (issue 64; the shape of `i/en/` and
+  `en/`). No `pages/ru/`.
+- Sources are two body fragments, `pages/src/<id>.html` (Russian) and
+  `pages/src/en/<id>.html` (English): authored, tracked, content only - no
+  `<section lang>` wrapper (the document's `<html lang>` carries the
+  language) and no link back to the app. `tools/build-pages.js` throws
+  when a page has no fragment in one of the languages.
+- Outputs are written by `tools/build-pages.js` through
   `node tools/build.js`, gitignored like `i/`. The template adds the head
-  (`noindex, nofollow`, section 1), the style, `<main id="app-page">` and
-  a back link at its top and its bottom.
-- Both languages sit on one page, Russian first, like `404.html`: no
-  script reads the language preference there.
-- Links are relative (`../` is the app), unlike `404.html` (section 7): a
-  page here is always served at its own path.
-- The back link reads «Назад к генератору / Back to the generator»,
-  `href="../"`. A small inline script calls `history.back()` instead when
-  the referrer is the app document (same origin, the scope root or
-  `index.html`) and the tab has history, so the reader returns to the
-  exact hash route; a direct visit, a new tab or no JavaScript opens `../`.
-- `pages/src/` is never published: `ci.yml` copies `pages/*.html` only
-  and refuses `_site/pages/src`. `vite.config.mts` junctions `pages/`
-  into `dist/` with the artwork, so the built app serves the pages too.
-- `.claude/hooks/edit-guard.mjs` blocks a direct write to `pages/*.html`;
-  `tests/derived.js` compares each output with a fresh render, and
-  `tools/check-site.mjs` probes `pages/install.html`.
+  (`noindex, nofollow`, section 1; a `description` and a text preview
+  card - `og:type article`, `og:title`, `og:description`, `og:url`,
+  `og:locale` with the other language as the alternate, `twitter:card
+  summary` - from the `PAGES` entry's `title` and `desc` pairs, with no
+  `og:image`: a page is a document, not the site), the style and
+  `<main id="app-page">`, which holds the back link, a link to the copy in
+  the other language, the fragment, and the back link again.
+- The template owns the back links and the language link because their
+  depth differs: the Russian page links `en/<id>.html` and `../`, the
+  English one `../<id>.html` and `../../`. A relative link inside a
+  fragment would resolve on one output only, so a fragment links the app
+  through the template's back link only.
+- The back link reads «Назад к генератору» on the Russian page and "Back
+  to the generator" on the English one, with `data-back`. A small inline
+  script calls `history.back()` instead when the referrer is the app
+  document (same origin; below the app root that the link's own `href`
+  names, the path is empty or `index.html`) and the tab has history, so
+  the reader returns to the exact hash route. A direct visit, a new tab, no
+  JavaScript, or a referrer that is the other language's copy opens the app
+  root. The script is the page's only one and stores nothing, so an English
+  page does not store the language preference the way an English stub does
+  (`docs/specs/I18N.md`).
+- `pages/src/` is never published: `ci.yml` copies `pages/*.html` and
+  `pages/en/*.html` only and refuses `_site/pages/src`. `vite.config.mts`
+  junctions `pages/` into `dist/` with the artwork, so the built app
+  serves both copies too.
+- `.claude/hooks/edit-guard.mjs` blocks a direct write to `pages/*.html`
+  and `pages/en/*.html`; `tests/derived.js` compares each output with a
+  fresh render and checks its language, head, sibling link, both back links
+  and the script; `tools/check-site.mjs` probes `pages/install.html` and
+  `pages/en/install.html`; `tests/app/states.js` case 29 follows the top
+  back link in both languages.
 - The worker treats `pages/` as shell: a page read once online is readable
   offline; a page never opened shows the browser's own offline page,
   because only the scope root and `index.html` fall back to the cached
   `./`. The pages are not precached: the install guide is read before
   installing, which happens online.
-- The footer's nav row links them, drawn only where its link can be used
-  (`FEATURES.md`, "Chrome").
+- The footer's nav row links them, drawn only where its link can be used,
+  and every link starts from `Shell.svelte`'s `pagesDir` (`pages/en/` in
+  English, `pages/` in Russian), so a reader lands on the copy of the
+  language on screen (`FEATURES.md`, "Chrome").
+- The pages stay outside `tools/tg-preview`'s manifest: a Telegram preview
+  of one stays cached until a hand push (section 8), which a text card with
+  no picture and a rare text change does not justify.
 
-One more page is: one `PAGES` entry in `tools/build-pages.js` (the id and
-the two titles), one source `pages/src/<id>.html`, and one footer link (a
-`dict.ts` key pair and one `<a>` in `Shell.svelte`'s nav). The nav's
-`{#if app.showInstall}` guard covers the install link only, but today it
-wraps the whole `<nav>`: with a second link, move the guard onto the install
-`<a>`, or the installed app and a folder hide the new link too.
+One more page, in order:
+
+1. One `PAGES` entry in `tools/build-pages.js`: the id, the `title` pair
+   and the `desc` pair.
+2. Two fragments, `pages/src/<id>.html` (Russian) and
+   `pages/src/en/<id>.html` (English): content only, no wrapper, no back
+   link, no relative link to the app.
+3. One footer link: a `dict.ts` key pair and one
+   `<a href={pagesDir + '<id>.html'}>` in `Shell.svelte`'s nav. The nav's
+   `{#if app.showInstall}` guard covers the install link only, but today it
+   wraps the whole `<nav>`: with a second link, move the guard onto the
+   install `<a>`, or the installed app and a folder hide the new link too.
+4. `node tools/build.js`.
+5. A page submitted to a verifier or a messenger (the persistence work's
+   `privacy` and `terms`) joins `ci.yml`'s by-name list and
+   `check-site.lib.mjs`'s probes, in both languages. A submitted URL is
+   frozen; each language has its own, and the Russian page links the
+   English one at its top.
+
+The `derived` suite, the collect step, the junction, the worker rule and the
+edit guard already cover every `pages/*.html` and `pages/en/*.html`.
 
 ### From a folder, and on iOS
 

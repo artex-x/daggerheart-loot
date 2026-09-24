@@ -23,6 +23,10 @@
     { value: 'en', label: 'EN' }
   ];
 
+  /* A static page has one copy per language (docs/specs/META.md section 9):
+     every footer link starts here, so it opens the copy of the language on screen. */
+  const pagesDir = $derived(app.lang === 'en' ? 'pages/en/' : 'pages/');
+
   /**
    * A record, a section or an owned list titles the tab
    * with its own name ahead of the app's - `<name> — <docTitle>` - and every
@@ -118,7 +122,7 @@
        used (FEATURES.md, "Chrome"). -->
   {#if app.showInstall}
     <nav class="foot-nav" aria-label={app.t.footNavLabel}>
-      <a href="pages/install.html">{app.t.installLink}</a>
+      <a href={pagesDir + 'install.html'}>{app.t.installLink}</a>
     </nav>
   {/if}
   <p>

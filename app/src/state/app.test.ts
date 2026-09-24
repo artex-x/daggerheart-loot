@@ -287,6 +287,25 @@ describe('the install link', () => {
   });
 });
 
+describe('links to hand somebody else', () => {
+  it('follow the language on screen', () => {
+    const app = new AppState(at('#/roll/std'));
+    expect(app.linkToRecord('w1')).toBe('https://example.test/i/w1.html');
+    expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
+    app.setLang('en');
+    expect(app.linkToRecord('w1')).toBe('https://example.test/i/en/w1.html');
+    expect(app.linkTo('#/lists')).toBe('https://example.test/en/#/lists');
+  });
+
+  it('are the in-app route from a folder in both languages', () => {
+    const router = { ...memoryRouter('#/roll/std'), hosted: () => false };
+    const app = new AppState(fakeEnv({ router }));
+    expect(app.linkToRecord('w1')).toBe('https://example.test/index.html#/i/w1');
+    app.setLang('en');
+    expect(app.linkToRecord('w1')).toBe('https://example.test/index.html#/i/w1');
+  });
+});
+
 describe('the storage notice', () => {
   const WARN_KEY = 'dhloot.warn.v1';
 

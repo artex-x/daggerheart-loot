@@ -94,24 +94,63 @@ console.log('stubs match the generator');
 /* craft.js checks stubs against the start of the description - that is
    enough while only the data changes. But an edit to the generator itself
    (say, an added meta tag) does not show there: the description matches
-   while every page at once is stale. So here all 953 are re-rendered and
-   compared in full. */
-const { page } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
-const drift = ALL.filter(function (x) {
-  const p = path.join(ROOT, 'i', x.id + '.html');
-  return !fs.existsSync(p) || fs.readFileSync(p, 'utf8') !== page(x);
+   while every page at once is stale. So here every stub of both languages
+   and the English entry document are re-rendered and compared in full. */
+const { page, rootPage } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
+[
+  ['i', 'ru'],
+  ['i/en', 'en']
+].forEach(function ([dir, lang]) {
+  const drift = ALL.filter(function (x) {
+    const p = path.join(ROOT, dir, x.id + '.html');
+    return !fs.existsSync(p) || fs.readFileSync(p, 'utf8') !== page(x, lang);
+  });
+  ok(
+    drift.length === 0,
+    dir +
+      '/ stubs are stale: ' +
+      drift.length +
+      ', for example ' +
+      drift
+        .slice(0, 5)
+        .map((x) => x.id)
+        .join(', ') +
+      ' — run node tools/build.js'
+  );
 });
+const enRootPath = path.join(ROOT, 'en', 'index.html');
 ok(
-  drift.length === 0,
-  'stubs are stale: ' +
-    drift.length +
-    ', for example ' +
-    drift
-      .slice(0, 5)
-      .map((x) => x.id)
-      .join(', ') +
-    ' — run node tools/build.js'
+  fs.existsSync(enRootPath) && fs.readFileSync(enRootPath, 'utf8') === rootPage(),
+  'en/index.html is missing or stale — run node tools/build.js'
 );
+/* The English stub is a separate page at its own path (docs/specs/I18N.md):
+   one level deeper, so its picture climbs two folders, and it never falls
+   back to the Russian text. Two records: one with a craft line, one frame
+   piece with a stat line. */
+[ALL.find((x) => x.craft), ALL.find((x) => x.eq && x.frame)].forEach(function (x) {
+  const html = page(x, 'en');
+  ok(html.includes('<html lang="en">'), 'stub i/en/' + x.id + ': <html lang> is not en');
+  ok(
+    html.includes('<meta property="og:url" content="' + D.SITE + 'i/en/' + x.id + '.html">'),
+    'stub i/en/' + x.id + ': og:url is not its own English address'
+  );
+  ok(
+    html.includes('<meta property="og:locale" content="en_US">'),
+    'stub i/en/' + x.id + ': og:locale is not en_US'
+  );
+  ok(
+    html.includes('src="../../img/'),
+    'stub i/en/' + x.id + ': the picture does not climb two folders'
+  );
+  ok(
+    html.includes('<meta property="og:title" content="' + x.en.replace(/&/g, '&amp;')),
+    'stub i/en/' + x.id + ': og:title is not the English name'
+  );
+  ok(
+    /localStorage\.getItem\('dhloot\.lang\.v1'\)/.test(html),
+    'stub i/en/' + x.id + ': the script does not seed the language only when none is stored'
+  );
+});
 
 /* An artifact weapon's stub names its section where a rank would go. The
    fixture keeps the line pinned if Oath of Balance (voa4_a3) ever moves. */
@@ -156,6 +195,8 @@ ok(
   'app/index.html has no noindex'
 );
 ok(NOINDEX.test(page(ALL[0])), 'the stub generator stopped setting noindex');
+ok(NOINDEX.test(page(ALL[0], 'en')), 'the English stubs lost noindex');
+ok(NOINDEX.test(rootPage()), 'en/index.html lost noindex');
 /* 404.html is authored, not generated (tools/build.js never touches it), so
    neither of the above two checks reaches it - a deleted noindex or a
    deleted id="app-404" marker on this file stayed green through npm run
@@ -182,47 +223,93 @@ console.log('site pages match the generator');
 /* docs/specs/META.md section 9, "Static pages". Each page is re-rendered from
    its source and compared in full, like the stubs above. */
 const SITE_PAGES = require(path.join(ROOT, 'tools', 'build-pages.js'));
-SITE_PAGES.PAGES.forEach(function ({ id }) {
-  const src = path.join(ROOT, 'pages', 'src', id + '.html');
-  const out = path.join(ROOT, 'pages', id + '.html');
-  ok(fs.existsSync(src), 'pages/src/' + id + '.html is missing');
-  if (!fs.existsSync(src)) return;
-  const html = fs.existsSync(out) ? fs.readFileSync(out, 'utf8') : null;
-  ok(html !== null, 'pages/' + id + '.html is missing — run node tools/build.js');
-  if (html === null) return;
+/* One copy per language (docs/specs/META.md section 9): the Russian page keeps
+   pages/<id>.html, the English one is pages/en/<id>.html, and the template owns
+   the link to the other copy and the link back to the app, one folder deeper
+   for English. */
+const PAGE_DIR = { ru: '', en: 'en/' };
+const SIBLING_HREF = { ru: (id) => 'en/' + id + '.html', en: (id) => '../' + id + '.html' };
+const BACK_HREF = { ru: '../', en: '../../' };
+SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
   ok(
-    html === SITE_PAGES.render(id),
-    'pages/' + id + '.html is stale — run node tools/build.js'
+    !!(desc && desc.ru && desc.en),
+    'tools/build-pages.js: PAGES entry ' + id + ' needs a desc in both languages'
   );
-  ok(NOINDEX.test(html), 'pages/' + id + '.html has no noindex');
-  ok(
-    html.includes('lang="ru"') && html.includes('lang="en"'),
-    'pages/' + id + '.html does not carry both languages'
-  );
-  ok(html.includes('id="app-page"'), 'pages/' + id + '.html has lost its id="app-page" marker');
-  ok(
-    html.split(SITE_PAGES.BACK).length - 1 === 2,
-    'pages/' + id + '.html does not draw the back link at the top and the bottom'
-  );
-  ok(html.includes('history.back()'), 'pages/' + id + '.html has lost the back link script');
-  ok(
-    !fs.readFileSync(src, 'utf8').includes('class="back"'),
-    'pages/src/' + id + '.html draws its own back link; the template owns it'
-  );
-  /* The opposite of 404.html's rule below, for the opposite reason: a site
-     page is served at its own path, so a relative link works on Pages and on
-     any server. */
-  ok(
-    !html.includes('/daggerheart-loot/'),
-    'pages/' + id + '.html carries a root-anchored link; site pages link relatively'
-  );
+  SITE_PAGES.LANGS.forEach(function (lang) {
+    const rel = PAGE_DIR[lang] + id + '.html';
+    const src = path.join(ROOT, 'pages', 'src', rel);
+    const out = path.join(ROOT, 'pages', rel);
+    ok(fs.existsSync(src), 'pages/src/' + rel + ' is missing');
+    if (!fs.existsSync(src)) return;
+    const html = fs.existsSync(out) ? fs.readFileSync(out, 'utf8') : null;
+    ok(html !== null, 'pages/' + rel + ' is missing — run node tools/build.js');
+    if (html === null) return;
+    ok(
+      html === SITE_PAGES.render(id, lang),
+      'pages/' + rel + ' is stale — run node tools/build.js'
+    );
+    ok(NOINDEX.test(html), 'pages/' + rel + ' has no noindex');
+    const other = lang === 'ru' ? 'en' : 'ru';
+    ok(
+      html.includes('<html lang="' + lang + '">') &&
+        !html.includes('<html lang="' + other + '">'),
+      'pages/' + rel + ' is not a ' + lang + ' page'
+    );
+    ok(html.includes('id="app-page"'), 'pages/' + rel + ' has lost its id="app-page" marker');
+    ok(
+      /<meta property="og:title" content="[^"]+">/.test(html),
+      'pages/' + rel + ' has no og:title'
+    );
+    ok(
+      html.includes('<meta property="og:url" content="' + D.SITE + 'pages/' + rel + '">'),
+      'pages/' + rel + ': og:url is not its own address'
+    );
+    ok(
+      /<meta name="description" content="[^"]+">/.test(html),
+      'pages/' + rel + ' has no description'
+    );
+    ok(
+      html.includes('href="' + SIBLING_HREF[lang](id) + '"'),
+      'pages/' + rel + ' does not link its copy in the other language'
+    );
+    ok(
+      html.split('<a class="back" href="' + BACK_HREF[lang] + '" data-back>').length - 1 === 2,
+      'pages/' +
+        rel +
+        ' does not draw the back link ("' +
+        BACK_HREF[lang] +
+        '") at the top and the bottom'
+    );
+    ok(
+      (html.match(/<script/gi) || []).length === 1 &&
+        html.includes('history.back()') &&
+        !html.includes('localStorage'),
+      'pages/' + rel + ' must carry one script, the back link one, which stores nothing'
+    );
+    const source = fs.readFileSync(src, 'utf8');
+    ok(
+      !source.includes('class="back"') && !source.includes('data-back'),
+      'pages/src/' + rel + ' draws its own back link; the template owns it'
+    );
+    /* The opposite of 404.html's rule below, for the opposite reason: a site
+       page is served at its own path, so a relative link works on Pages and on
+       any server. */
+    ok(
+      !/(href|src)="[^"]*\/daggerheart-loot\//.test(html),
+      'pages/' + rel + ' carries a root-anchored link; site pages link relatively'
+    );
+  });
 });
 const PAGE_IDS = SITE_PAGES.PAGES.map((p) => p.id);
-const orphanSources = fs.existsSync(path.join(ROOT, 'pages', 'src'))
-  ? fs
-      .readdirSync(path.join(ROOT, 'pages', 'src'))
-      .filter((f) => f.endsWith('.html') && PAGE_IDS.indexOf(f.slice(0, -5)) < 0)
-  : [];
+const orphanSources = ['', 'en'].flatMap(function (sub) {
+  const dir = path.join(ROOT, 'pages', 'src', sub);
+  return fs.existsSync(dir)
+    ? fs
+        .readdirSync(dir)
+        .filter((f) => f.endsWith('.html') && PAGE_IDS.indexOf(f.slice(0, -5)) < 0)
+        .map((f) => (sub ? sub + '/' : '') + f)
+    : [];
+});
 ok(
   orphanSources.length === 0,
   'pages/src has a source with no PAGES entry in tools/build-pages.js: ' +
@@ -373,12 +460,87 @@ ok(
     'x' +
     shareFacts['og:image:height']
 );
-ok(fs.existsSync(path.join(ROOT, 'og', '_share.jpg')), 'the shared og picture is not on disk');
+/* Both site cards are committed JPEGs (docs/artwork.md, "The site share
+   cards"). Root npm ci carries no decoder, so the size is read off the JPEG
+   frame header: the first SOF marker holds the height and the width. */
+function jpegSize(file) {
+  const b = fs.readFileSync(file);
+  if (b[0] !== 0xff || b[1] !== 0xd8) return null;
+  let i = 2;
+  while (i + 9 < b.length) {
+    if (b[i] !== 0xff) return null;
+    const marker = b[i + 1];
+    if (
+      marker >= 0xc0 &&
+      marker <= 0xcf &&
+      marker !== 0xc4 &&
+      marker !== 0xc8 &&
+      marker !== 0xcc
+    )
+      return { height: b.readUInt16BE(i + 5), width: b.readUInt16BE(i + 7) };
+    i += 2 + b.readUInt16BE(i + 2);
+  }
+  return null;
+}
+['_share.jpg', '_share_en.jpg'].forEach(function (name) {
+  const file = path.join(ROOT, 'og', name);
+  ok(fs.existsSync(file), 'the site card og/' + name + ' is not on disk');
+  if (!fs.existsSync(file)) return;
+  const size = jpegSize(file);
+  ok(
+    size && size.width === 1200 && size.height === 630,
+    'og/' + name + ' is not a 1200x630 JPEG: ' + JSON.stringify(size)
+  );
+});
 ok(
   shareFacts['twitter:image'] === shareFacts['og:image'],
   'twitter:image diverges from og:image: ' + shareFacts['twitter:image']
 );
 ok(shareFacts['og:locale'] === 'ru_RU', 'og:locale is not ru_RU: ' + shareFacts['og:locale']);
+
+/* The English entry document (docs/specs/META.md section 2): the same card
+   fields as app/index.html, in English, with its own picture. Not the two
+   PWA tags - it is a redirect page, never the installed app's document. */
+const enFacts = fs.existsSync(enRootPath) ? headFacts('en/index.html') : {};
+['description', 'robots', 'color-scheme', 'viewport', '<title>'].forEach(function (key) {
+  ok(key in enFacts, 'en/index.html head is missing ' + key);
+});
+[
+  ['og:type', 'website'],
+  ['og:title', 'Daggerheart Loot Generator'],
+  ['og:site_name', 'Daggerheart Loot Generator'],
+  ['og:url', SITE + 'en/'],
+  ['og:image', SITE + 'og/_share_en.jpg'],
+  ['og:image:width', '1200'],
+  ['og:image:height', '630'],
+  ['og:locale', 'en_US'],
+  ['og:locale:alternate', 'ru_RU'],
+  ['twitter:card', 'summary_large_image'],
+  ['twitter:image', SITE + 'og/_share_en.jpg']
+].forEach(function ([key, want]) {
+  ok(enFacts[key] === want, 'en/index.html ' + key + ' is not ' + want + ': ' + enFacts[key]);
+});
+['og:description', 'twitter:title', 'twitter:description', 'og:image:alt'].forEach(
+  function (key) {
+    ok(!!enFacts[key], 'en/index.html head is missing ' + key);
+  }
+);
+ok(
+  !('theme-color' in enFacts) && !('apple-mobile-web-app-title' in enFacts),
+  'en/index.html carries a PWA tag; it is a redirect page, not the app'
+);
+const enRootHtml = rootPage();
+ok(
+  !/http-equiv="refresh"/i.test(enRootHtml),
+  'en/index.html has a meta refresh, which drops the fragment of a list link'
+);
+ok(
+  enRootHtml.includes("location.replace('../' + location.hash)"),
+  'en/index.html does not redirect to the app with the fragment kept'
+);
+['../catalog.csv', '../data.json', '../llms.txt', '../'].forEach(function (href) {
+  ok(enRootHtml.includes('href="' + href + '"'), 'en/index.html does not link ' + href);
+});
 
 /* `/daggerheart-loot/` is hardcoded in 404.html's two way-home links too
    (tools/derived.js and tools/build-share-pages.js already read SITE, and
@@ -404,15 +566,20 @@ const artless = Object.assign(
 );
 delete artless.img;
 [ALL.find((x) => x.img), artless].forEach(function (x) {
-  const html = page(x);
-  const twCard = /<meta name="twitter:card" content="([^"]*)">/.exec(html);
-  ok(twCard && twCard[1] === 'summary', 'stub ' + x.id + ': twitter:card is not summary');
-  const ogImg = /<meta property="og:image" content="([^"]*)">/.exec(html);
-  const wantImg = SITE + 'og/' + (x.img ? x.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
-  ok(
-    ogImg && ogImg[1] === wantImg,
-    'stub ' + x.id + ': og:image is not ' + wantImg + ', but ' + (ogImg && ogImg[1])
-  );
+  ['ru', 'en'].forEach(function (lang) {
+    const html = page(x, lang);
+    const twCard = /<meta name="twitter:card" content="([^"]*)">/.exec(html);
+    ok(
+      twCard && twCard[1] === 'summary',
+      lang + ' stub ' + x.id + ': twitter:card is not summary'
+    );
+    const ogImg = /<meta property="og:image" content="([^"]*)">/.exec(html);
+    const wantImg = SITE + 'og/' + (x.img ? x.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
+    ok(
+      ogImg && ogImg[1] === wantImg,
+      lang + ' stub ' + x.id + ': og:image is not ' + wantImg + ', but ' + (ogImg && ogImg[1])
+    );
+  });
 });
 
 console.log('llms.txt');
