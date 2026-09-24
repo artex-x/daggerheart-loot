@@ -45,6 +45,28 @@ describe('the fake cloud', () => {
     expect(calls).toBe(0);
   });
 
+  it('refuses a link with `linkError`, changing nothing and telling nobody', async () => {
+    const { auth } = fakeCloud(SEED, 'gm2', { linkError: 'alreadyLinked' });
+    let calls = 0;
+    auth.onChange(() => {
+      calls++;
+    });
+    expect(await auth.link('discord')).toEqual({ ok: false, error: 'alreadyLinked' });
+    expect(await auth.identities()).toHaveLength(1);
+    expect(calls).toBe(0);
+  });
+
+  it('answers `redirectResult()` with `returned`, as given', async () => {
+    const returned = {
+      kind: 'link',
+      provider: 'discord',
+      result: { ok: false, error: 'alreadyLinked' }
+    } as const;
+    const { auth } = fakeCloud(SEED, 'gm2', { returned });
+    expect(await auth.redirectResult()).toEqual(returned);
+    expect(await fakeCloud(SEED).auth.redirectResult()).toBeNull();
+  });
+
   it('keeps each port apart from the seed and from the others', async () => {
     await fakeCloud(SEED, 'gm1').auth.deleteAccount();
     expect(await fakeCloud(SEED, 'gm1').auth.identities()).toHaveLength(2);

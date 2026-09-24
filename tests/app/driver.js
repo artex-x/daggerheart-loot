@@ -160,7 +160,9 @@ function makeDriver(page, target) {
      *
      * `as` is the test build's signed-in switch: `?as=<user>` before the hash
      * signs that seed user into the fake cloud; without it the page is
-     * signed out (docs/specs/COVERAGE.md, "Test layers").
+     * signed out (docs/specs/COVERAGE.md, "Test layers"). A user the seed
+     * does not have stops the boot with `#boot-error` (main.ts), which
+     * fails here at once rather than as a page that never draws.
      */
     async open(route, { as } = {}) {
       await page.goto('about:blank');
@@ -168,6 +170,12 @@ function makeDriver(page, target) {
         waitUntil: 'networkidle0'
       });
       await ready(page);
+      const refused = await page.evaluate(
+        () => document.getElementById('boot-error')?.textContent ?? null
+      );
+      if (refused !== null) {
+        throw new Error(route + ': the test build refused to boot - ' + refused);
+      }
     },
 
     /** The window a state is looked at through; the breakpoints depend on it. */

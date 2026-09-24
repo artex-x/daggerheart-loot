@@ -11,6 +11,7 @@ RootWebArea "Королевская Брошь — Генератор лута �
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -54,6 +55,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Войти
 Добавить в список
 К содержимому
 Конфиденциальность
@@ -83,6 +85,7 @@ RootWebArea "Royal Brooch — Daggerheart Loot Generator" [url=#/i/cm1]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -136,6 +139,7 @@ Privacy
 RU
 Search
 Share
+Sign in
 Skip to content
 Standard rules
 Tables

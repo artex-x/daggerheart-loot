@@ -39,12 +39,32 @@ entry to its first line before adding another.
   `--env-file .env.test.local` locally, the cloud environment's variables).
   The mint stays `generateLink` then `verifyOtp`, creating the user when
   absent. The probe discriminates: `GET /auth/v1/user` with the publishable
-  key and no `Authorization` must answer 401 `no_authorization`, and one
-  carrying `Bearer a.b.c` must be refused for that token. The test
-  project's secret key is model-visible; it opens the test project only.
+  key and no `Authorization` must answer 401 `no_authorization`, from Node
+  and from a Puppeteer page, and one carrying `Bearer a.b.c` must be refused
+  for that token. The test project's secret key is model-visible; it opens
+  the test project only.
 - Rejected: a proxy API credential (measured to replace every
   `Authorization` header and not to grant admin); anonymous sign-ins (no
-  identity to test `#/account` with); layer 4 in CI only on `main`.
+  identity to test `#/account` with); layer 4 in CI only on `main`;
+  `signInWithPassword` (a second credential shape for one user); a CI-side
+  session mint handed to the cloud (a session token in transit for no gain).
+
+## 2026-09-24 - The account client loads after first paint; a provider redirect settles before mount
+
+- Task: `persist-1-auth` (`B1.2` planner; the unconfigured build: owner).
+- Decision: `ports/supabase.ts` alone imports `@supabase/supabase-js`, as a
+  lazy chunk behind a synchronous `CloudPort` wrapper, so a configured app
+  mounts as fast as an unconfigured one. `main.ts` reads `?auth-callback=1`
+  before mount, restores the route saved in `sessionStorage` (10 minutes)
+  and strips the code and error parameters; the exchange and its outcome
+  (`AuthPort.redirectResult()`) resolve after mount, because a refused link
+  and a cancelled consent arrive on the redirect back, not from the call.
+  With no configuration the branch is a dead literal: no chunk, no account
+  control, and `#/account` is the not-found page.
+- Rejected: mounting after the chunk loads (every reader waits); a static
+  import (the entry carries the client for anonymous readers); supabase-js's
+  `detectSessionInUrl` (races the router); a "sign-in unavailable" page
+  (owner).
 
 ## 2026-09-24 - The laws of no backend and of `file://` are superseded
 

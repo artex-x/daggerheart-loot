@@ -446,5 +446,16 @@
       "printCards": 0,
       "picked": []
     }
+  },
+  {
+    "hash": "#/account",
+    "why": "the account page; with no sign-in configured it is the not-found page, address kept",
+    "resolves": {
+      "hash": "#/account",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
   }
 ]

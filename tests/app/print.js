@@ -1,4 +1,4 @@
-/* #/print/<ids> against dist/ - sheet grid, card size against the design,
+/* #/print/<ids> against dist-test/ - sheet grid, card size against the design,
  * versatile weapons, dice by class, armour, black and white, art
  * edges, text fitting, entry points.
  *

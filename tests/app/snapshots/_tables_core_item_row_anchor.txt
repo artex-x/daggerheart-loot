@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -138,6 +139,7 @@ daggerheart.com
 Банка с Огнём
 Бездонная Сумка
 Ботинки Хождения по Воде
+Войти
 Глиняный Спутник
 Двойная Фляга
 Заряжающий Колчан
@@ -222,6 +224,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/core_item/ci1]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -407,6 +410,7 @@ Ring of Silence
 Ring of Unbreakable Resolve
 Search
 Shard of Memory
+Sign in
 Skeleton Key
 Skip to content
 Speaking Orbs

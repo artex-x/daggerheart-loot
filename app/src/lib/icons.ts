@@ -102,6 +102,11 @@ export const ICONS = {
   back: {
     d: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
     size: 15
+  },
+  /* Not in app.js: the header's account control (FEATURES.md, "Chrome"). */
+  user: {
+    d: 'M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4zm0 2.1c-3.4 0-8.4 1.7-8.4 5v1.3h16.8v-1.3c0-3.3-5-5-8.4-5z',
+    size: 15
   }
 } as const satisfies Record<string, IconDef>;
 

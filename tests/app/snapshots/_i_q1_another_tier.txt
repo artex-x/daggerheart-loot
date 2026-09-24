@@ -32,6 +32,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Войти
 Добавить в список
 Закрыть
 К содержимому
@@ -102,6 +103,7 @@ Privacy
 RU
 Search
 Share
+Sign in
 Skip to content
 Standard rules
 Tables

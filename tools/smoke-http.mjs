@@ -87,6 +87,30 @@ const after = await page.evaluate(async () => ({
 ok(after.registrations === 1, 'not one worker registration: ' + String(after.registrations));
 ok(after.controlled, 'the worker does not control the page after one reload');
 ok(after.mounted, 'the app did not render on the controlled reload');
+
+/* A build with no sign-in configured - what `npm run build` makes unless the
+   two VITE_SUPABASE_* values are in its environment - draws no account
+   control, and `#/account` is the not-found page at the same address
+   (docs/specs/FEATURES.md, "Account"). */
+if (!process.env.VITE_SUPABASE_URL) {
+  const control = await page.evaluate(
+    () => !!document.querySelector('header a[href="#/account"]')
+  );
+  ok(!control, 'an unconfigured build draws the account control');
+  await page.goto(root + 'index.html#/account', { waitUntil: 'load' });
+  await page.waitForFunction(() => !!document.querySelector('#app h1'));
+  const account = await page.evaluate(() => ({
+    heading: document.querySelector('#app h1')?.textContent ?? '',
+    hash: location.hash,
+    control: !!document.querySelector('header a[href="#/account"]')
+  }));
+  ok(
+    account.heading === 'Предмет не найден',
+    'an unconfigured #/account does not draw the not-found page: ' + account.heading
+  );
+  ok(account.hash === '#/account', 'an unconfigured #/account moved to ' + account.hash);
+  ok(!account.control, 'an unconfigured #/account draws the account control');
+}
 ok(!errors.length, 'the page complains over HTTP: ' + errors.join('; '));
 
 /* The <noscript> block's own links: with scripting on, the browser never

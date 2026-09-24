@@ -14,14 +14,19 @@
      *  panel's own field carries one (14px with a result shown, 0 without),
      *  which is how it beats `.lroll>:last-child{margin-bottom:13px}`. */
     after?: number;
+    /** The caption heads its panel as an `<h2>` rather than labelling a
+     *  row - the account page's sections. */
+    heading?: boolean;
     children: Snippet;
   }
 
-  const { label, after, children }: Props = $props();
+  const { label, after, heading = false, children }: Props = $props();
 </script>
 
 <div class="field" style={after === undefined ? undefined : `margin-bottom:${String(after)}px`}>
-  {#if label}<span class="lbl">{label}</span>{/if}
+  {#if label && heading}<h2 class="lbl">{label}</h2>{:else if label}<span class="lbl"
+      >{label}</span
+    >{/if}
   {@render children()}
 </div>
 
@@ -43,6 +48,6 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--muted2);
-    margin-bottom: 8px;
+    margin: 0 0 8px;
   }
 </style>

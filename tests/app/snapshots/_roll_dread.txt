@@ -11,6 +11,7 @@ RootWebArea "Dread — Генератор лута — Daggerheart" [url=#/roll/
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -61,6 +62,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Войти
 К содержимому
 Как это работает
 Конфиденциальность
@@ -93,6 +95,7 @@ RootWebArea "Dread — Daggerheart Loot Generator" [url=#/roll/dread]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -157,6 +160,7 @@ Random 1–29
 Roll result
 Search
 Share
+Sign in
 Skip to content
 Standard rules
 Tables

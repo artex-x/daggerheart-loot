@@ -2254,7 +2254,8 @@ async function noticeSummaryWinsItsTaps() {
 
 /** 35. The test build's cloud: signed out without `?as=`, the seed's `gm1`
  *  with `?as=gm1` - and the query survives arrival, so a reload keeps the
- *  session (docs/specs/COVERAGE.md, "Test layers"). */
+ *  session; a user the seed does not have fails `open()` by name
+ *  (docs/specs/COVERAGE.md, "Test layers"). */
 async function fakeCloudSignedState() {
   const at = '35 (fake cloud signed state): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
@@ -2279,6 +2280,14 @@ async function fakeCloudSignedState() {
     at + 'as gm1: the email is ' + JSON.stringify(as.session?.email)
   );
   ok(as.search === '?as=gm1', at + 'the query did not survive arrival - ' + as.search);
+  const refused = await d.open('#/roll/std', { as: 'nobody' }).then(
+    () => '',
+    (e) => String(e && e.message)
+  );
+  ok(
+    refused.includes('unknown user "nobody"'),
+    at + 'an unknown ?as= user did not fail open() by name - ' + JSON.stringify(refused)
+  );
   await ctx.close();
 }
 
@@ -2338,7 +2347,7 @@ const CASES = [
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\nreal-input states (dist-test/): all ' + CASES.length + ' cases passed'
+      : '\nreal-input states (dist-test/): all ' + CASES.length + ' runs passed'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

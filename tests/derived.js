@@ -298,6 +298,13 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
       !/(href|src)="[^"]*\/daggerheart-loot\//.test(html),
       'pages/' + rel + ' carries a root-anchored link; site pages link relatively'
     );
+    ok(!html.includes('%APP%'), 'pages/' + rel + ' still holds %APP%; page() replaces it');
+    if (id === 'privacy') {
+      ok(
+        html.includes('href="' + BACK_HREF[lang] + '#/account"'),
+        'pages/' + rel + ' does not link the account page at its own depth'
+      );
+    }
   });
 });
 const PAGE_IDS = SITE_PAGES.PAGES.map((p) => p.id);

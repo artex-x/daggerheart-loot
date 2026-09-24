@@ -1,12 +1,13 @@
 # State: what lives where
 
 Three places, and the boundary between them is a product decision rather than an
-implementation detail.
+implementation detail. A fourth holds one short-lived record.
 
 | Where | Holds | Survives a reload |
 |---|---|---|
 | URL hash | anything shareable: route, table, anchor, filters, the whole contents of a shared list, what to print | yes, and travels to other people |
 | `localStorage` | preferences and the person's own lists | yes, on this browser only; kept under storage pressure in the installed app (`META.md` section 9) |
+| `sessionStorage` | `dhloot.auth.return`: where a provider redirect comes back to | this tab only, honoured for 10 minutes and removed when read |
 | Memory (`S`) | everything else | no |
 
 **The rule: how a page looks is remembered, what was asked on it is not.** A
@@ -30,7 +31,15 @@ is for.
 | `dhloot.prefs.v1` | `{ view: 'list' \| 'grid' }` |
 | `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |
 | `dhloot.probe` | written and removed to test whether storage works at all |
+| `sb-<ref>-auth-token` | the signed-in session (`<ref>` is the Supabase project), and `sb-<ref>-auth-token-code-verifier` while a provider redirect is in flight - written and removed by supabase-js, never by the app |
 | `dhloot.lists.v2.bad` | a `dhloot.lists.v2` value that would not parse, copied here once before this tab's own next write would otherwise silently overwrite it - what a newer build, a browser extension, or another page on the shared origin left behind, kept rather than lost (R1) |
+
+`dhloot.auth.return` (`sessionStorage`) is `{ hash, at, kind, provider }`,
+written just before sign-in or Connect leaves for the provider
+(`app/src/ports/redirect.ts`). The page that comes back reads and removes
+it before mount and returns to `hash` only when every field is one the app
+could have written - a `#/` route under 2048 characters, `at` within 10
+minutes, a known `kind` and provider; otherwise it opens `#/account`.
 
 Every read is defensive: a value that does not parse, or does not pass its own
 validity check, is replaced by the default and the rest is kept. Broken JSON is
@@ -85,7 +94,7 @@ state exists, by what it was for:
 
 | Group | Fields |
 |---|---|
-| Session | `lang`, `route` |
+| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), `alreadyLinked` (the provider a Connect was refused for) |
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `comm {c, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}` |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |

@@ -11,6 +11,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -53,6 +54,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Войти
 Доспешный Сшиватель
 К содержимому
 Конфиденциальность
@@ -78,6 +80,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -125,6 +128,7 @@ Privacy
 RU
 Save to my lists
 Search
+Sign in
 Skip to content
 Spidersilk Tunic
 Spidersilk Tunic1 handfulTier 2 · Thresholds 9/20 · Armor 4Wall-... [namelen=157 namehash=d6f04d1b]

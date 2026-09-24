@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -235,6 +236,7 @@ daggerheart.com
 Возвращающийся клинок
 Возвращающийся клинокРанг 1 · Магическое · Искусность · Средне ·... [namelen=212 namehash=acfa782a]
 Войнарианский Арбалет
+Войти
 Волнистый Кинжал
 Волнистый КинжалРанг 1 · Физическое · Знание · Вплотную · d8 физ... [namelen=190 namehash=b7c003dc]
 Волшебная Палочка Цепной Молнии
@@ -906,6 +908,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -1682,6 +1685,7 @@ Shotgun
 ShotgunTier 1 · Physical · Strength · Very Close · d6+2 phy · Tw... [namelen=198 namehash=38c8e230]
 Sickle
 SickleTier 1 · Physical · Presence · Melee · d8 phy · One-Handed... [namelen=189 namehash=65408d3c]
+Sign in
 Singing Sword
 Singing SwordTier 3 · Physical · Presence · Very Close · d8+5 ph... [namelen=202 namehash=773a5175]
 Siphoning Gauntlets

@@ -41,7 +41,8 @@ const PAGES = [
   '#/lists/a',
   '#/i/w1',
   '#/i/q1',
-  '#/search'
+  '#/search',
+  '#/account'
 ];
 
 const STORAGE = {
@@ -80,7 +81,8 @@ const STORAGE = {
  * never presses; `.lnote`/the per-row note toggle are `ListPage.svelte`
  * only, so `#/lists` (no entries of its own) gets neither; every `PageHead`
  * caller among these routes has help text except `SearchPage`
- * (`help={null}`), and `RecordPage`/`ListPage` render no `PageHead` at all. */
+ * (`help={null}`), and `RecordPage`/`ListPage`/`AccountPage` render no
+ * `PageHead` at all. */
 const EXPECTED = {
   '#/roll/std': ['help'],
   '#/roll/alt': ['help'],
@@ -95,7 +97,8 @@ const EXPECTED = {
   '#/lists/a': ['note', 'listNote'],
   '#/i/w1': ['addToList'],
   '#/i/q1': ['addToList'],
-  '#/search': []
+  '#/search': [],
+  '#/account': []
 };
 
 /* `softClick`'s three name-based grips, in both languages this suite drives -

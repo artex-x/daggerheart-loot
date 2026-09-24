@@ -18,6 +18,7 @@
   /* The application. Routes are matched here and nowhere else; every branch
      below will become its own component as the phases go on. */
   import { untrack } from 'svelte';
+  import AccountPage from './components/AccountPage.svelte';
   import AltPanel from './components/AltPanel.svelte';
   import Button from './components/Button.svelte';
   import CommunityPanel from './components/CommunityPanel.svelte';
@@ -89,6 +90,8 @@
       <ListPage {app} />
     {:else if app.route.kind === 'print'}
       <PrintPage {app} ids={app.route.ids} dropped={app.route.dropped} qty={app.route.qty} />
+    {:else if app.route.kind === 'account' && app.env.cloud}
+      <AccountPage {app} />
     {:else}
       <!-- R7: `#fallback` keeps `app.hash` readable at boot and on every
            navigation, so a route kind with no branch above should not be

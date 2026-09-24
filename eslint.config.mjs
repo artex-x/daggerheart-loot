@@ -5,6 +5,11 @@ import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 import svelteConfig from './app/svelte.config.mjs';
 
+const SUPABASE_ONLY_IN_PORT = {
+  group: ['@supabase/*'],
+  message: 'only ports/supabase.ts talks to Supabase'
+};
+
 export default ts.config(
   {
     ignores: [
@@ -96,10 +101,23 @@ export default ts.config(
             {
               group: ['**/ports/*', '../ports/*'],
               message: 'a port is already something outside; lib stays pure'
-            }
+            },
+            SUPABASE_ONLY_IN_PORT
           ]
         }
       ]
+    }
+  },
+  {
+    /* The Supabase client is one lazy chunk behind one port
+       (docs/DECISIONS.md, "The account client loads after first paint").
+       `src/lib` is left out here because a later block's
+       `no-restricted-imports` replaces an earlier one's options - the lib
+       block above carries the same pattern instead. */
+    files: ['app/src/**/*.ts', 'app/src/**/*.svelte'],
+    ignores: ['app/src/ports/supabase.ts', 'app/src/lib/**'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [SUPABASE_ONLY_IN_PORT] }]
     }
   },
   {

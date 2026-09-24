@@ -34,7 +34,7 @@ import { encodeList, type DecodedList } from '../lib/listLink.js';
 import { LIST_PAGE, type StoredList } from '../lib/lists.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Section } from '../lib/types.js';
-import type { Env } from '../ports/index.js';
+import type { Env, Provider, Session } from '../ports/index.js';
 import { ListStore } from './lists.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -270,8 +270,20 @@ export class AppState {
   /** Whether the footer offers the install guide: inside the installed app it
    *  is done (`FEATURES.md`, "Chrome"). */
   readonly showInstall: boolean;
+  /**
+   * Who is signed in: `undefined` until the cloud has answered, `null`
+   * signed out, and `null` from the start in a build with no sign-in
+   * configured (`env.cloud` null). The header draws its account control
+   * only once this is known, so a signed-in reader never sees «Войти» flash.
+   */
+  user = $state<Session | null | undefined>(undefined);
+  /** The provider a link was refused for because its identity belongs to
+   *  another account - drawn in that provider's row on `#/account` until
+   *  the next account action there. */
+  alreadyLinked = $state<Provider | null>(null);
   #stopRouter: (() => void) | null = null;
   #stopListWatch: (() => void) | null = null;
+  #stopAuth: (() => void) | null = null;
   /** The hash `go()` itself just wrote, so the router's own change handler
    *  can tell "the app just navigated" apart from "the address changed
    *  underneath it" and not process the same navigation twice. Real
@@ -289,6 +301,7 @@ export class AppState {
     this.#warnHidden = env.storage.get(WARN_KEY) === '1';
     this.#tablesView = readTablesView(env);
     this.storageWorks = env.storage.works();
+    if (!env.cloud) this.user = null;
     this.showInstall = !env.pwa.standalone();
     this.lists = new ListStore(
       env,
@@ -351,9 +364,44 @@ export class AppState {
       this.#expand();
     });
     this.#stopListWatch = this.lists.watch();
+    this.#watchAccount();
     return () => {
       this.stop();
     };
+  }
+
+  /* The session, and how a provider redirect that opened this page ended.
+     A change notification always wins over the first `session()` answer,
+     which may have been read before it. */
+  #watchAccount(): void {
+    const cloud = this.env.cloud;
+    if (!cloud) return;
+    let live = true;
+    let notified = false;
+    const off = cloud.auth.onChange((s) => {
+      notified = true;
+      this.user = s;
+    });
+    this.#stopAuth = () => {
+      live = false;
+      off();
+    };
+    void cloud.auth.session().then(
+      (s) => {
+        if (live && !notified) this.user = s;
+      },
+      () => {
+        if (live && !notified) this.user = null;
+      }
+    );
+    void cloud.auth.redirectResult().then((r) => {
+      if (!live || !r || r.result.ok) return;
+      if (r.kind === 'link' && r.result.error === 'alreadyLinked' && r.provider) {
+        this.alreadyLinked = r.provider;
+      } else {
+        this.say(this.t.accountFailed, { error: true });
+      }
+    });
   }
 
   stop(): void {
@@ -361,6 +409,8 @@ export class AppState {
     this.#stopRouter = null;
     this.#stopListWatch?.();
     this.#stopListWatch = null;
+    this.#stopAuth?.();
+    this.#stopAuth = null;
     /* A timer left running past the listeners it would otherwise update is a
        leak of the same kind `#stopRouter`/`#stopListWatch` already guard
        against. */
@@ -445,6 +495,13 @@ export class AppState {
 
   get t(): Dict {
     return dict(this.lang);
+  }
+
+  /** A static page has one copy per language (docs/specs/META.md section 9):
+   *  the footer and the account page's consent line link the copy of the
+   *  language on screen. */
+  get pagesDir(): string {
+    return this.lang === 'en' ? 'pages/en/' : 'pages/';
   }
 
   /** The one route kind that reads the data at all: print needs to know

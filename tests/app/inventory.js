@@ -1469,6 +1469,41 @@ const STATES = [
     id: '#/print/nope',
     route: '#/print/nope',
     why: 'nothing to print: the heading, the note and the way to the lists'
+  },
+  {
+    id: '#/account',
+    route: '#/account',
+    why: 'signed out: the sign-in chooser, both providers and the consent line'
+  },
+  {
+    id: '#/account as gm2',
+    route: '#/account',
+    as: 'gm2',
+    why: 'one identity: no Disconnect, the only-method hint and Connect Discord'
+  },
+  {
+    id: '#/account as gm1',
+    route: '#/account',
+    as: 'gm1',
+    why: 'two identities: the four sections in order, a Disconnect on each'
+  },
+  {
+    id: '#/account ~ delete confirmation as gm1',
+    route: '#/account',
+    as: 'gm1',
+    why: 'the typed confirmation open, the word typed and the final button enabled',
+    enter: async (d) => {
+      await d.click('Удалить аккаунт...');
+      /* The only text box on the page; it is named by its <label>, which the
+         driver's name lookup does not read, and has no placeholder. */
+      await d.type('', 'удалить');
+    }
+  },
+  {
+    id: '#/roll/std as gm1',
+    route: '#/roll/std',
+    as: 'gm1',
+    why: 'the header signed in: the initial in place of «Войти»'
   }
 ];
 

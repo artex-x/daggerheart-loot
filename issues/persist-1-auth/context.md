@@ -129,6 +129,40 @@ For `.claude/README.md`, "Cloud sessions", in R1's first commit.
 - No `tests/e2e/`, no `supabase/migrations/`, `applied.json` is
   `{ "prod": [], "test": [] }`.
 
+## Owner and human inputs after B1.1 (2026-09-24)
+- The human authorised both `CLAUDE.md` edits in chat, 2026-09-24
+  ("approved"): question A's "Source and commit conventions" last bullet
+  (plan section 4A's text) and "Quality gates" browser suites "(after `npm
+  run build:test`)" (review R1). They land in `B1.2`'s commit.
+- `B1.2` mock answers: `mocks/B1.2/README.md`, "Owner answer" (standing
+  rule: account texts and names are for the final state, in general terms).
+  `B1.4`/`B1.5` answers: `mocks/B1.4/README.md`, "Owner answer".
+- B1.1 review: approve, no blockers; register `reviews.md`.
+
+## Repository facts found by the B1.2 planner (2026-09-24, HEAD `0dd526b`)
+- Migration names must match `^\d{14}_[a-z0-9_]+\.sql$`
+  (`tools/supabase/lib.mjs` `MIGRATION_NAME_RE`); the roadmap's
+  `0002_delete_account.sql` form fails `pairMigrations`. No migration
+  exists yet (no `0001` baseline was created in R0).
+- The up-down-up gate has no pre-`up` base; a migration written with
+  `create function` (not `create or replace`) still fails a reversal that
+  forgets the drop, because the second `up` errors.
+- `tools/bundle-budget.mjs` (120 kB, 100.8 kB at B1.1) measures `dist/`
+  only, which `check:built` and CI `check` build unconfigured; the deploy
+  job's build is the only configured one and ran no budget before B1.2.
+- `ci.yml`'s `deploy` job set no `VITE_SUPABASE_*` before B1.2; the Actions
+  variables exist (roadmap section 15 step 12).
+- `app/src/**` outside `ports/` may not touch `sessionStorage`, `location`
+  or `history` (ESLint); the `#/account` redirect code lives in `ports/`.
+- A site-page fragment may not carry a root-anchored link
+  (`tests/derived.js`); the `#/account` link in `privacy` needs the
+  template's depth (`../` or `../../`).
+- Every golden's tree includes the header banner, so a header control in
+  the test build moves all 150 goldens (both languages).
+- The app's narrowest checked width is 360 (`COVERAGE.md` "Known thin
+  spots": 320 is below every instrument's floor); at 360 the header has
+  about 71 px free after the language switch (mock estimate).
+
 ## Key paths
 - Roadmap: `issues/persistent-storage/plan.md`, `handoff.md`, `context.md`
 - Cloud facts: `.claude/README.md`, "Cloud sessions"; `.claude/cloud-setup.sh`;
@@ -144,8 +178,14 @@ For `.claude/README.md`, "Cloud sessions", in R1's first commit.
 | `npm run check:built` | 3 s before B1.1; 8 s with both builds and the marker guard (B1.1) | yes |
 | `npm run check:db` | 30 s warm; 115 s with first image pull | yes |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | 346 s (B1.1, 4 at a time) | yes |
-| `node tests/app/sweep.js <width>` | unmeasured here | - |
-| `node tests/app/golden.js --shard=n/4` | 136, 139, 136, 132 s (B1.1) | yes, one shard per call |
+| `npm run check` (B1.2) | 145 s | yes |
+| `npm run check:built` (B1.2) | 9 s | yes |
+| configured build + `npm run budget` (B1.2) | 3 s build, 160.7 kB (supabase chunk 54.0 kB) | yes |
+| `npm run check:db` (B1.2) | 119 s cold, 39 s warm | yes |
+| filter group (B1.2) | 356 s | yes |
+| `node tests/app/sweep.js 360` | 378-379 s (B1.2) | yes |
+| `node tests/app/golden.js --shard=n/4` | 136, 139, 136, 132 s (B1.1); `--update` 139, 143, 141, 134 s and compare 136, 142, 140, 134 s (B1.2, 155 states) | yes, one shard per call |
+| CI `browser` shards, suite step (run 36065518261, `0dd526b`) | 368, 374, 354, 221 s | - |
 
 ## Which machine is authoritative
 - Timings: this cloud host for this release (host rule: a whole release on

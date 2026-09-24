@@ -260,6 +260,11 @@ npm run build:test    # -> dist-test/, dist/ plus the fake cloud: what tests/app
 npm run test:legacy   # the surviving suites, mostly a real browser against dist-test/
 ```
 
+Sign-in is on only in a build configured with `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY`: the dev server reads them from
+`app/.env.local` (gitignored); `npm run build` stays unconfigured unless they
+are in its environment.
+
 ```
 app/src/lib/         pure logic: roll modes, filters, hash grammar, i18n
 app/src/ports/        browser adapters: storage, clipboard, compression, drag

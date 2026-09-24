@@ -11,6 +11,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -108,6 +109,7 @@ daggerheart.com
 Амулет из Пальца Дьявола
 Бутыль с Духом
 Взгляд Ваэт
+Войти
 Временной Фитиль
 Динамит
 ДинамитВы можете поджечь эту динамитную шашку и бросить её в пре... [namelen=355 namehash=25334e3b]
@@ -168,6 +170,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -296,6 +299,7 @@ RU
 Ring of the Blood Matron
 Rings of Camaraderie
 Search
+Sign in
 Skip to content
 Sphere of Insanity
 Sprite Bottle

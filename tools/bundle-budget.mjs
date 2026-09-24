@@ -14,7 +14,10 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIST = join(import.meta.dirname, '..', 'dist');
-const BUDGET_KB = 120; // gzip, code only
+/* 120 until the account client: the configured build `deploy` ships adds
+   supabase-js as a chunk loaded after first paint - 160.7 kB in all, the
+   chunk 54.0 kB of it (measured 2026-09-24 with placeholder values). */
+const BUDGET_KB = 170; // gzip, code only
 
 if (!existsSync(DIST)) {
   console.log('  FAIL no dist - run `npm run build` first');

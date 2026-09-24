@@ -8,6 +8,7 @@ import {
 } from 'node:fs';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadEnv } from 'vite';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
@@ -138,6 +139,17 @@ function rootFiles(): Plugin {
 export default defineConfig(({ command, mode }) => {
   const testBuild = command === 'build' && mode === 'test';
   const OUT = testBuild ? 'dist-test' : 'dist';
+  /* Sign-in is configured by two values; the test build and vitest have
+     none. `vite build` reads only the process environment (the `deploy` job
+     sets both), never `app/.env.local`, so a local `npm run build` - and
+     `check:built` - stays the unconfigured build unless they are on the
+     command line. The dev server reads `app/.env.local`. */
+  const cloudEnv: Record<string, string | undefined> =
+    testBuild || process.env['VITEST']
+      ? {}
+      : command === 'build'
+        ? process.env
+        : loadEnv(mode, join(ROOT, 'app'), 'VITE_');
   return {
     root: 'app',
     /* The manifest, the service worker and the icons, copied verbatim: the
@@ -147,8 +159,16 @@ export default defineConfig(({ command, mode }) => {
        Pages, `vite preview` and the test server at any path. */
     base: './',
     plugins: [svelte(), dataScript(), artwork(OUT), noscriptData(OUT), rootFiles()],
-    /* A JSON literal, so the fake's branch in main.ts is dead code in `dist/`. */
-    define: { 'import.meta.env.VITE_CLOUD_FAKE': JSON.stringify(testBuild) },
+    /* JSON literals, so a branch of main.ts a build does not take - the
+       fake's in `dist/`, the Supabase client's in an unconfigured build -
+       is dead code, and its chunk is never emitted. */
+    define: {
+      'import.meta.env.VITE_CLOUD_FAKE': JSON.stringify(testBuild),
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(cloudEnv['VITE_SUPABASE_URL'] ?? ''),
+      'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
+        cloudEnv['VITE_SUPABASE_PUBLISHABLE_KEY'] ?? ''
+      )
+    },
     /* Under vitest the modules are loaded the way a server would, and Svelte then
        hands back its server build - where `mount` does not exist. Asking for the
        browser condition during tests is what makes a component test a component

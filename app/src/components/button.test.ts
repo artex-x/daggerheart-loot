@@ -76,6 +76,15 @@ describe('the shared button', () => {
     expect(screen.getByRole('button', { name: 'Press' })).not.toHaveAttribute('aria-expanded');
   });
 
+  it('can be disabled, and then ignores a press', async () => {
+    const spy = vi.fn();
+    render(Button, { onclick: spy, disabled: true, children: label });
+    const el = screen.getByRole('button', { name: 'Press' });
+    expect(el).toBeDisabled();
+    await userEvent.click(el);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
   it('calls back when pressed', async () => {
     const spy = vi.fn();
     render(Button, { onclick: spy, children: label });

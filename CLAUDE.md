@@ -121,7 +121,7 @@ Agents: one foreground call, `rtk npm run check`, Bash timeout 600000 - see `.cl
 
 If a change alters what a screen draws, also run `npm run check:built`; a change under
 `supabase/` or `tests/db/` also runs `npm run check:db` (on Windows through the PowerShell tool), which the commit gate requires.
-Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`; the built app in a real browser (after `npm run build`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
+Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`; the built app in a real browser (after `npm run build:test`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
 `app/sweep` and `app/golden` are each too slow for one foreground call; run them per width/shard - `.claude/README.md`, "Batch size and the fixed cost of a run".
 
 Definition of done: checks pass, fixed defects and changed behaviour have
@@ -156,7 +156,7 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
   Push once, at closeout, after the task directory is deleted. A push closes
   the amend window: never force-push in any form; work after a push is a new
   commit. A push before closeout is the human's call and costs one more commit.
-  A cloud release's one push is its own task branch; the owner fast-forwards `main` to it locally.
+  A cloud session pushes its branch after every green commit (a reclaimed container loses what is not pushed) and never amends a pushed commit; at closeout the owner squash-merges that branch onto `main` as the release's one commit, never a merge commit.
 
 ## Comments
 

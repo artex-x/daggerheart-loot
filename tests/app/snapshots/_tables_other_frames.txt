@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -93,6 +94,7 @@ daggerheart.com
 ВилыРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуручно... [namelen=100 namehash=1d4d5bb2]
 Винтовка
 ВинтовкаРанг 1 · Физическое · Проворность · Очень далеко · d8+2 ... [namelen=188 namehash=a46e5371]
+Войти
 Деревянный Кол
 Деревянный КолРанг 1 · Физическое · Сила · Вплотную · d8 физ · О... [namelen=210 namehash=c756983a]
 Динамит
@@ -302,6 +304,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_frames]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -551,6 +554,7 @@ Shotgun
 ShotgunTier 1 · Physical · Strength · Very Close · d6+2 phy · Tw... [namelen=198 namehash=38c8e230]
 Sickle
 SickleTier 1 · Physical · Presence · Melee · d8 phy · One-Handed... [namelen=189 namehash=65408d3c]
+Sign in
 Silverweave Armor
 Silverweave ArmorTier 1 · Thresholds 5/11 · Armor 3Warded: You r... [namelen=185 namehash=201fa16c]
 Skip to content

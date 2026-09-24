@@ -30,6 +30,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Войти
 Добавить в список
 Закрыть
 К содержимому
@@ -101,6 +102,7 @@ Random 1–119
 Roll result
 Search
 Share
+Sign in
 Skip to content
 Standard rules
 Tables

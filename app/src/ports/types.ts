@@ -243,24 +243,39 @@ export interface Identity {
 export interface Session {
   userId: string;
   email: string;
-  provider: Provider;
+  /** The account's first provider; null when it is neither Google nor
+   *  Discord (an email identity). */
+  provider: Provider | null;
 }
+
+export type AuthError = 'alreadyLinked' | 'lastIdentity' | 'failed';
 
 /** A refusal is an answer, not a throw - the way `ClipboardPort` and
  *  `SharePort` report failure. */
-export type AuthResult =
-  { ok: true } | { ok: false; error: 'alreadyLinked' | 'lastIdentity' | 'failed' };
+export type AuthResult = { ok: true } | { ok: false; error: AuthError };
+
+/** How a provider redirect this page load came back from ended. */
+export interface AuthRedirect {
+  kind: 'signIn' | 'link';
+  provider: Provider | null;
+  result: AuthResult;
+}
 
 export interface AuthPort {
   session(): Promise<Session | null>;
   identities(): Promise<Identity[]>;
-  /** Starts the provider redirect; the fake signs the seed's default user in. */
-  signIn(provider: Provider): Promise<void>;
+  /** Starts the provider redirect; the fake signs the seed's default user in.
+   *  A redirect that cannot start is a refusal, not a throw. */
+  signIn(provider: Provider): Promise<AuthResult>;
   link(provider: Provider): Promise<AuthResult>;
   unlink(identityId: string): Promise<AuthResult>;
-  signOut(scope?: 'local' | 'global'): Promise<void>;
+  signOut(scope?: 'local' | 'global'): Promise<AuthResult>;
   deleteAccount(): Promise<AuthResult>;
   onChange(fn: (session: Session | null) => void): () => void;
+  /** The outcome of the provider redirect that opened this page, or null
+   *  when none did - one answer per page load. A link refused on the
+   *  provider's side reaches the page only here. */
+  redirectResult(): Promise<AuthRedirect | null>;
 }
 
 /** Grows one member per release (R1 auth, R1 prefs, R2 lists, ...). */

@@ -16,16 +16,18 @@ export async function runCloudContract(
 ): Promise<void> {
   const def = seed.users[seed.defaultUser];
 
-  /* 1. signed out at start */
+  /* 1. signed out at start, with no redirect to report */
   const cloud = await make();
   const { auth } = cloud;
   assert((await auth.session()) === null, 'signed out: session is not null');
   assert((await auth.identities()).length === 0, 'signed out: identities are not empty');
+  assert((await auth.redirectResult()) === null, 'a fresh port: there is a redirect result');
 
   /* 2. signIn yields the default user and notifies once */
   const seen: (Session | null)[] = [];
   const off = auth.onChange((s) => seen.push(s));
-  await auth.signIn('google');
+  const signedIn = await auth.signIn('google');
+  assert(signedIn.ok, 'signIn: refused');
   const s = await auth.session();
   assert(s?.userId === def.id, 'signIn: session is not the default user');
   assert(s?.email === def.email, 'signIn: session email is not the default user');
@@ -60,7 +62,8 @@ export async function runCloudContract(
 
   /* 6. signOut clears and notifies null */
   seen.length = 0;
-  await auth.signOut();
+  const signedOut = await auth.signOut();
+  assert(signedOut.ok, 'signOut: refused');
   assert((await auth.session()) === null, 'signOut: session is not null');
   assert(seen.length === 1 && seen[0] === null, 'signOut: onChange did not fire null');
   off();

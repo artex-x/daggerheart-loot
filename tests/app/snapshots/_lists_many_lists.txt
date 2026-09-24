@@ -11,6 +11,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -149,6 +150,7 @@ Wondrous
 daggerheart.com
 Ёлочная ярмарка, 0 позиций
 Альт. таблицы
+Войти
 Восстановить
 Восстановить из ссылки
 К содержимому
@@ -202,6 +204,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -351,6 +354,7 @@ Restore from a link
 Search
 Share
 Show more (6)
+Sign in
 Skip to content
 Standard rules
 Tables

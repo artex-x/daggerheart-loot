@@ -15,7 +15,6 @@ const { assertBuilt, serveDist: serveDistAt } = require('./serve.js');
 
 const ROOT = path.join(__dirname, '..', '..');
 const DIST_TEST = path.join(ROOT, 'dist-test');
-const DIST_HTML = path.join(DIST_TEST, 'index.html');
 
 /* Every suite requires this file before it does anything else, so the guard
    belongs at the top: a missing or stale dist-test/ should say so once, in
@@ -206,8 +205,6 @@ function reporter() {
 }
 
 module.exports = {
-  DIST_HTML,
-  serveDist,
   baseUrl,
   fresh,
   sharedPage,

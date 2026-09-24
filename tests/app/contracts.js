@@ -1,4 +1,4 @@
-/* Public contracts against the golden fixtures, re-pointed at dist/ - the
+/* Public contracts against the golden fixtures, re-pointed at dist-test/ - the
  * browser half of tests/contracts.js. The pure half (the second
  * implementation of the codec) and the llms.txt/CONTRACTS.md/ROUTES.md name
  * greps need no browser and stay there for now. Nothing here edits a

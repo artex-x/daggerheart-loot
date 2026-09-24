@@ -9,10 +9,19 @@
 - Release branch: `claude/kind-curie-nxag95` (cloud session 3; supersedes
   `claude/jolly-allen-ipojqp`). One commit per batch, pushed after each
   green commit (question A).
-- `B1.1`: implemented 2026-09-24 in cloud session 3, all gates green, review
-  pending (trigger: harness, hook edit, CI). One acceptance line is open:
-  the `CLAUDE.md` bullet of question A (see `handoff.md`, Blockers).
-- Next batch: `B1.2` - needs planner refresh (section 7 outline).
+- `B1.1`: done 2026-09-24 in cloud session 3 (`0dd526b`, pushed), all gates
+  green; review: approve, no blockers (findings `reviews.md`, placed in
+  section 7's acceptance lines). Its one open line, the `CLAUDE.md` bullet of
+  question A, moves to `B1.2`: the human authorised both `CLAUDE.md` edits in
+  chat on 2026-09-24.
+- Planning pass 2, 2026-09-24, planner (mode B): `B1.2` refreshed to
+  implement-ready (section 7) on B1.1 as built and the owner's mock answers
+  (`mocks/B1.2/README.md`, "Owner answer"). Sections renumbered: the later
+  outlines are section 8, owner steps 9, risks 10.
+- `B1.2`: done 2026-09-24 in cloud session 3 (one new commit on `0dd526b`,
+  pushed), all gates green; review pending (trigger: public contract, new
+  UI, hook edit). Deviations: `handoff.md`, "Completed".
+- Next batch: `B1.3` - needs planner refresh (outline in section 8).
 
 ## 1. Objective and current state
 
@@ -256,18 +265,18 @@ first cloud reading. Layer 4 ~240 s is the roadmap's estimate.
 | Batch | Goal | Gates (cost, one green pass) | Review | Split criterion from the previous batch |
 |---|---|---|---|---|
 | `B1.1` | Layer 2 reach: `AuthPort`/`CloudPort`, fake cloud and seed, contract test, `vite build --mode test` -> `dist-test/`, `main.ts` selection, marker guard in `check:built`, `tests/app/` driving `dist-test/`, driver `open(route, { as })`, golden `as` naming, CI `browser` on the test build, `COVERAGE.md` four-layer table, README cloud facts; states case 35; cherry-pick of `e1d7a4b` first (question B) | `check` x2 (222 s), `check:built` (re-measured), filter group (~290 s), goldens 4 shards (~600 s, expected "unchanged") - **~19 min** | required: harness every later golden trusts, a hook edit, CI | new release |
-| `B1.2` | `@supabase/supabase-js`, real `auth` adapter, PKCE callback, header control, route `#/account`, `AccountPage.svelte` (five sections, linking, "Sign out everywhere", delete), migration `0002_delete_account.sql` and reversal, `privacy` link; vitest with the fake; goldens: `#/account` signed out, as `gm2`, as `gm1`, header both states | `check` x2, `check:built`, filter group, goldens, `check:db` - **~24 min** | required: public contract, new UI | a public-contract change; and a commit boundary the harness cannot reach (`?as=` and `dist-test/` land in `B1.1`) |
+| `B1.2` | `@supabase/supabase-js` (lazy chunk), real `auth` adapter, PKCE callback settled before mount, header control, route `#/account`, `AccountPage.svelte` (linking, "Sign out everywhere", delete), migration `<ts>_delete_account.sql` and reversal, `privacy` link; B1.1 review findings; the two authorised `CLAUDE.md` edits; goldens: 5 new states, all 150 re-seeded (the header gains the control) - section 7 | `check` x2 (260 s), `check:built` plus a configured budget probe (~25 s), `check:db` (~120 s with the Docker start), filter group (~350 s), goldens `--update` then compare, 4 shards each (~1120 s), sweep 360 (~450 s, unmeasured here) - **~39 min**, plus CI after the push | required: public contract, new UI, a hook edit | a public-contract change; and a commit boundary the harness cannot reach (`?as=` and `dist-test/` land in `B1.1`) |
 | `B1.3` | Layer 4: `tests/e2e/` (probe as in question C, mint, cleanup, flows over `#/account`, `contract.mjs` fake-vs-real), `npm run e2e`, CI `e2e` job with its concurrency group and `skip_e2e`, `deploy` needs `e2e`, README failure mode | `check`, layer 4 (~6 min) - **~7 min** | not required unless the worker deviates | a commit boundary the harness cannot reach (flows need `B1.2`'s UI); harness judged against `COVERAGE.md` |
-| `B1.4` | Account preferences: `0003_user_prefs.sql` and reversal, RLS matrix, `PreferencesPort` real and fake, `CloudPort.prefs`, `AppState` precedence, print layout and default money mode as preferences; goldens: tables view, print layout, language as `gm1` vs signed out; E2E: a preference read back on a fresh session | `check` x2, `check:built`, filter group, goldens, `check:db`, layer 4 - **~26 min** | required: schema rule and UI | a different route and filter set (tables, print, lists vs `#/account`) |
+| `B1.4` | Account preferences: `<ts>_user_prefs.sql` and reversal, RLS matrix, `PreferencesPort` real and fake, `CloudPort.prefs`, `AppState` precedence, print layout as a preference (default money mode dropped, owner Q1); goldens: tables view, print layout, language as `gm1` vs signed out; E2E: a preference read back on a fresh session | `check` x2, `check:built`, filter group, goldens, `check:db`, layer 4 - **~26 min** | required: schema rule and UI | a different route and filter set (tables, print, lists vs `#/account`) |
 | `B1.5` | Release automation: `backup.yml` (nightly `supabase db dump` schema and data, `age`-encrypted to the owner's public key, 30-day artifact, fails closed without a recipient), CI migration deploy to test before `e2e` and to prod before `deploy` with `--db-url` secrets, the applied-set redesign (`applied.json` and `edit-guard.mjs` read a source CI keeps current), the R1 owner steps, `.claude/README.md` runbook | `check` x2, `check:db`, CI on the pushed branch by `workflow_dispatch` - **~5 min** plus CI | required: hooks and a production credential | a review that cannot be held in one pass (pipeline and hooks vs product UI) |
 
-Total gate cost, one green pass per batch: about 81 minutes on this host,
-plus CI. Every batch fits one foreground `npm run check` call.
+Total gate cost, one green pass per batch: about 96 minutes on this host
+(`B1.1` measured ~19, `B1.2` ~39 with the full golden re-seed, `B1.3` ~7,
+`B1.4` ~26, `B1.5` ~5), plus CI. Every batch fits one foreground `npm run
+check` call; each golden shard and the sweep row are one call each.
 
-Mockups: `B1.2` (header control beside the language switch, `#/account`
-composed from the current `Shell` and a page layout) and `B1.4` (no new
-control; the existing controls persist) are produced by their planner
-refresh under `mocks/`.
+Mockups: `B1.2`'s are `mocks/B1.2/` (owner-answered 2026-09-24); `B1.4`
+draws nothing new (`mocks/B1.4/README.md`, owner-answered).
 
 ## 6. Batch B1.1 - fake cloud and test build (implement-ready)
 
@@ -513,18 +522,643 @@ literal, replace the dynamic import by a static import inside a separate
 entry `app/src/main.test-build.ts` selected by `build.rollupOptions.input`
 in test mode - same marker guard.
 
-## 7. Later batch outlines
+## 7. Batch B1.2 - sign-in, `#/account`, delete account (done, review pending)
 
-`B1.2` Auth (roadmap section 14, `B1.2`, unchanged) plus: `CloudPort` is
-built by `ports/supabase.ts`'s `createCloud(url, key)`; `ports/config.ts`
-returns `null` when the two `VITE_` values are unset; `main.ts`'s `else`
-branch becomes `boot(config ? createCloud(...) : null)`; the fake gains
-`linkError` for the already-linked test; `AppState.user` reads
-`env.cloud?.auth.session()` on start and follows `onChange`; the `?as=`
-`base()` quirk (section 3 item 6) is harmless for its states (no copied
-link on `#/account`). Its planner refresh produces the mockups (header
-control beside the language switch; `#/account` page). Owner steps before
-its push: roadmap section 15, steps 3 (remaining part) and 12.
+**Objective.** Ship accounts: Google and Discord sign-in through Supabase
+Auth (PKCE), a header control beside the language switch, the public route
+`#/account` (who is signed in, connected providers with Connect and
+Disconnect, Sign out and Sign out everywhere, delete account), the
+`delete_account()` migration with its layer 3 proof, and the route's
+contract change - on B1.1's `CloudPort` and test build as built. Close
+B1.1's review findings and write the two `CLAUDE.md` edits the human
+authorised.
+
+**Inputs that bind this batch.**
+
+- Owner answers (2026-09-24): `mocks/B1.2/README.md`, "Owner answer", and
+  the two mocks there. The README's recommendations 1-13 stand, with three
+  owner changes: the delete hint is exactly «Аккаунт и все связанные с ним
+  данные будут удалены навсегда.» (no sentence about local lists); the
+  signed-out lead is exactly «Войдите, чтобы ваши данные были доступны на
+  всех устройствах. Всё остальное работает и без входа.»; a build with no
+  sign-in configured draws **no** account control and `#/account` there
+  draws the not-found page (mock frame G is dropped).
+- Owner standing rule (2026-09-24): account texts and names describe the
+  final state (after R10) in general terms, true in every release. It binds
+  every string and identifier below; this batch writes it to
+  `docs/specs/I18N.md` (planner's choice of home: it is a rule about
+  product text, and I18N.md already holds the text rules).
+- The human authorised in chat on 2026-09-24 ("approved") both `CLAUDE.md`
+  edits of step 22; the implementer may edit `CLAUDE.md` for exactly those
+  two lines.
+- B1.1 review register `reviews.md`, rows placed in B1.2: R3, R5, N1-N7,
+  N9 (N8 is deferred; R4 goes to B1.3's outline; R1 is step 22's second
+  edit).
+
+**Settled here (planner decisions; do not reopen).**
+
+1. **supabase-js is a lazy chunk.** `app/src/ports/supabase.ts` is the only
+   module that imports `@supabase/supabase-js` (ESLint enforces it).
+   `main.ts` wraps it as `lazyCloud(() => import('./ports/supabase.js')
+   .then(...))`, so the configured app mounts synchronously like today and
+   the chunk arrives after first paint. The branch is dead in a build with
+   no configuration (a `define` literal, B1.1's pattern), so `dist/` built
+   by `check:built` carries neither the chunk nor the control. Rejected:
+   mounting after the chunk loads (every visitor waits for it); a static
+   import (the entry grows by the whole client for anonymous readers).
+   Recorded in `docs/DECISIONS.md` (this planning pass).
+2. **A provider redirect is settled before mount.** `ports/redirect.ts`
+   `takeRedirect(window)` runs synchronously in `main.ts` when the URL holds
+   `auth-callback`: it reads `code` or the error parameters, reads and
+   deletes `sessionStorage['dhloot.auth.return']` (`{ hash, at, kind,
+   provider }`, honoured for 10 minutes), and `history.replaceState`s the
+   URL to the page without `auth-callback`, `code`, `error`, `error_code`,
+   `error_description`, plus the saved hash (`#/account` when none). The
+   code exchange and its outcome resolve after mount through the new
+   `AuthPort.redirectResult()`. Reason: `linkIdentity` and `signInWithOAuth`
+   report `identity_already_exists` and a cancelled consent on the
+   *redirect back* (query parameters), not as the call's return value, and
+   the router reads the hash at mount. Supabase's own `detectSessionInUrl`
+   is off (it would race the router).
+3. **`AuthPort` changes (types.ts), all additive to B1.1's shape except two
+   return types:** `export type AuthError = 'alreadyLinked' | 'lastIdentity'
+   | 'failed'` (`AuthResult` uses it); `signIn(provider)` and
+   `signOut(scope?)` now resolve `AuthResult` (a redirect that cannot start
+   and a failed global sign-out must reach the page); new
+   `redirectResult(): Promise<AuthRedirect | null>` with `export interface
+   AuthRedirect { kind: 'signIn' | 'link'; provider: Provider | null;
+   result: AuthResult }`; `Session.provider` becomes `Provider | null`
+   (null when the account's first provider is neither Google nor Discord -
+   the test project's email user in B1.3).
+4. **The fake grows options, not modes:** `fakeCloud(seed, as?, options:
+   FakeCloudOptions = {})` with `FakeCloudOptions = { linkError?:
+   AuthError; returned?: AuthRedirect }` - `link()` resolves `{ ok: false,
+   error: linkError }` and changes nothing when set; `redirectResult()`
+   resolves `returned ?? null`. The browser build never sets them
+   (`installFakeCloud` passes none); vitest does.
+5. **Unconfigured build:** `App.svelte` draws `AccountPage` only when
+   `app.env.cloud` is non-null; otherwise `#/account` falls to the existing
+   not-found block and the address stays (owner M16). `parseHash('#/account')`
+   is `{ kind: 'account' }` in every build, so the address never falls home.
+6. **The header control** (Shell, one use, inline): an `<a href="#/account">`
+   drawn only when `app.env.cloud` is non-null **and** `app.user` is no
+   longer `undefined` (no flash of «Войти» for a signed-in reader). Signed
+   out: the new `user` icon plus `<span class="t">` «Войти»/"Sign in";
+   below 420 px the span is visually hidden (the clip pattern
+   `ListPage.svelte` uses) and stays the name. Signed in: a 38 px circle
+   (44 px at <= 600 px, the system breakpoint) with the email's first
+   character (CSS `text-transform: uppercase`; the `user` icon when the
+   email is empty) and `aria-label` «Аккаунт: <email>»/"Account: <email>".
+   On `#/account` it carries `aria-current="page"` and the gold ring; no tab
+   is lit. Values: the mock's `.acct` rules (Seg's track and type, 8 px after
+   the switch); the 420 px query is component-local with a comment naming
+   the measured reason (the English label crowds the brand at 390).
+7. **`AppState` holds the session, not the page:** `user = $state<Session |
+   null | undefined>()` (`null` at construction when `env.cloud` is null,
+   else `undefined` until known); `alreadyLinked = $state<Provider |
+   null>(null)`; `get pagesDir()` (moved from `Shell.svelte` on its second
+   use, the consent line). `start()` subscribes `cloud.auth.onChange` (a
+   notification always wins over the first `session()` answer), reads
+   `session()` (a rejection reads as `null`), and reads `redirectResult()`
+   once: a refused link with `alreadyLinked` and a known provider sets
+   `alreadyLinked`; any other refusal says `accountFailed` as an error
+   toast. `stop()` unsubscribes.
+8. **The migration name follows the repository's rule,** not the roadmap's
+   `0002_...`: `tools/supabase/lib.mjs` `MIGRATION_NAME_RE` requires
+   `<14 digits>_<snake>.sql`. Use `20260925120000_delete_account.sql`
+   (reversal of the same name). It uses `create function`, not `create or
+   replace`, so the existing up-down-up gate fails a reversal that forgets
+   the drop (the second `up` errors "already exists") - the carried
+   reversibility-base item (roadmap section 17) stays with `B1.4`, which
+   has the first table.
+9. **The budget measures what ships.** `check:built` keeps measuring the
+   unconfigured `dist/`; the batch measures a configured build once
+   (placeholder values, step 21) and the `deploy` job runs `npm run budget`
+   after its configured build. If the configured build exceeds 120 kB,
+   raise `BUDGET_KB` in `tools/bundle-budget.mjs` in this commit with the
+   measured number and the reason in its comment (the tool's own rule).
+10. **Configuration is read from the environment at build time only:**
+    `vite.config.mts` defines `import.meta.env.VITE_SUPABASE_URL` and
+    `VITE_SUPABASE_PUBLISHABLE_KEY` as JSON literals from `process.env`
+    for `vite build` (the `deploy` job sets them from the Actions
+    variables), from `loadEnv(mode, 'app', 'VITE_')` for `vite` (dev, so
+    `app/.env.local` works), and `''` for the test build and vitest. So a
+    local `npm run build` is unconfigured unless the variables are on the
+    command line, and `check:built` stays deterministic.
+11. **M6's user-name fallback is not built.** Both providers are
+    `email_optional = false` (`supabase/config.toml`) and the owner's
+    dashboard refuses users without email (roadmap section 15 step 4), so
+    the branch has no reachable input. When an email is empty anyway, the
+    "Signed in as" line shows the provider alone and the header draws the
+    icon. Named to the owner in the report; no confirmation needed.
+12. **One text-input component.** The typed confirmation is the third real
+    `<input type="text">` with the same scoped rule (`ListsPage.svelte` has
+    two): extract `components/TextInput.svelte` (props: `value` bindable,
+    `el` bindable, `placeholder?`, `label?` as `aria-label`, `id?`) with the
+    rule moved from `ListsPage.svelte`, which then uses it twice. The
+    accessibility tree is unchanged, so no `#/lists` golden moves for this.
+13. **Headings in the page:** each section is a `Panel` headed by an `h2`
+    in `Field`'s `.lbl` style: `Field.svelte` gains `heading?: boolean`
+    (renders `<h2 class="lbl">`, margin reset) - no new copy of `.lbl`.
+14. **`Button.svelte` gains `disabled?: boolean`** (the redirect state and
+    the typed confirmation both need it): `disabled` on the `<button>`,
+    `.btn:disabled { opacity: 0.5; cursor: default; pointer-events: none }`
+    per the mock; a link-button never takes it.
+
+**In scope.** Everything in the files list. **Out of scope.** The Export
+JSON section (R6; absent, not a placeholder); `user_prefs` (B1.4); the
+hosted E2E (B1.3); pushing the migration to any hosted project (owner, rule
+2n); `hashRouter.base()`; a sign-in prompt anywhere but `#/account` (R2);
+any golden state for the redirect or the already-linked error (unreachable
+in the test build: vitest covers both).
+
+**Files.** Create: `app/src/ports/supabase.ts`, `supabase.test.ts`,
+`lazy-cloud.ts`, `lazy-cloud.test.ts`, `redirect.ts`, `redirect.test.ts`;
+`app/src/components/AccountPage.svelte`, `accountPage.test.ts`,
+`TextInput.svelte`; `supabase/migrations/20260925120000_delete_account.sql`,
+`supabase/reversals/20260925120000_delete_account.sql`;
+`tests/db/delete-account.test.mjs`; five goldens (written by the runner).
+Edit: `package.json`, `package-lock.json` (through `npm install` only),
+`app/src/ports/types.ts`, `fake-cloud.ts`, `fake-cloud.test.ts`,
+`cloud.contract.ts`; `app/src/main.ts`, `vite-env.d.ts`, `App.svelte`;
+`app/src/lib/hash.ts`, `hash.test.ts`, `icons.ts`, `dict.ts`;
+`app/src/state/app.svelte.ts`, `app.test.ts`; `app/src/components/Shell.svelte`,
+`shell.test.ts`, `Button.svelte`, `button.test.ts`, `Field.svelte`,
+`ListsPage.svelte`, `a11y.test.ts`; `vite.config.mts`, `eslint.config.mjs`;
+`docs/fixtures/urls/routes.json`, `docs/specs/ROUTES.md`, `CONTRACTS.md`,
+`FEATURES.md`, `STATE.md`, `META.md`, `I18N.md`, `COVERAGE.md`, `llms.txt`,
+`DESIGN.md` ("Navigation"); `pages/src/privacy.html`,
+`pages/src/en/privacy.html`, `tools/build-pages.js`, `tests/derived.js`;
+`tests/app/inventory.js`, `sweep.js`, `typo.js`, `states.js`, `driver.js`,
+`lib.js`, `golden.js`, `contracts.js`, `print.js`; `tools/no-fake-in-prod.mjs`,
+`tools/smoke-http.mjs`, `tools/bundle-budget.mjs` (only if step 21 says so);
+`tests/db/roles.mjs`, `tests/db/harness.test.mjs`; `.github/workflows/ci.yml`;
+`.claude/hooks/bash-guard.mjs`, `.claude/hooks/selftest.mjs`,
+`.claude/README.md`; `docs/DECISIONS.md` (N5); `CLAUDE.md` (step 22 only);
+`README.md`, `README.ru.md`.
+
+**Texts (RU / EN), exact.** Keys are `dict.ts` additions; every one obeys
+the owner's standing rule. Brand names `Google` and `Discord` are not
+translated (a `PROVIDER_NAME` const in `AccountPage.svelte`). `%s` is the
+provider name, replaced with `.replace('%s', name)`.
+
+| Key | RU | EN |
+|---|---|---|
+| `account` | Аккаунт | Account |
+| `signIn` | Войти | Sign in |
+| `accountSub` | Способы входа, выход и ваши данные. | Sign-in methods, signing out and your data. |
+| `signInLead` | Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа. | Sign in to have your data on all your devices. Everything else works without signing in. |
+| `signInWith` | Войти через %s | Sign in with %s |
+| `consentBefore` / `consentTerms` / `consentMid` / `consentPrivacy` / `consentAfter` | «Входя, вы принимаете » / «условия» / « и » / «политику конфиденциальности» / «.» | "By signing in you accept the " / "terms" / " and the " / "privacy policy" / "." |
+| `signedInAs` | Вы вошли как | Signed in as |
+| `via` | через %s | with %s |
+| `providers` | Способы входа | Connected providers |
+| `notConnected` | не подключён | not connected |
+| `connect` | Подключить %s | Connect %s |
+| `redirecting` | Переходим в %s... | Redirecting to %s... |
+| `disconnect` | Отключить | Disconnect |
+| `onlyMethod` | %s - единственный способ входа, поэтому его нельзя отключить. Подключите второй, чтобы отключить этот. | %s is your only sign-in method, so it cannot be disconnected. Connect another one first. |
+| `alreadyLinked` | Этот аккаунт %s уже подключён к другому пользователю. | This %s account is already used by another account. |
+| `signOutHead` | Выход | Sign out |
+| `signOut` | Выйти | Sign out |
+| `signOutAll` | Выйти на всех устройствах | Sign out everywhere |
+| `signOutAllHint` | «Выйти на всех устройствах» завершает вход и на других телефонах и компьютерах. | "Sign out everywhere" also ends the session on your other phones and computers. |
+| `deleteHead` | Удаление аккаунта | Delete account |
+| `deleteHint` | Аккаунт и все связанные с ним данные будут удалены навсегда. | The account and all the data linked to it will be deleted for good. |
+| `deleteOpen` | Удалить аккаунт... | Delete account... |
+| `deleteConfirm` | Чтобы подтвердить, введите слово | To confirm, type the word |
+| `deleteWord` | удалить | delete |
+| `deleteFinal` | Удалить навсегда | Delete for good |
+| `signedOut` | Вы вышли из аккаунта. | You are signed out. |
+| `accountDeleted` | Аккаунт удалён. | The account is deleted. |
+| `accountFailed` | Не получилось. Попробуйте ещё раз. | That did not work. Try again. |
+
+`cancel` (existing) is the confirmation's cancel button; `notFound`,
+`notFoundSub`, `toStart` (existing) are the unconfigured page. The signed-in
+sub (`accountSub`) replaces the mock's «Способы входа, выход и удаление
+аккаунта.», which the standing rule rules out (R6 adds "Your data").
+
+**Steps.**
+
+1. `npm install --save-exact @supabase/supabase-js@2` (devDependencies,
+   like every bundled package here; record the version in the handoff).
+   `eslint.config.mjs`, the "everything else in the app" block: add
+   `no-restricted-imports` with `{ group: ['@supabase/*'], message: 'only
+   ports/supabase.ts talks to Supabase' }` for `app/src/**` with
+   `ignores: ['app/src/ports/supabase.ts']` (a new block, so the lib
+   block's own patterns are untouched).
+2. `ports/types.ts`: the changes of decision 3, doc comments stating that a
+   refusal is an answer and that `redirectResult()` answers once per page
+   load.
+3. `ports/fake-cloud.ts`: decision 4; `signIn` and `signOut` resolve `{ ok:
+   true }` (`signIn` with nobody to sign in cannot happen: the seed has a
+   default user). `cloud.contract.ts`: every case that awaited `signIn`/
+   `signOut` asserts `.ok`; one new case "a fresh port has no redirect
+   result" (`redirectResult()` is `null`). `fake-cloud.test.ts`: `linkError`
+   (`alreadyLinked` refused, identities unchanged, no notification) and
+   `returned` (answered as given).
+4. `ports/redirect.ts` (browser access through a `win` argument defaulting
+   to `window`): `export const RETURN_KEY = 'dhloot.auth.return'`;
+   `RETURN_MS = 10 * 60 * 1000`; `export function callbackUrl(href:
+   string): string` (origin + path without a trailing `index.html` +
+   `?auth-callback=1` - the allowlisted form, `supabase/config.toml`);
+   `export function saveReturn(win, record: { hash; kind; provider }, now =
+   Date.now()): void` (JSON with `at`, a storage throw ignored); `export
+   interface Redirect { code: string | null; error: string | null; kind:
+   'signIn' | 'link'; provider: Provider | null }`; `export function
+   takeRedirect(win = window, now = Date.now()): Redirect | null` - `null`
+   when the query has no `auth-callback`; otherwise reads `code` and
+   `error_code ?? error` from the query and from a hash that starts with
+   `#error` or `#access_token` (read as parameters, never routed), reads,
+   validates (object, `hash` a string starting `#/` under 2048 chars, `at`
+   within `RETURN_MS`, `kind` and `provider` from their sets) and removes
+   the record, and `replaceState`s to the cleaned URL plus `record?.hash ??
+   '#/account'`. Every storage access is wrapped: a throw means "no
+   record". `redirect.test.ts` (jsdom, a stub `win` with `sessionStorage`,
+   `location.href` and a spy `history`): each branch above, including a
+   stale record, a foreign hash, a record with a bad provider, an error in
+   the hash, and a storage that throws.
+5. `ports/supabase.ts`: `export function createCloud(url: string, key:
+   string, redirect: Redirect | null, win = window): CloudPort`.
+   `createClient(url, key, { auth: { flowType: 'pkce', detectSessionInUrl:
+   false, persistSession: true, autoRefreshToken: true } })`. With
+   `redirect?.code`, start `exchangeCodeForSession(code)` at once and keep
+   the promise; `session()` and `identities()` await it first. Mapping:
+   `Session = { userId: user.id, email: user.email ?? '', provider: google
+   or discord from app_metadata.provider, else null }`; `identities()` from
+   `getUserIdentities()`, Google and Discord only, `{ id: identity_id,
+   provider, email: identity_data?.email ?? '' }` in the server's order.
+   `signIn(p)`/`link(p)`: `saveReturn(win, { hash: win.location.hash ||
+   '#/account', kind, provider: p })`, then `signInWithOAuth`/`linkIdentity`
+   with `options: { redirectTo: callbackUrl(win.location.href) }`; an error
+   maps to `alreadyLinked` when `error.code === 'identity_already_exists'`,
+   else `failed`. `unlink(id)`: find the `UserIdentity` by `identity_id`
+   (absent -> `failed`), refuse `lastIdentity` locally when it is the only
+   one, map `single_identity_not_deletable` to `lastIdentity`, else
+   `failed`. `signOut(scope = 'local')`: `auth.signOut({ scope })`.
+   `deleteAccount()`: `rpc('delete_account')`, on success `auth.signOut({
+   scope: 'local' })` and `{ ok: true }` whatever that sign-out answers (the
+   user no longer exists). `onChange`: `onAuthStateChange((_e, s) =>
+   fn(map(s)))`, the synchronous mapping only (a callback that awaits
+   another client call deadlocks supabase-js). `redirectResult()`: `null`
+   without a redirect; with `redirect.error`: `{ kind, provider, result: {
+   ok: false, error: redirect.error === 'identity_already_exists' ?
+   'alreadyLinked' : 'failed' } }`; with a code: the exchange's outcome.
+   `supabase.test.ts` mocks `@supabase/supabase-js` (`vi.mock`, a stub
+   client with `vi.fn()` methods) and covers every mapping above, the
+   exchange-before-session order, and `saveReturn` being called before the
+   provider call. This is layer 1's "ports against fake clients"; the real
+   client is proven in B1.3.
+6. `ports/lazy-cloud.ts`: `export function lazyCloud(load: () =>
+   Promise<CloudPort>): CloudPort` - loads once on first use; every method
+   delegates; `onChange` returns an unsubscribe at once and subscribes when
+   the port arrives (an unsubscribe before that cancels it); a load failure
+   answers like a signed-out, failing port (`session()` null,
+   `identities()` [], mutators `{ ok: false, error: 'failed' }`,
+   `redirectResult()` null). `lazy-cloud.test.ts` over `fakeCloud` and a
+   rejecting loader.
+7. `vite-env.d.ts`: `readonly VITE_SUPABASE_URL: string; readonly
+   VITE_SUPABASE_PUBLISHABLE_KEY: string`. `vite.config.mts`: decision 10,
+   one comment naming why a literal (the dead branch, B1.1's reason) and why
+   `vite build` ignores `app/.env.local`.
+8. `main.ts`: `else if (import.meta.env.VITE_SUPABASE_URL &&
+   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)` between the fake branch
+   and the plain boot: `const redirect = takeRedirect(); boot({ ...env,
+   cloud: lazyCloud(() => import('./ports/supabase.js').then((m) =>
+   m.createCloud(import.meta.env.VITE_SUPABASE_URL,
+   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, redirect))) })` (no local
+   named `URL`: it would shadow the global). **R5:** the fake branch gains
+   `.catch((err: unknown) => { ... })` that appends `<p id="boot-error"
+   role="alert">` with the error's message to `#app`; `tests/app/driver.js`
+   `open()` checks for `#boot-error` after `ready()` and throws `Error(route
+   + ': the test build refused to boot - ' + text)`. States case 35 gains a
+   last assertion: `d.open('#/roll/std', { as: 'nobody' })` rejects with a
+   message containing `unknown user "nobody"`.
+9. `lib/hash.ts`: route kind `{ kind: 'account' }` for exactly `account`
+   (after the `lists/` test, before the `l/` test), `export const
+   ACCOUNT_HASH = '#/account'`. `hash.test.ts`: `#/account` parses to it;
+   `#/account/x` and `#/accounts` stay `unknown`.
+   `docs/fixtures/urls/routes.json`: one entry `{ "hash": "#/account",
+   "why": "the account page; with no sign-in configured it is the not-found
+   page, address kept", "resolves": { "hash": "#/account", "tab": null,
+   "rows": 0, "printCards": 0, "picked": [] } }`.
+10. `lib/icons.ts`: `user` (the mock's path, size 15), with a comment that
+    it is not in app.js (the `craftFrom` precedent). `lib/dict.ts`: the
+    table above, one commented group per language.
+11. `state/app.svelte.ts`: decision 7. `app.test.ts`: `user` null with no
+    cloud; `undefined` then the session with the fake as `gm1`; follows
+    sign-out; a notification before the first answer wins; a rejected
+    `session()` reads null; `returned` alreadyLinked sets `alreadyLinked`;
+    `returned` failed toasts `accountFailed`; `stop()` unsubscribes.
+12. `App.svelte`: `{:else if app.route.kind === 'account' && app.env.cloud}
+    <AccountPage {app} />` before the `{:else}` not-found block.
+    `Shell.svelte`: decision 6; the title effect names `app.t.account` on
+    `route.kind === 'account'` when `app.env.cloud` is non-null; `pagesDir`
+    read from `app`. `FEATURES.md` "Chrome" and the no-tab-lit sentence move
+    with it (step 17).
+13. `AccountPage.svelte` (props `{ app }`; it reads `app.env.cloud` and
+    draws nothing when it is null - `App.svelte` never mounts it then, and
+    no non-null assertion is needed): a `.col` wrapper at `max-width: 70ch`; `PageTitle`
+    `account` with `accountSub` (signed in) or `signInLead` (signed out);
+    while `app.user === undefined` only the title and an empty sub. Signed
+    out: one `Panel` headed `signIn` with two plain buttons `signInWith`
+    (provider logo + text), then the consent line (`consent*` keys, links
+    `app.pagesDir + 'terms.html'` and `'privacy.html'`). Signed in, in this
+    order: "Signed in as" (bold email, then the logo and `via`); "Connected
+    providers": one row per provider in the order Google, Discord - a
+    connected one shows its logo, name and identity email and, while two or
+    more identities exist, a `ghost sm` `disconnect`; a missing one shows
+    `notConnected` and a plain `sm` `connect`; with exactly one identity the
+    `onlyMethod` hint follows the list; `app.alreadyLinked === p` draws the
+    `alreadyLinked` text as `<p class="err" role="alert">` inside that row
+    (`#f0a49d`, the danger button's text colour, 13 px, full row width);
+    "Sign out": `signOut` (plain) and `signOutAll` (`ghost`) then the hint;
+    "Delete account": the hint, `deleteOpen` (`danger`, `expanded`) opening
+    an inline confirmation - label `deleteConfirm` + « **<deleteWord>** »,
+    a `TextInput` (`id`, `autocomplete="off"`), `deleteFinal` (`danger`,
+    disabled until `typed.trim().toLowerCase() === t.deleteWord`) and
+    `cancel` (`ghost`, closes and clears). Behaviour: every action sets a
+    local `busy` (buttons disabled while set) and clears
+    `app.alreadyLinked`; Connect/Sign in save nothing themselves (the port
+    does), show `redirecting` on the pressed button, then on `{ ok: false,
+    error: 'alreadyLinked' }` set `app.alreadyLinked = p`, on another
+    refusal toast `accountFailed`, on success re-read identities (the fake
+    links in place; the real port has navigated away). Disconnect: `unlink`,
+    then re-read; refusal toasts. Sign out / everywhere: ok -> toast
+    `signedOut` (the page becomes the chooser through `app.user`); refusal
+    -> toast. Delete: ok -> toast `accountDeleted`, confirmation closed;
+    refusal -> toast. Identities are re-read whenever `app.user?.userId`
+    changes (a stale answer for another user is dropped). Provider logos: a
+    `{#snippet logo(p)}` with the mock's Google "G" (four paths, viewBox 48)
+    and Discord mark (`#5865F2`), `aria-hidden`. Long identity emails wrap
+    (`overflow-wrap: anywhere`), never ellipsis (sweep's clipped-text check).
+    Styles from the mock (`.who`, `.via`, `.ids`, `.err`, `.row-btns`,
+    `.confirm`), tokens only.
+14. `TextInput.svelte`, `Field.svelte` `heading`, `Button.svelte`
+    `disabled` (decisions 12-14); `ListsPage.svelte` uses `TextInput` twice
+    (its `bind:this={nameInput}` becomes `bind:el={nameInput}`).
+    `button.test.ts`: disabled renders `disabled` and ignores a click.
+15. Tests, vitest: `accountPage.test.ts` over `fakeEnv({ cloud:
+    fakeCloud(SEED, ...) , router: memoryRouter('#/account') })` rendering
+    `App` - signed out: the chooser, both buttons, the consent links to
+    `pages/terms.html` and `pages/privacy.html` (`pages/en/` in English),
+    sign in with Google shows `gm1`; as `gm1`: two rows with Disconnect,
+    Disconnect Discord leaves one row, no Disconnect, the hint, Connect
+    Discord; Connect with `linkError: 'alreadyLinked'` shows the
+    `role="alert"` text naming Discord and keeps the rest; `returned`
+    alreadyLinked shows it on arrival; as `gm2`: one identity, no
+    Disconnect, the hint; sign out -> chooser and the toast; sign out
+    everywhere calls `signOut('global')` (spy); delete: the final button is
+    disabled until the word is typed (`' УДАЛИТЬ '` passes), then the
+    chooser and the toast; a refusal toasts `accountFailed`; English texts
+    once; axe at the end of each state (`expectNoA11yViolations`).
+    `shell.test.ts`: no control with `cloud: null`; «Войти» linking
+    `#/account` signed out; the initial and «Аккаунт: gm1@example.test»
+    signed in; `aria-current="page"` on `#/account`; `document.title`
+    «Аккаунт — Генератор лута — Daggerheart»; with `cloud: null`,
+    `#/account` draws the not-found heading and keeps the address.
+    `a11y.test.ts`: `COVERED` gains `AccountPage.svelte` and
+    `TextInput.svelte`; the pressed state "delete confirmation open" under
+    axe.
+16. Layer 3. Migration (header comment: what it does and why `create
+    function`; cite `docs/specs/FEATURES.md`, "Account"):
+    ```sql
+    create function public.delete_account()
+    returns void
+    language plpgsql
+    security definer
+    set search_path = public, pg_temp
+    as $$
+    begin
+      if auth.uid() is null then
+        raise exception 'delete_account: not signed in' using errcode = '28000';
+      end if;
+      delete from auth.users where id = auth.uid();
+    end;
+    $$;
+    revoke execute on function public.delete_account() from public, anon;
+    grant execute on function public.delete_account() to authenticated;
+    ```
+    Reversal: `drop function public.delete_account();`. `tests/db/roles.mjs`
+    `asRole` gains an optional `setup(tx)` run as the connection's own role
+    before `set local role` (harness case: a row the setup inserts is seen
+    by the role and rolled back). `tests/db/delete-account.test.mjs`: the
+    function is `security definer` with `search_path=public, pg_temp`;
+    `anon` and `PUBLIC` lack EXECUTE, `authenticated` has it; as user A
+    (setup inserts auth users A and B) the call removes A and keeps B; as
+    `authenticated` with no `sub` it raises `not signed in`; as `anon` it is
+    refused (`permission denied`). `harness.test.mjs` gains the invariant
+    carried from R0: no function in `public` is executable by `anon`
+    (`has_function_privilege`, which sees the PUBLIC grant), allowlist empty.
+17. Specs and contract, same commit: `ROUTES.md` a section "Account"
+    (`#/account`; not-found page and address kept with no sign-in
+    configured; never falls home); `CONTRACTS.md` section 1 bullet list
+    gains `#/account`; `llms.txt` line 6 becomes "Static site with an
+    optional account (Google or Discord sign-in); no public API." and the
+    "cannot do" bullet "No public API. Signing in is optional; lists live in
+    the GM's browser and in links.", and the route list gains "`#/account` —
+    the account page: sign in, connected providers, sign out, delete the
+    account"; `FEATURES.md` "Chrome" gains the control bullet (decision 6)
+    and "no tab is lit" names the account page, and a new "## Account"
+    section (the page's states and order, the texts' rule, the redirect and
+    return route, errors, delete, the unconfigured build); `STATE.md` the
+    three-places table gains `sessionStorage` (`dhloot.auth.return`, this
+    tab, 10 minutes), the keys table gains `sb-<ref>-auth-token` (and its
+    `-code-verifier` during a redirect; written by supabase-js, never by the
+    app), the memory table's Session group gains `user`, `alreadyLinked`;
+    `META.md` section 3 retitled "Lists live in the URL hash and in the
+    browser, until cloud lists ship" with "No account feature is live yet"
+    replaced by one sentence that sign-in and `#/account` exist and an
+    account holds no list yet, and "Static pages" says the privacy page
+    describes the account service as it is and links `#/account` through
+    `%APP%`; `I18N.md` Rules gains the owner's standing rule as a bullet
+    ("**Account texts and names describe the final state in general
+    terms.** ..." - owner, 2026-09-24; an example pair: «ваши данные», not
+    «ваши настройки») and the stale "against `dist/`" in "What a test has
+    to cover" names `dist-test/`; `DESIGN.md` "Navigation" one sentence on
+    the account control; `COVERAGE.md` (step 18).
+18. `COVERAGE.md`: unit table rows for `redirect.test.ts`,
+    `supabase.test.ts`, `lazy-cloud.test.ts`, `accountPage.test.ts`; the
+    `fake-cloud.test.ts` row names the new contract case and options;
+    "Features to suites" row "Accounts" -> those, `shell.test.ts`, the five
+    goldens, `tests/db/delete-account.test.mjs`, `tools/smoke-http.mjs`
+    (no control unconfigured); layer 3 suite text names the function
+    invariant; "Known thin spots" gains: the provider redirect and the real
+    client are proven only against a mocked client until B1.3, and OAuth
+    itself only by the owner's closeout check (roadmap section 15 step 16).
+19. Privacy: `tools/build-pages.js` `page()` replaces every `%APP%` in the
+    body with the page's own `backHref` (`../` or `../../`), with a comment
+    that a fragment links an app route only through it. `pages/src/
+    privacy.html` and `en/privacy.html`: "Что сайт хранит сейчас" / "What
+    the site stores now" first bullet becomes "If you do not sign in,
+    nothing about you is stored on a server. ..." (RU in kind); "Если вы
+    войдёте в аккаунт" / "If you sign in": drop "Accounts are not available
+    yet. When they are," - "You can sign in with Google or Discord. The site
+    then stores:"; the list keeps its general items (the standing rule);
+    "Удаление данных" / "Deleting your data": "on the <a
+    href="%APP%#/account">account page</a>"; the date line becomes the
+    batch's date. `node tools/build.js`. `tests/derived.js`: every page
+    output has no `%APP%` left, and both privacy outputs link
+    `<backHref>#/account`.
+20. Guards and harness: **R3** `tools/no-fake-in-prod.mjs` also fails
+    `dist/assets/*.js` holding `@example.test` (the seed's domain), its
+    message naming the seed; **N6** `bash-guard.mjs` `rm -r` exemption
+    regex and message add `dist-test`, `selftest.mjs` one allow case;
+    `tools/smoke-http.mjs` over `dist/`: with `VITE_SUPABASE_URL` unset in
+    its environment, no `a[href="#/account"]` in the header on `#/roll/std`,
+    and `#/account` draws the not-found heading with the address kept;
+    `tests/app/inventory.js` five states - `#/account` (the chooser),
+    `#/account as gm2`, `#/account as gm1`, `#/account ~ delete
+    confirmation as gm1` (enter: press `deleteOpen`, type `удалить`),
+    `#/roll/std as gm1` (the header signed in); `sweep.js` PAGES gains
+    `['#/account', 'аккаунт: вход']`; `typo.js` PAGES gains `#/account` and its
+    `EXPECTED` row (no grips). **N1** `tests/app/contracts.js:1` and
+    `print.js:1` say `dist-test/`; COVERAGE's `app/states` case 29 row
+    ("over the same served `dist/`" -> `dist-test/`) and "each serves
+    `dist/` on its own port" -> `dist-test/`; `.claude/README.md` "Hooks"
+    `edit-guard.mjs` row lists `dist-test/`, and "rebuild ... before any
+    `dist/`-driven suite" names `npm run build:test`. **N2** COVERAGE "Test
+    layers": `main.ts` mounts with `{ ...env, cloud }` (not "hands its
+    CloudPort to `browserEnv`"). **N3** `tests/app/lib.js` drops the unused
+    `serveDist` and `DIST_HTML` exports. **N4** reflow the over-width comment
+    in `tests/app/golden.js` near its line 244. **N5** `docs/DECISIONS.md`
+    question C entry: restore the probe's Puppeteer-page half and the two
+    rejections (`signInWithPassword`; a CI-side session mint), inside the
+    fifteen-line cap. **N7** `app/states` result line says "runs" for its
+    count. `.github/workflows/ci.yml` `deploy`: the Build step gains `env:
+    VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}` and
+    `VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY
+    }}` (Actions variables, public by design); a step "Bundle size budget
+    (the shipped, configured build)" `run: npm run budget` right after it.
+    `README.md`/`README.ru.md` "Running and developing": one line - a
+    configured local dev server reads `app/.env.local` (gitignored) with the
+    two `VITE_` names; `npm run build` stays unconfigured unless they are in
+    the environment.
+21. Gates, in order, one foreground call each, this host: `rtk npm run
+    check` (600000 ms); `npm run check:built`; the configured probe
+    `VITE_SUPABASE_URL=https://example.invalid
+    VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_placeholder npm run build
+    && npm run budget` (record the total and the supabase chunk; decision
+    9), then `npm run build` again (leave `dist/` unconfigured); start
+    Docker if `docker info` does not answer (`(dockerd > /tmp/dockerd.log
+    2>&1 &)`, `.claude/README.md` "Cloud sessions"), then `npm run
+    check:db`; `node tests/run-all.js
+    app/print,app/contracts,app/states,app/typo,app/hues,stub`; `node
+    tests/app/golden.js --update --shard=n/4` for n = 1..4, then `node
+    tests/app/golden.js --shard=n/4` for n = 1..4 (each "unchanged"); `node
+    tests/app/sweep.js 360`. Read the golden diff before committing: every
+    pre-existing golden gains exactly the signed-out control lines in both
+    languages' tree and controls sections, and nothing else.
+22. `CLAUDE.md`, the two edits the human authorised in chat on 2026-09-24:
+    (a) "Source and commit conventions", last bullet, replaced by section
+    4A's text: "A cloud session pushes its branch after every green commit
+    (a reclaimed container loses what is not pushed) and never amends a
+    pushed commit; at closeout the owner squash-merges that branch onto
+    `main` as the release's one commit, never a merge commit."; (b) "Quality
+    gates", the browser-suites line "(after `npm run build`)" becomes
+    "(after `npm run build:test`)". Nothing else in `CLAUDE.md`.
+23. Commit (a new commit on the release branch, question A: `feat(account):
+    ...`, author `artex-x`), review, remediation as its own commit, push
+    after each green commit; handoff records exact commands, wall clocks,
+    the supabase-js version, the configured budget reading, and the CI
+    `browser` shard timings of B1.1's CI run and of this push (roadmap
+    section 8's shard rule).
+
+**Acceptance criteria.**
+
+- `#/account` in the test build: signed out draws the chooser (two sign-in
+  buttons, the consent line linking both policy pages in the language on
+  screen); as `gm1` the four sections in order with two identity rows and
+  a Disconnect on each; as `gm2` one row, no Disconnect, the `onlyMethod`
+  hint and Connect Discord. The header shows «Войти» signed out and the
+  initial with «Аккаунт: <email>» signed in, `aria-current="page"` on
+  `#/account`, no tab lit; `document.title` «Аккаунт — <docTitle>».
+- Vitest proves: connect calls `link(provider)` and shows `redirecting`;
+  Disconnect absent with one identity, present with two; unlink removes
+  one; `alreadyLinked` (from `link()` and from `redirectResult()`) renders
+  «Этот аккаунт Discord уже подключён к другому пользователю.» in the
+  Discord row with `role="alert"`; sign out, sign out everywhere
+  (`'global'`), delete with the typed word (trimmed, any case), toasts;
+  every component test ends with axe.
+- An unconfigured build: no account control on any page and `#/account`
+  draws the not-found page with the address kept - vitest (`cloud: null`)
+  and `tools/smoke-http.mjs` over `dist/`.
+- `redirect.test.ts`, `supabase.test.ts`, `lazy-cloud.test.ts` cover every
+  branch named in steps 4-6; per-file coverage holds for the three ports
+  and `AccountPage.svelte`, `TextInput.svelte`.
+- `dist/` built unconfigured holds neither `@example.test`, the fake's
+  marker, nor a supabase chunk (the budget listing shows none); the
+  configured probe's budget total is recorded, and `BUDGET_KB` is raised in
+  this commit (with the reason in its comment) only if that total exceeds
+  120 kB; `deploy` runs the budget after its configured build.
+- `check:db` passes: the up-down-up gate over the new pair, the five
+  `delete-account.test.mjs` cases, the `asRole` setup case and the new
+  anon-EXECUTE invariant.
+- Contract: `#/account` is in `routes.json` and replays in `hash.test.ts`
+  and `tests/app/contracts.js`; `ROUTES.md`, `CONTRACTS.md` section 1 and
+  `llms.txt` name it; `tests/contracts.js` passes.
+- Goldens: five new states written; all 150 existing goldens re-seeded
+  with only the signed-out control's lines added; the compare pass after
+  `--update` reports every shard unchanged; `golden.test.mjs`'s `as`
+  convention passes. The filter group passes (`app/contracts` replays
+  `#/account`; `app/typo` covers `#/account`); `sweep.js 360` passes
+  (no sideways scroll with the control on every page).
+- Specs: `FEATURES.md` "Account" and "Chrome", `STATE.md`, `META.md`
+  section 3 and "Static pages", `ROUTES.md`, `CONTRACTS.md`, `COVERAGE.md`
+  match the code; the privacy page in both languages links `#/account` and
+  no longer says accounts are unavailable.
+- The owner's standing rule is written to `docs/specs/I18N.md`, "Rules",
+  and every string and identifier this batch adds obeys it (the reviewer
+  reads the text table against it).
+- `CLAUDE.md` question A bullet written as step 22 (a) (authorised by the
+  human in chat, 2026-09-24).
+- `CLAUDE.md` "Quality gates" browser-suites line says `npm run build:test`
+  as step 22 (b) (review R1; authorised by the human in chat, 2026-09-24).
+- R3: `tools/no-fake-in-prod.mjs` fails a scratch `dist/assets` holding
+  `@example.test` (probe stated in the handoff, as B1.1's marker probe).
+- R5: an unknown `?as=` fails `driver.open` at once with a message naming
+  the user (states case 35's new assertion), not a 30 s `ready()` timeout.
+- N1: the listed `dist/` statements say `dist-test/` (history lines stay).
+- N2: COVERAGE "Test layers" describes `main.ts` as built.
+- N3: `tests/app/lib.js` exports neither `serveDist` nor `DIST_HTML`.
+- N4: the `golden.js` comment fits the file's width (prettier passes).
+- N5: the question C entry in `docs/DECISIONS.md` carries the probe's
+  Puppeteer-page half and both rejections, within fifteen lines.
+- N6: `rm -r dist-test` is allowed; selftest proves it.
+- N7: the `app/states` result line counts runs.
+- N9: the handoff records `SKIP_CHECK_GATE=1` on `0dd526b` and why (the
+  B1.1 implementer's reason, from the session record or the orchestrator),
+  and "Pushed: yes at `0dd526b`" (the planner wrote the latter; the
+  former is this batch's).
+- Deferred from earlier, now placed here: the fake's `linkError` option and
+  `AppState.user` (B1.1 Deferred) - both delivered by decisions 4 and 7.
+- The handoff records every gate's command and wall clock, the
+  supabase-js version, the configured budget reading, and the CI `browser`
+  shard timings.
+
+**Risks and do-nots.** Do not re-export `supabase.ts`, `lazy-cloud.ts` or
+`redirect.ts` from `ports/index.ts` (the entry graph must not hold the
+client). No top-level `await` in `main.ts`. No `create or replace` in the
+migration. No text that names a release or a later feature (the standing
+rule). No golden state that needs a fake option in the browser build. Do
+not push the migration to a hosted project (owner step; rule 2n). Risk:
+supabase-js's `signOut` after `delete_account()` may answer an error for a
+vanished user - the port answers `ok` regardless and B1.3's E2E proves the
+session is gone. Risk: the redirect's error parameters may arrive in the
+hash rather than the query for some provider errors - `takeRedirect` reads
+both; the owner's closeout OAuth check (roadmap section 15 step 16) is the
+proof, with a cancelled consent added to it (section 9). Risk: `postgres`
+deleting from `auth.users` inside a `security definer` function is the
+documented Supabase pattern, proven locally by layer 3 and on the test
+project by B1.3. Risk: re-seeding 150 goldens hides a real regression in
+the noise - the diff check in step 21 is the guard; a golden whose diff is
+more than the control lines stops the batch. **Fallback:** if Rollup keeps
+`ports/supabase.js` in an unconfigured `dist/` despite the literal (the
+budget listing shows it), gate the configured branch the way B1.1's
+fallback names: a separate entry selected in `vite.config.mts` when the
+two variables are set.
+
+## 8. Later batch outlines
 
 `B1.3` Hosted E2E: roadmap section 8 "Layer 4" with question C's probe,
 env-file loading, `createUser` when absent, the CI `e2e` job (job-level
@@ -535,61 +1169,97 @@ input) and `deploy` needing it. The fake-vs-real agreement runs
 `esbuild` from the same dependency tree - the batch picks and records).
 First step in the cloud: the probe; on refusal, the CI `workflow_dispatch`
 fallback (question C). Owner step 13 is done; `E2E_USER_PASSWORD` removed
-after.
+after. From `B1.2` as planned: the owner pushes the migration to the test
+project first (`npm run db:push -- --project test`; rule 2n denies an
+agent) - the delete flow needs `delete_account()` there. The E2E user is
+an email identity: the real adapter drops non-Google/Discord identities
+and answers `Session.provider` null, so `#/account` shows the email, no
+"via" part, no identity row, both Connect buttons and no Disconnect -
+assert that. Review R4 (placed here): the contract's cases 2 (`signIn`
+notifies once), 7 (a port made as `gm2` has one identity) and 8 (delete)
+assume the fake; B1.3 selects which cases run against the real adapter
+(the mint replaces `signIn`; `make('gm2')` has no real counterpart;
+delete runs last on a throwaway user) and records the selection in
+`COVERAGE.md`. `redirectResult()` stays vitest-only (no OAuth on the
+test project).
 
-`B1.4` Account preferences: roadmap section 14, `B1.4`; `CloudPort.prefs`
-and the seed's `prefs` rows arrive here; `cloud.contract.ts` appends the
-prefs cases (load null, save then load, overwrite). Carried from R0
-(roadmap section 17): the reversibility gate takes its base with `db reset
---local --version <previous>` for a real migration; the additive lint's
-blind spots are listed in the migration's review.
+`B1.4` Account preferences: roadmap section 14, `B1.4`, with the owner's
+answers in `mocks/B1.4/README.md`: default money mode dropped from R1 (Q1,
+recorded in `docs/DECISIONS.md` by B1.4), print layout persisted for
+everyone in `dhloot.prefs.v1` (Q2). `CloudPort.prefs` and the seed's
+`prefs` rows arrive here; `cloud.contract.ts` appends the prefs cases (load
+null, save then load, overwrite). Carried from R0 (roadmap section 17):
+the reversibility gate takes its base with `db reset --local --version
+<previous>` for a real migration (the first table); the additive lint's
+blind spots are listed in the migration's review; the view-without-
+`security_invoker` invariant joins the anon-EXECUTE one `B1.2` adds.
 
-`B1.5` Release automation (section 3 item 11): `backup.yml`; `ci.yml`
-`migrate-test` (before `e2e`) and `migrate-prod` (before `deploy`) with
-`supabase db push --db-url` from `SUPABASE_DB_URL_TEST`/`_PROD`; the
-applied set: `applied-check.mjs` and `edit-guard.mjs` read the migrations
-that are on `main` (every migration on `main` is applied by CI - the
-simplest source CI keeps current) instead of `applied.json`, which
-`db:push` stops writing (kept only for the local wrapper's log or deleted -
-the batch decides and records); the restore runbook. Owner steps: an `age`
-key pair (public key as an Actions variable, private key in the password
-manager), the two connection-string secrets. Carried from R0: rule 2n's
-uncovered hosted writes (`secrets set`, `functions deploy`, ...) - decide
-deny-by-default for non-local subcommands here or defer to `DEBT.md`.
+`B1.5` Release automation (section 3 item 11) with the owner's answers in
+`mocks/B1.4/README.md`: `backup.yml` at `17 3 * * *` UTC including the
+auth rows, plus one privacy sentence that encrypted backups are kept 30
+days after deletion (Q3, Q4); `ci.yml` `migrate-test` (before `e2e`) and
+`migrate-prod` (before `deploy`) with `supabase db push --db-url` from
+`SUPABASE_DB_URL_TEST`/`_PROD`, the production one a repository secret, no
+Environment (Q5); with `skip_e2e` and a new migration, `migrate-prod` and
+`deploy` refuse (Q6); the applied set: `applied-check.mjs` and
+`edit-guard.mjs` read the migrations that are on `main` (every migration
+on `main` is applied by CI) instead of `applied.json`, which `db:push`
+stops writing (kept only for the local wrapper's log or deleted - the
+batch decides and records); the restore runbook, and a restore drill into
+the test project at R1 closeout (Q8). Owner steps: an `age` key pair
+(public key as an Actions variable, private key in the password manager),
+the two connection-string secrets. Carried from R0 and answered (Q7): rule
+2n denies every hosted-capable `supabase` subcommand by default with an
+allowlist of local ones, and the same hook edit closes the 2l `git commit
+<pathspec>` and `git commit -a` gaps.
 
-## 8. Owner steps for R1 (in addition to the roadmap's section 15)
+## 9. Owner steps for R1 (in addition to the roadmap's section 15)
 
-- Confirm questions A-C (section 4).
+- Done 2026-09-24: questions A-C confirmed; both `CLAUDE.md` edits
+  authorised (`B1.2` writes them).
 - Before `B1.3`: confirm the cloud environment's `E2E_*` variables are set
-  (they reach new sessions only) and that no API credential remains.
+  (they reach new sessions only) and that no API credential remains; push
+  `B1.2`'s migration to the test project (`npm run db:push -- --project
+  test`).
 - Before `B1.5`: `age` key pair; `SUPABASE_DB_URL_TEST` and
   `SUPABASE_DB_URL_PROD` Actions secrets; `BACKUP_AGE_RECIPIENT` variable.
 - At closeout: question A's squash-merge (or the fast-forward/rebase
   fallback), `config:push` and `db:push` to test and prod only if `B1.5` did
   not automate migrations; Security Advisor; the manual OAuth check
-  (section 15, step 16); the roadmap compaction (sections 15 step 20, 18
-  conflict 3 and the verdict table, decision 25).
+  (roadmap section 15, step 16) with two additions from `B1.2`: cancel the
+  provider's consent screen once and see «Не получилось. Попробуйте ещё
+  раз.» on `#/account`, and "Sign out everywhere" on one device ends the
+  other's session at its next token refresh; the restore drill (Q8); the
+  roadmap compaction (sections 15 step 20, 18 conflict 3 and the verdict
+  table, decision 25).
 
-## 9. Risks, assumptions, deferred
+## 10. Risks, assumptions, deferred
 
 - Assumption: Rollup drops the `.then(import())` branch and its chunk when
-  the define is a literal `false` - the marker guard is the proof, and the
-  fallback is a second entry (section 6).
+  the define is a literal `false` - proven by B1.1's marker guard; `B1.2`
+  leans on the same fact for the supabase chunk (its fallback: section 7).
 - Risk: the `E2E_*` variables are not visible to this session's
   successor either (`printenv` confirmed they do not reach a running
   session; whether a new session or a new environment is needed is
   unmeasured) - `B1.3`'s probe answers; the CI dispatch is the fallback.
-- Risk: `check:built`'s 3 s reading is a short-circuited run; `B1.1`
-  re-measures.
 - Risk: a golden shard exceeds the foreground cap on a loaded container -
   one shard per call, never a bare `golden.js`.
-- Deferred to `B1.2`: the `linkError` fake option; `AppState.user`.
-- Deferred to closeout: the roadmap text superseded by questions A-C; the
-  `docs/DECISIONS.md` entries those questions produce; `orchestrate.prompt.md`
-  and README cost tables for the Windows host stay as they are.
+- Risk (B1.1 review R2, open): the test build mounts after the dynamic
+  import while production mounts synchronously; B1.1's fallback (a second
+  entry with a static import) removes the gap if it ever shows.
+- Deferred (B1.1 review N8): `fake-cloud-seed.ts` `SEED.now`,
+  `SeedIdentity`, `SeedUserId` have no outside reader - revisit when a
+  reader lands (R2's seed).
+- Deferred (planner, B1.2): loading supabase-js only for a reader with a
+  stored session or a pending redirect (anonymous readers would skip the
+  chunk); measure the chunk first (section 7 step 21).
+- Deferred to closeout: the roadmap text superseded by questions A-C;
+  `orchestrate.prompt.md` and README cost tables for the Windows host stay
+  as they are.
 - Carried from R0, placed: reversibility base (`B1.4`), additive lint
-  blind spots (`B1.4` review), rule 2n's uncovered hosted writes (`B1.5`),
-  `.impeccable/design.json` `file://` text, `AltPanel.svelte`'s "no
-  offline copy" comment and `clipboard.ts` `legacyCopy` (any batch that
-  touches those files takes them; none in R1 is expected to - name them to
-  the human at closeout if untouched).
+  blind spots (`B1.4` review), the anon-EXECUTE invariant (`B1.2`), the
+  view invariant (`B1.4`), rule 2n's uncovered hosted writes and the 2l
+  gaps (`B1.5`), `.impeccable/design.json` `file://` text,
+  `AltPanel.svelte`'s "no offline copy" comment and `clipboard.ts`
+  `legacyCopy` (any batch that touches those files takes them; none in R1
+  is expected to - name them to the human at closeout if untouched).

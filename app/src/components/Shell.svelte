@@ -1,11 +1,13 @@
 <script lang="ts">
   /* The frame every route sits in: brand, tabs and language. The storage
      notice moved to the lists index, where the live app draws it. */
+  import Icon from './Icon.svelte';
   import Seg from './Seg.svelte';
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
   import Toast from './Toast.svelte';
   import { SECTION_LABEL } from '../lib/dict.js';
+  import { ACCOUNT_HASH } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
@@ -23,9 +25,10 @@
     { value: 'en', label: 'EN' }
   ];
 
-  /* A static page has one copy per language (docs/specs/META.md section 9):
-     every footer link starts here, so it opens the copy of the language on screen. */
-  const pagesDir = $derived(app.lang === 'en' ? 'pages/en/' : 'pages/');
+  /* The account control waits until the session is known, so a signed-in
+     reader never sees «Войти» flash; a build with no sign-in draws none. */
+  const accountShown = $derived(app.env.cloud !== null && app.user !== undefined);
+  const onAccount = $derived(app.route.kind === 'account');
 
   /**
    * A record, a section or an owned list titles the tab
@@ -51,7 +54,9 @@
         ? own.name
         : app.section
           ? app.t[SECTION_LABEL[app.section]]
-          : undefined;
+          : route.kind === 'account' && app.env.cloud
+            ? app.t.account
+            : undefined;
     document.title = name ? `${name} — ${app.t.docTitle}` : app.t.docTitle;
   });
 
@@ -92,6 +97,26 @@
           app.setLang(l);
         }}
       />
+      {#if accountShown}
+        {#if app.user}
+          <a
+            class="acct in"
+            class:on={onAccount}
+            href={ACCOUNT_HASH}
+            aria-label={`${app.t.account}: ${app.user.email}`}
+            aria-current={onAccount ? 'page' : undefined}
+            >{#if app.user.email}{app.user.email.charAt(0)}{:else}<Icon name="user" />{/if}</a
+          >
+        {:else}
+          <a
+            class="acct"
+            class:on={onAccount}
+            href={ACCOUNT_HASH}
+            aria-current={onAccount ? 'page' : undefined}
+            ><Icon name="user" /><span class="t">{app.t.signIn}</span></a
+          >
+        {/if}
+      {/if}
     </div>
   </div>
   <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} />
@@ -125,10 +150,10 @@
        inside the installed app (FEATURES.md, "Chrome"). -->
   <nav class="foot-nav" aria-label={app.t.footNavLabel}>
     {#if app.showInstall}
-      <a href={pagesDir + 'install.html'}>{app.t.installLink}</a>
+      <a href={app.pagesDir + 'install.html'}>{app.t.installLink}</a>
     {/if}
-    <a href={pagesDir + 'privacy.html'}>{app.t.privacyLink}</a>
-    <a href={pagesDir + 'terms.html'}>{app.t.termsLink}</a>
+    <a href={app.pagesDir + 'privacy.html'}>{app.t.privacyLink}</a>
+    <a href={app.pagesDir + 'terms.html'}>{app.t.termsLink}</a>
   </nav>
   <details class="foot-licence">
     <summary>{app.t.footSummary}</summary>
@@ -217,6 +242,87 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted2);
+  }
+
+  /* The group after the brand: the language switch, then the account
+     control 8px after it. */
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* The account control: `Seg`'s track and its button type. */
+  .acct {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 38px;
+    min-width: 38px;
+    padding: 0 14px 0 11px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 650;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: 0.15s;
+  }
+
+  .acct:hover {
+    color: var(--txt);
+    border-color: var(--gold);
+  }
+
+  /* Signed in: a circle with the email's first letter. */
+  .acct.in {
+    padding: 0;
+    width: 38px;
+    background: var(--surface2);
+    border-color: rgb(216 171 94 / 45%);
+    color: var(--gold-soft);
+    font-size: 14px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  /* On `#/account`: the gold ring instead of a lit tab. */
+  .acct.on {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
+  }
+
+  @media (max-width: 600px) {
+    .acct {
+      height: 44px;
+      min-width: 44px;
+    }
+
+    .acct.in {
+      width: 44px;
+    }
+  }
+
+  /* Below 420px the English label crowds the brand (measured at 390), so the
+     label is hidden from sight and stays the control's name. */
+  @media (max-width: 419px) {
+    .acct:not(.in) {
+      padding: 0;
+      width: 44px;
+    }
+
+    .acct .t {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
   /* off `.foot` in style.css */

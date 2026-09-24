@@ -475,6 +475,10 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Header:** sticky, translucent, blurred, with a one-pixel seam under it.
 - **Brand:** a gold star glyph with a 35 per cent gold drop shadow beside a
   two-line wordmark. The wordmark is never translated.
+- **Account control:** 8px after the language switch, on the switch's own
+  track - a person glyph and «Войти» signed out, a gold-soft initial in a
+  38px circle signed in, with the gold ring on the account page, where no
+  tab is lit.
 - **Narrow:** below 640px the strip scrolls horizontally with the current tab
   scrolled to centre, and its scrollbar is hidden.
 

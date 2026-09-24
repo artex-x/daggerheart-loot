@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B1.2 account mock</title>
+    <style>
+      /* Values copied from app/src/styles/tokens.css, Shell, Seg, Button, Panel, PageTitle, Field, ListsPage (input). Dark only, as the app. */
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --danger: #e0685f;
+        --ink-on-gold: #1a1206;
+        --r: 14px;
+        --r-sm: 9px;
+        --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
+        --ui:
+          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+          Arial, sans-serif;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(1200px 700px at 12% -8%, #251c3d 0%, transparent 62%),
+          radial-gradient(900px 600px at 100% 0%, #1b2b3d 0%, transparent 55%), var(--bg);
+        background-attachment: fixed;
+        color: var(--txt);
+        font: 15.5px/1.6 var(--ui);
+        min-height: 100vh;
+        padding-bottom: 60px;
+      }
+      a {
+        color: var(--gold-soft);
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 2px;
+        border-radius: var(--r-sm);
+      }
+      /* mock chrome */
+      .mockbar {
+        padding: 10px 16px;
+        font-size: 13px;
+        color: var(--muted);
+        border-bottom: 1px dashed var(--line2);
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .mockbar b {
+        color: var(--txt);
+      }
+      .mockbar label {
+        cursor: pointer;
+      }
+      .cap {
+        width: min(1180px, 100% - 32px);
+        margin: 34px auto 8px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #5ec9c4;
+      }
+      .new {
+        outline: 1px dashed #5ec9c4;
+        outline-offset: 3px;
+      }
+      body:has(#hide-new:checked) .new {
+        outline: none;
+      }
+      .ru,
+      .en {
+        display: contents;
+      }
+      body:not(:has(#l-en:checked)) .en {
+        display: none;
+      }
+      body:has(#l-en:checked) .ru {
+        display: none;
+      }
+      /* app: Shell topbar (abridged; header.html has the full control) */
+      .frame {
+        --wrap: min(1180px, 100% - 32px);
+      }
+      .topbar {
+        background: rgb(14 12 21 / 86%);
+        border-bottom: 1px solid var(--line);
+      }
+      .topbar-in {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 11px 0;
+        width: var(--wrap);
+        margin-inline: auto;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--txt);
+      }
+      .brand svg {
+        width: 26px;
+        height: 26px;
+        fill: var(--gold);
+      }
+      .brand-txt {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+      }
+      .brand-txt b {
+        font-size: 16px;
+      }
+      .brand-txt i {
+        font-style: normal;
+        font-size: 10.5px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .seg {
+        display: flex;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px;
+      }
+      .seg label {
+        color: var(--muted);
+        padding: 5px 13px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        font-weight: 650;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+      }
+      body:not(:has(#l-en:checked)) .seg label.r,
+      body:has(#l-en:checked) .seg label.e {
+        background: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .acct {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        width: 38px;
+        border-radius: 999px;
+        background: var(--surface2);
+        border: 1px solid var(--gold);
+        box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
+        color: var(--gold-soft);
+        font-size: 14px;
+        font-weight: 650;
+        text-decoration: none;
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        width: var(--wrap);
+        margin-inline: auto;
+        overflow: hidden;
+      }
+      .tabs a {
+        color: var(--muted);
+        padding: 9px 13px 10px;
+        font-size: 13.5px;
+        font-weight: 560;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .tabs a.sep {
+        margin-left: auto;
+      }
+      /* app: Shell main; PROPOSED: the column reuses .page-sub max-width 70ch */
+      main {
+        width: var(--wrap);
+        margin-inline: auto;
+        padding: 26px 0 48px;
+      }
+      .col {
+        max-width: 70ch;
+      }
+      /* app: PageTitle.svelte */
+      .page-h {
+        margin: 0 0 4px;
+        font-size: 23px;
+        font-weight: 680;
+        letter-spacing: -0.01em;
+      }
+      .page-sub {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 70ch;
+      }
+      /* app: Panel.svelte; heading = Field .lbl */
+      .panel {
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 18px;
+        box-shadow: var(--shadow);
+        margin-top: 16px;
+      }
+      .lbl {
+        display: block;
+        margin: 0 0 8px;
+        font-size: 11.5px;
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .hint {
+        margin: 10px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      /* app: Button.svelte */
+      .btn {
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--txt);
+        padding: 0 18px;
+        height: 46px;
+        border-radius: var(--r-sm);
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .btn.sm {
+        height: 32px;
+        padding: 0 11px;
+        font-size: 12.5px;
+        border-radius: 8px;
+        gap: 6px;
+      }
+      .btn svg {
+        width: 15px;
+        height: 15px;
+        flex: none;
+      }
+      .btn:hover {
+        border-color: var(--gold);
+        background: var(--surface2);
+      }
+      .btn.primary {
+        background: linear-gradient(180deg, #e2b76c, var(--gold));
+        border-color: #e8c27c;
+        color: var(--ink-on-gold);
+        font-weight: 700;
+      }
+      .btn.ghost {
+        background: transparent;
+        border-color: var(--line);
+      }
+      .btn.danger {
+        border-color: rgb(224 104 95 / 40%);
+        color: #f0a49d;
+        background: var(--surface);
+      }
+      .btn.danger:hover {
+        border-color: var(--danger);
+        background: rgb(224 104 95 / 12%);
+      }
+      .btn[disabled] {
+        opacity: 0.5;
+        cursor: default;
+        pointer-events: none;
+      }
+      .btn.busy {
+        color: var(--muted);
+      }
+      .row-btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      /* PROPOSED: identity rows */
+      .who {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .who b {
+        font-size: 15.5px;
+        font-weight: 650;
+      }
+      .via {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .via svg {
+        width: 15px;
+        height: 15px;
+      }
+      .ids {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .ids li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+      }
+      .ids li:first-child {
+        border-top: 0;
+        padding-top: 2px;
+      }
+      .ids .pv {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        flex: 1 1 200px;
+      }
+      .ids .pv svg {
+        width: 18px;
+        height: 18px;
+        flex: none;
+      }
+      .ids .pv span {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.35;
+        min-width: 0;
+      }
+      .ids .pv small {
+        font-size: 12.5px;
+        color: var(--muted2);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .err {
+        flex-basis: 100%;
+        margin: 0;
+        font-size: 13px;
+        color: #f0a49d;
+      }
+      /* app: ListsPage input */
+      input[type='text'] {
+        width: 100%;
+        height: 46px;
+        padding: 0 14px;
+        border-radius: var(--r-sm);
+        background: var(--bg2);
+        border: 1px solid var(--line2);
+        color: var(--txt);
+        font: inherit;
+      }
+      input[type='text']:focus {
+        outline: none;
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
+      }
+      .confirm {
+        margin-top: 12px;
+        display: grid;
+        gap: 10px;
+      }
+      .confirm .grow {
+        flex: 1 1 170px;
+        min-width: 0;
+      }
+      .numrow {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .phone {
+        width: 360px;
+        margin-inline: auto;
+        border: 1px solid var(--line2);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .phone .col {
+        max-width: none;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="radio" name="lang" id="l-ru" checked hidden /><input
+      type="radio"
+      name="lang"
+      id="l-en"
+      hidden
+    />
+    <div class="mockbar">
+      <b>Mock B1.2 - route #/account</b
+      ><span
+        >Language: <label for="l-ru"><u>RU</u></label> / <label for="l-en"><u>EN</u></label> (or
+        the header switch)</span
+      ><label><input type="checkbox" id="hide-new" /> hide the dashed "proposed" outline</label
+      ><span
+        >Everything on #/account is new; outlines mark choices the roadmap does not
+        settle.</span
+      >
+    </div>
+
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="star" viewBox="0 0 24 24">
+        <path
+          fill="currentColor"
+          d="M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z"
+        />
+      </symbol>
+      <symbol id="g" viewBox="0 0 48 48">
+        <path
+          fill="#EA4335"
+          d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+        />
+        <path
+          fill="#4285F4"
+          d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+        />
+        <path
+          fill="#FBBC05"
+          d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+        />
+        <path
+          fill="#34A853"
+          d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+        />
+      </symbol>
+      <symbol id="d" viewBox="0 0 24 24">
+        <path
+          fill="#5865F2"
+          d="M19.3 5.3A16.6 16.6 0 0 0 15.2 4l-.5 1a15.3 15.3 0 0 0-5.4 0l-.5-1a16.6 16.6 0 0 0-4.1 1.3C2.1 9.2 1.4 13 1.7 16.7a16.7 16.7 0 0 0 5 2.6l1.1-1.7a10.8 10.8 0 0 1-1.7-.8l.4-.3a11.9 11.9 0 0 0 11 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.7a16.6 16.6 0 0 0 5-2.6c.4-4.3-.7-8-3-11.4zM8.7 14.5c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2z"
+        />
+      </symbol>
+    </svg>
+
+    <!-- ===== A ===== -->
+    <p class="cap">
+      A. Signed in as gm1: two identities, Disconnect on each (recommended layout)
+    </p>
+    <div class="frame">
+      <header class="topbar">
+        <div class="topbar-in">
+          <a class="brand" href="#"
+            ><svg><use href="#star" /></svg
+            ><span class="brand-txt"><b>Лут</b><i>Daggerheart</i></span></a
+          >
+          <div class="topbar-right">
+            <div class="seg">
+              <label class="r" for="l-ru">RU</label><label class="e" for="l-en">EN</label>
+            </div>
+            <a class="acct" href="#/account" aria-current="page">g</a>
+          </div>
+        </div>
+        <nav class="tabs">
+          <a href="#"
+            ><span class="ru">Обычные правила</span><span class="en">Standard rules</span></a
+          ><a href="#"
+            ><span class="ru">Альт. таблицы</span><span class="en">Alt. tables</span></a
+          ><a href="#">...</a
+          ><a class="sep" href="#"
+            ><span class="ru">Таблицы</span><span class="en">Tables</span></a
+          ><a href="#"><span class="ru">Списки</span><span class="en">Lists</span></a
+          ><a href="#"><span class="ru">Поиск</span><span class="en">Search</span></a>
+        </nav>
+      </header>
+      <main>
+        <div class="col">
+          <h1 class="page-h"><span class="ru">Аккаунт</span><span class="en">Account</span></h1>
+          <p class="page-sub new">
+            <span class="ru">Способы входа, выход и удаление аккаунта.</span
+            ><span class="en">Sign-in methods, signing out and deleting the account.</span>
+          </p>
+
+          <section class="panel">
+            <h2 class="lbl">
+              <span class="ru">Вы вошли как</span><span class="en">Signed in as</span>
+            </h2>
+            <div class="who">
+              <b>gm1@example.com</b
+              ><span class="via new"
+                ><svg><use href="#g" /></svg><span class="ru">через Google</span
+                ><span class="en">with Google</span></span
+              >
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2 class="lbl">
+              <span class="ru">Способы входа</span><span class="en">Connected providers</span>
+            </h2>
+            <ul class="ids new">
+              <li>
+                <span class="pv"
+                  ><svg><use href="#g" /></svg
+                  ><span><b>Google</b><small>gm1@example.com</small></span></span
+                ><button class="btn sm ghost" type="button">
+                  <span class="ru">Отключить</span><span class="en">Disconnect</span>
+                </button>
+              </li>
+              <li>
+                <span class="pv"
+                  ><svg><use href="#d" /></svg
+                  ><span><b>Discord</b><small>gm1.discord@example.net</small></span></span
+                ><button class="btn sm ghost" type="button">
+                  <span class="ru">Отключить</span><span class="en">Disconnect</span>
+                </button>
+              </li>
+            </ul>
+          </section>
+
+          <section class="panel">
+            <h2 class="lbl"><span class="ru">Выход</span><span class="en">Sign out</span></h2>
+            <div class="row-btns">
+              <button class="btn" type="button">
+                <span class="ru">Выйти</span><span class="en">Sign out</span></button
+              ><button class="btn ghost" type="button">
+                <span class="ru">Выйти на всех устройствах</span
+                ><span class="en">Sign out everywhere</span>
+              </button>
+            </div>
+            <p class="hint new">
+              <span class="ru"
+                >«Выйти на всех устройствах» завершает вход и на других телефонах и
+                компьютерах.</span
+              ><span class="en"
+                >"Sign out everywhere" also ends the session on your other phones and
+                computers.</span
+              >
+            </p>
+          </section>
+
+          <section class="panel">
+            <h2 class="lbl">
+              <span class="ru">Удаление аккаунта</span><span class="en">Delete account</span>
+            </h2>
+            <p class="hint new" style="margin: 0 0 12px">
+              <span class="ru"
+                >Аккаунт и всё, что в нём хранится, будут удалены навсегда. Списки, сохранённые
+                на этом устройстве, останутся.</span
+              ><span class="en"
+                >The account and everything stored in it are deleted for good. Lists saved on
+                this device stay.</span
+              >
+            </p>
+            <button class="btn danger" type="button" aria-expanded="false">
+              <span class="ru">Удалить аккаунт...</span
+              ><span class="en">Delete account...</span>
+            </button>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== B ===== -->
+    <p class="cap">
+      B. Signed in as gm2: one identity - no Disconnect, a hint says why; Discord offers Connect
+    </p>
+    <div class="frame">
+      <main style="padding-top: 0">
+        <div class="col">
+          <section class="panel">
+            <h2 class="lbl">
+              <span class="ru">Способы входа</span><span class="en">Connected providers</span>
+            </h2>
+            <ul class="ids">
+              <li>
+                <span class="pv"
+                  ><svg><use href="#g" /></svg
+                  ><span><b>Google</b><small>gm2@example.com</small></span></span
+                >
+              </li>
+              <li>
+                <span class="pv"
+                  ><svg><use href="#d" /></svg
+                  ><span
+                    ><b>Discord</b
+                    ><small
+                      ><span class="ru">не подключён</span
+                      ><span class="en">not connected</span></small
+                    ></span
+                  ></span
+                ><button class="btn sm" type="button">
+                  <span class="ru">Подключить Discord</span
+                  ><span class="en">Connect Discord</span>
+                </button>
+              </li>
+            </ul>
+            <p class="hint new">
+              <span class="ru"
+                >Google - единственный способ входа, поэтому его нельзя отключить. Подключите
+                второй, чтобы отключить этот.</span
+              ><span class="en"
+                >Google is your only sign-in method, so it cannot be disconnected. Connect
+                another one first.</span
+              >
+            </p>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== C ===== -->
+    <p class="cap">
+      C. gm2 after a refused link: "already used by another account" under the button; the page
+      keeps its state
+    </p>
+    <div class="frame">
+      <main style="padding-top: 0">
+        <div class="col">
+          <section class="panel">
+            <h2 class="lbl">
+              <span class="ru">Способы входа</span><span class="en">Connected providers</span>
+            </h2>
+            <ul class="ids">
+              <li>
+                <span class="pv"
+                  ><svg><use href="#g" /></svg
+                  ><span><b>Google</b><small>gm2@example.com</small></span></span
+                >
+              </li>
+              <li>
+                <span class="pv"
+                  ><svg><use href="#d" /></svg
+                  ><span
+                    ><b>Discord</b
+                    ><small
+                      ><span class="ru">не подключён</span
+                      ><span class="en">not connected</span></small
+                    ></span
+                  ></span
+                ><button class="btn sm" type="button">
+                  <span class="ru">Подключить Discord</span
+                  ><span class="en">Connect Discord</span>
+                </button>
+                <p class="err new" role="alert">
+                  <span class="ru"
+                    >Этот аккаунт Discord уже подключён к другому пользователю.</span
+                  ><span class="en"
+                    >This Discord account is already used by another account.</span
+                  >
+                </p>
+              </li>
+            </ul>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== D ===== -->
+    <p class="cap">
+      D. The redirect state after Connect (the button disables and says where it goes)
+    </p>
+    <div class="frame">
+      <main style="padding-top: 0">
+        <div class="col">
+          <section class="panel">
+            <ul class="ids">
+              <li>
+                <span class="pv"
+                  ><svg><use href="#d" /></svg
+                  ><span
+                    ><b>Discord</b
+                    ><small
+                      ><span class="ru">не подключён</span
+                      ><span class="en">not connected</span></small
+                    ></span
+                  ></span
+                ><button class="btn sm busy new" type="button" disabled aria-busy="true">
+                  <span class="ru">Переходим в Discord...</span
+                  ><span class="en">Redirecting to Discord...</span>
+                </button>
+              </li>
+            </ul>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== E ===== -->
+    <p class="cap">
+      E. Delete, confirmation open inline in its panel: the typed word, then the final button
+      enables
+    </p>
+    <div class="frame">
+      <main style="padding-top: 0">
+        <div class="col">
+          <section class="panel">
+            <h2 class="lbl">
+              <span class="ru">Удаление аккаунта</span><span class="en">Delete account</span>
+            </h2>
+            <p class="hint" style="margin: 0 0 12px">
+              <span class="ru"
+                >Аккаунт и всё, что в нём хранится, будут удалены навсегда. Списки, сохранённые
+                на этом устройстве, останутся.</span
+              ><span class="en"
+                >The account and everything stored in it are deleted for good. Lists saved on
+                this device stay.</span
+              >
+            </p>
+            <div class="confirm new">
+              <label for="typed" style="font-size: 14px"
+                ><span class="ru">Чтобы подтвердить, введите слово <b>удалить</b></span
+                ><span class="en">To confirm, type <b>delete</b></span></label
+              >
+              <div class="numrow">
+                <div class="grow">
+                  <input id="typed" type="text" autocomplete="off" value="удалить" />
+                </div>
+                <button class="btn danger" type="button">
+                  <span class="ru">Удалить навсегда</span
+                  ><span class="en">Delete for good</span></button
+                ><button class="btn ghost" type="button">
+                  <span class="ru">Отмена</span><span class="en">Cancel</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== F ===== -->
+    <p class="cap">F. Signed out (and after sign-out or deletion): the sign-in chooser</p>
+    <div class="frame">
+      <main style="padding-top: 0">
+        <div class="col">
+          <h1 class="page-h"><span class="ru">Аккаунт</span><span class="en">Account</span></h1>
+          <p class="page-sub new">
+            <span class="ru"
+              >Войдите, чтобы ваши настройки сохранялись на всех устройствах. Всё остальное
+              работает и без входа.</span
+            ><span class="en"
+              >Sign in to keep your settings on every device. Everything else works without an
+              account.</span
+            >
+          </p>
+          <section class="panel">
+            <h2 class="lbl"><span class="ru">Войти</span><span class="en">Sign in</span></h2>
+            <div class="row-btns new">
+              <button class="btn" type="button">
+                <svg><use href="#g" /></svg><span class="ru">Войти через Google</span
+                ><span class="en">Sign in with Google</span></button
+              ><button class="btn" type="button">
+                <svg><use href="#d" /></svg><span class="ru">Войти через Discord</span
+                ><span class="en">Sign in with Discord</span>
+              </button>
+            </div>
+            <p class="hint new">
+              <span class="ru"
+                >Входя, вы принимаете <a href="#">условия</a> и
+                <a href="#">политику конфиденциальности</a>.</span
+              ><span class="en"
+                >By signing in you accept the <a href="#">terms</a> and the
+                <a href="#">privacy policy</a>.</span
+              >
+            </p>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== G ===== -->
+    <p class="cap">G. Unconfigured build (env.cloud is null), signed-out route</p>
+    <div class="frame">
+      <main style="padding-top: 0">
+        <div class="col">
+          <h1 class="page-h"><span class="ru">Аккаунт</span><span class="en">Account</span></h1>
+          <p class="page-sub new">
+            <span class="ru">Вход недоступен в этой сборке сайта.</span
+            ><span class="en">Sign-in is not available in this build of the site.</span>
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <!-- ===== H ===== -->
+    <p class="cap">H. 360 px: state C (rows wrap, the button drops under the provider)</p>
+    <div class="phone frame">
+      <main>
+        <div class="col">
+          <h1 class="page-h"><span class="ru">Аккаунт</span><span class="en">Account</span></h1>
+          <section class="panel">
+            <h2 class="lbl">
+              <span class="ru">Способы входа</span><span class="en">Connected providers</span>
+            </h2>
+            <ul class="ids">
+              <li>
+                <span class="pv"
+                  ><svg><use href="#g" /></svg
+                  ><span
+                    ><b>Google</b><small>gm2.with.a.long.address@example.com</small></span
+                  ></span
+                >
+              </li>
+              <li>
+                <span class="pv"
+                  ><svg><use href="#d" /></svg
+                  ><span
+                    ><b>Discord</b
+                    ><small
+                      ><span class="ru">не подключён</span
+                      ><span class="en">not connected</span></small
+                    ></span
+                  ></span
+                ><button class="btn sm" type="button">
+                  <span class="ru">Подключить Discord</span
+                  ><span class="en">Connect Discord</span>
+                </button>
+                <p class="err" role="alert">
+                  <span class="ru"
+                    >Этот аккаунт Discord уже подключён к другому пользователю.</span
+                  ><span class="en"
+                    >This Discord account is already used by another account.</span
+                  >
+                </p>
+              </li>
+            </ul>
+          </section>
+          <section class="panel">
+            <h2 class="lbl"><span class="ru">Выход</span><span class="en">Sign out</span></h2>
+            <div class="row-btns">
+              <button class="btn" type="button">
+                <span class="ru">Выйти</span><span class="en">Sign out</span></button
+              ><button class="btn ghost" type="button">
+                <span class="ru">Выйти на всех устройствах</span
+                ><span class="en">Sign out everywhere</span>
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

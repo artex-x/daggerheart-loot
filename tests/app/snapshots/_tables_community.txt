@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -181,6 +182,7 @@ daggerheart.com
 Вечный Трут
 Военный Барабан Павшего Войска
 Возвратная Монета
+Войти
 Гильдейский Амулет
 Грибной Факел
 Древесная Настойка
@@ -289,6 +291,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -535,6 +538,7 @@ Scholar's Lodestone
 Search
 Shadow Amulet
 Shadowmark Chalk
+Sign in
 Skip to content
 Sparrow's Compass
 Spider Silk Spool

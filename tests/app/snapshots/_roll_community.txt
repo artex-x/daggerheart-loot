@@ -11,6 +11,7 @@ RootWebArea "Сообщества — Генератор лута — Daggerhear
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -69,6 +70,7 @@ daggerheart.com
 Альт. таблицы
 Бросить d10
 Великородное
+Войти
 Горное
 Догматичное
 К содержимому
@@ -108,6 +110,7 @@ RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -183,6 +186,7 @@ Roll result
 Seaborne
 Search
 Share
+Sign in
 Skip to content
 Slyborne
 Standard rules

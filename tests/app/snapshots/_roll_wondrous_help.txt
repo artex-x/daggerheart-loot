@@ -11,6 +11,7 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -66,6 +67,7 @@ Wondrous
 Wondrous Environments
 daggerheart.com
 Альт. таблицы
+Войти
 К содержимому
 Как это работает
 Конфиденциальность
@@ -98,6 +100,7 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -166,6 +169,7 @@ Random 1–119
 Roll result
 Search
 Share
+Sign in
 Skip to content
 Standard rules
 Tables

@@ -22,7 +22,9 @@ import {
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
-import type { CompressPort, Env, RouterPort } from '../ports/index.js';
+import type { CompressPort, Env, RouterPort, Session } from '../ports/index.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { AppState } from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -862,5 +864,134 @@ describe('the toast', () => {
     vi.advanceTimersByTime(5000);
     expect(app.toast).toBeNull();
     vi.useRealTimers();
+  });
+});
+
+describe('the account session', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+
+  it('is null from the start with no sign-in configured', () => {
+    const app = new AppState(at('#/roll/std'));
+    expect(app.user).toBeNull();
+    app.start();
+    expect(app.user).toBeNull();
+    app.stop();
+  });
+
+  it('is unknown until the cloud answers, then the session', async () => {
+    const app = new AppState(at('#/roll/std', { cloud: fakeCloud(SEED, 'gm1') }));
+    expect(app.user).toBeUndefined();
+    app.start();
+    await flush();
+    expect(app.user?.email).toBe('gm1@example.test');
+    app.stop();
+  });
+
+  it('follows a sign-out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    await flush();
+    await cloud.auth.signOut();
+    expect(app.user).toBeNull();
+    app.stop();
+  });
+
+  it('lets a notification win over a first answer read before it', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let answer: (s: Session | null) => void = () => undefined;
+    cloud.auth.session = () =>
+      new Promise((r) => {
+        answer = r;
+      });
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    await cloud.auth.signOut();
+    answer({ userId: 'stale', email: 'stale@example.test', provider: 'google' });
+    await flush();
+    expect(app.user).toBeNull();
+    app.stop();
+  });
+
+  it('reads a session that cannot be read as signed out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.auth.session = () => Promise.reject(new Error('offline'));
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    await flush();
+    expect(app.user).toBeNull();
+    app.stop();
+  });
+
+  it('marks the provider of a link refused as already linked', async () => {
+    const cloud = fakeCloud(SEED, 'gm2', {
+      returned: {
+        kind: 'link',
+        provider: 'discord',
+        result: { ok: false, error: 'alreadyLinked' }
+      }
+    });
+    const app = new AppState(at('#/account', { cloud }));
+    app.start();
+    await flush();
+    expect(app.alreadyLinked).toBe('discord');
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('toasts any other refused redirect, and nothing for one that worked', async () => {
+    const refused = new AppState(
+      at('#/account', {
+        cloud: fakeCloud(SEED, undefined, {
+          returned: { kind: 'signIn', provider: null, result: { ok: false, error: 'failed' } }
+        })
+      })
+    );
+    refused.start();
+    await flush();
+    expect(refused.toast).toEqual({
+      msg: 'Не получилось. Попробуйте ещё раз.',
+      mode: 'err',
+      action: undefined
+    });
+    expect(refused.alreadyLinked).toBeNull();
+    refused.stop();
+
+    const worked = new AppState(
+      at('#/account', {
+        cloud: fakeCloud(SEED, 'gm1', {
+          returned: { kind: 'link', provider: 'discord', result: { ok: true } }
+        })
+      })
+    );
+    worked.start();
+    await flush();
+    expect(worked.toast).toBeNull();
+    worked.stop();
+  });
+
+  it('stops listening, and ignores answers that arrive after stop()', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', {
+      returned: {
+        kind: 'link',
+        provider: 'discord',
+        result: { ok: false, error: 'alreadyLinked' }
+      }
+    });
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    app.stop();
+    await flush();
+    expect(app.user).toBeUndefined();
+    expect(app.alreadyLinked).toBeNull();
+    await cloud.auth.signOut();
+    expect(app.user).toBeUndefined();
+  });
+
+  it('names the static pages of the language on screen', () => {
+    const app = new AppState(at('#/roll/std'));
+    expect(app.pagesDir).toBe('pages/');
+    app.setLang('en');
+    expect(app.pagesDir).toBe('pages/en/');
   });
 });

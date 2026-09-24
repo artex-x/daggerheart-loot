@@ -46,13 +46,15 @@ Bulk collection for training is a separate matter and is refused by name:
 `GPTBot`, `ClaudeBot`, `anthropic-ai`, `CCBot`, `Google-Extended`,
 `Applebot-Extended`, `Bytespider`, `meta-externalagent`.
 
-## 3. Lists live in the URL hash and in the browser, until accounts ship
+## 3. Lists live in the URL hash and in the browser, until cloud lists ship
 
 The no-backend law was superseded on 2026-09-24 (`docs/DECISIONS.md`). A
 Supabase backend (Auth and Postgres, EU West) is the one server the site
 will use: for accounts, cloud lists and homebrew, each shipped in its own
-release. No account feature is live yet. Until the cloud lists ship, a
-shared list is its address, and the consequences stay deliberate:
+release. Sign-in (Google or Discord) and `#/account` exist in a build
+configured with the two `VITE_SUPABASE_*` values, and an account holds no
+list yet. Until the cloud lists ship, a shared list is its address, and the
+consequences stay deliberate:
 
 - a `#/l/` link cannot be revoked, and it stays readable after accounts ship
   (its decoder retires only at the legacy write cutoff)
@@ -296,7 +298,7 @@ JavaScript and without a hash route (the route grammar is frozen,
 - Sources are two body fragments, `pages/src/<id>.html` (Russian) and
   `pages/src/en/<id>.html` (English): authored, tracked, content only - no
   `<section lang>` wrapper (the document's `<html lang>` carries the
-  language) and no link back to the app. `tools/build-pages.js` throws
+  language) and no link back to the app but through `%APP%` (below). `tools/build-pages.js` throws
   when a page has no fragment in one of the languages.
 - Outputs are written by `tools/build-pages.js` through
   `node tools/build.js`, gitignored like `i/`. The template adds the head
@@ -311,7 +313,8 @@ JavaScript and without a hash route (the route grammar is frozen,
   depth differs: the Russian page links `en/<id>.html` and `../`, the
   English one `../<id>.html` and `../../`. A relative link inside a
   fragment would resolve on one output only, so a fragment links the app
-  through the template's back link only.
+  only through `%APP%`, which the template replaces with that page's own
+  back link.
 - The back link reads «Назад к генератору» on the Russian page and "Back
   to the generator" on the English one, with `data-back`. A small inline
   script calls `history.back()` instead when the referrer is the app
@@ -336,7 +339,7 @@ JavaScript and without a hash route (the route grammar is frozen,
   network.
 - The footer's nav row links them on every page (the install link is left
   out inside the installed app), and every link starts from
-  `Shell.svelte`'s `pagesDir` (`pages/en/` in English, `pages/` in Russian),
+  `AppState.pagesDir` (`pages/en/` in English, `pages/` in Russian),
   so a reader lands on the copy of the language on screen (`FEATURES.md`,
   "Chrome").
 - The policy pages exist because the Google OAuth console publishes an app
@@ -346,7 +349,9 @@ JavaScript and without a hash route (the route grammar is frozen,
   Russian pages too, so a reviewer without JavaScript finds them;
   `noindex, nofollow` stays on them. `privacy` names the operator `artex-x`
   and the contact `daggerheart.loot@gmail.com`, and describes the account
-  service in a conditional voice until accounts ship.
+  service as it is, in general terms. It links the account page through
+  `%APP%`, which `tools/build-pages.js` replaces with the page's own back
+  link (`../` or `../../`) - the one way a fragment links an app route.
 - The pages stay outside `tools/tg-preview`'s manifest: a Telegram preview
   of one stays cached until a hand push (section 8), which a text card with
   no picture and a rare text change does not justify.
@@ -357,9 +362,9 @@ One more page, in order:
    and the `desc` pair.
 2. Two fragments, `pages/src/<id>.html` (Russian) and
    `pages/src/en/<id>.html` (English): content only, no wrapper, no back
-   link, no relative link to the app.
+   link, and an app route only as `%APP%#/<route>`.
 3. One footer link: a `dict.ts` key pair and one
-   `<a href={pagesDir + '<id>.html'}>` in `Shell.svelte`'s nav.
+   `<a href={app.pagesDir + '<id>.html'}>` in `Shell.svelte`'s nav.
 4. `node tools/build.js`.
 5. A page submitted to a verifier or a messenger joins `ci.yml`'s by-name
    list and `check-site.lib.mjs`'s probes, in both languages. A submitted

@@ -278,8 +278,19 @@ jobs:
 
       - run: npm ci
 
+      # The one configured build: sign-in is on only where both values are
+      # set. Actions variables, not secrets - the publishable key ships in
+      # every page; row level security is what guards the data.
       - name: Build
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      # `check:built` measures the unconfigured build; this is the bundle that
+      # ships, with the account client's chunk in it.
+      - name: Bundle size budget (the shipped, configured build)
+        run: npm run budget
 
       # An explicit list rather than "everything": the repository also holds the
       # sources and the specs, and none of that belongs on a public site. A new

@@ -352,6 +352,7 @@ function testBashSilentCases() {
     ['#25c rm -rf outside the repo', 'rm -rf /tmp/elsewhere'],
     ['#25d rm -rf node_modules', 'rm -rf node_modules'],
     ['TL6c rm -r dist', 'rm -r dist'],
+    ['TL6e rm -r dist-test', 'rm -r dist-test'],
     ['TL6d rm -r i', 'rm -r i']
   ];
   for (const [label, command] of cases) {

@@ -6,7 +6,22 @@
  * "Test layers". */
 
 import { SEED, uuid, type Seed, type SeedUser } from './fake-cloud-seed.js';
-import type { AuthPort, CloudPort, Identity, Session } from './types.js';
+import type {
+  AuthError,
+  AuthPort,
+  AuthRedirect,
+  CloudPort,
+  Identity,
+  Session
+} from './types.js';
+
+/** What a unit test can make the fake answer; the browser build sets none. */
+export interface FakeCloudOptions {
+  /** `link()` refuses with this and changes nothing. */
+  linkError?: AuthError;
+  /** What `redirectResult()` answers, as though a redirect had come back. */
+  returned?: AuthRedirect;
+}
 
 /** The string the production-bundle guard looks for; renaming it without the
  *  guard makes the guard fail, not pass. */
@@ -22,7 +37,7 @@ function copyUser(u: SeedUser): SeedUser {
   return { ...u, identities: u.identities.map((i) => ({ ...i })) };
 }
 
-export function fakeCloud(seed: Seed, as?: string): CloudPort {
+export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {}): CloudPort {
   const users = new Map<string, SeedUser>(
     Object.entries(seed.users).map(([k, u]) => [k, copyUser(u)])
   );
@@ -51,11 +66,12 @@ export function fakeCloud(seed: Seed, as?: string): CloudPort {
     signIn() {
       current = seed.defaultUser;
       notify();
-      return Promise.resolve();
+      return Promise.resolve({ ok: true });
     },
     link(provider) {
       const u = user();
       if (!u) return Promise.resolve({ ok: false, error: 'failed' });
+      if (options.linkError) return Promise.resolve({ ok: false, error: options.linkError });
       u.identities.push({ id: uuid(next++), provider, email: u.email });
       notify();
       return Promise.resolve({ ok: true });
@@ -73,7 +89,7 @@ export function fakeCloud(seed: Seed, as?: string): CloudPort {
     signOut() {
       current = null;
       notify();
-      return Promise.resolve();
+      return Promise.resolve({ ok: true });
     },
     deleteAccount() {
       if (current === null) return Promise.resolve({ ok: false, error: 'failed' });
@@ -87,7 +103,8 @@ export function fakeCloud(seed: Seed, as?: string): CloudPort {
       return () => {
         listeners.delete(fn);
       };
-    }
+    },
+    redirectResult: () => Promise.resolve(options.returned ?? null)
   };
   return { auth };
 }

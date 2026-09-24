@@ -241,10 +241,11 @@ function serializeTree(n, depth, out) {
 /* ---------- comparison ---------- */
 
 /** The lines before the first `## ` heading - `render()`'s `# <id>`,
- *  `# route:`, `# why:` and, on a signed-in state only, `# as:` lines. `sectionsOf` only ever collects lines
- *  after a `## ` heading, so without this the header is never compared and
- *  an `inventory.js` route/why edit made without `--update` leaves a golden
- *  whose header silently disagrees with the state it gates. */
+ *  `# route:`, `# why:` and, on a signed-in state only, `# as:` lines.
+ *  `sectionsOf` only ever collects lines after a `## ` heading, so without
+ *  this the header is never compared and an `inventory.js` route/why edit
+ *  made without `--update` leaves a golden whose header silently disagrees
+ *  with the state it gates. */
 function headerOf(text) {
   const out = [];
   for (const line of text.split('\n')) {
