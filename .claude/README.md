@@ -1147,10 +1147,30 @@ persistence roadmap):
   `Authorization: Bearer <E2E_SUPABASE_SECRET_KEY>` for
   `https://rdjxcjkhsklhprmzxajq.supabase.co`, attached by the proxy and never
   shown to the model.
-- **Setup script.** The environment dialog runs `bash .claude/cloud-setup.sh`:
-  Node from `.nvmrc` through nvm, linked into `~/.local/bin`, `npm ci`,
-  gitleaks 8.30.1 and rtk 0.48.0 checked against their release checksums,
-  the rtk hook, `npx supabase --version`, then the versions. It
+- **Setup script.** `.claude/cloud-setup.sh` installs Node from `.nvmrc`
+  through nvm, linked into `~/.local/bin`, runs `npm ci`, installs gitleaks
+  8.30.1 and rtk 0.48.0 checked against their release checksums, the rtk
+  hook, `npx supabase --version`, then prints the versions. The dialog runs
+  its field before Claude Code starts and not from the repository: the field
+  `bash .claude/cloud-setup.sh` failed with exit 127, "No such file or
+  directory" (2026-09-24). The field holds this text, which uses the clone
+  when it is there and clones `main` when it is not:
+
+  ```bash
+  #!/bin/bash
+  set -euo pipefail
+  repo=/home/user/daggerheart-loot
+  if [ ! -f "$repo/.claude/cloud-setup.sh" ]; then
+    repo="$(mktemp -d)/daggerheart-loot"
+    git clone --depth 1 https://github.com/artex-x/daggerheart-loot "$repo"
+  fi
+  bash "$repo/.claude/cloud-setup.sh"
+  ```
+
+  Setup runs again only when the field or the network hosts change, or the
+  cache expires (about seven days); a resumed session never runs it. If the
+  session's clone has no `node_modules`, `session-start.mjs` says so: run
+  `npm ci`. It
   pulls no Docker image. `session-start.mjs` then reports each probe on every
   start.
 

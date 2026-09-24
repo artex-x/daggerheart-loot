@@ -2299,8 +2299,8 @@ function testSessionStart() {
       /Cloud session\./.test(cloudCtx)
     );
     check(
-      '#201 session-start: five probes, skipped',
-      (cloudCtx.match(/: skipped$/gm) || []).length === 5,
+      '#201 session-start: six probes, skipped',
+      (cloudCtx.match(/: skipped$/gm) || []).length === 6,
       cloudCtx
     );
     check(

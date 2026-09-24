@@ -36,7 +36,7 @@ function dockerProbe() {
   return result === 'ok' ? result : `${result} - start it: (dockerd > /tmp/dockerd.log 2>&1 &)`;
 }
 
-/** The cloud block: five host probes (each "ok" or what failed; "skipped"
+/** The cloud block: six host probes (each "ok" or what failed; "skipped"
  * under the selftest) and the three rules of a cloud session. */
 function cloudLines() {
   const skip = process.env.LOOT_SKIP_PROBES === '1';
@@ -46,6 +46,7 @@ function cloudLines() {
     `  Node: ${probe(probeNode)}`,
     `  docker info: ${probe(dockerProbe)}`,
     `  puppeteer cache: ${probe(() => (existsSync(path.join(os.homedir(), '.cache', 'puppeteer')) ? 'ok' : 'missing'))}`,
+    `  node_modules: ${probe(() => (existsSync(path.join(repoRoot(), 'node_modules')) ? 'ok' : 'missing - run npm ci'))}`,
     `  gitleaks version: ${probe(() => probeCommand('gitleaks', ['version'], 2000))}`,
     `  rtk --version: ${probe(() => probeCommand('rtk', ['--version'], 2000))}`,
     'A whole release runs on one host.',
