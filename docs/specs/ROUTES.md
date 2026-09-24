@@ -2,7 +2,8 @@
 
 Everything after `#` is the route. The app never asks a server for it, so the
 grammar below is the whole router. Golden fixtures for these shapes are in
-`docs/fixtures/urls/routes.json`; `tests/contracts.js` replays them.
+`docs/fixtures/urls/routes.json`; `app/src/lib/hash.test.ts` (the parser)
+and `tests/app/contracts.js` (the built app) replay them.
 
 The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
 `TABLES_RE`, `legacySource()` and `TABLE_ALIASES` beside it.

@@ -77,8 +77,8 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
   status ""
-    StaticText "«Первоклассный Спальный Мешок» убран"
-    button "Вернуть"
+    StaticText "Убрано из списка: «Первоклассный Спальный Мешок»"
+    button "Вернуть" [focused=true]
 
 ## ru :: controls
 Dragon's Vault
@@ -200,8 +200,8 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     link "daggerheart.com" [url=https://www.daggerheart.com/]
     StaticText ". There are no previous modifications by others."
   status ""
-    StaticText "«Первоклассный Спальный Мешок» убран"
-    button "Вернуть"
+    StaticText "Убрано из списка: «Первоклассный Спальный Мешок»"
+    button "Вернуть" [focused=true]
 
 ## en :: controls
 Alistair's Torch

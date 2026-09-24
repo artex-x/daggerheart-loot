@@ -12,8 +12,9 @@ import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
 import { buildIndex } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
-import { encodeList } from '../lib/listLink.js';
+import { encodeList, toBase64Url } from '../lib/listLink.js';
 import { priceText } from '../lib/money.js';
+import { plural } from '../lib/plural.js';
 import type { StoredList } from '../lib/lists.js';
 import { share } from '../lib/share.js';
 import {
@@ -172,9 +173,38 @@ describe('a dropped entry (P9)', () => {
     const payload = encodeList({ name: 'X', ids: ['ci1', 'nope999'] }, true);
     render(App, { env: at('#/l/' + payload) });
     expect(
-      screen.getByText('Пропущена 1 позиция — её больше нет в данных')
+      screen.getByText('Пропущено позиций, которых больше нет в данных: 1')
     ).toBeInTheDocument();
     expect(screen.getByText('Спальный мешок')).toBeInTheDocument();
+  });
+});
+
+describe('every entry gone from the data', () => {
+  it('opens as the list with no rows and the dropped-entries toast, not as a damaged link', async () => {
+    /* A legacy unstamped payload: no checksum, so it needs no stamp. */
+    const payload = toBase64Url('Пропавшее\nzzz1,zzz2');
+    const { container } = render(App, { env: at('#/l/' + payload) });
+    expect(screen.getByRole('heading', { level: 1, name: 'Пропавшее' })).toBeInTheDocument();
+    expect(container.querySelector('.page-sub')).toHaveTextContent(
+      'Список от другого игрока · 0 позиций'
+    );
+    expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-row]')).toHaveLength(0);
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.getAllByText(plural(2, dict('ru').droppedItems, 'ru'))).toHaveLength(1);
+    expect(screen.queryByText(dict('ru').badShare)).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('saves the empty copy and opens it as an own list, not as a damaged link', async () => {
+    const storage = memoryStorage();
+    render(App, { env: at('#/l/' + toBase64Url('Пропавшее\nzzz1,zzz2'), { storage }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
+    expect(readLists(storage)).toMatchObject([{ name: 'Пропавшее', ids: [] }]);
+    expect(screen.getByRole('heading', { level: 1, name: 'Пропавшее' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Сохранить себе' })).not.toBeInTheDocument();
+    expect(screen.queryByText(dict('ru').badShare)).not.toBeInTheDocument();
+    await expectNoA11yViolations(document.body);
   });
 });
 

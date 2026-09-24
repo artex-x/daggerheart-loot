@@ -100,8 +100,8 @@ const LOOT: Loot = {
         rud: 'Знак крови.'
       }
     ],
-    /* A campaign-frame equipment record, shaped like the real f33 - D11,
-       paid off: it used to hide its tier and show a full path instead of a
+    /* A campaign-frame equipment record, shaped like the real f33: it used
+       to hide its tier and show a full path instead of a
        tag, the same special-casing an otherwise identical `eq` record never
        got. */
     frames: [
@@ -549,7 +549,7 @@ describe('the path at the top of the page, and the tag on the badge', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('prints the tier for campaign-frame equipment, and the frame as a tag (D11, paid off)', () => {
+  it('prints the tier for campaign-frame equipment, and the frame as a tag', () => {
     const { container } = render(App, { env: at('f1') });
     const sub = container.querySelector('p.page-sub');
     expect(sub?.childNodes[0]?.textContent?.trim()).toBe(
@@ -659,7 +659,7 @@ describe('taking a record somewhere else', () => {
     expect(clip.last.text).toBe('https://example.test/i/cc1.html');
   });
 
-  it('shares the full text, not just the name (D22, paid off)', async () => {
+  it('shares the full text, not just the name', async () => {
     const share = fakeShare();
     render(App, { env: at('cc1', { share }) });
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
@@ -675,7 +675,7 @@ describe('taking a record somewhere else', () => {
     expect(share.last.hasFile).toBe(false);
   });
 
-  it('attaches the picture where there is art (D22, paid off)', async () => {
+  it('attaches the picture where there is art', async () => {
     const share = fakeShare();
     render(App, { env: at('ci1', { share }) });
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
@@ -693,7 +693,7 @@ describe('taking a record somewhere else', () => {
     expect(screen.getByText('Картинка скопирована')).toBeInTheDocument();
   });
 
-  it('falls back to the text when the canvas cannot be read back at all (D10, paid off)', async () => {
+  it('falls back to the text when the canvas cannot be read back at all', async () => {
     /* A tainted canvas under file:// - `pngOf` itself rejects, so there is
        never a blob to offer the clipboard at all. */
     const clip = fakeClipboard();
@@ -710,7 +710,7 @@ describe('taking a record somewhere else', () => {
     ).toBeInTheDocument();
   });
 
-  it('offers a download when the picture exists but the clipboard refuses it (D14, paid off)', async () => {
+  it('offers a download when the picture exists but the clipboard refuses it', async () => {
     const clip = fakeClipboard({ fail: true });
     const image = fakeImage();
     render(App, { env: at('ci1', { clipboard: clip, image }) });
@@ -720,7 +720,7 @@ describe('taking a record somewhere else', () => {
     expect(screen.getByText('Картинка сохранена')).toBeInTheDocument();
   });
 
-  it('says the picture could not be saved either, distinct from the generic failure (D15, paid off)', async () => {
+  it('says the picture could not be saved either, distinct from the generic failure', async () => {
     const clip = fakeClipboard({ fail: true });
     const image = fakeImage({ failDownload: true });
     render(App, { env: at('ci1', { clipboard: clip, image }) });
@@ -793,13 +793,13 @@ describe('the tier ladder', () => {
     expect(screen.queryByText('Ранг')).not.toBeInTheDocument();
   });
 
-  it('draws the ladder on a frame record now that the guard is dropped, tier words and all (D11, paid off)', async () => {
-    /* Before D11 paid off, RecordCard suppressed the ladder for every frame
+  it('draws the ladder on a frame record now that the guard is dropped, tier words and all', async () => {
+    /* RecordCard once suppressed the ladder for every frame
        record (`!isFrameRecord(it)`, once at `RecordCard.svelte:177`). f1
        stands alone (`eq.line: ''`) and cannot prove the guard's removal; f2
        and f3 share one, so this is a frame record's own page showing both a
        ladder and the tier word on its stat chip - the larger, user-visible
-       half of D11, which real frame records with a line (`f37`-`f44` and 54
+       half, which real frame records with a line (`f37`-`f44` and 54
        others) now get too. */
     const { container } = render(App, { env: at('f2') });
     const steps = screen.getByText('Ранг').parentElement;
@@ -884,6 +884,75 @@ describe('the tier ladder', () => {
     /* Only the menu closed - a second, unclaimed Escape is what closes the
        modal, the native <dialog> behaviour this must not fight. */
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+});
+
+describe('the undo toast while the record dialog is open', () => {
+  /* A modal dialog makes everything outside it inert, so the toast an action
+     inside it raises is drawn inside it (docs/DECISIONS.md, 2026-09-24). */
+  const inList = (): Env =>
+    at('q1', {
+      storage: memoryStorage({
+        'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Клад', ids: ['q2'], created: 1 }])
+      })
+    });
+  const removeFromList = async (): Promise<HTMLElement> => {
+    await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: '✓ Клад' }));
+    return dialog;
+  };
+  const stored = (env: Env): string[] =>
+    (JSON.parse(env.storage.get('dhloot.lists.v2') ?? '[]') as { ids: string[] }[])[0]?.ids ??
+    [];
+
+  it('draws the undo toast inside the open dialog, focused, and runs the undo', async () => {
+    const env = inList();
+    render(App, { env });
+    const dialog = await removeFromList();
+    expect(stored(env)).toEqual([]);
+
+    const status = within(dialog).getByRole('status');
+    const undo = within(status).getByRole('button', { name: 'Вернуть' });
+    expect(undo).toHaveFocus();
+    expect(document.querySelectorAll('.toast[role]')).toHaveLength(1);
+    await expectNoA11yViolations(dialog);
+
+    await userEvent.click(undo);
+    expect(stored(env)).toEqual(['q2']);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it("returns focus to the dialog's close button when the element it came from is gone", async () => {
+    render(App, { env: inList() });
+    const dialog = await removeFromList();
+    const undo = within(dialog).getByRole('button', { name: 'Вернуть' });
+    await vi.waitFor(() => {
+      expect(undo).toHaveFocus();
+    });
+    within(dialog).getByRole('button', { name: 'Клад' }).remove();
+
+    await userEvent.click(undo);
+    await vi.waitFor(() => {
+      expect(within(dialog).getByRole('button', { name: 'Закрыть' })).toHaveFocus();
+    });
+    await expectNoA11yViolations(document.body);
+  });
+
+  it("hands the toast to the page's own copy when the dialog closes", async () => {
+    render(App, { env: inList() });
+    const dialog = await removeFromList();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    const undo = screen.getByRole('button', { name: 'Вернуть' });
+    expect(undo.closest('dialog')).toBeNull();
+    await vi.waitFor(() => {
+      expect(undo).toHaveFocus();
+    });
+    expect(document.querySelectorAll('.toast[role]')).toHaveLength(1);
+    await expectNoA11yViolations(document.body);
   });
 });
 

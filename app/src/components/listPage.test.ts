@@ -156,7 +156,7 @@ describe('the address', () => {
     });
   });
 
-  it('draws the bad-link page and leaves the address alone when the port cannot expand a packed address (R10/D2)', async () => {
+  it('draws the bad-link page and leaves the address alone when the port cannot expand a packed address', async () => {
     const payload = encodeList({ name: 'Другой', ids: ['ci1'] }, true);
     const router = memoryRouter('#/l/~' + payload);
     render(App, { env: withA('#/l/~' + payload, { router }) });
@@ -171,7 +171,7 @@ describe('the address', () => {
     ).toBeInTheDocument();
     const link = screen.getByRole('link', { name: 'На главную' });
     expect(link).toHaveAttribute('href', '#/roll/std');
-    /* R10: the address itself is left where it was, unlike a plain #/l/zzzz
+    /* The address itself is left where it was, unlike a plain #/l/zzzz
        link, which has nowhere to keep and never had one to keep it from. */
     expect(router.hash()).toBe('#/l/~' + payload);
   });
@@ -965,7 +965,7 @@ describe('removing and undoing', () => {
     const removes = screen.getAllByRole('button', { name: 'Убрать из списка' });
     await userEvent.click(removes[1] as HTMLElement); // cc1, the priced/noted one
 
-    expect(screen.getByText('«Зелье» убран')).toBeInTheDocument();
+    expect(screen.getByText('Убрано из списка: «Зелье»')).toBeInTheDocument();
     expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'q1']);
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
@@ -1015,7 +1015,7 @@ describe('copying and sharing', () => {
 });
 
 describe('deleting', () => {
-  it('asks, and on accept removes the list, goes to #/lists, and toasts with an undo (P5)', async () => {
+  it('asks, and on accept removes the list, goes to #/lists, and toasts with an undo', async () => {
     const router = memoryRouter('#/lists/a');
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     const dialog = fakeDialog(true);
@@ -1044,7 +1044,7 @@ describe("another tab's write, while this page is mounted", () => {
   /* The gap the dispatch named: no test fired a storage event into a mounted
      page, though the harness (`memoryStorage`'s own `fireExternalChange`)
      already existed for `state/lists.test.ts`. Closes it directly here;
-     `listsPage.test.ts` closes it for R2's own general reload trigger. */
+     `listsPage.test.ts` closes it for the general reload trigger. */
   it('re-seeds an unfocused note field with another tab’s edit', async () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     render(App, { env: at('#/lists/a', { storage }) });
@@ -1122,8 +1122,31 @@ describe('drag', () => {
     const drag = fakeDrag();
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     render(App, { env: at('#/lists/a', { storage, drag }) });
+    drag.handlers?.onDrag?.(0);
     drag.handlers?.onDrop(0, 2);
     expect(readLists(storage)[0]?.ids).toEqual(['cc1', 'q1', 'ci1']);
+  });
+
+  it('moves the entry the drag started with, even after another tab rewrote the list', async () => {
+    const drag = fakeDrag();
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { container } = render(App, { env: at('#/lists/a', { storage, drag }) });
+    const bound = drag.handlers;
+    drag.handlers?.onDrag?.(1);
+
+    storage.set('dhloot.lists.v2', JSON.stringify([{ ...listA, ids: ['cc1', 'q1'] }]));
+    storage.fireExternalChange('dhloot.lists.v2');
+    await waitFor(() => {
+      expect(container.querySelectorAll('.lrow')).toHaveLength(2);
+    });
+    expect(drag.handlers).toBe(bound);
+    const dragging = container.querySelector('.lrow.dragging');
+    expect(dragging).not.toBeNull();
+    expect(within(dragging as HTMLElement).getByText('Зелье')).toBeInTheDocument();
+
+    drag.handlers?.onDrop(1, 1);
+    expect(readLists(storage)[0]?.ids).toEqual(['q1', 'cc1']);
+    await expectNoA11yViolations(container);
   });
 
   it('marks the grip draggable, so the browser actually fires dragstart', () => {
@@ -1209,10 +1232,12 @@ describe('announcing a reorder', () => {
     const region = screen.getByRole('status');
     expect(region).toHaveTextContent('');
 
+    drag.handlers?.onDrag?.(0);
     drag.handlers?.onDrop(0, 0);
     await tick();
     expect(region).toHaveTextContent('');
 
+    drag.handlers?.onDrag?.(0);
     drag.handlers?.onDrop(0, 2);
     await tick();
     expect(region).toHaveTextContent('«Спальный мешок» — позиция 3 из 3');
@@ -1232,6 +1257,7 @@ describe('announcing a reorder', () => {
       })
     });
 
+    drag.handlers?.onDrag?.(0);
     drag.handlers?.onDrop(0, 2);
     await tick();
     expect(screen.getByRole('status')).toHaveTextContent('позиция 3 из 3');

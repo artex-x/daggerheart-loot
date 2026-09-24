@@ -1,6 +1,6 @@
 # #/lists ~ unreadable storage
 # route: #/lists
-# why: R1: a corrupt dhloot.lists.v2 value draws the unreadable-storage notice in place of the folded "lists live only here" disclosure - no lists on screen, the value backed up under its own key rather than lost
+# why: a corrupt dhloot.lists.v2 value draws the unreadable-storage notice in place of the folded "lists live only here" disclosure - no lists on screen, the value backed up under its own key rather than lost
 
 ## ru :: tree
 RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]

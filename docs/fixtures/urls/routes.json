@@ -309,6 +309,18 @@
     }
   },
   {
+    "hash": "#/tables/frames",
+    "why": "legacy alias of other_frames, read as that table without rewriting the pasted hash",
+    "resolves": {
+      "hash": "#/tables/frames",
+      "tab": "#/tables",
+      "rows": 95,
+      "printCards": 0,
+      "picked": [],
+      "count": "95"
+    }
+  },
+  {
     "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
     "why": "legacy underscore separator, still read",
     "resolves": {

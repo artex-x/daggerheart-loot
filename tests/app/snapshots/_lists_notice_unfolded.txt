@@ -36,11 +36,11 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
     textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
     button "Восстановить"
-    link "Клад дракона 7" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
+    link "Клад дракона, 7 позиций" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
       StaticText "Клад дракона"
       StaticText "7"
     ... button x2 of 6 same-shape siblings elided
-    link "Лавка в порту 0 Список пуст" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+    link "Лавка в порту, 0 позиций" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
       StaticText "0"
       StaticText "Список пуст"
@@ -64,8 +64,8 @@ daggerheart.com
 Восстановить из ссылки
 К содержимому
 Как это работает
-Клад дракона7
-Лавка в порту0Список пуст
+Клад дракона, 7 позиций
+Лавка в порту, 0 позиций
 ЛутDaggerheart
 Новый список
 Обычные правила
@@ -112,11 +112,11 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     StaticText "RESTORE FROM A LINK"
     textbox "Restore from a link" [multiline=false readonly=false required=false]
     button "Restore"
-    link "Клад дракона 7" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
+    link "Клад дракона, 7 items" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
       StaticText "Клад дракона"
       StaticText "7"
     ... button x2 of 6 same-shape siblings elided
-    link "Лавка в порту 0 The list is empty" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+    link "Лавка в порту, 0 items" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
       StaticText "0"
       StaticText "The list is empty"
@@ -151,6 +151,6 @@ Tables
 Vault of Ages
 Wondrous
 daggerheart.com
-Клад дракона7
-Лавка в порту0The list is empty
+Клад дракона, 7 items
+Лавка в порту, 0 items
 ЛутDaggerheart

@@ -35,7 +35,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
     textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
     button "Восстановить"
-    link "Тайник 0 Список пуст" [url=#/l/0KLQsNC50L3QuNC6CjAubnRmcH4]
+    link "Тайник, 0 позиций" [url=#/l/0KLQsNC50L3QuNC6CjAubnRmcH4]
       StaticText "Тайник"
       StaticText "0"
       StaticText "Список пуст"
@@ -72,7 +72,7 @@ daggerheart.com
 Сообщества
 Списки
 Таблицы
-Тайник0Список пуст
+Тайник, 0 позиций
 Удалить
 
 ## en :: tree
@@ -108,7 +108,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     StaticText "RESTORE FROM A LINK"
     textbox "Restore from a link" [multiline=false readonly=false required=false]
     button "Restore"
-    link "Тайник 0 The list is empty" [url=#/l/0KLQsNC50L3QuNC6CjAubnRmcH4]
+    link "Тайник, 0 items" [url=#/l/0KLQsNC50L3QuNC6CjAubnRmcH4]
       StaticText "Тайник"
       StaticText "0"
       StaticText "The list is empty"
@@ -146,4 +146,4 @@ Vault of Ages
 Wondrous
 daggerheart.com
 ЛутDaggerheart
-Тайник0The list is empty
+Тайник, 0 items

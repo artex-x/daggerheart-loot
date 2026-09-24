@@ -28,7 +28,7 @@ RootWebArea "Святой Щит — Генератор лута — Daggerheart
     link "показать в таблице" [url=#/tables/voa/voa4_t3d]
     button "Страница"
     StaticText "28"
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Святой Клинок" [url=#/i/voa4_t3e]
@@ -99,7 +99,7 @@ RootWebArea "Saintly Guard — Daggerheart Loot Generator" [url=#/i/voa4_t3d]
     link "show in the table" [url=#/tables/voa/voa4_t3d]
     button "Page"
     StaticText "28"
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Saintly Blade" [url=#/i/voa4_t3e]

@@ -19,6 +19,7 @@
   import Icon from './Icon.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
+  import Toast from './Toast.svelte';
   import { printHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import type { ShareBlock } from '../lib/share.js';
@@ -48,9 +49,16 @@
   let dialog = $state<HTMLDialogElement | null>(null);
 
   /* Opened as a modal rather than shown: that is what makes the rest of the
-     page inert to a screen reader as well as to the mouse. */
+     page inert to a screen reader as well as to the mouse. The flag follows
+     `showModal()`: the top layer stacks in entry order, so a toast shown
+     first would sit under the dialog's backdrop. */
   $effect(() => {
-    dialog?.showModal();
+    if (!dialog) return;
+    dialog.showModal();
+    app.dialogOpen = true;
+    return () => {
+      app.dialogOpen = false;
+    };
   });
 
   /* Every way this dialog closes - the close button, the backdrop, Escape -
@@ -102,11 +110,8 @@
       }}
     >
       {#snippet nameActions()}
-        <!-- RecordActions toasts through `app.say` directly now (the `say`
-             shim this file used to wrap it in was deleted) - it still
-             reaches the reader from inside this dialog's own inertness
-             because the toast is `popover="manual"` (Toast.svelte), which
-             puts it in the top layer above this dialog. -->
+        <!-- RecordActions toasts through `app.say`; the toast is drawn
+             inside this dialog while it is open (Toast.svelte). -->
         <RecordActions {app} {index} {it} row="name" />
       {/snippet}
       {#snippet actions()}
@@ -120,6 +125,7 @@
       {/snippet}
     </RecordCard>
   </div>
+  <Toast {app} inDialog />
 </dialog>
 
 <style>

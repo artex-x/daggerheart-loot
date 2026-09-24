@@ -229,7 +229,7 @@ effort is session-level and human-controlled.
 ### Writer tier: `opus` by default, `sonnet` for a mechanical batch
 
 A plan cannot name the complexity it failed to see, and a Sonnet implementer
-stopped early twice on one batch (`.claude/improvements.md`). Opus 5.5 costs
+stopped early twice on one batch (`git show b2eec64:.claude/improvements.md`). Opus 5.5 costs
 less per solved task than the Opus the old split was priced against, so
 `opus` is the default and `sonnet` is the exception.
 

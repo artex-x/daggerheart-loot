@@ -35,25 +35,6 @@ const esc = (s) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const COMMUNITY_RU = {
-  Highborne: 'Великородное',
-  Loreborne: 'Научное',
-  Orderborne: 'Догматичное',
-  Ridgeborne: 'Горное',
-  Seaborne: 'Морское',
-  Slyborne: 'Криминальное',
-  Underborne: 'Подземное',
-  Wanderborne: 'Кочевое',
-  Wildborne: 'Лесное'
-};
-const SRC_LABEL = {
-  core: 'Core',
-  hnf: 'Hope & Fear',
-  wondrous: 'Wondrous Loot',
-  dread: 'Dread GM Toolbox',
-  voa: 'Vault of Ages',
-  dv: "Dragon's Vault"
-};
 /* The words of a page in each language. The English ones are the app's own
    (app/src/lib/dict.ts); the maps below are copies of app/src/lib/i18n.ts
    and frames.ts, pinned equal by app/src/lib/i18n.test.ts. */
@@ -61,13 +42,9 @@ const TEXT = {
   ru: {
     site: 'Генератор лута Daggerheart',
     open: 'Открыть в генераторе лута',
-    item: 'Предмет',
-    cons: 'Расходник',
-    ordinal: '№',
     other: 'Прочее',
     frames: 'Сеттинги',
     starting: 'Стартовые',
-    communities: 'Сообщества',
     craftFrom: 'Получается из: ',
     craftInto: 'Улучшается до: ',
     set: 'Комплект: ',
@@ -79,13 +56,9 @@ const TEXT = {
   en: {
     site: 'Daggerheart Loot Generator',
     open: 'Open in the loot generator',
-    item: 'Item',
-    cons: 'Consumable',
-    ordinal: '#',
     other: 'Other',
     frames: 'Frames',
     starting: 'Starting',
-    communities: 'Communities',
     craftFrom: 'Made from: ',
     craftInto: 'Upgrades to: ',
     set: 'Set: ',
@@ -158,17 +131,19 @@ const pick = (pair, lang) => (pair ? pair[lang === 'ru' ? 0 : 1] : '');
 // Russian falls back to English per field; English never falls back (I18N.md).
 const nameOf = (x, lang) => (lang === 'ru' ? x.ru || x.en : x.en);
 
-function eqLine(it, lang) {
+// `opts` mirrors eqParts' noType/noTier in app/src/lib/i18n.ts.
+function eqLine(it, lang, opts = {}) {
   const t = TEXT[lang];
   const e = it.eq,
-    out = [pick(EQ_TYPE[e.t], lang)];
-  if (!isFrame(it))
+    out = opts.noType ? [] : [pick(EQ_TYPE[e.t], lang)];
+  if (!opts.noTier)
     out.push(e.tier === 'A' ? t.artifact : e.tier ? t.tier + ' ' + e.tier : 'Wondrous');
   if (e.t === 'armor') {
     if (e.th) out.push(t.thresholds + ' ' + e.th[0] + '/' + e.th[1]);
     if (e.as != null) out.push(t.armor + ' ' + e.as);
   } else {
-    if (e.t === 'weapon' && e.cls) out.push(pick(EQ_CLS[e.cls], lang));
+    // Every weapon names its class, secondary too (docs/specs/FEATURES.md, "Records").
+    if (e.cls) out.push(pick(EQ_CLS[e.cls], lang));
     out.push(
       pick(EQ_TRAIT[e.tr], lang),
       pick(EQ_RANGE[e.rg], lang),
@@ -190,19 +165,112 @@ function provenance(it, lang) {
   return '';
 }
 
+/* The record page's path words: copies of app/src/lib/tables.ts
+   (TABLE_GROUPS labels, SUB_LABEL) and label.ts (tableOf, whereFrom) resolved
+   through dict.ts; tests/app/contracts.js compares every table's stub with
+   its record page, so a drift fails there. */
+const PATH_TEXT = {
+  ru: {
+    core: 'Core',
+    hnf: 'Hope & Fear',
+    wondrous: 'Wondrous Loot',
+    dread: 'Dread GM Toolbox',
+    voa: 'Vault of Ages',
+    dv: "Dragon's Vault",
+    community: 'Сообщества',
+    eq: 'Снаряжение',
+    other: 'Прочее',
+    items: 'Предметы',
+    cons: 'Расходники',
+    weapon: 'Оружие',
+    secondary: 'Вторичное',
+    armor: 'Броня',
+    starting: 'Стартовые',
+    frames: 'Сеттинги',
+    artifact: 'Артефакт',
+    cursed: 'Проклятый предмет',
+    rollNo: 'номер',
+    tier: 'Ранг'
+  },
+  en: {
+    core: 'Core',
+    hnf: 'Hope & Fear',
+    wondrous: 'Wondrous Loot',
+    dread: 'Dread GM Toolbox',
+    voa: 'Vault of Ages',
+    dv: "Dragon's Vault",
+    community: 'Communities',
+    eq: 'Equipment',
+    other: 'Other',
+    items: 'Items',
+    cons: 'Consumables',
+    weapon: 'Weapons',
+    secondary: 'Secondary',
+    armor: 'Armor',
+    starting: 'Starting',
+    frames: 'Frames',
+    artifact: 'Artifact',
+    cursed: 'Cursed object',
+    rollNo: 'roll',
+    tier: 'Tier'
+  }
+};
+// table id -> [group word, sub word or none]
+const TABLE_PATH = {
+  core_item: ['core', 'items'],
+  core_consumable: ['core', 'cons'],
+  hnf_item: ['hnf', 'items'],
+  hnf_consumable: ['hnf', 'cons'],
+  wondrous: ['wondrous'],
+  dread: ['dread'],
+  voa: ['voa'],
+  dv: ['dv'],
+  community: ['community'],
+  eq_weapon: ['eq', 'weapon'],
+  eq_secondary: ['eq', 'secondary'],
+  eq_armor: ['eq', 'armor'],
+  other_starting: ['other', 'starting'],
+  other_frames: ['other', 'frames']
+};
+const EQ_TABLE_OF = { weapon: 'eq_weapon', secondary: 'eq_secondary', armor: 'eq_armor' };
+
+function tableOf(it) {
+  if (isFrame(it)) return 'other_frames';
+  if (it.starting) return 'other_starting';
+  if (it.src === 'voa') return 'voa';
+  if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
+  if (['wondrous', 'dread', 'dv', 'community'].includes(it.src)) return it.src;
+  if (it.src === 'core' || it.src === 'hnf')
+    return it.src + (it.kind === 'consumable' ? '_consumable' : '_item');
+  return null;
+}
+
+// RecordPage.svelte's line under the heading: the path, then the roll number or the tier.
+function where(it, lang) {
+  const p = PATH_TEXT[lang];
+  const table = tableOf(it);
+  if (!table) throw new Error('No table for record ' + it.id + '; extend tableOf');
+  const [group, sub] = TABLE_PATH[table];
+  const bits = [p[group]];
+  if (sub) bits.push(p[sub]);
+  // the two tables sectioned by a value the record carries name its section
+  if (it.frame) bits.push(pick(FRAME_LABEL[it.frame], lang) || it.frame);
+  else if (it.community) bits.push(lang === 'ru' ? it.community_ru : it.community);
+  if (it.tier === 'A') bits.push(p.artifact);
+  else if (it.tier === 'C') bits.push(p.cursed);
+  if (it.roll) bits.push(p.rollNo + ' ' + it.roll);
+  else if (it.eq && it.eq.tier !== 'A') bits.push(p.tier + ' ' + it.eq.tier);
+  return bits.join(' · ');
+}
+
+/* The stat line follows, without the type word when the path is an equipment
+   table and without the tier when the path already ends with it: a rolled
+   record's path ends with its roll number, an artifact's carries the word. */
 function subtitle(it, lang) {
-  const t = TEXT[lang];
-  const from = provenance(it, lang);
-  if (from) return from + (it.eq ? ' · ' + eqLine(it, lang) : '');
-  if (it.eq) return eqLine(it, lang);
-  const kind = it.kind === 'consumable' ? t.cons : t.item;
-  const community =
-    lang === 'ru' ? COMMUNITY_RU[it.community] || t.communities : it.community || t.communities;
-  const src = it.src === 'community' ? community : SRC_LABEL[it.src];
-  /* Frames are browsable source records rather than a roll pool. The two
-     consumables without stat blocks retain the historical preview ordinal. */
-  const number = it.roll ?? (it.src === 'frame' ? DATA.frames.indexOf(it) + 1 : '');
-  return kind + ' · ' + src + ' · ' + t.ordinal + number;
+  const path = where(it, lang);
+  if (!it.eq) return path;
+  const opts = { noType: tableOf(it).startsWith('eq_'), noTier: !it.roll || it.tier === 'A' };
+  return path + ' · ' + eqLine(it, lang, opts);
 }
 
 /* Crafting chains, resolved the same way the app does it: the target is stored
@@ -404,6 +472,7 @@ ${STYLE}
 module.exports = {
   page,
   rootPage,
+  tableOf,
   SITE,
   FRAME_LABEL,
   EQ_TYPE,

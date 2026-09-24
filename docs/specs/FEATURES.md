@@ -72,15 +72,15 @@ Seven modes. Each keeps its own input in memory only.
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
   hits, a "300 из <n>" line - the same shown-of-total wording the table
-  filter strip's own count already uses - says so above the rows (P7, paid
-  off); under the cap nothing is said, because the count on screen already
+  filter strip's own count already uses - says so above the rows; under the
+  cap nothing is said, because the count on screen already
   is the whole answer.
 - Search folds case, `ё`/`е`, typographic apostrophes (U+2019, U+02BC), Latin
   diacritics (`ä`/`ö` etc., NFD-stripped - Cyrillic is excluded so `й` never
   merges into `и`) and the Unicode minus sign (U+2212 -> `-`) on both the
   query and the catalogue, so `плетеная` finds "Плетёная", a query typed with
   the typographic apostrophe autocorrect produces (`keeper’s staff` -> the
-  now-ASCII "Keeper's Staff", O2/B11) still finds it, `zweihander` finds
+  now-ASCII "Keeper's Staff") still finds it, `zweihander` finds
   "Zweihänder" and `-1` finds a "−1" penalty; still a substring match, not
   fuzzy.
 - Starting inventory is searchable, opens on direct record pages, and is
@@ -122,7 +122,7 @@ Seven modes. Each keeps its own input in memory only.
 ## Lists
 
 - Create, rename, reorder (drag handle or by typing a position), remove with
-  undo, delete with undo (P5). A drag lands in a gap between two rows, not on
+  undo, delete with undo. A drag lands in a gap between two rows, not on
   a row: the pointer resolves to the nearest gap, and both rows beside it
   light, because "after 3" and "before 4" are one place. On the row above the
   gap, the highlight is drawn on that row's own last visible line, so a row
@@ -132,7 +132,12 @@ Seven modes. Each keeps its own input in memory only.
   each end. The list accepts a release at every moment the highlight is
   shown, including while the pointer crosses a row's own controls (grip,
   inputs, note) on the way through. Leaving the zone, releasing outside it,
-  and Escape all cancel the drag and change nothing. Dragging near a
+  and Escape all cancel the drag and change nothing, including a release
+  over the list's own note, which the drag refuses rather than inserting
+  into. A drag whose own row another tab removes is void: its marks clear,
+  the release changes nothing, and the next drag, a text drag into a note
+  included, works as usual. A drop moves the entry the drag started with.
+  Dragging near a
   viewport edge auto-scrolls: a 120px band at either edge, up to 22px per
   frame, driven off `requestAnimationFrame` (`app/src/ports/drag.ts`) -
   untested by any suite (no test drags near a viewport edge);
@@ -160,9 +165,9 @@ Seven modes. Each keeps its own input in memory only.
   sits in - the record card, the record modal's own card, the window -
   re-measured from the toggle itself (not whichever button happens to render
   first) whenever it opens or grows, so it neither spills past the modal's
-  edge nor drags the card's own scroll position along with it (DEBT.md D6,
-  paid off). Escape closes it and returns focus to the toggle, the same as
-  any other disclosure on the page.
+  edge nor drags the card's own scroll position along with it. Escape closes
+  it and returns focus to the toggle, the same as any other disclosure on
+  the page.
 - The index, from the eighth list, draws a name filter («Найти список») under
   the create and import panel: it matches the list name, folded as search
   folds, keeps store order, lives in memory only and starts empty on every
@@ -245,13 +250,19 @@ Seven modes. Each keeps its own input in memory only.
   note. The bar shows the selection summary and the total, its
   "Скопировать" carries each taken count and unit price and ends with the
   total line, and its "Печать" writes each taken count into the print
-  address. A payload that cannot be decoded
-  draws "Предмет не найден", the bad-link line and a "На главную" button to
-  `#/roll/std`. A **packed** link (`#/l/~<payload>`) that cannot be expanded
+  address. An entry the data no longer knows is dropped and counted in one
+  toast ("Пропущено позиций, которых больше нет в данных: 2"), on this page and
+  on an import. A link whose every entry has left the data opens as that
+  list with no entries and the same toast, never as a damaged link;
+  importing it or saving it creates the empty copy and opens it. A link
+  written before the checksum that names no entry is still damaged; an
+  empty list's own link opens it. A payload that cannot be
+  decoded draws "Предмет не найден", the bad-link line and a "На главную"
+  button to `#/roll/std`. A **packed** link (`#/l/~<payload>`) that cannot be expanded
   draws the same bad-link page without replacing the address - the live
   shape sent the reader to `#/l/zzzz` instead, which cost a slow unpack
   resolving after the reader had already moved on the shared list they had
-  since left for (`DEBT.md` D2, paid off; R10/Q4 settled).
+  since left for.
 - Two open tabs merge rather than overwrite (`STATE.md`).
 - A storage notice at the top of the index and of a list page: when storage
   refuses, a plain warning that cannot be dismissed; otherwise a folded "lists
@@ -262,9 +273,10 @@ Seven modes. Each keeps its own input in memory only.
   re-folded it - the rewrite's deliberate deviation, invisible to the old
   parity harness because every one of its states started folded (deleted at
   R0c, issue 47). The dismiss cross is a sibling control positioned over the
-  disclosure's corner, not nested inside the `<summary>` that opens and
-  closes it (`DEBT.md` D3, paid off) - the two presses no longer have to
-  fight over the same click.
+  disclosure's corner; its 44x44 target yields to the summary where the two
+  overlap, so a tap on the summary's row unfolds the notice rather than
+  dismissing it. It is not nested inside the `<summary>` that opens and
+  closes it - the two presses no longer have to fight over the same click.
 
 ## Records
 
@@ -278,7 +290,11 @@ Seven modes. Each keeps its own input in memory only.
   Vault of Ages artifact or cursed object carries that word in the same line
   (`Vault of Ages · Артефакт` / `Vault of Ages · Artifact`, `· Проклятый
   предмет` / `· Cursed object`). The print card's source line and a generated
-  share stub's subtitle are paths too, and are held to the same rule. The
+  share stub's subtitle are paths too, and are held to the same rule. An
+  equipment record's stub subtitle follows the path with its stat line,
+  which drops the equipment type on the `eq_*` tables (the path names it)
+  and the tier wherever the path already names it (a record with no roll
+  number, and an artifact). The
   section leaf is not generalised past this set - a table earns one only when
   it is sectioned by a value the record itself carries, or, for Vault of
   Ages, by the book's own tiers; extending the rule to every table was
@@ -288,15 +304,17 @@ Seven modes. Each keeps its own input in memory only.
   community, or the setting - never a breadcrumb. It carries no path segment
   because every place it is drawn already shows the surrounding context (a
   table, a section, a list of results).
+- Every weapon's stat line - record card, table row, copied text, share
+  stub - names its class, secondary weapons too; the print card's class tag
+  says the same (`docs/DECISIONS.md`, 2026-09-24).
 - `#/i/<id>` for an id the data does not know draws "Предмет не найден", the
   sub line and a "На главную" button to `#/roll/std` (the live
   `renderItemPage` shape) and keeps the plain tab title, the same as any
   other route with nothing of its own to name. A record that is found, a
   section, and an owned list each title the tab with their own name ahead of
-  the app's - `<name> — <docTitle>` (`DEBT.md` D5/O3, paid off; the live app
-  wrote the name and then overwrote it with the plain title on the very same
-  render, on both `#/i/<id>` and every other route that could have named
-  itself). When `data.js` itself did not load, every page draws the "data did
+  the app's - `<name> — <docTitle>` (the live app wrote the name and then
+  overwrote it with the plain title on the very same render, on both
+  `#/i/<id>` and every other route that could have named itself). When `data.js` itself did not load, every page draws the "data did
   not load" line in place of its content (`NoData.svelte`) - the rewrite's
   own state; the live app threw on a missing `window.LOOT` and drew nothing.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
@@ -308,15 +326,15 @@ Seven modes. Each keeps its own input in memory only.
 - Copying the image has three outcomes, each with its own toast. A canvas
   that cannot be read back at all (a `file://` document's own picture always
   taints it) falls back to copying the record's text instead, worded to say
-  so (`DEBT.md` D10, paid off). A picture the canvas can produce but the
+  so. A picture the canvas can produce but the
   clipboard refuses falls back to downloading it as a PNG file, saved or
-  failed each with their own wording (D14/D15, paid off) - distinct from the
-  clipboard's own generic "could not copy".
+  failed each with their own wording - distinct from the clipboard's own
+  generic "could not copy".
 - Sharing a record attaches its picture where there is one and the share
   sheet can take a file, and always carries the full share text (stats and
-  description included), not just the name (D22, paid off).
+  description included), not just the name.
 - Copying every option of a roll toasts its own wording, not the generic
-  text-copied message (D13, paid off).
+  text-copied message.
 - Consumables get a "(consumable)" suffix outside the app, where the badge is
   not visible.
 - A compact card's art zooms slightly on hover, guarded by `@media
@@ -435,6 +453,10 @@ Seven modes. Each keeps its own input in memory only.
   `max(14cqw, 20pt)` tall - the design's 8.8 mm on the standard card,
   7.05 mm on the compact one - and a wrapped value raises it (11.3 mm on the
   compact card for `Хар. Заклинателя`).
+- A weapon's ribbon and die art follow its class, magic or physical, on both
+  strips of a two-strip weapon; the damage box names each strip's damage
+  type (`docs/DECISIONS.md`, "The print card frame follows the weapon's
+  class").
 - The die value, and the colour card's armour and burden labels over the
   picture, carry their halo as a vector stroke (`-webkit-text-stroke` with
   `paint-order: stroke fill`): a blurred `text-shadow` printed as a raster
@@ -477,22 +499,22 @@ Seven modes. Each keeps its own input in memory only.
   alternate-tables page's own heading jump, `<h1>` straight to `<h4>`, fixed
   separately: each rarity section is now an `<h2>` (`SectionHead`'s own
   `heading` prop, only passed here) and the Hope/Fear column pair under it
-  demoted to `<h3>` (`DEBT.md` D8, paid off).
+  demoted to `<h3>`.
 - The black-and-white choice (`printBW`) and the sheet size (`printCompact`)
   are session memory on `AppState` - they survive leaving the print page and
   coming back - matching the live app's own `S.printBW` rather than resetting
   on every fresh entry, which is what the page-local `$state` this replaced
-  did (`DEBT.md` D21, paid off). Neither is written to storage.
+  did. Neither is written to storage.
 - A missing picture (a partial deploy, a cold cache, a `file://` copy short
   one file) falls back to the same drawn glyph a record with no art gets,
   the same way `RecordCard` does - reached from a print sheet opened
   directly at a shared `#/print/...` address, where nothing has already
-  caught the failure (`DEBT.md` R6, paid off).
+  caught the failure.
 - An open record dialog and an action toast both stay hidden under print
   media, the way the live app's `#modal`/`#toast` rules did unconditionally -
-  neither had an equivalent rule in the rewrite (`DEBT.md` D20, paid off).
+  neither had an equivalent rule in the rewrite.
 - The card's own name (`.pc-name`) is not part of `fit()`'s shrink ladder -
-  P16, inspected rather than assumed (owner decision Q2, "look first, then
+  inspected rather than assumed (owner decision, "look first, then
   shrink"). The four longest names (`#/print/cm26-f60-hi62-ci81`), measured
   on the Windows host on 2026-09-22 as the distinct line tops of a `Range`
   over the name: in Russian cm26, f60 and hi62 wrap to three lines and ci81
@@ -514,17 +536,25 @@ Seven modes. Each keeps its own input in memory only.
 - Focusing the skip link moves focus straight to `#main` and never touches
   the address bar - the browser's own fragment jump would also route the
   hash through the app's own parser, which reads `#main` as unknown and
-  would clear the person's selection navigating them home (P1). While
+  would clear the person's selection navigating them home. While
   focused it is a gold plate pinned over the page's top-left corner, matching
   the live app rather than a grey chip that pushed the header down while
-  focused (`DEBT.md` D19, paid off).
+  focused.
 - Chips and segmented switches expose their on/off state as `aria-pressed` -
   the money chips and the two view switches (tables list/grid, print colour/
   black-and-white) gained it in the rewrite, where the live app wrote
   nothing for the money chips and `aria-current="true"` for the menu chips.
 - Help panels under a `?` per section, folded by default, fold state remembered
   for the session only.
-- Toasts with an undo action for destructive things.
+- Toasts with an undo action for destructive things. A toast that offers an
+  undo moves focus to its button, so the keyboard reaches it within the
+  7000 ms it lasts; a toast with no action never takes focus. When the toast
+  goes with focus still in it, focus returns to the element it came from, or
+  to the main landmark when that element left with the action (a removed
+  row). While a record dialog is open the toast is drawn inside it, so it
+  takes focus and answers a click there; with the element focus came from
+  gone, focus returns to the dialog's close button. Closing the dialog while
+  an undo is on offer leaves the toast on the page for the rest of its time.
 - A footer nav row above the licence line links the site's static pages
   (`META.md` section 9, "Static pages"). Today it has one link,
   «Установить как приложение» / "Install as an app". Every link opens the
@@ -541,18 +571,20 @@ Seven modes. Each keeps its own input in memory only.
   `renderTabs` compared against the raw route string, and none of those three
   route kinds was ever that string.
 - Under `prefers-reduced-motion: reduce` every transition and animation stops
-  moving - a blanket kill (`tokens.css`), not the live app's own two named
-  exceptions. A deliberate improvement over parity: `DEBT.md`, D1, paid off.
+  moving and waits out no delay - a blanket kill (`tokens.css`), not the live
+  app's own two named exceptions - including the table page's scroll to a
+  linked row or section, which jumps instead of easing (`Env.motion`: a
+  call-site `behavior` is out of CSS's reach).
 - Every focusable control gets the same gold keyboard-focus ring, at the
   control's own border-radius where a component sets one and `--r-sm`
   otherwise (a scoped rule always outranks the unscoped global one - `.seg
   button`'s 999px is untouched) - a global rule (`tokens.css`) rather than
   the live app's closed list of 18 selectors at an 8px radius, with
   everything outside that list falling back to the browser's own outline.
+  Broader coverage was the owner's call.
 - Self-hosted fonts were considered and dropped: the app declares `Inter,
   -apple-system, 'Segoe UI', Roboto, ...` with no `@font-face` (`tokens.
   css`), so glyphs depend on the machine. The five weights in use (650, 680,
   620, 560, 540) render as authored only with a variable font, and the print
   card needs a real italic - both argue for self-hosting, but the owner
   decided against it.
-  Broader coverage was the owner's call: `DEBT.md`, D18, paid off.

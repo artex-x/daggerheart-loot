@@ -89,7 +89,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     StaticText ". There are no previous modifications by others."
   status ""
     StaticText "Цены проставлены (1)"
-    button "Вернуть"
+    button "Вернуть" [focused=true]
 
 ## ru :: controls
 1 мешок
@@ -232,7 +232,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     StaticText ". There are no previous modifications by others."
   status ""
     StaticText "Цены проставлены (1)"
-    button "Вернуть"
+    button "Вернуть" [focused=true]
 
 ## en :: controls
 1 bag

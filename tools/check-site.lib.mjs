@@ -159,7 +159,7 @@ export function checks() {
      * land somewhere better than GitHub's own generic 404 - with no
      * `404.html` every wrong path got GitHub's generic 404 (verified live
      * on `i/zzzz.html`), no link back in either language. See
-     * `docs/specs/DEBT.md`. */
+     * `docs/specs/META.md` section 7. */
     {
       path: UNKNOWN_PATH,
       test: (body, meta) => meta.status === 404,

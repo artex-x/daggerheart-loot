@@ -99,7 +99,7 @@ describe('links written earlier', () => {
 });
 
 describe('unknown ids', () => {
-  it('are dropped rather than breaking the list, and counted (P9)', () => {
+  it('are dropped rather than breaking the list, and counted', () => {
     /* The checksum covers what the link says, so it has to be rebuilt - or the
        truncation guard fires instead of the branch under test. */
     const parts = ['ci1', 'zzz999'];
@@ -109,10 +109,24 @@ describe('unknown ids', () => {
     expect(back?.dropped).toBe(1);
   });
 
-  it('a list of only unknown ids does not open', () => {
+  it('a list of only unknown ids opens empty, with every entry counted as dropped', () => {
     const parts = ['zzz999'];
     const raw = `Empty\n${stamp(parts)}${parts.join(',')}`;
-    expect(decodeList(toBase64Url(raw), knows)).toBeNull();
+    const back = decodeList(toBase64Url(raw), knows);
+    expect(back?.ids).toEqual([]);
+    expect(back?.dropped).toBe(1);
+    expect(back?.name).toBe('Empty');
+  });
+
+  it('an empty list round-trips through its own link', () => {
+    const back = decodeList(encodeList({ name: 'Пусто', ids: [] }, true), knows);
+    expect(back?.ids).toEqual([]);
+    expect(back?.dropped).toBe(0);
+    expect(back?.name).toBe('Пусто');
+  });
+
+  it('a link written before the checksum that names no id is still unreadable', () => {
+    expect(decodeList(toBase64Url('Nothing\n'), knows)).toBeNull();
   });
 
   it('reports zero dropped for a link where nothing was lost', () => {

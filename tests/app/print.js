@@ -1,5 +1,5 @@
 /* #/print/<ids> against dist/ - sheet grid, card size against the design,
- * versatile weapons, dice by damage type, armour, black and white, art
+ * versatile weapons, dice by class, armour, black and white, art
  * edges, text fitting, entry points.
  *
  * Transposed from tests/print.js (the live-app suite, `print`) onto
@@ -536,9 +536,9 @@ const { ok } = rep;
   await colour();
   await d.settle();
 
-  /* Each die has its own shape, and colour follows the damage type: physical
-     gold, magical blue-violet. */
-  console.log('die by damage type');
+  /* Each die has its own shape, and colour follows the weapon's class:
+     physical gold, magical blue-violet. */
+  console.log('die by class');
   await d.open('#/print/q1');
   ok(
     /die-d8-phy\.svg$/.test(await page.$eval('.pc-die img', (e) => e.getAttribute('src'))),
@@ -967,6 +967,46 @@ const { ok } = rep;
     ok(
       (await ribbonOf()) === (isBw ? 'ribbon-bw.svg' : 'ribbon.svg'),
       'the physical weapon does not have its own frame: ' + (await ribbonOf())
+    );
+    /* The frame and die follow the class, not the damage type: q33 is a
+       magic weapon dealing either type, dve38 a physical one dealing magic
+       damage, q171 a magic one whose second strip deals physical damage. */
+    const frameOf = async (id) => {
+      await d.open('#/print/' + id);
+      if (isBw) {
+        await bw();
+        await d.settle();
+      }
+      return page.$$eval('.pcard[data-pid="' + id + '"]', (cards) =>
+        cards.flatMap((c) =>
+          [...c.querySelectorAll('.pc-ribbon, .pc-die img')].map((e) =>
+            e.getAttribute('src').replace(/^.*\//, '')
+          )
+        )
+      );
+    };
+    const tag = isBw ? 'bw: ' : 'colour: ';
+    const q33 = await frameOf('q33');
+    ok(
+      q33.length === 2 &&
+        q33.includes(isBw ? 'ribbon-mag-bw.svg' : 'ribbon-mag.svg') &&
+        (isBw || /^die-d\d+-mag\.svg$/.test(q33.find((f) => f.startsWith('die')))),
+      tag + 'the magic weapon dealing either type does not draw the magic frame: ' + q33
+    );
+    const dve38 = await frameOf('dve38');
+    ok(
+      dve38.length === 2 &&
+        dve38.includes(isBw ? 'ribbon-bw.svg' : 'ribbon.svg') &&
+        (isBw || /^die-d\d+-phy\.svg$/.test(dve38.find((f) => f.startsWith('die')))),
+      tag +
+        'the physical weapon dealing magic damage does not draw the physical frame: ' +
+        dve38
+    );
+    const q171 = await frameOf('q171');
+    ok(
+      q171.filter((f) => f === (isBw ? 'ribbon-mag-bw.svg' : 'ribbon-mag.svg')).length === 2 &&
+        (isBw || q171.filter((f) => /^die-d\d+-mag\.svg$/.test(f)).length === 2),
+      tag + 'the second strip of a magic weapon does not draw the magic frame: ' + q171
     );
   }
   await d.open('#/print/q1');

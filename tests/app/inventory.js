@@ -1,4 +1,4 @@
-/* "Everything a person can reach" - the 141 states tests/app/golden.js
+/* "Everything a person can reach" - the states tests/app/golden.js
  * captures a structural snapshot of on both languages. Originated (issue 47)
  * as an independent copy of tests/parity/specs.js's STATES array plus the
  * module-level constants it read: the print routes, PACKED, the button-name
@@ -185,6 +185,9 @@ const LISTS = [
 const two = { 'dhloot.lists.v2': JSON.stringify(LISTS) };
 const inList = {
   'dhloot.lists.v2': JSON.stringify([{ ...LISTS[0], ids: ['ci1'] }, LISTS[1]])
+};
+const ringInList = {
+  'dhloot.lists.v2': JSON.stringify([{ ...LISTS[0], ids: ['ci28'] }, LISTS[1]])
 };
 const eight = {
   'dhloot.lists.v2': JSON.stringify([
@@ -646,6 +649,19 @@ const STATES = [
     }
   },
   {
+    id: '#/tables ~ a row opened, removed from a list',
+    route: '#/tables',
+    why: 'the undo toast drawn inside the record modal after its card leaves a list, «Вернуть» focused',
+    storage: ringInList,
+    enter: async (d) => {
+      await d.click('Кольцо Тишины');
+      await d.click('Добавить в список');
+      await d.click('Клад дракона');
+    },
+    /* a 7000ms toast; arrived at afresh per language - this file's header */
+    timed: true
+  },
+  {
     id: '#/tables ~ a row ticked',
     route: '#/tables',
     why: 'the bar, one row ticked',
@@ -724,7 +740,7 @@ const STATES = [
   {
     id: '#/tables/eq_secondary ~ filter link',
     route: '#/tables/eq_secondary/f_cls-mag',
-    why: 'arriving opens the panel; the cls row reads "Тип урона" here and "Класс" on weapons'
+    why: 'arriving opens the panel; the cls row reads "Класс", as on weapons'
   },
   {
     id: '#/tables/eq_secondary ~ searched',
@@ -946,7 +962,7 @@ const STATES = [
     id: '#/lists ~ unreadable storage',
     route: '#/lists',
     why:
-      'R1: a corrupt dhloot.lists.v2 value draws the unreadable-storage notice in place of ' +
+      'a corrupt dhloot.lists.v2 value draws the unreadable-storage notice in place of ' +
       'the folded "lists live only here" disclosure - no lists on screen, the value backed up ' +
       'under its own key rather than lost',
     storage: { 'dhloot.lists.v2': '{' }
@@ -1207,6 +1223,16 @@ const STATES = [
     why:
       'the packed form, expanded and rewritten to the plain form - pixels identical to ' +
       '"~ shared, noted"; listAddress proves the rewrite'
+  },
+  {
+    /* Buffer.from('Пропавшее\nzzz1,zzz2').toString('base64url'): a legacy
+       unstamped payload, so it needs no checksum. */
+    id: '#/l/ ~ every entry gone',
+    route: '#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg',
+    why:
+      'a shared link whose every entry left the data: heading "Пропавшее", the sub "0 позиций", ' +
+      'the save button, no rows, the dropped-entries toast (not the bad-link page)',
+    timed: true
   },
   {
     id: '#/l/zzzz',

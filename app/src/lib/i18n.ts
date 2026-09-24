@@ -145,9 +145,9 @@ export function eqParts(
     if (e.th) out.push(`${labels.thresholds} ${String(e.th[0])}/${String(e.th[1])}`);
     if (e.as != null) out.push(`${labels.armorScore} ${String(e.as)}`);
   } else {
-    /* A magic weapon stays a magic weapon even when its damage can be physical,
-       which is why the class is printed and not inferred from the damage type. */
-    if (e.t === 'weapon' && e.cls) out.push(pick(EQ_CLS[e.cls], lang));
+    /* A character without a Spellcast trait cannot equip a magic weapon, so every
+       weapon names its class, secondary too; it is never inferred from the damage type. */
+    if (e.cls) out.push(pick(EQ_CLS[e.cls], lang));
     out.push(eqWord(EQ_TRAIT, e.tr, lang));
     out.push(eqWord(EQ_RANGE, e.rg, lang));
     out.push((e.dmg ?? '') + (e.dt ? ' ' + pick(EQ_DT[e.dt], lang) : ''));

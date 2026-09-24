@@ -82,7 +82,7 @@ daggerheart.com
 Благословленный Медный Кастет
 Благословленный Медный КастетРанг 1 · Магическое · Сила · Вплотн... [namelen=128 namehash=f96ddfea]
 Большая Вилка
-Большая ВилкаРанг 1 · Проворность · Вплотную · d8 физ · Одноручн... [namelen=161 namehash=c1862a79]
+Большая ВилкаРанг 1 · Физическое · Проворность · Вплотную · d8 ф... [namelen=174 namehash=af9386ce]
 Венчик
 ВенчикРанг 1 · Магическое · Знание · Далеко · d6+1 маг · Одноруч... [namelen=102 namehash=1ccbe8c8]
 Взрывные Зелья
@@ -92,7 +92,7 @@ daggerheart.com
 Винтовка
 ВинтовкаРанг 1 · Физическое · Проворность · Очень далеко · d8+2 ... [namelen=188 namehash=a46e5371]
 Деревянный Кол
-Деревянный КолРанг 1 · Сила · Вплотную · d8 физ · ОдноручноеПарн... [namelen=197 namehash=785ad3c3]
+Деревянный КолРанг 1 · Физическое · Сила · Вплотную · d8 физ · О... [namelen=210 namehash=c756983a]
 Динамит
 ДинамитВы можете поджечь эту динамитную шашку и бросить её в пре... [namelen=355 namehash=25334e3b]
 Доспех из Гробового Дерева
@@ -130,23 +130,23 @@ daggerheart.com
 Коса
 КосаРанг 1 · Физическое · Искусность · Близко · d8+2 физ · Двуру... [namelen=103 namehash=4652d252]
 Крюк для Буксировки
-Крюк для БуксировкиРанг 1 · Искусность · Средне · d6 физ · Однор... [namelen=176 namehash=53b743b0]
+Крюк для БуксировкиРанг 1 · Физическое · Искусность · Средне · d... [namelen=189 namehash=813920df]
 Кувалда
 КувалдаРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуру... [namelen=231 namehash=ba57fede]
 Кухонный Нож
 Кухонный НожРанг 1 · Физическое · Искусность · Вплотную · d8+1 ф... [namelen=114 namehash=1421b3d2]
 Лассо
-ЛассоРанг 1 · Проворность · Близко · d4 физ · ОдноручноеЗааркане... [namelen=393 namehash=e59f058f]
+ЛассоРанг 1 · Физическое · Проворность · Близко · d4 физ · Однор... [namelen=406 namehash=a17092d0]
 Легендарная Винтовка
 Легендарная ВинтовкаРанг 4 · Физическое · Проворность · Очень да... [namelen=201 namehash=6ed2de5f]
 Легендарная Среброшелковая Броня
 Легендарная Среброшелковая БроняРанг 4 · Пороги 11/32 · Броня 6З... [namelen=238 namehash=a3ecbc0a]
 Легендарное Лассо
-Легендарное ЛассоРанг 4 · Проворность · Близко · d4+9 физ · Одно... [namelen=407 namehash=45a82d19]
+Легендарное ЛассоРанг 4 · Физическое · Проворность · Близко · d4... [namelen=420 namehash=58814816]
 Легендарный Благословленный Медный Кастет
 Легендарный Благословленный Медный КастетРанг 4 · Магическое · С... [namelen=141 namehash=a70d626d]
 Легендарный Деревянный Кол
-Легендарный Деревянный КолРанг 4 · Сила · Вплотную · d8+6 физ · ... [namelen=211 namehash=85a93d23]
+Легендарный Деревянный КолРанг 4 · Физическое · Сила · Вплотную ... [namelen=224 namehash=85ed8525]
 Легендарный Доспех из Гробового Дерева
 Легендарный Доспех из Гробового ДереваРанг 4 · Пороги 10/31 · Бр... [namelen=185 namehash=ade9c86d]
 Легендарный Дробовик
@@ -154,7 +154,7 @@ daggerheart.com
 Легендарный Кожаный Длинный Плащ
 Легендарный Кожаный Длинный ПлащРанг 4 · Пороги 12/34 · Броня 6Т... [namelen=156 namehash=988284db]
 Легендарный Малый Револьвер
-Легендарный Малый РевольверРанг 4 · Искусность · Далеко · d6+9 ф... [namelen=199 namehash=f287c5a2]
+Легендарный Малый РевольверРанг 4 · Физическое · Искусность · Да... [namelen=212 namehash=681157ad]
 Легендарный Многозарядный Арбалет
 Легендарный Многозарядный АрбалетРанг 4 · Физическое · Искусност... [namelen=261 namehash=23582bdf]
 Легендарный Револьвер
@@ -162,12 +162,12 @@ daggerheart.com
 Легендарный Святой Дробовик
 Легендарный Святой ДробовикРанг 4 · Магическое · Проворность · Б... [namelen=237 namehash=c6abdbcb]
 Легендарный Священный Щит
-Легендарный Священный ЩитРанг 4 · Инстинкт · Вплотную · d4+6 маг... [namelen=212 namehash=1442fd40]
+Легендарный Священный ЩитРанг 4 · Магическое · Инстинкт · Вплотн... [namelen=225 namehash=74e995d3]
 Легендарный Цепной Хлыст
-Легендарный Цепной ХлыстРанг 4 · Влияние · Близко · d6+7 физ · О... [namelen=182 namehash=66c89667]
+Легендарный Цепной ХлыстРанг 4 · Физическое · Влияние · Близко ·... [namelen=195 namehash=ba90213f]
 ЛутDaggerheart
 Малый Револьвер
-Малый РевольверРанг 1 · Искусность · Далеко · d6 физ · Одноручно... [namelen=185 namehash=e8cfb649]
+Малый РевольверРанг 1 · Физическое · Искусность · Далеко · d6 фи... [namelen=198 namehash=69ba5d11]
 Многозарядный Арбалет
 Многозарядный АрбалетРанг 1 · Физическое · Искусность · Далеко ·... [namelen=248 namehash=90aafa8b]
 Мясницкий Топор
@@ -175,7 +175,7 @@ daggerheart.com
 Нагрудник из Противня
 Нагрудник из ПротивняРанг 1 · Пороги 8/17 · Броня 4Очень тяжелое... [namelen=123 namehash=896a28a9]
 Нож для Овощей
-Нож для ОвощейРанг 1 · Искусность · Вплотную · d8 физ · Одноручн... [namelen=161 namehash=edb18913]
+Нож для ОвощейРанг 1 · Физическое · Искусность · Вплотную · d8 ф... [namelen=174 namehash=b7579c9a]
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
@@ -186,11 +186,11 @@ daggerheart.com
 Продвинутая Среброшелковая Броня
 Продвинутая Среброшелковая БроняРанг 3 · Пороги 9/23 · Броня 5За... [namelen=237 namehash=acdd7f3f]
 Продвинутое Лассо
-Продвинутое ЛассоРанг 3 · Проворность · Близко · d4+6 физ · Одно... [namelen=407 namehash=c4fcf14b]
+Продвинутое ЛассоРанг 3 · Физическое · Проворность · Близко · d4... [namelen=420 namehash=c2bcdb76]
 Продвинутый Благословленный Медный Кастет
 Продвинутый Благословленный Медный КастетРанг 3 · Магическое · С... [namelen=140 namehash=dbb8afa7]
 Продвинутый Деревянный Кол
-Продвинутый Деревянный КолРанг 3 · Сила · Вплотную · d8+4 физ · ... [namelen=211 namehash=733a7be5]
+Продвинутый Деревянный КолРанг 3 · Физическое · Сила · Вплотную ... [namelen=224 namehash=da8d44b4]
 Продвинутый Доспех из Гробового Дерева
 Продвинутый Доспех из Гробового ДереваРанг 3 · Пороги 8/22 · Бро... [namelen=184 namehash=a17ca4ee]
 Продвинутый Дробовик
@@ -198,7 +198,7 @@ daggerheart.com
 Продвинутый Кожаный Длинный Плащ
 Продвинутый Кожаный Длинный ПлащРанг 3 · Пороги 10/25 · Броня 5Т... [namelen=156 namehash=94613530]
 Продвинутый Малый Револьвер
-Продвинутый Малый РевольверРанг 3 · Искусность · Далеко · d6+6 ф... [namelen=199 namehash=e95b366d]
+Продвинутый Малый РевольверРанг 3 · Физическое · Искусность · Да... [namelen=212 namehash=d9fd126c]
 Продвинутый Многозарядный Арбалет
 Продвинутый Многозарядный АрбалетРанг 3 · Физическое · Искусност... [namelen=260 namehash=33e0fa16]
 Продвинутый Револьвер
@@ -206,9 +206,9 @@ daggerheart.com
 Продвинутый Святой Дробовик
 Продвинутый Святой ДробовикРанг 3 · Магическое · Проворность · Б... [namelen=236 namehash=81ef7431]
 Продвинутый Священный Щит
-Продвинутый Священный ЩитРанг 3 · Инстинкт · Вплотную · d4+4 маг... [namelen=212 namehash=2ccd8117]
+Продвинутый Священный ЩитРанг 3 · Магическое · Инстинкт · Вплотн... [namelen=225 namehash=64cf57d0]
 Продвинутый Цепной Хлыст
-Продвинутый Цепной ХлыстРанг 3 · Влияние · Близко · d6+5 физ · О... [namelen=182 namehash=b4d9595d]
+Продвинутый Цепной ХлыстРанг 3 · Физическое · Влияние · Близко ·... [namelen=195 namehash=04d0fcc5]
 Прочее
 Револьвер
 РевольверРанг 1 · Физическое · Искусность · Далеко · d6+1 физ · ... [namelen=278 namehash=4227346b]
@@ -219,7 +219,7 @@ daggerheart.com
 Святой Дробовик
 Святой ДробовикРанг 1 · Магическое · Проворность · Близко · d6+2... [namelen=224 namehash=bf4a90f7]
 Священный Щит
-Священный ЩитРанг 1 · Инстинкт · Вплотную · d4 маг · ОдноручноеР... [namelen=198 namehash=61f45663]
+Священный ЩитРанг 1 · Магическое · Инстинкт · Вплотную · d4 маг ... [namelen=211 namehash=f116390b]
 Серп
 СерпРанг 1 · Физическое · Влияние · Вплотную · d8 физ · Одноручн... [namelen=226 namehash=a41fd177]
 Сетевой Узел
@@ -227,7 +227,7 @@ daggerheart.com
 Сеткой
 Сеттинги
 Сигнальная Ракета
-Сигнальная РакетаРанг 1 · Искусность · Далеко · d6+1 физ · Однор... [namelen=177 namehash=43f7fdf7]
+Сигнальная РакетаРанг 1 · Физическое · Искусность · Далеко · d6+... [namelen=190 namehash=15b576e3]
 Скалка
 СкалкаРанг 1 · Физическое · Влияние · Вплотную · d8+1 физ · Одно... [namelen=105 namehash=5920ae62]
 Скопировать ссылку на этот раздел
@@ -253,11 +253,11 @@ daggerheart.com
 Улучшенная Среброшелковая Броня
 Улучшенная Среброшелковая БроняРанг 2 · Пороги 7/16 · Броня 4Защ... [namelen=236 namehash=cb48fa24]
 Улучшенное Лассо
-Улучшенное ЛассоРанг 2 · Проворность · Близко · d4+3 физ · Однор... [namelen=406 namehash=45ed5385]
+Улучшенное ЛассоРанг 2 · Физическое · Проворность · Близко · d4+... [namelen=419 namehash=912865c4]
 Улучшенный Благословленный Медный Кастет
 Улучшенный Благословленный Медный КастетРанг 2 · Магическое · Си... [namelen=139 namehash=cb505932]
 Улучшенный Деревянный Кол
-Улучшенный Деревянный КолРанг 2 · Сила · Вплотную · d8+2 физ · О... [namelen=210 namehash=9ae99c38]
+Улучшенный Деревянный КолРанг 2 · Физическое · Сила · Вплотную ·... [namelen=223 namehash=c42f4d42]
 Улучшенный Доспех из Гробового Дерева
 Улучшенный Доспех из Гробового ДереваРанг 2 · Пороги 6/15 · Брон... [namelen=183 namehash=090fb767]
 Улучшенный Дробовик
@@ -265,7 +265,7 @@ daggerheart.com
 Улучшенный Кожаный Длинный Плащ
 Улучшенный Кожаный Длинный ПлащРанг 2 · Пороги 8/18 · Броня 4Тих... [namelen=154 namehash=e1c8bac7]
 Улучшенный Малый Револьвер
-Улучшенный Малый РевольверРанг 2 · Искусность · Далеко · d6+3 фи... [namelen=198 namehash=f3ce9167]
+Улучшенный Малый РевольверРанг 2 · Физическое · Искусность · Дал... [namelen=211 namehash=0c408778]
 Улучшенный Многозарядный Арбалет
 Улучшенный Многозарядный АрбалетРанг 2 · Физическое · Искусность... [namelen=259 namehash=c81271b9]
 Улучшенный Револьвер
@@ -273,20 +273,20 @@ daggerheart.com
 Улучшенный Святой Дробовик
 Улучшенный Святой ДробовикРанг 2 · Магическое · Проворность · Бл... [namelen=235 namehash=7dda9801]
 Улучшенный Священный Щит
-Улучшенный Священный ЩитРанг 2 · Инстинкт · Вплотную · d4+2 маг ... [namelen=211 namehash=d706352d]
+Улучшенный Священный ЩитРанг 2 · Магическое · Инстинкт · Вплотну... [namelen=224 namehash=eb7cc6f2]
 Улучшенный Цепной Хлыст
-Улучшенный Цепной ХлыстРанг 2 · Влияние · Близко · d6+3 физ · Од... [namelen=181 namehash=b639de06]
+Улучшенный Цепной ХлыстРанг 2 · Физическое · Влияние · Близко · ... [namelen=194 namehash=3cdcb3c2]
 Установка для Фейерверков
 Установка для ФейерверковРанг 1 · Физическое · Проворность · Оче... [namelen=158 namehash=c2f08aaa]
 Фестивальный Кнут
-Фестивальный КнутРанг 1 · Влияние · Близко · d6 физ · Одноручное... [namelen=240 namehash=b84d8016]
+Фестивальный КнутРанг 1 · Физическое · Влияние · Близко · d6 физ... [namelen=253 namehash=ec6b33ae]
 Фильтры
 Цепной Хлыст
-Цепной ХлыстРанг 1 · Влияние · Близко · d6+1 физ · ОдноручноеЦеп... [namelen=170 namehash=7d94cfe7]
+Цепной ХлыстРанг 1 · Физическое · Влияние · Близко · d6+1 физ · ... [namelen=183 namehash=7a5b5949]
 Щит из Стола
-Щит из СтолаРанг 1 · Сила · Вплотную · d6 физ · ОдноручноеБарьер... [namelen=139 namehash=bd0e9565]
+Щит из СтолаРанг 1 · Физическое · Сила · Вплотную · d6 физ · Одн... [namelen=152 namehash=64d5cbb6]
 Щиток Крышки Бочки
-Щиток Крышки БочкиРанг 1 · Сила · Вплотную · d4 физ · Одноручное... [namelen=131 namehash=f6da5a6e]
+Щиток Крышки БочкиРанг 1 · Физическое · Сила · Вплотную · d4 физ... [namelen=144 namehash=cec9105d]
 
 ## en :: tree
 RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/frames]
@@ -356,15 +356,15 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/frames]
 Advanced Blessed Brass Knuckles
 Advanced Blessed Brass KnucklesTier 3 · Magic · Strength · Melee... [namelen=125 namehash=a8af3c4b]
 Advanced Chain Whip
-Advanced Chain WhipTier 3 · Presence · Very Close · d6+5 phy · O... [namelen=185 namehash=70f0c6b2]
+Advanced Chain WhipTier 3 · Physical · Presence · Very Close · d... [namelen=196 namehash=b556b707]
 Advanced Coffinwood Armor
 Advanced Coffinwood ArmorTier 3 · Thresholds 8/22 · Armor 5Splin... [namelen=174 namehash=4e48c289]
 Advanced Hallowed Shield
-Advanced Hallowed ShieldTier 3 · Instinct · Melee · d4+4 mag · O... [namelen=206 namehash=a862edba]
+Advanced Hallowed ShieldTier 3 · Magic · Instinct · Melee · d4+4... [namelen=214 namehash=5653a1cb]
 Advanced Holy Shotgun
 Advanced Holy ShotgunTier 3 · Magic · Agility · Very Close · d6+... [namelen=207 namehash=48352728]
 Advanced Lasso
-Advanced LassoTier 3 · Agility · Very Close · d4+6 phy · One-Han... [namelen=424 namehash=44707a15]
+Advanced LassoTier 3 · Physical · Agility · Very Close · d4+6 ph... [namelen=435 namehash=fb4bb4a1]
 Advanced Leather Longcoat
 Advanced Leather LongcoatTier 3 · Thresholds 10/25 · Armor 5Quie... [namelen=146 namehash=fe6a4b11]
 Advanced Repeating Crossbow
@@ -378,20 +378,20 @@ Advanced ShotgunTier 3 · Physical · Strength · Very Close · d6+8... [namelen
 Advanced Silverweave Armor
 Advanced Silverweave ArmorTier 3 · Thresholds 9/23 · Armor 5Ward... [namelen=194 namehash=8f352fb4]
 Advanced Small Revolver
-Advanced Small RevolverTier 3 · Finesse · Far · d6+6 phy · One-H... [namelen=178 namehash=33f5ed97]
+Advanced Small RevolverTier 3 · Physical · Finesse · Far · d6+6 ... [namelen=189 namehash=83813175]
 Advanced Wooden Stake
-Advanced Wooden StakeTier 3 · Strength · Melee · d8+4 phy · One-... [namelen=208 namehash=d2a9adc1]
+Advanced Wooden StakeTier 3 · Physical · Strength · Melee · d8+4... [namelen=219 namehash=955f17dd]
 Alt. tables
 Baking Tray Breastplate
 Baking Tray BreastplateTier 1 · Thresholds 8/17 · Armor 4Very He... [namelen=119 namehash=88b62e16]
 Barrel Lid Shield
-Barrel Lid ShieldTier 1 · Strength · Melee · d4 phy · One-Handed... [namelen=126 namehash=29f5be45]
+Barrel Lid ShieldTier 1 · Physical · Strength · Melee · d4 phy ·... [namelen=137 namehash=4fbf5cdc]
 Blessed Brass Knuckles
 Blessed Brass KnucklesTier 1 · Magic · Strength · Melee · d8+1 m... [namelen=116 namehash=18cf2932]
 Butcher's Axe
 Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy · ... [namelen=125 namehash=f9a3c4ef]
 Chain Whip
-Chain WhipTier 1 · Presence · Very Close · d6+1 phy · One-Handed... [namelen=176 namehash=fa5ac7ce]
+Chain WhipTier 1 · Physical · Presence · Very Close · d6+1 phy ·... [namelen=187 namehash=c7469c9d]
 Cleaver
 CleaverTier 1 · Physical · Agility · Melee · d8 phy · One-Handed... [namelen=123 namehash=54f99894]
 Coffinwood Armor
@@ -427,20 +427,20 @@ Equipment
 Exploding Potions
 Exploding PotionsTier 1 · Magic · Finesse · Close · d8 mag · One... [namelen=102 namehash=065a07a5]
 Festival Whip
-Festival WhipTier 1 · Presence · Very Close · d6 phy · One-Hande... [namelen=206 namehash=0fb5b409]
+Festival WhipTier 1 · Physical · Presence · Very Close · d6 phy ... [namelen=217 namehash=11e6de3e]
 Filters
 Firework Launcher
 Firework LauncherTier 1 · Physical · Agility · Very Far · d6+3 p... [namelen=135 namehash=3ce27f12]
 Fishing Rod
 Fishing RodTier 1 · Physical · Agility · Far · d6+3 phy · Two-Ha... [namelen=99 namehash=14015ba9]
 Flare Launcher
-Flare LauncherTier 1 · Finesse · Far · d6+1 phy · One-HandedBrig... [namelen=163 namehash=4c5c25fb]
+Flare LauncherTier 1 · Physical · Finesse · Far · d6+1 phy · One... [namelen=174 namehash=432b62c9]
 Forge Poker
 Forge PokerTier 1 · Physical · Strength · Very Close · d8+2 phy ... [namelen=107 namehash=645396aa]
 Frames
 Grid
 Hallowed Shield
-Hallowed ShieldTier 1 · Instinct · Melee · d4 mag · One-HandedRe... [namelen=195 namehash=16c5a2bb]
+Hallowed ShieldTier 1 · Magic · Instinct · Melee · d4 mag · One-... [namelen=203 namehash=232883cc]
 Holy Shotgun
 Holy ShotgunTier 1 · Magic · Agility · Very Close · d6+2 mag · T... [namelen=198 namehash=0e96bb1a]
 Hope & Fear
@@ -450,15 +450,15 @@ How this works
 Improved Blessed Brass Knuckles
 Improved Blessed Brass KnucklesTier 2 · Magic · Strength · Melee... [namelen=125 namehash=1c67921b]
 Improved Chain Whip
-Improved Chain WhipTier 2 · Presence · Very Close · d6+3 phy · O... [namelen=185 namehash=3d025db3]
+Improved Chain WhipTier 2 · Physical · Presence · Very Close · d... [namelen=196 namehash=57bacd17]
 Improved Coffinwood Armor
 Improved Coffinwood ArmorTier 2 · Thresholds 6/15 · Armor 4Splin... [namelen=174 namehash=600222e9]
 Improved Hallowed Shield
-Improved Hallowed ShieldTier 2 · Instinct · Melee · d4+2 mag · O... [namelen=206 namehash=45d787fb]
+Improved Hallowed ShieldTier 2 · Magic · Instinct · Melee · d4+2... [namelen=214 namehash=ac7312c1]
 Improved Holy Shotgun
 Improved Holy ShotgunTier 2 · Magic · Agility · Very Close · d6+... [namelen=207 namehash=0d139384]
 Improved Lasso
-Improved LassoTier 2 · Agility · Very Close · d4+3 phy · One-Han... [namelen=424 namehash=d198e4c0]
+Improved LassoTier 2 · Physical · Agility · Very Close · d4+3 ph... [namelen=435 namehash=35fbfccd]
 Improved Leather Longcoat
 Improved Leather LongcoatTier 2 · Thresholds 8/18 · Armor 4Quiet... [namelen=145 namehash=eb597a25]
 Improved Repeating Crossbow
@@ -472,15 +472,15 @@ Improved ShotgunTier 2 · Physical · Strength · Very Close · d6+5... [namelen
 Improved Silverweave Armor
 Improved Silverweave ArmorTier 2 · Thresholds 7/16 · Armor 4Ward... [namelen=194 namehash=9c6cb0db]
 Improved Small Revolver
-Improved Small RevolverTier 2 · Finesse · Far · d6+3 phy · One-H... [namelen=178 namehash=1d635881]
+Improved Small RevolverTier 2 · Physical · Finesse · Far · d6+3 ... [namelen=189 namehash=d6b8855a]
 Improved Wooden Stake
-Improved Wooden StakeTier 2 · Strength · Melee · d8+2 phy · One-... [namelen=208 namehash=41271038]
+Improved Wooden StakeTier 2 · Physical · Strength · Melee · d8+2... [namelen=219 namehash=2643f006]
 Iron Skillet
 Iron SkilletTier 1 · Physical · Strength · Melee · d8+1 phy · On... [namelen=103 namehash=fabfcd08]
 Large Fork
-Large ForkTier 1 · Agility · Melee · d8 phy · One-HandedPaired: ... [namelen=154 namehash=3c62374d]
+Large ForkTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=165 namehash=be173c5f]
 Lasso
-LassoTier 1 · Agility · Very Close · d4 phy · One-HandedRoped: O... [namelen=413 namehash=3c4f8739]
+LassoTier 1 · Physical · Agility · Very Close · d4 phy · One-Han... [namelen=424 namehash=98c7b421]
 Leather Apron
 Leather ApronTier 1 · Thresholds 6/13 · Armor 3ArmorUniqueBeast ... [namelen=69 namehash=0f19bf1e]
 Leather Longcoat
@@ -488,15 +488,15 @@ Leather LongcoatTier 1 · Thresholds 5/12 · Armor 3Quiet: Gain a ... [namelen=1
 Legendary Blessed Brass Knuckles
 Legendary Blessed Brass KnucklesTier 4 · Magic · Strength · Mele... [namelen=127 namehash=b8650559]
 Legendary Chain Whip
-Legendary Chain WhipTier 4 · Presence · Very Close · d6+7 phy · ... [namelen=186 namehash=ee2f0c4c]
+Legendary Chain WhipTier 4 · Physical · Presence · Very Close · ... [namelen=197 namehash=19c3aa5e]
 Legendary Coffinwood Armor
 Legendary Coffinwood ArmorTier 4 · Thresholds 10/31 · Armor 6Spl... [namelen=176 namehash=729ced06]
 Legendary Hallowed Shield
-Legendary Hallowed ShieldTier 4 · Instinct · Melee · d4+6 mag · ... [namelen=207 namehash=53f72bfe]
+Legendary Hallowed ShieldTier 4 · Magic · Instinct · Melee · d4+... [namelen=215 namehash=c555edbe]
 Legendary Holy Shotgun
 Legendary Holy ShotgunTier 4 · Magic · Agility · Very Close · d6... [namelen=209 namehash=07aaafc9]
 Legendary Lasso
-Legendary LassoTier 4 · Agility · Very Close · d4+9 phy · One-Ha... [namelen=425 namehash=2128f508]
+Legendary LassoTier 4 · Physical · Agility · Very Close · d4+9 p... [namelen=436 namehash=45e5b187]
 Legendary Leather Longcoat
 Legendary Leather LongcoatTier 4 · Thresholds 12/34 · Armor 6Qui... [namelen=147 namehash=9c118b34]
 Legendary Repeating Crossbow
@@ -510,9 +510,9 @@ Legendary ShotgunTier 4 · Physical · Strength · Very Close · d6+... [namelen
 Legendary Silverweave Armor
 Legendary Silverweave ArmorTier 4 · Thresholds 11/32 · Armor 6Wa... [namelen=196 namehash=0c075a89]
 Legendary Small Revolver
-Legendary Small RevolverTier 4 · Finesse · Far · d6+9 phy · One-... [namelen=179 namehash=20245dcf]
+Legendary Small RevolverTier 4 · Physical · Finesse · Far · d6+9... [namelen=190 namehash=9011273c]
 Legendary Wooden Stake
-Legendary Wooden StakeTier 4 · Strength · Melee · d8+6 phy · One... [namelen=209 namehash=cdc4d0d1]
+Legendary Wooden StakeTier 4 · Physical · Strength · Melee · d8+... [namelen=220 namehash=064d9af7]
 Link to this table
 List
 Lists
@@ -521,7 +521,7 @@ Network tetherEach PC adds a Network tether to their inventory a... [namelen=237
 Open this section on start
 Other
 Paring Knife
-Paring KnifeTier 1 · Finesse · Melee · d8 phy · One-HandedPaired... [namelen=156 namehash=06c6a17a]
+Paring KnifeTier 1 · Physical · Finesse · Melee · d8 phy · One-H... [namelen=167 namehash=8bc51dca]
 Pitchfork
 PitchforkTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=101 namehash=17e33479]
 Quilted Clothing
@@ -550,16 +550,16 @@ SledgehammerTier 1 · Physical · Strength · Melee · d10+3 phy · T... [namele
 Slingshot
 SlingshotTier 1 · Physical · Finesse · Far · d6+3 phy · Two-Hand... [namelen=97 namehash=e2ce210e]
 Small Revolver
-Small RevolverTier 1 · Finesse · Far · d6 phy · One-HandedQuick ... [namelen=167 namehash=eaedc837]
+Small RevolverTier 1 · Physical · Finesse · Far · d6 phy · One-H... [namelen=178 namehash=a179b73d]
 Sparkling Staff
 Sparkling StaffTier 1 · Magic · Knowledge · Very Far · d6 mag · ... [namelen=199 namehash=54c1d540]
 Standard rules
 Starting
 Table Shield
-Table ShieldTier 1 · Strength · Melee · d6 phy · One-HandedBarri... [namelen=133 namehash=df911534]
+Table ShieldTier 1 · Physical · Strength · Melee · d6 phy · One-... [namelen=144 namehash=cde02b7b]
 Tables
 Towline Hook
-Towline HookTier 1 · Finesse · Close · d6 phy · One-HandedHooked... [namelen=173 namehash=7c0484e3]
+Towline HookTier 1 · Physical · Finesse · Close · d6 phy · One-H... [namelen=184 namehash=23be0a94]
 Tree Bark Armor
 Tree Bark ArmorTier 1 · Thresholds 7/15 · Armor 4Heavy: −1 to Ev... [namelen=91 namehash=a50d78cc]
 Vault of Ages
@@ -570,6 +570,6 @@ Whisk WandTier 1 · Magic · Knowledge · Far · d6+1 mag · One-Hand... [namele
 Wondrous
 Wondrous Loot
 Wooden Stake
-Wooden StakeTier 1 · Strength · Melee · d8 phy · One-HandedPaire... [namelen=197 namehash=2f4564eb]
+Wooden StakeTier 1 · Physical · Strength · Melee · d8 phy · One-... [namelen=208 namehash=539d3efb]
 daggerheart.com
 ЛутDaggerheart

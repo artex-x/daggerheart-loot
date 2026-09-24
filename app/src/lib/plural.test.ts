@@ -42,7 +42,7 @@ describe('plural', () => {
     const ru = dict('ru');
     const en = dict('en');
     const keys = (Object.keys(ru) as (keyof typeof ru)[]).filter((k) => ru[k].includes('|'));
-    expect(keys).toContain('droppedItems');
+    expect(keys).toContain('selectedN');
     for (const k of keys) {
       expect(ru[k].split('|'), k).toHaveLength(3);
       expect(en[k].split('|'), k).toHaveLength(2);
@@ -67,10 +67,11 @@ describe('plural', () => {
   it('agreesTheDroppedItemsToastWithTheCount', () => {
     const ru = dict('ru').droppedItems;
     const en = dict('en').droppedItems;
-    expect([1, 2, 5].map((n) => plural(n, ru, 'ru'))).toEqual([
-      'Пропущена 1 позиция — её больше нет в данных',
-      'Пропущено 2 позиции — их больше нет в данных',
-      'Пропущено 5 позиций — их больше нет в данных'
+    expect([1, 2, 5, 21].map((n) => plural(n, ru, 'ru'))).toEqual([
+      'Пропущено позиций, которых больше нет в данных: 1',
+      'Пропущено позиций, которых больше нет в данных: 2',
+      'Пропущено позиций, которых больше нет в данных: 5',
+      'Пропущено позиций, которых больше нет в данных: 21'
     ]);
     expect([1, 2].map((n) => plural(n, en, 'en'))).toEqual([
       'Skipped 1 item - no longer in the data',

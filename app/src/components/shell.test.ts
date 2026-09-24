@@ -50,7 +50,7 @@ const LOOT: Loot = {
 
 const listA: StoredList = { id: 'a', name: 'Тайник', ids: ['ci1'], created: 1 };
 
-describe('the tab title (D5/O3)', () => {
+describe('the tab title', () => {
   it("titles a record page with the record's own name", () => {
     render(App, { env: at('#/i/ci1', { data: fakeData(LOOT) }) });
     expect(document.title).toBe('Спальный мешок — Генератор лута — Daggerheart');
@@ -68,7 +68,7 @@ describe('the tab title (D5/O3)', () => {
         storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) })
       })
     });
-    /* R4-1/PF3: `app.openList` is only set once ListPage's own debounced
+    /* `app.openList` is only set once ListPage's own debounced
        URL sync runs, 150ms after mount. */
     await waitFor(() => {
       expect(document.title).toBe('Тайник — Генератор лута — Daggerheart');
@@ -113,7 +113,7 @@ describe('the frame', () => {
     );
   });
 
-  it('moves focus straight to the content without touching the address (P1)', async () => {
+  it('moves focus straight to the content without touching the address', async () => {
     /* The live browser's own fragment jump would route `#main` through the
        SPA's address bar too - `parseHash('#main')` is unknown, and the app
        would replace it with the home section, clearing the selection. */
@@ -130,7 +130,7 @@ describe('the frame', () => {
     expect(document.documentElement.lang).toBe('ru');
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(document.documentElement.lang).toBe('en');
-    /* D5/O3: a section titles the tab with its own name too, not only a
+    /* A section titles the tab with its own name too, not only a
        record - "Standard rules — Daggerheart Loot Generator", not the plain
        title alone. */
     expect(document.title).toBe('Standard rules — Daggerheart Loot Generator');
@@ -378,17 +378,128 @@ describe('the toast, through what a real page raises it with', () => {
   });
 });
 
-describe('the toast component, directly - the action path nothing on a page uses yet', () => {
+describe('the toast component, directly', () => {
+  /* Stand-ins for the page around the toast, removed even when a test fails
+     so a later axe run does not see them. */
+  const page: HTMLElement[] = [];
+  const add = <T extends HTMLElement>(el: T, name = ''): T => {
+    el.textContent = name;
+    document.body.append(el);
+    page.push(el);
+    return el;
+  };
+  afterEach(() => {
+    for (const el of page.splice(0)) el.remove();
+  });
+
   it('runs the action and hides the toast when its button is pressed', async () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     const run = vi.fn();
     render(Toast, { app });
-    app.say('«Клад» убран', { action: { label: 'Вернуть', run } });
+    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run } });
 
     const btn = await screen.findByRole('button', { name: 'Вернуть' });
     await userEvent.click(btn);
     expect(run).toHaveBeenCalledOnce();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('moves focus to the undo button, and back where it came from when the toast goes', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    const from = add(document.createElement('button'), 'Убрать');
+    from.focus();
+
+    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Вернуть' })).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+
+    app.hideToast();
+    await waitFor(() => {
+      expect(from).toHaveFocus();
+    });
+  });
+
+  it('sends focus to the main landmark when the element it came from is gone', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    render(Toast, { app });
+    const main = add(document.createElement('main'));
+    main.id = 'main';
+    main.tabIndex = -1;
+    const from = add(document.createElement('button'), 'Убрать');
+    from.focus();
+
+    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    const btn = await screen.findByRole('button', { name: 'Вернуть' });
+    await waitFor(() => {
+      expect(btn).toHaveFocus();
+    });
+    from.remove();
+    await userEvent.click(btn);
+    await waitFor(() => {
+      expect(main).toHaveFocus();
+    });
+  });
+
+  it('sends focus to the main landmark when the element it came from is gone before the toast shows', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    render(Toast, { app });
+    const main = add(document.createElement('main'));
+    main.id = 'main';
+    main.tabIndex = -1;
+    const from = add(document.createElement('button'), 'Убрать');
+    from.focus();
+
+    from.remove();
+    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    const btn = await screen.findByRole('button', { name: 'Вернуть' });
+    await waitFor(() => {
+      expect(btn).toHaveFocus();
+    });
+    await userEvent.click(btn);
+    await waitFor(() => {
+      expect(main).toHaveFocus();
+    });
+  });
+
+  it('draws nothing while the record dialog is open, and the toast again once it closes', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    app.dialogOpen = true;
+    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    await tick();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Вернуть' })).not.toBeInTheDocument();
+
+    app.dialogOpen = false;
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Вернуть' })).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('leaves focus alone for a toast with no action, and once focus has left the toast', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    render(Toast, { app });
+    const from = add(document.createElement('button'), 'Добавить');
+    const elsewhere = add(document.createElement('button'), 'Печать');
+    from.focus();
+
+    app.say('Добавлено в «Клад»');
+    await tick();
+    expect(from).toHaveFocus();
+
+    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Вернуть' })).toHaveFocus();
+    });
+    elsewhere.focus();
+    app.hideToast();
+    await tick();
+    await tick();
+    expect(elsewhere).toHaveFocus();
   });
 
   it('calls showPopover/hidePopover when the browser has them, not the display fallback', async () => {

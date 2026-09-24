@@ -1,0 +1,103 @@
+# #/l/ ~ every entry gone
+# route: #/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg
+# why: a shared link whose every entry left the data: heading "Пропавшее", the sub "0 позиций", the save button, no rows, the dropped-entries toast (not the bad-link page)
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Пропавшее" [level=1]
+    StaticText "Список от другого игрока · 0 позиций"
+    button "Сохранить себе"
+  generic ""
+  contentinfo ""
+    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+  status ""
+    StaticText "Пропущено позиций, которых больше нет в данных: 2"
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+К содержимому
+ЛутDaggerheart
+Обычные правила
+Поиск
+Сообщества
+Сохранить себе
+Списки
+Таблицы
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Пропавшее" [level=1]
+    StaticText "A list from another player · 0 items"
+    button "Save to my lists"
+  generic ""
+  contentinfo ""
+    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
+    link "daggerheart.com" [url=https://www.daggerheart.com/]
+    StaticText ". There are no previous modifications by others."
+  status ""
+    StaticText "Пропущено позиций, которых больше нет в данных: 2"
+
+## en :: controls
+Alt. tables
+Communities
+Dragon's Vault
+Dread
+EN
+Lists
+RU
+Save to my lists
+Search
+Skip to content
+Standard rules
+Tables
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

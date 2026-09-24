@@ -148,7 +148,7 @@ function stampOf(parts) {
 
   console.log('the address grammar');
   const routes = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'routes.json'), 'utf8'));
-  /* One context reused across all 31 fixtures rather than one per fixture -
+  /* One context reused across every fixture rather than one per fixture -
    * none of them seed storage, so `d.open`'s full
    * navigation (driver.js's own) and `prepare()`'s per-navigation
    * localStorage.clear() (lib.js/driver.js) already give every fixture the
@@ -244,6 +244,53 @@ function stampOf(parts) {
           JSON.stringify(parts) +
           ', the fixture says ' +
           JSON.stringify(lines[id][lang])
+      );
+    }
+    await ctx.close();
+  }
+
+  console.log('a share stub names the path its record page does');
+  /* The stub builder copies the record page's path words (tools/build-share-pages.js,
+     PATH_TEXT); one record per table in each language catches a drift. */
+  const stubs = require('../../tools/build-share-pages.js');
+  const firstOf = {};
+  for (const arr of Object.values(global.window.LOOT.items).concat([global.window.LOOT.eq])) {
+    for (const it of arr) {
+      const table = stubs.tableOf(it);
+      if (!(table in firstOf)) firstOf[table] = it.id;
+    }
+  }
+  const ROOT = path.join(__dirname, '..', '..');
+  for (const lang of ['ru', 'en']) {
+    const { ctx, page, d } = await fresh({ width: 1280, height: 900, lang });
+    for (const id of Object.values(firstOf)) {
+      await d.open('#/i/' + id);
+      const where = await page.evaluate(() => {
+        const sub = document.querySelector('.page-sub');
+        return sub
+          ? [...sub.childNodes]
+              .filter((n) => n.nodeType === 3)
+              .map((n) => n.textContent)
+              .join('')
+              .trim()
+          : null;
+      });
+      const html = fs.readFileSync(
+        path.join(ROOT, 'i', lang === 'ru' ? '' : 'en', id + '.html'),
+        'utf8'
+      );
+      const m = /<p class="s">([^<]*)<\/p>/.exec(html);
+      const ENT = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
+      const stub = m ? m[1].replace(/&(amp|lt|gt|quot|#39);/g, (e) => ENT[e]) : null;
+      ok(
+        !!where && !!stub && stub.startsWith(where),
+        id +
+          '/' +
+          lang +
+          ': the stub subtitle is ' +
+          JSON.stringify(stub) +
+          ', the record page says ' +
+          JSON.stringify(where)
       );
     }
     await ctx.close();

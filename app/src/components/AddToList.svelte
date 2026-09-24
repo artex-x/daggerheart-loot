@@ -100,7 +100,7 @@
       const meta = { ...itemMeta(l, entryId) };
       app.lists.removeId(l, entryId);
       if (app.lists.save()) {
-        /* P5: every other destructive action here offers an undo -
+        /* Every other destructive action here offers an undo -
            `restoreEntry` is the same one the list page's own row-remove
            cross already uses. */
         app.say(t.removedFrom.replace('%s', l.name), {
@@ -171,17 +171,17 @@
     /* app.js redraws the menu's markup on every render, so `placeMenu` always
        measures from the default (downward) side; re-measuring from wherever
        the menu already sits reads a different `below` and can flip the wrong
-       way once the form grows the menu (DEBT.md D6). */
+       way once the form grows the menu. */
     up = false;
     void tick().then(() => {
       if (!root) return;
       const menu = root.querySelector<HTMLElement>('.dropmenu');
-      /* D6, paid off: the toggle, not whichever `.btn` happens to render
+      /* The toggle, not whichever `.btn` happens to render
          first - `.dropmenu` now sits after the toggle in the markup, but
          `:scope >` makes the intent explicit rather than relying on order. */
       const btn = root.querySelector<HTMLElement>(':scope > .btn');
       if (!menu || !btn) return;
-      /* D6, paid off: measured against the tightest clipping box - the
+      /* Measured against the tightest clipping box - the
          record card (`overflow: clip` in RecordCard.svelte), the modal's own
          card, the window - rather than always against the window, which let
          `scrollIntoView` look for room past the modal's edge and drag the
@@ -204,7 +204,7 @@
     });
   });
 
-  /* P4(a): Escape closes the menu and returns focus to the toggle that
+  /* Escape closes the menu and returns focus to the toggle that
      opened it, the way any other disclosure on this page already does -
      without it, the browser's own default (nothing, since a plain `<div>`
      menu has no dismissal of its own) left a keyboard user with no way out

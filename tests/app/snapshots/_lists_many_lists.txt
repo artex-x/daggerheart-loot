@@ -36,97 +36,97 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
     button "Восстановить"
     searchbox "Найти список"
-    link "Клад дракона 1" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMS5yY3MwfmNpMQ]
+    link "Клад дракона, 1 позиция" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMS5yY3MwfmNpMQ]
       StaticText "Клад дракона"
       StaticText "1"
     ... button x47 of 51 same-shape siblings elided
-    link "Лавка в порту 0 Список пуст" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+    link "Лавка в порту, 0 позиций" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
       StaticText "0"
       StaticText "Список пуст"
-    link "Храм Солнца 0 Список пуст" [url=#/l/0KXRgNCw0Lwg0KHQvtC70L3RhtCwCjAubnRmcH4]
+    link "Храм Солнца, 0 позиций" [url=#/l/0KXRgNCw0Lwg0KHQvtC70L3RhtCwCjAubnRmcH4]
       StaticText "Храм Солнца"
       StaticText "0"
       StaticText "Список пуст"
-    link "Рынок 0 Список пуст" [url=#/l/0KDRi9C90L7QugowLm50ZnB-]
+    link "Рынок, 0 позиций" [url=#/l/0KDRi9C90L7QugowLm50ZnB-]
       StaticText "Рынок"
       StaticText "0"
       StaticText "Список пуст"
-    link "Порт Ветров 1" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
+    link "Порт Ветров, 1 позиция" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
       StaticText "Порт Ветров"
       StaticText "1"
-    link "Логово 0 Список пуст" [url=#/l/0JvQvtCz0L7QstC-CjAubnRmcH4]
+    link "Логово, 0 позиций" [url=#/l/0JvQvtCz0L7QstC-CjAubnRmcH4]
       StaticText "Логово"
       StaticText "0"
       StaticText "Список пуст"
-    link "Трофеи 0 Список пуст" [url=#/l/0KLRgNC-0YTQtdC4CjAubnRmcH4]
+    link "Трофеи, 0 позиций" [url=#/l/0KLRgNC-0YTQtdC4CjAubnRmcH4]
       StaticText "Трофеи"
       StaticText "0"
       StaticText "Список пуст"
-    link "Кузнец 0 Список пуст" [url=#/l/0JrRg9C30L3QtdGGCjAubnRmcH4]
+    link "Кузнец, 0 позиций" [url=#/l/0JrRg9C30L3QtdGGCjAubnRmcH4]
       StaticText "Кузнец"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 3 1" [url=#/l/0KHQtdGB0YHQuNGPIDMKMS5yY3MwfmNpMQ]
+    link "Сессия 3, 1 позиция" [url=#/l/0KHQtdGB0YHQuNGPIDMKMS5yY3MwfmNpMQ]
       StaticText "Сессия 3"
       StaticText "1"
-    link "Сессия 4 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDQKMC5udGZwfg]
+    link "Сессия 4, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDQKMC5udGZwfg]
       StaticText "Сессия 4"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сундук мага 0 Список пуст" [url=#/l/0KHRg9C90LTRg9C6INC80LDQs9CwCjAubnRmcH4]
+    link "Сундук мага, 0 позиций" [url=#/l/0KHRg9C90LTRg9C6INC80LDQs9CwCjAubnRmcH4]
       StaticText "Сундук мага"
       StaticText "0"
       StaticText "Список пуст"
-    link "Ёлочная ярмарка 0 Список пуст" [url=#/l/0IHQu9C-0YfQvdCw0Y8g0Y_RgNC80LDRgNC60LAKMC5udGZwfg]
+    link "Ёлочная ярмарка, 0 позиций" [url=#/l/0IHQu9C-0YfQvdCw0Y8g0Y_RgNC80LDRgNC60LAKMC5udGZwfg]
       StaticText "Ёлочная ярмарка"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 5 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDUKMC5udGZwfg]
+    link "Сессия 5, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDUKMC5udGZwfg]
       StaticText "Сессия 5"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 6 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDYKMC5udGZwfg]
+    link "Сессия 6, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDYKMC5udGZwfg]
       StaticText "Сессия 6"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 7 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDcKMC5udGZwfg]
+    link "Сессия 7, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDcKMC5udGZwfg]
       StaticText "Сессия 7"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 8 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDgKMC5udGZwfg]
+    link "Сессия 8, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDgKMC5udGZwfg]
       StaticText "Сессия 8"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 9 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDkKMC5udGZwfg]
+    link "Сессия 9, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDkKMC5udGZwfg]
       StaticText "Сессия 9"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 10 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDEwCjAubnRmcH4]
+    link "Сессия 10, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDEwCjAubnRmcH4]
       StaticText "Сессия 10"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 11 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDExCjAubnRmcH4]
+    link "Сессия 11, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDExCjAubnRmcH4]
       StaticText "Сессия 11"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 12 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDEyCjAubnRmcH4]
+    link "Сессия 12, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDEyCjAubnRmcH4]
       StaticText "Сессия 12"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 13 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDEzCjAubnRmcH4]
+    link "Сессия 13, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDEzCjAubnRmcH4]
       StaticText "Сессия 13"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 14 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDE0CjAubnRmcH4]
+    link "Сессия 14, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDE0CjAubnRmcH4]
       StaticText "Сессия 14"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 15 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDE1CjAubnRmcH4]
+    link "Сессия 15, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDE1CjAubnRmcH4]
       StaticText "Сессия 15"
       StaticText "0"
       StaticText "Список пуст"
-    link "Сессия 16 0 Список пуст" [url=#/l/0KHQtdGB0YHQuNGPIDE2CjAubnRmcH4]
+    link "Сессия 16, 0 позиций" [url=#/l/0KHQtdGB0YHQuNGPIDE2CjAubnRmcH4]
       StaticText "Сессия 16"
       StaticText "0"
       StaticText "Список пуст"
@@ -145,16 +145,16 @@ RU
 Vault of Ages
 Wondrous
 daggerheart.com
-Ёлочная ярмарка0Список пуст
+Ёлочная ярмарка, 0 позиций
 Альт. таблицы
 Восстановить
 Восстановить из ссылки
 К содержимому
 Как это работает
-Клад дракона1
-Кузнец0Список пуст
-Лавка в порту0Список пуст
-Логово0Список пуст
+Клад дракона, 1 позиция
+Кузнец, 0 позиций
+Лавка в порту, 0 позиций
+Логово, 0 позиций
 ЛутDaggerheart
 Новый список
 Обычные правила
@@ -162,31 +162,31 @@ daggerheart.com
 Поделиться
 Поиск
 Показать ещё (6)
-Порт Ветров1
-Рынок0Список пуст
-Сессия 100Список пуст
-Сессия 110Список пуст
-Сессия 120Список пуст
-Сессия 130Список пуст
-Сессия 140Список пуст
-Сессия 150Список пуст
-Сессия 160Список пуст
-Сессия 31
-Сессия 40Список пуст
-Сессия 50Список пуст
-Сессия 60Список пуст
-Сессия 70Список пуст
-Сессия 80Список пуст
-Сессия 90Список пуст
+Порт Ветров, 1 позиция
+Рынок, 0 позиций
+Сессия 10, 0 позиций
+Сессия 11, 0 позиций
+Сессия 12, 0 позиций
+Сессия 13, 0 позиций
+Сессия 14, 0 позиций
+Сессия 15, 0 позиций
+Сессия 16, 0 позиций
+Сессия 3, 1 позиция
+Сессия 4, 0 позиций
+Сессия 5, 0 позиций
+Сессия 6, 0 позиций
+Сессия 7, 0 позиций
+Сессия 8, 0 позиций
+Сессия 9, 0 позиций
 Скрыть
 Создать
 Сообщества
 Списки
-Сундук мага0Список пуст
+Сундук мага, 0 позиций
 Таблицы
-Трофеи0Список пуст
+Трофеи, 0 позиций
 Удалить
-Храм Солнца0Список пуст
+Храм Солнца, 0 позиций
 
 ## en :: tree
 RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
@@ -222,97 +222,97 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     textbox "Restore from a link" [multiline=false readonly=false required=false]
     button "Restore"
     searchbox "Find a list"
-    link "Клад дракона 1" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMS5yY3MwfmNpMQ]
+    link "Клад дракона, 1 item" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMS5yY3MwfmNpMQ]
       StaticText "Клад дракона"
       StaticText "1"
     ... button x47 of 51 same-shape siblings elided
-    link "Лавка в порту 0 The list is empty" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+    link "Лавка в порту, 0 items" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
       StaticText "0"
       StaticText "The list is empty"
-    link "Храм Солнца 0 The list is empty" [url=#/l/0KXRgNCw0Lwg0KHQvtC70L3RhtCwCjAubnRmcH4]
+    link "Храм Солнца, 0 items" [url=#/l/0KXRgNCw0Lwg0KHQvtC70L3RhtCwCjAubnRmcH4]
       StaticText "Храм Солнца"
       StaticText "0"
       StaticText "The list is empty"
-    link "Рынок 0 The list is empty" [url=#/l/0KDRi9C90L7QugowLm50ZnB-]
+    link "Рынок, 0 items" [url=#/l/0KDRi9C90L7QugowLm50ZnB-]
       StaticText "Рынок"
       StaticText "0"
       StaticText "The list is empty"
-    link "Порт Ветров 1" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
+    link "Порт Ветров, 1 item" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
       StaticText "Порт Ветров"
       StaticText "1"
-    link "Логово 0 The list is empty" [url=#/l/0JvQvtCz0L7QstC-CjAubnRmcH4]
+    link "Логово, 0 items" [url=#/l/0JvQvtCz0L7QstC-CjAubnRmcH4]
       StaticText "Логово"
       StaticText "0"
       StaticText "The list is empty"
-    link "Трофеи 0 The list is empty" [url=#/l/0KLRgNC-0YTQtdC4CjAubnRmcH4]
+    link "Трофеи, 0 items" [url=#/l/0KLRgNC-0YTQtdC4CjAubnRmcH4]
       StaticText "Трофеи"
       StaticText "0"
       StaticText "The list is empty"
-    link "Кузнец 0 The list is empty" [url=#/l/0JrRg9C30L3QtdGGCjAubnRmcH4]
+    link "Кузнец, 0 items" [url=#/l/0JrRg9C30L3QtdGGCjAubnRmcH4]
       StaticText "Кузнец"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 3 1" [url=#/l/0KHQtdGB0YHQuNGPIDMKMS5yY3MwfmNpMQ]
+    link "Сессия 3, 1 item" [url=#/l/0KHQtdGB0YHQuNGPIDMKMS5yY3MwfmNpMQ]
       StaticText "Сессия 3"
       StaticText "1"
-    link "Сессия 4 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDQKMC5udGZwfg]
+    link "Сессия 4, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDQKMC5udGZwfg]
       StaticText "Сессия 4"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сундук мага 0 The list is empty" [url=#/l/0KHRg9C90LTRg9C6INC80LDQs9CwCjAubnRmcH4]
+    link "Сундук мага, 0 items" [url=#/l/0KHRg9C90LTRg9C6INC80LDQs9CwCjAubnRmcH4]
       StaticText "Сундук мага"
       StaticText "0"
       StaticText "The list is empty"
-    link "Ёлочная ярмарка 0 The list is empty" [url=#/l/0IHQu9C-0YfQvdCw0Y8g0Y_RgNC80LDRgNC60LAKMC5udGZwfg]
+    link "Ёлочная ярмарка, 0 items" [url=#/l/0IHQu9C-0YfQvdCw0Y8g0Y_RgNC80LDRgNC60LAKMC5udGZwfg]
       StaticText "Ёлочная ярмарка"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 5 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDUKMC5udGZwfg]
+    link "Сессия 5, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDUKMC5udGZwfg]
       StaticText "Сессия 5"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 6 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDYKMC5udGZwfg]
+    link "Сессия 6, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDYKMC5udGZwfg]
       StaticText "Сессия 6"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 7 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDcKMC5udGZwfg]
+    link "Сессия 7, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDcKMC5udGZwfg]
       StaticText "Сессия 7"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 8 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDgKMC5udGZwfg]
+    link "Сессия 8, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDgKMC5udGZwfg]
       StaticText "Сессия 8"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 9 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDkKMC5udGZwfg]
+    link "Сессия 9, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDkKMC5udGZwfg]
       StaticText "Сессия 9"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 10 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDEwCjAubnRmcH4]
+    link "Сессия 10, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDEwCjAubnRmcH4]
       StaticText "Сессия 10"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 11 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDExCjAubnRmcH4]
+    link "Сессия 11, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDExCjAubnRmcH4]
       StaticText "Сессия 11"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 12 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDEyCjAubnRmcH4]
+    link "Сессия 12, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDEyCjAubnRmcH4]
       StaticText "Сессия 12"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 13 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDEzCjAubnRmcH4]
+    link "Сессия 13, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDEzCjAubnRmcH4]
       StaticText "Сессия 13"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 14 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDE0CjAubnRmcH4]
+    link "Сессия 14, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDE0CjAubnRmcH4]
       StaticText "Сессия 14"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 15 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDE1CjAubnRmcH4]
+    link "Сессия 15, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDE1CjAubnRmcH4]
       StaticText "Сессия 15"
       StaticText "0"
       StaticText "The list is empty"
-    link "Сессия 16 0 The list is empty" [url=#/l/0KHQtdGB0YHQuNGPIDE2CjAubnRmcH4]
+    link "Сессия 16, 0 items" [url=#/l/0KHQtdGB0YHQuNGPIDE2CjAubnRmcH4]
       StaticText "Сессия 16"
       StaticText "0"
       StaticText "The list is empty"
@@ -348,28 +348,28 @@ Tables
 Vault of Ages
 Wondrous
 daggerheart.com
-Ёлочная ярмарка0The list is empty
-Клад дракона1
-Кузнец0The list is empty
-Лавка в порту0The list is empty
-Логово0The list is empty
+Ёлочная ярмарка, 0 items
+Клад дракона, 1 item
+Кузнец, 0 items
+Лавка в порту, 0 items
+Логово, 0 items
 ЛутDaggerheart
-Порт Ветров1
-Рынок0The list is empty
-Сессия 100The list is empty
-Сессия 110The list is empty
-Сессия 120The list is empty
-Сессия 130The list is empty
-Сессия 140The list is empty
-Сессия 150The list is empty
-Сессия 160The list is empty
-Сессия 31
-Сессия 40The list is empty
-Сессия 50The list is empty
-Сессия 60The list is empty
-Сессия 70The list is empty
-Сессия 80The list is empty
-Сессия 90The list is empty
-Сундук мага0The list is empty
-Трофеи0The list is empty
-Храм Солнца0The list is empty
+Порт Ветров, 1 item
+Рынок, 0 items
+Сессия 10, 0 items
+Сессия 11, 0 items
+Сессия 12, 0 items
+Сессия 13, 0 items
+Сессия 14, 0 items
+Сессия 15, 0 items
+Сессия 16, 0 items
+Сессия 3, 1 item
+Сессия 4, 0 items
+Сессия 5, 0 items
+Сессия 6, 0 items
+Сессия 7, 0 items
+Сессия 8, 0 items
+Сессия 9, 0 items
+Сундук мага, 0 items
+Трофеи, 0 items
+Храм Солнца, 0 items

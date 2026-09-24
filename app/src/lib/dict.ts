@@ -75,9 +75,9 @@ const ru = {
   textCopied: 'Текст скопирован',
   linkCopied: 'Ссылка скопирована',
   copyFailed: 'Не удалось скопировать',
-  /* D13, paid off: the copy-all-options button gets its own toast. */
+  /* The copy-all-options button gets its own toast. */
   rollCopied: 'Варианты скопированы',
-  /* D10/D14/D15, paid off: a file:// document's own picture taints the
+  /* A file:// document's own picture taints the
    *  canvas it is redrawn on, so the picture can never leave it - falls back
    *  to the record's text instead of reporting a false success. Distinct
    *  from a clipboard that simply refuses the picture, which offers a
@@ -192,7 +192,6 @@ const ru = {
   eqScore: 'Броня',
   /* The equipment tables' own facet row labels */
   eqClass: 'Класс',
-  eqDmg: 'Тип урона',
   eqTrait: 'Характеристика',
   eqRange: 'Дистанция',
   eqBurden: 'Хват',
@@ -278,7 +277,8 @@ const ru = {
   removedFrom: 'Убрано из «%s»',
   nameFirst: 'Сначала назовите список',
   untitled: 'Без названия',
-  saveFailed: 'Не удалось сохранить: браузер блокирует локальное хранилище',
+  saveFailed:
+    'Не удалось сохранить: браузер не дал записать в локальное хранилище — оно заблокировано или переполнено',
   /* The shared page - app.js 3130-3170: a list from another player, the
      bad-link page's own link home, and the button that saves the shared
      list as a new own list. */
@@ -334,9 +334,9 @@ const ru = {
   badShare: 'Ссылка повреждена или собрана в другой версии данных.',
   /* An old link naming a renumbered or deleted record would otherwise lose
      those entries with no sign anything was missing - toasted once, on the
-     shared page and after restoring a copy. */
-  droppedItems:
-    'Пропущена %n позиция — её больше нет в данных|Пропущено %n позиции — их больше нет в данных|Пропущено %n позиций — их больше нет в данных',
+     shared page and after restoring a copy. One colon form: a pronoun after
+     "Пропущена 21 позиция" would refer to 21 records as to one. */
+  droppedItems: 'Пропущено позиций, которых больше нет в данных: %n',
 
   /* The list page - app.js 114-195, the address, the actions, the notes,
      the roll panel and a row's own controls. */
@@ -370,7 +370,7 @@ const ru = {
   position: 'Позиция в списке',
   dragHint: 'Перетащите, чтобы изменить порядок',
   removeItem: 'Убрать из списка',
-  removedItem: '«%s» убран',
+  removedItem: 'Убрано из списка: «%s»',
   movedItem: '«%s» — позиция %n из %m',
   undo: 'Вернуть',
   pickAll: 'Выбрать все',
@@ -540,7 +540,6 @@ const en: Dict = {
   eqTh: 'Thresholds',
   eqScore: 'Armor',
   eqClass: 'Class',
-  eqDmg: 'Damage type',
   eqTrait: 'Trait',
   eqRange: 'Range',
   eqBurden: 'Burden',
@@ -610,7 +609,8 @@ const en: Dict = {
   removedFrom: 'Removed from "%s"',
   nameFirst: 'Give the list a name first',
   untitled: 'Untitled',
-  saveFailed: 'Could not save: the browser is blocking local storage',
+  saveFailed:
+    'Could not save: the browser refused the write - local storage is blocked or full',
   sharedList: 'A list from another player',
   saveShared: 'Save to my lists',
   toStart: 'Home',
@@ -729,7 +729,7 @@ export function dict(lang: Lang): Dict {
   return DICTS[lang];
 }
 
-/** D5/O3, paid off: which dictionary key names a section, for the tab title
+/** Which dictionary key names a section, for the tab title
  *  (`<section label> — <docTitle>`). Mirrors `TabBar.svelte`'s own `TABS`
  *  pairing exactly - the exhaustive `Record<Section, ...>` is what keeps the
  *  two from drifting apart the moment a tenth section arrives. */

@@ -1357,7 +1357,8 @@ Object.entries(VOA4_REFS).forEach(([key, id]) => {
   const x = voa4ById[id];
   ok(x.set === 'saints-ensemble', id + ': not in saints-ensemble');
   ok(
-    !/Saint's Ensemble/.test(x.ende) && !/Убранство Святого/.test(x.rud),
+    // «Облачение Святого» is the source draft's name for the set; a re-sync can bring it back.
+    !/Saint's Ensemble/.test(x.ende) && !/Убранство Святого|Облачение Святого/.test(x.rud),
     id + ': own text still carries the set bonus'
   );
   ok(
@@ -1413,6 +1414,40 @@ const capitalTerms = [...ALL, ...SETS].filter(
 ok(
   capitalTerms.length === 0,
   'capitalised mid-sentence term in rud: ' + capitalTerms.map((x) => x.id).join()
+);
+/* A named roll capitalises both words, and a plural roll counts spells in
+   the plural: «Броски Силы», «Броску Урона», «Броскам Заклинаний»
+   (docs/specs/I18N.md, "Rules"). */
+const ROLL_NAME =
+  'атаки|действия|урона|реакции|заклинани[яй]|инстинкта|силы|знани[яй]|характеристик|проворности|искусности|влияния';
+const LOWER_ROLL = new RegExp(
+  '(?<![А-ЯЁа-яё])(?:бросо?к[а-яё]* [А-ЯЁ]|[Бб]росо?к[а-яё]* (?:' + ROLL_NAME + ')(?![а-яё]))'
+);
+const PLURAL_ROLL_SPELL = /[Бб]роск(?:и|ам|ами|ах|ов) Заклинания/;
+ok(
+  LOWER_ROLL.test('на броски Силы') &&
+    LOWER_ROLL.test('перед броском Влияния') &&
+    LOWER_ROLL.test('на броски атаки') &&
+    LOWER_ROLL.test('к Броску урона') &&
+    !LOWER_ROLL.test('на Броски Силы') &&
+    !LOWER_ROLL.test('к Броску Урона') &&
+    !LOWER_ROLL.test('броски для') &&
+    !LOWER_ROLL.test('Бросок со Сложностью') &&
+    !LOWER_ROLL.test('Броски атакующих'),
+  'LOWER_ROLL misses a lowercase roll word or matches a capitalised roll'
+);
+ok(
+  PLURAL_ROLL_SPELL.test('к Броскам Заклинания') &&
+    !PLURAL_ROLL_SPELL.test('Бросок Заклинания') &&
+    !PLURAL_ROLL_SPELL.test('к Броскам Заклинаний'),
+  'PLURAL_ROLL_SPELL misses a plural roll or matches a singular one'
+);
+const badRolls = [...ALL, ...SETS].filter((x) =>
+  [x.ru, x.rud].some((t) => LOWER_ROLL.test(t || '') || PLURAL_ROLL_SPELL.test(t || ''))
+);
+ok(
+  badRolls.length === 0,
+  'roll term casing or number in Russian text: ' + badRolls.map((x) => x.id).join()
 );
 const stubDir = path.join(ROOT, 'i');
 const badStubs = fs

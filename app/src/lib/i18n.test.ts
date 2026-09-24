@@ -103,6 +103,14 @@ describe('the pieces of the line', () => {
     expect(eqParts(shadow, 'ru', LABELS.ru)).toContain('Магическое');
   });
 
+  it('print the class of a secondary weapon before its trait', () => {
+    const scalpel = index.byId.get('w7') as Record_;
+    expect(scalpel.eq?.t).toBe('secondary');
+    const parts = eqParts(scalpel, 'ru', LABELS.ru);
+    expect(parts.indexOf('Магическое')).toBe(parts.indexOf('Искусность') - 1);
+    expect(eqLine(scalpel, 'en', LABELS.en)).toContain('Magic · Finesse');
+  });
+
   it('give armour thresholds and a score instead of trait and range', () => {
     const armour = index.byId.get('q337') as Record_;
     const parts = eqParts(armour, 'ru', LABELS.ru, { noType: true });

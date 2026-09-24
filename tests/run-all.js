@@ -25,7 +25,7 @@
    `--shard` is what ci.yml's `browser` matrix
    uses instead of a single `check`-job step plus a separate `golden` job -
    see the weight comment below. */
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -167,20 +167,22 @@ if (shardArg) {
   const mine = new Set(bins[n - 1].items);
   queue = queue.filter((s) => mine.has(s));
 }
-/* derived/dataint/craft/stub all read i/*.html, which f53f44d untracked: a
-   cold clone that has not run `node tools/build.js` (or `npm run build`) has
-   no i/ directory at all, and each of those four suites used to fail with a
-   raw ENOENT stack and no hint. One preflight here, the entry point all four
-   go through, replaces four separate crashes with one actionable message. */
+/* derived/dataint/craft/stub read i/*.html, which is generated, not committed
+   (docs/specs/CONTRACTS.md section 5): a clean checkout has no i/, so build it
+   once here rather than lose all four suites to ENOENT. */
 const NEEDS_I = ['derived', 'dataint', 'craft', 'stub'];
 if (
   queue.some((s) => NEEDS_I.indexOf(s[0]) >= 0) &&
   !fs.existsSync(path.join(HERE, '..', 'i'))
 ) {
-  console.log(
-    'i/ is missing - it is generated, not committed, like i/en/, en/, pages/ and pages/en/. Run `node tools/build.js` (or `npm run build`) first.'
-  );
-  process.exit(1);
+  console.log('i/ is missing - running node tools/build.js first');
+  const built = spawnSync(process.execPath, [path.join(HERE, '..', 'tools', 'build.js')], {
+    stdio: 'inherit'
+  });
+  if (built.status !== 0) {
+    console.log('node tools/build.js failed, so the suites that read i/ cannot run');
+    process.exit(1);
+  }
 }
 /* Report key: several rows share one suite name (app/sweep, app/golden) */
 const keyOf = (s) => s[0] + (s[3] ? ':' + s[3].join('-') : '');

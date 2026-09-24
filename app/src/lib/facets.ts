@@ -104,12 +104,10 @@ export function eqFacetRows(index: Index, kind: EquipKind, t: Dict, lang: Lang):
         index.allEquip.some((it) => it.eq?.t === kind && srcOf(it) === k)
       ).map((k) => ({ value: k, label: srcName(k, lang) }))
     }),
-    /* Weapons print the material ("Class"); secondary weapons have none, so
-       the same row's label and values become the damage type instead - the
-       one live app reuses the row rather than adding a fourth. */
+    /* The row filters the class on every weapon kind, secondary included. */
     cls: () => ({
       group: 'cls',
-      label: kind === 'secondary' ? t.eqDmg : t.eqClass,
+      label: t.eqClass,
       values: (Object.keys(EQ_CLS) as (keyof typeof EQ_CLS)[]).map((k) => ({
         value: k,
         label: eqWord(EQ_CLS, k, lang)

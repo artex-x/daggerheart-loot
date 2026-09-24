@@ -250,8 +250,9 @@ Loreborne `cm11`-`cm20` и так далее.
 открывается прямо в браузере, в том числе по `file://` - так же, как раньше
 открывался старый `index.html` на чистом JS. Переписывание велось в
 [issue #47](https://github.com/artex-x/daggerheart-loot/issues/47);
-[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md) закрыт на шаге R0c, обзор после
-миграции идёт отдельной задачей.
+оно закрыто на шаге R0c; принятые в нём решения - в
+[docs/DECISIONS.md](docs/DECISIONS.md), а то, куда ушёл каждый удалённый
+набор тестов, - в [docs/specs/COVERAGE.md](docs/specs/COVERAGE.md).
 Для работы над ним нужен Node 22 (`.nvmrc`):
 
 ```
@@ -315,10 +316,9 @@ CI после `npm run check`. Картинки и превью под это н
 с картинкой нашлись оба файла.
 
 Сам `i/` не хранится в репозитории - в нём только `data.json` и `catalog.csv`.
-На свежей копии перед `node tests/run-all.js` нужно один раз выполнить
-`node tools/build.js` (или любой `npm run check`, который делает это первым
-шагом) - иначе `derived`, `dataint`, `craft` и `stub` упадут на отсутствующей
-папке.
+На свежей копии `node tests/run-all.js` сам запускает `node tools/build.js`,
+если `i/` нет; прямой запуск `node tests/derived.js` (или `dataint`, `craft`,
+`stub`) требует этой сборки заранее.
 
 ### Проверки
 

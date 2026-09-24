@@ -12,6 +12,151 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-24 - A drag keeps its cached midpoints when another tab rewrites the list
+
+- Task: `debt-cleanup`; was DEBT D42 (`git show 7b0def9:docs/specs/DEBT.md`), closed
+  as a kept design.
+- Decision: the accepted cost of "A list drag resolves to a gap"
+  (2026-09-19). Row midpoints are measured once, at `dragstart`, in
+  document coordinates (`app/src/ports/drag.ts`). A second tab writing the
+  same list mid-drag re-renders the rows through the storage merge; the
+  highlight and the drop then land at the old layout's gap.
+- Rejected: re-measuring every row on each `dragover` (undoes the caching
+  decision); a mid-drag `onExternalChange` hook on the drag port (a port
+  surface for a sub-second window that needs two tabs editing one list).
+- How to see it: start a drag in one tab, write a reorder to the same list
+  from a second tab mid-drag; the highlight tracks the cached order.
+
+## 2026-09-24 - A secondary weapon's stat line names its damage type, not its class
+
+- Superseded by "Every weapon's stat line names its class, secondary weapons too" (2026-09-24).
+
+## 2026-09-24 - Kept defects live in `docs/specs/DEBT.md`, grouped by the task that owes them
+
+- Task: `debt-cleanup` (the register's own rule since issue 47, 2026-09-11,
+  restated with this task's regrouping).
+- Decision: a live defect kept on purpose is an entry in `docs/specs/DEBT.md`
+  (Where / What / Why deferred / How to verify), written in the batch that
+  defers it and deleted by the batch that pays it. Sections are the tasks
+  that owe the entries. A kept design goes here, not there; a refactor idea
+  with no user-visible defect is named to the human and dropped.
+- Rejected: a section of `FEATURES.md` (it says what the app does; "this is
+  wrong" in it reads as behaviour); a task directory (retires with the task);
+  one GitHub issue per entry (not in the tree, needs `gh`, cannot carry a
+  measurement verbatim); the READMEs (a reader's document).
+
+## 2026-09-24 - Outside the drop zone a list drag is refused explicitly
+
+- Task: `debt-cleanup`.
+- Decision: while a list drag is live, the document's capturing `dragenter`/
+  `dragover` listener cancels every event and sets `dropEffect` to `move`
+  inside the zone and `none` outside it; a `drop` outside the zone is
+  cancelled without a move (`app/src/ports/drag.ts`). An editable field
+  outside the zone, the list's own note first, cannot take the row's
+  `text/plain` index as text.
+- Rejected: `dropEffect = 'move'` on every `dragover` (the cursor would read
+  "move" outside the list, losing the cancellation signal of "A list drag
+  resolves to a gap"); leaving the browser default outside the zone (an
+  editable neighbour accepts the drop as text).
+- Evidence: a trusted puppeteer drag (`page.mouse` down/move/up) in this
+  headless Chrome starts a native drag but delivers no `drop` anywhere, even
+  inside the zone, and `page.mouse.dragAndDrop` hangs, so the insert was
+  never reproduced; the refusal is asserted with synthetic events instead.
+
+## 2026-09-24 - Every weapon's stat line names its class, secondary weapons too
+
+- Task: `debt-cleanup`; the owner reversed the entry above.
+- Decision: `eqParts` (`app/src/lib/i18n.ts`) and the share stub's `eqLine`
+  (`tools/build-share-pages.js`) print the class on every weapon, never
+  inferred from the damage type; the `eq_secondary` filter row that filters
+  the class is labelled «Класс»/"Class", as on primary weapons.
+- Reason: a character without a Spellcast trait cannot equip a magic weapon,
+  so a secondary's class must be as explicit as a primary's; Hope & Fear has
+  14 magic secondaries.
+- Rejected: the damage type standing in for the class (the entry above);
+  dropping the class tag from secondary print cards.
+- Cost: 123 records' copied text and table rows, 246 stub `og:description`s
+  refreshed by `previews.yml`, and the goldens that draw a secondary's row.
+
+## 2026-09-24 - The print card frame follows the weapon's class
+
+- Task: `debt-cleanup`; the owner asked for it.
+- Decision: `PrintCard.svelte` picks the stat strip's ribbon (`ribbon` or
+  `ribbon-mag`) and die art (`die-N-phy|mag`) from the weapon's class,
+  `eq.cls === 'mag'`, on both strips of a two-strip weapon; the damage box
+  still names each strip's own damage type.
+- Reason: the frame tells a player the weapon needs Spellcast, as the class
+  tag does, and a frame keyed on the damage type contradicted that tag.
+- Rejected: the damage type (a magic weapon dealing `any` damage printed a
+  physical frame, a physical one dealing magic damage the reverse); a
+  per-strip class for `alt` (the second strip is the same weapon).
+- Cards changed: q33, q94, q142, q162, q229 become magic; dve38, dve39
+  become physical; q171's second strip becomes magic.
+
+## 2026-09-24 - An undo toast takes focus; a plain toast never does
+
+- Task: `debt-cleanup` (owner's answer).
+- Decision: a toast that offers an undo moves focus to its button on show
+  (`Toast.svelte`), so the keyboard reaches it inside the 7000 ms window.
+  When it goes with focus still inside, focus returns to the element it
+  came from, or to `#main` when that element left with the action.
+  Behaviour: `docs/specs/FEATURES.md`, the undo-toast bullet.
+- Rejected: leaving it to issue #57's focus-management pass (recommended,
+  overruled: the undo was unreachable from the keyboard in practice);
+  lengthening the toast (a longer wait still ends at the page's last tab
+  stop); moving focus for every toast (a plain notice needs no answer).
+
+## 2026-09-24 - Repository layout: no asset-home merge, no test colocation, `pages/src/` stays
+
+- Task: `debt-cleanup` (owner's answers to a structure review).
+- Decision: the root layout stays. `npm run dev` serves the root files the
+  build links into `dist/` (`vite.config.mts`, `rootFiles()`).
+- Rejected: one asset home for `img/`, `og/`, `card/` (under `app/public/`
+  Vite copies ~90 MB per build; under `assets/` the published URLs stay
+  frozen anyway, ~90 citations and ~3200 renames for no behaviour, and it
+  contradicts "Share stubs (`i/`) and artwork (`img/`, `og/`) stay tracked
+  root folders"); one test file per component (tests already sit in
+  `app/src/components/`, and `perFile` coverage rejects a filename match);
+  moving `pages/src/` out of `pages/` (a hook, its selftest cases, CI,
+  `tests/derived.js` and two specs for tidiness: production never publishes
+  `pages/src/`, only the local `dist/` junction exposes it). Revisit the
+  last when a new static page is built anyway.
+
+## 2026-09-24 - While the record dialog is open, the toast is drawn inside it
+
+- Task: `debt-cleanup` (owner: fix now).
+- Decision: `RecordModal.svelte` renders its own `<Toast inDialog>` and sets
+  `app.dialogOpen` after `showModal()`; `Shell.svelte`'s copy draws nothing
+  while the flag is set, so one element holds the live region at a time.
+  "An undo toast takes focus" holds inside the dialog; when the origin is
+  gone, focus returns to the dialog's first control (where `showModal()`
+  put it), never to the inert `#main`. A dialog closed while a toast shows
+  hands the rest of its time to Shell's copy.
+- Rejected: `popover="manual"` from Shell alone (a modal dialog makes every
+  node outside it inert, the top layer included: the toast drew but took no
+  focus, had no accessibility node, and a click on it reached the backdrop
+  and closed the dialog - Chromium, 2026-09-24); `show()` for `showModal()`
+  (gives up the focus trap, the inert page and Escape); closing the dialog
+  when an undo is offered (loses the card being acted on); moving one toast
+  node between Shell and the dialog (a DOM move under Svelte's ownership).
+
+## 2026-09-24 - A drag whose own row leaves the list is void
+
+- Task: `debt-cleanup` (owner: fix now).
+- Decision: the drag binding lives as long as the list's id
+  (`ListPage.svelte`), not each edit of the list; the dragged entry's id is
+  captured at `dragstart` and the drop moves that id. When the dragged row
+  leaves the DOM mid-drag (another tab removed it), `app/src/ports/drag.ts`
+  voids the drag at the next `dragover`: the marks clear, every later event
+  of that drag is refused, the release moves nothing. Its listeners end at
+  the `dragend` the browser fires at the detached grip (bound on the grip,
+  since it no longer bubbles to the list) or at the next `dragstart`.
+- Rejected: voiding on any row change (undoes "A drag keeps its cached
+  midpoints when another tab rewrites the list" for nothing the id capture
+  does not already give); a document `pointermove` after the drag (none is
+  sent during a drag, and a synthetic one proves nothing about a trusted
+  one); a component effect watching the rows (a second mechanism).
+
 ## 2026-09-23 - Per-language previews: `i/en/<id>.html` and `en/`, seeded into the refresher's state; site cards rendered from one template; a static page is a page per language
 
 - Task: `64`; the owner settled `i/en/<id>.html`, the seed-when-absent rule,
@@ -356,7 +501,7 @@ entry to its first line before adding another.
   lists 22 -> 2.5 ms; an unchanged `storage` signal 62 -> under 1 ms with
   no DOM mutation; opening `#/lists` at 500 lists 467 -> 32 ms (24 cards).
 - Rejected: a `save()` debounce (the consistent-storage ticket owns it,
-  `DEBT.md` "Routed elsewhere"); one key per list (a stored-format change
+  `DEBT.md`, "Consistent storage"); one key per list (a stored-format change
   and a new two-tab merge).
 - Accepted trade-off: an in-place write to a stored list redraws nothing -
   the reason phase 8 kept deep state; writers stay immutable.
@@ -1064,7 +1209,7 @@ entry to its first line before adding another.
   they check.
 - Rejected: deciding with no data; a spike before R0c; committing to it up
   front. Still open - the heavy-run lock question beside it
-  (`docs/specs/DEBT.md`, "Routed elsewhere, not paid") weighs against the
+  (`.claude/README.md`, "Batch size and the fixed cost of a run") weighs against the
   same driver question, since a second real-browser dependency would need
   its own guard too.
 

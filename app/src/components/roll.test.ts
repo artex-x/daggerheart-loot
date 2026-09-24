@@ -223,7 +223,9 @@ describe('pinning the section', () => {
     /* The shell also warns that storage is off, so both live regions are on
        the page; this asks for the panel's. */
     expect(
-      screen.getByText('Не удалось сохранить: браузер блокирует локальное хранилище')
+      screen.getByText(
+        'Не удалось сохранить: браузер не дал записать в локальное хранилище — оно заблокировано или переполнено'
+      )
     ).toBeInTheDocument();
   });
 });

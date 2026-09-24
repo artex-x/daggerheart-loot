@@ -423,7 +423,12 @@
         const target =
           document.getElementById('sec-' + anchor) ??
           document.querySelector<HTMLElement>(`[data-row="${anchor}"]`);
-        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        /* A call-site `behavior` overrides tokens.css's reduced-motion
+           `scroll-behavior` rule, so the choice is made here. */
+        target?.scrollIntoView({
+          behavior: app.env.motion.reduced() ? 'auto' : 'smooth',
+          block: 'start'
+        });
       });
     });
   });

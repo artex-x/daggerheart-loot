@@ -76,6 +76,9 @@
           ? t.cons
           : t.item
   );
+  /* The ribbon and die follow the weapon's class (a magic weapon needs
+     Spellcast), on both strips; the damage box names each strip's own type. */
+  const magFrame = $derived(eq?.cls === 'mag');
   const tag2 = $derived(eq && eq.t !== 'armor' && eq.cls ? eqWord(EQ_CLS, eq.cls, lang) : '');
   const parts = $derived<DescPart[]>(
     setLine
@@ -299,10 +302,9 @@
   </div>
 {/snippet}
 
-{#snippet die(e: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>)}
+{#snippet die(e: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>, mag: boolean)}
   {@const parts2 = dmgParts(e.dmg)}
   {@const own = DICE_WITH_ART.has(parts2.die)}
-  {@const mag = e.dt === 'mag'}
   <span class="pc-die" class:own class:mag data-die={parts2.die}
     >{#if own}<img
         src={cardArt(`die-${parts2.die}-${mag ? 'mag' : 'phy'}`, bw)}
@@ -315,15 +317,12 @@
   <span class="pc-box"><small>{label}</small><b>{value}</b></span>
 {/snippet}
 
-{#snippet dmgStrip(e: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>)}
+{#snippet dmgStrip(e: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>, mag: boolean)}
   {@const parts2 = dmgParts(e.dmg)}
   <div class="pc-strip">
-    <span class="pc-lead">{@render die(e)}</span><span class="pc-frame"
-      ><img
-        class="pc-ribbon"
-        src={cardArt(e.dt === 'mag' ? 'ribbon-mag' : 'ribbon', bw)}
-        alt=""
-      /><span class="pc-cells"
+    <span class="pc-lead">{@render die(e, mag)}</span><span class="pc-frame"
+      ><img class="pc-ribbon" src={cardArt(mag ? 'ribbon-mag' : 'ribbon', bw)} alt="" /><span
+        class="pc-cells"
         ><span class="pc-c1" class:wbonus={!!parts2.bonus}
           >{#if parts2.bonus}<span class="pc-bonus">{parts2.bonus}</span>{/if}{@render box(
             t.pcDmg,
@@ -382,8 +381,9 @@
         >{@render band()}{@render tags()}{@render mark()}</div
       >{:else}{@render tags()}{/if}<h2 class="pc-name">{nameOf(it, lang)}{#if counter}<span class="pc-qty">{counter}</span>{/if}</h2
     >{#if armor && eq}{@render thStrip(eq)}{:else if eq}{@render dmgStrip(
-        eq
-      )}{#if eq.alt}{@render dmgStrip(eq.alt)}{/if}{/if}<div class="pc-text"
+        eq,
+        magFrame
+      )}{#if eq.alt}{@render dmgStrip(eq.alt, magFrame)}{/if}{/if}<div class="pc-text"
       >{#each parts as part, i (i)}{#if part.kind === 'list'}<ul class="dlist"
           >{#each part.items as line, k (k)}<li
               >{#if line.label}<i>{line.label}:</i>{/if}{line.body}</li

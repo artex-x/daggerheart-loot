@@ -80,7 +80,7 @@ async function ready(page) {
  * Waits for whatever a press started to finish moving.
  *
  * A fixed pause is the wrong instrument here in principle, but
- * `tokens.css`'s blanket reduced-motion kill (D1) made it nearly what this
+ * `tokens.css`'s blanket reduced-motion kill made it nearly what this
  * has become in practice: under `prepare()`'s emulated
  * `prefers-reduced-motion: reduce` plus that blanket rule,
  * `document.getAnimations()` reports only 0.01ms animations, so the animation
@@ -450,7 +450,7 @@ function makeDriver(page, target) {
     },
 
     /**
-     * Waits for a packed address that will never finish expanding (R10/D2):
+     * Waits for a packed address that will never finish expanding:
      * the hash itself does not change any more once expansion fails, so
      * `expanded()`'s own wait would spin until its timeout. The bad-link
      * page's own heading is the first thing `ListPage` draws while the route
@@ -849,10 +849,10 @@ async function prepare(page) {
      (parity-era: "both apps fade a card in over 0.28s... takes timing out of
      the pixel comparison") died along with the parity harness, since
      deleted. It stays for a better
-     reason: D1 (`tokens.css`'s blanket reduced-motion kill) is the app's
+     reason: `tokens.css`'s blanket reduced-motion kill is the app's
      shipped behaviour for a visitor who asked for less motion, and only under
      this emulation does every browser suite exercise that branch - drop it
-     and D1 is covered by `states.js` case 24 alone. It also keeps every run
+     and the kill is covered by `states.js` case 24 alone. It also keeps every run
      deterministic and fast: without it, every `settle()` wait would be a real
      0.2-0.28s instead of near-instant, and `sweep1180-ru` (already CI's
      longest row, ~372s, pressing hundreds of controls) would gain minutes.

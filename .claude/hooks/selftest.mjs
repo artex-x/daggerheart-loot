@@ -2232,6 +2232,29 @@ async function testStateCap() {
         JSON.stringify(result.json)
       );
     }
+
+    // #187 - saveState() writes a temp file and renames it over the state
+    // file, so a concurrent reader never parses a half write and no temp
+    // file is left behind.
+    {
+      const stateFile = path.join(capState, '.hook-state.json');
+      const inodeBefore = fs.statSync(stateFile).ino;
+      recordWrite('s-cap-atomic', 'app/src/lib/x.ts');
+      // Only a rename replaces the file; an in-place write keeps its inode.
+      const inodeAfter = fs.statSync(stateFile).ino;
+      let parsed = false;
+      try {
+        parsed = !!readCapState().sessions['s-cap-atomic'];
+      } catch {
+        parsed = false;
+      }
+      const leftovers = fs.readdirSync(capState).filter((f) => f.endsWith('.tmp'));
+      check(
+        '#187 state save is a temp file renamed over the state: new inode, parses, no temp left',
+        inodeAfter !== inodeBefore && parsed && leftovers.length === 0,
+        `inode ${inodeBefore}->${inodeAfter} parsed=${parsed} leftovers=${JSON.stringify(leftovers)}`
+      );
+    }
   } finally {
     process.env.LOOT_HOOK_STATE_DIR = previousStateDir;
     fs.rmSync(capState, { recursive: true, force: true });

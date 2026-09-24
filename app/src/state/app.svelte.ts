@@ -200,7 +200,7 @@ export class AppState {
    * "Select all" for whatever ids are on screen - always all of one list: the
    * whole table for a plain body, one section's own rows where the body is
    * split, or a shared list's own rows. Ticks every id if any of them is not
-   * already ticked, unticks them otherwise. P8: `TablesPage` and `SearchPage`
+   * already ticked, unticks them otherwise. `TablesPage` and `SearchPage`
    * each carried an identical copy of this; moved here once `SharedListPage`
    * became a third caller, rather than adding a fourth.
    */
@@ -227,6 +227,10 @@ export class AppState {
 
   /** What the toast is showing, or nothing. `Shell.svelte` renders it. */
   toast = $state<Toast | null>(null);
+  /** True while `RecordModal`'s modal dialog is open, set after its
+   *  `showModal()`; the toast is drawn inside the dialog then
+   *  (`Toast.svelte`). `RecordModal` is the only writer. */
+  dialogOpen = $state(false);
   #toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   #home = $state(DEFAULT_HOME);
@@ -241,20 +245,20 @@ export class AppState {
    *  two `tables` addresses, so a component-local field would survive a
    *  session but not explain where the persisted value lives. */
   #tablesView = $state<'list' | 'grid'>('list');
-  /** The print page's colour/black-and-white choice (D21, paid off: kept as
-   *  session memory over the rewrite's own page-local reset, the way live's
-   *  `S.printBW` was - `STATE.md`'s "Print" group). Never written to
+  /** The print page's colour/black-and-white choice, kept as session
+   *  memory over the rewrite's own page-local reset, the way live's
+   *  `S.printBW` was (`STATE.md`'s "Print" group). Never written to
    *  storage: it resets on reload like every other memory-only field here,
    *  `kinds` included. */
   printBW = $state(false);
   /** The print page's standard/compact sheet choice - session memory beside
-   *  `printBW`, for the same reason (D21); never written to storage. */
+   *  `printBW`, for the same reason; never written to storage. */
   printCompact = $state(false);
   /** How many lists the index draws - kept for the session so a return from
    *  a list page shows the same cards, the way `printBW` is kept; a reload
    *  starts at `LIST_PAGE` (`STATE.md`'s "Lists" group). */
   listsShown = $state(LIST_PAGE);
-  /** The packed payload a failed expansion is stuck on, or `''` - R10/S3/D2.
+  /** The packed payload a failed expansion is stuck on, or `''`.
    *  Compared against `route.payload` by whoever draws the bad-link state, so
    *  a later navigation to a *different* packed link is not mistaken for the
    *  same failure. */
@@ -445,7 +449,7 @@ export class AppState {
 
   /** The one route kind that reads the data at all: print needs to know
    *  which ids the cap threw away versus which were simply unknown.
-   *  `$derived` rather than a getter (S6) - `Shell`, `App` and every page
+   *  `$derived` rather than a getter: `Shell`, `App` and every page
    *  read this several times per render, and a getter re-parses the hash on
    *  each one. */
   route: Route = $derived.by(() =>
@@ -467,7 +471,7 @@ export class AppState {
     this.env.storage.set(LANG_KEY, lang);
   }
 
-  /** DC1/Q1 - restored: the tables page's list/grid switch, remembered the
+  /** Restored: the tables page's list/grid switch, remembered the
    *  way the live app's `dhloot.prefs.v1 { view }` did. */
   get tablesView(): 'list' | 'grid' {
     return this.#tablesView;
@@ -543,7 +547,7 @@ export class AppState {
    * router announces, and every `go()`. Never from `replace()` - the
    * expansion's own `replace` below would re-enter this.
    *
-   * D2/R10 (Q4 settled): the live shape replaced the address unconditionally,
+   * The live shape replaced the address unconditionally,
    * which meant a slow unpack resolving after the reader had already moved on
    * sent them back to the shared list. `stillHere()` re-reads `this.route`
    * at resolve time and both branches below drop the result unless the route
@@ -603,11 +607,24 @@ export class AppState {
    * does not loop.
    */
   syncListUrl(l: StoredList): void {
+    const want = this.#claimList(l);
+    if (this.hash !== want) this.replace(want);
+  }
+
+  /**
+   * Opens a list this tab just made (a restored or saved copy) at its
+   * players' address, claimed by id as `syncListUrl` leaves it: matched by
+   * content alone, a second copy of one link could open an older copy.
+   */
+  openNewList(l: StoredList): void {
+    this.go(this.#claimList(l));
+  }
+
+  #claimList(l: StoredList): string {
     const payload = encodeList(l, true);
     this.openList = l.id;
     this.urlPayload = payload;
-    const want = sharedListHash(payload);
-    if (this.hash !== want) this.replace(want);
+    return sharedListHash(payload);
   }
 
   /** The live app clears `S.openList`/`S.urlPayload` on every route that is

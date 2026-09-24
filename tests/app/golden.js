@@ -361,8 +361,8 @@ if (require.main === module) {
     return { tree, controls };
   };
 
-  /** Polls for the toast a `timed` state's `enter` raised. D1
-   *  (the blanket reduced-motion kill) is why the toast's own entrance
+  /** Polls for the toast a `timed` state's `enter` raised. The blanket
+   *  reduced-motion kill is why the toast's own entrance
    *  transition is one of the stays this app turns off too, so under the driver's emulated
    *  reduced motion it is up within a frame of the click that raised it -
    *  which makes this poll cheap, not wrong: it is still the assertion in
@@ -371,10 +371,12 @@ if (require.main === module) {
   const waitForToast = async (page, id, lang) => {
     const start = Date.now();
     for (;;) {
-      const up = await page.evaluate(() => {
-        const t = document.querySelector('.toast');
-        return !!t && getComputedStyle(t).display !== 'none';
-      });
+      /* two `.toast` elements exist while the record dialog is open */
+      const up = await page.evaluate(() =>
+        [...document.querySelectorAll('.toast')].some(
+          (t) => getComputedStyle(t).display !== 'none'
+        )
+      );
       if (up) return;
       if (Date.now() - start > 2000) {
         throw new Error(`${id} @ ${lang}: the toast never appeared`);

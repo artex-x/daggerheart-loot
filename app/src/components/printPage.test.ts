@@ -168,6 +168,55 @@ const LOOT: Loot = {
         bu: 1
       }
     }),
+    /* The frame follows the class, not the damage type: a magic weapon
+       dealing either type, a physical one dealing magic damage, and a magic
+       one whose second strip deals physical damage. */
+    row({
+      id: 'q33',
+      en: 'Shadowblade',
+      ru: 'Меч Тьмы',
+      eq: {
+        t: 'weapon',
+        tier: 1,
+        cls: 'mag',
+        tr: 'presence',
+        rg: 'melee',
+        dmg: 'd8',
+        dt: 'any',
+        bu: 1
+      }
+    }),
+    row({
+      id: 'dve38',
+      en: "Nature's Fall",
+      ru: 'Падение Природы',
+      eq: {
+        t: 'weapon',
+        tier: 3,
+        cls: 'phy',
+        tr: 'instinct',
+        rg: 'melee',
+        dmg: 'd8+6',
+        dt: 'mag',
+        bu: 1
+      }
+    }),
+    row({
+      id: 'q171',
+      en: 'Gunblade',
+      ru: 'Ганблейд',
+      eq: {
+        t: 'weapon',
+        tier: 3,
+        cls: 'mag',
+        tr: 'agility',
+        rg: 'far',
+        dmg: 'd6+6',
+        dt: 'mag',
+        bu: 1,
+        alt: { tr: 'agility', rg: 'melee', dmg: 'd8+6', dt: 'phy' }
+      }
+    }),
     row({
       id: 'a1',
       en: 'Plate',
@@ -313,7 +362,7 @@ describe('no art', () => {
     withArt?.querySelector('.pc-img')?.dispatchEvent(new Event('error'));
   });
 
-  it('swaps to the glyph once the picture 404s, reached directly at a print address (R6, paid off)', async () => {
+  it('swaps to the glyph once the picture 404s, reached directly at a print address', async () => {
     /* Unlike every other route, a shared #/print/... address may be the
        first (and only) page this session ever draws for this id - nothing
        else could already have caught the failure the way RecordCard's own
@@ -369,6 +418,41 @@ describe('the versatile magic weapon', () => {
     expect(card?.querySelector('.pc-ribbon')).toHaveAttribute('src', 'card/ribbon-mag.svg');
     expect(card?.querySelector('.pc-burden img')).toHaveAttribute('src', 'card/burden-2.svg');
     expect(card?.querySelector('.pc-tag.out')?.textContent).toBe('Магическое');
+  });
+});
+
+describe('the print frame', () => {
+  it("follows the weapon's class on every strip, while the damage box keeps the type", async () => {
+    const { container } = render(App, { env: at('#/print/q33-dve38-q171') });
+    const card = (id: string): Element | null =>
+      document.querySelector(`.pcard[data-pid="${id}"]`);
+    const ribbons = (id: string): (string | null)[] =>
+      Array.from(card(id)?.querySelectorAll('.pc-ribbon') ?? []).map((e) =>
+        e.getAttribute('src')
+      );
+    const dice = (id: string): (string | null)[] =>
+      Array.from(card(id)?.querySelectorAll('.pc-die img') ?? []).map((e) =>
+        e.getAttribute('src')
+      );
+    const dmg = (id: string): (string | undefined)[] =>
+      Array.from(card(id)?.querySelectorAll('.pc-c1 .pc-box b') ?? []).map(
+        (e) => e.textContent
+      );
+
+    expect(ribbons('q33')).toEqual(['card/ribbon-mag.svg']);
+    expect(dice('q33')).toEqual(['card/die-d8-mag.svg']);
+    expect(card('q33')?.querySelector('.pc-die')).toHaveClass('mag');
+    expect(dmg('q33')).toEqual(['физ/маг']);
+
+    expect(ribbons('dve38')).toEqual(['card/ribbon.svg']);
+    expect(dice('dve38')).toEqual(['card/die-d8-phy.svg']);
+    expect(card('dve38')?.querySelector('.pc-die')).not.toHaveClass('mag');
+    expect(dmg('dve38')).toEqual(['маг']);
+
+    expect(ribbons('q171')).toEqual(['card/ribbon-mag.svg', 'card/ribbon-mag.svg']);
+    expect(dice('q171')).toEqual(['card/die-d6-mag.svg', 'card/die-d8-mag.svg']);
+    expect(dmg('q171')).toEqual(['маг', 'физ']);
+    await expectNoA11yViolations(container);
   });
 });
 
@@ -546,7 +630,7 @@ describe('black and white', () => {
     );
   });
 
-  it('survives leaving the print page and coming back (D21, paid off)', async () => {
+  it('survives leaving the print page and coming back', async () => {
     /* Session memory on AppState, the way live's own S.printBW was - not the
        page-local $state this replaces, which reset to colour on every fresh
        mount. */

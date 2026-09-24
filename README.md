@@ -243,8 +243,9 @@ The site is a Svelte + TypeScript app (`app/`) built with Vite. `npm run build`
 produces `dist/`, which needs no server: open `dist/index.html` in a browser,
 `file://` included, the same way the old plain-JS `index.html` used to. The
 migration is [issue #47](https://github.com/artex-x/daggerheart-loot/issues/47);
-[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md) closed at R0c, with the
-post-migration review tracked under its own issue.
+it closed at R0c; the decisions it made are in
+[docs/DECISIONS.md](docs/DECISIONS.md), and where each deleted suite went is
+in [docs/specs/COVERAGE.md](docs/specs/COVERAGE.md).
 To work on it you need Node 22 (`.nvmrc`):
 
 ```
@@ -307,9 +308,9 @@ script - they are made from the source files by hand, and `tests/dataint.js`
 checks that both files exist for every record that has a picture.
 
 `i/` itself is not in the repository - only `data.json` and `catalog.csv` are
-committed. On a fresh clone, run `node tools/build.js` (or any `npm run check`,
-which runs it first) before `node tests/run-all.js`; otherwise `derived`,
-`dataint`, `craft` and `stub` fail on a missing folder.
+committed. On a fresh clone `node tests/run-all.js` runs `node tools/build.js`
+itself when `i/` is missing; running `node tests/derived.js` (or `dataint`,
+`craft`, `stub`) directly needs that build first.
 
 ### Tests
 

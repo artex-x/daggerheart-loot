@@ -98,7 +98,13 @@
     gap: 8px;
     align-items: baseline;
     flex-wrap: wrap;
-    padding-right: 26px;
+    /* 18 = 6 (right) + 26 (width) - 14 (padding), all inside the border:
+       the box ends at the painted cross. Above the cross's 44x44 target where
+       the two overlap; the target still wins everywhere the summary is not. */
+    padding-right: 8px;
+    margin-right: 18px;
+    position: relative;
+    z-index: 1;
   }
 
   .warn summary::-webkit-details-marker {

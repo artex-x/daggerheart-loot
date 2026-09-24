@@ -10,6 +10,7 @@ import { browserData, fakeData } from './data.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { browserImage, fakeImage } from './image.js';
 import { nativeDrag, noDrag } from './drag.js';
+import { browserMotion, fakeMotion } from './motion.js';
 import { browserPwa, fakePwa } from './pwa.js';
 import { hashRouter, memoryRouter } from './router.js';
 import { browserShare, fakeShare } from './share.js';
@@ -23,6 +24,7 @@ export { browserData, fakeData, noData } from './data.js';
 export { browserDialog, fakeDialog } from './dialog.js';
 export { browserImage, fakeImage } from './image.js';
 export { fakeDrag, nativeDrag, noDrag } from './drag.js';
+export { browserMotion, fakeMotion } from './motion.js';
 export { browserPwa, fakePwa, registerWith } from './pwa.js';
 export { hashRouter, memoryRouter } from './router.js';
 export { browserShare, fakeShare } from './share.js';
@@ -41,7 +43,8 @@ export function browserEnv(): Env {
     compress: browserCompress(),
     drag: nativeDrag(),
     dialog: browserDialog(),
-    pwa: browserPwa()
+    pwa: browserPwa(),
+    motion: browserMotion()
   };
 }
 
@@ -62,6 +65,7 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     drag: noDrag(),
     dialog: fakeDialog(),
     pwa: fakePwa(),
+    motion: fakeMotion(),
     ...over
   };
 }

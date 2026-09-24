@@ -1,10 +1,22 @@
-import { copyFileSync, existsSync, readFileSync, symlinkSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+  copyFileSync,
+  createReadStream,
+  existsSync,
+  readFileSync,
+  statSync,
+  symlinkSync
+} from 'node:fs';
+import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
+
+/* What the build adds to `dist/` from the repository root, beside the bundle:
+   the linked folders, and the files the `<noscript>` fallback links. */
+const ROOT_DIRS = ['img', 'og', 'card', 'pages'];
+const NOSCRIPT_FILES = ['catalog.csv', 'data.json', 'llms.txt'];
 
 /*
  * The artwork, beside the page that asks for it.
@@ -27,7 +39,7 @@ function artwork(): Plugin {
     name: 'dhloot-artwork',
     apply: 'build',
     closeBundle() {
-      for (const dir of ['img', 'og', 'card', 'pages']) {
+      for (const dir of ROOT_DIRS) {
         const at = join(ROOT, 'dist', dir);
         if (!existsSync(at)) symlinkSync(join(ROOT, dir), at, 'junction');
       }
@@ -49,7 +61,7 @@ function noscriptData(): Plugin {
     name: 'dhloot-noscript-data',
     apply: 'build',
     closeBundle() {
-      for (const file of ['catalog.csv', 'data.json', 'llms.txt']) {
+      for (const file of NOSCRIPT_FILES) {
         copyFileSync(join(ROOT, file), join(ROOT, 'dist', file));
       }
     }
@@ -63,6 +75,9 @@ function noscriptData(): Plugin {
 function fileUrlBuild(): Plugin {
   return {
     name: 'dhloot-file-url',
+    /* Build only: the dev server's own client and `main.ts` are modules, and
+       rewritten to classic scripts they throw on their first `import`. */
+    apply: 'build',
     enforce: 'post',
     generateBundle() {
       this.emitFile({
@@ -83,6 +98,50 @@ function fileUrlBuild(): Plugin {
   };
 }
 
+/* The same root files for `npm run dev`. The dev server resolves every URL
+   under `app/`, where none of these exist, so without this `data.js` is a 404
+   and the page draws nothing. `build` never runs it. */
+const TYPES: Record<string, string> = {
+  '.js': 'text/javascript',
+  '.json': 'application/json',
+  '.csv': 'text/csv; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.webp': 'image/webp',
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml'
+};
+
+function rootFiles(): Plugin {
+  const files = new Set(['data.js', ...NOSCRIPT_FILES]);
+  return {
+    name: 'dhloot-root-files',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        let rel: string;
+        try {
+          rel = normalize(decodeURIComponent(req.url?.split(/[?#]/)[0] ?? '')).replace(
+            /^[/\\]+/,
+            ''
+          );
+        } catch {
+          next();
+          return;
+        }
+        const file = join(ROOT, rel);
+        const listed = files.has(rel) || ROOT_DIRS.includes(rel.split(sep)[0] ?? '');
+        if (!listed || !existsSync(file) || !statSync(file).isFile()) {
+          next();
+          return;
+        }
+        res.setHeader('Content-Type', TYPES[extname(file)] ?? 'application/octet-stream');
+        createReadStream(file).pipe(res);
+      });
+    }
+  };
+}
+
 /* `app/` is the only application root; the build writes `dist/`, which
    `ci.yml`'s `deploy` job publishes. */
 export default defineConfig({
@@ -94,7 +153,7 @@ export default defineConfig({
      exactly the same, while an absolute one breaks every asset URL when the page
      is opened from a folder - see docs/specs/META.md section 4. */
   base: './',
-  plugins: [svelte(), fileUrlBuild(), artwork(), noscriptData()],
+  plugins: [svelte(), fileUrlBuild(), artwork(), noscriptData(), rootFiles()],
   /* Under vitest the modules are loaded the way a server would, and Svelte then
      hands back its server build - where `mount` does not exist. Asking for the
      browser condition during tests is what makes a component test a component

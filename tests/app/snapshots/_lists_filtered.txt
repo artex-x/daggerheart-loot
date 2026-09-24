@@ -36,12 +36,12 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
     button "Восстановить"
     searchbox "Найти список" [value=порт focused=true]
-    link "Лавка в порту 0 Список пуст" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+    link "Лавка в порту, 0 позиций" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
       StaticText "0"
       StaticText "Список пуст"
     ... button x2 of 6 same-shape siblings elided
-    link "Порт Ветров 1" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
+    link "Порт Ветров, 1 позиция" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
       StaticText "Порт Ветров"
       StaticText "1"
     button "Поделиться"
@@ -64,14 +64,14 @@ daggerheart.com
 Восстановить из ссылки
 К содержимому
 Как это работает
-Лавка в порту0Список пуст
+Лавка в порту, 0 позиций
 ЛутDaggerheart
 Новый список
 Обычные правила
 Открывать этот раздел при запуске
 Поделиться
 Поиск
-Порт Ветров1
+Порт Ветров, 1 позиция
 Скрыть
 Создать
 Сообщества
@@ -113,12 +113,12 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     textbox "Restore from a link" [multiline=false readonly=false required=false]
     button "Restore"
     searchbox "Find a list" [value=порт focused=true]
-    link "Лавка в порту 0 The list is empty" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+    link "Лавка в порту, 0 items" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
       StaticText "0"
       StaticText "The list is empty"
     ... button x2 of 6 same-shape siblings elided
-    link "Порт Ветров 1" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
+    link "Порт Ветров, 1 item" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
       StaticText "Порт Ветров"
       StaticText "1"
     button "Share"
@@ -152,6 +152,6 @@ Tables
 Vault of Ages
 Wondrous
 daggerheart.com
-Лавка в порту0The list is empty
+Лавка в порту, 0 items
 ЛутDaggerheart
-Порт Ветров1
+Порт Ветров, 1 item

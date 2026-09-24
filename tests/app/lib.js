@@ -194,7 +194,7 @@ const AXE_PATH = require.resolve('axe-core/axe.min.js');
  *
  * No per-call rule disabling: `#/lists`/`#/lists/a` used to need one for
  * `nested-interactive` (`StorageNotice.svelte`'s dismiss button sat inside
- * its own `<summary>`, `docs/specs/DEBT.md` D3); paid off, and it turned out
+ * its own `<summary>`); paid off, and it turned out
  * the parameter that carried it had gone unused by
  * every caller - `app/src/test/a11y.ts`'s own comment already argues that a
  * parameter with no caller is a maintained shape for nothing, so this suite

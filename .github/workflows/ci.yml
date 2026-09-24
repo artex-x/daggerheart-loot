@@ -136,6 +136,12 @@ jobs:
       - run: npm ci
       - name: Vulnerabilities we will not wave through
         run: npm audit --audit-level=high
+      # The two tool packages keep their own lockfiles; `npm audit` reads a
+      # lockfile alone, so neither needs an install here.
+      - name: Vulnerabilities in the preview refresher
+        run: npm audit --prefix tools/tg-preview --audit-level=high
+      - name: Vulnerabilities in the artwork tooling
+        run: npm audit --prefix tools/artwork --audit-level=high
 
   secrets:
     runs-on: ubuntu-latest

@@ -3,15 +3,16 @@
      app.js (969-1006) and `.toast`/`.toast.err`/`.toast.act`/`.toast-act`/
      `toastIn` in style.css.
 
-     `RecordModal` is a native `<dialog>` opened with `showModal()`, which
-     makes the rest of the document inert - a fixed element in `Shell` would
-     sit under the backdrop and go unannounced exactly when a person adds from
-     the card inside it. `popover="manual"` puts this in the top layer, above
-     the dialog and outside its inertness, at the cost of resetting the
-     popover UA styles this component's own `.toast` rule below undoes.
+     A modal dialog makes everything outside it inert, the top layer
+     included, so while `RecordModal` is open it draws its own copy
+     (`inDialog`) and this one stands down (`app.dialogOpen`) -
+     `docs/DECISIONS.md`, 2026-09-24, "While the record dialog is open, the
+     toast is drawn inside it". `popover="manual"` keeps each copy above the
+     page or dialog it belongs to, at the cost of resetting the popover UA
+     styles this component's own `.toast` rule below undoes.
 
      The element stays mounted whether or not a toast is showing - `hidePopover`
-     needs it to exist - so `role`/`aria-live` are only set while `app.toast`
+     needs it to exist - so `role`/`aria-live` are only set while `toast`
      is not null. Without that a component test's `getByRole('status')` would
      match this alongside the storage warning even while idle.
 
@@ -23,19 +24,24 @@
      does not), which is the same "browser fallback" the design already names
      for a browser with no Popover API at all: toggle the display directly,
      inline, so it wins over that UA rule the way any inline style does. */
+  import { tick } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
     app: AppState;
+    /** The copy `RecordModal` draws inside its dialog. */
+    inDialog?: boolean;
   }
 
-  const { app }: Props = $props();
+  const { app, inDialog = false }: Props = $props();
+
+  const toast = $derived(app.dialogOpen === inDialog ? app.toast : null);
 
   let el = $state<HTMLDivElement | undefined>(undefined);
 
   $effect(() => {
-    const active = !!app.toast;
-    const act = app.toast?.mode === 'act';
+    const active = !!toast;
+    const act = toast?.mode === 'act';
     if (!el) return;
     if (typeof el.showPopover === 'function') {
       const open = el.matches(':popover-open');
@@ -46,8 +52,36 @@
     }
   });
 
+  /* A toast with an undo takes focus, or a keyboard user could not reach the
+     button before its 7000ms run out; a plain notice never does. `pre`, so
+     "was focus inside" is read before the button leaves the DOM. The origin
+     may already be gone when this runs (a removed row leaves first, and focus
+     is then on `body`), so the toast falls back to `#main`, or to the
+     dialog's close button inside `RecordModal`, where `#main` is inert. */
+  let back: HTMLElement | null = null;
+
+  $effect.pre(() => {
+    const action = toast?.action;
+    const box = el;
+    if (!box) return;
+    const focused = document.activeElement;
+    const inside = box.contains(focused);
+    if (action) {
+      if (!inside)
+        back = focused instanceof HTMLElement && focused !== document.body ? focused : null;
+      void tick().then(() => box.querySelector<HTMLButtonElement>('.toast-act')?.focus());
+    } else if (inside) {
+      const home = inDialog
+        ? box.closest('dialog')?.querySelector<HTMLElement>('button')
+        : document.getElementById('main');
+      const to = back?.isConnected ? back : home;
+      back = null;
+      void tick().then(() => to?.focus());
+    }
+  });
+
   function runAction(): void {
-    const action = app.toast?.action;
+    const action = toast?.action;
     app.hideToast();
     action?.run();
   }
@@ -57,17 +91,15 @@
   bind:this={el}
   popover="manual"
   class="toast"
-  class:err={app.toast?.mode === 'err'}
-  class:act={app.toast?.mode === 'act'}
-  role={app.toast ? (app.toast.mode === 'err' ? 'alert' : 'status') : undefined}
-  aria-live={app.toast ? (app.toast.mode === 'err' ? 'assertive' : 'polite') : undefined}
+  class:err={toast?.mode === 'err'}
+  class:act={toast?.mode === 'act'}
+  role={toast ? (toast.mode === 'err' ? 'alert' : 'status') : undefined}
+  aria-live={toast ? (toast.mode === 'err' ? 'assertive' : 'polite') : undefined}
 >
-  {#if app.toast}
-    {app.toast.msg}
-    {#if app.toast.action}
-      <button type="button" class="toast-act" onclick={runAction}
-        >{app.toast.action.label}</button
-      >
+  {#if toast}
+    {toast.msg}
+    {#if toast.action}
+      <button type="button" class="toast-act" onclick={runAction}>{toast.action.label}</button>
     {/if}
   {/if}
 </div>
@@ -137,10 +169,10 @@
     }
   }
 
-  /* off `#toast` in the live `@media print` block (style.css:1409) - D20,
-     paid off: without `!important`, `.toast{display:none}` (0,1,0) lost
-     under print to `.toast.act{display:inline-flex}` (0,2,0) above, so an
-     action toast (an undo prompt, mid-copy) printed over the page. */
+  /* off `#toast` in the live `@media print` block (style.css:1409): without
+     `!important`, `.toast{display:none}` (0,1,0) lost under print to
+     `.toast.act{display:inline-flex}` (0,2,0) above, so an action toast (an
+     undo prompt, mid-copy) printed over the page. */
   @media print {
     .toast {
       display: none !important;

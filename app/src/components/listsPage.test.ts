@@ -21,7 +21,7 @@ import {
 } from '../ports/index.js';
 import type { CompressPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
-import { encodeList, encodeListRaw } from '../lib/listLink.js';
+import { encodeList, encodeListRaw, toBase64Url } from '../lib/listLink.js';
 import type { Loot } from '../lib/data.js';
 import type { StoredList } from '../lib/lists.js';
 
@@ -111,7 +111,7 @@ describe('the head and the panel', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('draws the unreadable-storage warning in place of the fold-open notice, undismissable (R1)', async () => {
+  it('draws the unreadable-storage warning in place of the fold-open notice, undismissable', async () => {
     const { container } = render(App, {
       env: at({ storage: memoryStorage({ 'dhloot.lists.v2': '{' }) })
     });
@@ -124,7 +124,7 @@ describe('the head and the panel', () => {
   it('folds the notice again on a language switch, as the live re-render does', async () => {
     const { container } = render(App, { env: at() });
     await userEvent.click(screen.getByText('подробнее'));
-    /* D3, paid off: `<details>` moved to a plain child of `.warn`, which now
+    /* `<details>` moved to a plain child of `.warn`, which now
        carries the dismiss button as a sibling rather than as a class of its
        own. */
     expect(container.querySelector<HTMLDetailsElement>('.warn details')?.open).toBe(true);
@@ -141,14 +141,9 @@ describe('a card per list', () => {
       env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
     });
 
-    /* Matched by a loose regex rather than the exact accessible name: both
-       jsdom's accessible-name computation and real Chrome's insert a space
-       at the boundary between the two block-level elements (the count and
-       the empty paragraph) - `tests/app/snapshots/_lists_two_lists.txt:37,41`
-       shows Chrome computing `link "Клад дракона 7"` and `link "Лавка в
-       порту 0 Список пуст"`, with the spaces; the two agree here. The
-       `textContent` check below pins a different thing: the raw text-node
-       structure, concatenated with no separator, not the accessible name. */
+    /* The link's name is its own `aria-label`, the list name and the count;
+       the `textContent` check below pins a different thing: the raw
+       text-node structure, concatenated with no separator. */
     /* The card link renders the GM payload, not the players' one - a live-app
        bug (`listCardHTML` calls `listHash(l)` with no second argument;
        `listHash`'s `forPlayers` goes undefined, falsy) that this port
@@ -157,12 +152,12 @@ describe('a card per list', () => {
        meaningful rather than a line that would pass either way. */
     expect(encodeList(listA, false)).not.toBe(encodeList(listA, true));
 
-    const cardA = screen.getByRole('link', { name: /Клад дракона/ });
+    const cardA = screen.getByRole('link', { name: 'Клад дракона, 1 позиция' });
     expect(cardA).toHaveAttribute('href', '#/l/' + encodeList(listA, false));
     expect(cardA.querySelectorAll('img')).toHaveLength(1);
     expect(cardA.querySelector('img')).toHaveAttribute('src', 'img/thumb/_none.webp');
 
-    const cardB = screen.getByRole('link', { name: /Лавка в порту/ });
+    const cardB = screen.getByRole('link', { name: 'Лавка в порту, 0 позиций' });
     expect(cardB).toHaveAttribute('href', '#/l/' + encodeList(listB, false));
     expect(cardB.querySelectorAll('img')).toHaveLength(0);
 
@@ -203,7 +198,7 @@ describe('creating a list', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Не удалось сохранить: браузер блокирует локальное хранилище'
+      'Не удалось сохранить: браузер не дал записать в локальное хранилище — оно заблокировано или переполнено'
     );
     expect(screen.queryByText(/создан/)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Клад дракона/ })).toBeInTheDocument();
@@ -276,11 +271,11 @@ describe('deleting a list', () => {
     await userEvent.click(screen.getAllByRole('button', { name: 'Удалить' })[0] as HTMLElement);
 
     expect(dialog.asked).toEqual(['Удалить список «Клад дракона»? Это действие необратимо.']);
-    expect(screen.getByRole('link', { name: 'Клад дракона1' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Клад дракона, 1 позиция' })).toBeInTheDocument();
     expect(readLists(storage)).toHaveLength(2);
   });
 
-  it('removes the card and the stored list on confirmation, and toasts with an undo (P5)', async () => {
+  it('removes the card and the stored list on confirmation, and toasts with an undo', async () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
     render(App, { env: at({ storage, dialog: fakeDialog(true) }) });
     await userEvent.click(screen.getAllByRole('button', { name: 'Удалить' })[0] as HTMLElement);
@@ -354,7 +349,7 @@ describe('restoring a list', () => {
     expect(readLists(storage)[0]?.ids).toEqual(['ci1']);
   });
 
-  it('passes money, note and hnote through instead of dropping them, and toasts the dropped-id count (R3/P9)', async () => {
+  it('passes money, note and hnote through instead of dropping them, and toasts the dropped-id count', async () => {
     const withNotes: StoredList = {
       id: 'x',
       name: 'Оружейная',
@@ -379,8 +374,53 @@ describe('restoring a list', () => {
     expect(stored?.note).toBe('Для игроков');
     expect(stored?.hnote).toBeUndefined();
     expect(
-      screen.getByText('Пропущена 1 позиция — её больше нет в данных')
+      screen.getByText('Пропущено позиций, которых больше нет в данных: 1')
     ).toBeInTheDocument();
+  });
+
+  it('restores a link whose every entry is gone as an empty list, toasting the dropped count', async () => {
+    const router = memoryRouter('#/lists');
+    const storage = memoryStorage();
+    const payload = toBase64Url('Пропавшее\nzzz1,zzz2');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), storage }) });
+
+    await userEvent.type(screen.getByPlaceholderText('Ссылка на список'), '#/l/' + payload);
+    await userEvent.click(screen.getByRole('button', { name: 'Восстановить' }));
+
+    const stored = readLists(storage);
+    expect(stored).toHaveLength(1);
+    expect(stored[0]?.name).toBe('Пропавшее');
+    expect(stored[0]?.ids).toEqual([]);
+    expect(router.hash()).toMatch(/^#\/l\//);
+    expect(screen.getByRole('heading', { level: 1, name: 'Пропавшее' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Пропущено позиций, которых больше нет в данных: 2')
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText('Ссылка повреждена или собрана в другой версии данных.')
+    ).not.toBeInTheDocument();
+    await expectNoA11yViolations(document.body);
+  });
+
+  it("opens an empty list from its card, through the card's own link", async () => {
+    const router = memoryRouter('#/lists');
+    render(App, {
+      env: fakeEnv({
+        router,
+        data: fakeData(LOOT),
+        storage: memoryStorage({ 'dhloot.lists.v2': TWO })
+      })
+    });
+    const card = screen.getByRole('link', { name: /Лавка в порту/ });
+    router.navigate(card.getAttribute('href') ?? '');
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { level: 1, name: 'Лавка в порту' })
+      ).toBeInTheDocument();
+    });
+    expect(
+      screen.queryByText('Ссылка повреждена или собрана в другой версии данных.')
+    ).not.toBeInTheDocument();
   });
 
   it('toasts badShare as an alert for garbage', async () => {
@@ -396,10 +436,10 @@ describe('restoring a list', () => {
   });
 });
 
-describe("another tab's write while the index is mounted (R2)", () => {
+describe("another tab's write while the index is mounted", () => {
   /* The gap the dispatch named: no test fired a storage event into a mounted
      page. `listPage.test.ts` closes it for the note-field symptom;
-     this closes it for R2's general reload trigger, on a second page type,
+     this closes it for the general reload trigger, on a second page type,
      through the `null`-key path a `storage` event with no key (or this
      tab becoming visible again) uses. */
   it('redraws with another tab’s list on a null-key external change', async () => {

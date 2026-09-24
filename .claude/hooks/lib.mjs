@@ -14,7 +14,9 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  renameSync,
   statSync,
+  unlinkSync,
   writeFileSync
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -348,6 +350,7 @@ function loadState() {
 export const MAX_SESSIONS = 64;
 
 function saveState(state, keepId) {
+  let tmp = null;
   try {
     const sessions = state.sessions || {};
     const kept = keepId && sessions[keepId] ? [keepId] : [];
@@ -362,8 +365,19 @@ function saveState(state, keepId) {
     for (const id of kept) pruned[id] = sessions[id];
     const dir = stateDir();
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    writeFileSync(statePath(), JSON.stringify({ sessions: pruned }));
+    // Temp file + rename: atomic on POSIX, replace-in-place on Windows, so a
+    // concurrent loadState() never parses a half-written file.
+    tmp = statePath() + '.' + process.pid + '.tmp';
+    writeFileSync(tmp, JSON.stringify({ sessions: pruned }));
+    renameSync(tmp, statePath());
   } catch {
+    if (tmp) {
+      try {
+        unlinkSync(tmp);
+      } catch {
+        // nothing left to clean up
+      }
+    }
     // fail open: a lost write costs one duplicate reminder or one missing
     // Stop sentence, never a block. guard() swallows a throw anyway, and
     // speaking on a failed save would fire on every edit of every session

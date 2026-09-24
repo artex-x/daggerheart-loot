@@ -6,7 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Twenty-nine cases, no ancestor. */
+ * real second tab to mean anything at all. Thirty-four cases in thirty-three
+ * runs (4 and 5 share one), no ancestor. */
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
@@ -92,17 +93,17 @@ async function newListFromModal() {
   });
   ok(!!card, '3 (modal): .modal-card not found');
   if (box && card) {
-    ok(inside(box, card), '3 (modal): the input sits outside .modal-card (DEBT.md D6)');
+    ok(inside(box, card), '3 (modal): the input sits outside .modal-card');
   }
   await ctx.close();
 }
 
 /** 23. The add-to-list menu inside the record modal must not force a scroll
- *  on the card article, nor spill outside the modal - DEBT.md D6, paid off:
+ *  on the card article, nor spill outside the modal:
  *  the toggle (`:scope > .btn`), not whichever button happens to render
  *  first, is what the placement effect measures, and the modal's own card is
  *  what it clips against. Кольцо Тишины at 1100x900 with no lists seeded is
- *  the exact case D6's own evidence measured (`.card.scrollTop` 109). */
+ *  the exact case the defect's own evidence measured (`.card.scrollTop` 109). */
 async function addToListMenuStaysInModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
   await d.open('#/tables');
@@ -113,7 +114,7 @@ async function addToListMenuStaysInModal() {
   /* `.card` is `overflow: clip` (RecordCard.svelte), which creates no
      scroll container, so a `.card.scrollTop` reading would be 0 regardless
      of what the placement effect does - it stopped being able to fail and
-     is not what D6's fix actually measures. The real invariant is that
+     is not what the fix actually measures. The real invariant is that
      `:scope > .btn` (AddToList.svelte's own selector for the toggle) finds
      exactly one direct child of `.seldrop`, so it cannot accidentally
      resolve to a `.dropmenu` button instead. */
@@ -138,10 +139,7 @@ async function addToListMenuStaysInModal() {
   const menu = await box('.dropmenu');
   ok(!!menu, '23 (menu in the modal): .dropmenu not found');
   if (menu && card) {
-    ok(
-      inside(menu, card),
-      '23 (menu in the modal): the menu sits outside .modal-card (DEBT.md D6)'
-    );
+    ok(inside(menu, card), '23 (menu in the modal): the menu sits outside .modal-card');
   }
 
   await d.press('+ Новый список');
@@ -149,10 +147,7 @@ async function addToListMenuStaysInModal() {
   ok(!!input, '23 (menu in the modal): the new-list form did not open');
   ok(!!input?.focused, '23 (menu in the modal): the input is not focused');
   if (input && card) {
-    ok(
-      inside(input, card),
-      '23 (menu in the modal): the input sits outside .modal-card (DEBT.md D6)'
-    );
+    ok(inside(input, card), '23 (menu in the modal): the input sits outside .modal-card');
   }
   await ctx.close();
 }
@@ -389,7 +384,7 @@ async function copyTextThroughClipboard() {
 }
 
 /** 10. Copy image - a live-shared defect this case found rather than one it
- *  proves closed: `docs/specs/DEBT.md` D10. Loading the record's own
+ *  proves closed. Loading the record's own
  *  picture onto a `<canvas>` taints it on *both* apps under `file://`
  *  (Chrome has no `--allow-file-access-from-files`, so even a sibling file
  *  in the same folder the document opened from reads as cross-origin) -
@@ -399,7 +394,7 @@ async function copyTextThroughClipboard() {
  *  invisible (`tests/app/driver.js`'s `clipboardImage()`
  *  reads a *pending promise*'s absent `.arrayBuffer` as `null` on both
  *  sides, so parity's own `copiedImage` spec has been comparing two
- *  identical nulls). D10, paid off: `RecordActions.svelte`'s `copyImage`
+ *  identical nulls). Paid off: `RecordActions.svelte`'s `copyImage`
  *  now probes `toDataURL` itself and a `toBlob` watchdog, so the rejection
  *  is real rather than a promise that never settles - this reads whichever
  *  of the two outcomes this build actually produces (a real picture, on a
@@ -418,11 +413,11 @@ async function copyImage() {
     return { neither: true };
   });
   if ('blob' in result) {
-    ok(result.blob > 0, '10 (copy image, D10): the copied picture is empty');
+    ok(result.blob > 0, '10 (copy image): the copied picture is empty');
   } else {
     ok(
       typeof result.text === 'string' && result.text.length > 0,
-      '10 (copy image, D10): neither the picture nor the fallback text arrived - ' +
+      '10 (copy image): neither the picture nor the fallback text arrived - ' +
         JSON.stringify(result)
     );
     const toast = await page.evaluate(
@@ -430,7 +425,7 @@ async function copyImage() {
     );
     ok(
       toast.includes('Не удалось скопировать картинку - скопирован текст'),
-      '10 (copy image, D10): the toast about the unavailable picture is not shown - ' + toast
+      '10 (copy image): the toast about the unavailable picture is not shown - ' + toast
     );
   }
   await ctx.close();
@@ -917,6 +912,43 @@ async function dragReorder() {
   const leftoverMarks = await d.count('.lrow.drop-before, .lrow.drop-after');
   ok(leftoverMarks === 0, '17 (drag reorder): a cancelled drag left a mark behind');
 
+  /* Outside the zone a live drag is refused, over the list's own note too,
+   * which would otherwise take the row's `text/plain` index as text. */
+  if (!(await page.evaluate(() => document.querySelector('.lnote')?.open))) {
+    await d.press('Заметки');
+  }
+  await page.evaluate(() => {
+    const grip = document.querySelector('.lrow [data-drag]');
+    const dt = new DataTransfer();
+    window.__dragDT = dt;
+    grip.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
+  });
+  await d.settle();
+  const overNote = await page.evaluate(() => {
+    const ta = document.querySelector('.lnote textarea');
+    const r = ta.getBoundingClientRect();
+    const e = new DragEvent('dragover', {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer: window.__dragDT,
+      clientX: r.x + r.width / 2,
+      clientY: r.y + r.height / 2
+    });
+    ta.dispatchEvent(e);
+    const out = { prevented: e.defaultPrevented, effect: window.__dragDT.dropEffect };
+    document
+      .querySelector('.lrow [data-drag]')
+      .dispatchEvent(
+        new DragEvent('dragend', { bubbles: true, dataTransfer: window.__dragDT })
+      );
+    return out;
+  });
+  ok(
+    overNote.prevented && overNote.effect === 'none',
+    '17 (drag reorder): a dragover on the list note is not refused - ' +
+      JSON.stringify(overNote)
+  );
+
   await ctx.close();
 
   /* Defect 1 (git log --grep=dnd2): an inset box-shadow paints below its
@@ -1017,7 +1049,7 @@ async function dragReorder() {
    * is narrowed off `box-shadow` (so the base half no longer fades) and
    * `.rnote` is left with no transition of its own (so the redrawn half does
    * not either). `prepare()` emulates `prefers-reduced-motion: reduce` for
-   * every case, and `tokens.css`'s blanket kill (`DEBT.md` D1, paid off)
+   * every case, and `tokens.css`'s blanket kill
    * forces every `transition-duration` to `0s` under it, which would make a
    * duration read here vacuous - true before this fix and after it alike
    * (COVERAGE.md, "app/states"). `transition-property` is not flattened by
@@ -1300,17 +1332,18 @@ async function moneyHelpAndPressedPicker() {
   await ctx2.close();
 }
 
-/** 24. D1, paid off: the real reduced-motion policy - every transition and
+/** 24. The real reduced-motion policy - every transition and
  *  animation dies under `prefers-reduced-motion: reduce`, not only the
  *  card's entrance and the section outline's fade `RecordCard.svelte`/
  *  `TablesPage.svelte` killed by name. Explicit here even though `prepare()`
  *  already emulates the same media feature for every other case
- *  (`driver.js`'s own comment: D1 is the app's shipped behaviour for a
+ *  (`driver.js`'s own comment: the blanket kill is the app's shipped behaviour for a
  *  visitor who asked for less motion, and this is what makes every suite
  *  exercise that branch, not a timing convenience) - this is the one case
  *  whose whole point is proving the policy itself, not relying on it as a
  *  side effect of something else. Hovers a button (the transition class) and
- *  crosses the 600px breakpoint (the responsive class) in the same pass. */
+ *  crosses the 600px breakpoint (the responsive class) in the same pass,
+ *  and every delay is zeroed too. */
 async function reducedMotionKillsEverything() {
   const { ctx, page, d } = await fresh({ width: 900, height: 900 });
   await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
@@ -1321,14 +1354,27 @@ async function reducedMotionKillsEverything() {
   const running = await page.evaluate(() => document.getAnimations().length);
   ok(
     running === 0,
-    '24 (reduced motion, D1): animations are still running under reduce - ' + running
+    '24 (reduced motion): animations are still running under reduce - ' + running
+  );
+  const delays = await page.evaluate(() => {
+    const el = document.createElement('div');
+    el.style.cssText = 'transition: opacity 1s 1s; animation: none 1s 1s';
+    document.body.append(el);
+    const cs = getComputedStyle(el);
+    const out = { transitionDelay: cs.transitionDelay, animationDelay: cs.animationDelay };
+    el.remove();
+    return out;
+  });
+  ok(
+    delays.transitionDelay === '0s' && delays.animationDelay === '0s',
+    '24 (reduced motion): a delay survives reduce - ' + JSON.stringify(delays)
   );
   await ctx.close();
 }
 
 /** 25. The storage-notice dismiss button stays hit-testable while its
  *  `<details>` is folded - real-browser coverage of exactly the regression
- *  class D3's fix could only be verified against by eye: jsdom does
+ *  class the sibling-button fix could only be verified against by eye: jsdom does
  *  not implement `<details>`'s native closed-content suppression at all, so
  *  every vitest test for the dismiss button passed against the *old*,
  *  button-hidden structure the first time it was tried. `.warn-x` is a
@@ -1791,6 +1837,411 @@ async function guideBackLink() {
   }
 }
 
+/** 30. The note clear button's 44px target yields to the note textarea
+ *  where the two overlap: a point just inside the textarea under the button
+ *  hits the textarea, the button's own centre hits the button. */
+async function noteClearTargetYieldsToTextarea() {
+  const { ctx, page, d } = await fresh({
+    width: 1180,
+    height: 900,
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        { id: 'a', name: 'Тайник', ids: ['ci1'], created: 1, note: 'текст' }
+      ])
+    }
+  });
+  await d.open('#/lists/a');
+  /* A list with a note opens its note group already; a press would fold it. */
+  if (!(await page.evaluate(() => document.querySelector('.lnote')?.open))) {
+    await d.press('Заметки');
+  }
+  const hits = await page.evaluate(() => {
+    const btn = [...document.querySelectorAll('.lnote .note-x')].find(
+      (b) => getComputedStyle(b).display !== 'none'
+    );
+    if (!btn) return null;
+    const ta = btn.closest('.nfield').querySelector('textarea');
+    const b = btn.getBoundingClientRect();
+    const t = ta.getBoundingClientRect();
+    const cx = b.x + b.width / 2;
+    const edge = document.elementFromPoint(cx, t.top + 3);
+    const centre = document.elementFromPoint(cx, b.y + b.height / 2);
+    return {
+      overlap: b.y + b.height / 2 + 22 - t.top,
+      edgeIsTextarea: !!edge && (edge === ta || ta.contains(edge)),
+      centreIsButton: !!centre && (centre === btn || btn.contains(centre)),
+      target: getComputedStyle(btn, '::after').width
+    };
+  });
+  ok(!!hits, '30 (note clear target): no visible clear button on the list note');
+  if (hits) {
+    ok(hits.overlap > 3, '30 (note clear target): no overlap left to test - ' + hits.overlap);
+    ok(
+      hits.edgeIsTextarea,
+      '30 (note clear target): the textarea edge under the button hits the button'
+    );
+    ok(
+      hits.centreIsButton,
+      '30 (note clear target): the button centre does not hit the button'
+    );
+    ok(
+      hits.target === '44px',
+      '30 (note clear target): the target is not 44px - ' + hits.target
+    );
+  }
+
+  await ctx.close();
+}
+
+/** 31. The card image's focus ring is drawn, not clipped by the card, at
+ *  both card sizes: a pixel read of a 3px band inside each edge of the
+ *  focused `.card-media`, against the ring's own colour. */
+async function cardMediaRingVisible() {
+  async function ringAt(route, selector, label) {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+    await d.open(route);
+    let reached = false;
+    for (let i = 0; i < 80 && !reached; i++) {
+      await page.keyboard.press('Tab');
+      reached = await page.evaluate(
+        (sel) => document.activeElement === document.querySelector(sel),
+        selector
+      );
+    }
+    ok(reached, '31 (card image focus ring, ' + label + '): Tab never reached ' + selector);
+    if (reached) {
+      await page.evaluate(
+        (sel) => document.querySelector(sel).scrollIntoView({ block: 'center' }),
+        selector
+      );
+      const box = await page.evaluate((sel) => {
+        const el = document.querySelector(sel);
+        const r = el.getBoundingClientRect();
+        const m = /rgba?\((\d+), (\d+), (\d+)/.exec(getComputedStyle(el).outlineColor);
+        return {
+          x: r.x,
+          y: r.y,
+          w: r.width,
+          h: r.height,
+          rgb: m ? m.slice(1, 4).map(Number) : null
+        };
+      }, selector);
+      const clip = {
+        x: Math.round(box.x),
+        y: Math.round(box.y),
+        width: Math.round(box.w),
+        height: Math.round(box.h)
+      };
+      ok(!!box.rgb, '31 (card image focus ring, ' + label + '): no outline colour to match');
+      if (!box.rgb) {
+        await ctx.close();
+        return;
+      }
+      const png = PNG.sync.read(await page.screenshot({ type: 'png', clip }));
+      const near = (x, y) => {
+        const p = (y * png.width + x) * 4;
+        return [0, 1, 2].every((k) => Math.abs(png.data[p + k] - box.rgb[k]) <= 48);
+      };
+      const edges = {
+        top: (x) => [0, 1, 2].some((dy) => near(x, dy)),
+        bottom: (x) => [1, 2, 3].some((dy) => near(x, png.height - dy)),
+        left: (y) => [0, 1, 2].some((dx) => near(dx, y)),
+        right: (y) => [1, 2, 3].some((dx) => near(png.width - dx, y))
+      };
+      for (const [edge, hit] of Object.entries(edges)) {
+        const len = edge === 'top' || edge === 'bottom' ? png.width : png.height;
+        let n = 0;
+        for (let i = 0; i < len; i++) if (hit(i)) n++;
+        ok(
+          n >= len / 2,
+          '31 (card image focus ring, ' +
+            label +
+            '): the ' +
+            edge +
+            ' edge shows ' +
+            n +
+            '/' +
+            len
+        );
+      }
+    }
+    await ctx.close();
+  }
+  await ringAt('#/i/ci1', '.card.full .card-media', 'full');
+  await ringAt('#/roll/wondrous', '.card.compact .card-media', 'compact');
+}
+
+/** 32. The undo toast an action inside the record dialog raises is drawn
+ *  inside the dialog: focused, hit-testable, in the accessibility tree, and
+ *  its undo runs (docs/DECISIONS.md, 2026-09-24, "While the record dialog is
+ *  open, the toast is drawn inside it"). Escape and the backdrop still close
+ *  the dialog, and a toast still on offer then moves to the page's copy. */
+async function undoToastInRecordDialog() {
+  const at = '32 (undo toast in the record dialog): ';
+  const { ctx, page, d } = await fresh({
+    width: 1180,
+    height: 900,
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        { id: 'a', name: 'Клад дракона', ids: ['ci28'], created: 1 }
+      ])
+    }
+  });
+  const stored = () =>
+    page.evaluate(() => {
+      const lists = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
+      return (lists.find((l) => l.id === 'a') || { ids: [] }).ids.join(',');
+    });
+  /* The menu stays open after a pick, so a second removal presses the chip only. */
+  const remove = async () => {
+    if (!(await page.evaluate(() => !!document.querySelector('dialog[open] .dropmenu')))) {
+      await d.press('Добавить в список');
+    }
+    await d.press('Клад дракона');
+    await d.settle();
+  };
+  await d.open('#/tables');
+  await d.press('Кольцо Тишины');
+  await remove();
+  ok((await stored()) === '', at + 'the chip did not remove ci28 from the list');
+
+  const where = await page.evaluate(() => {
+    const dialog = document.querySelector('dialog[open]');
+    const shown = [...document.querySelectorAll('.toast')].filter((t) =>
+      t.matches(':popover-open')
+    );
+    const act = shown[0]?.querySelector('.toast-act');
+    const r = act?.getBoundingClientRect();
+    const hit = r && document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+    return {
+      dialog: !!dialog,
+      shown: shown.length,
+      inDialog: !!dialog && shown.length === 1 && dialog.contains(shown[0]),
+      roles: document.querySelectorAll('.toast[role]').length,
+      focused: !!act && document.activeElement === act,
+      hit: !!act && hit === act
+    };
+  });
+  ok(
+    where.dialog && where.inDialog && where.roles === 1,
+    at + 'the shown toast is not the one inside the open dialog - ' + JSON.stringify(where)
+  );
+  ok(where.focused, at + '«Вернуть» is not focused');
+  ok(where.hit, at + '«Вернуть» is not what a point at its centre hits');
+
+  const cdp = await page.createCDPSession();
+  const { nodes } = await cdp.send('Accessibility.getFullAXTree');
+  await cdp.detach();
+  ok(
+    nodes.some((n) => !n.ignored && n.name && n.name.value === 'Вернуть'),
+    at + '«Вернуть» has no accessibility node'
+  );
+
+  await d.press('Вернуть');
+  await d.settle();
+  const afterUndo = await page.evaluate(() => ({
+    open: !!document.querySelector('dialog[open]'),
+    inside: !!document.activeElement?.closest('dialog[open]'),
+    body: document.activeElement === document.body
+  }));
+  ok(afterUndo.open, at + 'the undo closed the dialog');
+  ok((await stored()) === 'ci28', at + 'the undo did not restore ci28');
+  ok(
+    afterUndo.inside && !afterUndo.body,
+    at + 'focus left the dialog after the undo - ' + JSON.stringify(afterUndo)
+  );
+
+  await remove();
+  /* The first Escape folds the add-to-list menu, the second closes the dialog. */
+  await page.keyboard.press('Escape');
+  await d.settle();
+  await page.keyboard.press('Escape');
+  await d.settle();
+  const handed = await page.evaluate(() => {
+    const shown = [...document.querySelectorAll('.toast')].filter((t) =>
+      t.matches(':popover-open')
+    );
+    return {
+      open: !!document.querySelector('dialog[open]'),
+      shown: shown.length,
+      outside: shown.length === 1 && !shown[0].closest('dialog'),
+      focused: document.activeElement?.classList.contains('toast-act') ?? false
+    };
+  });
+  ok(
+    !handed.open && handed.outside,
+    at +
+      'after Escape the dialog is open or the page does not show the toast - ' +
+      JSON.stringify(handed)
+  );
+  ok(handed.focused, at + "after Escape «Вернуть» on the page's toast is not focused");
+  await page.keyboard.press('Enter');
+  await d.settle();
+  ok((await stored()) === 'ci28', at + 'Enter on the handed-over toast did not restore ci28');
+  ok(
+    await page.evaluate(() => document.activeElement !== document.body),
+    at + 'focus fell to body after the handed-over undo'
+  );
+
+  await d.press('Кольцо Тишины');
+  await remove();
+  await page.mouse.click(8, 8);
+  await d.settle();
+  ok(
+    await page.evaluate(() => !document.querySelector('dialog[open]')),
+    at + 'a backdrop click with the toast showing did not close the dialog'
+  );
+  await ctx.close();
+}
+
+/** 33. A drag whose own row another tab removes is void: the storage merge
+ *  keeps the binding, the next `dragover` refuses the drop and clears the
+ *  marks, the release moves nothing, and the page takes a text drop into a
+ *  note again (docs/DECISIONS.md, 2026-09-24, "A drag whose own row leaves
+ *  the list is void"). Synthetic `DragEvent`s, as case 17. */
+async function dragSourceRemovedMidDrag() {
+  const at = '33 (drag source removed mid-drag): ';
+  const { ctx, page, d } = await fresh({
+    width: 1180,
+    height: 900,
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        { id: 'a', name: 'Тайник', ids: ['ci1', 'ci2', 'ci3', 'ci4'], created: 1 }
+      ])
+    }
+  });
+  const order = () =>
+    page.evaluate(() => {
+      const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
+      const list = stored.find((l) => l.id === 'a');
+      return list ? list.ids.join(',') : '';
+    });
+  await d.open('#/lists/a');
+  if (!(await page.evaluate(() => document.querySelector('.lnote')?.open))) {
+    await d.press('Заметки');
+  }
+
+  await page.evaluate(() => {
+    const grip = document.querySelectorAll('.lrow')[1].querySelector('[data-drag]');
+    const dt = new DataTransfer();
+    window.__grip = grip;
+    window.__dragDT = dt;
+    grip.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer: dt }));
+  });
+  await d.settle();
+
+  await page.evaluate(() => {
+    const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2'));
+    stored[0].ids = ['ci1', 'ci3', 'ci4'];
+    localStorage.setItem('dhloot.lists.v2', JSON.stringify(stored));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'dhloot.lists.v2' }));
+  });
+  await d.settle();
+  ok((await d.count('.lrow')) === 3, at + "the other tab's removal was not drawn");
+
+  const over = await page.evaluate(() => {
+    const row = document.querySelectorAll('.lrow')[1];
+    const box = row.getBoundingClientRect();
+    const e = new DragEvent('dragover', {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer: window.__dragDT,
+      clientY: box.top + box.height - 2
+    });
+    row.dispatchEvent(e);
+    return { prevented: e.defaultPrevented, effect: window.__dragDT.dropEffect };
+  });
+  ok(over.prevented, at + 'the dragover after the removal is not handled');
+  ok(over.effect === 'none', at + 'the drop is not refused - dropEffect ' + over.effect);
+  await d.settle();
+  const marks = await d.count('.lrow.dragging, .lrow.drop-before, .lrow.drop-after');
+  ok(marks === 0, at + marks + ' drag marks left on the rows');
+
+  await page.evaluate(() => {
+    const row = document.querySelectorAll('.lrow')[1];
+    const box = row.getBoundingClientRect();
+    row.dispatchEvent(
+      new DragEvent('drop', {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer: window.__dragDT,
+        clientY: box.top + box.height - 2
+      })
+    );
+  });
+  await d.settle();
+  const after = await order();
+  ok(after === 'ci1,ci3,ci4', at + 'the void release moved an entry - ' + after);
+
+  const accepted = await page.evaluate(() => {
+    window.__grip.dispatchEvent(new DragEvent('dragend', { bubbles: true }));
+    const ta = document.querySelector('.lnote textarea');
+    if (!ta) return null;
+    const e = new DragEvent('dragenter', {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer: new DataTransfer()
+    });
+    ta.dispatchEvent(e);
+    return !e.defaultPrevented;
+  });
+  ok(accepted !== null, at + 'no list note textarea to drop text into');
+  ok(accepted !== false, at + 'the note still refuses a text drop after the drag ended');
+  await ctx.close();
+}
+
+/** 34. The storage notice's summary wins the taps on its own row: its box
+ *  ends at the painted cross, and the cross's 44x44 target yields to it
+ *  where the two overlap, so a tap just left of the cross unfolds the notice
+ *  rather than dismissing it. */
+async function noticeSummaryWinsItsTaps() {
+  const at = '34 (notice summary wins its taps): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/lists');
+  const m = await page.evaluate(() => {
+    const btn = document.querySelector('.warn-x');
+    const sum = document.querySelector('.warn summary');
+    if (!btn || !sum) return null;
+    const b = btn.getBoundingClientRect();
+    const s = sum.getBoundingClientRect();
+    const y = Math.min(Math.max(b.y + b.height / 2, s.y + 2), s.bottom - 2);
+    const inSummary = (x) => !!document.elementFromPoint(x, y)?.closest('summary');
+    const onCross = (x) => !!document.elementFromPoint(x, y)?.closest('.warn-x');
+    const after = getComputedStyle(btn, '::after');
+    return {
+      sRight: s.right,
+      bLeft: b.x,
+      y,
+      leftIsSummary: inSummary(b.x - 4),
+      paintIsCross: onCross(b.x + 3) && onCross(b.x + b.width / 2),
+      pastIsCross: onCross(b.right + 4),
+      target: after.width + ' x ' + after.height
+    };
+  });
+  ok(!!m, at + 'no storage notice on #/lists');
+  if (m) {
+    ok(
+      m.sRight <= m.bLeft + 0.5,
+      at + 'the summary covers the painted cross - ' + m.sRight + ' > ' + m.bLeft
+    );
+    ok(m.leftIsSummary, at + 'a point 4px left of the cross does not hit the summary');
+    ok(m.paintIsCross, at + 'the painted cross does not hit the cross');
+    ok(m.pastIsCross, at + 'the target no longer reaches past the painted cross');
+    ok(m.target === '44px x 44px', at + 'the target is not 44x44 - ' + m.target);
+    await page.mouse.click(m.bLeft - 4, m.y);
+    await d.settle();
+    const state = await page.evaluate(() => ({
+      open: document.querySelector('.warn details')?.open ?? null,
+      drawn: !!document.querySelector('.warn-x')
+    }));
+    ok(
+      state.open === true && state.drawn,
+      at + 'a tap left of the cross did not unfold the notice - ' + JSON.stringify(state)
+    );
+  }
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -1819,7 +2270,12 @@ const CASES = [
   ['26 (announce on touch, inert grip)', announceOnTouchAndHideInertGrip],
   ['27 (list menu at 50 lists)', listMenuKeepsItsControlsInView],
   ['28 (offline shell)', installedShellOffline],
-  ['29 (guide back link)', guideBackLink]
+  ['29 (guide back link)', guideBackLink],
+  ['30 (note clear target)', noteClearTargetYieldsToTextarea],
+  ['31 (card image focus ring)', cardMediaRingVisible],
+  ['32 (undo toast in the record dialog)', undoToastInRecordDialog],
+  ['33 (drag source removed mid-drag)', dragSourceRemovedMidDrag],
+  ['34 (notice summary wins its taps)', noticeSummaryWinsItsTaps]
 ];
 
 (async () => {

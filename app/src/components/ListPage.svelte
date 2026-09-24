@@ -213,7 +213,7 @@
      `S.guess`/`S.rp` (default `false`/`-20`) the same way: the panel's own
      open state and a typed percentage forget themselves on a navigation away
      and back here, where the live app's app-wide memory keeps them.
-     `dragFrom`/`dragMark` have no live counterpart at all - they exist only
+     `dragId`/`dragMark` have no live counterpart at all - they exist only
      to drive the three drag classes off the port's callbacks, since Svelte
      drops a scoped rule no template element can match and `npm run check`
      fails it as dead CSS if the port toggled them itself. */
@@ -242,7 +242,8 @@
   let rp = $state(-20);
   const noteOpen = new SvelteMap<string, boolean>();
   let rowsEl = $state<HTMLDivElement | undefined>(undefined);
-  let dragFrom = $state(-1);
+  /* The id of the entry being dragged, captured when the drag starts. */
+  let dragId = $state<string | null>(null);
   let dragMark = $state<{ over: number; where: 'before' | 'after' } | null>(null);
   let said = $state('');
 
@@ -632,24 +633,27 @@
      the port owns every listener and the edge-scroll loop, and reports back
      which row is being dragged and where it would land so the template can
      drive the three classes below off state rather than off a class the port
-     would have to toggle itself. */
+     would have to toggle itself. Keyed on the list's id, not the list, so a
+     storage merge mid-drag does not unbind a live drag; the drop moves the
+     id captured at `dragstart`, not whatever row now sits at its index. */
+  const ownId = $derived(own?.id);
   $effect(() => {
     const el = rowsEl;
-    const l = own;
-    if (!el || !l) return;
+    const listId = ownId;
+    if (!el || !listId) return;
     return app.env.drag.bind(el, {
-      onDrop: (from, to) => {
-        const id = l.ids[from];
-        if (id !== undefined && store.move(l.id, id, to)) announceMove(id, to);
+      onDrop: (_from, to) => {
+        const id = dragId;
+        if (id !== null && store.move(listId, id, to)) announceMove(id, to);
       },
       onDrag: (from) => {
-        dragFrom = from;
+        dragId = items[from]?.id ?? null;
       },
       onOver: (over, where) => {
         dragMark = where ? { over, where } : null;
       },
       onEnd: () => {
-        dragFrom = -1;
+        dragId = null;
         dragMark = null;
       }
     });
@@ -1015,7 +1019,7 @@
               class="row lrow"
               class:sel={lsel.has(it.id)}
               class:has-note={hasNote}
-              class:dragging={dragFrom === i}
+              class:dragging={dragId === it.id}
               class:drop-before={dropGap === i}
               class:drop-after={dropGap === i + 1}
               data-index={i}
@@ -1320,6 +1324,12 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+  }
+
+  /* Positioned and later in the tree, so it stacks above the clear button's
+     44px `::after`: a tap in the overlap focuses the note. */
+  .nfield textarea {
+    position: relative;
   }
 
   .nlbl {

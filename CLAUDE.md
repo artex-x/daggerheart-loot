@@ -87,7 +87,7 @@ Read the files the change touches:
 | `docs/specs/COVERAGE.md` | suite ownership, thresholds, and known gaps |
 | `docs/specs/I18N.md` | bilingual behaviour |
 | `docs/specs/META.md` | `noindex`, crawling, URL-only lists, `file://`, tiers |
-| `docs/specs/DEBT.md` | live defects the rewrite reproduces on purpose, and live decisions kept over its own |
+| `docs/specs/DEBT.md` | defects kept on purpose, grouped under the larger task that owes each |
 
 Public contracts default to no change. An unavoidable change updates
 `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md`, and `llms.txt`

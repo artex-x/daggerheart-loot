@@ -1,4 +1,4 @@
-/* The address grammar against the same fixtures tests/contracts.js replays. A
+/* The address grammar against the fixtures tests/app/contracts.js replays. A
    fixture records what the address unfolds into on screen: which section is
    highlighted, how many rows survive, which filter pills appear. What the parser
    can see - the table name and the picked values - is read out of it here, so one
@@ -180,8 +180,8 @@ describe('the filter segment', () => {
   });
 
   it('reads a two-frame link without mistaking a value-head for a group', () => {
-    /* The interim pin for the routes.json entry Phase 7 adds: a link naming
-       two frames must decode both, not fall into the legacy underscore
+    /* A link through the legacy `frames` alias naming two frames must decode
+       both, not fall into the legacy underscore
        reading because `frame-beast` and `feast-colossus` both "look like a
        group" - `feast` is nobody's group. */
     const hash = '#/tables/frames/f_frame-beast_feast-colossus';

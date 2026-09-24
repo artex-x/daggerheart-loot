@@ -407,6 +407,16 @@ describe('the list page address', () => {
     expect(app.hash).not.toBe(first);
   });
 
+  it('opens a new list at its payload, claimed by id even when it has no entry', () => {
+    const empty: StoredList = { id: 'e', name: 'Пусто', ids: [] };
+    const app = new AppState(at('#/lists'));
+    app.openNewList(empty);
+    const payload = encodeList(empty, true);
+    expect(app.hash).toBe(sharedListHash(payload));
+    expect(app.openList).toBe('e');
+    expect(app.urlPayload).toBe(payload);
+  });
+
   it('clears both on clearOpenList, as every other route does', () => {
     const app = new AppState(at('#/lists/a'));
     app.syncListUrl(list);
@@ -738,8 +748,8 @@ describe('a packed address', () => {
     expect(app.navigations).toBe(0);
   });
 
-  it('keeps the address and remembers the failure when the port cannot unpack, and does not loop (R10/D2)', async () => {
-    /* Was "lands on #/l/zzzz" - the live shape D2 recorded and R10 replaced:
+  it('keeps the address and remembers the failure when the port cannot unpack, and does not loop', async () => {
+    /* Was "lands on #/l/zzzz" - the live shape, since replaced:
        the address itself is left alone; `expandFailed` is what a page reads
        to draw the bad-link state instead. */
     const router = memoryRouter('#/l/~abc');
@@ -753,7 +763,7 @@ describe('a packed address', () => {
     expect(unpack).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps the address and remembers the failure when unpack rejects (R10/D2)', async () => {
+  it('keeps the address and remembers the failure when unpack rejects', async () => {
     const router = memoryRouter('#/l/~abc');
     const unpack = () => Promise.reject(new Error('no DecompressionStream'));
     const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
@@ -763,7 +773,7 @@ describe('a packed address', () => {
     expect(app.hash).toBe('#/l/~abc');
   });
 
-  it('drops a stale failure once the reader has moved to a different route, so an old payload cannot be mistaken for the new one (D2)', async () => {
+  it('drops a stale failure once the reader has moved to a different route, so an old payload cannot be mistaken for the new one', async () => {
     const router = memoryRouter('#/l/~abc');
     const unpack = () => Promise.reject(new Error('no DecompressionStream'));
     const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
@@ -831,7 +841,7 @@ describe('the toast', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     const run = vi.fn();
-    app.say('«Клад» убран', { action: { label: 'Вернуть', run } });
+    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run } });
     expect(app.toast?.mode).toBe('act');
     expect(app.toast?.action?.label).toBe('Вернуть');
 

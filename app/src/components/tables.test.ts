@@ -16,6 +16,7 @@ import {
   fakeClipboard,
   fakeData,
   fakeEnv,
+  fakeMotion,
   memoryRouter,
   memoryStorage,
   noData
@@ -839,7 +840,7 @@ describe('the equipment tables', () => {
     expect(document.querySelectorAll('.field')).toHaveLength(3);
   });
 
-  it('labels the class row by kind: Класс on weapons, Тип урона on secondary', async () => {
+  it('labels the class row Класс on every weapon kind', async () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
@@ -851,7 +852,7 @@ describe('the equipment tables', () => {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_secondary'), data: fakeData(LOOT) })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    expect(screen.getByText('Тип урона')).toBeInTheDocument();
+    expect(screen.getByText('Класс')).toBeInTheDocument();
   });
 
   it('a tier pick reads "Ранг 1" and a burden pick reads "Двуручное" - the pill rule fix', async () => {
@@ -1145,6 +1146,32 @@ describe('the row and section anchor', () => {
       expect(target).toHaveClass('flash');
     });
     expect(scroll).toHaveBeenCalled();
+  });
+
+  it('scrolls smoothly to the row a link named', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item/ci2'), data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  it('jumps to the row instead when the reader asked for less motion', async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/core_item/ci2'),
+        data: fakeData(LOOT),
+        motion: fakeMotion(true)
+      })
+    });
+    await waitFor(() => {
+      expect(scroll).toHaveBeenCalledWith({ behavior: 'auto', block: 'start' });
+    });
   });
 
   it('scrolls to and flashes the section a link named', async () => {

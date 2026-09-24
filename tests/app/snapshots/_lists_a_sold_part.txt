@@ -90,7 +90,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     StaticText ". There are no previous modifications by others."
   status ""
     StaticText "Убрано из списка (1)"
-    button "Вернуть"
+    button "Вернуть" [focused=true]
 
 ## ru :: controls
 7 мешков 5 горстей
@@ -235,7 +235,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     StaticText ". There are no previous modifications by others."
   status ""
     StaticText "Убрано из списка (1)"
-    button "Вернуть"
+    button "Вернуть" [focused=true]
 
 ## en :: controls
 7 bags 5 handfuls

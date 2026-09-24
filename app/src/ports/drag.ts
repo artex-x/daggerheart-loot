@@ -21,7 +21,11 @@
  * `dragging`/`drop-before`/`drop-after` classes, driven by the three optional
  * callbacks below. That split is forced, not chosen: Svelte drops a scoped
  * rule no template element can match, and `npm run check` fails it as dead
- * CSS - so the port cannot toggle a class itself. */
+ * CSS - so the port cannot toggle a class itself.
+ *
+ * A drag whose own row leaves the DOM mid-drag (another tab removed it) is
+ * void: its marks clear and the release moves nothing (docs/DECISIONS.md,
+ * 2026-09-24, "A drag whose own row leaves the list is void"). */
 
 import type { DragHandlers, DragPort } from './types.js';
 
@@ -54,6 +58,9 @@ export function nativeDrag(): DragPort {
       let zone: { mids: number[]; top: number; bottom: number } | null = null;
       let speed = 0;
       let frame = 0;
+      /* The grip the drag started from, and whether its row has left. */
+      let source: Element | null = null;
+      let gone = false;
 
       /* Runs off the frame rather than off the mouse, so it keeps going while
          the hand is still (app.js 4467-4469). */
@@ -86,14 +93,28 @@ export function nativeDrag(): DragPort {
         const clientY = (e as DragEvent).clientY;
         speed = edgeSpeed(clientY, window.innerHeight);
         if (speed && !frame) frame = requestAnimationFrame(step);
+        if (from >= 0 && source && !source.isConnected) {
+          stopScroll();
+          e.preventDefault();
+          const gdt = (e as DragEvent).dataTransfer;
+          if (gdt) gdt.dropEffect = 'none';
+          if (!gone) {
+            gone = true;
+            gap = -1;
+            handlers.onOver?.(-1, null);
+            handlers.onEnd?.();
+          }
+          return;
+        }
         if (from < 0 || !zone) return;
         const y = clientY + window.scrollY;
         const inside = y >= zone.top && y <= zone.bottom;
-        if (inside) {
-          e.preventDefault();
-          const dt = (e as DragEvent).dataTransfer;
-          if (dt) dt.dropEffect = 'move';
-        }
+        /* A cancelled event with `dropEffect = 'none'` refuses the drop outside
+           the zone, over an editable field too, which would otherwise take the
+           row's `text/plain` index as text. */
+        e.preventDefault();
+        const dt = (e as DragEvent).dataTransfer;
+        if (dt) dt.dropEffect = inside ? 'move' : 'none';
         let next = -1;
         if (inside) {
           let g = 0;
@@ -113,22 +134,40 @@ export function nativeDrag(): DragPort {
          `drop` could never see. */
       const onDocDrop = (e: Event): void => {
         stopScroll();
-        if (from >= 0 && gap >= 0) {
+        if (from >= 0 && gap >= 0 && !gone) {
           e.preventDefault();
           handlers.onDrop(from, gap > from ? gap - 1 : gap);
-        }
+        } else if (from >= 0) e.preventDefault();
         reset();
       };
 
-      const reset = (): void => {
+      const onDragEnd = (): void => {
+        reset();
+      };
+
+      const unlisten = (): void => {
         document.removeEventListener('dragover', onDocOver, true);
         document.removeEventListener('dragenter', onDocOver, true);
         document.removeEventListener('drop', onDocDrop, true);
+        document.removeEventListener('dragstart', onDocStart, true);
+        source?.removeEventListener('dragend', onDragEnd);
+        source = null;
         stopScroll();
+      };
+
+      const reset = (): void => {
+        unlisten();
         from = -1;
         gap = -1;
         zone = null;
+        gone = false;
         handlers.onEnd?.();
+      };
+
+      /* A new drag of any kind, text out of a note included, ends a stale
+         one before the container's own `onStart` runs. */
+      const onDocStart = (): void => {
+        reset();
       };
 
       /* app.js 4452-4454: only a grip starts a drag. A row also holds a
@@ -169,13 +208,14 @@ export function nativeDrag(): DragPort {
           if (row && dt.setDragImage) dt.setDragImage(row, 24, 24);
         }
         handlers.onDrag?.(from);
+        /* A grip another tab's write removed still gets its `dragend`, which
+           no longer bubbles to the container. */
+        source = grip;
+        source.addEventListener('dragend', onDragEnd);
         document.addEventListener('dragover', onDocOver, true);
         document.addEventListener('dragenter', onDocOver, true);
         document.addEventListener('drop', onDocDrop, true);
-      };
-
-      const onDragEnd = (): void => {
-        reset();
+        document.addEventListener('dragstart', onDocStart, true);
       };
 
       container.addEventListener('dragstart', onStart);
@@ -184,10 +224,7 @@ export function nativeDrag(): DragPort {
       return () => {
         container.removeEventListener('dragstart', onStart);
         container.removeEventListener('dragend', onDragEnd);
-        document.removeEventListener('dragover', onDocOver, true);
-        document.removeEventListener('dragenter', onDocOver, true);
-        document.removeEventListener('drop', onDocDrop, true);
-        stopScroll();
+        unlisten();
       };
     }
   };

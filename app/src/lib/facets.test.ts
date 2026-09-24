@@ -217,11 +217,11 @@ describe('the equipment tables', () => {
     }
   });
 
-  it('labels the class row by kind: Класс on weapons, Тип урона on secondary', () => {
+  it('labels the class row Класс on every weapon kind', () => {
     const [, , clsWeapon] = facetRows(index, 'eq_weapon', t, 'ru');
     const [, , clsSecondary] = facetRows(index, 'eq_secondary', t, 'ru');
     expect(clsWeapon?.label).toBe('Класс');
-    expect(clsSecondary?.label).toBe('Тип урона');
+    expect(clsSecondary?.label).toBe('Класс');
   });
 
   it('offers burden only on weapons', () => {

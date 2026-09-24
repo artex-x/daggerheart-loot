@@ -78,7 +78,7 @@ trap row 45 fixed).
 A subagent that ended its turn is still listed and still holds its
 context; `SendMessage` to its name resumes it from its transcript, and
 its reply arrives as an ordinary task notification. Measured 2026-09-11
-on the Windows desktop app - the host `improvements.md` Finding 1 and
+on the Windows desktop app - the host `git show b2eec64:.claude/improvements.md` Finding 1 and
 the orchestrate prompt (until this change) recorded as unable to do it:
 
 | Direction | Status | Evidence |
@@ -201,7 +201,7 @@ Three runtime files live under `.claude/` and are gitignored
 |---|---|---|
 | `.check-cache.json` | `check-observer.mjs` | `{ key, at, command }` for the last observed passing `npm run check`. |
 | `.check-index` | `tree-key.mjs` | A throwaway copy of `.git/index`, never the real one. |
-| `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. Holds the 64 most recently active sessions; the session being written is always kept. The cap bounds the session count, not a session's own `wrote` map, which still grows without limit for the life of one session. |
+| `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. Holds the 64 most recently active sessions; the session being written is always kept. The cap bounds the session count, not a session's own `wrote` map, which still grows without limit for the life of one session. A save writes a temp file and renames it over this one, so a reader never parses a half write. The read-modify-write is not guarded against a second session saving in between: one session per working tree is the protocol, and a lost save costs one duplicate reminder or one missing Stop sentence (fail open). |
 
 **Escape hatch:** `SKIP_CHECK_GATE=1 git commit -m "..."` bypasses the commit
 gate and announces the bypass to the human via `systemMessage`. It must be a
@@ -256,12 +256,13 @@ Each part is load-bearing:
   background (`Command did not complete within its 120s timeout and
   was moved to the background`), and for a subagent that is a lost
   run. The default is 120 s and the check is ~165 s (stage by stage:
-  format 11s, lint 30s, typecheck 12s, data 4s, derived 1s,
+  format 11s, lint 30s, typecheck 12s, data 4s, derived 1s, dataint
+  ~2.6s,
   selftest 19s, vitest with coverage 88s), so a check call without a
   timeout cannot finish in the foreground. 600000 is the tool's
   maximum; a check that outlives even that is the fork-pool stall
   below, not a timeout problem.
-- **Measured, it does not cross the output cap.** A result over about
+- **Measured with `rtk`, it does not cross the output cap.** A result over about
   30,000 characters is not shown - the tool saves it to
   `tool-results/<id>.txt` and names the path. `rtk npm run check`'s full
   output (both stdout and stderr, unpiped) measured 21,382 characters
@@ -284,6 +285,18 @@ cost three worker runs on issue 47 and is now blocked at
 `PreToolUse` (candidate 27), for a plain or `rtk`-prefixed check alike.
 
 **More host facts about a long check, recorded so nobody re-derives them:**
+
+- Without `rtk` (the Linux cloud container, measured 2026-09-24) a plain
+  `npm run check` prints about 65 KB, over the tool's output cap, so the
+  result is persisted to a file and `check-observer.mjs` cannot arm the
+  gate. A green run there is committed with `SKIP_CHECK_GATE=1`, and the
+  exact command and result are recorded in the task's handoff. Chromium is
+  at `/opt/pw-browsers` there (`PLAYWRIGHT_BROWSERS_PATH`, Playwright's
+  browser path); the puppeteer suites under `tests/app/` do not read it -
+  `tests/app/lib.js` launches puppeteer's own Chrome from
+  `~/.cache/puppeteer`, which `npm ci` installs, with no setup. Wall clocks
+  there (2026-09-24): `node tests/run-all.js app/states` 130-160 s, each
+  `golden.js --shard=n/4` 130-137 s - both fit one foreground call.
 
 - The Bash tool can sometimes not start at all on this Windows host
   (`CreateInstance: E_ACCESSDENIED`); any Bash-only wrapper for the check is
@@ -567,8 +580,8 @@ parity/run-all families) beside a live one. Nothing writes that lock
 today - `run-all.js` and `golden.js` never did - so two heavy runs (a
 `npm run check` and a `node tests/app/golden.js`, say) can now collide on
 one tree with no guard against it beyond "one session at a time per
-working tree" (`CLAUDE.md`). Still open, owned by no task (`docs/specs/
-DEBT.md`, "Routed elsewhere, not paid"): whether the still-surviving heavy
+working tree" (`CLAUDE.md`). Still open, owned by no task, and this
+paragraph is its home: whether the still-surviving heavy
 runs (`run-all.js`'s pool, the four `golden.js` shards) need a lock of their
 own, now that the class of collision the old one caught can recur - weighed
 against the Playwright decision beside it, since a second real-browser
@@ -904,6 +917,9 @@ touches the named file to fold in:
   re-derivable from the repository alone. Its real home is a comment in
   `ci.yml`'s own "HOW TO UNDO A BAD DEPLOY" block - out of scope for a
   `.md`-only batch, parked here instead.
+- `gitleaks-action@v2` and the three Pages actions in `ci.yml` target Node
+  20 and are forced onto Node 24 by the runner: two standing annotations,
+  not errors. File it only if one starts failing.
 
 Facts settled during measurement (issue 68, 2026-09-23), the Browser pane:
 
@@ -925,15 +941,15 @@ to find it. Candidate row 42 points here.
 Trigger for every row: **the start of persistence Phase 0**, which runs after
 issue 47 closes at R0c (`DAGGERHEART-LOOT-PERSISTENCE-DESIGN.md`, sections
 17.4 and 18, revised 2026-09-08). Not a date; not this task. Aligned with
-17.4's table, not re-derived. Superseded contracts are recorded in
-`docs/specs/DEBT.md` under a new heading, "Contracts superseded by the
-persistence design", in the same commit that edits `CLAUDE.md`,
+17.4's table, not re-derived. A superseded contract is recorded in
+`docs/DECISIONS.md` (a decision, not a defect: `DEBT.md`'s sections are the
+tasks that owe its entries), in the same commit that edits `CLAUDE.md`,
 `docs/specs/CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js` and
 `llms.txt` (the standing contract-change rule).
 
 | Item | Mechanism decided | Where it goes | Why a gate, not judgement |
 |---|---|---|---|
-| Supersede the no-backend / hash-only-list law and the `file://` clauses | edit `CLAUDE.md`: "Product laws" bullet 1, "Architecture boundaries" last bullet, "Project shape" first bullet; DEBT.md entry names the old text and the design section that replaces it | `CLAUDE.md`, `docs/specs/DEBT.md`, CONTRACTS/fixtures/llms.txt | until then those laws protect 47 |
+| Supersede the no-backend / hash-only-list law and the `file://` clauses | edit `CLAUDE.md`: "Product laws" bullet 1, "Architecture boundaries" last bullet, "Project shape" first bullet; a `docs/DECISIONS.md` entry names the old text and the design section that replaces it | `CLAUDE.md`, `docs/DECISIONS.md`, CONTRACTS/fixtures/llms.txt | until then those laws protect 47 |
 | RLS policy verification | a **gate**: negative tests against the local Supabase stack (anon reads no other user's rows; service role never reaches the client) wired into `npm run check`, so the existing commit gate (`check-observer.mjs` + rule 2e) covers it with no new hook | `package.json` check chain, `tests/` | an RLS mistake does not fail a test, it leaks data |
 | Migration reversibility | a **gate** in the same chain: every migration under `supabase/migrations/` has a reversal or is proven additive by a test that applies up, down, up | `tests/`, `package.json` | "additive while two frontend versions are open" is a rule tooling enforces |
 | Applied migrations never edited in place | `edit-guard.mjs` `DENY` entry: path under `supabase/migrations/` listed in the applied manifest the apply step writes | `.claude/hooks/edit-guard.mjs`, selftest cases | same class as the generated-file guard |
@@ -1011,8 +1027,8 @@ not changed.
 | 7 | Block every force-push form | `PreToolUse(Bash)` | **adopt** | Narrowed 2026-09-12 from "block every push": a plain push is not destructive, so the blanket block was the thing keeping committed work off the remote. **Tightened 2026-09-18** (`workflow-hygiene`): every force form is now denied, including `--force-with-lease` - one amended commit per task makes an amend after a push the tempting mistake, and a lease that succeeds is still the rewrite `CLAUDE.md` forbids. |
 | 8 | **+** Block blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths | `PreToolUse(Bash)` | **adopt** | CLAUDE.md's preserve-unrelated-changes rule flags exactly this: blanket staging is how another task's in-flight files get swept into someone else's commit. |
 | 9 | **+** Block AI attribution in a commit message | `PreToolUse(Bash)` | **adopt** | An explicit standing user rule ("no Co-Authored-By trailer, ever") against a well-known default agent behaviour. Zero false positives; fires never once respected. |
-| 10 | **+** Long-check reminder | `PreToolUse(Bash)` | **adopt** | `improvements.md` Finding 1: three of five workers made this exact mistake in one session. Fires on four command shapes, once per session each. |
-| 11 | **+** Parity-baseline warning on `index.html` / `app.js` / `style.css` | `PostToolUse(Edit\|Write)` | **adopt** | `improvements.md` Finding 5 called the static root frozen because it *was* the parity expectation; a block would have been wrong because count updates legitimately touched it. **Retired at R0c `23c00a6`**: the static root and the `remind:baseline` group that watched it are both deleted. |
+| 10 | **+** Long-check reminder | `PreToolUse(Bash)` | **adopt** | `git show b2eec64:.claude/improvements.md` Finding 1: three of five workers made this exact mistake in one session. Fires on four command shapes, once per session each. |
+| 11 | **+** Parity-baseline warning on `index.html` / `app.js` / `style.css` | `PostToolUse(Edit\|Write)` | **adopt** | `git show b2eec64:.claude/improvements.md` Finding 5 called the static root frozen because it *was* the parity expectation; a block would have been wrong because count updates legitimately touched it. **Retired at R0c `23c00a6`**: the static root and the `remind:baseline` group that watched it are both deleted. |
 | 12 | **+** Block writes to `dist/` and `package-lock.json` | `PreToolUse(Edit\|Write)` | **adopt** | Two array entries in a list that already exists; both catch real mistakes; neither can fire on a legitimate edit. |
 | 13 | Warn when a worker is dispatched with no explicit `model` | `PreToolUse(Task)` | **reject** | Fixed structurally at `60172d3` by putting real defaults in agent frontmatter. A hook would re-litigate a solved problem. |
 | 14 | Warn before `TaskStop` ("run ListAgents first") | `PreToolUse(TaskStop)` | **reject** | The recorded failure (`001aa43`) was a misread status, which is judgment. `orchestrate.prompt.md`'s "a worker that went quiet" section owns it and are the right owner. |
@@ -1034,7 +1050,7 @@ not changed.
 | 30 | Accept a leading `set -o pipefail` in the observer's attribution rule, and make the canonical invocation carry it | `PostToolUse(Bash)` (attribution only) | **adopt** (owner decision, 2026-09-10) | The recommended pipe reports `tail`'s status, so a failed check comes back with no exit line and reads as a pass; twelve check runs across five sessions were spent learning the status a second way. With the prefix the tool prints `Exit code 1` on a failed check, `check-observer.mjs` sees `exit_code: 1` and refuses to arm, and the worker reads one line. Forgery: `set -o pipefail` writes nothing to stdout, so the check stays the only stdout producer; the strip removes exactly the tokens `set -o pipefail` plus one `;` or `&&` at the start, on either side of the `cd` strip, and nothing else, after which every existing refusal applies unchanged. `set -o pipefail; echo "All files"`, `set -o pipefail; npm run check > o.txt 2>&1; grep "All files" o.txt`, `set -o pipefail; true; npm run check ...`, `set -eo pipefail; ...` and `set -x; ...` are all still refused. A forger gains nothing: omitting the prefix is today's state, and with it the exit code only tightens the gate. Measured 2026-09-10 on the Bash tool. |
 | 31 | Deny a foreground `npm run check` with no `timeout` (rule 2g, second trigger) | `PreToolUse(Bash)` | **reject for now**, sketched | The tool moves a call that outlives its timeout to the background instead of killing it, the default is 120 s, and the check is ~165 s healthy, so a check call without a `timeout` cannot finish in the foreground on this host and is lost exactly as a backgrounded one is - measured once (`8ba57351` afff seq 57). But the number was undocumented until now: B1 puts it in the 2g deny message, the 2f reminder, the README, `CLAUDE.md` and the implement prompt, and the deny message arrives at the exact moment a worker retries in the foreground. That prose has not been given a chance to fail, which is the standing bar (row 29). And the deny has a failure mode of its own: it must fire on an *absent* field, so a host that stops passing `tool_input.timeout` to hooks would deny every foreground check - loud and diagnosable, but the one thing a guard must not do. The sketch, so it is a copy-paste when this is built: the no-timeout deny fires on `run_in_background === true` OR `timeout` undefined/null, with a non-number non-null `timeout` (e.g. the string `'600000'`) counting as present so an unknown host shape leaves the rule inert; `bashPayload` gains `timeout: extra.timeout === null ? undefined : (extra.timeout ?? 600000)`, spread only when defined; the adoption probe is a foreground check with and without a `timeout` - both denied means the field is not passed, do not ship. Scope boundary if it is built: never a numeric threshold ("under 300000") and never extended to `check:built`/vitest/run-all - a number is a choice, not a measurement, and those families do not feed the commit gate. |
 | 32 | The observer speaks its verdict (armed / not armed and why) | `PostToolUse(Bash)` | **reject** | Tempting and cheap. But the only recorded reads of `.check-cache.json` are issue 65 verifying its own hook, and once the exit code is the check's (row 30) the worker has the status. No evidence; the observer stays silent by design. |
-| 33 | Speak on `echo $?` as the first command of a call | `PreToolUse(Bash)` | **reject** | Two occurrences, both inside R1; row 30 removes the reason to ask. One README sentence instead. |
+| 33 | Speak on `echo $?` as the first command of a call | `PreToolUse(Bash)` | **reject** | Two occurrences, both inside one session; row 30 removes the reason to ask. One README sentence instead. |
 | 34 | A hook for a result over the output cap | any | **reject** | The size is unknowable before the run, and the tool already persists the full output and names the file. The failure is re-running instead of reading it: the reminder gains one clause and the README one sentence. Parity's one-line-per-page diff text is the producer; shortening it is a `tests/` change with diagnostic cost, not this task's. |
 | 35 | Deny `SendMessage` to a writer while another writer is live | `PreToolUse(SendMessage)` | **reject** | The input does not exist in a hook: liveness and role come from `ListAgents`, which a hook cannot call - it gets stdin JSON and nothing else. The matcher is unverified on this host (`tool_name` for `SendMessage` has never reached a hook here; #19/#29-shaped). Zero recorded failures; the standing bar is a repeated one. The prompt's "a resume is a dispatch" sentence owns it. |
 | 36 | Deny the reviewer any `SendMessage` (write-by-proxy) | agent frontmatter `disallowedTools`, not a hook | **reject for now**, sketched | The cheaper instrument exists (row 19's argument): one frontmatter line in `reviewer.md`. But `disallowedTools` is unverified as a key this host honours, `SendMessage` is not in a subagent's default tool list so sending needs a deliberate `ToolSearch` load - a guard against habit and haste has no habit to guard here - and the failure has never been recorded. If a reviewer ever sends: add `disallowedTools: SendMessage` (or the key the host documents) under `permissionMode: plan` in `.claude/agents/reviewer.md`, and verify with a probe that the reviewer's `ToolSearch select:SendMessage` then returns nothing. |
@@ -1061,3 +1077,5 @@ not built. |
 | 46 | Deny a `npm run check`/`check:built` inside a pipe or redirected to a file, and have `check-observer.mjs` state the verdict | `PreToolUse(Bash)` (rule 2k), `PostToolUse(Bash)` (observer) | **adopt** (owner decision, 2026-09-18) | Measured over this project's 65 session transcripts: of 71 real check invocations, **61 were piped** into `tail`/`grep`, 9 redirected to a file, and exactly **one** was the canonical `rtk npm run check` that candidate 45 established. A pipe hands the Bash tool the last stage's exit status - `tail` always exits 0 - so a failed check is indistinguishable from a passing one; the recorded recovery is a second ~165s run, or an `echo $?` on a later line that reports the echo's own status. A redirect keeps the status but hides the stdout the observer needs, so the gate never arms and the file has to be read back. Candidate 10's reminder has said "no pipe needed" since 45 and fires once per session; those 61 runs are what a reminder is worth against a habit the docs themselves taught for months. The deny forbids nothing that works, and the paired verdict line removes the remaining inference: the observer already knows the failure markers and whether it armed, so it says `PASS` / `FAIL` / passed-but-unattributable in one line, and speaks only for a real foreground check invocation. Arming is unchanged and just as strict - the line states, it does not gate. **Two host facts, probed live rather than assumed, bound what that line can carry**, both on this Windows desktop build: no exit-code field reaches a `PostToolUse` hook at all here (a successful Bash call arrives as `{stdout, stderr, interrupted, isImage, noOutputExpected}`, whatever the hooks reference lists), so the pass/fail split rests on the stdout markers and the ` (exit n)` suffix stays empty; and on a *failed* Bash call the hook does not speak at all - the result comes back as a plain string, `"Exit code 1\n..."`, rather than that object, verified with a check deliberately failed at its prettier stage. Neither weakens the fix: unpiped, a failure opens with `Exit code 1` on the result's first line and a pass ends with the observer's own. The FAIL branch is kept for a host that does deliver the call, and for the case that genuinely reaches here - a run that exits 0 while printing failure markers. Covers `check:built` too (same family, same blindness) though only `check` feeds the gate; `check:fast` is out of scope, as it is everywhere else. Boundary caught while implementing: the `2>&1` strip has to run **before** the list split, because `LIST_SPLIT_RE` treats that `&` as a list operator and a later strip reads the leftover `2>` as a file redirect - `check-observer.mjs` had the order right already. Selftest #154-#171; #119 retargeted, since it asserted the now-denied shape. |
 | 47 | Name LSP and ast-grep where agents actually read | `.claude/README.md`, the three code-facing worker prompts | **adopt** (owner decision, 2026-09-18) | Measured over the same 65 transcripts: `Grep` 109 calls, `rtk grep` 90, `git grep` 55, **LSP 16** - all in the three sessions that installed it, and only `hover`/`documentSymbol` - and **`ast-grep` 1**, that one being `--version`. `git grep` over `.claude`, `CLAUDE.md` and `docs/` found exactly one mention of either tool, `agents/reviewer.md`'s `tools:` list, which grants LSP without saying what it is for. The guidance existed only in the human's global `~/.claude/CLAUDE.md`, while every worker is told to follow a prompt file exactly - so the prompts, not a doc line, are the lever. Two live traps found while probing and written down rather than left to be rediscovered: `workspaceSymbol` returns `No symbols found in workspace` on this host for any query, so the operation the old guidance led with is the one that fails first; and an `ast-grep` pattern that does not match exits 1 with no output, which reads as "no such code" (`function $N($$$A) { $$$B }` finds nothing in `app/src/lib/search.ts` only because those functions carry return type annotations). `findReferences` works and is the reason to bother - 11 references to `foldQuery` across two files in one call. No hook: a nudge toward a tool is not a deterministic property, and candidate 43's history is what happens when a guard denies a shape that already worked. |
 | 48 | Deny or fail on a comment citing a batch id, a review finding id or an `issues/<id>/` path | `tests/` grep or `PreToolUse(Edit)` | **reject for now** | The rule is new (`CLAUDE.md`, "Comments", 2026-09-18) and the sweep that applied it found ~95 files, all written before the rule existed - no recorded failure of the written rule yet (row 29's bar). Rule 2i already denies the one that does damage (an `issues/<id>/` citation, at retirement). Cheapest form if it recurs: a `tests/derived.js`-style check that greps comments in `app/src`, `tools`, `tests`, `.claude/hooks` for `issues/[^<]` without a sha prefix and for `\bB\d+(\.\d+)?[a-z]?-[NR]\d+\b`. |
+| 49 | A wrap-up nudge off the five-hour usage window | `Stop` / `PreToolUse` | **withdrawn, do not rebuild** | Built, measured and withdrawn at `79e26c9`: the five-hour window is not readable on this host. The hook input's `effort` is an object `{ level }`, and the same level reaches a worker's Bash tool as `$CLAUDE_EFFORT`. Full finding: `git show b2eec64:.claude/improvements.md`, Finding 4. |
+| 50 | Re-measure the configuration audit baseline | none (a manual pass) | **dated: 2026-10-15** | Same commands, same Windows host as the 2026-09-15 baseline (`rtk gain`, `rtk discover`, `wc -c` of the always-loaded markdown, the skill-listing sum); `grep -n` and `tail -c` should be near zero in `rtk discover`, and `CLAUDE.md` under 181 lines. A regression is a new row here. Baseline table and method: `git show b2eec64:.claude/improvements.md`, Finding 7. |

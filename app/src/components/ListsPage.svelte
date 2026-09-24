@@ -138,7 +138,7 @@
     }
     const l = app.lists.create(data.name, copyInit(data));
     importDraft = '';
-    app.go(sharedListHash(encodeList(l, true)));
+    app.openNewList(l);
     /* This call site must not proceed silently - once created, a dropped
        entry is gone from the copy for good even if the data later knows it
        again. */
@@ -198,7 +198,10 @@
             <!-- Whitespace below is content, covering the whole link - see
                docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
             <!-- prettier-ignore -->
-            <a class="listcard-main" href={sharedListHash(encodeList(l, false))}
+            <a
+              class="listcard-main"
+              href={sharedListHash(encodeList(l, false))}
+              aria-label={`${l.name || t.untitled}, ${plural(items.length, t.itemsN, app.lang)}`}
             ><div class="listcard-top"><b>{l.name}</b><Badge cls="num"
                 >{items.length}</Badge
               ></div

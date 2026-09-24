@@ -592,6 +592,21 @@ describe('parseArgs', () => {
     assert.throws(() => lib.parseArgs(['--adopt']), /--adopt needs a path under the site/);
   });
 
+  it('a value flag given last, or followed by another flag, throws instead of reading as absent', () => {
+    for (const flag of [
+      '--apply',
+      '--result',
+      '--stale-list',
+      '--assets',
+      '--state',
+      '--only'
+    ]) {
+      assert.throws(() => lib.parseArgs([flag]), /needs a value/, flag);
+    }
+    assert.throws(() => lib.parseArgs(['--apply', '--dry-run']), /--apply needs a value/);
+    assert.throws(() => lib.parseArgs(['--apply', '']), /--apply needs a value/);
+  });
+
   it('--adopt sets adopt, and runs on its own in either flag order', () => {
     assert.equal(lib.parseArgs(['--adopt', 'i/en/']).adopt, 'i/en/');
     assert.equal(lib.parseArgs([]).adopt, null);

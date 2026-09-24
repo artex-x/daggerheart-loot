@@ -233,6 +233,12 @@ export interface PwaPort {
   persist(): Promise<Persistence>;
 }
 
+export interface MotionPort {
+  /** Whether the reader asked for less motion; read per call, the setting
+   *  can change while the page is open. */
+  reduced(): boolean;
+}
+
 /**
  * Redrawing a picture as something the clipboard will accept.
  *
@@ -270,4 +276,5 @@ export interface Env {
   drag: DragPort;
   dialog: DialogPort;
   pwa: PwaPort;
+  motion: MotionPort;
 }

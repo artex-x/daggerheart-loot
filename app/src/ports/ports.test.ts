@@ -7,6 +7,7 @@ import { browserClipboard, fakeClipboard } from './clipboard.js';
 import { browserCompress, plainCompress } from './compress.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { edgeSpeed, nativeDrag } from './drag.js';
+import { browserMotion, fakeMotion } from './motion.js';
 import { hashRouter, memoryRouter } from './router.js';
 import { browserShare } from './share.js';
 import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
@@ -76,7 +77,7 @@ describe('storage that does not', () => {
   });
 });
 
-describe('another tab writing, or this tab catching up on one it might have missed (R2)', () => {
+describe('another tab writing, or this tab catching up on one it might have missed', () => {
   /** A `win` with just enough of `window` and `window.document` for
    *  `browserStorage`'s three listeners - the `storage` event plus
    *  `visibilitychange` and `pageshow`, neither of which exists in jsdom
@@ -117,7 +118,7 @@ describe('another tab writing, or this tab catching up on one it might have miss
     const seen: (string | null)[] = [];
     browserStorage(win).onExternalChange((k) => seen.push(k));
     for (const fn of storageListeners) fn({ key: 'dhloot.lists.v2' } as StorageEvent);
-    /* A cleared storage fires with a null key - R2 now redraws on it too. */
+    /* A cleared storage fires with a null key, and the merge redraws on it too. */
     for (const fn of storageListeners) fn({ key: null } as StorageEvent);
     expect(seen).toEqual(['dhloot.lists.v2', null]);
   });
@@ -306,7 +307,7 @@ describe('sharing', () => {
   });
 });
 
-describe('the picture download fallback (D14)', () => {
+describe('the picture download fallback', () => {
   /* `pngOf` cannot run in jsdom at all (no Image, no canvas, no
      toBlob) and stays excluded from coverage (vite.config.mts) for exactly
      that reason - but `download` needs only the two DOM globals it actually
@@ -587,6 +588,48 @@ describe('dragging', () => {
     expect(e.defaultPrevented).toBe(false);
   });
 
+  it("ends a drag at the grip's own dragend once its row has left the list", () => {
+    const box = rows(3);
+    const onEnd = vi.fn();
+    bindDrag(box, { onDrop: vi.fn(), onEnd });
+    const grip = gripOf(box, 1);
+    fire(grip, 'dragstart');
+    box.children[1]?.remove();
+    fire(grip, 'dragend');
+    expect(onEnd).toHaveBeenCalled();
+    expect(enter(box, 92).defaultPrevented).toBe(false);
+  });
+
+  it('voids a drag whose row leaves mid-drag: marks clear, the release moves nothing and is refused', () => {
+    const box = rows(3);
+    const onDrop = vi.fn();
+    const onOver = vi.fn();
+    const onEnd = vi.fn();
+    bindDrag(box, { onDrop, onOver, onEnd });
+    fire(gripOf(box, 0), 'dragstart');
+    hover(box, 140);
+    expect(onOver).toHaveBeenLastCalledWith(2, 'after');
+
+    box.children[0]?.remove();
+    const over = hover(box, 140);
+    expect(onOver).toHaveBeenLastCalledWith(-1, null);
+    expect(onEnd).toHaveBeenCalled();
+    expect(over.defaultPrevented).toBe(true);
+
+    const drop = release(box, 140);
+    expect(onDrop).not.toHaveBeenCalled();
+    expect(drop.defaultPrevented).toBe(true);
+  });
+
+  it('a later dragstart outside any grip ends a stale drag', () => {
+    const box = rows(3);
+    bindDrag(box, { onDrop: vi.fn() });
+    fire(gripOf(box, 0), 'dragstart');
+    box.children[0]?.remove();
+    fire(document.body, 'dragstart');
+    expect(enter(document.body, 5).defaultPrevented).toBe(false);
+  });
+
   it('leaves a stray drop alone when none of our rows is being dragged', () => {
     /* app.js 4509: the same guard as above, for the same reason. */
     const box = rows(3);
@@ -634,21 +677,24 @@ describe('dragging', () => {
     const onOver = vi.fn();
     bindDrag(box, { onDrop: vi.fn(), onOver });
     fire(gripOf(box, 1), 'dragstart');
+    /* Every live `dragover` is cancelled; the effect says which side of the
+       zone edge it fell on. */
+    const effectAt = (clientY: number): string => {
+      const dt = { dropEffect: '' };
+      expect(fire(box, 'dragover', { clientY, dataTransfer: dt }).defaultPrevented).toBe(true);
+      return dt.dropEffect;
+    };
 
-    const atTop = hover(box, -8); // one measured row gap above the first row
-    expect(atTop.defaultPrevented).toBe(true);
+    expect(effectAt(-8)).toBe('move'); // one measured row gap above the first row
     expect(onOver).toHaveBeenLastCalledWith(0, 'before');
 
-    const pastTop = hover(box, -9);
-    expect(pastTop.defaultPrevented).toBe(false);
+    expect(effectAt(-9)).toBe('none');
     expect(onOver).toHaveBeenLastCalledWith(-1, null);
 
-    const atBottom = hover(box, 144); // one measured row gap below the last row
-    expect(atBottom.defaultPrevented).toBe(true);
+    expect(effectAt(144)).toBe('move'); // one measured row gap below the last row
     expect(onOver).toHaveBeenLastCalledWith(2, 'after');
 
-    const pastBottom = hover(box, 145);
-    expect(pastBottom.defaultPrevented).toBe(false);
+    expect(effectAt(145)).toBe('none');
     expect(onOver).toHaveBeenLastCalledWith(-1, null);
 
     fire(box, 'dragend'); // ends the drag; see the note on the same cleanup above
@@ -807,12 +853,27 @@ describe('dragging', () => {
     fire(box, 'dragend'); // ends the drag; see the note on the same cleanup above
   });
 
-  it('leaves a dragenter outside the drop zone alone', () => {
+  it('refuses a dragenter and a dragover outside the drop zone', () => {
     const box = rows(3);
     bindDrag(box, { onDrop: vi.fn() });
     fire(gripOf(box, 1), 'dragstart');
-    expect(enter(box, -9).defaultPrevented).toBe(false); // one past the measured zone
+    for (const type of ['dragenter', 'dragover']) {
+      const dt = { dropEffect: '' };
+      const e = fire(box, type, { clientY: -9, dataTransfer: dt }); // one past the measured zone
+      expect(e.defaultPrevented).toBe(true);
+      expect(dt.dropEffect).toBe('none');
+    }
     fire(box, 'dragend'); // ends the drag; see the note on the same cleanup above
+  });
+
+  it('swallows a drop outside the drop zone without moving anything', () => {
+    const box = rows(3);
+    const onDrop = vi.fn();
+    bindDrag(box, { onDrop });
+    fire(gripOf(box, 1), 'dragstart');
+    hover(box, -9);
+    expect(fire(box, 'drop', { clientY: -9 }).defaultPrevented).toBe(true);
+    expect(onDrop).not.toHaveBeenCalled();
   });
 
   it('leaves a stray dragenter alone when none of our rows is being dragged', () => {
@@ -940,9 +1001,9 @@ describe('the address bar', () => {
     expect(calls).toEqual([]);
   });
 
-  it('falls back to assigning the hash when replaceState throws (R4/PF3)', () => {
+  it('falls back to assigning the hash when replaceState throws', () => {
     /* WebKit throws past 100 replaceState calls in a 30s window - the
-       debounced list-URL sync (PF3) is the caller most likely to hit it. */
+       debounced list-URL sync is the caller most likely to hit it. */
     const { win, history } = fakeWin();
     history.replaceState = () => {
       throw new DOMException('rate limited', 'SecurityError');
@@ -1245,5 +1306,27 @@ describe('the installable app', () => {
   it('has a fake storage request that answers what it is told', async () => {
     expect(await fakePwa({ persistence: 'denied' }).persist()).toBe('denied');
     expect(await fakePwa().persist()).toBe('skipped');
+  });
+});
+
+describe('the motion port', () => {
+  it('reads the reduced-motion preference, and answers no without matchMedia', () => {
+    try {
+      vi.stubGlobal('matchMedia', (q: string) => ({
+        matches: q === '(prefers-reduced-motion: reduce)'
+      }));
+      expect(browserMotion().reduced()).toBe(true);
+      vi.stubGlobal('matchMedia', () => ({ matches: false }));
+      expect(browserMotion().reduced()).toBe(false);
+      vi.stubGlobal('matchMedia', undefined);
+      expect(browserMotion().reduced()).toBe(false);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('has a fake that answers what it is told', () => {
+    expect(fakeMotion(true).reduced()).toBe(true);
+    expect(fakeMotion().reduced()).toBe(false);
   });
 });

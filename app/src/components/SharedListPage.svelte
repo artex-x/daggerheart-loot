@@ -14,10 +14,10 @@
   import RecordHost from './RecordHost.svelte';
   import TableRows from './TableRows.svelte';
   import type { Index } from '../lib/data.js';
-  import { sectionHash, sharedListHash } from '../lib/hash.js';
+  import { sectionHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { plural } from '../lib/plural.js';
-  import { decodeList, encodeList, type ListEntryMeta } from '../lib/listLink.js';
+  import { decodeList, type ListEntryMeta } from '../lib/listLink.js';
   import { copyInit, takenQty } from '../lib/lists.js';
   import { moneyMode, priceText } from '../lib/money.js';
   import type { Record_ } from '../lib/types.js';
@@ -82,7 +82,7 @@
     const l = app.lists.create(s.name, copyInit(s));
     /* `ListStore.save()` has already toasted `saveFailed` on a refusal. */
     if (app.lists.saved) app.say(t.listCreated.replace('%s', l.name));
-    app.go(sharedListHash(encodeList(l, true)));
+    app.openNewList(l);
   }
 
   /* Toasted once per distinct payload, not once per component instance -

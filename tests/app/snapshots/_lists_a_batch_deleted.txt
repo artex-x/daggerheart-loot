@@ -78,7 +78,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     StaticText ". There are no previous modifications by others."
   status ""
     StaticText "Убрано из списка (1)"
-    button "Вернуть"
+    button "Вернуть" [focused=true]
 
 ## ru :: controls
 Dragon's Vault
@@ -201,7 +201,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     StaticText ". There are no previous modifications by others."
   status ""
     StaticText "Убрано из списка (1)"
-    button "Вернуть"
+    button "Вернуть" [focused=true]
 
 ## en :: controls
 Alistair's Torch

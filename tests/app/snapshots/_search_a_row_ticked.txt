@@ -87,17 +87,17 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 20Монета ПалачаСтоимость Призыва: 1Совершите Бросок Заклинания (... [namelen=373 namehash=1770234c]
 20Ртутный ФамильярВы можете разбить это, чтобы создать ртутного ... [namelen=377 namehash=51f1d97a]
 21Перчатка Ползучего КороляЧтобы использовать этот предмет, позв... [namelen=563 namehash=1f76777b]
-23Голодный Кулачный КлинокРанг 4 · Искусность · Вплотную · d6+7 ... [namelen=411 namehash=5d38bac7]
+23Голодный Кулачный КлинокРанг 4 · Физическое · Искусность · Впл... [namelen=424 namehash=e6e4f137]
 23Карманные Часы Странника ВремениСтоимость Призыва: 1Один раз з... [namelen=392 namehash=990dcc8a]
 26Мантия АрхимагаРанг 4 · Пороги 10/30 · Броня 2Стоимость Призыв... [namelen=336 namehash=0adc4ed6]
 27Посох Чёрной ДырыРанг 4 · Магическое · Знание · Далеко · d20+7... [namelen=666 namehash=f24f876c]
 29Успокаивающий КулонКогда вы должны отметить последний Стресс, ... [namelen=131 namehash=734f72e2]
 2Клинок ЖивущихРанг 3 · Магическое · Сила · Вплотную · d10+11 ма... [namelen=216 namehash=cf0225f3]
 2Проклятая ГоловаСтоимость Призыва: 2Один раз за продолжительный... [namelen=348 namehash=40505bb8]
-2Стекло Разбитой СудьбыСущество, заглянувшее в это зеркало, види... [namelen=720 namehash=1079953f]
+2Стекло Разбитой СудьбыСущество, заглянувшее в это зеркало, види... [namelen=720 namehash=924e5a5c]
 32Амулет ГорнилаКогда вы носите этот амулет и совершаете Бросок ... [namelen=353 namehash=b6e3b144]
 32Зелье Судного ДняБросьте d12 за каждую ячейку Надежды по очере... [namelen=398 namehash=0d8c3e39]
-32Нож ЕдинорогаРанг 4 · Искусность · Вплотную · d8+6 физ · Однор... [namelen=325 namehash=7415e69b]
+32Нож ЕдинорогаРанг 4 · Физическое · Искусность · Вплотную · d8+... [namelen=338 namehash=9927c62a]
 33Шлем ВозмездияСтоимость Призыва: 2Вы можете потратить Надежду,... [namelen=447 namehash=1d05c950]
 33Ярость ЗантакаРанг 3 · Физическое · Сила · Вплотную · d10+9 фи... [namelen=731 namehash=9a8529a2]
 34Дочь ЗелениРанг 4 · Физическое · Проворность · Очень далеко · ... [namelen=705 namehash=e27c62c4]
@@ -113,13 +113,13 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 5Предательский КастетВы можете отметить Стресс перед Броском Ата... [namelen=128 namehash=bf531987]
 5Стенающая Костяная ФлейтаСтоимость Призыва: 1Один раз за продол... [namelen=394 namehash=01e31635]
 6Пифийская ВилкаСтоимость Призыва: 3Выберите место для путешеств... [namelen=382 namehash=a467e3e4]
-6Последний РубежРанг 2 · Физическое · Искусность · Близко · d10+... [namelen=258 namehash=c42440cb]
+6Последний РубежРанг 2 · Физическое · Искусность · Близко · d10+... [namelen=258 namehash=287c4d5e]
 71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=267 namehash=47fce802]
-76Теневая ПризмаБросьте d8 и положите её на эту карту как Теневу... [namelen=483 namehash=e77ab9d0]
-78Тысяча ПорезовРанг 3 · Искусность · Вплотную · d8+4 физ · Одно... [namelen=427 namehash=42aa75d8]
+76Теневая ПризмаБросьте d8 и положите её на эту карту как Теневу... [namelen=483 namehash=df517ac1]
+78Тысяча ПорезовРанг 3 · Физическое · Искусность · Вплотную · d8... [namelen=440 namehash=66683ec3]
 79Лук ИскателяРанг 2 · Физическое · Искусность · Далеко · d6+4 ф... [namelen=372 namehash=eff71575]
 7Амулет из Пальца ДьяволаСтоимость Призыва: 3Вражда: Когда вы ил... [namelen=517 namehash=ebfd1e29]
-7Щит ОтталкиванияРанг 3 · Сила · Вплотную · d4+4 физ · Одноручно... [namelen=352 namehash=56acab87]
+7Щит ОтталкиванияРанг 3 · Физическое · Сила · Вплотную · d4+4 фи... [namelen=365 namehash=33c9b865]
 84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
 85КровоглотРанг 2 · Физическое · Сила · Вплотную · d10+6 физ · Д... [namelen=370 namehash=9ec2e2de]
 89Меч Хрустального ДухаРанг 4 · Физическое · Искусность · Вплотн... [namelen=278 namehash=bbbe90ef]
@@ -176,7 +176,7 @@ daggerheart.com
 Кольца Товарищества
 Кольцо Кровавой Матроны
 Короткий Меч
-Короткий МечРанг 1 · Проворность · Вплотную · d8 физ · Одноручно... [namelen=145 namehash=36b2e2fe]
+Короткий МечРанг 1 · Физическое · Проворность · Вплотную · d8 фи... [namelen=158 namehash=2f28c030]
 Кровоглот
 Ласты Лужелуточки
 Латы Ужаса
@@ -188,7 +188,7 @@ daggerheart.com
 Легендарный Доспех из Гробового Дерева
 Легендарный Доспех из Гробового ДереваРанг 4 · Пороги 10/31 · Бр... [namelen=185 namehash=ade9c86d]
 Легендарный Короткий Меч
-Легендарный Короткий МечРанг 4 · Проворность · Вплотную · d8+6 ф... [namelen=158 namehash=cc27d283]
+Легендарный Короткий МечРанг 4 · Физическое · Проворность · Впло... [namelen=171 namehash=062f3dcb]
 Легендарный Меч Света
 Легендарный Меч СветаРанг 4 · Магическое · Сила · Вплотную · d10... [namelen=109 namehash=5b83b7a0]
 Легендарный Меч Тьмы
@@ -253,7 +253,7 @@ daggerheart.com
 Продвинутый Доспех из Гробового Дерева
 Продвинутый Доспех из Гробового ДереваРанг 3 · Пороги 8/22 · Бро... [namelen=184 namehash=a17ca4ee]
 Продвинутый Короткий Меч
-Продвинутый Короткий МечРанг 3 · Проворность · Вплотную · d8+4 ф... [namelen=158 namehash=1d530074]
+Продвинутый Короткий МечРанг 3 · Физическое · Проворность · Впло... [namelen=171 namehash=98310ec6]
 Продвинутый Меч Света
 Продвинутый Меч СветаРанг 3 · Магическое · Сила · Вплотную · d10... [namelen=108 namehash=34108514]
 Продвинутый Меч Тьмы
@@ -269,7 +269,7 @@ daggerheart.com
 Скипетр Инея
 Скипетр ИнеяРанг 3 · Магическое · Знание · Средне · d8+6 маг · О... [namelen=221 namehash=80521f91]
 Складная Дубинка
-Складная ДубинкаРанг 2 · Сила · Вплотную · d8 физ · ОдноручноеНе... [namelen=237 namehash=5a04cba4]
+Складная ДубинкаРанг 2 · Физическое · Сила · Вплотную · d8 физ ·... [namelen=250 namehash=05df5e95]
 Скопировать
 Снаряжение
 Снять выделение
@@ -296,7 +296,7 @@ daggerheart.com
 Улучшенный Доспех из Гробового Дерева
 Улучшенный Доспех из Гробового ДереваРанг 2 · Пороги 6/15 · Брон... [namelen=183 namehash=090fb767]
 Улучшенный Короткий Меч
-Улучшенный Короткий МечРанг 2 · Проворность · Вплотную · d8+2 фи... [namelen=157 namehash=0ae9e503]
+Улучшенный Короткий МечРанг 2 · Физическое · Проворность · Вплот... [namelen=170 namehash=4923b656]
 Улучшенный Меч Света
 Улучшенный Меч СветаРанг 2 · Магическое · Сила · Вплотную · d10+... [namelen=107 namehash=0a415a7e]
 Улучшенный Меч Тьмы
@@ -312,9 +312,9 @@ daggerheart.com
 Шлем Возмездия
 Щит Отталкивания
 Щит Храбреца
-Щит ХрабрецаРанг 4 · Проворность · Вплотную · d4+6 физ · Одноруч... [namelen=233 namehash=346251af]
+Щит ХрабрецаРанг 4 · Физическое · Проворность · Вплотную · d4+6 ... [namelen=246 namehash=0e2cc14e]
 Щупальце Черной Крови
-Щупальце Черной КровиРанг 4 · Инстинкт · Средне · d6+8 маг · Одн... [namelen=227 namehash=97aeaaa5]
+Щупальце Черной КровиРанг 4 · Магическое · Инстинкт · Средне · d... [namelen=240 namehash=f3a9427d]
 Эфирная Винтовка
 Эфирный Двуручный Меч
 Эфирный Двуручный МечРанг 4 · Магическое · Инстинкт · Близко · d... [namelen=213 namehash=5d70a8c0]
@@ -405,7 +405,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 20Mercurial FamiliarYou can smash this to create a mercury dupli... [namelen=372 namehash=99f1e743]
 20Sprite BottleWhen you mark your last Hit Point, this bottle sh... [namelen=196 namehash=32835a4a]
 21Crawling King's GauntletTo use this item, you must allow it to... [namelen=513 namehash=af0a0834]
-23Hungry Fist BladeTier 4 · Finesse · Melee · d6+7 phy · One-Han... [namelen=399 namehash=c41e8e5f]
+23Hungry Fist BladeTier 4 · Physical · Finesse · Melee · d6+7 ph... [namelen=410 namehash=37a2f1b6]
 23Timewalker PocketwatchRecall Cost: 1Once per long rest, when y... [namelen=337 namehash=b7140399]
 26Arch-Magus's RobesTier 4 · Thresholds 10/30 · Armor 2Recall Co... [namelen=294 namehash=31ef7315]
 27Black Hole StaffTier 4 · Magic · Knowledge · Far · d20+7 mag ·... [namelen=598 namehash=ea194387]
@@ -415,7 +415,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 2Glass of Shattered FateA creature peering into this mirror sees... [namelen=693 namehash=1fd2ef5f]
 32Doomsday PotionRoll a d12 for each of your Hope Slots in turn.... [namelen=422 namehash=dc8b568b]
 32Furnace AmuletWhile wearing this amulet, when you take the Ris... [namelen=342 namehash=c023986b]
-32Unicorn KnifeTier 4 · Finesse · Melee · d8+6 phy · One-HandedR... [namelen=293 namehash=76d8f02b]
+32Unicorn KnifeTier 4 · Physical · Finesse · Melee · d8+6 phy · ... [namelen=304 namehash=21ee9788]
 33Vengeance HelmRecall Cost: 2You can spend a Hope to gain power... [namelen=436 namehash=ee266bfb]
 33Zanthak's RageTier 3 · Physical · Strength · Melee · d10+9 phy... [namelen=642 namehash=2fc1e29a]
 34Verdant DaughterTier 4 · Physical · Agility · Very Far · d8+12... [namelen=658 namehash=96e97c2b]
@@ -434,10 +434,10 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 6Pythian ForkRecall Cost: 3Choose a location to travel to on any... [namelen=340 namehash=716a8df7]
 71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=276 namehash=b8ac17aa]
 76Umbral PrismRoll a d8 and place it on this card as the Umbral ... [namelen=452 namehash=ff956f00]
-78A Thousand CutsTier 3 · Finesse · Melee · d8+4 phy · One-Hande... [namelen=406 namehash=04e58c39]
+78A Thousand CutsTier 3 · Physical · Finesse · Melee · d8+4 phy ... [namelen=417 namehash=7345d157]
 79Seeker's BowTier 2 · Physical · Finesse · Far · d6+4 phy · Two... [namelen=357 namehash=488ad05f]
 7Devil-Finger CharmRecall Cost: 3Enmity: When you or an ally mak... [namelen=493 namehash=b976e705]
-7Shield of RepulsionTier 3 · Strength · Melee · d4+4 phy · One-H... [namelen=349 namehash=30f9feac]
+7Shield of RepulsionTier 3 · Physical · Strength · Melee · d4+4 ... [namelen=360 namehash=637dc776]
 84Black Corruption AxeTier 4 · Physical · Presence · Very Close ... [namelen=452 namehash=18cf1bda]
 85BloodgorgerTier 2 · Physical · Strength · Melee · d10+6 phy · ... [namelen=360 namehash=263b33e4]
 89Crystal Spirit SwordTier 4 · Physical · Finesse · Melee · d10+... [namelen=253 namehash=83de67b4]
@@ -459,7 +459,7 @@ Advanced LongswordTier 3 · Physical · Agility · Melee · d10+9 ph... [namelen
 Advanced Shadowblade
 Advanced ShadowbladeTier 3 · Magic · Presence · Melee · d8+6 phy... [namelen=182 namehash=099145d4]
 Advanced Shortsword
-Advanced ShortswordTier 3 · Agility · Melee · d8+4 phy · One-Han... [namelen=152 namehash=549f8bb1]
+Advanced ShortswordTier 3 · Physical · Agility · Melee · d8+4 ph... [namelen=163 namehash=59bab3f3]
 Advanced Whipsword
 Advanced WhipswordTier 3 · Physical · Finesse · Very Close · d8+... [namelen=191 namehash=521ccd6a]
 Aether Rifle
@@ -473,13 +473,13 @@ Arch-Magus's Robes
 Black Corruption Axe
 Black Hole Staff
 Blackblood Tendril
-Blackblood TendrilTier 4 · Instinct · Close · d6+8 mag · One-Han... [namelen=229 namehash=3c3b4bea]
+Blackblood TendrilTier 4 · Magic · Instinct · Close · d6+8 mag ·... [namelen=237 namehash=9b079a6f]
 Blade of the Living
 Bladefare Armor
 Bladefare ArmorTier 3 · Thresholds 16/39 · Armor 6Physical: You ... [namelen=127 namehash=aeb5e429]
 Bloodgorger
 Braveshield
-BraveshieldTier 4 · Agility · Melee · d4+6 phy · One-HandedShelt... [namelen=218 namehash=f5fbca6a]
+BraveshieldTier 4 · Physical · Agility · Melee · d4+6 phy · One-... [namelen=229 namehash=b2e8622e]
 Bravesword
 BraveswordTier 3 · Physical · Strength · Melee · d12+7 phy · Two... [namelen=146 namehash=7cfdfaeb]
 Brightsword
@@ -497,7 +497,7 @@ Cloak of the Dunes
 Coffinwood Armor
 Coffinwood ArmorTier 1 · Thresholds 4/10 · Armor 3Splintering: G... [namelen=165 namehash=2560a6b6]
 Collapsible Baton
-Collapsible BatonTier 2 · Strength · Melee · d8 phy · One-Handed... [namelen=235 namehash=e1615b3f]
+Collapsible BatonTier 2 · Physical · Strength · Melee · d8 phy ·... [namelen=246 namehash=dca5007c]
 Communities
 Consumables
 Copy
@@ -553,7 +553,7 @@ Improved LongswordTier 2 · Physical · Agility · Melee · d10+6 ph... [namelen
 Improved Shadowblade
 Improved ShadowbladeTier 2 · Magic · Presence · Melee · d8+3 phy... [namelen=182 namehash=21019082]
 Improved Shortsword
-Improved ShortswordTier 2 · Agility · Melee · d8+2 phy · One-Han... [namelen=152 namehash=014ece8c]
+Improved ShortswordTier 2 · Physical · Agility · Melee · d8+2 ph... [namelen=163 namehash=e7b1bcec]
 Improved Whipsword
 Improved WhipswordTier 2 · Physical · Finesse · Very Close · d8+... [namelen=191 namehash=49bed7a6]
 Irontree Breastplate Armor
@@ -575,7 +575,7 @@ Legendary LongswordTier 4 · Physical · Agility · Melee · d10+12 ... [namelen
 Legendary Shadowblade
 Legendary ShadowbladeTier 4 · Magic · Presence · Melee · d8+9 ph... [namelen=183 namehash=12bce345]
 Legendary Shortsword
-Legendary ShortswordTier 4 · Agility · Melee · d8+6 phy · One-Ha... [namelen=153 namehash=c1c84829]
+Legendary ShortswordTier 4 · Physical · Agility · Melee · d8+6 p... [namelen=164 namehash=a50b2be3]
 Legendary Whipsword
 Legendary WhipswordTier 4 · Physical · Finesse · Very Close · d8... [namelen=192 namehash=bdf7811e]
 Lists
@@ -608,7 +608,7 @@ ShadowbladeTier 1 · Magic · Presence · Melee · d8 phy/mag · One-... [namele
 Shattersword
 Shield of Repulsion
 Shortsword
-ShortswordTier 1 · Agility · Melee · d8 phy · One-HandedPaired: ... [namelen=141 namehash=6504f618]
+ShortswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=152 namehash=b5f42d4d]
 Singing Sword
 Singing SwordTier 3 · Physical · Presence · Very Close · d8+5 ph... [namelen=202 namehash=773a5175]
 Skip to content

@@ -430,10 +430,8 @@ async function focusWalk(page, where) {
          * node - so at the three narrow widths axe runs RU only, and
          * 1180 alone keeps both
          * languages; a real production fix would show up in whichever
-         * language reaches it first, so nothing measurable is lost. Every
-         * disabled rule is named, and each one points at a DEBT.md entry -
-         * a live-shared defect ported on purpose, checked against
-         * index.html before it was recorded. */
+         * language reaches it first, so nothing measurable is lost. No
+         * rule is disabled (`tests/app/lib.js`, `axe()`). */
         if (width === 1180 || lang === 'ru') {
           const violations = await axe(page);
           for (const v of violations) {

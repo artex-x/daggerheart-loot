@@ -389,6 +389,11 @@ export function parseArgs(argv) {
     } else if (a in FLAGS) {
       const key = FLAGS[a];
       const value = argv[++i];
+      // A trailing path flag would otherwise read as absent: `--apply` alone
+      // ran a live refresh. `--adopt` keeps its own message, checked below.
+      if (key !== 'adopt' && (!value || value.startsWith('--'))) {
+        throw new Error(a + ' needs a value');
+      }
       if (
         key === 'limit' ||
         key === 'pressLimit' ||

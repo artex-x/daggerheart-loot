@@ -132,7 +132,7 @@ export interface DecodedList {
   note?: string;
   hnote?: string;
   meta?: Record<string, ListEntryMeta>;
-  /** How many entries the payload named that `knows` rejected - P9. An old
+  /** How many entries the payload named that `knows` rejected. An old
    *  share link naming a renumbered or deleted record used to lose them with
    *  no sign anything was missing; this is what a caller toasts. */
   dropped: number;
@@ -152,14 +152,15 @@ function parseItems(
   const hasStamp = cut > 0 && /^[0-9a-z]+\.[0-9a-z]{1,4}$/.test(head);
   const body = hasStamp ? itemsLine.slice(cut + 1) : itemsLine;
 
-  const parts = body.split(',');
+  const parts = body ? body.split(',') : [];
   if (hasStamp && stamp(parts) !== head + '~') return null; // truncated or edited
 
   const ids: string[] = [];
   const meta: Record<string, ListEntryMeta> = {};
-  /* P9: an id the data no longer knows - a renumbered or deleted record on an
-     old share link - used to vanish with no sign of it; the checksum above
-     protects against truncation, which is a different failure than this one. */
+  /* An id the data no longer knows - a renumbered or deleted record on an old
+     share link - is counted, not silently lost; a link whose every entry is
+     gone still opens, empty, and so does a checksummed empty list this app
+     wrote. The checksum above guards truncation instead. */
   let dropped = 0;
   for (const part of parts) {
     const bits = part.split('*');
@@ -181,7 +182,7 @@ function parseItems(
     if (gold > 0) m.gold = Math.min(gold, 99999);
     if (Object.keys(m).length) meta[id] = m;
   }
-  return ids.length ? { ids, meta, dropped } : null;
+  return ids.length || dropped || hasStamp ? { ids, meta, dropped } : null;
 }
 
 export function decodeList(payload: string, knows: KnowsId): DecodedList | null {
