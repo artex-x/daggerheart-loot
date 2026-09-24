@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Setup script for a claude.ai/code cloud environment. The environment
-# dialog runs `bash .claude/cloud-setup.sh` as root; the result is cached.
-# See .claude/README.md, "Cloud sessions". No Docker image pull here: the
+# Setup script for a claude.ai/code cloud environment, run as root through
+# the dialog's field text in .claude/README.md, "Cloud sessions"; the result
+# is cached. No Docker image pull here: the
 # Docker daemon may not run during setup.
 set -euo pipefail
 
