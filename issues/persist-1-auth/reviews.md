@@ -29,3 +29,31 @@ all four `browser` shards on `build:test` green; `secrets` red - gitleaks
 scans the whole history on a dispatch and reports 3 findings in old commits
 (e.g. `cce10cb`, 2026-09-11, `issues/tg-preview-refresh/plan.md`), none from
 R1. Named to the orchestrator in B1.2's handoff.
+
+## B1.2 (`3a47379`) - verdict: approve, no blockers (2026-09-24)
+
+Reviewer verified: golden diff (150 files, 0 removed lines, only the
+control's four lines added); `check:built` PASS; supabase chunk is a dynamic
+chunk only (no `modulepreload`); return record and callback cleanup allow no
+open redirect; a forged `?code=` fails PKCE (verifier missing); migration is
+`security definer`, `search_path = public, pg_temp`, revoked from
+`public, anon`, reversal drops it; contract files updated; B1.1 rows placed in
+B1.2 all done; every implementer deviation accepted. Budget 170 kB accepted
+for R1 (META sets no first-load limit; raise reasoned in the tool).
+
+| Id | Kind | Finding | Placed |
+|---|---|---|---|
+| R2-1 | risk | `tools/bundle-budget.mjs` `BUDGET_KB = 170` also applies to the unconfigured `dist/` (105.4 kB; headroom 65 kB), and the configured build is measured only in `deploy`, after merge. Patch: limit by content, e.g. 170 when `dist/` holds a `supabase-*.js` chunk, else 120, and print which applied. Together with the Deferred "load supabase-js only with a stored session or a pending redirect". | B1.4 |
+| R2-2 | risk | auth-js `signInWithOAuth`/`linkIdentity` resolve right after `location.assign`, so `AccountPage.svelte` `act()` clears `going`/`busy` and `leave()` bumps `reread` while the page unloads: the "Redirecting" state only flashes (FEATURES "Account" says it stays). Fix: keep `going`/`busy` on a successful start, clear on `pageshow` with `persisted`; or reword FEATURES. | B1.3 |
+| R2-3 | risk | `app/src/ports/supabase.ts` `identities()` maps a failure to `[]` (`?? []`): the page then offers Connect for the provider the user is signed in with. | B1.3 |
+| R2-4 | risk, owner | `accountSub` «Способы входа, выход и ваши данные.» while R1 draws no data section - by the owner's general-wording rule. | noted to owner |
+| N2-1 | nit | `docs/specs/STATE.md` supabase keys row: supabase-js 2.117.1 also writes `sb-<ref>-auth-token-flow-<id>-code-verifier` and `...-flows-code-verifier` (ring of 5); they stay after the redirect until sign-out. | B1.3 |
+| N2-2 | nit | `tests/app/inventory.js` delete-confirmation state `why`: the English half keeps the Russian word, so its final button stays disabled - say so. | B1.3 |
+| N2-3 | nit | handoff Verification "final re-run ... see the report": record the last `rtk npm run check` result and wall clock. | B1.3 |
+| N2-4 | nit | `AccountPage.svelte` literal `font-size: 15.5px` where `--step-0` exists (`ListsPage` has the same literal). Optional. | B1.3 |
+| N2-5 | nit | Header `aria-label` would read «Аккаунт: » for an account with no email - unreachable per decision 11. | Deferred |
+
+CI on `3a47379` (run 36073608042, `workflow_dispatch`): `check` (incl. budget,
+Test build, marker guard), `db`, `audit`, `browser` 1-4 green (suite step
+375, 386, 364, 231 s); `secrets` red - the same 3 old-history gitleaks
+findings as run 36065518261, none from R1 (owner decision pending).

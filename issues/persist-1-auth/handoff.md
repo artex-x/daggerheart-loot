@@ -2,16 +2,16 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (`B1.1` done and reviewed; `B1.2` done, review
-  pending)
-- Last agent: implementer (`B1.2`)
-- NEEDS_HUMAN_CONFIRMATION: no
+- Task status: in_progress (`B1.1` and `B1.2` done, reviewed, approved;
+  next `B1.3` needs a planner refresh)
+- Last agent: orchestrator (recorded the B1.2 review and CI; session 3 ends
+  here by the owner's decision, the next batches run in a new session)
+- NEEDS_HUMAN_CONFIRMATION: no (owner items are under Blockers)
 - Branch: `claude/kind-curie-nxag95` (cloud session 3; the release branch,
   supersedes `claude/jolly-allen-ipojqp`)
 - Base / starting commit: `76497c4` (`main`); plan commit `dedafaf`
-- Pushed: yes at `0dd526b` (B1.1). B1.2 is one new commit on top, pushed
-  after its gates (question A: one commit per batch in a cloud release);
-  its sha is in the implementer's report and `git log`.
+- Pushed: yes - `3b5e4d6` (cherry-pick of `e1d7a4b`), `0dd526b` (B1.1),
+  `3a47379` (B1.2), then this handoff commit (see `git log`).
 - `0dd526b` was committed with `SKIP_CHECK_GATE=1` (review N9): untracked
   mock files the orchestrator's planners wrote (not part of B1.1) failed
   prettier, so the gate's `npm run check` could not pass on that tree; the
@@ -76,8 +76,8 @@
     release's one push ...") with section 4A's text; the local-release
     lines of that bullet stay (the DECISIONS entry keeps "a local release
     still amends and pushes once").
-- Review: required (trigger: public contract, new UI, hook edit) - verdict
-  pending
+- Review: required (trigger: public contract, new UI, hook edit) - approve,
+  no blockers; findings in `reviews.md` ("B1.2"), placed in B1.3/B1.4
 
 ## Verification
 - This host, 2026-09-24, one foreground call each (wall clock):
@@ -122,23 +122,36 @@
   carries the fake cloud seed ("@example.test"): probe.js".
 - CI `browser` shard timings, B1.1's run 36065518261 (`0dd526b`,
   `workflow_dispatch`), suite step: shard 1 368 s, 2 374 s, 3 354 s, 4
-  221 s. That run's `secrets` job is red (Blockers). B1.2's CI: the push
-  does not trigger `ci.yml` (push runs on `main` only); the orchestrator
-  dispatches it and reads the shard timings.
+  221 s. B1.2's run 36073608042 (`3a47379`, `workflow_dispatch`): `check`,
+  `db`, `audit` green; `browser` suite step 375, 386, 364, 231 s, all
+  green; `secrets` red on the same old-history findings (Blockers).
 - Gates: all green on this host.
 
 ## Next batch (implement-ready)
-- Name: `B1.3` - needs planner refresh (outline: `plan.md` section 8; review
-  R4 is placed there).
+- Name: `B1.3` - hosted E2E and CI `e2e` job; needs a planner refresh
+  first (outline: `plan.md` section 8). The refresh places: B1.1 review R4
+  (contract cases vs the real adapter), B1.2 review R2-2, R2-3 and nits
+  N2-1..N2-4 (`reviews.md`). B1.2 review R2-1 (budget by configuration,
+  lazy supabase-js) goes to B1.4's refresh.
+- Owner answers binding on later batches: `mocks/B1.4/README.md` (Q1-Q8).
+- First step in the cloud: the discriminating probe (plan section 4C);
+  the `E2E_*` variables were present in session 3.
 
 ## Blockers
-- None for B1.2. For the orchestrator: CI `secrets` (gitleaks) is red on the
-  `workflow_dispatch` run at `0dd526b` - a dispatch scans the whole history
-  (554 commits) and reports 3 findings in old commits (e.g. `cce10cb`,
-  2026-09-11, `issues/tg-preview-refresh/plan.md` line 690,
-  `generic-api-key`); none is from R1. It will be red on B1.2's dispatch
-  too; `deploy` needs `secrets`. Needs a decision (baseline/ignore the old
-  fingerprints in `.gitleaks.toml`, or scan only the dispatched range).
+- Owner, before `B1.3`: `npm run db:push -- --project test` from the
+  branch (the E2E delete flow needs `delete_account()` on the test
+  project; hooks forbid agents a hosted write).
+- Owner decision: CI `secrets` (gitleaks) is red on every
+  `workflow_dispatch` - a dispatch scans the whole history and reports 3
+  findings in old commits: `cce10cb` (2026-09-11) `docs/tg-preview.md:72`
+  and `issues/tg-preview-refresh/plan.md:690` (`TG_API_HASH=...`), and
+  `23c00a6` (2026-09-17) `issues/47/handoff.md:445` (`"key":"..."`). None
+  is from R1; a push to `main` scans only its range. The owner checks
+  whether `TG_API_HASH` there is the real Telegram hash (then a new
+  Telegram app and secret) and decides: `.gitleaksignore` the three
+  fingerprints, or scan only the dispatched range. B1.3/B1.5 verify by
+  dispatch, so this is needed before them. The orchestrator could not
+  inspect the values (auto-mode classifier denied it as credential access).
 
 ## Deferred
 - Optional `session-stop.mjs` cloud warning ("N commits on this branch are
