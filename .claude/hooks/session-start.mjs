@@ -1,7 +1,50 @@
 // SessionStart: branch, HEAD, dirty-file summary, most recently touched
-// issues/<id>/. Never blocks - see .claude/README.md, "Hooks".
+// issues/<id>/, and in a cloud session the host probes and the cloud rules.
+// Never blocks - see .claude/README.md, "Hooks" and "Cloud sessions".
 
-import { readInput, guard, speak, git, activeTask } from './lib.mjs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { readInput, guard, speak, git, activeTask, repoRoot } from './lib.mjs';
+
+function probeCommand(program, args, timeout) {
+  try {
+    const r = spawnSync(program, args, { stdio: 'ignore', timeout });
+    if (r.error)
+      return r.error.code === 'ETIMEDOUT' ? `no answer in ${timeout} ms` : 'not found';
+    return r.status === 0 ? 'ok' : `exit ${r.status}`;
+  } catch {
+    return 'not found';
+  }
+}
+
+function probeNode() {
+  try {
+    const want = readFileSync(path.join(repoRoot(), '.nvmrc'), 'utf8').trim().replace(/^v/, '');
+    const have = process.versions.node.split('.')[0];
+    return have === want.split('.')[0] ? 'ok' : `Node ${have}, .nvmrc wants ${want}`;
+  } catch {
+    return '.nvmrc not readable';
+  }
+}
+
+/** The cloud block: four host probes (each "ok" or what failed; "skipped"
+ * under the selftest) and the three rules of a cloud session. */
+function cloudLines() {
+  const skip = process.env.LOOT_SKIP_PROBES === '1';
+  const probe = (fn) => (skip ? 'skipped' : fn());
+  return [
+    'Cloud session.',
+    `  Node: ${probe(probeNode)}`,
+    `  docker info: ${probe(() => probeCommand('docker', ['info'], 3000))}`,
+    `  puppeteer cache: ${probe(() => (existsSync(path.join(os.homedir(), '.cache', 'puppeteer')) ? 'ok' : 'missing'))}`,
+    `  gitleaks version: ${probe(() => probeCommand('gitleaks', ['version'], 2000))}`,
+    'A whole release runs on one host.',
+    'No production secret enters this environment.',
+    'Push only the current task branch, never `main`.'
+  ];
+}
 
 function parseStatus(text) {
   const staged = [];
@@ -58,6 +101,8 @@ guard(() => {
       `Read issues/${task.id}/context.md before re-fetching the issue. Confirm the task id with the human - the newest directory is a guess, not an assignment.`
     );
   }
+
+  if (process.env.CLAUDE_CODE_REMOTE === 'true') lines.push(...cloudLines());
 
   if (!lines.length) return undefined;
   return speak(event, lines.join('\n'));

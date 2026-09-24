@@ -43,9 +43,11 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     checkbox "Арбалет Гравитации" [checked=false]
     button "Арбалет Гравитации Ранг 4 · Магическое · Знание · Далеко · d8+6 ..." [namelen=367 namehash=4123f644]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
@@ -190,6 +192,7 @@ daggerheart.com
 Колдующий МечРанг 2 · Магическое · Сила · Вплотную · d10+4 маг ·... [namelen=207 namehash=b0d9835c]
 Колючий Лук
 Колючий ЛукРанг 4 · Магическое · Инстинкт · Далеко · d6+13 маг ·... [namelen=131 namehash=1268e7c4]
+Конфиденциальность
 Копьё
 КопьёРанг 1 · Физическое · Искусность · Близко · d8+3 физ · Двур... [namelen=88 namehash=1aaad172]
 Короткий Лук
@@ -450,6 +453,8 @@ daggerheart.com
 Улучшенный СкипетрРанг 2 · Магическое · Влияние · Далеко · d6+3 ... [namelen=205 namehash=7669f44a]
 Ускользающее Лезвие
 Ускользающее ЛезвиеРанг 2 · Магическое · Искусность · Вплотную ·... [namelen=203 namehash=78be7788]
+Условия использования
+Установить как приложение
 Установка для Фейерверков
 Установка для ФейерверковРанг 1 · Физическое · Проворность · Оче... [namelen=158 namehash=c2f08aaa]
 Фрикционные Обмотки
@@ -499,9 +504,11 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     button "Equipment" [pressed=true]
     StaticText "Nothing found"
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 Alt. tables
@@ -511,14 +518,17 @@ Dragon's Vault
 Dread
 EN
 Equipment
+Install as an app
 Items
 Lists
 Open this section on start
+Privacy
 RU
 Search
 Skip to content
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com

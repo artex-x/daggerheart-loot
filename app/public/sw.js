@@ -1,44 +1,33 @@
-/* The service worker: an offline shell and two capped picture caches.
+/* The service worker: it keeps the site an installable app and caches the
+ * pictures and the hashed build files. Offline use is retired: there is no
+ * shell and no document cache.
  *
  * Plain JS copied verbatim into dist/, outside the bundle and the TypeScript
- * project. The policy, the silent update and the reason there is no version
- * stamp: docs/specs/META.md section 9. tests/sw.test.mjs and
+ * project. The policy and the reason there is no version stamp:
+ * docs/specs/META.md section 9. tests/sw.test.mjs and
  * tools/check-site.lib.mjs read the cache names. */
 
-const SHELL = 'dhloot-shell-v1';
 const IMAGES = 'dhloot-img-v1';
 const IMAGE_CAP = 300;
 /* Above the whole thumbnail set (about 2 KB each), so a table scroll never
    evicts a row's own picture; tests/sw.test.mjs fails when img/thumb/ outgrows it. */
 const THUMBS = 'dhloot-thumb-v1';
 const THUMB_CAP = 1500;
-const KEEP = [SHELL, IMAGES, THUMBS];
-const NETWORK_MS = 5000;
-const PRECACHE = [
-  './',
-  'assets/app.js',
-  'data.js',
-  'manifest.webmanifest',
-  'icons/icon-192.png',
-  'icons/icon-512.png',
-  'icons/maskable-512.png',
-  'img/_none.webp',
-  'img/thumb/_none.webp'
-];
+/* Hashed names never change their bytes, so a hit is never revalidated. A
+   deploy adds new names and nothing asks for the old ones again: the cap
+   drops the oldest, which holds several deploys of today's two files. */
+const ASSETS = 'dhloot-assets-v1';
+const ASSET_CAP = 30;
+const KEEP = [IMAGES, THUMBS, ASSETS];
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches
-      .open(SHELL)
-      .then((c) => c.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
-  );
+self.addEventListener('install', () => {
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    enablePreload()
-      .then(() => caches.keys())
+    caches
+      .keys()
       .then((keys) =>
         Promise.all(
           keys
@@ -46,73 +35,43 @@ self.addEventListener('activate', (e) => {
             .map((k) => caches.delete(k))
         )
       )
+      .then(disablePreload)
       .then(() => self.clients.claim())
   );
 });
 
-/* Absent in older Safari: a navigation then waits for the worker to
-   start, as before. */
-async function enablePreload() {
+/* The issue-69 worker enabled navigation preload, and the setting outlives
+   that worker; with no navigation handler every preload would be wasted. */
+async function disablePreload() {
   try {
-    if (self.registration.navigationPreload) await self.registration.navigationPreload.enable();
+    await self.registration.navigationPreload?.disable();
   } catch {
-    /* A refused enable leaves the plain fetch. */
+    /* Unsupported or refused: the page still loads from the network. */
   }
 }
 
-/* 'pass' | 'image' | 'thumb' | 'shell', from the path relative to the scope. */
-function policy(url) {
+/* 'pass' | 'image' | 'thumb' | 'asset', from the path relative to the scope.
+   A navigation, `data.js`, the worker, the manifest, `pages/`, any other
+   origin and a sign-in callback all pass to the network untouched. */
+function policy(req) {
+  const url = new URL(req.url);
   const scope = new URL(self.registration.scope);
+  if (req.method !== 'GET' || req.mode === 'navigate') return 'pass';
   if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return 'pass';
+  if (url.search.includes('auth-callback')) return 'pass';
   const rel = url.pathname.slice(scope.pathname.length);
-  if (/^(og|i)\//.test(rel)) return 'pass';
-  if (/^(data\.json|catalog\.csv|llms\.txt|robots\.txt|404\.html)$/.test(rel)) return 'pass';
   if (/^img\/thumb\//.test(rel)) return 'thumb';
   if (/^img\//.test(rel)) return 'image';
-  return 'shell';
+  if (/^assets\//.test(rel)) return 'asset';
+  return 'pass';
 }
 
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return;
-  const p = policy(new URL(e.request.url));
-  if (p === 'pass') {
-    /* Settled, so a passed navigation's unread preload is not cancelled with
-       a console warning; the browser still answers it. */
-    if (e.preloadResponse) e.waitUntil(e.preloadResponse.catch(() => {}));
-    return;
-  }
-  if (p === 'shell') e.respondWith(networkFirst(e));
-  else if (p === 'thumb') e.respondWith(imageFirst(e, THUMBS, THUMB_CAP));
-  else e.respondWith(imageFirst(e, IMAGES, IMAGE_CAP));
+  const p = policy(e.request);
+  if (p === 'thumb') e.respondWith(imageFirst(e, THUMBS, THUMB_CAP));
+  else if (p === 'image') e.respondWith(imageFirst(e, IMAGES, IMAGE_CAP));
+  else if (p === 'asset') e.respondWith(assetFirst(e));
 });
-
-async function networkFirst(e) {
-  const req = e.request;
-  /* Kept open, so a preload that the timeout outran is not cancelled
-     with a console warning. */
-  if (e.preloadResponse) e.waitUntil(e.preloadResponse.catch(() => {}));
-  const cache = await caches.open(SHELL);
-  try {
-    const res = await withTimeout(preloadOrFetch(e), NETWORK_MS);
-    /* Keyed without the query: `?fbclid=...` must not add a shell entry per visit. */
-    if (res.ok) await cache.put(req.url.split('?')[0], res.clone());
-    return res;
-  } catch (err) {
-    const hit = await cache.match(req, { ignoreSearch: true });
-    if (hit) return hit;
-    if (req.mode === 'navigate' && isRoot(req.url)) {
-      const shell = await cache.match('./');
-      if (shell) return shell;
-    }
-    throw err;
-  }
-}
-
-/* `preloadResponse` resolves to undefined off a navigation or with
-   preload off, and is absent where the browser has no preload. */
-async function preloadOrFetch(e) {
-  return (await e.preloadResponse) || fetch(e.request);
-}
 
 async function imageFirst(e, name, cap) {
   const cache = await caches.open(name);
@@ -125,27 +84,25 @@ async function imageFirst(e, name, cap) {
   try {
     res = await fetch(e.request);
   } catch (err) {
-    /* An offline miss rejects; the app's `onerror` then asks for
-       `img/_none.webp` (or `img/thumb/_none.webp`), which this same lookup
-       answers from the shell cache's precached copy. */
+    /* A thumbnail miss without a connection takes the full picture when
+       that one is cached. */
     if (name === THUMBS) {
       const full = await caches.match(fullOf(e.request.url), { cacheName: IMAGES });
       if (full) return full;
     }
-    const precached = await caches.match(e.request);
-    if (precached) return precached;
     throw err;
   }
   if (res.ok) e.waitUntil(store(cache, e.request, res.clone(), cap));
   return res;
 }
 
-/* The scope root and `index.html` are the one document every hash route
-   resolves to; any other path (a stub, an unknown file) stays network-only. */
-function isRoot(href) {
-  const path = new URL(href).pathname;
-  const scope = new URL(self.registration.scope).pathname;
-  return path === scope || path === scope + 'index.html';
+async function assetFirst(e) {
+  const cache = await caches.open(ASSETS);
+  const hit = await cache.match(e.request);
+  if (hit) return hit;
+  const res = await fetch(e.request);
+  if (res.ok) e.waitUntil(store(cache, e.request, res.clone(), ASSET_CAP));
+  return res;
 }
 
 /* Through the browser's HTTP cache: within Pages' `max-age` nothing goes
@@ -169,7 +126,7 @@ async function store(cache, req, res, cap) {
     await cache.put(req, res);
     await trim(cache, cap);
   } catch {
-    /* Quota or a failed write: the picture is fetched again next time. */
+    /* Quota or a failed write: the file is fetched again next time. */
   }
 }
 
@@ -183,12 +140,4 @@ function fullOf(href) {
 async function trim(cache, cap) {
   const keys = await cache.keys();
   for (const key of keys.slice(0, Math.max(0, keys.length - cap))) await cache.delete(key);
-}
-
-function withTimeout(promise, ms) {
-  let timer;
-  const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error('network timeout')), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }

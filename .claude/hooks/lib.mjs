@@ -91,6 +91,9 @@ export function stateDir() {
  * as "outside" let it straight through. */
 export function relPath(filePath, cwd) {
   if (!filePath) return null;
+  // A drive-letter path (a PowerShell command, normalised) names another
+  // file system everywhere but win32, never a path inside this repository.
+  if (process.platform !== 'win32' && /^[A-Za-z]:[\\/]/.test(filePath)) return null;
   try {
     const root = repoRoot();
     const base = cwd || process.cwd();
@@ -227,6 +230,66 @@ export function tokensOf(segment) {
  * arm on a real failure. */
 export const CHECK_INVOCATION_RE = /^(?:rtk\s+)?npm\s+run\s+(?:-s\s+)?check(?![:\w-])/;
 
+/** `npm run check:db` and nothing else, the database suite that arms the
+ * second commit gate (supabase/ and tests/db/). Same prefix rules as
+ * CHECK_INVOCATION_RE. */
+export const CHECK_DB_INVOCATION_RE = /^(?:rtk\s+)?npm\s+run\s+(?:-s\s+)?check:db(?![:\w-])/;
+
+/** The command text the rule families judge. A PowerShell command escapes
+ * with a backtick and writes paths with `\`; the families were written for
+ * Bash, where a backtick opens a substitution and `\` escapes the next
+ * character. So for PowerShell each backtick and the character after it
+ * become a space and `\` becomes `/`. A habit guard, not a parser: a
+ * cmdlet such as `Remove-Item` is not judged. */
+export function normalizeCommand(toolName, raw) {
+  const s = String(raw);
+  if (toolName !== 'PowerShell') return s;
+  return s.replace(/`[\s\S]?/g, ' ').replace(/\\/g, '/');
+}
+
+const LAUNCHER_SUFFIX_RE = /\.(?:exe|cmd|ps1|bat)$/i;
+
+/** Returns a program token without its Windows launcher suffix, so
+ * `git.exe` and `npx.cmd` are judged as `git` and `npx`. */
+export function programName(token) {
+  return String(token).replace(LAUNCHER_SUFFIX_RE, '');
+}
+
+function isSupabaseProgram(token) {
+  if (!token) return false;
+  const name = programName(token).split('/').pop();
+  return name === 'supabase' || name.startsWith('supabase@');
+}
+
+const SUPABASE_JS_RE = /(?:^|\/)supabase\/dist\/supabase\.js$/;
+
+/** When `tokens` (already unwrapped) run the Supabase CLI, returns the
+ * tokens after the program; otherwise null. The program is `supabase` or a
+ * path ending in it (`node_modules/.bin/supabase`), `node
+ * <...>/supabase/dist/supabase.js` (the tools' own entry), or `npx` /
+ * `npm exec` / `npm x` with `supabase[@version]` after their flags, a
+ * `-p`/`--package` value and a bare `--`. A leading `rtk` is skipped. */
+export function isSupabaseCall(tokens) {
+  let t = tokens;
+  if (t[0] === 'rtk') t = t.slice(t[1] === 'proxy' ? 2 : 1);
+  if (!t.length) return null;
+  const head = programName(t[0]);
+  if (isSupabaseProgram(head)) return t.slice(1);
+  let i;
+  if (head === 'node') {
+    i = 1;
+    while (i < t.length && t[i].startsWith('-')) i++;
+    return i < t.length && SUPABASE_JS_RE.test(t[i]) ? t.slice(i + 1) : null;
+  }
+  if (head === 'npx') i = 1;
+  else if (head === 'npm' && (t[1] === 'exec' || t[1] === 'x')) i = 2;
+  else return null;
+  while (i < t.length && t[i].startsWith('-')) {
+    i += t[i] === '-p' || t[i] === '--package' ? 2 : 1;
+  }
+  return isSupabaseProgram(t[i]) ? t.slice(i + 1) : null;
+}
+
 export function dropAssignments(tokens) {
   const t = tokens.slice();
   while (t.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(t[0])) t.shift();
@@ -237,14 +300,19 @@ export function dropAssignments(tokens) {
 // These wrappers all take the real program as their first non-flag argument.
 const WRAPPERS = new Set(['env', 'command', 'nohup', 'time', 'xargs']);
 
+function withProgramName(t) {
+  return t.length ? [programName(t[0]), ...t.slice(1)] : t;
+}
+
 /** Strip leading assignments and any command wrappers, so the returned
- * tokens start at the program actually being run. */
+ * tokens start at the program actually being run, without its launcher
+ * suffix. */
 export function unwrap(tokens) {
-  let t = dropAssignments(tokens);
+  let t = withProgramName(dropAssignments(tokens));
   for (let i = 0; i < 4 && t.length && WRAPPERS.has(t[0]); i++) {
     t = t.slice(1);
     while (t.length && t[0].startsWith('-')) t = t.slice(1);
-    t = dropAssignments(t);
+    t = withProgramName(dropAssignments(t));
   }
   return t;
 }

@@ -59,9 +59,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     StaticText "Ничего не найдено"
     button "Сбросить всё"
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 1
@@ -84,6 +86,7 @@ daggerheart.com
 Вторичное
 К содержимому
 Как это работает
+Конфиденциальность
 ЛутDaggerheart
 Обычные правила
 Оружие
@@ -104,6 +107,8 @@ daggerheart.com
 Убрать из фильтра
 Улучшаемые
 Уникальные
+Условия использования
+Установить как приложение
 Фильтры (1)
 
 ## en :: tree
@@ -163,9 +168,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
     StaticText "Nothing found"
     button "Reset all"
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 1
@@ -188,11 +195,13 @@ Filters (1)
 Grid
 Hope & Fear
 How this works
+Install as an app
 Link to this table
 List
 Lists
 Open this section on start
 Other
+Privacy
 RU
 Remove from the filter
 Reset all
@@ -201,6 +210,7 @@ Secondary
 Skip to content
 Standard rules
 Tables
+Terms of use
 Unique
 Upgradable
 Vault of Ages

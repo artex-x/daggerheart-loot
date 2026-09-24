@@ -61,9 +61,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Маска Фаибоса" [checked=false]
     button "5 Маска Фаибоса Как только вы надеваете эту маску, она срастаетс..." [namelen=662 namehash=b2488aad]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 10Камень ПсионаВы можете прикрепить этот камень к оружию, которо... [namelen=342 namehash=b7f01a24]
@@ -272,6 +274,7 @@ daggerheart.com
 Кольцо Кровавой Матроны
 Кольцо Форм
 Контракт Нарвиков
+Конфиденциальность
 Корона Суда
 Кружка Мощи
 Крушитель Монолитов
@@ -362,6 +365,8 @@ daggerheart.com
 Узы Души
 Уменьшенная Голова Увагеки
 Усиленные Серьги
+Условия использования
+Установить как приложение
 Федора Сыщика
 Фетиш Старухи
 Фильтры
@@ -442,9 +447,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/voa/tA]
     checkbox "Phaibos Mask" [checked=false]
     button "5 Phaibos Mask Once you don this mask, it fuses to your flesh ma..." [namelen=657 namehash=cd28bafe]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 10Mr.MushyRecall Cost: 0When you take a long rest with this squi... [namelen=133 namehash=45385ebb]
@@ -658,6 +665,7 @@ Hope & Fear
 Horrid Specimen
 How this works
 Hungry Fist Blade
+Install as an app
 Invocation of Ulrat
 Iron Constable
 Ironblood Talisman
@@ -693,6 +701,7 @@ Perfect Vintage
 Phaibos Mask
 Portmanteau of Proficiency
 Prismatonic
+Privacy
 Psion Stone
 Pythian Fork
 Quintessal Extract
@@ -733,6 +742,7 @@ Tears of Jhell
 Temporal Taper
 Temprus
 Tendon Girdle
+Terms of use
 Tetherstone Duo
 The Pale Glass
 Timekeeper's Watch

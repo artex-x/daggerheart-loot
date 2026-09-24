@@ -61,9 +61,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Маленький Лесной Дух" [checked=false]
     button "10 Маленький Лесной Дух Игривый лесной дух следует за вами как б..." [namelen=282 namehash=61469f86]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 10Амулет СкарабеяОдин раз за сессию вы можете активировать этот ... [namelen=423 namehash=79415d3d]
@@ -193,6 +195,7 @@ daggerheart.com
 Кольцо Диких Зверей
 Кольцо Маленького Исследователя
 Компас Воробья
+Конфиденциальность
 Кормовой Мешок Зверовода
 Королевская Брошь
 Котомка Странника
@@ -262,6 +265,8 @@ daggerheart.com
 Топор-Пила Лесоруба
 Тотем Горного Зверя
 Угрожающее Знамя
+Условия использования
+Установить как приложение
 Фальшивый Золотой Зуб
 Фильтры
 Флейта Зова Кракена
@@ -334,9 +339,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
     checkbox "Little Forest Spirit" [checked=false]
     button "10 Little Forest Spirit A playful forest spirit follows you as a..." [namelen=292 namehash=dd071f1f]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 10Bufonidus' Crystal SphereBy spending 1 Hope, you may roll a d2... [namelen=117 namehash=480cd2fd]
@@ -484,6 +491,7 @@ Hope & Fear
 Horn of Nobility
 Horned Helm
 How this works
+Install as an app
 Kraken's Call Flute
 Lantern of the Depths
 Leaf of the Giant Tree
@@ -513,6 +521,7 @@ Pathfinder's Boots
 Pirate's Treasure Map
 Portable Astrolabe
 Portable Bridge
+Privacy
 RU
 Reaction Boots
 Returning Coin
@@ -531,6 +540,7 @@ Sparrow's Compass
 Spider Silk Spool
 Standard rules
 Tables
+Terms of use
 Thief's Chime Bracelet
 Tome of a Thousand Subjects
 Totem of the Ridge Beast

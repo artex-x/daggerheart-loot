@@ -585,7 +585,7 @@ describe('a link that no longer resolves', () => {
   });
 
   it('says so when the dataset itself did not load', () => {
-    /* data.js served as HTML by a broken deploy, or missing from a folder. */
+    /* data.js served as HTML by a broken deploy, or missing from one. */
     render(App, { env: fakeEnv({ router: memoryRouter('#/i/ci1'), data: noData() }) });
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
   });
@@ -613,7 +613,6 @@ describe('taking a record somewhere else', () => {
   });
 
   it('copies a link to the stub page, not to the app', async () => {
-    /* memoryRouter reports itself hosted, which is the case the stub exists in. */
     const { env, clip } = withClip();
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
@@ -694,8 +693,8 @@ describe('taking a record somewhere else', () => {
   });
 
   it('falls back to the text when the canvas cannot be read back at all', async () => {
-    /* A tainted canvas under file:// - `pngOf` itself rejects, so there is
-       never a blob to offer the clipboard at all. */
+    /* A canvas tainted by a cross-origin picture - `pngOf` itself rejects,
+       so there is never a blob to offer the clipboard at all. */
     const clip = fakeClipboard();
     const image = {
       pngOf: () => Promise.reject(new Error('tainted')),

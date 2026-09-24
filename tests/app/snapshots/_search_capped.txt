@@ -44,9 +44,11 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     checkbox "Слизь Скользкости" [checked=false]
     button "60 Слизь Скользкости Вы можете нанести эту слизь на тело в качес..." [namelen=212 namehash=281bbba4]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 10Листья ВарикаВы можете съесть эти спаренные листья, чтобы сраз... [namelen=98 namehash=da9a1d79]
@@ -455,6 +457,7 @@ daggerheart.com
 Кольцо Сопротивления
 Кольцо Тишины
 Компасы Связи
+Конфиденциальность
 Коробка Многих Вещей
 Кристаллы Иномирья
 Кровавый Камень
@@ -637,8 +640,10 @@ daggerheart.com
 Удерживающий Крюк
 Улучшенный Мистический Осколок
 Улучшенный Яд Скрежетозуба
+Условия использования
 Усмиряющее Кадило
 Успокаивающий Кулон
+Установить как приложение
 Усыпляющий Сок
 Утяжелённые Кости
 Факел Алистера
@@ -711,9 +716,11 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     checkbox "Mucin of Slipperiness" [checked=false]
     button "60 Mucin of Slipperiness You can apply this slime to your body a..." [namelen=200 namehash=77dcd91d]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 10Astral Termite JawsUsing these jaws, you can chew into any wal... [namelen=136 namehash=471a2309]
@@ -1183,6 +1190,7 @@ Improved Grindletooth Venom
 Incantor's Chalk
 Infinite Bag
 Insomniac's Periapt
+Install as an app
 Instant Camp
 Invisibility Potion
 Iridian Dust
@@ -1260,6 +1268,7 @@ Portal Seed
 Potion of Stability
 Potion of Vigilance
 Premium Bedroll
+Privacy
 Psychopomp's Shroud
 Quillshawl
 Quintessential Severant
@@ -1309,6 +1318,7 @@ Sweet Moss
 Tables
 Tears of the Undying Hero
 Temporal Sanctuary
+Terms of use
 Thief's Compass
 Timekeeper's Pendant
 Titan's Girdle

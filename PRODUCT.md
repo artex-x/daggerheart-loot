@@ -48,7 +48,8 @@ cheaply.
 | Play and after play | player phone | opens a shared list, reads records, keeps the list as an inventory |
 | Table handout | paper | nine 63x88 mm cards per A4 sheet, in colour or in black and white, or sixteen 44x63 mm on the opt-in compact sheet |
 
-The app also runs from `file://`, so a person can keep a local copy.
+The app is served over HTTP only; running from `file://` was retired on
+2026-09-24 (`docs/DECISIONS.md`).
 
 ## Capabilities and Constraints
 
@@ -74,8 +75,9 @@ The app also runs from `file://`, so a person can keep a local copy.
   stats.
 - `data.js` is canonical. `data.json`, `catalog.csv` and `i/*.html` are
   generated. A shipped record id is never renumbered.
-- Relative asset paths and the classic-script data adapter must survive, because
-  the app runs from `file://`.
+- Relative asset paths and the classic-script data adapter must survive: the
+  same build serves at any path, and `data.js` is cached apart from the
+  bundle.
 - The site is published to GitHub Pages from `dist/`.
 
 **Open product decision**

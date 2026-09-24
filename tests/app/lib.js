@@ -7,6 +7,7 @@
  * draw every address, is every control named, does axe find anything, is the
  * typography on the agreed scale. */
 const fs = require('fs');
+const http = require('http');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./driver.js');
@@ -58,7 +59,7 @@ for (const f of BYTE_FILES) {
    neither can make dist/ stale, and including them would demand a rebuild
    after every test edit - plus app/public/ (copied into dist/ verbatim),
    app/index.html, vite.config.mts and app/svelte.config.mjs, compared
-   against dist/assets/app.js. Safe on CI:
+   against dist/index.html, which every build rewrites. Safe on CI:
    ci.yml's browser job runs `npm ci` then `npm run build` before any suite,
    and checkout sets source mtimes ahead of the build, so this cannot fire
    falsely there. */
@@ -76,19 +77,73 @@ function newestMtimeUnder(dir) {
   return newest;
 }
 
-const APP_JS = path.join(DIST, 'assets', 'app.js');
-if (fs.existsSync(APP_JS)) {
-  const sourceNewest = Math.max(
-    newestMtimeUnder(path.join(ROOT, 'app', 'src')),
-    newestMtimeUnder(path.join(ROOT, 'app', 'public')),
-    fs.statSync(path.join(ROOT, 'app', 'index.html')).mtimeMs,
-    fs.statSync(path.join(ROOT, 'vite.config.mts')).mtimeMs,
-    fs.statSync(path.join(ROOT, 'app', 'svelte.config.mjs')).mtimeMs
-  );
-  if (sourceNewest > fs.statSync(APP_JS).mtimeMs) {
-    console.log('dist/ is stale (mtime check, dist/assets/app.js) - run npm run build first');
-    process.exit(1);
+const sourceNewest = Math.max(
+  newestMtimeUnder(path.join(ROOT, 'app', 'src')),
+  newestMtimeUnder(path.join(ROOT, 'app', 'public')),
+  fs.statSync(path.join(ROOT, 'app', 'index.html')).mtimeMs,
+  fs.statSync(path.join(ROOT, 'vite.config.mts')).mtimeMs,
+  fs.statSync(path.join(ROOT, 'app', 'svelte.config.mjs')).mtimeMs
+);
+if (sourceNewest > fs.statSync(DIST_HTML).mtimeMs) {
+  console.log('dist/ is stale (mtime check, dist/index.html) - run npm run build first');
+  process.exit(1);
+}
+
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.csv': 'text/csv; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.webp': 'image/webp'
+};
+
+/** A static server over dist/ on a free port of 127.0.0.1: files only, no
+ *  listing, 404 for anything else. Port 0, never a fixed one: run-all.js runs
+ *  the suites in parallel, and each process gets its own port, so its own
+ *  origin and storage. tools/smoke-http.mjs reuses it. */
+function serveDist() {
+  const server = http.createServer((req, res) => {
+    let rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    if (rel.endsWith('/')) rel += 'index.html';
+    const file = path.join(DIST, rel);
+    const type = TYPES[path.extname(file)];
+    if (!file.startsWith(DIST + path.sep) || !type || !fs.existsSync(file)) {
+      res.writeHead(404).end();
+      return;
+    }
+    res.writeHead(200, { 'content-type': type, date: new Date().toUTCString() });
+    res.end(fs.readFileSync(file));
+  });
+  return new Promise((resolve) => {
+    server.listen(0, '127.0.0.1', () => resolve(server));
+  });
+}
+
+/* One server per process, started by the first page. */
+let serverPromise = null;
+let base = null;
+async function startServer() {
+  if (!serverPromise) {
+    serverPromise = serveDist().then((server) => {
+      base = 'http://127.0.0.1:' + String(server.address().port) + '/';
+      return server;
+    });
   }
+  return serverPromise;
+}
+
+/** The served dist/ root, `http://127.0.0.1:<port>/`. Valid once a page
+ *  from `fresh()` or `sharedPage()` exists. */
+function baseUrl() {
+  if (!base)
+    throw new Error('The dist/ server is not started. Open a page through fresh() first');
+  return base;
 }
 
 let browserPromise = null;
@@ -109,6 +164,13 @@ function browser() {
 /** Closes the one browser this process launched, if it launched one. Call
  *  once, at the end of a suite, before process.exit. */
 async function closeBrowser() {
+  if (serverPromise) {
+    const server = await serverPromise;
+    serverPromise = null;
+    base = null;
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  }
   if (!browserPromise) return;
   const b = await browserPromise;
   browserPromise = null;
@@ -130,6 +192,7 @@ async function closeBrowser() {
  * the driver.
  */
 async function fresh({ width = 1180, height = 900, lang, storage } = {}) {
+  await startServer();
   const b = await browser();
   const ctx = await b.createBrowserContext();
   const page = await ctx.newPage();
@@ -156,7 +219,7 @@ async function fresh({ width = 1180, height = 900, lang, storage } = {}) {
  * `tests/app/states.js`'s two-tabs case needs two pages that genuinely
  * share `localStorage`, which `fresh()`'s own incognito-like context (one
  * per call, by design, so every other case never leaks into the next)
- * would keep apart even under `file://`. There is no `ctx` to close: close
+ * keeps apart. There is no `ctx` to close: close
  * the page itself when done, and leave the shared context to `closeBrowser()`.
  *
  * Order matters to the one caller of this: open the page that must observe
@@ -165,6 +228,7 @@ async function fresh({ width = 1180, height = 900, lang, storage } = {}) {
  * does not race the first page's read of what it expects to see.
  */
 async function sharedPage({ width = 1180, height = 900, lang, storage } = {}) {
+  await startServer();
   const b = await browser();
   const page = await b.newPage();
   await prepare(page);
@@ -236,4 +300,13 @@ function reporter() {
   };
 }
 
-module.exports = { DIST_HTML, fresh, sharedPage, closeBrowser, axe, reporter };
+module.exports = {
+  DIST_HTML,
+  serveDist,
+  baseUrl,
+  fresh,
+  sharedPage,
+  closeBrowser,
+  axe,
+  reporter
+};

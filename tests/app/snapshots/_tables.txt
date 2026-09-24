@@ -54,9 +54,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Пояс Единства" [checked=false]
     button "60 Пояс Единства Один раз за сессию вы можете потратить 5 Надежд..." [namelen=144 namehash=5ce27726]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 10Подвешенный ЖезлЭтот плоский жезл исписан рунами. Когда вы акт... [namelen=223 namehash=d393152c]
@@ -148,6 +150,7 @@ daggerheart.com
 Кольцо Сопротивления
 Кольцо Тишины
 Компасы Связи
+Конфиденциальность
 Коробка Многих Вещей
 Кровавый Камень
 Кулон Светлячка
@@ -202,7 +205,9 @@ daggerheart.com
 Списком
 Ссылка на таблицу
 Таблицы
+Условия использования
 Успокаивающий Кулон
+Установить как приложение
 Факел Алистера
 Футляр для Компаньона
 Хранитель Знаний
@@ -260,9 +265,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     checkbox "Belt of Unity" [checked=false]
     button "60 Belt of Unity Once per session, you can spend 5 Hope to lead ..." [namelen=120 namehash=2cbc5f0e]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 10Suspended RodThis flat rod is inscribed with runes. When you a... [namelen=232 namehash=4f5a3fd9]
@@ -374,6 +381,7 @@ Hope & Fear
 Hopekeeper Locket
 How this works
 Infinite Bag
+Install as an app
 Items
 Lakestrider Boots
 Link to this table
@@ -392,6 +400,7 @@ Piercing Arrows
 Piper Whistle
 Portal Seed
 Premium Bedroll
+Privacy
 RU
 Ring of Resistance
 Ring of Silence
@@ -405,6 +414,7 @@ Standard rules
 Stride Relic
 Suspended Rod
 Tables
+Terms of use
 Valorstone
 Vault of Ages
 Vial of Darksmoke Recipe

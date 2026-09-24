@@ -6,9 +6,9 @@
  * reason `craft` is written in one direction only.
  *
  * Pure module: it is handed the data and returns an index. Where the data comes
- * from is somebody else's problem - under file:// it can only arrive as a
- * script that assigns a global, and that adapter lives outside this module
- * (docs/specs/CONTRACTS.md, section 4). */
+ * from is somebody else's problem - it arrives as a script that assigns a
+ * global, and that adapter lives outside this module (docs/specs/CONTRACTS.md,
+ * section 4). */
 
 import type { Rarity } from './money.js';
 import { CHARACTER_TRAITS } from './types.js';

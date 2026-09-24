@@ -1,8 +1,8 @@
 /*
   node:test over app/public/sw.js, the real file, run in a `vm` context with
   a fake CacheStorage, a stub `fetch` and fake events. What a real browser
-  adds - registration, control and an offline reload - is
-  tests/app/states.js's installed-shell case. The policy under test:
+  adds - registration, control and the old caches gone after a reload - is
+  tests/app/states.js's worker case. The policy under test:
   docs/specs/META.md section 9.
 */
 import { describe, it } from 'node:test';
@@ -33,9 +33,6 @@ function fakeCache() {
     async put(r, res) {
       entries.set(urlOf(r), res);
     },
-    async addAll(list) {
-      for (const r of list) await this.put(r, await this.fetch(r));
-    },
     async keys() {
       return [...entries.keys()].map((url) => ({ url }));
     },
@@ -45,12 +42,12 @@ function fakeCache() {
   };
 }
 
-function fakeCaches(fetch) {
+function fakeCaches() {
   const named = new Map();
   return {
     named,
     async open(name) {
-      if (!named.has(name)) named.set(name, Object.assign(fakeCache(), { fetch }));
+      if (!named.has(name)) named.set(name, fakeCache());
       return named.get(name);
     },
     async keys() {
@@ -74,9 +71,9 @@ function fakeCaches(fetch) {
 /** Loads the worker into a fresh context. `net.fn(url)` answers every
  *  `fetch`; it rejects (offline) until a test replaces it. `preload` gives
  *  the registration a `navigationPreload`, as Chrome has. */
-function load({ timers = { setTimeout, clearTimeout }, preload = false } = {}) {
+function load({ preload = false } = {}) {
   const handlers = {};
-  const calls = { skipWaiting: 0, claim: 0, preload: 0 };
+  const calls = { skipWaiting: 0, claim: 0, enable: 0, disable: 0, order: [] };
   const net = {
     urls: [],
     fn: async () => {
@@ -87,7 +84,7 @@ function load({ timers = { setTimeout, clearTimeout }, preload = false } = {}) {
     net.urls.push(urlOf(r));
     return net.fn(urlOf(r));
   };
-  const caches = fakeCaches(fetch);
+  const caches = fakeCaches();
   const self = {
     registration: { scope: SCOPE },
     addEventListener: (type, fn) => {
@@ -99,17 +96,22 @@ function load({ timers = { setTimeout, clearTimeout }, preload = false } = {}) {
     clients: {
       claim: async () => {
         calls.claim++;
+        calls.order.push('claim');
       }
     }
   };
   if (preload) {
     self.registration.navigationPreload = {
       enable: async () => {
-        calls.preload++;
+        calls.enable++;
+      },
+      disable: async () => {
+        calls.disable++;
+        calls.order.push('disable');
       }
     };
   }
-  const ctx = vm.createContext({ self, caches, fetch, URL, ...timers });
+  const ctx = vm.createContext({ self, caches, fetch, URL });
   vm.runInContext(SRC, ctx);
   return { handlers, calls, caches, net, ctx };
 }
@@ -123,9 +125,8 @@ const req = (path, init = {}) => ({
 });
 
 /** Dispatches a fetch event; `answered` is false when the worker let the
- *  browser handle the request itself. `init` adds event fields such as
- *  `preloadResponse`. */
-function dispatch(w, request, init = {}) {
+ *  browser handle the request itself. */
+function dispatch(w, request) {
   const ev = {
     request,
     answered: false,
@@ -139,7 +140,6 @@ function dispatch(w, request, init = {}) {
       this.waits.push(p);
     }
   };
-  Object.assign(ev, init);
   w.handlers.fetch(ev);
   return ev;
 }
@@ -150,143 +150,127 @@ async function lifecycle(w, type) {
   await Promise.all(waits);
 }
 
+const CURRENT = ['dhloot-img-v1', 'dhloot-thumb-v1', 'dhloot-assets-v1'];
+
 describe('install and activate', () => {
-  it('precaches every PRECACHE entry and skips waiting', async () => {
+  it('skips waiting on install and fetches nothing', async () => {
     const w = load();
-    w.net.fn = async (url) => body('at ' + url);
     await lifecycle(w, 'install');
-    /* Array.from: the array was made in the worker's realm. */
-    const precache = vm.runInContext('PRECACHE', w.ctx);
-    const shell = w.caches.named.get('dhloot-shell-v1');
-    assert.deepEqual(
-      [...shell.entries.keys()],
-      Array.from(precache, (p) => new URL(p, WORKER).href)
-    );
     assert.equal(w.calls.skipWaiting, 1);
+    assert.deepEqual(w.net.urls, []);
+    assert.equal(w.caches.named.size, 0);
   });
 
-  it('deletes an older dhloot cache, keeps the current three and a foreign one, and claims', async () => {
+  it('deletes the retired shell cache and older dhloot caches, keeps the current three and a foreign one, and claims', async () => {
     const w = load();
-    for (const name of [
-      'dhloot-shell-v0',
-      'dhloot-shell-v1',
-      'dhloot-img-v1',
-      'dhloot-thumb-v1',
-      'other'
-    ]) {
+    for (const name of ['dhloot-shell-v1', 'dhloot-img-v0', ...CURRENT, 'other']) {
       await w.caches.open(name);
     }
     await lifecycle(w, 'activate');
-    assert.deepEqual(
-      [...w.caches.named.keys()],
-      ['dhloot-shell-v1', 'dhloot-img-v1', 'dhloot-thumb-v1', 'other']
-    );
+    assert.deepEqual([...w.caches.named.keys()], [...CURRENT, 'other']);
+    assert.equal(w.calls.claim, 1);
+  });
+
+  it('disables the navigation preload left on by the previous worker', async () => {
+    const w = load({ preload: true });
+    await lifecycle(w, 'activate');
+    assert.equal(w.calls.disable, 1);
+    assert.equal(w.calls.enable, 0);
+    assert.deepEqual(w.calls.order, ['disable', 'claim']);
+  });
+
+  it('claims when the registration has no navigation preload', async () => {
+    const w = load();
+    await lifecycle(w, 'activate');
+    assert.equal(w.calls.claim, 1);
+  });
+
+  it('claims when disabling the navigation preload fails', async () => {
+    const w = load({ preload: true });
+    w.ctx.self.registration.navigationPreload.disable = async () => {
+      throw new Error('InvalidStateError');
+    };
+    await lifecycle(w, 'activate');
     assert.equal(w.calls.claim, 1);
   });
 });
 
-describe('the shell: network first, cache fallback', () => {
-  it('answers a GET online from the network and stores it', async () => {
-    const w = load();
-    w.net.fn = async () => body('fresh app');
-    const ev = dispatch(w, req('assets/app.js'));
-    assert.equal(await (await ev.response).text(), 'fresh app');
-    const stored = await w.caches.named.get('dhloot-shell-v1').match(SCOPE + 'assets/app.js');
-    assert.equal(await stored.text(), 'fresh app');
-  });
-
-  it('answers the same GET offline from the stored copy', async () => {
-    const w = load();
-    w.net.fn = async () => body('fresh app');
-    await (await dispatch(w, req('assets/app.js')).response).text();
-    w.net.fn = async () => {
-      throw new TypeError('Failed to fetch');
-    };
-    const ev = dispatch(w, req('assets/app.js'));
-    assert.equal(await (await ev.response).text(), 'fresh app');
-  });
-
-  it('stores one entry per path, whatever the query, and answers offline from it', async () => {
-    const w = load();
-    w.net.fn = async (url) => body('shell for ' + url);
-    await (await dispatch(w, req('index.html?a=1')).response).text();
-    await (await dispatch(w, req('index.html?a=2')).response).text();
-    const shell = w.caches.named.get('dhloot-shell-v1');
-    assert.deepEqual([...shell.entries.keys()], [SCOPE + 'index.html']);
-    w.net.fn = async () => {
-      throw new TypeError('Failed to fetch');
-    };
-    const ev = dispatch(w, req('index.html?a=3'));
-    assert.equal(await (await ev.response).text(), 'shell for ' + SCOPE + 'index.html?a=2');
-  });
-
-  it('falls back to the stored copy when the network does not answer in time', async () => {
-    /* The five-second timeout, fired at once. */
-    const w = load({
-      timers: { setTimeout: (fn) => setTimeout(fn, 0), clearTimeout }
-    });
-    await (await w.caches.open('dhloot-shell-v1')).put(SCOPE + 'data.js', body('cached data'));
-    w.net.fn = () => new Promise(() => {});
-    const ev = dispatch(w, req('data.js'));
-    assert.equal(await (await ev.response).text(), 'cached data');
-  });
-
-  it('answers a navigation to index.html offline with the cached scope root', async () => {
-    const w = load();
-    await (await w.caches.open('dhloot-shell-v1')).put('./', body('the shell'));
-    const ev = dispatch(w, req('index.html', { mode: 'navigate' }));
-    assert.equal(await (await ev.response).text(), 'the shell');
-  });
-
-  it('answers the English entry document from the network, stores it, and answers offline from it', async () => {
-    const w = load();
-    w.net.fn = async () => body('the English entry');
-    const online = dispatch(w, req('en/', { mode: 'navigate' }));
-    assert.equal(await (await online.response).text(), 'the English entry');
-    const stored = await w.caches.named.get('dhloot-shell-v1').match(SCOPE + 'en/');
-    assert.equal(await stored.text(), 'the English entry');
-    w.net.fn = async () => {
-      throw new TypeError('Failed to fetch');
-    };
-    const offline = dispatch(w, req('en/', { mode: 'navigate' }));
-    assert.equal(await (await offline.response).text(), 'the English entry');
-  });
-
-  it('rejects an offline miss that is not the scope root', async () => {
-    const w = load();
-    await (await w.caches.open('dhloot-shell-v1')).put('./', body('the shell'));
-    const ev = dispatch(w, req('card/x.svg', { mode: 'navigate' }));
-    await assert.rejects(ev.response, /Failed to fetch/);
-  });
-});
-
-describe('paths the worker leaves to the browser', () => {
+describe('requests the worker leaves to the network, even with a cached copy', () => {
   for (const [what, request] of [
+    ['a navigation to the app', req('index.html', { mode: 'navigate' })],
+    ['a navigation to the scope root', req('', { mode: 'navigate' })],
+    ['a navigation to the English entry document', req('en/', { mode: 'navigate' })],
+    ['a navigation to a hashed file', req('assets/index-a1.js', { mode: 'navigate' })],
+    ['data.js', req('data.js')],
+    ['the worker itself', req('sw.js')],
+    ['the manifest', req('manifest.webmanifest')],
+    ['a policy page', req('pages/privacy.html')],
     ['a share stub navigation', req('i/w1.html', { mode: 'navigate' })],
-    ['an English share stub navigation', req('i/en/w1.html', { mode: 'navigate' })],
     ['a link preview picture', req('og/x.jpg')],
     ['data.json', req('data.json')],
-    ['a POST', req('assets/app.js', { method: 'POST' })],
+    ['a sign-in callback', req('assets/index-a1.js?auth-callback=1')],
+    ['a POST', req('img/x.webp', { method: 'POST' })],
     [
-      'a cross-origin URL',
-      { url: 'https://other.test/daggerheart-loot/app.js', method: 'GET' }
+      'a cross-origin request',
+      {
+        url: 'https://abc.supabase.co/daggerheart-loot/img/x.webp',
+        method: 'GET',
+        mode: 'cors'
+      }
     ],
-    ['a path outside the scope', req('/elsewhere/index.html')]
+    ['a path outside the scope', req('/elsewhere/img/x.webp')]
   ]) {
-    it('does not answer ' + what, () => {
+    it('does not answer ' + what, async () => {
       const w = load();
+      for (const name of CURRENT)
+        await (await w.caches.open(name)).put(request.url, body('cached'));
       assert.equal(dispatch(w, request).answered, false);
     });
   }
+});
 
-  it('does not answer a share stub navigation with a preload response, and waits for it', async () => {
+describe('hashed build files: cache first, never revalidated, capped', () => {
+  it('fetches and stores a miss', async () => {
     const w = load();
-    const ev = dispatch(w, req('i/w1.html', { mode: 'navigate' }), {
-      preloadResponse: Promise.resolve(body('stub'))
-    });
-    assert.equal(ev.answered, false);
-    assert.equal(ev.waits.length, 1);
+    w.net.fn = async () => body('code');
+    const ev = dispatch(w, req('assets/index-a1.js'));
+    assert.equal(await (await ev.response).text(), 'code');
     await Promise.all(ev.waits);
+    assert.ok(w.caches.named.get('dhloot-assets-v1').entries.has(SCOPE + 'assets/index-a1.js'));
+  });
+
+  it('answers a hit from the cache without a request', async () => {
+    const w = load();
+    await (
+      await w.caches.open('dhloot-assets-v1')
+    ).put(SCOPE + 'assets/index-a1.css', body('css'));
+    w.net.fn = async () => body('fresh');
+    const ev = dispatch(w, req('assets/index-a1.css'));
+    assert.equal(await (await ev.response).text(), 'css');
+    assert.equal(ev.waits.length, 0);
+    assert.deepEqual(w.net.urls, []);
+  });
+
+  it('stores nothing for a miss that is not ok', async () => {
+    const w = load();
+    w.net.fn = async () => new Response('gone', { status: 404 });
+    const ev = dispatch(w, req('assets/index-old.js'));
+    assert.equal((await ev.response).status, 404);
+    assert.equal(ev.waits.length, 0);
+  });
+
+  it('evicts the oldest file when the 31st arrives', async () => {
+    const w = load();
+    const assets = await w.caches.open('dhloot-assets-v1');
+    for (let i = 0; i < 30; i++) await assets.put(SCOPE + 'assets/f' + i + '.js', body('f'));
+    w.net.fn = async () => body('newest');
+    const ev = dispatch(w, req('assets/f30.js'));
+    await (await ev.response).text();
+    await Promise.all(ev.waits);
+    const keys = [...assets.entries.keys()];
+    assert.equal(keys.length, 30);
+    assert.equal(keys[0], SCOPE + 'assets/f1.js');
+    assert.equal(keys[29], SCOPE + 'assets/f30.js');
   });
 });
 
@@ -338,13 +322,6 @@ describe('pictures: cache first, capped', () => {
     await thumbs.put(SCOPE + 'img/thumb/x.webp', body('small'));
     const ev = dispatch(w, req('img/x.webp'));
     await assert.rejects(ev.response, /Failed to fetch/);
-  });
-
-  it('falls back offline to the placeholder precached in the shell cache', async () => {
-    const w = load();
-    await (await w.caches.open('dhloot-shell-v1')).put('img/_none.webp', body('placeholder'));
-    const ev = dispatch(w, req('img/_none.webp'));
-    assert.equal(await (await ev.response).text(), 'placeholder');
   });
 
   it('evicts the oldest picture when the 301st arrives', async () => {
@@ -400,15 +377,6 @@ describe('thumbnails: their own cache, capped above the whole set', () => {
     assert.equal(keys.length, 1500);
     assert.equal(keys[0], SCOPE + 'img/thumb/t1.webp');
     assert.equal(keys[1499], SCOPE + 'img/thumb/t1500.webp');
-  });
-
-  it('falls back offline to the thumbnail placeholder precached in the shell cache', async () => {
-    const w = load();
-    await (
-      await w.caches.open('dhloot-shell-v1')
-    ).put('img/thumb/_none.webp', body('small placeholder'));
-    const ev = dispatch(w, req('img/thumb/_none.webp'));
-    assert.equal(await (await ev.response).text(), 'small placeholder');
   });
 
   it('answers an offline thumbnail miss with the cached full picture', async () => {
@@ -523,69 +491,4 @@ describe('picture and thumbnail hits: answered from the cache, revalidated on ev
       }
     );
   }
-});
-
-describe('navigations: the preload response when there is one', () => {
-  it('enables navigation preload on activate where the registration has it, then claims', async () => {
-    const w = load({ preload: true });
-    await lifecycle(w, 'activate');
-    assert.equal(w.calls.preload, 1);
-    assert.equal(w.calls.claim, 1);
-  });
-
-  it('still deletes older caches and claims when enabling navigation preload rejects', async () => {
-    const w = load();
-    w.ctx.self.registration.navigationPreload = {
-      enable: async () => {
-        throw new Error('refused');
-      }
-    };
-    await w.caches.open('dhloot-shell-v0');
-    await w.caches.open('dhloot-shell-v1');
-    await lifecycle(w, 'activate');
-    assert.deepEqual([...w.caches.named.keys()], ['dhloot-shell-v1']);
-    assert.equal(w.calls.claim, 1);
-  });
-
-  it('answers a navigation with the preload response and stores it without the query', async () => {
-    const w = load();
-    const ev = dispatch(w, req('index.html?fbclid=1', { mode: 'navigate' }), {
-      preloadResponse: Promise.resolve(body('preloaded'))
-    });
-    assert.equal(await (await ev.response).text(), 'preloaded');
-    const stored = await w.caches.named.get('dhloot-shell-v1').match(SCOPE + 'index.html');
-    assert.equal(await stored.text(), 'preloaded');
-    assert.deepEqual(w.net.urls, []);
-  });
-
-  it('fetches when the preload response is undefined', async () => {
-    const w = load();
-    w.net.fn = async () => body('fetched');
-    const ev = dispatch(w, req('index.html', { mode: 'navigate' }), {
-      preloadResponse: Promise.resolve(undefined)
-    });
-    assert.equal(await (await ev.response).text(), 'fetched');
-    assert.equal(w.net.urls.length, 1);
-  });
-
-  it('falls back to the cached scope root when the preload rejects', async () => {
-    const w = load();
-    await (await w.caches.open('dhloot-shell-v1')).put('./', body('the shell'));
-    const ev = dispatch(w, req('index.html', { mode: 'navigate' }), {
-      preloadResponse: Promise.reject(new TypeError('Failed to fetch'))
-    });
-    assert.equal(await (await ev.response).text(), 'the shell');
-  });
-
-  it('falls back to the stored copy when the preload does not settle in time', async () => {
-    /* The five-second timeout, fired at once. */
-    const w = load({
-      timers: { setTimeout: (fn) => setTimeout(fn, 0), clearTimeout }
-    });
-    await (await w.caches.open('dhloot-shell-v1')).put(SCOPE + 'index.html', body('cached'));
-    const ev = dispatch(w, req('index.html', { mode: 'navigate' }), {
-      preloadResponse: new Promise(() => {})
-    });
-    assert.equal(await (await ev.response).text(), 'cached');
-  });
 });

@@ -1,11 +1,10 @@
 /* The installable app: linking the manifest, registering the service worker,
  * and knowing whether the page already runs as the installed app.
  *
- * Neither the manifest nor a worker loads from a folder, so the protocol is
- * checked before either is touched: `file://` stays a no-op, with no failed
- * request (docs/specs/META.md sections 4 and 9). */
+ * The worker keeps the site installable and caches the pictures and the
+ * hashed build files; it holds no offline shell (docs/specs/META.md
+ * section 9). */
 
-import { hostedProtocol } from './router.js';
 import type { Persistence, PwaPort, Registration } from './types.js';
 
 interface WorkerContainer {
@@ -18,11 +17,8 @@ interface StorageManagerLike {
 }
 
 /** The decision, with the browser handed in so jsdom can cover every branch. */
-export function registerWith(
-  sw: WorkerContainer | undefined,
-  protocol: string
-): Promise<Registration> {
-  if (!sw || !hostedProtocol(protocol)) return Promise.resolve('unsupported');
+export function registerWith(sw: WorkerContainer | undefined): Promise<Registration> {
+  if (!sw) return Promise.resolve('unsupported');
   return sw.register('./sw.js').then(
     (): Registration => 'registered',
     (): Registration => 'failed'
@@ -37,10 +33,9 @@ export function registerWith(
  */
 export function persistWith(
   sm: StorageManagerLike | undefined,
-  protocol: string,
   standalone: boolean
 ): Promise<Persistence> {
-  if (!sm || !hostedProtocol(protocol) || !standalone) return Promise.resolve('skipped');
+  if (!sm || !standalone) return Promise.resolve('skipped');
   return sm
     .persisted()
     .then((done) => done || sm.persist())
@@ -50,14 +45,9 @@ export function persistWith(
     );
 }
 
-/**
- * Adds `<link rel="manifest">` once, only where a server serves the page.
- *
- * Not a static tag in `app/index.html`: Chrome fetches it from a folder too,
- * and refuses it there with a CORS error and a failed request.
- */
-export function linkManifest(doc: Document, protocol: string): void {
-  if (!hostedProtocol(protocol) || doc.head.querySelector('link[rel="manifest"]')) return;
+/** Adds `<link rel="manifest">` once. */
+export function linkManifest(doc: Document): void {
+  if (doc.head.querySelector('link[rel="manifest"]')) return;
   const link = doc.createElement('link');
   link.rel = 'manifest';
   link.href = './manifest.webmanifest';
@@ -70,12 +60,11 @@ export function browserPwa(): PwaPort {
     Reflect.get(navigator, 'standalone') === true;
   return {
     register: () => {
-      linkManifest(document, location.protocol);
+      linkManifest(document);
       return registerWith(
         /* Absent outside a secure context and in older browsers, whatever the
            DOM typings say. */
-        'serviceWorker' in navigator ? navigator.serviceWorker : undefined,
-        location.protocol
+        'serviceWorker' in navigator ? navigator.serviceWorker : undefined
       );
     },
     standalone,
@@ -84,7 +73,6 @@ export function browserPwa(): PwaPort {
         /* Absent outside a secure context and in older browsers, whatever the
            DOM typings say. */
         'storage' in navigator ? navigator.storage : undefined,
-        location.protocol,
         standalone()
       )
   };

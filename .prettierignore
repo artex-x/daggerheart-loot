@@ -28,6 +28,7 @@ docs/fixtures/
 # read a nested .gitignore, so format:check would otherwise trip on whatever
 # a live hook wrote during the session.
 .claude/.check-cache.json
+.claude/.check-db-cache.json
 .claude/.check-index
 .claude/.hook-state.json
 
@@ -43,6 +44,12 @@ docs/fixtures/
 .impeccable/hook.pending.json
 .impeccable/config.local.json
 .impeccable/config.json
+
+# Machine-written: npm run db:push writes applied.json; the Supabase CLI owns
+# the two gitignored scratch directories.
+supabase/applied.json
+supabase/.temp/
+supabase/.branches/
 
 # A dispatched agent's isolated worktree is host infrastructure, not source,
 # and can land nested under this tree's own .claude/ directory unpredictably

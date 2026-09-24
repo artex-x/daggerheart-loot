@@ -467,41 +467,30 @@ describe('writing an address', () => {
 });
 
 describe('a link to hand somebody else', () => {
-  const host = { base: 'https://e.test/loot/', hosted: true };
-  const disk = { base: 'file:///tmp/loot/', hosted: false };
+  const host = { base: 'https://e.test/loot/' };
 
-  it('names index.html only where nothing will serve it', () => {
+  it('leaves index.html off, because the server serves the directory', () => {
     expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
-    expect(appUrl(disk, '#/lists')).toBe('file:///tmp/loot/index.html#/lists');
   });
 
-  it('sends a record to its stub page on a host', () => {
+  it('sends a record to its stub page', () => {
     /* The stub carries the record's Open Graph tags, which is what makes a
        pasted link unfurl in Telegram or Discord with the picture and the name. */
     expect(recordUrl(host, 'w1', 'ru')).toBe('https://e.test/loot/i/w1.html');
   });
 
-  it('sends a record to the app itself from a folder, where no stub exists', () => {
-    expect(recordUrl(disk, 'w1', 'ru')).toBe('file:///tmp/loot/index.html#/i/w1');
-  });
-
-  it('sends an English record to its English stub on a host', () => {
+  it('sends an English record to its English stub', () => {
     expect(recordUrl(host, 'w1', 'en')).toBe('https://e.test/loot/i/en/w1.html');
   });
 
-  it('sends an English address through the English entry document on a host', () => {
+  it('sends an English address through the English entry document', () => {
     expect(appUrl(host, '#/lists', 'en')).toBe('https://e.test/loot/en/#/lists');
     expect(appUrl(host, '#/lists', 'ru')).toBe('https://e.test/loot/#/lists');
     expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
   });
 
-  it('ignores the language from a folder, where no English page exists', () => {
-    expect(recordUrl(disk, 'w1', 'en')).toBe('file:///tmp/loot/index.html#/i/w1');
-    expect(appUrl(disk, '#/lists', 'en')).toBe('file:///tmp/loot/index.html#/lists');
-  });
-
   it('lands on an address the app can read back', () => {
-    const r = parseHash(recordUrl(disk, 'w1', 'ru').split('index.html')[1] ?? '');
+    const r = parseHash(appUrl(host, recordHash('w1')).split('/loot/')[1] ?? '');
     expect(r).toEqual({ kind: 'record', id: 'w1' });
   });
 });

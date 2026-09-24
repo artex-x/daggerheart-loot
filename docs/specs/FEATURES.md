@@ -235,9 +235,8 @@ Seven modes. Each keeps its own input in memory only.
   either link form, plain or packed.
 - Every other address the app copies - a list's players link, a table, a
   filter, a section anchor, a print sheet - is `<site>#/...` in Russian and
-  `<site>en/#/...` in English on a host, so a messenger builds its preview in
-  that language (`CONTRACTS.md` section 3); from a folder it is
-  `index.html#/...` in both.
+  `<site>en/#/...` in English, so a messenger builds its preview in that
+  language (`CONTRACTS.md` section 3).
 - A shared link (`#/l/<payload>`) that is nobody's own list draws the shared
   page: the name, the shared-list line with the count as one text node, one
   "Сохранить себе" / "Save to my lists" button, drawn whatever the selection,
@@ -321,11 +320,10 @@ Seven modes. Each keeps its own input in memory only.
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
   asterisks are deliberately not used. Copy link and share carry the
   record's stub in the language on screen - `i/<id>.html` in Russian,
-  `i/en/<id>.html` in English - on a host, and the in-app route
-  `index.html#/i/<id>` from a folder.
+  `i/en/<id>.html` in English.
 - Copying the image has three outcomes, each with its own toast. A canvas
-  that cannot be read back at all (a `file://` document's own picture always
-  taints it) falls back to copying the record's text instead, worded to say
+  that cannot be read back at all (the retired `file://` build's own picture
+  always tainted it) falls back to copying the record's text instead, worded to say
   so. A picture the canvas can produce but the
   clipboard refuses falls back to downloading it as a PNG file, saved or
   failed each with their own wording - distinct from the clipboard's own
@@ -386,8 +384,8 @@ Seven modes. Each keeps its own input in memory only.
   draws, and hides the image button; so does a record whose picture or
   thumbnail fails to load, and the app remembers that for the session, so a
   failed thumbnail also shows the placeholder on the record's card.
-  Offline, where the service worker runs, a thumbnail the worker never
-  cached is answered with the cached 640 px picture when there is one, so
+  Without a connection, a thumbnail the service worker never cached is
+  answered with the cached 640 px picture when there is one, so
   the row draws that picture and nothing is remembered as failed
   (`META.md` section 9).
 - The record modal is a native `<dialog>` opened with `showModal()`, so it is
@@ -505,8 +503,7 @@ Seven modes. Each keeps its own input in memory only.
   coming back - matching the live app's own `S.printBW` rather than resetting
   on every fresh entry, which is what the page-local `$state` this replaced
   did. Neither is written to storage.
-- A missing picture (a partial deploy, a cold cache, a `file://` copy short
-  one file) falls back to the same drawn glyph a record with no art gets,
+- A missing picture (a partial deploy, a cold cache) falls back to the same drawn glyph a record with no art gets,
   the same way `RecordCard` does - reached from a print sheet opened
   directly at a shared `#/print/...` address, where nothing has already
   caught the failure.
@@ -555,15 +552,24 @@ Seven modes. Each keeps its own input in memory only.
   takes focus and answers a click there; with the element focus came from
   gone, focus returns to the dialog's close button. Closing the dialog while
   an undo is on offer leaves the toast on the page for the rest of its time.
-- A footer nav row above the licence line links the site's static pages
-  (`META.md` section 9, "Static pages"). Today it has one link,
-  «Установить как приложение» / "Install as an app". Every link opens the
-  copy of the page in the language on screen: `pages/install.html` in
-  Russian, `pages/en/install.html` in English (`Shell.svelte`'s
-  `pagesDir`). The row is drawn only when the page is served over
-  http(s) and is not already the installed app (`display-mode: standalone`,
-  or iOS `navigator.standalone`): nothing installs from a folder, and inside
-  the installed app the step is done.
+- The footer carries the full DPCGL licence notice (`dict.ts`'s
+  `footBefore`, `footLink`, `footAfter`, the text `tests/derived.js` pins)
+  on every page, folded in a native `<details>`: its `<summary>` is one line,
+  «Daggerheart © Darrington Press - DPCGL - Источники и лицензия» /
+  "Daggerheart © Darrington Press - DPCGL - Sources and licence"
+  (`footSummary`). A click or Enter opens it; the summary takes the global
+  focus ring. DPCGL clause 4.1 asks for the notice in the shared material
+  and sets no visibility rule (checked against the licence of 2025-07-30).
+- A footer nav row above the licence notice links the site's static pages
+  (`META.md` section 9, "Static pages"), on every page, in this order:
+  «Установить как приложение» / "Install as an app",
+  «Конфиденциальность» / "Privacy" and «Условия использования» / "Terms of
+  use". Every link opens the copy of the page in the language on screen:
+  `pages/<id>.html` in Russian, `pages/en/<id>.html` in English
+  (`Shell.svelte`'s `pagesDir`). The install link is left out inside the
+  installed app (`display-mode: standalone`, or iOS
+  `navigator.standalone`), where the step is done; the two policy links
+  are always drawn.
 - Each site page links back to the app at its top and its bottom and
   returns to the screen the reader left (`META.md` section 9, "Static
   pages").

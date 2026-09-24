@@ -54,9 +54,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Оберег Теней" [checked=false]
     button "145 Оберег Теней Ранг 2 · Пороги 9/20 · Броня 4 Укрытое тенями: ..." [namelen=169 namehash=b9c93161]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
@@ -269,6 +271,7 @@ daggerheart.com
 Кольцо Ухмыляющегося Черепа
 Кольцо Феникса
 Кольцо Хирлоина
+Конфиденциальность
 Корона Утраченной Линии Лей
 Кровоглот
 Крюк Ананимуса
@@ -356,6 +359,8 @@ daggerheart.com
 Удача Монарха
 Указ Отрицания
 Укреплённое Янтарное Кольцо
+Условия использования
+Установить как приложение
 Фильтры
 Флейта Транспозиции
 Фрикционные Обмотки
@@ -429,9 +434,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/dv]
     checkbox "Ward of Shadows" [checked=false]
     button "145 Ward of Shadows Tier 2 · Thresholds 9/20 · Armor 4 Shrouded:..." [namelen=153 namehash=03d57ffc]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=246 namehash=036eb4fb]
@@ -668,6 +675,7 @@ How this works
 Hydra Blade
 Impervious Vestments
 Infernal Knuckles
+Install as an app
 Kinetic Edge
 Link to this table
 List
@@ -688,6 +696,7 @@ Pelt of the Frost Bear
 Penance Pendant
 Phoenix Heart
 Prismatic Fork
+Privacy
 RU
 Radiant Diadem
 Red Dragon Horn
@@ -731,6 +740,7 @@ Sword of Angels
 Sword of Undeath
 Tables
 Tendon Bow
+Terms of use
 The Springer
 The White Cloak
 Thunderstone

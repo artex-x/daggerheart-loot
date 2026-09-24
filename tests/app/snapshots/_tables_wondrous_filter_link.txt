@@ -60,9 +60,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Шкура Йети" [checked=false]
     button "118 Шкура Йети Пока вы носите эту шкуру, вы получаете половину у..." [namelen=282 namehash=c9dc228e]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 102Искажённая ЛинзаКогда вы смотрите через эту линзу, вы можете ... [namelen=249 namehash=f9c5cce2]
@@ -140,6 +142,7 @@ daggerheart.com
 Как это работает
 Камень Сирены
 Капюшон Туманного Покрова
+Конфиденциальность
 Красный Нос Надежды
 Кувшинка-Пифия
 Ласты Лужелуточки
@@ -186,7 +189,9 @@ daggerheart.com
 Тростник Трясинного Стекла
 Убрать из фильтра
 Удерживающий Крюк
+Условия использования
 Усмиряющее Кадило
+Установить как приложение
 Факел Души
 Фильтры (1)
 Фонарь Теней
@@ -254,9 +259,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
     checkbox "Yeti Coat" [checked=false]
     button "118 Yeti Coat While wearing this coat you take half damage from ..." [namelen=239 namehash=3040652f]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 102Twisted LensWhen you look through this lens, you can see into... [namelen=231 namehash=e7db1354]
@@ -341,6 +348,7 @@ Hope & Fear
 How this works
 Ice Gloves
 Incantor's Chalk
+Install as an app
 Items
 Jamming Spanner
 Lantern of Shadows
@@ -353,6 +361,7 @@ Mimicry Mask
 Open this section on start
 Other
 Pathfinder's Ledger
+Privacy
 Puddleduck's Fins
 Pure Crystal
 Quill of Memory
@@ -372,6 +381,7 @@ Stingshield Robes
 Superior Alconite Crystal
 Tables
 Tarrasque Sinew
+Terms of use
 Ticket Master's Pouch
 Timeglass
 Tortoise Horn

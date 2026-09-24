@@ -157,16 +157,63 @@ describe('the footer nav', () => {
     );
   });
 
-  it('draws no install link inside the installed app', () => {
-    render(App, { env: at('#/roll/std', { pwa: fakePwa({ standalone: true }) }) });
-    expect(screen.queryByRole('link', { name: INSTALL })).toBeNull();
-    expect(screen.queryByRole('navigation', { name: 'Страницы сайта' })).toBeNull();
+  it('links the install guide, the privacy page and the terms, in that order', () => {
+    render(App, { env: at('#/roll/std') });
+    const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
+    const hrefs = [...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['pages/install.html', 'pages/privacy.html', 'pages/terms.html']);
+    expect(screen.getByRole('link', { name: 'Конфиденциальность' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Условия использования' })).toBeInTheDocument();
   });
 
-  it('draws no install link from a folder', () => {
-    const router = { ...memoryRouter('#/roll/std'), hosted: () => false };
-    render(App, { env: fakeEnv({ router }) });
+  it('links the English policy pages in English', async () => {
+    render(App, { env: at('#/roll/std') });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute(
+      'href',
+      'pages/en/privacy.html'
+    );
+    expect(screen.getByRole('link', { name: 'Terms of use' })).toHaveAttribute(
+      'href',
+      'pages/en/terms.html'
+    );
+  });
+
+  it('folds the full licence notice under a one-line summary that toggles it', async () => {
+    const { container } = render(App, { env: at('#/roll/std') });
+    const details = container.querySelector('footer details');
+    expect(details).not.toBeNull();
+    expect(details).not.toHaveAttribute('open');
+    const summary = screen.getByText(
+      'Daggerheart © Darrington Press - DPCGL - Источники и лицензия'
+    );
+    expect(summary.tagName).toBe('SUMMARY');
+    expect(details!.textContent).toContain('Daggerheart System Reference Document 2.0');
+    expect(details!.querySelector('a')).toHaveAttribute('href', 'https://www.daggerheart.com');
+    await expectNoA11yViolations(container);
+    await userEvent.click(summary);
+    expect(details).toHaveAttribute('open');
+    await expectNoA11yViolations(container);
+  });
+
+  it('names the licence summary in English and puts it in the tab order', async () => {
+    /* jsdom has no native summary activation; the keyboard toggle and its
+       focus ring are tests/app/states.js case 28, in Chrome. */
+    render(App, { env: at('#/roll/std') });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    const summary = screen.getByText(
+      'Daggerheart © Darrington Press - DPCGL - Sources and licence'
+    );
+    summary.focus();
+    expect(summary).toHaveFocus();
+  });
+
+  it('keeps the policy links and drops the install link inside the installed app', () => {
+    render(App, { env: at('#/roll/std', { pwa: fakePwa({ standalone: true }) }) });
     expect(screen.queryByRole('link', { name: INSTALL })).toBeNull();
+    const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
+    const hrefs = [...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(['pages/privacy.html', 'pages/terms.html']);
   });
 });
 

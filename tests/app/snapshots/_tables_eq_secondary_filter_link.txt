@@ -70,9 +70,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Легендарный Священный Щит" [checked=false]
     button "Легендарный Священный Щит Ранг 4 · Магическое · Инстинкт · Вплот..." [namelen=229 namehash=d4eac64c]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 1
@@ -117,6 +119,7 @@ daggerheart.com
 Клинок Эха
 Клинок ЭхаРанг 4 · Магическое · Влияние · Вплотную · d4+6 маг · ... [namelen=216 namehash=cfabda55]
 Колоссы Сухоземья
+Конфиденциальность
 Легендарные Руны Концентрации
 Легендарные Руны КонцентрацииРанг 4 · Магическое · Инстинкт · Бл... [namelen=201 namehash=3fefbe6b]
 Легендарный Рунный Щит
@@ -176,6 +179,8 @@ daggerheart.com
 Улучшенный Священный Щит
 Улучшенный Священный ЩитРанг 2 · Магическое · Инстинкт · Вплотну... [namelen=224 namehash=eb7cc6f2]
 Уникальные
+Условия использования
+Установить как приложение
 Физическое
 Фильтры (1)
 Щит Солнца
@@ -250,9 +255,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     checkbox "Legendary Hallowed Shield" [checked=false]
     button "Legendary Hallowed Shield Tier 4 · Magic · Instinct · Melee · d4..." [namelen=219 namehash=f870b479]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 1
@@ -312,6 +319,7 @@ Improved Hallowed Shield
 Improved Hallowed ShieldTier 2 · Magic · Instinct · Melee · d4+2... [namelen=214 namehash=ac7312c1]
 Improved Rune Shield
 Improved Rune ShieldTier 2 · Magic · Knowledge · Melee · d4+2 ma... [namelen=134 namehash=5ead169e]
+Install as an app
 Instinct
 Knowledge
 Legendary Focus Runes
@@ -331,6 +339,7 @@ Open this section on start
 Other
 Physical
 Presence
+Privacy
 RU
 Remove from the filter
 Reset all
@@ -349,6 +358,7 @@ Spark
 Standard rules
 Strength
 Tables
+Terms of use
 Unique
 Upgradable
 Vault of Ages

@@ -54,9 +54,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Склянка Святой Воды" [checked=false]
     button "29 Склянка Святой Воды Обжигает демонов, дьяволов и нежить. Чтоб..." [namelen=412 namehash=290cb8b2]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 10Мистическая СмолаМаленькая баночка воска для тетивы, которая м... [namelen=256 namehash=d4f34091]
@@ -110,6 +112,7 @@ daggerheart.com
 Как это работает
 Клинок Живущих
 Колчан Фей
+Конфиденциальность
 Ледяная Граната
 Ледяное Масло
 Лунный Шарф
@@ -139,6 +142,8 @@ daggerheart.com
 Таблицы
 Тиара Разговора
 Туманный Проектор Ми-Го
+Условия использования
+Установить как приложение
 Фильтры
 Цилиндр для Мозга Ми-Го
 Щит Солнца
@@ -197,9 +202,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/dread]
     checkbox "Vial of Holy Water" [checked=false]
     button "29 Vial of Holy Water Burns demons, devils, and undead. To use i..." [namelen=362 namehash=f889b517]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 10Arcane ResinA tiny jar of bowstring wax that changes the damag... [namelen=248 namehash=711fd626]
@@ -258,6 +265,7 @@ Green Ooze Oil
 Grid
 Hope & Fear
 How this works
+Install as an app
 Jar of Green Ooze Slime
 Lazarus Protocol Serum
 Link to this table
@@ -270,6 +278,7 @@ Moon Scarf
 Open this section on start
 Other
 Pen of Pals
+Privacy
 Purple Aim
 RU
 Search
@@ -279,6 +288,7 @@ Skip to content
 Staff of the Secret Flame
 Standard rules
 Tables
+Terms of use
 Tiara of Talking
 Vault of Ages
 Vial of Holy Water

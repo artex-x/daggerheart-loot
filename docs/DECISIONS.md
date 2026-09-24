@@ -12,6 +12,242 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-24 - The laws of no backend and of `file://` are superseded
+
+- Task: `persist-0-foundation` (owner decisions of this date).
+- Decision: three `CLAUDE.md` laws are replaced. "Project shape": "It runs
+  from `file://` too." - the app is served over HTTP only. "Architecture
+  boundaries": "Preserve relative asset paths and the classic-script data
+  adapter required by `file://`; do not use runtime `fetch()` for local
+  data." - both stay, for caching and a synchronous boot. "Product laws":
+  "Lists live in the URL hash and localStorage; add no backend or upload
+  service." - a Supabase backend holds accounts, cloud lists and homebrew,
+  and no other server is added. The replacement text, as this date's
+  entries settle it, is `docs/specs/META.md` sections 3, 4 and 9 and
+  `CONTRACTS.md` sections 4-5.
+- Rejected: keeping the laws with a list of exceptions - every persistence
+  batch would open with a law conflict.
+
+## 2026-09-24 - The guards judge PowerShell tool commands as well as Bash
+
+- Task: `persist-0-foundation`.
+- Context: on this Windows host Docker answers only the PowerShell tool, so
+  the Supabase work runs there; `settings.json` guarded the Bash tool only,
+  so a PowerShell `git commit`, `git reset --hard` or `supabase db reset
+  --linked` passed every guard, and the new gates were bypassable.
+- Decision: `bash-guard.mjs` and `check-observer.mjs` register for
+  `Bash|PowerShell`. A PowerShell command is normalised (each backtick and
+  the character after it become a space, `\` becomes `/`) and runs through
+  the same rule families. The observer arms `check:db` from either tool and
+  `npm run check` from Bash only.
+- Rejected: denying `git` from PowerShell (blocks legitimate reads and still
+  leaves `supabase` and `rm` unguarded); leaving PowerShell unguarded.
+- Consequences: the normalisation is a habit guard, not a parser;
+  `Remove-Item` and other cmdlets are not judged.
+
+## 2026-09-24 - Running from a folder and offline use are nice-to-haves
+
+- Task: `persistent-storage`; worker revised in `persist-0-foundation`.
+- Decision: direct `file://` execution ends (the IIFE build,
+  `tools/smoke-file-url.mjs` and the from-a-folder address branch go;
+  `base: './'` and the classic `data.js` stay) and offline use is retired.
+  `sw.js` stays registered, for installability: cache first for same-origin
+  `img/`, `img/thumb/` (issue 69's caps and revalidation) and hashed
+  `assets/` (immutable, capped at 30); navigations, `data.js`, the manifest,
+  `pages/`, other origins and an `auth-callback` URL pass to the network;
+  activate deletes every other `dhloot-*` cache (`META.md` section 9).
+- Rejected: the offline shell with Supabase bypass rules - a
+  shell answered while `?code=` is in the URL is an Auth defect class, and
+  hashed names need a precache list kept in step; a worker that unregisters
+  itself - no worker puts the install prompt at risk; no caches - 1272
+  pictures refetched past `max-age`; an absolute Pages base.
+
+## 2026-09-24 - The persistence programme ships one task per release
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: every deployable sub-feature of the persistence work (auth,
+  lists, Realtime, migration, import/export, homebrew, media, item share,
+  legacy removal) is its own task, `persist-<n>-<name>`, under the standing
+  law unchanged: first batch commits, later batches amend, closeout deletes
+  the task directory and pushes once; the push to `main` deploys. The
+  programme roadmap stays a task document of `persistent-storage` until the
+  last release ships. Migrations are pushed by the owner from the CLI before the
+  release push.
+- Rejected: one task with one commit per phase and owner-called pushes -
+  lawful, but one directory and one growing commit message for months; one
+  task per batch - a batch is not a deployable feature; a CI job with
+  production database credentials and a protected environment - a new
+  class of secret and failure for a personal tool.
+
+## 2026-09-24 - `data.js` in git is the only catalog authority
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: official records never enter the database. A cloud list entry
+  stores the official `item_key` (the stable record id) and the client
+  resolves it against the in-memory index built from `data.js`, as today;
+  a stored fallback name renders a retired id. `catalog.csv`, `data.json`
+  and `llms.txt` on Pages stay the machine-readable surface.
+- Rejected: the design's manifest -> PostgreSQL -> generated artefacts
+  chain with `items`, `catalog_state`, `catalog_releases`, a versioned
+  Pages snapshot and an async `CatalogSnapshotPort` - two authorities for
+  1272 records the database never queries, and a loading state on every
+  official screen; public Edge catalog endpoints - the static files already
+  serve LLMs and cost nothing to run.
+
+## 2026-09-24 - Realtime ships in v1, directly after lists, over polling
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: the lists release ships player and GM share pages that refetch
+  on focus and every 45 s; the next release adds Supabase Realtime
+  Broadcast from a database trigger (`realtime.send` on
+  `share:<topic_key>`, payload `{ revision }`) and keeps the poll as the
+  fallback. Topics are random and unguessable; a forged message can only
+  cause a refetch. The owner's own devices are not subscribed in v1.
+- Rejected: deferring Realtime past v1 (the planner's recommendation) - the
+  owner values live shared pages above the saved surface; bundling it
+  into the lists release - a release is smaller and safer without it; an
+  owner-scoped private topic now - refetch on focus covers two devices.
+
+## 2026-09-24 - The `#/l/` link decoder retires at the legacy write cutoff
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: content-bearing `#/l/<payload>` links stop decoding on the
+  same date local lists become read-only (`LEGACY_WRITE_UNTIL`, set 30 or
+  more days after the migration release is live). Cloud lists never write
+  one. From that date `#/l/` draws a retired-link page and the link buttons
+  and link import vanish from local lists; a local list's only structured
+  export is migration into an account, beside copy text and print. The
+  codec, its fixtures, `tests/contracts.js`'s encoding half and the
+  `llms.txt` section are removed by a release dispatched after the date;
+  `#/l/` keeps a route kind so the page is reached, never the home fallback.
+- Rejected: keeping the decoder read-only for good (the planner's
+  recommendation; small and pure, every pasted link kept opening) - the
+  owner prefers one list model and one link format; a second, later date -
+  two announcements for one change.
+
+## 2026-09-24 - Only a signed-in user creates a list, from the lists release on
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: once cloud lists ship, an anonymous visitor creates no list:
+  "New list", "Add to list" and "Save a copy" draw a sign-in prompt in the
+  slot of the control they replace. Existing local lists stay editable
+  until the legacy write cutoff. An unconfigured build (no Supabase URL and
+  key, the one the browser suites drive) keeps local creation, because it
+  has no account to offer; the prompt states are covered by component tests
+  with a fake cloud and by the hosted E2E, never by a golden.
+- Rejected: the design's rule - anonymous creation until the cutoff, then
+  none (two stores kept alive for the whole window); a fake cloud in the
+  production bundle so the goldens could draw the prompt - harness in the
+  shipped code.
+
+## 2026-09-24 - The account is a route, `#/account`, with provider linking
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: the header control ("Sign in" or the account name) opens
+  `#/account`, a public route with five sections in order: signed in as
+  (provider and email from the session, never stored in `public`);
+  connected providers (Connect through `linkIdentity`, Disconnect through
+  `unlinkIdentity`, drawn only while two or more identities exist); your
+  data (Export JSON, once import/export ships); sign out; delete account
+  with a typed confirmation calling `delete_account()`. Manual and
+  automatic (verified email) linking both stay on. A provider account held
+  by another user fails with `identity_already_exists`: "This <provider>
+  account is already used by another account"; the privacy page states the
+  recovery (export from the account you drop, import into the one you keep).
+- Rejected: a dialog - extra code to reopen after the OAuth redirect, and
+  no plain URL for the erasure link; no linking UI (the planner's cut) -
+  two accounts with no way to join them when the provider emails differ.
+
+## 2026-09-24 - Per-user UI preferences persist in the account, account wins
+
+- Task: `persistent-storage` (owner decision, 2026-09-24; reopens the
+  `profiles` cut of the same day's scope decision as one row).
+- Decision: for a signed-in user the settings that live in `localStorage`
+  or session memory - language, starting section, tables view, print layout
+  (colour or black-and-white, compact sheet) and a default money mode for
+  new lists - persist in `user_prefs(user_id, prefs jsonb)` and apply on
+  every device. Precedence: the account wins; a first sign-in with no row
+  seeds it from the local values; every later change writes local first,
+  then the account; two devices are last write wins, refetched on focus.
+  Anonymous users keep `localStorage`. No settings page: the controls stay
+  where they are.
+- Rejected: a separate preferences page - the controls already exist;
+  local wins - a new device would silently reset the account; `profiles`
+  with a display name - nothing shows one.
+
+## 2026-09-24 - The browser suites drive a test build with a deterministic fake cloud
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: `vite build --mode test` writes `dist-test/` with an in-memory
+  `CloudPort` fake seeded with fixed users, lists, homebrew, ids, tokens
+  and timestamps; `?as=<user>` signs a seeded user in, absent means signed
+  out. `tests/app/` drives that build, so every account-era screen has
+  offline, parallel, pixel and structural coverage in both states. The
+  production build never contains the fake: a build-time define that
+  Rollup drops, and `check:built` fails on the fake's marker in `dist/`.
+  The same contract assertions run against the fake and the real adapter
+  (hosted E2E), so drift fails a gate. Pixel comparisons exist only in this
+  layer; real network and real Supabase only in the database and E2E layers.
+- Rejected: an unconfigured build keeping local creation as the golden
+  subject (the planner's first choice) - the deployed anonymous screens
+  would never be captured; a runtime-selectable fake in the production
+  bundle - harness in shipped code.
+
+## 2026-09-24 - Supabase configuration is code; the dashboard is read-only; no Branching
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: everything that can be code is code. Auth settings live in
+  `supabase/config.toml` (site URL, redirect URLs, email, phone and
+  anonymous sign-in off, Google and Discord on with `env(...)` secret
+  references, manual linking on) and reach a hosted project only through
+  `supabase config push` after a `supabase config diff` that a person has
+  read - never a blind `--yes`, because a non-interactive push also writes
+  the init template's values over a customised hosted setting. Schema,
+  RLS, Realtime policies, the broadcast trigger, the Storage bucket and its
+  policies are SQL migrations; Edge Functions, if any, live in
+  `supabase/functions/`. The dashboard is read-only by convention: a
+  hosted value that differs from the repository is a defect, found by
+  `config diff` before each release push (CI holds no access token).
+- Rejected: the Supabase GitHub integration (Branching) - pull-request
+  based, likely paid, and the owner pushes to `main`; dashboard clicks
+  recorded in a checklist - a list nobody diffs.
+
+## 2026-09-24 - A cloud session runs a whole release on its own task branch
+
+- Task: `persistent-storage` (owner decision, 2026-09-24).
+- Decision: a release (one task id) runs fully in a claude.ai/code cloud
+  session or fully locally; batches never mix hosts. A cloud release starts
+  from the pushed `main`, commits and amends on a branch named after the
+  task id, and pushes that branch once at closeout after the task directory
+  is retired - that push is the release's one push, so "push once, never
+  force-push" holds unchanged with the task branch as its object. The owner
+  then runs the local-only steps (`config:push` and `db:push` to test and
+  prod, console steps) and fast-forwards `main` locally, which deploys; the
+  UI merge is not used. In a cloud session `bash-guard.mjs` denies a push
+  to `main` or to any branch but the current one. Production secrets never
+  enter the cloud; E2E credentials may, as proxy-attached API credentials.
+- Rejected: scratch base branches per batch with a local cherry-pick - two
+  extra branch names per batch and a release whose handoff lives on two
+  hosts; a pull request and merge commit from the claude.ai/code UI - one
+  commit per release is the law's shape.
+
+## 2026-09-24 - The hosted E2E mints its session with the secret key, not a password
+
+- Task: `persistent-storage` (owner decision, 2026-09-24, on the cloud
+  proxy's limits).
+- Decision: `tests/e2e/` obtains the test user's session through
+  `auth.admin.generateLink({ type: 'magiclink' })` and `verifyOtp({
+  token_hash })`, so the only credential a run needs is the test project's
+  secret key, sent as a header - what the cloud's hidden proxy can attach
+  to matching requests; no password travels in a request body on any host.
+  Every run starts with a fail-closed probe: a publishable-key-only request
+  to a protected table must return 401 and a Puppeteer page must see no
+  injected `Authorization` header, or the run refuses with a named message.
+- Rejected: `signInWithPassword` with `E2E_USER_PASSWORD` - the body cannot
+  pass the proxy and a second credential shape for one user; a CI-side
+  session mint handed to the cloud - a session token in transit for no
+  gain over the header the proxy already carries.
+
 ## 2026-09-24 - A drag keeps its cached midpoints when another tab rewrites the list
 
 - Task: `debt-cleanup`; was DEBT D42 (`git show 7b0def9:docs/specs/DEBT.md`), closed
@@ -195,6 +431,8 @@ entry to its first line before adding another.
 
 ## 2026-09-23 - The service worker is a hand-written `app/public/sw.js`
 
+- Superseded in part by "Running from a folder and offline use are nice-to-haves" (2026-09-24): the offline shell and the
+  one-IIFE rationale; the file, its tests and its lint block stay.
 - Task: `69`; on 2026-09-23 the owner chose a minimal worker (offline
   shell, capped picture cache, silent updates).
 - Decision: about 140 lines of plain JS with no dependency, copied verbatim
@@ -211,22 +449,14 @@ entry to its first line before adding another.
 
 ## 2026-09-23 - The shell is network first with a cache fallback; updates are silent
 
-- Task: `69`; on 2026-09-23 the owner chose the minimal worker and kept
-  these defaults (5 s, 300 entries, seven days, silent updates).
-- Decision: every shell request tries the network for 5 s, stores a good
-  answer and falls back to the cache. No per-deploy version: each online
-  load refreshes the entries. `skipWaiting()` and `clients.claim()` make an
-  update silent, which is safe while the app is one IIFE plus `data.js`.
-  Pictures are cache first, 300 entries, revalidated after seven days.
-- Rejected: a build-time content hash injected into `sw.js` with versioned
-  caches - a reinstall and a full precache on every deploy for no gain
-  under network first; a precache list generated by `tools/build.js` - it
-  guards eight stable names; an "update available" prompt - nothing
-  lazy-loads a chunk from a newer build today.
-- Superseded in part by "Pictures revalidate on every cache hit; an unchanged ETag writes nothing" (2026-09-23): the seven-day picture revalidation.
+- Superseded by "Running from a folder and offline use are nice-to-haves" (2026-09-24): no shell; the document and
+  `data.js` always come from the network.
+- Full text: `git show 12557fe1:docs/DECISIONS.md`.
 
 ## 2026-09-23 - PWA registration is a boot concern in `main.ts` behind `PwaPort`
 
+- Superseded in part by "Running from a folder and offline use are nice-to-haves" (2026-09-24): the protocol guard
+  is gone with `file://`; the boot call and the script-added manifest stay.
 - Task: `69`.
 - Decision: `app/src/main.ts` calls `env.pwa.register()` once, beside
   `mount`. `app/src/ports/pwa.ts` tests the protocol before it touches the
@@ -257,6 +487,9 @@ entry to its first line before adding another.
 
 ## 2026-09-23 - The install link is drawn only where it can be used
 
+- Superseded in part by "Running from a folder and offline use are nice-to-haves" (2026-09-24): the footer nav row
+  is always drawn with the policy links; only the install link hides, in
+  the installed app.
 - Task: `69`.
 - Decision: `AppState.showInstall` is `router.hosted() && !pwa.standalone()`;
   the footer nav row is drawn only when it is true (`FEATURES.md`,
@@ -284,6 +517,8 @@ entry to its first line before adding another.
 
 ## 2026-09-23 - Thumbnails get their own worker cache, capped above the whole set
 
+- Superseded in part by "Running from a folder and offline use are nice-to-haves" (2026-09-24): nothing is
+  precached, `img/thumb/_none.webp` included; the cache and its cap stay.
 - Task: `69`.
 - Decision: `app/public/sw.js` caches `img/thumb/` cache first in
   `dhloot-thumb-v1`, capped at 1500 entries (the set is 1057), with the
@@ -322,6 +557,8 @@ entry to its first line before adding another.
 
 ## 2026-09-23 - A picture miss is answered before it is stored; an offline thumbnail miss takes the cached full picture
 
+- Superseded in part by "Running from a folder and offline use are nice-to-haves" (2026-09-24): no precached
+  placeholder follows the full-picture fallback.
 - Task: `69`, follow-up; the owner chose both on 2026-09-23.
 - Decision: `imageFirst` returns a fetched picture at once and stores
   and trims it through `waitUntil`, so `trim`'s `cache.keys()` over up
@@ -338,16 +575,9 @@ entry to its first line before adding another.
 
 ## 2026-09-23 - Navigations take the navigation preload response
 
-- Task: `69`, follow-up; the owner chose it on 2026-09-23.
-- Decision: `activate` enables `registration.navigationPreload` where
-  it exists; `networkFirst` takes `e.preloadResponse` when it resolves
-  to a response and fetches otherwise, with the same 5 s timeout,
-  store and fallback (`docs/specs/META.md` section 9). A navigation's
-  request then starts while a stopped worker boots; the gain is not
-  measured here.
-- Rejected: cache first for navigations - a deploy would show one load
-  late, against "The shell is network first ..." above; no preload -
-  every navigation to a stopped worker waits for its start.
+- Superseded by "Running from a folder and offline use are nice-to-haves" (2026-09-24): the worker answers no
+  navigation and enables no preload.
+- Full text: `git show 12557fe1:docs/DECISIONS.md`.
 
 ## 2026-09-23 - A site page links back to the screen the reader came from
 

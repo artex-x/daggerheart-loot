@@ -37,9 +37,11 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3Qu
     button "1 Зелье Быстрого Шага Вы получаете бонус +1 к следующему Броску ..." [namelen=91 namehash=a16dcb39]
   generic ""
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 1Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Пр... [namelen=87 namehash=9c48229a]
@@ -54,6 +56,7 @@ daggerheart.com
 Альт. таблицы
 Зелье Быстрого Шага
 К содержимому
+Конфиденциальность
 ЛутDaggerheart
 Обычные правила
 Первоклассный Спальный Мешок
@@ -62,6 +65,8 @@ daggerheart.com
 Сохранить себе
 Списки
 Таблицы
+Условия использования
+Установить как приложение
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAefh_QpdC-0LfRj9C40L0gLSDQutC-0L3RgtGA0LDQsdCw0L3QtNC40YHRgh4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0LweY2kxH9Cf0L7QtNC00LXQu9C60LA]
@@ -98,9 +103,11 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaT
     button "1 Stride Potion You gain a +1 bonus to your next Agility Roll. C..." [namelen=78 namehash=9dbe7ab2]
   generic ""
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=74 namehash=dc485a4a]
@@ -110,8 +117,10 @@ Communities
 Dragon's Vault
 Dread
 EN
+Install as an app
 Lists
 Premium Bedroll
+Privacy
 RU
 Save to my lists
 Search
@@ -119,6 +128,7 @@ Skip to content
 Standard rules
 Stride Potion
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com

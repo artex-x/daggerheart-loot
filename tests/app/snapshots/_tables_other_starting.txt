@@ -54,9 +54,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Камень для прорицания" [checked=false]
     button "Камень для прорицания Стартовый предмет Ведьмы. При создании пер..." [namelen=140 namehash=692224b5]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 15 метров верёвки
@@ -89,6 +91,7 @@ daggerheart.com
 Книга, которую вы пытаетесь перевестиСтартовый предмет Волшебник... [namelen=150 namehash=128fd579]
 Кольцо, которое нельзя снять
 Кольцо, которое нельзя снятьСтартовый предмет Колдуна. При созда... [namelen=145 namehash=a5f4f62e]
+Конфиденциальность
 Крошечный безобидный элементаль-питомец
 Крошечный безобидный элементаль-питомецСтартовый предмет Волшебн... [namelen=152 namehash=9f618978]
 Крюк-кошка
@@ -141,6 +144,8 @@ daggerheart.com
 Точильный каменьСтартовый предмет Воина. При создании персонажа ... [namelen=124 namehash=f9e8584c]
 Трофей вашего первого убийства
 Трофей вашего первого убийстваСтартовый предмет Следопыта. При с... [namelen=142 namehash=b88aec74]
+Условия использования
+Установить как приложение
 Факел
 ФакелСтартовый предмет Core. Полезен для освещения тёмной комнат... [namelen=77 namehash=9159bafb]
 Шепчущая сфера
@@ -198,9 +203,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_starting
     checkbox "A scrying stone" [checked=false]
     button "A scrying stone Witch starting item. Choose this or A small, har..." [namelen=117 namehash=5b850949]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 50 feet of rope
@@ -269,17 +276,20 @@ Hand wraps from a mentor
 Hand wraps from a mentorBrawler starting item. Choose this or A ... [namelen=134 namehash=eaa29372]
 Hope & Fear
 How this works
+Install as an app
 Link to this table
 List
 Lists
 Open this section on start
 Other
+Privacy
 RU
 Search
 Skip to content
 Standard rules
 Starting
 Tables
+Terms of use
 The drawing of a lover
 The drawing of a loverWarrior starting item. Choose this or A sh... [namelen=113 namehash=4f1ebe53]
 Torch

@@ -179,8 +179,14 @@ function runHook(hookName, payload, opts = {}) {
     encoding: 'utf8',
     env: {
       ...process.env,
+      // Every case runs as a desktop session with a clean gitleaks scan
+      // unless it says otherwise: the host running the selftest may be a
+      // cloud session, and CI has no gitleaks binary.
+      CLAUDE_CODE_REMOTE: '',
+      LOOT_GITLEAKS_CMD: JSON.stringify([process.execPath, '-e', 'process.exit(0)']),
       LOOT_HOOK_ROOT: opts.root !== undefined ? opts.root : scratchRoot,
-      LOOT_HOOK_STATE_DIR: opts.state !== undefined ? opts.state : scratchState
+      LOOT_HOOK_STATE_DIR: opts.state !== undefined ? opts.state : scratchState,
+      ...(opts.env || {})
     }
   });
   let json = {};
@@ -721,6 +727,398 @@ function pathToFileUrlHref(name) {
   return new URL(`./${name}?t=${Date.now()}`, import.meta.url).href;
 }
 
+// #188 - in a linked worktree `.git` is a file, so a key built from
+// `<root>/.git/index` was null there and every commit gate failed open.
+async function testWorktreeTreeKey() {
+  const wtRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-wt-'));
+  const wtState = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-wt-state-'));
+  const saved = [process.env.LOOT_HOOK_ROOT, process.env.LOOT_HOOK_STATE_DIR];
+  try {
+    fs.rmSync(wtRoot, { recursive: true, force: true });
+    gitSh(['worktree', 'add', '-q', '--detach', wtRoot]);
+    check(
+      '#188 setup: worktree .git is a file',
+      fs.statSync(path.join(wtRoot, '.git')).isFile()
+    );
+    process.env.LOOT_HOOK_ROOT = wtRoot;
+    process.env.LOOT_HOOK_STATE_DIR = wtState;
+    const { treeKey } = await importTreeKey();
+    const key = treeKey();
+    check('#188 tree key: non-null in a linked worktree', typeof key === 'string', String(key));
+  } finally {
+    ['LOOT_HOOK_ROOT', 'LOOT_HOOK_STATE_DIR'].forEach((name, i) => {
+      if (saved[i] === undefined) Reflect.deleteProperty(process.env, name);
+      else process.env[name] = saved[i];
+    });
+    spawnSync('git', ['worktree', 'remove', '--force', wtRoot], {
+      cwd: scratchRoot,
+      encoding: 'utf8'
+    });
+    for (const dir of [wtRoot, wtState]) fs.rmSync(dir, { recursive: true, force: true });
+    spawnSync('git', ['worktree', 'prune'], { cwd: scratchRoot, encoding: 'utf8' });
+  }
+}
+
+// ---------- bash-guard.mjs: persistence-era families (#202-#226) ----------
+//
+// 2l gitleaks, 2m the check:db commit rule, 2n hosted Supabase writes, 2o
+// the cloud push rule, and the PowerShell input path.
+
+function psPayload(command, extra = {}) {
+  return { ...bashPayload(command, extra), tool_name: 'PowerShell' };
+}
+
+function fakeGitleaks(name, body) {
+  const file = path.join(scratchState, name);
+  fs.writeFileSync(file, body);
+  return JSON.stringify([process.execPath, file]);
+}
+
+async function testPersistenceGuards() {
+  process.env.LOOT_HOOK_ROOT = scratchRoot;
+  process.env.LOOT_HOOK_STATE_DIR = scratchState;
+  const { treeKey, writeCache } = await importTreeKey();
+  gitSh(['reset']);
+  clearCache();
+  clearDbCache();
+
+  // ----- 2l gitleaks -----
+  // Shaped like no real credential, so the live gitleaks rule never flags
+  // this file; the fake scanner reports it as the finding's secret.
+  const secret = 'selftest-placeholder-finding-value';
+  const finding = JSON.stringify([
+    { File: 'app/src/lib/x.ts', StartLine: 3, RuleID: 'generic-api-key', Secret: secret }
+  ]);
+  const leaky = fakeGitleaks(
+    'gitleaks-leak.cjs',
+    `process.stdout.write(${JSON.stringify(finding)}); process.exit(99);`
+  );
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'), {
+      env: { LOOT_GITLEAKS_CMD: leaky }
+    });
+    check('#202 gitleaks finding: denies', isDeny(result), result.stdout);
+    check(
+      '#202 gitleaks finding: names file:line (rule)',
+      denyReason(result).includes('app/src/lib/x.ts:3 (generic-api-key)'),
+      denyReason(result)
+    );
+    check(
+      '#202 gitleaks finding: never echoes the secret',
+      !result.stdout.includes(secret),
+      result.stdout
+    );
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'));
+    check('#203 gitleaks clean, nothing staged: silent', isSilent(result), result.stdout);
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'), {
+      env: { LOOT_GITLEAKS_CMD: JSON.stringify(['loot-no-such-gitleaks-binary']) }
+    });
+    check('#204 gitleaks missing: not denied', !isDeny(result));
+    check(
+      '#204 gitleaks missing: says not scanned',
+      systemMessage(result).includes('gitleaks is not on PATH'),
+      systemMessage(result)
+    );
+  }
+  {
+    const slow = fakeGitleaks('gitleaks-slow.cjs', 'setTimeout(() => process.exit(0), 3000);');
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'), {
+      env: { LOOT_GITLEAKS_CMD: slow, LOOT_GITLEAKS_TIMEOUT_MS: '300' }
+    });
+    check('#205 gitleaks timeout: not denied', !isDeny(result));
+    check(
+      '#205 gitleaks timeout: says not scanned',
+      systemMessage(result).includes('no answer in 300 ms'),
+      systemMessage(result)
+    );
+  }
+  {
+    const marker = path.join(scratchState, 'gitleaks-ran');
+    const marking = fakeGitleaks(
+      'gitleaks-mark.cjs',
+      `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'x');`
+    );
+    fs.rmSync(marker, { force: true });
+    runHook('bash-guard.mjs', bashPayload('git commit --dry-run -m "chore: x"'), {
+      env: { LOOT_GITLEAKS_CMD: marking }
+    });
+    check('#206 a --dry-run commit never runs gitleaks', !fs.existsSync(marker));
+    runHook('bash-guard.mjs', bashPayload('git status'), {
+      env: { LOOT_GITLEAKS_CMD: marking }
+    });
+    check('#207 a non-commit command never runs gitleaks', !fs.existsSync(marker));
+    runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'), {
+      env: { LOOT_GITLEAKS_CMD: marking }
+    });
+    check('#207a a commit runs gitleaks', fs.existsSync(marker));
+    fs.rmSync(marker, { force: true });
+  }
+
+  // ----- 2m the check:db commit rule -----
+  writeFile('supabase/config.toml', 'project_id = "scratch"\n');
+  gitSh(['add', 'supabase/config.toml']);
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: db"'));
+    check('#208 staged supabase/ without check:db: denies', isDeny(result), result.stdout);
+    check(
+      '#208 deny names check:db, PowerShell and the timeout',
+      ['npm run check:db', 'PowerShell', '600000'].every((s) => denyReason(result).includes(s)),
+      denyReason(result)
+    );
+  }
+  {
+    const key = treeKey();
+    writeCache(key);
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: db"'));
+    check('#209 check cache alone does not satisfy the db rule', isDeny(result), result.stdout);
+    check(
+      '#209 the deny is the check:db one',
+      denyReason(result).includes('npm run check:db') &&
+        !denyReason(result).includes('`npm run check` has not passed'),
+      denyReason(result)
+    );
+    writeCache(key, '.check-db-cache.json', 'npm run check:db');
+    const armed = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: db"'));
+    check('#210 matching check and check:db caches: silent', isSilent(armed), armed.stdout);
+  }
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('SKIP_CHECK_GATE=1 git commit -m "chore: db"')
+    );
+    check('#211 bypass with both caches valid: silent', isSilent(result), result.stdout);
+    clearDbCache();
+    const bypass = runHook(
+      'bash-guard.mjs',
+      bashPayload('SKIP_CHECK_GATE=1 git commit -m "chore: db"')
+    );
+    check('#212 bypass: not denied', !isDeny(bypass));
+    check(
+      '#212 bypass: names check:db',
+      systemMessage(bypass).includes('bypassed') &&
+        systemMessage(bypass).includes('npm run check:db'),
+      systemMessage(bypass)
+    );
+  }
+  gitSh(['reset']);
+  fs.rmSync(path.join(scratchRoot, 'supabase'), { recursive: true, force: true });
+  gitSh(['add', 'app/src/lib/x.ts']);
+  {
+    writeCache(treeKey());
+    clearDbCache();
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'));
+    check('#213 a staged app/ file needs no check:db', isSilent(result), result.stdout);
+  }
+  gitSh(['reset']);
+  clearCache();
+
+  // ----- 2n hosted Supabase writes -----
+  const hostedDeny = [
+    'npx supabase db push',
+    'supabase db push --project-ref rdjxcjkhsklhprmzxajq',
+    'npx supabase@2.117.0 db push --linked',
+    'npx supabase db reset',
+    'npx supabase db reset --linked',
+    'npx supabase db reset --local --db-url postgres://x',
+    'npx supabase db reset --local --project-ref rdjxcjkhsklhprmzxajq',
+    'npx --yes supabase config push --project-ref rdjxcjkhsklhprmzxajq',
+    'npx supabase migration repair --status applied 20261001120000',
+    'npx supabase migration down',
+    'npx supabase --workdir . db push',
+    'npm run config:push -- --project test',
+    'npm run db:push -- --project prod',
+    'rtk npm run db:push',
+    'node node_modules/supabase/dist/supabase.js config push --project-ref rdjxcjkhsklhprmzxajq',
+    'node ./node_modules/supabase/dist/supabase.js db push',
+    'node_modules/.bin/supabase db push',
+    './node_modules/.bin/supabase.cmd db push',
+    'supabase.exe db push',
+    'npx.cmd supabase db push',
+    'npm.cmd run config:push -- --project test',
+    'npx supabase migration up --linked',
+    'npx supabase migration up --db-url postgres://x',
+    'npx supabase migration up --project-ref rdjxcjkhsklhprmzxajq',
+    'npx -p supabase supabase db push',
+    'npx --package supabase supabase db push',
+    'npx --package=supabase supabase db push',
+    'npm exec supabase -- config push',
+    'npm exec -- supabase config push',
+    'npm x supabase -- db push',
+    'npx supabase db push --dry-run=false',
+    'npx supabase db push --local=false',
+    'npx supabase db reset --local=false',
+    'npx supabase migration down --local=false',
+    'npx supabase db push --local --linked',
+    'npx supabase --project-ref rdjxcjkhsklhprmzxajq config push',
+    'rtk npx supabase db push',
+    'rtk proxy npx supabase db push'
+  ];
+  for (const command of hostedDeny) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`#214 hosted write denied: ${command}`, isDeny(result), result.stdout);
+    check(
+      `#214 hosted write reason: ${command}`,
+      denyReason(result).includes('hosted Supabase project'),
+      denyReason(result)
+    );
+  }
+  const hostedSilent = [
+    'npx supabase db reset --local',
+    'npx supabase db push --dry-run',
+    'npx supabase db push --local',
+    'npx supabase status',
+    'npx supabase migration down --local',
+    'npx supabase config diff --project-ref rdjxcjkhsklhprmzxajq',
+    'npm run config:diff -- --project prod',
+    'echo npx supabase db push',
+    'node node_modules/supabase/dist/supabase.js config diff --project-ref rdjxcjkhsklhprmzxajq',
+    'node node_modules/supabase/dist/supabase.js db reset --local',
+    'node_modules/.bin/supabase start -x gotrue',
+    'npx.cmd supabase status',
+    'npm exec supabase -- migration list --local',
+    'npx supabase migration up',
+    'npx supabase migration up --local',
+    'npx supabase db push --dry-run=true',
+    'node tools/supabase/config.mjs diff --project test',
+    'npx supabase-other db push'
+  ];
+  for (const command of hostedSilent) {
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-hosted' }));
+    check(`#215 local or read-only allowed: ${command}`, isSilent(result), result.stdout);
+  }
+
+  // ----- 2o the cloud push rule -----
+  const original = gitSh(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
+  const cloud = { env: { CLAUDE_CODE_REMOTE: 'true' } };
+  try {
+    gitSh(['checkout', '-q', '-B', 'task-x']);
+    const cloudDeny = [
+      'git push origin main',
+      'git push origin HEAD:main',
+      'git push origin HEAD:refs/heads/main',
+      'git push --all',
+      'git push origin --tags',
+      'git push origin --delete task-x',
+      'git push origin other-branch'
+    ];
+    for (const command of cloudDeny) {
+      const result = runHook('bash-guard.mjs', bashPayload(command), cloud);
+      check(`#216 cloud push denied: ${command}`, isDeny(result), result.stdout);
+      check(
+        `#216 cloud push reason: ${command}`,
+        denyReason(result).includes('never `main`'),
+        denyReason(result)
+      );
+    }
+    for (const command of ['git push -u origin task-x', 'git push origin HEAD', 'git push']) {
+      const result = runHook('bash-guard.mjs', bashPayload(command), cloud);
+      check(`#217 cloud push of the current branch allowed: ${command}`, isSilent(result));
+    }
+    {
+      const result = runHook('bash-guard.mjs', bashPayload('git push origin main'));
+      check('#218 outside a cloud session the rule is off', isSilent(result), result.stdout);
+    }
+    gitSh(['checkout', '-q', '-B', 'main']);
+    {
+      const result = runHook('bash-guard.mjs', bashPayload('git push'), cloud);
+      check('#219 cloud push from main: denied', isDeny(result), result.stdout);
+    }
+  } finally {
+    gitSh(['checkout', '-q', original]);
+    for (const branch of ['task-x', 'main']) {
+      if (branch !== original)
+        spawnSync('git', ['branch', '-q', '-D', branch], { cwd: scratchRoot });
+    }
+  }
+
+  // ----- PowerShell input -----
+  {
+    const result = runHook('bash-guard.mjs', psPayload('git reset --hard'));
+    check('#220 PowerShell git reset --hard: denies', isDeny(result), result.stdout);
+  }
+  {
+    gitSh(['add', 'app/src/lib/x.ts']);
+    clearCache();
+    const result = runHook('bash-guard.mjs', psPayload('git commit -m "chore: x"'));
+    check('#221 PowerShell commit with a stale cache: denies', isDeny(result), result.stdout);
+    gitSh(['reset']);
+  }
+  {
+    const result = runHook('bash-guard.mjs', psPayload('rm -r C:\\Temp\\x'));
+    check(
+      '#222 PowerShell rm of a Windows path outside: silent',
+      isSilent(result),
+      result.stdout
+    );
+  }
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      psPayload('Remove-Item -Recurse -Force .\\app', { session_id: 's-ps' })
+    );
+    check('#223 PowerShell Remove-Item is not judged', isSilent(result), result.stdout);
+  }
+  {
+    const result = runHook('bash-guard.mjs', psPayload('npx supabase db reset --linked'));
+    check('#224 PowerShell hosted write: denies', isDeny(result), result.stdout);
+  }
+  {
+    const result = runHook('bash-guard.mjs', psPayload('git reset `\n  --hard'));
+    check('#225 PowerShell backtick continuation: still denies', isDeny(result), result.stdout);
+  }
+  for (const command of [
+    'node node_modules\\supabase\\dist\\supabase.js config push',
+    '.\\node_modules\\.bin\\supabase.cmd db push',
+    'npx.cmd supabase migration up --linked'
+  ]) {
+    const result = runHook('bash-guard.mjs', psPayload(command));
+    check(
+      `#227 PowerShell hosted write through the CLI entry: ${command}`,
+      isDeny(result),
+      result.stdout
+    );
+  }
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      psPayload('node node_modules\\supabase\\dist\\supabase.js config diff --project-ref x', {
+        session_id: 's-ps-diff'
+      })
+    );
+    check('#228 PowerShell read-only config diff: silent', isSilent(result), result.stdout);
+  }
+  {
+    const bash = runHook('bash-guard.mjs', bashPayload('git.exe reset --hard'));
+    check('#229 git.exe reset --hard: denies (Bash)', isDeny(bash), bash.stdout);
+    const ps = runHook('bash-guard.mjs', psPayload('git.exe reset --hard'));
+    check('#229 git.exe reset --hard: denies (PowerShell)', isDeny(ps), ps.stdout);
+  }
+
+  // ----- the check:db long-check reminder -----
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      psPayload('npm run check:db', { session_id: 's-longcheck-db' })
+    );
+    check(
+      '#226 check:db reminder names PowerShell',
+      systemMessage(result).includes('PowerShell'),
+      systemMessage(result)
+    );
+    check(
+      '#226 check:db reminder is not the check one',
+      !systemMessage(result).includes('~165s'),
+      systemMessage(result)
+    );
+  }
+  clearCache();
+  clearDbCache();
+}
+
 // ---------- bash-guard.mjs: long-check reminder (#29-30) ----------
 
 function testLongCheck() {
@@ -1221,6 +1619,47 @@ function testEditGuard() {
     const result = runHook('edit-guard.mjs', editPayload(filePath));
     check(`${label}: silent`, isSilent(result), result.stdout);
   }
+
+  // #196-#199 - a migration listed in supabase/applied.json is history, and
+  // applied.json itself is written by `npm run db:push` only.
+  const applied = '20261001120000_lists.sql';
+  const fresh = '20261002120000_share_links.sql';
+  const migration = (name) => path.join(scratchRoot, 'supabase', 'migrations', name);
+  try {
+    writeFile('supabase/applied.json', JSON.stringify({ prod: [applied], test: [] }));
+    {
+      const result = runHook('edit-guard.mjs', editPayload(migration(applied)));
+      check('#196 applied migration: denies', isDeny(result), result.stdout);
+      check(
+        '#196 applied migration: names the project',
+        denyReason(result).includes('applied to prod'),
+        denyReason(result)
+      );
+    }
+    {
+      const result = runHook('edit-guard.mjs', editPayload(migration(fresh)));
+      check('#197 unapplied migration: silent', isSilent(result), result.stdout);
+    }
+    {
+      const result = runHook(
+        'edit-guard.mjs',
+        editPayload(path.join(scratchRoot, 'supabase', 'applied.json'))
+      );
+      check('#198 applied.json: denies', isDeny(result), result.stdout);
+      check(
+        '#198 applied.json: names db:push',
+        denyReason(result).includes('npm run db:push'),
+        denyReason(result)
+      );
+    }
+    writeFile('supabase/applied.json', '{ not json');
+    {
+      const result = runHook('edit-guard.mjs', editPayload(migration(applied)));
+      check('#199 malformed applied.json: allows', isSilent(result), result.stdout);
+    }
+  } finally {
+    fs.rmSync(path.join(scratchRoot, 'supabase'), { recursive: true, force: true });
+  }
 }
 
 // ---------- edit-followup.mjs (#40-44) ----------
@@ -1665,6 +2104,126 @@ async function testCheckObserver() {
   clearCache();
 }
 
+// ---------- check-observer.mjs: npm run check:db (#189-#195) ----------
+
+function dbCacheFilePath() {
+  return path.join(scratchState, '.check-db-cache.json');
+}
+
+function clearDbCache() {
+  fs.rmSync(dbCacheFilePath(), { force: true });
+}
+
+function observerPayload(tool, command, response, background = false) {
+  return {
+    session_id: 's-observer-db',
+    cwd: scratchRoot,
+    hook_event_name: 'PostToolUse',
+    tool_name: tool,
+    tool_input: { command, run_in_background: background },
+    tool_response: response
+  };
+}
+
+async function testCheckDbObserver() {
+  const passText = '> node tests/db/run.mjs\n# pass 12\ncheck:db: PASS\n';
+  const failText = '> node tests/db/run.mjs\n# fail 1\ncheck:db: FAIL\n';
+  process.env.LOOT_HOOK_ROOT = scratchRoot;
+  process.env.LOOT_HOOK_STATE_DIR = scratchState;
+  const { treeKey } = await importTreeKey();
+
+  const armCases = [
+    ['#189 Bash', 'Bash', { stdout: passText, stderr: '', interrupted: false }],
+    ['#190 PowerShell stdout shape', 'PowerShell', { stdout: passText, stderr: '' }],
+    ['#191 PowerShell output shape', 'PowerShell', { output: passText }],
+    ['#191a PowerShell string shape', 'PowerShell', passText]
+  ];
+  for (const [label, tool, response] of armCases) {
+    clearCache();
+    clearDbCache();
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload(tool, 'npm run check:db', response)
+    );
+    check(
+      `${label}: check:db PASS arms the db gate`,
+      systemMessage(result).includes('Commit gate armed for supabase/ and tests/db/'),
+      systemMessage(result)
+    );
+    const cache = fs.existsSync(dbCacheFilePath())
+      ? JSON.parse(fs.readFileSync(dbCacheFilePath(), 'utf8'))
+      : null;
+    check(
+      `${label}: db cache holds the tree key`,
+      cache && cache.key === treeKey() && cache.command === 'npm run check:db',
+      JSON.stringify(cache)
+    );
+    check(`${label}: check:db never writes the check cache`, !fs.existsSync(cacheFilePath()));
+  }
+
+  clearDbCache();
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('PowerShell', 'npm run check:db', { stdout: failText, stderr: '' })
+    );
+    check('#192 check:db FAIL: says FAIL', systemMessage(result).includes('FAIL'));
+    check('#192 check:db FAIL: no db cache', !fs.existsSync(dbCacheFilePath()));
+  }
+
+  clearCache();
+  {
+    runHook(
+      'check-observer.mjs',
+      observerPayload('PowerShell', 'npm run check', {
+        stdout: 'All files | 95 |\n',
+        stderr: ''
+      })
+    );
+    check('#193 npm run check from PowerShell arms nothing', !fs.existsSync(cacheFilePath()));
+  }
+
+  clearDbCache();
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('PowerShell', 'npm run check:db', { stdout: passText }, true)
+    );
+    check('#194 backgrounded check:db arms nothing', !fs.existsSync(dbCacheFilePath()));
+    check('#194 backgrounded check:db is silent', isSilent(result), result.stdout);
+  }
+
+  clearDbCache();
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('PowerShell', 'npm run check:db', { stdout: 'nothing useful\n' })
+    );
+    check('#195 check:db without its PASS line: not armed', !fs.existsSync(dbCacheFilePath()));
+    check(
+      '#195 check:db without its PASS line: says so',
+      systemMessage(result).includes('not armed'),
+      systemMessage(result)
+    );
+  }
+  clearDbCache();
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('PowerShell', 'cd E:\\dev\\daggerheart-loot; npm run check:db', {
+        stdout: passText
+      })
+    );
+    check(
+      '#230 PowerShell `cd <dir>; npm run check:db` arms the db gate',
+      systemMessage(result).includes('Commit gate armed for supabase/ and tests/db/'),
+      systemMessage(result)
+    );
+  }
+  clearCache();
+  clearDbCache();
+}
+
 // ---------- pathKey() portability (#61-63) ----------
 //
 // pathKey() is now pure string folding with no process.platform branch (see
@@ -1718,6 +2277,34 @@ function testSessionStart() {
     /Working tree: \d+ changed paths/.test(ctx),
     ctx
   );
+  check(
+    '#200 session-start: no cloud block outside a cloud session',
+    !/Cloud session/.test(ctx)
+  );
+
+  {
+    const cloud = runHook('session-start.mjs', payload, {
+      env: { CLAUDE_CODE_REMOTE: 'true', LOOT_SKIP_PROBES: '1' }
+    });
+    const cloudCtx =
+      (cloud.json.hookSpecificOutput && cloud.json.hookSpecificOutput.additionalContext) || '';
+    check(
+      '#201 session-start: cloud block in a cloud session',
+      /Cloud session\./.test(cloudCtx)
+    );
+    check(
+      '#201 session-start: four probes, skipped',
+      (cloudCtx.match(/: skipped$/gm) || []).length === 4,
+      cloudCtx
+    );
+    check(
+      '#201 session-start: the three cloud rules',
+      cloudCtx.includes('A whole release runs on one host.') &&
+        cloudCtx.includes('No production secret enters this environment.') &&
+        cloudCtx.includes('Push only the current task branch, never `main`.'),
+      cloudCtx
+    );
+  }
 }
 
 // ---------- session-stop.mjs (#51-55) ----------
@@ -2329,6 +2916,8 @@ async function main() {
     testBlanketStaging();
     testCommitAttribution();
     await testCommitGateAsync();
+    await testWorktreeTreeKey();
+    await testPersistenceGuards();
     testLongCheck();
     testBackgroundCheck();
     testBlindCheck();
@@ -2336,6 +2925,7 @@ async function main() {
     testEditGuard();
     testEditFollowup();
     await testCheckObserver();
+    await testCheckDbObserver();
     await testPathKeyPortability();
     testSessionStart();
     await testSessionStop();

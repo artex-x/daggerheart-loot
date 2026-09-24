@@ -204,38 +204,31 @@ export function tablesHash(
 
 /* ---------- links to hand somebody else ---------- */
 
-/** Where the page itself is, and whether a server is serving it. */
+/** Where the page itself is. */
 export interface Site {
   base: string;
-  hosted: boolean;
 }
 
 /**
  * The address of the app itself.
  *
- * A web server serves `index.html` for the bare directory, so naming the file
- * only adds noise. Opened from a folder there is nothing to serve and the file
- * has to be named, or the link opens the directory listing. With `lang` `en`
- * on a host the address goes through the English entry document `en/`, which
- * carries the English preview and redirects to the app (docs/specs/I18N.md);
- * without a language, or from a folder, it is the app itself.
+ * A web server serves `index.html` for the bare directory, so the file is not
+ * named. With `lang` `en` the address goes through the English entry document
+ * `en/`, which carries the English preview and redirects to the app
+ * (docs/specs/I18N.md); without a language it is the app itself.
  */
 export function appUrl(site: Site, hash: string, lang?: Lang): string {
-  if (!site.hosted) return site.base + 'index.html' + hash;
   return site.base + (lang === 'en' ? 'en/' : '') + hash;
 }
 
 /**
- * The address of one record.
+ * The address of one record: the static stub in `i/`, not the app.
  *
- * On a real host this is the static stub in `i/`, not the app: the stub carries
- * per-record Open Graph tags, so Telegram and Discord unfurl the picture, the
- * name and the description without anyone opening anything. From a folder there
- * is no stub, so the in-app route is the only thing that can be linked. The
- * stub of the language on screen: `i/<id>.html` Russian, `i/en/<id>.html`
+ * The stub carries per-record Open Graph tags, so Telegram and Discord unfurl
+ * the picture, the name and the description without anyone opening anything.
+ * The stub of the language on screen: `i/<id>.html` Russian, `i/en/<id>.html`
  * English.
  */
 export function recordUrl(site: Site, id: string, lang: Lang): string {
-  if (!site.hosted) return appUrl(site, recordHash(id));
   return site.base + (lang === 'en' ? 'i/en/' : 'i/') + id + '.html';
 }

@@ -1,7 +1,29 @@
 // PreToolUse(Edit|MultiEdit|Write|NotebookEdit): block direct writes to
-// generated files. See .claude/README.md, "Hooks".
+// generated files, to supabase/applied.json and to a migration already
+// applied to a hosted project. See .claude/README.md, "Hooks".
 
-import { readInput, guard, deny, relPath, pathKey } from './lib.mjs';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { readInput, guard, deny, relPath, pathKey, repoRoot } from './lib.mjs';
+
+const MIGRATIONS = 'supabase/migrations/';
+
+/** The projects whose list in supabase/applied.json names `file`. A missing
+ * or unparsable file names none, so it denies nothing. */
+function appliedTo(file) {
+  try {
+    const applied = JSON.parse(
+      readFileSync(path.join(repoRoot(), 'supabase', 'applied.json'), 'utf8')
+    );
+    return Object.keys(applied).filter(
+      (project) =>
+        Array.isArray(applied[project]) &&
+        applied[project].some((n) => typeof n === 'string' && pathKey(n) === file)
+    );
+  } catch {
+    return [];
+  }
+}
 
 // Every test here runs against pathKey(rel), not rel itself: relPath() keeps
 // real casing on POSIX, and a literal like 'data.json' must match regardless
@@ -59,6 +81,22 @@ guard(() => {
 
   for (const rule of DENY) {
     if (rule.test(key)) return deny(event, rule.message);
+  }
+
+  if (key === 'supabase/applied.json') {
+    return deny(
+      event,
+      'Blocked: supabase/applied.json is written by `npm run db:push` after a successful push, which the owner runs. Do not edit it by hand.'
+    );
+  }
+  if (key.startsWith(MIGRATIONS)) {
+    const projects = appliedTo(key.slice(MIGRATIONS.length));
+    if (projects.length) {
+      return deny(
+        event,
+        `Blocked: ${rel} is applied to ${projects.join(' and ')}; write a new migration instead.`
+      );
+    }
   }
   return undefined;
 });

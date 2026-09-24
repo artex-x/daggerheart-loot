@@ -77,7 +77,7 @@ const ru = {
   copyFailed: 'Не удалось скопировать',
   /* The copy-all-options button gets its own toast. */
   rollCopied: 'Варианты скопированы',
-  /* A file:// document's own picture taints the
+  /* A cross-origin picture taints the
    *  canvas it is redrawn on, so the picture can never leave it - falls back
    *  to the record's text instead of reporting a false success. Distinct
    *  from a clipboard that simply refuses the picture, which offers a
@@ -101,9 +101,13 @@ const ru = {
     "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
+  /* The folded notice's one visible line; the full text above sits under it. */
+  footSummary: 'Daggerheart © Darrington Press - DPCGL - Источники и лицензия',
   /* The footer's nav row: the site's static pages (pages/<id>.html). */
   footNavLabel: 'Страницы сайта',
   installLink: 'Установить как приложение',
+  privacyLink: 'Конфиденциальность',
+  termsLink: 'Условия использования',
 
   /* The heading of each section, and the line under it. The heading is not
      always the tab's word: the tab says "Сообщества" and the page says
@@ -470,8 +474,11 @@ const en: Dict = {
     "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
+  footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and licence',
   footNavLabel: 'Site pages',
   installLink: 'Install as an app',
+  privacyLink: 'Privacy',
+  termsLink: 'Terms of use',
 
   pageWondrous: 'Wondrous Loot',
   pageDread: 'Dread GM Toolbox',

@@ -67,9 +67,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Динамит" [checked=false]
     button "Динамит Вы можете поджечь эту динамитную шашку и бросить её в пр..." [namelen=358 namehash=6652d180]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 Core
@@ -125,6 +127,7 @@ daggerheart.com
 Кожаный Фартук
 Кожаный ФартукРанг 1 · Пороги 6/13 · Броня 3БроняУникальноеПир з... [namelen=69 namehash=0d76c9c7]
 Колоссы Сухоземья
+Конфиденциальность
 Коса
 КосаРанг 1 · Физическое · Искусность · Близко · d8+2 физ · Двуру... [namelen=103 namehash=4652d252]
 Крюк для Буксировки
@@ -214,6 +217,8 @@ daggerheart.com
 Улучшенный Малый РевольверРанг 2 · Физическое · Искусность · Дал... [namelen=211 namehash=0c408778]
 Улучшенный Револьвер
 Улучшенный РевольверРанг 2 · Физическое · Искусность · Далеко · ... [namelen=289 namehash=6a547451]
+Условия использования
+Установить как приложение
 Установка для Фейерверков
 Установка для ФейерверковРанг 1 · Физическое · Проворность · Оче... [namelen=158 namehash=c2f08aaa]
 Фестивальный Кнут
@@ -289,9 +294,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_frames/f
     checkbox "Dynamite" [checked=false]
     button "Dynamite You can light this dynamite and toss it within Close ra..." [namelen=353 namehash=a88f5f1f]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 Advanced Lasso
@@ -372,6 +379,7 @@ Improved Shotgun
 Improved ShotgunTier 2 · Physical · Strength · Very Close · d6+5... [namelen=207 namehash=fd83d3ed]
 Improved Small Revolver
 Improved Small RevolverTier 2 · Physical · Finesse · Far · d6+3 ... [namelen=189 namehash=d6b8855a]
+Install as an app
 Iron Skillet
 Iron SkilletTier 1 · Physical · Strength · Melee · d8+1 phy · On... [namelen=103 namehash=fabfcd08]
 Large Fork
@@ -400,6 +408,7 @@ Paring Knife
 Paring KnifeTier 1 · Physical · Finesse · Melee · d8 phy · One-H... [namelen=167 namehash=8bc51dca]
 Pitchfork
 PitchforkTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=101 namehash=17e33479]
+Privacy
 Quilted Clothing
 Quilted ClothingTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 t... [namelen=95 namehash=a59647cc]
 RU
@@ -432,6 +441,7 @@ Starting
 Table Shield
 Table ShieldTier 1 · Physical · Strength · Melee · d6 phy · One-... [namelen=144 namehash=cde02b7b]
 Tables
+Terms of use
 Towline Hook
 Towline HookTier 1 · Physical · Finesse · Close · d6 phy · One-H... [namelen=184 namehash=23be0a94]
 Tree Bark Armor

@@ -59,8 +59,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: The built page opens from a folder
-        run: node tools/smoke-file-url.mjs
+      - name: The built page opens over HTTP
+        run: node tools/smoke-http.mjs
 
       - name: Bundle size budget
         run: npm run budget
@@ -124,6 +124,33 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+  # The database layer: RLS, functions and the migration reversibility gate,
+  # against a local Supabase stack in Docker (preinstalled on ubuntu
+  # runners). No hosted credential is used. On a push to main it also
+  # refuses a migration that the owner has not pushed to production yet.
+  db:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # The database layer drives no browser.
+      - run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+      - name: Every migration on main is applied to production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node tools/supabase/applied-check.mjs --project prod
+
+      - name: 'The database layer: RLS, functions, migration reversals'
+        run: npm run check:db
+
   audit:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -160,9 +187,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------------------------
-  # Publishing, gated on check, audit, secrets and browser (the sharded suite
+  # Publishing, gated on check, audit, secrets, browser (the sharded suite
   # that carries the structural goldens, among everything else run-all.js
-  # knows about).
+  # knows about) and db.
   #
   # What is published is the BUILT REWRITE: dist/index.html, dist/assets/ and
   # dist/data.js, assembled here with the generated data, the stub pages and the
@@ -209,7 +236,7 @@ jobs:
   # job is what publishes - nothing else does.
   # ---------------------------------------------------------------------------
   deploy:
-    needs: [check, audit, secrets, browser]
+    needs: [check, audit, secrets, browser, db]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -279,15 +306,17 @@ jobs:
           # in _site anyway, some other step re-created it, and a stray root
           # file like that must never reach _site.
           for f in package.json node_modules app tests tools docs .git app.js style.css \
-                   pages/src; do
+                   pages/src supabase; do
             if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
           done
           # The other half, and the deterministic detector for a dangling
           # symlink: [ -e ] is false for one, and [ -s ] / a non-empty listing
           # catches a link that resolved to nothing.
-          for f in index.html assets/app.js data.js data.json catalog.csv \
+          for f in index.html data.js data.json catalog.csv \
                    llms.txt robots.txt LICENSE 404.html manifest.webmanifest \
-                   sw.js icons/icon-192.png pages/install.html pages/en/install.html; do
+                   sw.js icons/icon-192.png pages/install.html pages/en/install.html \
+                   pages/privacy.html pages/en/privacy.html pages/terms.html \
+                   pages/en/terms.html; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
           # .nojekyll is empty by design - its presence here is the whole
@@ -303,7 +332,8 @@ jobs:
           # ever switched back to the legacy branch-based build, where a
           # missing .nojekyll lets Jekyll eat any file starting with `_`.
           if [ ! -e "_site/.nojekyll" ]; then echo "::error::.nojekyll is missing"; exit 1; fi
-          for d in img og i i/en en card pages pages/en; do
+          # assets/ holds hashed names only, so it is checked as a folder.
+          for d in assets img og i i/en en card pages pages/en; do
             if [ ! -d "_site/$d" ] || [ -z "$(ls -A "_site/$d")" ]; then
               echo "::error::$d is missing or empty"; exit 1
             fi
@@ -339,8 +369,8 @@ jobs:
           if ! cmp -s dist/index.html _site/index.html; then
             echo "::error::_site/index.html does not match dist/index.html"; exit 1
           fi
-          if ! cmp -s dist/assets/app.js _site/assets/app.js; then
-            echo "::error::_site/assets/app.js does not match dist/assets/app.js"; exit 1
+          if ! diff -r dist/assets _site/assets; then
+            echo "::error::_site/assets does not match dist/assets"; exit 1
           fi
           echo "published:"; ls -A _site
 

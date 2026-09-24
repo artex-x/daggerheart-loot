@@ -40,14 +40,19 @@ function memoryReader(files) {
   };
 }
 
+const SITE_PAGE =
+  '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">' +
+  '<main id="app-page"></main>';
+const CONTACT = '<a href="mailto:daggerheart.loot@gmail.com">mail</a>';
+
 const GOOD = {
   'index.html': {
     type: 'text/html',
     body:
       '<!doctype html><meta name="robots" content="noindex, nofollow">' +
-      '<div id="app"></div><script src="assets/app.js"></script>'
+      '<div id="app"></div><script type="module" crossorigin src="./assets/index-a1B2.js"></script>'
   },
-  'assets/app.js': { type: 'application/javascript', body: 'x'.repeat(30000) },
+  'assets/index-a1B2.js': { type: 'application/javascript', body: 'x'.repeat(30000) },
   'data.js': { type: 'application/javascript', body: 'window.LOOT = {}' },
   'data.json': { type: 'application/json', body: '{}' },
   'catalog.csv': { type: 'text/csv', body: 'id\n' },
@@ -68,7 +73,7 @@ const GOOD = {
     type: 'application/manifest+json',
     body: '{"start_url":"./","scope":"./"}'
   },
-  'sw.js': { type: 'application/javascript', body: "const SHELL = 'dhloot-shell-v1';" },
+  'sw.js': { type: 'application/javascript', body: "const ASSETS = 'dhloot-assets-v1';" },
   'icons/icon-192.png': { type: 'image/png', body: 'x' },
   'pages/install.html': {
     type: 'text/html',
@@ -76,12 +81,11 @@ const GOOD = {
       '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">' +
       '<main id="app-page"></main>'
   },
-  'pages/en/install.html': {
-    type: 'text/html',
-    body:
-      '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">' +
-      '<main id="app-page"></main>'
-  },
+  'pages/en/install.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/terms.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/en/terms.html': { type: 'text/html', body: SITE_PAGE },
+  'pages/privacy.html': { type: 'text/html', body: SITE_PAGE + CONTACT },
+  'pages/en/privacy.html': { type: 'text/html', body: SITE_PAGE + CONTACT },
   '404.html': { type: 'text/html', body: `<!doctype html><div id="app-404"></div>` }
 };
 
@@ -109,16 +113,51 @@ describe('checks() against broken sites', () => {
     );
   });
 
-  it('catches a tiny assets/app.js that is not a real build', async () => {
+  it('catches a tiny entry module that is not a real build', async () => {
     const broken = {
       ...GOOD,
-      'assets/app.js': { type: 'application/javascript', body: 'tiny' }
+      'assets/index-a1B2.js': { type: 'application/javascript', body: 'tiny' }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, ['the entry module is only 4 bytes - not a real build']);
+  });
+
+  it('catches a page whose entry is a classic script, not one hashed module', async () => {
+    const broken = {
+      ...GOOD,
+      'index.html': {
+        type: 'text/html',
+        body:
+          '<meta name="robots" content="noindex, nofollow"><div id="app"></div>' +
+          '<script defer src="./assets/app.js"></script>'
+      }
     };
     const bad = await runChecks(memoryReader(broken));
     assert.ok(
-      bad.some((m) => /assets\/app\.js is only 4 bytes - not a real build/.test(m)),
-      `expected a build-size failure, got: ${JSON.stringify(bad)}`
+      bad.includes('the published page does not reference exactly one assets/*.js module') &&
+        bad.includes('the entry module returned 404, not 200'),
+      `expected an entry failure, got: ${JSON.stringify(bad)}`
     );
+  });
+
+  it('catches a worker that still carries the retired shell cache', async () => {
+    const broken = {
+      ...GOOD,
+      'sw.js': {
+        type: 'application/javascript',
+        body: "const SHELL = 'dhloot-shell-v1'; const ASSETS = 'dhloot-assets-v1';"
+      }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, [
+      'sw.js is not the current service worker - no dhloot-assets-v1, or a shell cache'
+    ]);
+  });
+
+  it('catches a privacy page that lost the contact address', async () => {
+    const broken = { ...GOOD, 'pages/en/privacy.html': { type: 'text/html', body: SITE_PAGE } };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, ['pages/en/privacy.html does not name the contact address']);
   });
 
   it('catches a share stub with no og:image', async () => {
@@ -249,11 +288,13 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 36);
-    const paths = [...new Set(list.map((c) => c.path))].sort();
+    assert.equal(list.length, 46);
+    const paths = [
+      ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
+    ].sort();
     assert.deepEqual(paths, [
       '',
-      'assets/app.js',
+      '<entry>',
       'card/die-d12-bw.svg',
       'catalog.csv',
       'data.js',
@@ -269,13 +310,17 @@ describe('checks() shape', () => {
       'og/_share.jpg',
       'og/_share_en.jpg',
       'pages/en/install.html',
+      'pages/en/privacy.html',
+      'pages/en/terms.html',
       'pages/install.html',
+      'pages/privacy.html',
+      'pages/terms.html',
       'robots.txt',
       'sw.js',
       UNKNOWN_PATH
     ]);
     for (const c of list) {
-      assert.equal(typeof c.path, 'string');
+      assert.ok(typeof c.path === 'string' || typeof c.path === 'function');
       assert.equal(typeof c.test, 'function');
       assert.ok(typeof c.message === 'string' || typeof c.message === 'function');
     }

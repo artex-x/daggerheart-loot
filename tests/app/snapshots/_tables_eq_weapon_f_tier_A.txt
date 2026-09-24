@@ -62,9 +62,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Клятва Равновесия" [checked=false]
     button "9 Клятва Равновесия Артефакт · Магическое · Инстинкт · Далеко · ..." [namelen=847 namehash=70e32327]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 1
@@ -99,6 +101,7 @@ daggerheart.com
 Как это работает
 Клятва Равновесия
 Колоссы Сухоземья
+Конфиденциальность
 ЛутDaggerheart
 Магическое
 Обычные правила
@@ -126,6 +129,8 @@ daggerheart.com
 Убрать из фильтра
 Улучшаемые
 Уникальные
+Условия использования
+Установить как приложение
 Физическое
 Фильтры (1)
 
@@ -189,9 +194,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     checkbox "Oath of Balance" [checked=false]
     button "9 Oath of Balance Artifact · Magic · Instinct · Far · d12+12 mag..." [namelen=762 namehash=4e67f12e]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 1
@@ -222,6 +229,7 @@ Finesse
 Grid
 Hope & Fear
 How this works
+Install as an app
 Instinct
 Knowledge
 Link to this table
@@ -235,6 +243,7 @@ Open this section on start
 Other
 Physical
 Presence
+Privacy
 RU
 Remove from the filter
 Reset all
@@ -244,6 +253,7 @@ Skip to content
 Standard rules
 Strength
 Tables
+Terms of use
 Two-Handed
 Unique
 Upgradable

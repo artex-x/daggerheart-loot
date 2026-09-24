@@ -6,8 +6,8 @@
  * faces would be a lie about what is being thrown.
  *
  * The outlines come from `card/die-dN-bw.svg` word for word, and `derived`
- * checks them against those files: the file cannot be read at run time because
- * `fetch` is refused from a folder. Lines only, no fill, so the button shows
+ * checks them against those files: inline paths draw with the button, with no
+ * request to wait for. Lines only, no fill, so the button shows
  * through the way it does through every other icon in the row. */
 
 export interface DieArt {

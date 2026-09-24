@@ -1,4 +1,6 @@
-// PreToolUse(Bash): eight rule families evaluated in order, first deny wins.
+// PreToolUse(Bash|PowerShell): the rule families evaluated in order, first
+// deny wins. A PowerShell command is normalised first (lib.mjs,
+// normalizeCommand) and then judged by the same families.
 // See .claude/README.md, "Hooks", for what each family blocks and for the
 // sanitiser's known limits. Never blocks anything not listed there.
 // segmentInfo already skips READERS and unwraps env/command/nohup/time/xargs,
@@ -21,6 +23,8 @@ import {
   tokensOf,
   unwrap,
   dropAssignments,
+  normalizeCommand,
+  isSupabaseCall,
   CHECK_INVOCATION_RE
 } from './lib.mjs';
 import { treeKey, readCache } from './tree-key.mjs';
@@ -56,8 +60,19 @@ const MSG = {
     'Blocked: `rm -r` inside the repository, with or without `-f`. Delete named files, or run `git clean -n` to see what is actually untracked. dist, coverage, test-output, node_modules and i (build output, not source) are exempt from this rule.',
   commitAttribution:
     'Blocked: this commit message carries AI attribution. This repository\'s commit messages never carry it - no Co-Authored-By trailer, no "Generated with" line. Rewrite the message without it.',
-  gateBypassed:
-    'Commit gate bypassed with SKIP_CHECK_GATE=1 - npm run check has not passed for this tree.',
+  gateBypassed: (commands) =>
+    `Commit gate bypassed with SKIP_CHECK_GATE=1 - ${commands.join(' and ')} has not passed for this tree.`,
+  checkDbGate: (count) =>
+    `Blocked: \`npm run check:db\` has not passed for this working tree (${count} files under supabase/ or tests/db/ in this commit). Run \`npm run check:db\` in the foreground with the tool timeout set to 600000 - on Windows through the PowerShell tool, because Git Bash hangs on docker - then commit again. A passing result is remembered until the tree changes.\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`,
+  hostedWrite: (shape) =>
+    `Blocked: \`${shape}\` writes to a hosted Supabase project, and agents never do. The owner runs \`npm run config:push\` and \`npm run db:push\` from an interactive terminal (.claude/README.md, "Supabase configuration"). The local and read-only forms are allowed: \`supabase db reset --local\`, \`supabase db push --dry-run\`, \`supabase status\`, \`npm run config:diff\`.`,
+  cloudPush:
+    'Blocked: a cloud session pushes only its own task branch, never `main`; the owner fast-forwards `main` locally (`CLAUDE.md`). Push the current branch by name, for example `git push -u origin <current branch>`, without --all, --mirror, --tags or --delete.',
+  gitleaksFinding: (hits) =>
+    `Blocked: gitleaks found ${hits.length === 1 ? 'a secret' : 'secrets'} in the staged changes: ${hits.join(', ')}. Remove the value from the file and from the index, or allowlist a false positive in .gitleaks.toml. There is no bypass.`,
+  gitleaksMissing: 'gitleaks is not on PATH; this commit was not scanned for secrets.',
+  gitleaksFailed: (what) =>
+    `gitleaks did not finish (${what}); this commit was not scanned for secrets.`,
   backgroundCheck:
     "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `rtk npm run check` (no pipe, no `set -o pipefail` - with nothing piping the output away, the exit code the tool reports is already the check's).",
   blindCheckPipe:
@@ -460,6 +475,13 @@ function hasGateBypass(segList) {
   return false;
 }
 
+// 2m rides on 2e: a path under supabase/ or tests/db/ also needs a passing
+// `npm run check:db` for the same tree key, which check-observer.mjs
+// records in .check-db-cache.json. SKIP_CHECK_GATE=1 bypasses both.
+function isDbPath(p) {
+  return p.startsWith('supabase/') || p.startsWith('tests/db/');
+}
+
 function evaluateCommitGate(segList, cwd) {
   const info = commitInfo(segList);
   if (!info.isCommit || info.hasDryRun) return null;
@@ -481,23 +503,232 @@ function evaluateCommitGate(segList, cwd) {
     }
   }
   const covered = paths.filter((p) => !isExempt(p));
-  if (covered.length === 0) return null; // nothing npm run check reads
+  const dbPaths = paths.filter(isDbPath);
+  // nothing npm run check or check:db reads
+  if (covered.length === 0 && dbPaths.length === 0) return null;
 
   const key = treeKey();
   if (key === null) return null; // fail open: cannot fingerprint the tree
 
   const cache = readCache();
-  if (cache && cache.key === key) return null; // already passing
+  const needCheck = covered.length > 0 && !(cache && cache.key === key);
+  const dbCache = readCache('.check-db-cache.json');
+  const needDb = dbPaths.length > 0 && !(dbCache && dbCache.key === key);
+  if (!needCheck && !needDb) return null; // already passing
 
   if (hasGateBypass(segList)) {
-    return { type: 'speak', message: MSG.gateBypassed };
+    const missing = [];
+    if (needCheck) missing.push('npm run check');
+    if (needDb) missing.push('npm run check:db');
+    return { type: 'speak', message: MSG.gateBypassed(missing) };
   }
 
+  if (!needCheck) {
+    return { type: 'deny', id: 'commit-gate-db', message: MSG.checkDbGate(dbPaths.length) };
+  }
+  const alsoDb = needDb
+    ? ' This commit also stages files under supabase/ or tests/db/, so run `npm run check:db` as well, in the foreground with the tool timeout set to 600000 (on Windows through the PowerShell tool).'
+    : '';
   return {
     type: 'deny',
     id: 'commit-gate',
-    message: `Blocked: \`npm run check\` has not passed for this working tree (${covered.length} checked files in this commit). Run \`npm run check\`, then commit again - a passing result is remembered until the tree changes.\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`
+    message: `Blocked: \`npm run check\` has not passed for this working tree (${covered.length} checked files in this commit). Run \`npm run check\`, then commit again - a passing result is remembered until the tree changes.${alsoDb}\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`
   };
+}
+
+// ---------- 2n: writes to a hosted Supabase project (deny) ----------
+//
+// Agents never write to a hosted project; the owner does, from an
+// interactive terminal. Every shape below either changes a hosted project
+// or is one flag away from it. The local and read-only forms stay allowed.
+
+// Global CLI flags that take a value, so the value is not read as a
+// subcommand.
+const SUPABASE_VALUE_FLAGS = new Set([
+  '--workdir',
+  '--profile',
+  '--network-id',
+  '--log-level',
+  '--output',
+  '-o',
+  '--output-format',
+  '--dns-resolver',
+  '--agent',
+  '--project-ref',
+  '--db-url'
+]);
+
+function supabaseWords(rest) {
+  const words = [];
+  for (let i = 0; i < rest.length && words.length < 2; i++) {
+    const t = rest[i];
+    if (SUPABASE_VALUE_FLAGS.has(t)) {
+      i++;
+      continue;
+    }
+    if (t.startsWith('-')) continue;
+    words.push(t);
+  }
+  return words.join(' ');
+}
+
+function hasFlag(tokens, name) {
+  return tokens.some((t) => t === name || t.startsWith(`${name}=`));
+}
+
+// A boolean flag set to false (`--local=false`, `--dry-run=0`) is absent,
+// as the CLI's flag parser reads it.
+function boolFlagOn(tokens, name) {
+  return tokens.some(
+    (t) =>
+      t === name ||
+      (t.startsWith(`${name}=`) && !/^(?:false|f|0)$/i.test(t.slice(name.length + 1)))
+  );
+}
+
+function isHostedWrite(rest) {
+  const words = supabaseWords(rest);
+  const local = boolFlagOn(rest, '--local');
+  const hosted =
+    boolFlagOn(rest, '--linked') || hasFlag(rest, '--db-url') || hasFlag(rest, '--project-ref');
+  if (words === 'db push') return (!local || hosted) && !boolFlagOn(rest, '--dry-run');
+  if (words === 'db reset' || words === 'migration down') return !local || hosted;
+  if (words === 'migration up') return hosted;
+  if (words === 'config push' || words === 'migration repair') return true;
+  return false;
+}
+
+const HOSTED_NPM_RE = /^(?:rtk\s+)?npm\s+run\s+(?:-s\s+)?(config:push|db:push)(?![:\w-])/;
+
+function evaluateHostedWrite(segList) {
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    const joined = info.tokens.join(' ');
+    if (HOSTED_NPM_RE.test(joined)) {
+      return { id: 'hosted-write', message: MSG.hostedWrite(joined) };
+    }
+    const rest = isSupabaseCall(info.tokens);
+    if (rest && isHostedWrite(rest)) {
+      return { id: 'hosted-write', message: MSG.hostedWrite(joined) };
+    }
+  }
+  return null;
+}
+
+// ---------- 2o: a cloud session pushes only its own branch (deny) ----------
+//
+// Only in a cloud session (CLAUDE_CODE_REMOTE=true): a release there
+// amends on its task branch and pushes it once, and the owner fast-forwards
+// `main` locally (.claude/README.md, "Cloud sessions").
+
+const PUSH_VALUE_FLAGS = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
+const PUSH_WIDE_FLAGS = new Set(['--all', '--mirror', '--tags', '--delete', '-d']);
+
+function evaluateCloudPush(segList, cwd) {
+  if (process.env.CLAUDE_CODE_REMOTE !== 'true') return null;
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info || info.program !== 'git') continue;
+    const { subcommand, rest } = gitSubcommand(info.tokens);
+    if (subcommand !== 'push') continue;
+    const out = git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: cwd || repoRoot() });
+    const branch = out === null ? null : out.trim();
+    if (!branch || branch === 'main' || branch === 'HEAD') {
+      return { id: 'cloud-push', message: MSG.cloudPush };
+    }
+    if (rest.some((t) => PUSH_WIDE_FLAGS.has(t))) {
+      return { id: 'cloud-push', message: MSG.cloudPush };
+    }
+    const positional = [];
+    for (let i = 0; i < rest.length; i++) {
+      const t = rest[i];
+      if (PUSH_VALUE_FLAGS.has(t)) {
+        i++;
+        continue;
+      }
+      if (!t.startsWith('-')) positional.push(t);
+    }
+    for (const refspec of positional.slice(1)) {
+      const dest = (refspec.includes(':') ? refspec.slice(refspec.indexOf(':') + 1) : refspec)
+        .replace(/^\+/, '')
+        .replace(/^refs\/heads\//, '');
+      if (dest !== branch && dest !== 'HEAD') {
+        return { id: 'cloud-push', message: MSG.cloudPush };
+      }
+    }
+  }
+  return null;
+}
+
+// ---------- 2l: gitleaks on every commit ----------
+//
+// Scans the staged changes before a non-dry-run `git commit`. A finding
+// denies, naming file, line and rule but never the secret. A missing
+// binary, a timeout or any other failure allows the commit and says it was
+// not scanned. LOOT_GITLEAKS_CMD (a JSON argv prefix replacing `gitleaks`)
+// and LOOT_GITLEAKS_TIMEOUT_MS exist for the selftest only.
+
+function gitleaksCommand() {
+  try {
+    const parsed = JSON.parse(process.env.LOOT_GITLEAKS_CMD || 'null');
+    if (Array.isArray(parsed) && parsed.length && parsed.every((s) => typeof s === 'string')) {
+      return parsed;
+    }
+  } catch {
+    // an unreadable override means the real binary
+  }
+  return ['gitleaks'];
+}
+
+function evaluateGitleaks(segList) {
+  const info = commitInfo(segList);
+  if (!info.isCommit || info.hasDryRun) return null;
+  const [program, ...prefix] = gitleaksCommand();
+  const timeout = Number(process.env.LOOT_GITLEAKS_TIMEOUT_MS) || 6000;
+  const r = spawnSync(
+    program,
+    [
+      ...prefix,
+      'git',
+      '--pre-commit',
+      '--staged',
+      '--config',
+      '.gitleaks.toml',
+      '--redact',
+      '--no-banner',
+      '--log-level',
+      'error',
+      '--exit-code',
+      '99',
+      '--report-format',
+      'json',
+      '--report-path',
+      '-',
+      '.'
+    ],
+    { cwd: repoRoot(), encoding: 'utf8', timeout }
+  );
+  if (r.error) {
+    if (r.error.code === 'ENOENT') return { type: 'speak', message: MSG.gitleaksMissing };
+    if (r.error.code === 'ETIMEDOUT') {
+      return { type: 'speak', message: MSG.gitleaksFailed(`no answer in ${timeout} ms`) };
+    }
+    return { type: 'speak', message: MSG.gitleaksFailed(r.error.code || 'spawn error') };
+  }
+  if (r.status === 0) return null;
+  if (r.status === 99) {
+    let hits = [];
+    try {
+      const findings = JSON.parse(r.stdout.slice(r.stdout.indexOf('[')));
+      hits = findings.slice(0, 5).map((f) => `${f.File}:${f.StartLine} (${f.RuleID})`);
+    } catch {
+      // the finding list is unreadable; the deny still stands
+    }
+    if (!hits.length) hits = ['see `gitleaks git --pre-commit --staged --redact`'];
+    return { type: 'deny', id: 'gitleaks', message: MSG.gitleaksFinding(hits) };
+  }
+  return { type: 'speak', message: MSG.gitleaksFailed(`exit ${r.status}`) };
 }
 
 // Costs measured in this repository; see .claude/README.md, "Batch size and
@@ -509,7 +740,16 @@ const LONG_CHECKS = [
   // check[:built]` into this shape before any hook sees it - see
   // CHECK_INVOCATION_RE in lib.mjs for the live probe that established it.
   { re: /^(?:rtk\s+)?npm run check:built\b/, family: 'check:built', cost: 'a few minutes' },
-  { re: /^(?:rtk\s+)?npm run check\b/, family: 'check', cost: '~165s on an idle host' },
+  {
+    // Docker answers only the PowerShell tool on this Windows host, so this
+    // entry has its own message instead of the Bash one below.
+    re: /^(?:rtk\s+)?npm run check:db(?![:\w-])/,
+    family: 'check:db',
+    cost: 'first run 3-5 min (image pull), then ~1-2 min; on Windows run it through the PowerShell tool',
+    message: (joined, cost) =>
+      `\`${joined}\` takes ${cost}. Set the tool timeout to 600000 and stay in this turn until it prints its final \`check:db: PASS\` or \`check:db: FAIL\` line - check-observer.mjs arms the commit gate for supabase/ and tests/db/ from that line. Run it in the foreground, with no pipe and no redirect.`
+  },
+  { re: /^(?:rtk\s+)?npm run check(?![:\w-])/, family: 'check', cost: '~165s on an idle host' },
   {
     // No `--shard=` exemption, unlike `golden`/`sweep` below: a run-all
     // shard packs a whole `browser` matrix row of suites, not one small
@@ -777,6 +1017,7 @@ function evaluateLongCheck(segList, sessionId) {
       const matches = spec.match ? spec.match(joined) : spec.re.test(joined);
       if (matches) {
         if (!once(sessionId, `long-check:${spec.family}`)) return null;
+        if (spec.message) return { type: 'speak', message: spec.message(joined, spec.cost) };
         // joined may already carry a leading `rtk ` (RTK rewrote it, or the
         // model typed it directly) - strip before re-adding so the
         // suggestion never doubles up as `rtk rtk npm run check`.
@@ -796,11 +1037,14 @@ function evaluateLongCheck(segList, sessionId) {
 guard(() => {
   const input = readInput();
   const event = input.hook_event_name || 'PreToolUse';
-  if (input.tool_name !== 'Bash') return undefined;
-  const rawCommand =
+  const tool = input.tool_name;
+  if (tool !== 'Bash' && tool !== 'PowerShell') return undefined;
+  const rawCommand = normalizeCommand(
+    tool,
     input.tool_input && typeof input.tool_input.command === 'string'
       ? input.tool_input.command
-      : '';
+      : ''
+  );
   if (!rawCommand.trim()) return undefined;
   const cwd = input.cwd;
 
@@ -819,9 +1063,22 @@ guard(() => {
   const attribution = evaluateAttribution(rawCommand, segList);
   if (attribution) return deny(event, attribution.message);
 
+  const hosted = evaluateHostedWrite(segList);
+  if (hosted) return deny(event, hosted.message);
+
+  const cloudPush = evaluateCloudPush(segList, cwd);
+  if (cloudPush) return deny(event, cloudPush.message);
+
+  // A gitleaks note (not scanned) rides along with whatever speaks later,
+  // or speaks alone; any deny below still wins.
+  const leaks = evaluateGitleaks(segList);
+  if (leaks && leaks.type === 'deny') return deny(event, leaks.message);
+  const note = leaks ? leaks.message : null;
+  const say = (message) => speak(event, note ? `${note}\n${message}` : message);
+
   const gate = evaluateCommitGate(segList, cwd);
   if (gate) {
-    return gate.type === 'deny' ? deny(event, gate.message) : speak(event, gate.message);
+    return gate.type === 'deny' ? deny(event, gate.message) : say(gate.message);
   }
 
   const background = evaluateBackgroundCheck(segList, input.tool_input);
@@ -834,7 +1091,7 @@ guard(() => {
   if (rtk) return deny(event, rtk.message);
 
   const longCheck = evaluateLongCheck(segList, input.session_id);
-  if (longCheck) return speak(event, longCheck.message);
+  if (longCheck) return say(longCheck.message);
 
-  return undefined;
+  return note ? speak(event, note) : undefined;
 });

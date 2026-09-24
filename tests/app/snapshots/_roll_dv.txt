@@ -45,9 +45,11 @@ RootWebArea "Dragon's Vault — Генератор лута — Daggerheart" [ur
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 Dragon's Vault
@@ -60,6 +62,7 @@ daggerheart.com
 Альт. таблицы
 К содержимому
 Как это работает
+Конфиденциальность
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
@@ -77,6 +80,8 @@ daggerheart.com
 Списки
 Страница
 Таблицы
+Условия использования
+Установить как приложение
 
 ## en :: tree
 RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
@@ -121,9 +126,11 @@ RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 Alt. tables
@@ -136,11 +143,13 @@ Dragon's Vault
 Dread
 EN
 How this works
+Install as an app
 Lists
 One higher
 One lower
 Open this section on start
 Page
+Privacy
 RU
 Random 1–145
 Roll result
@@ -149,6 +158,7 @@ Share
 Skip to content
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com

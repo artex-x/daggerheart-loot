@@ -120,9 +120,12 @@ All of them are generated from `data.js` by `node tools/build.js` and
 compared byte for byte by `tests/derived.js`.
 
 `data.js` assigns `window.LOOT` from a classic script. That is not decoration:
-`fetch()` of a local JSON is blocked under `file://`, so the dataset has to
-arrive as a script. Any future build must keep loading the data this way, and
-read it through one typed adapter rather than importing it.
+the dataset is cached apart from the hashed bundle, so a code change does not
+send the data again, and the app reads it at boot with no async bootstrap
+and no loading state. (It began as a script because `fetch()` of a local
+JSON is blocked under `file://`, retired 2026-09-24.) Any build must keep
+loading the data this way, and read it through one typed adapter rather than
+importing it.
 
 `data.json` and `catalog.csv` stay tracked in git (a generated pair kept
 rather than gitignored). Three triggers would reopen that: the seven
@@ -145,18 +148,21 @@ are; `tools/artwork/cards.mjs` renders the two cards (`docs/artwork.md`, "The
 site share cards"). `i/<id>.html`, `i/en/<id>.html`, `en/index.html`, the
 entry document and `assets/` are not committed: they are what the build emits
 (`node tools/build.js` for `i/`, `i/en/` and `en/`; `app/index.html` and the
-bundle become `dist/index.html` and `dist/assets/app.js`), and the deploy job
+bundle become `dist/index.html` and the hashed files under `dist/assets/`,
+whose names change with every build and are not public), and the deploy job
 publishes them from the build rather than from a committed file. Nothing about
 the frozen paths above changes with them.
 
 `manifest.webmanifest`, `sw.js` and `icons/` are build outputs too, published
 the same way as `assets/`: Vite copies them verbatim from `app/public/`. The
 URL `sw.js` stays stable once published, because every registered worker
-keeps polling it (`docs/specs/META.md` section 9).
+keeps polling it; the worker stays registered and caches only pictures and
+hashed build files (`docs/specs/META.md` section 9).
 
 `pages/<name>.html` (Russian) and `pages/en/<name>.html` (English) are the
-site's static pages, one copy per language (today `pages/install.html` and
-`pages/en/install.html`). `tools/build-pages.js` generates them from
+site's static pages, one copy per language: `install`, `privacy` and
+`terms`. The `privacy` and `terms` URLs are frozen once submitted to the
+Google OAuth console. `tools/build-pages.js` generates them from
 `pages/src/<name>.html` and `pages/src/en/<name>.html` through
 `node tools/build.js`, and the deploy job publishes them from the build, like
 `i/`; `pages/src/` is never published. A page URL is public once something

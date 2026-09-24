@@ -1,8 +1,8 @@
 /* Reading the dataset.
  *
- * `data.js` assigns `window.LOOT` from a classic script: a page opened from a
- * folder cannot fetch a local JSON, so the data cannot be imported and has to be
- * picked up off the global. That is a browser fact, which is why it lives behind
+ * `data.js` assigns `window.LOOT` from a classic script, cached apart from the
+ * bundle, so the data is not imported and has to be picked up off the global
+ * (docs/specs/CONTRACTS.md, section 4). That is a browser fact, which is why it lives behind
  * a port instead of in `lib` - and it is what lets a test hand the app a
  * two-record catalogue instead of the whole book. */
 
@@ -45,8 +45,8 @@ export function browserData(
 /**
  * Nothing loaded at all - which is not the same as an empty catalogue.
  *
- * `data.js` missing from a folder, or served as an HTML error page by a broken
- * deploy. The app has to be able to say "the data did not load" rather than
+ * `data.js` missing from a deploy, or served as an HTML error page by a broken
+ * one. The app has to be able to say "the data did not load" rather than
  * show an empty book as though that were the truth.
  */
 export function noData(): DataPort {

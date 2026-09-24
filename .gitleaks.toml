@@ -16,11 +16,10 @@ useDefault = true
 # under the threshold, which makes this a coin flip the next key can also lose -
 # so allow the key-name shape rather than those three findings.
 #
-# These are storage key names, not credentials. The app has no backend and
-# nothing to authenticate against: lists live in the URL hash and localStorage
-# (CLAUDE.md, "Product laws that look negotiable but are not"), so the keys are
-# public by construction - readable in devtools on the live site and written
-# down in docs/specs/STATE.md.
+# These are storage key names, not credentials: `localStorage` keys the
+# browser app writes, public by construction - readable in devtools on the
+# live site and written down in docs/specs/STATE.md. The Supabase backend's
+# keys are a different shape and stay subject to every rule here.
 #
 # Use `[allowlist]`, not `[[allowlists]]`: the plural form parses without
 # complaint in gitleaks 8.24.3 and is then ignored, so it looks like a working

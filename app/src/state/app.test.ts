@@ -62,7 +62,6 @@ function quirkyRouter(start: string): RouterPort & { fire: (h: string) => void }
       };
     },
     base: () => 'https://example.test/',
-    hosted: () => true,
     canGoBack: () => true,
     back() {
       /* Unused by this suite's one test. */
@@ -271,7 +270,7 @@ describe('whether storage works, read once at construction', () => {
 });
 
 describe('the install link', () => {
-  it('is offered where a server serves the page and the app is not installed', () => {
+  it('is offered where the app is not installed', () => {
     expect(new AppState(at('#/roll/std')).showInstall).toBe(true);
   });
 
@@ -279,11 +278,6 @@ describe('the install link', () => {
     expect(
       new AppState(at('#/roll/std', { pwa: fakePwa({ standalone: true }) })).showInstall
     ).toBe(false);
-  });
-
-  it('is not offered from a folder', () => {
-    const router = { ...memoryRouter('#/roll/std'), hosted: () => false };
-    expect(new AppState(fakeEnv({ router })).showInstall).toBe(false);
   });
 });
 
@@ -295,14 +289,6 @@ describe('links to hand somebody else', () => {
     app.setLang('en');
     expect(app.linkToRecord('w1')).toBe('https://example.test/i/en/w1.html');
     expect(app.linkTo('#/lists')).toBe('https://example.test/en/#/lists');
-  });
-
-  it('are the in-app route from a folder in both languages', () => {
-    const router = { ...memoryRouter('#/roll/std'), hosted: () => false };
-    const app = new AppState(fakeEnv({ router }));
-    expect(app.linkToRecord('w1')).toBe('https://example.test/index.html#/i/w1');
-    app.setLang('en');
-    expect(app.linkToRecord('w1')).toBe('https://example.test/index.html#/i/w1');
   });
 });
 

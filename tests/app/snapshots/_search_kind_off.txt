@@ -43,9 +43,11 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     checkbox "Теневая Призма" [checked=false]
     button "76 Теневая Призма Бросьте d8 и положите её на эту карту как Тене..." [namelen=487 namehash=6a6558c8]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 108Нектар Обетного ЦветкаВы очищаете 1d4 Стресса, но в следующий... [namelen=259 namehash=b85e1b52]
@@ -116,6 +118,7 @@ daggerheart.com
 Колчан Фей
 Кольца Товарищества
 Кольцо Кровавой Матроны
+Конфиденциальность
 Ласты Лужелуточки
 Ледяное Масло
 Лист Исполинского Дерева
@@ -149,7 +152,9 @@ daggerheart.com
 Таблицы
 Теневая Призма
 Узы Души
+Условия использования
 Успокаивающий Кулон
+Установить как приложение
 Часы Хранителя Времени
 Шлем Белого Когтя
 Шлем Возмездия
@@ -195,9 +200,11 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     checkbox "Umbral Prism" [checked=false]
     button "76 Umbral Prism Roll a d8 and place it on this card as the Umbra..." [namelen=456 namehash=adb3eb87]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 108Votive Bloom NectarYou clear 1d4 Stress, but the next time yo... [namelen=243 namehash=a0d9cd81]
@@ -272,6 +279,7 @@ Gaze of Vaeth
 Glass of Shattered Fate
 Gloves of Alacrity
 Green Ooze Oil
+Install as an app
 Items
 Keening Bone Flute
 Leaf of the Giant Tree
@@ -281,6 +289,7 @@ Mercurial Familiar
 Open this section on start
 Phaibos Mask
 Pirate's Treasure Map
+Privacy
 Puddleduck's Fins
 Pythian Fork
 RU
@@ -293,6 +302,7 @@ Sprite Bottle
 Standard rules
 Tables
 Temporal Taper
+Terms of use
 Timekeeper's Watch
 Timewalker Pocketwatch
 Treacherous Knuckle-Duster

@@ -3,3 +3,4 @@
 .hook-state.json
 .hook-state.json.*.tmp
 settings.local.json
+.check-db-cache.json

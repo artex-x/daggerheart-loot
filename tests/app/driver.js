@@ -6,18 +6,19 @@
  * hand-written HTML or a Svelte component's output.
  *
  * This driver used to drive either of two targets - the live app at
- * the repository root, or the built rewrite at `dist/index.html` - and a
+ * the repository root, or the built rewrite in `dist/` - and a
  * side-by-side comparison harness ran every spec against the pair, with the
  * live app read as the expectation. That harness and the live app it
  * compared against were both since deleted; `tests/app/*.js` is this
  * driver's only remaining reader, and it always means `next`.
  */
-const path = require('path');
-
-const ROOT = path.join(__dirname, '..', '..');
-
+/* Over HTTP from lib.js's per-process server; read when a driver is made,
+   after `fresh()` or `sharedPage()` has started that server. Required
+   lazily: lib.js requires this file first. */
 const TARGETS = {
-  next: 'file://' + path.join(ROOT, 'dist', 'index.html')
+  get next() {
+    return require('./lib.js').baseUrl() + 'index.html';
+  }
 };
 
 /* ListPage.svelte's scheduleUrlSync debounces the address write this long.

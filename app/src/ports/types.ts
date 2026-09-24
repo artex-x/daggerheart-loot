@@ -117,14 +117,6 @@ export interface RouterPort {
    * the end - a web server serves the directory, so naming the file is noise.
    */
   base(): string;
-  /**
-   * Whether a server is serving this, rather than a folder on disk.
-   *
-   * It changes what a shared link may point at: on a host there are stub pages
-   * with Open Graph tags for messengers to unfurl, and from disk there are not.
-   * `lib/hash.ts` holds that rule; this only reports the fact.
-   */
-  hosted(): boolean;
   /** How many entries back there are, so a print page knows whether to offer one. */
   canGoBack(): boolean;
   back(): void;
@@ -201,8 +193,8 @@ export interface DragPort {
 /**
  * The dataset.
  *
- * `data.js` is a classic script that assigns `window.LOOT`, because a page
- * opened from a folder cannot fetch a local JSON - CONTRACTS.md section 4. That
+ * `data.js` is a classic script that assigns `window.LOOT`: it is cached apart
+ * from the bundle and needs no async bootstrap - CONTRACTS.md section 4. That
  * makes reading it a browser fact rather than an import, and `null` a real
  * answer: if the script failed to load the app has to say so rather than render
  * an empty catalogue as though it were the truth.
@@ -214,22 +206,21 @@ export interface DataPort {
 /**
  * The installable app.
  *
- * The manifest and the service worker load only where a server serves the
- * page, so from a folder `register` answers `'unsupported'` without touching
- * the browser - docs/specs/META.md sections 4 and 9.
+ * `register` answers `'unsupported'` where the browser has no service worker
+ * container; the worker it registers caches the pictures and the hashed
+ * build files (docs/specs/META.md section 9).
  */
 export type Registration = 'registered' | 'unsupported' | 'failed';
 
 export type Persistence = 'persisted' | 'denied' | 'skipped';
 
 export interface PwaPort {
-  /** Links the manifest and registers `./sw.js` where a server serves the
-   *  page; a no-op from a folder. */
+  /** Links the manifest and registers `./sw.js`. */
   register(): Promise<Registration>;
   /** Whether the page runs as an installed app (standalone display mode). */
   standalone(): boolean;
   /** Asks the browser to keep this origin's storage under storage pressure;
-   *  only in the installed app over http(s). */
+   *  only in the installed app. */
   persist(): Promise<Persistence>;
 }
 

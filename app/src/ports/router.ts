@@ -8,7 +8,7 @@
 import type { RouterPort } from './types.js';
 
 interface RouterWin {
-  location: { hash: string; pathname: string; search: string; href: string; protocol: string };
+  location: { hash: string; pathname: string; search: string; href: string };
   /* `replaceState` is optional on purpose: the guard below is what keeps the
      page working where it is missing, and typing it as always present would
      make that guard look like dead code. */
@@ -20,9 +20,6 @@ interface RouterWin {
   addEventListener: (t: string, fn: () => void) => void;
   removeEventListener: (t: string, fn: () => void) => void;
 }
-
-/** Whether a page at this protocol is served by a server, not opened from a folder. */
-export const hostedProtocol = (protocol: string): boolean => /^https?:$/.test(protocol);
 
 export function hashRouter(win: RouterWin = window): RouterPort {
   return {
@@ -37,8 +34,8 @@ export function hashRouter(win: RouterWin = window): RouterPort {
     replace(hash) {
       /* The filter segment is rewritten on every click. Through `navigate` that
          would bury the page the person came from under a hundred entries, so
-         the address is swapped in place and the file:// case - where
-         replaceState is unavailable - falls back to assigning it. WebKit also
+         the address is swapped in place, and where replaceState is
+         unavailable the assignment is the fallback. WebKit also
          throws past 100 `replaceState` calls in a 30s window (R4/PF3) - the
          debounced list-URL sync is the caller most likely to hit that limit -
          so a throw here falls back the same way a missing method does, rather
@@ -69,7 +66,6 @@ export function hashRouter(win: RouterWin = window): RouterPort {
     },
 
     base: () => (win.location.href.split('#')[0] ?? '').replace(/index\.html$/, ''),
-    hosted: () => hostedProtocol(win.location.protocol),
 
     canGoBack: () => win.history.length > 1,
     back() {
@@ -109,7 +105,6 @@ export function memoryRouter(start = '#/roll/std'): RouterPort & { readonly stac
       };
     },
     base: () => BASE,
-    hosted: () => true,
 
     canGoBack: () => stack.length > 1,
     back() {

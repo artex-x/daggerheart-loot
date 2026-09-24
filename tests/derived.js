@@ -426,12 +426,18 @@ ok(
   !!touch && fs.existsSync(path.join(APP_PUBLIC, touch)),
   'app/index.html has no relative apple-touch-icon link to a file in app/public/'
 );
-/* The PWA port adds the manifest link when hosted; a static tag is refused
-   from a folder with a failed request (tools/smoke-file-url.mjs). */
+/* The PWA port adds the manifest link at boot; a static tag as well would
+   make two. */
 ok(
   !/<link\s+rel="manifest"/i.test(indexHtml),
-  'app/index.html carries a static manifest link, which fails from a folder'
+  'app/index.html carries a static manifest link beside the one the PWA port adds'
 );
+/* A reviewer without JavaScript finds the policy pages too (docs/specs/META.md
+   section 9, "Static pages"). */
+['pages/privacy.html', 'pages/terms.html'].forEach(function (href) {
+  const noscript = (/<noscript>([\s\S]*?)<\/noscript>/i.exec(indexHtml) || ['', ''])[1];
+  ok(noscript.includes('href="' + href + '"'), 'the <noscript> block does not link ' + href);
+});
 
 console.log('layout does not shift between a short and a long page');
 /* tokens.css reserves the scrollbar gutter whether or not the page needs
@@ -1071,10 +1077,9 @@ COUNT_BEARING_FILES.forEach(function (file) {
   ok(text.indexOf(String(N.all)) >= 0, file + ': the overall record count went unmentioned');
 });
 
-/* Dice drawn on buttons use the same paths that print on the card. The file
-   cannot be read on the fly - `fetch` from `file://` is forbidden - so the
-   paths are written out in dice.ts, and this is where they are checked
-   against the actual files. Otherwise an edit to a vector in `card/` would
+/* Dice drawn on buttons use the same paths that print on the card. The
+   paths are written out in dice.ts, so a button draws with no request, and
+   this is where they are checked against the actual files. Otherwise an edit to a vector in `card/` would
    silently drift from the screen. */
 console.log('dice on the buttons');
 const diceTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dice.ts'), 'utf8');
@@ -1180,6 +1185,7 @@ if (deployNeeds) {
     return name.trim();
   });
   ok(names.includes('browser'), 'deploy.needs: browser is missing');
+  ok(names.includes('db'), 'deploy.needs: db is missing');
 }
 
 /* The browser matrix and

@@ -85,9 +85,11 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Убрать из списка" [description=Убрать из списка]
     status ""
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
   status ""
     StaticText "Убрано из списка (1)"
     button "Вернуть" [focused=true]
@@ -110,6 +112,7 @@ daggerheart.com
 К содержимому
 Как в книге
 Как это работает
+Конфиденциальность
 Лавка закрыта до утра
 ЛутDaggerheart
 Мистический Плащ
@@ -144,6 +147,8 @@ daggerheart.com
 Таблицы
 Убрать из списка
 Удалить
+Условия использования
+Установить как приложение
 Факел Алистера
 Факел АлистераВы можете зажигать этот магический факел по желани... [namelen=193 namehash=dd2e26d8]
 
@@ -230,9 +235,11 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "Remove from the list" [description=Remove from the list]
     status ""
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
     StaticText "Убрано из списка (1)"
     button "Вернуть" [focused=true]
@@ -257,6 +264,7 @@ Dread
 EN
 How this works
 In coins
+Install as an app
 Lay these out for printing: nine to an A4 sheet
 List name
 Lists
@@ -271,6 +279,7 @@ Players' link
 Position in the list
 Premium Bedroll
 Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
+Privacy
 RU
 Random 1–7
 Remove from the list
@@ -282,6 +291,7 @@ Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 Your own link

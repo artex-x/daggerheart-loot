@@ -160,7 +160,7 @@ describe('community items', () => {
 });
 
 describe('a dataset that did not load', () => {
-  /* data.js served as HTML by a broken deploy, or missing from a folder. Both
+  /* data.js served as HTML by a broken deploy, or missing from one. Both
      pages read the catalogue twice - once to build the picker, once to roll -
      and both have to say so rather than draw an empty panel. */
   it.each([

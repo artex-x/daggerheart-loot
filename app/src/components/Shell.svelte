@@ -116,20 +116,28 @@
 <SelBar {app} />
 
 <!-- The licence notice is on every page on purpose: the terms ask for it, and
-     a page that can be linked to directly has to carry it. -->
+     a page that can be linked to directly has to carry it. It sits folded in
+     a native <details> under a one-line summary: DPCGL clause 4.1 asks for
+     the notice in the shared material and names no visibility rule
+     (FEATURES.md, "Chrome"). -->
 <footer class="foot">
-  <!-- The home of the site's static pages, drawn only where its link can be
-       used (FEATURES.md, "Chrome"). -->
-  {#if app.showInstall}
-    <nav class="foot-nav" aria-label={app.t.footNavLabel}>
+  <!-- The home of the site's static pages. The install guide is left out
+       inside the installed app (FEATURES.md, "Chrome"). -->
+  <nav class="foot-nav" aria-label={app.t.footNavLabel}>
+    {#if app.showInstall}
       <a href={pagesDir + 'install.html'}>{app.t.installLink}</a>
-    </nav>
-  {/if}
-  <p>
-    {app.t.footBefore}<a href="https://www.daggerheart.com" target="_blank" rel="noopener"
-      >{app.t.footLink}</a
-    >{app.t.footAfter}
-  </p>
+    {/if}
+    <a href={pagesDir + 'privacy.html'}>{app.t.privacyLink}</a>
+    <a href={pagesDir + 'terms.html'}>{app.t.termsLink}</a>
+  </nav>
+  <details class="foot-licence">
+    <summary>{app.t.footSummary}</summary>
+    <p>
+      {app.t.footBefore}<a href="https://www.daggerheart.com" target="_blank" rel="noopener"
+        >{app.t.footLink}</a
+      >{app.t.footAfter}
+    </p>
+  </details>
 </footer>
 
 <Toast {app} />
@@ -223,7 +231,12 @@
   }
 
   .foot p {
-    margin: 0;
+    margin: var(--gap-sm) 0 0;
+  }
+
+  .foot-licence summary {
+    cursor: pointer;
+    width: fit-content;
   }
 
   /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap; the link

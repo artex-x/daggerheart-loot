@@ -121,6 +121,7 @@ daggerheart.com
 Кольцо Сопротивления
 Кольцо Тишины
 Компасы Связи
+Конфиденциальность
 Коробка Многих Вещей
 Кровавый Камень
 Кулон Светлячка
@@ -183,7 +184,9 @@ daggerheart.com
 Ссылка на таблицу
 Страница
 Таблицы
+Условия использования
 Успокаивающий Кулон
+Установить как приложение
 Факел Алистера
 Футляр для Компаньона
 Хранитель Знаний
@@ -326,6 +329,7 @@ Hope & Fear
 Hopekeeper Locket
 How this works
 Infinite Bag
+Install as an app
 Items
 Lakestrider Boots
 Lay these out for printing: nine to an A4 sheet
@@ -346,6 +350,7 @@ Piercing Arrows
 Piper Whistle
 Portal Seed
 Premium Bedroll
+Privacy
 RU
 Ring of Resistance
 Ring of Silence
@@ -360,6 +365,7 @@ Standard rules
 Stride Relic
 Suspended Rod
 Tables
+Terms of use
 Valorstone
 Vault of Ages
 Vial of Darksmoke Recipe

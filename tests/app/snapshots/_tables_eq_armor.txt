@@ -63,9 +63,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Непробиваемые Одеяния" [checked=false]
     button "142 Непробиваемые Одеяния Ранг 4 · Пороги 15/38 · Броня 5 Защищё..." [namelen=243 namehash=095f0d24]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 12Одеяние ПосланникаРанг 2 · Пороги 11/24 · Броня 5Стоимость При... [namelen=286 namehash=e2dee282]
@@ -134,6 +136,7 @@ daggerheart.com
 Кольчуга СпасителяРанг 4 · Пороги 18/48 · Броня 8Сложное: −1 ко ... [namelen=115 namehash=cb6d3929]
 Кольчужный Доспех
 Кольчужный ДоспехРанг 1 · Пороги 7/15 · Броня 4Тяжелое: −1 к Укл... [namelen=79 namehash=7872a65d]
+Конфиденциальность
 Латный Доспех
 Латный Доспех Демоностража
 Латный ДоспехРанг 1 · Пороги 8/17 · Броня 4Очень тяжелое: −2 к У... [namelen=99 namehash=45d3a871]
@@ -286,6 +289,8 @@ daggerheart.com
 Улучшенный Стеганый ДоспехРанг 2 · Пороги 7/16 · Броня 4Гибкое: ... [namelen=87 namehash=f73ae836]
 Улучшенный Чешуйчатый Доспех
 Улучшенный Чешуйчатый ДоспехРанг 2 · Пороги 11/23 · Броня 4Громо... [namelen=102 namehash=29ad9830]
+Условия использования
+Установить как приложение
 Фильтры
 Хабит Шторма
 Хабит ШтормаРанг 2 · Пороги 9/20 · Броня 4Поглощающее: Один раз ... [namelen=168 namehash=5a540b00]
@@ -361,9 +366,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     checkbox "Impervious Vestments" [checked=false]
     button "142 Impervious Vestments Tier 4 · Thresholds 15/38 · Armor 5 War..." [namelen=221 namehash=3b0d6d12]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 12Envoy's AttireTier 2 · Thresholds 11/24 · Armor 5Recall Cost: ... [namelen=251 namehash=4ba6f07f]
@@ -504,6 +511,7 @@ Improved Scale Mail Armor
 Improved Scale Mail ArmorTier 2 · Thresholds 11/23 · Armor 4Cumb... [namelen=101 namehash=7197161d]
 Improved Silverweave Armor
 Improved Silverweave ArmorTier 2 · Thresholds 7/16 · Armor 4Ward... [namelen=194 namehash=9c6cb0db]
+Install as an app
 Irontree Breastplate Armor
 Irontree Breastplate ArmorTier 2 · Thresholds 9/20 · Armor 4Rein... [namelen=199 namehash=1768c922]
 Leather Apron
@@ -546,6 +554,7 @@ Nightshroud
 Open this section on start
 Ordo Draconis Scale
 Other
+Privacy
 Quilted Clothing
 Quilted ClothingTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 t... [namelen=95 namehash=a59647cc]
 RU
@@ -579,6 +588,7 @@ Standard rules
 Stormthread Habit
 Stormthread HabitTier 2 · Thresholds 9/20 · Armor 4Absorbing: On... [namelen=155 namehash=c3b1b4d3]
 Tables
+Terms of use
 Tree Bark Armor
 Tree Bark ArmorTier 1 · Thresholds 7/15 · Armor 4Heavy: −1 to Ev... [namelen=91 namehash=a50d78cc]
 Trollhide Cuirass

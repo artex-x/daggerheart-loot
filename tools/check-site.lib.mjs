@@ -2,7 +2,8 @@
  * as two hand-written implementations that can drift from each other.
  *
  * `checks()` returns one array of `{ path, test(body, meta), message }`
- * descriptors. Nothing here knows how to fetch a path - that is an injected
+ * descriptors; a `path` is a string, or a function of the root page's body
+ * for a hashed name. Nothing here knows how to fetch a path - that is an injected
  * `read(path)` reader, resolving to `{ status, type, body }` - so the exact
  * same list runs against a live URL (`fetchReader`, used by check-site.mjs
  * after a deploy) and against a local `_site/` build (`dirReader`, used by
@@ -30,6 +31,20 @@ export const NOT_FOUND_MARKER = 'id="app-404"';
 
 const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
 
+const MODULE = /<script[^>]*type="module"[^>]*src="\.\/(assets\/[^"]+\.js)"/g;
+
+/** The hashed entry module the page references, `assets/<name>.js`, or null
+ *  unless there is exactly one. */
+export function entryOf(html) {
+  const found = [...html.matchAll(MODULE)].map((m) => m[1]);
+  return found.length === 1 ? found[0] : null;
+}
+
+/* A path that is never on disk, so a page with no entry fails the entry's
+   own status check with a readable message. */
+const NO_ENTRY = 'assets/no-entry-module.js';
+const entryPath = (root) => entryOf(root) ?? NO_ENTRY;
+
 export function checks() {
   const status200 = (name) => ({
     test: (body, meta) => meta.status === 200,
@@ -50,8 +65,8 @@ export function checks() {
     },
     {
       path: '',
-      test: (body) => body.includes('assets/app.js'),
-      message: 'the published page does not reference assets/app.js'
+      test: (body) => entryOf(body) !== null,
+      message: 'the published page does not reference exactly one assets/*.js module'
     },
     {
       path: '',
@@ -66,11 +81,12 @@ export function checks() {
       message: 'the published page mixes both apps - src="app.js" is still there'
     },
 
-    { path: 'assets/app.js', ...status200('assets/app.js') },
+    /* The entry's name is hashed, so its path is read from the root page. */
+    { path: entryPath, ...status200('the entry module') },
     {
-      path: 'assets/app.js',
+      path: entryPath,
       test: (body) => body.length > 20000,
-      message: (meta) => `assets/app.js is only ${meta.body.length} bytes - not a real build`
+      message: (meta) => `the entry module is only ${meta.body.length} bytes - not a real build`
     },
 
     { path: 'data.js', ...status200('data.js') },
@@ -136,23 +152,32 @@ export function checks() {
     { path: 'sw.js', ...status200('sw.js') },
     {
       path: 'sw.js',
-      test: (body) => body.includes('dhloot-shell'),
-      message: 'sw.js is not the service worker - no dhloot-shell cache in it'
+      test: (body) => body.includes('dhloot-assets-v1') && !body.includes('dhloot-shell'),
+      message: 'sw.js is not the current service worker - no dhloot-assets-v1, or a shell cache'
     },
     { path: 'icons/icon-192.png', ...status200('icons/icon-192.png') },
 
     /* The generated site pages (docs/specs/META.md section 9, "Static
      * pages"): a plain URL outside the app, one copy per language, kept out
      * of search results too. */
-    ...['pages/install.html', 'pages/en/install.html'].flatMap((f) => [
-      { path: f, ...status200(f) },
-      {
-        path: f,
-        test: (body) =>
-          NOINDEX.test(body) && body.includes('id="app-page"') && body.includes('og:title'),
-        message: `${f} lost its noindex, its id="app-page" marker or its og:title`
-      }
-    ]),
+    ...['install', 'privacy', 'terms']
+      .flatMap((id) => ['pages/' + id + '.html', 'pages/en/' + id + '.html'])
+      .flatMap((f) => [
+        { path: f, ...status200(f) },
+        {
+          path: f,
+          test: (body) =>
+            NOINDEX.test(body) && body.includes('id="app-page"') && body.includes('og:title'),
+          message: `${f} lost its noindex, its id="app-page" marker or its og:title`
+        }
+      ]),
+    /* The address the Google console publishes against (docs/specs/META.md
+     * section 9): the privacy page names the contact. */
+    ...['pages/privacy.html', 'pages/en/privacy.html'].map((f) => ({
+      path: f,
+      test: (body) => body.includes('mailto:daggerheart.loot@gmail.com'),
+      message: `${f} does not name the contact address`
+    })),
 
     /* The 404 fallback, owner-approved: a hosted record link truncated by a
      * chat client, or a stub for a record a data change dropped, has to
@@ -187,7 +212,9 @@ export async function runChecks(read, list = checks()) {
   };
   const bad = [];
   for (const c of list) {
-    const meta = await get(c.path);
+    /* A function path is read from the root page's body. */
+    const path = typeof c.path === 'function' ? c.path((await get('')).body) : c.path;
+    const meta = await get(path);
     if (!c.test(meta.body, meta)) {
       bad.push(typeof c.message === 'function' ? c.message(meta) : c.message);
     }
@@ -200,9 +227,9 @@ export async function runChecks(read, list = checks()) {
  *  every request a hard ceiling so one stalled CDN socket cannot hang this
  *  step indefinitely (the existing catch below already
  *  treats an abort as a retry) - it bounds a single request, not the whole
- *  retry loop below: `checks()`'s 21 distinct paths, `TRIES=6` and
+ *  retry loop below: `checks()`'s 25 distinct paths, `TRIES=6` and
  *  `WAIT_MS=10_000` between attempts add up to a worst case of roughly
- *  21 x 15s x 6 + 5 x 10s, about 32 minutes, if every request on every try
+ *  25 x 15s x 6 + 5 x 10s, about 38 minutes, if every request on every try
  *  stalls to its own ceiling - past `deploy`'s own 10-minute job timeout.
  *  That worst case needs every request to fail
  *  identically on every attempt, unlike the few-seconds-of-stale-CDN read

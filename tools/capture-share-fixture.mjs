@@ -23,18 +23,23 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PAGE = 'file://' + join(ROOT, 'dist', 'index.html');
 const OUT = join(ROOT, 'docs', 'fixtures', 'share', 'records.json');
 
 if (!existsSync(join(ROOT, 'dist', 'index.html'))) {
   console.log('no dist/index.html - run `npm run build` first');
   process.exit(1);
 }
+
+/* The built app loads only over HTTP: the browser suites' own server. */
+const { serveDist } = createRequire(import.meta.url)('../tests/app/lib.js');
+const server = await serveDist();
+const PAGE = 'http://127.0.0.1:' + String(server.address().port) + '/index.html';
 
 /* `dict.ts`'s own two labels, both languages - the accessible name
  * `RecordActions.svelte` gives each copy button (`aria-label`/`title`, both
@@ -191,6 +196,8 @@ for (const id of ids) {
 }
 
 await browser.close();
+server.closeAllConnections();
+server.close();
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(fixture, null, 2) + '\n', 'utf8');
 console.log(`${String(ids.length)} records -> docs/fixtures/share/records.json`);

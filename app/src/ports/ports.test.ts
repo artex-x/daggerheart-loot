@@ -1,6 +1,6 @@
 /* Ports exist so these cases can be tested at all. Each one here is a way the
    browser says no, and every one of them is a thing that actually happens to
-   somebody: a private window, a page opened from a folder, an older browser, a
+   somebody: a private window, a page outside a secure context, an older browser, a
    share sheet dismissed on purpose. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { browserClipboard, fakeClipboard } from './clipboard.js';
@@ -208,14 +208,12 @@ describe('the address', () => {
   });
 
   it('falls back to assigning the hash where replaceState is missing', () => {
-    /* Which is the case when the page is opened from a folder */
     const win = {
       location: {
         hash: '#/a',
         pathname: '/x.html',
         search: '',
-        href: 'file:///tmp/x.html#/a',
-        protocol: 'file:'
+        href: 'https://e.test/x.html#/a'
       },
       history: { length: 1 },
       addEventListener: () => undefined,
@@ -349,7 +347,7 @@ describe('the clipboard falls back rather than failing', () => {
   const win = (over: Partial<ClipWin>): ClipWin => ({ navigator: {}, document, ...over });
 
   it('reaches for the old copy outside a secure context', async () => {
-    /* Which is what opening the page from a folder gives you. jsdom has no
+    /* A plain http page on a LAN address, for one. jsdom has no
        execCommand either, so this asserts the shape of the fallback: it is
        tried, and it answers instead of throwing. */
     const c = browserClipboard(win({ isSecureContext: false }));
@@ -936,7 +934,7 @@ describe('the address bar', () => {
   }
 
   /** A window with only the parts hashRouter touches, and either of the two
-      optional pieces removable - which is the file:// case. */
+      optional pieces removable. */
   function fakeWin(missing: { replaceState?: true; back?: true } = {}) {
     const calls: string[] = [];
     const listeners = new Map<string, Set<() => void>>();
@@ -946,8 +944,7 @@ describe('the address bar', () => {
         hash: '#/roll/std',
         pathname: '/index.html',
         search: '',
-        href: 'https://example.test/index.html#/roll/std',
-        protocol: 'https:'
+        href: 'https://example.test/index.html#/roll/std'
       },
       history,
       addEventListener: (t: string, fn: () => void) => {
@@ -994,7 +991,7 @@ describe('the address bar', () => {
   });
 
   it('falls back to assigning the hash where replaceState is missing', () => {
-    /* That is the file:// case, which is a supported way to open this app. */
+    /* An older or stripped-down browser. */
     const { win, calls } = fakeWin({ replaceState: true });
     hashRouter(win).replace('#/lists');
     expect(win.location.hash).toBe('#/lists');
@@ -1128,8 +1125,8 @@ describe('the dataset', () => {
 });
 
 describe('where the page is', () => {
-  const win = (href: string, protocol: string) => ({
-    location: { hash: '', pathname: '/', search: '', href, protocol },
+  const win = (href: string) => ({
+    location: { hash: '', pathname: '/', search: '', href },
     history: { length: 1 },
     addEventListener: () => undefined,
     removeEventListener: () => undefined
@@ -1138,19 +1135,13 @@ describe('where the page is', () => {
   it('drops the hash and the file name from the base', () => {
     /* A server serves the directory, so naming index.html is noise - and the
        hash of the page somebody happened to be on has no business in a link. */
-    const r = hashRouter(win('https://e.test/loot/index.html#/i/w1', 'https:'));
+    const r = hashRouter(win('https://e.test/loot/index.html#/i/w1'));
     expect(r.base()).toBe('https://e.test/loot/');
   });
 
   it('keeps a file name that is not index.html', () => {
-    const r = hashRouter(win('https://e.test/loot/other.html#/x', 'https:'));
+    const r = hashRouter(win('https://e.test/loot/other.html#/x'));
     expect(r.base()).toBe('https://e.test/loot/other.html');
-  });
-
-  it('knows a server from a folder', () => {
-    expect(hashRouter(win('https://e.test/', 'https:')).hosted()).toBe(true);
-    expect(hashRouter(win('http://e.test/', 'http:')).hosted()).toBe(true);
-    expect(hashRouter(win('file:///tmp/index.html', 'file:')).hosted()).toBe(false);
   });
 });
 
@@ -1160,24 +1151,18 @@ describe('the installable app', () => {
   });
 
   it('answers unsupported where the browser has no service worker container', async () => {
-    expect(await registerWith(undefined, 'http:')).toBe('unsupported');
+    expect(await registerWith(undefined)).toBe('unsupported');
   });
 
-  it('never registers from a folder', async () => {
+  it('registers the relative worker', async () => {
     const sw = container(() => Promise.resolve({}));
-    expect(await registerWith(sw, 'file:')).toBe('unsupported');
-    expect(sw.register).not.toHaveBeenCalled();
-  });
-
-  it('registers the relative worker where a server serves the page', async () => {
-    const sw = container(() => Promise.resolve({}));
-    expect(await registerWith(sw, 'https:')).toBe('registered');
+    expect(await registerWith(sw)).toBe('registered');
     expect(sw.register).toHaveBeenCalledWith('./sw.js');
   });
 
   it('answers failed when the browser refuses the worker', async () => {
     const sw = container(() => Promise.reject(new Error('refused')));
-    expect(await registerWith(sw, 'http:')).toBe('failed');
+    expect(await registerWith(sw)).toBe('failed');
   });
 
   it('registers nothing under jsdom and is not the installed app there', async () => {
@@ -1186,8 +1171,7 @@ describe('the installable app', () => {
     expect(pwa.standalone()).toBe(false);
   });
 
-  it('links the manifest once where a server serves the page', async () => {
-    /* jsdom serves the page over http:, so this is the hosted branch. */
+  it('links the manifest once', async () => {
     const pwa = browserPwa();
     await pwa.register();
     await pwa.register();
@@ -1197,9 +1181,16 @@ describe('the installable app', () => {
     links[0]!.remove();
   });
 
-  it('links no manifest from a folder', () => {
-    linkManifest(document, 'file:');
-    expect(document.head.querySelector('link[rel="manifest"]')).toBeNull();
+  it('keeps a manifest link that is already in the head', () => {
+    const own = document.createElement('link');
+    own.rel = 'manifest';
+    own.href = './own.webmanifest';
+    document.head.append(own);
+    linkManifest(document);
+    const links = document.head.querySelectorAll('link[rel="manifest"]');
+    expect(links).toHaveLength(1);
+    expect(links[0]).toBe(own);
+    own.remove();
   });
 
   it('reports the standalone display mode and the iOS flag', () => {
@@ -1234,16 +1225,15 @@ describe('the installable app', () => {
   });
 
   it('skips the storage request where the browser has no storage manager', async () => {
-    expect(await persistWith(undefined, 'https:', true)).toBe('skipped');
+    expect(await persistWith(undefined, true)).toBe('skipped');
   });
 
-  it('never asks for persistent storage from a folder or outside the installed app', async () => {
+  it('never asks for persistent storage outside the installed app', async () => {
     const sm = storage(
       () => Promise.resolve(false),
       () => Promise.resolve(true)
     );
-    expect(await persistWith(sm, 'file:', true)).toBe('skipped');
-    expect(await persistWith(sm, 'https:', false)).toBe('skipped');
+    expect(await persistWith(sm, false)).toBe('skipped');
     expect(sm.persisted).not.toHaveBeenCalled();
     expect(sm.persist).not.toHaveBeenCalled();
   });
@@ -1253,7 +1243,7 @@ describe('the installable app', () => {
       () => Promise.resolve(true),
       () => Promise.resolve(false)
     );
-    expect(await persistWith(sm, 'https:', true)).toBe('persisted');
+    expect(await persistWith(sm, true)).toBe('persisted');
     expect(sm.persist).not.toHaveBeenCalled();
   });
 
@@ -1262,13 +1252,13 @@ describe('the installable app', () => {
       () => Promise.resolve(false),
       () => Promise.resolve(true)
     );
-    expect(await persistWith(granted, 'http:', true)).toBe('persisted');
+    expect(await persistWith(granted, true)).toBe('persisted');
     expect(granted.persist).toHaveBeenCalledTimes(1);
     const refused = storage(
       () => Promise.resolve(false),
       () => Promise.resolve(false)
     );
-    expect(await persistWith(refused, 'https:', true)).toBe('denied');
+    expect(await persistWith(refused, true)).toBe('denied');
   });
 
   it('answers denied when the storage manager rejects', async () => {
@@ -1276,7 +1266,7 @@ describe('the installable app', () => {
       () => Promise.reject(new Error('refused')),
       () => Promise.resolve(true)
     );
-    expect(await persistWith(sm, 'https:', true)).toBe('denied');
+    expect(await persistWith(sm, true)).toBe('denied');
     expect(sm.persist).not.toHaveBeenCalled();
   });
 

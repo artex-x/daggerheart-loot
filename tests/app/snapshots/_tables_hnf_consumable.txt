@@ -54,9 +54,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Зелье Легкой Поступи" [checked=false]
     button "60 Зелье Легкой Поступи Выпейте это зелье, и у вас на лодыжках в..." [namelen=185 namehash=d87d55eb]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 10Трубочное ЗельеКогда во время короткого отдыха вы выбираете Хо... [namelen=221 namehash=cff49eac]
@@ -149,6 +151,7 @@ daggerheart.com
 Квинтэссенциальный Разделитель
 Кол Запрета
 Колокол Некроплясуна
+Конфиденциальность
 ЛутDaggerheart
 Мазь Саламандры
 Мазь Стальной Кожи
@@ -202,6 +205,8 @@ daggerheart.com
 Тоник Месмера
 Трубочное Зелье
 Удача Каменщика
+Условия использования
+Установить как приложение
 Флакон Мягкого Падения
 Фляга Мидаса
 Формоидная Сыворотка
@@ -260,9 +265,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable
     checkbox "Featherstep Potion" [checked=false]
     button "60 Featherstep Potion You can drink this potion to sprout small ..." [namelen=188 namehash=ffaa337c]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 10PipeweedWhen you choose the Clear Stress downtime move during ... [namelen=249 namehash=4004310f]
@@ -359,6 +366,7 @@ Green Ooze Oil
 Grid
 Hope & Fear
 How this works
+Install as an app
 Instant Camp
 Invisibility Potion
 Iridian Dust
@@ -384,6 +392,7 @@ Packet of Space Dust
 Phial of Deep Ink
 Pipeweed
 Potion of Vigilance
+Privacy
 Psychopomp's Shroud
 Quintessential Severant
 RU
@@ -404,6 +413,7 @@ Stonemason's Fortune
 Sunlight Orb
 Tables
 Tears of the Undying Hero
+Terms of use
 Vault of Ages
 Verglasian Seed
 Vial of Featherfall

@@ -11,7 +11,8 @@ cards.
 
 The site installs as an app on a phone or a desktop; the guide is at
 `pages/install.html` (Russian) and `pages/en/install.html` (English), linked
-in the footer.
+in the footer beside the privacy policy (`pages/privacy.html`) and the terms
+of use (`pages/terms.html`).
 
 1272 records in all - 891 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
@@ -240,19 +241,21 @@ pinned - it is a snapshot that drifts away from the data.
 ## Running and developing
 
 The site is a Svelte + TypeScript app (`app/`) built with Vite. `npm run build`
-produces `dist/`, which needs no server: open `dist/index.html` in a browser,
-`file://` included, the same way the old plain-JS `index.html` used to. The
-migration is [issue #47](https://github.com/artex-x/daggerheart-loot/issues/47);
+produces `dist/`, which is served over HTTP only: run `npm run preview`, or any
+static server, and open the address it prints. Opening `dist/index.html` from
+a folder (`file://`) stopped working on 2026-09-24, when the build became ES
+modules ([docs/DECISIONS.md](docs/DECISIONS.md)). The migration to Svelte is [issue #47](https://github.com/artex-x/daggerheart-loot/issues/47);
 it closed at R0c; the decisions it made are in
 [docs/DECISIONS.md](docs/DECISIONS.md), and where each deleted suite went is
 in [docs/specs/COVERAGE.md](docs/specs/COVERAGE.md).
-To work on it you need Node 22 (`.nvmrc`):
+To work on it you need Node 24 (`.nvmrc`):
 
 ```
 npm ci
 npm run dev      # dev server with hot reload
 npm run check    # format, lint, types, data, unit tests - before every commit
-npm run build    # -> dist/, opens from file:// as well as from Pages
+npm run check:db # the database suite; needs Docker (on Windows, run it from PowerShell)
+npm run build    # -> dist/, served over HTTP (npm run preview, Pages)
 npm run test:legacy   # the surviving suites, mostly a real browser against dist/
 ```
 
@@ -272,7 +275,7 @@ i/*.html              1272 stub pages per language with Open Graph markup: i/ Ru
                       i/en/ English; generated, not committed
 en/index.html         the English entry document (the site's English preview card),
                       generated, not committed
-pages/src/*.html      the site pages (install guide), authored, Russian; pages/src/en/ English
+pages/src/*.html      the site pages (install guide, privacy, terms), authored, Russian; pages/src/en/ English
 pages/*.html          the site pages, generated from pages/src/, not committed: Russian,
                       and pages/en/ English
 data.json             the same data as plain JSON, for outside readers

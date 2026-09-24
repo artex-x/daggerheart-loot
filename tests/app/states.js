@@ -9,10 +9,8 @@
  * real second tab to mean anything at all. Thirty-four cases in thirty-three
  * runs (4 and 5 share one), no ancestor. */
 const fs = require('fs');
-const http = require('http');
-const path = require('path');
 const { PNG } = require('pngjs');
-const { fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
+const { baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
 
 const rep = reporter();
@@ -240,8 +238,8 @@ async function dialogSemantics() {
   await ctx.close();
 }
 
-/** 7. Two pages sharing storage - file:// pages share one origin's storage
- *  in Chrome. Page B opens first and stays on #/lists; page A opens second
+/** 7. Two pages sharing storage - two pages of one origin in one browser
+ *  context share its storage. Page B opens first and stays on #/lists; page A opens second
  *  and creates a list; B must redraw on the storage event with no
  *  navigation of its own. */
 async function twoTabsShareStorage() {
@@ -383,51 +381,37 @@ async function copyTextThroughClipboard() {
   await ctx.close();
 }
 
-/** 10. Copy image - a live-shared defect this case found rather than one it
- *  proves closed. Loading the record's own
- *  picture onto a `<canvas>` taints it on *both* apps under `file://`
- *  (Chrome has no `--allow-file-access-from-files`, so even a sibling file
- *  in the same folder the document opened from reads as cross-origin) -
- *  `canvas.toDataURL()` throws "Tainted canvases may not be exported" on
- *  both apps for the identical picture; `toBlob()` does not throw in this
- *  Chromium build, it simply never calls back, which is what made this
- *  invisible (`tests/app/driver.js`'s `clipboardImage()`
- *  reads a *pending promise*'s absent `.arrayBuffer` as `null` on both
- *  sides, so parity's own `copiedImage` spec has been comparing two
- *  identical nulls). Paid off: `RecordActions.svelte`'s `copyImage`
- *  now probes `toDataURL` itself and a `toBlob` watchdog, so the rejection
- *  is real rather than a promise that never settles - this reads whichever
- *  of the two outcomes this build actually produces (a real picture, on a
- *  build that is not tainted; the record's text and its own `imgTainted`
- *  toast, on this one) rather than racing a timeout against a hang. */
+/** 10. Copy image. Over HTTP the picture is same-origin, the canvas is
+ *  clean, and a real picture reaches the clipboard. The tainted-canvas
+ *  fallback (the record's text and the `imgTainted` toast) is
+ *  `record.test.ts`'s; here it is a regression. */
 async function copyImage() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1');
   await d.press('Скопировать изображение');
+  /* The canvas loads, draws and encodes the picture after the press
+     returns; the clipboard write or the fallback toast marks the outcome. */
+  await page
+    .waitForFunction(
+      () => !!window.__clip || !!document.querySelector('.toast')?.textContent?.trim(),
+      { timeout: 15_000 }
+    )
+    .catch(() => {});
   const result = await page.evaluate(async () => {
     const m = window.__clip;
     const imgKey = m && Object.keys(m).find((k) => k.startsWith('image/'));
-    const textKey = m && m['text/plain'] ? 'text/plain' : null;
     if (imgKey) return { blob: (await m[imgKey]).size };
-    if (textKey) return { text: await m[textKey].text() };
-    return { neither: true };
+    return {
+      clip: m ? Object.keys(m) : null,
+      toast: document.querySelector('.toast')?.textContent || ''
+    };
   });
-  if ('blob' in result) {
-    ok(result.blob > 0, '10 (copy image): the copied picture is empty');
-  } else {
-    ok(
-      typeof result.text === 'string' && result.text.length > 0,
-      '10 (copy image): neither the picture nor the fallback text arrived - ' +
-        JSON.stringify(result)
-    );
-    const toast = await page.evaluate(
-      () => document.querySelector('.toast')?.textContent || ''
-    );
-    ok(
-      toast.includes('Не удалось скопировать картинку - скопирован текст'),
-      '10 (copy image): the toast about the unavailable picture is not shown - ' + toast
-    );
-  }
+  ok(
+    'blob' in result,
+    '10 (copy image): no picture reached the clipboard (a clean canvas is expected over HTTP) - ' +
+      JSON.stringify(result)
+  );
+  ok(result.blob > 0, '10 (copy image): the copied picture is empty');
   await ctx.close();
 }
 
@@ -1571,55 +1555,24 @@ async function listMenuKeepsItsControlsInView() {
   }
 }
 
-const DIST = path.join(__dirname, '..', '..', 'dist');
-const TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json',
-  '.webmanifest': 'application/manifest+json',
-  '.css': 'text/css',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.webp': 'image/webp'
-};
-
-/** A static server over dist/ on a free port: files only, no listing, 404
- *  for anything else. The worker registers only over http(s). */
-function serveDist() {
-  const server = http.createServer((req, res) => {
-    let rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-    if (rel.endsWith('/')) rel += 'index.html';
-    const file = path.join(DIST, rel);
-    const type = TYPES[path.extname(file)];
-    if (!file.startsWith(DIST + path.sep) || !type || !fs.existsSync(file)) {
-      res.writeHead(404).end();
-      return;
-    }
-    res.writeHead(200, { 'content-type': type, date: new Date().toUTCString() });
-    res.end(fs.readFileSync(file));
-  });
-  return new Promise((resolve) => {
-    server.listen(0, '127.0.0.1', () => resolve(server));
-  });
-}
-
-/** 28. The installed shell opens offline: the worker registers over http,
- *  controls the page after one reload, and answers the next reload with the
- *  network gone. Over http the manifest parses and the page is installable,
- *  and the footer links the install guide, which the server answers; from a
- *  folder the footer draws no such link (docs/specs/META.md section 9,
+/** 28. The minimal worker over http: it registers, controls the page after
+ *  one reload, deletes the retired shell cache, and caches the hashed build
+ *  files but never the document or `data.js`. The manifest parses, the page
+ *  is installable, and the footer links the install guide and the two
+ *  policy pages, which the server answers (docs/specs/META.md section 9,
  *  FEATURES.md, "Chrome"). */
-async function installedShellOffline() {
-  const at = '28 (offline shell): ';
-  const server = await serveDist();
-  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+async function minimalWorker() {
+  const at = '28 (minimal worker): ';
+  const { ctx, page } = await fresh({ width: 1180, height: 900 });
   try {
-    await d.open('#/roll/std');
-    ok(
-      await page.evaluate(() => document.querySelector('.foot-nav') === null),
-      at + 'the install link is drawn from a folder'
+    const root = baseUrl();
+    /* A site page registers no worker: the retired cache is seeded on the
+       origin before the app's first load. */
+    await page.goto(root + 'pages/install.html', { waitUntil: 'load' });
+    await page.evaluate(() =>
+      caches.open('dhloot-shell-v1').then((c) => c.put('./', new Response('old shell')))
     );
-    const url = 'http://127.0.0.1:' + String(server.address().port) + '/index.html#/roll/std';
+    const url = root + 'index.html#/roll/std';
     await page.goto(url, { waitUntil: 'load' });
     ok(
       await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)),
@@ -1631,27 +1584,77 @@ async function installedShellOffline() {
           document.head.querySelector('link[rel="manifest"]')?.getAttribute('href') ===
           './manifest.webmanifest'
       ),
-      at + 'the hosted page has no manifest link'
+      at + 'the page has no manifest link'
+    );
+    const footer = await page.evaluate(() =>
+      [...document.querySelectorAll('.foot-nav a')].map((a) => a.getAttribute('href'))
     );
     ok(
-      await page.evaluate(
-        () =>
-          document.querySelector('.foot-nav a')?.getAttribute('href') === 'pages/install.html'
-      ),
-      at + 'the hosted footer does not link pages/install.html'
+      JSON.stringify(footer) ===
+        JSON.stringify(['pages/install.html', 'pages/privacy.html', 'pages/terms.html']),
+      at +
+        'the footer does not link the install guide and the two policy pages - ' +
+        JSON.stringify(footer)
     );
+    /* The folded licence notice opens from the keyboard, with the focus ring
+       drawn on its summary (FEATURES.md, "Chrome"). */
+    await page.focus('footer details > summary');
+    await page.keyboard.press('Enter');
+    const licence = await page.evaluate(() => {
+      const summary = document.querySelector('footer details > summary');
+      const style = summary && getComputedStyle(summary);
+      return {
+        open: !!summary?.parentElement?.open,
+        ring: !!style && style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) > 0
+      };
+    });
     ok(
-      await page.evaluate(() =>
-        fetch('pages/install.html')
-          .then((r) => (r.status === 200 ? r.text() : ''))
-          .then((body) => body.includes('id="app-page"'))
-      ),
-      at + 'pages/install.html is not served beside the app'
+      licence.open && licence.ring,
+      at +
+        'the licence notice does not open from the keyboard with a focus ring - ' +
+        JSON.stringify(licence)
     );
+    for (const href of footer) {
+      ok(
+        await page.evaluate(
+          (h) =>
+            fetch(h)
+              .then((r) => (r.status === 200 ? r.text() : ''))
+              .then((body) => body.includes('id="app-page"')),
+          href
+        ),
+        at + href + ' is not served beside the app'
+      );
+    }
     await page.reload({ waitUntil: 'load' });
     ok(
       await page.evaluate(() => navigator.serviceWorker.controller !== null),
       at + 'the page is not controlled after one reload'
+    );
+    const stored = await page.evaluate(async () => {
+      const out = {};
+      for (const name of await caches.keys()) {
+        const c = await caches.open(name);
+        out[name] = (await c.keys()).map((r) => new URL(r.url).pathname);
+      }
+      return out;
+    });
+    ok(
+      !('dhloot-shell-v1' in stored),
+      at +
+        'the retired shell cache survived activation - ' +
+        JSON.stringify(Object.keys(stored))
+    );
+    ok(
+      (stored['dhloot-assets-v1'] || []).some((p) => /^\/assets\/index-[\w-]+\.js$/.test(p)),
+      at +
+        'the entry module was not cached after the controlled reload - ' +
+        JSON.stringify(stored)
+    );
+    const paths = Object.values(stored).flat();
+    ok(
+      !paths.some((p) => p === '/' || p === '/index.html' || p === '/data.js'),
+      at + 'the document or data.js was cached - ' + JSON.stringify(stored)
     );
     const cdp = await page.createCDPSession();
     const manifest = await cdp.send('Page.getAppManifest');
@@ -1687,45 +1690,53 @@ async function installedShellOffline() {
     } finally {
       await shared.page.close();
     }
-    /* Both halves of "offline": the emulation for the page, and the server
-       itself gone, so the worker's own fetch fails too. */
-    server.closeAllConnections();
-    await new Promise((resolve) => server.close(resolve));
-    await page.setOfflineMode(true);
-    await page.reload({ waitUntil: 'load' });
-    const seen = await page.evaluate(() => ({
-      mounted: !!document.querySelector('#app')?.childElementCount,
-      data: typeof window.LOOT === 'object' && window.LOOT !== null,
-      title: document.title
-    }));
-    ok(seen.mounted, at + 'the app did not render offline');
-    ok(seen.data, at + 'the data did not arrive offline: window.LOOT is empty');
-    ok(
-      seen.title.endsWith('Генератор лута — Daggerheart'),
-      at + 'the offline document is not the app: ' + seen.title
-    );
-    await page.setOfflineMode(false);
   } finally {
     await ctx.close();
-    if (server.listening) {
-      server.closeAllConnections();
-      server.close();
-    }
   }
 }
 
 /** 29. The install guide links back to the screen the reader left, in both
  *  languages: from `#/lists` the top back link of `pages/install.html`
  *  (`../`) and of `pages/en/install.html` (`../../`) returns to
- *  `index.html#/lists`, and on a direct visit it opens the app root
- *  (docs/specs/META.md section 9, "Static pages"). */
+ *  `index.html#/lists`, and on a direct visit it opens the app root. The
+ *  two policy pages draw the same back links in both languages, and
+ *  `privacy` names the contact address (docs/specs/META.md section 9,
+ *  "Static pages"). */
 async function guideBackLink() {
   const at = '29 (guide back link): ';
-  const server = await serveDist();
   const { ctx, page } = await fresh({ width: 1180, height: 900 });
   let en = null;
   try {
-    const root = 'http://127.0.0.1:' + String(server.address().port) + '/';
+    const root = baseUrl();
+    for (const [dir, back] of [
+      ['pages/', '../'],
+      ['pages/en/', '../../']
+    ]) {
+      for (const id of ['privacy', 'terms']) {
+        await page.goto(root + dir + id + '.html', { waitUntil: 'load' });
+        const seen = await page.evaluate((b) => {
+          const main = document.getElementById('app-page');
+          const first = main && main.firstElementChild;
+          const last = main && main.lastElementChild;
+          return {
+            backs:
+              !!first &&
+              first !== last &&
+              [first, last].every((a) => a.matches('a.back') && a.getAttribute('href') === b),
+            h1: !!main?.querySelector('h1'),
+            mail: !!main?.querySelector('a[href="mailto:daggerheart.loot@gmail.com"]')
+          };
+        }, back);
+        ok(
+          seen.backs && seen.h1 && seen.mail,
+          at +
+            dir +
+            id +
+            '.html lacks its back links, its heading or the contact address - ' +
+            JSON.stringify(seen)
+        );
+      }
+    }
     await page.goto(root + 'index.html#/lists', { waitUntil: 'load' });
     await page.waitForSelector('.foot-nav a');
     await page.click('.foot-nav a');
@@ -1832,8 +1843,6 @@ async function guideBackLink() {
   } finally {
     if (en) await en.ctx.close();
     await ctx.close();
-    server.closeAllConnections();
-    server.close();
   }
 }
 
@@ -2269,7 +2278,7 @@ const CASES = [
   ['25 (notice dismiss while folded)', storageNoticeDismissWhileFolded],
   ['26 (announce on touch, inert grip)', announceOnTouchAndHideInertGrip],
   ['27 (list menu at 50 lists)', listMenuKeepsItsControlsInView],
-  ['28 (offline shell)', installedShellOffline],
+  ['28 (minimal worker)', minimalWorker],
   ['29 (guide back link)', guideBackLink],
   ['30 (note clear target)', noteClearTargetYieldsToTextarea],
   ['31 (card image focus ring)', cardMediaRingVisible],

@@ -20,11 +20,9 @@
   arbitrary, possibly nested bad path (e.g. /daggerheart-loot/i/<id>.htm),
   and a relative "./" link would resolve against *that* path's directory,
   not against this file's own location - the opposite of every other page
-  in this repository, where the page is actually loaded at its own path and
-  a relative link is what keeps file:// working. This page is never opened
-  over file:// (nothing links to it locally; it only exists as a Pages
-  serving fallback), so that constraint does not apply here, and getting the
-  reader back to a working address does.
+  in this repository, which is loaded at its own path, where a relative link
+  is what keeps the site movable. Here, getting the reader back to a working
+  address wins.
 -->
 <style>
   body{background:#0e0c15;color:#ece8f6;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;

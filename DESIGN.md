@@ -190,9 +190,9 @@ ornament.
 
 There are no webfonts. `--ui` and `--mono` are lists of locally installed
 families, so `document.fonts.size` is zero and the first paint is the final
-paint. This is a load-bearing property of the world, not an omission: the app
-also runs from `file://`, and the print sheet must measure identically on a
-machine that has never been online.
+paint. This is a load-bearing property of the world, not an omission: the
+print sheet must measure identically on every machine, with no font request
+in the way.
 
 `app/src/styles/tokens.css` and `tests/app/typo.js` are normative. This file
 records the system they express, in the language a design decision needs. Where
@@ -315,8 +315,8 @@ stat line, a rung in an upgrade chain, the value in a number field. A number a
 person reads as prose is not.
 
 **The Local Font Rule.** No `@font-face` and no font service, ever. The families
-are lists of locally installed names. Anything else breaks the `file://` case
-and moves the print measurements.
+are lists of locally installed names. Anything else adds a request before the
+final paint and moves the print measurements.
 
 ## Layout
 

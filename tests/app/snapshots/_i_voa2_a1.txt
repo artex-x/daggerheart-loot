@@ -39,9 +39,11 @@ RootWebArea "Узы Души — Генератор лута — Daggerheart" [u
     button "Добавить в список" [expanded=false]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/voa2_a1]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 Dragon's Vault
@@ -54,6 +56,7 @@ daggerheart.com
 Альт. таблицы
 Добавить в список
 К содержимому
+Конфиденциальность
 ЛутDaggerheart
 Обычные правила
 Отправить
@@ -67,6 +70,8 @@ daggerheart.com
 Списки
 Страница
 Таблицы
+Условия использования
+Установить как приложение
 показать в таблице
 
 ## en :: tree
@@ -106,9 +111,11 @@ RootWebArea "Anima Colligationem — Daggerheart Loot Generator" [url=#/i/voa2_a
     button "Add to list" [expanded=false]
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/voa2_a1]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 Add to list
@@ -121,15 +128,18 @@ Copy text
 Dragon's Vault
 Dread
 EN
+Install as an app
 Lay these out for printing: nine to an A4 sheet
 Lists
 Page
+Privacy
 RU
 Search
 Share
 Skip to content
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com

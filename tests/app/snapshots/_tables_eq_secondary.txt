@@ -63,9 +63,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Нож Единорога" [checked=false]
     button "32 Нож Единорога Ранг 4 · Физическое · Искусность · Вплотную · d..." [namelen=346 namehash=240c1322]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 106Духовая Трубка Скорбного ЕжаРанг 2 · Физическое · Искусность ... [namelen=253 namehash=4be85385]
@@ -140,6 +142,7 @@ daggerheart.com
 Клинок из Драконьей Кости
 Колючая Проволока
 Колючая ПроволокаРанг 2 · Физическое · Искусность · Близко · d6+... [namelen=266 namehash=925f8b11]
+Конфиденциальность
 Короткий Меч
 Короткий МечРанг 1 · Физическое · Проворность · Вплотную · d8 фи... [namelen=158 namehash=2f28c030]
 Круглый Щит
@@ -322,6 +325,8 @@ daggerheart.com
 Улучшенный Цепной ХлыстРанг 2 · Физическое · Влияние · Близко · ... [namelen=194 namehash=3cdcb3c2]
 Усиленная Рукавица
 Усиленная РукавицаРанг 3 · Физическое · Знание · Средне · d6+4 ф... [namelen=202 namehash=05e487d1]
+Условия использования
+Установить как приложение
 Фестивальный Кнут
 Фестивальный КнутРанг 1 · Физическое · Влияние · Близко · d6 физ... [namelen=253 namehash=ec6b33ae]
 Фильтры
@@ -407,9 +412,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     checkbox "Unicorn Knife" [checked=false]
     button "32 Unicorn Knife Tier 4 · Physical · Finesse · Melee · d8+6 phy ..." [namelen=312 namehash=1d5303db]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 106Grief Urchin BlowgunTier 2 · Physical · Finesse · Close · d4 ... [namelen=244 namehash=07dea7ed]
@@ -566,6 +573,7 @@ Improved Whip
 Improved WhipTier 2 · Physical · Presence · Very Close · d6+2 ph... [namelen=206 namehash=0f09a675]
 Improved Wooden Stake
 Improved Wooden StakeTier 2 · Physical · Strength · Melee · d8+2... [namelen=219 namehash=2643f006]
+Install as an app
 Knuckle Claws
 Knuckle ClawsTier 4 · Physical · Strength · Melee · d6+8 phy · O... [namelen=218 namehash=fce41f6d]
 Large Fork
@@ -626,6 +634,7 @@ Powered Gauntlet
 Powered GauntletTier 3 · Physical · Knowledge · Close · d6+4 phy... [namelen=192 namehash=f04e5ea0]
 Primer Shard
 Primer ShardTier 4 · Physical · Instinct · Very Close · d4 phy ·... [namelen=225 namehash=f6689c2e]
+Privacy
 RU
 Razor Wire
 Razor WireTier 2 · Physical · Finesse · Very Close · d6+3 phy · ... [namelen=272 namehash=8991451e]
@@ -663,6 +672,7 @@ Standard rules
 Table Shield
 Table ShieldTier 1 · Physical · Strength · Melee · d6 phy · One-... [namelen=144 namehash=cde02b7b]
 Tables
+Terms of use
 Throwing Knives
 Throwing KnivesTier 1 · Physical · Finesse · Melee · d8 phy · On... [namelen=262 namehash=50a4d3a5]
 Tinker's Hammer

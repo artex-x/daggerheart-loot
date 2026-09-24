@@ -8,8 +8,8 @@ if (!target) throw new Error('no #app element');
 
 const env = browserEnv();
 /* Registration and the storage request are boot concerns beside `mount`, not
-   a component's; the port keeps both no-ops from a folder (docs/specs/META.md
-   sections 4 and 9). */
+   a component's. The registered worker keeps the site installable
+   (docs/specs/META.md section 9). */
 void env.pwa.register();
 void env.pwa.persist();
 

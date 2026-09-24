@@ -64,9 +64,11 @@ RootWebArea "Обычные правила — Генератор лута — D
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 Core
@@ -86,6 +88,7 @@ daggerheart.com
 Бросить 5d12 — Легендарная
 К содержимому
 Как это работает
+Конфиденциальность
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
@@ -105,6 +108,8 @@ daggerheart.com
 Списки
 Страница
 Таблицы
+Условия использования
+Установить как приложение
 
 ## en :: tree
 RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
@@ -168,9 +173,11 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 Alt. tables
@@ -188,11 +195,13 @@ Dread
 EN
 Hope & Fear
 How this works
+Install as an app
 Lists
 One higher
 One lower
 Opens on start
 Page
+Privacy
 RU
 Roll 1d12 — Common
 Roll 2d12 — Common / Uncommon
@@ -205,6 +214,7 @@ Share
 Skip to content
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com

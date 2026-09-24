@@ -13,7 +13,7 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 ## Project shape
 
 - The shipped app is the Svelte + TypeScript rewrite: `app/` builds to `dist/`,
-  which `ci.yml`'s `deploy` job publishes to Pages. It runs from `file://` too.
+  which `ci.yml`'s `deploy` job publishes to Pages. It is served over HTTP only.
 - The static root (`index.html`, `style.css`, `app.js`) was deleted at R0c
   (`23c00a6`); read it from history with `git show 23c00a6^ -- index.html
   app.js style.css`, never from the working tree.
@@ -37,9 +37,10 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 
 ## Task and session protocol
 
-One session at a time per working tree. A second session's `npm ci`, staged
-index, vitest coverage directory or browser suite run will corrupt the
-first's results, and the failure looks like a bug in whatever was running.
+One session at a time per working tree, per local Supabase stack and per
+hosted test project. A second session's `npm ci`, staged index, coverage
+directory, browser suite, `db reset` or E2E run corrupts the first's results
+or data, and the failure looks like a bug in whatever was running.
 
 Task state lives under `issues/<id>/` only while the task is open:
 `context.md` (shared facts and settled decisions), `plan.md` (design, ordered
@@ -86,7 +87,7 @@ Read the files the change touches:
 | `docs/specs/FEATURES.md` | product behaviour and required state |
 | `docs/specs/COVERAGE.md` | suite ownership, thresholds, and known gaps |
 | `docs/specs/I18N.md` | bilingual behaviour |
-| `docs/specs/META.md` | `noindex`, crawling, URL-only lists, `file://`, tiers |
+| `docs/specs/META.md` | `noindex`, crawling, lists and the backend, HTTP-only build, tiers, PWA |
 | `docs/specs/DEBT.md` | defects kept on purpose, grouped under the larger task that owes each |
 
 Public contracts default to no change. An unavoidable change updates
@@ -100,7 +101,7 @@ in the same commit. Behaviour changes update their specs in the same commit.
 - Shared UI belongs in `app/src/components/`; expose only differences real callers need.
 - `app/src/styles/tokens.css` owns global colours, spacing, radii, and type steps. `DESIGN.md` records the visual system those tokens express; the code wins any conflict with it.
   Components compose tokens; they do not invent near-duplicate values.
-- Preserve relative asset paths and the classic-script data adapter required by `file://`; do not use runtime `fetch()` for local data.
+- Preserve relative asset paths and the classic-script `data.js` adapter (cached apart from the bundle, no async bootstrap); do not use runtime `fetch()` for local data.
 
 ## Data and published artefacts
 
@@ -118,12 +119,10 @@ npm run check
 ```
 Agents: one foreground call, `rtk npm run check`, Bash timeout 600000 - see `.claude/README.md`, "Run a long check".
 
-If a change alters what a screen draws, also run `npm run check:built`.
-Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`.
-The built app in a real browser (after `npm run build`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
-`app/sweep` and `app/golden` are each too slow for one foreground call; run
-them per width/shard - `.claude/README.md`, "Batch size and the fixed cost of
-a run".
+If a change alters what a screen draws, also run `npm run check:built`; a change under
+`supabase/` or `tests/db/` also runs `npm run check:db` (on Windows through the PowerShell tool), which the commit gate requires.
+Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`; the built app in a real browser (after `npm run build`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
+`app/sweep` and `app/golden` are each too slow for one foreground call; run them per width/shard - `.claude/README.md`, "Batch size and the fixed cost of a run".
 
 Definition of done: checks pass, fixed defects and changed behaviour have
 meaningful coverage, specs and fixtures match, and the handoff records exact
@@ -133,12 +132,11 @@ Coverage is enforced per file and directory (a new file must be reached by a
 test, not by a matching filename). End component tests with
 `expectNoA11yViolations`; cover pressed/open states with axe. See `docs/specs/COVERAGE.md`.
 
-Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
-`.claude/README.md`, "Hooks"). They enforce; this file states intent.
+Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in `.claude/README.md`, "Hooks"). They enforce; this file states intent.
 
 ## Product laws that look negotiable but are not
 
-- Lists live in the URL hash and localStorage; add no backend or upload service.
+- The Supabase backend is the only server: add no other backend, upload endpoint or paste service.
 - Keep `noindex` while allowing crawling; crawler blocks hide `noindex` and break previews.
 - Never infer equipment tier from stats; use the source book data.
 - Printing is nine 63x88 mm cards per A4 sheet, or sixteen 44x63 mm cards on the opt-in compact sheet. Colour and black-and-white are distinct layouts on either sheet; preserve browser-measured fitting. See `FEATURES.md`.
@@ -158,6 +156,7 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
   Push once, at closeout, after the task directory is deleted. A push closes
   the amend window: never force-push in any form; work after a push is a new
   commit. A push before closeout is the human's call and costs one more commit.
+  A cloud release's one push is its own task branch; the owner fast-forwards `main` to it locally.
 
 ## Comments
 
@@ -195,7 +194,6 @@ Feature work uses roles (see `.claude/`):
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 - a single-file visual bug pinned to a width skips planner and review: `/small-fix` (`.claude/skills/small-fix/SKILL.md`)
 
-Prompts: `.claude/prompts/`. Agents: `.claude/agents/`. Kickoff: `/orchestrate`.
-Pass `TASK: <id>` at runtime. Orchestrator selects models; effort is the session's, set by the human. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
+Prompts: `.claude/prompts/`. Agents: `.claude/agents/`. Kickoff: `/orchestrate`. Pass `TASK: <id>` at runtime. Orchestrator selects models; effort is the session's, set by the human. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
 Hosts without agent tools run the prompt files sequentially with `issues/<id>/` as the handoff bus; closeout and cleanup are the orchestrate prompt's.
 <!-- setup-claude-agents:end -->

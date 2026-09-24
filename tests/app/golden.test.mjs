@@ -39,14 +39,20 @@ describe('collapse', () => {
 });
 
 describe('normUrl', () => {
-  it('cuts a file:// dist url down to its hash', () => {
+  it('cuts a served app url down to its hash, whatever the port', () => {
     assert.equal(
-      normUrl('file:///C:/repo/dist/index.html#/tables/eq_weapon'),
+      normUrl('http://127.0.0.1:51234/index.html#/tables/eq_weapon'),
       '#/tables/eq_weapon'
     );
+    assert.equal(normUrl('http://127.0.0.1:7/#/lists'), '#/lists');
   });
 
-  it('leaves a real outbound link whole - no dist/index.html marker to cut at', () => {
+  it('cuts a served site page down to its relative path', () => {
+    assert.equal(normUrl('http://127.0.0.1:51234/pages/privacy.html'), 'pages/privacy.html');
+    assert.equal(normUrl('http://127.0.0.1:51234/en/#/lists'), 'en/#/lists');
+  });
+
+  it('leaves a real outbound link whole - no test server origin to cut', () => {
     assert.equal(normUrl('https://daggerheart.com/'), 'https://daggerheart.com/');
   });
 });

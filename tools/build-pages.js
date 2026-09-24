@@ -35,8 +35,24 @@ const PAGES = [
     id: 'install',
     title: { ru: 'Установить как приложение', en: 'Install as an app' },
     desc: {
-      ru: 'Как поставить сайт на телефон или компьютер как приложение и что работает без сети.',
-      en: 'How to put the site on a phone or a computer as an app, and what works offline.'
+      ru: 'Как поставить сайт на телефон или компьютер как приложение.',
+      en: 'How to put the site on a phone or a computer as an app.'
+    }
+  },
+  {
+    id: 'privacy',
+    title: { ru: 'Конфиденциальность', en: 'Privacy' },
+    desc: {
+      ru: 'Что хранит генератор лута, где это лежит и как это удалить.',
+      en: 'What the loot generator stores, where it is kept, and how to delete it.'
+    }
+  },
+  {
+    id: 'terms',
+    title: { ru: 'Условия использования', en: 'Terms of use' },
+    desc: {
+      ru: 'Правила пользования сайтом, отсутствие гарантий и лицензия на игровые материалы.',
+      en: 'Rules for using the site, no uptime promise, and the licence for the game content.'
     }
   }
 ];
@@ -105,9 +121,10 @@ function page({ id, lang, title, desc, body }) {
   main{max-width:640px;margin:0 auto}
   h1{font-size:22px;margin:0 0 10px}
   h2{font-size:16px;margin:22px 0 6px;color:#d8ab5e}
+  h3{font-size:15px;margin:16px 0 4px}
   p,li{color:#cfc8e0}
   p{margin:0 0 12px}
-  ol{margin:0 0 12px;padding-left:22px}
+  ol,ul{margin:0 0 12px;padding-left:22px}
   a{color:#d8ab5e}
   .lang{font-size:13px;margin:0 0 16px}
   .back{display:inline-block;margin:8px 0 16px}

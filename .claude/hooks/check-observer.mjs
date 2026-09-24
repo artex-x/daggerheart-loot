@@ -1,6 +1,7 @@
-// PostToolUse(Bash): observes a real `npm run check`, records its tree key
-// when it passed - so bash-guard.mjs's commit gate has something to check
-// against - and states the verdict in one line either way. Never blocks.
+// PostToolUse(Bash|PowerShell): observes a real `npm run check` (Bash only)
+// or `npm run check:db` (either tool), records its tree key when it passed -
+// so bash-guard.mjs's commit gates have something to check against - and
+// states the verdict in one line either way. Never blocks.
 // See .claude/README.md, "Hooks".
 //
 // It speaks because the verdict was measurably not obvious. Across 65
@@ -45,7 +46,9 @@ import {
   segments,
   tokensOf,
   unwrap,
-  CHECK_INVOCATION_RE
+  normalizeCommand,
+  CHECK_INVOCATION_RE,
+  CHECK_DB_INVOCATION_RE
 } from './lib.mjs';
 import { treeKey, writeCache } from './tree-key.mjs';
 
@@ -103,16 +106,16 @@ const EXIT_CODE_FIELDS = [
  * pre-strips) still refuses that doubled string - the observer would then
  * arm on a command the gate itself denies.
  */
-function isCheckInvocation(rawCommand) {
+function isCheckInvocation(rawCommand, invocationRe) {
   let s = sanitize(rawCommand).replace(/\d?>&\d/g, ' ');
-  // `cd <dir> &&` and `set -o pipefail;` are habit and hygiene, not output
-  // producers: neither writes to stdout, so the check is still the only
-  // thing that can have produced what this hook reads. Exactly those
-  // tokens, at the start, in either order; `set -eo pipefail`, `set -x` or
-  // anything else between them and the check leaves a separator behind
-  // and is refused by the test below.
+  // `cd <dir> &&` (`cd <dir>;` in PowerShell 5.1, which has no `&&`) and
+  // `set -o pipefail;` are habit and hygiene, not output producers: neither
+  // writes to stdout, so the check is still the only thing that can have
+  // produced what this hook reads. Exactly those tokens, at the start, in
+  // either order; `set -eo pipefail`, `set -x` or anything else between
+  // them and the check leaves a separator behind and is refused below.
   for (let i = 0; i < 3; i++) {
-    s = s.replace(/^cd(\s+[^\s;&|]+)?\s*&&\s*/i, '');
+    s = s.replace(/^cd(\s+[^\s;&|]+)?\s*(?:&&|;)\s*/i, '');
     s = s.replace(/^set -o pipefail\s*(?:;|&&)\s*/, '');
   }
   if (/&&|\|\||;|&|\n|\$\(|`/.test(s)) return false;
@@ -120,7 +123,7 @@ function isCheckInvocation(rawCommand) {
   if (!first) return false;
   const tokens = unwrap(tokensOf(first));
   if (tokens.some((t) => /^\d?>>?/.test(t))) return false;
-  return CHECK_INVOCATION_RE.test(tokens.join(' '));
+  return invocationRe.test(tokens.join(' '));
 }
 
 function firstExitCode(toolResponse) {
@@ -131,15 +134,68 @@ function firstExitCode(toolResponse) {
   return undefined;
 }
 
+/** The text a tool call printed. A Bash result carries `stdout` and
+ * `stderr`; for the PowerShell result the text is taken from `stdout`,
+ * else `output`, else a plain string, so either shape reaches the markers. */
+function responseText(response) {
+  if (typeof response === 'string') return response;
+  if (!response || typeof response !== 'object') return '';
+  let out = '';
+  if (typeof response.stdout === 'string') out = response.stdout;
+  else if (typeof response.output === 'string') out = response.output;
+  if (typeof response.stderr === 'string') out += response.stderr;
+  return out;
+}
+
+function observeCheckDb(response) {
+  if (response && typeof response === 'object' && response.interrupted === true)
+    return undefined;
+  const exitCode = firstExitCode(response);
+  const text = responseText(response);
+  const code = exitCode === undefined ? '' : ` (exit ${exitCode})`;
+  if (
+    (exitCode !== undefined && exitCode !== 0) ||
+    /^check:db: FAIL\s*$/m.test(text) ||
+    FAILURE_MARKERS.some((re) => re.test(text))
+  ) {
+    return speak(
+      EVENT,
+      `npm run check:db: FAIL${code}. The commit gate for supabase/ and tests/db/ is not armed - fix the failure above and run \`npm run check:db\` again.`
+    );
+  }
+  if (!/^check:db: PASS\s*$/m.test(text)) {
+    return speak(
+      EVENT,
+      `npm run check:db: no failure seen${code}, but its final PASS line never reached this hook, so the run cannot be attributed and the commit gate for supabase/ and tests/db/ is not armed. Run it plainly in the foreground, with no pipe and no redirect.`
+    );
+  }
+  const key = treeKey();
+  if (key === null) return undefined; // fail open: nothing to cache against
+  writeCache(key, '.check-db-cache.json', 'npm run check:db');
+  return speak(
+    EVENT,
+    `npm run check:db: PASS${code}. Commit gate armed for supabase/ and tests/db/.`
+  );
+}
+
 guard(() => {
   const input = readInput();
-  if (input.tool_name !== 'Bash') return undefined;
-  const command =
+  const tool = input.tool_name;
+  if (tool !== 'Bash' && tool !== 'PowerShell') return undefined;
+  const command = normalizeCommand(
+    tool,
     input.tool_input && typeof input.tool_input.command === 'string'
       ? input.tool_input.command
-      : '';
-  if (!isCheckInvocation(command)) return undefined;
+      : ''
+  );
   if (input.tool_input && input.tool_input.run_in_background === true) return undefined;
+
+  if (isCheckInvocation(command, CHECK_DB_INVOCATION_RE)) {
+    return observeCheckDb(input.tool_response);
+  }
+  // `npm run check` arms from Bash only: its attribution rests on the Bash
+  // result shape measured in the header above.
+  if (tool !== 'Bash' || !isCheckInvocation(command, CHECK_INVOCATION_RE)) return undefined;
 
   const response = input.tool_response || {};
   if (response.interrupted === true) return undefined;

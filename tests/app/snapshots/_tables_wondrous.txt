@@ -54,9 +54,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Пески Ифанга" [checked=false]
     button "119 Пески Ифанга Когда этот чёрный порошок загорается или испыты..." [namelen=321 namehash=d381b644]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 100Семя Цветка ТроицыУпотребление этого семени дарует мудрость Т... [namelen=156 namehash=c7496489]
@@ -225,6 +227,7 @@ daggerheart.com
 Капюшон Туманного Покрова
 Книга Беспамятства
 Когти Ифанга
+Конфиденциальность
 Красный Нос Надежды
 Кристаллы Иномирья
 Кровь Кайдзю
@@ -307,7 +310,9 @@ daggerheart.com
 Тростник Трясинного Стекла
 Тёмный Камень
 Удерживающий Крюк
+Условия использования
 Усмиряющее Кадило
+Установить как приложение
 Факел Души
 Фильтры
 Флакон Кристальных Вод
@@ -377,9 +382,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous]
     checkbox "Yifang Sands" [checked=false]
     button "119 Yifang Sands When this black powder catches fire or experien..." [namelen=302 namehash=26357a70]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 100Trinity Flower SeedEating this seed grants the wisdom of the ... [namelen=153 namehash=8aea652a]
@@ -561,6 +568,7 @@ Hope & Fear
 How this works
 Ice Gloves
 Incantor's Chalk
+Install as an app
 Jamming Spanner
 Lantern of Shadows
 Leviathan Harpoon
@@ -588,6 +596,7 @@ Planar Wood
 Potion of Revealed Paths
 Potion of Spiraling Vision
 Prismatic Water
+Privacy
 Puddleduck's Fins
 Pure Crystal
 Quill of Memory
@@ -615,6 +624,7 @@ Storm in a Bottle
 Superior Alconite Crystal
 Tables
 Tarrasque Sinew
+Terms of use
 Ticket Master's Pouch
 Timeglass
 Tincture of Fortified Thoughts

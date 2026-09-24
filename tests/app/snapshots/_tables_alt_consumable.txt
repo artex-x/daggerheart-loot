@@ -68,9 +68,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Зеркало Златоцвета" [checked=false]
     button "12 Зеркало Златоцвета Когда вы получаете урон, вы можете потрати..." [namelen=148 namehash=f1d96a23]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 10Доспешный СшивательВы можете использовать этот швейный аппарат... [namelen=154 namehash=8141daa9]
@@ -250,6 +252,7 @@ daggerheart.com
 Кислотная Паста
 Кол Запрета
 Колокол Некроплясуна
+Конфиденциальность
 Кровь Йорги
 Круг Пустоты
 Крылокорень
@@ -330,6 +333,8 @@ daggerheart.com
 Удача Каменщика
 Улучшенный Мистический Осколок
 Улучшенный Яд Скрежетозуба
+Условия использования
+Установить как приложение
 Усыпляющий Сок
 Флакон Мягкого Падения
 Флакон с Лунной Каплей
@@ -409,9 +414,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_consumable
     checkbox "Mirror of Marigold" [checked=false]
     button "12 Mirror of Marigold When you take damage, you can spend a Hope..." [namelen=136 namehash=b2150af9]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 10Armor StitcherYou can use this stitcher to spend any number of... [namelen=116 namehash=61221ff1]
@@ -595,6 +602,7 @@ Hopehold Flare
 How this works
 Improved Arcane Shard
 Improved Grindletooth Venom
+Install as an app
 Instant Camp
 Invisibility Potion
 Iridian Dust
@@ -639,6 +647,7 @@ Phial of Deep Ink
 Pipeweed
 Potion of Stability
 Potion of Vigilance
+Privacy
 Psychopomp's Shroud
 Quintessential Severant
 RU
@@ -669,6 +678,7 @@ Sunlight Orb
 Sweet Moss
 Tables
 Tears of the Undying Hero
+Terms of use
 Unstable Arcane Shard
 Varik Leaves
 Vault of Ages

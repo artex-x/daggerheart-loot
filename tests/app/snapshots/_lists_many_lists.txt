@@ -133,9 +133,11 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Удалить"
     button "Показать ещё (6)"
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 Dragon's Vault
@@ -152,6 +154,7 @@ daggerheart.com
 К содержимому
 Как это работает
 Клад дракона, 1 позиция
+Конфиденциальность
 Кузнец, 0 позиций
 Лавка в порту, 0 позиций
 Логово, 0 позиций
@@ -186,6 +189,8 @@ daggerheart.com
 Таблицы
 Трофеи, 0 позиций
 Удалить
+Условия использования
+Установить как приложение
 Храм Солнца, 0 позиций
 
 ## en :: tree
@@ -319,9 +324,11 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "Delete"
     button "Show more (6)"
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 Alt. tables
@@ -333,9 +340,11 @@ Dragon's Vault
 Dread
 EN
 How this works
+Install as an app
 Lists
 New list
 Open this section on start
+Privacy
 RU
 Restore
 Restore from a link
@@ -345,6 +354,7 @@ Show more (6)
 Skip to content
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com

@@ -267,8 +267,8 @@ export class AppState {
    *  delete) on every mount of `StorageNotice` cost the same round trip for
    *  nothing, since the answer cannot change while the page is open. */
   readonly storageWorks: boolean;
-  /** Whether the footer offers the install guide: nothing installs from a
-   *  folder, and inside the installed app it is done (`FEATURES.md`, "Chrome"). */
+  /** Whether the footer offers the install guide: inside the installed app it
+   *  is done (`FEATURES.md`, "Chrome"). */
   readonly showInstall: boolean;
   #stopRouter: (() => void) | null = null;
   #stopListWatch: (() => void) | null = null;
@@ -289,7 +289,7 @@ export class AppState {
     this.#warnHidden = env.storage.get(WARN_KEY) === '1';
     this.#tablesView = readTablesView(env);
     this.storageWorks = env.storage.works();
-    this.showInstall = env.router.hosted() && !env.pwa.standalone();
+    this.showInstall = !env.pwa.standalone();
     this.lists = new ListStore(
       env,
       (msg, error) => {
@@ -413,7 +413,7 @@ export class AppState {
 
   /** Where this page is, as the link builders in lib/hash.ts want it. */
   get site(): Site {
-    return { base: this.env.router.base(), hosted: this.env.router.hosted() };
+    return { base: this.env.router.base() };
   }
 
   /** The app's own address, for a link to a section or a filtered table. An
@@ -423,7 +423,7 @@ export class AppState {
     return appUrl(this.site, hash, this.lang);
   }
 
-  /** A record's address, which on a host is its stub page rather than the app.
+  /** A record's address, which is its stub page rather than the app.
    *  An address to hand somebody else, in the language on screen, so a
    *  messenger builds its preview in that language. */
   linkToRecord(id: string): string {

@@ -78,9 +78,11 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Убрать из списка" [description=Убрать из списка]
     status ""
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 Dragon's Vault
@@ -96,6 +98,7 @@ daggerheart.com
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
 К содержимому
+Конфиденциальность
 ЛутDaggerheart
 Мистический Плащ
 Мистический ПлащСущество с Характеристикой Заклинателя, носящее ... [namelen=147 namehash=0cc59311]
@@ -127,6 +130,8 @@ daggerheart.com
 Убрать из списка
 Удалить
 Удалить (1)
+Условия использования
+Установить как приложение
 Факел Алистера
 Факел АлистераВы можете зажигать этот магический факел по желани... [namelen=193 namehash=dd2e26d8]
 Цены
@@ -207,9 +212,11 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "Remove from the list" [description=Remove from the list]
     status ""
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 Alistair's Torch
@@ -228,6 +235,7 @@ Dismiss
 Dragon's Vault
 Dread
 EN
+Install as an app
 Lay these out for printing: nine to an A4 sheet
 List name
 Lists
@@ -243,6 +251,7 @@ Position in the list
 Premium Bedroll
 Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
 Prices
+Privacy
 RU
 Random 1–7
 Remove from the list
@@ -254,6 +263,7 @@ Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 Your own link

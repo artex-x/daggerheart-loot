@@ -34,6 +34,7 @@ daggerheart.com
 Закрыть
 К содержимому
 Как это работает
+Конфиденциальность
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
@@ -52,6 +53,8 @@ daggerheart.com
 Списки
 Страница
 Таблицы
+Условия использования
+Установить как приложение
 
 ## en :: tree
 RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
@@ -85,12 +88,14 @@ Dragon's Vault
 Dread
 EN
 How this works
+Install as an app
 Lay these out for printing: nine to an A4 sheet
 Lists
 One higher
 One lower
 Open this section on start
 Page
+Privacy
 RU
 Random 1–119
 Roll result
@@ -99,6 +104,7 @@ Share
 Skip to content
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com

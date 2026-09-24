@@ -36,9 +36,8 @@ function richWriter(w: ClipboardWin): RichWriter | null {
 /**
  * The pre-async fallback: a hidden textarea and `execCommand`.
  *
- * Deprecated and still the only thing that works without a secure context,
- * which includes opening the page from a folder - a supported way to run this
- * (docs/specs/META.md, section 4).
+ * Deprecated and still the only thing that works without a secure context or
+ * without the async clipboard API.
  */
 function legacyCopy(doc: Document, text: string): boolean {
   const ta = doc.createElement('textarea');
@@ -51,8 +50,7 @@ function legacyCopy(doc: Document, text: string): boolean {
   let ok: boolean;
   try {
     /* Deprecated, and kept on purpose: it is the only copy that works outside a
-       secure context, which includes opening the page from a folder. When that
-       stops being supported this whole branch goes with it. */
+       secure context or without the async clipboard API. */
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     ok = doc.execCommand('copy');
   } catch {

@@ -12,9 +12,10 @@ stylesheet) with no public-contract, route, list-link, `data.js` or i18n
 change. Anything else is the orchestrate path (`/orchestrate`). Read
 `CLAUDE.md` first; it still binds, this file only shortens the route.
 
-1. **Reproduce before proposing.** `npm run build`, then open the built app at
-   the reported route, width and language - the Browser pane resized to that
-   width, or `dist/index.html` from `file://`. Record the element, its
+1. **Reproduce before proposing.** `npm run build`, then serve it with
+   `npm run preview` (`http://localhost:4173/`; start it from the Browser
+   pane's `preview_start` or a background shell) and open the reported route
+   at that width and language in the Browser pane. Record the element, its
    computed value, and the expected value taken from the design node or
    Figma reference (`CLAUDE.md`, "Source and commit conventions" - open
    issue screenshots and design nodes before visual work). If it does not

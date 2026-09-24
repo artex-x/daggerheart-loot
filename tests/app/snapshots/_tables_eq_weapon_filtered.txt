@@ -69,9 +69,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Разящие Клыки" [checked=false]
     button "132 Разящие Клыки Ранг 1 · Физическое · Проворность · Близко · d..." [namelen=265 namehash=c70cb0df]
   contentinfo ""
-    StaticText "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread ..." [namelen=464 namehash=15be137a]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
 1
@@ -144,6 +146,7 @@ daggerheart.com
 Кованый Крюк
 Кованый КрюкРанг 1 · Физическое · Сила · Близко · d8+2 физ · Дву... [namelen=105 namehash=ad8a5907]
 Колоссы Сухоземья
+Конфиденциальность
 Копьё
 КопьёРанг 1 · Физическое · Искусность · Близко · d8+3 физ · Двур... [namelen=88 namehash=1aaad172]
 Короткий Лук
@@ -206,6 +209,8 @@ daggerheart.com
 УдочкаРанг 1 · Физическое · Проворность · Далеко · d6+3 физ · Дв... [namelen=106 namehash=07683ec0]
 Улучшаемые
 Уникальные
+Условия использования
+Установить как приложение
 Установка для Фейерверков
 Установка для ФейерверковРанг 1 · Физическое · Проворность · Оче... [namelen=158 namehash=c2f08aaa]
 Физическое
@@ -279,9 +284,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     checkbox "Striking Fangs" [checked=false]
     button "132 Striking Fangs Tier 1 · Physical · Agility · Very Close · d8..." [namelen=262 namehash=06204c97]
   contentinfo ""
-    StaticText "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM..." [namelen=463 namehash=25f93251]
-    link "daggerheart.com" [url=https://www.daggerheart.com/]
-    StaticText ". There are no previous modifications by others."
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
 1
@@ -352,6 +359,7 @@ Holy Shotgun
 Holy ShotgunTier 1 · Magic · Agility · Very Close · d6+2 mag · T... [namelen=198 namehash=0e96bb1a]
 Hope & Fear
 How this works
+Install as an app
 Instinct
 Katana
 KatanaTier 1 · Physical · Agility · Melee · d10+3 phy · Two-Hand... [namelen=185 namehash=1fa5cb4f]
@@ -372,6 +380,7 @@ Physical
 Pitchfork
 PitchforkTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=101 namehash=17e33479]
 Presence
+Privacy
 Quarterstaff
 QuarterstaffTier 1 · Physical · Instinct · Melee · d10+3 phy · T... [namelen=91 namehash=b6a19e52]
 RU
@@ -406,6 +415,7 @@ Standard rules
 Strength
 Striking Fangs
 Tables
+Terms of use
 Two-Handed
 Unique
 Upgradable

@@ -35,6 +35,7 @@ daggerheart.com
 Добавить в список
 Закрыть
 К содержимому
+Конфиденциальность
 Легендарный Палаш
 ЛутDaggerheart
 Обычные правила
@@ -52,6 +53,8 @@ daggerheart.com
 Страница
 Таблицы
 Улучшенный Палаш
+Условия использования
+Установить как приложение
 показать в таблице
 
 ## en :: tree
@@ -90,16 +93,19 @@ Dragon's Vault
 Dread
 EN
 Improved Broadsword
+Install as an app
 Lay these out for printing: nine to an A4 sheet
 Legendary Broadsword
 Lists
 Page
+Privacy
 RU
 Search
 Share
 Skip to content
 Standard rules
 Tables
+Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com

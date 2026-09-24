@@ -40,16 +40,18 @@
 <meta name="twitter:image" content="https://artex-x.github.io/daggerheart-loot/og/_share.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
 <!-- iOS reads this tag, not the manifest, for the home-screen icon. The
-     manifest link is not here: Chrome refuses it from a folder, so the PWA
-     port adds it when hosted. docs/specs/META.md section 9. -->
+     manifest link is added by the PWA port at boot. docs/specs/META.md
+     section 9. -->
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <!-- iOS reads the home-screen label from this tag when it does not read the
      script-added manifest link: the manifest's short_name. docs/specs/META.md
      section 9. -->
 <meta name="apple-mobile-web-app-title" content="Лут DH">
-<!-- No stylesheet link: the rewrite's CSS ships inside the bundle. -->
-<!-- The data arrives as a classic script rather than by fetch: from a folder
-     (file://) a request for a local json is blocked. CONTRACTS.md section 4. -->
+<!-- The stylesheet link is absent here on purpose: the build adds it, with
+     its hashed name (assets/index-*.css). -->
+<!-- The data arrives as a classic script rather than as a module import: it
+     is cached apart from the bundle, and the app needs no async bootstrap to
+     read it. CONTRACTS.md section 4. -->
 <script defer src="./data.js"></script>
 </head>
 <body>
@@ -68,6 +70,8 @@
       <li><a href="data.json">data.json</a> — то же целиком</li>
       <li><a href="llms.txt">llms.txt</a> — что это за сайт, грамматика адресов, формат ссылки на список</li>
     </ul>
+    <p><a href="pages/privacy.html">Конфиденциальность</a></p>
+    <p><a href="pages/terms.html">Условия использования</a></p>
     <p lang="en">The app needs JavaScript. Machine-readable data:
       <a href="catalog.csv">catalog.csv</a>, <a href="data.json">data.json</a>,
       <a href="llms.txt">llms.txt</a>. Note that a list link keeps its contents
