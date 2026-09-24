@@ -12,6 +12,40 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-24 - A cloud release pushes after every green commit; the owner squash-merges it
+
+- Task: `persist-1-auth` (owner confirmation, 2026-09-24, cloud session 2).
+- Decision: a cloud session pushes its branch after every green commit (a
+  reclaimed container loses what is not pushed) and never amends a pushed
+  commit, so a cloud release is a branch of one commit per batch and a
+  remediation after a push is its own commit. At closeout the owner
+  cherry-picks any tooling commit the release carries on its own first, then
+  squash-merges the branch onto `main` as the release's one commit (`git
+  merge --squash`, authored `artex-x`), pushes `main` and deletes the
+  branch. A local release still amends and pushes once. Rule 2o already
+  allows exactly these pushes; no guard changes.
+- Rejected: amend plus `--force-with-lease` (the law forbids every force
+  shape); one push at closeout (a release longer than one session loses a
+  batch); pushing "at session end" (no signal precedes an idle reclaim); N
+  commits on `main` (a deploy's undo stops being one revert); the UI merge
+  button (a merge commit); a fast-forward (`main` moves under bot commits).
+
+## 2026-09-24 - The hosted E2E reads its credentials from the environment; no proxy credential
+
+- Task: `persist-1-auth` (owner confirmation, 2026-09-24, cloud session 2).
+- Decision: the harness reads `E2E_SUPABASE_URL`,
+  `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY` and
+  `E2E_USER_EMAIL` from the process environment on every host (CI secrets,
+  `--env-file .env.test.local` locally, the cloud environment's variables).
+  The mint stays `generateLink` then `verifyOtp`, creating the user when
+  absent. The probe discriminates: `GET /auth/v1/user` with the publishable
+  key and no `Authorization` must answer 401 `no_authorization`, and one
+  carrying `Bearer a.b.c` must be refused for that token. The test
+  project's secret key is model-visible; it opens the test project only.
+- Rejected: a proxy API credential (measured to replace every
+  `Authorization` header and not to grant admin); anonymous sign-ins (no
+  identity to test `#/account` with); layer 4 in CI only on `main`.
+
 ## 2026-09-24 - The laws of no backend and of `file://` are superseded
 
 - Task: `persist-0-foundation` (owner decisions of this date).
@@ -214,39 +248,13 @@ entry to its first line before adding another.
 
 ## 2026-09-24 - A cloud session runs a whole release on its own task branch
 
-- Task: `persistent-storage` (owner decision, 2026-09-24).
-- Decision: a release (one task id) runs fully in a claude.ai/code cloud
-  session or fully locally; batches never mix hosts. A cloud release starts
-  from the pushed `main`, commits and amends on a branch named after the
-  task id, and pushes that branch once at closeout after the task directory
-  is retired - that push is the release's one push, so "push once, never
-  force-push" holds unchanged with the task branch as its object. The owner
-  then runs the local-only steps (`config:push` and `db:push` to test and
-  prod, console steps) and fast-forwards `main` locally, which deploys; the
-  UI merge is not used. In a cloud session `bash-guard.mjs` denies a push
-  to `main` or to any branch but the current one. Production secrets never
-  enter the cloud; E2E credentials may, as proxy-attached API credentials.
-- Rejected: scratch base branches per batch with a local cherry-pick - two
-  extra branch names per batch and a release whose handoff lives on two
-  hosts; a pull request and merge commit from the claude.ai/code UI - one
-  commit per release is the law's shape.
+- Superseded by "A cloud release pushes after every green commit; the owner squash-merges it" (2026-09-24).
+- Full text: `git show dedafaf:docs/DECISIONS.md`.
 
 ## 2026-09-24 - The hosted E2E mints its session with the secret key, not a password
 
-- Task: `persistent-storage` (owner decision, 2026-09-24, on the cloud
-  proxy's limits).
-- Decision: `tests/e2e/` obtains the test user's session through
-  `auth.admin.generateLink({ type: 'magiclink' })` and `verifyOtp({
-  token_hash })`, so the only credential a run needs is the test project's
-  secret key, sent as a header - what the cloud's hidden proxy can attach
-  to matching requests; no password travels in a request body on any host.
-  Every run starts with a fail-closed probe: a publishable-key-only request
-  to a protected table must return 401 and a Puppeteer page must see no
-  injected `Authorization` header, or the run refuses with a named message.
-- Rejected: `signInWithPassword` with `E2E_USER_PASSWORD` - the body cannot
-  pass the proxy and a second credential shape for one user; a CI-side
-  session mint handed to the cloud - a session token in transit for no
-  gain over the header the proxy already carries.
+- Superseded by "The hosted E2E reads its credentials from the environment; no proxy credential" (2026-09-24).
+- Full text: `git show dedafaf:docs/DECISIONS.md`.
 
 ## 2026-09-24 - A drag keeps its cached midpoints when another tab rewrites the list
 

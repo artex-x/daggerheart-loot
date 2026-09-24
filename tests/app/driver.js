@@ -6,7 +6,8 @@
  * hand-written HTML or a Svelte component's output.
  *
  * This driver used to drive either of two targets - the live app at
- * the repository root, or the built rewrite in `dist/` - and a
+ * the repository root, or the built rewrite in `dist/` (now the test build,
+ * `dist-test/`) - and a
  * side-by-side comparison harness ran every spec against the pair, with the
  * live app read as the expectation. That harness and the live app it
  * compared against were both since deleted; `tests/app/*.js` is this
@@ -156,10 +157,16 @@ function makeDriver(page, target) {
      * clears storage and stubs the clipboard - never runs again. The help panel
      * one state opened was still open in the next one, and it took an hour to
      * see that the harness was reporting its own leak.
+     *
+     * `as` is the test build's signed-in switch: `?as=<user>` before the hash
+     * signs that seed user into the fake cloud; without it the page is
+     * signed out (docs/specs/COVERAGE.md, "Test layers").
      */
-    async open(route) {
+    async open(route, { as } = {}) {
       await page.goto('about:blank');
-      await page.goto(url + route, { waitUntil: 'networkidle0' });
+      await page.goto(url + (as ? '?as=' + encodeURIComponent(as) : '') + route, {
+        waitUntil: 'networkidle0'
+      });
       await ready(page);
     },
 

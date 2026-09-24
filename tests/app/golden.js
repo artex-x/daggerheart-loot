@@ -2,7 +2,7 @@
  * both languages inside it, an accessibility-tree snapshot plus the control
  * inventory `tests/app/lib.js`'s driver already knows how to read.
  *
- * It compares dist/ against nothing but its own last committed shape. "Is
+ * It compares dist-test/ against nothing but its own last committed shape. "Is
  * anything missing or renamed since the commit that seeded this file?" is a
  * question a pixel diff answers by accident and a text diff answers on
  * purpose - a renamed button or a dropped landmark is a line in `git diff`,
@@ -241,7 +241,7 @@ function serializeTree(n, depth, out) {
 /* ---------- comparison ---------- */
 
 /** The lines before the first `## ` heading - `render()`'s `# <id>`,
- *  `# route:` and `# why:` lines. `sectionsOf` only ever collects lines
+ *  `# route:`, `# why:` and, on a signed-in state only, `# as:` lines. `sectionsOf` only ever collects lines
  *  after a `## ` heading, so without this the header is never compared and
  *  an `inventory.js` route/why edit made without `--update` leaves a golden
  *  whose header silently disagrees with the state it gates. */
@@ -320,8 +320,8 @@ function compareGolden(id, wantText, gotText, ok) {
 /* ---------- exports ----------
  * Only the pure, DOM/browser-free half: normalisation, rule A/B, the
  * header/section split and the comparison itself. `golden.test.mjs` runs
- * these under `node --test` against plain strings - no dist/, no puppeteer.
- * `require('./lib.js')` (which checks dist/ exists and requires puppeteer)
+ * these under `node --test` against plain strings - no build, no puppeteer.
+ * `require('./lib.js')` (which checks dist-test/ exists and requires puppeteer)
  * is deliberately kept out of this module's top level so requiring golden.js
  * for its pure half never trips either.
  *
@@ -391,6 +391,7 @@ if (require.main === module) {
       '# ' + state.id,
       '# route: ' + state.route,
       '# why: ' + state.why,
+      ...(state.as ? ['# as: ' + state.as] : []),
       '',
       '## ru :: tree',
       ...ru.tree,
@@ -422,7 +423,7 @@ if (require.main === module) {
         storage: state.storage
       });
       try {
-        await d.open(state.route);
+        await d.open(state.route, { as: state.as });
         if (state.enter) await state.enter(d);
         await d.addressSettled();
         const ru = await captureLang(page, d);
@@ -442,7 +443,7 @@ if (require.main === module) {
         storage: state.storage
       });
       try {
-        await d.open(state.route);
+        await d.open(state.route, { as: state.as });
         if (state.enter) await state.enter(d);
         if (lang !== 'ru') await d.click('EN');
         await waitForToast(page, state.id, lang);
@@ -544,7 +545,7 @@ if (require.main === module) {
         (SHARD ? ` (shard ${String(SHARD.n + 1)}/${String(SHARD.of)})` : '')
     );
     console.log(
-      rep.failed ? `${rep.failed} FAILED` : 'structural snapshots (dist/): unchanged'
+      rep.failed ? `${rep.failed} FAILED` : 'structural snapshots (dist-test/): unchanged'
     );
     process.exit(rep.failed ? 1 : 0);
   })();

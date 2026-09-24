@@ -55,9 +55,9 @@ const DENY = [
       'Blocked: pages/*.html and pages/en/*.html are generated site pages. Edit pages/src/<id>.html (Russian) or pages/src/en/<id>.html (English), then run `node tools/build.js`.'
   },
   {
-    test: (p) => p.startsWith('dist/'),
+    test: (p) => p.startsWith('dist/') || p.startsWith('dist-test/'),
     message:
-      'Blocked: dist/ is build output. Edit the source under app/src/ and run `npm run build`.'
+      'Blocked: dist/ and dist-test/ are build output. Edit the source under app/src/ and run `npm run build` (dist/) or `npm run build:test` (dist-test/).'
   },
   {
     test: (p) => p === 'package-lock.json',

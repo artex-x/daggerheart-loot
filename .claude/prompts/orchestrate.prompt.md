@@ -105,6 +105,7 @@ Known costs in this repo:
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | yes |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | barely, one width at a time |
 | `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | yes, one shard at a time |
+| any of the above, in a claude.ai/code cloud session | that host's own measured table: `.claude/README.md`, "Cloud sessions" | as there |
 
 So, before dispatching:
 

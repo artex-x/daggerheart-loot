@@ -2,17 +2,17 @@
 
 ## Status
 
-- Planning pass 1, 2026-09-24, planner, cloud session on branch
-  `claude/jolly-allen-ipojqp` (HEAD `76497c4` = `main`). Mode A: no plan
-  existed for this release; the programme design is
+- Planning pass 1, 2026-09-24, planner (mode A); the programme design is
   `issues/persistent-storage/plan.md` (the roadmap) and is not repeated here.
 - NEEDS_HUMAN_CONFIRMATION: no - the human confirmed section 4's proposals
-  A, B and C as written (2026-09-24, cloud session 2). Their durable homes
-  are acceptance lines of `B1.1` (section 6).
-- Next batch: `B1.1` (section 6), implement-ready, in a new cloud session
-  that sees the `E2E_*` environment variables.
-- This planning pass is committed and pushed on its own under A
-  (`context.md`, gap 4); `B1.1` is the next commit on the branch.
+  A, B and C as written (2026-09-24, cloud session 2).
+- Release branch: `claude/kind-curie-nxag95` (cloud session 3; supersedes
+  `claude/jolly-allen-ipojqp`). One commit per batch, pushed after each
+  green commit (question A).
+- `B1.1`: implemented 2026-09-24 in cloud session 3, all gates green, review
+  pending (trigger: harness, hook edit, CI). One acceptance line is open:
+  the `CLAUDE.md` bullet of question A (see `handoff.md`, Blockers).
+- Next batch: `B1.2` - needs planner refresh (section 7 outline).
 
 ## 1. Objective and current state
 

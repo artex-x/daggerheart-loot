@@ -110,6 +110,7 @@ function setupScratch() {
   writeFile('pages/install.html', '<html></html>\n');
   writeFile('pages/src/install.html', '<section></section>\n');
   writeFile('dist/index.html', '<html></html>\n');
+  writeFile('dist-test/index.html', '<html></html>\n');
   writeFile('package-lock.json', '{}\n');
   writeFile('docs/specs/CONTRACTS.md', '# contracts\n');
   writeFile('docs/fixtures/lists/x.json', '{}\n');
@@ -1553,6 +1554,11 @@ function testEditGuard() {
       'node tools/build.js'
     ],
     ['#34 dist/index.html', path.join(scratchRoot, 'dist', 'index.html'), 'npm run build'],
+    [
+      '#34a dist-test/index.html',
+      path.join(scratchRoot, 'dist-test', 'index.html'),
+      'npm run build:test'
+    ],
     ['#35 package-lock.json', path.join(scratchRoot, 'package-lock.json'), 'npm install'],
     [
       '#35a tests/app/snapshots/x_state.txt',

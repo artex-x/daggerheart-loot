@@ -19,6 +19,13 @@
  * as opposed to the viewport alone) but golden.js's accessibility-tree
  * capture reads the same either way, so it currently marks nothing golden.js
  * itself branches on.
+ *
+ * A state with `as: '<user>'` opens signed in as that fake-cloud seed user
+ * (`?as=<user>`, the test build only - docs/specs/COVERAGE.md, "Test
+ * layers"); its id ends ` as <user>` and golden.js writes `# as: <user>`
+ * into its header. A state without `as` is signed out and says nothing, so
+ * no golden written before signed-in states existed moves.
+ * tests/app/golden.test.mjs pins the id convention both ways.
  */
 
 /** Both notes on the list and both on one entry - the shared page's own

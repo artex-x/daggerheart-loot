@@ -20,6 +20,7 @@ card/
 app/index.html
 404.html
 dist/
+dist-test/
 coverage/
 node_modules/
 docs/fixtures/

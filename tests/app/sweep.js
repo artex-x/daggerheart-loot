@@ -475,7 +475,7 @@ async function focusWalk(page, where) {
       ? 'at ' + WIDTHS.join(', ') + ' (' + LANGS.join(', ') + ')'
       : 'at every width and language';
   console.log(
-    rep.failed ? '\n' + rep.failed + ' FAILED' : '\npage sweep (dist/): clean ' + scope
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\npage sweep (dist-test/): clean ' + scope
   );
   process.exit(rep.failed ? 1 : 0);
 })();

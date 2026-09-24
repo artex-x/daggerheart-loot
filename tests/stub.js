@@ -3,7 +3,7 @@
  * stylesheet and no app around it, so it is neither `dist/`
  * (`tests/app/sweep.js`'s own header says it walks `dist/`) nor the live app.
  * `tests/app/lib.js` is reused only for its browser/context plumbing -
- * `fresh()`'s own driver is pointed at `dist/` and goes unused here, since
+ * `fresh()`'s own driver is pointed at `dist-test/` and goes unused here, since
  * nothing in this file opens a route through it.
  * Ported from `craftmob.js` (deleted at R0c, `23c00a6`). */
 const path = require('path');

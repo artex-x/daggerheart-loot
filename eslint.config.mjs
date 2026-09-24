@@ -9,6 +9,7 @@ export default ts.config(
   {
     ignores: [
       'dist/**',
+      'dist-test/**',
       'coverage/**',
       'node_modules/**',
       /* Generated data, not authored - reformatting or linting a

@@ -65,11 +65,20 @@ jobs:
       - name: Bundle size budget
         run: npm run budget
 
+      # The test build is what `browser` drives (docs/specs/COVERAGE.md,
+      # "Test layers"); built here too so the guard can compare both bundles.
+      - name: Test build
+        run: npm run build:test
+
+      - name: The production bundle carries no fake cloud
+        run: node tools/no-fake-in-prod.mjs
+
       # A CI run is gone by the time anyone looks at it, and the summary prints
       # a dozen grepped lines. This job no longer runs run-all.js itself (see
       # `browser`, below), so `coverage/` is what a failed `npm run check`
-      # leaves; `dist/` is what a failed Build, smoke or budget step - all
-      # three run after it in this same job - leaves instead.
+      # leaves; `dist/` and `dist-test/` are what a failed build, smoke,
+      # budget or marker step - all run after it in this same job - leave
+      # instead.
       - name: Everything a failed run left behind
         if: failure()
         uses: actions/upload-artifact@v5
@@ -77,6 +86,7 @@ jobs:
           name: failure-output
           path: |
             dist/
+            dist-test/
             coverage/
           retention-days: 14
           if-no-files-found: ignore
@@ -107,8 +117,10 @@ jobs:
 
       - run: npm ci
 
+      # The test build: tests/app/ drive dist-test/, whose cloud is the fake
+      # one (docs/specs/COVERAGE.md, "Test layers").
       - name: Build
-        run: npm run build
+        run: npm run build:test
 
       - name: The built app's suites - shard ${{ matrix.shard }} of 4
         run: node tests/run-all.js --shard=${{ matrix.shard }}/4
@@ -120,7 +132,7 @@ jobs:
           name: failure-output-browser-${{ matrix.shard }}
           path: |
             test-output/
-            dist/
+            dist-test/
           retention-days: 14
           if-no-files-found: ignore
 

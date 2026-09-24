@@ -256,7 +256,8 @@ npm run dev      # dev server with hot reload
 npm run check    # format, lint, types, data, unit tests - before every commit
 npm run check:db # the database suite; needs Docker (on Windows, run it from PowerShell)
 npm run build    # -> dist/, served over HTTP (npm run preview, Pages)
-npm run test:legacy   # the surviving suites, mostly a real browser against dist/
+npm run build:test    # -> dist-test/, dist/ plus the fake cloud: what tests/app/* drive
+npm run test:legacy   # the surviving suites, mostly a real browser against dist-test/
 ```
 
 ```
@@ -288,7 +289,7 @@ tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
 tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
 tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
-                      (7 real-Chrome suites against dist/) and the runner
+                      (7 real-Chrome suites against dist-test/) and the runner
 docs/specs/           behaviour and frozen contracts, for maintainers
 docs/fixtures/        golden fixtures the contract suite replays
 ```
@@ -323,7 +324,7 @@ node tests/run-all.js dataint       # one suite
 node tests/run-all.js --jobs 1      # one at a time, for debugging
 ```
 
-Needs `puppeteer`, and `npm run build` first for the `tests/app/*` suites
+Needs `puppeteer`, and `npm run build:test` first for the `tests/app/*` suites
 (`npm run check` does not build).
 
 | Suite | Checks |
@@ -333,7 +334,7 @@ Needs `puppeteer`, and `npm run build` first for the `tests/app/*` suites
 | `contracts` | list encoding and route-grammar fixtures, decoded and re-derived by a second implementation |
 | `craft` | data invariants for upgrade chains, and the share stubs |
 | `stub` | the generated pages (`i/`, `i/en/`, `en/`, `pages/`, `pages/en/`) do not scroll sideways |
-| `app/sweep` | every address the app has, at four widths and in both languages, over `dist/` |
+| `app/sweep` | every address the app has, at four widths and in both languages, over `dist-test/` |
 | `app/states` | states reachable only by a trusted click, a real clipboard, or a real second tab |
 | `app/golden` | one accessibility-tree-plus-controls snapshot per state; a control gone, moved or renamed is a line in `git diff` |
 | `app/contracts` | the browser half of `contracts`: the link the app writes and reads, filter group names |
@@ -344,8 +345,9 @@ Needs `puppeteer`, and `npm run build` first for the `tests/app/*` suites
 Translation parity (`app/src/lib/dict.ts`'s `Dict` type) and tier sourcing
 (never inferred from stats) are compile-time and unit-test checks rather than
 a `tests/` suite - see `docs/specs/I18N.md` and `docs/specs/META.md`.
-`tests/app/*` suites use puppeteer against the built `dist/`, each on its own
-context: pages of one browser share `localStorage`, and without that the
+`tests/app/*` suites use puppeteer against `dist-test/`, the published build
+plus an in-memory fake cloud that `?as=<user>` signs a fixed test user into
+(`docs/specs/COVERAGE.md`, "Test layers"), each on its own context: pages of one browser share `localStorage`, and without that the
 chosen language leaks between suites.
 
 ### Machine readability and search

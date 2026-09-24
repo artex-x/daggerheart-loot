@@ -335,7 +335,7 @@ function stampOf(parts) {
 
   await closeBrowser();
   console.log(
-    rep.failed ? '\n' + rep.failed + ' FAILED' : '\ncontracts (dist/): match the fixtures'
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\ncontracts (dist-test/): match the fixtures'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

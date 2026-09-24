@@ -210,7 +210,7 @@ async function softClick(d, name) {
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\ntypography (dist/): two fonts and one scale across every page'
+      : '\ntypography (dist-test/): two fonts and one scale across every page'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

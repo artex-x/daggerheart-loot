@@ -34,13 +34,13 @@ const NOSCRIPT_FILES = ['catalog.csv', 'data.json', 'llms.txt'];
  * The generated site pages (`pages/`) ride the same junction: they are written
  * before `vite build`, because `npm run build` runs `npm run data` first.
  */
-function artwork(): Plugin {
+function artwork(out: string): Plugin {
   return {
     name: 'dhloot-artwork',
     apply: 'build',
     closeBundle() {
       for (const dir of ROOT_DIRS) {
-        const at = join(ROOT, 'dist', dir);
+        const at = join(ROOT, out, dir);
         if (!existsSync(at)) symlinkSync(join(ROOT, dir), at, 'junction');
       }
     }
@@ -56,13 +56,13 @@ function artwork(): Plugin {
  * build. `tools/smoke-http.mjs` asserts every `noscript a[href]`
  * resolves under `dist/`, and was proven to fail before this copy existed.
  */
-function noscriptData(): Plugin {
+function noscriptData(out: string): Plugin {
   return {
     name: 'dhloot-noscript-data',
     apply: 'build',
     closeBundle() {
       for (const file of NOSCRIPT_FILES) {
-        copyFileSync(join(ROOT, file), join(ROOT, 'dist', file));
+        copyFileSync(join(ROOT, file), join(ROOT, out, file));
       }
     }
   };
@@ -130,143 +130,153 @@ function rootFiles(): Plugin {
 }
 
 /* `app/` is the only application root; the build writes `dist/`, which
-   `ci.yml`'s `deploy` job publishes. */
-export default defineConfig({
-  root: 'app',
-  /* The manifest, the service worker and the icons, copied verbatim: the
-     worker must not pass through the bundle (docs/specs/META.md section 9). */
-  publicDir: 'public',
-  /* A relative base, not '/daggerheart-loot/': the same build serves from
-     Pages, `vite preview` and the test server at any path. */
-  base: './',
-  plugins: [svelte(), dataScript(), artwork(), noscriptData(), rootFiles()],
-  /* Under vitest the modules are loaded the way a server would, and Svelte then
-     hands back its server build - where `mount` does not exist. Asking for the
-     browser condition during tests is what makes a component test a component
-     test rather than a render-to-string. */
-  resolve: process.env['VITEST'] ? { conditions: ['browser'] } : {},
-  build: {
-    outDir: '../dist',
-    emptyOutDir: true,
-    sourcemap: false
-  },
-  test: {
-    environment: 'jsdom',
-    /* Vitest defaults to 5000ms, which is below what these tests actually do:
-       axe over a full page in jsdom takes seconds, and the slowest a11y specs
-       were measured at 13.5s. The default held only on an idle machine - one
-       `npm run check` with a single puppeteer probe alongside produced 92
-       failures, 71 of them `Test timed out in 5000ms`, on a suite that passes
-       658/658 at 30s.
+   `ci.yml`'s `deploy` job publishes. `vite build --mode test` writes
+   `dist-test/` instead, the build `tests/app/` drives, with the fake cloud
+   switched on (docs/specs/COVERAGE.md, "Test layers"). Vitest's own default
+   mode is also `test`, so the switch needs `command === 'build'` as well, or
+   `npm run test` would flip the outDir and the define. */
+export default defineConfig(({ command, mode }) => {
+  const testBuild = command === 'build' && mode === 'test';
+  const OUT = testBuild ? 'dist-test' : 'dist';
+  return {
+    root: 'app',
+    /* The manifest, the service worker and the icons, copied verbatim: the
+       worker must not pass through the bundle (docs/specs/META.md section 9). */
+    publicDir: 'public',
+    /* A relative base, not '/daggerheart-loot/': the same build serves from
+       Pages, `vite preview` and the test server at any path. */
+    base: './',
+    plugins: [svelte(), dataScript(), artwork(OUT), noscriptData(OUT), rootFiles()],
+    /* A JSON literal, so the fake's branch in main.ts is dead code in `dist/`. */
+    define: { 'import.meta.env.VITE_CLOUD_FAKE': JSON.stringify(testBuild) },
+    /* Under vitest the modules are loaded the way a server would, and Svelte then
+       hands back its server build - where `mount` does not exist. Asking for the
+       browser condition during tests is what makes a component test a component
+       test rather than a render-to-string. */
+    resolve: process.env['VITEST'] ? { conditions: ['browser'] } : {},
+    build: {
+      outDir: '../' + OUT,
+      emptyOutDir: true,
+      sourcemap: false
+    },
+    test: {
+      environment: 'jsdom',
+      /* Vitest defaults to 5000ms, which is below what these tests actually do:
+         axe over a full page in jsdom takes seconds, and the slowest a11y specs
+         were measured at 13.5s. The default held only on an idle machine - one
+         `npm run check` with a single puppeteer probe alongside produced 92
+         failures, 71 of them `Test timed out in 5000ms`, on a suite that passes
+         658/658 at 30s.
 
-       30s is a little over twice the slowest measured test, so a genuinely
-       hung test still fails rather than hanging the run. Scoping it to the
-       a11y specs alone was considered and dropped: vitest has no per-file
-       timeout without splitting into projects, and 30s is a bounded cost for
-       a non-a11y test to hang before failing, not an unbounded one.
+         30s is a little over twice the slowest measured test, so a genuinely
+         hung test still fails rather than hanging the run. Scoping it to the
+         a11y specs alone was considered and dropped: vitest has no per-file
+         timeout without splitting into projects, and 30s is a bounded cost for
+         a non-a11y test to hang before failing, not an unbounded one.
 
-       The second half of the problem - a timed-out test leaves `axe.run()`
-       in flight and axe holds a global lock, so one timeout takes the rest of
-       the file with it (`Axe is already running`) - was not a timeout value
-       and lives in app/src/test/a11y.ts instead: expectNoA11yViolations
-       clears axe's `_running` flag before every run, so an abandoned run from
-       a timed-out neighbour can no longer block the next one. See
-       app/src/test/a11y.test.ts for the regression test. */
-    testTimeout: 30_000,
-    include: ['src/**/*.test.ts'],
-    setupFiles: ['./vitest-setup.ts'],
-    coverage: {
-      provider: 'v8',
-      /* Everything that ships, not only the parts that are easy to measure.
-         Leaving components out was how a number in the eighties described two
-         directories out of four. */
-      include: ['src/**/*.ts', 'src/**/*.svelte'],
-      exclude: [
-        'src/**/*.test.ts',
-        /* Test-only helpers, and the one file that is types and nothing else
-           - it emits no code, so a percentage of it is noise. */
-        'src/test/**',
-        'src/ports/types.ts',
-        /* `pngOf`'s canvas conversion cannot run in jsdom at all - no Image,
-           no canvas, no toBlob - so a percentage of this file would measure
-           one test double and nothing else. It is exercised for real by
-           tests/app/states.js's copy-image case, which drives the built app
-           in Chrome and reads a real assertion on whichever of the two
-           outcomes this build actually produces - a real picture (the
-           same-origin build over HTTP), or the record's text and its own
-           toast (a tainted canvas) - rather than only proving the promise
-           does not hang. The caller's own branching on a rejection
-           (RecordActions.svelte's copyImage) is covered here, through
-           fakeImage. `download` is different: it touches only
-           `URL.createObjectURL`/`revokeObjectURL` and a plain `<a>`,
-           all of which jsdom has, so `ports.test.ts` covers it directly
-           rather than through `states.js` (which never reaches it either -
-           that suite's stubbed clipboard accepts the picture, so `download`
-           is never called). The whole file still carries
-           one exclusion rather than an inline ignore on `pngOf` alone,
-           because `pngOf` is most of it. */
-        'src/ports/image.ts',
-        'src/vite-env.d.ts',
-        /* The entry point that mounts the app onto a real DOM - exercised for
-           real by tools/smoke-http.mjs, which opens the built page over
-           HTTP. */
-        'src/main.ts'
-      ],
-      reporter: ['text', 'text-summary'],
-      /* Per directory, because one global number lets a well covered library
-         pay for a component nobody tested. The bars differ because the
-         obligations differ: lib is pure and has no excuse, ports wrap browser
-         APIs whose happy paths jsdom cannot reach, everything else is drawn on
-         screen and is checked through behaviour. `perFile` is the part that
-         matters - it is what makes a file with no test at all fail, without
-         demanding a test file per source file. */
-      thresholds: {
-        perFile: true,
-        'src/lib/**': { lines: 95, functions: 95, branches: 85, statements: 90 },
-        'src/ports/**': { lines: 70, functions: 80, branches: 55, statements: 70 },
-        /* Every component except the ones named below. A threshold glob does
-           not override a wider one - both are applied - so the exception has to
-           be carved out of the pattern rather than layered on top of it. */
-        'src/**/!(Button|DiceBar|Badge).svelte': {
-          lines: 85,
-          functions: 80,
-          branches: 75,
-          statements: 85
-        },
-        /* Three components carry their own exception, a file rather than a
-           rule - each named here rather than lowering the bar for every
-           component to suit one (see CLAUDE.md). */
-        /* Five buttons built from three props and nothing else: every branch
-         Svelte generates for it is an attribute update path, and even a test
-         that switches the language cannot reach them all. */
-        'src/components/DiceBar.svelte': {
-          lines: 85,
-          functions: 80,
-          branches: 55,
-          statements: 85
-        },
-        /* Svelte compiles every attribute into an update path; Button is
-           small enough that its own tests - seven of them, including one
-           that changes its props under it - still cannot reach them all. */
-        'src/components/Button.svelte': {
-          lines: 85,
-          functions: 80,
-          branches: 60,
-          statements: 85
-        },
-        /* One attribute (`title`) and one class interpolation (`cls`): the
-           whole component is a single optional-attribute update path,
-           present-vs-absent, plus a class-value update path - badge.test.ts
-           covers both directions of each, including a rerender that swaps
-           both, and 50% branch is still the ceiling. */
-        'src/components/Badge.svelte': {
-          lines: 85,
-          functions: 80,
-          branches: 50,
-          statements: 85
-        },
-        'src/state/**': { lines: 95, functions: 95, branches: 85, statements: 90 }
+         The second half of the problem - a timed-out test leaves `axe.run()`
+         in flight and axe holds a global lock, so one timeout takes the rest of
+         the file with it (`Axe is already running`) - was not a timeout value
+         and lives in app/src/test/a11y.ts instead: expectNoA11yViolations
+         clears axe's `_running` flag before every run, so an abandoned run from
+         a timed-out neighbour can no longer block the next one. See
+         app/src/test/a11y.test.ts for the regression test. */
+      testTimeout: 30_000,
+      include: ['src/**/*.test.ts'],
+      setupFiles: ['./vitest-setup.ts'],
+      coverage: {
+        provider: 'v8',
+        /* Everything that ships, not only the parts that are easy to measure.
+           Leaving components out was how a number in the eighties described two
+           directories out of four. */
+        include: ['src/**/*.ts', 'src/**/*.svelte'],
+        exclude: [
+          'src/**/*.test.ts',
+          /* Test-only helpers, and the one file that is types and nothing else
+             - it emits no code, so a percentage of it is noise. */
+          'src/test/**',
+          'src/ports/types.ts',
+          /* `pngOf`'s canvas conversion cannot run in jsdom at all - no Image,
+             no canvas, no toBlob - so a percentage of this file would measure
+             one test double and nothing else. It is exercised for real by
+             tests/app/states.js's copy-image case, which drives the built app
+             in Chrome and reads a real assertion on whichever of the two
+             outcomes this build actually produces - a real picture (the
+             same-origin build over HTTP), or the record's text and its own
+             toast (a tainted canvas) - rather than only proving the promise
+             does not hang. The caller's own branching on a rejection
+             (RecordActions.svelte's copyImage) is covered here, through
+             fakeImage. `download` is different: it touches only
+             `URL.createObjectURL`/`revokeObjectURL` and a plain `<a>`,
+             all of which jsdom has, so `ports.test.ts` covers it directly
+             rather than through `states.js` (which never reaches it either -
+             that suite's stubbed clipboard accepts the picture, so `download`
+             is never called). The whole file still carries
+             one exclusion rather than an inline ignore on `pngOf` alone,
+             because `pngOf` is most of it. */
+          'src/ports/image.ts',
+          'src/vite-env.d.ts',
+          /* The entry point that mounts the app onto a real DOM - exercised for
+             real by tools/smoke-http.mjs, which opens the built page over
+             HTTP. */
+          'src/main.ts'
+        ],
+        reporter: ['text', 'text-summary'],
+        /* Per directory, because one global number lets a well covered library
+           pay for a component nobody tested. The bars differ because the
+           obligations differ: lib is pure and has no excuse, ports wrap browser
+           APIs whose happy paths jsdom cannot reach, everything else is drawn on
+           screen and is checked through behaviour. `perFile` is the part that
+           matters - it is what makes a file with no test at all fail, without
+           demanding a test file per source file. */
+        thresholds: {
+          perFile: true,
+          'src/lib/**': { lines: 95, functions: 95, branches: 85, statements: 90 },
+          'src/ports/**': { lines: 70, functions: 80, branches: 55, statements: 70 },
+          /* Every component except the ones named below. A threshold glob does
+             not override a wider one - both are applied - so the exception has to
+             be carved out of the pattern rather than layered on top of it. */
+          'src/**/!(Button|DiceBar|Badge).svelte': {
+            lines: 85,
+            functions: 80,
+            branches: 75,
+            statements: 85
+          },
+          /* Three components carry their own exception, a file rather than a
+             rule - each named here rather than lowering the bar for every
+             component to suit one (see CLAUDE.md). */
+          /* Five buttons built from three props and nothing else: every branch
+           Svelte generates for it is an attribute update path, and even a test
+           that switches the language cannot reach them all. */
+          'src/components/DiceBar.svelte': {
+            lines: 85,
+            functions: 80,
+            branches: 55,
+            statements: 85
+          },
+          /* Svelte compiles every attribute into an update path; Button is
+             small enough that its own tests - seven of them, including one
+             that changes its props under it - still cannot reach them all. */
+          'src/components/Button.svelte': {
+            lines: 85,
+            functions: 80,
+            branches: 60,
+            statements: 85
+          },
+          /* One attribute (`title`) and one class interpolation (`cls`): the
+             whole component is a single optional-attribute update path,
+             present-vs-absent, plus a class-value update path - badge.test.ts
+             covers both directions of each, including a rerender that swaps
+             both, and 50% branch is still the ceiling. */
+          'src/components/Badge.svelte': {
+            lines: 85,
+            functions: 80,
+            branches: 50,
+            statements: 85
+          },
+          'src/state/**': { lines: 95, functions: 95, branches: 85, statements: 90 }
+        }
       }
     }
-  }
+  };
 });

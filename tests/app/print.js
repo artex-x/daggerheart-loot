@@ -2328,7 +2328,7 @@ const { ok } = rep;
   await ctx.close();
   await closeBrowser();
   console.log(
-    rep.failed ? '\n' + rep.failed + ' FAILED' : '\nprint (dist/): every check passed'
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\nprint (dist-test/): every check passed'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

@@ -230,6 +230,44 @@ export interface MotionPort {
   reduced(): boolean;
 }
 
+/* ---------- cloud ---------- */
+
+export type Provider = 'google' | 'discord';
+
+export interface Identity {
+  id: string;
+  provider: Provider;
+  email: string;
+}
+
+export interface Session {
+  userId: string;
+  email: string;
+  provider: Provider;
+}
+
+/** A refusal is an answer, not a throw - the way `ClipboardPort` and
+ *  `SharePort` report failure. */
+export type AuthResult =
+  { ok: true } | { ok: false; error: 'alreadyLinked' | 'lastIdentity' | 'failed' };
+
+export interface AuthPort {
+  session(): Promise<Session | null>;
+  identities(): Promise<Identity[]>;
+  /** Starts the provider redirect; the fake signs the seed's default user in. */
+  signIn(provider: Provider): Promise<void>;
+  link(provider: Provider): Promise<AuthResult>;
+  unlink(identityId: string): Promise<AuthResult>;
+  signOut(scope?: 'local' | 'global'): Promise<void>;
+  deleteAccount(): Promise<AuthResult>;
+  onChange(fn: (session: Session | null) => void): () => void;
+}
+
+/** Grows one member per release (R1 auth, R1 prefs, R2 lists, ...). */
+export interface CloudPort {
+  auth: AuthPort;
+}
+
 /**
  * Redrawing a picture as something the clipboard will accept.
  *
@@ -268,4 +306,6 @@ export interface Env {
   dialog: DialogPort;
   pwa: PwaPort;
   motion: MotionPort;
+  /** null in an unconfigured build: no cloud control is drawn. */
+  cloud: CloudPort | null;
 }

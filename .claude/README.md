@@ -1126,27 +1126,71 @@ persistence roadmap):
 - The proxy lists each denied host under `recentRelayFailures` in
   `curl -sS "$HTTPS_PROXY/__agentproxy/status"`.
 
+Measured in the second cloud session, 2026-09-24, network "Full", root,
+Node v24.21.0, `node_modules` present from setup (`npm ls` clean):
+
+- Docker answered only after `(dockerd > /tmp/dockerd.log 2>&1 &)`, then
+  `docker info` in about 1 s. The first `check:db` pulled its images from
+  `public.ecr.aws` and met two transient registry errors (ECR "Data limit
+  exceeded"; the anonymous token fetch reset, proxy
+  `ws_closed_mid_exchange`); the Supabase CLI retried and passed.
+- Every gate passed, one foreground call each. This host's costs, the ones
+  a cloud session plans by (the Windows tables above stay the owner's; "(3)"
+  marks the third session's reading, the same day, with `tests/app/` over
+  `dist-test/`):
+
+  | Command | Wall clock |
+  |---|---|
+  | `npm run check` | 111 s; 130 s (3) |
+  | `npm run check:built` (both builds, smoke, budget, marker guard) | 8 s (3) |
+  | `npm run check:db` | 30 s warm; 115 s with the first image pull |
+  | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | 346 s (3), 4 at a time; `app/print` and `app/contracts` dominate |
+  | `node tests/app/golden.js --shard=n/4` | 132-139 s per shard (3) |
+
+- Quirk: a proxy API credential is host-scoped and replaces the
+  `Authorization` header of every request to that host, including one the
+  request already carries. Symptom: `/auth/v1/user` answers `403 bad_jwt`
+  "invalid number of segments" whatever token is sent. It does not grant
+  admin either (the gateway wants the secret key in `apikey`). The owner
+  removed it; the same request then answered `401 no_authorization`, and a
+  request's own `Bearer a.b.c` reached the server ("illegal base64").
+- Environment variables added while a session runs reach only new
+  sessions (`printenv` in the running one did not see them).
+- The environment's own Stop hook (`~/.claude/stop-hook-git-check.sh`,
+  outside the repository) asks to commit and push at every turn end; the
+  branch rule below is what makes those pushes lawful.
+
 - **Layer rule.** A cloud session runs layers 1-3: `npm run check`,
-  `npm run check:built`, the `tests/app/` suites (Chrome for Testing from
-  `npm ci`), golden re-seeds (the goldens are text, and ubuntu CI already
+  `npm run check:built`, the `tests/app/` suites over `dist-test/` (`npm run
+  build:test`; Chrome for Testing from `npm ci`), golden re-seeds (the goldens are text, and ubuntu CI already
   compares Windows-seeded goldens green) and `npm run check:db` (Docker
   without the PowerShell detour; needs the image blob hosts above). Layer 4 (hosted E2E)
   runs only after its fail-closed probe passes on that host. Sweep
   measurements there are advisory.
 - **Host rule.** A whole release (one task id) runs fully in the cloud or
   fully locally; batches never mix hosts within a release.
-- **Branch rule.** A cloud release starts from the pushed `main`, commits and
-  amends on the branch its session was given, and pushes that branch once,
-  at closeout. `bash-guard.mjs` rule 2o denies any other push in a
-  cloud session. The owner fast-forwards `main` to it locally; the
-  claude.ai/code merge button (a pull request and a merge commit) is not
-  used.
+- **Branch rule.** A cloud release starts from the pushed `main` and
+  commits on the branch its session was given, pushing that branch after
+  every green commit (a reclaimed container loses what is not pushed); it
+  never amends a pushed commit, so the branch holds one commit per batch and
+  a remediation after a push is its own commit. `bash-guard.mjs` rule 2o
+  allows exactly a push of the current branch and denies any other push in
+  a cloud session. At closeout the owner squash-merges the branch onto
+  `main` as the release's one commit (owner step (e)); the claude.ai/code
+  merge button (a pull request and a merge commit) is not used.
 - **Network:** "Full" (owner decision, 2026-09-24), so no allowlist is kept.
 - **Secrets.** No production secret (database password, OAuth secrets,
-  service keys) enters a cloud environment. The one API credential is
-  `Authorization: Bearer <E2E_SUPABASE_SECRET_KEY>` for
-  `https://rdjxcjkhsklhprmzxajq.supabase.co`, attached by the proxy and never
-  shown to the model.
+  service keys) enters a cloud environment, and no proxy API credential is
+  set (the quirk above). The hosted E2E reads `E2E_SUPABASE_URL`,
+  `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY` and
+  `E2E_USER_EMAIL` from the environment's variables, as CI reads its
+  secrets and a local run its `.env.test.local`. They are model-visible:
+  never print a value; the key opens the test project only, and the owner
+  rotates it if it ever appears in a document or a log. Before a run, the
+  probe (`GET /auth/v1/user` with the publishable key: no `Authorization`
+  answers `401 no_authorization`, `Bearer a.b.c` is refused for that token)
+  proves nothing rewrites the header. `docs/DECISIONS.md`, 2026-09-24,
+  "The hosted E2E reads its credentials from the environment".
 - **Setup script.** `.claude/cloud-setup.sh` installs Node from `.nvmrc`
   through nvm, linked into `~/.local/bin`, runs `npm ci`, installs gitleaks
   8.30.1 and rtk 0.48.0 checked against their release checksums, the rtk
@@ -1174,14 +1218,19 @@ persistence roadmap):
   pulls no Docker image. `session-start.mjs` then reports each probe on every
   start.
 
-**Owner steps, local, between the cloud push and the fast-forward**, in
-order: (a) `git fetch`, read the release's closeout summary; (b) `npm run
-config:push -- --project test`, `npm run db:push -- --project test`; (c) the
-same for `prod`, then the Security Advisor; (d) the Google or Discord console
-steps the release names; (e) fast-forward `main` and push, which runs
+**Owner steps, local, after the release's last push**, in order: (a) `git
+fetch`, read the release's closeout summary; (b) `npm run config:push --
+--project test`, `npm run db:push -- --project test`; (c) the same for
+`prod`, then the Security Advisor; (d) the Google or Discord console steps
+the release names; (e) onto `main`: first cherry-pick, each on its own, any
+tooling commit the release carries unchanged from another branch (R1:
+`e1d7a4b`), then `git checkout main && git pull && git merge --squash
+claude/<name> && git commit --author='artex-x
+<artex-x@users.noreply.github.com>' -F <the closeout commit message>` - the
+release's one commit, never a merge commit - and push `main`, which runs
 `deploy`; (f) after the deploy, the manual OAuth check; (g) delete the task
-branch. A cloud release's `supabase/applied.json` change is amended into the
-release commit locally, after (b)-(c) and before (e).
+branch. A cloud release's `supabase/applied.json` change enters the squash
+commit, after (b)-(c) and before the push in (e).
 
 ## Artwork tooling
 

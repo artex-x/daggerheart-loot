@@ -6,8 +6,9 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Thirty-four cases in thirty-three
- * runs (4 and 5 share one), no ancestor. */
+ * real second tab to mean anything at all. Thirty-five cases in thirty-four
+ * runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"). */
 const fs = require('fs');
 const { PNG } = require('pngjs');
 const { baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
@@ -2251,6 +2252,36 @@ async function noticeSummaryWinsItsTaps() {
   await ctx.close();
 }
 
+/** 35. The test build's cloud: signed out without `?as=`, the seed's `gm1`
+ *  with `?as=gm1` - and the query survives arrival, so a reload keeps the
+ *  session (docs/specs/COVERAGE.md, "Test layers"). */
+async function fakeCloudSignedState() {
+  const at = '35 (fake cloud signed state): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/roll/std');
+  const out = await page.evaluate(async () => {
+    const fake = window.__dhlootFake;
+    return fake ? { session: await fake.auth.session() } : null;
+  });
+  ok(!!out, at + 'no window.__dhlootFake - is this the test build?');
+  ok(out?.session === null, at + 'signed out: the session is ' + JSON.stringify(out?.session));
+  await d.open('#/roll/std', { as: 'gm1' });
+  const as = await page.evaluate(async () => ({
+    session: (await window.__dhlootFake?.auth.session()) ?? null,
+    search: location.search
+  }));
+  ok(
+    as.session?.userId === '00000000-0000-4000-8000-000000000001',
+    at + 'as gm1: the user id is ' + JSON.stringify(as.session?.userId)
+  );
+  ok(
+    as.session?.email === 'gm1@example.test',
+    at + 'as gm1: the email is ' + JSON.stringify(as.session?.email)
+  );
+  ok(as.search === '?as=gm1', at + 'the query did not survive arrival - ' + as.search);
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -2284,7 +2315,8 @@ const CASES = [
   ['31 (card image focus ring)', cardMediaRingVisible],
   ['32 (undo toast in the record dialog)', undoToastInRecordDialog],
   ['33 (drag source removed mid-drag)', dragSourceRemovedMidDrag],
-  ['34 (notice summary wins its taps)', noticeSummaryWinsItsTaps]
+  ['34 (notice summary wins its taps)', noticeSummaryWinsItsTaps],
+  ['35 (fake cloud signed state)', fakeCloudSignedState]
 ];
 
 (async () => {
@@ -2306,7 +2338,7 @@ const CASES = [
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\nreal-input states (dist/): all ' + CASES.length + ' cases passed'
+      : '\nreal-input states (dist-test/): all ' + CASES.length + ' cases passed'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

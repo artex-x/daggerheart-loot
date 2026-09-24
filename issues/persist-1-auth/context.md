@@ -73,6 +73,15 @@ For `.claude/README.md`, "Cloud sessions", in R1's first commit.
   it conflicts with CLAUDE.md "push once, at closeout" (open question A).
   Environment variables are visible to the model, unlike an API credential.
 
+## Cloud session 3 (2026-09-24)
+- Session branch `claude/kind-curie-nxag95`, fast-forwarded to `dedafaf`
+  and pushed; it is the release branch from now on (supersedes
+  `claude/jolly-allen-ipojqp`). `e1d7a4b` fetched from
+  `origin/claude/keen-noether-mpa4jq`.
+- All five `E2E_*` variable names are set in this session (names checked,
+  values not read). Docker not started at session start.
+- Owner: run all R1 batches iteratively in this session.
+
 ## Cloud workflow gaps found (for the planner and the human)
 1. `e1d7a4b` (setup field text, `node_modules` probe) is only on
    `claude/keen-noether-mpa4jq`. `main` got `76497c4` (tg-preview bot,
@@ -131,12 +140,12 @@ For `.claude/README.md`, "Cloud sessions", in R1's first commit.
 
 | Command | Wall clock | Fits one call? |
 |---|---|---|
-| `npm run check` | 111 s | yes |
-| `npm run check:built` | 3 s | yes |
+| `npm run check` | 111 s (session 2); 130 s (session 3, B1.1) | yes |
+| `npm run check:built` | 3 s before B1.1; 8 s with both builds and the marker guard (B1.1) | yes |
 | `npm run check:db` | 30 s warm; 115 s with first image pull | yes |
-| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | unmeasured here | - |
+| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | 346 s (B1.1, 4 at a time) | yes |
 | `node tests/app/sweep.js <width>` | unmeasured here | - |
-| `node tests/app/golden.js --shard=n/4` | unmeasured here | - |
+| `node tests/app/golden.js --shard=n/4` | 136, 139, 136, 132 s (B1.1) | yes, one shard per call |
 
 ## Which machine is authoritative
 - Timings: this cloud host for this release (host rule: a whole release on
