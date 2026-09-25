@@ -3,7 +3,8 @@
   Russian from the body fragment pages/src/<id>.html, and pages/en/<id>.html
   in English from pages/src/en/<id>.html. One template for all of them: the
   head (with a text preview card from the PAGES entry's title and desc
-  pairs), the style, the <main id="app-page"> shell, the back link at the
+  pairs, and the manifest link and the two iOS tags at the output's
+  depth), the style, the <main id="app-page"> shell, the back link at the
   top and the bottom (its script returns to the screen the reader left) and
   the link to the page in the other language right under the top back link.
   The template owns these links because their depth differs between the two
@@ -28,6 +29,12 @@ const OUT = path.join(ROOT, 'pages');
 const OUT_EN = path.join(OUT, 'en');
 const SRC = path.join(OUT, 'src');
 const SRC_EN = path.join(SRC, 'en');
+
+/* The iOS home-screen label, from the one manifest the pages and the app
+   share (docs/specs/META.md section 9). */
+const SHORT_NAME = JSON.parse(
+  fs.readFileSync(path.join(ROOT, 'app', 'public', 'manifest.webmanifest'), 'utf8')
+).short_name;
 
 const LANGS = ['ru', 'en'];
 
@@ -122,6 +129,11 @@ function page({ id, lang, title, desc, body }) {
 <meta name="twitter:title" content="${esc(title[lang])}">
 <meta name="twitter:description" content="${esc(desc[lang])}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
+<!-- the app's manifest, so the browser installs the app from this page too;
+     static, since a page is served over HTTP only - docs/specs/META.md section 9 -->
+<link rel="manifest" href="${t.backHref}manifest.webmanifest">
+<link rel="apple-touch-icon" href="${t.backHref}icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="${esc(SHORT_NAME)}">
 <style>
   body{background:#0e0c15;color:#ece8f6;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
        margin:0;padding:24px}

@@ -217,14 +217,21 @@ use was retired on 2026-09-24 (`docs/DECISIONS.md`).
 The `<link rel="manifest">` is not a static tag in `app/index.html`: the
 PWA port (`app/src/ports/pwa.ts`) appends it once at boot, and
 `tests/derived.js` refuses a second, static one. (It became a script-added
-tag because Chrome refused it from a folder, measured 2026-09-23.)
+tag because Chrome refused it from a folder, measured 2026-09-23.) The
+static pages carry a static link instead (below, "Static pages"); without
+it Chrome answers `no-manifest` on the install guide (measured 2026-09-25,
+Chrome 152, on the published site).
 Headless Chrome parses that manifest with no errors and finds
-the page installable with no error (`tests/app/states.js` case 28, through
+the page installable with no error, and also finds `pages/install.html`
+and `pages/en/install.html` installable with the manifest at the app root
+(`tests/app/states.js` case 28, through
 CDP, in the browser's default context; an incognito context always answers
 `in-incognito`). Not verified on a device: that the install prompt of
 Android Chrome and of desktop Chrome appears with a manifest link added by
 a script, and that iOS
-Safari reads such a link when "Add to Home Screen" runs; on iOS the
+Safari reads such a link when "Add to Home Screen" runs. iOS Safari's "Add
+to Home Screen" from a static page is not verified either: it may keep the
+page's URL as the start page. On iOS the
 `apple-touch-icon` and the `apple-mobile-web-app-title` tags cover the icon
 and the label either way.
 
@@ -308,9 +315,14 @@ JavaScript and without a hash route (the route grammar is frozen,
   card - `og:type article`, `og:title`, `og:description`, `og:url`,
   `og:locale` with the other language as the alternate, `twitter:card
   summary` - from the `PAGES` entry's `title` and `desc` pairs, with no
-  `og:image`: a page is a document, not the site), the style and
+  `og:image`: a page is a document, not the site; a `<link rel="manifest">`
+  to the app's manifest, the `apple-touch-icon` link and an
+  `apple-mobile-web-app-title` from the manifest's `short_name`, at the
+  output's depth, `../` or `../../`), the style and
   `<main id="app-page">`, which holds the back link, a link to the copy in
-  the other language, the fragment, and the back link again.
+  the other language, the fragment, and the back link again. So the
+  browser installs the app from any static page; the manifest's
+  `start_url` opens the app root.
 - The template owns the back links and the language link because their
   depth differs: the Russian page links `en/<id>.html` and `../`, the
   English one `../<id>.html` and `../../`. A relative link inside a
@@ -333,12 +345,14 @@ JavaScript and without a hash route (the route grammar is frozen,
   serves both copies too.
 - `.claude/hooks/edit-guard.mjs` blocks a direct write to `pages/*.html`
   and `pages/en/*.html`; `tests/derived.js` compares each output with a
-  fresh render and checks its language, head, sibling link, both back links
-  and the script; `tools/check-site.mjs` probes all six outputs;
-  `tests/app/states.js` case 29 follows the install guide's top back link
+  fresh render and checks its language, head, the manifest link and the two
+  iOS tags, sibling link, both back links and the script;
+  `tools/check-site.mjs` probes all six outputs; `tests/app/states.js`
+  case 28 asks Chrome whether both guides are installable; case 29 follows the install guide's top back link
   in both languages and checks the back links of the four policy outputs.
 - The worker does not answer `pages/`: a page always comes from the
-  network.
+  network, and a page registers no worker: the manifest link alone makes it
+  installable (measured 2026-09-25).
 - The footer's nav row links them on every page (the install link is left
   out inside the installed app), and every link starts from
   `AppState.pagesDir` (`pages/en/` in English, `pages/` in Russian),

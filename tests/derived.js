@@ -223,6 +223,14 @@ console.log('site pages match the generator');
 /* docs/specs/META.md section 9, "Static pages". Each page is re-rendered from
    its source and compared in full, like the stubs above. */
 const SITE_PAGES = require(path.join(ROOT, 'tools', 'build-pages.js'));
+/* Parsed once for the site pages' iOS label and the installable-app block. */
+const APP_PUBLIC = path.join(ROOT, 'app', 'public');
+let manifest = null;
+try {
+  manifest = JSON.parse(fs.readFileSync(path.join(APP_PUBLIC, 'manifest.webmanifest'), 'utf8'));
+} catch (e) {
+  ok(false, 'app/public/manifest.webmanifest does not parse: ' + e.message);
+}
 /* One copy per language (docs/specs/META.md section 9): the Russian page keeps
    pages/<id>.html, the English one is pages/en/<id>.html, and the template owns
    the link to the other copy and the link back to the app, one folder deeper
@@ -279,6 +287,35 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
         ' does not draw the back link ("' +
         BACK_HREF[lang] +
         '") at the top and the bottom'
+    );
+    /* The manifest link makes the browser offer the install item on the page
+       itself; docs/specs/META.md section 9, "Static pages". */
+    ok(
+      html.split('<link rel="manifest"').length - 1 === 1 &&
+        html.includes(
+          '<link rel="manifest" href="' + BACK_HREF[lang] + 'manifest.webmanifest">'
+        ),
+      'pages/' +
+        rel +
+        ' does not link the app manifest at its own depth ("' +
+        BACK_HREF[lang] +
+        'manifest.webmanifest")'
+    );
+    ok(
+      html.includes(
+        '<link rel="apple-touch-icon" href="' + BACK_HREF[lang] + 'icons/apple-touch-icon.png">'
+      ),
+      'pages/' +
+        rel +
+        ' does not link the iOS icon ("' +
+        BACK_HREF[lang] +
+        'icons/apple-touch-icon.png")'
+    );
+    const shortName = manifest && manifest.short_name;
+    ok(
+      !!shortName &&
+        html.includes('<meta name="apple-mobile-web-app-title" content="' + shortName + '">'),
+      'pages/' + rel + ': the iOS label is not the manifest short_name ("' + shortName + '")'
     );
     ok(
       (html.match(/<script/gi) || []).length === 1 &&
@@ -377,13 +414,6 @@ ok(!!icon, 'the tab icon is missing on app/index.html');
 console.log('the installable app agrees with itself');
 /* docs/specs/META.md section 9. One colour in four places: the head's
    theme-color, the manifest's two colours and tokens.css's --bg. */
-const APP_PUBLIC = path.join(ROOT, 'app', 'public');
-let manifest = null;
-try {
-  manifest = JSON.parse(fs.readFileSync(path.join(APP_PUBLIC, 'manifest.webmanifest'), 'utf8'));
-} catch (e) {
-  ok(false, 'app/public/manifest.webmanifest does not parse: ' + e.message);
-}
 if (manifest) {
   ok(
     manifest.start_url === './' && manifest.scope === './',

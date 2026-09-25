@@ -1566,7 +1566,8 @@ async function listMenuKeepsItsControlsInView() {
 /** 28. The minimal worker over http: it registers, controls the page after
  *  one reload, deletes the retired shell cache, and caches the hashed build
  *  files but never the document or `data.js`. The manifest parses, the page
- *  is installable, and the footer links the install guide and the two
+ *  is installable, both install guides are installable on their own
+ *  before the app loads, and the footer links the install guide and the two
  *  policy pages, which the server answers (docs/specs/META.md section 9,
  *  FEATURES.md, "Chrome"). */
 async function minimalWorker() {
@@ -1676,6 +1677,36 @@ async function minimalWorker() {
        site does. The worker it registers there is removed afterwards. */
     const shared = await sharedPage({ width: 1180, height: 900 });
     try {
+      /* The guides go first, before the app registers the worker in this
+         context: the manifest link alone makes a static page installable. */
+      for (const guide of ['pages/install.html', 'pages/en/install.html']) {
+        await shared.page.goto(root + guide, { waitUntil: 'load' });
+        const guideCdp = await shared.page.createCDPSession();
+        const m = await guideCdp.send('Page.getAppManifest');
+        const { installabilityErrors: errs } = await guideCdp.send(
+          'Page.getInstallabilityErrors'
+        );
+        await guideCdp.detach();
+        fs.writeSync(
+          1,
+          at +
+            guide +
+            ' installability error ids: ' +
+            JSON.stringify(errs.map((e) => e.errorId)) +
+            '\n'
+        );
+        ok(
+          m.errors.length === 0 && m.url === root + 'manifest.webmanifest',
+          at +
+            guide +
+            ' does not link the manifest at the app root: ' +
+            JSON.stringify({ url: m.url, errors: m.errors })
+        );
+        ok(
+          errs.length === 0,
+          at + 'Chrome finds ' + guide + ' not installable: ' + JSON.stringify(errs)
+        );
+      }
       await shared.page.goto(url, { waitUntil: 'load' });
       await shared.page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
       const sharedCdp = await shared.page.createCDPSession();
