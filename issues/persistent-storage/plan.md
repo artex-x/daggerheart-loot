@@ -1128,8 +1128,11 @@ one commit per batch, squash-merged by the orchestrator):
   executable by signed-in users (by design: it deletes only the caller,
   layer 3 pins it) and leaked password protection off (no password
   sign-in). Test: the same two plus `public.rls_auto_enable()` SECURITY
-  DEFINER executable by anon and signed-in users - not in the repository's
-  migrations; the owner decides whether to drop it.
+  DEFINER executable by anon and signed-in users - the function of the
+  `ensure_rls` event trigger (Supabase's automatic RLS on new tables, on
+  test only), not in the repository's migrations. The owner dropped both
+  (2026-09-25) so that a migration missing `enable row level security`
+  fails on test as it would on production.
 - Pending, owner: the OAuth check of step 16 with R1's additions; the
   restore drill from `backup-2026-09-25` - runbook steps 1-5 and 7, never
   step 6 (production) - with the date and the row counts restored.
