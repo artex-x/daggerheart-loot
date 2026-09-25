@@ -1183,7 +1183,9 @@ backed up nightly, encrypted to the owner's key, kept 30 days". GitHub
 refuses to dispatch a workflow that is not on the default branch (`gh
 workflow run backup.yml --ref <branch>` answered `HTTP 404: workflow
 backup.yml not found on the default branch`, 2026-09-25), so a new
-workflow file runs first on `main`.
+workflow file runs first on `main`. The first run on `main` (2026-09-25,
+schema only, no user rows yet) took 74 s for the `dump` job and uploaded
+an 11 KB artifact.
 
 **Symptom.** Data is lost, or a migration must be undone together with the
 data it changed.

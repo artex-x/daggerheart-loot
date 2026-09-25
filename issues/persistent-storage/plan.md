@@ -1107,14 +1107,22 @@ one commit per batch, squash-merged by the orchestrator):
   test project (owner's `db:push`, 2026-09-25). Production held no user
   table before, so no backup precedes the first `migrate-prod`.
 - `E2E_USER_PASSWORD` deleted (owner, 2026-09-25).
-- Pending, owner or orchestrator after the merge: the config diffs and
-  pushes of both projects (step 15); the `migrate-prod` log line of the
-  `main` run and its run id; the Data API check and the Security Advisor
-  on both projects (date); the OAuth check of step 16 with R1's additions;
-  the first `backup.yml` run (its wall clock and image pull go to
-  `.claude/README.md`, "Backups and restore"); the restore drill - runbook
-  steps 1-5 and 7, never step 6 (production) - with the date, the
-  artifact name and the row counts restored.
+- Config (orchestrator, 2026-09-25, before the merge): `config:diff` for
+  test and prod - `drift: none`, 0 updates; 4 remote-only settings not
+  declared in `config.toml` (`auth.sms.twilio.enabled`, pooler
+  `default_pool_size`/`max_client_conn`, `storage.vector.enabled`). No
+  `config:push`.
+- Merge: `c65b845` on `main` (squash of the release branch onto
+  `bc48e18`). Run 36135397358 (push): every job green; `migrate-prod`
+  applied the three migrations above, log `Finished supabase db push.`;
+  `deploy` green.
+- First `backup.yml` run: 36136286588 (`workflow_dispatch`, `main`),
+  `dump` 12:40:33-12:41:47Z (74 s), artifact `backup-2026-09-25`, 11109
+  bytes, expires 2026-10-25.
+- Pending, owner: the Data API check and the Security Advisor on both
+  projects (date); the OAuth check of step 16 with R1's additions; the
+  restore drill from `backup-2026-09-25` - runbook steps 1-5 and 7, never
+  step 6 (production) - with the date and the row counts restored.
 
 ## 18. Cloud sessions (claude.ai/code)
 
