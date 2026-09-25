@@ -1587,13 +1587,16 @@ async function minimalWorker() {
       await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)),
       at + 'the service worker never became ready'
     );
+    const manifestLinks = JSON.stringify(
+      await page.evaluate(() =>
+        [...document.head.querySelectorAll('link[rel="manifest"]')].map((l) =>
+          l.getAttribute('href')
+        )
+      )
+    );
     ok(
-      await page.evaluate(
-        () =>
-          document.head.querySelector('link[rel="manifest"]')?.getAttribute('href') ===
-          './manifest.webmanifest'
-      ),
-      at + 'the page has no manifest link'
+      manifestLinks === '["./manifest.webmanifest"]',
+      at + 'the page does not carry exactly one manifest link - ' + manifestLinks
     );
     const footer = await page.evaluate(() =>
       [...document.querySelectorAll('.foot-nav a')].map((a) => a.getAttribute('href'))

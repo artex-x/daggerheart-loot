@@ -1,5 +1,5 @@
-/* The installable app: linking the manifest, registering the service worker,
- * and knowing whether the page already runs as the installed app.
+/* The installable app: registering the service worker and knowing whether the
+ * page already runs as the installed app.
  *
  * The worker keeps the site installable and caches the pictures and the
  * hashed build files; it holds no offline shell (docs/specs/META.md
@@ -45,28 +45,17 @@ export function persistWith(
     );
 }
 
-/** Adds `<link rel="manifest">` once. */
-export function linkManifest(doc: Document): void {
-  if (doc.head.querySelector('link[rel="manifest"]')) return;
-  const link = doc.createElement('link');
-  link.rel = 'manifest';
-  link.href = './manifest.webmanifest';
-  doc.head.append(link);
-}
-
 export function browserPwa(): PwaPort {
   const standalone = () =>
     (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches) ||
     Reflect.get(navigator, 'standalone') === true;
   return {
-    register: () => {
-      linkManifest(document);
-      return registerWith(
+    register: () =>
+      registerWith(
         /* Absent outside a secure context and in older browsers, whatever the
            DOM typings say. */
         'serviceWorker' in navigator ? navigator.serviceWorker : undefined
-      );
-    },
+      ),
     standalone,
     persist: () =>
       persistWith(

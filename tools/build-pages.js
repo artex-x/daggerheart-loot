@@ -3,8 +3,8 @@
   Russian from the body fragment pages/src/<id>.html, and pages/en/<id>.html
   in English from pages/src/en/<id>.html. One template for all of them: the
   head (with a text preview card from the PAGES entry's title and desc
-  pairs, and the manifest link and the two iOS tags at the output's
-  depth), the style, the <main id="app-page"> shell, the back link at the
+  pairs, the theme colour, and the manifest link and the two iOS tags at
+  the output's depth), the style, the <main id="app-page"> shell, the back link at the
   top and the bottom (its script returns to the screen the reader left) and
   the link to the page in the other language right under the top back link.
   The template owns these links because their depth differs between the two
@@ -30,11 +30,13 @@ const OUT_EN = path.join(OUT, 'en');
 const SRC = path.join(OUT, 'src');
 const SRC_EN = path.join(SRC, 'en');
 
-/* The iOS home-screen label, from the one manifest the pages and the app
-   share (docs/specs/META.md section 9). */
-const SHORT_NAME = JSON.parse(
+/* The iOS home-screen label and the theme colour, from the one manifest the
+   pages and the app share (docs/specs/META.md section 9). */
+const MANIFEST = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'app', 'public', 'manifest.webmanifest'), 'utf8')
-).short_name;
+);
+const SHORT_NAME = MANIFEST.short_name;
+const THEME_COLOR = MANIFEST.theme_color;
 
 const LANGS = ['ru', 'en'];
 
@@ -113,6 +115,7 @@ function page({ id, lang, title, desc, body }) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="${esc(THEME_COLOR)}">
 <!-- kept out of search results, same as every other page - docs/specs/META.md
      section 1 -->
 <meta name="robots" content="noindex, nofollow">

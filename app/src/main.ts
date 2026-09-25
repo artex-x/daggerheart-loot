@@ -13,9 +13,7 @@ const root = target;
 const env = browserEnv();
 /* Registration and the storage request are boot concerns beside `mount`, not
    a component's. The registered worker keeps the site installable
-   (docs/specs/META.md section 9). Both run before the cloud is chosen, so the
-   test build links the manifest as early as `dist/` does: Chrome answered
-   `manifest-location-changed` when the link arrived after `load`. */
+   (docs/specs/META.md section 9). */
 void env.pwa.register();
 void env.pwa.persist();
 

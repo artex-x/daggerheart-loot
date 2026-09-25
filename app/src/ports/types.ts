@@ -216,7 +216,7 @@ export type Registration = 'registered' | 'unsupported' | 'failed';
 export type Persistence = 'persisted' | 'denied' | 'skipped';
 
 export interface PwaPort {
-  /** Links the manifest and registers `./sw.js`. */
+  /** Registers `./sw.js`. */
   register(): Promise<Registration>;
   /** Whether the page runs as an installed app (standalone display mode). */
   standalone(): boolean;

@@ -14,7 +14,7 @@ import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 import { browserData, fakeData, noData } from './data.js';
 import { browserImage } from './image.js';
 import { browserEnv, fakeEnv } from './index.js';
-import { browserPwa, fakePwa, linkManifest, persistWith, registerWith } from './pwa.js';
+import { browserPwa, fakePwa, persistWith, registerWith } from './pwa.js';
 import type { DragHandlers } from './types.js';
 
 describe('storage that works', () => {
@@ -1169,28 +1169,6 @@ describe('the installable app', () => {
     const pwa = browserPwa();
     expect(await pwa.register()).toBe('unsupported');
     expect(pwa.standalone()).toBe(false);
-  });
-
-  it('links the manifest once', async () => {
-    const pwa = browserPwa();
-    await pwa.register();
-    await pwa.register();
-    const links = document.head.querySelectorAll('link[rel="manifest"]');
-    expect(links).toHaveLength(1);
-    expect(links[0]!.getAttribute('href')).toBe('./manifest.webmanifest');
-    links[0]!.remove();
-  });
-
-  it('keeps a manifest link that is already in the head', () => {
-    const own = document.createElement('link');
-    own.rel = 'manifest';
-    own.href = './own.webmanifest';
-    document.head.append(own);
-    linkManifest(document);
-    const links = document.head.querySelectorAll('link[rel="manifest"]');
-    expect(links).toHaveLength(1);
-    expect(links[0]).toBe(own);
-    own.remove();
   });
 
   it('reports the standalone display mode and the iOS flag', () => {

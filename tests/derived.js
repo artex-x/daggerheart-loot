@@ -231,6 +231,10 @@ try {
 } catch (e) {
   ok(false, 'app/public/manifest.webmanifest does not parse: ' + e.message);
 }
+const BG = (/--bg:\s*(#[0-9a-f]{3,8})\s*;/i.exec(
+  fs.readFileSync(path.join(ROOT, 'app', 'src', 'styles', 'tokens.css'), 'utf8')
+) || [])[1];
+ok(!!BG, 'tokens.css has no --bg colour to compare against');
 /* One copy per language (docs/specs/META.md section 9): the Russian page keeps
    pages/<id>.html, the English one is pages/en/<id>.html, and the template owns
    the link to the other copy and the link back to the app, one folder deeper
@@ -316,6 +320,11 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
       !!shortName &&
         html.includes('<meta name="apple-mobile-web-app-title" content="' + shortName + '">'),
       'pages/' + rel + ': the iOS label is not the manifest short_name ("' + shortName + '")'
+    );
+    ok(
+      html.split('<meta name="theme-color"').length - 1 === 1 &&
+        html.includes('<meta name="theme-color" content="' + BG + '">'),
+      'pages/' + rel + ': the head theme-color is not tokens.css --bg ("' + BG + '")'
     );
     ok(
       (html.match(/<script/gi) || []).length === 1 &&
@@ -412,8 +421,9 @@ const icon = (ICON.exec(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'u
 ok(!!icon, 'the tab icon is missing on app/index.html');
 
 console.log('the installable app agrees with itself');
-/* docs/specs/META.md section 9. One colour in four places: the head's
-   theme-color, the manifest's two colours and tokens.css's --bg. */
+/* docs/specs/META.md section 9. One colour in every place: the app head's
+   theme-color, the manifest's two colours, tokens.css's --bg, and each site
+   page's theme-color (checked in the page loop). */
 if (manifest) {
   ok(
     manifest.start_url === './' && manifest.scope === './',
@@ -429,8 +439,8 @@ if (manifest) {
     (manifest.icons || []).some((i) => i.purpose === 'maskable'),
     'the manifest has no maskable icon'
   );
-  /* iOS labels the home-screen icon from this tag when it does not read the
-     script-added manifest link. */
+  /* iOS labels the home-screen icon from this tag; whether it reads the
+     manifest's short_name is not verified on a device. */
   ok(
     shareFacts['apple-mobile-web-app-title'] === manifest.short_name,
     'apple-mobile-web-app-title ' +
@@ -438,16 +448,12 @@ if (manifest) {
       ' is not the manifest short_name ' +
       manifest.short_name
   );
-  const bg = (/--bg:\s*(#[0-9a-f]{3,8})\s*;/i.exec(
-    fs.readFileSync(path.join(ROOT, 'app', 'src', 'styles', 'tokens.css'), 'utf8')
-  ) || [])[1];
-  ok(!!bg, 'tokens.css has no --bg colour to compare against');
   ok(
-    manifest.theme_color === bg &&
-      manifest.background_color === bg &&
-      shareFacts['theme-color'] === bg,
+    manifest.theme_color === BG &&
+      manifest.background_color === BG &&
+      shareFacts['theme-color'] === BG,
     'theme colours disagree with --bg ' +
-      bg +
+      BG +
       ': manifest theme_color ' +
       manifest.theme_color +
       ', background_color ' +
@@ -463,11 +469,11 @@ ok(
   !!touch && fs.existsSync(path.join(APP_PUBLIC, touch)),
   'app/index.html has no relative apple-touch-icon link to a file in app/public/'
 );
-/* The PWA port adds the manifest link at boot; a static tag as well would
-   make two. */
+/* The app links the manifest with a static tag (docs/specs/META.md section 9). */
 ok(
-  !/<link\s+rel="manifest"/i.test(indexHtml),
-  'app/index.html carries a static manifest link beside the one the PWA port adds'
+  indexHtml.split('<link rel="manifest"').length - 1 === 1 &&
+    indexHtml.includes('<link rel="manifest" href="./manifest.webmanifest">'),
+  'app/index.html does not carry exactly one static manifest link to ./manifest.webmanifest'
 );
 /* A reviewer without JavaScript finds the policy pages too (docs/specs/META.md
    section 9, "Static pages"). */

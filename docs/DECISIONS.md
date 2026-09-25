@@ -12,6 +12,23 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-25 - The app document links the manifest with a static tag
+
+- Task: `static-manifest-link` (owner request, 2026-09-25).
+- Decision: `app/index.html` carries
+  `<link rel="manifest" href="./manifest.webmanifest">`; `linkManifest()`
+  and its call go, and `PwaPort.register()` only registers `./sw.js`. The
+  script-added link existed for `file://`, retired on 2026-09-24. Vite
+  8.2.2 keeps the href as written, with no hash and no warning (measured
+  2026-09-25). The static pages' head gains `theme-color` from the
+  manifest's `theme_color`.
+- Rejected: keeping the script-added link - it serves no supported host,
+  and Chrome answered `manifest-location-changed` when it arrived after
+  `load`; both a static and a script-added link - two links, which
+  `tests/derived.js` and case 28 refuse; an absolute
+  `/daggerheart-loot/manifest.webmanifest` href - it breaks
+  `vite preview` and the test server (`base: './'`).
+
 ## 2026-09-25 - A static page links the manifest in its head and registers no worker
 
 - Task: `install-from-guide`; the owner reported that the guide page
@@ -23,7 +40,7 @@ entry to its first line before adding another.
   with the link alone, worker or not (measured 2026-09-25, Chrome 152).
 - Rejected: registering the worker from a page - installability does not
   need it, and it adds a second script; a script-added link like the
-  app's - that exists for `file://`, which is retired; an in-page
+  app's then - that existed for `file://`, which is retired; an in-page
   install button over `beforeinstallprompt` - Chromium only, a second
   script, and the browser's own install item works now.
 
@@ -633,8 +650,10 @@ entry to its first line before adding another.
 
 ## 2026-09-23 - PWA registration is a boot concern in `main.ts` behind `PwaPort`
 
-- Superseded in part by "Running from a folder and offline use are nice-to-haves" (2026-09-24): the protocol guard
-  is gone with `file://`; the boot call and the script-added manifest stay.
+- Superseded in part by "Running from a folder and offline use are
+  nice-to-haves" (2026-09-24): the protocol guard is gone with `file://`;
+  and by "The app document links the manifest with a static tag"
+  (2026-09-25): the script-added link is gone. The boot call stays.
 - Task: `69`.
 - Decision: `app/src/main.ts` calls `env.pwa.register()` once, beside
   `mount`. `app/src/ports/pwa.ts` tests the protocol before it touches the

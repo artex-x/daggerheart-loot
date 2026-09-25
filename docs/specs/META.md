@@ -199,8 +199,9 @@ use was retired on 2026-09-24 (`docs/DECISIONS.md`).
 - `id`, `start_url` and `scope` are `./`, relative to the manifest, so they
   resolve to `/daggerheart-loot/` on Pages. An absolute base changes
   nothing here.
-- `theme_color`, `background_color` and the head's `theme-color` are all
-  `--bg` from `tokens.css`; `tests/derived.js` pins the four to one value.
+- `theme_color`, `background_color`, the `theme-color` in `app/index.html`'s
+  head and in every static page's head are all `--bg` from `tokens.css`;
+  `tests/derived.js` pins them to one value.
 - The icons are `app/public/icons/`: `icon.svg` is the source, and
   `tools/artwork/icons.mjs` rasterises it into `icon-192.png`,
   `icon-512.png`, `maskable-512.png` and `apple-touch-icon.png` (180 px),
@@ -211,25 +212,26 @@ use was retired on 2026-09-24 (`docs/DECISIONS.md`).
   home-screen icon. The tab favicon is unchanged.
 - `app/index.html` also carries a static
   `<meta name="apple-mobile-web-app-title" content="Лут DH">`: iOS takes the
-  home-screen label from it when it does not read the script-added manifest
-  link below. `tests/derived.js` pins it to the manifest's `short_name`.
+  home-screen label from it; whether iOS Safari reads the manifest's
+  `short_name` is not verified on a device. `tests/derived.js` pins it to the
+  manifest's `short_name`.
 
-The `<link rel="manifest">` is not a static tag in `app/index.html`: the
-PWA port (`app/src/ports/pwa.ts`) appends it once at boot, and
-`tests/derived.js` refuses a second, static one. (It became a script-added
-tag because Chrome refused it from a folder, measured 2026-09-23.) The
-static pages carry a static link instead (below, "Static pages"); without
-it Chrome answers `no-manifest` on the install guide (measured 2026-09-25,
-Chrome 152, on the published site).
+`app/index.html` links the manifest with a static
+`<link rel="manifest" href="./manifest.webmanifest">`, and
+`tests/derived.js` requires exactly one. Vite keeps the href as written and
+copies the manifest verbatim (measured 2026-09-25, Vite 8.2.2); the
+script-added link it replaces is in `docs/DECISIONS.md` (2026-09-25). The
+static pages carry the same static link at their depth
+(below, "Static pages"); without it Chrome answers `no-manifest` on the
+install guide (measured 2026-09-25, Chrome 152, on the published site).
 Headless Chrome parses that manifest with no errors and finds
 the page installable with no error, and also finds `pages/install.html`
 and `pages/en/install.html` installable with the manifest at the app root
 (`tests/app/states.js` case 28, through
 CDP, in the browser's default context; an incognito context always answers
 `in-incognito`). Not verified on a device: that the install prompt of
-Android Chrome and of desktop Chrome appears with a manifest link added by
-a script, and that iOS
-Safari reads such a link when "Add to Home Screen" runs. iOS Safari's "Add
+Android Chrome and of desktop Chrome appears, and that iOS Safari reads the
+manifest link when "Add to Home Screen" runs. iOS Safari's "Add
 to Home Screen" from a static page is not verified either: it may keep the
 page's URL as the start page. On iOS the
 `apple-touch-icon` and the `apple-mobile-web-app-title` tags cover the icon
@@ -315,7 +317,8 @@ JavaScript and without a hash route (the route grammar is frozen,
   card - `og:type article`, `og:title`, `og:description`, `og:url`,
   `og:locale` with the other language as the alternate, `twitter:card
   summary` - from the `PAGES` entry's `title` and `desc` pairs, with no
-  `og:image`: a page is a document, not the site; a `<link rel="manifest">`
+  `og:image`: a page is a document, not the site; a `theme-color` from the
+  manifest's `theme_color`; a `<link rel="manifest">`
   to the app's manifest, the `apple-touch-icon` link and an
   `apple-mobile-web-app-title` from the manifest's `short_name`, at the
   output's depth, `../` or `../../`), the style and
@@ -345,8 +348,8 @@ JavaScript and without a hash route (the route grammar is frozen,
   serves both copies too.
 - `.claude/hooks/edit-guard.mjs` blocks a direct write to `pages/*.html`
   and `pages/en/*.html`; `tests/derived.js` compares each output with a
-  fresh render and checks its language, head, the manifest link and the two
-  iOS tags, sibling link, both back links and the script;
+  fresh render and checks its language, head, the theme colour, the manifest
+  link and the two iOS tags, sibling link, both back links and the script;
   `tools/check-site.mjs` probes all six outputs; `tests/app/states.js`
   case 28 asks Chrome whether both guides are installable; case 29 follows the install guide's top back link
   in both languages and checks the back links of the four policy outputs.
