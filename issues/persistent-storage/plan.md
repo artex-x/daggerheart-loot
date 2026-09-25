@@ -1119,8 +1119,18 @@ one commit per batch, squash-merged by the orchestrator):
 - First `backup.yml` run: 36136286588 (`workflow_dispatch`, `main`),
   `dump` 12:40:33-12:41:47Z (74 s), artifact `backup-2026-09-25`, 11109
   bytes, expires 2026-10-25.
-- Pending, owner: the Data API check and the Security Advisor on both
-  projects (date); the OAuth check of step 16 with R1's additions; the
+- Data API and Security Advisor (orchestrator, owner's Chrome session,
+  2026-09-25, linter rerun): "Automatically expose new tables" off on both
+  projects; both show 2 of 2 schemas, 0 of 1 tables, 0 of 2 functions
+  exposed (the dashboard's count; `user_prefs` and `delete_account()` are
+  granted to `authenticated` only, and the hosted E2E reaches both).
+  Production: 0 errors, 2 warnings - `delete_account()` SECURITY DEFINER
+  executable by signed-in users (by design: it deletes only the caller,
+  layer 3 pins it) and leaked password protection off (no password
+  sign-in). Test: the same two plus `public.rls_auto_enable()` SECURITY
+  DEFINER executable by anon and signed-in users - not in the repository's
+  migrations; the owner decides whether to drop it.
+- Pending, owner: the OAuth check of step 16 with R1's additions; the
   restore drill from `backup-2026-09-25` - runbook steps 1-5 and 7, never
   step 6 (production) - with the date and the row counts restored.
 
