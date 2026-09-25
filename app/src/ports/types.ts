@@ -29,6 +29,7 @@
  * and keeps running; it does not pretend the lists are saved.
  */
 import type { Loot } from '../lib/data.js';
+import type { Prefs } from '../lib/prefs.js';
 import type { Random } from '../lib/roll.js';
 
 export interface StoragePort {
@@ -230,6 +231,81 @@ export interface MotionPort {
   reduced(): boolean;
 }
 
+/* ---------- cloud ---------- */
+
+export type Provider = 'google' | 'discord';
+
+export interface Identity {
+  id: string;
+  provider: Provider;
+  email: string;
+}
+
+export interface Session {
+  userId: string;
+  email: string;
+  /** The account's first provider; null when it is neither Google nor
+   *  Discord (an email identity). */
+  provider: Provider | null;
+}
+
+export type AuthError = 'alreadyLinked' | 'lastIdentity' | 'failed';
+
+/** A refusal is an answer, not a throw - the way `ClipboardPort` and
+ *  `SharePort` report failure. */
+export type AuthResult = { ok: true } | { ok: false; error: AuthError };
+
+/** How a provider redirect this page load came back from ended. */
+export interface AuthRedirect {
+  kind: 'signIn' | 'link';
+  provider: Provider | null;
+  result: AuthResult;
+}
+
+export interface AuthPort {
+  session(): Promise<Session | null>;
+  /** `[]` signed out; `null` when a signed-in read failed, so a caller never
+   *  mistakes "could not read" for "none connected". The fake never answers
+   *  null. */
+  identities(): Promise<Identity[] | null>;
+  /** Starts the provider redirect; the fake signs the seed's default user in.
+   *  A redirect that cannot start is a refusal, answered at once; a started
+   *  one leaves the page, so the real port answers only if this page comes
+   *  back from the back-forward cache. */
+  signIn(provider: Provider): Promise<AuthResult>;
+  /** Like `signIn`; the fake links in place and answers at once. */
+  link(provider: Provider): Promise<AuthResult>;
+  unlink(identityId: string): Promise<AuthResult>;
+  signOut(scope?: 'local' | 'global'): Promise<AuthResult>;
+  deleteAccount(): Promise<AuthResult>;
+  onChange(fn: (session: Session | null) => void): () => void;
+  /** The outcome of the provider redirect that opened this page, or null
+   *  when none did - one answer per page load. A link refused on the
+   *  provider's side reaches the page only here. */
+  redirectResult(): Promise<AuthRedirect | null>;
+}
+
+/** A read of the account's preferences: `prefs: null` is an account with
+ *  no row yet; `{ ok: false }` is signed out or a read that failed, never
+ *  null, so a failed read cannot pass as an empty account and be seeded
+ *  over. */
+export type PrefsRead = { ok: true; prefs: Prefs | null } | { ok: false };
+
+/** The signed-in reader's preferences, one row per account
+ *  (docs/specs/STATE.md, "Account preferences"). */
+export interface PreferencesPort {
+  load(): Promise<PrefsRead>;
+  /** Replaces the whole row with `p` - a field `p` lacks is gone. Answers
+   *  false signed out or refused. */
+  save(p: Prefs): Promise<boolean>;
+}
+
+/** Grows one member per release (R1 auth, R1 prefs, R2 lists, ...). */
+export interface CloudPort {
+  auth: AuthPort;
+  prefs: PreferencesPort;
+}
+
 /**
  * Redrawing a picture as something the clipboard will accept.
  *
@@ -268,4 +344,6 @@ export interface Env {
   dialog: DialogPort;
   pwa: PwaPort;
   motion: MotionPort;
+  /** null in an unconfigured build: no cloud control is drawn. */
+  cloud: CloudPort | null;
 }

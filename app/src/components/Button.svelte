@@ -43,6 +43,9 @@
      *  the same tab the button click would have used anyway. */
     sameTab?: boolean;
     onclick?: (() => void) | undefined;
+    /** A button only: while an action runs, or until a confirmation is
+     *  typed. A link-button never takes it. */
+    disabled?: boolean;
     children: Snippet;
   }
 
@@ -61,6 +64,7 @@
     href,
     sameTab,
     onclick,
+    disabled,
     children
   }: Props = $props();
 </script>
@@ -85,6 +89,7 @@
     {title}
     aria-label={label}
     aria-expanded={expanded}
+    {disabled}
     {onclick}
   >
     {@render children()}{#if caret}<i class="caret" class:up={expanded}></i>{/if}
@@ -143,6 +148,12 @@
   .btn:hover {
     border-color: var(--gold);
     background: var(--surface2);
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
   }
 
   .btn.primary {

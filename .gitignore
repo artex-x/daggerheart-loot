@@ -26,8 +26,9 @@ export/
 # ...except those under docs/: those are the specs, and they are the source of truth
 !docs/**
 
-# Build output of the app.
+# Build output of the app, and its test build (tests/app/ drive it).
 dist/
+dist-test/
 coverage/
 .svelte-kit/
 

@@ -6,11 +6,13 @@
  * hand-written HTML or a Svelte component's output.
  *
  * This driver used to drive either of two targets - the live app at
- * the repository root, or the built rewrite in `dist/` - and a
+ * the repository root, or the built rewrite in `dist/` (now the test build,
+ * `dist-test/`) - and a
  * side-by-side comparison harness ran every spec against the pair, with the
  * live app read as the expectation. That harness and the live app it
- * compared against were both since deleted; `tests/app/*.js` is this
- * driver's only remaining reader, and it always means `next`.
+ * compared against were both since deleted. `tests/app/*.js` drives the
+ * test build through `next`; `tests/e2e/` is the second reader, driving the
+ * configured `dist/` from its own server.
  */
 /* Over HTTP from lib.js's per-process server; read when a driver is made,
    after `fresh()` or `sharedPage()` has started that server. Required
@@ -117,9 +119,9 @@ const NAME_FN = `(el) => (
   ''
 ).replace(/\\s+/g, ' ').trim()`;
 
-function makeDriver(page, target) {
-  const url = TARGETS[target];
-
+/* `url` is the page to drive; a caller with its own server (tests/e2e/)
+   passes it and never reads `TARGETS`, whose getter needs lib.js's server. */
+function makeDriver(page, target, url = TARGETS[target]) {
   /**
    * `confirm()` blocks the calling script until something answers it, and
    * `el.click()` inside `page.evaluate` never returns while one is open - so
@@ -156,11 +158,25 @@ function makeDriver(page, target) {
      * clears storage and stubs the clipboard - never runs again. The help panel
      * one state opened was still open in the next one, and it took an hour to
      * see that the harness was reporting its own leak.
+     *
+     * `as` is the test build's signed-in switch: `?as=<user>` before the hash
+     * signs that seed user into the fake cloud; without it the page is
+     * signed out (docs/specs/COVERAGE.md, "Test layers"). A user the seed
+     * does not have stops the boot with `#boot-error` (main.ts), which
+     * fails here at once rather than as a page that never draws.
      */
-    async open(route) {
+    async open(route, { as } = {}) {
       await page.goto('about:blank');
-      await page.goto(url + route, { waitUntil: 'networkidle0' });
+      await page.goto(url + (as ? '?as=' + encodeURIComponent(as) : '') + route, {
+        waitUntil: 'networkidle0'
+      });
       await ready(page);
+      const refused = await page.evaluate(
+        () => document.getElementById('boot-error')?.textContent ?? null
+      );
+      if (refused !== null) {
+        throw new Error(route + ': the test build refused to boot - ' + refused);
+      }
     },
 
     /** The window a state is looked at through; the breakpoints depend on it. */

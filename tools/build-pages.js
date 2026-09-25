@@ -7,7 +7,8 @@
   top and the bottom (its script returns to the screen the reader left) and
   the link to the page in the other language right under the top back link.
   The template owns these links because their depth differs between the two
-  outputs, so a fragment is content only and never links the app itself.
+  outputs, so a fragment is content only and links an app route only as
+  %APP%#/<route>, which page() resolves to that output's own back link.
 
   One more page is one PAGES entry below (its id, its two titles and its two
   descriptions), two fragments, and one footer link in Shell.svelte that
@@ -86,6 +87,12 @@ const esc = (s) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
+/* A fragment links an app route only through %APP%: the app root sits at
+   a different depth from each output, and only the template knows which. */
+function appLinks(body, backHref) {
+  return body.replaceAll('%APP%', backHref);
+}
+
 /* Links inside a page are relative: unlike 404.html, a page here is always
    served at its own path. */
 function page({ id, lang, title, desc, body }) {
@@ -134,7 +141,7 @@ function page({ id, lang, title, desc, body }) {
 <main id="app-page">
 ${backLink}
 <nav class="lang"><a href="${t.otherHref(id)}" lang="${t.otherLang}" hreflang="${t.otherLang}">${t.other}</a></nav>
-${body}${backLink}
+${appLinks(body, t.backHref)}${backLink}
 </main>
 <script>
   /* A referrer carries no fragment; history.back() returns to the exact

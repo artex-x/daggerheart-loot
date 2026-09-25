@@ -1,7 +1,8 @@
 /*
-  The layer 3 harness proves itself, and pins two invariants every schema
-  batch inherits: no `public` table grants anything to anon, and every
-  `public` table has row level security enabled.
+  The layer 3 harness proves itself, and pins four invariants every schema
+  batch inherits: no `public` table grants anything to anon, every `public`
+  table has row level security enabled, no `public` function is executable
+  by anon, and every `public` view is `security_invoker`.
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -48,6 +49,35 @@ describe('asRole', () => {
       asRole(sql, { role: 'service_role' }, () => null),
       /not anon/
     );
+  });
+
+  it('runs a setup as its own role first, visible to the role and rolled back', async () => {
+    await sql.unsafe(`
+      create schema harness_probe;
+      create table harness_probe.t (n int);
+      grant usage on schema harness_probe to authenticated;
+      grant select on harness_probe.t to authenticated;`);
+    try {
+      const n = await asRole(
+        sql,
+        {
+          role: 'authenticated',
+          sub: USER,
+          setup: (tx) => tx`insert into harness_probe.t values (7)`
+        },
+        async (tx) => {
+          const [r] =
+            await tx`select current_user as who, sum(n)::int as n from harness_probe.t`;
+          assert.equal(r.who, 'authenticated');
+          return r.n;
+        }
+      );
+      assert.equal(n, 7);
+      const [r] = await sql`select count(*)::int as n from harness_probe.t`;
+      assert.equal(r.n, 0);
+    } finally {
+      await sql`drop schema harness_probe cascade`;
+    }
   });
 
   it('rolls back every write made inside it', async () => {
@@ -121,6 +151,96 @@ describe('public schema invariants', () => {
       where n.nspname = 'public' and c.relkind in ('r', 'p') and not c.relrowsecurity`;
     assert.deepEqual(
       rows.map((r) => r.relname),
+      []
+    );
+  });
+});
+
+// has_function_privilege sees a grant to PUBLIC as well as one to anon;
+// Supabase's default privileges grant EXECUTE on every new public function
+// to anon, so a migration has to revoke it.
+function anonFunctions(db) {
+  return db`
+    select p.oid::regprocedure::text as fn
+    from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'EXECUTE')
+    order by 1`;
+}
+
+describe('public function invariants', () => {
+  it('lets anon execute no public function', async () => {
+    const rows = await anonFunctions(sql);
+    assert.deepEqual(
+      rows.map((r) => r.fn),
+      []
+    );
+  });
+
+  it('sees a function left executable by PUBLIC', async () => {
+    const rollback = new Error('rollback');
+    let rows;
+    await assert.rejects(
+      sql.begin(async (tx) => {
+        await tx.unsafe(`
+          create function public.harness_fn_probe() returns int language sql as 'select 1';
+          revoke execute on function public.harness_fn_probe() from anon;
+          grant execute on function public.harness_fn_probe() to public;`);
+        rows = await anonFunctions(tx);
+        throw rollback;
+      }),
+      (err) => err === rollback
+    );
+    assert.deepEqual(
+      rows.map((r) => r.fn),
+      ['harness_fn_probe()']
+    );
+  });
+});
+
+// A view runs as its owner unless it is security_invoker, and the owner is
+// not held by row level security: such a view reads every user's rows.
+function definerViews(db) {
+  return db`
+    select c.relname
+    from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = 'public' and c.relkind = 'v'
+      and not exists (
+        select 1 from unnest(coalesce(c.reloptions, '{}'::text[])) as o(opt)
+        where lower(o.opt) in
+          ('security_invoker=true', 'security_invoker=on', 'security_invoker=1')
+      )
+    order by 1`;
+}
+
+describe('public view invariants', () => {
+  it('makes every public view security_invoker', async () => {
+    const rows = await definerViews(sql);
+    assert.deepEqual(
+      rows.map((r) => r.relname),
+      []
+    );
+  });
+
+  it('sees a view without security_invoker, and not the same view with it', async () => {
+    const rollback = new Error('rollback');
+    let without;
+    let withIt;
+    await assert.rejects(
+      sql.begin(async (tx) => {
+        await tx.unsafe('create view public.harness_view_probe as select 1 as n');
+        without = await definerViews(tx);
+        await tx.unsafe('alter view public.harness_view_probe set (security_invoker = true)');
+        withIt = await definerViews(tx);
+        throw rollback;
+      }),
+      (err) => err === rollback
+    );
+    assert.deepEqual(
+      without.map((r) => r.relname),
+      ['harness_view_probe']
+    );
+    assert.deepEqual(
+      withIt.map((r) => r.relname),
       []
     );
   });

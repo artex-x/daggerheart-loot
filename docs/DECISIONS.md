@@ -12,6 +12,194 @@ first. The fifteen-line cap counts body lines only - the `##` heading and
 the blank lines around it are free. Past ~400 lines, fold every superseded
 entry to its first line before adding another.
 
+## 2026-09-24 - A cloud release pushes after every green commit; the owner squash-merges it
+
+- Task: `persist-1-auth` (owner confirmation, 2026-09-24, cloud session 2).
+- Decision: a cloud session pushes its branch after every green commit (a
+  reclaimed container loses what is not pushed) and never amends a pushed
+  commit, so a cloud release is a branch of one commit per batch and a
+  remediation after a push is its own commit. At closeout the owner
+  cherry-picks any tooling commit the release carries on its own first, then
+  squash-merges the branch onto `main` as the release's one commit (`git
+  merge --squash`, authored `artex-x`), pushes `main` and deletes the
+  branch. A local release still amends and pushes once. Rule 2o already
+  allows exactly these pushes; no guard changes. Amended 2026-09-25: the
+  orchestrator merges (entry of that date).
+- Rejected: amend plus `--force-with-lease` (the law forbids every force
+  shape); one push at closeout (a release longer than one session loses a
+  batch); pushing "at session end" (no signal precedes an idle reclaim); N
+  commits on `main` (a deploy's undo stops being one revert); the UI merge
+  button (a merge commit); a fast-forward (`main` moves under bot commits).
+
+## 2026-09-24 - The hosted E2E reads its credentials from the environment; no proxy credential
+
+- Task: `persist-1-auth` (owner confirmation, 2026-09-24, cloud session 2).
+- Decision: the harness reads `E2E_SUPABASE_URL`,
+  `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY` and
+  `E2E_USER_EMAIL` from the process environment on every host (CI secrets,
+  `--env-file .env.test.local` locally, the cloud environment's variables).
+  The mint stays `generateLink` then `verifyOtp`, creating the user when
+  absent. The probe discriminates: `GET /auth/v1/user` with the publishable
+  key and no `Authorization` must answer 401 `no_authorization`, from Node
+  and from a Puppeteer page, and one carrying `Bearer a.b.c` must be refused
+  for that token. The test project's secret key is model-visible; it opens
+  the test project only.
+- Rejected: a proxy API credential (measured to replace every
+  `Authorization` header and not to grant admin); anonymous sign-ins (no
+  identity to test `#/account` with); layer 4 in CI only on `main`;
+  `signInWithPassword` (a second credential shape for one user); a CI-side
+  session mint handed to the cloud (a session token in transit for no gain).
+
+## 2026-09-24 - The account client loads after first paint; a provider redirect settles before mount
+
+- Task: `persist-1-auth` (planner, 2026-09-24; the unconfigured build: owner).
+- Decision: `ports/supabase.ts` alone imports `@supabase/supabase-js`, as a
+  lazy chunk behind a synchronous `CloudPort` wrapper, so a configured app
+  mounts as fast as an unconfigured one. `main.ts` reads `?auth-callback=1`
+  before mount, restores the route saved in `sessionStorage` (10 minutes)
+  and strips the code and error parameters; the exchange and its outcome
+  (`redirectResult()`) resolve after mount: a refused link and a cancelled
+  consent arrive on the redirect back. With no configuration the branch is
+  a dead literal: no chunk, no account control, `#/account` is not found.
+- Rejected: mounting after the chunk loads (every reader waits); a static
+  import (the entry carries the client for anonymous readers); supabase-js's
+  `detectSessionInUrl` (races the router); a "sign-in unavailable" page
+  (owner); loading the chunk only for a reader with a stored session or a
+  pending redirect (considered 2026-09-25: it saves a download after first
+  paint, not paint, and would read supabase-js's private storage key names).
+
+## 2026-09-24 - Account preferences drop the default money mode; the print layout persists for everyone
+
+- Task: `persist-1-auth` (owner answers of this date to the preferences
+  mock's questions 1 and 2).
+- Decision: the account preferences are the language, the starting
+  section, the tables view and the print layout; "a default money mode for
+  new lists" is removed from the release (money mode stays per list). The
+  print layout (colour or black-and-white, standard or compact sheet) leaves
+  session memory and is kept in `dhloot.prefs.v1` beside the tables view
+  for every reader, signed in or not; the account copies it like the rest.
+- Rejected: the last money mode picked on an own list as the default (a
+  rule nobody sees being applied); a new money-mode control (a new control
+  and its mock for one setting); persisting the print layout only for a
+  signed-in reader (two behaviours for one control).
+
+## 2026-09-25 - The hosted E2E runs `cloud.contract.ts` under Node's own type stripping
+
+- Task: `persist-1-auth` (planner, 2026-09-25).
+- Decision: `tests/e2e/` imports the app's TypeScript ports
+  (`cloud.contract.ts`, `supabase.ts`) straight into Node 24, which strips
+  erasable types. `tests/e2e/ts-hooks.mjs`, loaded by `--import`, maps a
+  `.js` import inside a `.ts` file to its `.ts` sibling and loads `.ts` as
+  a module; `tsconfig.json` sets `erasableSyntaxOnly`, so typecheck refuses
+  what Node could not strip. Measured 2026-09-25: the contract over the
+  fake passes this way, with no warning and no new dependency.
+- Rejected: `vite-node` and `esbuild` (neither is in the tree since vitest
+  4 and vite 8's rolldown); `tsx` (a dependency for one directory); a
+  vitest project for layer 4 (network inside the unit runner's config and
+  coverage); bundling with rolldown first (a build step and a temporary
+  file per run).
+
+## 2026-09-25 - A blocker fix pass also carries the batch's local nits
+
+- Task: `persist-1-auth` (the human's request of this date).
+- Decision: on a fix-then-continue review, the one remediation pass carries
+  the blockers and every nit that is cheap, local and safe inside the paths
+  the batch touched, mid-plan as well as on the terminal batch. A nit that
+  needs a redesign, a public-contract change, a new spec or work outside
+  those paths still goes to Deferred or a later batch. An approve with only
+  nits mid-plan still spends no cycle. Gates do not move: a nit fix that
+  breaks one is reverted and reported.
+- Rejected: always deferring nits mid-plan - the fix pass's dispatch and
+  gates are already paid, a nit in the same paths adds almost nothing to
+  them, and a deferred one costs a pass later (`365952c` ran `npm run check`
+  over the same `tests/e2e/` and CI paths as three nits it left behind).
+
+## 2026-09-25 - Commit author and attribution are set in `.claude/settings.json`
+
+- Task: `persist-1-auth` (the human's request of this date).
+- Decision: `.claude/settings.json` sets `attribution` empty (no trailer,
+  no pull request footer) and `env` with the git author and committer
+  `artex-x <artex-x@users.noreply.github.com>`; `CLAUDE.md` keeps only
+  "Use Conventional Commits". The `bash-guard.mjs` rule that denies an AI
+  attribution trailer stays, as the backstop for a session or host that
+  does not load these settings. Settings apply from the next session start.
+- Rejected: the author sentence in `CLAUDE.md` (a rule each agent had to
+  remember while the harness asked for a trailer, which cost blocked commit
+  attempts); retiring the trailer rule (nothing else would catch a trailer
+  from a host that ignores the settings); a `git config` step in the cloud
+  setup script (one host only, and outside the repository's review).
+
+## 2026-09-25 - Migrations deploy from CI as steps of `e2e` and `deploy`; the database is the applied record
+
+- Task: `persist-1-auth` (owner, 2026-09-24; the shape: planner, 2026-09-25).
+- Decision: the `e2e` job first runs `supabase db push --db-url` against
+  the test project, and `deploy` runs it against production before its
+  build - on a push to `main` or the owner's `skip_e2e` dispatch, which
+  refuses when production lacks a migration (`pending-check.mjs`). Both
+  connection strings are repository secrets, no Environment. The applied
+  record is the database's `supabase_migrations.schema_migrations`:
+  `applied.json` and `applied-check.mjs` are gone; `edit-guard.mjs` locks a
+  migration that any remote-tracking ref holds (a pushed commit is never
+  amended; CI applies what is pushed). `config:push` stays the owner's,
+  `db:push` a manual path that records nothing.
+- Rejected: separate `migrate-*` jobs (more job-level `if:`s on `deploy`'s
+  needs, a second concurrency group for one database); an approval
+  Environment (the backup is the recovery); a committed history snapshot
+  (drifts as `applied.json` did); "every migration in HEAD" as the lock.
+
+## 2026-09-25 - Production is backed up nightly, encrypted to the owner's key, kept 30 days
+
+- Task: `persist-1-auth` (owner, 2026-09-24: `auth` rows, `17 3 * * *` UTC).
+- Decision: `backup.yml` runs nightly and on dispatch: `supabase db dump`
+  of the schema and of the `auth` and `public` data (`--schema auth,public`;
+  the CLI excludes `auth` by default) with the production connection
+  string, each file `age`-encrypted to the `BACKUP_AGE_RECIPIENT` variable
+  and uploaded as a 30-day artifact; nothing unencrypted leaves the job,
+  which fails closed without a recipient. The private key stays in the
+  owner's password manager. The run is production's free-tier keep-alive.
+  The privacy page says a backup keeps deleted data at most 30 days. The
+  runbook (`.claude/README.md`, "Backups and restore") restores into the
+  local stack, then the test project, then production.
+- Rejected: a monthly manual dump (nobody remembers a schedule); an
+  unencrypted artifact (a public repository's artifacts are public); roles
+  in the dump (a new project has its own); a backup before the first
+  production migration (production held no user table).
+
+## 2026-09-25 - Agents may write to the test project; production is CI's or the owner's
+
+- Task: `persist-1-auth` (owner, 2026-09-25).
+- Decision: `bash-guard.mjs` rule 2n allows a `db`, `migration` or
+  `config push` command whose target is provably the test project (a
+  `--project-ref` equal to the test ref, a `--db-url` that carries it, or
+  a wrapper with `--project test`) and denies production, `--linked` and
+  every target the command does not name; `link`, `login`, `secrets`,
+  `functions deploy` and `storage` stay denied. `npm run db:push --
+  --project test --yes` runs without a terminal and reads the password
+  from `SUPABASE_DB_PASSWORD_TEST` (a cloud variable, test only);
+  `--project prod` keeps the typed `yes`, the fallback behind `migrate-prod`.
+  No production secret enters a cloud environment.
+- Rejected: "agents never write to a hosted project" as written (the
+  owner's words supersede it); `--linked` as proof of the target (state
+  outside the command); a `--yes` for production (the pipeline or a typed
+  yes there, by the owner's words).
+
+## 2026-09-25 - The orchestrator merges a release branch onto `main`; the owner keeps the dashboard steps
+
+- Task: `persist-1-auth` (owner, 2026-09-25).
+- Decision: at a release's closeout the orchestrator, on a host where the
+  push rule allows it, squash-merges the release branch onto `main` as the
+  release's one commit (question A's shape; the rebase fallback if the
+  squash refuses; never a merge commit, never a force-push), pushes `main`,
+  watches the run that deploys and deletes the branch; the agents also
+  compact the programme roadmap in the closeout commit. The owner keeps
+  what needs a terminal with secrets or a dashboard: `config:push`, the
+  Security Advisor, the Data API check, the manual OAuth check, the restore
+  drill's private key. Amends the 2026-09-24 entry "A cloud release pushes
+  after every green commit; the owner squash-merges it": the merge is the
+  orchestrator's now; the rest of that entry stands.
+- Rejected: the owner merging (a manual step the pipeline does not need);
+  the claude.ai/code merge button (a merge commit).
+
 ## 2026-09-24 - The laws of no backend and of `file://` are superseded
 
 - Task: `persist-0-foundation` (owner decisions of this date).
@@ -160,6 +348,7 @@ entry to its first line before adding another.
 
 ## 2026-09-24 - Per-user UI preferences persist in the account, account wins
 
+- Superseded in part by "Account preferences drop the default money mode; the print layout persists for everyone" (2026-09-24).
 - Task: `persistent-storage` (owner decision, 2026-09-24; reopens the
   `profiles` cut of the same day's scope decision as one row).
 - Decision: for a signed-in user the settings that live in `localStorage`
@@ -214,39 +403,13 @@ entry to its first line before adding another.
 
 ## 2026-09-24 - A cloud session runs a whole release on its own task branch
 
-- Task: `persistent-storage` (owner decision, 2026-09-24).
-- Decision: a release (one task id) runs fully in a claude.ai/code cloud
-  session or fully locally; batches never mix hosts. A cloud release starts
-  from the pushed `main`, commits and amends on a branch named after the
-  task id, and pushes that branch once at closeout after the task directory
-  is retired - that push is the release's one push, so "push once, never
-  force-push" holds unchanged with the task branch as its object. The owner
-  then runs the local-only steps (`config:push` and `db:push` to test and
-  prod, console steps) and fast-forwards `main` locally, which deploys; the
-  UI merge is not used. In a cloud session `bash-guard.mjs` denies a push
-  to `main` or to any branch but the current one. Production secrets never
-  enter the cloud; E2E credentials may, as proxy-attached API credentials.
-- Rejected: scratch base branches per batch with a local cherry-pick - two
-  extra branch names per batch and a release whose handoff lives on two
-  hosts; a pull request and merge commit from the claude.ai/code UI - one
-  commit per release is the law's shape.
+- Superseded by "A cloud release pushes after every green commit; the owner squash-merges it" (2026-09-24).
+- Full text: `git show dedafaf:docs/DECISIONS.md`.
 
 ## 2026-09-24 - The hosted E2E mints its session with the secret key, not a password
 
-- Task: `persistent-storage` (owner decision, 2026-09-24, on the cloud
-  proxy's limits).
-- Decision: `tests/e2e/` obtains the test user's session through
-  `auth.admin.generateLink({ type: 'magiclink' })` and `verifyOtp({
-  token_hash })`, so the only credential a run needs is the test project's
-  secret key, sent as a header - what the cloud's hidden proxy can attach
-  to matching requests; no password travels in a request body on any host.
-  Every run starts with a fail-closed probe: a publishable-key-only request
-  to a protected table must return 401 and a Puppeteer page must see no
-  injected `Authorization` header, or the run refuses with a named message.
-- Rejected: `signInWithPassword` with `E2E_USER_PASSWORD` - the body cannot
-  pass the proxy and a second credential shape for one user; a CI-side
-  session mint handed to the cloud - a session token in transit for no
-  gain over the header the proxy already carries.
+- Superseded by "The hosted E2E reads its credentials from the environment; no proxy credential" (2026-09-24).
+- Full text: `git show dedafaf:docs/DECISIONS.md`.
 
 ## 2026-09-24 - A drag keeps its cached midpoints when another tab rewrites the list
 

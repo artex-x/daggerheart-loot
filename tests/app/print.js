@@ -1,4 +1,4 @@
-/* #/print/<ids> against dist/ - sheet grid, card size against the design,
+/* #/print/<ids> against dist-test/ - sheet grid, card size against the design,
  * versatile weapons, dice by class, armour, black and white, art
  * edges, text fitting, entry points.
  *
@@ -2328,7 +2328,7 @@ const { ok } = rep;
   await ctx.close();
   await closeBrowser();
   console.log(
-    rep.failed ? '\n' + rep.failed + ' FAILED' : '\nprint (dist/): every check passed'
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\nprint (dist-test/): every check passed'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

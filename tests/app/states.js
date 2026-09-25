@@ -6,8 +6,9 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Thirty-four cases in thirty-three
- * runs (4 and 5 share one), no ancestor. */
+ * real second tab to mean anything at all. Thirty-six cases in thirty-five
+ * runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"). */
 const fs = require('fs');
 const { PNG } = require('pngjs');
 const { baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
@@ -419,9 +420,13 @@ async function copyImage() {
  *  the request for one record's own picture is aborted, so the browser
  *  fires a genuine error event and the port's own onartfail/markArtBroken
  *  path runs for real. A second page does the same to a table row's
- *  thumbnail, and proves the row never asks for the 640 px file. */
+ *  thumbnail, and proves the row never asks for the 640 px file.
+ *
+ *  Both pages bypass the service worker: once sw.js controls the page, a
+ *  lazy picture is fetched by the worker, which page interception never sees. */
 async function brokenArtPath() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await page.setBypassServiceWorker(true);
   await page.setRequestInterception(true);
   const onReq = (req) => {
     if (/\/img\/w3[._]/.test(req.url()) || /w3\.webp$/.test(req.url())) req.abort();
@@ -452,6 +457,7 @@ async function brokenArtPath() {
    * (docs/specs/FEATURES.md, "Records"). */
   const row = await fresh({ width: 1180, height: 900 });
   const asked = [];
+  await row.page.setBypassServiceWorker(true);
   await row.page.setRequestInterception(true);
   row.page.on('request', (req) => {
     asked.push(req.url());
@@ -1159,9 +1165,11 @@ async function foldedDetailsSurviveRerender() {
 
 /** 19. Tile geometry with no art loaded - `/img/*.webp` left unanswered by
  *  request interception, never aborted and never continued, ported from
- *  the legacy `qa.js`. */
+ *  the legacy `qa.js`. The service worker is bypassed for the reason case 11
+ *  gives: a worker fetch escapes the interception. */
 async function tileGeometryNoArt() {
   const { ctx, page, d } = await fresh({ width: 360, height: 800 });
+  await page.setBypassServiceWorker(true);
   await page.setRequestInterception(true);
   const onReq = (req) => {
     if (/\/img\/.*\.webp$/.test(req.url())) return; // deliberately left hanging
@@ -2251,6 +2259,111 @@ async function noticeSummaryWinsItsTaps() {
   await ctx.close();
 }
 
+/** 35. The test build's cloud: signed out without `?as=`, the seed's `gm1`
+ *  with `?as=gm1` - and the query survives arrival, so a reload keeps the
+ *  session; a user the seed does not have fails `open()` by name
+ *  (docs/specs/COVERAGE.md, "Test layers"). */
+async function fakeCloudSignedState() {
+  const at = '35 (fake cloud signed state): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/roll/std');
+  const out = await page.evaluate(async () => {
+    const fake = window.__dhlootFake;
+    return fake ? { session: await fake.auth.session() } : null;
+  });
+  ok(!!out, at + 'no window.__dhlootFake - is this the test build?');
+  ok(out?.session === null, at + 'signed out: the session is ' + JSON.stringify(out?.session));
+  await d.open('#/roll/std', { as: 'gm1' });
+  const as = await page.evaluate(async () => ({
+    session: (await window.__dhlootFake?.auth.session()) ?? null,
+    search: location.search
+  }));
+  ok(
+    as.session?.userId === '00000000-0000-4000-8000-000000000001',
+    at + 'as gm1: the user id is ' + JSON.stringify(as.session?.userId)
+  );
+  ok(
+    as.session?.email === 'gm1@example.test',
+    at + 'as gm1: the email is ' + JSON.stringify(as.session?.email)
+  );
+  ok(as.search === '?as=gm1', at + 'the query did not survive arrival - ' + as.search);
+  const refused = await d.open('#/roll/std', { as: 'nobody' }).then(
+    () => '',
+    (e) => String(e && e.message)
+  );
+  ok(
+    refused.includes('unknown user "nobody"'),
+    at + 'an unknown ?as= user did not fail open() by name - ' + JSON.stringify(refused)
+  );
+  await ctx.close();
+}
+
+/** 36. Account preferences over the fake cloud: the account's language
+ *  wins over this browser's and is written back; an account with no row is
+ *  seeded from this browser; a signed-out print press is remembered
+ *  (docs/specs/STATE.md, "Account preferences"). */
+async function accountPreferences() {
+  const at = '36 (account preferences): ';
+  const lang = (page) => page.evaluate(() => document.documentElement.lang);
+  const until = async (page, fn, ...args) => {
+    try {
+      await page.waitForFunction(fn, { timeout: 2000, polling: 50 }, ...args);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const a = await fresh({ width: 1180, height: 900, lang: 'en' });
+  await a.d.open('#/roll/std', { as: 'gm1' });
+  ok(
+    await until(a.page, () => document.documentElement.lang === 'ru'),
+    at + "a: the account's ru did not win over this browser's en - " + (await lang(a.page))
+  );
+  ok((await a.d.storage('dhloot.lang.v1')) === 'ru', at + 'a: dhloot.lang.v1 is not ru');
+  const local = JSON.parse((await a.d.storage('dhloot.prefs.v1')) ?? 'null');
+  ok(
+    JSON.stringify(local) ===
+      JSON.stringify({ view: 'grid', printBw: true, printCompact: true }),
+    at + "a: dhloot.prefs.v1 is not the account's - " + JSON.stringify(local)
+  );
+  await a.ctx.close();
+
+  const b = await fresh({
+    width: 1180,
+    height: 900,
+    lang: 'en',
+    storage: { 'dhloot.prefs.v1': '{"view":"grid","printBw":false,"printCompact":true}' }
+  });
+  await b.d.open('#/roll/std', { as: 'gm2' });
+  const want = {
+    ok: true,
+    prefs: { lang: 'en', home: '#/roll/std', view: 'grid', printBw: false, printCompact: true }
+  };
+  ok(
+    await until(
+      b.page,
+      async (w) => JSON.stringify(await window.__dhlootFake?.prefs.load()) === w,
+      JSON.stringify(want)
+    ),
+    at +
+      'b: the account with no row was not seeded from this browser - ' +
+      JSON.stringify(await b.page.evaluate(() => window.__dhlootFake?.prefs.load()))
+  );
+  ok((await lang(b.page)) === 'en', at + 'b: the page did not stay English');
+  await b.ctx.close();
+
+  const c = await fresh({ width: 1180, height: 900 });
+  await c.d.open('#/print/ci1-q1');
+  await c.d.click('Чёрно-белая');
+  const kept = await c.d.storage('dhloot.prefs.v1');
+  ok(
+    kept === '{"view":"list","printBw":true,"printCompact":false}',
+    at + 'c: the signed-out print press was not remembered - ' + kept
+  );
+  await c.ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -2284,7 +2397,9 @@ const CASES = [
   ['31 (card image focus ring)', cardMediaRingVisible],
   ['32 (undo toast in the record dialog)', undoToastInRecordDialog],
   ['33 (drag source removed mid-drag)', dragSourceRemovedMidDrag],
-  ['34 (notice summary wins its taps)', noticeSummaryWinsItsTaps]
+  ['34 (notice summary wins its taps)', noticeSummaryWinsItsTaps],
+  ['35 (fake cloud signed state)', fakeCloudSignedState],
+  ['36 (account preferences)', accountPreferences]
 ];
 
 (async () => {
@@ -2306,7 +2421,7 @@ const CASES = [
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\nreal-input states (dist/): all ' + CASES.length + ' cases passed'
+      : '\nreal-input states (dist-test/): all ' + CASES.length + ' runs passed'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

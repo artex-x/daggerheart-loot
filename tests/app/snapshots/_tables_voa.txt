@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -236,6 +237,7 @@ daggerheart.com
 Виски Ведьмовского Духа
 Вихревой Резак
 Войнарианский Арбалет
+Войти
 Воля Глашатая
 Временной Фитиль
 Всадник Волн
@@ -397,6 +399,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/voa]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -724,6 +727,7 @@ Shadowcull
 Shaman's Blade
 Shield of Repulsion
 Shrunken Head of Uvageki
+Sign in
 Silvered Holy Symbol
 Skip to content
 Skull Lord's Key

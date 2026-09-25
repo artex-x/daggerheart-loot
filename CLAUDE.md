@@ -22,9 +22,8 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 
 ## Engineering posture and campsite
 
-- Prefer the smallest change that fixes the defect. Public contracts default
-  to no change; behaviour is judged against `docs/specs/`, not against the
-  previous build.
+- Prefer the smallest change that fixes the defect. Public contracts default to
+  no change; behaviour is judged against `docs/specs/`, not the previous build.
 - Reuse existing modules, ports, patterns, tokens, and naming. Do not invent
   abstractions ahead of demonstrated need.
 - Add no module, export, component, or variant before something uses it.
@@ -40,7 +39,8 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 One session at a time per working tree, per local Supabase stack and per
 hosted test project. A second session's `npm ci`, staged index, coverage
 directory, browser suite, `db reset` or E2E run corrupts the first's results
-or data, and the failure looks like a bug in whatever was running.
+or data, and the failure looks like a bug in whatever was running. Agents
+write only to the test project; production is CI's or the owner's.
 
 Task state lives under `issues/<id>/` only while the task is open:
 `context.md` (shared facts and settled decisions), `plan.md` (design, ordered
@@ -57,9 +57,8 @@ size budget: the Stop hook warns past it; `.claude/skills/handoff/SKILL.md`
 When asked to continue, report status and the next batch, then wait for confirmation. Implement only that batch unless the human changes scope.
 A placed item is its own acceptance line in the batch that receives it; a
 batch is not closed while an inherited line has no outcome.
-A new state gets a `tests/app/inventory.js` entry and a re-seeded golden in
-the same change; a defect kept on purpose gets a `docs/specs/DEBT.md` entry in
-the same change.
+A new state gets a `tests/app/inventory.js` entry and a re-seeded golden; a
+defect kept on purpose, a `docs/specs/DEBT.md` entry; both in the same change.
 
 Size a batch by its gates, not its diff: merge work that shares a component,
 seed and filter; split only at a public-contract change, a different route
@@ -121,7 +120,7 @@ Agents: one foreground call, `rtk npm run check`, Bash timeout 600000 - see `.cl
 
 If a change alters what a screen draws, also run `npm run check:built`; a change under
 `supabase/` or `tests/db/` also runs `npm run check:db` (on Windows through the PowerShell tool), which the commit gate requires.
-Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`; the built app in a real browser (after `npm run build`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
+Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`; the built app in a real browser (after `npm run build:test`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
 `app/sweep` and `app/golden` are each too slow for one foreground call; run them per width/shard - `.claude/README.md`, "Batch size and the fixed cost of a run".
 
 Definition of done: checks pass, fixed defects and changed behaviour have
@@ -150,13 +149,14 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 - Source, identifiers, tests, and developer docs are English.
 - Product text may be Russian; otherwise use ASCII punctuation and characters.
 - Preserve unrelated working-tree changes. Commit only the coherent task scope.
-- Use Conventional Commits; author as `artex-x <artex-x@users.noreply.github.com>`.
+- Use Conventional Commits.
 - One commit per task: the first batch commits, every later batch and the
   closeout amend it (`git commit --amend`), each amend green on its gates.
   Push once, at closeout, after the task directory is deleted. A push closes
   the amend window: never force-push in any form; work after a push is a new
   commit. A push before closeout is the human's call and costs one more commit.
-  A cloud release's one push is its own task branch; the owner fast-forwards `main` to it locally.
+  A cloud release pushes each green commit and never amends a pushed one; at
+  closeout the orchestrator squash-merges it onto `main` as one commit.
 
 ## Comments
 
@@ -189,7 +189,7 @@ Feature work uses roles (see `.claude/`):
 - **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code);
   decisions to `docs/DECISIONS.md`
 - **implementer** -> next batch only; routing: `.claude/README.md`, "Host-aware explicit routing policy"
-- **reviewer** -> required when a trigger in `.claude/prompts/orchestrate.prompt.md`, "When to run reviewer (do not skip these)" fires; one remediation cycle; nits defer mid-plan and clear on the terminal batch
+- **reviewer** -> required when a trigger in `.claude/prompts/orchestrate.prompt.md`, "When to run reviewer (do not skip these)" fires; one remediation cycle, which also carries the batch's local nits; nits alone defer mid-plan and clear on the terminal batch
 - **add-source** -> rare end-to-end content ingest
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 - a single-file visual bug pinned to a width skips planner and review: `/small-fix` (`.claude/skills/small-fix/SKILL.md`)

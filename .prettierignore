@@ -20,6 +20,7 @@ card/
 app/index.html
 404.html
 dist/
+dist-test/
 coverage/
 node_modules/
 docs/fixtures/
@@ -45,9 +46,7 @@ docs/fixtures/
 .impeccable/config.local.json
 .impeccable/config.json
 
-# Machine-written: npm run db:push writes applied.json; the Supabase CLI owns
-# the two gitignored scratch directories.
-supabase/applied.json
+# Machine-written: the Supabase CLI owns the two gitignored scratch directories.
 supabase/.temp/
 supabase/.branches/
 

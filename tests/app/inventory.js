@@ -19,6 +19,13 @@
  * as opposed to the viewport alone) but golden.js's accessibility-tree
  * capture reads the same either way, so it currently marks nothing golden.js
  * itself branches on.
+ *
+ * A state with `as: '<user>'` opens signed in as that fake-cloud seed user
+ * (`?as=<user>`, the test build only - docs/specs/COVERAGE.md, "Test
+ * layers"); its id ends ` as <user>` and golden.js writes `# as: <user>`
+ * into its header. A state without `as` is signed out and says nothing, so
+ * no golden written before signed-in states existed moves.
+ * tests/app/golden.test.mjs pins the id convention both ways.
  */
 
 /** Both notes on the list and both on one entry - the shared page's own
@@ -1462,6 +1469,53 @@ const STATES = [
     id: '#/print/nope',
     route: '#/print/nope',
     why: 'nothing to print: the heading, the note and the way to the lists'
+  },
+  {
+    id: '#/account',
+    route: '#/account',
+    why: 'signed out: the sign-in chooser, both providers and the consent line'
+  },
+  {
+    id: '#/account as gm2',
+    route: '#/account',
+    as: 'gm2',
+    why: 'one identity: no Disconnect, the only-method hint and Connect Discord'
+  },
+  {
+    id: '#/account as gm1',
+    route: '#/account',
+    as: 'gm1',
+    why: 'two identities: the four sections in order, a Disconnect on each'
+  },
+  {
+    id: '#/account ~ delete confirmation as gm1',
+    route: '#/account',
+    as: 'gm1',
+    why: 'the typed confirmation open, the word typed and the final button enabled; the English half types the Russian word, so there its final button stays disabled',
+    enter: async (d) => {
+      await d.click('Удалить аккаунт...');
+      /* The only text box on the page; it is named by its <label>, which the
+         driver's name lookup does not read, and has no placeholder. */
+      await d.type('', 'удалить');
+    }
+  },
+  {
+    id: '#/roll/std as gm1',
+    route: '#/roll/std',
+    as: 'gm1',
+    why: 'the header signed in: the initial in place of «Войти»'
+  },
+  {
+    id: '#/tables/dread as gm1',
+    route: '#/tables/dread',
+    as: 'gm1',
+    why: "the account's tables view: the grid, where signed out the list is drawn"
+  },
+  {
+    id: '#/print/ci1-q1 as gm1',
+    route: '#/print/ci1-q1',
+    as: 'gm1',
+    why: "the account's print layout: black and white on the compact sheet, where signed out it is colour on the standard sheet"
   }
 ];
 

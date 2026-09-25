@@ -110,6 +110,7 @@ function setupScratch() {
   writeFile('pages/install.html', '<html></html>\n');
   writeFile('pages/src/install.html', '<section></section>\n');
   writeFile('dist/index.html', '<html></html>\n');
+  writeFile('dist-test/index.html', '<html></html>\n');
   writeFile('package-lock.json', '{}\n');
   writeFile('docs/specs/CONTRACTS.md', '# contracts\n');
   writeFile('docs/fixtures/lists/x.json', '{}\n');
@@ -351,6 +352,7 @@ function testBashSilentCases() {
     ['#25c rm -rf outside the repo', 'rm -rf /tmp/elsewhere'],
     ['#25d rm -rf node_modules', 'rm -rf node_modules'],
     ['TL6c rm -r dist', 'rm -r dist'],
+    ['TL6e rm -r dist-test', 'rm -r dist-test'],
     ['TL6d rm -r i', 'rm -r i']
   ];
   for (const [label, command] of cases) {
@@ -759,7 +761,7 @@ async function testWorktreeTreeKey() {
   }
 }
 
-// ---------- bash-guard.mjs: persistence-era families (#202-#226) ----------
+// ---------- bash-guard.mjs: persistence-era families (#202-#240) ----------
 //
 // 2l gitleaks, 2m the check:db commit rule, 2n hosted Supabase writes, 2o
 // the cloud push rule, and the PowerShell input path.
@@ -858,6 +860,91 @@ async function testPersistenceGuards() {
     fs.rmSync(marker, { force: true });
   }
 
+  {
+    // #232-#235 - `-a` and a pathspec commit unstaged changes too, so the
+    // rule scans twice: the index, then the unstaged diff (no `--staged`).
+    const log = path.join(scratchState, 'gitleaks-argv');
+    const logging = fakeGitleaks(
+      'gitleaks-log.cjs',
+      `require('node:fs').appendFileSync(${JSON.stringify(log)}, JSON.stringify(process.argv.slice(2)) + '\\n');`
+    );
+    const scans = (command) => {
+      fs.rmSync(log, { force: true });
+      runHook('bash-guard.mjs', bashPayload(command), { env: { LOOT_GITLEAKS_CMD: logging } });
+      if (!fs.existsSync(log)) return [];
+      return fs
+        .readFileSync(log, 'utf8')
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+    };
+    const staged = (argv) => argv.includes('--staged');
+    // The dirty tree is parked, so rule 2c (blanket staging) lets `-a` reach
+    // this rule.
+    gitSh(['stash', 'push', '-q', '-u']);
+    try {
+      {
+        const runs = scans('git commit -am "chore: x"');
+        check(
+          '#232 commit -am: two scans, the second without --staged',
+          runs.length === 2 && staged(runs[0]) && !staged(runs[1]),
+          JSON.stringify(runs)
+        );
+      }
+      {
+        const runs = scans('git commit -m "chore: x" app/src/lib/x.ts');
+        check(
+          '#233 pathspec commit: two scans, the second without --staged',
+          runs.length === 2 && staged(runs[0]) && !staged(runs[1]),
+          JSON.stringify(runs)
+        );
+      }
+      for (const command of [
+        'git commit -m "chore: x" --pathspec-from-file=paths.txt',
+        'git commit -m "chore: x" --pathspec-from-file paths.txt'
+      ]) {
+        const runs = scans(command);
+        check(
+          `#233a ${command}: two scans, the second without --staged`,
+          runs.length === 2 && staged(runs[0]) && !staged(runs[1]),
+          JSON.stringify(runs)
+        );
+      }
+      {
+        const runs = scans('git commit -m "chore: x"');
+        check(
+          '#234 plain commit: one scan, with --staged',
+          runs.length === 1 && staged(runs[0]),
+          JSON.stringify(runs)
+        );
+      }
+      fs.rmSync(log, { force: true });
+      const unstagedLeak = fakeGitleaks(
+        'gitleaks-unstaged-leak.cjs',
+        `if (!process.argv.includes('--staged')) { process.stdout.write(${JSON.stringify(finding)}); process.exit(99); }`
+      );
+      const env = { env: { LOOT_GITLEAKS_CMD: unstagedLeak } };
+      {
+        const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: x"'), env);
+        check('#235 unstaged finding, plain commit: silent', isSilent(result), result.stdout);
+      }
+      for (const command of [
+        'git commit -am "chore: x"',
+        'git commit -m "chore: x" app/src/lib/x.ts'
+      ]) {
+        const result = runHook('bash-guard.mjs', bashPayload(command), env);
+        check(`#235 unstaged finding: denies ${command}`, isDeny(result), result.stdout);
+        check(
+          `#235 unstaged finding: names file:line (rule) for ${command}`,
+          denyReason(result).includes('app/src/lib/x.ts:3 (generic-api-key)'),
+          denyReason(result)
+        );
+      }
+    } finally {
+      gitSh(['stash', 'pop', '-q']);
+    }
+  }
+
   // ----- 2m the check:db commit rule -----
   writeFile('supabase/config.toml', 'project_id = "scratch"\n');
   gitSh(['add', 'supabase/config.toml']);
@@ -916,32 +1003,68 @@ async function testPersistenceGuards() {
   gitSh(['reset']);
   clearCache();
 
-  // ----- 2n hosted Supabase writes -----
+  {
+    // #236-#237 - a pathspec commit takes the named paths' unstaged changes,
+    // so the gate counts them; an unstaged path outside the pathspec is not.
+    writeFile('supabase/migrations/x.sql', 'select 1;\n');
+    gitSh(['add', 'supabase/migrations/x.sql']);
+    gitCommit('chore: a migration');
+    const appFile = path.join(scratchRoot, 'app', 'src', 'lib', 'x.ts');
+    const appText = fs.readFileSync(appFile, 'utf8');
+    try {
+      appendFile('supabase/migrations/x.sql', 'select 2;\n');
+      writeCache(treeKey());
+      clearDbCache();
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload('git commit -m x supabase/migrations/x.sql')
+      );
+      check(
+        '#236 pathspec commit of an unstaged migration: denies',
+        isDeny(result),
+        result.stdout
+      );
+      check(
+        '#236 the deny is the check:db one',
+        denyReason(result).includes('npm run check:db'),
+        denyReason(result)
+      );
+      appendFile('app/src/lib/x.ts', '// changed\n');
+      writeCache(treeKey());
+      const other = runHook('bash-guard.mjs', bashPayload('git commit -m x app/src/lib/x.ts'));
+      check(
+        '#237 pathspec outside the unstaged migration: silent',
+        isSilent(other),
+        other.stdout
+      );
+    } finally {
+      fs.writeFileSync(appFile, appText);
+      gitSh(['reset', '-q', '--soft', 'HEAD~1']);
+      gitSh(['reset', '-q', 'HEAD', '--', 'supabase']);
+      fs.rmSync(path.join(scratchRoot, 'supabase'), { recursive: true, force: true });
+      clearCache();
+    }
+  }
+
+  // ----- 2n the Supabase CLI allowlist -----
   const hostedDeny = [
     'npx supabase db push',
-    'supabase db push --project-ref rdjxcjkhsklhprmzxajq',
     'npx supabase@2.117.0 db push --linked',
     'npx supabase db reset',
     'npx supabase db reset --linked',
     'npx supabase db reset --local --db-url postgres://x',
-    'npx supabase db reset --local --project-ref rdjxcjkhsklhprmzxajq',
-    'npx --yes supabase config push --project-ref rdjxcjkhsklhprmzxajq',
     'npx supabase migration repair --status applied 20261001120000',
     'npx supabase migration down',
     'npx supabase --workdir . db push',
-    'npm run config:push -- --project test',
     'npm run db:push -- --project prod',
     'rtk npm run db:push',
-    'node node_modules/supabase/dist/supabase.js config push --project-ref rdjxcjkhsklhprmzxajq',
     'node ./node_modules/supabase/dist/supabase.js db push',
     'node_modules/.bin/supabase db push',
     './node_modules/.bin/supabase.cmd db push',
     'supabase.exe db push',
     'npx.cmd supabase db push',
-    'npm.cmd run config:push -- --project test',
     'npx supabase migration up --linked',
     'npx supabase migration up --db-url postgres://x',
-    'npx supabase migration up --project-ref rdjxcjkhsklhprmzxajq',
     'npx -p supabase supabase db push',
     'npx --package supabase supabase db push',
     'npx --package=supabase supabase db push',
@@ -953,7 +1076,6 @@ async function testPersistenceGuards() {
     'npx supabase db reset --local=false',
     'npx supabase migration down --local=false',
     'npx supabase db push --local --linked',
-    'npx supabase --project-ref rdjxcjkhsklhprmzxajq config push',
     'rtk npx supabase db push',
     'rtk proxy npx supabase db push'
   ];
@@ -962,7 +1084,7 @@ async function testPersistenceGuards() {
     check(`#214 hosted write denied: ${command}`, isDeny(result), result.stdout);
     check(
       `#214 hosted write reason: ${command}`,
-      denyReason(result).includes('hosted Supabase project'),
+      denyReason(result).includes('test project only'),
       denyReason(result)
     );
   }
@@ -989,6 +1111,89 @@ async function testPersistenceGuards() {
   for (const command of hostedSilent) {
     const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-hosted' }));
     check(`#215 local or read-only allowed: ${command}`, isSilent(result), result.stdout);
+  }
+  // The test project is the agent's (owner decision 2026-09-25): these named
+  // the test ref and were denied before it.
+  const testProject = [
+    'supabase db push --project-ref rdjxcjkhsklhprmzxajq',
+    'npx supabase db reset --local --project-ref rdjxcjkhsklhprmzxajq',
+    'npx --yes supabase config push --project-ref rdjxcjkhsklhprmzxajq',
+    'npm run config:push -- --project test',
+    'node node_modules/supabase/dist/supabase.js config push --project-ref rdjxcjkhsklhprmzxajq',
+    'npm.cmd run config:push -- --project test',
+    'npx supabase migration up --project-ref rdjxcjkhsklhprmzxajq',
+    'npx supabase --project-ref rdjxcjkhsklhprmzxajq config push'
+  ];
+  for (const command of testProject) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { session_id: 's-test-ref' })
+    );
+    check(`#238 the test project is the agent's: ${command}`, isSilent(result), result.stdout);
+  }
+  const allowlistDeny = [
+    'npx supabase functions deploy x',
+    'npx supabase secrets set A=b',
+    'npx supabase link --project-ref rdjxcjkhsklhprmzxajq',
+    'npx supabase login',
+    'npx supabase db dump --db-url postgres://x',
+    'npx supabase db dump',
+    'npx supabase migration list',
+    'npx supabase migration list --linked',
+    'npx supabase storage ls ss:///',
+    'npx supabase frobnicate',
+    'npx supabase projects list',
+    'npx supabase db push --project-ref zzmrftmzefcqehhyztjq',
+    'npx supabase db push --db-url "$SUPABASE_DB_URL"',
+    'npx supabase db push --db-url postgresql://postgres.zzmrftmzefcqehhyztjq:x@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    'npm run db:push -- --project prod --yes',
+    'npm run db:push',
+    // `--version <ts>` on `db reset` is the reset's target migration, not
+    // the CLI's version.
+    'npx supabase db reset --project-ref zzmrftmzefcqehhyztjq --version 20260925120000',
+    'npx supabase db reset --linked --version 20260925120000',
+    'npx supabase db reset --db-url postgres://x -v',
+    // The test ref in the query string is not the target.
+    'npx supabase db push --db-url postgresql://postgres.rdjxcjkhsklhprmzxajq:x@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?user=postgres.zzmrftmzefcqehhyztjq',
+    'npx supabase db push --db-url postgresql://postgres:x@db.zzmrftmzefcqehhyztjq.supabase.co:5432/postgres?application_name=postgres.rdjxcjkhsklhprmzxajq',
+    'npx supabase db push --db-url postgresql://postgres:x@db.rdjxcjkhsklhprmzxajq.supabase.co.example.com:5432/postgres'
+  ];
+  for (const command of allowlistDeny) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`#239 not on the allowlist: ${command}`, isDeny(result), result.stdout);
+    check(
+      `#239 reason: ${command}`,
+      denyReason(result).includes('test project only'),
+      denyReason(result)
+    );
+  }
+  const allowlistSilent = [
+    'npx supabase db push --help',
+    'npx supabase db reset --linked -h',
+    'npx supabase --help',
+    'npx supabase -v',
+    'npx supabase --version',
+    'npx supabase db push --db-url postgresql://postgres:x@db.rdjxcjkhsklhprmzxajq.supabase.co:5432/postgres',
+    'npx supabase db dump --local -f x.sql',
+    'npx supabase db dump --dry-run --db-url postgres://x',
+    'npx supabase migration list --local',
+    'npx supabase gen types --local',
+    'npx supabase db diff --local',
+    'npx supabase migration new x',
+    'npx supabase functions serve',
+    'npx supabase db start',
+    'npx supabase completion bash',
+    'npx supabase',
+    'npm run db:push -- --project test --yes',
+    'npx supabase db push --project-ref rdjxcjkhsklhprmzxajq --yes',
+    'npx supabase db reset --project-ref rdjxcjkhsklhprmzxajq',
+    'npx supabase db dump --project-ref rdjxcjkhsklhprmzxajq -f x.sql',
+    'npx supabase db push --db-url postgresql://postgres.rdjxcjkhsklhprmzxajq:x@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    'npx supabase migration repair --project-ref rdjxcjkhsklhprmzxajq --status applied 20260925120000'
+  ];
+  for (const command of allowlistSilent) {
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-allow' }));
+    check(`#240 on the allowlist: ${command}`, isSilent(result), result.stdout);
   }
 
   // ----- 2o the cloud push rule -----
@@ -1553,6 +1758,11 @@ function testEditGuard() {
       'node tools/build.js'
     ],
     ['#34 dist/index.html', path.join(scratchRoot, 'dist', 'index.html'), 'npm run build'],
+    [
+      '#34a dist-test/index.html',
+      path.join(scratchRoot, 'dist-test', 'index.html'),
+      'npm run build:test'
+    ],
     ['#35 package-lock.json', path.join(scratchRoot, 'package-lock.json'), 'npm install'],
     [
       '#35a tests/app/snapshots/x_state.txt',
@@ -1626,45 +1836,54 @@ function testEditGuard() {
     check(`${label}: silent`, isSilent(result), result.stdout);
   }
 
-  // #196-#199 - a migration listed in supabase/applied.json is history, and
-  // applied.json itself is written by `npm run db:push` only.
-  const applied = '20261001120000_lists.sql';
+  // #196-#199 - a migration that a remote-tracking ref holds is history: CI
+  // applies every pushed migration. Git is the record; no ref, no deny.
+  const pushed = '20261001120000_lists.sql';
   const fresh = '20261002120000_share_links.sql';
   const migration = (name) => path.join(scratchRoot, 'supabase', 'migrations', name);
+  const noRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-norepo-'));
+  let committed = false;
   try {
-    writeFile('supabase/applied.json', JSON.stringify({ prod: [applied], test: [] }));
+    writeFile(`supabase/migrations/${pushed}`, 'select 1;\n');
+    gitSh(['add', `supabase/migrations/${pushed}`]);
+    gitCommit('chore: a pushed migration');
+    committed = true;
+    gitSh(['update-ref', 'refs/remotes/origin/main', 'HEAD']);
     {
-      const result = runHook('edit-guard.mjs', editPayload(migration(applied)));
-      check('#196 applied migration: denies', isDeny(result), result.stdout);
+      const result = runHook('edit-guard.mjs', editPayload(migration(pushed)));
+      check('#196 pushed migration: denies', isDeny(result), result.stdout);
       check(
-        '#196 applied migration: names the project',
-        denyReason(result).includes('applied to prod'),
+        '#196 pushed migration: names the ref',
+        denyReason(result).includes('origin/main'),
         denyReason(result)
       );
     }
+    writeFile(`supabase/migrations/${fresh}`, 'select 2;\n');
     {
       const result = runHook('edit-guard.mjs', editPayload(migration(fresh)));
-      check('#197 unapplied migration: silent', isSilent(result), result.stdout);
+      check('#197 migration on no ref: silent', isSilent(result), result.stdout);
+    }
+    gitSh(['update-ref', '-d', 'refs/remotes/origin/main']);
+    {
+      const result = runHook('edit-guard.mjs', editPayload(migration(pushed)));
+      check('#198 no remote ref holds it: allows', isSilent(result), result.stdout);
     }
     {
       const result = runHook(
         'edit-guard.mjs',
-        editPayload(path.join(scratchRoot, 'supabase', 'applied.json'))
+        editPayload(path.join(noRepo, 'supabase', 'migrations', pushed)),
+        { root: noRepo, env: { GIT_CEILING_DIRECTORIES: path.dirname(noRepo) } }
       );
-      check('#198 applied.json: denies', isDeny(result), result.stdout);
-      check(
-        '#198 applied.json: names db:push',
-        denyReason(result).includes('npm run db:push'),
-        denyReason(result)
-      );
-    }
-    writeFile('supabase/applied.json', '{ not json');
-    {
-      const result = runHook('edit-guard.mjs', editPayload(migration(applied)));
-      check('#199 malformed applied.json: allows', isSilent(result), result.stdout);
+      check('#199 not a git repository: allows', isSilent(result), result.stdout);
     }
   } finally {
+    spawnSync('git', ['update-ref', '-d', 'refs/remotes/origin/main'], { cwd: scratchRoot });
+    if (committed) {
+      gitSh(['reset', '-q', '--soft', 'HEAD~1']);
+      gitSh(['reset', '-q', 'HEAD', '--', 'supabase']);
+    }
     fs.rmSync(path.join(scratchRoot, 'supabase'), { recursive: true, force: true });
+    fs.rmSync(noRepo, { recursive: true, force: true });
   }
 }
 
@@ -2299,8 +2518,19 @@ function testSessionStart() {
       /Cloud session\./.test(cloudCtx)
     );
     check(
-      '#201 session-start: five probes, skipped',
-      (cloudCtx.match(/: skipped$/gm) || []).length === 5,
+      '#201 session-start: seven probes, skipped',
+      (cloudCtx.match(/: skipped$/gm) || []).length === 7,
+      cloudCtx
+    );
+    check(
+      '#201 session-start: the NSS probe runs cloud-nss.sh --check',
+      /proxy authority in NSS: skipped$/m.test(cloudCtx) &&
+        /\[script, '--check'\]/.test(
+          fs.readFileSync(path.join(hooksDir, 'session-start.mjs'), 'utf8')
+        ) &&
+        /\$\{1:-\}" = --check/.test(
+          fs.readFileSync(path.join(hooksDir, '..', 'cloud-nss.sh'), 'utf8')
+        ),
       cloudCtx
     );
     check(

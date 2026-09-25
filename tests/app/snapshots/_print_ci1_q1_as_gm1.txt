@@ -1,0 +1,150 @@
+# #/print/ci1-q1 as gm1
+# route: #/print/ci1-q1
+# why: the account's print layout: black and white on the compact sheet, where signed out it is colour on the standard sheet
+# as: gm1
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1#/print/ci1-q1]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Аккаунт: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Печать карточек" [level=1]
+    StaticText "Карточек: 2. Листов A4: 1. Размер карты 44×63 мм — шестнадцать н..." [namelen=71 namehash=a55798f5]
+    button "Назад"
+    button "Отправить на печать"
+    button "Цветная" [pressed=false]
+    button "Чёрно-белая" [pressed=true]
+    button "Обычная" [pressed=false]
+    button "Компактная" [pressed=true]
+    button "Ссылка на набор"
+    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
+    ... StaticText x18 of 22 same-shape siblings elided
+    heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
+    heading "ПАЛАШ" [level=2]
+    StaticText "Daggerheart"
+    StaticText "Core"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+К содержимому
+Компактная
+Конфиденциальность
+ЛутDaggerheart
+Назад
+Обычная
+Обычные правила
+Отправить на печать
+Поиск
+Сообщества
+Списки
+Ссылка на набор
+Таблицы
+Условия использования
+Установить как приложение
+Цветная
+Чёрно-белая
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/print/ci1-q1]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Account: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Printing cards" [level=1]
+    StaticText "Cards: 2. A4 sheets: 1. Card size 44×63 mm - sixteen to a sheet."
+    button "Back"
+    button "Send to printer"
+    button "Colour" [pressed=false]
+    button "Black and white" [pressed=true]
+    button "Standard" [pressed=false]
+    button "Compact" [pressed=true]
+    button "Link to this set"
+    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
+    ... StaticText x18 of 22 same-shape siblings elided
+    heading "PREMIUM BEDROLL" [level=2]
+    heading "BROADSWORD" [level=2]
+    StaticText "Daggerheart"
+    StaticText "Core"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Account: gm1@example.test
+Alt. tables
+Back
+Black and white
+Colour
+Communities
+Compact
+Dragon's Vault
+Dread
+EN
+Install as an app
+Link to this set
+Lists
+Privacy
+RU
+Search
+Send to printer
+Skip to content
+Standard
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

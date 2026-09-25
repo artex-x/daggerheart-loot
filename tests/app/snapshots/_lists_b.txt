@@ -11,6 +11,7 @@ RootWebArea "Лавка в порту — Генератор лута — Dagger
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -50,6 +51,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Войти
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -76,6 +78,7 @@ RootWebArea "Лавка в порту — Daggerheart Loot Generator" [url=#/l/0
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -122,6 +125,7 @@ Players' link
 Privacy
 RU
 Search
+Sign in
 Skip to content
 Standard rules
 Tables

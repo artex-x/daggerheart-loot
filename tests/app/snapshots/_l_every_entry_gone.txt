@@ -11,6 +11,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0J_RgNC-0L_Qs
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -45,6 +46,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Войти
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -66,6 +68,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ej
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -103,6 +106,7 @@ Privacy
 RU
 Save to my lists
 Search
+Sign in
 Skip to content
 Standard rules
 Tables

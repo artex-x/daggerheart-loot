@@ -16,8 +16,10 @@ import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
-import type { Env } from '../ports/index.js';
+import type { CloudPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
 import type { Record_ } from '../lib/types.js';
@@ -127,6 +129,7 @@ const STATES: {
   what: string;
   route: string;
   storage?: Record<string, string>;
+  cloud?: () => CloudPort;
   enter?: (() => Promise<void>) | undefined;
 }[] = [
   {
@@ -319,17 +322,32 @@ const STATES: {
     enter: async () => {
       await press('Чёрно-белая');
     }
+  },
+  {
+    what: 'the account page with the delete confirmation open',
+    route: '#/account',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await userEvent.click(await screen.findByRole('button', { name: 'Удалить аккаунт...' }));
+      await userEvent.type(screen.getByRole('textbox'), 'удалить');
+    }
   }
 ];
 
 describe('states reached by pressing something', () => {
-  it.each(STATES)('has no axe violations on $what', async ({ route, storage, enter }) => {
-    const { container } = render(App, {
-      env: at(route, storage ? { storage: memoryStorage(storage) } : {})
-    });
-    await enter?.();
-    await expectNoA11yViolations(container);
-  });
+  it.each(STATES)(
+    'has no axe violations on $what',
+    async ({ route, storage, cloud, enter }) => {
+      const { container } = render(App, {
+        env: at(route, {
+          ...(storage ? { storage: memoryStorage(storage) } : {}),
+          ...(cloud ? { cloud: cloud() } : {})
+        })
+      });
+      await enter?.();
+      await expectNoA11yViolations(container);
+    }
+  );
 });
 
 /**
@@ -342,6 +360,8 @@ describe('states reached by pressing something', () => {
  * question and the one that was going unasked.
  */
 const COVERED: Record<string, string> = {
+  'AccountPage.svelte':
+    'accountPage.test.ts in every state, and the delete confirmation open above',
   'Actions.svelte': 'the card actions on every record state above, and record.test.ts',
   'AddToList.svelte': 'the add-to-list menu, in the state above',
   'Toast.svelte':
@@ -398,6 +418,8 @@ const COVERED: Record<string, string> = {
   'Shell.svelte': 'shell.test.ts',
   'StorageNotice.svelte': 'the lists index state above, and the list page below',
   'TabBar.svelte': 'the frame, on every state',
+  'TextInput.svelte':
+    'the lists index above, and the delete confirmation open above (accountPage.test.ts)',
   'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",
   'TablesPage.svelte': 'tables.test.ts, and the pressed states below',
   'VoaPanel.svelte': 'sections.test.ts, and in English above'

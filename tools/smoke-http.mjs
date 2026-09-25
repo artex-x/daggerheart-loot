@@ -1,7 +1,7 @@
 /* The built page opens over HTTP.
  *
  * `dist/` is served by the same static server the browser suites use
- * (tests/app/lib.js), on a free port of 127.0.0.1. The entry is an ES module
+ * (tests/app/serve.js), on a free port of 127.0.0.1. The entry is an ES module
  * with a hashed name; `data.js` stays a classic script that puts the dataset
  * into window.LOOT before the module runs (docs/specs/CONTRACTS.md section 4).
  * The service worker registers and controls the page after one reload
@@ -13,7 +13,6 @@ import { join } from 'node:path';
 import puppeteer from 'puppeteer';
 
 const DIST = join(import.meta.dirname, '..', 'dist');
-const INDEX = join(DIST, 'index.html');
 
 let fail = 0;
 const ok = (c, m) => {
@@ -23,14 +22,12 @@ const ok = (c, m) => {
   }
 };
 
-if (!existsSync(INDEX)) {
-  console.log('  FAIL no dist/index.html - run `npm run build` first');
-  process.exit(1);
-}
-
-/* CommonJS, shared with tests/app/: it also refuses a stale dist/. */
-const { serveDist } = createRequire(import.meta.url)('../tests/app/lib.js');
-const server = await serveDist();
+/* CommonJS, shared with tests/app/, which drive dist-test/ through it; this
+   file keeps driving dist/, what is published. It refuses a missing or
+   stale build. */
+const { assertBuilt, serveDist } = createRequire(import.meta.url)('../tests/app/serve.js');
+assertBuilt(DIST, 'dist/');
+const server = await serveDist(DIST);
 const root = 'http://127.0.0.1:' + String(server.address().port) + '/';
 
 const browser = await puppeteer.launch({
@@ -90,6 +87,30 @@ const after = await page.evaluate(async () => ({
 ok(after.registrations === 1, 'not one worker registration: ' + String(after.registrations));
 ok(after.controlled, 'the worker does not control the page after one reload');
 ok(after.mounted, 'the app did not render on the controlled reload');
+
+/* A build with no sign-in configured - what `npm run build` makes unless the
+   two VITE_SUPABASE_* values are in its environment - draws no account
+   control, and `#/account` is the not-found page at the same address
+   (docs/specs/FEATURES.md, "Account"). */
+if (!process.env.VITE_SUPABASE_URL) {
+  const control = await page.evaluate(
+    () => !!document.querySelector('header a[href="#/account"]')
+  );
+  ok(!control, 'an unconfigured build draws the account control');
+  await page.goto(root + 'index.html#/account', { waitUntil: 'load' });
+  await page.waitForFunction(() => !!document.querySelector('#app h1'));
+  const account = await page.evaluate(() => ({
+    heading: document.querySelector('#app h1')?.textContent ?? '',
+    hash: location.hash,
+    control: !!document.querySelector('header a[href="#/account"]')
+  }));
+  ok(
+    account.heading === 'Предмет не найден',
+    'an unconfigured #/account does not draw the not-found page: ' + account.heading
+  );
+  ok(account.hash === '#/account', 'an unconfigured #/account moved to ' + account.hash);
+  ok(!account.control, 'an unconfigured #/account draws the account control');
+}
 ok(!errors.length, 'the page complains over HTTP: ' + errors.join('; '));
 
 /* The <noscript> block's own links: with scripting on, the browser never

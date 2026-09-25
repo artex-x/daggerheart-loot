@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -137,6 +138,7 @@ daggerheart.com
 Бутыль Цисканского Тумана
 Бутыль с Духом
 Варево Берсерка
+Войти
 Гравитационная Бомба
 Гриб Светящегося Мха
 Драконья Мантия
@@ -222,6 +224,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -400,6 +403,7 @@ Red Ooze Oil
 Salamander Salve
 Search
 Self-Sewing Thread
+Sign in
 Skip to content
 Slayer's Salt
 Snakeskin Spirit

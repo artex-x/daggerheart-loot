@@ -15,6 +15,7 @@
   import Panel from './Panel.svelte';
   import SearchBox from './SearchBox.svelte';
   import StorageNotice from './StorageNotice.svelte';
+  import TextInput from './TextInput.svelte';
   import { artSrc } from '../lib/desc.js';
   import { sharedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
@@ -157,12 +158,11 @@
     <Field label={t.newList}>
       <NumRow>
         <div class="grow">
-          <input
-            type="text"
+          <TextInput
             bind:value={draft}
-            bind:this={nameInput}
+            bind:el={nameInput}
             placeholder={t.listNamePh}
-            aria-label={t.newList}
+            label={t.newList}
           />
         </div>
         <Button variant="primary" onclick={create}>{t.create}</Button>
@@ -171,12 +171,7 @@
     <Field label={t.importList}>
       <NumRow>
         <div class="grow">
-          <input
-            type="text"
-            bind:value={importDraft}
-            placeholder={t.importPh}
-            aria-label={t.importList}
-          />
+          <TextInput bind:value={importDraft} placeholder={t.importPh} label={t.importList} />
         </div>
         <Button onclick={restore}>{t.importBtn}</Button>
       </NumRow>
@@ -256,25 +251,6 @@
     min-width: 0;
   }
 
-  /* off the global `input[type=text]` rule in style.css - `TablesPage.svelte`
-     scopes its own search box the same way rather than sharing one. */
-  input[type='text'] {
-    width: 100%;
-    height: 46px;
-    padding: 0 14px;
-    border-radius: var(--r-sm);
-    background: var(--bg2);
-    border: 1px solid var(--line2);
-    color: var(--txt);
-    font: inherit;
-  }
-
-  input[type='text']:focus {
-    outline: none;
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
-  }
-
   /* The grid's own top margin, which the filter takes over. */
   .listfind {
     margin-top: 18px;
@@ -327,7 +303,7 @@
   }
 
   .listcard-top b {
-    font-size: 15.5px;
+    font-size: var(--step-0);
     font-weight: 650;
     line-height: 1.3;
   }

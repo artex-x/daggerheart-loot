@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run data && vite build",
+    "build:test": "npm run data && vite build --mode test",
     "preview": "vite preview",
     "data": "node tools/build.js",
     "format": "prettier --write .",
@@ -20,17 +21,19 @@
     "test:legacy": "node tests/run-all.js",
     "budget": "node tools/bundle-budget.mjs",
     "check:fast": "npm run lint && npm run typecheck && npm run test",
-    "check": "npm run format:check && npm run lint && npm run typecheck && node --check tools/check-site.mjs && npm run data && node tests/derived.js && node tests/dataint.js && node .claude/hooks/selftest.mjs && node --test tools/tg-preview/lib.test.mjs && node --test tools/artwork/lib.test.mjs && node --test tools/supabase/lib.test.mjs && node --test tools/check-site.test.mjs && node --test tests/app/golden.test.mjs && node --test tests/sw.test.mjs && npm run test",
-    "check:built": "npm run build && npm run smoke && npm run budget",
+    "check": "npm run format:check && npm run lint && npm run typecheck && node --check tools/check-site.mjs && npm run data && node tests/derived.js && node tests/dataint.js && node .claude/hooks/selftest.mjs && node --test tools/tg-preview/lib.test.mjs && node --test tools/artwork/lib.test.mjs && node --test tools/supabase/lib.test.mjs && node --test tools/check-site.test.mjs && node --test tests/app/golden.test.mjs && node --test tests/sw.test.mjs && node --test tests/e2e/lib.test.mjs && npm run test",
+    "check:built": "npm run build && npm run build:test && npm run smoke && npm run budget && node tools/no-fake-in-prod.mjs",
     "check:db": "node tests/db/run.mjs",
     "smoke": "node tools/smoke-http.mjs",
     "previews": "node tools/tg-preview/run.mjs",
     "config:diff": "node tools/supabase/config.mjs diff",
     "config:push": "node tools/supabase/config.mjs push",
-    "db:push": "node tools/supabase/db-push.mjs"
+    "db:push": "node tools/supabase/db-push.mjs",
+    "e2e": "node --env-file-if-exists=.env.test.local --import ./tests/e2e/ts-hooks.mjs tests/e2e/run.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@supabase/supabase-js": "2.117.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/svelte": "^5.4.2",

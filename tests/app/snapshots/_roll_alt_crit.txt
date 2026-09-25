@@ -11,6 +11,7 @@ RootWebArea "Альт. таблицы — Генератор лута — Dagger
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -95,6 +96,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Бросить кости
+Войти
 К содержимому
 Как это работает
 Конфиденциальность
@@ -140,6 +142,7 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -249,6 +252,7 @@ RareTier 2–3
 Roll the dice
 Search
 Share
+Sign in
 Skip to content
 Standard rules
 Tables

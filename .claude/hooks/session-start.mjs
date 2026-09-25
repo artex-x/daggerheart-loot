@@ -36,7 +36,17 @@ function dockerProbe() {
   return result === 'ok' ? result : `${result} - start it: (dockerd > /tmp/dockerd.log 2>&1 &)`;
 }
 
-/** The cloud block: five host probes (each "ok" or what failed; "skipped"
+// Chrome for Testing trusts the NSS store, not the system bundle, so without
+// the proxy's authorities there the hosted E2E's browser half is refused.
+// The script's own `--check` (every CA, by fingerprint) is the one test.
+function nssProbe() {
+  if (!existsSync('/root/.ccr/agent-proxy-ca.crt')) return 'no proxy authority on this host';
+  const script = path.join(repoRoot(), '.claude', 'cloud-nss.sh');
+  const result = probeCommand('bash', [script, '--check'], 3000);
+  return result === 'ok' ? result : `${result} - run: bash .claude/cloud-nss.sh`;
+}
+
+/** The cloud block: seven host probes (each "ok" or what failed; "skipped"
  * under the selftest) and the three rules of a cloud session. */
 function cloudLines() {
   const skip = process.env.LOOT_SKIP_PROBES === '1';
@@ -46,8 +56,10 @@ function cloudLines() {
     `  Node: ${probe(probeNode)}`,
     `  docker info: ${probe(dockerProbe)}`,
     `  puppeteer cache: ${probe(() => (existsSync(path.join(os.homedir(), '.cache', 'puppeteer')) ? 'ok' : 'missing'))}`,
+    `  node_modules: ${probe(() => (existsSync(path.join(repoRoot(), 'node_modules')) ? 'ok' : 'missing - run npm ci'))}`,
     `  gitleaks version: ${probe(() => probeCommand('gitleaks', ['version'], 2000))}`,
     `  rtk --version: ${probe(() => probeCommand('rtk', ['--version'], 2000))}`,
+    `  proxy authority in NSS: ${probe(nssProbe)}`,
     'A whole release runs on one host.',
     'No production secret enters this environment.',
     'Push only the current task branch, never `main`.'

@@ -102,6 +102,7 @@ daggerheart.com
 Банка с Огнём
 Бездонная Сумка
 Ботинки Хождения по Воде
+Войти
 Глиняный Спутник
 Двойная Фляга
 Добавить в список
@@ -351,6 +352,7 @@ Ring of Unbreakable Resolve
 Search
 Shard of Memory
 Share
+Sign in
 Skeleton Key
 Skip to content
 Speaking Orbs

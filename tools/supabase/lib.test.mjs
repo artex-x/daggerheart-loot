@@ -15,9 +15,8 @@ import {
   pairMigrations,
   isAdditiveMarker,
   nonAdditiveStatements,
-  readApplied,
-  unapplied,
-  markApplied,
+  migrationVersion,
+  pendingMigrations,
   NOT_OWNED,
   splitDrift,
   driftSummary
@@ -229,24 +228,27 @@ describe('nonAdditiveStatements', () => {
   });
 });
 
-describe('applied.json', () => {
-  it('reads the two lists and refuses a malformed file', () => {
-    assert.deepEqual(readApplied('{ "prod": [], "test": ["a"] }'), { prod: [], test: ['a'] });
-    assert.throws(() => readApplied('{ "prod": [] }'), /"test" is not a list/);
-    assert.throws(() => readApplied('{ "prod": [1], "test": [] }'), /"prod" is not a list/);
-    assert.throws(() => readApplied('not json'));
+describe('pending migrations', () => {
+  it('reads the version as the 14 digits and gives null for a bad name', () => {
+    assert.equal(migrationVersion(M1), '20261001120000');
+    assert.equal(migrationVersion('0002_delete_account.sql'), null);
+    assert.equal(migrationVersion('20261001120000_Lists.sql'), null);
   });
 
-  it('lists a new migration as unapplied for one project only', () => {
-    const applied = { prod: [M1], test: [M1, M2] };
-    assert.deepEqual(unapplied([M2, M1], applied, 'prod'), [M2]);
-    assert.deepEqual(unapplied([M1, M2], applied, 'test'), []);
+  it('lists the names whose version is not applied, sorted', () => {
+    assert.deepEqual(pendingMigrations([M2, M1], ['20261001120000']), [M2]);
+    assert.deepEqual(pendingMigrations([M1, M2], ['20261001120000', '20261002120000']), []);
   });
 
-  it('marks migrations applied in order without duplicates', () => {
-    const applied = { prod: [M1], test: [] };
-    const next = markApplied(applied, 'prod', [M2, M1]);
-    assert.deepEqual(next, { prod: [M1, M2], test: [] });
-    assert.deepEqual(applied, { prod: [M1], test: [] });
+  it('lists a bad name as pending', () => {
+    assert.deepEqual(pendingMigrations([M1, 'x.sql'], ['20261001120000']), ['x.sql']);
+  });
+
+  it('lists every migration when nothing is applied', () => {
+    assert.deepEqual(pendingMigrations([M2, M1], []), [M1, M2]);
+  });
+
+  it('gives an empty list when there is no local migration', () => {
+    assert.deepEqual(pendingMigrations([], ['20261001120000']), []);
   });
 });

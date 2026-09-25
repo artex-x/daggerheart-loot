@@ -405,7 +405,46 @@ const ru = {
     'В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок величин взят из общей таблицы сообщества — у снаряжения по рангу, у добычи по редкости. Это не канон, а точка отсчёта; выбранным строкам цены будут перезаписаны.',
   guessNoTier: 'нечем оценить',
   guessNoRarity: 'редкость не указана',
-  guessDone: 'Цены проставлены'
+  guessDone: 'Цены проставлены',
+
+  /* The account: the header control and `#/account`. Texts name what an
+     account is for in general terms, true in every release (I18N.md,
+     "Rules"). `%s` is a provider name, Google or Discord, never translated. */
+  account: 'Аккаунт',
+  signIn: 'Войти',
+  accountSub: 'Способы входа, выход и ваши данные.',
+  signInLead:
+    'Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.',
+  signInWith: 'Войти через %s',
+  consentBefore: 'Входя, вы принимаете ',
+  consentTerms: 'условия',
+  consentMid: ' и ',
+  consentPrivacy: 'политику конфиденциальности',
+  consentAfter: '.',
+  signedInAs: 'Вы вошли как',
+  via: 'через %s',
+  providers: 'Способы входа',
+  notConnected: 'не подключён',
+  connect: 'Подключить %s',
+  redirecting: 'Переходим в %s...',
+  disconnect: 'Отключить',
+  onlyMethod:
+    '%s - единственный способ входа, поэтому его нельзя отключить. Подключите второй, чтобы отключить этот.',
+  alreadyLinked: 'Этот аккаунт %s уже подключён к другому пользователю.',
+  signOutHead: 'Выход',
+  signOut: 'Выйти',
+  signOutAll: 'Выйти на всех устройствах',
+  signOutAllHint:
+    '«Выйти на всех устройствах» завершает вход и на других телефонах и компьютерах.',
+  deleteHead: 'Удаление аккаунта',
+  deleteHint: 'Аккаунт и все связанные с ним данные будут удалены навсегда.',
+  deleteOpen: 'Удалить аккаунт...',
+  deleteTypeWord: 'Чтобы подтвердить, введите слово',
+  deleteWord: 'удалить',
+  deleteFinal: 'Удалить навсегда',
+  signedOut: 'Вы вышли из аккаунта.',
+  accountDeleted: 'Аккаунт удалён.',
+  accountFailed: 'Не получилось. Попробуйте ещё раз.'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -727,7 +766,44 @@ const en: Dict = {
     'The book has no prices: Core (p. 105) leaves them to the GM. These magnitudes come from the community spreadsheet - by tier for equipment, by rarity for loot. Not canon, a starting point; the selected rows will have their prices overwritten.',
   guessNoTier: 'nothing to go on',
   guessNoRarity: 'no rarity given',
-  guessDone: 'Prices set'
+  guessDone: 'Prices set',
+
+  /* The account */
+  account: 'Account',
+  signIn: 'Sign in',
+  accountSub: 'Sign-in methods, signing out and your data.',
+  signInLead:
+    'Sign in to have your data on all your devices. Everything else works without signing in.',
+  signInWith: 'Sign in with %s',
+  consentBefore: 'By signing in you accept the ',
+  consentTerms: 'terms',
+  consentMid: ' and the ',
+  consentPrivacy: 'privacy policy',
+  consentAfter: '.',
+  signedInAs: 'Signed in as',
+  via: 'with %s',
+  providers: 'Connected providers',
+  notConnected: 'not connected',
+  connect: 'Connect %s',
+  redirecting: 'Redirecting to %s...',
+  disconnect: 'Disconnect',
+  onlyMethod:
+    '%s is your only sign-in method, so it cannot be disconnected. Connect another one first.',
+  alreadyLinked: 'This %s account is already used by another account.',
+  signOutHead: 'Sign out',
+  signOut: 'Sign out',
+  signOutAll: 'Sign out everywhere',
+  signOutAllHint:
+    '"Sign out everywhere" also ends the session on your other phones and computers.',
+  deleteHead: 'Delete account',
+  deleteHint: 'The account and all the data linked to it will be deleted for good.',
+  deleteOpen: 'Delete account...',
+  deleteTypeWord: 'To confirm, type the word',
+  deleteWord: 'delete',
+  deleteFinal: 'Delete for good',
+  signedOut: 'You are signed out.',
+  accountDeleted: 'The account is deleted.',
+  accountFailed: 'That did not work. Try again.'
 };
 
 const DICTS: Record<Lang, Dict> = { ru, en };

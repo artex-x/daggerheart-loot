@@ -32,9 +32,10 @@ import {
 } from '../lib/hash.js';
 import { encodeList, type DecodedList } from '../lib/listLink.js';
 import { LIST_PAGE, type StoredList } from '../lib/lists.js';
+import { readPrefs, type Prefs } from '../lib/prefs.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Section } from '../lib/types.js';
-import type { Env } from '../ports/index.js';
+import type { Env, Provider, Session } from '../ports/index.js';
 import { ListStore } from './lists.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -44,19 +45,30 @@ const PREFS_KEY = 'dhloot.prefs.v1';
 
 const DEFAULT_HOME = '#/roll/std';
 
+/** What `dhloot.prefs.v1` holds, whole: the tables view and the print
+ *  layout (docs/specs/STATE.md). */
+interface LocalPrefs {
+  view: 'list' | 'grid';
+  printBw: boolean;
+  printCompact: boolean;
+}
+
 /** Read as untrusted data, the same as every other stored setting: a bad or
- *  missing value falls back to `'list'` rather than breaking the page. */
-function readTablesView(env: Env): 'list' | 'grid' {
+ *  missing field falls back to its default rather than breaking the page, and
+ *  live's old `{ view }` shape still reads. */
+function readLocalPrefs(env: Env): LocalPrefs {
+  let p: Prefs = {};
   const raw = env.storage.get(PREFS_KEY);
-  if (!raw) return 'list';
   try {
-    const parsed: unknown = JSON.parse(raw);
-    const view =
-      parsed && typeof parsed === 'object' ? (parsed as { view?: unknown }).view : undefined;
-    return view === 'grid' ? 'grid' : 'list';
+    if (raw) p = readPrefs(JSON.parse(raw));
   } catch {
-    return 'list';
+    /* broken JSON: the defaults */
   }
+  return {
+    view: p.view ?? 'list',
+    printBw: p.printBw ?? false,
+    printCompact: p.printCompact ?? false
+  };
 }
 
 /** What one action can undo, carried on a toast for the 7000ms it lasts. */
@@ -79,8 +91,8 @@ function readLang(env: Env): Lang {
   return v === 'ru' || v === 'en' ? v : 'ru';
 }
 
-function readHome(env: Env): string {
-  const v = env.storage.get(HOME_KEY);
+/** The pin an address makes, or null when a pin may not hold it. */
+function pinOf(v: string): string | null {
   /* A pinned section has to still be a section. A record or a list is refused
      because it is a snapshot that drifts away from the data. A named table
      survives the same way; a bare `#/tables` is accepted too - live's own
@@ -90,12 +102,17 @@ function readHome(env: Env): string {
      `parseHash` cannot tell "no name" from "a name it did not recognise"
      (both come back `table: null`), so the bare case is read off the string
      itself rather than off the route. */
-  if (!v) return DEFAULT_HOME;
   if (v === '#/tables/frames') return '#/tables/other_frames';
   const r = parseHash(v);
   if (r.kind === 'section') return v;
   if (r.kind === 'tables' && (r.table || stripHash(v) === 'tables')) return v;
-  return DEFAULT_HOME;
+  return null;
+}
+
+/** The starting section a stored value names, the default for nothing or a
+ *  refused value. */
+function homeOf(v: string | null): string {
+  return (v && pinOf(v)) || DEFAULT_HOME;
 }
 
 export class AppState {
@@ -238,25 +255,21 @@ export class AppState {
    *  for good - the live app's `dhloot.warn.v1`. App-level because the list
    *  page reads the same flag, not only the index. */
   #warnHidden = $state(false);
-  /** The tables page's list/grid switch (restored). `dhloot.prefs.v1`
-   *  held `{ view }` on live and nothing else; app-level, the way `#home` and
-   *  `#warnHidden` are, rather than component-local, because how a page looks
-   *  is remembered (`STATE.md`) and `TablesPage` is never destroyed between
-   *  two `tables` addresses, so a component-local field would survive a
-   *  session but not explain where the persisted value lives. */
+  /** The tables page's list/grid switch (restored). App-level, the way
+   *  `#home` and `#warnHidden` are, rather than component-local, because how
+   *  a page looks is remembered (`STATE.md`) and `TablesPage` is never
+   *  destroyed between two `tables` addresses, so a component-local field
+   *  would survive a session but not explain where the persisted value
+   *  lives. */
   #tablesView = $state<'list' | 'grid'>('list');
-  /** The print page's colour/black-and-white choice, kept as session
-   *  memory over the rewrite's own page-local reset, the way live's
-   *  `S.printBW` was (`STATE.md`'s "Print" group). Never written to
-   *  storage: it resets on reload like every other memory-only field here,
-   *  `kinds` included. */
-  printBW = $state(false);
-  /** The print page's standard/compact sheet choice - session memory beside
-   *  `printBW`, for the same reason; never written to storage. */
-  printCompact = $state(false);
+  /** The print page's colour/black-and-white and standard/compact choices,
+   *  remembered in `dhloot.prefs.v1` beside the tables view for every reader
+   *  (docs/specs/FEATURES.md, "Print"). */
+  #printBW = $state(false);
+  #printCompact = $state(false);
   /** How many lists the index draws - kept for the session so a return from
-   *  a list page shows the same cards, the way `printBW` is kept; a reload
-   *  starts at `LIST_PAGE` (`STATE.md`'s "Lists" group). */
+   *  a list page shows the same cards; a reload starts at `LIST_PAGE`
+   *  (`STATE.md`'s "Lists" group). */
   listsShown = $state(LIST_PAGE);
   /** The packed payload a failed expansion is stuck on, or `''`.
    *  Compared against `route.payload` by whoever draws the bad-link state, so
@@ -270,8 +283,31 @@ export class AppState {
   /** Whether the footer offers the install guide: inside the installed app it
    *  is done (`FEATURES.md`, "Chrome"). */
   readonly showInstall: boolean;
+  /**
+   * Who is signed in: `undefined` until the cloud has answered, `null`
+   * signed out, and `null` from the start in a build with no sign-in
+   * configured (`env.cloud` null). The header draws its account control
+   * only once this is known, so a signed-in reader never sees «Войти» flash.
+   */
+  user = $state<Session | null | undefined>(undefined);
+  /** The provider a link was refused for because its identity belongs to
+   *  another account - drawn in that provider's row on `#/account` until
+   *  the next account action there. */
+  alreadyLinked = $state<Provider | null>(null);
   #stopRouter: (() => void) | null = null;
   #stopListWatch: (() => void) | null = null;
+  #stopAuth: (() => void) | null = null;
+  /* The account sync (docs/specs/STATE.md, "Account preferences"): whether
+     `#watchAccount` is listening, the user whose row was last pulled, how
+     many local edits there have been (a pull that sees it move drops its
+     answer), whether the newest save was refused, the save in flight, and
+     whether another was asked for meanwhile. */
+  #watching = false;
+  #prefsFor: string | null = null;
+  #edits = 0;
+  #stale = false;
+  #saving: Promise<void> | null = null;
+  #savePending = false;
   /** The hash `go()` itself just wrote, so the router's own change handler
    *  can tell "the app just navigated" apart from "the address changed
    *  underneath it" and not process the same navigation twice. Real
@@ -285,10 +321,14 @@ export class AppState {
     const loot = env.data.load();
     this.index = loot ? buildIndex(loot) : null;
     this.lang = readLang(env);
-    this.#home = readHome(env);
+    this.#home = homeOf(env.storage.get(HOME_KEY));
     this.#warnHidden = env.storage.get(WARN_KEY) === '1';
-    this.#tablesView = readTablesView(env);
+    const local = readLocalPrefs(env);
+    this.#tablesView = local.view;
+    this.#printBW = local.printBw;
+    this.#printCompact = local.printCompact;
     this.storageWorks = env.storage.works();
+    if (!env.cloud) this.user = null;
     this.showInstall = !env.pwa.standalone();
     this.lists = new ListStore(
       env,
@@ -351,9 +391,153 @@ export class AppState {
       this.#expand();
     });
     this.#stopListWatch = this.lists.watch();
+    this.#watchAccount();
     return () => {
       this.stop();
     };
+  }
+
+  /* The session, and how a provider redirect that opened this page ended.
+     A change notification always wins over the first `session()` answer,
+     which may have been read before it. The storage port's `null` signal
+     (shown again, a back-forward-cache restore) refetches the account's
+     preferences, or saves them when the last save was refused. */
+  #watchAccount(): void {
+    const cloud = this.env.cloud;
+    if (!cloud) return;
+    let live = true;
+    let notified = false;
+    this.#watching = true;
+    const off = cloud.auth.onChange((s) => {
+      notified = true;
+      this.#setUser(s);
+    });
+    const offShown = this.env.storage.onExternalChange((key) => {
+      if (key !== null || !this.user) return;
+      if (this.#stale) this.#saveAccount();
+      else void this.#pull();
+    });
+    this.#stopAuth = () => {
+      live = false;
+      this.#watching = false;
+      off();
+      offShown();
+    };
+    void cloud.auth.session().then(
+      (s) => {
+        if (live && !notified) this.#setUser(s);
+      },
+      () => {
+        if (live && !notified) this.#setUser(null);
+      }
+    );
+    void cloud.auth.redirectResult().then((r) => {
+      if (!live || !r || r.result.ok) return;
+      if (r.kind === 'link' && r.result.error === 'alreadyLinked' && r.provider) {
+        this.alreadyLinked = r.provider;
+      } else {
+        this.say(this.t.accountFailed, { error: true });
+      }
+    });
+  }
+
+  /* A new user pulls the account's preferences; the same user again (a
+     token refresh) pulls nothing, and signing out clears nothing local. */
+  #setUser(s: Session | null): void {
+    this.user = s;
+    if (!s) {
+      this.#prefsFor = null;
+      return;
+    }
+    if (s.userId === this.#prefsFor) return;
+    this.#prefsFor = s.userId;
+    this.#stale = false;
+    void this.#pull();
+  }
+
+  /* The account wins over this browser; an account with no row is seeded
+     from it. An answer is dropped when the page stopped, the user changed,
+     or a local edit came first (that edit has already been saved). */
+  async #pull(): Promise<void> {
+    const cloud = this.env.cloud;
+    const id = this.#prefsFor;
+    const edits = this.#edits;
+    if (!cloud || id === null) return;
+    /* A read that overtook a save would read the row before it. */
+    while (this.#saving) await this.#saving;
+    const read = await cloud.prefs.load();
+    if (!this.#watching || this.#prefsFor !== id || this.#edits !== edits || !read.ok) return;
+    if (read.prefs === null) this.#saveAccount();
+    else this.#applyPrefs(read.prefs);
+  }
+
+  /* Never navigates: first paint already chose the page. A `home` the pin
+     check refuses is ignored, not reset. */
+  #applyPrefs(p: Prefs): void {
+    if (p.lang) {
+      this.lang = p.lang;
+      this.env.storage.set(LANG_KEY, p.lang);
+    }
+    const pin = p.home === undefined ? null : pinOf(p.home);
+    if (pin) {
+      this.#home = pin;
+      if (pin === DEFAULT_HOME) this.env.storage.remove(HOME_KEY);
+      else this.env.storage.set(HOME_KEY, pin);
+    }
+    if (p.view) this.#tablesView = p.view;
+    if (p.printBw !== undefined) this.#printBW = p.printBw;
+    if (p.printCompact !== undefined) this.#printCompact = p.printCompact;
+    this.#writeLocalPrefs();
+  }
+
+  /* Signed in, the whole current object replaces the account's row. One
+     save at a time: two in flight could land out of order and leave the row
+     older than this tab. One asked for meanwhile runs once, afterwards, with
+     the newest values, and only the newest save sets `#stale`. */
+  #saveAccount(): void {
+    const cloud = this.env.cloud;
+    if (!cloud || !this.user) return;
+    if (this.#saving) {
+      this.#savePending = true;
+      return;
+    }
+    this.#saving = cloud.prefs
+      .save({
+        lang: this.lang,
+        home: this.#home,
+        view: this.#tablesView,
+        printBw: this.#printBW,
+        printCompact: this.#printCompact
+      })
+      .catch(() => false)
+      .then((ok) => {
+        this.#saving = null;
+        if (!this.#watching) {
+          this.#savePending = false;
+          return;
+        }
+        if (this.#savePending) {
+          this.#savePending = false;
+          this.#saveAccount();
+        } else {
+          this.#stale = !ok;
+        }
+      });
+  }
+
+  /* Every setter writes this browser first, then the account. */
+  #changed(): void {
+    this.#edits++;
+    this.#saveAccount();
+  }
+
+  #writeLocalPrefs(): void {
+    const local: LocalPrefs = {
+      view: this.#tablesView,
+      printBw: this.#printBW,
+      printCompact: this.#printCompact
+    };
+    this.env.storage.set(PREFS_KEY, JSON.stringify(local));
   }
 
   stop(): void {
@@ -361,6 +545,8 @@ export class AppState {
     this.#stopRouter = null;
     this.#stopListWatch?.();
     this.#stopListWatch = null;
+    this.#stopAuth?.();
+    this.#stopAuth = null;
     /* A timer left running past the listeners it would otherwise update is a
        leak of the same kind `#stopRouter`/`#stopListWatch` already guard
        against. */
@@ -447,6 +633,13 @@ export class AppState {
     return dict(this.lang);
   }
 
+  /** A static page has one copy per language (docs/specs/META.md section 9):
+   *  the footer and the account page's consent line link the copy of the
+   *  language on screen. */
+  get pagesDir(): string {
+    return this.lang === 'en' ? 'pages/en/' : 'pages/';
+  }
+
   /** The one route kind that reads the data at all: print needs to know
    *  which ids the cap threw away versus which were simply unknown.
    *  `$derived` rather than a getter: `Shell`, `App` and every page
@@ -469,17 +662,39 @@ export class AppState {
   setLang(lang: Lang): void {
     this.lang = lang;
     this.env.storage.set(LANG_KEY, lang);
+    this.#changed();
   }
 
-  /** Restored: the tables page's list/grid switch, remembered the
-   *  way the live app's `dhloot.prefs.v1 { view }` did. */
+  /** Restored: the tables page's list/grid switch, remembered in
+   *  `dhloot.prefs.v1` the way the live app's `{ view }` was. */
   get tablesView(): 'list' | 'grid' {
     return this.#tablesView;
   }
 
   setTablesView(view: 'list' | 'grid'): void {
     this.#tablesView = view;
-    this.env.storage.set(PREFS_KEY, JSON.stringify({ view }));
+    this.#writeLocalPrefs();
+    this.#changed();
+  }
+
+  get printBW(): boolean {
+    return this.#printBW;
+  }
+
+  setPrintBW(bw: boolean): void {
+    this.#printBW = bw;
+    this.#writeLocalPrefs();
+    this.#changed();
+  }
+
+  get printCompact(): boolean {
+    return this.#printCompact;
+  }
+
+  setPrintCompact(compact: boolean): void {
+    this.#printCompact = compact;
+    this.#writeLocalPrefs();
+    this.#changed();
   }
 
   go(hash: string): void {
@@ -659,6 +874,7 @@ export class AppState {
       this.env.storage.remove(HOME_KEY);
       this.#home = DEFAULT_HOME;
     }
+    this.#changed();
     return true;
   }
 

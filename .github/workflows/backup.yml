@@ -1,0 +1,81 @@
+name: backup
+
+# Nightly backup of production: the schema and the `auth` and `public` data,
+# each file encrypted to the owner's `age` public key before it leaves this
+# job. Nothing unencrypted is uploaded - a public repository's artifacts are
+# readable by anyone. The job fails closed: no recipient, a failed dump or no
+# file to upload each turn it red. Restore procedure: .claude/README.md,
+# "Backups and restore".
+
+on:
+  # 03:17 UTC. GitHub disables this after 60 days without a push; any push
+  # re-arms it. The run is also production's free-tier keep-alive.
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # The pinned Supabase CLI; the dump drives no browser.
+      - run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+      - name: The recipient is set - the job fails closed without it
+        run: |
+          case "$RECIPIENT" in
+            age1*) echo "recipient: set" ;;
+            *) echo "::error::BACKUP_AGE_RECIPIENT is not an age public key"; exit 1 ;;
+          esac
+        env:
+          RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+
+      - name: Install age
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq age && age --version
+
+      # Without `--schema`, `db dump --data-only` leaves out `auth`; the
+      # schema dump leaves out roles (those need `--role-only`). Each plain
+      # file is removed as soon as its encrypted copy exists.
+      - name: Dump and encrypt
+        id: dump
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/backup"
+          mkdir -p "$out"
+          cli=node_modules/supabase/dist/supabase.js
+          node "$cli" db dump --db-url "$SUPABASE_DB_URL" -f "$out/schema.sql"
+          node "$cli" db dump --db-url "$SUPABASE_DB_URL" --data-only --schema auth,public \
+            -f "$out/data.sql"
+          for f in schema data; do
+            age -r "$RECIPIENT" -o "$out/$f.sql.age" "$out/$f.sql"
+            rm "$out/$f.sql"
+          done
+          ls -l "$out"
+          echo "date=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
+          RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: backup-${{ steps.dump.outputs.date }}
+          path: ${{ runner.temp }}/backup/*.age
+          retention-days: 30
+          if-no-files-found: error

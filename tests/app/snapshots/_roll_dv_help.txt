@@ -11,6 +11,7 @@ RootWebArea "Dragon's Vault — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -65,6 +66,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Войти
 К содержимому
 Как это работает
 Конфиденциальность
@@ -97,6 +99,7 @@ RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -164,6 +167,7 @@ Random 1–145
 Roll result
 Search
 Share
+Sign in
 Skip to content
 Standard rules
 Tables

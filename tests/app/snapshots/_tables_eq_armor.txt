@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -104,6 +105,7 @@ daggerheart.com
 Бригантный Доспех
 Бригантный ДоспехРанг 1 · Пороги 6/12 · Броня 3Облицованное: Отм... [namelen=124 namehash=8a291d1a]
 Броня
+Войти
 Вторичное
 Глубинный Коралловый Доспех
 Глубинный Коралловый ДоспехРанг 3 · Пороги 13/35 · Броня 6Водное... [namelen=182 namehash=1b3c357a]
@@ -314,6 +316,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -575,6 +578,7 @@ Scale Mail Armor
 Scale Mail ArmorTier 1 · Thresholds 7/14 · Armor 3Cumbersome: −1... [namelen=91 namehash=33e2248a]
 Search
 Secondary
+Sign in
 Silverweave Armor
 Silverweave ArmorTier 1 · Thresholds 5/11 · Armor 3Warded: You r... [namelen=185 namehash=201fa16c]
 Skip to content

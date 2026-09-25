@@ -1,0 +1,306 @@
+# #/tables/dread as gm1
+# route: #/tables/dread
+# why: the account's tables view: the grid, where signed out the list is drawn
+# as: gm1
+
+## ru :: tree
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/tables/dread]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Аккаунт: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=index.html?as=gm1#/tables/core_item]
+    link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
+    link "Альт. таблицы" [url=index.html?as=gm1#/tables/alt_item]
+    link "Wondrous Loot" [url=index.html?as=gm1#/tables/wondrous]
+    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
+    link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
+    link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Сообщества" [url=index.html?as=gm1#/tables/community]
+    link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
+    link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=false]
+    button "Сеткой" [pressed=true]
+    button "Фильтры" [expanded=false]
+    StaticText "29"
+    checkbox "Выбрать все (29)" [checked=false]
+    StaticText "Выбрать все (29)"
+    checkbox "Эфирная Винтовка" [checked=false]
+    button "1 Эфирная Винтовка Aether Rifle"
+    ... checkbox x26 of 30 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
+    checkbox "Тиара Разговора" [checked=false]
+    button "28 Тиара Разговора Tiara of Talking"
+    checkbox "Склянка Святой Воды" [checked=false]
+    button "29 Склянка Святой Воды Vial of Holy Water"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+10Мистическая СмолаArcane Resin
+11Брошюра по Истории ИскусстваArt History Booklet
+12Проклятая БрошюраCursed Booklet
+13Одеяния ДьяволаDevil's Vestments
+14Эспайрская ШестерёнкаEspairian Cog
+15Зеркало ФейFey Mirror
+16Колчан ФейFey Quiver
+17Ледяная ГранатаFrost Grenade
+18Ледяное МаслоFrost Oil
+19Стекло из ЛенгаGlass from Leng
+1Эфирная ВинтовкаAether Rifle
+20Масло Зелёной СлизиGreen Ooze Oil
+21Банка Зелёной СлизиJar of Green Ooze Slime
+22Сыворотка Протокола ЛазаряLazarus Protocol Serum
+23Цилиндр для Мозга Ми-ГоMi-Go Brain Cylinder
+24Лунный ШарфMoon Scarf
+25Ручка ДрузейPen of Pals
+26Пурпурный ПрицелPurple Aim
+27Серебряный КлючSilver Key
+28Тиара РазговораTiara of Talking
+29Склянка Святой ВодыVial of Holy Water
+2Клинок ЖивущихBlade of the Living
+3Длинный Лук ФираLongbow of Fyr
+4Туманный Проектор Ми-ГоMi-Go Mist Projector
+5Посох Тайного ПламениStaff of the Secret Flame
+6Щит СолнцаShield of the Sun
+7Молниевая Пушка ЙитианцевYithian Lightning Gun
+8Амулет ЗариAmulet of the Dawn
+9Амулет ЖизнестойкостиAmulet of Vitality
+Core
+Dragon's Vault
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Амулет Жизнестойкости
+Амулет Зари
+Банка Зелёной Слизи
+Брошюра по Истории Искусства
+Длинный Лук Фира
+Зеркало Фей
+К содержимому
+Как это работает
+Клинок Живущих
+Колчан Фей
+Конфиденциальность
+Ледяная Граната
+Ледяное Масло
+Лунный Шарф
+ЛутDaggerheart
+Масло Зелёной Слизи
+Мистическая Смола
+Молниевая Пушка Йитианцев
+Обычные правила
+Одеяния Дьявола
+Открывать этот раздел при запуске
+Поиск
+Посох Тайного Пламени
+Проклятая Брошюра
+Прочее
+Пурпурный Прицел
+Ручка Друзей
+Серебряный Ключ
+Сеткой
+Склянка Святой Воды
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Стекло из Ленга
+Сыворотка Протокола Лазаря
+Таблицы
+Тиара Разговора
+Туманный Проектор Ми-Го
+Условия использования
+Установить как приложение
+Фильтры
+Цилиндр для Мозга Ми-Го
+Щит Солнца
+Эспайрская Шестерёнка
+Эфирная Винтовка
+
+## en :: tree
+RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tables/dread]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Account: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=index.html?as=gm1#/tables/core_item]
+    link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
+    link "Alt. tables" [url=index.html?as=gm1#/tables/alt_item]
+    link "Wondrous Loot" [url=index.html?as=gm1#/tables/wondrous]
+    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
+    link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
+    link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Communities" [url=index.html?as=gm1#/tables/community]
+    link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
+    link "Other" [url=index.html?as=gm1#/tables/other_starting]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=false]
+    button "Grid" [pressed=true]
+    button "Filters" [expanded=false]
+    StaticText "29"
+    checkbox "Select all (29)" [checked=false]
+    StaticText "Select all (29)"
+    checkbox "Aether Rifle" [checked=false]
+    button "1 Aether Rifle Эфирная Винтовка"
+    ... checkbox x26 of 30 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
+    checkbox "Tiara of Talking" [checked=false]
+    button "28 Tiara of Talking Тиара Разговора"
+    checkbox "Vial of Holy Water" [checked=false]
+    button "29 Vial of Holy Water Склянка Святой Воды"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+10Arcane ResinМистическая Смола
+11Art History BookletБрошюра по Истории Искусства
+12Cursed BookletПроклятая Брошюра
+13Devil's VestmentsОдеяния Дьявола
+14Espairian CogЭспайрская Шестерёнка
+15Fey MirrorЗеркало Фей
+16Fey QuiverКолчан Фей
+17Frost GrenadeЛедяная Граната
+18Frost OilЛедяное Масло
+19Glass from LengСтекло из Ленга
+1Aether RifleЭфирная Винтовка
+20Green Ooze OilМасло Зелёной Слизи
+21Jar of Green Ooze SlimeБанка Зелёной Слизи
+22Lazarus Protocol SerumСыворотка Протокола Лазаря
+23Mi-Go Brain CylinderЦилиндр для Мозга Ми-Го
+24Moon ScarfЛунный Шарф
+25Pen of PalsРучка Друзей
+26Purple AimПурпурный Прицел
+27Silver KeyСеребряный Ключ
+28Tiara of TalkingТиара Разговора
+29Vial of Holy WaterСклянка Святой Воды
+2Blade of the LivingКлинок Живущих
+3Longbow of FyrДлинный Лук Фира
+4Mi-Go Mist ProjectorТуманный Проектор Ми-Го
+5Staff of the Secret FlameПосох Тайного Пламени
+6Shield of the SunЩит Солнца
+7Yithian Lightning GunМолниевая Пушка Йитианцев
+8Amulet of the DawnАмулет Зари
+9Amulet of VitalityАмулет Жизнестойкости
+Account: gm1@example.test
+Aether Rifle
+Alt. tables
+Amulet of Vitality
+Amulet of the Dawn
+Arcane Resin
+Art History Booklet
+Blade of the Living
+Communities
+Core
+Cursed Booklet
+Devil's Vestments
+Dragon's Vault
+Dread
+Dread GM Toolbox
+EN
+Equipment
+Espairian Cog
+Fey Mirror
+Fey Quiver
+Filters
+Frost Grenade
+Frost Oil
+Glass from Leng
+Green Ooze Oil
+Grid
+Hope & Fear
+How this works
+Install as an app
+Jar of Green Ooze Slime
+Lazarus Protocol Serum
+Link to this table
+List
+Lists
+Longbow of Fyr
+Mi-Go Brain Cylinder
+Mi-Go Mist Projector
+Moon Scarf
+Open this section on start
+Other
+Pen of Pals
+Privacy
+Purple Aim
+RU
+Search
+Shield of the Sun
+Silver Key
+Skip to content
+Staff of the Secret Flame
+Standard rules
+Tables
+Terms of use
+Tiara of Talking
+Vault of Ages
+Vial of Holy Water
+Wondrous
+Wondrous Loot
+Yithian Lightning Gun
+daggerheart.com
+ЛутDaggerheart

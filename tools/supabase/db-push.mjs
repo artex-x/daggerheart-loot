@@ -1,27 +1,23 @@
 /*
-  node tools/supabase/db-push.mjs --project test|prod
+  node tools/supabase/db-push.mjs --project test|prod [--yes]
 
   Applies every pending migration in supabase/migrations/ to a hosted
-  project, then records them in supabase/applied.json. It needs an
-  interactive terminal and a typed `yes`, and has no unattended path on
-  purpose. The database password comes from SUPABASE_DB_PASSWORD or the
+  project. This is the manual path: CI applies migrations itself
+  (`migrate-test` before every E2E run, `migrate-prod` at a push to main).
+  Two callers remain: an agent's push to the test project (`--project test
+  --yes`, with SUPABASE_DB_PASSWORD_TEST set) and the owner's interactive
+  push, the production fallback while CI is broken, which needs a terminal
+  and a typed `yes`; its password comes from SUPABASE_DB_PASSWORD or the
   CLI's own prompt. Procedure: .claude/README.md, "Supabase configuration".
 */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  SUPABASE_CLI,
-  parseProjectArg,
-  pairMigrations,
-  readApplied,
-  markApplied
-} from './lib.mjs';
+import { SUPABASE_CLI, parseProjectArg, pairMigrations } from './lib.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const APPLIED = path.join(ROOT, 'supabase', 'applied.json');
 
 function fail(message) {
   console.error(message);
@@ -36,9 +32,10 @@ function sqlFiles(dir) {
     .sort();
 }
 
-function runCli(args) {
+function runCli(args, env = process.env) {
   const r = spawnSync(process.execPath, [SUPABASE_CLI, ...args], {
     cwd: ROOT,
+    env,
     stdio: 'inherit'
   });
   if (r.error) fail(`The Supabase CLI did not start: ${r.error.message}`);
@@ -55,37 +52,47 @@ async function confirm(question) {
 }
 
 async function main() {
+  const argv = process.argv.slice(2);
   let target;
   try {
-    target = parseProjectArg(process.argv.slice(2));
+    target = parseProjectArg(argv);
   } catch (err) {
     fail(err.message);
   }
   const { project, ref } = target;
+  const unattended = argv.includes('--yes');
 
-  if (!(process.stdin.isTTY && process.stdout.isTTY)) {
+  let env = process.env;
+  if (unattended) {
+    if (project !== 'test') {
+      fail("--yes is for the test project; production is CI's or a typed yes.");
+    }
+    const password = process.env.SUPABASE_DB_PASSWORD_TEST;
+    if (!password) {
+      fail('SUPABASE_DB_PASSWORD_TEST is not set; --yes needs the test database password.');
+    }
+    env = { ...process.env, SUPABASE_DB_PASSWORD: password };
+  } else if (!(process.stdin.isTTY && process.stdout.isTTY)) {
     fail('db:push needs an interactive terminal; the owner runs it.');
   }
 
-  const migrations = sqlFiles('migrations');
-  const { errors } = pairMigrations(migrations, sqlFiles('reversals'));
+  const { errors } = pairMigrations(sqlFiles('migrations'), sqlFiles('reversals'));
   if (errors.length) fail(`Migration pairing failed. Nothing pushed.\n${errors.join('\n')}`);
-  const applied = readApplied(readFileSync(APPLIED, 'utf8'));
 
-  if (runCli(['db', 'push', '--project-ref', ref, '--dry-run']) !== 0) {
+  if (runCli(['db', 'push', '--project-ref', ref, '--dry-run'], env) !== 0) {
     fail('The dry run failed. Nothing pushed.');
   }
-  if (!(await confirm(`Type yes to push these migrations to ${project} (${ref}): `))) {
+  if (
+    !unattended &&
+    !(await confirm(`Type yes to push these migrations to ${project} (${ref}): `))
+  ) {
     fail('Nothing pushed.');
   }
-  const status = runCli(['db', 'push', '--project-ref', ref]);
+  const pushArgs = ['db', 'push', '--project-ref', ref];
+  if (unattended) pushArgs.push('--yes');
+  const status = runCli(pushArgs, env);
   if (status !== 0) process.exit(status);
-
-  // A push applies every pending migration in order or fails, so after a
-  // success every local file is applied on this project.
-  const next = markApplied(applied, project, migrations);
-  writeFileSync(APPLIED, `${JSON.stringify(next, null, 2)}\n`);
-  console.log('Amend supabase/applied.json into the release commit before the git push.');
+  console.log('Done. CI applies migrations on a push to main; this run was the manual path.');
 }
 
 main().catch((err) => fail(err.message));

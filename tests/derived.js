@@ -298,6 +298,13 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
       !/(href|src)="[^"]*\/daggerheart-loot\//.test(html),
       'pages/' + rel + ' carries a root-anchored link; site pages link relatively'
     );
+    ok(!html.includes('%APP%'), 'pages/' + rel + ' still holds %APP%; page() replaces it');
+    if (id === 'privacy') {
+      ok(
+        html.includes('href="' + BACK_HREF[lang] + '#/account"'),
+        'pages/' + rel + ' does not link the account page at its own depth'
+      );
+    }
   });
 });
 const PAGE_IDS = SITE_PAGES.PAGES.map((p) => p.id);
@@ -1173,10 +1180,16 @@ const OUTSIDE = [
    goldens included (it replaced a separate `golden`
    job, which this assertion named until then). */
 const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
-const deploy =
-  /^ {2}deploy:\s*\r?\n([\s\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(
-    workflow
-  );
+/** The body of job `name` in ci.yml (match[1]), or null. */
+function jobOf(name) {
+  return new RegExp(
+    '^ {2}' +
+      name +
+      ':\\s*\\r?\\n([\\s\\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\\s*(?:#.*)?$|(?![\\s\\S]))',
+    'm'
+  ).exec(workflow);
+}
+const deploy = jobOf('deploy');
 ok(deploy, 'deploy.needs: deploy job is missing');
 const deployNeeds = deploy && /^ {4}needs:\s*\[([^\]\r\n]*)\]\s*$/m.exec(deploy[1]);
 ok(deployNeeds, 'deploy.needs: inline needs list is missing or unparseable');
@@ -1186,7 +1199,111 @@ if (deployNeeds) {
   });
   ok(names.includes('browser'), 'deploy.needs: browser is missing');
   ok(names.includes('db'), 'deploy.needs: db is missing');
+  ok(names.includes('e2e'), 'deploy.needs: e2e is missing');
+
+  /* deploy's `!cancelled()` lets a skipped need through, so only the job
+     that is meant to be skipped may carry a job-level if:. */
+  const gated = names.filter(function (name) {
+    const job = jobOf(name);
+    return job && /^ {4}if:/m.test(job[1]);
+  });
+  ok(
+    gated.length === 1 && gated[0] === 'e2e',
+    'deploy.needs: only e2e may carry a job-level if: - a skipped need passes deploy (found: ' +
+      (gated.join(', ') || 'none') +
+      ')'
+  );
 }
+
+/* Migrations reach the hosted projects from CI: `migrate-test` before the
+   E2E, `migrate-prod` before the deploy build, and a `skip_e2e` dispatch
+   refuses a migration production has not received. The steps of a job, in
+   order, split at the `- ` of each step. */
+function stepsOf(job) {
+  return job ? job[1].split(/^ {6}- /m).slice(1) : [];
+}
+function stepIndex(steps, test) {
+  return steps.findIndex(test);
+}
+const migrateRun = 'db push --db-url "$SUPABASE_DB_URL"';
+const e2eSteps = stepsOf(jobOf('e2e'));
+const migrateTest = stepIndex(e2eSteps, function (step) {
+  return step.indexOf(migrateRun) >= 0 && step.indexOf('secrets.SUPABASE_DB_URL_TEST') >= 0;
+});
+const e2eRun = stepIndex(e2eSteps, function (step) {
+  return /^ {8}run:\s*npm run e2e\s*$/m.test(step);
+});
+ok(migrateTest >= 0, 'e2e.migrate-test: no db push step with SUPABASE_DB_URL_TEST');
+ok(e2eRun >= 0, 'e2e.migrate-test: no npm run e2e step');
+ok(
+  migrateTest >= 0 && migrateTest < e2eRun,
+  'e2e.migrate-test: the migrations must reach the test project before npm run e2e (order)'
+);
+
+const deploySteps = stepsOf(deploy);
+const pendingCheck = stepIndex(deploySteps, function (step) {
+  return step.indexOf('tools/supabase/pending-check.mjs') >= 0;
+});
+const migrateProd = stepIndex(deploySteps, function (step) {
+  return step.indexOf(migrateRun) >= 0 && step.indexOf('secrets.SUPABASE_DB_URL_PROD') >= 0;
+});
+const deployBuild = stepIndex(deploySteps, function (step) {
+  return /^ {8}run:\s*npm run build\s*$/m.test(step);
+});
+ok(
+  pendingCheck >= 0 &&
+    /^ {8}if:\s*inputs\.skip_e2e\s*$/m.test(deploySteps[pendingCheck]) &&
+    deploySteps[pendingCheck].indexOf('secrets.SUPABASE_DB_URL_PROD') >= 0,
+  'deploy.pending-check: a skip_e2e dispatch must refuse a migration production lacks'
+);
+ok(migrateProd >= 0, 'deploy.migrate-prod: no db push step with SUPABASE_DB_URL_PROD');
+ok(
+  pendingCheck >= 0 && pendingCheck < migrateProd && migrateProd < deployBuild,
+  'deploy.migrate-prod: pending-check, then migrate-prod, then the build (order)'
+);
+ok(
+  workflow.indexOf('applied-check.mjs') < 0,
+  'ci.yml: applied-check.mjs is gone; the database is the applied record'
+);
+
+/* The nightly backup: every property that keeps a production dump private
+   and recoverable. */
+const backupPath = path.join(ROOT, '.github', 'workflows', 'backup.yml');
+const backup = fs.existsSync(backupPath) ? fs.readFileSync(backupPath, 'utf8') : '';
+ok(backup, 'backup.yml: the nightly production backup is missing');
+[
+  ["cron: '17 3 * * *'", 'the nightly schedule'],
+  ['workflow_dispatch', 'the manual run'],
+  ['BACKUP_AGE_RECIPIENT', 'the encryption recipient'],
+  ['--schema auth,public', 'the auth rows in the data dump'],
+  ['if-no-files-found: error', 'the fail-closed upload']
+].forEach(function (pair) {
+  ok(backup.indexOf(pair[0]) >= 0, 'backup.yml: ' + pair[1] + ' (' + pair[0] + ') is missing');
+});
+ok(
+  /^permissions:\s*\r?\n\s+contents:\s*read\s*$/m.test(backup),
+  'backup.yml: permissions must be contents: read only'
+);
+ok(
+  /^\s+retention-days:\s*30\s*$/m.test(backup),
+  'backup.yml: retention-days must be 30 (the privacy page promises it)'
+);
+ok(
+  /^\s+path:.*\/\*\.age\s*$/m.test(backup),
+  'backup.yml: the upload path must end in *.age - nothing unencrypted leaves the job'
+);
+
+/* Rule 2n's test-project proof and the release tools name the same ref. */
+const hookRef = /const TEST_PROJECT_REF = '([a-z0-9]+)'/.exec(
+  fs.readFileSync(path.join(ROOT, '.claude', 'hooks', 'bash-guard.mjs'), 'utf8')
+);
+const toolsRef = /test:\s*'([a-z0-9]+)'/.exec(
+  fs.readFileSync(path.join(ROOT, 'tools', 'supabase', 'lib.mjs'), 'utf8')
+);
+ok(
+  hookRef && toolsRef && hookRef[1] === toolsRef[1],
+  'bash-guard.mjs TEST_PROJECT_REF must equal PROJECTS.test in tools/supabase/lib.mjs'
+);
 
 /* The browser matrix and
    the divisor tests/run-all.js's own --shard flag divides by have to agree,
@@ -1198,10 +1315,7 @@ if (deployNeeds) {
    entirely, and CI stays green - the three jobs that do run all pass. This
    is the assertion that catches that: the matrix list's length has to equal
    the divisor, and the list has to be exactly 1..m. */
-const browserJob =
-  /^ {2}browser:\s*\r?\n([\s\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/m.exec(
-    workflow
-  );
+const browserJob = jobOf('browser');
 ok(browserJob, 'browser job: missing from ci.yml');
 const shardList = browserJob && /^\s*shard:\s*\[([^\]]*)\]\s*$/m.exec(browserJob[1]);
 ok(shardList, 'browser.strategy.matrix.shard: missing or unparseable');

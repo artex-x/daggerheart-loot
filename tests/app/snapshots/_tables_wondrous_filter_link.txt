@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -129,6 +130,7 @@ Wondrous Loot
 daggerheart.com
 Алконитовый Кристалл
 Альт. таблицы
+Войти
 Времястекло
 Гравитационная Привязь
 Громовой Скарабей
@@ -210,6 +212,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -371,6 +374,7 @@ Remove from the filter
 Reset all
 Rootslicer Gauntlet
 Search
+Sign in
 Siren's Rock
 Skip to content
 Soul Torch

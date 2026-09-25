@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -108,6 +109,7 @@ daggerheart.com
 Винтовка
 ВинтовкаРанг 1 · Физическое · Проворность · Очень далеко · d8+2 ... [namelen=188 namehash=a46e5371]
 Влияние
+Войти
 Вплотную
 Вторичное
 Далеко
@@ -226,6 +228,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -402,6 +405,7 @@ Shortbow
 ShortbowTier 1 · Physical · Agility · Far · d6+3 phy · Two-Hande... [namelen=83 namehash=cea9452f]
 Shotgun
 ShotgunTier 1 · Physical · Strength · Very Close · d6+2 phy · Tw... [namelen=198 namehash=38c8e230]
+Sign in
 Skip to content
 Sledgehammer
 SledgehammerTier 1 · Physical · Strength · Melee · d10+3 phy · T... [namelen=212 namehash=975ae8b9]

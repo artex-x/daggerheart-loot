@@ -23,6 +23,8 @@ import type { Env } from '../ports/index.js';
 import type { Loot } from '../lib/data.js';
 import type { StoredList } from '../lib/lists.js';
 import { AppState } from '../state/app.svelte.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 
 afterEach(cleanup);
 
@@ -577,6 +579,83 @@ describe('the toast component, directly', () => {
     app.hideToast();
     await tick();
     expect(hide).toHaveBeenCalledOnce();
+  });
+});
+
+describe('the account control', () => {
+  it('is not drawn in a build with no sign-in configured', () => {
+    render(App, { env: at('#/roll/std') });
+    expect(screen.queryByRole('link', { name: 'Войти' })).not.toBeInTheDocument();
+    expect(document.querySelector('a[href="#/account"]')).toBeNull();
+  });
+
+  it('draws the not-found page on #/account there, and keeps the address', () => {
+    const env = at('#/account');
+    render(App, { env });
+    expect(screen.getByRole('heading', { name: 'Предмет не найден', level: 1 })).toBeVisible();
+    expect(env.router.hash()).toBe('#/account');
+    expect(document.title).toBe('Генератор лута — Daggerheart');
+  });
+
+  it('says «Войти» signed out and leads to #/account', async () => {
+    const { container } = render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED) }) });
+    const link = await screen.findByRole('link', { name: 'Войти' });
+    expect(link).toHaveAttribute('href', '#/account');
+    expect(link).not.toHaveAttribute('aria-current');
+    await expectNoA11yViolations(container);
+  });
+
+  it('shows the initial signed in, named by the email', async () => {
+    const { container } = render(App, {
+      env: at('#/roll/std', { cloud: fakeCloud(SEED, 'gm1') })
+    });
+    const link = await screen.findByRole('link', { name: 'Аккаунт: gm1@example.test' });
+    expect(link).toHaveTextContent(/^g$/);
+    expect(screen.queryByRole('link', { name: 'Войти' })).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the person icon for an account with no email', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.auth.session = () => Promise.resolve({ userId: 'u', email: '', provider: 'google' });
+    render(App, { env: at('#/roll/std', { cloud }) });
+    const link = await screen.findByRole('link', { name: 'Аккаунт:' });
+    expect(link.querySelector('svg')).not.toBeNull();
+  });
+
+  it('waits for the session, so a signed-in reader never sees «Войти»', () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.auth.session = () => new Promise(() => undefined);
+    render(App, { env: at('#/roll/std', { cloud }) });
+    expect(document.querySelector('a[href="#/account"]')).toBeNull();
+  });
+
+  it('marks the account page as current, lights no tab and titles the tab', async () => {
+    const { container } = render(App, {
+      env: at('#/account', { cloud: fakeCloud(SEED, 'gm1') })
+    });
+    const link = await screen.findByRole('link', { name: 'Аккаунт: gm1@example.test' });
+    expect(link).toHaveAttribute('aria-current', 'page');
+    expect(link).toHaveClass('on');
+    const tabs = screen.getByRole('navigation', { name: 'Разделы' });
+    expect(tabs.querySelector('[aria-current]')).toBeNull();
+    expect(document.title).toBe('Аккаунт — Генератор лута — Daggerheart');
+    await expectNoA11yViolations(container);
+  });
+
+  it('marks the signed-out control as current on #/account too', async () => {
+    render(App, { env: at('#/account', { cloud: fakeCloud(SEED) }) });
+    expect(await screen.findByRole('link', { name: 'Войти' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  });
+
+  it('follows the language', async () => {
+    render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED) }) });
+    await screen.findByRole('link', { name: 'Войти' });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
   });
 });
 

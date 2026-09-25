@@ -11,6 +11,7 @@ RootWebArea "Обычные правила — Генератор лута — D
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -86,6 +87,7 @@ daggerheart.com
 Бросить 3d12 — Необычная / Редкая
 Бросить 4d12 — Редкая / Легендарная
 Бросить 5d12 — Легендарная
+Войти
 К содержимому
 Как это работает
 Конфиденциальность
@@ -120,6 +122,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -211,6 +214,7 @@ Roll 5d12 — Legendary
 Roll result
 Search
 Share
+Sign in
 Skip to content
 Standard rules
 Tables

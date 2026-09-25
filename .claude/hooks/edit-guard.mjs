@@ -1,28 +1,30 @@
 // PreToolUse(Edit|MultiEdit|Write|NotebookEdit): block direct writes to
-// generated files, to supabase/applied.json and to a migration already
-// applied to a hosted project. See .claude/README.md, "Hooks".
+// generated files and to a migration that a remote-tracking ref holds - CI
+// applies every pushed migration, so a pushed one is history. Git is the
+// record; no file lists applied migrations. See .claude/README.md, "Hooks".
 
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { readInput, guard, deny, relPath, pathKey, repoRoot } from './lib.mjs';
 
 const MIGRATIONS = 'supabase/migrations/';
 
-/** The projects whose list in supabase/applied.json names `file`. A missing
- * or unparsable file names none, so it denies nothing. */
-function appliedTo(file) {
-  try {
-    const applied = JSON.parse(
-      readFileSync(path.join(repoRoot(), 'supabase', 'applied.json'), 'utf8')
-    );
-    return Object.keys(applied).filter(
-      (project) =>
-        Array.isArray(applied[project]) &&
-        applied[project].some((n) => typeof n === 'string' && pathKey(n) === file)
-    );
-  } catch {
-    return [];
-  }
+/** Returns the remote-tracking refs whose tree holds
+ * supabase/migrations/<file>. A repository with no remote ref, or any git
+ * failure, gives none, so it denies nothing. */
+function remoteRefsHolding(file) {
+  const git = (args) =>
+    spawnSync('git', args, { cwd: repoRoot(), encoding: 'utf8', windowsHide: true });
+  const list = git(['for-each-ref', '--format=%(refname:short)', 'refs/remotes/']);
+  if (list.error || list.status !== 0) return [];
+  // `origin/HEAD` (short form `origin` on some git versions) is a second name
+  // for a ref already listed.
+  const refs = list.stdout
+    .split(/\r?\n/)
+    .filter((ref) => ref.includes('/') && !ref.endsWith('/HEAD'));
+  return refs.filter((ref) => {
+    const r = git(['cat-file', '-e', `${ref}:${MIGRATIONS}${file}`]);
+    return !r.error && r.status === 0;
+  });
 }
 
 // Every test here runs against pathKey(rel), not rel itself: relPath() keeps
@@ -55,9 +57,9 @@ const DENY = [
       'Blocked: pages/*.html and pages/en/*.html are generated site pages. Edit pages/src/<id>.html (Russian) or pages/src/en/<id>.html (English), then run `node tools/build.js`.'
   },
   {
-    test: (p) => p.startsWith('dist/'),
+    test: (p) => p.startsWith('dist/') || p.startsWith('dist-test/'),
     message:
-      'Blocked: dist/ is build output. Edit the source under app/src/ and run `npm run build`.'
+      'Blocked: dist/ and dist-test/ are build output. Edit the source under app/src/ and run `npm run build` (dist/) or `npm run build:test` (dist-test/).'
   },
   {
     test: (p) => p === 'package-lock.json',
@@ -83,18 +85,12 @@ guard(() => {
     if (rule.test(key)) return deny(event, rule.message);
   }
 
-  if (key === 'supabase/applied.json') {
-    return deny(
-      event,
-      'Blocked: supabase/applied.json is written by `npm run db:push` after a successful push, which the owner runs. Do not edit it by hand.'
-    );
-  }
   if (key.startsWith(MIGRATIONS)) {
-    const projects = appliedTo(key.slice(MIGRATIONS.length));
-    if (projects.length) {
+    const refs = remoteRefsHolding(rel.slice(MIGRATIONS.length));
+    if (refs.length) {
       return deny(
         event,
-        `Blocked: ${rel} is applied to ${projects.join(' and ')}; write a new migration instead.`
+        `Blocked: ${rel} is on ${refs.join(', ')}; CI applies every pushed migration to the test project and every migration on main to production, so it is history - write a new migration instead.`
       );
     }
   }

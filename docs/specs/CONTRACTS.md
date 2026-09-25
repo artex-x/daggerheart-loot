@@ -24,6 +24,8 @@ Frozen as written in `ROUTES.md`. In particular:
   group key spelling**: `range` and `burden`, not `rg` and `bu`
 - `#/i/<id>`, `#/print/<ids>` (each id optionally followed by `*<n>`, a
   count), `#/lists/<listId>`, `#/l/<payload>`
+- `#/account`, the account page, read in every build (the not-found page,
+  address kept, where no sign-in is configured)
 
 ## 2. Record ids
 

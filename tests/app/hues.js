@@ -189,7 +189,7 @@ const gap = (a, b) => {
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\nbadge colours (dist/): all distinguishable by hue'
+      : '\nbadge colours (dist-test/): all distinguishable by hue'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

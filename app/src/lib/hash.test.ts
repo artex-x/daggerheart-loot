@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  ACCOUNT_HASH,
   legacySource,
   parseHash,
   printAsked,
@@ -63,6 +64,7 @@ describe('golden route fixtures', () => {
       } else if (fx.resolves.printCards > 0) {
         expect(route.kind).toBe('print');
       }
+      if (fx.resolves.hash === ACCOUNT_HASH) expect(route).toEqual({ kind: 'account' });
       if (fx.resolves.printQty) {
         expect(route.kind).toBe('print');
         if (route.kind === 'print') expect(route.qty).toEqual(fx.resolves.printQty);
@@ -311,6 +313,19 @@ describe('an unreadable address', () => {
 
   it('a named table that resolves to nothing is unreadable too (R9/Q3)', () => {
     expect(parseHash('#/tables/nosuch').kind).toBe('unknown');
+  });
+});
+
+describe('the account page', () => {
+  it('is exactly `#/account`', () => {
+    expect(parseHash(ACCOUNT_HASH)).toEqual({ kind: 'account' });
+    expect(parseHash('#account')).toEqual({ kind: 'account' });
+  });
+
+  it('reads nothing longer or shorter as the account page', () => {
+    for (const h of ['#/account/x', '#/accounts', '#/acc']) {
+      expect(parseHash(h).kind).toBe('unknown');
+    }
   });
 });
 

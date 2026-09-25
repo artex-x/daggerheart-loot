@@ -31,6 +31,7 @@ export { browserShare, fakeShare } from './share.js';
 export { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 export type { FakeStoragePort } from './storage.js';
 
+/** `cloud` starts empty: `main.ts` sets it once a build has one. */
 export function browserEnv(): Env {
   return {
     data: browserData(),
@@ -44,7 +45,8 @@ export function browserEnv(): Env {
     drag: nativeDrag(),
     dialog: browserDialog(),
     pwa: browserPwa(),
-    motion: browserMotion()
+    motion: browserMotion(),
+    cloud: null
   };
 }
 
@@ -66,6 +68,7 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     dialog: fakeDialog(),
     pwa: fakePwa(),
     motion: fakeMotion(),
+    cloud: null,
     ...over
   };
 }

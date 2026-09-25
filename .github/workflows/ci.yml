@@ -5,22 +5,28 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      skip_e2e:
+        description: 'Skip the hosted E2E (the test project is down); on main this still deploys'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 # Only one publish at a time, and never cancel one half-done - but that rule
-# is for the push-to-main run that actually deploys. A PR run shares this
+# is for the runs on main, which are the ones that can deploy: a push, and
+# the owner's `skip_e2e` dispatch (`deploy`, below). A PR run shares this
 # workflow and used to share this same group too, which meant two PRs (or a
 # PR and a push) queued behind each other for no reason; worse, if the fix
 # were "let a PR run join the `pages` group with cancel-in-progress: true",
 # an in-flight publish could be cancelled mid-deploy by an unrelated PR push.
-# So only a push to main keeps the shared, never-cancelled `pages` group; any
-# other run (PR, workflow_dispatch, a push to another branch) gets its own
-# group keyed on the ref and may cancel its own superseded runs.
+# So every run on main keeps the shared, never-cancelled `pages` group; any
+# other run (PR, a dispatch or a push on another branch) gets its own group
+# keyed on the ref and may cancel its own superseded runs.
 concurrency:
-  group: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'pages' || format('ci-{0}', github.ref) }}
-  cancel-in-progress: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/main') }}
+  group: ${{ github.ref == 'refs/heads/main' && 'pages' || format('ci-{0}', github.ref) }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   check:
@@ -65,11 +71,20 @@ jobs:
       - name: Bundle size budget
         run: npm run budget
 
+      # The test build is what `browser` drives (docs/specs/COVERAGE.md,
+      # "Test layers"); built here too so the guard can compare both bundles.
+      - name: Test build
+        run: npm run build:test
+
+      - name: The production bundle carries no fake cloud
+        run: node tools/no-fake-in-prod.mjs
+
       # A CI run is gone by the time anyone looks at it, and the summary prints
       # a dozen grepped lines. This job no longer runs run-all.js itself (see
       # `browser`, below), so `coverage/` is what a failed `npm run check`
-      # leaves; `dist/` is what a failed Build, smoke or budget step - all
-      # three run after it in this same job - leaves instead.
+      # leaves; `dist/` and `dist-test/` are what a failed build, smoke,
+      # budget or marker step - all run after it in this same job - leave
+      # instead.
       - name: Everything a failed run left behind
         if: failure()
         uses: actions/upload-artifact@v5
@@ -77,6 +92,7 @@ jobs:
           name: failure-output
           path: |
             dist/
+            dist-test/
             coverage/
           retention-days: 14
           if-no-files-found: ignore
@@ -107,8 +123,10 @@ jobs:
 
       - run: npm ci
 
+      # The test build: tests/app/ drive dist-test/, whose cloud is the fake
+      # one (docs/specs/COVERAGE.md, "Test layers").
       - name: Build
-        run: npm run build
+        run: npm run build:test
 
       - name: The built app's suites - shard ${{ matrix.shard }} of 4
         run: node tests/run-all.js --shard=${{ matrix.shard }}/4
@@ -120,14 +138,13 @@ jobs:
           name: failure-output-browser-${{ matrix.shard }}
           path: |
             test-output/
-            dist/
+            dist-test/
           retention-days: 14
           if-no-files-found: ignore
 
   # The database layer: RLS, functions and the migration reversibility gate,
   # against a local Supabase stack in Docker (preinstalled on ubuntu
-  # runners). No hosted credential is used. On a push to main it also
-  # refuses a migration that the owner has not pushed to production yet.
+  # runners). No hosted credential is used.
   db:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -144,12 +161,57 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: 'true'
 
-      - name: Every migration on main is applied to production
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: node tools/supabase/applied-check.mjs --project prod
-
       - name: 'The database layer: RLS, functions, migration reversals'
         run: npm run check:db
+
+  # Layer 4: the real Supabase adapter and the account flows on the hosted
+  # test project (docs/specs/COVERAGE.md, "Test layers"). One run at a time
+  # across every branch - the runs share the test project's member and its
+  # throwaway users. A fork's pull request has no secrets, so it skips this
+  # job rather than failing it. Nothing is uploaded, on failure either: the
+  # page draws the member's email and a public repository's artifacts are
+  # readable by anyone. `migrate-test` applies the branch's migrations to the
+  # test project first, with the connection-string secret
+  # (`SUPABASE_DB_URL_TEST`); the `applied.json` record it replaces is gone -
+  # the database is the record.
+  e2e:
+    if: ${{ !inputs.skip_e2e && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: e2e-test-project
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # The pinned CLI that `npm ci` installed. The connection string stays in
+      # the step's `env:`, never in a `run:` line. A network error here is
+      # the secret's shape: the session pooler, port 5432 (.claude/README.md,
+      # "The hosted E2E and the deploy").
+      - name: 'migrate-test: apply pending migrations to the test project'
+        run: node node_modules/supabase/dist/supabase.js db push --db-url "$SUPABASE_DB_URL" --yes
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_TEST }}
+
+      - name: 'The hosted E2E: the real adapter and the account flows'
+        run: npm run e2e
+        env:
+          E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
+          E2E_SUPABASE_SECRET_KEY: ${{ secrets.E2E_SUPABASE_SECRET_KEY }}
+          E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+
+      # `npm run e2e` leaves the configured build in dist/: the shipped
+      # bundle is measured here, before a merge, not only in `deploy`.
+      - name: Bundle size budget (the configured build e2e left in dist/)
+        run: npm run budget
 
   audit:
     runs-on: ubuntu-latest
@@ -189,7 +251,7 @@ jobs:
   # ---------------------------------------------------------------------------
   # Publishing, gated on check, audit, secrets, browser (the sharded suite
   # that carries the structural goldens, among everything else run-all.js
-  # knows about) and db.
+  # knows about), db and e2e.
   #
   # What is published is the BUILT REWRITE: dist/index.html, dist/assets/ and
   # dist/data.js, assembled here with the generated data, the stub pages and the
@@ -218,6 +280,14 @@ jobs:
   # the *current* commit, since it would just republish stale content
   # instead.
   #
+  # A deploy that carried a migration is undone the same way for the app,
+  # never by deleting the migration: `migrate-prod` has applied it, and
+  # `db push` refuses a remote history that holds a version absent locally,
+  # so a deleted migration file would block every later deploy. Revert the
+  # app change only, or add a new migration whose body is the reversal file
+  # (`supabase/reversals/<name>`); restoring data is `.claude/README.md`,
+  # "Backups and restore".
+  #
   # THE OLD APP IS GONE FROM THE REPOSITORY, NOT JUST FROM THE PUBLISHED SET
   #
   # index.html, app.js and style.css were deleted at R0c (issue 47, `23c00a6`)
@@ -236,8 +306,12 @@ jobs:
   # job is what publishes - nothing else does.
   # ---------------------------------------------------------------------------
   deploy:
-    needs: [check, audit, secrets, browser, db]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, audit, secrets, browser, db, e2e]
+    # A skipped `e2e` passes and a failed one blocks. A push to main deploys;
+    # so does the owner's dispatch on main with `skip_e2e`, the escape hatch
+    # for a test project that is down (.claude/README.md, "Supabase
+    # configuration"); no other dispatch deploys.
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.skip_e2e) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # A job-level `permissions:` block replaces the workflow-level one above
@@ -266,8 +340,37 @@ jobs:
 
       - run: npm ci
 
+      # A `skip_e2e` dispatch skipped `migrate-test`, so nothing proved the
+      # branch's migrations on the test project: it may ship none that
+      # production has not received already. This step and `migrate-prod`
+      # hold the one production credential in CI besides `backup.yml`'s
+      # (`docs/DECISIONS.md`, 2026-09-25, "Migrations deploy from CI as
+      # steps of `e2e` and `deploy`").
+      - name: A skip_e2e dispatch ships no migration production has not received
+        if: inputs.skip_e2e
+        run: node tools/supabase/pending-check.mjs
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
+
+      # Before the build, so a failed push stops the publish before it starts.
+      - name: 'migrate-prod: apply pending migrations to production'
+        run: node node_modules/supabase/dist/supabase.js db push --db-url "$SUPABASE_DB_URL" --yes
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
+
+      # The one configured build: sign-in is on only where both values are
+      # set. Actions variables, not secrets - the publishable key ships in
+      # every page; row level security is what guards the data.
       - name: Build
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      # `check:built` measures the unconfigured build; this is the bundle that
+      # ships, with the account client's chunk in it.
+      - name: Bundle size budget (the shipped, configured build)
+        run: npm run budget
 
       # An explicit list rather than "everything": the repository also holds the
       # sources and the specs, and none of that belongs on a public site. A new

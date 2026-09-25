@@ -83,7 +83,8 @@ const PAGES = [
   ['#/search', 'поиск'],
   ['#/roll/core', 'старая ссылка'],
   ['#/nowhere', 'неизвестный адрес -> раздел по умолчанию'],
-  ['#/tables', 'таблицы (без указания)']
+  ['#/tables', 'таблицы (без указания)'],
+  ['#/account', 'аккаунт: вход']
 ]
   .concat(TABLES.map((t) => ['#/tables/' + t, 'таблица ' + t]))
   .concat([
@@ -365,7 +366,7 @@ async function focusWalk(page, where) {
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
             const known =
-              /^(roll\/(std|alt|wondrous|dread|voa|dv|community)|tables|lists|search|print\/|i\/|l\/|lists\/)/.test(
+              /^(roll\/(std|alt|wondrous|dread|voa|dv|community)|tables|lists|search|print\/|i\/|l\/|lists\/|account$)/.test(
                 h
               );
             if (!known) out.badLinks.push(h);
@@ -475,7 +476,7 @@ async function focusWalk(page, where) {
       ? 'at ' + WIDTHS.join(', ') + ' (' + LANGS.join(', ') + ')'
       : 'at every width and language';
   console.log(
-    rep.failed ? '\n' + rep.failed + ' FAILED' : '\npage sweep (dist/): clean ' + scope
+    rep.failed ? '\n' + rep.failed + ' FAILED' : '\npage sweep (dist-test/): clean ' + scope
   );
   process.exit(rep.failed ? 1 : 0);
 })();

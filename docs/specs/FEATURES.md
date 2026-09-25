@@ -499,10 +499,9 @@ Seven modes. Each keeps its own input in memory only.
   `heading` prop, only passed here) and the Hope/Fear column pair under it
   demoted to `<h3>`.
 - The black-and-white choice (`printBW`) and the sheet size (`printCompact`)
-  are session memory on `AppState` - they survive leaving the print page and
-  coming back - matching the live app's own `S.printBW` rather than resetting
-  on every fresh entry, which is what the page-local `$state` this replaced
-  did. Neither is written to storage.
+  are remembered in this browser (`dhloot.prefs.v1`, for every reader) and,
+  signed in, in the account (`STATE.md`, "Account preferences"): they
+  survive leaving the print page, a reload and, signed in, a new device.
 - A missing picture (a partial deploy, a cold cache) falls back to the same drawn glyph a record with no art gets,
   the same way `RecordCard` does - reached from a print sheet opened
   directly at a shared `#/print/...` address, where nothing has already
@@ -524,6 +523,65 @@ Seven modes. Each keeps its own input in memory only.
   `#/print/cm26*99-f60*99-hi62*99-ci81*99`), both languages and both
   layouts. No deviation from Figma nodes `714-42387`/`3773-90792` was
   needed.
+
+## Account
+
+`#/account`, drawn by `AccountPage.svelte` in a build with sign-in
+configured (the two `VITE_SUPABASE_*` values, `docs/specs/META.md` section
+3). Sign-in is optional: everything else works without it. The page is one
+column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккаунт —
+<docTitle>`), and each section is a panel headed by an `h2`.
+
+- **Unknown session**: only the title, while the cloud has not answered.
+- **Signed out**: the lead «Войдите, чтобы ваши данные были доступны на всех
+  устройствах. Всё остальное работает и без входа.» and one panel, «Войти»:
+  «Войти через Google» and «Войти через Discord» (each with the provider's
+  own logo), then the consent line linking the terms and privacy pages of
+  the language on screen.
+- **Signed in**, in this order: «Вы вошли как» (the email in bold, then the
+  first provider's logo and «через <provider>»; the provider alone when an
+  account has no email); «Способы входа» - a row for Google, then Discord:
+  a connected one shows its identity's email and, while two or more are
+  connected, «Отключить»; a missing one says «не подключён» and offers
+  «Подключить <provider>»; with exactly one connected, a hint says it cannot
+  be disconnected until another is connected; «Выход» - «Выйти» and «Выйти на
+  всех устройствах», which also ends the session on the reader's other
+  devices at their next token refresh; «Удаление аккаунта» - the hint
+  «Аккаунт и все связанные с ним данные будут удалены навсегда.» and
+  «Удалить аккаунт...», which opens an inline confirmation: the word
+  «удалить» / "delete" typed (trimmed, any case) enables «Удалить навсегда»;
+  «Отмена» folds it and forgets the word.
+- An identity email of any length wraps; it is never cut short.
+- Every action disables the page's buttons while it runs. Sign-in and
+  Connect say «Переходим в <provider>...» on the pressed button, record
+  where to come back to (`STATE.md`, `dhloot.auth.return`) and leave for the
+  provider; the buttons stay disabled and the pressed one keeps its text
+  until the page is gone, and a return with the browser's Back button
+  enables them again. The return lands on `?auth-callback=1`, which is read
+  before the app mounts and replaced by the page the reader left
+  (`ROUTES.md`, "Account").
+- When the connected providers cannot be read, «Способы входа» says «Не
+  получилось. Попробуйте ещё раз.» (`role="alert"`) in place of the rows,
+  and offers no Connect.
+- A Connect refused because that provider account already belongs to
+  another account says «Этот аккаунт <provider> уже подключён к другому
+  пользователю.» in that provider's row (`role="alert"`), whether the
+  refusal came back from the call or from the provider's redirect; it
+  clears on the next action. Any other refusal - a cancelled consent, a
+  failed sign-out, disconnect or deletion - is the error toast «Не
+  получилось. Попробуйте ещё раз.».
+- Sign-out and deletion stay on `#/account`, which becomes the signed-out
+  page, with the toast «Вы вышли из аккаунта.» or «Аккаунт удалён.».
+  Deletion removes the account on the server (`delete_account()`, a
+  migration in `supabase/migrations/`), then this browser's session.
+- The texts describe what an account is for in general terms, true in
+  every release (`I18N.md`, "Rules").
+- A build with no sign-in configured draws the not-found page on
+  `#/account`, keeps the address, and draws no account control.
+- Signed in, the language, starting section, tables view and print layout
+  follow the account on every device (`STATE.md`, "Account preferences").
+  The controls stay where they are; the page first draws this browser's
+  values and switches once the account answers. There is no settings page.
 
 ## Chrome
 
@@ -566,16 +624,25 @@ Seven modes. Each keeps its own input in memory only.
   «Конфиденциальность» / "Privacy" and «Условия использования» / "Terms of
   use". Every link opens the copy of the page in the language on screen:
   `pages/<id>.html` in Russian, `pages/en/<id>.html` in English
-  (`Shell.svelte`'s `pagesDir`). The install link is left out inside the
+  (`AppState.pagesDir`). The install link is left out inside the
   installed app (`display-mode: standalone`, or iOS
   `navigator.standalone`), where the step is done; the two policy links
   are always drawn.
 - Each site page links back to the app at its top and its bottom and
   returns to the screen the reader left (`META.md` section 9, "Static
   pages").
-- No tab is lit on a record, a list page or a print sheet - the live
-  `renderTabs` compared against the raw route string, and none of those three
-  route kinds was ever that string.
+- The account control sits 8px after the language switch, in a build with
+  sign-in configured only, and only once the session is known (a signed-in
+  reader never sees «Войти» flash). It is a link to `#/account` on
+  `Seg`'s track: signed out, the person icon and «Войти» / "Sign in", the
+  label visually hidden below 420px (it stays the name); signed in, a 38px
+  circle (44px at 600px and below) with the email's first letter
+  (the icon when there is no email), named «Аккаунт: <email>» / "Account:
+  <email>". On `#/account` it carries `aria-current="page"` and the gold
+  ring. A build with no sign-in draws no control at all.
+- No tab is lit on a record, a list page, a print sheet or the account page -
+  the live `renderTabs` compared against the raw route string, and none of
+  those route kinds was ever that string.
 - Under `prefers-reduced-motion: reduce` every transition and animation stops
   moving and waits out no delay - a blanket kill (`tokens.css`), not the live
   app's own two named exceptions - including the table page's scroll to a

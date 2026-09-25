@@ -1,0 +1,146 @@
+# #/account as gm1
+# route: #/account
+# why: two identities: the four sections in order, a Disconnect on each
+# as: gm1
+
+## ru :: tree
+RootWebArea "Аккаунт — Генератор лута — Daggerheart" [url=index.html?as=gm1#/account]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Аккаунт: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Аккаунт" [level=1]
+    StaticText "Способы входа, выход и ваши данные."
+    heading "ВЫ ВОШЛИ КАК" [level=2]
+    StaticText "gm1@example.test"
+    ... StaticText x5 of 9 same-shape siblings elided
+    heading "СПОСОБЫ ВХОДА" [level=2]
+    button "Отключить Google"
+    button "Отключить Discord"
+    heading "ВЫХОД" [level=2]
+    button "Выйти"
+    button "Выйти на всех устройствах"
+    StaticText "«Выйти на всех устройствах» завершает вход и на других телефонах..." [namelen=79 namehash=1735104d]
+    heading "УДАЛЕНИЕ АККАУНТА" [level=2]
+    StaticText "Аккаунт и все связанные с ним данные будут удалены навсегда."
+    button "Удалить аккаунт..." [expanded=false]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Выйти
+Выйти на всех устройствах
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Обычные правила
+Отключить Discord
+Отключить Google
+Поиск
+Сообщества
+Списки
+Таблицы
+Удалить аккаунт...
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/account]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Account: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Account" [level=1]
+    StaticText "Sign-in methods, signing out and your data."
+    heading "SIGNED IN AS" [level=2]
+    StaticText "gm1@example.test"
+    ... StaticText x5 of 9 same-shape siblings elided
+    heading "CONNECTED PROVIDERS" [level=2]
+    button "Disconnect Google"
+    button "Disconnect Discord"
+    heading "SIGN OUT" [level=2]
+    button "Sign out"
+    button "Sign out everywhere"
+    StaticText ""Sign out everywhere" also ends the session on your other phones..." [namelen=79 namehash=669cc4e6]
+    heading "DELETE ACCOUNT" [level=2]
+    StaticText "The account and all the data linked to it will be deleted for go..." [namelen=67 namehash=04586c07]
+    button "Delete account..." [expanded=false]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Account: gm1@example.test
+Alt. tables
+Communities
+Delete account...
+Disconnect Discord
+Disconnect Google
+Dragon's Vault
+Dread
+EN
+Install as an app
+Lists
+Privacy
+RU
+Search
+Sign out
+Sign out everywhere
+Skip to content
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

@@ -14,6 +14,7 @@ import { sharedListHash } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
 import { LOOT_KINDS } from '../lib/std.js';
+import type { Prefs } from '../lib/prefs.js';
 import { KINDS } from '../lib/types.js';
 import {
   brokenStorage,
@@ -22,7 +23,16 @@ import {
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
-import type { CompressPort, Env, RouterPort } from '../ports/index.js';
+import type {
+  CloudPort,
+  CompressPort,
+  Env,
+  FakeStoragePort,
+  RouterPort,
+  Session
+} from '../ports/index.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { AppState } from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -258,7 +268,58 @@ describe('the tables view preference (restored)', () => {
     const app = new AppState(env);
     app.setTablesView('grid');
     expect(app.tablesView).toBe('grid');
-    expect(env.storage.get(PREFS_KEY)).toBe('{"view":"grid"}');
+    expect(env.storage.get(PREFS_KEY)).toBe(
+      '{"view":"grid","printBw":false,"printCompact":false}'
+    );
+  });
+
+  it('keeps the print layout in the key when the view changes', () => {
+    const env = at('#/tables', {
+      storage: stored({ [PREFS_KEY]: '{"view":"list","printBw":true,"printCompact":true}' })
+    });
+    new AppState(env).setTablesView('grid');
+    expect(env.storage.get(PREFS_KEY)).toBe(
+      '{"view":"grid","printBw":true,"printCompact":true}'
+    );
+  });
+});
+
+describe('the print layout (remembered for every reader)', () => {
+  const PREFS_KEY = 'dhloot.prefs.v1';
+
+  it('is read at boot', () => {
+    const app = new AppState(
+      at('#/print/ci1', {
+        storage: stored({ [PREFS_KEY]: '{"view":"grid","printBw":true,"printCompact":true}' })
+      })
+    );
+    expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['grid', true, true]);
+  });
+
+  it("reads live's old { view } shape as colour on the standard sheet", () => {
+    const app = new AppState(
+      at('#/print/ci1', { storage: stored({ [PREFS_KEY]: '{"view":"grid"}' }) })
+    );
+    expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['grid', false, false]);
+  });
+
+  it('reads broken JSON as the defaults', () => {
+    const app = new AppState(at('#/print/ci1', { storage: stored({ [PREFS_KEY]: '{not' }) }));
+    expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['list', false, false]);
+  });
+
+  it('writes the whole key on a press', () => {
+    const env = at('#/print/ci1');
+    const app = new AppState(env);
+    app.setPrintBW(true);
+    expect(env.storage.get(PREFS_KEY)).toBe(
+      '{"view":"list","printBw":true,"printCompact":false}'
+    );
+    app.setPrintCompact(true);
+    expect(app.printCompact).toBe(true);
+    expect(env.storage.get(PREFS_KEY)).toBe(
+      '{"view":"list","printBw":true,"printCompact":true}'
+    );
   });
 });
 
@@ -862,5 +923,433 @@ describe('the toast', () => {
     vi.advanceTimersByTime(5000);
     expect(app.toast).toBeNull();
     vi.useRealTimers();
+  });
+});
+
+describe('the account session', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+
+  it('is null from the start with no sign-in configured', () => {
+    const app = new AppState(at('#/roll/std'));
+    expect(app.user).toBeNull();
+    app.start();
+    expect(app.user).toBeNull();
+    app.stop();
+  });
+
+  it('is unknown until the cloud answers, then the session', async () => {
+    const app = new AppState(at('#/roll/std', { cloud: fakeCloud(SEED, 'gm1') }));
+    expect(app.user).toBeUndefined();
+    app.start();
+    await flush();
+    expect(app.user?.email).toBe('gm1@example.test');
+    app.stop();
+  });
+
+  it('follows a sign-out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    await flush();
+    await cloud.auth.signOut();
+    expect(app.user).toBeNull();
+    app.stop();
+  });
+
+  it('lets a notification win over a first answer read before it', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let answer: (s: Session | null) => void = () => undefined;
+    cloud.auth.session = () =>
+      new Promise((r) => {
+        answer = r;
+      });
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    await cloud.auth.signOut();
+    answer({ userId: 'stale', email: 'stale@example.test', provider: 'google' });
+    await flush();
+    expect(app.user).toBeNull();
+    app.stop();
+  });
+
+  it('reads a session that cannot be read as signed out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.auth.session = () => Promise.reject(new Error('offline'));
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    await flush();
+    expect(app.user).toBeNull();
+    app.stop();
+  });
+
+  it('marks the provider of a link refused as already linked', async () => {
+    const cloud = fakeCloud(SEED, 'gm2', {
+      returned: {
+        kind: 'link',
+        provider: 'discord',
+        result: { ok: false, error: 'alreadyLinked' }
+      }
+    });
+    const app = new AppState(at('#/account', { cloud }));
+    app.start();
+    await flush();
+    expect(app.alreadyLinked).toBe('discord');
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('toasts any other refused redirect, and nothing for one that worked', async () => {
+    const refused = new AppState(
+      at('#/account', {
+        cloud: fakeCloud(SEED, undefined, {
+          returned: { kind: 'signIn', provider: null, result: { ok: false, error: 'failed' } }
+        })
+      })
+    );
+    refused.start();
+    await flush();
+    expect(refused.toast).toEqual({
+      msg: 'Не получилось. Попробуйте ещё раз.',
+      mode: 'err',
+      action: undefined
+    });
+    expect(refused.alreadyLinked).toBeNull();
+    refused.stop();
+
+    const worked = new AppState(
+      at('#/account', {
+        cloud: fakeCloud(SEED, 'gm1', {
+          returned: { kind: 'link', provider: 'discord', result: { ok: true } }
+        })
+      })
+    );
+    worked.start();
+    await flush();
+    expect(worked.toast).toBeNull();
+    worked.stop();
+  });
+
+  it('stops listening, and ignores answers that arrive after stop()', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', {
+      returned: {
+        kind: 'link',
+        provider: 'discord',
+        result: { ok: false, error: 'alreadyLinked' }
+      }
+    });
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    app.stop();
+    await flush();
+    expect(app.user).toBeUndefined();
+    expect(app.alreadyLinked).toBeNull();
+    await cloud.auth.signOut();
+    expect(app.user).toBeUndefined();
+  });
+
+  it('names the static pages of the language on screen', () => {
+    const app = new AppState(at('#/roll/std'));
+    expect(app.pagesDir).toBe('pages/');
+    app.setLang('en');
+    expect(app.pagesDir).toBe('pages/en/');
+  });
+});
+
+describe('account preferences', () => {
+  const PREFS_KEY = 'dhloot.prefs.v1';
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+
+  /** A signed-in app over its own storage, started and settled. */
+  async function signedIn(
+    cloud: CloudPort,
+    initial: Record<string, string> = {},
+    hash = '#/roll/std'
+  ): Promise<{ app: AppState; storage: FakeStoragePort; router: RouterPort }> {
+    const storage = memoryStorage(initial);
+    const router = memoryRouter(hash);
+    const app = new AppState(fakeEnv({ router, storage, cloud }));
+    app.start();
+    await flush();
+    return { app, storage, router };
+  }
+
+  it("applies the account's row over this browser's values, saving nothing back", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const { app, storage } = await signedIn(cloud, { [LANG_KEY]: 'en' });
+    expect(app.lang).toBe('ru');
+    expect(storage.get(LANG_KEY)).toBe('ru');
+    expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['grid', true, true]);
+    expect(storage.get(PREFS_KEY)).toBe('{"view":"grid","printBw":true,"printCompact":true}');
+    expect(save).not.toHaveBeenCalled();
+    app.stop();
+  });
+
+  it("pins the account's starting section without navigating", async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    await cloud.prefs.save({ home: '#/tables/dread' });
+    const { app, storage, router } = await signedIn(cloud);
+    expect(app.home).toBe('#/tables/dread');
+    expect(storage.get(HOME_KEY)).toBe('#/tables/dread');
+    expect(router.hash()).toBe('#/roll/std');
+    app.stop();
+  });
+
+  it('removes the pin key for the default section', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    await cloud.prefs.save({ home: '#/roll/std' });
+    const { app, storage } = await signedIn(cloud, { [HOME_KEY]: '#/tables/dread' });
+    expect(app.home).toBe('#/roll/std');
+    expect(storage.get(HOME_KEY)).toBeNull();
+    app.stop();
+  });
+
+  it('ignores a starting section the pin check refuses', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    await cloud.prefs.save({ home: '#/i/w1' });
+    const { app, storage, router } = await signedIn(cloud, { [HOME_KEY]: '#/tables/dread' });
+    expect(app.home).toBe('#/tables/dread');
+    expect(storage.get(HOME_KEY)).toBe('#/tables/dread');
+    expect(router.hash()).toBe('#/roll/std');
+    app.stop();
+  });
+
+  it("seeds an account with no row from this browser's five values, once", async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const { app } = await signedIn(cloud, {
+      [LANG_KEY]: 'en',
+      [HOME_KEY]: '#/tables/dread',
+      [PREFS_KEY]: '{"view":"grid","printBw":false,"printCompact":true}'
+    });
+    expect(save).toHaveBeenCalledOnce();
+    expect(save).toHaveBeenCalledWith({
+      lang: 'en',
+      home: '#/tables/dread',
+      view: 'grid',
+      printBw: false,
+      printCompact: true
+    });
+    app.stop();
+  });
+
+  it('applies and saves nothing when the read fails', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.prefs.load = () => Promise.resolve({ ok: false });
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const { app, storage } = await signedIn(cloud, { [LANG_KEY]: 'en' });
+    expect(app.lang).toBe('en');
+    expect(app.tablesView).toBe('list');
+    expect(storage.get(PREFS_KEY)).toBeNull();
+    expect(save).not.toHaveBeenCalled();
+    app.stop();
+  });
+
+  it('saves the whole object once from each of the five setters, signed in', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const { app } = await signedIn(cloud);
+    const presses: [string, () => void][] = [
+      [
+        'setLang',
+        () => {
+          app.setLang('en');
+        }
+      ],
+      [
+        'setTablesView',
+        () => {
+          app.setTablesView('list');
+        }
+      ],
+      ['toggleHome', () => app.toggleHome('#/tables/dread')],
+      [
+        'setPrintBW',
+        () => {
+          app.setPrintBW(false);
+        }
+      ],
+      [
+        'setPrintCompact',
+        () => {
+          app.setPrintCompact(false);
+        }
+      ]
+    ];
+    for (const [name, press] of presses) {
+      save.mockClear();
+      press();
+      await flush();
+      expect(save, name).toHaveBeenCalledOnce();
+    }
+    expect(save).toHaveBeenLastCalledWith({
+      lang: 'en',
+      home: '#/tables/dread',
+      view: 'list',
+      printBw: false,
+      printCompact: false
+    });
+    await flush();
+    expect(await cloud.prefs.load()).toEqual({
+      ok: true,
+      prefs: {
+        lang: 'en',
+        home: '#/tables/dread',
+        view: 'list',
+        printBw: false,
+        printCompact: false
+      }
+    });
+    app.stop();
+  });
+
+  it('runs one save at a time, then the newest once, and takes stale from it', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = await signedIn(cloud);
+    const answers: ((ok: boolean) => void)[] = [];
+    const sent: Prefs[] = [];
+    cloud.prefs.save = (p) => {
+      sent.push(p);
+      return new Promise((r) => answers.push(r));
+    };
+    const load = vi.spyOn(cloud.prefs, 'load');
+    app.setTablesView('list');
+    app.setPrintBW(false);
+    app.setPrintCompact(false);
+    expect(sent).toHaveLength(1);
+    storage.fireExternalChange(null);
+    await flush();
+    expect(load).not.toHaveBeenCalled();
+    answers[0]?.(false);
+    await flush();
+    expect(sent).toHaveLength(2);
+    expect(sent[1]).toMatchObject({ view: 'list', printBw: false, printCompact: false });
+    expect(load).not.toHaveBeenCalled();
+    answers[1]?.(true);
+    await flush();
+    expect(load).toHaveBeenCalledOnce();
+    storage.fireExternalChange(null);
+    await flush();
+    expect(sent).toHaveLength(2);
+    expect(load).toHaveBeenCalledTimes(2);
+    app.stop();
+  });
+
+  it('saves nothing signed out, nor from a pin storage refused', async () => {
+    const out = fakeCloud(SEED);
+    const outSave = vi.spyOn(out.prefs, 'save');
+    const { app } = await signedIn(out);
+    app.setLang('en');
+    app.setTablesView('grid');
+    app.toggleHome('#/tables/dread');
+    app.setPrintBW(true);
+    app.setPrintCompact(true);
+    expect(outSave).not.toHaveBeenCalled();
+    app.stop();
+
+    const cloud = fakeCloud(SEED, 'gm1');
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const broken = new AppState(
+      fakeEnv({ router: memoryRouter('#/roll/std'), storage: brokenStorage(), cloud })
+    );
+    broken.start();
+    await flush();
+    expect(broken.toggleHome('#/tables/dread')).toBe(false);
+    expect(save).not.toHaveBeenCalled();
+    broken.stop();
+  });
+
+  it('lets a local change made while the read is pending win over the row', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const real = cloud.prefs.load.bind(cloud.prefs);
+    let release: () => void = () => undefined;
+    cloud.prefs.load = () =>
+      new Promise((r) => {
+        release = () => {
+          void real().then(r);
+        };
+      });
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const { app } = await signedIn(cloud);
+    app.setTablesView('list');
+    release();
+    await flush();
+    expect(app.tablesView).toBe('list');
+    expect(app.printBW).toBe(false);
+    expect(save).toHaveBeenCalledOnce();
+    app.stop();
+  });
+
+  it('keeps every local value on sign-out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = await signedIn(cloud, { [LANG_KEY]: 'en' });
+    await cloud.auth.signOut();
+    expect(app.user).toBeNull();
+    expect([app.lang, app.tablesView, app.printBW]).toEqual(['ru', 'grid', true]);
+    expect(storage.get(PREFS_KEY)).toBe('{"view":"grid","printBw":true,"printCompact":true}');
+    app.stop();
+  });
+
+  it('pulls again for another user, and not for the same user notified twice', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const load = vi.spyOn(cloud.prefs, 'load');
+    const { app } = await signedIn(cloud);
+    expect(load).toHaveBeenCalledOnce();
+    await cloud.auth.link('discord');
+    await flush();
+    expect(load).toHaveBeenCalledOnce();
+    await cloud.auth.signOut();
+    await cloud.auth.signIn('google');
+    await flush();
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(app.tablesView).toBe('grid');
+    app.stop();
+  });
+
+  it('pulls again when the tab is shown again, signed in', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = await signedIn(cloud);
+    await cloud.prefs.save({ view: 'list', lang: 'en' });
+    storage.fireExternalChange(null);
+    await flush();
+    expect([app.tablesView, app.lang]).toEqual(['list', 'en']);
+    app.stop();
+  });
+
+  it('saves instead of pulling when the last save was refused', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = await signedIn(cloud);
+    const load = vi.spyOn(cloud.prefs, 'load');
+    const save = vi.spyOn(cloud.prefs, 'save').mockResolvedValueOnce(false);
+    app.setTablesView('list');
+    await flush();
+    storage.fireExternalChange(null);
+    await flush();
+    expect(load).not.toHaveBeenCalled();
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(await cloud.prefs.load()).toMatchObject({ ok: true, prefs: { view: 'list' } });
+    storage.fireExternalChange(null);
+    await flush();
+    expect(load).toHaveBeenCalledTimes(2);
+    app.stop();
+  });
+
+  it('does nothing for a named key, signed out, or after stop()', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = await signedIn(cloud);
+    const load = vi.spyOn(cloud.prefs, 'load');
+    storage.fireExternalChange(LANG_KEY);
+    app.stop();
+    storage.fireExternalChange(null);
+    await flush();
+    expect(load).not.toHaveBeenCalled();
+
+    const out = fakeCloud(SEED);
+    const outLoad = vi.spyOn(out.prefs, 'load');
+    const signedOut = await signedIn(out);
+    signedOut.storage.fireExternalChange(null);
+    await flush();
+    expect(outLoad).not.toHaveBeenCalled();
+    signedOut.app.stop();
   });
 });

@@ -17,6 +17,8 @@ export const PACK_MARK = '~';
 /** More than this and the browser stalls. Twenty sheets of nine. */
 export const PRINT_MAX = 180;
 
+export const ACCOUNT_HASH = '#/account';
+
 export type Route =
   | { kind: 'section'; section: Section }
   | { kind: 'tables'; table: TableId | null; anchor: string; filter: FilterState }
@@ -32,6 +34,9 @@ export type Route =
     }
   | { kind: 'storedList'; listId: string }
   | { kind: 'sharedList'; payload: string; packed: boolean }
+  /** In every build: with no sign-in configured it draws the not-found page,
+   *  so the address never falls home (docs/specs/ROUTES.md, "Account"). */
+  | { kind: 'account' }
   /** Nothing could be read - the caller replaces it with the home section. */
   | { kind: 'unknown' };
 
@@ -114,6 +119,7 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
     return { kind: 'print', ids, dropped: asked.ids.length - ids.length, qty };
   }
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
+  if (h === 'account') return { kind: 'account' };
   /* Was `/^l\/[A-Za-z0-9_-]+$/`: a stray character after the payload - a chat
      client swallowing a trailing full stop is the reachable case (R5) - used
      to fail the character class and fall through to `unknown`, which sent the

@@ -1,0 +1,6 @@
+# Fingerprints (<commit>:<file>:<rule>:<line>) of old-history matches the
+# owner confirmed are not keys (2026-09-25). A new finding is added here only
+# on the owner's word; a real key is rotated, not ignored.
+23c00a6eb7407ab374646d9fdb585e87b10ae06d:issues/47/handoff.md:generic-api-key:445
+cce10cbe216a9e49113eaff2b9ef478263601f50:docs/tg-preview.md:generic-api-key:72
+cce10cbe216a9e49113eaff2b9ef478263601f50:issues/tg-preview-refresh/plan.md:generic-api-key:690

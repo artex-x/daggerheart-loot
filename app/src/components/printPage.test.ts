@@ -630,12 +630,9 @@ describe('black and white', () => {
     );
   });
 
-  it('survives leaving the print page and coming back', async () => {
-    /* Session memory on AppState, the way live's own S.printBW was - not the
-       page-local $state this replaces, which reset to colour on every fresh
-       mount. */
+  it('survives leaving the print page, and a reload: remembered in dhloot.prefs.v1', async () => {
     const env = at('#/print/q1-a1');
-    render(App, { env });
+    const first = render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
 
@@ -643,6 +640,13 @@ describe('black and white', () => {
     await tick();
     env.router.navigate('#/print/q1-a1');
     await tick();
+    expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
+    expect(env.storage.get('dhloot.prefs.v1')).toBe(
+      '{"view":"list","printBw":true,"printCompact":false}'
+    );
+    first.unmount();
+
+    render(App, { env: at('#/print/q1-a1', { storage: env.storage }) });
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
   });
 });

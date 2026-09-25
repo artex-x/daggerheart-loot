@@ -143,6 +143,23 @@ occurrence and that occurrence's count. Only the list page's print button
 and the shared page's selection bar (the taken counts) write counts; an
 address written without them reads as it always did.
 
+## Account
+
+| Hash | Meaning |
+|---|---|
+| `#/account` | the account page: sign in, connected providers, sign out, delete the account |
+
+Exactly `#/account`; `#/account/x` and `#/accounts` are unreadable
+addresses (`Fallback` below). The route is read in every build. A build
+with no sign-in configured draws the not-found page there, keeps the
+address as it is, and never sends it home (`FEATURES.md`, "Account").
+
+A provider's sign-in or linking redirect returns to
+`?auth-callback=1` on the page, with a `code` or the error parameters. That
+query is read and removed before the app mounts, and the address is put
+back to the page the reader left (`#/account` when none was recorded), so
+the router never sees it (`STATE.md`, `dhloot.auth.return`).
+
 ## Fallback
 
 An address that matches nothing readable - at boot or on navigation - is

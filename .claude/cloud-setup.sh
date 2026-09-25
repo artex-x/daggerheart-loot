@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Setup script for a claude.ai/code cloud environment. The environment
-# dialog runs `bash .claude/cloud-setup.sh` as root; the result is cached.
-# See .claude/README.md, "Cloud sessions". No Docker image pull here: the
+# Setup script for a claude.ai/code cloud environment, run as root through
+# the dialog's field text in .claude/README.md, "Cloud sessions"; the result
+# is cached. No Docker image pull here: the
 # Docker daemon may not run during setup.
 set -euo pipefail
 
@@ -61,6 +61,10 @@ rtk init -g --hook-only --auto-patch
 
 # 4. The Supabase CLI pinned in package.json.
 npx supabase --version
+
+# 4b. The proxy's authorities in the NSS store Chrome for Testing reads (the
+# hosted E2E's browser half); its own file, so a session can re-run it.
+bash .claude/cloud-nss.sh
 
 # 5. The versions the SessionStart hook checks.
 echo "node $(node --version) (.nvmrc $(cat .nvmrc))"

@@ -19,8 +19,9 @@
    The suites that drove the live app (`index.html`/`app.js`/`style.css`) and
    the parity harness that compared it against `dist/` are gone;
    `docs/specs/COVERAGE.md`'s per-suite table says where each one's
-   assertions went. What is left runs against `dist/` alone, plus a handful
-   of fs-only data/contract checks.
+   assertions went. What is left runs against `dist-test/` (the test build,
+   `npm run build:test`) alone, plus a handful of fs-only data/contract
+   checks.
 
    `--shard` is what ci.yml's `browser` matrix
    uses instead of a single `check`-job step plus a separate `golden` job -
@@ -58,20 +59,20 @@ const HERE = __dirname;
    that wants to skip them) - under `--shard` they join the pool like any
    other row, which is the first time their granularity earns anything in CI. */
 const SUITES = [
-  ['app/sweep', 'dist/: page sweep 390', 326.6, ['390']],
-  ['app/sweep', 'dist/: page sweep 360', 325.0, ['360']],
-  ['app/sweep', 'dist/: page sweep 768', 318.8, ['768']],
-  ['app/sweep', 'dist/: page sweep 1180 ru', 275, ['1180', 'ru']],
-  ['app/sweep', 'dist/: page sweep 1180 en', 275, ['1180', 'en']],
-  ['app/contracts', 'dist/: contracts and fixtures', 256.4],
-  ['app/print', 'dist/: card printing', 159.7],
-  ['app/golden', 'dist/: structural snapshots 1/4', 106, ['--shard=1/4']],
-  ['app/states', 'dist/: real input', 102.7],
-  ['app/golden', 'dist/: structural snapshots 2/4', 102, ['--shard=2/4']],
-  ['app/golden', 'dist/: structural snapshots 3/4', 98, ['--shard=3/4']],
-  ['app/golden', 'dist/: structural snapshots 4/4', 94, ['--shard=4/4']],
-  ['app/typo', 'dist/: fonts and scale', 78.1],
-  ['app/hues', 'dist/: label colours', 66.9],
+  ['app/sweep', 'dist-test/: page sweep 390', 326.6, ['390']],
+  ['app/sweep', 'dist-test/: page sweep 360', 325.0, ['360']],
+  ['app/sweep', 'dist-test/: page sweep 768', 318.8, ['768']],
+  ['app/sweep', 'dist-test/: page sweep 1180 ru', 275, ['1180', 'ru']],
+  ['app/sweep', 'dist-test/: page sweep 1180 en', 275, ['1180', 'en']],
+  ['app/contracts', 'dist-test/: contracts and fixtures', 256.4],
+  ['app/print', 'dist-test/: card printing', 159.7],
+  ['app/golden', 'dist-test/: structural snapshots 1/4', 106, ['--shard=1/4']],
+  ['app/states', 'dist-test/: real input', 102.7],
+  ['app/golden', 'dist-test/: structural snapshots 2/4', 102, ['--shard=2/4']],
+  ['app/golden', 'dist-test/: structural snapshots 3/4', 98, ['--shard=3/4']],
+  ['app/golden', 'dist-test/: structural snapshots 4/4', 94, ['--shard=4/4']],
+  ['app/typo', 'dist-test/: fonts and scale', 78.1],
+  ['app/hues', 'dist-test/: label colours', 66.9],
   ['stub', 'stub pages i/', 1.6],
   ['dataint', 'data.js invariants', 0.3],
   ['derived', 'derived files and catalog', 0.3],
@@ -223,7 +224,7 @@ function flush() {
     const [name, what] = queue[printed];
     const r = done[keyOf(queue[printed])];
     console.log(
-      (r.ok ? '  ok  ' : 'FAIL  ') + name.padEnd(10) + what.padEnd(34) + r.secs + 's'
+      (r.ok ? '  ok  ' : 'FAIL  ') + name.padEnd(14) + what.padEnd(40) + r.secs + 's'
     );
     if (!r.ok) {
       r.out

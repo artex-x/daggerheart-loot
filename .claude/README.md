@@ -167,15 +167,25 @@ Host and tool facts behind this design, kept so nobody re-derives them:
 
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
-| `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. In a cloud session (`CLAUDE_CODE_REMOTE=true`) also probes Node against `.nvmrc`, `docker info` (3 s), the puppeteer cache and `gitleaks version` (2 s), each "ok" or what failed, and states the three cloud rules ("Cloud sessions"). `LOOT_SKIP_PROBES=1` (selftest) reads each probe as "skipped". | warn (informational) |
-| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** denies a hosted Supabase write - `supabase db push` without `--dry-run`, or without `--local`, or with `--linked`/`--db-url`/`--project-ref`; `supabase db reset` and `supabase migration down` without `--local` or with one of those three; `supabase migration up` with one of them; `supabase config push`; `supabase migration repair`; and `npm run config:push`/`db:push`. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (the tools' own entry), `npx`, `npm exec` or `npm x` (past their flags, a `-p`/`--package` value and a bare `--`), or `rtk`; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (6 s timeout) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass (it scans the index only, so a `git commit -a` leaves unstaged changes unscanned); **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
+| `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. In a cloud session (`CLAUDE_CODE_REMOTE=true`) also runs seven probes - Node against `.nvmrc`, `docker info` (3 s), the puppeteer cache, `node_modules`, `gitleaks version` and `rtk --version` (2 s each), and the proxy's authorities in `~/.pki/nssdb` (`bash .claude/cloud-nss.sh --check`, 3 s: every CA by sha256 fingerprint; on a failure it names `bash .claude/cloud-nss.sh`) - each "ok" or what failed, and states the three cloud rules ("Cloud sessions"). `LOOT_SKIP_PROBES=1` (selftest) reads each probe as "skipped". | warn (informational) |
+| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push` is allowed only with `--project test` and no other `--project`. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (the tools' own entry), `npx`, `npm exec` or `npm x` (past their flags, a `-p`/`--package` value and a bare `--`), or `rtk`; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
 arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` (plain or `rtk`-prefixed), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
-| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `package-lock.json`, `tests/app/snapshots/**`, `supabase/applied.json` (written by `npm run db:push`), and a `supabase/migrations/<file>` that `applied.json` lists under any project ("write a new migration instead"). A missing or unparsable `applied.json` blocks no migration. | **block** |
+| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). No file records applied migrations; a repository with no remote ref, or a git failure, blocks no migration. | **block** |
 | `PostToolUse` | `Bash\|PowerShell` | `check-observer.mjs` | `npm run check:db` from either tool: reads the output from `tool_response.stdout`, else `.output`, else a string response, plus `stderr`; a `check:db: PASS` line writes `.check-db-cache.json` and says "Commit gate armed for supabase/ and tests/db/", a `check:db: FAIL` line or a failure marker says FAIL, neither says it cannot attribute the run. `npm run check` arms from Bash only, as follows. Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` or `cd <dir>;` (PowerShell 5.1 has no `&&`), `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js` and public-contract fixtures. Known false-positive, kept as a nag rather than fixed: it tests `p.startsWith('docs/fixtures/')`, so it fires its public-contract reminder on any write under `docs/fixtures/share/`, which is not itself a contract surface (`CONTRACTS.md` enumerates only `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`) - the reminder firing there is not evidence a contract moved. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
+
+**Settings besides hooks.** `.claude/settings.json` also sets `attribution`
+(`commit` and `pr` empty, so the harness adds no attribution line) and `env`
+(`GIT_AUTHOR_*` and `GIT_COMMITTER_*` as `artex-x
+<artex-x@users.noreply.github.com>`), the commit author since 2026-09-25
+(`docs/DECISIONS.md`, "Commit author and attribution are set in
+`.claude/settings.json`"). Both are read at session start, so an edit
+applies from the next session. `bash-guard.mjs` rule 2d (an attribution line
+in a commit message) stays as the backstop for a session or host that does
+not load them.
 
 **There is no git pre-commit hook** - not to be confused with the Claude
 Code hooks above, which run in this harness, not in `git` itself. One
@@ -298,10 +308,15 @@ npm run check:db
 The first run pulls the images (measured 2026-09-24: `supabase start` with
 the excludes took 288 s, pulling the `postgres` and `gotrue` images); a warm
 run takes about a minute (`db reset --local` plus the suite; the four
-`db dump --local` snapshots of the fixture gate cost about 4 s each). Its
+`db dump --local` snapshots of the fixture gate cost about 4 s each). With
+the reversibility base check (two more `db reset --local`) a run took 220 s,
+140 s of it the base check (2026-09-25). Its
 last stdout line is `check:db: PASS` or `check:db: FAIL`, and
 `check-observer.mjs` arms the `supabase/` and `tests/db/` commit rule from
-the PASS line. Measured live on 2026-09-24: a PowerShell call reaches the
+the PASS line. The observer matches the command at its start, so a run
+wrapped in anything (a timer such as `$s = Get-Date; npm run check:db; ...`)
+passes and arms nothing; the commit is then refused by rule 2m
+(2026-09-25). Run the command alone. Measured live on 2026-09-24: a PowerShell call reaches the
 `PostToolUse` hook with the PASS line in its text and no exit-code field
 (the verdict line carried no `(exit n)`), and the `Bash|PowerShell`
 matchers took effect in the session that saved them. The CLI's progress
@@ -492,6 +507,12 @@ documented; the parity rows below are replaced by the gates that survive.
 | `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | longer; the four shards must run separately, never as one bare `node tests/app/golden.js` call |
 | `node tests/run-all.js <suites> --shard=n/m` | varies with what the packer bins together - measured up to ~372s for one bin (`sweep1180-ru`: 371.9s(ru)/172.7s(en), CI run `35232880507`) | longer; a shard's own bins are not interchangeable with `ci.yml`'s matrix count (`tests/derived.js` asserts the two agree) |
 
+Re-measured on this host on 2026-09-25, at the end of the accounts release:
+`npm run check` 348 s (vitest with coverage 200 s of it, 52 files and 1517
+tests; the hook selftest 719 cases), `npm run check:built` 19 s, `node
+tests/run-all.js app/states` 197 s. The check has grown with its suites, so
+plan by these figures, not by the table's 165 s.
+
 `check:built` and the `tests/app/` filters are paid once per batch; `npm run
 check` is paid once per commit inside it. None of these scale with the
 diff: eight paths and forty paths cost the same minutes.
@@ -510,9 +531,10 @@ needs `MSYS_NO_PATHCONV=1` in front (see "Shell hazards on this host",
 "Run a long check"); without it the `#/`-leading argument is path-converted
 and the filter silently matches nothing. Separately, `npm run check`'s own
 `npm run data` step can move `data.json`/`catalog.csv` mtimes with unchanged
-content, so a `npm run build` run before the check no longer satisfies the
-stale-`dist/` guard - rebuild after the check, before any `dist/`-driven
-suite or golden probe.
+content, so a build run before the check no longer satisfies the
+stale-build guard - rebuild after the check (`npm run build:test` before any
+`dist-test/`-driven suite or golden probe, `npm run build` before
+`tools/smoke-http.mjs`).
 
 The full unsharded browser suite
 (`app/sweep,app/typo,app/hues,app/contracts,app/states`) runs ~648s in 8
@@ -530,6 +552,11 @@ This table is about a **local** foreground call. A CI job's fixed cost is
 about twenty seconds (checkout, setup-node, `npm ci`, `npm run build`), not
 minutes - `tests/run-all.js`'s `--shard=n/m` and `ci.yml`'s `browser` matrix
 split the real-Chrome suites across four such jobs for exactly that reason.
+CI run 36105652165 (2026-09-25): the `browser` shards' suite steps 361, 367,
+367 and 224 s; the `e2e` job's `npm run e2e` step 20 s. CI run 36124766953
+(2026-09-25): `migrate-test` 1 s when the test project is up to date, `npm
+run e2e` 26 s. CI run 36131497583 (2026-09-25): the whole `e2e` job 66 s, the
+whole `browser (1)` job 385 s.
 Merging work to share a CI job's fixed cost follows the opposite logic from
 merging a batch to share this table's local one.
 
@@ -977,7 +1004,7 @@ tasks that owe its entries), in the same commit that edits `CLAUDE.md`,
 | Supersede the no-backend / hash-only-list law and the `file://` clauses | edit `CLAUDE.md`: "Product laws" bullet 1, "Architecture boundaries" last bullet, "Project shape" first bullet; a `docs/DECISIONS.md` entry names the old text and the design section that replaces it. **Installed 2026-09-24** (`persist-0-foundation`): `CLAUDE.md`, `docs/DECISIONS.md`, `META.md` sections 3, 4 and 9, `CONTRACTS.md` sections 4-5; no fixture, `tests/contracts.js` or `llms.txt` text changed | `CLAUDE.md`, `docs/DECISIONS.md`, CONTRACTS/fixtures/llms.txt | until then those laws protect 47 |
 | RLS policy verification | a **gate**: negative tests against the local Supabase stack (anon reads no other user's rows; service role never reaches the client). Amended 2026-09-24: a **separate chain**, `npm run check:db` (`tests/db/`), not `npm run check`, for two reasons - Docker for every `npm run check` on a CSS fix is not acceptable, and on this host `npm run check` runs through the Bash tool while Docker answers only the PowerShell tool, so a chain that needs Docker could never arm the gate from Bash. The commit gate gains rule 2m (a `supabase/**` or `tests/db/**` commit needs a passing `check:db`), armed by `check-observer.mjs` from either tool; CI runs it in the `db` job, which `deploy` needs. **Installed 2026-09-24** (`persist-0-foundation`): the harness and its two invariants; each schema batch adds its role cases | `tests/db/`, `package.json`, `ci.yml` | an RLS mistake does not fail a test, it leaks data |
 | Migration reversibility | a **gate** in `check:db`: every migration under `supabase/migrations/` has a reversal in `supabase/reversals/` or the marker `-- additive` (refused over a `drop`, `rename` or type change), and up-down-up leaves the schema dump unchanged. **Installed 2026-09-24**: proven on two fixtures (one passing, one failing); R0 ships no migration | `tests/db/reversibility.test.mjs`, `tools/supabase/lib.mjs` | "additive while two frontend versions are open" is a rule tooling enforces |
-| Applied migrations never edited in place | `edit-guard.mjs` `DENY` entry: path under `supabase/migrations/` listed in `supabase/applied.json`, which `npm run db:push` writes. **Installed 2026-09-24** | `.claude/hooks/edit-guard.mjs`, selftest cases | same class as the generated-file guard |
+| Applied migrations never edited in place | `edit-guard.mjs` rule: a path under `supabase/migrations/` that a remote-tracking ref holds. **Installed 2026-09-24**; **redesigned 2026-09-25**: git is the record, `supabase/applied.json` is gone, because CI applies every pushed migration | `.claude/hooks/edit-guard.mjs`, selftest cases | same class as the generated-file guard |
 | Secrets hygiene, `VITE_` boundary | `bash-guard.mjs` family on a `git commit` segment: run gitleaks over the staged diff with `.gitleaks.toml`; deny on findings; `speak` (not deny) when gitleaks is not on PATH so a missing control is visible; raise the hook timeout in `settings.json` only if measured slower than 10 s. **Installed 2026-09-24** (rule 2l) | `.claude/hooks/bash-guard.mjs`, `settings.json`, selftest | CI also runs it (`secrets` job); before any service-role key exists |
 | One session per working tree, extended to the shared database | one sentence added to `CLAUDE.md` "Task and session protocol": a second session on the same Supabase project corrupts the first's data and the failure looks like an application bug. **Installed 2026-09-24** | `CLAUDE.md` | prose, because the hook has no input for it |
 | Authenticated CI credentials | CI secret plus a documented failure mode | `ci.yml`, README | Phase 2, per 17.4 |
@@ -1062,26 +1089,150 @@ CLI facts (2.117.0, measured 2026-09-24):
   (`@supabase/cli-windows-x64`, `@supabase/cli-linux-x64`); the tools run
   `node node_modules/supabase/dist/supabase.js`, the pinned version, with no
   shell and no `npx` lookup.
+- `db dump --data-only` leaves out the platform schemas, `auth` included,
+  unless `--schema auth,public` is passed; with it the CLI runs `pg_dump
+  --data-only --schema "auth|public"` without `auth.schema_migrations`, and
+  the file starts with `SET session_replication_role = replica;` (measured by
+  `--dry-run`, 2026-09-25). The schema dump leaves out `auth`, `storage`,
+  `supabase_migrations` and roles (`--role-only` is a separate dump).
+- `db push` takes `--db-url` (percent-encoded), `--dry-run`, `--include-all`,
+  `--skip-vault` and the global `--yes`. `db reset --version <timestamp>`
+  resets up to that migration, so `--version` is not always the CLI's
+  version flag (`db reset --help`, 2026-09-25).
 
 | Command | Who runs it | What it does |
 |---|---|---|
 | `npm run config:diff -- --project test\|prod [--env-file <path>]` | anyone; an agent only against `test` | read-only diff of `config.toml` against the project; prints `drift: none (N not-owned)` or `drift: N`, exits 2 on drift |
 | `npm run config:push -- --project test\|prod [--env-file <path>]` | the owner, in an interactive terminal | refuses without a TTY; for `prod` refuses while an `env(...)` name is unset; diffs, asks for a typed `yes`, then runs `config push` with the CLI's own prompt |
-| `npm run db:push -- --project test\|prod` | the owner, in an interactive terminal | refuses without a TTY or on a migration pairing error; dry run, typed `yes`, `db push`, then writes `supabase/applied.json` |
+| `npm run db:push -- --project test [--yes]` | anyone, an agent included; `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing |
+| `npm run db:push -- --project prod` | the owner, in an interactive terminal | the fallback while CI's `migrate-prod` is broken; refuses without a TTY, and refuses `--yes`; dry run, typed `yes`, `db push`; records nothing |
 | `npm run check:db` | anyone (Docker; PowerShell on Windows) | layer 3 against the local stack |
 
 The env file defaults to `supabase/.env` (gitignored by the root `*.env`
 rule); its values reach the CLI's environment and are never printed. Agents
-never write to a hosted project: `bash-guard.mjs` rule 2n denies every write
-shape, and neither wrapper has a `--yes` path.
+write to the test project only (owner decision 2026-09-25; `docs/DECISIONS.md`,
+"Agents may write to the test project; production is CI's or the owner's"):
+`bash-guard.mjs` rule 2n allows a `db`, `migration` or `config push`
+command whose target is provably the test project and denies production,
+`--linked` and every target a command does not name. `db:push --project
+test --yes` passes `SUPABASE_DB_PASSWORD_TEST` to the CLI as its own
+`SUPABASE_DB_PASSWORD`, in the child's environment only.
 
-**Release procedure, `test` first, then `prod`:** `npm run config:diff`,
-`npm run config:push`, `npm run db:push`; amend `supabase/applied.json` into
-the release commit; then the git push. CI's `db` job refuses a push to
-`main` whose `supabase/migrations/` holds a file `applied.json` does not list
-under `prod` (`tools/supabase/applied-check.mjs`). A non-empty diff the
-repository did not cause is drift: record it in the task's handoff, then
-push the repository's value.
+**Migration names.** A new migration's 14-digit stamp must sort after every
+migration already applied: `supabase db push` refuses a local migration that
+would be inserted before the remote's last one (short of `--include-all`).
+`date -u +%Y%m%d%H%M%S` is not enough on its own - the applied
+`20260925120000_delete_account.sql` was named for 12:00 UTC, and a stamp
+taken at 07:46 the same day sorts before it; take the next free minute after
+the newest file instead (2026-09-25). A migration once applied is never
+edited: a fix is a new migration.
+
+**Release procedure.** Configuration, `test` first, then `prod`, by the
+owner before the push of `main`: `npm run config:diff`, then `npm run
+config:push`. A non-empty diff the repository did not cause is drift:
+record it in the task's handoff, then push the repository's value.
+Migrations are CI's (`docs/DECISIONS.md`, 2026-09-25, "Migrations deploy
+from CI as steps of `e2e` and `deploy`"): `migrate-test`, the first step of
+every `e2e` run, applies the pending migrations to the test project, and
+`migrate-prod`, the first step of `deploy`, applies them to production at
+the push of `main`, before the build. A `skip_e2e` dispatch runs no
+`migrate-test`, so `deploy` first runs `tools/supabase/pending-check.mjs`
+against production and stops when a migration file's version is not in its
+`supabase_migrations.schema_migrations`. The database is the applied
+record; no file lists applied migrations, and `edit-guard.mjs` locks a
+migration that any remote-tracking ref holds.
+
+**The hosted E2E and the deploy.** CI's `e2e` job runs `npm run e2e` (layer
+4, `docs/specs/COVERAGE.md`, "Test layers") against the test project, and
+`deploy` needs it. `migrate-test` applies the schema before every `e2e`
+run. A red `migrate-test` step names the reason, most often the connection
+string: `SUPABASE_DB_URL_TEST` and `SUPABASE_DB_URL_PROD` must be the
+session pooler form (`aws-0-<region>.pooler.supabase.com`, port 5432, user
+`postgres.<ref>`, the password percent-encoded) - GitHub's runners have no
+IPv6 and the direct `db.<ref>.supabase.co` host answers IPv6 only, and the
+transaction pooler (port 6543) breaks `db push`. The owner fixes the secret
+and re-runs the job. When the test project
+itself is down, the escape hatch is the owner's: dispatch the `check`
+workflow on `main` with `skip_e2e: true` (the one dispatch that deploys),
+and record the run id and the reason in the release's handoff. Nothing else
+may skip `e2e`. A job-level `concurrency` group can replace a pending `e2e`
+job with a newer run's even with `cancel-in-progress: false`; that run's
+`deploy` then sees `e2e` cancelled and does not publish - it fails safe, and
+a re-run recovers. Every run mints its sessions through `verifyOtp`, which
+Auth limits (`token_verifications = 30` per five minutes, `config.toml`), so
+expect about three back-to-back local runs per five minutes before Auth
+refuses a mint.
+
+A known gap: `migrate-test` runs on every branch's `e2e`, so a migration
+that a branch pushed is in the test project before `main` has its file.
+Symptom: on the next push of `main` without that branch, `migrate-test`
+fails - `db push` refuses a remote history that holds a version absent
+locally - and `e2e` and `deploy` stay red until the branch merges onto
+`main`. Recovery: merge the branch that owns the migration. No fix is
+designed yet.
+
+### Backups and restore
+
+`.github/workflows/backup.yml` dumps production every night at 03:17 UTC
+and on dispatch: `schema.sql` and `data.sql` (the `auth` and `public` rows),
+each encrypted to the owner's `age` public key (the Actions variable
+`BACKUP_AGE_RECIPIENT`) and kept as the artifact `backup-<date>` for 30
+days. The private key lives in the owner's password manager, never on disk
+longer than a restore. `docs/DECISIONS.md`, 2026-09-25, "Production is
+backed up nightly, encrypted to the owner's key, kept 30 days". GitHub
+refuses to dispatch a workflow that is not on the default branch (`gh
+workflow run backup.yml --ref <branch>` answered `HTTP 404: workflow
+backup.yml not found on the default branch`, 2026-09-25), so a new
+workflow file runs first on `main`.
+
+**Symptom.** Data is lost, or a migration must be undone together with the
+data it changed.
+
+**Diagnosis.** Find the newest nightly artifact made before the loss:
+
+```bash
+gh run list --workflow backup.yml
+gh run download <run id> --dir <dir>
+```
+
+Expected: `<dir>` holds `schema.sql.age` and `data.sql.age`.
+
+**Recovery.** Restore into the local stack first, then the test project,
+then production. The dump restores against the schema the migrations
+produce, and it sets `session_replication_role = replica`, so triggers stay
+off while it loads.
+
+1. Decrypt the data file: `age -d -i <the owner's key file> -o data.sql
+   data.sql.age`. Expected: `data.sql`, plain SQL.
+2. Start the local stack: `npx supabase start`, then `npx supabase db reset
+   --local` (PowerShell on Windows). Expected: every migration applied.
+3. Load the data locally: `psql
+   "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+   --single-transaction --variable ON_ERROR_STOP=1 --file data.sql`.
+   Expected: exit 0, and the rows are in the tables.
+4. Load it into the test project: the same `psql` command with the
+   `SUPABASE_DB_URL_TEST` connection string (the session pooler, port 5432).
+   Expected: exit 0.
+5. Clean the test project: `delete from auth.users where id in (...)` with
+   the user ids the dump holds; their `user_prefs` rows cascade. The E2E's
+   member is not in a production dump. Expected: the E2E runs green again.
+6. Load it into production, only after steps 3 and 4 passed: the same
+   command with `SUPABASE_DB_URL_PROD`, on a project whose schema matches the
+   dump's. The dump inserts rows, so a live database with conflicting rows
+   fails the whole transaction: load into an empty project, or first
+   truncate the `public` tables and delete the `auth.users` rows that the
+   dump holds. A new project needs the schema first: decrypt
+   `schema.sql.age` and run `psql --file schema.sql` before `data.sql`.
+7. Delete the decrypted `data.sql` and `schema.sql` from every place they
+   were written, after a restore or a drill: the privacy pages promise that
+   a backup lives 30 days. Expected: only the `.age` files are left.
+
+**Undo a deploy that carried a migration.** Revert the app change only, or
+add a new migration whose body is the reversal file
+(`supabase/reversals/<name>`). Never delete a migration file from `main`:
+`db push` refuses a remote history that holds a version absent locally, so
+`migrate-prod` would then block every later deploy. `ci.yml`'s "HOW TO UNDO
+A BAD DEPLOY" comment carries the same rule.
 
 ## Cloud sessions
 
@@ -1126,42 +1277,144 @@ persistence roadmap):
 - The proxy lists each denied host under `recentRelayFailures` in
   `curl -sS "$HTTPS_PROXY/__agentproxy/status"`.
 
+Measured in the second cloud session, 2026-09-24, network "Full", root,
+Node v24.21.0, `node_modules` present from setup (`npm ls` clean):
+
+- Docker answered only after `(dockerd > /tmp/dockerd.log 2>&1 &)`, then
+  `docker info` in about 1 s. The first `check:db` pulled its images from
+  `public.ecr.aws` and met two transient registry errors (ECR "Data limit
+  exceeded"; the anonymous token fetch reset, proxy
+  `ws_closed_mid_exchange`); the Supabase CLI retried and passed.
+- Every gate passed, one foreground call each. This host's costs, the ones
+  a cloud session plans by (the Windows tables above stay the owner's; "(3)"
+  marks the third session's reading, the same day, with `tests/app/` over
+  `dist-test/`; "(4)" the fourth session's, 2026-09-25):
+
+  | Command | Wall clock |
+  |---|---|
+  | `npm run check` | 111 s; 130-145 s (3) |
+  | `npm run check:built` (both builds, smoke, budget, marker guard) | 8-9 s (3); 11 s (4) |
+  | `npm run check:db` | 30 s warm; 115 s with the first image pull; 119 s cold, 39 s warm (3); 94 s (4) with the reversibility base check (its two `db reset --local` about 49 s) |
+  | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | 346-356 s (3), 365 s (4), 4 at a time; `app/print` and `app/contracts` dominate |
+  | `node tests/app/golden.js --shard=n/4` | 132-143 s per shard (3), `--update` and compare alike; 141-145 s (4, 157 states) |
+  | `node tests/app/sweep.js 360` | 378-379 s (3) |
+  | `npm run e2e`, to its refusal at the page probe (the layer rule below) | 11 s (4) |
+  | `npm run e2e`, end to end, with the authority in `~/.pki/nssdb` | 35-37 s (4) |
+
+- Quirk: a proxy API credential is host-scoped and replaces the
+  `Authorization` header of every request to that host, including one the
+  request already carries. Symptom: `/auth/v1/user` answers `403 bad_jwt`
+  "invalid number of segments" whatever token is sent. It does not grant
+  admin either (the gateway wants the secret key in `apikey`). The owner
+  removed it; the same request then answered `401 no_authorization`, and a
+  request's own `Bearer a.b.c` reached the server ("illegal base64").
+- Environment variables added while a session runs reach only new
+  sessions (`printenv` in the running one did not see them).
+- The session's clone is shallow (60 commits in session 4, 2026-09-25): a
+  history-wide `gitleaks git` there reports the boundary commit's old lines
+  as new findings that CI's full clone does not. Run `git fetch --unshallow
+  origin` (about 5 s) before such a scan; the full-history scan then took
+  4 s.
+- The environment's own Stop hook (`~/.claude/stop-hook-git-check.sh`,
+  outside the repository) asks to commit and push at every turn end; the
+  branch rule below is what makes those pushes lawful.
+
 - **Layer rule.** A cloud session runs layers 1-3: `npm run check`,
-  `npm run check:built`, the `tests/app/` suites (Chrome for Testing from
-  `npm ci`), golden re-seeds (the goldens are text, and ubuntu CI already
+  `npm run check:built`, the `tests/app/` suites over `dist-test/` (`npm run
+  build:test`; Chrome for Testing from `npm ci`), golden re-seeds (the goldens are text, and ubuntu CI already
   compares Windows-seeded goldens green) and `npm run check:db` (Docker
-  without the PowerShell detour; needs the image blob hosts above). Layer 4 (hosted E2E)
-  runs only after its fail-closed probe passes on that host. Sweep
-  measurements there are advisory.
+  without the PowerShell detour; needs the image blob hosts above). Of layer
+  4 (hosted E2E), both halves run there once `.claude/cloud-nss.sh` has put
+  the proxy's certificate authority in `~/.pki/nssdb` (`session-start.mjs`
+  probes it): Chrome for Testing reads that store, not the system bundle,
+  and without the authority it refuses the test project
+  (`net::ERR_CERT_AUTHORITY_INVALID`, measured 2026-09-25), so `npm run e2e`
+  stops at the page probe while its Node half (`node tests/e2e/probe.mjs`,
+  the contract, the configured build) still runs. CI's `e2e` job, by a
+  `workflow_dispatch` on the pushed branch, is layer 4's verification of
+  record. Sweep measurements there are advisory.
 - **Host rule.** A whole release (one task id) runs fully in the cloud or
   fully locally; batches never mix hosts within a release.
-- **Branch rule.** A cloud release starts from the pushed `main`, commits and
-  amends on the branch its session was given, and pushes that branch once,
-  at closeout. `bash-guard.mjs` rule 2o denies any other push in a
-  cloud session. The owner fast-forwards `main` to it locally; the
-  claude.ai/code merge button (a pull request and a merge commit) is not
-  used.
+- **Branch rule.** A cloud release starts from the pushed `main` and
+  commits on the branch its session was given, pushing that branch after
+  every green commit (a reclaimed container loses what is not pushed); it
+  never amends a pushed commit, so the branch holds one commit per batch and
+  a remediation after a push is its own commit. `bash-guard.mjs` rule 2o
+  allows exactly a push of the current branch and denies any other push in
+  a cloud session. At closeout the orchestrator, on a host whose push rule
+  allows it, squash-merges the branch onto `main` as the release's one
+  commit (orchestrator step (c) below); the claude.ai/code merge button (a
+  pull request and a merge commit) is not used.
 - **Network:** "Full" (owner decision, 2026-09-24), so no allowlist is kept.
 - **Secrets.** No production secret (database password, OAuth secrets,
-  service keys) enters a cloud environment. The one API credential is
-  `Authorization: Bearer <E2E_SUPABASE_SECRET_KEY>` for
-  `https://rdjxcjkhsklhprmzxajq.supabase.co`, attached by the proxy and never
-  shown to the model.
-- **Setup script.** The environment dialog runs `bash .claude/cloud-setup.sh`:
-  Node from `.nvmrc` through nvm, linked into `~/.local/bin`, `npm ci`,
-  gitleaks 8.30.1 and rtk 0.48.0 checked against their release checksums,
-  the rtk hook, `npx supabase --version`, then the versions. It
+  service keys) enters a cloud environment, and no proxy API credential is
+  set (the quirk above). The hosted E2E reads `E2E_SUPABASE_URL`,
+  `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY` and
+  `E2E_USER_EMAIL` from the environment's variables, as CI reads its
+  secrets and a local run its `.env.test.local`. They are model-visible:
+  never print a value; the key opens the test project only, and the owner
+  rotates it if it ever appears in a document or a log. Before a run, the
+  probe (`GET /auth/v1/user` with the publishable key: no `Authorization`
+  answers `401 no_authorization`, `Bearer a.b.c` is refused for that token)
+  proves nothing rewrites the header. `docs/DECISIONS.md`, 2026-09-24,
+  "The hosted E2E reads its credentials from the environment". The test
+  database password, `SUPABASE_DB_PASSWORD_TEST`, is a cloud variable beside
+  the `E2E_*` names for `npm run db:push -- --project test --yes`: test
+  only, never printed.
+- **Setup script.** `.claude/cloud-setup.sh` installs Node from `.nvmrc`
+  through nvm, linked into `~/.local/bin`, runs `npm ci`, installs gitleaks
+  8.30.1 and rtk 0.48.0 checked against their release checksums, the rtk
+  hook, `npx supabase --version`, step 4b `bash .claude/cloud-nss.sh` (every
+  CA in `/root/.ccr/agent-proxy-ca.crt` - there are two - into
+  `~/.pki/nssdb`, each under its own nickname `ccr-agent-proxy-ca<n>` with
+  trust `C,,` and compared by sha256 fingerprint, installing
+  `libnss3-tools` when `certutil` is missing; idempotent, and a session whose
+  store lacks one re-runs it alone - the cached setup does not; `--check`
+  installs nothing, and `session-start.mjs` runs it), then prints the
+  versions. The dialog runs
+  its field before Claude Code starts and not from the repository: the field
+  `bash .claude/cloud-setup.sh` failed with exit 127, "No such file or
+  directory" (2026-09-24). The field holds this text, which uses the clone
+  when it is there and clones `main` when it is not:
+
+  ```bash
+  #!/bin/bash
+  set -euo pipefail
+  repo=/home/user/daggerheart-loot
+  if [ ! -f "$repo/.claude/cloud-setup.sh" ]; then
+    repo="$(mktemp -d)/daggerheart-loot"
+    git clone --depth 1 https://github.com/artex-x/daggerheart-loot "$repo"
+  fi
+  bash "$repo/.claude/cloud-setup.sh"
+  ```
+
+  Setup runs again only when the field or the network hosts change, or the
+  cache expires (about seven days); a resumed session never runs it. If the
+  session's clone has no `node_modules`, `session-start.mjs` says so: run
+  `npm ci`. It
   pulls no Docker image. `session-start.mjs` then reports each probe on every
   start.
 
-**Owner steps, local, between the cloud push and the fast-forward**, in
-order: (a) `git fetch`, read the release's closeout summary; (b) `npm run
-config:push -- --project test`, `npm run db:push -- --project test`; (c) the
-same for `prod`, then the Security Advisor; (d) the Google or Discord console
-steps the release names; (e) fast-forward `main` and push, which runs
-`deploy`; (f) after the deploy, the manual OAuth check; (g) delete the task
-branch. A cloud release's `supabase/applied.json` change is amended into the
-release commit locally, after (b)-(c) and before (e).
+Closeout is split by `docs/DECISIONS.md`, 2026-09-25, "The orchestrator
+merges a release branch onto `main`; the owner keeps the dashboard steps".
+CI applies the migrations (`migrate-test` on every `e2e` run,
+`migrate-prod` at the push of `main`).
+
+**Owner steps, local, before the merge**, in order: (a) `git fetch`, read
+the release's closeout summary; (b) `npm run config:push -- --project
+test`; (c) the same for `prod`; (d) the Security Advisor and the Data API
+check on both projects; (e) the Google or Discord console steps the release
+names. After the deploy: (f) the manual OAuth check; (g) the restore drill
+with the private key, when the release asks for one.
+
+**Orchestrator steps, after the owner's (a)-(e)**, in order: (a) confirm
+the branch's last CI run is green; (b) `git checkout main && git pull`;
+(c) `git merge --squash claude/<name>`, then `git commit -F <the closeout
+commit message>` - the author comes from `.claude/settings.json`, and a
+tooling commit the branch carries rides in the squash; the release is one
+commit, never a merge commit, and a rebase is the fallback if the squash
+refuses; (d) push `main`, which runs `deploy`, and
+watch that run; (e) delete the task branch.
 
 ## Artwork tooling
 

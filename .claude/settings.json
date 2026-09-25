@@ -1,4 +1,11 @@
 {
+  "attribution": { "commit": "", "pr": "" },
+  "env": {
+    "GIT_AUTHOR_NAME": "artex-x",
+    "GIT_AUTHOR_EMAIL": "artex-x@users.noreply.github.com",
+    "GIT_COMMITTER_NAME": "artex-x",
+    "GIT_COMMITTER_EMAIL": "artex-x@users.noreply.github.com"
+  },
   "hooks": {
     "SessionStart": [
       {

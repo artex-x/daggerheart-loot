@@ -1,6 +1,6 @@
 /*
   Pure logic for the Supabase release tools (config.mjs, db-push.mjs,
-  applied-check.mjs) and the reversibility gate in tests/db/. No process
+  pending-check.mjs) and the reversibility gate in tests/db/. No process
   spawn, no filesystem: every input arrives as an argument, so
   lib.test.mjs covers it inside `npm run check`.
   Procedure: .claude/README.md, "Supabase configuration".
@@ -163,7 +163,11 @@ function stripSqlComments(sql) {
 
 /** Returns the statements of a migration that an `-- additive` reversal
  * cannot undo: a `drop`, a `rename`, or a type change (`alter table ...
- * alter column ... type`, `alter type`). */
+ * alter column ... type`, `alter type`). Blind spots, read by a reviewer
+ * instead: `create or replace` of an existing object, `set not null`,
+ * `revoke` (every table migration revokes the default grants) and data
+ * statements (`update`, `delete`, `insert`) - docs/specs/COVERAGE.md,
+ * "Known thin spots". */
 export function nonAdditiveStatements(migrationText) {
   const statements = stripSqlComments(migrationText)
     .split(';')
@@ -183,31 +187,21 @@ export function nonAdditiveStatements(migrationText) {
   });
 }
 
-/** Returns `{ prod, test }` from the text of supabase/applied.json; throws
- * when either list is absent or holds a non-string. */
-export function readApplied(text) {
-  const parsed = JSON.parse(text);
-  for (const project of Object.keys(PROJECTS)) {
-    const list = parsed && parsed[project];
-    if (!Array.isArray(list) || list.some((n) => typeof n !== 'string')) {
-      throw new Error(
-        `supabase/applied.json: "${project}" is not a list of migration names. Expected { "prod": [], "test": [] }.`
-      );
-    }
-  }
-  return { prod: [...parsed.prod], test: [...parsed.test] };
+/** Returns the 14-digit version of a migration file name, or `null` when
+ * the name does not match MIGRATION_NAME_RE. */
+export function migrationVersion(name) {
+  return MIGRATION_NAME_RE.test(name) ? name.slice(0, 14) : null;
 }
 
-/** Returns the migrations that applied.json does not list under `project`,
- * sorted. */
-export function unapplied(migrationNames, appliedJson, project) {
-  const done = new Set(appliedJson[project]);
-  return [...migrationNames].filter((n) => !done.has(n)).sort();
-}
-
-/** Returns a copy of applied.json with `migrationNames` added under
- * `project`: the sorted union, no duplicates. */
-export function markApplied(appliedJson, project, migrationNames) {
-  const union = [...new Set([...appliedJson[project], ...migrationNames])].sort();
-  return { ...appliedJson, [project]: union };
+/** Returns the sorted migration names whose version is not in
+ * `appliedVersions` (the versions of `supabase_migrations.schema_migrations`).
+ * A name without a version is listed too, so a bad name is loud. */
+export function pendingMigrations(localNames, appliedVersions) {
+  const done = new Set(appliedVersions);
+  return [...localNames]
+    .filter((name) => {
+      const version = migrationVersion(name);
+      return version === null || !done.has(version);
+    })
+    .sort();
 }

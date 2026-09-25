@@ -188,15 +188,19 @@ function stripHeredocs(s) {
 // so unquoting can never invent a new segment.
 const INERT_WORD = /^[-A-Za-z0-9._/=:]+$/;
 
-function keepIfInert(inner) {
-  return INERT_WORD.test(inner) ? ` ${inner} ` : ' ';
+function keepIfInert(inner, placeholder) {
+  return INERT_WORD.test(inner) ? ` ${inner} ` : ` ${placeholder} `;
 }
 
-export function sanitize(raw) {
+/** Returns the command with quoted data erased. With `placeholder`, an
+ * erased span leaves that word instead of nothing, so a caller that counts
+ * positional arguments (the pathspec of `git commit -m "a b" x`) still sees
+ * the span as the flag's value. */
+export function sanitize(raw, placeholder = '') {
   let s = stripHeredocs(String(raw));
   s = s.replace(/\\./g, ' '); // backslash-escaped chars
-  s = s.replace(/'([^']*)'/g, (_m, inner) => keepIfInert(inner));
-  s = s.replace(/"([^"]*)"/g, (_m, inner) => keepIfInert(inner));
+  s = s.replace(/'([^']*)'/g, (_m, inner) => keepIfInert(inner, placeholder));
+  s = s.replace(/"([^"]*)"/g, (_m, inner) => keepIfInert(inner, placeholder));
   s = s.replace(/[^\S\n]+/g, ' ').trim();
   return s;
 }

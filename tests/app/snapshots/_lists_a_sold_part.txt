@@ -11,6 +11,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -105,6 +106,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Вернуть
+Войти
 Выбрать все
 Заметка
 Заряжающий Колчан
@@ -161,6 +163,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -286,6 +289,7 @@ Remove from the list
 Roll result
 Search
 Select all
+Sign in
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]

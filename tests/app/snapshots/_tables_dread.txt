@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -106,6 +107,7 @@ daggerheart.com
 Амулет Зари
 Банка Зелёной Слизи
 Брошюра по Истории Искусства
+Войти
 Длинный Лук Фира
 Зеркало Фей
 К содержимому
@@ -159,6 +161,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/dread]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -283,6 +286,7 @@ Purple Aim
 RU
 Search
 Shield of the Sun
+Sign in
 Silver Key
 Skip to content
 Staff of the Secret Flame

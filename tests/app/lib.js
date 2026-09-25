@@ -1,128 +1,32 @@
 /* What every tests/app/ suite shares, and nothing else. driver.js, its
- * sibling in this directory, drives dist/ in a real browser; this file adds
+ * sibling in this directory, drives dist-test/ - the test build, whose cloud
+ * is the fake one, signed in by `?as=<user>` (docs/specs/COVERAGE.md, "Test
+ * layers") - in a real browser; this file adds
  * what only matters for that - a guard that it was actually built, a page
  * factory that seeds storage before the first paint, and an axe runner.
  *
  * These suites check the rewrite against itself, with real input: does it
  * draw every address, is every control named, does axe find anything, is the
  * typography on the agreed scale. */
-const fs = require('fs');
-const http = require('http');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { makeDriver, prepare } = require('./driver.js');
+const { assertBuilt, serveDist: serveDistAt } = require('./serve.js');
 
 const ROOT = path.join(__dirname, '..', '..');
-const DIST = path.join(ROOT, 'dist');
-const DIST_HTML = path.join(DIST, 'index.html');
+const DIST_TEST = path.join(ROOT, 'dist-test');
 
 /* Every suite requires this file before it does anything else, so the guard
-   belongs at the top: a missing dist/ should say so once, in one sentence,
-   rather than have all seven suites fail every address with a stack trace
-   that is really just "the page never opened". */
-if (!fs.existsSync(DIST_HTML)) {
-  console.log('dist/index.html is not built - run npm run build first');
-  process.exit(1);
-}
+   belongs at the top: a missing or stale dist-test/ should say so once, in
+   one sentence, rather than have every suite fail every address with a stack
+   trace that is really just "the page never opened". serve.js says why both
+   halves of it exist. */
+assertBuilt(DIST_TEST, 'dist-test/');
 
-/* golden.js and every other suite here
-   compare captures against dist/ (golden.js's own header comment), but npm
-   run check's npm run data step regenerates data.json/catalog.csv/i/ and
-   never runs vite build - so dist/ can lag the tree arbitrarily. A
-   --update run against a lagging dist/ re-records the OLD render, and the
-   next verification run prints "unchanged", having measured nothing - the
-   same failure class as a lost settle instrument (COVERAGE.md, "The
-   gate rule for 'no golden moved'"). Fail closed, both halves, no escape
-   hatch: an env-var bypass is a guard that gets waved through, which
-   .claude/README.md already records as worse than no guard. */
-
-/* Byte half: the three files `npm run data` actually regenerates, against
-   their dist/ copies (~1.3 MB, milliseconds). Each dist/ copy is verified
-   to exist before it is depended on - the deploy collect step copies
-   data.json/catalog.csv from the repo root, not from dist/, so their
-   presence in dist/ comes only from vite's own static asset copying and is
-   not guaranteed; a file vite did not emit is dropped from the comparison
-   rather than treated as a mismatch. llms.txt is deliberately excluded -
-   it is not one of the three files `npm run data` writes. */
-const BYTE_FILES = ['data.js', 'data.json', 'catalog.csv'];
-for (const f of BYTE_FILES) {
-  const distCopy = path.join(DIST, f);
-  if (!fs.existsSync(distCopy)) continue;
-  if (!fs.readFileSync(path.join(ROOT, f)).equals(fs.readFileSync(distCopy))) {
-    console.log('dist/ is stale (byte check, ' + f + ') - run npm run build first');
-    process.exit(1);
-  }
-}
-
-/* Mtime half: newest mtime under app/src/ - excluding every *.test.ts file
-   and the whole app/src/test/ directory, neither of which is bundled, so
-   neither can make dist/ stale, and including them would demand a rebuild
-   after every test edit - plus app/public/ (copied into dist/ verbatim),
-   app/index.html, vite.config.mts and app/svelte.config.mjs, compared
-   against dist/index.html, which every build rewrites. Safe on CI:
-   ci.yml's browser job runs `npm ci` then `npm run build` before any suite,
-   and checkout sets source mtimes ahead of the build, so this cannot fire
-   falsely there. */
-function newestMtimeUnder(dir) {
-  let newest = 0;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (full === path.join(ROOT, 'app', 'src', 'test')) continue;
-      newest = Math.max(newest, newestMtimeUnder(full));
-    } else if (!entry.name.endsWith('.test.ts')) {
-      newest = Math.max(newest, fs.statSync(full).mtimeMs);
-    }
-  }
-  return newest;
-}
-
-const sourceNewest = Math.max(
-  newestMtimeUnder(path.join(ROOT, 'app', 'src')),
-  newestMtimeUnder(path.join(ROOT, 'app', 'public')),
-  fs.statSync(path.join(ROOT, 'app', 'index.html')).mtimeMs,
-  fs.statSync(path.join(ROOT, 'vite.config.mts')).mtimeMs,
-  fs.statSync(path.join(ROOT, 'app', 'svelte.config.mjs')).mtimeMs
-);
-if (sourceNewest > fs.statSync(DIST_HTML).mtimeMs) {
-  console.log('dist/ is stale (mtime check, dist/index.html) - run npm run build first');
-  process.exit(1);
-}
-
-const TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.webmanifest': 'application/manifest+json',
-  '.csv': 'text/csv; charset=utf-8',
-  '.txt': 'text/plain; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.webp': 'image/webp'
-};
-
-/** A static server over dist/ on a free port of 127.0.0.1: files only, no
- *  listing, 404 for anything else. Port 0, never a fixed one: run-all.js runs
- *  the suites in parallel, and each process gets its own port, so its own
- *  origin and storage. tools/smoke-http.mjs reuses it. */
+/** The static server over dist-test/ (serve.js). tools/smoke-http.mjs serves
+ *  dist/ through serve.js itself. */
 function serveDist() {
-  const server = http.createServer((req, res) => {
-    let rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-    if (rel.endsWith('/')) rel += 'index.html';
-    const file = path.join(DIST, rel);
-    const type = TYPES[path.extname(file)];
-    if (!file.startsWith(DIST + path.sep) || !type || !fs.existsSync(file)) {
-      res.writeHead(404).end();
-      return;
-    }
-    res.writeHead(200, { 'content-type': type, date: new Date().toUTCString() });
-    res.end(fs.readFileSync(file));
-  });
-  return new Promise((resolve) => {
-    server.listen(0, '127.0.0.1', () => resolve(server));
-  });
+  return serveDistAt(DIST_TEST);
 }
 
 /* One server per process, started by the first page. */
@@ -138,11 +42,11 @@ async function startServer() {
   return serverPromise;
 }
 
-/** The served dist/ root, `http://127.0.0.1:<port>/`. Valid once a page
+/** The served dist-test/ root, `http://127.0.0.1:<port>/`. Valid once a page
  *  from `fresh()` or `sharedPage()` exists. */
 function baseUrl() {
   if (!base)
-    throw new Error('The dist/ server is not started. Open a page through fresh() first');
+    throw new Error('The dist-test/ server is not started. Open a page through fresh() first');
   return base;
 }
 
@@ -178,7 +82,7 @@ async function closeBrowser() {
 }
 
 /**
- * A fresh context and driver against dist/, seeded before the first paint.
+ * A fresh context and driver against dist-test/, seeded before the first paint.
  *
  * A context rather than a bare page: two pages that share `browser.newPage()`
  * also share cookies and storage, and `tests/app/states.js`'s two-tabs case
@@ -301,8 +205,6 @@ function reporter() {
 }
 
 module.exports = {
-  DIST_HTML,
-  serveDist,
   baseUrl,
   fresh,
   sharedPage,

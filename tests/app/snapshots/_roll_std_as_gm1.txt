@@ -1,0 +1,250 @@
+# #/roll/std as gm1
+# route: #/roll/std
+# why: the header signed in: the initial in place of «Войти»
+# as: gm1
+
+## ru :: tree
+RootWebArea "Обычные правила — Генератор лута — Daggerheart" [url=index.html?as=gm1#/roll/std]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Аккаунт: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Обычные правила" [level=1]
+    button "Открывается при запуске" [description=Открывается при запуске pressed=true]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–60)"
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Бросить 1d12 ОБЫЧНАЯ" [description=Бросить 1d12 — Обычная]
+    button "2d12 ОБЫЧНАЯ / НЕОБЫЧНАЯ" [description=Бросить 2d12 — Обычная / Необычная]
+    button "3d12 НЕОБЫЧНАЯ / РЕДКАЯ" [description=Бросить 3d12 — Необычная / Редкая]
+    button "4d12 РЕДКАЯ / ЛЕГЕНДАРНАЯ" [description=Бросить 4d12 — Редкая / Легендарная]
+    button "5d12 ЛЕГЕНДАРНАЯ" [description=Бросить 5d12 — Легендарная]
+    StaticText "ИСТОЧНИК"
+    button "Core" [pressed=true]
+    button "Hope & Fear" [pressed=true]
+    StaticText "ТИП"
+    button "Предметы" [pressed=true]
+    button "Расходники" [pressed=true]
+    button "Скопировать все варианты"
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ПРЕДМЕТ"
+      ... StaticText x15 of 19 same-shape siblings elided
+      link "Первоклассный Спальный Мешок" [description=Страница url=index.html?as=gm1#/i/ci1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      ... button x4 of 8 same-shape siblings elided
+      link "Зелье Быстрого Шага" [description=Страница url=index.html?as=gm1#/i/cc1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      link "Шипы" [description=Страница url=index.html?as=gm1#/i/hi1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+      button "Страница"
+      StaticText "HOPE & FEAR"
+      link "Оберегающая Свеча" [description=Страница url=index.html?as=gm1#/i/hc1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Core
+Dragon's Vault
+Dread
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Бросить 1d12 — Обычная
+Бросить 2d12 — Обычная / Необычная
+Бросить 3d12 — Необычная / Редкая
+Бросить 4d12 — Редкая / Легендарная
+Бросить 5d12 — Легендарная
+К содержимому
+Как это работает
+Конфиденциальность
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывается при запуске
+Отправить
+Поиск
+Предметы
+Расходники
+Результат броска
+Скопировать все варианты
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Сообщества
+Списки
+Страница
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Standard rules — Daggerheart Loot Generator" [url=index.html?as=gm1#/roll/std]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Account: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Standard rules" [level=1]
+    button "Opens on start" [description=Opens on start pressed=true]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "A roll over the core book and the Hope & Fear tables."
+    StaticText "ROLL RESULT (1–60)"
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Roll 1d12 COMMON" [description=Roll 1d12 — Common]
+    button "2d12 COMMON / UNCOMMON" [description=Roll 2d12 — Common / Uncommon]
+    button "3d12 UNCOMMON / RARE" [description=Roll 3d12 — Uncommon / Rare]
+    button "4d12 RARE / LEGENDARY" [description=Roll 4d12 — Rare / Legendary]
+    button "5d12 LEGENDARY" [description=Roll 5d12 — Legendary]
+    StaticText "SOURCE"
+    button "Core" [pressed=true]
+    button "Hope & Fear" [pressed=true]
+    StaticText "TYPE"
+    button "Items" [pressed=true]
+    button "Consumables" [pressed=true]
+    button "Copy every option"
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "ITEM"
+      ... StaticText x15 of 19 same-shape siblings elided
+      link "Premium Bedroll" [description=Page url=index.html?as=gm1#/i/ci1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      ... button x4 of 8 same-shape siblings elided
+      link "Stride Potion" [description=Page url=index.html?as=gm1#/i/cc1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      link "Caltrops" [description=Page url=index.html?as=gm1#/i/hi1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+      button "Page"
+      StaticText "HOPE & FEAR"
+      link "Warding Candle" [description=Page url=index.html?as=gm1#/i/hc1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Account: gm1@example.test
+Alt. tables
+Communities
+Consumables
+Copy every option
+Copy image
+Copy link
+Copy name
+Copy text
+Core
+Dragon's Vault
+Dread
+EN
+Hope & Fear
+How this works
+Install as an app
+Items
+Lists
+One higher
+One lower
+Opens on start
+Page
+Privacy
+RU
+Roll 1d12 — Common
+Roll 2d12 — Common / Uncommon
+Roll 3d12 — Uncommon / Rare
+Roll 4d12 — Rare / Legendary
+Roll 5d12 — Legendary
+Roll result
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

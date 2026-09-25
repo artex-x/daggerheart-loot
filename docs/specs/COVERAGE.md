@@ -11,6 +11,128 @@ the source of truth for the current list). Every suite's full output is
 written to `test-output/<name>.log` whatever the result; the summary only prints
 the first dozen failing lines. CI uploads that directory when a job fails.
 
+## Test layers
+
+Four layers (owner, 2026-09-24):
+
+| Layer | Name | Runs | Covers |
+|---|---|---|---|
+| 1 | Unit and component | vitest with fakes, `npm run test` (inside `npm run check`) | pure logic, ports against fake clients, components with axe |
+| 2 | Built app in a browser | `tests/app/` goldens, states, sweep, print, contracts, typo, hues over HTTP against `dist-test/`, the build with the deterministic fake cloud | every screen, signed out and signed in, offline and in parallel |
+| 3 | Database | `tests/db/`, `npm run check:db`, local Supabase in Docker (PowerShell tool on the owner's Windows host) | RLS, SQL functions, migrations and their reversals |
+| 4 | Hosted E2E | `tests/e2e/`, `npm run e2e`, against the test project `rdjxcjkhsklhprmzxajq` | real Auth, network and RLS end to end; the fake-vs-real agreement check |
+
+Rules: pixel and structural comparisons exist only in layer 2. Real network
+and real Supabase exist only in layers 3 and 4.
+
+**Layer 2's subject: the test build and the fake cloud.** `npm run
+build:test` (`vite build --mode test`) writes `dist-test/`, the same app
+with `import.meta.env.VITE_CLOUD_FAKE` defined `true`; `main.ts` then loads
+`app/src/ports/fake-cloud.ts` and mounts the app with `{ ...env, cloud }`,
+the fake's `CloudPort` in the `cloud` slot `browserEnv()` leaves `null`. The
+production build defines it `false`, so the branch and the fake's chunk are
+not in `dist/`: `tools/no-fake-in-prod.mjs` (in `npm run check:built` and
+CI's `check` job) fails when any `dist/assets/*.js` holds the marker
+`dhloot-fake-cloud` or the seed's mail domain `@example.test`, and also when
+no `dist-test/assets/*.js` holds the marker, so a renamed marker cannot pass
+silently. The test build defines the two `VITE_SUPABASE_*` values empty, so
+it never loads the real client. The mode is gated on `command ===
+'build'` too, because vitest's own default mode is also `test`.
+
+- The fake is in memory, seeded from `app/src/ports/fake-cloud-seed.ts`: two
+  users with fixed ids (`00000000-0000-4000-8000-0000000000nn`) - `gm1`
+  (Google and Discord identities, the default a sign-in picks) and `gm2`
+  (Google only). The seed grows with each release's port member.
+- `?as=<user>` in the address signs that seed user in, read once at boot;
+  without it the page is signed out. `tests/app/driver.js` `open(route, { as
+  })` sets it. An unknown user throws at boot: the page draws only
+  `#boot-error` with the error, and `open()` fails at once naming the user
+  (states case 35) - a typo never passes as signed out.
+- The query stays in the address, so a reload keeps the session. A
+  consequence: `hashRouter.base()` is `href` up to `#` minus a trailing
+  `index.html`, so on a signed-in page every link the app writes from
+  `base()` carries `index.html?as=<user>`. That is deterministic, so a golden
+  may hold it; `base()` is not changed for the test build.
+- `window.__dhlootFake` is the port itself plus its `marker`, in the test
+  build only - how a states case reads the session.
+- A signed-in golden state carries `as: '<user>'` and an id ending ` as
+  <user>`; `golden.js` writes `# as: <user>` into its header only then
+  (`tests/app/golden.test.mjs` pins the naming both ways).
+- `tests/app/` drive `dist-test/`; `tools/smoke-http.mjs`,
+  `tools/bundle-budget.mjs`, `tools/capture-share-fixture.mjs` and the deploy
+  collect step drive `dist/`. `tests/app/serve.js` holds the static server
+  and the stale-build guard both kinds of caller share.
+
+**Layer 4's subject: the test project.** `npm run e2e` (`tests/e2e/run.mjs`,
+not a `run-all.js` row) reads `E2E_SUPABASE_URL`,
+`E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY` and
+`E2E_USER_EMAIL` from the environment (or `.env.test.local`, never
+committed), names any that is missing, and refuses unless the URL is the test
+project - before any request. No line, message or file of the run carries a
+value of those variables; CI's `e2e` job uploads nothing. In order:
+
+- the probe (`tests/e2e/probe.mjs`): `GET /auth/v1/user` with the
+  publishable key and no `Authorization` must answer 401 `no_authorization`,
+  and with `Bearer a.b.c` 403 `bad_jwt` for that token, from Node and later
+  from a page of the served app - a header added or replaced on the way
+  refuses the host (`e2e: refused on this host - node|page: ...`);
+- the sweep (every throwaway `<member>+dhloot-e2e-...` user deleted, a
+  killed run's too) and the member, `E2E_USER_EMAIL`, found or created,
+  never deleted, its preferences row cleared so F2 is a first sign-in that
+  seeds it; sessions are minted with the secret key (`generateLink` magic
+  link, then `verifyOtp`), never a password;
+- the cloud contract over the real adapter (`tests/e2e/contract.mjs`), in
+  Node: `createCloud` with a store holding a minted session, cases A-F (F,
+  the preferences round trip, on a throwaway that case E then deletes), and
+  anon's `rpc('delete_account')` and `user_prefs` select refused;
+- `npm run build` with the two `VITE_SUPABASE_*` values of the test project
+  and no `E2E_*` variable in its environment - the deploy job's own code
+  path. `dist/` is left configured for the test project until `npm run
+  build` or `check:built` rebuilds it; CI's `e2e` job then runs `npm run
+  budget` on it (the 170 kB limit with the account client chunk);
+- the flows in Chrome over that `dist/`, each in its own browser context
+  with the browser suites' `prepare()` and driver and the session written
+  where supabase-js keeps it: F1 signed out (the chooser, «Войти» in the
+  header), F2 the member (the header's name, the email alone, both
+  providers «не подключён» with Connect and no alert), F3 sign out (the
+  session no longer refreshes on the server), F4 sign out everywhere
+  (another session no longer refreshes), F5 delete a throwaway (the user is
+  gone), F6 a throwaway's first sign-in seeds its row with `lang: 'ru'`,
+  «EN» writes `en` to it, and a fresh session with cleared storage reads
+  English back (`dhloot.lang.v1` `en`); rows are polled through the admin
+  client;
+- cleanup, whatever happened: the sweep again, then every session of the
+  member ended.
+
+Node runs the app's TypeScript ports through its own type stripping:
+`tests/e2e/ts-hooks.mjs` maps a `.js` import inside a `.ts` file to its
+`.ts` source, and `tsconfig.json`'s `erasableSyntaxOnly` refuses syntax Node
+could not strip (docs/DECISIONS.md, "The hosted E2E runs `cloud.contract.ts`
+under Node's own type stripping"). In Node supabase-js does not use
+`localStorage`, so `contract.mjs` hands `createCloud` its store.
+
+**The contract selection.** `app/src/ports/cloud.contract.ts` holds only
+what every `CloudPort` does, and runs over the fake (vitest) and the real
+adapter (layer 4): A signed out (no session, identities `[]`, no redirect
+result); B a port made as the member is signed in as the member, its
+identities an array of Google or Discord ones; C an identity it does not
+hold is refused `failed`; D sign-out clears the session and announces
+`null` once (the real client also announces the current session on
+subscribe, so only what follows the sign-out is compared); F the doomed
+user's preferences (no row, a whole row saved and read back, a second save
+replacing the row), after which E deletes that same port's account; E
+delete leaves nothing signed in. A also requires `prefs` refused signed out,
+B an `ok` read for the member. The seed's own behaviour stays in
+`fake-cloud.test.ts`: a sign-in as the default user notifying once, the
+identities in the seed's order, unlink then the last refused, link, a port
+made as `gm2`, `gm1`'s preferences row and none for `gm2`, a saved row kept
+to its own port, no read after deletion - on the
+test project a sign-in and a link are provider redirects (the mint stands in
+for the sign-in), the member holds no Google or Discord identity, and there
+is no second seeded user. `redirectResult()` after a real redirect and
+`signIn`/`link`/`unlink` against the real server are proven only against
+the stub client (`supabase.test.ts`) and by the owner's closeout check.
+
 ## Suites
 
 R0c (issue 47, `23c00a6`) deleted the static root (`index.html`, `app.js`,
@@ -38,11 +160,17 @@ not run:
   `dataint`. `derived` re-renders every
   page in both languages against disk and reads both site cards' JPEG size
   off the file header.
-- Seven `tests/app/*.js` suites test the built rewrite (`dist/`) - what Pages
-  serves - in a real Chrome: `app/sweep`, `app/golden`, `app/contracts`,
-  `app/states`, `app/typo`, `app/hues`, `app/print`. This is the layer B12
-  added because nothing before it drove `dist/` with a trusted click, a real
-  network, or a real clipboard; see "`tests/app/*`" below.
+- Seven `tests/app/*.js` suites test the built rewrite in a real Chrome:
+  `app/sweep`, `app/golden`, `app/contracts`, `app/states`, `app/typo`,
+  `app/hues`, `app/print`. They drive `dist-test/` - what Pages serves, plus
+  the fake cloud ("Test layers", above). This is the layer B12 added because
+  nothing before it drove the build with a trusted click, a real network, or
+  a real clipboard; see "`tests/app/*`" below.
+- `tests/e2e/` - layer 4, the hosted E2E, run by `npm run e2e` and CI's
+  `e2e` job, not by `npm run check` ("Test layers", above). Its pure half,
+  `tests/e2e/lib.test.mjs` (the variables, the project guard, the throwaway
+  names, the probe's verdict over every measured refusal shape), runs inside
+  `npm run check`.
 - `tests/db/` - layer 3, the database, run by `npm run check:db`, not by
   `npm run check`: Docker for every check on a CSS fix is not acceptable,
   and on Windows Docker answers only the PowerShell tool, so run it there.
@@ -57,14 +185,40 @@ not run:
   connection - RLS reads `auth.uid()` from the claims either way, the
   PostgREST path is layer 4's. `harness.test.mjs` proves the helper (anon
   has no user id and no read of `auth.users`, an authenticated user has the
-  given id, a write inside `asRole` is gone after it) and pins two invariants
-  every schema batch inherits: no `public` table grants anything to `anon`
-  (read with `has_table_privilege`, so a grant to `PUBLIC` counts, which a
-  probe table proves), and every `public` table has row level security. `reversibility.test.mjs`
+  given id, a write inside `asRole` is gone after it, and a `setup(tx)` run
+  first as the connection's own role - rows the role may not write, such as
+  `auth.users` - is seen by the role and rolled back) and pins four
+  invariants every schema batch inherits: no `public` table grants anything
+  to `anon` (read with `has_table_privilege`, so a grant to `PUBLIC` counts,
+  which a probe table proves), every `public` table has row level security,
+  and no `public` function is executable by `anon` (read with
+  `has_function_privilege`, which a probe function left to `PUBLIC` proves;
+  Supabase's default privileges grant it on every new function, so a
+  migration revokes it), and every `public` view is `security_invoker`
+  (a view otherwise reads as its owner, past row level security; a probe
+  view proves it both ways). `delete-account.test.mjs` holds `delete_account()`:
+  security definer with `search_path=public, pg_temp`, EXECUTE for
+  `authenticated` and neither `anon` nor `PUBLIC`, the caller's own user
+  removed and another kept, a call with no user id refused, `anon`
+  refused. `user-prefs.test.mjs` is `user_prefs`'s matrix: `authenticated`
+  holds exactly SELECT, INSERT and UPDATE, `anon` nothing, and
+  `service_role` SELECT and DELETE (the hosted E2E's admin client, by a
+  grant: `auto_expose_new_tables = false` gives a new table's Data API
+  roles only TRUNCATE, REFERENCES and TRIGGER by default, which the first
+  migration revokes from `anon` and `authenticated`) and never INSERT or
+  UPDATE - the test pins the whole set; a user
+  inserts, reads, updates and upserts only its own row, cannot delete it,
+  and touches none of another's; no user id reads and writes nothing; the
+  shape and size checks refuse; the row goes with its user, through
+  `delete_account()` too. `reversibility.test.mjs`
   is the migration gate: every migration has a reversal of the same name in
   `supabase/reversals/` or the marker `-- additive` (refused over a `drop`,
-  `rename` or type change), and up-down-up leaves the `db dump` of `public`
-  unchanged (with no migration yet it reports "no migrations yet"). It proves
+  `rename` or type change), up-down-up leaves the `db dump` of `public`
+  unchanged, and the base check resets the database to each migration's
+  predecessor (`supabase db reset --local --version`) and requires its up
+  then its down to leave that schema exactly - the first migration has none
+  below it and is proven by up-down-up alone; the database is left fully
+  migrated for the files after it. It proves
   itself on `tests/db/fixtures/`: `good` passes; `bad`, whose reversal
   forgets the schema, fails with the difference named (a forgotten index
   alone is invisible there, because dropping a table drops its indexes). CI
@@ -107,7 +261,12 @@ before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
 | `typo` | layout | ported as is; `tests/app/typo.js` is in fact stricter than this - its `EXPECTED` set turns "control not found" into a failure the live suite used to swallow | two fonts and one size scale, every page, both languages |
 | `hues` | layout | rewritten (reads rendered badges, not injected spans) | badges that can share a list are told apart by hue |
 
-### `tests/app/*` - the same real Chrome, against `dist/` (B12)
+### `tests/app/*` - the same real Chrome, against `dist-test/` (B12)
+
+`tests/app/lib.js` serves `dist-test/` - the test build, the published app
+plus the fake cloud, so every screen can be driven signed out and, with
+`?as=<user>`, signed in ("Test layers", above) - and refuses to start when it
+is missing or stale (`tests/app/serve.js`).
 
 | Suite | Kind | Responsible for |
 |---|---|---|
@@ -116,8 +275,8 @@ before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
 | `app/hues` | layout | colour read off rendered badges and the real roll button, not an injected span |
 | `app/contracts` | contract | the browser half of `contracts`, re-pointed: the link the app writes/reads, a truncated link, the llms.txt-described link, every route fixture, the stat line, a share stub's subtitle against its record page's heading line (one record per table, both languages), filter group names |
 | `app/print` | feature | the deleted `tests/print.js`, transposed onto `dist/` and the moved driver: sheet grid, card size against the design (millimetres, not a tree), versatile weapons, dice by class, armour, black and white, art edges, text fitting, short black-and-white text growing to its cap without a spill (and colour never growing), the compact sheet (44x63 mm cards, four to a row on A4, the grow cap and the colour ceiling at 44 mm, the design measurements at 70%), entry points; plus the four print specs the deleted parity harness used to run (`sheetCounts`, `cardFit`, `printMedia`, `copiedPrintLink`) - the sheet's counts, the fit ladder's own written numbers at every width, the sheet under print media, and the copied set link; `sheetCounts` and `cardFit` run over the seven compact states, `printMedia` over `TEN ~ compact` (`copiedPrintLink` runs no compact state); an English pass added at R0c (`sheetCounts`/`printMedia` stay Russian-only, a comment in the file says why) |
-| `app/states` | journey | the thirty-four states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two Other frame values picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path (a record card's picture, then a table row's thumbnail: the row asks for `img/thumb/w3.webp`, never `img/w3.webp`, and shows `img/thumb/_none.webp` after the abort), focus surviving a keystroke, the note textarea's height (plus, R0b.2, the list note-field group's real CSS geometry), a roll's card `<img>` node replaced, real history Back/Forward, the selection bar pinned to the viewport at a narrow width, a real HTML5 drag reorder including a release inside the row gap marking both rows at once, a `dragenter` crossing into a row's own child reporting `defaultPrevented`, a `drop-after` row with its note box open painting gold in a measured strip at its bottom edge - pixel probe via `pngjs`, at the end of the list and in the middle of it, that same row's redrawn mark on its open note box declaring no transition of its own and the base mark's `transition-property` excluding `box-shadow` - read with reduced motion briefly relaxed then restored, and a cancelled drag (dragend, no drop) leaving the order and the marks untouched, and a `dragover` on the list's own note refused (`defaultPrevented`, `dropEffect` `none`), a folded `<details>` surviving a select-all re-render, tile geometry with art blocked, the storage notice under 320px, a button keeping focus across a re-render, the money-help box plus the pressed picker's colour, and (case 26) a touch-emulated viewport where the drag grip is hidden and a committed position both moves a row and announces it through a visually hidden live region, plus that same grip drawn again for a pointer that can hover, and (case 27) the add-to-list menu at 50 lists, at 1100 and 360 wide: no taller than 342 px, its search and «+ Новый список» inside the menu and the window, the chips scrolling on their own, the five lists holding the record first, and the new-list form started with the query, and (case 28) the minimal worker: a `dhloot-shell-v1` cache seeded from a site page before the app's first load, then the service worker ready, the manifest link added, the footer linking `pages/install.html`, `pages/privacy.html` and `pages/terms.html` in that order and each fetched with status 200, the page controlled after one reload, the seeded shell cache gone, the entry module in `dhloot-assets-v1`, and neither the document nor `data.js` in any cache; through CDP, `Page.getAppManifest` with no errors and `Page.getInstallabilityErrors` with no errors on a page in the browser's default context (an incognito context answers `in-incognito`); (case 29) over the same served `dist/`, the four policy outputs (`privacy` and `terms`, in Russian and in English) draw their back links first and last, a heading and the contact address, and in Russian and in English the install guide's first and last children are back links (`../` on `pages/install.html`, `../../` on `pages/en/install.html`), the top one returns from `#/lists` to `#/lists`, and a direct visit opens the app root; (case 24) under reduced motion no animation left running and every transition and animation delay computed as `0s`; (case 30) at 1180x900 a point 3px inside the list note textarea under its clear button hits the textarea, the button's centre hits the button, and the target is still 44px; (case 31) the focused card image's ring read from pixels - at least half of a 3px band inside each edge in the outline colour - on the full card (`#/i/ci1`) and the compact roll card (`#/roll/wondrous`); (case 32) at 1180x900 the undo toast a removal inside the record dialog raises drawn inside the open dialog, the only `.toast` with a role, «Вернуть» focused, hit at its centre and present in the CDP accessibility tree, its undo restoring the entry with the dialog still open and focus inside it, then after Escape the page's own toast focused and Enter restoring the entry, and a backdrop click still closing the dialog; (case 33) a drag whose own row another tab removes (a synthetic `storage` event mid-drag): the next `dragover` refused (`defaultPrevented`, `dropEffect` `none`), no drag marks left, the release moving nothing, and after the detached grip's `dragend` a `dragenter` on the list note not prevented; (case 34) at 1180x900 on `#/lists` the notice summary ending at the painted cross, a point 4px left of the cross hitting the summary, the painted cross and a point 4px right of it hitting the cross, its target 44x44, and a trusted click 4px left of it unfolding the notice |
-| `app/golden` | structural | one accessibility-tree-plus-controls text snapshot per state in `tests/app/inventory.js` (150 states, both languages, four shards), compared byte-for-byte against `tests/app/snapshots/*.txt` - a control gone, a heading moved or a label renamed is a line in `git diff`, not a percentage. Regenerate a golden only with `node tests/app/golden.js --update`; `.claude/hooks/edit-guard.mjs` refuses a hand edit. It says nothing about colour, spacing, or which picture sits behind a correct `alt` - that stays `tests/app/sweep.js`'s alone since R0c deleted the pixel harness that used to also watch it. The text a same-shape sibling run folds to its first two and last two occurrences (rule A) and the tail of a name past 64 code points (rule B, `namelen`/`namehash`) are both blind past that boundary. Mostly that is `data.js` catalogue text already owned by `tests/derived.js`, `tests/dataint.js` and the contract fixtures, **but not only**: retention is positional, so any node sharing a row's signature falls in the blind interior too. In `_tables_eq_weapon.txt` the tier 1 `checkbox "Выбрать все (N)"` and the last section's label and select-all (`АРТЕФАКТЫ`, since Volume 4) survive; the other select-alls and every `StaticText "РАНГ N"` are elided, and a rename of one of those is owned by no other suite now that `tests/parity.js` is deleted. What still fails: any attribute value change, any node added or removed (the group total moves), a role or tree-shape change, and a name change in a kept position or in any group of five or fewer. What does **not** fail: a rename inside an elided interior, and a **reorder of two same-signature siblings both inside it** - swapping them leaves the file byte-identical. |
+| `app/states` | journey | the thirty-six states only a trusted click, a real clipboard, a real second tab or a real network reaches: new list from the card/bar/modal, two Other frame values picked (fresh and live), `<dialog>` focus/Escape/return, two tabs sharing storage, the packed link, copy text/image, a broken art path (a record card's picture, then a table row's thumbnail: the row asks for `img/thumb/w3.webp`, never `img/w3.webp`, and shows `img/thumb/_none.webp` after the abort), focus surviving a keystroke, the note textarea's height (plus, R0b.2, the list note-field group's real CSS geometry), a roll's card `<img>` node replaced, real history Back/Forward, the selection bar pinned to the viewport at a narrow width, a real HTML5 drag reorder including a release inside the row gap marking both rows at once, a `dragenter` crossing into a row's own child reporting `defaultPrevented`, a `drop-after` row with its note box open painting gold in a measured strip at its bottom edge - pixel probe via `pngjs`, at the end of the list and in the middle of it, that same row's redrawn mark on its open note box declaring no transition of its own and the base mark's `transition-property` excluding `box-shadow` - read with reduced motion briefly relaxed then restored, and a cancelled drag (dragend, no drop) leaving the order and the marks untouched, and a `dragover` on the list's own note refused (`defaultPrevented`, `dropEffect` `none`), a folded `<details>` surviving a select-all re-render, tile geometry with art blocked, the storage notice under 320px, a button keeping focus across a re-render, the money-help box plus the pressed picker's colour, and (case 26) a touch-emulated viewport where the drag grip is hidden and a committed position both moves a row and announces it through a visually hidden live region, plus that same grip drawn again for a pointer that can hover, and (case 27) the add-to-list menu at 50 lists, at 1100 and 360 wide: no taller than 342 px, its search and «+ Новый список» inside the menu and the window, the chips scrolling on their own, the five lists holding the record first, and the new-list form started with the query, and (case 28) the minimal worker: a `dhloot-shell-v1` cache seeded from a site page before the app's first load, then the service worker ready, the manifest link added, the footer linking `pages/install.html`, `pages/privacy.html` and `pages/terms.html` in that order and each fetched with status 200, the page controlled after one reload, the seeded shell cache gone, the entry module in `dhloot-assets-v1`, and neither the document nor `data.js` in any cache; through CDP, `Page.getAppManifest` with no errors and `Page.getInstallabilityErrors` with no errors on a page in the browser's default context (an incognito context answers `in-incognito`); (case 29) over the same served `dist-test/`, the four policy outputs (`privacy` and `terms`, in Russian and in English) draw their back links first and last, a heading and the contact address, and in Russian and in English the install guide's first and last children are back links (`../` on `pages/install.html`, `../../` on `pages/en/install.html`), the top one returns from `#/lists` to `#/lists`, and a direct visit opens the app root; (case 24) under reduced motion no animation left running and every transition and animation delay computed as `0s`; (case 30) at 1180x900 a point 3px inside the list note textarea under its clear button hits the textarea, the button's centre hits the button, and the target is still 44px; (case 31) the focused card image's ring read from pixels - at least half of a 3px band inside each edge in the outline colour - on the full card (`#/i/ci1`) and the compact roll card (`#/roll/wondrous`); (case 32) at 1180x900 the undo toast a removal inside the record dialog raises drawn inside the open dialog, the only `.toast` with a role, «Вернуть» focused, hit at its centre and present in the CDP accessibility tree, its undo restoring the entry with the dialog still open and focus inside it, then after Escape the page's own toast focused and Enter restoring the entry, and a backdrop click still closing the dialog; (case 33) a drag whose own row another tab removes (a synthetic `storage` event mid-drag): the next `dragover` refused (`defaultPrevented`, `dropEffect` `none`), no drag marks left, the release moving nothing, and after the detached grip's `dragend` a `dragenter` on the list note not prevented; (case 34) at 1180x900 on `#/lists` the notice summary ending at the painted cross, a point 4px left of the cross hitting the summary, the painted cross and a point 4px right of it hitting the cross, its target 44x44, and a trusted click 4px left of it unfolding the notice; (case 35) the test build's cloud on `#/roll/std`: `window.__dhlootFake.auth.session()` `null` without `?as=`, and with `?as=gm1` the seed's `gm1` id and email and `location.search` still `?as=gm1` after arrival, and `open()` with `?as=nobody` failing at once with `unknown user "nobody"`; (case 36) account preferences: as `gm1` in a browser set to English the page turns Russian, `dhloot.lang.v1` is rewritten `ru` and `dhloot.prefs.v1` holds the account's grid and print layout; as `gm2` (no row) the fake's row is seeded from this browser's five values and the page stays English; signed out, a press of «Чёрно-белая» on `#/print/ci1-q1` writes `dhloot.prefs.v1` whole |
+| `app/golden` | structural | one accessibility-tree-plus-controls text snapshot per state in `tests/app/inventory.js` (157 states, both languages, four shards), compared byte-for-byte against `tests/app/snapshots/*.txt` - a control gone, a heading moved or a label renamed is a line in `git diff`, not a percentage. Regenerate a golden only with `node tests/app/golden.js --update`; `.claude/hooks/edit-guard.mjs` refuses a hand edit. It says nothing about colour, spacing, or which picture sits behind a correct `alt` - that stays `tests/app/sweep.js`'s alone since R0c deleted the pixel harness that used to also watch it. The text a same-shape sibling run folds to its first two and last two occurrences (rule A) and the tail of a name past 64 code points (rule B, `namelen`/`namehash`) are both blind past that boundary. Mostly that is `data.js` catalogue text already owned by `tests/derived.js`, `tests/dataint.js` and the contract fixtures, **but not only**: retention is positional, so any node sharing a row's signature falls in the blind interior too. In `_tables_eq_weapon.txt` the tier 1 `checkbox "Выбрать все (N)"` and the last section's label and select-all (`АРТЕФАКТЫ`, since Volume 4) survive; the other select-alls and every `StaticText "РАНГ N"` are elided, and a rename of one of those is owned by no other suite now that `tests/parity.js` is deleted. What still fails: any attribute value change, any node added or removed (the group total moves), a role or tree-shape change, and a name change in a kept position or in any group of five or fewer. What does **not** fail: a rename inside an elided interior, and a **reorder of two same-signature siblings both inside it** - swapping them leaves the file byte-identical. |
 
 ### The golden format, and why
 
@@ -293,13 +452,16 @@ tracing a feature back through history).
 | v1 storage and v1 links migrate | `state/lists.test.ts` |
 | Record card, modal, copy, share, image | `record.test.ts`, `share.test.ts`, `tests/app/states.js` |
 | Craft chains, referenced cards | `record.test.ts`, `tables.test.ts`, `share.test.ts`, `derived` |
-| Print | `app/print` |
+| Print | `app/print`, `printPage.test.ts`, `state/app.test.ts` (the layout remembered in `dhloot.prefs.v1`), `tests/app/states.js` case 36, the `#/print/ci1-q1 as gm1` golden |
 | Language switch | `i18n.test.ts`, `app/src/lib/dict.ts`'s compile-time check, `tests/app/sweep.js`, `tests/app/typo.js` |
 | Starting section | `state/app.test.ts`, `tests/app/states.js` |
 | Storage unavailable | `ports.test.ts`, `state/app.test.ts` |
 | `noindex`, robots | `derived` |
 | Data generation | `derived`, `dataint` |
-| HTTP-only build | every `tests/app/` suite loads `http://127.0.0.1:<port>/index.html` from `tests/app/lib.js`'s per-process server; `tools/smoke-http.mjs` (hashed module entry, classic `data.js`, `<noscript>` links) |
+| HTTP-only build | every `tests/app/` suite loads `http://127.0.0.1:<port>/index.html` from `tests/app/lib.js`'s per-process server (`tests/app/serve.js`, over `dist-test/`); `tools/smoke-http.mjs` (hashed module entry, classic `data.js`, `<noscript>` links, over `dist/`) |
+| Fake cloud and the test build | `ports/fake-cloud.test.ts` (the cloud contract, `?as=`), `tests/app/states.js` case 35, `tools/no-fake-in-prod.mjs` |
+| Accounts: sign-in, the header control, `#/account`, delete account | `ports/redirect.test.ts`, `ports/supabase.test.ts`, `ports/lazy-cloud.test.ts`, `components/accountPage.test.ts`, `shell.test.ts`, `state/app.test.ts`, the five `#/account` and `as gm1` goldens, `tests/db/delete-account.test.mjs`, `tools/smoke-http.mjs` (no control and the not-found page unconfigured), `contracts` (`#/account` replayed), `app/typo`, `app/sweep`, `tests/e2e/run.mjs` (the contract over the real adapter, flows F1-F5), `tests/e2e/lib.test.mjs` |
+| Account preferences: language, starting section, tables view and print layout follow the account | `lib/prefs.test.ts`, `state/app.test.ts`, `ports/fake-cloud.test.ts` and the contract's case F, `ports/lazy-cloud.test.ts`, `ports/supabase.test.ts`, `tests/db/user-prefs.test.mjs`, `tests/app/states.js` case 36, the `#/tables/dread as gm1` and `#/print/ci1-q1 as gm1` goldens, `tests/e2e/run.mjs` (case F and anon's `user_prefs` select on the test project, flow F6) |
 | Footer nav: install link, policy links | `shell.test.ts`, `state/app.test.ts`, `tests/app/states.js` cases 28 and 29, the goldens, `derived`, `tools/check-site.test.mjs` |
 | Policy pages `privacy`, `terms` | `derived` (render, `<noscript>` links), `tests/app/states.js` case 29, `tools/check-site.test.mjs` (both languages, contact address) |
 | Row thumbnails | `desc.test.ts`, `tables.test.ts`, `listsPage.test.ts`, `dataint`, `tests/sw.test.mjs`, `tests/app/states.js` case 11 |
@@ -499,14 +661,20 @@ components in isolation.
 | `components/lists.test.ts` | the add-to-list row itself - `listMenuHTML`/`addToListBtn` and `listMemberFor(item)`'s live behaviour: the button, the menu, a chip's tick, the new-list form, and the toast each raises |
 | `components/tables.test.ts` | the plain table's own behaviour - chip nav, the toolbar, selection, sectioned bodies, the row/section anchor - and, off `renderSelBar` (app.js 3706-3721), the selection bar it raises once a row is ticked: the count, the cross, its own add-to-list menu, and copying the whole selection |
 | `filters.test.ts` | the facet grammar both ways, and the predicate and counters the panel is built from |
+| `ports/fake-cloud.test.ts` | `ports/cloud.contract.ts`, the contract every `CloudPort` meets - R1 covers `auth` and `prefs`, cases A-F ("Test layers", "The contract selection") - run over the fake here and over the real adapter in layer 4; the seed's own cases (a sign-in as the default user notifying once, the identities in the seed's order, unlink then the last refused, link, a port made as `gm2`, `gm1`'s preferences row and none for `gm2`, a saved row kept to its own port, no read after deletion); plus the fake's own refusals, its two test options (`linkError` refuses a link and changes nothing, `returned` is the redirect result as given), an unknown `?as=` user throwing, and `installFakeCloud` |
+| `ports/redirect.test.ts` | the provider redirect's way back over a stub window: the callback address, the saved record, and `takeRedirect` - no flag, a code, `error_code` over `error`, an error or tokens in the hash, a stale, future, foreign, overlong or malformed record, a storage that throws, and the cleaned address in each case |
+| `ports/supabase.test.ts` | the real adapter over a stub supabase-js client: the PKCE client options, the session and identity mapping, the code exchanged before the session is read, every refusal mapped (`identity_already_exists`, `single_identity_not_deletable`, a throw), identities `[]` signed out and `null` when a signed-in read fails, the way back saved before the provider call, a started redirect kept pending until a back-forward-cache `pageshow` while a refused one answers at once, a store handed in, sign-out scopes, delete then a local sign-out whatever it answers, auth changes forwarded; the preferences row: nothing read or written signed out, the user's own row read with an invalid field dropped, no row as `null`, a failed or thrown read not `ok`, the whole row upserted on `user_id` and a refusal or a throw answered false |
+| `ports/lazy-cloud.test.ts` | the lazy port: loaded once on first use, every method delegated, a loaded port's `null` identities passed through, a subscription made when the port arrives or cancelled before, and a failed load answering signed out and refusing (preferences unread, a save refused); a loaded port's preference answers passed through |
+| `components/accountPage.test.ts` | `#/account` over the fake cloud: the chooser and its consent links in both languages, sign-in, the redirect state, only the title while the session is unknown, the four sections as `gm1`, disconnect and its hint, connect and `redirecting`, the already-linked alert from `link()` and from the redirect, sign out and everywhere (`'global'`), delete with the typed word (trimmed, any case), cancel, every refusal's toast, identities that cannot be read (the alert, no Connect), an account with no provider identity or no email, English, and axe in each state |
 | `ports/ports.test.ts` | every way the browser says no: storage that throws, a page outside a secure context, a missing compressor, a dismissed share; and the hash router against a fake window |
-| `state/app.test.ts` | settings read as untrusted data, which address may be pinned, a refused write, what an old section name sets, the storage notice's own dismissal flag, a packed address expanded through the compress port, and where it lands when the port cannot |
-| `components/shell.test.ts` | the frame: labels a screen reader needs, the language switch and what it redraws, which tab is lit, the address on the way in, and axe on three states |
+| `state/app.test.ts` | settings read as untrusted data, which address may be pinned, a refused write, what an old section name sets, the storage notice's own dismissal flag, a packed address expanded through the compress port, and where it lands when the port cannot; the print layout in `dhloot.prefs.v1` (read at boot, live's `{ view }` shape, broken JSON, written whole); account preferences (the account wins and saves nothing back, a `home` pinned without navigating, removed at the default or ignored when refused, a first sign-in seeding five values, a failed read applying nothing, each setter saving the whole object once signed in and none signed out, a pending read losing to a local edit, sign-out clearing nothing, another user pulling again, the shown-again signal pulling or, after a refused save, saving) |
+| `lib/prefs.test.ts` | the preferences reader: each valid field kept, each invalid one and every unknown key dropped, a non-object read as nothing |
+| `components/shell.test.ts` | the frame: labels a screen reader needs, the language switch and what it redraws, which tab is lit, the address on the way in, the account control (none unconfigured, where `#/account` is the not-found page with the address kept; «Войти» signed out; the initial and its name signed in; nothing until the session is known; `aria-current` and the title on `#/account`), and axe on three states |
 | `components/listsPage.test.ts` | `#/lists` - off `renderLists`/`storageWarning`/`listCardHTML` and the create/share/delete/restore handlers (app.js 2865-2931, 4136-4270): the head and its help, the storage notice (`StorageNotice.svelte`, extracted on its second use in B5.4) in both live forms, a card per list with a known-record badge and its actions, the name filter from the eighth list, the first 24 cards and «Показать ещё (N)» with its focus move and its count kept across a return, and `noData` |
 | `components/listPage.test.ts` | `#/lists/<id>` and `#/l/<own payload>` - off `renderOneList` and everything it draws (app.js 2933-3128, the address at 1537-1607, the handlers at 3944-4571): the address rewrite and its address-only edge cases, the title input and the actions row, the storage notice, the money picker and its help, the list note, the roll panel (folded/absent/rolled/reset), select-all, a row's position/qty/gold/note/remove with undo, copying and sharing, deleting, a row's own modal, the drag port's `onDrop`, `noData`, and the branch into the shared page (drawn for a payload that is nobody's, nothing drawn while a packed address expands, the bad-link page when the port cannot expand one) |
 | `components/sharedListPage.test.ts` | `#/l/<payload>` for a payload that is nobody's own list - off `renderSharedList` (app.js 3130-3170): the heading and the one-text-node sub, the save button and saving the whole list as a new own list (both notes, the money mode, a nameless list), the bar alone holding add-to-list with a row ticked, and the bar taking rows into a new or an existing list (qty/gold/note, never the GM's own note), both list hitnotes and each entry's own after its row, the tails (`×qty`, `×qty · price`, bare price, coin mode), selection and the bar it raises, a row's own modal, the bad-link page, and English |
 | `components/searchPage.test.ts` | `#/search` - off `renderSearch`, `kindChips` and the `#sq`/kind handlers (app.js 2841-2859, 2114-2132, 4160-4164, 4333): the head with no help button, the box focused on arrival, both languages at once, the assembled stat line, the 300 cap, the kind filter narrowing and refusing its last chip, equipment obeying the equipment chip regardless of its own `kind`, the filter shared with the roll pages, selection, a row's own modal, `noData`, and English |
-| `components/printPage.test.ts` | `#/print/<ids>` - off `renderPrint`, `printCardHTML` and its helpers, and `fitPrintCards` (app.js 3235-3558), and the four handlers (`doPrint`/`printBack`/`printArt`/`printLink`, 4236-4245): the bar and its controls in order, a sheet's card/blank counts and page breaks, every card shape (loot with and without art, a broken image swapped for the glyph, a weapon's tier/tags/burden/die/ribbon/cells, a versatile weapon's second stat block, a damage bonus, an armoured card's shield and threshold strip, an artifact's list markup, a community record's source line), the black-and-white layout, the second-sheet and 180-id cap arithmetic, the empty address, `Назад`/print/link handlers, the fit ladder driven end to end under a faked layout, the grow rung's cap and step-back under a faked layout, the compact switch (sixteen places, independent of the colour switch both ways, the compact subtitle, the ten-id and 180-id arithmetic at sixteen, session memory, a re-fit on a size change, axe on both compact layouts), `noData`, English, and the per-card count from `*<n>` |
+| `components/printPage.test.ts` | `#/print/<ids>` - off `renderPrint`, `printCardHTML` and its helpers, and `fitPrintCards` (app.js 3235-3558), and the four handlers (`doPrint`/`printBack`/`printArt`/`printLink`, 4236-4245): the bar and its controls in order, a sheet's card/blank counts and page breaks, every card shape (loot with and without art, a broken image swapped for the glyph, a weapon's tier/tags/burden/die/ribbon/cells, a versatile weapon's second stat block, a damage bonus, an armoured card's shield and threshold strip, an artifact's list markup, a community record's source line), the black-and-white layout, the second-sheet and 180-id cap arithmetic, the empty address, `Назад`/print/link handlers, the fit ladder driven end to end under a faked layout, the grow rung's cap and step-back under a faked layout, the compact switch (sixteen places, independent of the colour switch both ways, the compact subtitle, the ten-id and 180-id arithmetic at sixteen, kept across a navigation and off on a fresh start, a re-fit on a size change, axe on both compact layouts), the black-and-white choice remembered across a navigation and a new `AppState` over the same storage, `noData`, English, and the per-card count from `*<n>` |
 
 The browser adapters' happy paths are the one thing these cannot reach - a real
 clipboard write, a real share sheet - because jsdom has neither. `tests/app/states.js`
@@ -590,14 +758,23 @@ keys), migration naming, `pairMigrations` (a missing reversal, an orphan
 reversal, a bad name), `isAdditiveMarker`, `nonAdditiveStatements` (a
 `drop`, a `rename`, `alter table x alter column y type text` and `alter
 type` refused; a pure `create` and `alter table x add column` accepted),
-`readApplied`, `unapplied` and `markApplied` (sorted, no duplicates), and
+`migrationVersion` (the 14 digits; `null` for a bad name) and
+`pendingMigrations` (sorted; a bad name listed as pending; everything
+pending against an empty history; nothing without a local file), and
 `splitDrift` with `driftSummary` (the four `NOT_OWNED` rows alone are no
 drift; an owned update, a declared or updated not-owned path, and an
 undeclared path outside the set are drift). The
 wrappers that spawn the CLI (`config.mjs`, `db-push.mjs`) and
-`applied-check.mjs` are outside it for the same reason as `run.mjs` above;
-the two writers refuse without a terminal, and `check:db` exercises the
-pairing and marker logic against the real directories.
+`pending-check.mjs`, which connects to a database, are outside it for the
+same reason as `run.mjs` above; `config:push` refuses without a terminal,
+`db:push` without one unless `--project test --yes`, `check:db` exercises
+the pairing and marker logic against the real directories, and
+`pending-check.mjs` was proven in both directions against the local stack
+when it was written. `tests/derived.js` pins CI's migration steps
+(`migrate-test` before `npm run e2e`; `pending-check` on a `skip_e2e`
+dispatch, then `migrate-prod`, then the deploy build) and `backup.yml`'s
+schedule, recipient, `--schema auth,public`, `contents: read`, 30-day
+retention and `*.age`-only, fail-closed upload.
 
 `tools/check-site.test.mjs` is the same pattern again:
 `tools/check-site.lib.mjs`'s `checks()`/`runChecks()` covers the assertion
@@ -690,8 +867,8 @@ it measured. B8's three failures fell one each in shards 2, 3 and 4
 defect this rule exists to catch. B8 in fact claimed no movement with
 `--only=#/i/ci1` and `--only=print`; both were true, and both missed all three
 failures, because neither reaches an owned-list route. A prior claim of "no
-movement" is worth nothing if `dist/` itself was stale when it was measured -
-`tests/app/lib.js` fails closed on a lagging `dist/`, both a byte mismatch
+movement" is worth nothing if the build itself was stale when it was measured -
+`tests/app/lib.js` fails closed on a lagging `dist-test/` (`tests/app/serve.js`), both a byte mismatch
 against the three files `npm run data` regenerates and an mtime check against
 the bundle, before any suite requiring it can run.
 
@@ -791,6 +968,26 @@ reading it); `.card :global(.card-acts ...)` raises specificity (0,3,0 ->
 
 Not blocking, recorded so they are not mistaken for coverage:
 
+- The real Supabase client is proven on the test project (layer 4) for the
+  session, the identities read, both sign-out scopes and deletion. The
+  provider redirect, `link` and `unlink` are proven only against the stub
+  client (`ports/supabase.test.ts`), and OAuth itself - the consent screens,
+  a cancelled consent - only by the owner's manual check at a release's
+  closeout. From a cloud session the browser half runs once
+  `.claude/cloud-nss.sh` has put the proxy's authority in `~/.pki/nssdb`
+  (`.claude/README.md`, "Cloud sessions").
+- The additive lint (`nonAdditiveStatements`, `tools/supabase/lib.mjs`) does
+  not see `create or replace` of an existing object, `set not null`,
+  `revoke` (flagging it would refuse every table migration's own
+  default-grant revoke) or data statements (`update`, `delete`, `insert`): a
+  reviewer reads a migration whose reversal is `-- additive` for them.
+- The view invariant (`tests/db/harness.test.mjs`, `definerViews`) reads
+  `relkind = 'v'` only: a materialized view (`'m'`) has no
+  `security_invoker` and is not checked. The first migration that adds one
+  extends the invariant.
+- `tests/app/sweep.js` visits `#/account` signed out only (it takes no
+  `as`); the signed-in account page is covered by its goldens, the
+  `accountPage.test.ts` jsdom tests and E2E flow F2.
 - No harness exercises the real install prompt, the installed standalone
   window, or iOS (the Share sheet, the home-screen app's separate storage,
   a manifest link added by script). `ports.test.ts` covers `standalone()`
@@ -823,7 +1020,7 @@ Not blocking, recorded so they are not mistaken for coverage:
   app had none. Neither loses behaviour, but both change what a future
   instrument can grip.
 - Language leaks between states through `localStorage` (one origin per
-  suite process: each serves `dist/` on its own port), so a state run at `en` can leave the next `@ ru` capture in
+  suite process: each serves `dist-test/` on its own port), so a state run at `en` can leave the next `@ ru` capture in
   English; no verdict is wrong, but a human reading a `_ru_` artefact finds
   English text in it. Same mechanism: a previous pass's created lists leak
   into the next one - a 43 px menu-height difference in one capture was one

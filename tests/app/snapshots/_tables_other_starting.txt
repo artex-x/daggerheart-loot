@@ -11,6 +11,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
+    link "Войти" [url=#/account]
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -79,6 +80,7 @@ daggerheart.com
 Базовые припасыСтартовый предмет Core. Палатка, спальный мешок, ... [namelen=121 namehash=40e014e5]
 Бинты для рук от наставника
 Бинты для рук от наставникаСтартовый предмет Бойца. При создании... [namelen=142 namehash=6e6a0f0c]
+Войти
 Вырезанный символ вашего покровителя
 Вырезанный символ вашего покровителяСтартовый предмет Колдуна. П... [namelen=153 namehash=27c6b58e]
 К содержимому
@@ -160,6 +162,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_starting
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -285,6 +288,7 @@ Other
 Privacy
 RU
 Search
+Sign in
 Skip to content
 Standard rules
 Starting

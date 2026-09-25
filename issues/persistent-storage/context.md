@@ -7,6 +7,10 @@ import/export, homebrew with media, Realtime. This session's output is a
 finalized high-level plan with batch splits, so that later sessions run small
 plan-implement-review-remediate loops per batch.
 
+## Release status
+- R0 closed 2026-09-24; R1 `persist-1-auth` closed 2026-09-25 (record:
+  `plan.md` section 16, "R1 closeout record"). Next: R2 `persist-2-lists`.
+
 ## Input design (external, not authoritative)
 - `C:\Users\Ignat\OneDrive\Desktop\persist\DAGGERHEART-LOOT-PERSISTENCE-DESIGN.md`
   (2590 lines, revised 2026-09-23, reviewed repo revision `4976cb4`).
@@ -77,7 +81,7 @@ plan-implement-review-remediate loops per batch.
 | Env `supabase-production` | does not exist |
 | `main` branch protection / rulesets | none |
 | Actions variables | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` set (owner, `gh variable list`, 2026-09-24) |
-| Actions secrets | `TG_API_HASH`, `TG_API_ID`, `TG_SESSION`, and `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY`, `E2E_USER_EMAIL`, `E2E_USER_PASSWORD` set (owner, `gh secret list`, 2026-09-24) |
+| Actions secrets | `TG_API_HASH`, `TG_API_ID`, `TG_SESSION`, and `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY`, `E2E_USER_EMAIL` set (owner, `gh secret list`, 2026-09-24); `SUPABASE_DB_URL_TEST`, `SUPABASE_DB_URL_PROD` added and `E2E_USER_PASSWORD` deleted (owner, 2026-09-25); variable `BACKUP_AGE_RECIPIENT` added (owner, 2026-09-25) |
 | Supabase CLI config commands | `supabase config push` and `supabase config diff` exist in 2.117.0; the help warns that a non-interactive push also writes template values (a local `site_url`) over a customised hosted setting - always `config diff` first, never a blind `--yes` (owner, 2026-09-24) |
 | `https://artex-x.github.io/` root | 404 (no user-site repo) |
 
@@ -146,7 +150,9 @@ password. The owner runs that check.
   goldens green). To verify in the first cloud session: Docker works,
   Chrome for Testing downloads, Supabase images pull, and the layer 4
   probe (publishable-key request gets 401; the browser sees no injected
-  header).
+  header). Superseded in R1: no proxy credential (environment variables),
+  a push after every green commit, the orchestrator squash-merges -
+  `plan.md` section 18.
 
 ## Repository facts found by the planner (2026-09-24)
 - `tests/app/driver.js` `TARGETS.next` is `file://.../dist/index.html`;
@@ -184,6 +190,32 @@ password. The owner runs that check.
   (13 days), and its own Phase 2 says "no earlier than October 7 and only
   after 14 stable production days". The date cannot hold; it is an owner
   decision.
+
+## Owner request 2026-09-25: amend decision 31 (limits) - for the R2 planner
+- Limits configurable in the database: defaults in a table, not trigger
+  constants; a generic per-user override (a new limit needs no schema
+  change); `null` means "no limit" (decision 31 has null = the default).
+- Orchestrator's proposal, not yet confirmed: `limit_defaults(key pk,
+  value int null)`, `user_limit_overrides(user_id, key fk, value int null)`
+  with a missing row = the default, `effective_limit(user, key)` for every
+  limit trigger, no grant to `anon`/`authenticated`, `limits:set` gains
+  `--default`, `--unlimited`, `--clear`. Built in `B2.1` (first user).
+- Owner: `null` = no limit is a proposal; a large integer is acceptable if
+  null does not fit. Orchestrator recommends null (a missing override row
+  is the default, so null is free; PL/pgSQL `if n >= null` is not true) on
+  one condition: `effective_limit()` raises for a key not in
+  `limit_defaults`, so a typo can never read as unlimited. The R2 planner
+  decides and records it in `docs/DECISIONS.md`.
+- Owner confirmed 2026-09-25 (all as recommended): the proposal above;
+  null = no limit with the unknown-key raise; the table covers every count
+  limit (lists, entries per list, homebrew items, R4's lines per request
+  and pending requests per list), while R4's rate (5 per link per minute)
+  and expiry (1 hour) stay constants; an override may raise or lower a
+  limit. The R2 planner applies it to decision 31 and section 14's `B2.1`.
+
+## Owner decision 2026-09-25: agents may write to the test project
+- Built in R1: `docs/DECISIONS.md`, 2026-09-25, "Agents may write to the
+  test project; production is CI's or the owner's".
 
 ## Constraints
 - Public contracts default to no change; each unavoidable change updates

@@ -105,6 +105,7 @@ Known costs in this repo:
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | yes |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | barely, one width at a time |
 | `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | yes, one shard at a time |
+| any of the above, in a claude.ai/code cloud session | that host's own measured table: `.claude/README.md`, "Cloud sessions" | as there |
 
 So, before dispatching:
 
@@ -346,9 +347,9 @@ you count the one cycle.
 - **approve** -> continue to next batch or finish; on a terminal batch
   (below) carrying local nits, resume the writer ONCE for the nits first
 - **fix-then-continue** -> resume the batch's writer ONCE with the blockers
-  only - quoted, with what is already settled, HEAD and the gates; a cold
-  fix-pass is the fallback when "Resume, do not replace" says spawn. Do not
-  replan; send nits only on a terminal batch, and then in the same message
+  and the review's local nits ("Nits", below) - quoted, with what is already
+  settled, HEAD and the gates; a cold fix-pass is the fallback when "Resume,
+  do not replace" says spawn. Do not replan.
 - **replan** -> resume the planner ONCE (dispatch it if not listed) to
   revise the affected batch, then the writer ONCE
 - After that single remediation, do not auto-review again unless
@@ -356,13 +357,18 @@ you count the one cycle.
   look is due, resume the same reviewer - it holds the batch
 - If still blocked after one remediation cycle -> stop and ask the human
 
-### Nits: defer mid-plan, clear on the terminal batch
+### Nits: they ride a fix pass; alone, they defer mid-plan and clear on the terminal batch
 
 A batch is **terminal** when, after it lands, `plan.md` lists no further batch
 and the human has named no further phase or goal for TASK. A batch with work
 queued behind it is mid-plan, whatever its size.
 
-- **Mid-plan** -> record nits in handoff Deferred and continue; do not burn a
+- **A fix pass carries them** -> on fix-then-continue, mid-plan or terminal,
+  the one remediation message carries the blockers *and* the local nits: the
+  pass's dispatch and gates are already paid, and a nit in the same paths
+  adds almost nothing to them (`docs/DECISIONS.md`, 2026-09-25, "A blocker
+  fix pass also carries the batch's local nits").
+- **Mid-plan, nits alone** -> record nits in handoff Deferred and continue; do not burn a
   cycle on nits alone. A later batch re-enters those paths, and one pass over
   the finished area beats a pass per batch.
 - **Terminal** -> the one remediation cycle carries blockers *and* nits, and a
@@ -371,8 +377,8 @@ queued behind it is mid-plan, whatever its size.
 - Send only nits that are cheap, local and safe inside the paths the batch
   already touched (`CLAUDE.md`, campsite). A nit wanting a redesign, a
   public-contract change, a new spec, or work outside those paths goes to
-  Deferred even on a terminal batch - record that it was seen and why it was
-  left.
+  Deferred even in a fix pass or on a terminal batch - record that it was
+  seen and why it was left.
 - Gates do not move. The fix-pass reruns the batch's checks and commits, or it
   reverts its own nit fixes and reports. A nit never justifies a red gate.
 - Exception: when a plan's batches are merged by area and do not overlap, a

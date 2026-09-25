@@ -3,7 +3,8 @@
 > A bilingual (Russian/English) loot reference and roller for Daggerheart: 1272
 > records covering items, consumables, weapons and armour from the Core Set,
 > Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon's
-> Vault and community sets. Static site, no server, no API, no accounts.
+> Vault and community sets. Static site with an optional account (Google or
+> Discord sign-in); no public API.
 
 Site: https://artex-x.github.io/daggerheart-loot/
 Source: https://github.com/artex-x/daggerheart-loot
@@ -190,6 +191,8 @@ of two or three usually plays better than assigning one each.
 - `#/i/<id>` — one record
 - `#/search` — search
 - `#/l/<payload>` — a list (see below)
+- `#/account` — the account page: sign in, connected providers, sign out,
+  delete the account
 
 ## List links
 
@@ -373,8 +376,8 @@ from the book.
 
 ## What this site cannot do
 
-- No API, no server-side storage, no accounts. Lists live in the GM's browser
-  and in links.
+- No public API. Signing in is optional; lists live in the GM's browser and in
+  links.
 - You cannot edit someone else's list — you can only build a new address.
 - Art is at `img/<id>.webp`, link previews at `og/<id>.jpg`.
 

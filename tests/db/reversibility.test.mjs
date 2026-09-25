@@ -4,8 +4,11 @@
   marker `-- additive` (allowed only when the migration drops, renames or
   retypes nothing). The up-down-up gate snapshots the schema with every
   migration applied, applies the reversals newest first and the migrations
-  oldest first again, and requires the same snapshot. The fixtures prove
-  the gate in both directions on a scratch schema.
+  oldest first again, and requires the same snapshot. The base check resets
+  the database to each migration's predecessor and requires its up then its
+  down to leave that schema exactly, so a reversal that undoes too little is
+  caught even when a second up would not fail. The fixtures prove the gate
+  in both directions on a scratch schema.
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,7 +20,7 @@ import {
   isAdditiveMarker,
   nonAdditiveStatements
 } from '../../tools/supabase/lib.mjs';
-import { applySql, connect, snapshot } from './roles.mjs';
+import { applySql, connect, resetLocal, snapshot } from './roles.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SUPABASE = path.resolve(HERE, '..', '..', 'supabase');
@@ -115,6 +118,38 @@ describe('supabase/migrations', () => {
       return;
     }
     assert.deepEqual(await upDownUp(sql, ['public'], steps), []);
+  });
+
+  it('restores the schema the previous migration left', async (t) => {
+    const reversal = (p) => read(SUPABASE, 'reversals', p.name);
+    const checked = pairs.slice(1).filter((p) => !isAdditiveMarker(reversal(p)));
+    if (pairs.length && !isAdditiveMarker(reversal(pairs[0]))) {
+      t.diagnostic(`${pairs[0].name} has no migration below it: up-down-up alone proves it`);
+    }
+    try {
+      for (const p of checked) {
+        const previous = pairs[pairs.indexOf(p) - 1].name.slice(0, 14);
+        await sql.end();
+        resetLocal(['--version', previous]);
+        sql = connect();
+        const base = snapshot(['public']);
+        await applySql(sql, read(SUPABASE, 'migrations', p.name));
+        await applySql(sql, reversal(p));
+        const diff = lineDiff(base, snapshot(['public']));
+        assert.deepEqual(
+          diff,
+          [],
+          `${p.name}: its reversal does not restore the schema the previous migration left:\n${diff.join('\n')}`
+        );
+      }
+    } finally {
+      /* Every migration again, as run.mjs left it for the files after this. */
+      if (checked.length) {
+        await sql.end();
+        resetLocal();
+        sql = connect();
+      }
+    }
   });
 });
 

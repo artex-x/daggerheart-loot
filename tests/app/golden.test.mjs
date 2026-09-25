@@ -1,9 +1,9 @@
 /*
   node:test over golden.js's pure half - the normalisation, rule A (same-shape
   sibling elision), rule B (name cap) and comparison logic that `npm run check`
-  can exercise without dist/ or puppeteer.
+  can exercise without a build or puppeteer.
 
-  golden.js keeps `require('./lib.js')` (which checks dist/index.html exists
+  golden.js keeps `require('./lib.js')` (which checks dist-test/index.html exists
   and requires puppeteer) inside its `require.main === module` guard, so
   importing it here for its exports never trips either.
 */
@@ -180,6 +180,21 @@ describe("slugOf - unique per state id (golden.js's slugOf)", () => {
           'share one golden file and the stale-file sweep would not notice'
       );
       seenBy.set(slug, s.id);
+    }
+  });
+});
+
+describe('signed-in states - the `as` field and the id suffix agree', () => {
+  it('ends every signed-in state id with " as <user>", and no other id holds " as "', () => {
+    for (const s of STATES) {
+      if (s.as) {
+        assert.ok(
+          s.id.endsWith(' as ' + s.as),
+          `"${s.id}" signs in as ${s.as} but does not say so`
+        );
+      } else {
+        assert.ok(!s.id.includes(' as '), `"${s.id}" says " as " but signs nobody in`);
+      }
     }
   });
 });

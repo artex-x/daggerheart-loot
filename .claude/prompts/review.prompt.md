@@ -119,8 +119,9 @@ retirement while an `issues/<id>/` citation stands.
 2. **Blockers**
 3. **Risks**
 4. **Nits** - mark each `local` (cheap and safe inside the paths this batch
-   touched) or `deferred-scope`. On a terminal batch the orchestrator sends the
-   `local` ones to the writer; the rest are filed in handoff Deferred.
+   touched) or `deferred-scope`. With a fix-then-continue verdict's blockers,
+   and on a terminal batch, the orchestrator sends the `local` ones to the
+   writer; the rest are filed in handoff Deferred.
    Prose that narrates the session (G) is never a blocker - it breaks
    nothing - so it is always a nit, scoped `local` or `deferred-scope` the
    same way.

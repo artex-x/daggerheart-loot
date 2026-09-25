@@ -55,9 +55,9 @@
     };
   }
 
-  /* Both print switches are session memory on `AppState`, the way live's
-     `S.printBW` (app.js:49) was - they survive leaving the page, unlike
-     search's `q` and TablesPage's `q`, which stay component-local on
+  /* Both print switches are remembered on `AppState` (`dhloot.prefs.v1`,
+     and the account when signed in - docs/specs/FEATURES.md, "Print"),
+     unlike search's `q` and TablesPage's `q`, which stay component-local on
      purpose. `app.printBW` and `app.printCompact` directly, not local
      mirrors: this page remounts on every navigation, so a local copy would
      have to be re-synced from `app` on mount anyway. */
@@ -114,7 +114,7 @@
         value={app.printBW ? 'bw' : 'color'}
         label={t.printTitle}
         onchange={(v: 'color' | 'bw') => {
-          app.printBW = v === 'bw';
+          app.setPrintBW(v === 'bw');
         }}
       />
       <Seg
@@ -123,7 +123,7 @@
         value={app.printCompact ? 'compact' : 'std'}
         label={t.printSize}
         onchange={(v: 'std' | 'compact') => {
-          app.printCompact = v === 'compact';
+          app.setPrintCompact(v === 'compact');
         }}
       />
       <Button onclick={() => void copyLink()}><Icon name="link" />{t.printLink}</Button>

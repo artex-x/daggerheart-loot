@@ -27,14 +27,17 @@ export function connect() {
 }
 
 /** Runs `fn(tx)` as `role` with the JWT claims `{ role, sub }`, then rolls
- * the transaction back. Returns what `fn` returned; rethrows what it
- * threw. */
-export async function asRole(sql, { role, sub }, fn) {
+ * the transaction back. `setup(tx)`, when given, runs first as the
+ * connection's own role - rows the role itself may not write, such as
+ * auth.users - and is rolled back with the rest. Returns what `fn`
+ * returned; rethrows what it threw. */
+export async function asRole(sql, { role, sub, setup }, fn) {
   if (!ROLES.has(role)) throw new Error(`The role "${role}" is not anon or authenticated.`);
   const claims = JSON.stringify(sub ? { role, sub } : { role });
   let result;
   try {
     await sql.begin(async (tx) => {
+      if (setup) await setup(tx);
       await tx.unsafe(`set local role ${role}`);
       await tx`select set_config('request.jwt.claims', ${claims}, true)`;
       result = await fn(tx);
@@ -66,6 +69,22 @@ export function snapshot(schemas) {
     return readFileSync(file, 'utf8');
   } finally {
     rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/** Resets the local database to supabase/migrations/ - with `--version
+ * <14 digits>`, only up to that migration. It drops every connection: end
+ * yours before, connect again after. Throws on a non-zero exit. */
+export function resetLocal(args = []) {
+  const r = spawnSync(process.execPath, [SUPABASE_CLI, 'db', 'reset', '--local', ...args], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+  if (r.error || r.status !== 0) {
+    throw new Error(
+      `supabase db reset --local ${args.join(' ')} failed (${r.status}): ${r.stderr}`
+    );
   }
 }
 

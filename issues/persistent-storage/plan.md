@@ -8,8 +8,10 @@
 - NEEDS_HUMAN_CONFIRMATION: yes for the purchase-request questions 32-38
   (section 16); decisions 1-31 answered 2026-09-24. `B0.1` and R1-R3 do
   not depend on them; `B4.1` does.
-- Current release: R0 `persist-0-foundation`, `B0.1` running in its own
-  directory (2026-09-24). Next release after R0: R1 `persist-1-auth`.
+- R0 `persist-0-foundation` closed 2026-09-24; R1 `persist-1-auth` closed
+  2026-09-25 (its task directory retired in its closeout commit; the
+  release record is section 16, "R1 closeout record"). Next release: R2
+  `persist-2-lists`, `B2.1`.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -399,11 +401,14 @@ seconds the sharding costs are accounting, not money.
 ## 9. Commit, push and deploy policy (owner decision D1)
 
 Settled 2026-09-24 (decision 1; `docs/DECISIONS.md`): **one TASK id per
-release**, `persist-<n>-<name>`. Each release follows the standing law
+release**, `persist-<n>-<name>`. A local release follows the standing law
 unchanged: first batch commits, later batches amend, closeout deletes
-`issues/persist-<n>-<name>/`, pushes once; the push to `main` deploys.
-Before the push the owner runs `npm run db:push -- --project prod` for
-that release's migrations and re-runs Security Advisor (section 15). This
+`issues/persist-<n>-<name>/`, pushes once; the push to `main` deploys. A
+cloud release pushes its branch after every green commit and the
+orchestrator squash-merges it onto `main` (`docs/DECISIONS.md`, 2026-09-24
+and 2026-09-25 entries; `.claude/README.md`, "Cloud sessions"). Migrations
+reach both projects from CI (decision 41); the owner keeps `config:push`
+and re-runs the Security Advisor (section 15). This
 directory, `issues/persistent-storage/`, is the programme roadmap: it stays
 open, is compacted at every release closeout inside that release's commit,
 and is retired with the last release (a planned-but-unshipped task keeps
@@ -417,7 +422,7 @@ Releases, in the order the owner set (batch ids carry the release number):
 | Release | Task id | Batches | Ships |
 |---|---|---|---|
 | R0 | `persist-0-foundation` | `B0.1`, `B0.2` | HTTP-only build, retired worker, laws superseded, policy pages `privacy` and `terms`, Supabase tooling and guards, CI `db` job; no user-visible cloud feature. After it is live the owner publishes the Google app |
-| R1 | `persist-1-auth` | `B1.1`-`B1.4` | Fake cloud and test build (layer 2), sign in, `#/account` with linking and sign out everywhere, delete account, hosted E2E (layer 4) and CI `e2e` job, account preferences |
+| R1 | `persist-1-auth` | `B1.1`-`B1.6` - **closed 2026-09-25**, live at the merge onto `main` | Fake cloud and test build (layer 2), sign in, `#/account` with linking and sign out everywhere, delete account, hosted E2E (layer 4) and CI `e2e` job, account preferences, CI migration deploys (decision 41), the nightly backup (decision 39) |
 | R2 | `persist-2-lists` | `B2.1`-`B2.3` | Cloud lists with "edited N ago", sign-in-only creation, player and GM share links with polling, save a copy |
 | R3 | `persist-3-realtime` | `B3.1` | Live updates on shared pages; polling stays as the fallback |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline, requester status |
@@ -528,10 +533,7 @@ carries "goldens".
 |---|---|---|---|---|---|
 | `B0.1` | HTTP-only ES-module build, retire the worker's caches, supersede the three laws, harness over HTTP, policy pages `privacy` and `terms` with footer and `<noscript>` links | section 6 rows 1-8 | layer 1 `check` x2, `check:built`, layer 2 filter group, golden re-seed, sweep x5 (~61 min) | required: generated artefacts and UI (footer always drawn, two new links) | - |
 | `B0.2` | `supabase/` init, layer 3 `check:db` chain and RLS harness, reversibility gate, applied-migration guard, gitleaks hook, CI `db` job with the `applied.json` check, `db:push` wrapper | section 6 rows 9-10 | layer 1 `check`, layer 3 `check:db`, CI (~5 min + first stack start) | required (plan rule: every hook and every `supabase/` batch) | a review that cannot be held in one pass: build and product source vs hooks and tooling (the `B12b`/`B12c` precedent) |
-| `B1.1` | Layer 2 reach: `CloudPort` types, `fake-cloud.ts` and its seed, `cloud.contract.ts`, `vite build --mode test` -> `dist-test/`, `main.ts` selection, the production-bundle marker guard in `check:built`, `tests/app/` driving `dist-test/`, driver `open(route, { as })`, `golden.js` state naming, CI `browser` builds the test build; one states case proves signed-out and `?as=gm1` differ and one proves `dist/` lacks the marker; `COVERAGE.md` four-layer table | section 6 row 11 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens (~28 min) | required: harness that every later golden trusts | new release (R1); a commit boundary the harness cannot reach - the reach lands first, on its own commit |
-| `B1.2` | `@supabase/supabase-js`, real `auth` adapter, PKCE sign-in and callback (`redirectTo` `<site>?auth-callback=1`, return route in `sessionStorage`, `replaceState` strips `code` and `auth-callback`), header control, route `#/account` and `AccountPage.svelte` with the five sections (section 3) including "Sign out everywhere", provider linking and unlinking with the last-identity guard and the already-linked error, `delete_account()` migration, `privacy` gains the `#/account` link; vitest with the fake `AuthPort`: connect calls `link(provider)` and shows the redirect state, Disconnect absent with one identity and present with two, unlink removes one, `identity_already_exists` renders "This <provider> account is already used by another account"; layer 2 states: `#/account` signed out, as `gm2` (one identity), as `gm1` (two identities), header both states | section 6 row 12 | layer 1 `check` x2, `check:built`, layer 2 filter group (`app/contracts` carries the new route), goldens, layer 3 `check:db` (~30 min) | required: public contract, new UI | a public-contract change |
-| `B1.3` | Layer 4: hosted E2E harness, `npm run e2e`, `tests/e2e/contract.mjs` (fake-vs-real agreement), CI `e2e` job with its concurrency group and the `skip_e2e` dispatch input, `deploy` needs `e2e`; flows: seeded session, `#/account` draws the email user's provider and email, no Disconnect with one identity, Export JSON section absent, sign out, sign out everywhere, delete account. OAuth linking is not reachable with the email-only test project: the owner's closeout check covers it (section 15, step 16) | `COVERAGE.md`, `.claude/README.md` | layer 1 `check`, layer 4 E2E (~7 min) | not required unless the worker deviates | a commit boundary the harness cannot reach: the flows need `B1.2`'s UI; the harness is tooling judged against `COVERAGE.md` |
-| `B1.4` | Account preferences: `user_prefs` migration and reversal, RLS matrix, `PreferencesPort` (real and fake), `AppState` precedence (account wins, local seeds an empty row, write-through to local), print layout and default money mode become preferences for a signed-in user; layer 2 states: tables view, print layout and language as `gm1` versus signed out; E2E: change the language on one session, read it back on a fresh one | section 6 row 13 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 3 `check:db`, layer 4 E2E (~35 min) | required: schema rule and UI | a different route and filter set: tables, print and lists states versus `#/account` |
+| `B1.1`-`B1.6` | R1, closed 2026-09-25: the fake cloud and test build, sign-in and `#/account`, the hosted E2E and the CI `e2e` job, account preferences, CI migration deploys and the nightly backup, a states-case fix. The design as built is in `docs/specs/`, `docs/DECISIONS.md` and `.claude/README.md`; the batch briefs are in R1's commit history | - | - | - | - |
 | `B2.1` | R2 schema (with `topic_key`), RLS, RPCs, six-role matrix tests, reversals; the fake cloud's seed gains lists and shares | - | layer 1 `check`, layer 3 `check:db` (~5 min) | required (schema rule) | new release; SQL judged apart from Svelte |
 | `B2.2` | `ListRepository`, cloud store, `ListModel` seam in `ListPage.svelte`, lists index groups (cloud, local) with "edited N ago" and a sort by last edit, save states; **sign-in-only creation**: one `SignInPrompt` component drawn by "New list" (lists index) and "Add to list" (`AddToList.svelte`, record menu, selection bar) when nobody is signed in; layer 2 states signed out and as `gm1` for the index, a list page, the prompt in each slot; E2E flows create/edit/reorder/delete and a signed-out prompt case | section 6 row 14 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~27 min) | required: new UI | a commit boundary the harness cannot reach (needs `B2.1`) |
 | `B2.3` | Share links: create, one-time display, rotate, revoke; `#/s/<token>` page (reuse `SharedListPage.svelte`), "Save a copy" (signed out: the `SignInPrompt`), poll on focus and 45 s; cloud lists never write `#/l/`; `llms.txt` announces that `#/l/` retires at the cutoff; layer 2 states: share panel as `gm1`, `#/s/player-token-1` and `#/s/gm-token-1` signed out and as `gm2` | section 6 row 15 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~27 min) | required: public contract | a public-contract change |
@@ -610,59 +612,8 @@ branch only, never `main`) and the one-line `CLAUDE.md` amendment
 Supabase-stack command through the PowerShell tool (section 7). Owner:
 gitleaks on PATH before this batch.
 
-`B1.1` Fake cloud and test build (section 8, "Layer 2"). `app/src/ports/
-cloud.ts` (the `CloudPort` types and the resource union), `fake-cloud.ts`,
-`fake-cloud-seed.ts`, `cloud.contract.ts` and its vitest run against the
-fake; `vite.config.mts` `mode === 'test'` -> `define` and `outDir
-../dist-test`; `package.json` `build:test`, `check:built` builds both and
-runs the marker guard (`tools/no-fake-in-prod.mjs`); `main.ts` selection;
-`Env.cloud`; `tests/app/lib.js` `serveDist()` serves `dist-test/`;
-`driver.js` `open(route, { as })`; `golden.js` naming; `ci.yml` `browser`
-runs `npm run build:test`; `.gitignore` `dist-test/`; `edit-guard.mjs`
-denies `dist-test/` like `dist/`; `COVERAGE.md` four-layer table.
-
-`B1.2` Auth. `@supabase/supabase-js` (pinned); `app/src/ports/auth.ts`
-(`AuthPort`: `session()`, `identities()`, `signIn(provider)`,
-`link(provider)`, `unlink(identityId)`, `signOut()`, `deleteAccount()`,
-`onChange`; a fake with a settable identity list and a settable error);
-`app/src/ports/supabase.ts` (`createCloud(url, key): CloudPort`; maps the
-Supabase error code `identity_already_exists` to `AuthError.alreadyLinked`
-and everything else to `AuthError.failed`); `app/src/ports/config.ts`
-(reads `import.meta.env`, returns `null` when unset); `Env.cloud`;
-`AppState.user`; `Shell.svelte` header control that navigates to
-`#/account`; `hash.ts` route kind `account`; `AccountPage.svelte` with the
-five sections in section 3's order - Disconnect is drawn per identity only
-while `identities().length >= 2`; Connect for a provider not yet connected
-calls `link(provider)` after saving `#/account` as the return route; the
-already-linked error renders under the button and the page keeps its
-state; the Sign out section has "Sign out" and "Sign out everywhere"
-(`signOut({ scope: 'global' })`); Delete needs the typed word the
-dictionary names. Callback: `redirectTo` is `<site>?auth-callback=1` (the
-allowlisted form, `context.md`); the wanted hash route is saved to
-`sessionStorage['dhloot.auth.return']` for ten minutes before `signIn` or
-`link`, restored after `exchangeCodeForSession`; `replaceState` strips
-`code` and `auth-callback`. Migration `0002_delete_account.sql` and
-reversal. `privacy` gains the `#/account` link. The fake's `auth` follows
-the same interface (`?as=` decides the session). Contract change:
-`ROUTES.md`, `CONTRACTS.md` section 1, `docs/fixtures/urls/routes.json`,
-`tests/contracts.js`, `llms.txt`. ESLint `no-restricted-imports` for
-`@supabase/*` outside `ports/supabase.ts`. Owner steps 3 (the remaining
-part) and 12 of section 15 before the release push.
-
-`B1.3` Hosted E2E and the CI `e2e` job: section 8. Owner step 13 before
-it.
-
-`B1.4` Account preferences. Migration `0003_user_prefs.sql` and reversal;
-`PreferencesPort` `{ load(): Promise<Prefs | null>; save(p: Prefs):
-Promise<void> }` real (one row, `upsert`) and fake; `Prefs = { lang, home,
-view, printBw, printCompact, moneyMode }`, every field optional;
-`AppState`: at boot read local as today; on session ready `load()`; `null`
--> `save(localValues)`; a row -> apply each present field, write it to its
-local key or session field; every later change writes local first, then
-`save()` when signed in; on sign-out nothing is cleared. `STATE.md` gains
-the fourth place and the precedence rule; print layout stops being
-session-only for a signed-in user (`FEATURES.md` "Print"). Layer 2 states
-and E2E as in section 12.
+`B1.1`-`B1.6`: shipped in R1 (section 9). Their outlines were superseded by the
+release's own plan; the code, the specs and `docs/DECISIONS.md` are the record.
 
 `B2.1`-`B2.3`: section 5 schema; `ListRepository` (`list()`, `get(id)`,
 `create`, `update`, `reorder`, `remove`, shares); the `ListModel` seam;
@@ -812,27 +763,28 @@ GitHub, repository settings -> Secrets and variables -> Actions:
     `VITE_SUPABASE_PUBLISHABLE_KEY` are set.
 13. Done 2026-09-24 (`gh secret list`): `E2E_SUPABASE_URL`,
     `E2E_SUPABASE_PUBLISHABLE_KEY`, `E2E_SUPABASE_SECRET_KEY`,
-    `E2E_USER_EMAIL`, `E2E_USER_PASSWORD` are set. `B1.3` uses the first
-    four; `E2E_USER_PASSWORD` is removed once the mint path is proven
-    (section 18, conflict 3).
+    `E2E_USER_EMAIL` are set; `E2E_USER_PASSWORD` was deleted by the owner
+    (2026-09-25, `gh secret list`). Done 2026-09-25 for R1: the secrets
+    `SUPABASE_DB_URL_TEST` and `SUPABASE_DB_URL_PROD` (the session pooler
+    form, `.claude/README.md` "The hosted E2E and the deploy") and the
+    variable `BACKUP_AGE_RECIPIENT`.
 14. Not in v1: branch protection, a `supabase-production` environment,
     `SUPABASE_ACCESS_TOKEN` in CI, the Supabase GitHub integration
-    (Branching - decision 27). Migrations and configuration are pushed
-    from the owner's machine (step 15).
+    (Branching - decision 27). Configuration is pushed from the owner's
+    machine (step 15); migrations from CI (decision 41).
 
 Every release that carries a migration or a `config.toml` change (R0
 config, R1, R2, R3, R4, R6, R7, R8):
 
-15. From the repository root, before the git push, for `test` then
-    `prod`: `npx supabase link --project-ref <ref>`; `npm run config:push
-    -- --project <name>` (runs `supabase config diff`, prints it, waits for
-    a typed `yes`, then `supabase config push`; never `--yes`); `npm run
-    db:push -- --project <name>`; after `test`, run the hosted E2E once;
-    after `prod`, step 6. The wrappers refuse `db reset` against a linked
-    project. A non-empty `config diff` that the repository did not cause is
-    hosted drift - a defect: record it, then push the repository's value
-    over it. This is where the drift check runs; CI has no access token by
-    design.
+15. Before the merge onto `main`, for `test` then `prod`: `npm run
+    config:diff -- --project <name>`, then `npm run config:push --
+    --project <name>` if it differs (typed `yes`, never `--yes`); then step
+    6. Migrations are not the owner's: `migrate-test` and `migrate-prod` in
+    `ci.yml` apply them (decision 41; `.claude/README.md`, "Supabase
+    configuration", "Release procedure"). A non-empty `config diff` that the
+    repository did not cause is hosted drift - a defect: record it, then
+    push the repository's value over it. This is where the drift check
+    runs; CI has no access token by design.
 16. After the push: `node tools/check-site.mjs` is CI's; the owner signs
     in once on a desktop browser, once on an Android phone and once from an
     iPhone installed app, both providers, and records the result in the
@@ -841,12 +793,16 @@ config, R1, R2, R3, R4, R6, R7, R8):
     see two identities, disconnect one, see Disconnect vanish with one
     identity left; then, from a second Supabase user, try to connect a
     provider account that the first user already holds and see "This
-    <provider> account is already used by another account".
+    <provider> account is already used by another account"; cancel the
+    consent screen once and see «Не получилось. Попробуйте ещё раз.»;
+    "Sign out everywhere" on one device ends the other's session at its
+    next refresh; Back from the provider page re-enables the account
+    buttons (proven so far only on a stub window).
 
 Monthly, from R2 on:
 
-17. `npx supabase db dump --linked --data-only -f <date>-data.sql` into the
-    owner's encrypted store; delete dumps older than 90 days.
+17. Replaced by decision 39, built in R1: `backup.yml` dumps production
+    nightly (`.claude/README.md`, "Backups and restore"). Nothing monthly.
 18. From R3 on: Dashboard -> Reports -> Realtime: peak connections under
     150 and messages under 1.5 million for the month; if either is passed,
     the owner says so and the next release raises the poll interval or
@@ -861,19 +817,17 @@ At the cutoff date (set in R5's closeout):
 
 Cloud sessions (after R0 is live):
 
-20. claude.ai/code -> environment for this repository: network "Full";
-    setup script `bash .claude/cloud-setup.sh`; no environment variables;
-    one API credential: `Authorization: Bearer <E2E_SUPABASE_SECRET_KEY>`
-    for `https://rdjxcjkhsklhprmzxajq.supabase.co` (the test project's
-    secret key from `.env.test.local`; never a production value). Open one
-    session on `main`, run `npm run check`, `npm run check:built`, `npm run
-    check:db` and the layer 4 probe (`node tests/e2e/probe.mjs` from
-    `B1.3`; before `B1.3`, a `curl` with the publishable key against
-    `/rest/v1/` must answer 401), and record the result and the starred
-    facts of section 18 in `.claude/README.md` through that session's
-    branch. The probe's verdict decides whether R1 may run in the cloud.
-21. For a cloud release: after its branch is pushed, run section 18
-    conflict 5 (a)-(g) in order.
+20. Done 2026-09-24, superseded as written: the environment has network
+    "Full", the setup field of `.claude/README.md` "Cloud sessions", the
+    `E2E_*` names and `SUPABASE_DB_PASSWORD_TEST` as environment variables,
+    and **no** API credential (measured to replace every `Authorization`
+    header; `docs/DECISIONS.md`, 2026-09-24, "The hosted E2E reads its
+    credentials from the environment"). Chrome for Testing needs the proxy's
+    authority in `~/.pki/nssdb` (`.claude/cloud-nss.sh`, run by the setup
+    script). The measured results are in `.claude/README.md`, "Cloud
+    sessions".
+21. For a cloud release: the owner and orchestrator closeout lists of
+    `.claude/README.md`, "Cloud sessions".
 
 ## 16. Owner decisions - answered 2026-09-24
 
@@ -997,13 +951,12 @@ Cloud sessions (section 18), answered 2026-09-24:
     local steps and fast-forwards `main` (section 18, conflicts 1 and 5).
     `CLAUDE.md` gains one line in `B0.2`; the push guard is reshaped to
     "only the current branch, never `main`".
-25. **E2E credentials in the cloud as API credentials.** Recommended none;
-    **changed**: allowed through the hidden proxy. The proxy carries
-    headers only, so the flow drops `E2E_USER_PASSWORD` and mints sessions
-    with the secret key through `generateLink` and `verifyOtp` on every
-    host; a fail-closed probe refuses layer 4 where the proxy also
-    decorates the browser's or the anon client's requests (section 18,
-    conflict 3). Production secrets never enter the cloud.
+25. **E2E credentials in the cloud as API credentials.** Superseded
+    2026-09-24 by `docs/DECISIONS.md`, "The hosted E2E reads its
+    credentials from the environment; no proxy credential" (the proxy
+    credential replaced every `Authorization` header). The mint through
+    `generateLink` and `verifyOtp` stands. Production secrets never enter
+    the cloud.
 26. **Network "Full".** Recommended "Custom"; **changed**: "Full"; no
     allowlist is kept (section 15, step 20).
 
@@ -1100,27 +1053,13 @@ to sections 3, 5, 12 and 14 and writes the durable ones to
   its time only. None of the caps is in `user_limits`. The privacy text
   then has no free-text personal data from requesters to describe.
 
-39. **Nightly backup and keep-alive** (owner, 2026-09-24). Replaces the
-    monthly manual dump (section 15, step 17) and the "backup drills"
-    line of the scope cut. A scheduled GitHub Actions workflow
-    (`backup.yml`, nightly, plus `workflow_dispatch`) runs
-    `supabase db dump` for schema and data (roles excluded) against
-    production, encrypts the files with `age` to the owner's public key
-    (an Actions variable), and uploads them as an artifact with 30-day
-    retention. The repository is public, so artifacts are public: nothing
-    unencrypted leaves the job, and the job fails closed if the recipient
-    is missing. From R7 it also copies the `homebrew-art` objects. The
-    nightly run also keeps the free-tier project from pausing (7 days of
-    inactivity). Secrets: the production database connection string as an
-    Actions secret, used only by this job; this is the one production
-    credential in CI, and a written exception to section 7's "no production
-    access token in CI". The owner keeps the `age` private key outside the
-    repository and the machine's plain files (password manager). A restore
-    runbook (download, decrypt, `psql` into the test project first) goes to
-    `.claude/README.md` or a `docs/` runbook. It lands with the first
-    release that stores user data (R1, `user_prefs`); the R1 planner
-    refresh places it in a batch and adds the owner steps (generate the
-    `age` key pair, add the secret and the variable) to section 15.
+39. **Nightly backup and keep-alive** (owner, 2026-09-24). **Built in
+    R1**: `.github/workflows/backup.yml`; the decision and its rejected
+    alternatives are `docs/DECISIONS.md`, 2026-09-25, "Production is backed
+    up nightly, encrypted to the owner's key, kept 30 days"; the runbook is
+    `.claude/README.md`, "Backups and restore". Still owed here: from R7 the
+    job also copies the `homebrew-art` objects. The production connection
+    string it uses is shared with `migrate-prod` (decision 41).
 40. **Edge Functions: one, in R7.** Orchestrator recommendation, discussed
     with the owner 2026-09-24; the R7 refresh confirms it. `delete-account`
     (in `supabase/functions/`, deployed from the owner's CLI) verifies the
@@ -1137,32 +1076,45 @@ to sections 3, 5, 12 and 14 and writes the durable ones to
     Deferred idea (section 17): Discord webhook notifications for purchase
     requests through a trigger and `pg_net`, no Edge Function.
 41. **Migrations deploy from CI, automatically; config stays manual**
-    (owner, 2026-09-24; R1 builds it with `backup.yml`). Supersedes the
-    owner-run `db:push` of section 15 step 15 and section 9's "before the
-    push the owner runs `db:push`". On push to `main`, CI applies new
-    migrations to the test project, runs layer 4 E2E, then applies them to
-    production and deploys, with no approval step; the nightly backup
-    (decision 39) is the recovery path. Credentials: the test and the
-    production database connection strings as Actions secrets
-    (project-scoped; the production one is shared with `backup.yml`);
-    migrations run with `supabase db push --db-url`. `config.toml` pushes
-    stay a manual owner `config:push` (no account-wide Supabase access
-    token in GitHub). The R1 planner redesigns the applied-migration record:
-    `supabase/applied.json` is written only by the local wrapper, so the
-    `edit-guard.mjs` rule must read the applied set from a source CI keeps
-    current (for example the database's `supabase_migrations` history via a
-    committed snapshot, or "every migration on `main` is applied"). Owner
-    steps (R1): add the two connection-string secrets. Rejected: an
-    approval-gated `supabase-production` environment (the owner prefers
-    automation, backups cover a bad migration); config push in CI (the
-    token is account-wide).
+    (owner, 2026-09-24). **Built in R1**: `migrate-test` in the `e2e` job
+    and `migrate-prod` in `deploy` (`ci.yml`); the database's
+    `supabase_migrations.schema_migrations` is the applied record,
+    `applied.json` is gone and `edit-guard.mjs` locks every pushed
+    migration. Decision and rejected alternatives: `docs/DECISIONS.md`,
+    2026-09-25, "Migrations deploy from CI as steps of `e2e` and `deploy`;
+    the database is the applied record"; procedure: `.claude/README.md`,
+    "Supabase configuration". `config:push` stays the owner's.
 
 R0 closeout record (2026-09-24): C1 production `config:diff` "drift: none
 (4 not-owned)"; C2 `config:push --project test` pushed
 `enable_manual_linking`, `minimum_password_length` and
 `secure_password_change`; test `config:diff` afterwards "drift: none (4
 not-owned)"; C3 no migration; C4 (Google Branding and Publish, device
-install checks) follows the deploy.
+install checks) follows the deploy. C1-C4 done (owner, 2026-09-24): Google
+Branding set, consent screen published, support email
+`daggerheart.loot@gmail.com`.
+
+R1 closeout record (2026-09-25; branch `claude/compassionate-cannon-v13iq1`,
+one commit per batch, squash-merged by the orchestrator):
+- CI before the merge: run 36131497583 (`workflow_dispatch`, `57cf401`)
+  green in every job - `audit`, `secrets`, `check`, `db`, `e2e`, `browser`
+  1-4 (`browser (1)` 11:49:30-11:55:55Z, states cases 11 and 19 green on
+  the first attempt); `deploy` skipped (not `main`). Run 36124766953
+  (`06af055`): `migrate-test` 1 s, "Remote database is up to date".
+- Migrations for production: `20260925120000_delete_account.sql`,
+  `20260925120100_user_prefs.sql`,
+  `20260925120200_user_prefs_service_role.sql`, all three already on the
+  test project (owner's `db:push`, 2026-09-25). Production held no user
+  table before, so no backup precedes the first `migrate-prod`.
+- `E2E_USER_PASSWORD` deleted (owner, 2026-09-25).
+- Pending, owner or orchestrator after the merge: the config diffs and
+  pushes of both projects (step 15); the `migrate-prod` log line of the
+  `main` run and its run id; the Data API check and the Security Advisor
+  on both projects (date); the OAuth check of step 16 with R1's additions;
+  the first `backup.yml` run (its wall clock and image pull go to
+  `.claude/README.md`, "Backups and restore"); the restore drill - runbook
+  steps 1-5 and 7, never step 6 (production) - with the date, the
+  artifact name and the row counts restored.
 
 ## 18. Cloud sessions (claude.ai/code)
 
@@ -1188,127 +1140,82 @@ cross-OS proof already exists. Sweep measurements (contrast, geometry) in
 the cloud are advisory, as every non-CI run is (`.claude/README.md`'s
 doctrine).
 
-**Conflicts settled (owner decisions 24-26, 2026-09-24).**
+**Conflicts settled (owner decisions 24-26, 2026-09-24), as they stand
+after R1.**
 
 1. *Commit law and hosts.* A whole release (one task id) runs fully in the
-   cloud or fully locally; batches never mix hosts within a release. A
-   cloud release starts from the pushed `main`, commits and amends on its
-   own working branch named after the task id (`persist-<n>-<name>`), and
-   pushes that branch once, at closeout, after the task directory is
-   retired. That push is the release's one push: "push once, never
-   force-push" reads unchanged with the task branch as its object, and the
-   amend window closes at it as always. `CLAUDE.md` gets one line in
-   `B0.2`: "A cloud release's one push is its own task branch; the owner
-   fast-forwards `main` to it locally." The owner then runs the local
-   steps below and `git checkout main && git merge --ff-only
-   persist-<n>-<name> && git push`, which triggers `deploy`; a fast-forward
-   keeps one commit per release and no merge commit, so the claude.ai/code
-   UI merge (a pull request and a merge commit) is not used. The
-   `bash-guard.mjs` rule is reshaped and kept: when `CLAUDE_CODE_REMOTE` is
-   set, deny a `git push` whose target is `main` or any branch other than
-   the current one - a cloud session pushes only its own working branch.
-   Rejected: scratch base branches per batch (two extra branch names and a
-   cherry-pick per cloud batch, and a mixed-host release whose handoff
-   lives in two places).
+   cloud or fully locally; batches never mix hosts within a release. The
+   branch rule as first written here (amend on a task branch, push once,
+   the owner fast-forwards `main`) is superseded: a cloud release pushes
+   its session's branch after every green commit and the orchestrator
+   squash-merges it (`docs/DECISIONS.md`, 2026-09-24, "A cloud release
+   pushes after every green commit; the owner squash-merges it", amended
+   2026-09-25; `.claude/README.md`, "Cloud sessions", branch rule; rule 2o).
 2. *Goldens.* Cloud-OK, above.
-3. *Secrets.* No production secret (DB password, OAuth secrets, service
-   keys) ever enters a cloud environment. E2E credentials may enter as API
-   credentials (the hidden proxy attaches them to matching HTTP requests;
-   they never reach the model). The proxy carries headers, not request
-   bodies, so a password sent in `signInWithPassword`'s body cannot go
-   through it. Smallest workable shape, adopted for every host: the harness
-   stops using `E2E_USER_PASSWORD`; it mints the session with the secret
-   key as a header - `auth.admin.generateLink({ type: 'magiclink', email
-   })` returns a `hashed_token`, which `verifyOtp({ token_hash, type:
-   'magiclink' })` exchanges for a session; the publishable key and URL
-   are public and sit in `tests/e2e/config.mjs`. The cloud environment
-   then holds one API credential: `Authorization: Bearer
-   <E2E_SUPABASE_SECRET_KEY>` for `https://rdjxcjkhsklhprmzxajq.supabase.co`.
-   Condition, verified fail-closed at every layer 4 run (`tests/e2e/run.mjs`
-   first step): a request with the publishable key alone to a protected
-   table must return 401, and a page loaded in Puppeteer must see no
-   injected `Authorization` header - if either fails, the proxy is also
-   decorating the browser's or the anon client's requests, RLS assertions
-   would be meaningless, and layer 4 is refused on that host with a named
-   message. Until the first cloud session runs that probe (step 20), a
-   cloud release's layer 4 verdict is "conditional". `E2E_USER_PASSWORD`
-   stays a CI secret until `B1.3` proves the mint path, then is removed.
+3. *Secrets.* No production secret (database password, OAuth secrets,
+   service keys) ever enters a cloud environment. The proxy API credential
+   shape is superseded by `docs/DECISIONS.md`, 2026-09-24, "The hosted E2E
+   reads its credentials from the environment; no proxy credential": the
+   `E2E_*` names and `SUPABASE_DB_PASSWORD_TEST` are environment variables,
+   the mint is `generateLink` then `verifyOtp`, and `tests/e2e/probe.mjs`
+   refuses layer 4 where a header is rewritten. `E2E_USER_PASSWORD` is gone.
 4. *Shared state.* A cloud session has its own tree and its own Docker, so
    the one-session-per-tree rule holds; the hosted test project is the one
    shared thing, serialised by the CI concurrency group and by the rule
    that a layer 4 run is one at a time (the owner does not run `npm run
    e2e` while a cloud release runs it).
-5. *Owner-only, local, between the cloud push and the fast-forward.* In
-   order: (a) `git fetch`, read the release's closeout summary; (b) `npm
-   run config:push -- --project test`, `npm run db:push -- --project test`
-   (section 15, step 15); (c) the same for `prod`, then Security Advisor;
-   (d) the Google or Discord console steps the release names (R0: Branding
-   and Publish); (e) fast-forward `main` and push - `deploy` runs; (f) after
-   the deploy, the manual OAuth check (step 16); (g) delete the task branch.
+5. *Owner and orchestrator steps at closeout.* Superseded by the two lists
+   of `.claude/README.md`, "Cloud sessions" (`docs/DECISIONS.md`,
+   2026-09-25, "The orchestrator merges a release branch onto `main`; the
+   owner keeps the dashboard steps"). No `db:push` by the owner: CI applies
+   migrations (decision 41).
 
 **Per-release verdict.**
 
 | Release | Verdict | Reason |
 |---|---|---|
-| R0 `persist-0-foundation` | local-only | `B0.2` edits the hooks and `settings.json` the session runs under, proves the Docker stack on this host and writes the cloud section itself; the first cloud session (step 20) proves the setup script and the layer 4 probe afterwards |
-| R1 `persist-1-auth` | cloud-OK if step 20 passed the layer 4 probe; else local-only | `B1.3` needs layer 4; the contract change and the schema need nothing local |
-| R2 `persist-2-lists`, R3 `persist-3-realtime`, R4 `persist-4-requests`, R5 `persist-5-migration`, R6 `persist-6-import-export`, R7 `persist-7-homebrew`, R8 `persist-8-media`, R9 `persist-9-item-share` | cloud-OK (layer 4 conditional as above) | layers 1-3 and the goldens run in the VM; the owner-only steps run locally between the branch push and the fast-forward |
+| R0 `persist-0-foundation` | local-only (shipped) | `B0.2` edited the hooks the session runs under and proved the Docker stack on this host |
+| R1 `persist-1-auth` | shipped: `B1.1`-`B1.4` in the cloud, `B1.5`-`B1.6` on the owner's Windows host (the orchestrator's call; their gates are host-neutral) | layer 4 ran in the cloud once the proxy's authority was in `~/.pki/nssdb`; CI's `e2e` job is its verification of record |
+| R2 `persist-2-lists`, R3 `persist-3-realtime`, R4 `persist-4-requests`, R5 `persist-5-migration`, R6 `persist-6-import-export`, R7 `persist-7-homebrew`, R8 `persist-8-media`, R9 `persist-9-item-share` | cloud-OK | layers 1-4 run in the VM (`.claude/README.md`, "Cloud sessions", layer rule); the owner's steps run locally before and after the merge |
 | R10 `persist-10-legacy-removal` | cloud-OK | layers 1-2 only |
-| owner steps (section 15) | local-only | dashboards, consoles, `config:push`, `db:push`, the fast-forward of `main` |
+| owner steps (section 15) | local-only | dashboards, consoles, `config:push` |
 
-**What `B0.2` writes** (`.claude/README.md`, "Cloud sessions"): the
-facts above with their verification dates; the layer rule; the branch
-rule; the allowlist; the setup script `.claude/cloud-setup.sh` (the
-environment dialog runs `bash .claude/cloud-setup.sh`, so the repository
-owns it):
-
-```text
-1. Node: install nvm, `nvm install $(cat .nvmrc)`, `nvm alias default`.
-2. `npm ci` (downloads Chrome for Testing into ~/.cache/puppeteer).
-3. gitleaks: download the linux_x64 release tarball from GitHub, install
-   to /usr/local/bin, `gitleaks version`.
-4. Supabase CLI: `npx supabase --version` (the npm package fetches its
-   binary from GitHub releases); optionally `npx supabase start` once to
-   pull the images inside the cached layer.
-5. Print the versions the SessionStart hook will check.
-```
-
-and a `SessionStart` branch in `session-start.mjs` guarded by
-`process.env.CLAUDE_CODE_REMOTE === 'true'`: reports the cloud session,
-checks Node equals `.nvmrc`, `docker info` answers, the puppeteer cache
-exists and gitleaks is on PATH, and states the three rules in one line
-each: a whole release on this host, no production secret, push only the
-current branch and never `main`. Selftest cases cover the guard both ways.
-Network access: "Full" (decision 26), so no allowlist is kept.
+The cloud tooling R0 wrote (`.claude/cloud-setup.sh`, `.claude/cloud-nss.sh`,
+the `CLAUDE_CODE_REMOTE` branch of `session-start.mjs`, rule 2o) and its
+measured facts live in `.claude/README.md`, "Cloud sessions".
 
 ## 17. Risks, assumptions, deferred
 
-Carried from R0 (`persist-0-foundation`, closed 2026-09-24; its review
-register rows 24-26 and handoff Deferred). The R1 planner refresh places
-each one or names it to the owner:
+Carried from R0 (`persist-0-foundation`, closed 2026-09-24), outcome in
+R1: the reversibility base (`db reset --local --version`), the additive
+lint blind spots, the anon-`EXECUTE` and view invariants, rule 2n's
+uncovered hosted writes (now an allowlist) and the 2l/2e pathspec and
+`-a` gaps - all built in R1 (`.claude/README.md`, "Hooks" and "Supabase
+configuration"; `docs/specs/COVERAGE.md`). Still open, the owner's: the
+install prompt on Android and desktop Chrome with the registered worker,
+and no navigation-preload warning on a device upgraded from the issue 69
+worker. Named to the owner at R1's closeout and dropped from this plan:
+`.impeccable/design.json`'s `file://` text, `AltPanel.svelte`'s "no
+offline copy" comment, `clipboard.ts` `legacyCopy` (no R1 batch touched
+them; any batch that touches those files takes them).
 
-- R1 schema batch, reversibility gate: a real migration has no pre-`up`
-  base, so a reversal that leaves an object behind passes when the
-  migration is idempotent. Take the base with `supabase db reset --local
-  --version <previous>` or `--last`.
-- R1 schema batch, layer 3: the additive lint misses `create or replace`
-  of an existing object, `set not null`, `revoke` and data statements; the
-  invariants miss a view without `security_invoker` and a function `anon`
-  can execute through the default PUBLIC `EXECUTE` grant.
-- R1, guards: rule 2n covers only `db push`, `config push`, `db reset
-  --linked`, `migration up` to a hosted database and the wrappers. Other
-  hosted writes (`secrets set`, `functions deploy`, `postgres-config
-  update`, `backups restore`, `storage ... --linked`) pass; consider
-  deny-by-default for non-local subcommands. `git commit <pathspec>` and
-  `git commit -a` leave changes unscanned by 2l and outside 2e/2m.
-- Owner checks at R0 closeout, not reproducible by agents: the install
-  prompt on Android and desktop Chrome with the registered worker; no
-  navigation-preload warning on a device upgraded from the issue 69 worker.
-- Small cleanups, no defect: `.impeccable/design.json` still says the app
-  runs from `file://` (refresh with `/impeccable document`);
-  `AltPanel.svelte`'s tables-link comment cites "no offline copy";
-  `clipboard.ts` `legacyCopy` may be removable now that every host has a
-  secure context. Any batch touching those files takes them.
+Carried from R1 (`persist-1-auth`, closed 2026-09-25) for the R2 planner
+refresh, which places each one or names it to the owner:
+
+- CI, the test project's migration history: `migrate-test` runs on every
+  branch's `e2e`, so a migration a branch pushed reaches the test project
+  before `main` has its file; the next push of `main` without that branch
+  fails `migrate-test` (`db push` refuses a remote history ahead of the
+  files) and `e2e` and `deploy` stay red until the branch merges. R2 is the
+  next release with a migration, so its `B2.1` meets this first. Symptom
+  and recovery: `.claude/README.md`, "The hosted E2E and the deploy".
+  Candidate fixes: a `main`-only test apply, or a repair step.
+- `edit-guard.mjs`'s migration lock reads only the local remote-tracking
+  refs (an unfetched push is not locked; it fails open), and a `git rm` or
+  `git mv` of a pushed migration through Bash is not guarded at all.
+- Rule 2n's `HOSTED_NPM_RE` misses `npm run-script db:push` and `npm
+  --silent run db:push`, and does not recognise `bunx supabase` or `pnpm
+  exec supabase`. The tools themselves still refuse without a terminal.
 
 - Assumption: Chrome no longer requires a service worker for the install
   prompt. `B0.1`'s closeout has the owner try the install on Android Chrome
@@ -1325,8 +1232,8 @@ each one or names it to the owner:
   decides after reading the component.
 - Risk: goldens re-seeded twice (R0 footer row, R1 footer links); the
   reviewer reads the diff both times.
-- Risk: the hosted E2E depends on the test project's schema being pushed by
-  hand; the documented failure mode (section 8) names it.
+- Risk: the hosted E2E needs the test project's schema current;
+  `migrate-test` applies it before every `e2e` run (decision 41).
 - Risk: Realtime Broadcast from the database (`realtime.send`) and the
   `private: true` channel with a `realtime.messages` policy for `anon` are
   planned from platform documentation, not measured here; `B3.1`'s

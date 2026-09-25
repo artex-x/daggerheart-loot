@@ -16,7 +16,8 @@ of use (`pages/terms.html`).
 
 1272 records in all - 891 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
-illustration. No build step, no server, no account, no tracking.
+illustration. No tracking; signing in is optional, and without it nothing about
+you reaches a server.
 
 > **For AI agents.** The app renders on the client, and a list lives in the URL
 > fragment, which never reaches the server: fetching `index.html` gives you an
@@ -215,14 +216,16 @@ Loreborne `cm11`-`cm20`, and so on.
 
 ## What the app remembers
 
-Everything is in this browser's `localStorage`.
+Everything is in this browser's `localStorage`. Signed in, the language,
+starting section, table view and print layout are also kept in the account, so
+they follow the reader to every device.
 
 | Key | Holds |
 |---|---|
 | `dhloot.lists.v2` | lists with their contents and notes |
 | `dhloot.lang.v1` | interface language |
 | `dhloot.home.v1` | starting section |
-| `dhloot.prefs.v1` | table view (list or grid) |
+| `dhloot.prefs.v1` | table view (list or grid) and print layout (colour or black and white, standard or compact) |
 | `dhloot.warn.v1` | that the storage warning has been dismissed |
 
 The line is drawn where the interface draws it: **how** a page looks is
@@ -256,8 +259,20 @@ npm run dev      # dev server with hot reload
 npm run check    # format, lint, types, data, unit tests - before every commit
 npm run check:db # the database suite; needs Docker (on Windows, run it from PowerShell)
 npm run build    # -> dist/, served over HTTP (npm run preview, Pages)
-npm run test:legacy   # the surviving suites, mostly a real browser against dist/
+npm run build:test    # -> dist-test/, dist/ plus the fake cloud: what tests/app/* drive
+npm run test:legacy   # the surviving suites, mostly a real browser against dist-test/
 ```
+
+Sign-in is on only in a build configured with `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_PUBLISHABLE_KEY`: the dev server reads them from
+`app/.env.local` (gitignored); `npm run build` stays unconfigured unless they
+are in its environment.
+
+`npm run e2e` runs the hosted end-to-end test against the Supabase test
+project. It reads `E2E_SUPABASE_URL`, `E2E_SUPABASE_PUBLISHABLE_KEY`,
+`E2E_SUPABASE_SECRET_KEY` and `E2E_USER_EMAIL` from the environment or from
+`.env.test.local` (never committed), and leaves `dist/` built for the test
+project: run `npm run build` before serving `dist/` again.
 
 ```
 app/src/lib/         pure logic: roll modes, filters, hash grammar, i18n
@@ -288,7 +303,7 @@ tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
 tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
 tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
-                      (7 real-Chrome suites against dist/) and the runner
+                      (7 real-Chrome suites against dist-test/) and the runner
 docs/specs/           behaviour and frozen contracts, for maintainers
 docs/fixtures/        golden fixtures the contract suite replays
 ```
@@ -323,7 +338,7 @@ node tests/run-all.js dataint       # one suite
 node tests/run-all.js --jobs 1      # one at a time, for debugging
 ```
 
-Needs `puppeteer`, and `npm run build` first for the `tests/app/*` suites
+Needs `puppeteer`, and `npm run build:test` first for the `tests/app/*` suites
 (`npm run check` does not build).
 
 | Suite | Checks |
@@ -333,7 +348,7 @@ Needs `puppeteer`, and `npm run build` first for the `tests/app/*` suites
 | `contracts` | list encoding and route-grammar fixtures, decoded and re-derived by a second implementation |
 | `craft` | data invariants for upgrade chains, and the share stubs |
 | `stub` | the generated pages (`i/`, `i/en/`, `en/`, `pages/`, `pages/en/`) do not scroll sideways |
-| `app/sweep` | every address the app has, at four widths and in both languages, over `dist/` |
+| `app/sweep` | every address the app has, at four widths and in both languages, over `dist-test/` |
 | `app/states` | states reachable only by a trusted click, a real clipboard, or a real second tab |
 | `app/golden` | one accessibility-tree-plus-controls snapshot per state; a control gone, moved or renamed is a line in `git diff` |
 | `app/contracts` | the browser half of `contracts`: the link the app writes and reads, filter group names |
@@ -344,8 +359,9 @@ Needs `puppeteer`, and `npm run build` first for the `tests/app/*` suites
 Translation parity (`app/src/lib/dict.ts`'s `Dict` type) and tier sourcing
 (never inferred from stats) are compile-time and unit-test checks rather than
 a `tests/` suite - see `docs/specs/I18N.md` and `docs/specs/META.md`.
-`tests/app/*` suites use puppeteer against the built `dist/`, each on its own
-context: pages of one browser share `localStorage`, and without that the
+`tests/app/*` suites use puppeteer against `dist-test/`, the published build
+plus an in-memory fake cloud that `?as=<user>` signs a fixed test user into
+(`docs/specs/COVERAGE.md`, "Test layers"), each on its own context: pages of one browser share `localStorage`, and without that the
 chosen language leaks between suites.
 
 ### Machine readability and search
