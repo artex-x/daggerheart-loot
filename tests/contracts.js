@@ -116,6 +116,26 @@ const N_REC = '\x1e',
     machine.includes('daggerheart-loot/en/'),
     'llms.txt does not name the English address daggerheart-loot/en/'
   );
+  /* The account share link is a public address (CONTRACTS.md section 1), and
+     the old list links carry a published end date (section 3). */
+  const routesDoc = fs.readFileSync(path.join(FIX, '..', 'specs', 'ROUTES.md'), 'utf8');
+  const contractsText = fs.readFileSync(path.join(FIX, '..', 'specs', 'CONTRACTS.md'), 'utf8');
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText],
+    ['ROUTES.md', routesDoc]
+  ].forEach(function ([name, text]) {
+    ok(text.includes('#/s/<token>'), name + ' does not name the share link #/s/<token>');
+  });
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText]
+  ].forEach(function ([name, text]) {
+    ok(
+      text.includes('2026-10-26'),
+      name + ' does not name the date #/l/ links stop, 2026-10-26'
+    );
+  });
 
   /* ---------- data.json top-level keys ---------- */
   /* `CONTRACTS.md` section 4 publishes the key list; a key added to or dropped

@@ -1,6 +1,6 @@
 # #/l/ ~ shared, a row ticked
 # route: #/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg
-# why: issue 58: the save button above, row 1 ticked with its take line "Взять [2] из 2" inside the row, the bar with "Выбрана 1 позиция · 2 шт." and the only "Добавить в список"; no total, row 1 has no price
+# why: issue 58: the save button above and the 26 October line, row 1 ticked with its take line "Взять [2] из 2" inside the row, the bar with "Выбрана 1 позиция · 2 шт." and the only "Добавить в список"; no total, row 1 has no price
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
@@ -27,6 +27,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
     heading "Лавка" [level=1]
     StaticText "Список от другого игрока · 3 позиции"
     button "Сохранить себе"
+    StaticText "Ссылки вида #/l/ перестанут открываться 26 октября 2026 года. Со..." [namelen=107 namehash=f619a7e9]
     checkbox "Выбрать все (3)" [checked=false]
     StaticText "Выбрать все (3)"
     checkbox "Первоклассный Спальный Мешок" [checked=true]
@@ -109,6 +110,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
     heading "Лавка" [level=1]
     StaticText "A list from another player · 3 items"
     button "Save to my lists"
+    StaticText "Links like this one (#/l/) stop opening on 26 October 2026. Save..." [namelen=99 namehash=211a3cb8]
     checkbox "Select all (3)" [checked=false]
     StaticText "Select all (3)"
     checkbox "Premium Bedroll" [checked=true]

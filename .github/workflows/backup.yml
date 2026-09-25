@@ -25,6 +25,10 @@ jobs:
   dump:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # `SUPABASE_DB_URL_PROD` lives in this Environment, which only `main` may
+    # use (docs/DECISIONS.md, 2026-09-25, "The production connection string
+    # lives in an Environment limited to `main`").
+    environment: production
     steps:
       - uses: actions/checkout@v5
 

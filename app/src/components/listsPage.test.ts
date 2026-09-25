@@ -1,13 +1,15 @@
 /* The lists index, `#/lists` - off `renderLists`/`storageWarning`/`hideWarn`/
- * `listCardHTML` in app.js and the create/share/delete/restore handlers
- * (app.js 4136-4270). `shell.test.ts` used to cover the storage notice
- * as the frame's own invention; it lives here now, where the live app draws
- * it. */
+ * `listCardHTML` in app.js and the create/share/delete handlers
+ * (app.js 4136-4270), plus the account group and the sign-in prompt over the
+ * fake cloud. `shell.test.ts` used to cover the storage notice as the frame's
+ * own invention; it lives here now, where the live app draws it. */
 
 import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import {
   brokenStorage,
   fakeClipboard,
@@ -19,9 +21,9 @@ import {
   noData,
   plainCompress
 } from '../ports/index.js';
-import type { CompressPort, Env } from '../ports/index.js';
+import type { CloudPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
-import { encodeList, encodeListRaw, toBase64Url } from '../lib/listLink.js';
+import { encodeList, encodeListRaw } from '../lib/listLink.js';
 import type { Loot } from '../lib/data.js';
 import type { StoredList } from '../lib/lists.js';
 
@@ -68,19 +70,20 @@ const readLists = (storage: { get: (k: string) => string | null }): StoredList[]
   JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
 
 describe('the head and the panel', () => {
-  it('draws the heading, the folded notice, both fields and the empty state', async () => {
+  it('draws the heading, the create field, the folded notice and the empty state', async () => {
     const { container } = render(App, { env: at() });
     expect(screen.getByRole('heading', { level: 1, name: 'Списки' })).toBeInTheDocument();
     expect(screen.getByText('Списки живут только в этом браузере.')).toBeInTheDocument();
     expect(screen.getByText('подробнее')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Скрыть' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Например: клад дракона')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Ссылка на список')).toBeInTheDocument();
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
     expect(screen.getByText('Списков пока нет — создайте первый выше')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
-  it('opens the four help paragraphs, two of them with two bold runs', async () => {
+  it('opens the five help paragraphs, two of them with two bold runs', async () => {
     render(App, { env: at() });
     await userEvent.click(screen.getByRole('button', { name: 'Как это работает' }));
     expect(screen.getByText('Для игроков')).toBeInTheDocument();
@@ -290,118 +293,7 @@ describe('deleting a list', () => {
   });
 });
 
-describe('restoring a list', () => {
-  const fixture: StoredList = {
-    id: 'x',
-    name: 'Оружейная',
-    ids: ['ci1'],
-    created: 1,
-    meta: { ci1: { qty: 2 } }
-  };
-
-  it('takes a full link, navigates to it, and stores the name, ids and meta', async () => {
-    const router = memoryRouter('#/lists');
-    const storage = memoryStorage();
-    const payload = encodeList(fixture, true);
-    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), storage }) });
-
-    await userEvent.type(screen.getByPlaceholderText('Ссылка на список'), '#/l/' + payload);
-    await userEvent.click(screen.getByRole('button', { name: 'Восстановить' }));
-
-    expect(router.hash()).toBe('#/l/' + payload);
-    const stored = readLists(storage);
-    expect(stored[0]?.name).toBe('Оружейная');
-    expect(stored[0]?.ids).toEqual(['ci1']);
-    expect(stored[0]?.meta).toEqual({ ci1: { qty: 2 } });
-  });
-
-  it('takes a bare payload with no #/l/ prefix', async () => {
-    const router = memoryRouter('#/lists');
-    const storage = memoryStorage();
-    const payload = encodeList(fixture, true);
-    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), storage }) });
-
-    await userEvent.type(screen.getByPlaceholderText('Ссылка на список'), payload);
-    await userEvent.click(screen.getByRole('button', { name: 'Восстановить' }));
-
-    expect(router.hash()).toBe('#/l/' + payload);
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1']);
-  });
-
-  it('takes a packed payload through a compress port whose unpack maps it to the plain one', async () => {
-    /* No real deflate here - what matters is that `unpack` runs before
-       `decodeList`, not the compression itself, which `ports.test.ts` already
-       covers against the real stream. */
-    const plain = encodeList(fixture, true);
-    const compress: CompressPort = {
-      available: () => true,
-      pack: () => Promise.resolve('~' + plain),
-      unpack: (payload) => Promise.resolve(payload.startsWith('~') ? payload.slice(1) : payload)
-    };
-    const router = memoryRouter('#/lists');
-    const storage = memoryStorage();
-    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), storage, compress }) });
-
-    await userEvent.type(screen.getByPlaceholderText('Ссылка на список'), '#/l/~' + plain);
-    await userEvent.click(screen.getByRole('button', { name: 'Восстановить' }));
-
-    expect(router.hash()).toBe('#/l/' + plain);
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1']);
-  });
-
-  it('passes money, note and hnote through instead of dropping them, and toasts the dropped-id count', async () => {
-    const withNotes: StoredList = {
-      id: 'x',
-      name: 'Оружейная',
-      ids: ['ci1', 'zzz999'],
-      created: 1,
-      money: 'coin',
-      note: 'Для игроков',
-      hnote: 'Только для мастера'
-    };
-    const router = memoryRouter('#/lists');
-    const storage = memoryStorage();
-    /* The players' link, off which restore() is meant to work too - it never
-       carries hnote, so that field's absence below is that shape, not a bug. */
-    const payload = encodeList(withNotes, true);
-    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), storage }) });
-
-    await userEvent.type(screen.getByPlaceholderText('Ссылка на список'), '#/l/' + payload);
-    await userEvent.click(screen.getByRole('button', { name: 'Восстановить' }));
-
-    const stored = readLists(storage)[0];
-    expect(stored?.money).toBe('coin');
-    expect(stored?.note).toBe('Для игроков');
-    expect(stored?.hnote).toBeUndefined();
-    expect(
-      screen.getByText('Пропущено позиций, которых больше нет в данных: 1')
-    ).toBeInTheDocument();
-  });
-
-  it('restores a link whose every entry is gone as an empty list, toasting the dropped count', async () => {
-    const router = memoryRouter('#/lists');
-    const storage = memoryStorage();
-    const payload = toBase64Url('Пропавшее\nzzz1,zzz2');
-    render(App, { env: fakeEnv({ router, data: fakeData(LOOT), storage }) });
-
-    await userEvent.type(screen.getByPlaceholderText('Ссылка на список'), '#/l/' + payload);
-    await userEvent.click(screen.getByRole('button', { name: 'Восстановить' }));
-
-    const stored = readLists(storage);
-    expect(stored).toHaveLength(1);
-    expect(stored[0]?.name).toBe('Пропавшее');
-    expect(stored[0]?.ids).toEqual([]);
-    expect(router.hash()).toMatch(/^#\/l\//);
-    expect(screen.getByRole('heading', { level: 1, name: 'Пропавшее' })).toBeInTheDocument();
-    expect(
-      screen.getByText('Пропущено позиций, которых больше нет в данных: 2')
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText('Ссылка повреждена или собрана в другой версии данных.')
-    ).not.toBeInTheDocument();
-    await expectNoA11yViolations(document.body);
-  });
-
+describe('opening a list', () => {
   it("opens an empty list from its card, through the card's own link", async () => {
     const router = memoryRouter('#/lists');
     render(App, {
@@ -421,18 +313,6 @@ describe('restoring a list', () => {
     expect(
       screen.queryByText('Ссылка повреждена или собрана в другой версии данных.')
     ).not.toBeInTheDocument();
-  });
-
-  it('toasts badShare as an alert for garbage', async () => {
-    render(App, { env: at() });
-    await userEvent.type(
-      screen.getByPlaceholderText('Ссылка на список'),
-      'not a link at all, just words'
-    );
-    await userEvent.click(screen.getByRole('button', { name: 'Восстановить' }));
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Ссылка повреждена или собрана в другой версии данных.'
-    );
   });
 });
 
@@ -622,5 +502,204 @@ describe('a dataset that did not load', () => {
     expect(
       screen.queryByText('Списков пока нет — создайте первый выше')
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('with sign-in configured', () => {
+  const withCloud = (cloud: CloudPort, over: Partial<Env> = {}) => {
+    const router = memoryRouter('#/lists');
+    const dialog = fakeDialog();
+    const view = render(App, { env: at({ router, dialog, cloud, ...over }) });
+    return { ...view, router, dialog };
+  };
+  const groupNames = (container: HTMLElement): string[] =>
+    [...container.querySelectorAll('h2')].map((h) => h.textContent);
+
+  it('draws the prompt as the panel signed out, and «Войти» opens the account page', async () => {
+    const { container, router } = withCloud(fakeCloud(SEED));
+    const button = await screen.findByRole('button', { name: 'Войти' });
+    expect(screen.getByRole('heading', { level: 2, name: 'Новый список' })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Войдите, чтобы создавать списки: они хранятся в аккаунте и открываются на любом устройстве.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Войти через/ })).not.toBeInTheDocument();
+    /* No local lists and working storage: no browser group, no notice. */
+    expect(screen.queryByText('Списки живут только в этом браузере.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Списков пока нет — создайте первый выше')
+    ).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.click(button);
+    expect(router.hash()).toBe('#/account');
+  });
+
+  it("keeps this browser's cards with the notice, and no group heading, signed out", async () => {
+    const { container } = withCloud(fakeCloud(SEED), {
+      storage: memoryStorage({ 'dhloot.lists.v2': TWO })
+    });
+    await screen.findByRole('button', { name: 'Войти' });
+    expect(cardNames(container)).toEqual(['Клад дракона', 'Лавка в порту']);
+    expect(groupNames(container)).toEqual(['Новый список']);
+    expect(screen.getByText('Списки живут только в этом браузере.')).toBeInTheDocument();
+  });
+
+  it('still says the stored lists could not be read, signed out', async () => {
+    withCloud(fakeCloud(SEED), { storage: memoryStorage({ 'dhloot.lists.v2': '{' }) });
+    expect(
+      await screen.findByText('Сохранённые списки не удалось прочитать.')
+    ).toBeInTheDocument();
+  });
+
+  it('draws no panel while the session is unknown', () => {
+    const cloud = fakeCloud(SEED);
+    cloud.auth.session = () => new Promise(() => undefined);
+    withCloud(cloud);
+    expect(screen.queryByRole('button', { name: 'Войти' })).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
+  });
+
+  it('draws the account group newest edit first, then this browser with its notice', async () => {
+    const { container } = withCloud(fakeCloud(SEED, 'gm1'), {
+      storage: memoryStorage({ 'dhloot.lists.v2': TWO })
+    });
+    await screen.findByText('Пустой список');
+    expect(groupNames(container)).toEqual(['Ваш аккаунт', 'Этот браузер']);
+    expect(cardNames(container)).toEqual([
+      'Пустой список',
+      'Лавка кузнеца',
+      'Трофеи',
+      'Клад дракона',
+      'Лавка в порту'
+    ]);
+    expect(
+      [...container.querySelectorAll('.listcard-edited')].map((p) => p.textContent)
+    ).toEqual(['изменён 1 час назад', 'изменён 3 дня назад', 'изменён в прошлом месяце']);
+    const shop = screen.getByRole('link', {
+      name: 'Лавка кузнеца, 1 позиция, изменён 3 дня назад'
+    });
+    expect(shop).toHaveAttribute('href', '#/lists/00000000-0000-4000-8000-000000000101');
+    /* An account card has one action: delete. */
+    const acts = shop.parentElement?.querySelectorAll('.listcard-acts button');
+    expect([...(acts ?? [])].map((b) => b.textContent)).toEqual(['Удалить']);
+    const browser = container.querySelectorAll('.group')[1];
+    expect(browser?.textContent).toContain('Списки живут только в этом браузере.');
+    await expectNoA11yViolations(container);
+  });
+
+  it('moves «изменён N назад» with the 45 s clock while the index stays open', async () => {
+    vi.useFakeTimers({
+      now: new Date('2026-09-25T12:00:00Z'),
+      toFake: ['Date', 'setInterval', 'clearInterval']
+    });
+    try {
+      const cloud = fakeCloud(SEED, 'gm1');
+      const { container } = withCloud(cloud);
+      await screen.findByText('Пустой список');
+      const edited = (): (string | null)[] =>
+        [...container.querySelectorAll('.listcard-edited')].map((p) => p.textContent);
+      expect(edited()[0]).toBe('изменён 1 час назад');
+      const read = vi.spyOn(cloud.lists, 'list');
+      await vi.advanceTimersByTimeAsync(3_600_000);
+      await waitFor(() => {
+        expect(edited()[0]).toBe('изменён 2 часа назад');
+      });
+      const answers = await Promise.all(read.mock.results.map((r) => r.value as unknown));
+      expect(answers.every((a) => JSON.stringify(a) === JSON.stringify(answers[0]))).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('creates an account list, first in the account group', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { container } = withCloud(cloud);
+    await screen.findByText('Список второго ГМа');
+    await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    expect(cardNames(container)).toEqual(['Тайник', 'Список второго ГМа']);
+    expect(screen.getByText('Список «Тайник» создан')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Тайник/ })).toHaveAttribute(
+      'href',
+      '#/lists/00000000-0000-4000-8000-000000005000'
+    );
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      expect(read.ok && read.lists.map((l) => l.name)).toContain('Тайник');
+    });
+  });
+
+  it('deletes an account list after a confirm that names its links, with no undo', async () => {
+    const { container, dialog } = withCloud(fakeCloud(SEED, 'gm1'));
+    await screen.findByText('Трофеи');
+    const trophies = screen.getByRole('link', { name: /Трофеи/ });
+    const del = trophies.parentElement?.querySelector('.listcard-acts button');
+    await userEvent.click(del as HTMLElement);
+    expect(dialog.asked).toEqual([
+      'Удалить список «Трофеи»? Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.'
+    ]);
+    expect(cardNames(container)).toEqual(['Пустой список', 'Лавка кузнеца']);
+    expect(screen.getByText('Список «Трофеи» удалён')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Вернуть' })).not.toBeInTheDocument();
+  });
+
+  it('keeps an account list when the confirm is refused', async () => {
+    const { container } = withCloud(fakeCloud(SEED, 'gm1'), { dialog: fakeDialog(false) });
+    await screen.findByText('Трофеи');
+    const del = screen
+      .getByRole('link', { name: /Трофеи/ })
+      .parentElement?.querySelector('.listcard-acts button');
+    await userEvent.click(del as HTMLElement);
+    expect(cardNames(container)).toContain('Трофеи');
+  });
+
+  it('says loading, then a failed read with a retry that loads', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    const { container } = withCloud(cloud);
+    expect(await screen.findByText('Не получилось загрузить списки аккаунта.')).toBeVisible();
+    await expectNoA11yViolations(container);
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    expect(await screen.findByText('Лавка кузнеца')).toBeInTheDocument();
+  });
+
+  it('says loading while the first read is in flight, and none when the account is empty', async () => {
+    const slow = fakeCloud(SEED, 'gm1');
+    slow.lists.list = () => new Promise(() => undefined);
+    withCloud(slow);
+    expect(await screen.findByText('Загружаем...')).toBeInTheDocument();
+    cleanup();
+    const empty = fakeCloud(SEED, 'gm1');
+    empty.lists.list = () => Promise.resolve({ ok: true, lists: [] });
+    withCloud(empty);
+    expect(
+      await screen.findByText('В аккаунте пока нет списков - создайте первый выше.')
+    ).toBeInTheDocument();
+  });
+
+  it('filters both groups with one box and folds them as one sequence', async () => {
+    const { container } = withCloud(fakeCloud(SEED, 'gm1'), {
+      storage: memoryStorage({ 'dhloot.lists.v2': many(30, ['Лавка у моря']) })
+    });
+    await screen.findByText('Лавка кузнеца');
+    expect(container.querySelectorAll('.listcard')).toHaveLength(24);
+    expect(cardNames(container).slice(0, 4)).toEqual([
+      'Пустой список',
+      'Лавка кузнеца',
+      'Трофеи',
+      'Лавка у моря'
+    ]);
+    await userEvent.click(screen.getByRole('button', { name: 'Показать ещё (9)' }));
+    expect(container.querySelectorAll('.listcard')).toHaveLength(33);
+    expect(document.activeElement).toBe(container.querySelectorAll('.listcard-main')[24]);
+
+    await userEvent.type(findBox(), 'лавк');
+    expect(cardNames(container)).toEqual(['Лавка кузнеца', 'Лавка у моря']);
+    await userEvent.clear(findBox());
+    await userEvent.type(findBox(), 'zzz');
+    expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
+    expect(container.querySelectorAll('.listcard')).toHaveLength(0);
   });
 });

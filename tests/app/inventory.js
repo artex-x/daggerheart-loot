@@ -24,7 +24,11 @@
  * (`?as=<user>`, the test build only - docs/specs/COVERAGE.md, "Test
  * layers"); its id ends ` as <user>` and golden.js writes `# as: <user>`
  * into its header. A state without `as` is signed out and says nothing, so
- * no golden written before signed-in states existed moves.
+ * no golden written before signed-in states existed moves. The test build
+ * always has the fake cloud, so a signed-out state that would create a list
+ * draws the sign-in prompt instead; the states that create one run `as gm2`
+ * (docs/DECISIONS.md, 2026-09-25, "The browser suites' signed-out states draw
+ * the sign-in prompt ...").
  * tests/app/golden.test.mjs pins the id convention both ways.
  */
 
@@ -108,7 +112,6 @@ const NAME = {
     clearSel: 'Снять выделение',
     share: 'Поделиться',
     del: 'Удалить',
-    restore: 'Восстановить',
     note: 'Заметка',
     removeItem: 'Убрать из списка',
     undo: 'Вернуть',
@@ -154,7 +157,6 @@ const NAME = {
     clearSel: 'Clear selection',
     share: 'Share',
     del: 'Delete',
-    restore: 'Restore',
     note: 'Note',
     removeItem: 'Remove from the list',
     undo: 'Undo',
@@ -181,6 +183,11 @@ const NAME = {
 };
 
 const LANGS = ['ru', 'en'];
+
+/** The fake seed's `gm1` list «Лавка кузнеца», `uuid(101)`, with both share links. */
+const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
+/** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
+const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
 
 /* Storage seeds for the list states below. A state that needs a list to
    exist cannot be entered - every state opens a fresh page whose `prepare()`
@@ -411,11 +418,32 @@ const STATES = [
   {
     id: '#/i/ci1 ~ new list',
     route: '#/i/ci1',
-    why: 'the inline form, both apps focusing the same input',
+    why: 'signed out: the sign-in prompt in the new-list slot - one line, «Войти» and «Отмена», no provider buttons; the browser lists stay pickable',
     storage: two,
     enter: async (d) => {
       await d.click('Добавить в список');
       await d.click('+ Новый список');
+    }
+  },
+  {
+    id: '#/i/ci1 ~ new list as gm2',
+    route: '#/i/ci1',
+    as: 'gm2',
+    why: 'signed in: the inline form, focused, over the account list and the browser lists',
+    storage: two,
+    enter: async (d) => {
+      await d.click('Добавить в список');
+      await d.click('+ Новый список');
+    }
+  },
+  {
+    id: '#/i/ci1 ~ list menu as gm1',
+    route: '#/i/ci1',
+    as: 'gm1',
+    why: "one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest, account and browser lists together",
+    storage: two,
+    enter: async (d) => {
+      await d.click('Добавить в список');
     }
   },
   {
@@ -428,8 +456,9 @@ const STATES = [
     }
   },
   {
-    id: '#/i/ci1 ~ new list from a search',
+    id: '#/i/ci1 ~ new list from a search as gm2',
     route: '#/i/ci1',
+    as: 'gm2',
     why: 'the new-list form started with the query nothing matched',
     storage: twelve,
     enter: async (d) => {
@@ -648,7 +677,7 @@ const STATES = [
     // divergence is never reached. With no lists seeded, Самоцвет Чутья
     // sits inside the 17px band at 1100 where the rewrite re-measures the
     // menu from its already-flipped side and sends it under the card's edge.
-    why: "the new-list form inside the modal, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card's edge",
+    why: "signed out: the sign-in prompt in the new-list slot of the modal's menu, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card's edge",
     enter: async (d) => {
       await d.click('Самоцвет Чутья');
       await d.click('Добавить в список');
@@ -920,12 +949,29 @@ const STATES = [
   {
     id: '#/lists',
     route: '#/lists',
-    why: 'the folded notice, both fields, no lists yet'
+    why: 'signed out, no lists: the panel is the sign-in prompt, no browser group, no notice'
+  },
+  {
+    id: '#/lists as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: "«Ваш аккаунт»: gm1's three lists newest edit first with «изменён N назад» and one «Удалить» each; then «Этот браузер» with the notice at its head and the two browser cards",
+    storage: two
+  },
+  {
+    id: '#/lists ~ load failed',
+    route: '#/lists',
+    why: 'signed in with no network: the account group says the read failed and offers «Повторить»',
+    enter: async (d) => {
+      await d.fake('setOffline', true);
+      await d.fake('auth.signIn', 'google');
+      await d.settle();
+    }
   },
   {
     id: '#/lists ~ two lists',
     route: '#/lists',
-    why: 'a card with six thumbs and a badge of 7, and an empty card',
+    why: 'signed out: the prompt panel, then a card with six thumbs and a badge of 7 and an empty card under the notice',
     storage: seven
   },
   {
@@ -949,15 +995,16 @@ const STATES = [
   {
     id: '#/lists ~ help',
     route: '#/lists',
-    why: 'the four paragraphs, two of them with two bold runs each',
+    why: 'the five paragraphs, the third and fifth with two bold runs each and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth when #/l/ links stop opening',
     enter: async (d) => {
       await d.click('Как это работает');
     }
   },
   {
-    id: '#/lists ~ created',
+    id: '#/lists ~ created as gm2',
     route: '#/lists',
-    why: 'the new card first, the field cleared, the toast',
+    as: 'gm2',
+    why: 'the new account list first in «Ваш аккаунт», «изменён только что», the field cleared, the toast',
     enter: async (d) => {
       await d.type('Например: клад дракона', 'Тайник');
       await d.click('Создать');
@@ -1006,6 +1053,61 @@ const STATES = [
     enter: async (d) => {
       await d.type('Найти список', 'zzz');
     }
+  },
+
+  /* An account list's page: the address kept, no link buttons, no notice,
+     and the save status in the sub. */
+  {
+    id: SHOP + ' as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: '«Лавка кузнеца»: «9 позиций · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», no storage notice, coins, both list notes open'
+  },
+  {
+    id: SHOP + ' ~ share as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: '«Поделиться» pressed and expanded: the panel with both seed links, «Скопировать» and «Удалить ссылку» in each row, and the hint',
+    enter: async (d) => {
+      await d.click('Поделиться');
+    }
+  },
+  {
+    id: SHOP + ' ~ share deleted as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: 'the GM row after «Удалить ссылку»: «Ссылка удалена» and «Создать ссылку» alone and focused; the players row unchanged; the toast',
+    enter: async (d) => {
+      await d.click('Поделиться');
+      await d.click('Удалить ссылку', 1);
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: TROPHIES + ' ~ share as gm1',
+    route: TROPHIES,
+    as: 'gm1',
+    why: 'a list with no link: both links made on open, #/s/share-token-1 for players and #/s/share-token-2 for the GM',
+    enter: async (d) => {
+      await d.click('Поделиться');
+    }
+  },
+  {
+    id: SHOP + ' ~ not saved as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: 'an edit with no network: «Не сохранено» in the danger colour and «Повторить» in the sub, the edit kept on screen, «Поделиться» folded',
+    enter: async (d) => {
+      await d.fake('setOffline', true);
+      await d.type('Например: лавка закрыта до утра', 'Открыта с рассвета до полуночи.');
+      await d.settle();
+    }
+  },
+  {
+    id: SHOP,
+    route: SHOP,
+    why: 'signed out on an account address: «Список не найден», the line asking to sign in, one «Войти»'
   },
 
   /* The list page, off `renderOneList` and everything it draws in the
@@ -1175,18 +1277,18 @@ const STATES = [
     route: '#/l/' + QTY_AND_PRICE.player.payload,
     storage: two,
     why:
-      'a list from another player: heading "Лавка", the sub, the save button, three rows with ' +
-      'their tails (×2; ×5 · price; price), no notes, no bar. Seeded with two lists, which this ' +
-      'page does not draw'
+      'a list from another player: heading "Лавка", the sub, the save button, the line saying ' +
+      '#/l/ links stop opening on 26 October 2026, three rows with their tails (×2; ×5 · price; ' +
+      'price), no notes, no bar. Seeded with two lists, which this page does not draw'
   },
   {
     id: '#/l/ ~ shared, a row ticked',
     route: '#/l/' + QTY_AND_PRICE.player.payload,
     storage: two,
     why:
-      'issue 58: the save button above, row 1 ticked with its take line "Взять [2] из 2" inside ' +
-      'the row, the bar with "Выбрана 1 позиция · 2 шт." and the only "Добавить в список"; no ' +
-      'total, row 1 has no price',
+      'issue 58: the save button above and the 26 October line, row 1 ticked with its take line ' +
+      '"Взять [2] из 2" inside the row, the bar with "Выбрана 1 позиция · 2 шт." and the only ' +
+      '"Добавить в список"; no total, row 1 has no price',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
     }
@@ -1198,7 +1300,7 @@ const STATES = [
     why:
       'all three rows ticked, row 2 taken at 2 of 5: two take lines inside their rows (2 of 2; ' +
       '2 of 5 = 1 мешок), the bar with "Выбрано 3 позиции · 5 шт." and "Итого: 1 мешок 1 ' +
-      'горсть (без цены: 1)", the print link with the taken counts',
+      'горсть (без цены: 1)", the print link with the taken counts, the 26 October line',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
       await d.tick('Доспешный Сшиватель');
@@ -1210,8 +1312,19 @@ const STATES = [
     id: '#/l/ ~ shared, saved',
     route: '#/l/' + QTY_AND_PRICE.player.payload,
     why:
-      'after "Сохранить себе": the own page of the new "Лавка", its player link on the bar, the ' +
-      'toast "Список «Лавка» создан"',
+      'signed out, after "Сохранить себе": the button pressed and the sign-in prompt under it, ' +
+      'the 26 October line under the prompt; no browser list is made',
+    enter: async (d) => {
+      await d.click('Сохранить себе');
+    }
+  },
+  {
+    id: '#/l/ ~ shared, saved as gm2',
+    route: '#/l/' + QTY_AND_PRICE.player.payload,
+    as: 'gm2',
+    why:
+      'signed in, after "Сохранить себе": the new account list "Лавка" at #/lists/<uuid(5000)>, ' +
+      '«Сохранено», «Поделиться», the toast "Список «Лавка» создан"',
     enter: async (d) => {
       await d.click('Сохранить себе');
     },
@@ -1221,7 +1334,7 @@ const STATES = [
   {
     id: '#/l/ ~ shared, noted',
     route: '#/l/' + NOTES_BOTH_KINDS.gm.payload,
-    why: '"Тайник": both list hitnotes above two rows, ci1 with both entry hitnotes under it, no tails'
+    why: '"Тайник": the 26 October line, both list hitnotes above two rows, ci1 with both entry hitnotes under it, no tails'
   },
   {
     id: '#/l/ ~ packed',
@@ -1229,7 +1342,7 @@ const STATES = [
     enter: (d) => d.expanded(),
     why:
       'the packed form, expanded and rewritten to the plain form - pixels identical to ' +
-      '"~ shared, noted"; listAddress proves the rewrite'
+      '"~ shared, noted", the 26 October line included; listAddress proves the rewrite'
   },
   {
     /* Buffer.from('Пропавшее\nzzz1,zzz2').toString('base64url'): a legacy
@@ -1238,7 +1351,8 @@ const STATES = [
     route: '#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg',
     why:
       'a shared link whose every entry left the data: heading "Пропавшее", the sub "0 позиций", ' +
-      'the save button, no rows, the dropped-entries toast (not the bad-link page)',
+      'the save button, the 26 October line, no rows, the dropped-entries toast (not the ' +
+      'bad-link page)',
     timed: true
   },
   {
@@ -1254,6 +1368,55 @@ const STATES = [
     route: '#/l/~AAAA',
     enter: (d) => d.expandFailed(),
     why: 'a packed link that cannot be unpacked: the same bad-link page as #/l/zzzz, address kept'
+  },
+
+  /* An account list's share link, `#/s/<token>`: read-only for everyone, the
+     owner included. The fake resolves its seed tokens in any session. */
+  {
+    id: '#/s/player-token-1',
+    route: '#/s/player-token-1',
+    why: "the players' view signed out: «Лавка кузнеца», the sub, «Обновлено 3 дня назад», «Сохранить себе», the players' list note, nine rows, no GM note, no 26 October line"
+  },
+  {
+    id: '#/s/gm-token-1',
+    route: '#/s/gm-token-1',
+    why: 'the GM view signed out: the same page with the GM notes on the list and on «Проклят.»'
+  },
+  {
+    id: '#/s/player-token-1 as gm1',
+    route: '#/s/player-token-1',
+    as: 'gm1',
+    why: "the owner on their own players' link: «Это ваш список.» and «Открыть для правки» to #/lists/<uuid(101)> above the players' view"
+  },
+  {
+    id: '#/s/gm-token-1 as gm2',
+    route: '#/s/gm-token-1',
+    as: 'gm2',
+    why: 'another user on the GM link: read-only, the GM notes, «Сохранить себе», no own line'
+  },
+  {
+    id: '#/s/player-token-1 ~ saved',
+    route: '#/s/player-token-1',
+    why: 'signed out, after «Сохранить себе»: the button pressed and the sign-in prompt under it',
+    enter: async (d) => {
+      await d.click('Сохранить себе');
+    }
+  },
+  {
+    id: '#/s/gm-token-1 ~ saved as gm2',
+    route: '#/s/gm-token-1',
+    as: 'gm2',
+    why: 'signed in, after «Сохранить себе»: the copy at #/lists/<uuid(5000)> with both GM notes, «Поделиться», the toast «Список «Лавка кузнеца» создан»',
+    enter: async (d) => {
+      await d.click('Сохранить себе');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/s/unknown-token',
+    route: '#/s/unknown-token',
+    why: 'a link that opens nothing: «Список больше не доступен», «Владелец удалил эту ссылку или список.», «На главную»; the address kept'
   },
 
   {

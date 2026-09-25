@@ -9,16 +9,21 @@
  * (app.js 1320-1330). */
 
 import {
+  freshIds,
   keepLists,
   liftNotes,
   mergeLists,
-  moveEntry,
+  movedIds,
+  withEntryAt,
+  withIds,
+  withMeta,
+  withMoney,
+  withNote,
   type LegacyList,
   type StoredList
 } from '../lib/lists.js';
 import type { Dict } from '../lib/dict.js';
 import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
-import { MONEY_DEFAULT } from '../lib/money.js';
 import type { Env } from '../ports/index.js';
 
 const LISTS_KEY = 'dhloot.lists.v2';
@@ -34,7 +39,37 @@ function random36(n: number, random: () => number): string {
   return v.toString(36).padStart(n, '0');
 }
 
-export class ListStore {
+/**
+ * What the list page and the add-to-list menu ask of a store, local or
+ * account (`CloudLists`). Deleting a list stays out: a local delete has an
+ * undo, an account delete a confirm and none.
+ */
+export interface ListModel {
+  get(id: string): StoredList | undefined;
+  rename(id: string, name: string): void;
+  setMeta(
+    id: string,
+    entryId: string,
+    field: 'qty' | 'gold' | 'note' | 'hnote',
+    value: string | number
+  ): void;
+  setNote(id: string, kind: 'note' | 'hnote', text: string): void;
+  setMoney(id: string, mode: MoneyMode): void;
+  move(id: string, entryId: string, to: number): boolean;
+  restoreEntry(id: string, entryId: string, at: number, meta: ListEntryMeta): void;
+  removeEntry(id: string, entryId: string): void;
+  /** Adds what the list lacks and saves; returns the ids added. */
+  add(
+    id: string,
+    ids: readonly string[],
+    knows: (id: string) => boolean,
+    meta?: Readonly<Record<string, ListEntryMeta>>
+  ): string[];
+  /** Whether the last write was taken. */
+  readonly saved: boolean;
+}
+
+export class ListStore implements ListModel {
   /* Raw, not deep: a proxy on every list made each save cost what 200 lists
      weigh (docs/DECISIONS.md, 2026-09-23, "The list store is raw state...").
      A writer must replace the array and the list it changes, never mutate. */
@@ -258,27 +293,24 @@ export class ListStore {
     knows: (id: string) => boolean,
     meta?: Readonly<Record<string, ListEntryMeta>>
   ): string[] {
-    const fresh = ids.filter((id) => knows(id) && !list.ids.includes(id));
+    const fresh = freshIds(list, ids, knows);
     if (fresh.length) {
-      this.lists = this.lists.map((l) => {
-        if (l.id !== list.id) return l;
-        const next: StoredList = { ...l, ids: [...l.ids, ...fresh] };
-        if (meta) {
-          const nextMeta: Record<string, ListEntryMeta> = { ...(l.meta ?? {}) };
-          for (const id of fresh) {
-            const m = meta[id];
-            if (!m) continue;
-            const entry: ListEntryMeta = {};
-            if (typeof m.qty === 'number' && m.qty > 1) entry.qty = m.qty;
-            if (typeof m.gold === 'number' && m.gold > 0) entry.gold = m.gold;
-            if (m.note) entry.note = m.note;
-            if (Object.keys(entry).length) nextMeta[id] = entry;
-          }
-          if (Object.keys(nextMeta).length) next.meta = nextMeta;
-        }
-        return next;
-      });
+      this.lists = this.lists.map((l) => (l.id === list.id ? withIds(l, fresh, meta) : l));
     }
+    return fresh;
+  }
+
+  /** `addIds` and the save, by the list's id; nothing for an id no list has. */
+  add(
+    id: string,
+    ids: readonly string[],
+    knows: (id: string) => boolean,
+    meta?: Readonly<Record<string, ListEntryMeta>>
+  ): string[] {
+    const l = this.get(id);
+    if (!l) return [];
+    const fresh = this.addIds(l, ids, knows, meta);
+    this.save();
     return fresh;
   }
 
@@ -322,46 +354,21 @@ export class ListStore {
     field: 'qty' | 'gold' | 'note' | 'hnote',
     value: string | number
   ): void {
-    this.lists = this.lists.map((l) => {
-      if (l.id !== id) return l;
-      const meta: Record<string, ListEntryMeta> = { ...(l.meta ?? {}) };
-      const m: ListEntryMeta = { ...meta[entryId] };
-      if (value) m[field] = value as never;
-      else Reflect.deleteProperty(m, field);
-      if (Object.keys(m).length) meta[entryId] = m;
-      else Reflect.deleteProperty(meta, entryId);
-      const next: StoredList = { ...l };
-      if (Object.keys(meta).length) next.meta = meta;
-      else Reflect.deleteProperty(next, 'meta');
-      return next;
-    });
+    this.lists = this.lists.map((l) => (l.id === id ? withMeta(l, entryId, field, value) : l));
     this.save();
   }
 
   /** The live list-note writer (app.js 4421-4430): trimmed, and a blank value
    *  deletes the key rather than storing an empty string. */
   setNote(id: string, kind: 'note' | 'hnote', text: string): void {
-    const v = text.trim();
-    this.lists = this.lists.map((l) => {
-      if (l.id !== id) return l;
-      const next: StoredList = { ...l };
-      if (v) next[kind] = v;
-      else Reflect.deleteProperty(next, kind);
-      return next;
-    });
+    this.lists = this.lists.map((l) => (l.id === id ? withNote(l, kind, text) : l));
     this.save();
   }
 
   /** The live money-mode writer (app.js 4086-4094): the default mode is not
    *  stored at all. */
   setMoney(id: string, mode: MoneyMode): void {
-    this.lists = this.lists.map((l) => {
-      if (l.id !== id) return l;
-      const next: StoredList = { ...l };
-      if (mode === MONEY_DEFAULT) delete next.money;
-      else next.money = mode;
-      return next;
-    });
+    this.lists = this.lists.map((l) => (l.id === id ? withMoney(l, mode) : l));
     this.save();
   }
 
@@ -369,12 +376,8 @@ export class ListStore {
    *  only then - the live `moveToInList` (app.js 1223-1231). */
   move(id: string, entryId: string, to: number): boolean {
     const l = this.get(id);
-    if (!l) return false;
-    const from = l.ids.indexOf(entryId);
-    if (from < 0) return false;
-    const clamped = Math.max(0, Math.min(to, l.ids.length - 1));
-    if (from === clamped) return false;
-    const ids = moveEntry(l.ids, from, to);
+    const ids = l ? movedIds(l, entryId, to) : null;
+    if (!ids) return false;
     this.lists = this.lists.map((x) => (x.id === id ? { ...x, ids } : x));
     this.save();
     return true;
@@ -385,14 +388,7 @@ export class ListStore {
    *  is non-empty. A second undo (the entry already back) is a no-op, as the
    *  live handler's own guard makes it. */
   restoreEntry(id: string, entryId: string, at: number, meta: ListEntryMeta): void {
-    this.lists = this.lists.map((l) => {
-      if (l.id !== id || l.ids.includes(entryId)) return l;
-      const ids = [...l.ids];
-      ids.splice(Math.min(at, ids.length), 0, entryId);
-      const next: StoredList = { ...l, ids };
-      if (Object.keys(meta).length) next.meta = { ...(l.meta ?? {}), [entryId]: meta };
-      return next;
-    });
+    this.lists = this.lists.map((l) => (l.id === id ? withEntryAt(l, entryId, at, meta) : l));
     this.save();
   }
 

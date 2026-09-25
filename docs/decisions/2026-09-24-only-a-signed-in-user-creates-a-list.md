@@ -1,5 +1,6 @@
 # 2026-09-24 - Only a signed-in user creates a list, from the lists release on
 
+- Amended by "The browser suites' signed-out states draw the sign-in prompt, and the goldens capture it" (2026-09-25).
 - Task: `persistent-storage` (owner decision, 2026-09-24).
 - Decision: once cloud lists ship, an anonymous visitor creates no list:
   "New list", "Add to list" and "Save a copy" draw a sign-in prompt in the

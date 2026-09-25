@@ -56,6 +56,11 @@ const EVENT = 'PostToolUse';
 
 const FAILURE_MARKERS = [/npm error/i, /ELIFECYCLE/, /\bFAILED\b/, /Tests\s+\d+\s+failed/];
 
+// vitest's `text-summary` coverage block, the last thing a passing check
+// prints: its banner and its `Lines` row.
+const COVERAGE_SUMMARY_RE = /^=+ Coverage summary =+\s*$/m;
+const COVERAGE_LINES_RE = /^Lines\s*:\s*[\d.]+%/m;
+
 // 'status' and 'exitStatus' are not field names any host is known to use.
 // They are listed so an unrecognised *numeric failure* field cannot read as
 // "field absent, assume a pass". `exit_code` is the documented one.
@@ -71,9 +76,9 @@ const EXIT_CODE_FIELDS = [
 /**
  * True only when the observed stdout can actually have come from a real
  * `npm run check`. Matching the raw command let three shapes of false pass
- * through: `npm run check > o.txt 2>&1 || true; grep "All files" o.txt`
+ * through: `npm run check > o.txt 2>&1 || true; grep "Coverage summary" o.txt`
  * (the check failed; grep supplied the pass-shaped output),
- * `echo "npm run check says All files"`, and anything else that merely
+ * `echo "npm run check says Coverage summary"`, and anything else that merely
  * mentions the command. So:
  *   - the command must not chain, background or command-substitute, because
  *     then the stdout may belong to some later segment;
@@ -218,10 +223,10 @@ guard(() => {
     );
   }
 
-  if (!stdout.includes('All files')) {
+  if (!COVERAGE_SUMMARY_RE.test(stdout) || !COVERAGE_LINES_RE.test(stdout)) {
     return speak(
       EVENT,
-      `npm run check: no failure seen${code}, but its coverage table never reached this hook, so the run cannot be attributed and the commit gate is not armed. Run it plainly - \`rtk npm run check\`, no pipe and no redirect.`
+      `npm run check: no failure seen${code}, but its coverage summary never reached this hook, so the run cannot be attributed and the commit gate is not armed. Run it plainly - \`rtk npm run check\`, no pipe and no redirect.`
     );
   }
 

@@ -168,11 +168,11 @@ Host and tool facts behind this design, kept so nobody re-derives them:
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. In a cloud session (`CLAUDE_CODE_REMOTE=true`) also runs seven probes - Node against `.nvmrc`, `docker info` (3 s), the puppeteer cache, `node_modules`, `gitleaks version` and `rtk --version` (2 s each), and the proxy's authorities in `~/.pki/nssdb` (`bash .claude/cloud-nss.sh --check`, 3 s: every CA by sha256 fingerprint; on a failure it names `bash .claude/cloud-nss.sh`) - each "ok" or what failed, and states the three cloud rules ("Cloud sessions"). `LOOT_SKIP_PROBES=1` (selftest) reads each probe as "skipped". | warn (informational) |
-| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push` is allowed only with `--project test` and no other `--project`. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (the tools' own entry), `npx`, `npm exec` or `npm x` (past their flags, a `-p`/`--package` value and a bare `--`), or `rtk`; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
+| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push`/`limits:set` is allowed only with `--project test` and no other `--project`; the script is read past a leading `rtk`, npm's flags on either side of the verb (`-s`, `--silent`, `-q`, `--loglevel <v>` or `=<v>`, any other `-` token; before the verb, any other `--name` without `=` takes the next token as its value unless that token is a verb or a flag, so `npm --registry x run db:push` is judged) and the verbs `run`, `run-script`, `rum` and `urn`. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (the tools' own entry), a package runner - `npx`, `bunx`, `pnpx`, `npm exec`/`x`, `pnpm exec`/`dlx`, `yarn exec`/`dlx`, `bun x` (past its flags, a `-p`/`--package` value and a bare `--`) - or `rtk`; **2p** (after 2i) denies a `git rm`, `git mv`, `rm` or `mv` whose positional token is a `supabase/migrations/<file>` that a remote-tracking ref holds, with edit-guard's lookup, fetch and message (a deletion or a rename never reaches an Edit-family tool); a source token that is a directory at, under or above `supabase/migrations/` expands to the migrations under it, and a glob in a token's last segment (`*` or `?`) expands against its parent directory, because the shell expands it only after the hook has judged the command; a move's destination directory only receives and is not expanded; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
 arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` (plain or `rtk`-prefixed), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
-| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). No file records applied migrations; a repository with no remote ref, or a git failure, blocks no migration. | **block** |
+| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git fetch --quiet origin` first when a remote `origin` exists - 5 s at most, `GIT_TERMINAL_PROMPT=0`, so a push from another clone is seen - then `git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). `lib.mjs`'s `remoteRefsHoldingMigration` is the lookup, shared with rule 2p. No file records applied migrations; a failed or slow fetch reads the local refs as they are, and a repository with no remote ref, or a git failure, blocks no migration (fail open). | **block** |
 | `PostToolUse` | `Bash\|PowerShell` | `check-observer.mjs` | `npm run check:db` from either tool: reads the output from `tool_response.stdout`, else `.output`, else a string response, plus `stderr`; a `check:db: PASS` line writes `.check-db-cache.json` and says "Commit gate armed for supabase/ and tests/db/", a `check:db: FAIL` line or a failure marker says FAIL, neither says it cannot attribute the run. `npm run check` arms from Bash only, as follows. Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` or `cd <dir>;` (PowerShell 5.1 has no `&&`), `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and a write under `docs/decisions/` -> `node tools/decisions.js` (`remind:decisions`). Known false-positive, kept as a nag rather than fixed: it tests `p.startsWith('docs/fixtures/')`, so it fires its public-contract reminder on any write under `docs/fixtures/share/`, which is not itself a contract surface (`CONTRACTS.md` enumerates only `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`) - the reminder firing there is not evidence a contract moved. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
@@ -275,15 +275,24 @@ Each part is load-bearing:
   timeout cannot finish in the foreground. 600000 is the tool's
   maximum; a check that outlives even that is the fork-pool stall
   below, not a timeout problem.
-- **Measured with `rtk`, it now crosses the output cap.** A result over about
+- **Measured with `rtk`, it crossed the output cap until 2026-09-25.** A result over about
   30,000 characters is not shown - the tool saves it to
   `tool-results/<id>.txt` and names the path. `rtk npm run check`'s full
   output (both stdout and stderr, unpiped) measured 21,382 characters
   across 361 lines on this host (`rtk-coverage` remediation,
   2026-09-18), and 31.2 KB on 2026-09-24 once `tools/supabase/lib.test.mjs`
-  joined the chain. The observer still sees the whole stdout and arms the
-  gate, and its PASS line still reaches the transcript; grep the persisted
-  file for `All files` or `fail` rather than re-running the check - the deleted parity
+  joined the chain. On 2026-09-25 on this host it printed 34.4 KB: the
+  result was persisted and `check-observer.mjs` did not arm the gate. The
+  same day vitest's coverage reporter became `text-summary` only (the
+  per-file table was 4.9 KB): 29.6 KB, still persisted. The `node --test`
+  steps then took `--test-reporter=dot` (one dot per test; a failure still
+  prints in full): about 3 KB, shown inline, and the observer armed. The
+  observer's marker is the summary block (`= Coverage summary =` and its
+  `Lines` row); the per-file table prints with `npx vitest run --coverage
+  --coverage.reporter=text`. If a result is persisted again, grep the
+  persisted file for `Coverage summary` or `fail` rather than re-running the
+  check, and commit a green run as the first bullet of "More host facts
+  about a long check" says - the deleted parity
   harness hit the same cap from its diff lines carrying a page's whole
   text; nothing that survives R0c produces a single line that large,
   but the technique still applies if something ever does.
@@ -309,8 +318,14 @@ The first run pulls the images (measured 2026-09-24: `supabase start` with
 the excludes took 288 s, pulling the `postgres` and `gotrue` images); a warm
 run takes about a minute (`db reset --local` plus the suite; the four
 `db dump --local` snapshots of the fixture gate cost about 4 s each). With
-the reversibility base check (two more `db reset --local`) a run took 220 s,
-140 s of it the base check (2026-09-25). Its
+one `db reset --local` per migration in the reversibility base check, seven
+migrations took 723 s (2026-09-25), past the tool's 600 s cap. Since the
+base check walks forward from one reset (`docs/DECISIONS.md`, 2026-09-25),
+a run resets three times whatever the migration count (the runner, the
+applier test, the walk): seven migrations took 192-203 s wall clock, the
+suite about 146 s of it, 72-76 s the walk (measured 2026-09-25 on this
+host); each
+new migration adds about 10 s. Its
 last stdout line is `check:db: PASS` or `check:db: FAIL`, and
 `check-observer.mjs` arms the `supabase/` and `tests/db/` commit rule from
 the PASS line. The observer matches the command at its start, so a run
@@ -511,7 +526,18 @@ Re-measured on this host on 2026-09-25, at the end of the accounts release:
 `npm run check` 348 s (vitest with coverage 200 s of it, 52 files and 1517
 tests; the hook selftest 719 cases), `npm run check:built` 19 s, `node
 tests/run-all.js app/states` 197 s. The check has grown with its suites, so
-plan by these figures, not by the table's 165 s.
+plan by these figures, not by the table's 165 s. `npm run e2e` runs end to
+end on this host too: 50 s on 2026-09-25, F0-F7 in Chrome. Its configured
+build runs `npm` through a shell on Windows (`npm.cmd`; without the shell
+the spawn failed with ENOENT and the run stopped at "the configured build
+failed").
+
+Re-measured on this host on 2026-09-26, at the end of the lists release:
+vitest with coverage 156 s (59 files, 1700 tests), the hook selftest 812
+cases, `node tests/run-all.js app/states` 188 s, `node tests/run-all.js
+app/contracts` 343 s. The same day a check died with Windows status
+0xC000012D (the commit limit): the host ran out of memory with seven agents
+and their worktrees open. Run the heavy gates with one agent session open.
 
 `check:built` and the `tests/app/` filters are paid once per batch; `npm run
 check` is paid once per commit inside it. None of these scale with the
@@ -797,9 +823,12 @@ adversary:
 
 Facts settled during implementation (issue 65):
 
-- Measured: `All files` (vitest's coverage-table header) reliably appears in a
-  passing `npm run check`, and does not appear alongside the failure markers
-  (`npm error`, `ELIFECYCLE`, `FAILED`, `Tests \d+ failed`) in a passing run.
+- Measured: vitest's coverage summary (the `= Coverage summary =` banner and
+  its `Lines : n%` row) reliably appears in a passing `npm run check`, and
+  does not appear alongside the failure markers (`npm error`, `ELIFECYCLE`,
+  `FAILED`, `Tests \d+ failed`) in a passing run. It replaced the per-file
+  table's `All files` header as the observer's marker on 2026-09-25, when
+  the table left the check's output.
 - Looked up, not measured: `tool_response.exit_code` is the numeric Bash
   exit-code field, per the official hooks reference. `check-observer.mjs` also
   accepts `exitCode`/`returnCode`/`code`/`status`/`exitStatus`, and treats a
@@ -1170,8 +1199,9 @@ CLI facts (2.117.0, measured 2026-09-24):
 |---|---|---|
 | `npm run config:diff -- --project test\|prod [--env-file <path>]` | anyone; an agent only against `test` | read-only diff of `config.toml` against the project; prints `drift: none (N not-owned)` or `drift: N`, exits 2 on drift |
 | `npm run config:push -- --project test\|prod [--env-file <path>]` | the owner, in an interactive terminal | refuses without a TTY; for `prod` refuses while an `env(...)` name is unset; diffs, asks for a typed `yes`, then runs `config push` with the CLI's own prompt |
-| `npm run db:push -- --project test [--yes]` | anyone, an agent included; `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing |
+| `npm run db:push -- --project test [--yes]` | anyone, an agent included; `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing. It keeps `db push`, so it refuses while another branch's migration sits on the test project; CI's `migrate-test` is the path then |
 | `npm run db:push -- --project prod` | the owner, in an interactive terminal | the fallback while CI's `migrate-prod` is broken; refuses without a TTY, and refuses `--yes`; dry run, typed `yes`, `db push`; records nothing |
+| `npm run limits:set -- --project test\|prod --user <email\|uuid> --key <key> --value <n>\|--default\|--clear\|--unlimited` | an agent only against `test` (rule 2n); `prod` the owner, in an interactive terminal | sets or removes one user's override of one count limit over `SUPABASE_DB_URL` from the environment; refuses a string that is not the named project's, a key not in `limit_defaults`, and a user that is not exactly one row; prints `before:` and `after:` (`200`, `unlimited`, `default 50`). `--clear` is `--default`: it deletes the override |
 | `npm run check:db` | anyone (Docker; PowerShell on Windows) | layer 3 against the local stack |
 
 The env file defaults to `supabase/.env` (gitignored by the root `*.env`
@@ -1198,15 +1228,27 @@ owner before the push of `main`: `npm run config:diff`, then `npm run
 config:push`. A non-empty diff the repository did not cause is drift:
 record it in the task's handoff, then push the repository's value.
 Migrations are CI's (`docs/DECISIONS.md`, 2026-09-25, "Migrations deploy
-from CI as steps of `e2e` and `deploy`"): `migrate-test`, the first step of
-every `e2e` run, applies the pending migrations to the test project, and
-`migrate-prod`, the first step of `deploy`, applies them to production at
-the push of `main`, before the build. A `skip_e2e` dispatch runs no
-`migrate-test`, so `deploy` first runs `tools/supabase/pending-check.mjs`
-against production and stops when a migration file's version is not in its
+from CI as steps of `e2e` and `deploy`", amended by "CI applies the test
+project's migrations file by file and ignores other branches' versions"):
+`migrate-test`, the first step of every `e2e` run, runs
+`tools/supabase/migrate-test.mjs`, which applies the pending migrations to
+the test project file by file - each file and its history row in one
+transaction, oldest first - and lists, without failing, a history version
+that no local file names (another branch's migration). It refuses a
+connection string that is not the test project's (`dbUrlProject` in
+`tools/supabase/lib.mjs`). A migration that must run outside a transaction
+(`create index concurrently`) is not supported by it; none exists. The
+`migrate-prod` job applies them to production with `db push` at the push of
+`main`, before `deploy` builds. A `skip_e2e` dispatch runs no
+`migrate-test`, so `migrate-prod` first runs
+`tools/supabase/pending-check.mjs` against production and stops when a
+migration file's version is not in its
 `supabase_migrations.schema_migrations`. The database is the applied
-record; no file lists applied migrations, and `edit-guard.mjs` locks a
-migration that any remote-tracking ref holds.
+record; no file lists applied migrations, and `edit-guard.mjs` and rule 2p
+lock a migration that any remote-tracking ref holds, after a fetch.
+The history rows that `migrate-test` writes hold a version and a name and
+no `statements` (`tools/supabase/db.mjs`), so `supabase migration fetch`
+against the test project writes empty files; never fetch migrations from it.
 
 **The hosted E2E and the deploy.** CI's `e2e` job runs `npm run e2e` (layer
 4, `docs/specs/COVERAGE.md`, "Test layers") against the test project, and
@@ -1214,10 +1256,43 @@ migration that any remote-tracking ref holds.
 run. A red `migrate-test` step names the reason, most often the connection
 string: `SUPABASE_DB_URL_TEST` and `SUPABASE_DB_URL_PROD` must be the
 session pooler form (`aws-0-<region>.pooler.supabase.com`, port 5432, user
-`postgres.<ref>`, the password percent-encoded) - GitHub's runners have no
-IPv6 and the direct `db.<ref>.supabase.co` host answers IPv6 only, and the
-transaction pooler (port 6543) breaks `db push`. The owner fixes the secret
-and re-runs the job. When the test project
+`postgres.<ref>`, the password percent-encoded, no query string - the tools
+refuse one, because `user=` or `host=` there can move the target) -
+GitHub's runners have no IPv6 and the direct `db.<ref>.supabase.co` host
+answers IPv6 only, and the transaction pooler (port 6543) breaks `db push`.
+The owner fixes the secret and re-runs the job. If `migrate-test` cannot
+reach the session pooler through the `postgres` client at all, the named
+fallback is `psql --single-transaction --variable ON_ERROR_STOP=1 --file`
+per pending file plus its history row (ubuntu runners ship `psql`).
+
+Where the secrets live: `SUPABASE_DB_URL_TEST` is a repository secret,
+because every branch's `e2e` needs it. `SUPABASE_DB_URL_PROD` is a secret
+of the GitHub Environment `production` (deployment branch `main` only, no
+reviewers; `docs/DECISIONS.md`, 2026-09-25, "The production connection
+string lives in an Environment limited to `main`"), read only by the jobs
+that declare it - `ci.yml`'s `migrate-prod` and `backup.yml`'s `dump` - and
+`tests/derived.js` pins that. A workflow edited on another branch cannot
+read it. To create the Environment, or to rotate the string, the owner
+follows the four steps below, in order.
+
+1. GitHub, Settings, Environments: create (or open) `production`;
+   Deployment branches and tags: "Selected branches and tags", add `main`;
+   no required reviewers, no wait timer. Expected: the environment lists
+   the rule `main`.
+2. In that environment, add (or update) the secret `SUPABASE_DB_URL_PROD`,
+   the session pooler form; remove a query string (for example
+   `?sslmode=require`), if there is one. While a repository secret of the same name
+   exists, the environment secret shadows it in a job that declares the
+   environment. Expected: the secret is listed under the environment.
+3. Push `main` (or re-run its latest `check` run) and watch `migrate-prod`
+   run in the environment and `deploy` after it; then dispatch the backup
+   once with `gh workflow run backup.yml` and watch `dump` run there too.
+   Expected: both runs green.
+4. Delete the repository secret `SUPABASE_DB_URL_PROD` (Settings, Secrets
+   and variables, Actions), once, after the first green pair. Expected: the
+   next runs of both workflows stay green.
+
+When the test project
 itself is down, the escape hatch is the owner's: dispatch the `check`
 workflow on `main` with `skip_e2e: true` (the one dispatch that deploys),
 and record the run id and the reason in the release's handoff. Nothing else
@@ -1229,13 +1304,27 @@ Auth limits (`token_verifications = 30` per five minutes, `config.toml`), so
 expect about three back-to-back local runs per five minutes before Auth
 refuses a mint.
 
-A known gap: `migrate-test` runs on every branch's `e2e`, so a migration
-that a branch pushed is in the test project before `main` has its file.
-Symptom: on the next push of `main` without that branch, `migrate-test`
-fails - `db push` refuses a remote history that holds a version absent
-locally - and `e2e` and `deploy` stay red until the branch merges onto
-`main`. Recovery: merge the branch that owns the migration. No fix is
-designed yet.
+Branch migrations on the test project: `migrate-test` runs on every
+branch's `e2e`, so a migration that a branch pushed is in the test project
+before `main` has its file. `db push` refuses such a history ("Remote
+migration versions not found in local migrations directory"), so
+`migrate-test` does not use it: it applies what the run's checkout has and
+lists the other versions as "version(s) from other branches". The test
+project's schema is then the union of every pushed branch, and `main`'s
+runs stay green while a branch is open. `--include-all` does not help: it
+covers a local file older than the remote's newest, never a remote-only
+version.
+
+An orphan is a branch migration that will never reach `main` (the branch
+was abandoned, or the migration was renamed after its push - rule 2p and
+`edit-guard.mjs` refuse both once the migration is on a remote ref). Its
+objects stay on the test project and its version stays in every later
+`migrate-test` list. Recovery, by the owner: run the branch's reversal file
+(`supabase/reversals/<name>`) against the test project with `psql` and the
+`SUPABASE_DB_URL_TEST` string, then `delete from
+supabase_migrations.schema_migrations where version = '<version>'`; or
+reset the test project. Expected: the next `migrate-test` log no longer
+lists the version.
 
 ### Backups and restore
 
@@ -1245,7 +1334,10 @@ each encrypted to the owner's `age` public key (the Actions variable
 `BACKUP_AGE_RECIPIENT`) and kept as the artifact `backup-<date>` for 30
 days. The private key lives in the owner's password manager, never on disk
 longer than a restore. `docs/DECISIONS.md`, 2026-09-25, "Production is
-backed up nightly, encrypted to the owner's key, kept 30 days". GitHub
+backed up nightly, encrypted to the owner's key, kept 30 days". The `dump`
+job reads `SUPABASE_DB_URL_PROD` from the Environment `production`, so it
+runs only on `main`; the four steps in "The hosted E2E and the deploy"
+create or rotate that secret. GitHub
 refuses to dispatch a workflow that is not on the default branch (`gh
 workflow run backup.yml --ref <branch>` answered `HTTP 404: workflow
 backup.yml not found on the default branch`, 2026-09-25), so a new

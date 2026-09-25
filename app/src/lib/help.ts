@@ -534,16 +534,19 @@ const TABLES: Record<Lang, Help> = {
 };
 
 /**
- * The lists index's help. Paragraphs 2 and 3 each carry two bold words
- * mid-sentence rather than a `lead` - "Для игроков"/"Только для мастера" and
- * "Ссылка игрокам"/"Ссылка себе" both sit inside running prose, not at the
- * paragraph's head, so each is a run of parts like `TABLES`'s "Линейка" one.
+ * The lists index's help. Paragraphs 3 and 5 each carry two bold words and
+ * paragraph 4 one, mid-sentence rather than a `lead` - each sits inside
+ * running prose, not at the paragraph's head, so each is a run of parts like
+ * `TABLES`'s "Линейка" one.
  */
 const LISTS: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
         'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «Добавить в список». То же самое можно сделать прямо с карточки предмета — меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
+      ),
+      p(
+        'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве. Списки, созданные до входа, остаются в этом браузере.'
       ),
       {
         parts: [
@@ -556,22 +559,29 @@ const LISTS: Record<Lang, Help> = {
       },
       {
         parts: [
-          'Отсюда и две кнопки. ',
-          { b: 'Ссылка игрокам' },
-          ' — то, что можно кинуть в чат партии. ',
-          { b: 'Ссылка себе' },
-          ' — полный снимок со всеми заметками: это и способ сохранить список, чтобы восстановить его потом или открыть на другом устройстве. В адресной строке браузера лежит ссылка для игроков, так что скопировать её оттуда тоже безопасно.'
+          'Списком из аккаунта делятся кнопкой ',
+          { b: 'Поделиться' },
+          ': в ней ссылка для игроков и ссылка для мастера, в которой видны и заметки «Только для мастера». По ссылке всегда открывается список таким, какой он сейчас. «Удалить ссылку» закрывает доступ по ней, «Создать ссылку» даёт новую.'
         ]
       },
-      p(
-        'Поле «Восстановить из ссылки» принимает любую из них обратно — получится обычный список, который можно править. Хранятся в ссылке только название, id позиций, количество, цена и заметки, поэтому правки в данных подхватятся сами.'
-      )
+      {
+        parts: [
+          'У списка в этом браузере вместо неё две кнопки. ',
+          { b: 'Ссылка игрокам' },
+          ' - для чата партии, ',
+          { b: 'Ссылка себе' },
+          ' - снимок со всеми заметками. Такая ссылка хранит список в себе и перестанет открываться 26 октября 2026 года: откройте её, нажмите «Сохранить себе», и список останется в аккаунте.'
+        ]
+      }
     ]
   },
   en: {
     paragraphs: [
       p(
         'Build a list: tick what you need in Tables or Search and press “Add to list”. The same works straight from an item card — the menu stays open, so one item goes into several lists without reopening anything.'
+      ),
+      p(
+        'Sign in and your lists are kept in your account: they save themselves and open on any device. Lists made before signing in stay in this browser.'
       ),
       {
         parts: [
@@ -584,16 +594,20 @@ const LISTS: Record<Lang, Help> = {
       },
       {
         parts: [
-          'Hence the two buttons. ',
-          { b: "Players' link" },
-          ' is the one to drop into the party chat. ',
-          { b: 'Your own link' },
-          ' is a full snapshot with every note — which is also how you keep a list to restore later or open on another device. The browser’s address bar holds the players’ link, so copying it from there is safe too.'
+          'Share a list from your account with ',
+          { b: 'Share' },
+          ': it holds a players\' link and a GM\'s link, which also shows the "GM only" notes. A link always opens the list as it is now. "Delete link" ends access through it, "Create link" makes a new one.'
         ]
       },
-      p(
-        'The “Restore from a link” field takes either of them back and gives you an ordinary, editable list. A link stores only the name, the entry ids, quantity, price and the notes, so edits to the data are picked up on their own.'
-      )
+      {
+        parts: [
+          'A list in this browser has two buttons instead. ',
+          { b: "Players' link" },
+          ' is for the party chat, ',
+          { b: 'Your own link' },
+          ' is a snapshot with every note. Such a link carries the list inside it and stops opening on 26 October 2026: open it, press "Save to my lists", and the list stays in your account.'
+        ]
+      }
     ]
   }
 };

@@ -17,7 +17,9 @@ import {
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
-import type { Env } from '../ports/index.js';
+import type { CloudPort, Env } from '../ports/index.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
 import type { StoredList } from '../lib/lists.js';
@@ -413,5 +415,161 @@ describe('accessibility', () => {
     await openMenu();
     await userEvent.type(screen.getByRole('searchbox', { name: 'Найти список' }), 'порт');
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('with sign-in configured', () => {
+  const withCloud = (cloud: CloudPort, hash = '#/i/ci1', storage = TWO) => {
+    const router = memoryRouter(hash);
+    const view = render(App, {
+      env: fakeEnv({
+        router,
+        data: fakeData(LOOT),
+        cloud,
+        storage: memoryStorage({ 'dhloot.lists.v2': storage })
+      })
+    });
+    return { ...view, router };
+  };
+  /* The header names the account once the session is in; the lists follow
+     within the same turn. */
+  const signedInAs = async (user: string): Promise<void> => {
+    await screen.findByRole('link', { name: 'Аккаунт: ' + user + '@example.test' });
+    await new Promise((r) => setTimeout(r, 0));
+  };
+  const signInThroughAccount = async (): Promise<void> => {
+    await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
+  };
+
+  it('puts the prompt in the new-list slot signed out, and the chips stay pickable', async () => {
+    const { container } = withCloud(fakeCloud(SEED));
+    await screen.findByRole('link', { name: 'Войти' });
+    await openMenu();
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    expect(screen.getByText('Войдите, чтобы создать список.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Войти' })).toHaveFocus();
+    expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Войти через/ })).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
+    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
+    expect(screen.getByRole('button', { name: '✓ Клад дракона' })).toBeInTheDocument();
+  });
+
+  it('draws no new-list chip while the session is unknown', async () => {
+    const cloud = fakeCloud(SEED);
+    cloud.auth.session = () => new Promise(() => undefined);
+    withCloud(cloud);
+    await openMenu();
+    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
+  });
+
+  it("returns to the record's page after sign-in, the menu open, the lists holding it first", async () => {
+    const { container, router } = withCloud(fakeCloud(SEED));
+    await screen.findByRole('link', { name: 'Войти' });
+    await openMenu();
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await signInThroughAccount();
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/i/ci1');
+    });
+    await screen.findByRole('button', { name: '✓ Лавка кузнеца' });
+    expect(chipNames(container)).toEqual([
+      '✓ Лавка кузнеца',
+      '✓ Трофеи',
+      'Пустой список',
+      'Лавка в порту',
+      'Клад дракона'
+    ]);
+    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
+  });
+
+  it("returns to the table with the bar's rows ticked and its menu open", async () => {
+    const { router } = withCloud(fakeCloud(SEED), '#/tables');
+    await screen.findByRole('link', { name: 'Войти' });
+    const [row] = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
+    await userEvent.click(row as HTMLElement);
+    await openMenu();
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await signInThroughAccount();
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/tables');
+    });
+    expect(await screen.findByRole('button', { name: '✓ Трофеи' })).toBeInTheDocument();
+    const ticked = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
+    expect(ticked[0]).toBeChecked();
+  });
+
+  it('returns from the record dialog to the record page', async () => {
+    const { router } = withCloud(fakeCloud(SEED), '#/tables');
+    await screen.findByRole('link', { name: 'Войти' });
+    await userEvent.click(screen.getByRole('button', { name: /Спальный мешок/ }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Войти' }));
+    expect(router.hash()).toBe('#/account');
+    await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/i/ci1');
+    });
+    expect(await screen.findByRole('button', { name: '✓ Трофеи' })).toBeInTheDocument();
+  });
+
+  it('keeps the name typed in the search through the sign-in', async () => {
+    const { router } = withCloud(fakeCloud(SEED), '#/i/ci1', EIGHT);
+    await screen.findByRole('link', { name: 'Войти' });
+    await openMenu();
+    await userEvent.type(screen.getByPlaceholderText('Найти список'), 'Тайник');
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await signInThroughAccount();
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/i/ci1');
+    });
+    const field = await screen.findByPlaceholderText('Например: клад дракона');
+    expect(field).toHaveValue('Тайник');
+    expect(field).toHaveFocus();
+  });
+
+  it('makes an account list signed in, and lists both kinds in one menu', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { container } = withCloud(cloud);
+    await signedInAs('gm2');
+    await openMenu();
+    expect(chipNames(container)).toEqual([
+      'Список второго ГМа',
+      'Лавка в порту',
+      'Клад дракона'
+    ]);
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    expect(screen.getByText('Добавлено в «Тайник»')).toBeInTheDocument();
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      const made = read.ok ? read.lists.find((l) => l.name === 'Тайник') : undefined;
+      expect(made?.list_entries.map((e) => e.item_key)).toEqual(['ci1']);
+    });
+  });
+
+  it('adds to and removes from an account list, with an undo', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    withCloud(cloud);
+    await signedInAs('gm2');
+    await openMenu();
+    await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
+    await userEvent.click(screen.getByRole('button', { name: '✓ Список второго ГМа' }));
+    expect(screen.getByText('Убрано из «Список второго ГМа»')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    await openMenu();
+    expect(screen.getByRole('button', { name: '✓ Список второго ГМа' })).toBeInTheDocument();
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      const l = read.ok ? read.lists[0] : undefined;
+      expect(l?.list_entries.map((e) => e.item_key)).toEqual(['q23', 'ci1']);
+    });
   });
 });

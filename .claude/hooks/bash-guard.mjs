@@ -7,6 +7,8 @@
 // so `echo npm run check` never matches and `nohup npm run check` does.
 
 import { spawnSync } from 'node:child_process';
+import { readdirSync, statSync } from 'node:fs';
+import path from 'node:path';
 import {
   readInput,
   guard,
@@ -25,6 +27,10 @@ import {
   dropAssignments,
   normalizeCommand,
   isSupabaseCall,
+  programName,
+  remoteRefsHoldingMigration,
+  migrationLockedMessage,
+  MIGRATIONS_DIR,
   CHECK_INVOCATION_RE
 } from './lib.mjs';
 import { treeKey, readCache } from './tree-key.mjs';
@@ -65,7 +71,7 @@ const MSG = {
   checkDbGate: (count) =>
     `Blocked: \`npm run check:db\` has not passed for this working tree (${count} files under supabase/ or tests/db/ in this commit). Run \`npm run check:db\` in the foreground with the tool timeout set to 600000 - on Windows through the PowerShell tool, because Git Bash hangs on docker - then commit again. A passing result is remembered until the tree changes.\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`,
   hostedWrite: (shape) =>
-    `Blocked: \`${shape}\` is not on the allowlist of \`supabase\` commands; agents write to the test project only, never to production or to a target the command does not name. Allowed: the local stack (\`--local\`), \`--dry-run\` forms, \`status\`, \`config diff\`, \`--help\`, and a \`db\`, \`migration\` or \`config push\` command that names the test project (\`--project-ref rdjxcjkhsklhprmzxajq\`, a \`--db-url\` that carries that ref, \`npm run db:push -- --project test\`); production is CI's (\`migrate-prod\`) or the owner's interactive \`npm run db:push -- --project prod\` (.claude/README.md, "Supabase configuration").`,
+    `Blocked: \`${shape}\` is not on the allowlist of \`supabase\` commands; agents write to the test project only, never to production or to a target the command does not name. Allowed: the local stack (\`--local\`), \`--dry-run\` forms, \`status\`, \`config diff\`, \`--help\`, and a \`db\`, \`migration\` or \`config push\` command that names the test project (\`--project-ref rdjxcjkhsklhprmzxajq\`, a \`--db-url\` that carries that ref, \`npm run db:push -- --project test\`, \`npm run limits:set -- --project test\`); production is CI's (\`migrate-prod\`) or the owner's interactive \`npm run db:push -- --project prod\` (.claude/README.md, "Supabase configuration").`,
   cloudPush:
     'Blocked: a cloud session pushes only its own task branch, never `main`; the orchestrator squash-merges it onto `main` (`CLAUDE.md`). Push the current branch by name, for example `git push -u origin <current branch>`, without --all, --mirror, --tags or --delete.',
   gitleaksFinding: (hits) =>
@@ -84,6 +90,7 @@ const MSG = {
     const more = hits.length > 4 ? ', ...' : '';
     return `Blocked: \`${target}\` is still cited by ${hits.length} tracked line(s): ${shown}${more}. Repair every citation first - state the fact where it is cited, retarget it to its permanent home (\`docs/specs/\`, \`.claude/README.md\`, \`docs/decisions/\`), or qualify a history-only pointer as \`git show <sha>:<path>\` - then delete in the same commit.`;
   },
+  migrationLocked: migrationLockedMessage,
   orphanTaskBare:
     "Blocked: `issues` (or `issues/`) deletes every task directory in one command, including the live task's own and anyone else's in-flight work - there is no legitimate reason to retire all of `issues/` at once. Retire one task at a time: `git rm -r issues/<id>`, after its citations are repaired.",
   grepLineNumber:
@@ -372,6 +379,113 @@ function evaluateOrphanTask(segList, cwd) {
     }
     const hits = citingLines(target);
     if (hits.length) return { id: 'orphan-task', message: MSG.orphanTask(target, hits) };
+  }
+  return null;
+}
+
+// ---------- 2p: deny removing or moving a pushed migration ----------
+//
+// edit-guard.mjs locks a migration that a remote-tracking ref holds, but a
+// deletion or a rename never reaches an Edit-family tool. The same lock,
+// with the same bounded fetch, for `git rm`, `git mv`, `rm` and `mv`: every
+// positional token under supabase/migrations/ is checked, so `git mv <new>
+// <pushed>` is refused too. The shell expands a glob only after this hook
+// has judged the command, so a directory that holds the migrations and a
+// glob in a token's last segment are expanded here. A move's destination
+// only receives, so a directory there is not expanded.
+
+const MIGRATIONS_KEY = MIGRATIONS_DIR.slice(0, -1);
+
+/** Returns the repo-relative paths of every file under `rel`, a directory. */
+function filesUnder(rel) {
+  let entries;
+  try {
+    entries = readdirSync(path.join(repoRoot(), rel), { recursive: true, withFileTypes: true });
+  } catch {
+    return [];
+  }
+  return entries
+    .filter((e) => e.isFile())
+    .map((e) =>
+      path.relative(repoRoot(), path.join(e.parentPath, e.name)).split(path.sep).join('/')
+    );
+}
+
+/** Returns the migration paths that `rel` names: itself, the files under a
+ * directory at, under or above supabase/migrations, or the matches of a
+ * glob in its last segment. */
+function expandMigrationToken(rel, { expandDirectory }) {
+  const key = pathKey(rel);
+  const slash = rel.lastIndexOf('/');
+  const last = rel.slice(slash + 1);
+  if (/[*?]/.test(last)) {
+    const parent = slash === -1 ? '.' : rel.slice(0, slash);
+    const source = last
+      .split('')
+      .map((c) =>
+        c === '*' ? '[^/]*' : c === '?' ? '[^/]' : c.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      )
+      .join('');
+    const re = new RegExp(`^${source}$`, process.platform === 'win32' ? 'i' : '');
+    let names;
+    try {
+      names = readdirSync(path.join(repoRoot(), parent));
+    } catch {
+      return [];
+    }
+    return names
+      .filter((name) => re.test(name))
+      .map((name) => (parent === '.' ? name : `${parent}/${name}`))
+      .filter((p) => pathKey(p).startsWith(MIGRATIONS_DIR));
+  }
+  const holds =
+    key === MIGRATIONS_KEY ||
+    key.startsWith(MIGRATIONS_DIR) ||
+    key === '.' ||
+    MIGRATIONS_DIR.startsWith(`${key}/`);
+  if (expandDirectory && holds) {
+    const stat = statSync(path.join(repoRoot(), rel), { throwIfNoEntry: false });
+    if (stat && stat.isDirectory()) {
+      const base = key.startsWith(MIGRATIONS_DIR) ? rel : MIGRATIONS_KEY;
+      return filesUnder(base).filter((p) => pathKey(p).startsWith(MIGRATIONS_DIR));
+    }
+  }
+  return key.startsWith(MIGRATIONS_DIR) && key.length > MIGRATIONS_DIR.length ? [rel] : [];
+}
+
+function migrationTargets(segList, cwd) {
+  const targets = [];
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    const { tokens, program } = info;
+    let candidates = null;
+    let verb = program;
+    if (program === 'rm' || program === 'mv') candidates = tokens.slice(1);
+    else if (program === 'git') {
+      const { subcommand, rest } = gitSubcommand(tokens);
+      if (subcommand === 'rm' || subcommand === 'mv') candidates = rest;
+      verb = subcommand;
+    }
+    if (!candidates) continue;
+    const positional = candidates.filter((t) => !t.startsWith('-'));
+    for (const [i, token] of positional.entries()) {
+      const rel = relPath(token, cwd);
+      if (!rel) continue;
+      const destination = verb === 'mv' && i === positional.length - 1 && i > 0;
+      targets.push(...expandMigrationToken(rel, { expandDirectory: !destination }));
+    }
+  }
+  return targets;
+}
+
+function evaluatePushedMigration(segList, cwd) {
+  const targets = migrationTargets(segList, cwd);
+  for (const [i, rel] of targets.entries()) {
+    const refs = remoteRefsHoldingMigration(rel.slice(MIGRATIONS_DIR.length), {
+      fetch: i === 0
+    });
+    if (refs.length) return { id: 'pushed-migration', message: MSG.migrationLocked(rel, refs) };
   }
   return null;
 }
@@ -782,10 +896,46 @@ function supabaseAllowed(rest) {
   return false;
 }
 
-const HOSTED_NPM_RE = /^(?:rtk\s+)?npm\s+run\s+(?:-s\s+)?(config:push|db:push)(?![:\w-])/;
+const HOSTED_SCRIPTS = new Set(['config:push', 'db:push', 'limits:set']);
+// npm's verbs that run a package script: `run` and its aliases.
+const NPM_RUN_VERBS = new Set(['run', 'run-script', 'rum', 'urn']);
+// npm flags whose value is the next token when written without `=`.
+const NPM_VALUE_FLAGS = new Set(['--loglevel', '--prefix', '-w', '--workspace']);
 
-/** True when a `config:push` or `db:push` wrapper names only the test
- * project. */
+/** Returns the script that `tokens` (already unwrapped) run through `npm
+ * run` or an alias of it, past a leading `rtk` and npm's own flags on
+ * either side of the verb; otherwise null. */
+function npmRunScript(tokens) {
+  let t = tokens;
+  if (t[0] === 'rtk') t = t.slice(t[1] === 'proxy' ? 2 : 1);
+  if (!t.length || programName(t[0]) !== 'npm') return null;
+  let i = 1;
+  // Before the verb, an unknown `--name` flag without `=` takes the next
+  // token as its value unless that token is a verb or a flag
+  // (`npm --registry x run db:push`); after it, the next token is the script.
+  const skipFlags = (beforeVerb) => {
+    while (i < t.length && t[i].startsWith('-') && t[i] !== '--') {
+      const next = t[i + 1];
+      const takesValue =
+        NPM_VALUE_FLAGS.has(t[i]) ||
+        (beforeVerb &&
+          t[i].startsWith('--') &&
+          !t[i].includes('=') &&
+          next !== undefined &&
+          !NPM_RUN_VERBS.has(next) &&
+          !next.startsWith('-'));
+      i += takesValue ? 2 : 1;
+    }
+  };
+  skipFlags(true);
+  if (!NPM_RUN_VERBS.has(t[i])) return null;
+  i++;
+  skipFlags(false);
+  return t[i] ?? null;
+}
+
+/** True when a `config:push`, `db:push` or `limits:set` wrapper names only
+ * the test project. */
 function npmTargetsTest(tokens) {
   const projects = flagValues(tokens, '--project');
   return projects.length > 0 && projects.every((p) => p === 'test');
@@ -796,7 +946,7 @@ function evaluateHostedWrite(segList) {
     const info = segmentInfo(segment);
     if (!info) continue;
     const joined = info.tokens.join(' ');
-    if (HOSTED_NPM_RE.test(joined)) {
+    if (HOSTED_SCRIPTS.has(npmRunScript(info.tokens))) {
       if (npmTargetsTest(info.tokens)) continue;
       return { id: 'hosted-write', message: MSG.hostedWrite(joined) };
     }
@@ -1267,6 +1417,9 @@ guard(() => {
 
   const orphanTask = evaluateOrphanTask(segList, cwd);
   if (orphanTask) return deny(event, orphanTask.message);
+
+  const pushedMigration = evaluatePushedMigration(segList, cwd);
+  if (pushedMigration) return deny(event, pushedMigration.message);
 
   const blanket = evaluateBlanketStage(segList, cwd);
   if (blanket) return deny(event, blanket.message);

@@ -17,6 +17,7 @@ import {
   recordHash,
   sectionHash,
   sharedListHash,
+  shareHash,
   storedListHash,
   recordUrl,
   appUrl,
@@ -340,6 +341,35 @@ describe('a shared-list payload with a stray trailing character (R5)', () => {
       payload: 'ABC.',
       packed: false
     });
+  });
+});
+
+describe('a share link', () => {
+  /* The server reads only a 43-character base64url token; a shorter sample tests the malformed path. */
+  const SAMPLE = 'Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM';
+
+  it('uses a sample token of the real length', () => {
+    expect(SAMPLE).toMatch(/^[A-Za-z0-9_-]{43}$/);
+  });
+
+  it('reads the token after `#/s/`', () => {
+    expect(parseHash('#/s/player-token-1')).toEqual({ kind: 'share', token: 'player-token-1' });
+  });
+
+  it('drops a stray character after the token', () => {
+    const long = 'A'.repeat(43);
+    expect(parseHash('#/s/' + long + '.')).toEqual({ kind: 'share', token: long });
+    expect(parseHash('#/s/' + SAMPLE + '.')).toEqual({ kind: 'share', token: SAMPLE });
+  });
+
+  it('reads a bare `#/s/` as the empty token, and `#/s` as unknown', () => {
+    expect(parseHash('#/s/')).toEqual({ kind: 'share', token: '' });
+    expect(parseHash('#/s').kind).toBe('unknown');
+  });
+
+  it('builds the address back', () => {
+    expect(shareHash(SAMPLE)).toBe('#/s/' + SAMPLE);
+    expect(parseHash(shareHash(SAMPLE))).toEqual({ kind: 'share', token: SAMPLE });
   });
 });
 

@@ -26,6 +26,9 @@ Frozen as written in `ROUTES.md`. In particular:
   count), `#/lists/<listId>`, `#/l/<payload>`
 - `#/account`, the account page, read in every build (the not-found page,
   address kept, where no sign-in is configured)
+- `#/s/<token>`, an account share link: the token is opaque, made only by
+  the list's owner, one active per audience (players, GM); it opens from
+  `<site>#/s/<token>` and `<site>en/#/s/<token>` alike
 
 ## 2. Record ids
 
@@ -45,6 +48,11 @@ shared list. Never renumber a record that has shipped.
 | `q` | Core and Hope & Fear equipment |
 
 ## 3. List link encoding
+
+`#/l/` links stop decoding on 2026-10-26 (`LEGACY_WRITE_UNTIL`; decision
+"`LEGACY_WRITE_UNTIL` is 2026-10-26; the migration release moves directly
+after lists"); from then the codec, these fixtures and this section are
+removed by a later release.
 
 `#/l/<payload>` where `payload` is `base64url(utf8(raw))`, unpadded, `+`/`/`
 replaced by `-`/`_`.

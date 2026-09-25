@@ -267,11 +267,22 @@ function isSupabaseProgram(token) {
 
 const SUPABASE_JS_RE = /(?:^|\/)supabase\/dist\/supabase\.js$/;
 
+// A package runner that takes the program as its first word, and one that
+// takes it after a verb (`npm exec`, `pnpm dlx`).
+const RUNNERS = new Set(['npx', 'bunx', 'pnpx']);
+const RUNNER_VERBS = new Map([
+  ['npm', new Set(['exec', 'x'])],
+  ['pnpm', new Set(['exec', 'dlx'])],
+  ['yarn', new Set(['exec', 'dlx'])],
+  ['bun', new Set(['x'])]
+]);
+
 /** When `tokens` (already unwrapped) run the Supabase CLI, returns the
  * tokens after the program; otherwise null. The program is `supabase` or a
  * path ending in it (`node_modules/.bin/supabase`), `node
- * <...>/supabase/dist/supabase.js` (the tools' own entry), or `npx` /
- * `npm exec` / `npm x` with `supabase[@version]` after their flags, a
+ * <...>/supabase/dist/supabase.js` (the tools' own entry), or a package
+ * runner - `npx`, `bunx`, `pnpx`, `npm exec`/`x`, `pnpm exec`/`dlx`, `yarn
+ * exec`/`dlx`, `bun x` - with `supabase[@version]` after its flags, a
  * `-p`/`--package` value and a bare `--`. A leading `rtk` is skipped. */
 export function isSupabaseCall(tokens) {
   let t = tokens;
@@ -285,8 +296,8 @@ export function isSupabaseCall(tokens) {
     while (i < t.length && t[i].startsWith('-')) i++;
     return i < t.length && SUPABASE_JS_RE.test(t[i]) ? t.slice(i + 1) : null;
   }
-  if (head === 'npx') i = 1;
-  else if (head === 'npm' && (t[1] === 'exec' || t[1] === 'x')) i = 2;
+  if (RUNNERS.has(head)) i = 1;
+  else if (RUNNER_VERBS.has(head) && RUNNER_VERBS.get(head).has(t[1])) i = 2;
   else return null;
   while (i < t.length && t[i].startsWith('-')) {
     i += t[i] === '-p' || t[i] === '--package' ? 2 : 1;
@@ -336,6 +347,47 @@ export function git(args, opts = {}) {
   } catch {
     return null;
   }
+}
+
+export const MIGRATIONS_DIR = 'supabase/migrations/';
+
+/** Returns the remote-tracking refs whose tree holds
+ * supabase/migrations/<file>. With `fetch`, it first runs `git fetch origin`
+ * (5 s at most, no prompt) when a remote named `origin` exists, so a push
+ * made from elsewhere is seen; a failed fetch reads the local refs as they
+ * are. No remote ref, or any git failure, gives none, so nothing is denied. */
+export function remoteRefsHoldingMigration(file, { fetch = false } = {}) {
+  const run = (args, extra = {}) =>
+    spawnSync('git', args, { cwd: repoRoot(), encoding: 'utf8', windowsHide: true, ...extra });
+  if (fetch) {
+    const remotes = run(['remote']);
+    if (
+      !remotes.error &&
+      remotes.status === 0 &&
+      remotes.stdout.split(/\r?\n/).includes('origin')
+    ) {
+      run(['fetch', '--quiet', 'origin'], {
+        timeout: 5000,
+        env: { ...process.env, GIT_TERMINAL_PROMPT: '0' }
+      });
+    }
+  }
+  const list = run(['for-each-ref', '--format=%(refname:short)', 'refs/remotes/']);
+  if (list.error || list.status !== 0) return [];
+  // `origin/HEAD` (short form `origin` on some git versions) is a second name
+  // for a ref already listed.
+  const refs = list.stdout
+    .split(/\r?\n/)
+    .filter((ref) => ref.includes('/') && !ref.endsWith('/HEAD'));
+  return refs.filter((ref) => {
+    const r = run(['cat-file', '-e', `${ref}:${MIGRATIONS_DIR}${file}`]);
+    return !r.error && r.status === 0;
+  });
+}
+
+/** The deny text for a change to a migration that `refs` hold. */
+export function migrationLockedMessage(rel, refs) {
+  return `Blocked: ${rel} is on ${refs.join(', ')}; CI applies every pushed migration to the test project and every migration on main to production, so it is history - write a new migration instead.`;
 }
 
 /** Most recently touched issues/<id>/ directory, by the newest mtime among

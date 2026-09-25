@@ -28,20 +28,18 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
+    heading "НОВЫЙ СПИСОК" [level=2]
+    StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
+    button "Войти"
+    searchbox "Найти список" [value=порт focused=true]
     DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
     button "Скрыть" [description=Скрыть]
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
-    StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
-    textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
-    button "Восстановить"
-    searchbox "Найти список" [value=порт focused=true]
     link "Лавка в порту, 0 позиций" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
       StaticText "0"
       StaticText "Список пуст"
-    ... button x2 of 6 same-shape siblings elided
+    button "Поделиться"
+    button "Удалить"
     link "Порт Ветров, 1 позиция" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
       StaticText "Порт Ветров"
       StaticText "1"
@@ -64,21 +62,17 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
-Восстановить
-Восстановить из ссылки
 К содержимому
 Как это работает
 Конфиденциальность
 Лавка в порту, 0 позиций
 ЛутDaggerheart
-Новый список
 Обычные правила
 Открывать этот раздел при запуске
 Поделиться
 Поиск
 Порт Ветров, 1 позиция
 Скрыть
-Создать
 Сообщества
 Списки
 Таблицы
@@ -112,20 +106,18 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
+    heading "NEW LIST" [level=2]
+    StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]
+    button "Sign in"
+    searchbox "Find a list" [value=порт focused=true]
     DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
     button "Dismiss" [description=Dismiss]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
-    StaticText "RESTORE FROM A LINK"
-    textbox "Restore from a link" [multiline=false readonly=false required=false]
-    button "Restore"
-    searchbox "Find a list" [value=порт focused=true]
     link "Лавка в порту, 0 items" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
       StaticText "0"
       StaticText "The list is empty"
-    ... button x2 of 6 same-shape siblings elided
+    button "Share"
+    button "Delete"
     link "Порт Ветров, 1 item" [url=#/l/0J_QvtGA0YIg0JLQtdGC0YDQvtCyCjEucmNzMH5jaTE]
       StaticText "Порт Ветров"
       StaticText "1"
@@ -141,7 +133,6 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
 ## en :: controls
 Alt. tables
 Communities
-Create
 Delete
 Dismiss
 Dragon's Vault
@@ -150,12 +141,9 @@ EN
 How this works
 Install as an app
 Lists
-New list
 Open this section on start
 Privacy
 RU
-Restore
-Restore from a link
 Search
 Share
 Sign in

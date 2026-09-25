@@ -9,6 +9,14 @@
  * would race the router. docs/specs/FEATURES.md, "Account". */
 
 import { createClient, type User, type UserIdentity } from '@supabase/supabase-js';
+import {
+  entryOrder,
+  type EntryRow,
+  type ListRow,
+  type SharedRow,
+  type ShareRow
+} from '../lib/cloudLists.js';
+import type { SignInAfter } from '../lib/pending.js';
 import { readPrefs } from '../lib/prefs.js';
 import { callbackUrl, saveReturn, type Redirect, type RedirectWindow } from './redirect.js';
 import type {
@@ -18,9 +26,13 @@ import type {
   AuthResult,
   CloudPort,
   Identity,
+  ListRepository,
+  ListWrite,
   PreferencesPort,
   Provider,
-  Session
+  Session,
+  ShareMade,
+  ShareRepository
 } from './types.js';
 
 const OK: AuthResult = { ok: true };
@@ -44,6 +56,66 @@ function sessionOf(user: User | null | undefined): Session | null {
 function linkError(code: string | undefined): AuthError {
   return code === 'identity_already_exists' ? 'alreadyLinked' : 'failed';
 }
+
+/** What a PostgREST call answers, as far as a write's outcome needs it. */
+interface Answer {
+  error: { code?: string; message?: string; details?: string } | null;
+  status: number;
+}
+
+const WRITTEN: ListWrite = { ok: true };
+const NETWORK: ListWrite = { ok: false, error: 'network' };
+const LIMIT = /^limit: ([\w-]+)$/;
+
+/** Returns a write's outcome: a limit trigger's `limit: <key>` (P0001, the limit in
+ *  `details`), no answer or a server fault as `network`, any other error as `refused`. */
+function writeOf(answer: Answer): ListWrite {
+  const { error, status } = answer;
+  if (!error) return WRITTEN;
+  if (status === 0 || status >= 500 || !error.code) return NETWORK;
+  const limit = error.code === 'P0001' ? LIMIT.exec(error.message ?? '') : null;
+  if (limit?.[1]) {
+    const value = Number(error.details);
+    return {
+      ok: false,
+      error: 'limit',
+      key: limit[1],
+      value: error.details && Number.isFinite(value) ? value : null
+    };
+  }
+  return { ok: false, error: 'refused' };
+}
+
+/* A thrown call never reached the database, so it may be sent again. */
+async function written(call: () => PromiseLike<Answer>): Promise<ListWrite> {
+  try {
+    return writeOf(await call());
+  } catch {
+    return NETWORK;
+  }
+}
+
+/** What `create_list_share` answers: a `returns table`, so an array. */
+type MadeAnswer = Answer & { data: { id: string; token: string }[] | null };
+
+/* A share's row is the answer's first; an answer with none is a refusal. */
+async function made(call: () => PromiseLike<MadeAnswer>): Promise<ShareMade> {
+  try {
+    const answer = await call();
+    const refusal = writeOf(answer);
+    if (!refusal.ok) return refusal;
+    const row = answer.data?.[0];
+    return row ? { ok: true, id: row.id, token: row.token } : { ok: false, error: 'refused' };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+/* One read of the owner's lists with their entries; row level security keeps
+   it to the owner (tests/db/lists.test.mjs). */
+const LIST_SELECT =
+  'id,name,money_mode,player_note,gm_note,created_at,updated_at,' +
+  'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)';
 
 type CloudWindow = RedirectWindow & Pick<Window, 'addEventListener' | 'removeEventListener'>;
 
@@ -97,8 +169,17 @@ export function createCloud(
     }
   }
 
-  async function leave(kind: 'signIn' | 'link', provider: Provider): Promise<AuthResult> {
-    saveReturn(win, { hash: win.location.hash || '#/account', kind, provider });
+  async function leave(
+    kind: 'signIn' | 'link',
+    provider: Provider,
+    after?: SignInAfter
+  ): Promise<AuthResult> {
+    saveReturn(win, {
+      hash: after?.hash ?? (win.location.hash || '#/account'),
+      kind,
+      provider,
+      ...(after?.action ? { action: after.action } : {})
+    });
     const options = { redirectTo: callbackUrl(win.location.href) };
     try {
       const { error } =
@@ -148,7 +229,7 @@ export function createCloud(
         return [{ id: i.identity_id, provider, email: typeof email === 'string' ? email : '' }];
       });
     },
-    signIn: (provider) => leave('signIn', provider),
+    signIn: (provider, after) => leave('signIn', provider, after),
     link: (provider) => leave('link', provider),
     async unlink(identityId) {
       const all = await allIdentities();
@@ -197,10 +278,12 @@ export function createCloud(
     },
     async redirectResult(): Promise<AuthRedirect | null> {
       if (!redirect) return null;
-      const { kind, provider } = redirect;
-      if (redirect.error) return { kind, provider, result: refuse(linkError(redirect.error)) };
+      const { kind, provider, action } = redirect;
+      if (redirect.error) {
+        return { kind, provider, result: refuse(linkError(redirect.error)), action };
+      }
       if (!exchanged) return null;
-      return { kind, provider, result: await exchanged };
+      return { kind, provider, result: await exchanged, action };
     }
   };
 
@@ -235,5 +318,100 @@ export function createCloud(
       }
     }
   };
-  return { auth, prefs };
+
+  const entriesOf = (listId: string, entries: EntryRow[]) =>
+    client.from('list_entries').upsert(
+      entries.map((e) => ({ ...e, list_id: listId })),
+      { onConflict: 'id', ignoreDuplicates: true }
+    );
+
+  const lists: ListRepository = {
+    newId: () => crypto.randomUUID(),
+    async list() {
+      try {
+        const { data, error } = await client.from('lists').select(LIST_SELECT);
+        if (error || !Array.isArray(data)) return { ok: false };
+        return {
+          ok: true,
+          lists: (data as unknown as ListRow[]).map((l) => ({
+            ...l,
+            list_entries: [...l.list_entries].sort(entryOrder)
+          }))
+        };
+      } catch {
+        return { ok: false };
+      }
+    },
+    async create(list, entries) {
+      /* lists.owner_id has no default; its insert policy checks it against
+         the session's user. */
+      const owner = await userId();
+      if (!owner) return { ok: false, error: 'refused' };
+      const made = await written(() =>
+        client
+          .from('lists')
+          .upsert({ ...list, owner_id: owner }, { onConflict: 'id', ignoreDuplicates: true })
+      );
+      if (!made.ok || !entries.length) return made;
+      return written(() => entriesOf(list.id, entries));
+    },
+    update: (id, patch) => written(() => client.from('lists').update(patch).eq('id', id)),
+    addEntries: (listId, entries) =>
+      entries.length ? written(() => entriesOf(listId, entries)) : Promise.resolve(WRITTEN),
+    updateEntry: (entryId, patch) =>
+      written(() => client.from('list_entries').update(patch).eq('id', entryId)),
+    removeEntries: (entryIds) =>
+      written(() => client.from('list_entries').delete().in('id', entryIds)),
+    reorder: (listId, entryIds) =>
+      written(() => client.rpc('reorder_list', { p_list: listId, p_entries: entryIds })),
+    remove: (id) => written(() => client.from('lists').delete().eq('id', id))
+  };
+
+  /* Row level security keeps a share's row to its list's owner, stopped rows
+     included (tests/db/list-shares.test.mjs); a change goes through the
+     functions, which check the owner again. */
+  const shares: ShareRepository = {
+    async list(listId) {
+      try {
+        const { data, error } = await client
+          .from('list_shares')
+          .select('id,audience,token,created_at,revoked_at')
+          .eq('list_id', listId);
+        if (error || !Array.isArray(data)) return { ok: false };
+        return { ok: true, shares: data as unknown as ShareRow[] };
+      } catch {
+        return { ok: false };
+      }
+    },
+    create: (listId, audience) =>
+      made(() => client.rpc('create_list_share', { p_list: listId, p_audience: audience })),
+    revoke: (shareId) => written(() => client.rpc('revoke_list_share', { p_share: shareId })),
+    async read(token) {
+      try {
+        const answer = await client.rpc('get_shared_list', { p_token: token });
+        if (answer.error) return { ok: false };
+        const shared: unknown = answer.data;
+        return { ok: true, shared: (shared as SharedRow | null) ?? null };
+      } catch {
+        return { ok: false };
+      }
+    },
+    async ownerOf(token) {
+      if (!(await userId())) return null;
+      try {
+        const { data, error } = await client
+          .from('list_shares')
+          .select('list_id')
+          .eq('token', token)
+          .maybeSingle();
+        const row: unknown = data;
+        return error ? null : ((row as { list_id: string } | null)?.list_id ?? null);
+      } catch {
+        return null;
+      }
+    },
+    clone: (token, id) =>
+      written(() => client.rpc('clone_shared_list', { p_token: token, p_id: id }))
+  };
+  return { auth, prefs, lists, shares };
 }

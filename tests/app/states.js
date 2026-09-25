@@ -6,13 +6,40 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Thirty-six cases in thirty-five
+ * real second tab to mean anything at all. Forty-two cases in forty-one
  * runs (4 and 5 share one), no ancestor. Like every suite here it drives
- * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"). */
+ * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
+ * out it draws the sign-in prompt where a list would be made, so the cases
+ * that make one open as the seed's `gm2`. */
 const fs = require('fs');
 const { PNG } = require('pngjs');
 const { baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
+/** The shared page's «Лавка»: three rows with a quantity and a price. */
+const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
+
+/** The fake seed's `gm1` list «Лавка кузнеца», `uuid(101)`, and the first id
+ *  the fake hands a new list, `uuid(5000)`. */
+const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
+const FIRST_NEW = '#/lists/00000000-0000-4000-8000-000000005000';
+/** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
+const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
+
+/** One browser list: signed out, the index draws the storage notice only
+ *  over this browser's lists. */
+const ONE_LOCAL = {
+  'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Клад', ids: [], created: 1 }])
+};
+
+/** Waits up to 5 s for `fn` to hold in the page; answers whether it did. */
+async function waitIn(page, fn, ...args) {
+  try {
+    await page.waitForFunction(fn, { timeout: 5000, polling: 50 }, ...args);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const rep = reporter();
 const { ok } = rep;
@@ -49,7 +76,7 @@ function inside(a, b) {
 /** 1. New list from the card. */
 async function newListFromCard() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
-  await d.open('#/i/ci1');
+  await d.open('#/i/ci1', { as: 'gm2' });
   await d.press('Добавить в список');
   await d.press('+ Новый список');
   const box = await newListInputBox(page);
@@ -62,7 +89,7 @@ async function newListFromCard() {
 /** 2. New list from the selection bar. */
 async function newListFromBar() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
-  await d.open('#/tables');
+  await d.open('#/tables', { as: 'gm2' });
   await d.tick('Первоклассный Спальный Мешок'); // ticking a row is not this case's point
   await d.press('Добавить в список');
   await d.press('+ Новый список');
@@ -72,11 +99,11 @@ async function newListFromBar() {
   await ctx.close();
 }
 
-/** 3. New list from the modal - Самоцвет Чутья, 1100x900, no seed: the
- *  pre-measured case this fix was verified against. */
+/** 3. New list from the modal - Самоцвет Чутья, 1100x900, no browser list:
+ *  the pre-measured case this fix was verified against, as `gm2`. */
 async function newListFromModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
-  await d.open('#/tables');
+  await d.open('#/tables', { as: 'gm2' });
   await d.press('Самоцвет Чутья');
   ok(await d.has('Добавить в список'), '3 (modal): the modal did not open');
   await d.press('Добавить в список');
@@ -101,11 +128,12 @@ async function newListFromModal() {
  *  on the card article, nor spill outside the modal:
  *  the toggle (`:scope > .btn`), not whichever button happens to render
  *  first, is what the placement effect measures, and the modal's own card is
- *  what it clips against. Кольцо Тишины at 1100x900 with no lists seeded is
- *  the exact case the defect's own evidence measured (`.card.scrollTop` 109). */
+ *  what it clips against. Кольцо Тишины at 1100x900 with no browser list is
+ *  the exact case the defect's own evidence measured (`.card.scrollTop` 109),
+ *  as `gm2`, whose one account list the menu also draws. */
 async function addToListMenuStaysInModal() {
   const { ctx, page, d } = await fresh({ width: 1100, height: 900 });
-  await d.open('#/tables');
+  await d.open('#/tables', { as: 'gm2' });
   await d.press('Кольцо Тишины');
   ok(await d.has('Добавить в список'), '23 (menu in the modal): the modal did not open');
   await d.press('Добавить в список');
@@ -240,36 +268,45 @@ async function dialogSemantics() {
 }
 
 /** 7. Two pages sharing storage - two pages of one origin in one browser
- *  context share its storage. Page B opens first and stays on #/lists; page A opens second
- *  and creates a list; B must redraw on the storage event with no
- *  navigation of its own. */
+ *  context share its storage. Both hold one browser list; page B stays on
+ *  #/lists while page A deletes the list; B must redraw without it on the
+ *  storage event, with no navigation of its own. A delete, not a create:
+ *  signed out, the test build makes no browser list. */
 async function twoTabsShareStorage() {
-  const b = await sharedPage({ width: 1180, height: 900 });
+  const seed = {
+    'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Общий клад', ids: [], created: 1 }])
+  };
+  const b = await sharedPage({ width: 1180, height: 900, storage: seed });
   /* The test's own listener, independent of app/src/ports/storage.ts's -
    * it answers "did Chrome deliver the event at all" on its own, so a
    * timeout below can say which half failed instead of one sentence
    * covering both. */
   await b.page.evaluateOnNewDocument(() => {
     window.addEventListener('storage', (e) => {
-      /* Gated on the list key, so prepare()'s own
-       * localStorage.clear() on the next fresh() call cannot satisfy this
-       * stage by itself - the two stages stay disjoint as designed. */
       if (e.key === 'dhloot.lists.v2') window.__storageSeen = (window.__storageSeen || 0) + 1;
     });
   });
   await b.d.open('#/lists');
   ok(
-    (await b.page.evaluate(() => document.body.innerText)).includes('Списков пока нет'),
-    '7 (two windows): page B does not start with an empty list'
+    (await b.page.evaluate(() => document.body.innerText)).includes('Общий клад'),
+    '7 (two windows): page B does not start with the list'
   );
 
-  const a = await sharedPage({ width: 1180, height: 900 });
+  const a = await sharedPage({ width: 1180, height: 900, storage: seed });
   await a.d.open('#/lists');
-  await a.d.type('Например: клад дракона', 'Общий клад');
-  await a.d.click('Создать');
+  /* Page A's own arrival clears and re-seeds the shared storage, which B
+     hears too: the count starts here, and B shows the list again first. */
   ok(
-    (await a.page.evaluate(() => document.body.innerText)).includes('Общий клад'),
-    '7 (two windows): page A did not create the list'
+    await waitIn(b.page, () => document.body.innerText.includes('Общий клад')),
+    '7 (two windows): page B lost the list when page A arrived'
+  );
+  await b.page.evaluate(() => {
+    window.__storageSeen = 0;
+  });
+  await a.d.press('Удалить');
+  ok(
+    await a.page.evaluate(() => !document.querySelector('.listcard')),
+    '7 (two windows): page A did not delete the list'
   );
 
   /* No navigation on B - the storage event alone must redraw it. Two
@@ -292,7 +329,7 @@ async function twoTabsShareStorage() {
   if (storageDelivered) {
     let repainted = true;
     try {
-      await b.page.waitForFunction(() => document.body.innerText.includes('Общий клад'), {
+      await b.page.waitForFunction(() => !document.querySelector('.listcard'), {
         timeout: STORAGE_WAIT_MS
       });
     } catch (e) {
@@ -1373,7 +1410,7 @@ async function reducedMotionKillsEverything() {
  *  sibling of `<details>`, not a child (StorageNotice.svelte), so folding
  *  the disclosure must not hide or unhit-test it. */
 async function storageNoticeDismissWhileFolded() {
-  const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
+  const { ctx, page, d } = await fresh({ width: 1280, height: 900, storage: ONE_LOCAL });
   await d.open('#/lists');
   const open = await page.evaluate(() => document.querySelector('.warn details')?.open ?? null);
   ok(open === false, '25 (notice dismiss while folded): <details> is not closed on arrival');
@@ -1496,7 +1533,7 @@ async function listMenuKeepsItsControlsInView() {
   ]) {
     const at = '27 (' + String(width) + '): ';
     const { ctx, page, d } = await fresh({ width, height, storage: seed });
-    await d.open('#/i/ci1');
+    await d.open('#/i/ci1', { as: 'gm2' });
     await d.press('Добавить в список');
     await d.settle();
 
@@ -2247,7 +2284,7 @@ async function dragSourceRemovedMidDrag() {
  *  rather than dismissing it. */
 async function noticeSummaryWinsItsTaps() {
   const at = '34 (notice summary wins its taps): ';
-  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage: ONE_LOCAL });
   await d.open('#/lists');
   const m = await page.evaluate(() => {
     const btn = document.querySelector('.warn-x');
@@ -2398,6 +2435,439 @@ async function accountPreferences() {
   await c.ctx.close();
 }
 
+/** The prompt's own «Войти» - the header draws one too. */
+async function pressPromptSignIn(page) {
+  await page.click('.signin button');
+  await ready(page);
+}
+
+/** 37. A signed-out selection's «+ Новый список» is the sign-in prompt; its
+ *  «Войти» opens #/account, whose Google sign-in comes back to the table with
+ *  the same row ticked and the bar's menu open over the account's lists.
+ *  Leaving #/account by a tab first forgets it (docs/specs/FEATURES.md,
+ *  "Account"). */
+async function signInFromTheBar() {
+  const at = '37 (sign-in from the bar): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/tables');
+  await d.tick('Первоклассный Спальный Мешок');
+  await d.press('Добавить в список');
+  await d.press('+ Новый список');
+  ok(
+    (await page.evaluate(() => document.body.innerText)).includes(
+      'Войдите, чтобы создать список.'
+    ),
+    at + 'the prompt did not take the new-list slot'
+  );
+  ok(!(await d.has('Войти через Google')), at + 'a provider button sits in the prompt');
+  await pressPromptSignIn(page);
+  ok((await d.hash()) === '#/account', at + '«Войти» did not open #/account');
+  await d.press('Войти через Google');
+  ok(
+    await waitIn(
+      page,
+      () => location.hash === '#/tables' && !!document.querySelector('.dropmenu')
+    ),
+    at + 'the sign-in did not come back to #/tables with the menu open - ' + (await d.hash())
+  );
+  const back = await page.evaluate(() => ({
+    ticked: [...document.querySelectorAll('input[type="checkbox"]')].some(
+      (c) => c.checked && c.getAttribute('aria-label') === 'Первоклассный Спальный Мешок'
+    ),
+    chips: [...document.querySelectorAll('.dropmenu .chip')].map((c) => c.textContent)
+  }));
+  ok(back.ticked, at + 'the row is no longer ticked');
+  ok(
+    back.chips.some((c) => c.includes('Лавка кузнеца')) &&
+      back.chips.includes('+ Новый список'),
+    at +
+      "the menu lacks the account's lists or «+ Новый список» - " +
+      JSON.stringify(back.chips)
+  );
+  await ctx.close();
+
+  const again = await fresh({ width: 1180, height: 900 });
+  await again.d.open('#/tables');
+  await again.d.tick('Первоклассный Спальный Мешок');
+  await again.d.press('Добавить в список');
+  await again.d.press('+ Новый список');
+  await pressPromptSignIn(again.page);
+  await again.d.press('Списки');
+  await again.page.click('header a[href="#/account"]');
+  await again.d.settle();
+  await again.d.press('Войти через Google');
+  await again.d.settle();
+  ok(
+    (await again.d.hash()) === '#/account' &&
+      !(await again.page.evaluate(() => !!document.querySelector('.dropmenu'))),
+    at + 'a prompt left behind by a tab still ran - ' + (await again.d.hash())
+  );
+  await again.ctx.close();
+}
+
+/** 38. An old #/l/ link, signed out: «Сохранить себе» opens the prompt under
+ *  it; the sign-in comes back and saves the list into the account by itself,
+ *  and opens it. */
+async function saveOldLinkAfterSignIn() {
+  const at = '38 (old link saved after sign-in): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/l/' + QTY_AND_PRICE.player.payload);
+  await d.press('Сохранить себе');
+  ok(
+    (await page.evaluate(() => document.body.innerText)).includes(
+      'Войдите, и список сохранится в ваш аккаунт.'
+    ),
+    at + 'the prompt did not open under the button'
+  );
+  await pressPromptSignIn(page);
+  ok((await d.hash()) === '#/account', at + '«Войти» did not open #/account');
+  await d.press('Войти через Google');
+  ok(
+    await waitIn(
+      page,
+      (h) =>
+        location.hash === h && document.querySelector('input.titleinput')?.value === 'Лавка',
+      FIRST_NEW
+    ),
+    at + 'the sign-in did not open the saved «Лавка» - ' + (await d.hash())
+  );
+  const read = await d.fake('lists.list');
+  ok(
+    !!read?.ok && read.lists.some((l) => l.name === 'Лавка' && l.list_entries.length === 3),
+    at + 'the account does not hold «Лавка» with its three rows'
+  );
+  ok((await d.storage('dhloot.lists.v2')) === null, at + 'a browser list was made');
+  await ctx.close();
+}
+
+/** 39. Signing out on an account list's page goes to the lists page, with
+ *  no account list left on screen. */
+async function signOutOnAccountList() {
+  const at = '39 (sign-out on an account list): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open(SHOP, { as: 'gm1' });
+  ok(
+    await waitIn(
+      page,
+      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
+    ),
+    at + 'the account list did not open'
+  );
+  await d.fake('auth.signOut');
+  ok(
+    await waitIn(page, () => location.hash === '#/lists'),
+    at + 'the address is not #/lists - ' + (await d.hash())
+  );
+  ok(
+    !(await page.evaluate(() => document.body.innerText)).includes('Лавка кузнеца'),
+    at + 'an account list is still on screen'
+  );
+  await ctx.close();
+}
+
+/** 40. A rename with no network: «Не сохранено» and «Повторить» in the sub,
+ *  the edit kept; online again, «Повторить» saves it. */
+async function notSavedThenRetried() {
+  const at = '40 (not saved, then retried): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open(SHOP, { as: 'gm1' });
+  await waitIn(
+    page,
+    () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
+  );
+  await d.fake('setOffline', true);
+  await d.type('Название списка', 'Лавка у моста');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        document.querySelector('.page-sub')?.textContent.includes('Не сохранено') &&
+        [...document.querySelectorAll('.page-sub button')].some(
+          (b) => b.textContent === 'Повторить'
+        )
+    ),
+    at + 'the sub does not say «Не сохранено» with «Повторить»'
+  );
+  ok(
+    (await page.evaluate(() => document.querySelector('input.titleinput')?.value)) ===
+      'Лавка у моста',
+    at + 'the edit left the screen'
+  );
+  await d.fake('setOffline', false);
+  await d.press('Повторить');
+  ok(
+    await waitIn(page, () =>
+      document.querySelector('.page-sub')?.textContent.includes('Сохранено')
+    ),
+    at + 'the retry did not save'
+  );
+  const read = await d.fake('lists.list');
+  ok(
+    !!read?.ok && read.lists.some((l) => l.name === 'Лавка у моста'),
+    at + 'the account does not hold the new name'
+  );
+  await ctx.close();
+}
+
+/** 41. Deleting an account list on the index: the browser's confirm names
+ *  the share links, the card goes, and the toast offers no undo. */
+async function deleteAccountList() {
+  const at = '41 (delete an account list): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/lists', { as: 'gm1' });
+  await waitIn(page, () => document.body.innerText.includes('Трофеи'));
+  const index = await page.evaluate(() =>
+    [...document.querySelectorAll('.listcard')].findIndex((c) =>
+      c.textContent.includes('Трофеи')
+    )
+  );
+  await d.press('Удалить', index);
+  ok(
+    (d.dialog() ?? '').includes('перестанут работать'),
+    at + 'the confirm does not name the links - ' + JSON.stringify(d.dialog())
+  );
+  const after = await page.evaluate(() => ({
+    card: [...document.querySelectorAll('.listcard')].some((c) =>
+      c.textContent.includes('Трофеи')
+    ),
+    undo: [...document.querySelectorAll('button')].some((b) => b.textContent === 'Вернуть')
+  }));
+  ok(!after.card, at + 'the card is still drawn');
+  ok(!after.undo, at + 'the toast offers «Вернуть»');
+  await ctx.close();
+}
+
+/** 42. The sign-in prompt inside the record dialog's menu at 360 wide: the
+ *  menu, measured against the dialog's card with the prompt open, keeps the
+ *  prompt and its «Войти» inside the card and the window, and reachable. */
+async function promptInDialogMenuAt360() {
+  const at = '42 (prompt in the dialog menu at 360): ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 740 });
+  await d.open('#/tables');
+  await d.press('Кольцо Тишины');
+  await d.press('Добавить в список');
+  await d.press('+ Новый список');
+  await d.settle();
+  const m = await page.evaluate(() => {
+    const box = (el) => {
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return { x: r.x, y: r.y, w: r.width, h: r.height, shown: !!hit && el.contains(hit) };
+    };
+    return {
+      card: box(document.querySelector('.modal-card')),
+      menu: box(document.querySelector('.dropmenu')),
+      signIn: box(document.querySelector('.dropmenu .signin button')),
+      view: { x: 0, y: 0, w: innerWidth, h: innerHeight }
+    };
+  });
+  ok(!!m.menu && !!m.signIn, at + 'the menu or its prompt did not draw');
+  for (const [name, b] of [
+    ['the menu', m.menu],
+    ['«Войти»', m.signIn]
+  ]) {
+    ok(!!b && !!m.card && inside(b, m.card), at + name + ' lies outside .modal-card');
+    ok(!!b && inside(b, m.view), at + name + ' lies outside the window');
+  }
+  ok(!!m.signIn?.shown, at + '«Войти» is covered or clipped - ' + JSON.stringify(m.signIn));
+  await ctx.close();
+}
+
+/** The texts on the page, for a share-link wait. */
+const bodyHas = (text) => document.body.innerText.includes(text);
+/** The share panel's link texts, in row order. */
+const shareLinks = () => [...document.querySelectorAll('.sharelink')].map((a) => a.textContent);
+
+/** 43. An account list's share panel: both links made on open, «Скопировать»
+ *  copies `#/s/<token>`, a deleted link opens nothing and a new one opens the
+ *  list with the owner's line; a deleted GM link stays deleted on the next
+ *  open until «Создать ссылку». No `#/l/` address is ever copied. */
+async function shareLinksOfAnAccountList() {
+  const at = '43 (share links): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  const copied = [];
+  await d.open(TROPHIES, { as: 'gm1' });
+  await waitIn(page, () => document.querySelector('input.titleinput')?.value === 'Трофеи');
+  await d.press('Поделиться');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        [...document.querySelectorAll('.sharelink')].map((a) => a.textContent).join() ===
+        '#/s/share-token-1,#/s/share-token-2'
+    ),
+    at +
+      'the panel did not make both links - ' +
+      JSON.stringify(await page.evaluate(shareLinks))
+  );
+  await d.press('Скопировать');
+  const clip = (await d.clipboard())?.text ?? '';
+  copied.push(clip);
+  ok(clip.endsWith('#/s/share-token-1'), at + 'the players link was not copied - ' + clip);
+  await d.press('Удалить ссылку');
+  ok(await waitIn(page, bodyHas, 'Ссылка удалена'), at + 'the deleted row does not say so');
+  await d.press('Создать ссылку');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        [...document.querySelectorAll('.sharelink')].map((a) => a.textContent)[0] ===
+        '#/s/share-token-3'
+    ),
+    at + 'a new players link was not made - ' + JSON.stringify(await page.evaluate(shareLinks))
+  );
+  await d.go('#/s/share-token-1');
+  ok(
+    await waitIn(page, bodyHas, 'Список больше не доступен'),
+    at + 'the deleted link still opens something'
+  );
+  ok((await d.hash()) === '#/s/share-token-1', at + 'the address moved - ' + (await d.hash()));
+  await d.go('#/s/share-token-3');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        document.body.innerText.includes('Трофеи') &&
+        document.body.innerText.includes('Это ваш список.')
+    ),
+    at + 'the new link does not open the list with the owner line'
+  );
+  await d.go(TROPHIES);
+  await waitIn(page, () => document.querySelector('input.titleinput')?.value === 'Трофеи');
+  await d.press('Поделиться');
+  await waitIn(
+    page,
+    () => [...document.querySelectorAll('.sharelink')].map((a) => a.textContent).length === 2
+  );
+  await d.press('Удалить ссылку', 1);
+  ok(await waitIn(page, bodyHas, 'Ссылка удалена'), at + 'the GM row does not say deleted');
+  await d.press('Поделиться');
+  await d.press('Поделиться');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        document.body.innerText.includes('Ссылка удалена') &&
+        [...document.querySelectorAll('.sharelink')].map((a) => a.textContent).length === 1
+    ),
+    at + 'the deleted GM link was made again on the next open'
+  );
+  const read = await d.fake('shares.list', '00000000-0000-4000-8000-000000000103');
+  ok(
+    !!read?.ok && !read.shares.some((s) => s.audience === 'gm' && s.revoked_at === null),
+    at + 'the account holds an active GM link - ' + JSON.stringify(read)
+  );
+  await d.press('Создать ссылку');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        [...document.querySelectorAll('.sharelink')].map((a) => a.textContent)[1] ===
+        '#/s/share-token-4'
+    ),
+    at + 'a new GM link was not made - ' + JSON.stringify(await page.evaluate(shareLinks))
+  );
+  await d.press('Скопировать', 1);
+  copied.push((await d.clipboard())?.text ?? '');
+  await d.press('Скопировать текст');
+  copied.push((await d.clipboard())?.text ?? '');
+  ok(
+    copied.every((c) => !c.includes('#/l/')),
+    at + 'a #/l/ address was copied - ' + JSON.stringify(copied)
+  );
+  await ctx.close();
+}
+
+/** 44. A share link signed out: «Сохранить себе» opens the prompt, the
+ *  sign-in comes back and copies the list by itself - the players' notes,
+ *  none of the GM's. */
+async function saveShareLinkAfterSignIn() {
+  const at = '44 (share link saved after sign-in): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/s/player-token-1');
+  await waitIn(page, bodyHas, 'Лавка кузнеца');
+  await d.press('Сохранить себе');
+  ok(
+    await waitIn(page, bodyHas, 'Войдите, и список сохранится в ваш аккаунт.'),
+    at + 'the prompt did not open under the button'
+  );
+  await pressPromptSignIn(page);
+  ok((await d.hash()) === '#/account', at + '«Войти» did not open #/account');
+  await d.press('Войти через Google');
+  ok(
+    await waitIn(
+      page,
+      (h) =>
+        location.hash === h &&
+        document.querySelector('input.titleinput')?.value === 'Лавка кузнеца',
+      FIRST_NEW
+    ),
+    at + 'the sign-in did not open the copy - ' + (await d.hash())
+  );
+  const notes = await page.evaluate(() =>
+    [...document.querySelectorAll('textarea')].map((t) => t.value).join('\n')
+  );
+  ok(
+    notes.includes('Открыта с рассвета до заката.'),
+    at + "the players' note is not on the page"
+  );
+  ok(!notes.includes('Кузнец торгуется'), at + 'the GM note reached the copy');
+  const read = await d.fake('lists.list');
+  const copy = read?.ok ? read.lists.find((l) => l.id === FIRST_NEW.slice(8)) : null;
+  ok(
+    !!copy &&
+      copy.gm_note === '' &&
+      copy.player_note === 'Открыта с рассвета до заката.' &&
+      copy.list_entries.every((e) => e.gm_note === ''),
+    at + 'the copy in the account holds a GM note or lacks the players note'
+  );
+  await ctx.close();
+}
+
+/** 45. The owner on their own link: «Обновлено 3 дня назад»; an edit made
+ *  elsewhere shows when the tab is shown again, with «Обновлено только что». */
+async function sharedPageRereadWhenShownAgain() {
+  const at = '45 (shared page re-read): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/s/player-token-1', { as: 'gm1' });
+  ok(
+    await waitIn(page, bodyHas, 'Обновлено 3 дня назад'),
+    at + 'the page does not say «Обновлено 3 дня назад»'
+  );
+  await d.fake('lists.update', '00000000-0000-4000-8000-000000000101', {
+    name: 'Лавка у моста'
+  });
+  await d.shownAgain();
+  ok(
+    await waitIn(
+      page,
+      () =>
+        document.querySelector('h1')?.textContent === 'Лавка у моста' &&
+        document.body.innerText.includes('Обновлено только что')
+    ),
+    at + 'the edit did not show after the tab was shown again'
+  );
+  await ctx.close();
+}
+
+/** 46. A link deleted while its page is open draws the no-longer-available
+ *  page when the tab is shown again, the address kept. */
+async function sharedPageGoneWhenShownAgain() {
+  const at = '46 (shared page gone): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/s/gm-token-1', { as: 'gm1' });
+  await waitIn(page, bodyHas, 'Лавка кузнеца');
+  await d.fake('shares.revoke', '00000000-0000-4000-8000-000000000113');
+  await d.shownAgain();
+  ok(
+    await waitIn(page, bodyHas, 'Список больше не доступен'),
+    at + 'the deleted link still draws the list'
+  );
+  ok((await d.hash()) === '#/s/gm-token-1', at + 'the address moved - ' + (await d.hash()));
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -2433,7 +2903,17 @@ const CASES = [
   ['33 (drag source removed mid-drag)', dragSourceRemovedMidDrag],
   ['34 (notice summary wins its taps)', noticeSummaryWinsItsTaps],
   ['35 (fake cloud signed state)', fakeCloudSignedState],
-  ['36 (account preferences)', accountPreferences]
+  ['36 (account preferences)', accountPreferences],
+  ['37 (sign-in from the bar)', signInFromTheBar],
+  ['38 (old link saved after sign-in)', saveOldLinkAfterSignIn],
+  ['39 (sign-out on an account list)', signOutOnAccountList],
+  ['40 (not saved, then retried)', notSavedThenRetried],
+  ['41 (delete an account list)', deleteAccountList],
+  ['42 (prompt in the dialog menu at 360)', promptInDialogMenuAt360],
+  ['43 (share links)', shareLinksOfAnAccountList],
+  ['44 (share link saved after sign-in)', saveShareLinkAfterSignIn],
+  ['45 (shared page re-read)', sharedPageRereadWhenShownAgain],
+  ['46 (shared page gone)', sharedPageGoneWhenShownAgain]
 ];
 
 (async () => {

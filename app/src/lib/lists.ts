@@ -13,6 +13,7 @@ import {
   type ListEntryMeta,
   type MoneyMode
 } from './listLink.js';
+import { MONEY_DEFAULT } from './money.js';
 import { foldQuery } from './search.js';
 
 /** The list count from which both the add-to-list menu and the lists index draw a search box. */
@@ -136,17 +137,17 @@ export function mergeLists(
 /* ---------- finding a list (docs/specs/FEATURES.md, "Lists") ---------- */
 
 /** Returns the lists whose name holds the query, folded the way search folds it; a blank query keeps every list. */
-export function matchLists(lists: readonly StoredList[], query: string): StoredList[] {
+export function matchLists<T extends StoredList>(lists: readonly T[], query: string): T[] {
   const q = foldQuery(query.trim());
   return q ? lists.filter((l) => foldQuery(l.name).includes(q)) : [...lists];
 }
 
 /** Returns a copy with the `first` lists ahead of the rest, each group newest created first. */
-export function pickerOrder(
-  lists: readonly StoredList[],
-  first: (l: StoredList) => boolean
-): StoredList[] {
-  const rank = (l: StoredList): number => (first(l) ? 0 : 1);
+export function pickerOrder<T extends StoredList>(
+  lists: readonly T[],
+  first: (l: T) => boolean
+): T[] {
+  const rank = (l: T): number => (first(l) ? 0 : 1);
   return [...lists].sort((a, b) => rank(a) - rank(b) || (b.created ?? 0) - (a.created ?? 0));
 }
 
@@ -192,6 +193,106 @@ export function takenTotal(
     else unpriced++;
   }
   return { coins, unpriced, pieces };
+}
+
+/* ---------- one list's writers, shared by the local and the account store ---------- */
+
+/** Returns the list with one entry's field set, or removed when `value` is falsy; an entry
+ *  or a `meta` emptied by that is pruned rather than left as `{}`. */
+export function withMeta(
+  l: StoredList,
+  entryId: string,
+  field: 'qty' | 'gold' | 'note' | 'hnote',
+  value: string | number
+): StoredList {
+  const meta: Record<string, ListEntryMeta> = { ...(l.meta ?? {}) };
+  const m: ListEntryMeta = { ...meta[entryId] };
+  if (value) m[field] = value as never;
+  else Reflect.deleteProperty(m, field);
+  if (Object.keys(m).length) meta[entryId] = m;
+  else Reflect.deleteProperty(meta, entryId);
+  const next: StoredList = { ...l };
+  if (Object.keys(meta).length) next.meta = meta;
+  else Reflect.deleteProperty(next, 'meta');
+  return next;
+}
+
+/** Returns the list with a list note set, trimmed; a blank text removes the key. */
+export function withNote(l: StoredList, kind: 'note' | 'hnote', text: string): StoredList {
+  const v = text.trim();
+  const next: StoredList = { ...l };
+  if (v) next[kind] = v;
+  else Reflect.deleteProperty(next, kind);
+  return next;
+}
+
+/** Returns the list with its money mode set; the default mode is not stored. */
+export function withMoney(l: StoredList, mode: MoneyMode): StoredList {
+  const next: StoredList = { ...l };
+  if (mode === MONEY_DEFAULT) delete next.money;
+  else next.money = mode;
+  return next;
+}
+
+/** Returns the ids after a move of `entryId` to `to`, or null when nothing moves. */
+export function movedIds(l: StoredList, entryId: string, to: number): string[] | null {
+  const from = l.ids.indexOf(entryId);
+  if (from < 0) return null;
+  const clamped = Math.max(0, Math.min(to, l.ids.length - 1));
+  if (from === clamped) return null;
+  return moveEntry(l.ids, from, to);
+}
+
+/** Returns the list with a removed entry back at `min(at, length)` and its meta when that is
+ *  not empty; the same list when the entry is already there. */
+export function withEntryAt(
+  l: StoredList,
+  entryId: string,
+  at: number,
+  meta: ListEntryMeta
+): StoredList {
+  if (l.ids.includes(entryId)) return l;
+  const ids = [...l.ids];
+  ids.splice(Math.min(at, ids.length), 0, entryId);
+  const next: StoredList = { ...l, ids };
+  if (Object.keys(meta).length) next.meta = { ...(l.meta ?? {}), [entryId]: meta };
+  return next;
+}
+
+/** Returns the ids the data knows and the list does not hold yet, in the order given. */
+export function freshIds(
+  l: StoredList,
+  ids: readonly string[],
+  knows: (id: string) => boolean
+): string[] {
+  return ids.filter((id) => knows(id) && !l.ids.includes(id));
+}
+
+/**
+ * Returns the list with `fresh` appended. `meta`, when given, copies the players'-visible
+ * facts along for each fresh id - `qty` above 1, `gold` above 0, `note` when present; `hnote`
+ * never travels.
+ */
+export function withIds(
+  l: StoredList,
+  fresh: readonly string[],
+  meta?: Readonly<Record<string, ListEntryMeta>>
+): StoredList {
+  const next: StoredList = { ...l, ids: [...l.ids, ...fresh] };
+  if (meta) {
+    const nextMeta: Record<string, ListEntryMeta> = { ...(l.meta ?? {}) };
+    for (const id of fresh) {
+      const m = meta[id];
+      if (!m) continue;
+      const entry: ListEntryMeta = {};
+      if (typeof m.qty === 'number' && m.qty > 1) entry.qty = m.qty;
+      if (typeof m.gold === 'number' && m.gold > 0) entry.gold = m.gold;
+      if (m.note) entry.note = m.note;
+      if (Object.keys(entry).length) nextMeta[id] = entry;
+    }
+    if (Object.keys(nextMeta).length) next.meta = nextMeta;
+  }
+  return next;
 }
 
 /**

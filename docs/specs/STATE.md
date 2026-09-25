@@ -6,9 +6,9 @@ implementation detail. A fifth holds one short-lived record.
 | Where | Holds | Survives a reload |
 |---|---|---|
 | URL hash | anything shareable: route, table, anchor, filters, the whole contents of a shared list, what to print | yes, and travels to other people |
-| `localStorage` | preferences and the person's own lists | yes, on this browser only; kept under storage pressure in the installed app (`META.md` section 9) |
-| The account (`user_prefs`, signed in only) | the language, starting section, tables view and print layout | yes, on every device signed in to the account |
-| `sessionStorage` | `dhloot.auth.return`: where a provider redirect comes back to | this tab only, honoured for 10 minutes and removed when read |
+| `localStorage` | preferences and the person's browser lists | yes, on this browser only; kept under storage pressure in the installed app (`META.md` section 9) |
+| The account (signed in only) | the language, starting section, tables view and print layout (`user_prefs`); the account lists with their entries (`lists`, `list_entries`) | yes, on every device signed in to the account |
+| `sessionStorage` | `dhloot.auth.return`: where a provider redirect comes back to, and the action a sign-in prompt started | this tab only, honoured for 10 minutes and removed when read |
 | Memory (`S`) | everything else | no |
 
 **The rule: how a page looks is remembered, what was asked on it is not.** A
@@ -35,12 +35,18 @@ is for.
 | `sb-<ref>-auth-token` | the signed-in session (`<ref>` is the Supabase project). A provider redirect also writes its PKCE verifier three ways (supabase-js 2.117.1): `sb-<ref>-auth-token-flow-<id>-code-verifier` per flow, the index `sb-<ref>-auth-token-flows-code-verifier` (a ring of five flows, the oldest evicted), and `sb-<ref>-auth-token-code-verifier`, the latest flow's copy. The return's code exchange reads and removes only that last key (the callback address carries no flow id), so the per-flow key and the index stay until sign-out or deletion ends the session. Written and removed by supabase-js, never by the app |
 | `dhloot.lists.v2.bad` | a `dhloot.lists.v2` value that would not parse, copied here once before this tab's own next write would otherwise silently overwrite it - what a newer build, a browser extension, or another page on the shared origin left behind, kept rather than lost (R1) |
 
-`dhloot.auth.return` (`sessionStorage`) is `{ hash, at, kind, provider }`,
-written just before sign-in or Connect leaves for the provider
-(`app/src/ports/redirect.ts`). The page that comes back reads and removes
-it before mount and returns to `hash` only when every field is one the app
-could have written - a `#/` route under 2048 characters, `at` within 10
-minutes, a known `kind` and provider; otherwise it opens `#/account`.
+`dhloot.auth.return` (`sessionStorage`) is `{ hash, at, kind, provider,
+action? }`, written just before sign-in or Connect leaves for the provider
+(`app/src/ports/redirect.ts`). `hash` is the page the reader left, or - when
+a sign-in prompt's «Войти» led to `#/account` - the prompt's page, and
+`action` the action it started (`app/src/lib/pending.ts`: reopen the
+add-to-list menu with its rows, taken counts and typed name, or save the open
+shared list, `#/l/` or `#/s/`). The page that comes back reads and removes it before mount and
+returns to `hash` only when every field is one the app could have written - a
+`#/` route under 16384 characters (a `#/l/` link with notes passes 2048),
+`at` within 10 minutes, a known `kind` and provider; otherwise it opens
+`#/account`. An `action` that fails its own check is dropped and the rest is
+kept.
 
 Every read is defensive: a value that does not parse, or does not pass its own
 validity check, is replaced by the default and the rest is kept. Broken JSON is
@@ -75,6 +81,14 @@ A signal that finds in storage the very string the tab's lists were drawn
 from redraws nothing, and a save does not parse the string it last read or
 wrote again (`docs/DECISIONS.md`, 2026-09-23, "The list store is raw
 state...", for the measured cost).
+
+Account lists do not ride the `storage` event: every tab and device reads the
+account again when it is shown again and every 45 s while the index or an
+account list's page is open and no write is queued. A shared page
+`#/s/<token>` reads its list again on the same two signals, signed in or
+not. A read keeps each list
+whose `updated_at` has not moved as the same object, so a read that finds
+nothing new redraws nothing, and an edit replaces only the list it changes.
 
 ## Account preferences
 
@@ -123,11 +137,11 @@ state exists, by what it was for:
 
 | Group | Fields |
 |---|---|
-| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), `alreadyLinked` (the provider a Connect was refused for) |
+| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), `pendingListName` (a name typed before a sign-in, taken once by the menu that reopens; the pending action and this name are forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list) |
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `comm {c, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}` |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |
-| Lists | `lists`, `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `importDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session) |
+| Lists | `lists`, `cloudLists` (the account lists, their read status, the write queue and its save status), `sharedView` (the open share link's list, its read status and whether the reader owns it), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session) |
 | Prices | `rp`, `guess`, `moneyHelp` |
 | Print | `printIds` |
 | UI | `sel`, `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen` |

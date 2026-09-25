@@ -7,10 +7,12 @@
      separate `ListMenu.svelte` would be an abstraction ahead of need. `key`
      is the opener: a record id on a card, or the selection bar's own key.
      `ids` is what a chip acts on. */
-  import { tick, flushSync } from 'svelte';
+  import { tick, flushSync, untrack } from 'svelte';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
+  import { recordHash } from '../lib/hash.js';
   import type { ListEntryMeta } from '../lib/listLink.js';
   import {
     itemMeta,
@@ -29,9 +31,12 @@
     primary?: boolean;
     /** The meta to copy along in place of the shared page's own - the bar's taken counts. */
     meta?: Readonly<Record<string, ListEntryMeta>> | undefined;
+    /** Drawn in the record dialog, which is not in the address: a sign-in returns to the
+     *  record's own page. */
+    inModal?: boolean;
   }
 
-  const { app, key, ids, primary, meta }: Props = $props();
+  const { app, key, ids, primary, meta, inModal = false }: Props = $props();
 
   const t = $derived(app.t);
   const open = $derived(app.menuFor === key);
@@ -45,6 +50,14 @@
   const one = $derived(ids.length === 1 ? ids[0] : undefined);
   const label = $derived(one !== undefined ? t.inLists : t.addTo);
 
+  /* One plain list: the account's lists, once read, and this browser's. */
+  const target = $derived(app.newListTarget);
+  const all = $derived<StoredList[]>(
+    app.cloudLists?.status === 'ready' && target === 'cloud'
+      ? [...app.cloudLists.lists, ...app.lists.lists]
+      : app.lists.lists
+  );
+
   /* Taken when the menu opens, so a pressed chip keeps its place until the
      menu opens again: the lists holding `one`, and every list there was. */
   let held = $state.raw(new Set<string>());
@@ -54,10 +67,7 @@
      one-record menu puts the lists holding the record first (issue 68), and
      a list created while it is open joins them. */
   const sorted = $derived(
-    pickerOrder(
-      app.lists.lists,
-      (l) => one !== undefined && (held.has(l.id) || !known.has(l.id))
-    )
+    pickerOrder(all, (l) => one !== undefined && (held.has(l.id) || !known.has(l.id)))
   );
   const showSearch = $derived(sorted.length >= LIST_SEARCH_AT);
 
@@ -73,15 +83,30 @@
   let root = $state<HTMLDivElement | undefined>(undefined);
   let up = $state(false);
 
-  function toggle(): void {
-    if (!open) {
-      const all = app.lists.lists;
-      const record = one;
-      known = new Set(all.map((l) => l.id));
-      held = new Set(
-        record === undefined ? [] : all.filter((l) => l.ids.includes(record)).map((l) => l.id)
-      );
+  /* On the rising edge of `open`, whoever opened it - the button, or a
+     sign-in that reopens the menu through `app.menuFor`. */
+  let wasOpen = false;
+  $effect.pre(() => {
+    const isOpen = open;
+    if (isOpen && !wasOpen) {
+      untrack(() => {
+        const record = one;
+        known = new Set(all.map((l) => l.id));
+        held = new Set(
+          record === undefined ? [] : all.filter((l) => l.ids.includes(record)).map((l) => l.id)
+        );
+        /* A sign-in hands back the name typed before it. */
+        if (app.pendingListName !== null) {
+          newListFor = true;
+          draft = app.pendingListName;
+          app.pendingListName = null;
+        }
+      });
     }
+    wasOpen = isOpen;
+  });
+
+  function toggle(): void {
     app.menuFor = open ? '' : key;
     newListFor = false;
   }
@@ -93,13 +118,22 @@
      tick, which means the success message always wins there and a refusal
      is never actually seen - not reproduced here, since the acceptance this
      batch is held to is that a refusal is seen. */
+  const knows = (id: string): boolean => !!app.index?.byId.has(id);
+
+  function added(name: string, fresh: readonly string[]): void {
+    app.say(
+      t.addedTo.replace('%s', name) + (ids.length > 1 ? ': ' + String(fresh.length) : '')
+    );
+  }
+
   function pick(l: StoredList): void {
+    const store = app.storeFor(l.id);
     if (one !== undefined && l.ids.includes(one)) {
       const entryId = one;
       const at = l.ids.indexOf(entryId);
       const meta = { ...itemMeta(l, entryId) };
-      app.lists.removeId(l, entryId);
-      if (app.lists.save()) {
+      store.removeEntry(l.id, entryId);
+      if (store.saved) {
         /* Every other destructive action here offers an undo -
            `restoreEntry` is the same one the list page's own row-remove
            cross already uses. */
@@ -107,20 +141,15 @@
           action: {
             label: t.undo,
             run: () => {
-              app.lists.restoreEntry(l.id, entryId, at, meta);
+              store.restoreEntry(l.id, entryId, at, meta);
             }
           }
         });
       }
       return;
     }
-    const knows = (id: string): boolean => !!app.index?.byId.has(id);
-    const fresh = app.lists.addIds(l, ids, knows, carried);
-    if (app.lists.save()) {
-      app.say(
-        t.addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + String(fresh.length) : '')
-      );
-    }
+    const fresh = store.add(l.id, ids, knows, carried);
+    if (store.saved) added(l.name, fresh);
   }
 
   /* The search already holds the name a person looked for and did not find. */
@@ -128,6 +157,27 @@
     newListFor = true;
     draft = showSearch ? pickQ.trim() : '';
   }
+
+  /* Signed out, the create slot is the sign-in prompt; the return reopens
+     this menu with the same rows and the name already typed. */
+  const signInAfter = $derived.by(() => {
+    const counts = Object.fromEntries(
+      ids.flatMap((id) => {
+        const n = app.picked.get(id);
+        return n === undefined ? [] : [[id, n]];
+      })
+    );
+    return {
+      hash: inModal ? recordHash(key) : app.hash,
+      action: {
+        do: 'addToList' as const,
+        key,
+        ids: [...ids],
+        ...(Object.keys(counts).length ? { picked: counts } : {}),
+        ...(draft.trim() ? { name: draft.trim() } : {})
+      }
+    };
+  });
 
   function cancelNew(): void {
     newListFor = false;
@@ -141,23 +191,22 @@
       newInput?.focus();
       return;
     }
-    const l = app.lists.create(draft);
-    const knows = (id: string): boolean => !!app.index?.byId.has(id);
-    const fresh = app.lists.addIds(l, ids, knows, carried);
-    if (app.lists.save()) {
-      app.say(
-        t.addedTo.replace('%s', l.name) + (ids.length > 1 ? ': ' + String(fresh.length) : '')
-      );
-    }
+    const store = target === 'cloud' && app.cloudLists ? app.cloudLists : app.lists;
+    const l = store.create(draft);
+    const fresh = store.add(l.id, ids, knows, carried);
+    if (store.saved) added(l.name, fresh);
     newListFor = false;
     draft = '';
     pickQ = '';
   }
 
   /* Focuses the new-list input the moment its form appears - the live app's
-     own `focusNew()`, called right after the form is drawn. */
+     own `focusNew()`, called right after the form is drawn - or, signed
+     out, the prompt's «Войти» that took the pressed chip's place. */
   $effect(() => {
-    if (newListFor && newInput) newInput.focus();
+    if (!newListFor) return;
+    if (newInput) newInput.focus();
+    else root?.querySelector<HTMLElement>('.signin button')?.focus();
   });
 
   /* `placeMenu` in app.js, run after every render while the menu is open:
@@ -312,7 +361,15 @@
           <span class="picker-none">{t.nothing}</span>
         {/if}
       </div>
-      {#if newListFor}
+      {#if newListFor && target === 'prompt'}
+        <SignInPrompt
+          {app}
+          lead={t.signInToCreateShort}
+          after={signInAfter}
+          compact
+          oncancel={cancelNew}
+        />
+      {:else if newListFor}
         <span class="picker-new">
           <input
             type="text"
@@ -327,7 +384,7 @@
           <Button size="sm" variant="primary" onclick={createNew}>{t.create}</Button>
           <Button size="sm" variant="ghost" onclick={cancelNew}>{t.cancel}</Button>
         </span>
-      {:else}
+      {:else if target !== 'wait'}
         <Chip label={'+ ' + t.newList} on={false} onclick={openNew} />
       {/if}
     </div>

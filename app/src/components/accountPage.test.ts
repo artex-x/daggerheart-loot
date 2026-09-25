@@ -77,6 +77,20 @@ describe('signed out', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('hands the prompt that led here to the sign-in, and returns to its page', async () => {
+    const cloud = as();
+    const signIn = vi.spyOn(cloud.auth, 'signIn');
+    const router = memoryRouter('#/lists');
+    render(App, { env: fakeEnv({ cloud, router }) });
+    await userEvent.click(await screen.findByRole('button', { name: 'Войти' }));
+    expect(router.hash()).toBe('#/account');
+    await press('Войти через Google');
+    expect(signIn).toHaveBeenCalledWith('google', { hash: '#/lists' });
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/lists');
+    });
+  });
+
   it('shows where it is going while the redirect starts', async () => {
     const cloud = as();
     let answer: (r: AuthResult) => void = () => undefined;
@@ -287,7 +301,8 @@ describe('signed in as gm2', () => {
         returned: {
           kind: 'link',
           provider: 'discord',
-          result: { ok: false, error: 'alreadyLinked' }
+          result: { ok: false, error: 'alreadyLinked' },
+          action: null
         }
       })
     );

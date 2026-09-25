@@ -324,6 +324,22 @@ const STATES: {
     }
   },
   {
+    what: 'a GM share link with both notes, signed out',
+    route: '#/s/gm-token-1',
+    cloud: () => fakeCloud(SEED),
+    enter: async () => {
+      await screen.findByText('Кузнец торгуется, если назвать имя его брата.');
+    }
+  },
+  {
+    what: 'a share link that opens nothing',
+    route: '#/s/unknown',
+    cloud: () => fakeCloud(SEED),
+    enter: async () => {
+      await screen.findByRole('heading', { level: 1, name: 'Список больше не доступен' });
+    }
+  },
+  {
     what: 'the account page with the delete confirmation open',
     route: '#/account',
     cloud: () => fakeCloud(SEED, 'gm1'),
@@ -374,6 +390,7 @@ const COVERED: Record<string, string> = {
   'HitNote.svelte':
     "the list page's priced, noted entry with the roll panel open above, and the shared list below",
   'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
+  'ListCard.svelte': 'listsPage.test.ts, signed out, signed in and with a failed read',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte': 'the roll button and the card actions, on every roll page',
@@ -414,7 +431,11 @@ const COVERED: Record<string, string> = {
   'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind off below',
   'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
   'SelBar.svelte': 'the state above, and tables.test.ts',
-  'SharedListPage.svelte': 'sharedListPage.test.ts, and the shared list below',
+  'SharedListPage.svelte':
+    'sharedListPage.test.ts in both modes, and the shared list and both share links above',
+  'SharePanel.svelte': 'sharePanel.test.ts open, with a deleted link, and with a failed read',
+  'SignInPrompt.svelte':
+    'signInPrompt.test.ts in its three forms, and inside the add-to-list menu (lists.test.ts)',
   'Shell.svelte': 'shell.test.ts',
   'StorageNotice.svelte': 'the lists index state above, and the list page below',
   'TabBar.svelte': 'the frame, on every state',

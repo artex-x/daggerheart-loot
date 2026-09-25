@@ -448,6 +448,28 @@
     }
   },
   {
+    "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
+    "why": "an account list's share link; a token that opens nothing draws the no-longer-available page, the address kept, never home",
+    "resolves": {
+      "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM.",
+    "why": "a share link with a stray trailing character reads the token before it; the address is not rewritten",
+    "resolves": {
+      "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM.",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/account",
     "why": "the account page; with no sign-in configured it is the not-found page, address kept",
     "resolves": {

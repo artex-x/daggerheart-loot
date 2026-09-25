@@ -1,6 +1,6 @@
 # #/lists ~ help
 # route: #/lists
-# why: the four paragraphs, two of them with two bold runs each
+# why: the five paragraphs, the third and fifth with two bold runs each and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth when #/l/ links stop opening
 
 ## ru :: tree
 RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]
@@ -29,15 +29,11 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Как это работает" [description=Как это работает expanded=true]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
     StaticText "Соберите список: отметьте нужное галочками в «Таблицах» или «Пои..." [namelen=240 namehash=d1f1be55]
-    ... StaticText x12 of 16 same-shape siblings elided
-    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
-    button "Скрыть" [description=Скрыть]
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
-    StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
-    textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
-    button "Восстановить"
-    StaticText "Списков пока нет — создайте первый выше"
+    ... StaticText x13 of 17 same-shape siblings elided
+    StaticText " - снимок со всеми заметками. Такая ссылка хранит список в себе ..." [namelen=180 namehash=e4d18982]
+    heading "НОВЫЙ СПИСОК" [level=2]
+    StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
+    button "Войти"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -55,18 +51,13 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
-Восстановить
-Восстановить из ссылки
 К содержимому
 Как это работает
 Конфиденциальность
 ЛутDaggerheart
-Новый список
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
-Скрыть
-Создать
 Сообщества
 Списки
 Таблицы
@@ -100,15 +91,11 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "How this works" [description=How this works expanded=true]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
     StaticText "Build a list: tick what you need in Tables or Search and press “..." [namelen=206 namehash=cfe32602]
-    ... StaticText x12 of 16 same-shape siblings elided
-    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
-    button "Dismiss" [description=Dismiss]
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
-    StaticText "RESTORE FROM A LINK"
-    textbox "Restore from a link" [multiline=false readonly=false required=false]
-    button "Restore"
-    StaticText "No lists yet — create one above"
+    ... StaticText x13 of 17 same-shape siblings elided
+    StaticText " is a snapshot with every note. Such a link carries the list ins..." [namelen=179 namehash=0acec707]
+    heading "NEW LIST" [level=2]
+    StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]
+    button "Sign in"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -119,20 +106,15 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
 ## en :: controls
 Alt. tables
 Communities
-Create
-Dismiss
 Dragon's Vault
 Dread
 EN
 How this works
 Install as an app
 Lists
-New list
 Open this section on start
 Privacy
 RU
-Restore
-Restore from a link
 Search
 Sign in
 Skip to content

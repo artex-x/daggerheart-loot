@@ -1,0 +1,202 @@
+# #/lists as gm1
+# route: #/lists
+# why: «Ваш аккаунт»: gm1's three lists newest edit first with «изменён N назад» and one «Удалить» each; then «Этот браузер» with the notice at its head and the two browser cards
+# as: gm1
+
+## ru :: tree
+RootWebArea "Списки — Генератор лута — Daggerheart" [url=index.html?as=gm1#/lists]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Аккаунт: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Списки" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
+    StaticText "НОВЫЙ СПИСОК"
+    textbox "Новый список" [multiline=false readonly=false required=false]
+    button "Создать"
+    heading "ВАШ АККАУНТ" [level=2]
+    link "Пустой список, 0 позиций, изменён 1 час назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
+      StaticText "Пустой список"
+      StaticText "0"
+      StaticText "изменён 1 час назад"
+      StaticText "Список пуст"
+    button "Удалить"
+    link "Лавка кузнеца, 9 позиций, изменён 3 дня назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+      StaticText "Лавка кузнеца"
+      StaticText "9"
+      StaticText "изменён 3 дня назад"
+    ... button x4 of 8 same-shape siblings elided
+    link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
+      StaticText "Трофеи"
+      StaticText "2"
+      StaticText "изменён в прошлом месяце"
+    heading "ЭТОТ БРАУЗЕР" [level=2]
+    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
+    button "Скрыть" [description=Скрыть]
+    link "Клад дракона, 0 позиций" [url=index.html?as=gm1#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMC5udGZwfg]
+      StaticText "Клад дракона"
+      StaticText "0"
+      StaticText "Список пуст"
+    link "Лавка в порту, 0 позиций" [url=index.html?as=gm1#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+      StaticText "Лавка в порту"
+      StaticText "0"
+      StaticText "Список пуст"
+    button "Поделиться"
+    button "Удалить"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+К содержимому
+Как это работает
+Клад дракона, 0 позиций
+Конфиденциальность
+Лавка в порту, 0 позиций
+Лавка кузнеца, 9 позиций, изменён 3 дня назад
+ЛутDaggerheart
+Новый список
+Обычные правила
+Открывать этот раздел при запуске
+Поделиться
+Поиск
+Пустой список, 0 позиций, изменён 1 час назад
+Скрыть
+Создать
+Сообщества
+Списки
+Таблицы
+Трофеи, 2 позиции, изменён в прошлом месяце
+Удалить
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Account: gm1@example.test" [url=index.html?as=gm1#/account]
+      StaticText "G"
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Lists" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
+    StaticText "NEW LIST"
+    textbox "New list" [multiline=false readonly=false required=false]
+    button "Create"
+    heading "YOUR ACCOUNT" [level=2]
+    link "Пустой список, 0 items, edited 1 hour ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
+      StaticText "Пустой список"
+      StaticText "0"
+      StaticText "edited 1 hour ago"
+      StaticText "The list is empty"
+    button "Delete"
+    link "Лавка кузнеца, 9 items, edited 3 days ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+      StaticText "Лавка кузнеца"
+      StaticText "9"
+      StaticText "edited 3 days ago"
+    ... button x4 of 8 same-shape siblings elided
+    link "Трофеи, 2 items, edited last month" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
+      StaticText "Трофеи"
+      StaticText "2"
+      StaticText "edited last month"
+    heading "THIS BROWSER" [level=2]
+    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
+    button "Dismiss" [description=Dismiss]
+    link "Клад дракона, 0 items" [url=index.html?as=gm1#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMC5udGZwfg]
+      StaticText "Клад дракона"
+      StaticText "0"
+      StaticText "The list is empty"
+    link "Лавка в порту, 0 items" [url=index.html?as=gm1#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+      StaticText "Лавка в порту"
+      StaticText "0"
+      StaticText "The list is empty"
+    button "Share"
+    button "Delete"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Account: gm1@example.test
+Alt. tables
+Communities
+Create
+Delete
+Dismiss
+Dragon's Vault
+Dread
+EN
+How this works
+Install as an app
+Lists
+New list
+Open this section on start
+Privacy
+RU
+Search
+Share
+Skip to content
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+Клад дракона, 0 items
+Лавка в порту, 0 items
+Лавка кузнеца, 9 items, edited 3 days ago
+ЛутDaggerheart
+Пустой список, 0 items, edited 1 hour ago
+Трофеи, 2 items, edited last month

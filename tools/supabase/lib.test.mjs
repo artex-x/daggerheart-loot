@@ -7,6 +7,9 @@ import assert from 'node:assert/strict';
 import {
   PROJECTS,
   parseProjectArg,
+  parseLimitsArgs,
+  describeLimit,
+  dbUrlProject,
   diffArgs,
   envRefs,
   parseEnvFile,
@@ -94,6 +97,123 @@ describe('parseProjectArg', () => {
     );
     assert.throws(() => parseProjectArg([]), /missing/);
     assert.throws(() => parseProjectArg(['--project', 'toString']), /toString/);
+  });
+});
+
+describe('parseLimitsArgs', () => {
+  const base = ['--project', 'test', '--user', 'gm@example.test', '--key', 'lists_per_owner'];
+
+  it('reads each of the four modes', () => {
+    assert.deepEqual(parseLimitsArgs([...base, '--value', '200']), {
+      project: 'test',
+      user: 'gm@example.test',
+      key: 'lists_per_owner',
+      mode: 'value',
+      value: 200
+    });
+    assert.equal(parseLimitsArgs([...base, '--value', '0']).value, 0);
+    assert.equal(parseLimitsArgs([...base, '--default']).mode, 'default');
+    assert.equal(parseLimitsArgs([...base, '--clear']).mode, 'default');
+    assert.deepEqual(parseLimitsArgs(['--project=prod', ...base.slice(2), '--unlimited']), {
+      project: 'prod',
+      user: 'gm@example.test',
+      key: 'lists_per_owner',
+      mode: 'unlimited',
+      value: null
+    });
+  });
+
+  it('refuses no mode, two modes, and --default with --clear', () => {
+    assert.throws(() => parseLimitsArgs(base), /exactly one .*got 0/);
+    assert.throws(() => parseLimitsArgs([...base, '--value', '2', '--unlimited']), /got 2/);
+    assert.throws(() => parseLimitsArgs([...base, '--default', '--clear']), /got 2/);
+  });
+
+  it('refuses a value that is not a non-negative integer', () => {
+    for (const bad of ['-1', '1.5', 'ten', '', '1e3', '99999999999']) {
+      assert.throws(() => parseLimitsArgs([...base, '--value', bad]), /integer/, bad);
+    }
+    assert.throws(() => parseLimitsArgs([...base, '--value']), /missing/);
+  });
+
+  it('refuses a missing user, key or project, and an unknown argument', () => {
+    assert.throws(
+      () => parseLimitsArgs(['--project', 'test', '--key', 'k', '--default']),
+      /user is missing/
+    );
+    assert.throws(
+      () => parseLimitsArgs(['--project', 'test', '--user', 'u', '--default']),
+      /key is missing/
+    );
+    assert.throws(() => parseLimitsArgs(base.slice(2).concat('--default')), /--project test/);
+    assert.throws(() => parseLimitsArgs([...base, '--default', '--yes']), /--yes/);
+  });
+});
+
+describe('describeLimit', () => {
+  it('words an override and a default, each with a number or no limit', () => {
+    assert.equal(describeLimit({ override: true, value: 200, fallback: 50 }), '200');
+    assert.equal(describeLimit({ override: true, value: 0, fallback: 50 }), '0');
+    assert.equal(describeLimit({ override: true, value: null, fallback: 50 }), 'unlimited');
+    assert.equal(describeLimit({ override: false, value: null, fallback: 50 }), 'default 50');
+    assert.equal(
+      describeLimit({ override: false, value: null, fallback: null }),
+      'default unlimited'
+    );
+  });
+});
+
+describe('dbUrlProject', () => {
+  const pooler = (ref, extra = '') =>
+    `postgresql://postgres.${ref}:p%40ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres${extra}`;
+  const direct = (ref, user = 'postgres') =>
+    `postgresql://${user}:x@db.${ref}.supabase.co:5432/postgres`;
+
+  it('names the project of a session pooler string', () => {
+    assert.equal(dbUrlProject(pooler(PROJECTS.test)), 'test');
+    assert.equal(dbUrlProject(pooler(PROJECTS.prod)), 'prod');
+  });
+
+  it('names the project of a direct host with either user', () => {
+    assert.equal(dbUrlProject(direct(PROJECTS.test)), 'test');
+    assert.equal(dbUrlProject(direct(PROJECTS.prod, `postgres.${PROJECTS.prod}`)), 'prod');
+    assert.equal(
+      dbUrlProject(`postgres://postgres:x@db.${PROJECTS.test}.supabase.co/postgres`),
+      'test'
+    );
+  });
+
+  it('refuses a foreign ref, a mismatched user and a look-alike host', () => {
+    assert.equal(dbUrlProject(pooler('abcdefghijklmnopqrst')), null);
+    assert.equal(dbUrlProject(direct(PROJECTS.test, `postgres.${PROJECTS.prod}`)), null);
+    assert.equal(
+      dbUrlProject(`postgresql://postgres.${PROJECTS.test}:x@pooler.example.com:5432/postgres`),
+      null
+    );
+    assert.equal(
+      dbUrlProject(
+        `postgresql://postgres:x@db.${PROJECTS.test}.supabase.co.example.com/postgres`
+      ),
+      null
+    );
+  });
+
+  it('refuses a query string or a hash, which can move the target', () => {
+    assert.equal(dbUrlProject(pooler(PROJECTS.test, '?sslmode=require')), null);
+    assert.equal(dbUrlProject(pooler(PROJECTS.test, `?user=postgres.${PROJECTS.prod}`)), null);
+    assert.equal(dbUrlProject(pooler(PROJECTS.test, '#x')), null);
+  });
+
+  it('refuses garbage, another scheme and a local stack', () => {
+    assert.equal(dbUrlProject('garbage'), null);
+    assert.equal(dbUrlProject(''), null);
+    assert.equal(dbUrlProject(undefined), null);
+    assert.equal(dbUrlProject(`https://db.${PROJECTS.test}.supabase.co/`), null);
+    assert.equal(dbUrlProject('postgresql://postgres:postgres@127.0.0.1:54322/postgres'), null);
+    assert.equal(
+      dbUrlProject(`postgresql://postgres.${PROJECTS.test}%zz:x@x.pooler.supabase.com/p`),
+      null
+    );
   });
 });
 

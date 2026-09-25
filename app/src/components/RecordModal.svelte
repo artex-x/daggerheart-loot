@@ -118,7 +118,7 @@
         <RecordActions {app} {index} {it} row="card" {extra} />
       {/snippet}
       {#snippet pick()}
-        <AddToList {app} key={it.id} ids={[it.id]} primary />
+        <AddToList {app} key={it.id} ids={[it.id]} primary inModal />
         <Button size="sm" href={printHash([it.id])} sameTab title={app.t.printHint}
           ><Icon name="print" />{app.t.print}</Button
         >

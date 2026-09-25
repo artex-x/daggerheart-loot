@@ -1,6 +1,6 @@
 # #/lists
 # route: #/lists
-# why: the folded notice, both fields, no lists yet
+# why: signed out, no lists: the panel is the sign-in prompt, no browser group, no notice
 
 ## ru :: tree
 RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]
@@ -28,15 +28,9 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
-    button "Скрыть" [description=Скрыть]
-    StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
-    StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
-    textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
-    button "Восстановить"
-    StaticText "Списков пока нет — создайте первый выше"
+    heading "НОВЫЙ СПИСОК" [level=2]
+    StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
+    button "Войти"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -54,18 +48,13 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
-Восстановить
-Восстановить из ссылки
 К содержимому
 Как это работает
 Конфиденциальность
 ЛутDaggerheart
-Новый список
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
-Скрыть
-Создать
 Сообщества
 Списки
 Таблицы
@@ -98,15 +87,9 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
-    button "Dismiss" [description=Dismiss]
-    StaticText "NEW LIST"
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
-    StaticText "RESTORE FROM A LINK"
-    textbox "Restore from a link" [multiline=false readonly=false required=false]
-    button "Restore"
-    StaticText "No lists yet — create one above"
+    heading "NEW LIST" [level=2]
+    StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]
+    button "Sign in"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -117,20 +100,15 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
 ## en :: controls
 Alt. tables
 Communities
-Create
-Dismiss
 Dragon's Vault
 Dread
 EN
 How this works
 Install as an app
 Lists
-New list
 Open this section on start
 Privacy
 RU
-Restore
-Restore from a link
 Search
 Sign in
 Skip to content

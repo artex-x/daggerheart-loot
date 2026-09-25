@@ -5,13 +5,13 @@
 - Planning pass 1, 2026-09-24, planner; revised the same day after the
   owner answered decisions 1-13 (section 16). HEAD `12557fe1`, branch
   `claude/persistent-storage-plan-d74d73`.
-- NEEDS_HUMAN_CONFIRMATION: yes for the purchase-request questions 32-38
-  (section 16); decisions 1-31 answered 2026-09-24. `B0.1` and R1-R3 do
-  not depend on them; `B4.1` does.
+- NEEDS_HUMAN_CONFIRMATION: no (decisions 1-41 answered, section 16).
 - R0 `persist-0-foundation` closed 2026-09-24; R1 `persist-1-auth` closed
-  2026-09-25 (its task directory retired in its closeout commit; the
-  release record is section 16, "R1 closeout record"). Next release: R2
-  `persist-2-lists`, `B2.1`.
+  2026-09-25; R2 `persist-2-lists` closed 2026-09-26. Each task directory
+  was retired in its closeout commit; the release records are section 16,
+  "R1 closeout record" and "R2 closeout record". Next release: R5
+  `persist-5-migration` (its plan waits on a worktree branch,
+  `context.md`, "Plans made ahead"), then R5b, R3, R4.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -180,7 +180,7 @@ Raised, not settled: none beyond section 16.
 | Release | Objects |
 |---|---|
 | R1 | `public.delete_account()` security definer: deletes the caller's rows and `auth.users` row; `user_prefs(user_id uuid pk references auth.users on delete cascade, prefs jsonb not null default '{}', updated_at)` with owner-only RLS and a `CHECK (pg_column_size(prefs) < 4096)` |
-| R2 | `lists(id uuid pk client-generated, owner_id, name, money_mode, player_note, gm_note, position, revision, legacy_fingerprint unique per owner null, created_at, updated_at)`, `list_entries(id, list_id, item_key, source 'official'\|'homebrew', snapshot jsonb null, position, quantity, price_coins, player_note, gm_note)`, `list_shares(id, list_id, audience, token_hash bytea unique, topic_key uuid default gen_random_uuid(), created_at, revoked_at)`; RLS: owner CRUD on base tables, nothing for `anon`; RPCs `create_list_share`, `rotate_list_share`, `revoke_list_share`, `get_shared_list(raw_token)` (returns the projection, `revision` and `topic_key`), `clone_shared_list(raw_token)`, `reorder_list(list_id, entry_ids)`; a trigger bumps `lists.revision` and `updated_at` on any list or entry write; a trigger holds 200 lists per owner and 500 entries per list |
+| R2 | As shipped (2026-09-26; migrations `20260925130000`-`20260925130300` are the record): `limit_defaults(key pk, value int null)`, `user_limit_overrides(user_id, key, value int null)`, `effective_limit(user, key)` (decision 31 as amended); `lists(id uuid pk client-generated, owner_id, name, money_mode, player_note, gm_note, revision, created_at, updated_at)` - no `position` (lists are never reordered), `legacy_fingerprint` arrives with R5's writer; `list_entries(id, list_id, item_key, source 'official'\|'homebrew', snapshot jsonb null, position, quantity, price_coins, player_note, gm_note)`; `list_shares(id, list_id, audience, token unique, topic_key uuid default gen_random_uuid(), created_at, revoked_at)` - the raw token, no hash (decision 29); RLS: owner CRUD on `lists` and `list_entries`, owner select on `list_shares`, nothing for `anon`; RPCs `create_list_share`, `revoke_list_share` (no rotate: a link is replaced by delete, then create), `get_shared_list(token)` (the projection, `revision` and `topic_key`; null for a bad or revoked token), `clone_shared_list(token, new_id)`, `reorder_list(list_id, entry_ids)`; triggers bump `lists.revision` and `updated_at` on any list or entry write and hold the limits `effective_limit` reads (50 lists per owner, 100 entries per list) |
 | R3 | An `after update of revision on lists` trigger calls `realtime.send(jsonb_build_object('revision', new.revision), 'revision', 'share:' \|\| s.topic_key, false)` for every active share of the list; a policy on `realtime.messages` lets `anon` and `authenticated` `select` where `realtime.topic() like 'share:%'` (topics are random and unguessable; a forged message can only cause a refetch). Both are SQL migrations, never dashboard clicks |
 | R4 | `purchase_requests(id uuid pk, list_id fk cascade, share_id fk list_shares, audience, requester_user uuid null, requester_name varchar(40) null, status 'pending'\|'applied'\|'declined'\|'expired', status_key uuid unique default gen_random_uuid(), created_at, decided_at null, expires_at = created_at + 14 days)`, `purchase_request_lines(request_id fk cascade, entry_id fk list_entries on delete set null, item_key, name_snapshot, quantity 1..99, unit_price_coins null)`; RLS: the list owner selects, updates status and deletes; nothing for `anon` on the tables. RPCs: `create_purchase_request(raw_token, lines jsonb, requester_name text)` security definer with `execute` to `anon` and `authenticated` - validates the active share (player or GM), 1..20 lines each naming an entry of that list with 1..99, name trimmed and bounded, refuses when the list has 20 pending requests or the share sent 5 in the last minute (counted from the table, no IP), deletes that list's requests decided or expired more than 30 days ago (write-time housekeeping), returns `{ id, status_key }`; `get_purchase_request(status_key)` returns status and lines only; `apply_purchase_request(id, clamp boolean default false)` owner-only, one transaction: every line's quantity must be at or below the entry's current stock or the whole request is refused with the failing lines, unless `clamp` - then each line takes what is there; an entry that reaches zero leaves the list (today's remove semantics); `lists.revision` bumps through the existing trigger; `decline_purchase_request(id)`. A `status` read past `expires_at` reports `expired`. An `after insert` trigger calls `realtime.send({ list_id }, 'request', 'owner:' \|\| owner_id, true)`; a policy on `realtime.messages` lets `authenticated` `select` where `realtime.topic() = 'owner:' \|\| auth.uid()` |
 | R6 | `import_lists(bundle jsonb)` security definer, create-only, one transaction |
@@ -423,17 +423,19 @@ Releases, in the order the owner set (batch ids carry the release number):
 |---|---|---|---|
 | R0 | `persist-0-foundation` | `B0.1`, `B0.2` | HTTP-only build, retired worker, laws superseded, policy pages `privacy` and `terms`, Supabase tooling and guards, CI `db` job; no user-visible cloud feature. After it is live the owner publishes the Google app |
 | R1 | `persist-1-auth` | `B1.1`-`B1.6` - **closed 2026-09-25**, live at the merge onto `main` | Fake cloud and test build (layer 2), sign in, `#/account` with linking and sign out everywhere, delete account, hosted E2E (layer 4) and CI `e2e` job, account preferences, CI migration deploys (decision 41), the nightly backup (decision 39) |
-| R2 | `persist-2-lists` | `B2.1`-`B2.3` | Cloud lists with "edited N ago", sign-in-only creation, player and GM share links with polling, save a copy |
+| R2 | `persist-2-lists` | `B2.0`-`B2.3` - **closed 2026-09-26**, live at the push of `main` | The test-migration fix (`B2.0`), then cloud lists with "edited N ago", sign-in-only creation, player and GM share links with polling, save a copy; `llms.txt` and the shared page name the cutoff date |
+| R5 | `persist-5-migration` | `B5.1` | **Moved directly after R2 (owner, 2026-09-25)** so that `LEGACY_WRITE_UNTIL` = 2026-10-26 is reachable (section 10): migration banner and flow, the `legacy_fingerprint` migration, legacy write cutoff, date-gated `#/l/` retirement, two-tab merge removed. Must be live on production by 2026-10-12, else the date moves |
 | R3 | `persist-3-realtime` | `B3.1` | Live updates on shared pages; polling stays as the fallback |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline, requester status |
-| R5 | `persist-5-migration` | `B5.1` | Migration banner and flow, legacy write cutoff, date-gated `#/l/` retirement and its announcement, two-tab merge removed |
 | R6 | `persist-6-import-export` | `B6.1` | JSON export and import, published schema |
 | R7 | `persist-7-homebrew` | `B7.1`, `B7.2` | Homebrew items, search group, add to list, bundle schema v2 |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
 | R10 | `persist-10-legacy-removal` | `B10.1` | After the cutoff date has passed: the `#/l/` codec, its fixtures and contract text are removed |
 
-R10 is the first release dispatched after the cutoff date; R6-R9 may ship
+The order is R0, R1, R2, R5, R3, R4, R6-R9, R10 (owner, 2026-09-25;
+`docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"). R10 is the
+first release dispatched after the cutoff date; R3, R4 and R6-R9 may ship
 before it. Each release is deployable alone.
 
 ## 10. Legacy write cutoff (owner decision D2)
@@ -444,9 +446,17 @@ The design's 2026-10-07 cannot hold. Replacement rule, settled 2026-09-24
 - `LEGACY_WRITE_UNTIL` is a build-time constant (`app/src/lib/legacy.ts`),
   ISO date with a time zone, shown in the migration banner, on the local
   lists index and in `llms.txt` from the day R5 ships.
-- Its value is the first Monday at least 30 days after R5 reaches
-  production, set in R5's closeout commit; R5 ships only after the owner has
-  migrated real lists on one desktop browser and one phone.
+- Its value is **Monday 2026-10-26**, fixed by the owner 2026-09-25
+  (`docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"; it replaces
+  "the first Monday at least 30 days after R5 reaches production, set in
+  R5's closeout"). R2's `llms.txt` and shared page name it from the day R2
+  ships; R5 writes the constant. Safety rule: if R5 is not live on
+  production by 2026-10-12, the owner moves the date later. R5 ships only
+  after the owner has migrated real lists on one desktop browser and one
+  phone - how that happens before R5 is live is an open question for R5's
+  refresh (question f; answered 2026-09-25: the owner migrates on production
+  as the first user right after R5 deploys, and a defect found then moves
+  the date - an R5 closeout step, not a merge gate).
 - From R2 (before the date): anonymous users create no list. Existing local
   lists stay editable, and their `#/l/` links keep working, until the date.
 - After the date, in the same build (`B5.1` gates every item on the
@@ -534,13 +544,11 @@ carries "goldens".
 | `B0.1` | HTTP-only ES-module build, retire the worker's caches, supersede the three laws, harness over HTTP, policy pages `privacy` and `terms` with footer and `<noscript>` links | section 6 rows 1-8 | layer 1 `check` x2, `check:built`, layer 2 filter group, golden re-seed, sweep x5 (~61 min) | required: generated artefacts and UI (footer always drawn, two new links) | - |
 | `B0.2` | `supabase/` init, layer 3 `check:db` chain and RLS harness, reversibility gate, applied-migration guard, gitleaks hook, CI `db` job with the `applied.json` check, `db:push` wrapper | section 6 rows 9-10 | layer 1 `check`, layer 3 `check:db`, CI (~5 min + first stack start) | required (plan rule: every hook and every `supabase/` batch) | a review that cannot be held in one pass: build and product source vs hooks and tooling (the `B12b`/`B12c` precedent) |
 | `B1.1`-`B1.6` | R1, closed 2026-09-25: the fake cloud and test build, sign-in and `#/account`, the hosted E2E and the CI `e2e` job, account preferences, CI migration deploys and the nightly backup, a states-case fix. The design as built is in `docs/specs/`, `docs/DECISIONS.md` and `.claude/README.md`; the batch briefs are in R1's commit history | - | - | - | - |
-| `B2.1` | R2 schema (with `topic_key`), RLS, RPCs, six-role matrix tests, reversals; the fake cloud's seed gains lists and shares | - | layer 1 `check`, layer 3 `check:db` (~5 min) | required (schema rule) | new release; SQL judged apart from Svelte |
-| `B2.2` | `ListRepository`, cloud store, `ListModel` seam in `ListPage.svelte`, lists index groups (cloud, local) with "edited N ago" and a sort by last edit, save states; **sign-in-only creation**: one `SignInPrompt` component drawn by "New list" (lists index) and "Add to list" (`AddToList.svelte`, record menu, selection bar) when nobody is signed in; layer 2 states signed out and as `gm1` for the index, a list page, the prompt in each slot; E2E flows create/edit/reorder/delete and a signed-out prompt case | section 6 row 14 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~27 min) | required: new UI | a commit boundary the harness cannot reach (needs `B2.1`) |
-| `B2.3` | Share links: create, one-time display, rotate, revoke; `#/s/<token>` page (reuse `SharedListPage.svelte`), "Save a copy" (signed out: the `SignInPrompt`), poll on focus and 45 s; cloud lists never write `#/l/`; `llms.txt` announces that `#/l/` retires at the cutoff; layer 2 states: share panel as `gm1`, `#/s/player-token-1` and `#/s/gm-token-1` signed out and as `gm2` | section 6 row 15 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~27 min) | required: public contract | a public-contract change |
+| `B2.0`-`B2.3` | R2, closed 2026-09-26: the test-migration fix and the `production` Environment, the lists schema with limits and share links, account lists in the app with sign-in-only creation, share links `#/s/<token>` with "Save a copy". The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R2's commit history | - | - | - | - |
 | `B3.1` | Realtime: `realtime.send` trigger and `realtime.messages` policy (migration, reversal, `check:db` case that an update inserts one message per active share and none for a revoked one), real `CapabilityEventsPort` adapter, shared page subscribes to `share:<topic_key>`, coalesces events 250 ms, refetches, keeps the 45 s poll as the fallback, `Updated just now` and an `aria-live` announcement; layer 2 states: the fake's `emit` plays an edit into an open shared page; E2E: owner edit reaches an open viewer without reload | section 6 row 16 | layer 1 `check` x2, layer 3 `check:db`, `check:built`, layer 2 `app/states`, goldens, layer 4 E2E (~24 min) | required: schema rule and UI | new release (R3) |
 | `B4.1` | R4 schema and RPCs (section 5, R4 row), owner topic policy, RLS, reversals; layer 3 matrix: anon creates through a valid token only, a revoked or wrong token is refused, the caps refuse the 21st pending and the 6th in a minute, another user cannot read or apply, apply refuses over-stock and clamps on request, zero removes the entry, the status key reads status and lines only, the insert broadcasts to `owner:<uid>` and to nobody else | - | layer 1 `check`, layer 3 `check:db` (~5 min) | required (schema rule; the first anonymous write) | new release (R4); SQL judged apart from Svelte |
 | `B4.2` | Shared page: "Notify the owner" on the selection bar with an optional name field (signed out) and a Sent state with a status line; signed-in add-to-list asks "Notify the GM?" with "always / never" remembered in `user_prefs.notifyGm`; list page: a Requests panel above the entries (requester, lines, total, Apply, Apply available, Decline), a badge on the lists index card; `CapabilityEventsPort` subscribes to `owner:<uid>` when signed in, poll fallback; fake seed gains two requests (one over stock); layer 2 states: the form signed out and as `gm2`, Sent, the panel as `gm1` with a pending and an over-stock request, refused apply, declined; E2E: anonymous request, owner applies, stock deducted, requester status reads applied; privacy and terms fragments | section 6 row 17 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~29 min) | required: new UI, policy text | a commit boundary the harness cannot reach (needs `B4.1`) |
-| `B5.1` | Migration banner and flow (canonical-JSON fingerprint, `legacy_fingerprint`, read-back, per-list removal, `dhloot.migrated.v1`), `LEGACY_WRITE_UNTIL` read-only mode, date-gated `#/l/` retirement (retired-link page, hidden link buttons and link import) and its announcement (`llms.txt`, `CONTRACTS.md`, install guide iOS paragraph), remove the two-tab merge with the local write path; layer 2 states: banner as `gm1` with seeded local lists, read-only local list and retired-link page with the constant forced past (a test-build-only `?today=` switch beside `?as=`) | section 6 row 18 | layer 1 `check`, `check:built`, layer 2 `app/states`, `app/contracts`, goldens, layer 4 E2E (~23 min) | required: UI, data safety, contract text | new release (R5) |
+| `B5.1` | Directly after R2 (owner, 2026-09-25). Migration banner and flow (canonical-JSON fingerprint, the `legacy_fingerprint` column and its unique index as R5's own migration - the R2 refresh deferred it here, so this batch also pays layer 3 `check:db`; read-back, per-list removal, `dhloot.migrated.v1`), `LEGACY_WRITE_UNTIL` = 2026-10-26 read-only mode, date-gated `#/l/` retirement (retired-link page, hidden link buttons and link import) and its announcement (`llms.txt`, `CONTRACTS.md`, install guide iOS paragraph), remove the two-tab merge with the local write path; layer 2 states: banner as `gm1` with seeded local lists, read-only local list and retired-link page with the constant forced past (a test-build-only `?today=` switch beside `?as=`) | section 6 row 18 | layer 1 `check`, `check:built`, layer 2 `app/states`, `app/contracts`, goldens, layer 4 E2E (~23 min) | required: UI, data safety, contract text | new release (R5) |
 | `B6.1` | `schema/import-v1.json` published, export all/selected/one (and the `#/account` "Your data" section), upload-validate-preview-import, `import_lists` RPC, `llms.txt` (the bundle replaces LLM-built links); layer 2 states: the import panel's preview and error report as `gm1` | section 6 row 19 | layer 1 `check` x2, layer 3 `check:db`, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~29 min) | required: public contract | new release (R6) |
 | `B7.1` | R7 schema, RLS, RPCs, tests, reversals; seed gains homebrew | - | layer 1 `check`, layer 3 `check:db` (~5 min) | required (schema rule) | new release (R7) |
 | `B7.2` | `#/homebrew` section and item form (kind-specific fields, EN and RU), "Your homebrew" search group, add to list as snapshot, delete with confirm, bundle schema v2 with homebrew; layer 2 states as `gm1`: the section, the form per kind, the search group | section 6 row 20 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~27 min) | required: contract and UI | a commit boundary the harness cannot reach |
@@ -615,20 +623,8 @@ gitleaks on PATH before this batch.
 `B1.1`-`B1.6`: shipped in R1 (section 9). Their outlines were superseded by the
 release's own plan; the code, the specs and `docs/DECISIONS.md` are the record.
 
-`B2.1`-`B2.3`: section 5 schema; `ListRepository` (`list()`, `get(id)`,
-`create`, `update`, `reorder`, `remove`, shares); the `ListModel` seam;
-lists index groups "Your account" and "This browser"; save state text
-"Saved" / "Saving" / "Not saved - retry"; `SignInPrompt.svelte` (one
-sentence and a "Sign in" button that opens the provider chooser; drawn
-only when `env.cloud` exists and `app.user` is null) in the new-list form
-slot, the add-to-list menu body and the shared page's save control;
-`#/s/<token>` reuses `SharedListPage.svelte` behind an async loader; share
-panel with one-time token display and "Generate a new link" warning;
-`clone_shared_list` behind "Save a copy". Inventory and goldens: none
-change (the unconfigured build keeps local creation); vitest covers the
-prompt in `listsPage.test.ts`, `components/lists.test.ts`,
-`sharedListPage.test.ts` and `a11y.test.ts`; the hosted E2E covers it for
-real.
+`B2.0`-`B2.3`: shipped in R2 (section 9). Their outlines were superseded by the
+release's own plan; the code, the specs and `docs/decisions/` are the record.
 
 `B3.1`: the `realtime.send` trigger and policy (section 5, R3 row);
 `CapabilityEventsPort` `{ subscribe(topic, onRevision): unsubscribe }` over
@@ -670,8 +666,10 @@ requests; terms: a request is a message to the owner, not an order.
 Anonymous requester name is plain text through Svelte text nodes, as every
 user string.
 
-`B5.1`: migration - fingerprint = SHA-256 of a canonical JSON of the local
-list (sorted keys, no codec), `legacy_fingerprint` unique per owner,
+`B5.1` (directly after R2; live by 2026-10-12 or the date moves):
+migration - fingerprint = SHA-256 of a canonical JSON of the local
+list (sorted keys, no codec), `legacy_fingerprint` unique per owner (its
+migration and reversal are this batch's; `check:db` joins its gates),
 `dhloot.migrated.v1` map, per-list states Waiting / Moving / Moved / Needs
 attention, resume on next sign-in; `LEGACY_WRITE_UNTIL` and every item
 section 10 gates on it; the retired-link page for `#/l/`; install guide
@@ -768,10 +766,12 @@ GitHub, repository settings -> Secrets and variables -> Actions:
     `SUPABASE_DB_URL_TEST` and `SUPABASE_DB_URL_PROD` (the session pooler
     form, `.claude/README.md` "The hosted E2E and the deploy") and the
     variable `BACKUP_AGE_RECIPIENT`.
-14. Not in v1: branch protection, a `supabase-production` environment,
-    `SUPABASE_ACCESS_TOKEN` in CI, the Supabase GitHub integration
-    (Branching - decision 27). Configuration is pushed from the owner's
-    machine (step 15); migrations from CI (decision 41).
+14. Not in v1: branch protection, `SUPABASE_ACCESS_TOKEN` in CI, the
+    Supabase GitHub integration (Branching - decision 27). Configuration is
+    pushed from the owner's machine (step 15); migrations from CI (decision
+    41). Changed 2026-09-25 (owner, R2): a GitHub Environment `production`
+    limited to `main` holds `SUPABASE_DB_URL_PROD` - built in `B2.0`, the
+    owner's steps in `.claude/README.md`, "The hosted E2E and the deploy".
 
 Every release that carries a migration or a `config.toml` change (R0
 config, R1, R2, R3, R4, R6, R7, R8):
@@ -810,7 +810,7 @@ Monthly, from R2 on:
     dashboard toggle: it is on by default, and the `realtime.messages`
     policy is a migration.
 
-At the cutoff date (set in R5's closeout):
+At the cutoff date (2026-10-26, fixed 2026-09-25):
 
 19. Confirm in production that `#/l/<payload>` draws the retired-link page
     and a local list shows no link buttons; then ask for R10.
@@ -840,7 +840,10 @@ sign-in-only creation).
    (section 9). **Accepted.**
 2. **Legacy write cutoff.** Recommended a build-time constant, first Monday
    at least 30 days after the migration release is live, after the owner's
-   own migration. **Accepted** (section 10; the release is R5).
+   own migration. **Accepted** (section 10; the release is R5). **Amended
+   2026-09-25**: the constant is 2026-10-26, R5 moves directly after R2,
+   and the date moves if R5 is not live by 2026-10-12 (section 9, 10;
+   `docs/DECISIONS.md`).
 3. **Catalog authority.** Recommended `data.js` in git as the only catalog
    source; official records never enter the database. **Accepted.**
 4. **Realtime.** Recommended deferring past v1. **Changed: Realtime is in
@@ -987,14 +990,24 @@ named batch applies each one and writes the durable ones to
 31. **Lower default limits with per-user overrides** (`B2.1`, `B7.1`,
     `B5.1`). Defaults: 50 lists per owner, 100 entries per list, 50
     homebrew items per owner (was 200 / 500 / 500; the owner set this after
-    two intermediate values the same day). Escape hatch: a `user_limits`
-    table (user id, lists, entries per list, homebrew items; null = the
-    default) in a migration, with no grant to `anon` or `authenticated`;
-    the limit triggers read the user's row when present. The owner raises a
-    limit with a local-only command, for example `npm run limits:set --
-    --project test|prod --user <email|uuid> --lists 200`, which uses the
-    secret key from the local `.env`, never runs in CI or the cloud, and
-    prints the before and after values. No admin UI. The limits are also
+    two intermediate values the same day). **Amended by the owner
+    2026-09-25** (`docs/DECISIONS.md`, 2026-09-25, "Count limits are rows
+    read by `effective_limit()`"): the escape hatch is two tables, not one
+    wide row - `limit_defaults(key pk, value int null)` holds every count
+    limit and `user_limit_overrides(user_id, key fk, value int null)` one
+    user's override; a missing override is the default, `null` is no
+    limit, an override may raise or lower. `effective_limit(user, key)`
+    raises for a key not in `limit_defaults`, so a typo never reads as
+    unlimited; every limit trigger calls it. No grant to `anon` or
+    `authenticated`. The table covers every count limit (lists, entries
+    per list, homebrew items, R4's lines per request and pending requests
+    per list); R4's rate (5 per link per minute) and expiry (1 hour) stay
+    constants. The owner edits an override with a local-only command,
+    `npm run limits:set -- --project test|prod --user <email|uuid> --key
+    <key> --value <n>|--default|--unlimited|--clear`, over the project's
+    connection string from the environment (production needs a terminal),
+    never in CI or the cloud, printing the before and after values. No
+    admin UI. The limits are also
     stated in `import-v1` (R6). Migration (R5) is exempt: every valid
     local list migrates even above the limits; afterwards the user cannot
     add past a limit until they delete or the owner raises it. The limit
@@ -1137,6 +1150,49 @@ one commit per batch, squash-merged by the orchestrator):
   restore drill from `backup-2026-09-25` - runbook steps 1-5 and 7, never
   step 6 (production) - with the date and the row counts restored.
 
+R2 closeout record (2026-09-26; one local commit on `main`, amended per
+batch and at closeout, pushed once by the owner's approval; the pushed sha
+is in the R2 closeout summary):
+- Shipped: the test-migration fix (`migrate-test.mjs`, decision "CI
+  applies the test project's migrations file by file and ignores other
+  branches' versions"), the `production` Environment for
+  `SUPABASE_DB_URL_PROD`, guard gaps in rule 2n, rule 2p and
+  `edit-guard.mjs`; the lists schema with count limits
+  (`limit_defaults`, `user_limit_overrides`, `effective_limit`,
+  `limits:set`) and share links; account lists in the app with
+  sign-in-only creation, save status and "edited N ago"; share links
+  `#/s/<token>` (a new public contract) with the Share panel, the shared
+  page, "Save a copy" and the `#/l/` announcement naming 2026-10-26.
+- Owner change during the last batch: no rotate. A link is replaced by
+  delete, then create; `rotate_list_share` left the unpushed migration and
+  was dropped from the test project on 2026-09-26.
+- Migrations for production (the first `migrate-prod` run in the
+  Environment): `20260925130000_limits.sql`, `20260925130100_lists.sql`,
+  `20260925130200_list_shares.sql`, `20260925130300_lists_service_role.sql`.
+  The test project holds all four (`migrate-test: applied 4`, 2026-09-25).
+- Environment steps 1-2 done 2026-09-25 (Environment `production`, id
+  22753974407, branch policy `main`, no reviewers; its secret set).
+- Gates on the task's commit before closeout: the orchestrator's
+  foreground `rtk npm run check` passed and armed the gate (selftest
+  812/0, vitest 1697/1697, coverage 97.99 / 91.8 / 98.75 / 98.72). The
+  previous amend was made with `SKIP_CHECK_GATE=1`: its check passed but
+  ran 10 min on a loaded host, past the 600 s tool cap, so the observer
+  could not arm. `npm run check:db` 127 tests, `npm run e2e` PASS
+  (contract 8 cases, flows F0-F8), goldens re-seeded in four shards, sweep
+  clean at 360.
+- Closeout amend: the last review's nits (a second «Сохранить себе» during
+  the read-back made a second copy; focus kept in the Share panel row;
+  a 43-character sample token in `routes.json`), kept defects D54-D59 in
+  `docs/specs/DEBT.md`.
+- Pending, owner, after the push: Environment step 3 (watch `migrate-prod`
+  and `deploy`, dispatch `backup.yml` once) and step 4 (delete the
+  repository secret `SUPABASE_DB_URL_PROD`), with run ids; the `e2e`
+  job's `migrate-test` log reports none pending; the Security Advisor on
+  production (its security definer warnings are by design: `effective_limit`,
+  the entry and limit triggers, `reorder_list`, the share, read and clone
+  RPCs); no `rotate_list_share` on
+  production.
+
 ## 18. Cloud sessions (claude.ai/code)
 
 Facts relied on (code.claude.com cloud-environments docs, 2026-09-24; the
@@ -1220,23 +1276,29 @@ worker. Named to the owner at R1's closeout and dropped from this plan:
 offline copy" comment, `clipboard.ts` `legacyCopy` (no R1 batch touched
 them; any batch that touches those files takes them).
 
-Carried from R1 (`persist-1-auth`, closed 2026-09-25) for the R2 planner
+Carried from R1: the three items (the test-migration trap, the
+`edit-guard.mjs` lock, rule 2n's gaps) were built in R2's first batch.
+
+Carried from R2 (`persist-2-lists`, closed 2026-09-26) for the R5 planner
 refresh, which places each one or names it to the owner:
 
-- CI, the test project's migration history: `migrate-test` runs on every
-  branch's `e2e`, so a migration a branch pushed reaches the test project
-  before `main` has its file; the next push of `main` without that branch
-  fails `migrate-test` (`db push` refuses a remote history ahead of the
-  files) and `e2e` and `deploy` stay red until the branch merges. R2 is the
-  next release with a migration, so its `B2.1` meets this first. Symptom
-  and recovery: `.claude/README.md`, "The hosted E2E and the deploy".
-  Candidate fixes: a `main`-only test apply, or a repair step.
-- `edit-guard.mjs`'s migration lock reads only the local remote-tracking
-  refs (an unfetched push is not locked; it fails open), and a `git rm` or
-  `git mv` of a pushed migration through Bash is not guarded at all.
-- Rule 2n's `HOSTED_NPM_RE` misses `npm run-script db:push` and `npm
-  --silent run db:push`, and does not recognise `bunx supabase` or `pnpm
-  exec supabase`. The tools themselves still refuse without a terminal.
+- `legacy_fingerprint` and its unique index: deferred by R2 to R5's own
+  migration (`B5.1`), which therefore also pays layer 3 `check:db`.
+- `docs/specs/DEBT.md` D54: a `#/l/` link with more than 100 items saves
+  an empty account list; R5's move of browser lists meets the same limit.
+- R2 already removed «Восстановить из ссылки» and the install guide's iOS
+  paragraph, and old `#/l/` "Save" already saves into the account; R5's
+  refresh drops them from `B5.1`. Between R2 and R5 an iPhone reader
+  cannot move a browser list from Safari into the installed app.
+- Question f is answered (section 10): an R5 closeout step.
+- `Intl.RelativeTimeFormat` output: the goldens hold Node's text
+  («изменён 1 час назад», «3 дня назад», «в прошлом месяце»); if a CI
+  Chrome build differs, pin the text per runtime in the test.
+
+For the R3 (Realtime) planner: `docs/specs/DEBT.md` D55-D59 (a lapsed
+session drops a write, a reorder refused after another device's edit, no
+timeout on a hanging write, «Поделиться» before a queued create lands, a
+failed first `#/s/` read not retried); R3's plan names D56 and D57.
 
 - Assumption: Chrome no longer requires a service worker for the install
   prompt. `B0.1`'s closeout has the owner try the install on Android Chrome

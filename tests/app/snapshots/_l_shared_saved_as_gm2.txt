@@ -1,0 +1,238 @@
+# #/l/ ~ shared, saved as gm2
+# route: #/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg
+# why: signed in, after "Сохранить себе": the new account list "Лавка" at #/lists/<uuid(5000)>, «Сохранено», «Поделиться», the toast "Список «Лавка» создан"
+# as: gm2
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000005000]
+  link "К содержимому" [url=index.html?as=gm2#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Аккаунт: gm2@example.test" [url=index.html?as=gm2#/account]
+      StaticText "G"
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm2#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm2#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm2#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm2#/roll/community]
+      link "Таблицы" [url=index.html?as=gm2#/tables]
+      link "Списки" [url=index.html?as=gm2#/lists]
+      link "Поиск" [url=index.html?as=gm2#/search]
+  main ""
+    textbox "Название списка" [value=Лавка multiline=false readonly=false required=false]
+    StaticText "3 позиции · "
+    StaticText "Сохранено"
+    button "Поделиться" [expanded=false]
+    button "Скопировать текст"
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm2#/print/ci1*2-cc21*5-q337]
+    button "Удалить"
+    ... StaticText x8 of 12 same-shape siblings elided
+    button "Как в книге" [pressed=true]
+    button "Монетами" [pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
+    DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
+    checkbox "Выбрать все" [checked=false]
+    generic ""
+    checkbox "Первоклассный Спальный Мешок" [checked=false]
+    spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=3]
+    button "Первоклассный Спальный Мешок Во время отдыха вы автоматически оч..." [namelen=91 namehash=0ad88f78]
+    spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
+    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Заметка" [description=Заметка]
+    button "Убрать из списка" [description=Убрать из списка]
+    checkbox "Доспешный Сшиватель" [checked=false]
+    spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=3]
+    button "Доспешный Сшиватель Вы можете использовать этот швейный аппарат,..." [namelen=155 namehash=42f31898]
+    spinbutton "КОЛ-ВО" [value=5 valuetext=5 required=false valuemin=1 valuemax=99]
+    spinbutton "ЗОЛОТО ?" [value=50 description=5 горстей valuetext=50 required=false valuemin=0 valuemax=99999]
+    button "Заметка" [description=Заметка]
+    button "Убрать из списка" [description=Убрать из списка]
+    checkbox "Туника из Паучьего Шелка" [checked=false]
+    spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=3]
+    button "Туника из Паучьего Шелка Ранг 2 · Пороги 9/20 · Броня 4 Карабкаю..." [namelen=170 namehash=b42218ae]
+    spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
+    StaticText "ЗОЛОТО"
+    StaticText "?"
+    spinbutton "ЗОЛОТО ?" [value=12 description=1 горсть valuetext=12 required=false valuemin=0 valuemax=99999]
+    button "Заметка" [description=Заметка]
+    button "Убрать из списка" [description=Убрать из списка]
+    status ""
+    status ""
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+  status ""
+    StaticText "Список «Лавка» создан"
+
+## ru :: controls
+1 горсть
+5 горстей
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm2@example.test
+Альт. таблицы
+Выбрать все
+Доспешный Сшиватель
+Доспешный СшивательВы можете использовать этот швейный аппарат, ... [namelen=152 namehash=8d323e65]
+Заметка
+К содержимому
+Как в книге
+Как это работает
+Конфиденциальность
+ЛутDaggerheart
+Монетами
+На единицу больше
+На единицу меньше
+Название списка
+Обычные правила
+Первоклассный Спальный Мешок
+Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
+Поделиться
+Позиция в списке
+Поиск
+Результат броска
+Скопировать текст
+Случайно 1–3
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Списки
+Таблицы
+Туника из Паучьего Шелка
+Туника из Паучьего ШелкаРанг 2 · Пороги 9/20 · Броня 4Карабкающе... [namelen=165 namehash=1b03af51]
+Убрать из списка
+Удалить
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000005000]
+  link "Skip to content" [url=index.html?as=gm2#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Account: gm2@example.test" [url=index.html?as=gm2#/account]
+      StaticText "G"
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm2#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm2#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm2#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Communities" [url=index.html?as=gm2#/roll/community]
+      link "Tables" [url=index.html?as=gm2#/tables]
+      link "Lists" [url=index.html?as=gm2#/lists]
+      link "Search" [url=index.html?as=gm2#/search]
+  main ""
+    textbox "List name" [value=Лавка multiline=false readonly=false required=false]
+    StaticText "3 items · "
+    StaticText "Saved"
+    button "Share" [expanded=false]
+    button "Copy text"
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm2#/print/ci1*2-cc21*5-q337]
+    button "Delete"
+    ... StaticText x8 of 12 same-shape siblings elided
+    button "As in the book" [pressed=true]
+    button "In coins" [pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    DisclosureTriangle "NOTES" [expanded=false]
+    DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
+    checkbox "Select all" [checked=false]
+    generic ""
+    checkbox "Premium Bedroll" [checked=false]
+    spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=3]
+    button "Premium Bedroll During downtime, you automatically clear a Stres..." [namelen=76 namehash=b4b015ab]
+    spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
+    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    button "Note" [description=Note]
+    button "Remove from the list" [description=Remove from the list]
+    checkbox "Armor Stitcher" [checked=false]
+    spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=3]
+    button "Armor Stitcher You can use this stitcher to spend any number of ..." [namelen=117 namehash=5a644529]
+    spinbutton "QTY" [value=5 valuetext=5 required=false valuemin=1 valuemax=99]
+    spinbutton "GOLD ?" [value=50 description=5 handfuls valuetext=50 required=false valuemin=0 valuemax=99999]
+    button "Note" [description=Note]
+    button "Remove from the list" [description=Remove from the list]
+    checkbox "Spidersilk Tunic" [checked=false]
+    spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=3]
+    button "Spidersilk Tunic Tier 2 · Thresholds 9/20 · Armor 4 Wall-Crawlin..." [namelen=153 namehash=d48c0001]
+    spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
+    StaticText "GOLD"
+    StaticText "?"
+    spinbutton "GOLD ?" [value=12 description=1 handful valuetext=12 required=false valuemin=0 valuemax=99999]
+    button "Note" [description=Note]
+    button "Remove from the list" [description=Remove from the list]
+    status ""
+    status ""
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+  status ""
+    StaticText "Список «Лавка» создан"
+
+## en :: controls
+1 handful
+5 handfuls
+Account: gm2@example.test
+Alt. tables
+Armor Stitcher
+Armor StitcherYou can use this stitcher to spend any number of H... [namelen=114 namehash=0de533ee]
+As in the book
+Communities
+Copy text
+Delete
+Dragon's Vault
+Dread
+EN
+How this works
+In coins
+Install as an app
+Lay these out for printing: nine to an A4 sheet
+List name
+Lists
+Note
+One higher
+One lower
+Position in the list
+Premium Bedroll
+Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
+Privacy
+RU
+Random 1–3
+Remove from the list
+Roll result
+Search
+Select all
+Share
+Skip to content
+Spidersilk Tunic
+Spidersilk TunicTier 2 · Thresholds 9/20 · Armor 4Wall-Crawling:... [namelen=148 namehash=319e3625]
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

@@ -1,31 +1,19 @@
 // PreToolUse(Edit|MultiEdit|Write|NotebookEdit): block direct writes to
-// generated files and to a migration that a remote-tracking ref holds - CI
-// applies every pushed migration, so a pushed one is history. Git is the
-// record; no file lists applied migrations. See .claude/README.md, "Hooks".
+// generated files and to a migration that a remote-tracking ref holds, after
+// a bounded fetch - CI applies every pushed migration, so a pushed one is
+// history. Git is the record; no file lists applied migrations. See
+// .claude/README.md, "Hooks".
 
-import { spawnSync } from 'node:child_process';
-import { readInput, guard, deny, relPath, pathKey, repoRoot } from './lib.mjs';
-
-const MIGRATIONS = 'supabase/migrations/';
-
-/** Returns the remote-tracking refs whose tree holds
- * supabase/migrations/<file>. A repository with no remote ref, or any git
- * failure, gives none, so it denies nothing. */
-function remoteRefsHolding(file) {
-  const git = (args) =>
-    spawnSync('git', args, { cwd: repoRoot(), encoding: 'utf8', windowsHide: true });
-  const list = git(['for-each-ref', '--format=%(refname:short)', 'refs/remotes/']);
-  if (list.error || list.status !== 0) return [];
-  // `origin/HEAD` (short form `origin` on some git versions) is a second name
-  // for a ref already listed.
-  const refs = list.stdout
-    .split(/\r?\n/)
-    .filter((ref) => ref.includes('/') && !ref.endsWith('/HEAD'));
-  return refs.filter((ref) => {
-    const r = git(['cat-file', '-e', `${ref}:${MIGRATIONS}${file}`]);
-    return !r.error && r.status === 0;
-  });
-}
+import {
+  readInput,
+  guard,
+  deny,
+  relPath,
+  pathKey,
+  remoteRefsHoldingMigration,
+  migrationLockedMessage,
+  MIGRATIONS_DIR as MIGRATIONS
+} from './lib.mjs';
 
 // Every test here runs against pathKey(rel), not rel itself: relPath() keeps
 // real casing on POSIX, and a literal like 'data.json' must match regardless
@@ -91,13 +79,8 @@ guard(() => {
   }
 
   if (key.startsWith(MIGRATIONS)) {
-    const refs = remoteRefsHolding(rel.slice(MIGRATIONS.length));
-    if (refs.length) {
-      return deny(
-        event,
-        `Blocked: ${rel} is on ${refs.join(', ')}; CI applies every pushed migration to the test project and every migration on main to production, so it is history - write a new migration instead.`
-      );
-    }
+    const refs = remoteRefsHoldingMigration(rel.slice(MIGRATIONS.length), { fetch: true });
+    if (refs.length) return deny(event, migrationLockedMessage(rel, refs));
   }
   return undefined;
 });

@@ -411,6 +411,23 @@ function makeDriver(page, target, url = TARGETS[target]) {
       return settle(page);
     },
 
+    /** Navigates in the page, as a pasted link does, then settles. */
+    async go(hash) {
+      await page.evaluate((h) => {
+        location.hash = h;
+      }, hash);
+      await settle(page);
+    },
+
+    /** Fires the page's shown-again signal (`visibilitychange` while visible),
+     *  then settles. */
+    async shownAgain() {
+      await page.evaluate(() => {
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      await settle(page);
+    },
+
     /**
      * Waits for the address bar to stop changing - specifically for
      * `ListPage.svelte`'s 150ms-debounced URL sync (`URL_DEBOUNCE_MS` above)
@@ -619,6 +636,29 @@ function makeDriver(page, target, url = TARGETS[target]) {
      *  not only as the tick on a chip. */
     storage(key) {
       return page.evaluate((k) => localStorage.getItem(k), key);
+    },
+
+    /**
+     * Calls the fake cloud's function at the dotted `path` in the page and
+     * returns its awaited answer - `fake('setOffline', true)`,
+     * `fake('auth.signOut')`, `fake('lists.list')`. The test build only
+     * (`window.__dhlootFake`); a path that names no function throws.
+     */
+    fake(path, ...args) {
+      return page.evaluate(
+        async (p, a) => {
+          const parts = p.split('.');
+          const name = parts.pop();
+          let owner = window.__dhlootFake;
+          for (const k of parts) owner = owner?.[k];
+          if (typeof owner?.[name] !== 'function') {
+            throw new Error('fake: no function at ' + p);
+          }
+          return await owner[name](...a);
+        },
+        path,
+        args
+      );
     },
 
     /** What the tab says. Off screen, so no screenshot can catch it drifting. */

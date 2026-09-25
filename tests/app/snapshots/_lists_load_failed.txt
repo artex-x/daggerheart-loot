@@ -1,6 +1,6 @@
-# #/lists ~ created
+# #/lists ~ load failed
 # route: #/lists
-# why: the new card first, the field cleared, the toast
+# why: signed in with no network: the account group says the read failed and offers «Повторить»
 
 ## ru :: tree
 RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]
@@ -11,7 +11,8 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Аккаунт: gm1@example.test" [url=#/account]
+      StaticText "G"
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
@@ -28,28 +29,18 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
-    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
-    button "Скрыть" [description=Скрыть]
     StaticText "НОВЫЙ СПИСОК"
-    textbox "Новый список" [focused=true multiline=false readonly=false required=false]
+    textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
-    StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
-    textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
-    button "Восстановить"
-    link "Тайник, 0 позиций" [url=#/l/0KLQsNC50L3QuNC6CjAubnRmcH4]
-      StaticText "Тайник"
-      StaticText "0"
-      StaticText "Список пуст"
-    button "Поделиться"
-    button "Удалить"
+    heading "ВАШ АККАУНТ" [level=2]
+    StaticText "Не получилось загрузить списки аккаунта."
+    button "Повторить"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
       link "Конфиденциальность" [url=pages/privacy.html]
       link "Условия использования" [url=pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
-  status ""
-    StaticText "Список «Тайник» создан"
 
 ## ru :: controls
 Dragon's Vault
@@ -59,10 +50,8 @@ RU
 Vault of Ages
 Wondrous
 daggerheart.com
+Аккаунт: gm1@example.test
 Альт. таблицы
-Войти
-Восстановить
-Восстановить из ссылки
 К содержимому
 Как это работает
 Конфиденциальность
@@ -70,15 +59,12 @@ daggerheart.com
 Новый список
 Обычные правила
 Открывать этот раздел при запуске
-Поделиться
+Повторить
 Поиск
-Скрыть
 Создать
 Сообщества
 Списки
 Таблицы
-Тайник, 0 позиций
-Удалить
 Условия использования
 Установить как приложение
 
@@ -91,7 +77,8 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Account: gm1@example.test" [url=#/account]
+      StaticText "G"
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
@@ -108,35 +95,24 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
-    button "Dismiss" [description=Dismiss]
     StaticText "NEW LIST"
-    textbox "New list" [focused=true multiline=false readonly=false required=false]
+    textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
-    StaticText "RESTORE FROM A LINK"
-    textbox "Restore from a link" [multiline=false readonly=false required=false]
-    button "Restore"
-    link "Тайник, 0 items" [url=#/l/0KLQsNC50L3QuNC6CjAubnRmcH4]
-      StaticText "Тайник"
-      StaticText "0"
-      StaticText "The list is empty"
-    button "Share"
-    button "Delete"
+    heading "YOUR ACCOUNT" [level=2]
+    StaticText "Could not load the lists in your account."
+    button "Retry"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
       link "Privacy" [url=pages/en/privacy.html]
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
-  status ""
-    StaticText "Список «Тайник» создан"
 
 ## en :: controls
+Account: gm1@example.test
 Alt. tables
 Communities
 Create
-Delete
-Dismiss
 Dragon's Vault
 Dread
 EN
@@ -147,11 +123,8 @@ New list
 Open this section on start
 Privacy
 RU
-Restore
-Restore from a link
+Retry
 Search
-Share
-Sign in
 Skip to content
 Standard rules
 Tables
@@ -160,4 +133,3 @@ Vault of Ages
 Wondrous
 daggerheart.com
 ЛутDaggerheart
-Тайник, 0 items

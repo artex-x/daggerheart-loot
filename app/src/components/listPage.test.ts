@@ -26,7 +26,9 @@ import {
   noData,
   plainCompress
 } from '../ports/index.js';
-import type { CompressPort, Env } from '../ports/index.js';
+import type { CloudPort, CompressPort, Env, ListWrite } from '../ports/index.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -1334,5 +1336,179 @@ describe('accessibility', () => {
     await userEvent.click(screen.getByText('Бросок по списку'));
     await userEvent.click(screen.getByRole('button', { name: 'На единицу больше' }));
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('an account list', () => {
+  const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
+  const openAs = (cloud: CloudPort, hash = SHOP, over: Partial<Env> = {}) => {
+    const router = memoryRouter(hash);
+    const dialog = fakeDialog();
+    const view = render(App, { env: at(hash, { router, dialog, cloud, ...over }) });
+    return { ...view, router, dialog };
+  };
+  const sub = (container: HTMLElement): string =>
+    container.querySelector('.page-sub')?.textContent.replace(/\s+/g, ' ').trim() ?? '';
+
+  it('keeps its address, draws no link buttons and no notice, and says saved', async () => {
+    const { container, router } = openAs(fakeCloud(SEED, 'gm1'));
+    const input = await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(input).toHaveValue('Лавка кузнеца');
+    expect(sub(container)).toBe('3 позиции · Сохранено');
+    expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ссылка себе' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
+    expect(screen.queryByText('Списки живут только в этом браузере.')).not.toBeInTheDocument();
+    await userEvent.type(input, '!');
+    await new Promise((r) => setTimeout(r, 200));
+    expect(router.hash()).toBe(SHOP);
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws Поделиться on an account list only, and folds its panel', async () => {
+    const clipboard = fakeClipboard();
+    const { container } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { clipboard });
+    const share = await screen.findByRole('button', { name: 'Поделиться' });
+    expect(share).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(share);
+    expect(share).toHaveAttribute('aria-expanded', 'true');
+    expect(await screen.findByText('Ссылка для игроков')).toBeInTheDocument();
+    for (const b of screen.getAllByRole('button', { name: 'Скопировать' })) {
+      await userEvent.click(b);
+      expect(clipboard.last.text).not.toContain('#/l/');
+    }
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
+    expect(clipboard.last.text).not.toContain('#/l/');
+    await expectNoA11yViolations(container);
+    await userEvent.click(share);
+    expect(screen.queryByText('Ссылка для игроков')).not.toBeInTheDocument();
+    cleanup();
+    render(App, { env: withA('#/lists/a') });
+    expect(screen.queryByRole('button', { name: 'Поделиться' })).not.toBeInTheDocument();
+  });
+
+  it('says saving while a write is in flight, then saved', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let answer: (w: ListWrite) => void = () => undefined;
+    cloud.lists.update = () =>
+      new Promise((r) => {
+        answer = r;
+      });
+    const { container } = openAs(cloud);
+    await userEvent.type(await screen.findByRole('textbox', { name: 'Название списка' }), '!');
+    expect(sub(container)).toBe('3 позиции · Сохраняем...');
+    answer({ ok: true });
+    await waitFor(() => {
+      expect(sub(container)).toBe('3 позиции · Сохранено');
+    });
+  });
+
+  it('says not saved offline, keeps the edit, and announces the retry that saves it', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container } = openAs(cloud);
+    const input = await screen.findByRole('textbox', { name: 'Название списка' });
+    cloud.setOffline(true);
+    await userEvent.type(input, '!');
+    await waitFor(() => {
+      expect(sub(container)).toBe('3 позиции · Не сохраненоПовторить');
+    });
+    expect(input).toHaveValue('Лавка кузнеца!');
+    const status = [...container.querySelectorAll('.lsaid')].map((s) => s.textContent);
+    expect(status).toContain('Не сохранено');
+    await expectNoA11yViolations(container);
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    await waitFor(() => {
+      expect(sub(container)).toBe('3 позиции · Сохранено');
+    });
+    const said = () => [...container.querySelectorAll('.lsaid')].map((s) => s.textContent);
+    expect(said()).toContain('Сохранено');
+    const read = await cloud.lists.list();
+    expect(read.ok && read.lists.find((l) => l.name === 'Лавка кузнеца!')).toBeTruthy();
+    await userEvent.type(input, '?');
+    await waitFor(() => {
+      expect(said()).not.toContain('Сохранено');
+    });
+  });
+
+  it('deletes after a confirm that names its links, back on the index, with no undo', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { router, dialog } = openAs(cloud);
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
+    expect(dialog.asked).toEqual([
+      'Удалить список «Лавка кузнеца»? Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.'
+    ]);
+    expect(router.hash()).toBe('#/lists');
+    expect(screen.getByText('Список «Лавка кузнеца» удалён')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Вернуть' })).not.toBeInTheDocument();
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      expect(read.ok && read.lists.map((l) => l.name)).not.toContain('Лавка кузнеца');
+    });
+  });
+
+  it('puts a removed row back into the account list when the undo runs on a browser list', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { router } = openAs(cloud, SHOP, { storage });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    await userEvent.click(screen.getAllByRole('button', { name: 'Убрать из списка' })[0]!);
+    router.navigate('#/lists/a');
+    expect(await screen.findByRole('textbox', { name: 'Название списка' })).toHaveValue(
+      'Тайник'
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      const shop = read.ok ? read.lists.find((l) => l.name === 'Лавка кузнеца') : undefined;
+      expect(shop?.list_entries.map((e) => e.item_key)[0]).toBe('ci1');
+    });
+    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'cc1', 'q1']);
+  });
+
+  it('keeps the list when the delete is refused', async () => {
+    const { router } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { dialog: fakeDialog(false) });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
+    expect(router.hash()).toBe(SHOP);
+  });
+
+  it('asks a signed-out reader to sign in, and «Войти» opens the account page', async () => {
+    const { container, router } = openAs(fakeCloud(SEED));
+    expect(
+      await screen.findByText('Если это список из вашего аккаунта, войдите, чтобы открыть его.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Список не найден' })
+    ).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
+    expect(router.hash()).toBe('#/account');
+  });
+
+  it('draws nothing while the account answers, and a failed read with a retry', async () => {
+    const pending = fakeCloud(SEED);
+    pending.auth.session = () => new Promise(() => undefined);
+    openAs(pending);
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+    cleanup();
+
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    const { container } = openAs(cloud);
+    expect(await screen.findByText('Не получилось загрузить списки аккаунта.')).toBeVisible();
+    await expectNoA11yViolations(container);
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    expect(await screen.findByRole('textbox', { name: 'Название списка' })).toHaveValue(
+      'Лавка кузнеца'
+    );
+  });
+
+  it("draws today's not-found page for an id the account does not hold", async () => {
+    openAs(fakeCloud(SEED, 'gm2'));
+    expect(
+      await screen.findByText('Возможно, он удалён или открыт в другом браузере.')
+    ).toBeInTheDocument();
   });
 });

@@ -47,6 +47,9 @@
   --eq-armor: #5ec9c4;
 
   --danger: #e0685f;
+  /* The danger colour as text on the dark ground: a destructive button's
+     label, an error line, an account list's failed save. */
+  --danger-text: #f0a49d;
 
   /* The badge's own ground - moved here from `Badge.svelte`, where it
      was the base rule's `background` alone; every variant sits on it. */

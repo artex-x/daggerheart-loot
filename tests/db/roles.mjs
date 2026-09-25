@@ -92,3 +92,18 @@ export function resetLocal(args = []) {
 export function applySql(sql, text) {
   return sql.unsafe(text);
 }
+
+/** Returns the lines only in `a` (`- `) and only in `b` (`+ `), at most
+ * ten, ignoring blank lines. */
+export function lineDiff(a, b) {
+  const lines = (s) => s.split(/\r?\n/).filter((l) => l.trim());
+  const inA = lines(a);
+  const inB = lines(b);
+  const setA = new Set(inA);
+  const setB = new Set(inB);
+  const out = [
+    ...inA.filter((l) => !setB.has(l)).map((l) => `- ${l}`),
+    ...inB.filter((l) => !setA.has(l)).map((l) => `+ ${l}`)
+  ];
+  return out.slice(0, 10);
+}

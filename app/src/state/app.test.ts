@@ -33,7 +33,7 @@ import type {
 } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
-import { AppState } from './app.svelte.js';
+import { AppState, LIST_POLL_MS } from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
@@ -987,7 +987,8 @@ describe('the account session', () => {
       returned: {
         kind: 'link',
         provider: 'discord',
-        result: { ok: false, error: 'alreadyLinked' }
+        result: { ok: false, error: 'alreadyLinked' },
+        action: null
       }
     });
     const app = new AppState(at('#/account', { cloud }));
@@ -1002,7 +1003,12 @@ describe('the account session', () => {
     const refused = new AppState(
       at('#/account', {
         cloud: fakeCloud(SEED, undefined, {
-          returned: { kind: 'signIn', provider: null, result: { ok: false, error: 'failed' } }
+          returned: {
+            kind: 'signIn',
+            provider: null,
+            result: { ok: false, error: 'failed' },
+            action: null
+          }
         })
       })
     );
@@ -1019,7 +1025,7 @@ describe('the account session', () => {
     const worked = new AppState(
       at('#/account', {
         cloud: fakeCloud(SEED, 'gm1', {
-          returned: { kind: 'link', provider: 'discord', result: { ok: true } }
+          returned: { kind: 'link', provider: 'discord', result: { ok: true }, action: null }
         })
       })
     );
@@ -1034,7 +1040,8 @@ describe('the account session', () => {
       returned: {
         kind: 'link',
         provider: 'discord',
-        result: { ok: false, error: 'alreadyLinked' }
+        result: { ok: false, error: 'alreadyLinked' },
+        action: null
       }
     });
     const app = new AppState(at('#/roll/std', { cloud }));
@@ -1351,5 +1358,445 @@ describe('account preferences', () => {
     await flush();
     expect(outLoad).not.toHaveBeenCalled();
     signedOut.app.stop();
+  });
+});
+
+describe('account lists', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const loot: Loot = {
+    items: {
+      core_item: [
+        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 },
+        { id: 'q1', src: 'core', kind: 'item', en: 'B', ende: '', ru: 'Б', rud: '', roll: 2 }
+      ]
+    }
+  };
+  const SHOP = '00000000-0000-4000-8000-000000000101';
+
+  function started(cloud: CloudPort | null, hash: string, over: Partial<Env> = {}) {
+    const router = memoryRouter(hash);
+    const storage = memoryStorage();
+    const app = new AppState(
+      fakeEnv({ router, storage, cloud, data: { load: () => loot }, ...over })
+    );
+    app.start();
+    return { app, router, storage };
+  }
+
+  it('creates where the reader can: locally with no sign-in, waits, prompts, or the account', async () => {
+    expect(started(null, '#/lists').app.newListTarget).toBe('local');
+    const cloud = fakeCloud(SEED);
+    const { app } = started(cloud, '#/lists');
+    expect(app.newListTarget).toBe('wait');
+    await flush();
+    expect(app.newListTarget).toBe('prompt');
+    await cloud.auth.signIn('google');
+    expect(app.newListTarget).toBe('cloud');
+    app.stop();
+  });
+
+  it("loads the account's lists on sign-in and names the store that holds a list", async () => {
+    const { app } = started(fakeCloud(SEED, 'gm1'), '#/lists');
+    await flush();
+    expect(app.cloudLists?.status).toBe('ready');
+    expect(app.cloudLists?.lists.map((l) => l.name)).toEqual([
+      'Пустой список',
+      'Лавка кузнеца',
+      'Трофеи'
+    ]);
+    expect(app.storeFor(SHOP)).toBe(app.cloudLists);
+    expect(app.storeFor('l1')).toBe(app.lists);
+    app.stop();
+  });
+
+  it('remembers a prompt until the reader leaves the account page', async () => {
+    const { app, router } = started(fakeCloud(SEED), '#/tables/eq_weapon');
+    await flush();
+    const after = { hash: '#/tables/eq_weapon' };
+    app.askSignIn(after);
+    expect(app.hash).toBe('#/account');
+    expect(app.signInFor).toBe(after);
+    router.navigate('#/account');
+    expect(app.signInFor).toBe(after);
+    router.navigate('#/roll/std');
+    expect(app.signInFor).toBeNull();
+    app.askSignIn(after);
+    app.go('#/lists');
+    expect(app.signInFor).toBeNull();
+    app.stop();
+  });
+
+  it('returns after sign-in with the same rows ticked and the menu open', async () => {
+    const cloud = fakeCloud(SEED);
+    const signIn = vi.spyOn(cloud.auth, 'signIn');
+    const { app } = started(cloud, '#/tables/eq_weapon');
+    await flush();
+    const after = {
+      hash: '#/tables/eq_weapon',
+      action: { do: 'addToList' as const, key: 'sel', ids: ['ci1', 'q1'], picked: { q1: 2 } }
+    };
+    app.askSignIn(after);
+    expect(await app.signIn('google')).toEqual({ ok: true });
+    expect(signIn).toHaveBeenCalledWith('google', after);
+    expect(app.hash).toBe('#/tables/eq_weapon');
+    expect(app.signInFor).toBeNull();
+    await flush();
+    expect([...app.sel]).toEqual(['ci1', 'q1']);
+    expect([...app.picked]).toEqual([['q1', 2]]);
+    expect(app.menuFor).toBe('sel');
+    app.stop();
+  });
+
+  it("opens a card's menu without ticking its record", async () => {
+    const { app } = started(fakeCloud(SEED), '#/i/ci1');
+    await flush();
+    app.askSignIn({ hash: '#/i/ci1', action: { do: 'addToList', key: 'ci1', ids: ['ci1'] } });
+    await app.signIn('discord');
+    await flush();
+    expect(app.hash).toBe('#/i/ci1');
+    expect(app.menuFor).toBe('ci1');
+    expect(app.sel.size).toBe(0);
+    app.stop();
+  });
+
+  it('stays on the account page after a sign-in no prompt started', async () => {
+    const { app } = started(fakeCloud(SEED), '#/account');
+    await flush();
+    expect(await app.signIn('google')).toEqual({ ok: true });
+    expect(app.hash).toBe('#/account');
+    app.stop();
+  });
+
+  it('answers a refusal, and a build with no sign-in, without moving', async () => {
+    const cloud = fakeCloud(SEED);
+    cloud.auth.signIn = () => Promise.resolve({ ok: false, error: 'failed' });
+    const { app } = started(cloud, '#/lists');
+    await flush();
+    app.askSignIn({ hash: '#/lists' });
+    expect(await app.signIn('google')).toEqual({ ok: false, error: 'failed' });
+    expect(app.hash).toBe('#/account');
+    app.stop();
+    expect(await new AppState(at('#/account')).signIn('google')).toEqual({
+      ok: false,
+      error: 'failed'
+    });
+  });
+
+  it('finishes the action a provider redirect brought back, once the lists are read', async () => {
+    const action = { do: 'addToList' as const, key: 'sel', ids: ['ci1'] };
+    const cloud = fakeCloud(SEED, 'gm1', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const { app } = started(cloud, '#/tables/eq_weapon');
+    await flush();
+    await flush();
+    expect(app.menuFor).toBe('sel');
+    expect([...app.sel]).toEqual(['ci1']);
+    app.stop();
+  });
+
+  it('saves an old shared link into the account and opens the copy', async () => {
+    const shared = encodeList({ name: 'Лавка', ids: ['ci1', 'q1'] }, true);
+    const { app } = started(fakeCloud(SEED), sharedListHash(shared));
+    await flush();
+    app.askSignIn({ hash: app.hash, action: { do: 'saveList' } });
+    await app.signIn('google');
+    await flush();
+    expect(app.hash).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+    expect(app.cloudLists?.get('00000000-0000-4000-8000-000000005000')).toMatchObject({
+      name: 'Лавка',
+      ids: ['ci1', 'q1']
+    });
+    expect(app.toast?.msg).toBe('Список «Лавка» создан');
+    app.stop();
+  });
+
+  it('waits for a packed link to expand before it saves it', async () => {
+    const shared = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
+    let expand: (plain: string) => void = () => undefined;
+    const compress: CompressPort = {
+      available: () => true,
+      pack: (raw) => Promise.resolve(raw),
+      unpack: () =>
+        new Promise((r) => {
+          expand = r;
+        })
+    };
+    const action = { do: 'saveList' as const };
+    const cloud = fakeCloud(SEED, 'gm1', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const { app } = started(cloud, '#/l/~packed', { compress });
+    await flush();
+    expect(app.hash).toBe('#/l/~packed');
+    expand(shared);
+    await flush();
+    expect(app.hash).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+    app.stop();
+  });
+
+  it('forgets a waiting save when the reader moves to another shared link', async () => {
+    const shared = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
+    let expand: (plain: string) => void = () => undefined;
+    const compress: CompressPort = {
+      available: () => true,
+      pack: (raw) => Promise.resolve(raw),
+      unpack: () =>
+        new Promise((r) => {
+          expand = r;
+        })
+    };
+    const action = { do: 'saveList' as const };
+    const cloud = fakeCloud(SEED, 'gm1', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const { app, router } = started(cloud, '#/l/~packed', { compress });
+    await flush();
+    router.navigate('#/l/~other');
+    expand(shared);
+    await flush();
+    expect(app.route.kind).toBe('sharedList');
+    expect(app.cloudLists?.lists).toHaveLength(3);
+    app.stop();
+  });
+
+  it('forgets a waiting action and its typed name on sign-out', async () => {
+    const action = { do: 'addToList' as const, key: 'sel', ids: ['ci1'], name: 'Клад' };
+    const cloud = fakeCloud(SEED, 'gm1', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const read = cloud.lists.list.bind(cloud.lists);
+    let answer: () => void = () => undefined;
+    cloud.lists.list = () =>
+      new Promise((r) => {
+        answer = () => {
+          r(read());
+        };
+      });
+    const { app } = started(cloud, '#/tables/eq_weapon');
+    await flush();
+    await cloud.auth.signOut();
+    await cloud.auth.signIn('google');
+    await flush();
+    answer();
+    await flush();
+    expect(app.cloudLists?.status).toBe('ready');
+    expect(app.menuFor).toBe('');
+    expect(app.sel.size).toBe(0);
+    expect(app.pendingListName).toBeNull();
+    app.stop();
+  });
+
+  it('drops a save that returns to a page that is not a shared list', async () => {
+    const action = { do: 'saveList' as const };
+    const cloud = fakeCloud(SEED, 'gm1', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const { app } = started(cloud, '#/lists');
+    await flush();
+    await flush();
+    expect(app.hash).toBe('#/lists');
+    expect(app.cloudLists?.lists).toHaveLength(3);
+    app.stop();
+  });
+
+  it('leaves an account list page for the index on sign-out, with no account list kept', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, router } = started(cloud, '#/lists/' + SHOP);
+    await flush();
+    expect(app.cloudLists?.get(SHOP)).toBeDefined();
+    await cloud.auth.signOut();
+    expect(app.hash).toBe('#/lists');
+    expect(router.hash()).toBe('#/lists');
+    expect(app.cloudLists?.lists).toEqual([]);
+    expect(app.cloudLists?.status).toBe('idle');
+    app.stop();
+  });
+
+  it('keeps a signed-out reader on an account address, and a local list page on sign-out', async () => {
+    const out = started(fakeCloud(SEED), '#/lists/' + SHOP);
+    await flush();
+    expect(out.app.hash).toBe('#/lists/' + SHOP);
+    out.app.stop();
+    const cloud = fakeCloud(SEED, 'gm1');
+    const local = started(cloud, '#/lists/l1');
+    await flush();
+    await cloud.auth.signOut();
+    expect(local.app.hash).toBe('#/lists/l1');
+    local.app.stop();
+  });
+
+  it('re-reads the lists when the tab is shown again', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = started(cloud, '#/lists');
+    await flush();
+    const list = vi.spyOn(cloud.lists, 'list');
+    storage.fireExternalChange(null);
+    await flush();
+    expect(list).toHaveBeenCalledOnce();
+    app.stop();
+  });
+
+  it('re-reads every 45 s on the index and an account list page, not elsewhere', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED, 'gm1');
+      const { app } = started(cloud, '#/lists');
+      await vi.advanceTimersByTimeAsync(0);
+      const list = vi.spyOn(cloud.lists, 'list');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).toHaveBeenCalledTimes(1);
+      app.go('#/lists/' + SHOP);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).toHaveBeenCalledTimes(2);
+      app.go('#/tables/eq_weapon');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).toHaveBeenCalledTimes(2);
+      app.stop();
+      app.go('#/lists');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('re-reads nothing signed out', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED);
+      const list = vi.spyOn(cloud.lists, 'list');
+      const { app } = started(cloud, '#/lists');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).not.toHaveBeenCalled();
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('re-reads an open share link every 45 s signed out, not elsewhere, and moves the clock', async () => {
+    vi.useFakeTimers({ now: new Date('2026-09-25T12:00:00Z') });
+    try {
+      const cloud = fakeCloud(SEED);
+      const { app } = started(cloud, '#/s/player-token-1');
+      await app.sharedView?.open('player-token-1', null);
+      const read = vi.spyOn(cloud.shares, 'read');
+      const before = app.now;
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(read).toHaveBeenCalledOnce();
+      expect(app.now).toBe(before + LIST_POLL_MS);
+      app.go('#/tables/eq_weapon');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(read).toHaveBeenCalledOnce();
+      expect(app.now).toBe(before + 2 * LIST_POLL_MS);
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('re-reads an open share link and moves the clock when the tab is shown again, signed out', async () => {
+    const cloud = fakeCloud(SEED);
+    const { app, storage } = started(cloud, '#/s/player-token-1');
+    await flush();
+    await app.sharedView?.open('player-token-1', null);
+    const read = vi.spyOn(cloud.shares, 'read');
+    app.now = 0;
+    storage.fireExternalChange(null);
+    await flush();
+    expect(read).toHaveBeenCalledOnce();
+    expect(app.now).toBeGreaterThan(0);
+    storage.fireExternalChange('dhloot.lists.v1');
+    await flush();
+    expect(read).toHaveBeenCalledOnce();
+    app.stop();
+  });
+
+  it('saves a share link into the account and opens the copy', async () => {
+    const { app } = started(fakeCloud(SEED, 'gm2'), '#/s/player-token-1');
+    await flush();
+    await app.sharedView?.open('player-token-1', app.user?.userId ?? null);
+    await app.saveShareCopy('player-token-1');
+    expect(app.hash).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+    expect(app.cloudLists?.get('00000000-0000-4000-8000-000000005000')).toMatchObject({
+      name: 'Лавка кузнеца',
+      note: 'Открыта с рассвета до заката.'
+    });
+    expect(app.cloudLists?.get('00000000-0000-4000-8000-000000005000')?.hnote).toBeUndefined();
+    expect(app.toast?.msg).toBe('Список «Лавка кузнеца» создан');
+    expect(app.cloning).toBe(false);
+    app.stop();
+  });
+
+  it('stays where the reader went while the copy was made', async () => {
+    const { app } = started(fakeCloud(SEED, 'gm2'), '#/s/player-token-1');
+    await flush();
+    const saving = app.saveShareCopy('player-token-1');
+    expect(app.cloning).toBe(true);
+    await app.saveShareCopy('player-token-1');
+    app.go('#/tables/eq_weapon');
+    await saving;
+    expect(app.hash).toBe('#/tables/eq_weapon');
+    expect(app.cloudLists?.lists).toHaveLength(2);
+    app.stop();
+  });
+
+  it('makes one copy when Save a copy is pressed again while the account is read back', async () => {
+    const { app } = started(fakeCloud(SEED, 'gm2'), '#/s/player-token-1');
+    await flush();
+    const lists = app.cloudLists;
+    if (!lists) throw new Error('The account lists are missing. Start the app signed in');
+    const load = lists.load.bind(lists);
+    let release = (): void => {};
+    const held = new Promise<void>((r) => {
+      release = r;
+    });
+    const readBack = vi.spyOn(lists, 'load').mockImplementationOnce(async () => {
+      await held;
+      await load();
+    });
+    const saving = app.saveShareCopy('player-token-1');
+    await vi.waitFor(() => {
+      expect(readBack).toHaveBeenCalledOnce();
+    });
+    expect(app.cloning).toBe(true);
+    await app.saveShareCopy('player-token-1');
+    release();
+    await saving;
+    expect(app.cloning).toBe(false);
+    expect(lists.lists).toHaveLength(2);
+    app.stop();
+  });
+
+  it('says the limit, or the failure, when the copy is refused', async () => {
+    const { app } = started(
+      fakeCloud(SEED, 'gm2', { limits: { lists: 1 } }),
+      '#/s/player-token-1'
+    );
+    await flush();
+    await app.saveShareCopy('player-token-1');
+    expect(app.hash).toBe('#/s/player-token-1');
+    expect(app.toast).toMatchObject({ mode: 'err' });
+    expect(app.toast?.msg).toContain('Достигнут предел списков в аккаунте: 1.');
+    await app.saveShareCopy('unknown-token');
+    expect(app.toast?.msg).toBe('Не получилось сохранить список себе. Попробуйте ещё раз.');
+    app.stop();
+  });
+
+  it('copies a share link once a sign-in that a prompt started comes back', async () => {
+    const action = { do: 'saveList' as const };
+    const cloud = fakeCloud(SEED, 'gm2', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const { app } = started(cloud, '#/s/gm-token-1');
+    await flush();
+    await flush();
+    await flush();
+    expect(app.hash).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+    expect(app.cloudLists?.get('00000000-0000-4000-8000-000000005000')?.hnote).toBe(
+      'Кузнец торгуется, если назвать имя его брата.'
+    );
+    app.stop();
   });
 });

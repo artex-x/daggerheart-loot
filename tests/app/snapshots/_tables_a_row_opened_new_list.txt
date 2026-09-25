@@ -1,6 +1,6 @@
 # #/tables ~ a row opened, new list
 # route: #/tables
-# why: the new-list form inside the modal, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card's edge
+# why: signed out: the sign-in prompt in the new-list slot of the modal's menu, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card's edge
 
 ## ru :: tree
 RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
@@ -9,17 +9,16 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Страница"
     StaticText "56"
     StaticText "ПРЕДМЕТ"
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=true]
-    StaticText "ЛЕЖИТ В СПИСКАХ"
     StaticText "Ничего не найдено"
-    textbox "Новый список" [focused=true multiline=false readonly=false required=false]
-    button "Создать"
+    StaticText "Войдите, чтобы создать список."
+    button "Войти" [focused=true]
     button "Отмена"
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci56]
 
@@ -126,7 +125,6 @@ daggerheart.com
 Мешочек Своенравного Песка
 Мистический Плащ
 Наручники
-Новый список
 Обычные правила
 Осколок Памяти
 Открывать этот раздел при запуске
@@ -174,7 +172,6 @@ daggerheart.com
 Скопировать текст
 Снаряжение
 Собрать карточки для печати: девять на лист A4
-Создать
 Сообщества
 Списки
 Списком

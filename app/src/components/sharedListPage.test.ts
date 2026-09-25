@@ -4,7 +4,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -25,6 +25,8 @@ import {
   memoryStorage
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -611,6 +613,148 @@ describe('the bad link', () => {
   });
 });
 
+describe('the legacy announcement', () => {
+  it('names the date on a link that decodes, and not on the bad-link page', () => {
+    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
+    expect(screen.getByText(dict('ru').legacyLinks)).toBeInTheDocument();
+    cleanup();
+    render(App, { env: at('#/l/zzzz') });
+    expect(screen.queryByText(dict('ru').legacyLinks)).not.toBeInTheDocument();
+  });
+});
+
+describe('a share link', () => {
+  const ru = dict('ru');
+  const open = (hash: string, cloud = fakeCloud(SEED), over: Partial<Env> = {}) => {
+    const router = memoryRouter(hash);
+    const r = render(App, { env: at(hash, { router, cloud, ...over }) });
+    return { ...r, router, cloud };
+  };
+
+  it("draws the players' view signed out: the name, the sub, the update time and no GM note", async () => {
+    open('#/s/player-token-1');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Список от другого игрока · 2 позиции')).toBeInTheDocument();
+    expect(screen.getByText('Обновлено 3 дня назад')).toBeInTheDocument();
+    expect(screen.getByText('Открыта с рассвета до заката.')).toBeInTheDocument();
+    expect(screen.queryByText(/Кузнец торгуется/)).not.toBeInTheDocument();
+    expect(screen.queryByText(ru.ownList)).not.toBeInTheDocument();
+    expect(screen.queryByText(ru.legacyLinks)).not.toBeInTheDocument();
+  });
+
+  it('toasts the entries the data does not know, once', async () => {
+    open('#/s/player-token-1');
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    expect(screen.getByText(plural(7, ru.droppedItems, 'ru'))).toBeInTheDocument();
+  });
+
+  it('draws both notes on a GM link', async () => {
+    open('#/s/gm-token-1');
+    expect(
+      await screen.findByText('Кузнец торгуется, если назвать имя его брата.')
+    ).toBeInTheDocument();
+    expect(screen.getByText('Открыта с рассвета до заката.')).toBeInTheDocument();
+  });
+
+  it('tells the owner it is their list, with a link to its page', async () => {
+    open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
+    const edit = await screen.findByRole('link', { name: ru.ownListEdit });
+    expect(edit).toHaveAttribute('href', '#/lists/' + uuid(101));
+    expect(screen.getByText(ru.ownList, { exact: false })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
+  });
+
+  it('draws a GM link read-only for another user, with the GM notes and the save button', async () => {
+    open('#/s/gm-token-1', fakeCloud(SEED, 'gm2'));
+    await screen.findByText('Кузнец торгуется, если назвать имя его брата.');
+    await screen.findByRole('link', { name: 'Аккаунт: gm2@example.test' });
+    expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
+    expect(screen.queryByText(ru.ownList, { exact: false })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(document.querySelector('textarea')).toBeNull();
+  });
+
+  for (const hash of ['#/s/unknown', '#/s/']) {
+    it(`draws the no-longer-available page for ${hash}, the address kept`, async () => {
+      const { router } = open(hash);
+      expect(
+        await screen.findByRole('heading', { level: 1, name: ru.shareGone })
+      ).toBeInTheDocument();
+      expect(screen.getByText(ru.shareGoneSub)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'На главную' })).toHaveAttribute(
+        'href',
+        '#/roll/std'
+      );
+      expect(router.hash()).toBe(hash);
+    });
+  }
+
+  it('draws the no-longer-available page in a build with no sign-in', () => {
+    render(App, { env: at('#/s/player-token-1') });
+    expect(screen.getByRole('heading', { level: 1, name: ru.shareGone })).toBeInTheDocument();
+  });
+
+  it('draws the load failure offline, and the list after Повторить online', async () => {
+    const cloud = fakeCloud(SEED, undefined, { offline: true });
+    open('#/s/player-token-1', cloud);
+    expect(
+      await screen.findByRole('heading', { level: 1, name: ru.sharedFailed })
+    ).toBeInTheDocument();
+    expect(screen.getByText(ru.sharedFailedSub)).toBeInTheDocument();
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' })
+    ).toBeInTheDocument();
+  });
+
+  it('saves a copy signed in and opens it', async () => {
+    const { router } = open('#/s/player-token-1', fakeCloud(SEED, 'gm2'));
+    await screen.findByRole('link', { name: 'Аккаунт: gm2@example.test' });
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/lists/' + uuid(5000));
+    });
+    expect(await screen.findByText('Список «Лавка кузнеца» создан')).toBeInTheDocument();
+  });
+
+  it('opens the prompt signed out, and makes the copy by itself after the sign-in', async () => {
+    const { router } = open('#/s/player-token-1');
+    await screen.findByRole('link', { name: 'Войти' });
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    const save = screen.getByRole('button', { name: 'Сохранить себе' });
+    await userEvent.click(save);
+    expect(save).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Войдите, и список сохранится в ваш аккаунт.')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
+    expect(router.hash()).toBe('#/account');
+    await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/lists/' + uuid(5000));
+    });
+    expect(await screen.findByRole('textbox', { name: 'Название списка' })).toHaveValue(
+      'Лавка кузнеца'
+    );
+  });
+
+  it("has no violations on the players' view, the owner's view and the gone page", async () => {
+    const player = open('#/s/player-token-1');
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    await expectNoA11yViolations(player.container);
+    cleanup();
+    const owner = open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
+    await screen.findByRole('link', { name: ru.ownListEdit });
+    await expectNoA11yViolations(owner.container);
+    cleanup();
+    const gone = open('#/s/unknown');
+    await screen.findByRole('heading', { level: 1, name: ru.shareGone });
+    await expectNoA11yViolations(gone.container);
+  });
+});
+
 describe('English', () => {
   it('reads the sub, the note labels and the save button in English', async () => {
     render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
@@ -656,5 +800,69 @@ describe('accessibility', () => {
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('saving with sign-in configured', () => {
+  const PAYLOAD = encodeList({ name: 'Лавка', ids: ['ci1', 'cc1'], money: 'coin' }, true);
+
+  it('saves into the account signed in, and opens the copy', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const router = memoryRouter('#/l/' + PAYLOAD);
+    const storage = memoryStorage();
+    render(App, { env: at('#/l/' + PAYLOAD, { router, storage, cloud }) });
+    await screen.findByRole('link', { name: 'Аккаунт: gm2@example.test' });
+    await new Promise((r) => setTimeout(r, 0));
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
+    expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+    expect(screen.getByText('Список «Лавка» создан')).toBeInTheDocument();
+    expect(readLists(storage)).toEqual([]);
+    const read = await cloud.lists.list();
+    const made = read.ok ? read.lists.find((l) => l.name === 'Лавка') : undefined;
+    expect(made?.money_mode).toBe('coin');
+    expect(made?.list_entries.map((e) => e.item_key)).toEqual(['ci1', 'cc1']);
+  });
+
+  it('opens the prompt under the pressed button signed out, and a second press folds it', async () => {
+    const router = memoryRouter('#/l/' + PAYLOAD);
+    const storage = memoryStorage();
+    const { container } = render(App, {
+      env: at('#/l/' + PAYLOAD, { router, storage, cloud: fakeCloud(SEED) })
+    });
+    await screen.findByRole('link', { name: 'Войти' });
+    const save = screen.getByRole('button', { name: 'Сохранить себе' });
+    expect(save).not.toHaveAttribute('aria-expanded');
+    await userEvent.click(save);
+    expect(screen.getByText('Войдите, и список сохранится в ваш аккаунт.')).toBeInTheDocument();
+    expect(save).toHaveClass('on');
+    expect(save).toHaveAttribute('aria-expanded', 'true');
+    expect(readLists(storage)).toEqual([]);
+    await expectNoA11yViolations(container);
+    await userEvent.click(save);
+    expect(
+      screen.queryByText('Войдите, и список сохранится в ваш аккаунт.')
+    ).not.toBeInTheDocument();
+    expect(save).not.toHaveAttribute('aria-expanded');
+    await userEvent.click(save);
+    await userEvent.click(screen.getByRole('button', { name: 'Войти' }));
+    expect(router.hash()).toBe('#/account');
+    await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+    });
+    expect(await screen.findByRole('textbox', { name: 'Название списка' })).toHaveValue(
+      'Лавка'
+    );
+    expect(readLists(storage)).toEqual([]);
+  });
+
+  it('does nothing while the session is unknown', async () => {
+    const cloud = fakeCloud(SEED);
+    cloud.auth.session = () => new Promise(() => undefined);
+    const router = memoryRouter('#/l/' + PAYLOAD);
+    render(App, { env: at('#/l/' + PAYLOAD, { router, cloud }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
+    expect(router.hash()).toBe('#/l/' + PAYLOAD);
+    expect(screen.queryByText(/Войдите/)).not.toBeInTheDocument();
   });
 });

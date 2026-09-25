@@ -84,8 +84,9 @@
     }
   }
 
-  /* Sign-in and Connect leave for the provider; the port saves the way back.
-     The fake links in place, so identities are read again on success. */
+  /* Sign-in and Connect leave for the provider; the port saves the way back,
+     and a sign-in carries the prompt that led here (`app.signInFor`). The
+     fake links in place, so identities are read again on success. */
   function leave(p: Provider, run: () => Promise<AuthResult>): void {
     going = p;
     void act(run, (r) => {
@@ -183,7 +184,7 @@
               <Button
                 disabled={busy}
                 onclick={() => {
-                  leave(p, () => cloud.auth.signIn(p));
+                  leave(p, () => app.signIn(p));
                 }}
                 >{@render logo(p)}{(going === p ? t.redirecting : t.signInWith).replace(
                   '%s',
@@ -427,12 +428,11 @@
     overflow-wrap: anywhere;
   }
 
-  /* The danger button's own text colour. */
   .err {
     flex-basis: 100%;
     margin: 0;
     font-size: 13px;
-    color: #f0a49d;
+    color: var(--danger-text);
   }
 
   .confirm {

@@ -1237,18 +1237,29 @@ if (deployNeeds) {
   ok(names.includes('browser'), 'deploy.needs: browser is missing');
   ok(names.includes('db'), 'deploy.needs: db is missing');
   ok(names.includes('e2e'), 'deploy.needs: e2e is missing');
+  ok(names.includes('migrate-prod'), 'deploy.needs: migrate-prod is missing');
 
   /* deploy's `!cancelled()` lets a skipped need through, so only the job
-     that is meant to be skipped may carry a job-level if:. */
-  const gated = names.filter(function (name) {
+     that is meant to be skipped may carry a job-level if:, plus
+     migrate-prod, whose if: must be deploy's own - it is skipped exactly
+     when deploy is. */
+  const ifOf = function (name) {
     const job = jobOf(name);
-    return job && /^ {4}if:/m.test(job[1]);
+    const m = job && /^ {4}if:\s*(.+?)\s*$/m.exec(job[1]);
+    return m ? m[1] : null;
+  };
+  const gated = names.filter(function (name) {
+    return ifOf(name) !== null;
   });
   ok(
-    gated.length === 1 && gated[0] === 'e2e',
-    'deploy.needs: only e2e may carry a job-level if: - a skipped need passes deploy (found: ' +
+    gated.length === 2 && gated.includes('e2e') && gated.includes('migrate-prod'),
+    'deploy.needs: only e2e and migrate-prod may carry a job-level if: - a skipped need passes deploy (found: ' +
       (gated.join(', ') || 'none') +
       ')'
+  );
+  ok(
+    ifOf('migrate-prod') !== null && ifOf('migrate-prod') === ifOf('deploy'),
+    "migrate-prod: its job-level if: must equal deploy's"
   );
 }
 
@@ -1262,46 +1273,96 @@ function stepsOf(job) {
 function stepIndex(steps, test) {
   return steps.findIndex(test);
 }
+/* The test project takes the file-by-file applier, which tolerates another
+   branch's migration; production keeps `db push` (docs/DECISIONS.md,
+   2026-09-25, "CI applies the test project's migrations file by file and
+   ignores other branches' versions"). */
 const migrateRun = 'db push --db-url "$SUPABASE_DB_URL"';
 const e2eSteps = stepsOf(jobOf('e2e'));
 const migrateTest = stepIndex(e2eSteps, function (step) {
-  return step.indexOf(migrateRun) >= 0 && step.indexOf('secrets.SUPABASE_DB_URL_TEST') >= 0;
+  return (
+    /^ {8}run:\s*node tools\/supabase\/migrate-test\.mjs\s*$/m.test(step) &&
+    step.indexOf('secrets.SUPABASE_DB_URL_TEST') >= 0
+  );
 });
 const e2eRun = stepIndex(e2eSteps, function (step) {
   return /^ {8}run:\s*npm run e2e\s*$/m.test(step);
 });
-ok(migrateTest >= 0, 'e2e.migrate-test: no db push step with SUPABASE_DB_URL_TEST');
+ok(migrateTest >= 0, 'e2e.migrate-test: no migrate-test.mjs step with SUPABASE_DB_URL_TEST');
+ok(
+  !e2eSteps.some(function (step) {
+    return /^ {8}run:.*\bdb push\b/m.test(step);
+  }),
+  "e2e.migrate-test: db push refuses another branch's migration; the test project takes migrate-test.mjs"
+);
 ok(e2eRun >= 0, 'e2e.migrate-test: no npm run e2e step');
 ok(
   migrateTest >= 0 && migrateTest < e2eRun,
   'e2e.migrate-test: the migrations must reach the test project before npm run e2e (order)'
 );
 
-const deploySteps = stepsOf(deploy);
-const pendingCheck = stepIndex(deploySteps, function (step) {
+/* The production string lives in the Environment `production`, limited to
+   `main` (docs/DECISIONS.md, 2026-09-25): only a job that declares it may
+   read the secret, and `deploy` builds only after `migrate-prod`. */
+const migrateProdJob = jobOf('migrate-prod');
+ok(migrateProdJob, 'migrate-prod: the job is missing from ci.yml');
+const migrateProdNeeds =
+  migrateProdJob && /^ {4}needs:\s*\[([^\]\r\n]*)\]\s*$/m.exec(migrateProdJob[1]);
+ok(
+  migrateProdNeeds &&
+    deployNeeds &&
+    migrateProdNeeds[1].replace(/\s+/g, '') + ',migrate-prod' ===
+      deployNeeds[1].replace(/\s+/g, ''),
+  "migrate-prod.needs: must be deploy's needs without migrate-prod itself"
+);
+const prodSteps = stepsOf(migrateProdJob);
+const pendingCheck = stepIndex(prodSteps, function (step) {
   return step.indexOf('tools/supabase/pending-check.mjs') >= 0;
 });
-const migrateProd = stepIndex(deploySteps, function (step) {
+const migrateProd = stepIndex(prodSteps, function (step) {
   return step.indexOf(migrateRun) >= 0 && step.indexOf('secrets.SUPABASE_DB_URL_PROD') >= 0;
-});
-const deployBuild = stepIndex(deploySteps, function (step) {
-  return /^ {8}run:\s*npm run build\s*$/m.test(step);
 });
 ok(
   pendingCheck >= 0 &&
-    /^ {8}if:\s*inputs\.skip_e2e\s*$/m.test(deploySteps[pendingCheck]) &&
-    deploySteps[pendingCheck].indexOf('secrets.SUPABASE_DB_URL_PROD') >= 0,
-  'deploy.pending-check: a skip_e2e dispatch must refuse a migration production lacks'
+    /^ {8}if:\s*inputs\.skip_e2e\s*$/m.test(prodSteps[pendingCheck]) &&
+    prodSteps[pendingCheck].indexOf('secrets.SUPABASE_DB_URL_PROD') >= 0,
+  'migrate-prod.pending-check: a skip_e2e dispatch must refuse a migration production lacks'
 );
-ok(migrateProd >= 0, 'deploy.migrate-prod: no db push step with SUPABASE_DB_URL_PROD');
+ok(migrateProd >= 0, 'migrate-prod: no db push step with SUPABASE_DB_URL_PROD');
 ok(
-  pendingCheck >= 0 && pendingCheck < migrateProd && migrateProd < deployBuild,
-  'deploy.migrate-prod: pending-check, then migrate-prod, then the build (order)'
+  pendingCheck >= 0 && pendingCheck < migrateProd,
+  'migrate-prod: pending-check, then migrate-prod (order)'
+);
+ok(
+  stepIndex(stepsOf(deploy), function (step) {
+    return /^ {8}run:\s*npm run build\s*$/m.test(step);
+  }) >= 0,
+  'deploy: no npm run build step'
 );
 ok(
   workflow.indexOf('applied-check.mjs') < 0,
   'ci.yml: applied-check.mjs is gone; the database is the applied record'
 );
+
+/** The names of the jobs in `text` that read `secrets.SUPABASE_DB_URL_PROD`
+ * without declaring `environment: production`. */
+function prodSecretOutsideEnvironment(text) {
+  // A comment may name the secret; only a YAML line can read it.
+  const code = text.replace(/^\s*#.*$/gm, '');
+  const jobsAt = code.search(/^jobs:\s*$/m);
+  if (jobsAt < 0) return code.indexOf('SUPABASE_DB_URL_PROD') >= 0 ? ['(no jobs)'] : [];
+  if (code.slice(0, jobsAt).indexOf('SUPABASE_DB_URL_PROD') >= 0) return ['(workflow level)'];
+  const jobs = code.slice(jobsAt);
+  const bad = [];
+  const jobRe =
+    /^ {2}([A-Za-z0-9_-]+):\s*(?:#.*)?\r?\n([\s\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/gm;
+  let m;
+  while ((m = jobRe.exec(jobs))) {
+    if (m[2].indexOf('SUPABASE_DB_URL_PROD') < 0) continue;
+    if (!/^ {4}environment:\s*production\s*$/m.test(m[2])) bad.push(m[1]);
+  }
+  return bad;
+}
 
 /* The nightly backup: every property that keeps a production dump private
    and recoverable. */
@@ -1328,6 +1389,28 @@ ok(
 ok(
   /^\s+path:.*\/\*\.age\s*$/m.test(backup),
   'backup.yml: the upload path must end in *.age - nothing unencrypted leaves the job'
+);
+[
+  ['ci.yml', workflow],
+  ['backup.yml', backup]
+].forEach(function (pair) {
+  const bad = prodSecretOutsideEnvironment(pair[1]);
+  ok(
+    bad.length === 0,
+    pair[0] +
+      ': SUPABASE_DB_URL_PROD is read outside a job that declares environment: production (' +
+      bad.join(', ') +
+      ')'
+  );
+});
+ok(
+  migrateProdJob && /^ {4}environment:\s*production\s*$/m.test(migrateProdJob[1]),
+  'migrate-prod: the job must declare environment: production'
+);
+ok(
+  /^ {4}environment:\s*production\s*$/m.test(backup) &&
+    backup.indexOf('SUPABASE_DB_URL_PROD') >= 0,
+  'backup.yml: the dump job must declare environment: production'
 );
 
 /* Rule 2n's test-project proof and the release tools name the same ref. */

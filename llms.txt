@@ -191,12 +191,19 @@ of two or three usually plays better than assigning one each.
 - `#/i/<id>` — one record
 - `#/search` — search
 - `#/l/<payload>` — a list (see below)
+- `#/s/<token>` — a list shared from an account; the token is opaque and made
+  only by the list's owner, so you cannot build one, and fetching it tells you
+  nothing (the fragment never leaves the browser)
 - `#/account` — the account page: sign in, connected providers, sign out,
   delete the account
 
 ## List links
 
-A list lives entirely inside its link — there is no storage on the server. That
+`#/l/` links stop opening on 2026-10-26. Until then the format below still
+works; a list that must outlive that date belongs in an account (sign in, then
+"Сохранить себе" on its page).
+
+A `#/l/` list lives entirely inside its link — there is no storage on the server. That
 means **you can build a working link yourself** without calling anything.
 
 A payload carries all of this, and you can set every part of it:
@@ -376,8 +383,9 @@ from the book.
 
 ## What this site cannot do
 
-- No public API. Signing in is optional; lists live in the GM's browser and in
-  links.
+- No public API. Signing in is optional; a signed-in GM's lists live in the
+  account and are shared through `#/s/` links, older lists in the browser and in
+  `#/l/` links.
 - You cannot edit someone else's list — you can only build a new address.
 - Art is at `img/<id>.webp`, link previews at `og/<id>.jpg`.
 

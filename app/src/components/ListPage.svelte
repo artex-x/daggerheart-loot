@@ -30,8 +30,10 @@
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
   import RowMain from './RowMain.svelte';
+  import SharePanel from './SharePanel.svelte';
   import SharedListPage from './SharedListPage.svelte';
   import StorageNotice from './StorageNotice.svelte';
+  import { isCloudId } from '../lib/cloudLists.js';
   import { moneyHelpFor } from '../lib/help.js';
   import { printHash, sectionHash, sharedListHash } from '../lib/hash.js';
   import { nameOf, selCountText } from '../lib/i18n.js';
@@ -59,6 +61,7 @@
   import { entryNoteBlock, shareList, shareSelection } from '../lib/share.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
+  import type { ListModel } from '../state/lists.svelte.js';
 
   interface Props {
     app: AppState;
@@ -68,9 +71,9 @@
 
   const t = $derived(app.t);
   const index = $derived(app.index);
-  const store = $derived(app.lists);
 
   const route = $derived(app.route);
+  const cloud = $derived(app.cloudLists);
 
   /** Which id the data still knows, for `findListByPayload`'s own comparison
    *  and for dropping an unknown entry silently, as the live app does. */
@@ -83,7 +86,7 @@
    */
   const own = $derived.by((): StoredList | null => {
     const r = route;
-    if (r.kind === 'storedList') return app.lists.get(r.listId) ?? null;
+    if (r.kind === 'storedList') return app.lists.get(r.listId) ?? cloud?.get(r.listId) ?? null;
     if (r.kind === 'sharedList' && !r.packed) {
       if (r.payload === app.urlPayload) {
         const mine = app.lists.get(app.openList);
@@ -92,6 +95,32 @@
       return findListByPayload(app.lists.lists, r.payload, knows);
     }
     return null;
+  });
+
+  /* An account list keeps its `#/lists/<uuid>` address: no `#/l/` rewrite,
+     no link buttons, no storage notice, and a save status in the sub. */
+  const isCloud = $derived(own !== null && cloud?.get(own.id) === own);
+  const store: ListModel = $derived(isCloud && cloud ? cloud : app.lists);
+  /* A `#/lists/<uuid>` the account store does not hold (yet). */
+  const cloudAddress = $derived(
+    route.kind === 'storedList' && isCloudId(route.listId) && cloud !== null
+  );
+  const syncFailed = $derived(isCloud && cloud?.sync === 'failed');
+  /* The status region's text: a failure, then the save that ends it. The
+     next ordinary save empties it, so it never talks over the reader. */
+  let syncSaid = $state('');
+  let syncWasFailed = false;
+  $effect(() => {
+    const sync = isCloud ? cloud?.sync : undefined;
+    if (sync === 'failed') {
+      syncSaid = t.notSaved;
+      syncWasFailed = true;
+    } else if (sync === 'saved' && syncWasFailed) {
+      syncSaid = t.savedState;
+      syncWasFailed = false;
+    } else if (sync === 'saving' && !syncWasFailed) {
+      syncSaid = '';
+    }
   });
 
   const byId = (id: string): Record_ | undefined => index?.byId.get(id);
@@ -174,12 +203,12 @@
     clearTimeout(syncTimer);
     syncTimer = null;
     const l = own;
-    if (l) app.syncListUrl(l);
+    if (l && !isCloud) app.syncListUrl(l);
   }
 
   $effect(() => {
     const l = own;
-    if (l) scheduleUrlSync(l);
+    if (l && !isCloud) scheduleUrlSync(l);
   });
 
   $effect(() => {
@@ -322,12 +351,20 @@
   function del(): void {
     const l = own;
     if (!l) return;
+    if (isCloud) {
+      /* For good: the confirm names the share links, and there is no undo. */
+      if (!app.env.dialog.confirm(t.deleteCloudConfirm.replace('%s', l.name))) return;
+      cloud?.remove(l.id);
+      app.go('#/lists');
+      app.say(t.listDeleted.replace('%s', l.name));
+      return;
+    }
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
     /* Before removing it: a pending debounced sync still names
        this list, and must not flush into the address bar after it is gone -
        see `cancelUrlSync`. */
     cancelUrlSync();
-    const removed = store.remove(l.id);
+    const removed = app.lists.remove(l.id);
     app.go('#/lists');
     /* Delete gets an undo, like every other destructive action here. */
     if (removed) {
@@ -335,7 +372,7 @@
         action: {
           label: t.undo,
           run: () => {
-            store.restoreList(removed.list, removed.index);
+            app.lists.restoreList(removed.list, removed.index);
           }
         }
       });
@@ -421,12 +458,15 @@
     if (!l) return;
     const meta = { ...itemMeta(l, it.id) };
     const listId = l.id;
-    store.removeEntry(listId, it.id);
+    /* The toast's undo may run after the page moved to a list of the other
+       kind; it acts on the store that held this list. */
+    const into = store;
+    into.removeEntry(listId, it.id);
     app.say(t.removedItem.replace('%s', nameOf(it, app.lang)), {
       action: {
         label: t.undo,
         run: () => {
-          store.restoreEntry(listId, it.id, i, meta);
+          into.restoreEntry(listId, it.id, i, meta);
         }
       }
     });
@@ -531,13 +571,14 @@
   ): number {
     const l = own;
     if (!l) return 0;
+    const into = store;
     const before: Record<string, number> = {};
     let n = 0;
     for (const id of ticked) {
       const v = next(id);
       if (v === undefined) continue;
       before[id] = metaOf(id).gold ?? 0;
-      store.setMeta(l.id, id, 'gold', v);
+      into.setMeta(l.id, id, 'gold', v);
       n++;
     }
     if (n) {
@@ -546,7 +587,7 @@
           label: t.repriceUndo,
           run: () => {
             for (const [id, gold] of Object.entries(before))
-              store.setMeta(l.id, id, 'gold', gold);
+              into.setMeta(l.id, id, 'gold', gold);
           }
         }
       });
@@ -610,9 +651,10 @@
       gone.push({ id, at: i, meta, left: stockLeft(meta, takenOf(id)) });
     });
     if (!gone.length) return;
+    const into = store;
     for (const g of gone) {
-      if (g.left > 0) store.setMeta(l.id, g.id, 'qty', g.left > 1 ? g.left : 0);
-      else store.removeEntry(l.id, g.id);
+      if (g.left > 0) into.setMeta(l.id, g.id, 'qty', g.left > 1 ? g.left : 0);
+      else into.removeEntry(l.id, g.id);
     }
     lsel.clear();
     picked.clear();
@@ -621,8 +663,8 @@
         label: t.undo,
         run: () => {
           for (const g of gone) {
-            if (g.left > 0) store.setMeta(l.id, g.id, 'qty', g.meta.qty ?? 0);
-            else store.restoreEntry(l.id, g.id, g.at, g.meta);
+            if (g.left > 0) into.setMeta(l.id, g.id, 'qty', g.meta.qty ?? 0);
+            else into.restoreEntry(l.id, g.id, g.at, g.meta);
           }
         }
       }
@@ -637,6 +679,12 @@
      storage merge mid-drag does not unbind a live drag; the drop moves the
      id captured at `dragstart`, not whatever row now sits at its index. */
   const ownId = $derived(own?.id);
+  /* The share panel folds when another list opens. */
+  let sharing = $state(false);
+  $effect(() => {
+    void ownId;
+    sharing = false;
+  });
   $effect(() => {
     const el = rowsEl;
     const listId = ownId;
@@ -773,8 +821,25 @@
     {#if !index}
       <NoData>{t.noData}</NoData>
     {:else if route.kind === 'storedList' && !own}
-      <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
-      <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+      {#if cloudAddress && app.user === null}
+        <!-- One «Войти», not the prompt: the sub already carries its line. -->
+        <PageTitle title={t.listNotFound} sub={t.signInToOpen} />
+        <Button
+          variant="primary"
+          onclick={() => {
+            app.askSignIn({ hash: app.hash });
+          }}>{t.signIn}</Button
+        >
+      {:else if cloudAddress && cloud?.status === 'error'}
+        <PageTitle title={t.listNotFound} sub={t.cloudLoadFailed} />
+        <Button variant="primary" onclick={() => void cloud.load()}>{t.retry}</Button>
+      {:else if cloudAddress && (app.user === undefined || cloud?.status !== 'ready')}
+        <!-- The account is still answering: nothing yet, so neither the
+             sign-in line nor "not found" flashes. -->
+      {:else}
+        <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
+        <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+      {/if}
     {:else if !own}
       {#if route.kind === 'sharedList' && route.packed}
         {#if app.expandFailed === route.payload}
@@ -814,13 +879,41 @@
           oninput={rename}
         />
       {/snippet}
-      <PageTitle title={renameTitle} sub={plural(items.length, t.itemsN, app.lang)} />
+      {#snippet cloudSub()}
+        {plural(items.length, t.itemsN, app.lang)} ·
+        <span class="sync" class:bad={syncFailed}
+          >{syncFailed ? t.notSaved : cloud?.sync === 'saving' ? t.saving : t.savedState}</span
+        >{#if syncFailed}<button
+            type="button"
+            class="linkbtn"
+            onclick={() => {
+              cloud?.retry();
+            }}>{t.retry}</button
+          >{/if}
+      {/snippet}
+      <PageTitle
+        title={renameTitle}
+        sub={isCloud ? cloudSub : plural(items.length, t.itemsN, app.lang)}
+      />
       <Actions style="margin-bottom:16px">
-        <Button size="sm" onclick={() => void sharePlayers()}
-          ><Icon name="link" />{t.sharePlayers}</Button
-        >
-        <Button size="sm" onclick={() => void shareGm()}><Icon name="link" />{t.shareGm}</Button
-        >
+        {#if isCloud}
+          <Button
+            size="sm"
+            caret
+            on={sharing}
+            expanded={sharing}
+            onclick={() => {
+              sharing = !sharing;
+            }}><Icon name="link" />{t.share}</Button
+          >
+        {:else}
+          <Button size="sm" onclick={() => void sharePlayers()}
+            ><Icon name="link" />{t.sharePlayers}</Button
+          >
+          <Button size="sm" onclick={() => void shareGm()}
+            ><Icon name="link" />{t.shareGm}</Button
+          >
+        {/if}
         <Button size="sm" onclick={() => void copyList()}
           ><Icon name="copy" />{t.copyText}</Button
         >
@@ -837,8 +930,13 @@
         {/if}
         <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
       </Actions>
+      {#if isCloud && sharing}
+        <SharePanel {app} listId={own.id} />
+      {/if}
 
-      <StorageNotice {app} />
+      {#if !isCloud}
+        <StorageNotice {app} />
+      {/if}
 
       {#if priced}
         <div class="money">
@@ -1146,6 +1244,9 @@
         <Empty>{t.listEmptyHint}</Empty>
       {/if}
       <div class="lsaid" role="status" aria-live="polite">{said}</div>
+      {#if isCloud}
+        <div class="lsaid" role="status">{syncSaid}</div>
+      {/if}
     {/if}
   {/snippet}
 </RecordHost>
@@ -1706,6 +1807,23 @@
     margin-top: 0;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+  }
+
+  /* The save status of an account list, in the sub line. */
+  .sync.bad {
+    color: var(--danger-text);
+    font-weight: 600;
+  }
+
+  .linkbtn {
+    background: none;
+    border: 0;
+    padding: 0 2px;
+    margin-left: 4px;
+    color: var(--gold-soft);
+    text-decoration: underline;
+    font: inherit;
+    cursor: pointer;
   }
 
   .lsaid {

@@ -45,3 +45,104 @@ debounce, a local `.json` export, and backups a person can reach.
 - **Copy** (was D31): `app/src/lib/dict.ts` `badStorage` (`ru`, `en`) tells
   the reader their unreadable data is kept "under a separate key", which no
   one can act on outside devtools. Rewrite it once a backup is reachable.
+
+## Account data migration (`persist-5-migration`)
+
+Owns: the move of this browser's lists into the account, the legacy write
+cutoff (`LEGACY_WRITE_UNTIL`, 2026-10-26) and the retired `#/l/` page.
+
+### D54 - a `#/l/` link with more than 100 items saves an empty account list
+
+- **Where**: `app/src/state/app.svelte.ts` `AppState.saveCopyOf`, and
+  `CloudLists.create` in `app/src/state/cloudLists.svelte.ts`.
+- **What**: «Сохранить» on an old `#/l/` link creates the account list, then
+  queues all its entries in one write. The server's `entries_per_list` limit
+  (100 by default) refuses that whole write, so the reader gets a list with
+  its name and no entries, and the limit toast.
+- **Why deferred**: a link of more than 100 items is rare, and the move of
+  browser lists into the account meets the same limit with the same data.
+  One fix (cut at the limit and say how many were left out, or refuse
+  before the list is made) serves both paths.
+- **How to verify the fix**: open a `#/l/` link that holds 101 items, press
+  «Сохранить» signed in, and confirm that the account list holds the items
+  the limit allows, or that no empty list is made, and that the text says
+  what happened.
+
+## Live updates (`persist-3-realtime`)
+
+Owns: Realtime on shared pages and the owner's lists, which replaces the
+45 s poll as the primary path and reworks the account write queue. The
+Realtime release's plan owns D56 and D57 by name; D55, D58 and D59 go with
+the same rework.
+
+### D55 - any refused account write, a lapsed session included, is dropped
+
+- **Where**: `app/src/ports/supabase.ts` `writeOf`; `CloudLists#flush` in
+  `app/src/state/cloudLists.svelte.ts`.
+- **What**: every 4xx answer with an error code, 401 included, maps to
+  `refused`. The queue drops a refused write and re-reads the account, so an
+  edit made while the session token lapsed is lost, with the refusal toast.
+- **Why deferred**: the Supabase client renews the session before it
+  expires, so a 401 needs a device that slept past the renewal. The queue
+  rework for Realtime decides which answers keep a write for a retry.
+- **How to verify the fix**: in `supabase.test.ts`, answer one list write
+  with status 401 and confirm that the write stays queued and is sent again
+  after the session is renewed.
+
+### D56 - a reorder after another device changed the entries is refused
+
+- **Where**: `reorder_list` in
+  `supabase/migrations/20260925130100_lists.sql`; `CloudLists#flush`.
+- **What**: `reorder_list` refuses (`22023`) an entry set that does not match
+  the list. When a second device added or removed an entry since this one
+  last read the list, a drag on this device shows the refusal toast and the
+  order snaps back after the re-read. No data is lost.
+- **Why deferred**: it needs two devices editing one list inside the 45 s
+  poll window. Realtime shortens that window, and its plan decides whether
+  the reorder merges instead of refusing.
+- **How to verify the fix**: open one account list on two devices, add an
+  entry on the first, drag an entry on the second before it re-reads, and
+  confirm that the order is kept or merged with no refusal toast.
+
+### D57 - a fetch that never answers holds «Сохраняем...» with no end
+
+- **Where**: `CloudLists#flush` in `app/src/state/cloudLists.svelte.ts`.
+- **What**: the queue sends one write at a time and waits for its answer.
+  A request that hangs (no answer and no error) keeps the status on
+  «Сохраняем...», and every later edit waits behind it until the page is
+  reloaded.
+- **Why deferred**: the browser ends most dead connections with an error,
+  which the queue retries. A timeout belongs to the queue rework that
+  Realtime brings.
+- **How to verify the fix**: in `cloudLists.test.ts`, make one write return
+  a promise that never settles and confirm that the queue gives up after a
+  set time, shows «Не сохранено» and retries.
+
+### D58 - «Поделиться» on a list whose create is still queued says the links did not load
+
+- **Where**: `app/src/components/SharePanel.svelte` `load`.
+- **What**: a new account list exists on the server only after its queued
+  create is sent. «Поделиться» pressed before that reads no shares and calls
+  `create_list_share`, which refuses (`42501`, not the owner of the list).
+  The panel then says the links did not load. «Повторить» works once the
+  create has landed.
+- **Why deferred**: the window is the queue's latency, usually well under a
+  second, and «Повторить» recovers. The fix is to wait for the list's own
+  queued writes before the panel reads, which is part of the queue rework.
+- **How to verify the fix**: in `sharePanel.test.ts`, hold the list's create
+  in the fake, press «Поделиться», release the create, and confirm that both
+  links show with no error.
+
+### D59 - a failed first read of a `#/s/` link is not retried by itself
+
+- **Where**: `app/src/state/sharedView.svelte.ts` `SharedView.refresh`.
+- **What**: `refresh()` re-reads only a page in the `ready` or `gone`
+  state. When the first read fails (offline), the page shows the error and
+  «Повторить», and neither the 45 s poll nor the shown-again signal reads
+  it again. The reader must press «Повторить».
+- **Why deferred**: this is the planned behaviour of the poll release, and
+  the reader has a working button. Realtime replaces the poll and decides
+  how a shared page recovers from a failed read.
+- **How to verify the fix**: open `#/s/<token>` offline, go back online, and
+  confirm that the list shows on the next poll or when the tab is shown
+  again, with no press.

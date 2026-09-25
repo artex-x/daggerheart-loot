@@ -1,6 +1,6 @@
 # #/l/ ~ every entry gone
 # route: #/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg
-# why: a shared link whose every entry left the data: heading "Пропавшее", the sub "0 позиций", the save button, no rows, the dropped-entries toast (not the bad-link page)
+# why: a shared link whose every entry left the data: heading "Пропавшее", the sub "0 позиций", the save button, the 26 October line, no rows, the dropped-entries toast (not the bad-link page)
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg]
@@ -27,6 +27,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0J_RgNC-0L_Qs
     heading "Пропавшее" [level=1]
     StaticText "Список от другого игрока · 0 позиций"
     button "Сохранить себе"
+    StaticText "Ссылки вида #/l/ перестанут открываться 26 октября 2026 года. Со..." [namelen=107 namehash=f619a7e9]
   generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -84,6 +85,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ej
     heading "Пропавшее" [level=1]
     StaticText "A list from another player · 0 items"
     button "Save to my lists"
+    StaticText "Links like this one (#/l/) stop opening on 26 October 2026. Save..." [namelen=99 namehash=211a3cb8]
   generic ""
   contentinfo ""
     navigation "Site pages"

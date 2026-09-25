@@ -6,8 +6,10 @@
  * port signed in as that user, or signed out without one. Only what every
  * port does belongs here; what depends on the fake's seed stays in its own
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
- * cases for the port member it adds. */
+ * cases for the port member it adds: A-F the account, G the lists, H the
+ * share links. */
 
+import type { EntryRow, ListRow } from '../lib/cloudLists.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { CloudPort, Session } from './types.js';
 
@@ -33,6 +35,246 @@ function samePrefs(a: Prefs | null, b: Prefs): boolean {
   );
 }
 
+type Assert = (cond: boolean, msg: string) => void;
+
+function entryOf(
+  id: string,
+  key: string,
+  position: number,
+  over: Partial<EntryRow> = {}
+): EntryRow {
+  return {
+    id,
+    item_key: key,
+    source: 'official',
+    snapshot: null,
+    position,
+    quantity: 1,
+    price_coins: null,
+    player_note: '',
+    gm_note: '',
+    ...over
+  };
+}
+
+/** The port's lists by id, or null when the read failed. */
+async function listsOf(
+  port: CloudPort,
+  assert: Assert,
+  when: string
+): Promise<ListRow[] | null> {
+  const read = await port.lists.list();
+  assert(read.ok, 'lists: ' + when + ', list() is not ok');
+  return read.ok ? read.lists : null;
+}
+
+/** The one list with `id`, or null when there is not exactly one. */
+async function theList(
+  port: CloudPort,
+  id: string,
+  assert: Assert,
+  when: string
+): Promise<ListRow | null> {
+  const found = ((await listsOf(port, assert, when)) ?? []).filter((l) => l.id === id);
+  assert(found.length === 1, 'lists: ' + when + ', not exactly one list with the id');
+  return found[0] ?? null;
+}
+
+const view = (e: EntryRow): string =>
+  [e.item_key, e.quantity, e.price_coins, e.player_note, e.gm_note].join('|');
+
+async function listCases(port: CloudPort, assert: Assert): Promise<void> {
+  const { lists } = port;
+  const before = (await listsOf(port, assert, 'at first'))?.length ?? 0;
+
+  const id = lists.newId();
+  const [a, b, c] = [lists.newId(), lists.newId(), lists.newId()];
+  const row = { id, name: 'Клад', money_mode: 'coin' as const, player_note: 'p', gm_note: 'g' };
+  const two = [
+    entryOf(a, 'ci1', 0, { quantity: 2, price_coins: 150, player_note: 'a' }),
+    entryOf(b, 'q1', 1, { gm_note: 'b' })
+  ];
+  assert((await lists.create(row, two)).ok, 'lists: create() was refused');
+  assert((await lists.create(row, two)).ok, 'lists: a second create() was refused');
+  let got = await theList(port, id, assert, 'after create');
+  assert(
+    got?.name === 'Клад' &&
+      got.money_mode === 'coin' &&
+      got.player_note === 'p' &&
+      got.gm_note === 'g',
+    'lists: the list does not read back as created'
+  );
+  assert(
+    got?.list_entries.map(view).join(';') === 'ci1|2|150|a|;q1|1|||b',
+    'lists: the entries do not read back in order'
+  );
+
+  assert(
+    (
+      await lists.update(id, {
+        name: 'Клад дракона',
+        money_mode: 'bag',
+        player_note: '',
+        gm_note: 'G'
+      })
+    ).ok,
+    'lists: update() was refused'
+  );
+  assert(
+    (await lists.addEntries(id, [entryOf(c, 'q313', 2)])).ok,
+    'lists: addEntries() was refused'
+  );
+  assert(
+    (
+      await lists.updateEntry(b, {
+        quantity: 5,
+        price_coins: 20,
+        player_note: 'n',
+        gm_note: ''
+      })
+    ).ok,
+    'lists: updateEntry() was refused'
+  );
+  assert((await lists.reorder(id, [c, a, b])).ok, 'lists: reorder() was refused');
+  got = await theList(port, id, assert, 'after the edits');
+  assert(
+    got?.name === 'Клад дракона' &&
+      got.money_mode === 'bag' &&
+      got.player_note === '' &&
+      got.gm_note === 'G',
+    'lists: update() does not read back'
+  );
+  assert(
+    got?.list_entries.map(view).join(';') === 'q313|1|||;ci1|2|150|a|;q1|5|20|n|',
+    'lists: addEntries(), updateEntry() or reorder() does not read back'
+  );
+
+  const missed = await lists.reorder(id, [c, a]);
+  assert(
+    !missed.ok && missed.error === 'refused',
+    'lists: a reorder that misses an entry was taken'
+  );
+
+  assert((await lists.removeEntries([a, b, c])).ok, 'lists: removeEntries() was refused');
+  got = await theList(port, id, assert, 'after removeEntries');
+  assert(got?.list_entries.length === 0, 'lists: removeEntries() left an entry');
+  assert((await lists.remove(id)).ok, 'lists: remove() was refused');
+  const after = await listsOf(port, assert, 'after remove');
+  assert(
+    after?.length === before && !after.some((l) => l.id === id),
+    'lists: remove() left the list'
+  );
+}
+
+/* No key of `o`, at any depth, is `gm_note`. */
+function hasGmNote(o: unknown): boolean {
+  if (Array.isArray(o)) return o.some(hasGmNote);
+  if (o === null || typeof o !== 'object') return false;
+  return Object.entries(o).some(([k, v]) => k === 'gm_note' || hasGmNote(v));
+}
+
+async function shareCases(port: CloudPort, assert: Assert): Promise<void> {
+  const { lists, shares } = port;
+  const id = lists.newId();
+  const [a, b] = [lists.newId(), lists.newId()];
+  const row = {
+    id,
+    name: 'Ссылки',
+    money_mode: 'bag' as const,
+    player_note: 'p',
+    gm_note: 'g'
+  };
+  assert(
+    (await lists.create(row, [entryOf(a, 'ci1', 0), entryOf(b, 'q1', 1, { gm_note: 'h' })])).ok,
+    'shares: the list was not created'
+  );
+  const none = await shares.list(id);
+  assert(none.ok && none.shares.length === 0, 'shares: a new list does not read no shares');
+
+  const player = await shares.create(id, 'player');
+  const again = await shares.create(id, 'player');
+  assert(player.ok, 'shares: create(player) was refused');
+  assert(
+    player.ok && again.ok && again.id === player.id && again.token === player.token,
+    'shares: a second create(player) made another share'
+  );
+  const gm = await shares.create(id, 'gm');
+  assert(gm.ok, 'shares: create(gm) was refused');
+  if (!player.ok || !gm.ok) return;
+
+  const seen = await shares.read(player.token);
+  const p = seen.ok ? seen.shared : null;
+  assert(
+    p?.audience === 'player' && p.list.name === 'Ссылки' && p.list.player_note === 'p',
+    'shares: the player link does not read the list'
+  );
+  assert(p !== null && !hasGmNote(p), 'shares: the player link reads a GM note');
+  assert(
+    p?.entries.map((e) => e.item_key).join(',') === 'ci1,q1',
+    'shares: the player link does not read the entries in order'
+  );
+  const seenGm = await shares.read(gm.token);
+  const g = seenGm.ok ? seenGm.shared : null;
+  assert(
+    g?.list.gm_note === 'g' && g.entries[1]?.gm_note === 'h',
+    'shares: the GM link does not read the GM notes'
+  );
+  assert(
+    (await shares.ownerOf(player.token)) === id,
+    "shares: ownerOf is not the owner's list"
+  );
+
+  /* A link is replaced by deleting it and making a new one. */
+  assert((await shares.revoke(player.id)).ok, 'shares: revoke(player) was refused');
+  const old = await shares.read(player.token);
+  assert(old.ok && old.shared === null, 'shares: a deleted link still opens the list');
+  const remade = await shares.create(id, 'player');
+  assert(remade.ok && remade.token !== player.token, 'shares: create() reused a deleted link');
+  if (!remade.ok) return;
+  const fresh = await shares.read(remade.token);
+  assert(
+    fresh.ok && fresh.shared?.list.name === 'Ссылки',
+    'shares: the new link opens nothing'
+  );
+
+  assert((await shares.revoke(gm.id)).ok, 'shares: revoke(gm) was refused');
+  assert((await shares.revoke(gm.id)).ok, 'shares: a second revoke() was refused');
+  const stopped = await shares.read(gm.token);
+  assert(
+    stopped.ok && stopped.shared === null,
+    'shares: a deleted GM link still opens the list'
+  );
+
+  const all = await shares.list(id);
+  const rows = all.ok ? all.shares : [];
+  assert(
+    rows.length === 3 &&
+      rows.filter((r) => r.revoked_at !== null).length === 2 &&
+      rows.filter((r) => r.revoked_at === null).length === 1,
+    'shares: the owner does not read two stopped rows and one active'
+  );
+  const gmAgain = await shares.create(id, 'gm');
+  assert(
+    gmAgain.ok && gmAgain.token !== gm.token,
+    'shares: create() after a deleted GM link reused it'
+  );
+
+  const copy = lists.newId();
+  assert((await shares.clone(remade.token, copy)).ok, 'shares: clone() was refused');
+  assert((await shares.clone(remade.token, copy)).ok, 'shares: a second clone() was refused');
+  const got = await theList(port, copy, assert, 'after clone');
+  assert(
+    got?.name === 'Ссылки' &&
+      got.player_note === 'p' &&
+      got.gm_note === '' &&
+      got.list_entries.length === 2 &&
+      got.list_entries.every((e) => e.gm_note === ''),
+    'shares: a player copy does not hold the list without its GM notes'
+  );
+  const nobody = await shares.create(lists.newId(), 'player');
+  assert(!nobody.ok && nobody.error === 'refused', 'shares: a share of no list was made');
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -50,6 +292,18 @@ export async function runCloudContract(
   assert(
     !(await signedOut.prefs.save({ view: 'grid' })),
     'prefs: signed out, save() was taken'
+  );
+  assert(!(await signedOut.lists.list()).ok, 'lists: signed out, list() is not { ok: false }');
+  const nothing = await signedOut.shares.read('nonsense');
+  assert(nothing.ok && nothing.shared === null, 'shares: an unknown token does not read null');
+  assert(
+    (await signedOut.shares.ownerOf('nonsense')) === null,
+    'shares: signed out, ownerOf() is not null'
+  );
+  const outClone = await signedOut.shares.clone('nonsense', signedOut.lists.newId());
+  assert(
+    !outClone.ok && outClone.error === 'refused',
+    'shares: signed out, clone() was not refused'
   );
 
   /* B. a port made as the member is signed in as the member */
@@ -109,6 +363,15 @@ export async function runCloudContract(
     replaced.ok && samePrefs(replaced.prefs, { view: 'list' }),
     'prefs: a save() did not replace the whole row'
   );
+
+  /* G. a list written and read back through every write, on the doomed
+     user. The account's deletion (E) takes the rows with it,
+     so a run against the hosted project leaves nothing behind. */
+  await listCases(doomedPort, assert);
+
+  /* H. share links made, read, deleted, made again and copied, on the doomed
+     user; the account's deletion takes them with it. */
+  await shareCases(doomedPort, assert);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

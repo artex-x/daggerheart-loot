@@ -5,10 +5,14 @@
   retypes nothing). The up-down-up gate snapshots the schema with every
   migration applied, applies the reversals newest first and the migrations
   oldest first again, and requires the same snapshot. The base check resets
-  the database to each migration's predecessor and requires its up then its
-  down to leave that schema exactly, so a reversal that undoes too little is
-  caught even when a second up would not fail. The fixtures prove the gate
-  in both directions on a scratch schema.
+  the database once, to the first migration, and walks the rest in order:
+  each reversible one must leave the schema its predecessor left after its
+  up then its down, so a reversal that undoes too little is caught even
+  when a second up would not fail; an additive one is only applied. The
+  walk must end in the schema apply-pending.test.mjs left, which that test
+  proves equal to the CLI's own reset. The fixtures
+  prove the gate in both directions on a scratch schema. docs/DECISIONS.md,
+  2026-09-25, "The reversibility base check walks forward from one reset".
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,7 +24,7 @@ import {
   isAdditiveMarker,
   nonAdditiveStatements
 } from '../../tools/supabase/lib.mjs';
-import { applySql, connect, resetLocal, snapshot } from './roles.mjs';
+import { applySql, connect, lineDiff, resetLocal, snapshot } from './roles.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SUPABASE = path.resolve(HERE, '..', '..', 'supabase');
@@ -36,21 +40,6 @@ function sqlFiles(dir) {
 
 function read(...parts) {
   return readFileSync(path.join(...parts), 'utf8');
-}
-
-/** Returns the lines only in `a` (`- `) and only in `b` (`+ `), at most
- * ten, ignoring blank lines. */
-function lineDiff(a, b) {
-  const lines = (s) => s.split(/\r?\n/).filter((l) => l.trim());
-  const inA = lines(a);
-  const inB = lines(b);
-  const setA = new Set(inA);
-  const setB = new Set(inB);
-  const out = [
-    ...inA.filter((l) => !setB.has(l)).map((l) => `- ${l}`),
-    ...inB.filter((l) => !setA.has(l)).map((l) => `+ ${l}`)
-  ];
-  return out.slice(0, 10);
 }
 
 /** Runs up-down-up over `steps` ({ up, down } texts, oldest first) with
@@ -82,6 +71,9 @@ async function upDownUp(sql, schemas, steps, base = null) {
 }
 
 let sql;
+/* The schema with every migration applied, as apply-pending.test.mjs left
+   it; that test proves it equal to the CLI's reset. */
+let fullSnapshot = null;
 before(() => {
   sql = connect();
 });
@@ -117,34 +109,51 @@ describe('supabase/migrations', () => {
       t.diagnostic('no migrations yet');
       return;
     }
+    fullSnapshot = snapshot(['public']);
     assert.deepEqual(await upDownUp(sql, ['public'], steps), []);
   });
 
   it('restores the schema the previous migration left', async (t) => {
-    const reversal = (p) => read(SUPABASE, 'reversals', p.name);
-    const checked = pairs.slice(1).filter((p) => !isAdditiveMarker(reversal(p)));
-    if (pairs.length && !isAdditiveMarker(reversal(pairs[0]))) {
-      t.diagnostic(`${pairs[0].name} has no migration below it: up-down-up alone proves it`);
+    if (pairs.length < 2) {
+      t.diagnostic('fewer than two migrations: up-down-up alone proves them');
+      return;
     }
+    let failed = false;
     try {
-      for (const p of checked) {
-        const previous = pairs[pairs.indexOf(p) - 1].name.slice(0, 14);
-        await sql.end();
-        resetLocal(['--version', previous]);
-        sql = connect();
+      await sql.end();
+      resetLocal(['--version', pairs[0].name.slice(0, 14)]);
+      sql = connect();
+      for (const p of pairs.slice(1)) {
+        const up = read(SUPABASE, 'migrations', p.name);
+        const down = read(SUPABASE, 'reversals', p.name);
+        if (isAdditiveMarker(down)) {
+          await applySql(sql, up);
+          continue;
+        }
         const base = snapshot(['public']);
-        await applySql(sql, read(SUPABASE, 'migrations', p.name));
-        await applySql(sql, reversal(p));
+        await applySql(sql, up);
+        await applySql(sql, down);
         const diff = lineDiff(base, snapshot(['public']));
         assert.deepEqual(
           diff,
           [],
           `${p.name}: its reversal does not restore the schema the previous migration left:\n${diff.join('\n')}`
         );
+        await applySql(sql, up);
       }
+      assert.ok(fullSnapshot !== null, 'up-down-up took no snapshot of the full schema');
+      assert.deepEqual(
+        lineDiff(fullSnapshot, snapshot(['public'])),
+        [],
+        'the walk did not end in the schema the applier test left'
+      );
+    } catch (err) {
+      failed = true;
+      throw err;
     } finally {
-      /* Every migration again, as run.mjs left it for the files after this. */
-      if (checked.length) {
+      /* A green walk leaves every migration applied (without history rows,
+         which no later file reads); a red one resets for the files after it. */
+      if (failed) {
         await sql.end();
         resetLocal();
         sql = connect();

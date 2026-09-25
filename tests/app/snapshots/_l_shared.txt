@@ -1,6 +1,6 @@
 # #/l/ ~ shared
 # route: #/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg
-# why: a list from another player: heading "Лавка", the sub, the save button, three rows with their tails (×2; ×5 · price; price), no notes, no bar. Seeded with two lists, which this page does not draw
+# why: a list from another player: heading "Лавка", the sub, the save button, the line saying #/l/ links stop opening on 26 October 2026, three rows with their tails (×2; ×5 · price; price), no notes, no bar. Seeded with two lists, which this page does not draw
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
@@ -27,6 +27,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
     heading "Лавка" [level=1]
     StaticText "Список от другого игрока · 3 позиции"
     button "Сохранить себе"
+    StaticText "Ссылки вида #/l/ перестанут открываться 26 октября 2026 года. Со..." [namelen=107 namehash=f619a7e9]
     checkbox "Выбрать все (3)" [checked=false]
     StaticText "Выбрать все (3)"
     checkbox "Первоклассный Спальный Мешок" [checked=false]
@@ -96,6 +97,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
     heading "Лавка" [level=1]
     StaticText "A list from another player · 3 items"
     button "Save to my lists"
+    StaticText "Links like this one (#/l/) stop opening on 26 October 2026. Save..." [namelen=99 namehash=211a3cb8]
     checkbox "Select all (3)" [checked=false]
     StaticText "Select all (3)"
     checkbox "Premium Bedroll" [checked=false]

@@ -28,7 +28,7 @@ const { client, createClient, rows } = vi.hoisted(() => {
       onAuthStateChange: vi.fn()
     },
     rpc: vi.fn(),
-    from: vi.fn(() => rows)
+    from: vi.fn<(table: string) => typeof rows>(() => rows)
   };
   return { client, createClient: vi.fn(() => client), rows };
 });
@@ -95,6 +95,7 @@ const redirect = (over: Partial<Redirect> = {}): Redirect => ({
   error: null,
   kind: 'link',
   provider: 'discord',
+  action: null,
   ...over
 });
 
@@ -182,7 +183,8 @@ describe('createCloud', () => {
     expect(await auth.redirectResult()).toEqual({
       kind: 'link',
       provider: 'discord',
-      result: { ok: true }
+      result: { ok: true },
+      action: null
     });
   });
 
@@ -194,14 +196,16 @@ describe('createCloud', () => {
     expect(await make(redirect({ code: 'a' })).auth.redirectResult()).toEqual({
       kind: 'link',
       provider: 'discord',
-      result: { ok: false, error: 'alreadyLinked' }
+      result: { ok: false, error: 'alreadyLinked' },
+      action: null
     });
     client.auth.exchangeCodeForSession.mockRejectedValueOnce(new Error('offline'));
     const thrown = make(redirect({ code: 'b', kind: 'signIn', provider: null }));
     expect(await thrown.auth.redirectResult()).toEqual({
       kind: 'signIn',
       provider: null,
-      result: { ok: false, error: 'failed' }
+      result: { ok: false, error: 'failed' },
+      action: null
     });
     expect(await thrown.auth.identities()).toHaveLength(2);
   });
@@ -212,12 +216,14 @@ describe('createCloud', () => {
     ).toEqual({
       kind: 'link',
       provider: 'discord',
-      result: { ok: false, error: 'alreadyLinked' }
+      result: { ok: false, error: 'alreadyLinked' },
+      action: null
     });
     expect(await make(redirect({ error: 'access_denied' })).auth.redirectResult()).toEqual({
       kind: 'link',
       provider: 'discord',
-      result: { ok: false, error: 'failed' }
+      result: { ok: false, error: 'failed' },
+      action: null
     });
     expect(await make(redirect()).auth.redirectResult()).toBeNull();
     expect(await make().auth.redirectResult()).toBeNull();
@@ -437,5 +443,386 @@ describe('the preferences row', () => {
     expect(await prefs.save(P)).toBe(false);
     rows.upsert.mockRejectedValueOnce(new Error('offline'));
     expect(await prefs.save(P)).toBe(false);
+  });
+});
+
+describe('the lists', () => {
+  type Call = [string, unknown[]];
+
+  /* One PostgREST query: every builder method records itself, and awaiting
+     it answers `answer` (or throws it). */
+  function query(answer: unknown) {
+    const calls: Call[] = [];
+    const q: Record<string, unknown> = {};
+    for (const m of ['select', 'upsert', 'update', 'delete', 'eq', 'in']) {
+      q[m] = (...args: unknown[]) => {
+        calls.push([m, args]);
+        return q;
+      };
+    }
+    q['then'] = (ok: (v: unknown) => unknown, fail: (e: unknown) => unknown) =>
+      (answer instanceof Error ? Promise.reject(answer) : Promise.resolve(answer)).then(
+        ok,
+        fail
+      );
+    return { q, calls };
+  }
+  const answers = (...each: unknown[]) => {
+    const made = each.map(query);
+    for (const m of made)
+      client.from.mockImplementationOnce(() => m.q as unknown as typeof rows);
+    return made.map((m) => m.calls);
+  };
+  const OK = { error: null, status: 201 };
+  const entry = (id: string, key: string, position: number) => ({
+    id,
+    item_key: key,
+    source: 'official' as const,
+    snapshot: null,
+    position,
+    quantity: 1,
+    price_coins: null,
+    player_note: '',
+    gm_note: ''
+  });
+  const LIST = {
+    id: 'l1',
+    name: 'К',
+    money_mode: 'bag' as const,
+    player_note: '',
+    gm_note: ''
+  };
+
+  it('reads every list with its entries in one query, sorted by position then id', async () => {
+    const [calls] = answers({
+      data: [
+        {
+          ...LIST,
+          list_entries: [entry('b', 'q2', 1), entry('c', 'q3', 0), entry('a', 'q1', 1)]
+        }
+      ],
+      error: null,
+      status: 200
+    });
+    const read = await make().lists.list();
+    expect(client.from).toHaveBeenCalledWith('lists');
+    expect(calls).toEqual([
+      [
+        'select',
+        [
+          'id,name,money_mode,player_note,gm_note,created_at,updated_at,' +
+            'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)'
+        ]
+      ]
+    ]);
+    expect(read.ok && read.lists[0]?.list_entries.map((e) => e.id)).toEqual(['c', 'a', 'b']);
+  });
+
+  it('answers not ok to an error, a thrown read and no rows', async () => {
+    answers({ data: null, error: { code: '42501' }, status: 401 }, new Error('offline'), {
+      data: null,
+      error: null,
+      status: 200
+    });
+    const { lists } = make();
+    expect(await lists.list()).toEqual({ ok: false });
+    expect(await lists.list()).toEqual({ ok: false });
+    expect(await lists.list()).toEqual({ ok: false });
+  });
+
+  it('creates the list as the session user, then its entries, both ignoring a row already there', async () => {
+    const [list, entries] = answers(OK, OK);
+    const e = entry('e1', 'ci1', 0);
+    expect(await make().lists.create(LIST, [e])).toEqual({ ok: true });
+    expect(list).toEqual([
+      [
+        'upsert',
+        [
+          { ...LIST, owner_id: 'u1' },
+          { onConflict: 'id', ignoreDuplicates: true }
+        ]
+      ]
+    ]);
+    expect(entries).toEqual([
+      ['upsert', [[{ ...e, list_id: 'l1' }], { onConflict: 'id', ignoreDuplicates: true }]]
+    ]);
+    expect(client.from.mock.calls.map((c) => c[0])).toEqual(['lists', 'list_entries']);
+  });
+
+  it('refuses a create with no session and sends nothing', async () => {
+    client.auth.getSession.mockResolvedValueOnce({ data: { session: null }, error: null });
+    client.auth.getSession.mockRejectedValueOnce(new Error('offline'));
+    const { lists } = make();
+    expect(await lists.create(LIST, [entry('e1', 'ci1', 0)])).toEqual({
+      ok: false,
+      error: 'refused'
+    });
+    expect(await lists.create(LIST, [])).toEqual({ ok: false, error: 'refused' });
+    expect(client.from).not.toHaveBeenCalled();
+  });
+
+  it('skips the entries call with no entries, or when the list was refused', async () => {
+    answers(OK, { error: { code: '42501', message: 'x' }, status: 403 });
+    const { lists } = make();
+    expect(await lists.create(LIST, [])).toEqual({ ok: true });
+    expect(await lists.create(LIST, [entry('e1', 'ci1', 0)])).toEqual({
+      ok: false,
+      error: 'refused'
+    });
+    expect(client.from).toHaveBeenCalledTimes(2);
+    expect(await lists.addEntries('l1', [])).toEqual({ ok: true });
+    expect(client.from).toHaveBeenCalledTimes(2);
+  });
+
+  it('maps a limit, no answer, a server fault and any other refusal', async () => {
+    answers(
+      {
+        error: { code: 'P0001', message: 'limit: lists_per_owner', details: '50' },
+        status: 400
+      },
+      {
+        error: { code: 'P0001', message: 'limit: entries_per_list', details: '' },
+        status: 400
+      },
+      { error: { code: 'P0001', message: 'something else' }, status: 400 },
+      { error: { code: '23505', message: 'duplicate' }, status: 409 },
+      { error: { code: '', message: 'TypeError: fetch failed' }, status: 0 },
+      { error: { code: 'XX000', message: 'x' }, status: 503 },
+      new Error('offline'),
+      { error: null, status: 204 }
+    );
+    const { lists } = make();
+    const results = [];
+    for (let i = 0; i < 8; i++) results.push(await lists.update('l1', { name: 'x' }));
+    expect(results).toEqual([
+      { ok: false, error: 'limit', key: 'lists_per_owner', value: 50 },
+      { ok: false, error: 'limit', key: 'entries_per_list', value: null },
+      { ok: false, error: 'refused' },
+      { ok: false, error: 'refused' },
+      { ok: false, error: 'network' },
+      { ok: false, error: 'network' },
+      { ok: false, error: 'network' },
+      { ok: true }
+    ]);
+  });
+
+  it('writes each change to its row', async () => {
+    const [update, addEntries, updateEntry, removeEntries, remove] = answers(
+      OK,
+      OK,
+      OK,
+      OK,
+      OK
+    );
+    const { lists } = make();
+    await lists.update('l1', { name: 'x' });
+    await lists.addEntries('l1', [entry('e1', 'ci1', 3)]);
+    await lists.updateEntry('e1', { quantity: 2 });
+    await lists.removeEntries(['e1', 'e2']);
+    await lists.remove('l1');
+    expect(update).toEqual([
+      ['update', [{ name: 'x' }]],
+      ['eq', ['id', 'l1']]
+    ]);
+    expect(addEntries?.[0]?.[0]).toBe('upsert');
+    expect(updateEntry).toEqual([
+      ['update', [{ quantity: 2 }]],
+      ['eq', ['id', 'e1']]
+    ]);
+    expect(removeEntries).toEqual([
+      ['delete', []],
+      ['in', ['id', ['e1', 'e2']]]
+    ]);
+    expect(remove).toEqual([
+      ['delete', []],
+      ['eq', ['id', 'l1']]
+    ]);
+    expect(client.from.mock.calls.map((c) => c[0])).toEqual([
+      'lists',
+      'list_entries',
+      'list_entries',
+      'list_entries',
+      'lists'
+    ]);
+  });
+
+  it('reorders through the RPC with both arguments', async () => {
+    client.rpc.mockResolvedValueOnce({ data: null, error: null, status: 204 });
+    expect(await make().lists.reorder('l1', ['b', 'a'])).toEqual({ ok: true });
+    expect(client.rpc).toHaveBeenCalledWith('reorder_list', {
+      p_list: 'l1',
+      p_entries: ['b', 'a']
+    });
+  });
+
+  it('makes a fresh v4 id', () => {
+    const { lists } = make();
+    const id = lists.newId();
+    expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(lists.newId()).not.toBe(id);
+  });
+});
+
+describe('the share links', () => {
+  type Call = [string, unknown[]];
+
+  /* One PostgREST query, as in "the lists", with `maybeSingle` for `ownerOf`. */
+  function query(answer: unknown) {
+    const calls: Call[] = [];
+    const q: Record<string, unknown> = {};
+    for (const m of ['select', 'eq', 'maybeSingle']) {
+      q[m] = (...args: unknown[]) => {
+        calls.push([m, args]);
+        return q;
+      };
+    }
+    q['then'] = (ok: (v: unknown) => unknown, fail: (e: unknown) => unknown) =>
+      (answer instanceof Error ? Promise.reject(answer) : Promise.resolve(answer)).then(
+        ok,
+        fail
+      );
+    client.from.mockImplementationOnce(() => q as unknown as typeof rows);
+    return calls;
+  }
+  const SHARE = {
+    id: 's1',
+    audience: 'player',
+    token: 't1',
+    created_at: '2026-09-20T10:00:00.000Z',
+    revoked_at: null
+  };
+
+  it('reads the list shares, stopped ones included, by list id', async () => {
+    const calls = query({ data: [SHARE], error: null, status: 200 });
+    expect(await make().shares.list('l1')).toEqual({ ok: true, shares: [SHARE] });
+    expect(client.from).toHaveBeenCalledWith('list_shares');
+    expect(calls).toEqual([
+      ['select', ['id,audience,token,created_at,revoked_at']],
+      ['eq', ['list_id', 'l1']]
+    ]);
+  });
+
+  it('answers not ok to a failed or thrown shares read', async () => {
+    query({ data: null, error: { code: '42501' }, status: 401 });
+    query(new Error('offline'));
+    const { shares } = make();
+    expect(await shares.list('l1')).toEqual({ ok: false });
+    expect(await shares.list('l1')).toEqual({ ok: false });
+  });
+
+  it('makes a share through the RPC, the row being the first of the answer', async () => {
+    client.rpc
+      .mockResolvedValueOnce({ data: [{ id: 's1', token: 't1' }], error: null, status: 200 })
+      .mockResolvedValueOnce({ data: [], error: null, status: 200 })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: '42501', message: 'x' },
+        status: 403
+      })
+      .mockResolvedValueOnce({ data: null, error: { code: 'XX000' }, status: 503 })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { shares } = make();
+    expect(await shares.create('l1', 'gm')).toEqual({ ok: true, id: 's1', token: 't1' });
+    expect(client.rpc).toHaveBeenLastCalledWith('create_list_share', {
+      p_list: 'l1',
+      p_audience: 'gm'
+    });
+    expect(await shares.create('l1', 'gm')).toEqual({ ok: false, error: 'refused' });
+    expect(await shares.create('l1', 'player')).toEqual({ ok: false, error: 'refused' });
+    expect(await shares.create('l1', 'player')).toEqual({ ok: false, error: 'network' });
+    expect(await shares.create('l1', 'player')).toEqual({ ok: false, error: 'network' });
+  });
+
+  it('stops a share and saves a copy through the RPCs', async () => {
+    client.rpc
+      .mockResolvedValueOnce({ data: null, error: null, status: 204 })
+      .mockResolvedValueOnce({ data: 'c1', error: null, status: 200 })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'P0001', message: 'limit: lists_per_owner', details: '50' },
+        status: 400
+      });
+    const { shares } = make();
+    expect(await shares.revoke('s1')).toEqual({ ok: true });
+    expect(client.rpc).toHaveBeenLastCalledWith('revoke_list_share', { p_share: 's1' });
+    expect(await shares.clone('t1', 'c1')).toEqual({ ok: true });
+    expect(client.rpc).toHaveBeenLastCalledWith('clone_shared_list', {
+      p_token: 't1',
+      p_id: 'c1'
+    });
+    expect(await shares.clone('t1', 'c1')).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'lists_per_owner',
+      value: 50
+    });
+  });
+
+  it('reads a shared list, null for a link that opens nothing, not ok on an error', async () => {
+    const shared = { audience: 'player', updated_at: 'x', list: {}, entries: [] };
+    client.rpc
+      .mockResolvedValueOnce({ data: shared, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: null, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: null, error: { code: 'XX000' }, status: 503 })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { shares } = make();
+    expect(await shares.read('t1')).toEqual({ ok: true, shared });
+    expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', { p_token: 't1' });
+    expect(await shares.read('t1')).toEqual({ ok: true, shared: null });
+    expect(await shares.read('t1')).toEqual({ ok: false });
+    expect(await shares.read('t1')).toEqual({ ok: false });
+  });
+
+  it("answers the reader's own list id behind a token", async () => {
+    const calls = query({ data: { list_id: 'l1' }, error: null, status: 200 });
+    query({ data: null, error: null, status: 200 });
+    query({ data: null, error: { code: '42501' }, status: 401 });
+    query(new Error('offline'));
+    const { shares } = make();
+    expect(await shares.ownerOf('t1')).toBe('l1');
+    expect(calls).toEqual([
+      ['select', ['list_id']],
+      ['eq', ['token', 't1']],
+      ['maybeSingle', []]
+    ]);
+    expect(await shares.ownerOf('t1')).toBeNull();
+    expect(await shares.ownerOf('t1')).toBeNull();
+    expect(await shares.ownerOf('t1')).toBeNull();
+  });
+
+  it('asks nothing for the owner signed out', async () => {
+    client.auth.getSession.mockResolvedValueOnce({ data: { session: null }, error: null });
+    expect(await make().shares.ownerOf('t1')).toBeNull();
+    expect(client.from).not.toHaveBeenCalled();
+  });
+});
+
+describe('a sign-in that a prompt started', () => {
+  it('saves the page and the action to come back to, and reads the action back', async () => {
+    client.auth.signInWithOAuth.mockResolvedValueOnce({ data: {}, error: null });
+    const action = { do: 'addToList' as const, key: 'sel', ids: ['ci1'] };
+    void make().auth.signIn('google', { hash: '#/tables/eq_weapon', action });
+    await vi.waitFor(() => {
+      expect(client.auth.signInWithOAuth).toHaveBeenCalled();
+    });
+    expect(JSON.parse(store.get(RETURN_KEY) ?? '')).toMatchObject({
+      hash: '#/tables/eq_weapon',
+      kind: 'signIn',
+      provider: 'google',
+      action
+    });
+    client.auth.exchangeCodeForSession.mockResolvedValueOnce({ data: {}, error: null });
+    const back = make(redirect({ code: 'c', kind: 'signIn', provider: 'google', action }));
+    expect(await back.auth.redirectResult()).toEqual({
+      kind: 'signIn',
+      provider: 'google',
+      result: { ok: true },
+      action
+    });
+    const refused = make(redirect({ error: 'access_denied', action }));
+    expect(await refused.auth.redirectResult()).toMatchObject({
+      result: { ok: false, error: 'failed' },
+      action
+    });
   });
 });

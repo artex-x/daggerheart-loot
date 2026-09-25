@@ -1198,6 +1198,70 @@ async function testPersistenceGuards() {
     const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-allow' }));
     check(`#240 on the allowlist: ${command}`, isSilent(result), result.stdout);
   }
+  // #241-#242 - npm's `run` aliases and flags on either side of the verb, and
+  // the package runners besides npx and npm exec.
+  const runnerDeny = [
+    'npm run-script db:push -- --project prod',
+    'npm --silent run db:push -- --project prod',
+    'npm --loglevel=silent run config:push -- --project prod',
+    'npm --loglevel silent run db:push -- --project prod',
+    'npm rum db:push',
+    'npm run --silent config:push -- --project prod',
+    'npm --registry x run db:push -- --project prod',
+    'rtk npm run-script db:push',
+    'bunx supabase db push --linked',
+    'pnpx supabase db push',
+    'pnpm exec supabase db reset --linked',
+    'yarn dlx supabase link',
+    'yarn exec supabase db push',
+    'bun x supabase db push --linked',
+    'pnpm dlx --package supabase supabase db push'
+  ];
+  for (const command of runnerDeny) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`#241 runner or npm alias denied: ${command}`, isDeny(result), result.stdout);
+    check(
+      `#241 reason: ${command}`,
+      denyReason(result).includes('test project only'),
+      denyReason(result)
+    );
+  }
+  const runnerSilent = [
+    'npm -s run db:push -- --project test',
+    'npm run-script db:push -- --project test',
+    'npm --silent urn config:push -- --project test',
+    'npm --registry x run db:push -- --project test',
+    'bunx supabase status',
+    'pnpm dlx supabase@2 db reset --local',
+    'bun x supabase migration list --local',
+    'yarn exec supabase migration new lists',
+    'pnpm install',
+    'yarn dlx other-tool db push',
+    'npm run config:diff -- --project prod'
+  ];
+  for (const command of runnerSilent) {
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-runner' }));
+    check(`#242 runner or npm alias allowed: ${command}`, isSilent(result), result.stdout);
+  }
+  // #248-#249 - `limits:set` writes a hosted project's rows: the test
+  // project only, as db:push.
+  for (const command of [
+    'npm run limits:set -- --project prod --user x --key lists_per_owner --value 200',
+    'npm run limits:set -- --user x --key lists_per_owner --default'
+  ]) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(
+      `#248 limits:set off the test project denied: ${command}`,
+      isDeny(result),
+      result.stdout
+    );
+  }
+  {
+    const command =
+      'npm run limits:set -- --project test --user x --key lists_per_owner --value 200';
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-limits' }));
+    check(`#249 limits:set on the test project allowed`, isSilent(result), result.stdout);
+  }
 
   // ----- 2o the cloud push rule -----
   const original = gitSh(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
@@ -1878,10 +1942,82 @@ function testEditGuard() {
       const result = runHook('edit-guard.mjs', editPayload(migration(fresh)));
       check('#197 migration on no ref: silent', isSilent(result), result.stdout);
     }
+    // #243-#244 - rule 2p: the same lock for a deletion or a rename, which
+    // never reaches edit-guard. No `origin` remote here, so no fetch.
+    const renamed = '20261003120000_renamed.sql';
+    for (const command of [
+      `git rm supabase/migrations/${pushed}`,
+      `git rm --cached supabase/migrations/${pushed}`,
+      `git -C . rm -q supabase/migrations/${pushed}`,
+      `git mv supabase/migrations/${pushed} supabase/migrations/${renamed}`,
+      `git mv supabase/migrations/${fresh} supabase/migrations/${pushed}`,
+      `rm supabase/migrations/${pushed}`,
+      `rm -f ./supabase/migrations/${pushed}`,
+      `mv supabase/migrations/${pushed} ${renamed}`
+    ]) {
+      const result = runHook('bash-guard.mjs', bashPayload(command));
+      check(`#243 pushed migration: denies ${command}`, isDeny(result), result.stdout);
+      check(
+        `#243 pushed migration: names the ref for ${command}`,
+        denyReason(result).includes('origin/main') && denyReason(result).includes(pushed),
+        denyReason(result)
+      );
+    }
+    for (const command of [
+      `git rm supabase/migrations/${fresh}`,
+      `rm supabase/migrations/${fresh}`,
+      `mv supabase/migrations/${fresh} supabase/migrations/${renamed}`,
+      `git mv app/src/lib/x.ts app/src/lib/y.ts`
+    ]) {
+      const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-2p' }));
+      check(`#244 migration on no ref: allows ${command}`, isSilent(result), result.stdout);
+    }
+    // #251-#252 - rule 2p expands a directory and a glob in the last
+    // segment, because the shell does it after the hook has judged the
+    // command. A directory that only receives (a move's destination) is not
+    // expanded.
+    const future = '20990101120000_future.sql';
+    writeFile(`supabase/migrations/${future}`, 'select 4;\n');
+    for (const command of [
+      'git rm -r supabase/migrations',
+      'git rm -r -q supabase/migrations/',
+      'git rm -r --cached supabase',
+      'mv supabase/migrations supabase/old',
+      'rm supabase/migrations/2026*.sql',
+      'git rm supabase/migrations/202610?1120000_lists.sql'
+    ]) {
+      const result = runHook('bash-guard.mjs', bashPayload(command));
+      check(`#251 expanded pushed migration: denies ${command}`, isDeny(result), result.stdout);
+      check(
+        `#251 expanded pushed migration: names it for ${command}`,
+        denyReason(result).includes(pushed),
+        denyReason(result)
+      );
+    }
+    for (const command of [
+      'rm supabase/migrations/2099*.sql',
+      'git rm supabase/migrations/*_share_links.sql',
+      `mv supabase/migrations/${future} supabase/migrations/`,
+      'git mv app/src/lib/x.ts supabase/migrations'
+    ]) {
+      const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-2p' }));
+      check(
+        `#252 expansion finds no pushed file: allows ${command}`,
+        isSilent(result),
+        result.stdout
+      );
+    }
     gitSh(['update-ref', '-d', 'refs/remotes/origin/main']);
     {
       const result = runHook('edit-guard.mjs', editPayload(migration(pushed)));
       check('#198 no remote ref holds it: allows', isSilent(result), result.stdout);
+    }
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload(`git rm supabase/migrations/${pushed}`, { session_id: 's-2p' })
+      );
+      check('#245 rule 2p: no remote ref holds it: allows', isSilent(result), result.stdout);
     }
     {
       const result = runHook(
@@ -1899,6 +2035,94 @@ function testEditGuard() {
     }
     fs.rmSync(path.join(scratchRoot, 'supabase'), { recursive: true, force: true });
     fs.rmSync(noRepo, { recursive: true, force: true });
+  }
+
+  // #246-#247 - a migration pushed from elsewhere: `origin` (a bare
+  // repository beside the scratch root) holds it on a branch this clone has
+  // not fetched. Both guards fetch before they read the refs.
+  const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-origin-'));
+  const elsewhere = '20261004120000_elsewhere.sql';
+  const original = gitSh(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
+  let remoteAdded = false;
+  try {
+    gitSh(['init', '-q', '--bare'], bare);
+    gitSh(['remote', 'add', 'origin', bare]);
+    remoteAdded = true;
+    gitSh(['checkout', '-q', '-b', 'pushed-elsewhere']);
+    writeFile(`supabase/migrations/${elsewhere}`, 'select 3;\n');
+    gitSh(['add', `supabase/migrations/${elsewhere}`]);
+    // A pathspec commit: whatever else sits in the index stays on `original`.
+    gitSh([
+      '-c',
+      'user.email=hooks-selftest@example.com',
+      '-c',
+      'user.name=hooks-selftest',
+      'commit',
+      '-q',
+      '-m',
+      'chore: a migration pushed from another clone',
+      '--',
+      `supabase/migrations/${elsewhere}`
+    ]);
+    gitSh(['push', '-q', 'origin', 'pushed-elsewhere']);
+    gitSh(['checkout', '-q', original]);
+    gitSh(['branch', '-q', '-D', 'pushed-elsewhere']);
+    const unfetch = () =>
+      spawnSync('git', ['update-ref', '-d', 'refs/remotes/origin/pushed-elsewhere'], {
+        cwd: scratchRoot
+      });
+    unfetch();
+    {
+      const result = runHook('edit-guard.mjs', editPayload(migration(elsewhere)));
+      check(
+        '#246 unfetched pushed migration: edit-guard denies',
+        isDeny(result),
+        result.stdout
+      );
+      check(
+        '#246 unfetched pushed migration: names the fetched ref',
+        denyReason(result).includes('origin/pushed-elsewhere'),
+        denyReason(result)
+      );
+    }
+    unfetch();
+    {
+      const result = runHook(
+        'bash-guard.mjs',
+        bashPayload(`git rm supabase/migrations/${elsewhere}`)
+      );
+      check('#247 unfetched pushed migration: rule 2p denies', isDeny(result), result.stdout);
+    }
+    // #253 - offline: `origin` cannot be reached, so the fetch fails and the
+    // guard reads the ref this clone already holds (the fail-open path still
+    // denies what a local ref records).
+    gitSh(['fetch', '-q', 'origin']);
+    gitSh(['remote', 'set-url', 'origin', path.join(bare, 'no-such-repository')]);
+    {
+      const result = runHook('edit-guard.mjs', editPayload(migration(elsewhere)));
+      check(
+        '#253 origin unreachable, local ref holds it: denies',
+        isDeny(result),
+        result.stdout
+      );
+      check(
+        '#253 origin unreachable: names the local ref',
+        denyReason(result).includes('origin/pushed-elsewhere'),
+        denyReason(result)
+      );
+    }
+  } finally {
+    const branch = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      cwd: scratchRoot,
+      encoding: 'utf8'
+    });
+    if ((branch.stdout || '').trim() !== original) {
+      spawnSync('git', ['checkout', '-q', original], { cwd: scratchRoot });
+    }
+    spawnSync('git', ['branch', '-q', '-D', 'pushed-elsewhere'], { cwd: scratchRoot });
+    if (remoteAdded) spawnSync('git', ['remote', 'remove', 'origin'], { cwd: scratchRoot });
+    fs.rmSync(path.join(scratchRoot, 'supabase'), { recursive: true, force: true });
+    fs.rmSync(bare, { recursive: true, force: true });
   }
 }
 
@@ -2007,11 +2231,18 @@ function testEditFollowup() {
 
 // ---------- check-observer.mjs (#45-49) ----------
 
+// vitest's `text-summary` block, the only coverage output the check prints.
+const COVERAGE_SUMMARY =
+  '=============================== Coverage summary ===============================\n' +
+  'Statements   : 97.6% ( 4500/4610 )\n' +
+  'Lines        : 97.6% ( 4141/4210 )\n' +
+  '================================================================================\n';
+
 async function testCheckObserver() {
   clearCache();
   const passingResponse = {
     exit_code: 0,
-    stdout: 'some output\nAll files                    |   95 |\n',
+    stdout: 'some output\n' + COVERAGE_SUMMARY,
     stderr: '',
     interrupted: false
   };
@@ -2050,7 +2281,7 @@ async function testCheckObserver() {
       tool_input: { command: 'npm run check', run_in_background: false },
       tool_response: {
         exit_code: 1,
-        stdout: 'All files\n2 FAILED\n',
+        stdout: COVERAGE_SUMMARY + '2 FAILED\n',
         stderr: '',
         interrupted: false
       }
@@ -2146,7 +2377,7 @@ async function testCheckObserver() {
       tool_input: { command: 'rtk npm run check', run_in_background: false },
       tool_response: {
         exit_code: 1,
-        stdout: 'All files\n2 FAILED\n',
+        stdout: COVERAGE_SUMMARY + '2 FAILED\n',
         stderr: '',
         interrupted: false
       }
@@ -2219,18 +2450,47 @@ async function testCheckObserver() {
     check('#171 verdict: silent for a backgrounded run', !systemMessage(result), result.stdout);
   }
 
+  // #250 - the per-file table's header alone no longer attributes a run:
+  // the check prints only the summary block since the table pushed its
+  // output past the tool's cap (.claude/README.md, "Run a long check").
+  clearCache();
+  {
+    const result = runHook('check-observer.mjs', {
+      session_id: 's-observer-says',
+      cwd: scratchRoot,
+      hook_event_name: 'PostToolUse',
+      tool_name: 'Bash',
+      tool_input: { command: 'rtk npm run check', run_in_background: false },
+      tool_response: {
+        exit_code: 0,
+        stdout: 'All files | 96 |\n',
+        stderr: '',
+        interrupted: false
+      }
+    });
+    check(
+      '#250 the table header without the summary: not armed',
+      systemMessage(result).includes('not armed'),
+      systemMessage(result)
+    );
+    check(
+      '#250 the table header without the summary: no cache',
+      !fs.existsSync(cacheFilePath())
+    );
+  }
+
   // #49a-g - the observer must only trust stdout it can attribute to a real
   // check run. Every "no cache" case here was probed writing a cache entry.
   const attributionCases = [
     [
       '#49a redirect then grep (the check FAILED)',
-      'npm run check > o.txt 2>&1 || true; grep "All files" o.txt',
+      'npm run check > o.txt 2>&1 || true; grep "Coverage summary" o.txt',
       passingResponse,
       false
     ],
     [
       '#49b echo naming the command',
-      'echo "npm run check says All files"',
+      'echo "npm run check says Coverage summary"',
       passingResponse,
       false
     ],
@@ -2238,7 +2498,7 @@ async function testCheckObserver() {
     [
       '#49d unrecognised numeric failure field',
       'npm run check',
-      { status: 1, stdout: 'All files | 96 |\n', stderr: '', interrupted: false },
+      { status: 1, stdout: COVERAGE_SUMMARY, stderr: '', interrupted: false },
       false
     ],
     [
@@ -2260,7 +2520,7 @@ async function testCheckObserver() {
     // its stdout is the last thing written, and it is not the check's.
     [
       '#49g cd, check, then something else',
-      'cd /repo && npm run check && echo "All files"',
+      'cd /repo && npm run check && echo "Coverage summary"',
       passingResponse,
       false
     ],
@@ -2292,13 +2552,13 @@ async function testCheckObserver() {
     ],
     [
       '#96 pipefail then echo (forgery)',
-      'set -o pipefail; echo "All files"',
+      'set -o pipefail; echo "Coverage summary"',
       passingResponse,
       false
     ],
     [
       '#97 pipefail, redirect, grep (forgery)',
-      'set -o pipefail; npm run check > o.txt 2>&1; grep "All files" o.txt',
+      'set -o pipefail; npm run check > o.txt 2>&1; grep "Coverage summary" o.txt',
       passingResponse,
       false
     ],
@@ -2333,7 +2593,7 @@ async function testCheckObserver() {
     [
       '#101 pipefail carries the status',
       'set -o pipefail; npm run check 2>&1 | tail -n 120',
-      { exit_code: 1, stdout: 'All files | 96 |\n', stderr: '', interrupted: false },
+      { exit_code: 1, stdout: COVERAGE_SUMMARY, stderr: '', interrupted: false },
       false
     ],
     // #142-#143 - the gate has to arm on the shape RTK's own hook actually
@@ -2343,7 +2603,7 @@ async function testCheckObserver() {
     [
       '#143 rtk-prefixed check still refuses on failure',
       'rtk npm run check',
-      { exit_code: 1, stdout: 'All files | 96 |\n', stderr: '', interrupted: false },
+      { exit_code: 1, stdout: COVERAGE_SUMMARY, stderr: '', interrupted: false },
       false
     ]
   ];
@@ -2437,7 +2697,7 @@ async function testCheckDbObserver() {
     runHook(
       'check-observer.mjs',
       observerPayload('PowerShell', 'npm run check', {
-        stdout: 'All files | 95 |\n',
+        stdout: COVERAGE_SUMMARY,
         stderr: ''
       })
     );

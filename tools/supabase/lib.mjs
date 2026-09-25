@@ -1,8 +1,9 @@
 /*
   Pure logic for the Supabase release tools (config.mjs, db-push.mjs,
-  pending-check.mjs) and the reversibility gate in tests/db/. No process
-  spawn, no filesystem: every input arrives as an argument, so
-  lib.test.mjs covers it inside `npm run check`.
+  db.mjs, limits.mjs, migrate-test.mjs, pending-check.mjs) and the
+  reversibility gate in tests/db/. No process spawn, no filesystem: every
+  input arrives as an argument, so lib.test.mjs covers it inside `npm run
+  check`.
   Procedure: .claude/README.md, "Supabase configuration".
 */
 
@@ -19,6 +20,34 @@ export const PROJECTS = Object.freeze({
   test: 'rdjxcjkhsklhprmzxajq',
   prod: 'zzmrftmzefcqehhyztjq'
 });
+
+/** Returns the name in PROJECTS (`test` or `prod`) whose project a
+ * connection string targets, or `null`. The target is the pooler user
+ * `postgres.<ref>` on a `*.pooler.supabase.com` host, or the direct host
+ * `db.<ref>.supabase.co` with the user `postgres` or `postgres.<ref>`. A
+ * query string or a hash gives `null`: libpq reads `user=` and `host=`
+ * there too, so it can move the target. Rule 2n's `isTestDbUrl` in
+ * .claude/hooks/bash-guard.mjs reads a URL the same way. */
+export function dbUrlProject(url) {
+  let parsed;
+  let user;
+  try {
+    parsed = new URL(String(url));
+    user = decodeURIComponent(parsed.username);
+  } catch {
+    return null;
+  }
+  if (!/^postgres(?:ql)?:$/.test(parsed.protocol) || parsed.search || parsed.hash) return null;
+  for (const [name, ref] of Object.entries(PROJECTS)) {
+    const poolerUser = `postgres.${ref}`;
+    if (parsed.hostname === `db.${ref}.supabase.co`) {
+      if (user === 'postgres' || user === poolerUser) return name;
+    } else if (parsed.hostname.endsWith('.pooler.supabase.com') && user === poolerUser) {
+      return name;
+    }
+  }
+  return null;
+}
 
 /** Returns `{ project, ref, envFile }` from `--project test|prod` and an
  * optional `--env-file <path>`; throws when the project is absent or
@@ -40,6 +69,66 @@ export function parseProjectArg(argv) {
   }
   if (envFile === '') envFile = null;
   return { project, ref: PROJECTS[project], envFile };
+}
+
+const LIMIT_MODES = new Map([
+  ['--value', 'value'],
+  ['--default', 'default'],
+  ['--clear', 'default'],
+  ['--unlimited', 'unlimited']
+]);
+
+/** Returns `{ project, user, key, mode, value }` from the arguments of
+ * `npm run limits:set`: `--project test|prod --user <email|uuid> --key
+ * <key>` and exactly one of `--value <n>`, `--default`, `--clear` (the
+ * same as `--default`) or `--unlimited`. `mode` is `value`, `default` or
+ * `unlimited`; `value` is the integer for `value`, else `null`. Throws on a
+ * bad shape. The keys live in the database, not here. */
+export function parseLimitsArgs(argv) {
+  const { project } = parseProjectArg(argv);
+  let user = null;
+  let key = null;
+  let raw = null;
+  const modes = [];
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--user') user = argv[++i] ?? null;
+    else if (arg === '--key') key = argv[++i] ?? null;
+    else if (arg === '--project') i++;
+    else if (arg.startsWith('--project=')) continue;
+    else if (LIMIT_MODES.has(arg)) {
+      modes.push(arg);
+      if (arg === '--value') raw = argv[++i] ?? null;
+    } else throw new Error(`The argument "${arg}" is unknown.`);
+  }
+  if (!user) throw new Error('The user is missing. Pass --user <email or uuid>.');
+  if (!key) throw new Error('The key is missing. Pass --key <limit key>.');
+  if (modes.length !== 1) {
+    throw new Error(
+      `Pass exactly one of --value <n>, --default, --clear or --unlimited (got ${modes.length}).`
+    );
+  }
+  const mode = LIMIT_MODES.get(modes[0]);
+  let value = null;
+  if (mode === 'value') {
+    if (raw === null || !/^\d+$/.test(raw) || !Number.isSafeInteger(Number(raw))) {
+      throw new Error(
+        `The value is ${raw === null ? 'missing' : `"${raw}"`}. Pass a non-negative integer.`
+      );
+    }
+    value = Number(raw);
+    if (value > 2147483647) throw new Error(`The value ${raw} is too large for an integer.`);
+  }
+  return { project, user, key, mode, value };
+}
+
+/** Returns one side of a `limits:set` report: the override's value (`200`,
+ * `unlimited`), or with no override the default's (`default 50`, `default
+ * unlimited`). `limit` is `{ override: boolean, value: number | null,
+ * fallback: number | null }`. */
+export function describeLimit({ override, value, fallback }) {
+  const shown = (n) => (n === null ? 'unlimited' : String(n));
+  return override ? shown(value) : `default ${shown(fallback)}`;
 }
 
 /** Returns the CLI arguments of a read-only `config diff` against `ref`.

@@ -1,0 +1,175 @@
+# #/s/gm-token-1
+# route: #/s/gm-token-1
+# why: the GM view signed out: the same page with the GM notes on the list and on «Проклят.»
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/s/gm-token-1]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Лавка кузнеца" [level=1]
+    StaticText "Список от другого игрока · 9 позиций"
+    StaticText "Обновлено 3 дня назад"
+    button "Сохранить себе"
+    ... StaticText x7 of 11 same-shape siblings elided
+    checkbox "Выбрать все (9)" [checked=false]
+    checkbox "Первоклассный Спальный Мешок" [checked=false]
+    button "1 Первоклассный Спальный Мешок ×2 · 150 зол. Во время отдыха вы ..." [namelen=107 namehash=a6fdba25]
+    ... checkbox x6 of 10 same-shape siblings elided
+    ... button x6 of 10 same-shape siblings elided
+    StaticText "ТОЛЬКО ДЛЯ МАСТЕРА"
+    StaticText "Проклят."
+    checkbox "Колдующий Кинжал" [checked=false]
+    button "Колдующий Кинжал Ранг 1 · Магическое · Инстинкт · Средне · d6 ма..." [namelen=217 namehash=4560dddc]
+    checkbox "Брошюра по Истории Искусства" [checked=false]
+    button "11 Брошюра по Истории Искусства Это прекрасно иллюстрированная б..." [namelen=616 namehash=5c84c6ba]
+  generic ""
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+11Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная бро... [namelen=612 namehash=094e189a]
+1Зелье Быстрого Шага×5 · 20 зол.Вы получаете бонус +1 к следующе... [namelen=99 namehash=37be7764]
+1Первоклассный Спальный Мешок×2 · 150 зол.Во время отдыха вы авт... [namelen=102 namehash=f527509a]
+3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
+51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Брошюра по Истории Искусства
+Войти
+Гарпун Левиафана
+Зелье Быстрого Шага
+К содержимому
+Колдующий Кинжал
+Колдующий КинжалРанг 1 · Магическое · Инстинкт · Средне · d6 маг... [namelen=213 namehash=420a4f88]
+Колода Сумерек
+Конфиденциальность
+ЛутDaggerheart
+Обычные правила
+Палаш
+ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
+Первоклассный Спальный Мешок
+Поиск
+Скипетр
+СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
+Сообщества
+Сохранить себе
+Списки
+Стеганый Доспех
+Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/s/gm-token-1]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Лавка кузнеца" [level=1]
+    StaticText "A list from another player · 9 items"
+    StaticText "Updated 3 days ago"
+    button "Save to my lists"
+    ... StaticText x7 of 11 same-shape siblings elided
+    checkbox "Select all (9)" [checked=false]
+    checkbox "Premium Bedroll" [checked=false]
+    button "1 Premium Bedroll ×2 · 150 gp During downtime, you automatically..." [namelen=90 namehash=a96c7377]
+    ... checkbox x6 of 10 same-shape siblings elided
+    ... button x6 of 10 same-shape siblings elided
+    StaticText "GM ONLY"
+    StaticText "Проклят."
+    checkbox "Casting Dagger" [checked=false]
+    button "Casting Dagger Tier 1 · Magic · Instinct · Close · d6 mag · One-..." [namelen=180 namehash=33c9b4cf]
+    checkbox "Art History Booklet" [checked=false]
+    button "11 Art History Booklet This is a finely illustrated booklet (don..." [namelen=538 namehash=326f6b17]
+  generic ""
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+11Art History BookletThis is a finely illustrated booklet (donat... [namelen=534 namehash=84c3b132]
+1Premium Bedroll×2 · 150 gpDuring downtime, you automatically cl... [namelen=85 namehash=b9388206]
+1Stride Potion×5 · 20 gpYou gain a +1 bonus to your next Agility... [namelen=84 namehash=35b6c241]
+3Twilight DeckRecall Cost: 2This deck enhances fortunes with the... [namelen=871 namehash=62fc9683]
+51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=351 namehash=189625cc]
+Alt. tables
+Art History Booklet
+Broadsword
+BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+Casting Dagger
+Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
+Communities
+Dragon's Vault
+Dread
+EN
+Gambeson Armor
+Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
+Install as an app
+Leviathan Harpoon
+Lists
+Premium Bedroll
+Privacy
+RU
+Save to my lists
+Scepter
+ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
+Search
+Sign in
+Skip to content
+Standard rules
+Stride Potion
+Tables
+Terms of use
+Twilight Deck
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

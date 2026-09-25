@@ -17,6 +17,7 @@
  * what stops a component reaching past it. */
 
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import { isCloudId, limitText } from '../lib/cloudLists.js';
 import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict } from '../lib/dict.js';
 import {
@@ -25,18 +26,23 @@ import {
   PACK_MARK,
   parseHash,
   recordUrl,
+  sectionHash,
   sharedListHash,
+  storedListHash,
   stripHash,
   type Route,
   type Site
 } from '../lib/hash.js';
-import { encodeList, type DecodedList } from '../lib/listLink.js';
-import { LIST_PAGE, type StoredList } from '../lib/lists.js';
+import { decodeList, encodeList, type DecodedList } from '../lib/listLink.js';
+import { copyInit, LIST_PAGE, type StoredList } from '../lib/lists.js';
+import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import { readPrefs, type Prefs } from '../lib/prefs.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Section } from '../lib/types.js';
-import type { Env, Provider, Session } from '../ports/index.js';
-import { ListStore } from './lists.svelte.js';
+import type { AuthResult, Env, Provider, Session } from '../ports/index.js';
+import { CloudLists } from './cloudLists.svelte.js';
+import { ListStore, type ListModel } from './lists.svelte.js';
+import { SharedView } from './sharedView.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
@@ -44,6 +50,10 @@ const WARN_KEY = 'dhloot.warn.v1';
 const PREFS_KEY = 'dhloot.prefs.v1';
 
 const DEFAULT_HOME = '#/roll/std';
+
+/** How often the index, an account list page and a share page re-read the account's
+ *  lists, and the relative times move. */
+export const LIST_POLL_MS = 45_000;
 
 /** What `dhloot.prefs.v1` holds, whole: the tables view and the print
  *  layout (docs/specs/STATE.md). */
@@ -162,8 +172,31 @@ export class AppState {
    */
   navigations = $state(0);
 
-  /** The lists a person has made, and how they are saved. */
+  /** The lists a person has made in this browser, and how they are saved. */
   readonly lists: ListStore;
+  /** The signed-in owner's account lists; null in a build with no sign-in configured. */
+  readonly cloudLists: CloudLists | null;
+  /** The list behind the open share link; null in a build with no sign-in configured. */
+  readonly sharedView: SharedView | null;
+  /** The clock the relative times read: moved every 45 s and when the tab is shown again. */
+  now = $state(Date.now());
+  /** True while «Сохранить себе» copies a share link's list. */
+  cloning = $state(false);
+  /**
+   * Where a sign-in prompt's «Войти» came from and what it started - kept
+   * while the reader is on `#/account`, handed to the provider redirect by
+   * `signIn`, and forgotten on any navigation to another page
+   * (docs/specs/STATE.md, "Session"). Raw: it crosses into sessionStorage.
+   */
+  signInFor = $state.raw<SignInAfter | null>(null);
+  /** The name a reader typed for a new list before a sign-in; the add-to-list menu that
+   *  reopens after it takes the name into its create slot, once. */
+  pendingListName = $state<string | null>(null);
+  /* The action a sign-in finishes once the account's lists are read. A
+     navigation or a sign-out forgets it, so it never runs on another page
+     or for the next user. */
+  #pending: PendingAction | null = null;
+  #listPoll: ReturnType<typeof setInterval> | null = null;
 
   /**
    * The list currently open on the list page, and the payload its address
@@ -330,13 +363,12 @@ export class AppState {
     this.storageWorks = env.storage.works();
     if (!env.cloud) this.user = null;
     this.showInstall = !env.pwa.standalone();
-    this.lists = new ListStore(
-      env,
-      (msg, error) => {
-        this.say(msg, { error });
-      },
-      () => this.t
-    );
+    const say = (msg: string, error?: boolean): void => {
+      this.say(msg, { error });
+    };
+    this.lists = new ListStore(env, say, () => this.t);
+    this.cloudLists = env.cloud ? new CloudLists(env.cloud.lists, say, () => this.t) : null;
+    this.sharedView = env.cloud ? new SharedView(env.cloud.shares) : null;
 
     /* A bare address opens the pinned section - but only at boot, and only a
        bare one: a link to a record or a shared list must not be overridden by
@@ -384,6 +416,8 @@ export class AppState {
         return;
       }
       this.hash = this.#fallback(h);
+      this.#forgetSignIn();
+      this.#forgetPending();
       this.navigations++;
       this.menuFor = '';
       this.#clearTicks();
@@ -392,6 +426,11 @@ export class AppState {
     });
     this.#stopListWatch = this.lists.watch();
     this.#watchAccount();
+    if (this.cloudLists) {
+      this.#listPoll = setInterval(() => {
+        this.#pollLists();
+      }, LIST_POLL_MS);
+    }
     return () => {
       this.stop();
     };
@@ -413,9 +452,13 @@ export class AppState {
       this.#setUser(s);
     });
     const offShown = this.env.storage.onExternalChange((key) => {
-      if (key !== null || !this.user) return;
+      if (key !== null) return;
+      this.now = Date.now();
+      this.#refreshShared();
+      if (!this.user) return;
       if (this.#stale) this.#saveAccount();
       else void this.#pull();
+      void this.cloudLists?.refresh();
     });
     this.#stopAuth = () => {
       live = false;
@@ -432,7 +475,15 @@ export class AppState {
       }
     );
     void cloud.auth.redirectResult().then((r) => {
-      if (!live || !r || r.result.ok) return;
+      if (!live || !r) return;
+      if (r.result.ok) {
+        /* The real port has already put the address back to the prompt's page. */
+        if (r.action) {
+          this.#pending = r.action;
+          this.#runPending();
+        }
+        return;
+      }
       if (r.kind === 'link' && r.result.error === 'alreadyLinked' && r.provider) {
         this.alreadyLinked = r.provider;
       } else {
@@ -441,18 +492,173 @@ export class AppState {
     });
   }
 
-  /* A new user pulls the account's preferences; the same user again (a
-     token refresh) pulls nothing, and signing out clears nothing local. */
+  /* A new user pulls the account's preferences and lists; the same user
+     again (a token refresh) pulls nothing. Signing out clears nothing local,
+     but no account list stays on screen. */
   #setUser(s: Session | null): void {
+    const was = this.#prefsFor;
     this.user = s;
     if (!s) {
       this.#prefsFor = null;
+      if (was !== null) {
+        this.#forgetPending();
+        this.#listsSignedOut();
+      }
       return;
     }
     if (s.userId === this.#prefsFor) return;
     this.#prefsFor = s.userId;
     this.#stale = false;
     void this.#pull();
+    const lists = this.cloudLists;
+    if (lists) {
+      lists.clear();
+      void lists.load().then(() => {
+        this.#runPending();
+      });
+    }
+  }
+
+  #listsSignedOut(): void {
+    this.cloudLists?.clear();
+    const r = this.route;
+    if (r.kind === 'storedList' && isCloudId(r.listId)) this.replace(sectionHash('lists'));
+  }
+
+  /* A share page re-reads its list, signed in or not. */
+  #refreshShared(): void {
+    if (this.route.kind === 'share') void this.sharedView?.refresh();
+  }
+
+  /* The index and an account list page re-read while they are on screen. */
+  #pollLists(): void {
+    this.now = Date.now();
+    this.#refreshShared();
+    const lists = this.cloudLists;
+    if (!lists || !this.user) return;
+    const r = this.route;
+    const shown =
+      (r.kind === 'section' && r.section === 'lists') ||
+      (r.kind === 'storedList' && lists.get(r.listId) !== undefined);
+    if (shown) void lists.refresh();
+  }
+
+  /**
+   * Where a list made now goes: `local` in a build with no sign-in, `wait`
+   * while the session is unknown (nothing is drawn, so a signed-in reader
+   * never sees the prompt flash), `prompt` signed out, `cloud` signed in.
+   */
+  get newListTarget(): 'local' | 'cloud' | 'prompt' | 'wait' {
+    if (!this.cloudLists) return 'local';
+    if (this.user === undefined) return 'wait';
+    return this.user ? 'cloud' : 'prompt';
+  }
+
+  /** The store that holds `listId`: the account's, or this browser's. */
+  storeFor(listId: string): ListModel {
+    return this.cloudLists?.get(listId) ? this.cloudLists : this.lists;
+  }
+
+  /** A prompt's «Войти»: remembers the page and the action, then opens `#/account`. */
+  askSignIn(after: SignInAfter): void {
+    this.signInFor = after;
+    this.go('#/account');
+  }
+
+  #forgetSignIn(): void {
+    if (this.route.kind !== 'account') this.signInFor = null;
+  }
+
+  #forgetPending(): void {
+    this.#pending = null;
+    this.pendingListName = null;
+  }
+
+  /**
+   * The account page's sign-in. The remembered prompt rides the provider
+   * redirect; a port that signs in at once (the fake) is taken back to the
+   * prompt's page here, and its action runs once the lists are read.
+   */
+  async signIn(provider: Provider): Promise<AuthResult> {
+    const cloud = this.env.cloud;
+    if (!cloud) return { ok: false, error: 'failed' };
+    const after = this.signInFor;
+    const r = await cloud.auth.signIn(provider, after ?? undefined);
+    if (r.ok && after && this.user && this.signInFor === after) {
+      this.go(after.hash);
+      if (after.action) {
+        this.#pending = after.action;
+        this.#runPending();
+      }
+    }
+    return r;
+  }
+
+  /* Waits for a user and the account's lists, and for a packed `#/l/`
+     address to expand. */
+  #runPending(): void {
+    const action = this.#pending;
+    const lists = this.cloudLists;
+    if (!action || !this.user || lists?.status !== 'ready') return;
+    if (action.do === 'addToList') {
+      this.#pending = null;
+      /* Only the bar's menu acts on the ticks; a card's acts on its record. */
+      if (action.key === 'sel') {
+        this.#clearTicks();
+        for (const id of action.ids) this.sel.add(id);
+        for (const [id, n] of Object.entries(action.picked ?? {})) this.picked.set(id, n);
+      }
+      this.pendingListName = action.name ?? null;
+      this.menuFor = action.key;
+      return;
+    }
+    const r = this.route;
+    if (r.kind === 'sharedList' && r.packed) return;
+    this.#pending = null;
+    if (r.kind === 'share') {
+      void this.saveShareCopy(r.token);
+      return;
+    }
+    if (r.kind !== 'sharedList') return;
+    const d = decodeList(r.payload, (id) => this.index?.byId.has(id) ?? false);
+    if (d) this.saveCopyOf(d);
+  }
+
+  /** Saves a shared list into the account and opens it. */
+  saveCopyOf(d: DecodedList): void {
+    const lists = this.cloudLists;
+    if (!lists) return;
+    const l = lists.create(d.name, copyInit(d));
+    this.say(this.t.listCreated.replace('%s', l.name));
+    this.go(storedListHash(l.id));
+  }
+
+  /** Saves the share link's list into the account and opens the copy, while the reader
+   *  is still on that link. */
+  async saveShareCopy(token: string): Promise<void> {
+    const cloud = this.env.cloud;
+    const lists = this.cloudLists;
+    if (!cloud || !lists || this.cloning) return;
+    this.cloning = true;
+    const id = cloud.lists.newId();
+    try {
+      const r = await cloud.shares.clone(token, id);
+      if (!r.ok) {
+        const t = this.t;
+        if (r.error === 'limit') this.say(limitText(r.key, r.value, t), { error: true });
+        else this.say(t.cloneFailed, { error: true });
+        if (r.error === 'refused') void this.sharedView?.refresh();
+        return;
+      }
+      await lists.load();
+    } finally {
+      this.cloning = false;
+    }
+    const t = this.t;
+    const name = lists.get(id)?.name ?? this.sharedView?.shared?.list.name ?? '';
+    this.say(t.listCreated.replace('%s', name || t.untitled));
+    const here = this.route;
+    if (here.kind === 'share' && here.token === token) this.go(storedListHash(id));
   }
 
   /* The account wins over this browser; an account with no row is seeded
@@ -543,6 +749,8 @@ export class AppState {
   stop(): void {
     this.#stopRouter?.();
     this.#stopRouter = null;
+    if (this.#listPoll !== null) clearInterval(this.#listPoll);
+    this.#listPoll = null;
     this.#stopListWatch?.();
     this.#stopListWatch = null;
     this.#stopAuth?.();
@@ -717,6 +925,8 @@ export class AppState {
        reason: a route kind `App.svelte` cannot yet draw must not be the
        result of a call this class itself made. */
     this.hash = this.#fallback(hash);
+    this.#forgetSignIn();
+    this.#forgetPending();
     this.navigations++;
     this.menuFor = '';
     this.#clearTicks();
@@ -793,6 +1003,7 @@ export class AppState {
         } else {
           this.expandFailed = '';
           this.replace(sharedListHash(plain));
+          this.#runPending();
         }
       })
       .catch(() => {

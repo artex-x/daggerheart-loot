@@ -28,14 +28,11 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
+    heading "НОВЫЙ СПИСОК" [level=2]
+    StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
+    button "Войти"
     StaticText "Сохранённые списки не удалось прочитать."
-    ... StaticText x2 of 6 same-shape siblings elided
-    textbox "Новый список" [multiline=false readonly=false required=false]
-    button "Создать"
-    StaticText "ВОССТАНОВИТЬ ИЗ ССЫЛКИ"
-    textbox "Восстановить из ссылки" [multiline=false readonly=false required=false]
-    button "Восстановить"
-    StaticText "Списков пока нет — создайте первый выше"
+    StaticText " Похоже, их записала другая версия приложения, расширение браузе..." [namelen=239 namehash=54b7f09f]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -53,17 +50,13 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
-Восстановить
-Восстановить из ссылки
 К содержимому
 Как это работает
 Конфиденциальность
 ЛутDaggerheart
-Новый список
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
-Создать
 Сообщества
 Списки
 Таблицы
@@ -96,14 +89,11 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
+    heading "NEW LIST" [level=2]
+    StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]
+    button "Sign in"
     StaticText "The saved lists could not be read."
-    ... StaticText x2 of 6 same-shape siblings elided
-    textbox "New list" [multiline=false readonly=false required=false]
-    button "Create"
-    StaticText "RESTORE FROM A LINK"
-    textbox "Restore from a link" [multiline=false readonly=false required=false]
-    button "Restore"
-    StaticText "No lists yet — create one above"
+    StaticText " Something else on this site - another build, a browser extensio..." [namelen=226 namehash=9ec8cdd3]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -114,19 +104,15 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
 ## en :: controls
 Alt. tables
 Communities
-Create
 Dragon's Vault
 Dread
 EN
 How this works
 Install as an app
 Lists
-New list
 Open this section on start
 Privacy
 RU
-Restore
-Restore from a link
 Search
 Sign in
 Skip to content

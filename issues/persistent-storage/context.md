@@ -231,3 +231,105 @@ password. The owner runs that check.
 - Human provides new info
 - context.md is missing a fact you need
 - You suspect drift vs issue or plan
+
+## Owner request 2026-09-25: usage monitoring and forecast - a release after R2
+- Track everything important against the Supabase free plan: database
+  size, row counts per table, file storage (from R8), egress, monthly
+  active users; forecast days left from recent growth.
+- Alert: warn in the job summary (e.g. 50% of a limit or under 60 days
+  left); fail the job, so GitHub emails the owner (e.g. 80% or under 14
+  days). The owner then tunes limits with `limits:set`.
+- Orchestrator's proposal: a step in the nightly `backup.yml` job (it
+  already holds the production secret through the `production`
+  Environment); egress and users need the Supabase Management API and a
+  personal access token as a new `production` environment secret.
+- Placement: its own task after R2 (owner: "after r2", "plan it as the
+  last batch"). Recommended slot: right after R5, so the 2026-10-12
+  check for R5 keeps priority; the roadmap planner places it and settles
+  thresholds, the history store, and the free-project pause question
+  (a project idle for a week pauses; unverified whether the nightly dump
+  counts as activity).
+
+## Plans made ahead, 2026-09-25 - where they live until integrated
+Planned in parallel with R2's `B2.3`, each in its own git worktree on its
+own local branch (not pushed), all based on R2's local task commit
+`da7378cb`. Each planner commits its plan on its branch. After R2 closes
+and is pushed, the orchestrator brings each planning commit onto `main`
+(conflicts expected only in this roadmap's `plan.md`), then removes the
+worktree. Until then, do not delete these worktrees or branches.
+
+| Release | Task id | Worktree (`.claude/worktrees/`) | Branch | Planner model |
+|---|---|---|---|---|
+| R5 migration and cutoff | `persist-5-migration` | `agent-ab6237f88fb7735f1` | `worktree-agent-ab6237f88fb7735f1`, plan commit `6cae06e4` (revised, replaces `146be6ab`) | Fable |
+| R3 Realtime (polling stays plan B) | `persist-3-realtime` | `agent-ae90a050b0e40090a` | `worktree-agent-ae90a050b0e40090a`, plan commit `c39f3de1` | Opus |
+| R11 usage monitoring (after R5) | `persist-usage-monitoring` | `agent-acf8d4e7cebcec311` | `worktree-agent-acf8d4e7cebcec311`, plan commit `43e0e7dd` | Opus |
+| R6 import and export | `persist-6-import-export` | `agent-a7cedf410497c36ee` | `worktree-agent-a7cedf410497c36ee`, plan commit `a22a4230` | Fable |
+| R7 homebrew | `persist-7-homebrew` | `agent-ae9a09b5c219f2c0f` | `worktree-agent-ae9a09b5c219f2c0f`, plan commit `764ff8e7` (revised 2026-09-26, replaces `e9f82755`) | Fable |
+| R4 purchase requests | `persist-4-requests` | `agent-a1edb43d760ec7422` | `worktree-agent-a1edb43d760ec7422` (on top of R3's `c39f3de1`), plan commit `d8268062` | Opus |
+
+Starter `context.md` files for these tasks also sit untracked in the main
+tree under `issues/<task id>/` (the planners copied them). Find the plan
+commits with `git log --oneline main..<branch>` per branch.
+
+Owner answers for R11 usage monitoring (2026-09-26), to apply when its
+plan is integrated: thresholds warn at 50% or under 60 days, fail at 80%
+or under 14 days (Q1, as recommended); the public job summary shows totals
+only, no emails, ids or list names (Q2, as recommended); a scoped
+read-only Management API token `SUPABASE_USAGE_TOKEN_PROD` in the
+`production` Environment (Q3, as recommended).
+
+Owner answers for R3 Realtime (2026-09-26), to apply when its plan is
+integrated: Q1 yes - the owner's own devices subscribe to their account
+lists (`owner:<uid>`), reversing the 2026-09-24 "not subscribed in v1";
+Q2 "Allow public access" off on both projects, set by the owner after
+`B3.2` is live and read back each release; Q3 yes - a 5-minute safety
+re-read while Realtime reports live. All as recommended. `B3.1` is
+unblocked by Q1.
+
+Owner answers for R6 import and export (2026-09-26), all as recommended:
+Q1 import is all or nothing (one `import_lists` transaction); Q2 an
+export always carries both notes, no players' variant; Q3 three export
+surfaces (account all, index checklist, list page one); Q4 unknown catalog
+ids are skipped and named in the preview and the result.
+
+Owner answers for R5 and R7 (2026-09-26), changing both plans:
+- R5: the move of browser lists into the account is automatic, with no
+  press - on sign-in, lists move on the reader's behalf; the owner accepts
+  the shared-computer risk with two guards: a one-time notice naming the
+  moved lists, and the move runs only for the first account that signs in
+  on that browser. After the cutoff a browser list may still be deleted
+  (confirm); a moved list is removed from the browser, never duplicated.
+- New account menu (the header's account control): "Display settings",
+  "My lists", "My items", "Sign out". The Lists tab is removed at the
+  cutoff (lists are account-only then); until then it stays for signed-out
+  readers with browser lists. The menu can ship before R7 ("My items"
+  joins in R7). "Display settings" conflicts with section 17's "not in v1:
+  a preferences page" - the owner's new request supersedes it; the planner
+  designs the smallest form.
+- R7: homebrew items are live references inside the owner's account - an
+  edit updates every list holding the item, shared pages included. A copy
+  that leaves the account (a player's "Save a copy", R4's add-to-my-list,
+  R6's export) freezes a snapshot. Deleting an item that is in lists:
+  warn with the count, then delete it and remove it from those lists.
+
+Owner answer for R4 (2026-09-26): the remembered "notify the list owner"
+answer (`prefs.notifyGm`: ask / always / never) is changed in "Display
+settings", the page R5's account menu opens - not a field on `#/account`.
+R4's plan named `#/account`; its refresh moves it.
+
+Owner answer for R7 (2026-09-26): the source tag on a homebrew row, card
+and print card is «Хоумбрю» / "Homebrew" (against the planner's
+«Свой предмет»); the page, menu entry and search group stay «Мои
+предметы» / "My items".
+R5 plan revised (2026-09-26): plan commit `6cae06e4` replaces `146be6ab`
+(automatic move, account menu as `B5.3`). Open: whether `B5.3` ships as
+its own release R5b right after R5 (recommended) or as R5's last batch.
+R2 `B2.3` committed as `fd9b46eb`; the orchestrator's foreground
+`npm run check` on that tree passed 2026-09-26 (812/0, vitest 1697/1697)
+and armed the gate - an earlier attempt died with Windows 0xC000012D
+(commit limit: the host ran out of memory with seven agents and their
+worktrees).
+Owner answer (2026-09-26): the account menu ships as its own release R5b
+`persist-5b-account-menu` right after R5 (live before the 2026-10-26
+cutoff); R5 keeps `B5.1`, `B5.2`. R8, R9 and R10 are not planned yet
+(owner: finish R2 first).

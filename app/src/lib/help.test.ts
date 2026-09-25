@@ -120,37 +120,31 @@ describe('the help for a section', () => {
     expect(helpFor('nonsense', 'ru')).toBe(null);
   });
 
-  it('bolds both roles the two notes and the two links play, mid-sentence', () => {
-    /* "Для игроков"/"Только для мастера" and "Ссылка игрокам"/"Ссылка себе"
-       sit inside running prose rather than opening their paragraph, so each
-       pair is a run of parts rather than a `lead`. */
+  it('bolds both roles the two notes, the share button and the two links play, mid-sentence', () => {
+    /* "Для игроков"/"Только для мастера", "Поделиться" and "Ссылка
+       игрокам"/"Ссылка себе" sit inside running prose rather than opening
+       their paragraph, so each is a run of parts rather than a `lead`. */
+    const bold = (lang: 'ru' | 'en', at: number) =>
+      helpFor('lists', lang)
+        ?.paragraphs[at]?.parts.filter(isBold)
+        .map((b) => b.b);
     for (const lang of LANGS) {
       const lists = helpFor('lists', lang);
-      expect(lists?.paragraphs.length, lang).toBe(4);
+      expect(lists?.paragraphs.length, lang).toBe(5);
       expect(lists?.paragraphs[0]?.lead, lang).toBeUndefined();
-      expect(lists?.paragraphs[1]?.parts.filter(isBold), lang).toHaveLength(2);
-      expect(lists?.paragraphs[2]?.parts.filter(isBold), lang).toHaveLength(2);
+      expect(lists?.paragraphs[1]?.parts.filter(isBold), lang).toHaveLength(0);
     }
-    expect(
-      helpFor('lists', 'ru')
-        ?.paragraphs[1]?.parts.filter(isBold)
-        .map((b) => b.b)
-    ).toEqual(['Для игроков', 'Только для мастера']);
-    expect(
-      helpFor('lists', 'ru')
-        ?.paragraphs[2]?.parts.filter(isBold)
-        .map((b) => b.b)
-    ).toEqual(['Ссылка игрокам', 'Ссылка себе']);
-    expect(
-      helpFor('lists', 'en')
-        ?.paragraphs[1]?.parts.filter(isBold)
-        .map((b) => b.b)
-    ).toEqual(['For players', 'GM only']);
-    expect(
-      helpFor('lists', 'en')
-        ?.paragraphs[2]?.parts.filter(isBold)
-        .map((b) => b.b)
-    ).toEqual(["Players' link", 'Your own link']);
+    expect(bold('ru', 2)).toEqual(['Для игроков', 'Только для мастера']);
+    expect(bold('ru', 3)).toEqual(['Поделиться']);
+    expect(bold('ru', 4)).toEqual(['Ссылка игрокам', 'Ссылка себе']);
+    expect(bold('en', 2)).toEqual(['For players', 'GM only']);
+    expect(bold('en', 3)).toEqual(['Share']);
+    expect(bold('en', 4)).toEqual(["Players' link", 'Your own link']);
+  });
+
+  it('names the date the old list links stop opening', () => {
+    expect(textOf(helpFor('lists', 'ru'), 4)).toContain('26 октября 2026 года');
+    expect(textOf(helpFor('lists', 'en'), 4)).toContain('26 October 2026');
   });
 
   it('bolds the three-unit list and the three worked examples in the money help', () => {

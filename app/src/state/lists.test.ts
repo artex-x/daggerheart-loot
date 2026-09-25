@@ -235,6 +235,23 @@ describe('adding and removing ids', () => {
 
     expect(store.get('a')?.meta).toBeUndefined();
   });
+
+  it('adds by id and saves, the same as addIds and save', () => {
+    const storage = memoryStorage();
+    const store = new ListStore(at({ storage }), say, t);
+    const l = { id: 'a', name: 'Клад', ids: ['w1'], created: 1 };
+    store.lists = [l];
+
+    expect(
+      store.add('a', ['w1', 'w2', 'ghost'], knows, { w2: { qty: 2, hnote: 'h' } })
+    ).toEqual(['w2']);
+    const twin = new ListStore(at(), say, t);
+    twin.lists = [l];
+    twin.addIds(l, ['w1', 'w2', 'ghost'], knows, { w2: { qty: 2, hnote: 'h' } });
+    expect(store.get('a')).toEqual(twin.get('a'));
+    expect(JSON.parse(storage.get('dhloot.lists.v2') ?? 'null')).toEqual([twin.get('a')]);
+    expect(store.add('nope', ['w3'], knows)).toEqual([]);
+  });
 });
 
 describe('removing a list', () => {

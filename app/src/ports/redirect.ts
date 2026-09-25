@@ -8,11 +8,14 @@
  * to the page the reader left, so the router never sees the callback.
  * docs/specs/FEATURES.md, "Account"; docs/specs/STATE.md. */
 
+import { readPending, type PendingAction } from '../lib/pending.js';
 import type { Provider } from './types.js';
 
 export const RETURN_KEY = 'dhloot.auth.return';
 /** A record older than this is someone else's abandoned attempt. */
 export const RETURN_MS = 10 * 60 * 1000;
+/** The longest page address the record keeps: a `#/l/` link with notes passes 2048. */
+const HASH_MAX = 16384;
 
 const CALLBACK = 'auth-callback';
 const DROP = [CALLBACK, 'code', 'error', 'error_code', 'error_description'];
@@ -32,6 +35,8 @@ export interface ReturnRecord {
   hash: string;
   kind: Kind;
   provider: Provider;
+  /** What a sign-in prompt asked to finish on `hash` (lib/pending.ts). */
+  action?: PendingAction;
 }
 
 export interface Redirect {
@@ -39,6 +44,7 @@ export interface Redirect {
   error: string | null;
   kind: Kind;
   provider: Provider | null;
+  action: PendingAction | null;
 }
 
 /** The address a provider sends the reader back to: the page itself, without
@@ -78,12 +84,20 @@ function takeRecord(win: RedirectWindow, now: number): ReturnRecord | null {
   }
   if (!v || typeof v !== 'object') return null;
   const r = v as Record<string, unknown>;
-  const { hash, at, kind, provider } = r;
-  if (typeof hash !== 'string' || !hash.startsWith('#/') || hash.length >= 2048) return null;
+  const { hash, at, kind, provider, action } = r;
+  if (typeof hash !== 'string' || !hash.startsWith('#/') || hash.length >= HASH_MAX)
+    return null;
   if (typeof at !== 'number' || now - at < 0 || now - at > RETURN_MS) return null;
   if (typeof kind !== 'string' || !KINDS.includes(kind)) return null;
   if (typeof provider !== 'string' || !PROVIDERS.includes(provider)) return null;
-  return { hash, kind: kind as Kind, provider: provider as Provider };
+  /* A bad action costs the action, not the way back. */
+  const pending = readPending(action);
+  return {
+    hash,
+    kind: kind as Kind,
+    provider: provider as Provider,
+    ...(pending ? { action: pending } : {})
+  };
 }
 
 /** Reads a returning redirect and cleans the address, or answers null and
@@ -118,6 +132,7 @@ export function takeRedirect(win: RedirectWindow = window, now = Date.now()): Re
     code,
     error,
     kind: record?.kind ?? 'signIn',
-    provider: record?.provider ?? null
+    provider: record?.provider ?? null,
+    action: record?.action ?? null
   };
 }

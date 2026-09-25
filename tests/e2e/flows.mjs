@@ -1,7 +1,9 @@
 /* The account flows in a real browser over the configured `dist/`, on the
  * test project: F0 the page probe, F1 signed out, F2 the member's page, F3
  * sign-out, F4 sign-out everywhere, F5 delete account, F6 a preference read
- * back on a fresh session. Each flow gets its own browser context, the
+ * back on a fresh session, F7 an account list made, filled, renamed, read
+ * back from the server and deleted, F8 its share links made, read, deleted,
+ * made again and copied. Each flow gets its own browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
  * screenshots or throws a value of an `E2E_*` variable or the member's
@@ -9,7 +11,16 @@
  * docs/specs/COVERAGE.md, "Test layers". */
 
 import { createRequire } from 'node:module';
-import { createThrowaway, mint, prefsOf, refreshRefused, userGone } from './admin.mjs';
+import {
+  createThrowaway,
+  deleteListsOf,
+  listsOf,
+  mint,
+  prefsOf,
+  refreshRefused,
+  sharesOf,
+  userGone
+} from './admin.mjs';
 import { storageKey } from './lib.mjs';
 import { probePage } from './probe.mjs';
 
@@ -238,4 +249,207 @@ export async function runFlows({ env, admin, member, browser, base }) {
     );
   });
   console.log('e2e: F6 ok');
+
+  /* F7: an account list, from the index and the add-to-list menu, through
+     the real repository; the rows are read back by the service role. */
+  await deleteListsOf(admin, member.id);
+  try {
+    const mine = () => listsOf(admin, member.id);
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/lists');
+      await waitText(page, 'F7', 'Ваш аккаунт');
+      await waitText(page, 'F7', 'В аккаунте пока нет списков');
+      await d.type('Например: клад дракона', 'E2E список');
+      await d.press('Создать');
+      await until('F7: the new list did not reach the account', async () => {
+        const rows = await mine();
+        return rows.length === 1 && rows[0].name === 'E2E список';
+      });
+      const [made] = await mine();
+
+      await d.open('#/i/ci1');
+      await waitControl(page, 'F7', 'Добавить в список');
+      await d.press('Добавить в список');
+      await waitControl(page, 'F7', 'E2E список');
+      await d.press('E2E список');
+      await until('F7: ci1 did not reach the list', async () => {
+        const [row] = await mine();
+        return row?.list_entries.some((e) => e.item_key === 'ci1') ?? false;
+      });
+
+      await d.open('#/lists/' + made.id);
+      await waitText(page, 'F7', 'Сохранено');
+      await d.type('Название списка', 'E2E список 2');
+      await until('F7: the new name did not reach the account', async () => {
+        const [row] = await mine();
+        return row?.name === 'E2E список 2';
+      });
+      await d.open('#/lists/' + made.id);
+      await waitFor(
+        page,
+        'e2e F7: a reload did not read the new name and the row back',
+        () =>
+          document.querySelector('input.titleinput')?.value === 'E2E список 2' &&
+          document.querySelectorAll('.lrow').length === 1
+      );
+      await expectInPage(
+        page,
+        'F7',
+        'the address left #/lists/<id>',
+        (id) => location.hash === '#/lists/' + id,
+        made.id
+      );
+
+      await d.press('Удалить');
+      await waitText(page, 'F7', 'Список «E2E список 2» удалён');
+      await until(
+        'F7: the list is still in the account',
+        async () => (await mine()).length === 0
+      );
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+  }
+  console.log('e2e: F7 ok');
+
+  /* F8: an account list's share links through the real repository: made on
+     the panel's open, read signed out and by the owner, deleted and made
+     again, and copied by another user. The rows are read by the service
+     role. */
+  await deleteListsOf(admin, member.id);
+  try {
+    const mine = () => listsOf(admin, member.id);
+    let listId = '';
+    const active = async (audience) =>
+      (await sharesOf(admin, listId)).find(
+        (s) => s.audience === audience && s.revoked_at === null
+      );
+    const tokens = {};
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/lists');
+      await waitText(page, 'F8', 'Ваш аккаунт');
+      await d.type('Например: клад дракона', 'E2E ссылки');
+      await d.press('Создать');
+      await until('F8: the new list did not reach the account', async () => {
+        const rows = await mine();
+        return rows.length === 1 && rows[0].name === 'E2E ссылки';
+      });
+      listId = (await mine())[0].id;
+
+      await d.open('#/i/ci1');
+      await waitControl(page, 'F8', 'Добавить в список');
+      await d.press('Добавить в список');
+      await waitControl(page, 'F8', 'E2E ссылки');
+      await d.press('E2E ссылки');
+      await until('F8: ci1 did not reach the list', async () => {
+        const [row] = await mine();
+        return row?.list_entries.some((e) => e.item_key === 'ci1') ?? false;
+      });
+
+      await d.open('#/lists/' + listId);
+      await waitText(page, 'F8', 'Сохранено');
+      await d.press('Заметки');
+      await d.type('Например: лавка закрыта до утра', 'Игрокам E2E');
+      await d.type('Например: позиции 9-10 лежат под прилавком', 'Мастеру E2E');
+      await until('F8: the GM note did not reach the account', async () => {
+        const [row] = await mine();
+        return row?.gm_note === 'Мастеру E2E';
+      });
+      await waitText(page, 'F8', 'Сохранено');
+
+      await d.press('Поделиться');
+      await waitFor(
+        page,
+        'e2e F8: the panel did not show two links',
+        () => document.querySelectorAll('.sharelink').length === 2
+      );
+      await until('F8: the account does not hold two active links', async () => {
+        return !!(await active('player')) && !!(await active('gm'));
+      });
+      tokens.player = (await active('player')).token;
+      tokens.gm = (await active('gm')).token;
+    });
+
+    await withPage(ctx, null, async (page, d) => {
+      await d.open('#/s/' + tokens.player);
+      await waitText(page, 'F8', 'E2E ссылки');
+      await waitText(page, 'F8', 'Игрокам E2E');
+      await waitText(page, 'F8', 'Обновлено');
+      await expectInPage(
+        page,
+        'F8',
+        'the players link shows the GM note',
+        () => !document.body.textContent.includes('Мастеру E2E')
+      );
+      await d.open('#/s/' + tokens.gm);
+      await waitText(page, 'F8', 'Мастеру E2E');
+    });
+
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/s/' + tokens.player);
+      await waitText(page, 'F8', 'Это ваш список.');
+      await d.open('#/lists/' + listId);
+      await waitControl(page, 'F8', 'Поделиться');
+      await d.press('Поделиться');
+      await waitFor(
+        page,
+        'e2e F8: the panel did not show two links',
+        () => document.querySelectorAll('.sharelink').length === 2
+      );
+      await d.press('Удалить ссылку');
+      await waitText(page, 'F8', 'Ссылка удалена');
+      await until(
+        'F8: the players link is still active',
+        async () => !(await active('player'))
+      );
+      await d.press('Создать ссылку');
+      await until('F8: no new players link', async () => !!(await active('player')));
+      tokens.newPlayer = (await active('player')).token;
+      await d.press('Удалить ссылку', 1);
+      await until('F8: the GM link is still active', async () => !(await active('gm')));
+    });
+
+    await withPage(ctx, null, async (page, d) => {
+      await d.open('#/s/' + tokens.player);
+      await waitText(page, 'F8', 'Список больше не доступен');
+      await d.open('#/s/' + tokens.gm);
+      await waitText(page, 'F8', 'Список больше не доступен');
+      await d.open('#/s/' + tokens.newPlayer);
+      await waitText(page, 'F8', 'E2E ссылки');
+    });
+
+    const copier = await createThrowaway(admin, member.email);
+    await withPage(ctx, await mint(env, admin, copier.email), async (page, d) => {
+      await d.open('#/s/' + tokens.newPlayer);
+      await waitText(page, 'F8', 'E2E ссылки');
+      await waitFor(
+        page,
+        'e2e F8: the copier is not signed in',
+        () =>
+          document
+            .querySelector('header a[href="#/account"]')
+            ?.getAttribute('aria-label')
+            ?.startsWith('Аккаунт: ') ?? false
+      );
+      await d.press('Сохранить себе');
+      await waitFor(
+        page,
+        'e2e F8: «Сохранить себе» did not open the copy',
+        () =>
+          location.hash.startsWith('#/lists/') &&
+          document.querySelector('input.titleinput')?.value === 'E2E ссылки'
+      );
+      await until('F8: the copy in the account holds a GM note', async () => {
+        const rows = await listsOf(admin, copier.id);
+        return (
+          rows.length === 1 &&
+          rows[0].gm_note === '' &&
+          rows[0].list_entries.every((e) => e.gm_note === '')
+        );
+      });
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+  }
+  console.log('e2e: F8 ok');
 }

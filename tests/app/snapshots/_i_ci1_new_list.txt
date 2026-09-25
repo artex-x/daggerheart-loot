@@ -1,6 +1,6 @@
 # #/i/ci1 ~ new list
 # route: #/i/ci1
-# why: the inline form, both apps focusing the same input
+# why: signed out: the sign-in prompt in the new-list slot - one line, «Войти» and «Отмена», no provider buttons; the browser lists stay pickable
 
 ## ru :: tree
 RootWebArea "Первоклассный Спальный Мешок — Генератор лута — Daggerheart" [url=#/i/ci1]
@@ -29,10 +29,9 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
     link "показать в таблице" [url=#/tables/core_item/ci1]
     button "Страница"
     StaticText "1"
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Во время отдыха вы автоматически очищаете Стресс."
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
@@ -40,8 +39,8 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
     StaticText "ЛЕЖИТ В СПИСКАХ"
     button "Лавка в порту" [pressed=false]
     button "Клад дракона" [pressed=false]
-    textbox "Новый список" [focused=true multiline=false readonly=false required=false]
-    button "Создать"
+    StaticText "Войдите, чтобы создать список."
+    button "Войти" [focused=true]
     button "Отмена"
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1]
   contentinfo ""
@@ -67,7 +66,6 @@ daggerheart.com
 Конфиденциальность
 Лавка в порту
 ЛутDaggerheart
-Новый список
 Обычные правила
 Отмена
 Отправить
@@ -77,7 +75,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Собрать карточки для печати: девять на лист A4
-Создать
 Сообщества
 Списки
 Страница

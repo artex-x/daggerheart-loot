@@ -2,7 +2,8 @@
   The layer 3 harness proves itself, and pins four invariants every schema
   batch inherits: no `public` table grants anything to anon, every `public`
   table has row level security enabled, no `public` function is executable
-  by anon, and every `public` view is `security_invoker`.
+  by anon but the listed exceptions, and every `public` view is
+  `security_invoker`.
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -159,6 +160,8 @@ describe('public schema invariants', () => {
 // has_function_privilege sees a grant to PUBLIC as well as one to anon;
 // Supabase's default privileges grant EXECUTE on every new public function
 // to anon, so a migration has to revoke it.
+// The deliberate exceptions: a share link opens signed out.
+const EXPECTED_ANON_FUNCTIONS = ['get_shared_list(text)'];
 function anonFunctions(db) {
   return db`
     select p.oid::regprocedure::text as fn
@@ -168,11 +171,11 @@ function anonFunctions(db) {
 }
 
 describe('public function invariants', () => {
-  it('lets anon execute no public function', async () => {
+  it('lets anon execute only the listed public functions', async () => {
     const rows = await anonFunctions(sql);
     assert.deepEqual(
       rows.map((r) => r.fn),
-      []
+      EXPECTED_ANON_FUNCTIONS
     );
   });
 
@@ -192,7 +195,7 @@ describe('public function invariants', () => {
     );
     assert.deepEqual(
       rows.map((r) => r.fn),
-      ['harness_fn_probe()']
+      [...EXPECTED_ANON_FUNCTIONS, 'harness_fn_probe()'].sort()
     );
   });
 });

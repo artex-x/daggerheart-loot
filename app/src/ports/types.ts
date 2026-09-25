@@ -28,7 +28,18 @@
  * answer `null`, writes answer whether they succeeded. The app shows a warning
  * and keeps running; it does not pretend the lists are saved.
  */
+import type {
+  EntryPatch,
+  EntryRow,
+  ListPatch,
+  ListRow,
+  NewListRow,
+  ShareAudience,
+  SharedRow,
+  ShareRow
+} from '../lib/cloudLists.js';
 import type { Loot } from '../lib/data.js';
+import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { Random } from '../lib/roll.js';
 
@@ -260,6 +271,8 @@ export interface AuthRedirect {
   kind: 'signIn' | 'link';
   provider: Provider | null;
   result: AuthResult;
+  /** What the sign-in prompt that led here asked to finish; null when none did. */
+  action: PendingAction | null;
 }
 
 export interface AuthPort {
@@ -271,8 +284,9 @@ export interface AuthPort {
   /** Starts the provider redirect; the fake signs the seed's default user in.
    *  A redirect that cannot start is a refusal, answered at once; a started
    *  one leaves the page, so the real port answers only if this page comes
-   *  back from the back-forward cache. */
-  signIn(provider: Provider): Promise<AuthResult>;
+   *  back from the back-forward cache. `after` names the page the redirect
+   *  returns to and the action it finishes there; the fake ignores it. */
+  signIn(provider: Provider, after?: SignInAfter): Promise<AuthResult>;
   /** Like `signIn`; the fake links in place and answers at once. */
   link(provider: Provider): Promise<AuthResult>;
   unlink(identityId: string): Promise<AuthResult>;
@@ -300,10 +314,72 @@ export interface PreferencesPort {
   save(p: Prefs): Promise<boolean>;
 }
 
-/** Grows one member per release (R1 auth, R1 prefs, R2 lists, ...). */
+/** A write's answer; a refusal is an answer, never a throw. */
+export type ListWrite =
+  | { ok: true }
+  /** No answer: offline, a 5xx, a thrown fetch. The write may be sent again. */
+  | { ok: false; error: 'network' }
+  /** A count limit (`limit: <key>`); `value` is the limit the database applied. */
+  | { ok: false; error: 'limit'; key: string; value: number | null }
+  /** Any other refusal by the database. */
+  | { ok: false; error: 'refused' };
+
+/** `{ ok: false }` is signed out or a read that failed, never an empty account. */
+export type ListsRead = { ok: true; lists: ListRow[] } | { ok: false };
+
+/** The signed-in owner's lists (docs/specs/FEATURES.md, "Lists"). Every write is
+ *  idempotent on the client-made ids, so a retry cannot duplicate a row. */
+export interface ListRepository {
+  /** A fresh list or entry id. */
+  newId(): string;
+  /** The owner's lists, each with its entries in list order. */
+  list(): Promise<ListsRead>;
+  /** Inserts the list and its entries; a second call with the same ids inserts nothing. */
+  create(list: NewListRow, entries: EntryRow[]): Promise<ListWrite>;
+  update(id: string, patch: ListPatch): Promise<ListWrite>;
+  /** Inserts the entries; an id already there is left as it is. */
+  addEntries(listId: string, entries: EntryRow[]): Promise<ListWrite>;
+  updateEntry(entryId: string, patch: EntryPatch): Promise<ListWrite>;
+  removeEntries(entryIds: string[]): Promise<ListWrite>;
+  /** Sets every entry's position from its index in `entryIds` (`reorder_list`). */
+  reorder(listId: string, entryIds: string[]): Promise<ListWrite>;
+  remove(id: string): Promise<ListWrite>;
+}
+
+/** The owner's shares of one list, stopped ones included; `{ ok: false }` is signed out
+ *  or a read that failed. */
+export type SharesRead = { ok: true; shares: ShareRow[] } | { ok: false };
+/** A share made, or why not. */
+export type ShareMade =
+  { ok: true; id: string; token: string } | Exclude<ListWrite, { ok: true }>;
+/** `shared: null` is a link that opens nothing: stopped, deleted, unknown or malformed. */
+export type SharedRead = { ok: true; shared: SharedRow | null } | { ok: false };
+
+/** An account list's share links (docs/specs/FEATURES.md, "Account lists"). The owner
+ *  makes and deletes them; anyone holding a token reads the list through it. */
+export interface ShareRepository {
+  /** The list's shares, stopped ones included; another user's list reads none. */
+  list(listId: string): Promise<SharesRead>;
+  /** The audience's active share, or a new one (`create_list_share`). */
+  create(listId: string, audience: ShareAudience): Promise<ShareMade>;
+  /** Stops the share; a stopped one stays as it is (`revoke_list_share`). */
+  revoke(shareId: string): Promise<ListWrite>;
+  /** The list as the link's audience sees it (`get_shared_list`), signed out too. */
+  read(token: string): Promise<SharedRead>;
+  /** The reader's own list id behind the token; null signed out, for another user's
+   *  list, or when the read failed. */
+  ownerOf(token: string): Promise<string | null>;
+  /** Saves a copy of the link's list as the reader's list `id` (`clone_shared_list`);
+   *  a second call with the same id copies nothing. */
+  clone(token: string, id: string): Promise<ListWrite>;
+}
+
+/** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, ...). */
 export interface CloudPort {
   auth: AuthPort;
   prefs: PreferencesPort;
+  lists: ListRepository;
+  shares: ShareRepository;
 }
 
 /**

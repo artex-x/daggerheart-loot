@@ -1,0 +1,111 @@
+# #/s/unknown-token
+# route: #/s/unknown-token
+# why: a link that opens nothing: «Список больше не доступен», «Владелец удалил эту ссылку или список.», «На главную»; the address kept
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/s/unknown-token]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Список больше не доступен" [level=1]
+    StaticText "Владелец удалил эту ссылку или список."
+    link "На главную" [url=#/roll/std]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Войти
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+На главную
+Обычные правила
+Поиск
+Сообщества
+Списки
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/s/unknown-token]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "This list is no longer available" [level=1]
+    StaticText "The owner deleted this link or the list."
+    link "Home" [url=#/roll/std]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Alt. tables
+Communities
+Dragon's Vault
+Dread
+EN
+Home
+Install as an app
+Lists
+Privacy
+RU
+Search
+Sign in
+Skip to content
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

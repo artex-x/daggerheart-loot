@@ -21,7 +21,7 @@
     /** For a button whose visible text is not its name. */
     label?: string;
     /** `aria-expanded`, for a button that folds a panel open. */
-    expanded?: boolean;
+    expanded?: boolean | undefined;
     /** The pressed look - `.btn.on` / `.btn.primary.on` - for a toggle that
      *  stays visible once it is on, rather than a filled fill like `toggle`. */
     on?: boolean;
@@ -186,7 +186,7 @@
   /* off `.btn.danger` - the lists index's delete button. */
   .btn.danger {
     border-color: rgb(224 104 95 / 40%);
-    color: #f0a49d;
+    color: var(--danger-text);
   }
 
   .btn.danger:hover {

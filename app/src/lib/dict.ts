@@ -311,10 +311,7 @@ const ru = {
   homeReset: 'Приложение снова будет открываться на обычных правилах',
 
   /* The lists index - app.js 107-108/110-111/154/156/159-160/162-168/163/148,
-     the storage notice's two live forms and the panel's restore row. */
-  importList: 'Восстановить из ссылки',
-  importBtn: 'Восстановить',
-  importPh: 'Ссылка на список',
+     and the storage notice's two live forms. */
   dismiss: 'Скрыть',
   readMore: 'подробнее',
   listCreated: 'Список «%s» создан',
@@ -330,7 +327,7 @@ const ru = {
     'Похоже, их записала другая версия приложения, расширение браузера или другая вкладка на этом сайте. Исходное содержимое сохранено под отдельным ключом и не потеряно; дальнейшие изменения будут сохраняться заново, начиная с чистого списка.',
   localOnlyTitle: 'Списки живут только в этом браузере.',
   localOnly:
-    'Сервера у приложения нет. Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас — в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново.',
+    'Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас — в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново.',
   deleteConfirm: 'Удалить список «%s»? Это действие необратимо.',
   /* Delete gets an undo, like every other destructive action. */
   listDeleted: 'Список «%s» удалён',
@@ -444,7 +441,61 @@ const ru = {
   deleteFinal: 'Удалить навсегда',
   signedOut: 'Вы вышли из аккаунта.',
   accountDeleted: 'Аккаунт удалён.',
-  accountFailed: 'Не получилось. Попробуйте ещё раз.'
+  accountFailed: 'Не получилось. Попробуйте ещё раз.',
+
+  /* Account lists: the index groups, the save status, the sign-in prompts,
+     the delete confirm and the limits (docs/specs/FEATURES.md, "Lists"). */
+  groupAccount: 'Ваш аккаунт',
+  groupBrowser: 'Этот браузер',
+  noCloudLists: 'В аккаунте пока нет списков - создайте первый выше.',
+  cloudLoading: 'Загружаем...',
+  cloudLoadFailed: 'Не получилось загрузить списки аккаунта.',
+  retry: 'Повторить',
+  editedAgo: 'изменён %s',
+  editedNow: 'изменён только что',
+  saving: 'Сохраняем...',
+  savedState: 'Сохранено',
+  notSaved: 'Не сохранено',
+  signInToCreate:
+    'Войдите, чтобы создавать списки: они хранятся в аккаунте и открываются на любом устройстве.',
+  signInToCreateShort: 'Войдите, чтобы создать список.',
+  signInToSave: 'Войдите, и список сохранится в ваш аккаунт.',
+  signInToOpen: 'Если это список из вашего аккаунта, войдите, чтобы открыть его.',
+  deleteCloudConfirm:
+    'Удалить список «%s»? Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.',
+  limitLists:
+    'Достигнут предел списков в аккаунте: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+  limitEntries:
+    'Достигнут предел позиций в списке: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+  limitOther: 'Достигнут предел: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+  writeRefused: 'Изменение не сохранилось: сервер его не принял. Показан список из аккаунта.',
+
+  /* Share links of an account list and the shared page `#/s/<token>`
+     (docs/specs/FEATURES.md, "Account lists"). */
+  shareLinkPlayers: 'Ссылка для игроков',
+  shareLinkGm: 'Ссылка для мастера',
+  shareCopy: 'Скопировать',
+  shareCreate: 'Создать ссылку',
+  shareDelete: 'Удалить ссылку',
+  shareStopped: 'Ссылка удалена',
+  shareHint:
+    '«Удалить ссылку» закрывает доступ: по удалённой ссылке список больше не откроется. «Создать ссылку» даёт новую. Ссылка для мастера показывает и заметки «Только для мастера» - давайте её только мастерам.',
+  shareLoadFailed: 'Не получилось загрузить ссылки.',
+  shareCreated: 'Ссылка создана.',
+  shareDeleted: 'Ссылка удалена: по ней список больше не откроется.',
+  shareFailed: 'Не получилось изменить ссылку. Проверьте сеть и попробуйте ещё раз.',
+  gmShareCopied: 'Ссылка для мастера скопирована - в ней есть заметки мастера',
+  updatedAgo: 'Обновлено %s',
+  updatedNow: 'Обновлено только что',
+  ownList: 'Это ваш список.',
+  ownListEdit: 'Открыть для правки',
+  shareGone: 'Список больше не доступен',
+  shareGoneSub: 'Владелец удалил эту ссылку или список.',
+  sharedFailed: 'Список не загрузился',
+  sharedFailedSub: 'Проверьте сеть и нажмите «Повторить».',
+  cloneFailed: 'Не получилось сохранить список себе. Попробуйте ещё раз.',
+  legacyLinks:
+    'Ссылки вида #/l/ перестанут открываться 26 октября 2026 года. Сохраните список себе, чтобы не потерять его.'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -681,9 +732,6 @@ const en: Dict = {
   homeSet: 'The app will open on this section',
   homeReset: 'The app will open on the standard rules again',
 
-  importList: 'Restore from a link',
-  importBtn: 'Restore',
-  importPh: 'Paste a list link',
   dismiss: 'Dismiss',
   readMore: 'more',
   listCreated: 'List "%s" created',
@@ -699,7 +747,7 @@ const en: Dict = {
     'Something else on this site - another build, a browser extension, or another tab - seems to have written them. The original content was kept under a separate key rather than lost; further changes save again from a clean list.',
   localOnlyTitle: 'Lists live in this browser only.',
   localOnly:
-    'The app has no server. Clearing site data, a private window or another device, and the lists are gone. To keep one, press "Your own link": the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone — it carries whatever you wrote under "GM only". Send players the "Players\' link" or the result of "Copy text": only what is written under "For players" goes there. The browser\'s own address bar holds the players\' link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
+    'Clearing site data, a private window or another device, and the lists are gone. To keep one, press "Your own link": the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone — it carries whatever you wrote under "GM only". Send players the "Players\' link" or the result of "Copy text": only what is written under "For players" goes there. The browser\'s own address bar holds the players\' link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
   deleteConfirm: 'Delete the list "%s"? This cannot be undone.',
   listDeleted: 'List "%s" deleted',
   playersLinkCopied: "Players' link copied — it carries no GM notes",
@@ -803,7 +851,58 @@ const en: Dict = {
   deleteFinal: 'Delete for good',
   signedOut: 'You are signed out.',
   accountDeleted: 'The account is deleted.',
-  accountFailed: 'That did not work. Try again.'
+  accountFailed: 'That did not work. Try again.',
+
+  groupAccount: 'Your account',
+  groupBrowser: 'This browser',
+  noCloudLists: 'No lists in your account yet - create one above.',
+  cloudLoading: 'Loading...',
+  cloudLoadFailed: 'Could not load the lists in your account.',
+  retry: 'Retry',
+  editedAgo: 'edited %s',
+  editedNow: 'edited just now',
+  saving: 'Saving...',
+  savedState: 'Saved',
+  notSaved: 'Not saved',
+  signInToCreate:
+    'Sign in to create lists: they are kept in your account and open on any device.',
+  signInToCreateShort: 'Sign in to create a list.',
+  signInToSave: 'Sign in and the list is saved to your account.',
+  signInToOpen: 'If this list is in your account, sign in to open it.',
+  deleteCloudConfirm:
+    'Delete the list "%s"? Its player and GM links will stop working. This cannot be undone.',
+  limitLists:
+    'You have reached the limit of %n lists. Need more? Write to daggerheart.loot@gmail.com.',
+  limitEntries:
+    'This list has reached its limit of %n entries. Need more? Write to daggerheart.loot@gmail.com.',
+  limitOther: 'A limit has been reached: %n. Need more? Write to daggerheart.loot@gmail.com.',
+  writeRefused:
+    'The change was not saved: the server refused it. The list from your account is shown.',
+
+  shareLinkPlayers: "Players' link",
+  shareLinkGm: "GM's link",
+  shareCopy: 'Copy',
+  shareCreate: 'Create link',
+  shareDelete: 'Delete link',
+  shareStopped: 'Link deleted',
+  shareHint:
+    '"Delete link" ends access: a deleted link no longer opens the list. "Create link" makes a new one. The GM\'s link also shows the "GM only" notes - give it to GMs only.',
+  shareLoadFailed: 'Could not load the links.',
+  shareCreated: 'Link created.',
+  shareDeleted: 'Link deleted: it no longer opens the list.',
+  shareFailed: 'Could not change the link. Check the network and try again.',
+  gmShareCopied: "GM's link copied - it carries the GM notes",
+  updatedAgo: 'Updated %s',
+  updatedNow: 'Updated just now',
+  ownList: 'This is your list.',
+  ownListEdit: 'Open to edit',
+  shareGone: 'This list is no longer available',
+  shareGoneSub: 'The owner deleted this link or the list.',
+  sharedFailed: 'The list did not load',
+  sharedFailedSub: 'Check the network and press "Retry".',
+  cloneFailed: 'Could not save the list to your lists. Try again.',
+  legacyLinks:
+    'Links like this one (#/l/) stop opening on 26 October 2026. Save the list to your lists to keep it.'
 };
 
 const DICTS: Record<Lang, Dict> = { ru, en };

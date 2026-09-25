@@ -24,11 +24,13 @@
   import CommunityPanel from './components/CommunityPanel.svelte';
   import ListPage from './components/ListPage.svelte';
   import ListsPage from './components/ListsPage.svelte';
+  import NoData from './components/NoData.svelte';
   import PageTitle from './components/PageTitle.svelte';
   import PrintPage from './components/PrintPage.svelte';
   import RecordPage from './components/RecordPage.svelte';
   import RollPanel from './components/RollPanel.svelte';
   import SearchPage from './components/SearchPage.svelte';
+  import SharedListPage from './components/SharedListPage.svelte';
   import Shell from './components/Shell.svelte';
   import StdPanel from './components/StdPanel.svelte';
   import TablesPage from './components/TablesPage.svelte';
@@ -88,6 +90,12 @@
       <TablesPage {app} />
     {:else if app.route.kind === 'storedList' || app.route.kind === 'sharedList'}
       <ListPage {app} />
+    {:else if app.route.kind === 'share'}
+      {#if app.index}
+        <SharedListPage {app} index={app.index} token={app.route.token} />
+      {:else}
+        <NoData>{app.t.noData}</NoData>
+      {/if}
     {:else if app.route.kind === 'print'}
       <PrintPage {app} ids={app.route.ids} dropped={app.route.dropped} qty={app.route.qty} />
     {:else if app.route.kind === 'account' && app.env.cloud}

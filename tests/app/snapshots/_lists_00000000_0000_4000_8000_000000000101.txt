@@ -1,0 +1,109 @@
+# #/lists/00000000-0000-4000-8000-000000000101
+# route: #/lists/00000000-0000-4000-8000-000000000101
+# why: signed out on an account address: «Список не найден», the line asking to sign in, one «Войти»
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/lists/00000000-0000-4000-8000-000000000101]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Список не найден" [level=1]
+    StaticText "Если это список из вашего аккаунта, войдите, чтобы открыть его."
+    button "Войти"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Войти
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Обычные правила
+Поиск
+Сообщества
+Списки
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/lists/00000000-0000-4000-8000-000000000101]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "List not found" [level=1]
+    StaticText "If this list is in your account, sign in to open it."
+    button "Sign in"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Alt. tables
+Communities
+Dragon's Vault
+Dread
+EN
+Install as an app
+Lists
+Privacy
+RU
+Search
+Sign in
+Skip to content
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

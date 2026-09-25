@@ -120,9 +120,10 @@ silent, which is why the key names above are a contract: `f_rg-melee` on
 |---|---|
 | `#/i/<id>` | one record |
 | `#/print/<id>[*<n>]-<id>[*<n>]-...` | a print sheet of those records, up to 180, each with an optional count |
-| `#/lists/<listId>` | a locally stored list, by its local id |
-| `#/l/<payload>` | a shared list, encoded in full (see `CONTRACTS.md`) |
-| `#/l/~<payload>` | the same, deflate-compressed; expanded and rewritten to the plain form on open |
+| `#/lists/<listId>` | a browser list, by its local id, or an account list, by its UUID (the address is never rewritten to `#/l/`) |
+| `#/s/<token>` | an account list shared by its owner, read-only; the token is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept); a stopped, deleted, unknown or empty token draws one "no longer available" page, never home; with no sign-in configured that page too |
+| `#/l/<payload>` | a shared list, encoded in full (see `CONTRACTS.md`), until 2026-10-26 (`LEGACY_WRITE_UNTIL`) |
+| `#/l/~<payload>` | the same, deflate-compressed; expanded and rewritten to the plain form on open, until 2026-10-26 (`LEGACY_WRITE_UNTIL`) |
 
 The payload after `l/` is read as written, whatever it contains - R5. A stray
 character a chat client left behind (a truncated link's trailing full stop is

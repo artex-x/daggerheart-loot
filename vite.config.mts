@@ -241,7 +241,10 @@ export default defineConfig(({ command, mode }) => {
              HTTP. */
           'src/main.ts'
         ],
-        reporter: ['text', 'text-summary'],
+        /* The per-file table pushed the check's output past the tool's cap and
+           stopped the commit gate arming; a threshold failure still names each
+           file (.claude/README.md, "Run a long check"). */
+        reporter: ['text-summary'],
         /* Per directory, because one global number lets a well covered library
            pay for a component nobody tested. The bars differ because the
            obligations differ: lib is pure and has no excuse, ports wrap browser

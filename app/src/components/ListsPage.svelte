@@ -1,33 +1,29 @@
 <script lang="ts">
-  /* The lists index, `#/lists` - off `renderLists` (app.js 2909-2931),
-   * `storageWarning`/`hideWarn` (2865-2886, 4175) and `listCardHTML`
-   * (2888-2907). The storage notice lives here and on the list page,
-   * nowhere else - `Shell.svelte`'s own copy was the rewrite's invention. */
+  /* The lists index, `#/lists` - off `renderLists` (app.js 2909-2931). Two
+   * groups: the signed-in owner's account lists, newest edit first, then
+   * this browser's lists with the storage notice at their head. The browser
+   * group is one block, so the release that retires local lists deletes it
+   * whole (docs/specs/FEATURES.md, "Lists"). */
   import { tick } from 'svelte';
-  import Badge from './Badge.svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import Icon from './Icon.svelte';
+  import ListCard from './ListCard.svelte';
   import NoData from './NoData.svelte';
   import NumRow from './NumRow.svelte';
   import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
   import SearchBox from './SearchBox.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import TextInput from './TextInput.svelte';
-  import { artSrc } from '../lib/desc.js';
-  import { sharedListHash } from '../lib/hash.js';
+  import { agoText } from '../lib/ago.js';
+  import type { CloudList } from '../lib/cloudLists.js';
+  import { sharedListHash, storedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
-  import { decodeList, encodeList, encodeListRaw } from '../lib/listLink.js';
-  import {
-    copyInit,
-    LIST_PAGE,
-    LIST_SEARCH_AT,
-    matchLists,
-    type StoredList
-  } from '../lib/lists.js';
-  import { plural } from '../lib/plural.js';
+  import { encodeList, encodeListRaw } from '../lib/listLink.js';
+  import { LIST_PAGE, LIST_SEARCH_AT, matchLists, type StoredList } from '../lib/lists.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -39,21 +35,41 @@
 
   const t = $derived(app.t);
   const index = $derived(app.index);
-  const lists = $derived(app.lists.lists);
+  const target = $derived(app.newListTarget);
+  const cloud = $derived(app.cloudLists);
+  const signedIn = $derived(target === 'cloud');
+  const local = $derived(app.lists.lists);
+  const account = $derived<CloudList[]>(
+    signedIn && cloud?.status === 'ready' ? cloud.lists : []
+  );
+  /* Drawn with no sign-in configured, and otherwise only while it has
+     something to say. */
+  const browserGroup = $derived(
+    !cloud || local.length > 0 || !app.storageWorks || app.lists.unreadable
+  );
 
   let draft = $state('');
-  let importDraft = $state('');
   let nameInput = $state<HTMLInputElement | undefined>(undefined);
 
-  /* The name filter and the fold (docs/specs/FEATURES.md, "Lists"). The
-     query is page memory and starts empty on a return; the drawn count is
+  /* The name filter and the fold run over the account lists, then the
+     browser's, as one sequence (docs/specs/FEATURES.md, "Lists"). The query
+     is page memory and starts empty on a return; the drawn count is
      `app.listsShown`, kept for the session. */
   let findQ = $state('');
-  let grid = $state<HTMLDivElement | undefined>(undefined);
-  const filtering = $derived(lists.length >= LIST_SEARCH_AT);
-  const found = $derived(filtering ? matchLists(lists, findQ) : lists);
-  const drawn = $derived(found.slice(0, app.listsShown));
-  const hidden = $derived(found.length - drawn.length);
+  let groups = $state<HTMLDivElement | undefined>(undefined);
+  const filtering = $derived(account.length + local.length >= LIST_SEARCH_AT);
+  const foundAccount = $derived(filtering ? matchLists(account, findQ) : account);
+  const foundLocal = $derived(filtering ? matchLists(local, findQ) : local);
+  const drawnAccount = $derived(foundAccount.slice(0, app.listsShown));
+  const drawnLocal = $derived(
+    foundLocal.slice(0, Math.max(0, app.listsShown - foundAccount.length))
+  );
+  const hidden = $derived(
+    foundAccount.length + foundLocal.length - drawnAccount.length - drawnLocal.length
+  );
+  const nothing = $derived(
+    account.length + local.length > 0 && foundAccount.length + foundLocal.length === 0
+  );
 
   /* Any edit to the query starts the new result folded. */
   function setQuery(v: string): void {
@@ -64,10 +80,10 @@
   /* Focus goes to the first card the press revealed, so a keyboard user
      continues there and is not lost when the button goes. */
   async function showMore(): Promise<void> {
-    const from = drawn.length;
+    const from = drawnAccount.length + drawnLocal.length;
     app.listsShown = from + LIST_PAGE;
     await tick();
-    grid?.querySelectorAll<HTMLElement>('.listcard-main')[from]?.focus();
+    groups?.querySelectorAll<HTMLElement>('.listcard-main')[from]?.focus();
   }
 
   /* The ids the data still knows, in list order - what the badge counts and
@@ -85,12 +101,13 @@
       nameInput?.focus();
       return;
     }
-    const l = app.lists.create(draft);
+    const store = signedIn && cloud ? cloud : app.lists;
+    const l = store.create(draft);
     draft = '';
     if (findQ) setQuery('');
     /* `ListStore.save()` has already toasted `saveFailed` on a refusal - a
        "created" on top of it would bury the one message that matters. */
-    if (app.lists.saved) app.say(t.listCreated.replace('%s', l.name));
+    if (store.saved) app.say(t.listCreated.replace('%s', l.name));
   }
 
   async function share(l: StoredList): Promise<void> {
@@ -121,120 +138,128 @@
     }
   }
 
-  async function restore(): Promise<void> {
-    const raw = importDraft.trim();
-    /* `~` is in the capture on purpose: the live regex lacks it and so refuses
-       its own "Поделиться" output whenever the packed form is shorter. */
-    const m = /#\/l\/([~A-Za-z0-9_-]+)/.exec(raw);
-    let pay = m?.[1] ?? raw;
-    try {
-      pay = await app.env.compress.unpack(pay);
-    } catch {
-      pay = '';
-    }
-    const data = decodeList(pay, (id) => index?.byId.has(id) ?? false);
-    if (!data) {
-      app.say(t.badShare, { error: true });
-      return;
-    }
-    const l = app.lists.create(data.name, copyInit(data));
-    importDraft = '';
-    app.openNewList(l);
-    /* This call site must not proceed silently - once created, a dropped
-       entry is gone from the copy for good even if the data later knows it
-       again. */
-    if (data.dropped) app.say(plural(data.dropped, t.droppedItems, app.lang));
+  /* An account list goes for good: the confirm names its share links, and
+     there is no undo. */
+  function delAccount(l: CloudList): void {
+    if (!app.env.dialog.confirm(t.deleteCloudConfirm.replace('%s', l.name))) return;
+    cloud?.remove(l.id);
+    app.say(t.listDeleted.replace('%s', l.name));
   }
 </script>
 
 <PageHead {app} title={t.lists} sub={t.subLists} help={helpFor('lists', app.lang)} />
 
-<StorageNotice {app} />
-
 {#if !index}
+  <StorageNotice {app} />
   <NoData>{t.noData}</NoData>
 {:else}
-  <Panel style="margin-top:16px">
-    <Field label={t.newList}>
-      <NumRow>
-        <div class="grow">
-          <TextInput
-            bind:value={draft}
-            bind:el={nameInput}
-            placeholder={t.listNamePh}
-            label={t.newList}
-          />
-        </div>
-        <Button variant="primary" onclick={create}>{t.create}</Button>
-      </NumRow>
-    </Field>
-    <Field label={t.importList}>
-      <NumRow>
-        <div class="grow">
-          <TextInput bind:value={importDraft} placeholder={t.importPh} label={t.importList} />
-        </div>
-        <Button onclick={restore}>{t.importBtn}</Button>
-      </NumRow>
-    </Field>
-  </Panel>
-  {#if lists.length}
-    {#if filtering}
-      <div class="listfind">
-        <SearchBox value={findQ} placeholder={t.findList} oninput={setQuery} />
-      </div>
-    {/if}
-    {#if !found.length}
-      <Empty>{t.nothing}</Empty>
-    {:else}
-      <div class="listgrid" bind:this={grid}>
-        {#each drawn as l (l.id)}
-          {@const items = knownItems(l)}
-          <div class="listcard">
-            <!-- Whitespace below is content, covering the whole link - see
-               docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
-            <!-- prettier-ignore -->
-            <a
-              class="listcard-main"
-              href={sharedListHash(encodeList(l, false))}
-              aria-label={`${l.name || t.untitled}, ${plural(items.length, t.itemsN, app.lang)}`}
-            ><div class="listcard-top"><b>{l.name}</b><Badge cls="num"
-                >{items.length}</Badge
-              ></div
-            >{#if items.length}<div class="listcard-thumbs"
-                >{#each items.slice(0, 6) as it (it.id)}<img
-                    src={artSrc(it.img, app.artBroken(it.id), 'thumb')}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    onerror={() => {
-                      app.markArtBroken(it.id);
-                    }}
-                  />{/each}</div
-              >{:else}<p class="listcard-empty">{t.listEmpty}</p>{/if}</a
-          >
-            <div class="listcard-acts">
-              <Button size="sm" onclick={() => void share(l)}
-                ><Icon name="link" />{t.share}</Button
-              >
-              <Button
-                size="sm"
-                variant="danger"
-                onclick={() => {
-                  del(l);
-                }}>{t.del}</Button
-              >
-            </div>
+  {#if target === 'local' || target === 'cloud'}
+    <Panel style="margin-top:16px">
+      <Field label={t.newList}>
+        <NumRow>
+          <div class="grow">
+            <TextInput
+              bind:value={draft}
+              bind:el={nameInput}
+              placeholder={t.listNamePh}
+              label={t.newList}
+            />
           </div>
-        {/each}
+          <Button variant="primary" onclick={create}>{t.create}</Button>
+        </NumRow>
+      </Field>
+    </Panel>
+  {:else if target === 'prompt'}
+    <Panel style="margin-top:16px">
+      <Field label={t.newList} heading>
+        <SignInPrompt {app} lead={t.signInToCreate} after={{ hash: '#/lists' }} />
+      </Field>
+    </Panel>
+  {/if}
+  {#if filtering}
+    <div class="listfind">
+      <SearchBox value={findQ} placeholder={t.findList} oninput={setQuery} />
+    </div>
+  {/if}
+  <div bind:this={groups}>
+    {#if signedIn && cloud}
+      <div class="group">
+        <Field label={t.groupAccount} heading>
+          {#if cloud.status === 'error'}
+            <p class="grouptext err">{t.cloudLoadFailed}</p>
+            <Button size="sm" onclick={() => void cloud.load()}>{t.retry}</Button>
+          {:else if cloud.status !== 'ready'}
+            <p class="grouptext">{t.cloudLoading}</p>
+          {:else if !account.length}
+            <p class="grouptext">{t.noCloudLists}</p>
+          {:else if drawnAccount.length}
+            <div class="listgrid">
+              {#each drawnAccount as l (l.id)}
+                <ListCard
+                  {app}
+                  list={l}
+                  href={storedListHash(l.id)}
+                  items={knownItems(l)}
+                  edited={agoText(l.updated, app.now, app.lang, t)}
+                >
+                  {#snippet actions()}
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onclick={() => {
+                        delAccount(l);
+                      }}>{t.del}</Button
+                    >
+                  {/snippet}
+                </ListCard>
+              {/each}
+            </div>
+          {/if}
+        </Field>
       </div>
     {/if}
-    {#if hidden > 0}
-      <div class="listmore">
-        <Button onclick={() => void showMore()}>{`${t.showMore} (${String(hidden)})`}</Button>
+    {#if browserGroup}
+      <div class="group" class:first={!signedIn}>
+        <Field label={signedIn ? t.groupBrowser : undefined} heading>
+          <StorageNotice {app} />
+          {#if drawnLocal.length}
+            <div class="listgrid">
+              {#each drawnLocal as l (l.id)}
+                <ListCard
+                  {app}
+                  list={l}
+                  href={sharedListHash(encodeList(l, false))}
+                  items={knownItems(l)}
+                >
+                  {#snippet actions()}
+                    <Button size="sm" onclick={() => void share(l)}
+                      ><Icon name="link" />{t.share}</Button
+                    >
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onclick={() => {
+                        del(l);
+                      }}>{t.del}</Button
+                    >
+                  {/snippet}
+                </ListCard>
+              {/each}
+            </div>
+          {:else if !cloud && !local.length}
+            <Empty>{t.noLists}</Empty>
+          {/if}
+        </Field>
       </div>
     {/if}
-  {:else}
-    <Empty>{t.noLists}</Empty>
+  </div>
+  {#if nothing}
+    <Empty>{t.nothing}</Empty>
+  {/if}
+  {#if hidden > 0}
+    <div class="listmore">
+      <Button onclick={() => void showMore()}>{`${t.showMore} (${String(hidden)})`}</Button>
+    </div>
   {/if}
 {/if}
 
@@ -242,10 +267,6 @@
   /* `.miss` moved to `NoData.svelte`, `.numrow` to `NumRow.svelte`, `.panel`
      to `Panel.svelte` - the 16px margin-top is the live inline attribute,
      passed as `style`. */
-  /* Was `.numrow .grow`: `.numrow` now belongs to `NumRow.svelte`, a
-     different component, so a descendant selector naming it here would match
-     nothing - `.grow` only ever appears inside this file's own two `NumRow`
-     children anyway, so the ancestor is not needed to disambiguate it. */
   .grow {
     flex: 1 1 170px;
     min-width: 0;
@@ -256,6 +277,27 @@
     margin-top: 18px;
   }
 
+  /* A group sits the panel's own gap below what comes before it. */
+  .group {
+    margin-top: 22px;
+  }
+
+  /* With no heading, the browser group keeps the grid's own 18px. */
+  .group.first {
+    margin-top: 18px;
+  }
+
+  .grouptext {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted2);
+  }
+
+  .grouptext.err {
+    color: var(--danger-text);
+    margin-bottom: 8px;
+  }
+
   /* The grid's own gap above the button. */
   .listmore {
     display: flex;
@@ -263,79 +305,10 @@
     margin-top: 14px;
   }
 
-  /* off `.listgrid`..`.listcard-acts` in style.css. No `@media` override
-     touches any of these. */
+  /* off `.listgrid` in style.css. */
   .listgrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 14px;
-    margin-top: 18px;
-  }
-
-  .listcard {
-    background: linear-gradient(180deg, var(--surface2), var(--surface));
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: 0.16s;
-  }
-
-  .listcard:hover {
-    border-color: var(--line2);
-  }
-
-  .listcard-main {
-    display: block;
-    padding: 14px 15px 12px;
-    text-decoration: none;
-    color: inherit;
-    flex: 1;
-  }
-
-  .listcard-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  .listcard-top b {
-    font-size: var(--step-0);
-    font-weight: 650;
-    line-height: 1.3;
-  }
-
-  .listcard-main:hover .listcard-top b {
-    color: var(--gold-soft);
-  }
-
-  .listcard-thumbs {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-  }
-
-  .listcard-thumbs img {
-    width: 40px;
-    height: 40px;
-    border-radius: 7px;
-    object-fit: cover;
-    background: #0a0810;
-  }
-
-  .listcard-empty {
-    margin: 0;
-    font-size: 12.5px;
-    color: var(--muted2);
-  }
-
-  .listcard-acts {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    padding: 0 15px 14px;
   }
 </style>

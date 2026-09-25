@@ -46,23 +46,29 @@ Bulk collection for training is a separate matter and is refused by name:
 `GPTBot`, `ClaudeBot`, `anthropic-ai`, `CCBot`, `Google-Extended`,
 `Applebot-Extended`, `Bytespider`, `meta-externalagent`.
 
-## 3. Lists live in the URL hash and in the browser, until cloud lists ship
+## 3. Lists live in the account, and in the browser until the cutoff
 
 The no-backend law was superseded on 2026-09-24 (`docs/DECISIONS.md`). A
 Supabase backend (Auth and Postgres, EU West) is the one server the site
-will use: for accounts, cloud lists and homebrew, each shipped in its own
+uses: for accounts, lists and, later, homebrew, each shipped in its own
 release. Sign-in (Google or Discord) and `#/account` exist in a build
 configured with the two `VITE_SUPABASE_*` values, and an account holds the
-reader's preferences (`STATE.md`) and no list yet. A nightly job backs the
-database up, encrypted to the owner's key, and each copy is kept 30 days
-(`.claude/README.md`, "Backups and restore"). Until the cloud lists ship, a
-shared list is its address, and the consequences stay deliberate:
+reader's preferences and lists (`STATE.md`); a signed-in reader makes every
+new list there, and a signed-out one is asked to sign in first
+(`FEATURES.md`, "Account lists"). An account list is shared through `#/s/`
+links, a players' one and a GM's one, which its owner can delete and make
+again; a link opens the list as it is now, read-only. A nightly job backs the database up,
+encrypted to the owner's key, and each copy is kept 30 days
+(`.claude/README.md`, "Backups and restore"). Browser lists stay editable
+until the legacy write cutoff, and an old shared list is still its address,
+with deliberate consequences:
 
-- a `#/l/` link cannot be revoked, and it stays readable after accounts ship
-  (its decoder retires only at the legacy write cutoff)
+- a `#/l/` link cannot be revoked, and it stays readable until the legacy
+  write cutoff, 2026-10-26 (`LEGACY_WRITE_UNTIL`), when its decoder retires
 - a link is as long as its contents, hence the checksum and the short form
-- the person's own lists are in `localStorage` and can be lost; the app says so
-  in the section, and **Your own link** (`shareGm`) doubles as the backup
+- a browser list is in `localStorage` and can be lost; the app says so over
+  the browser lists, and **Your own link** (`shareGm`) doubles as its backup
+- a build with no sign-in configured keeps making browser lists
 
 Add no server beside the Supabase backend: no upload endpoint and no paste
 service.

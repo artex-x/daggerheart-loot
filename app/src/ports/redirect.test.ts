@@ -97,7 +97,8 @@ describe('takeRedirect', () => {
       code: 'abc',
       error: null,
       kind: 'link',
-      provider: 'discord'
+      provider: 'discord',
+      action: null
     });
     expect(store.has(RETURN_KEY)).toBe(false);
     expect(landed()).toBe(PAGE + '#/lists');
@@ -124,7 +125,8 @@ describe('takeRedirect', () => {
       code: null,
       error: 'access_denied',
       kind: 'signIn',
-      provider: null
+      provider: null,
+      action: null
     });
     expect(landed()).toBe(PAGE + '#/account');
   });
@@ -147,7 +149,7 @@ describe('takeRedirect', () => {
     ['a record with no time', { at: 'soon' }],
     ['a foreign hash', { hash: 'https://evil.test/' }],
     ['a hash that is not text', { hash: 42 }],
-    ['an overlong hash', { hash: '#/' + 'x'.repeat(2046) }],
+    ['an overlong hash', { hash: '#/' + 'x'.repeat(16382) }],
     ['a bad kind', { kind: 'steal' }],
     ['a bad provider', { provider: 'github' }]
   ])('refuses %s, removes it and opens the account page', (_label, over) => {
@@ -158,10 +160,48 @@ describe('takeRedirect', () => {
       code: 'abc',
       error: null,
       kind: 'signIn',
-      provider: null
+      provider: null,
+      action: null
     });
     expect(store.has(RETURN_KEY)).toBe(false);
     expect(landed()).toBe(PAGE + '#/account');
+  });
+
+  it('returns a long page address and the action the prompt left', () => {
+    const hash = '#/l/' + 'x'.repeat(3000);
+    const action = { do: 'addToList', key: 'sel', ids: ['ci1'], picked: { ci1: 2 } };
+    const { win, landed } = stubWin(PAGE + '?auth-callback=1&code=abc', {
+      [RETURN_KEY]: record({ hash, kind: 'signIn', action })
+    });
+    expect(takeRedirect(win, NOW)).toEqual({
+      code: 'abc',
+      error: null,
+      kind: 'signIn',
+      provider: 'discord',
+      action
+    });
+    expect(landed()).toBe(PAGE + hash);
+  });
+
+  it('keeps the way back and drops an action it cannot read', () => {
+    const { win, landed } = stubWin(PAGE + '?auth-callback=1&code=abc', {
+      [RETURN_KEY]: record({ action: { do: 'deleteEverything' } })
+    });
+    expect(takeRedirect(win, NOW)?.action).toBeNull();
+    expect(landed()).toBe(PAGE + '#/lists');
+  });
+
+  it('writes an action into the record and reads it back', () => {
+    const { win, store } = stubWin(PAGE + '?auth-callback=1&code=abc');
+    saveReturn(
+      win,
+      { hash: '#/l/abc', kind: 'signIn', provider: 'google', action: { do: 'saveList' } },
+      NOW
+    );
+    expect(JSON.parse(store.get(RETURN_KEY) ?? '')).toMatchObject({
+      action: { do: 'saveList' }
+    });
+    expect(takeRedirect(win, NOW)?.action).toEqual({ do: 'saveList' });
   });
 
   it.each([
@@ -180,7 +220,8 @@ describe('takeRedirect', () => {
       code: 'abc',
       error: null,
       kind: 'signIn',
-      provider: null
+      provider: null,
+      action: null
     });
     expect(win.history.replaceState).toHaveBeenCalledWith(null, '', PAGE + '#/account');
   });

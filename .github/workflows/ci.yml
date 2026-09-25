@@ -172,8 +172,8 @@ jobs:
   # page draws the member's email and a public repository's artifacts are
   # readable by anyone. `migrate-test` applies the branch's migrations to the
   # test project first, with the connection-string secret
-  # (`SUPABASE_DB_URL_TEST`); the `applied.json` record it replaces is gone -
-  # the database is the record.
+  # (`SUPABASE_DB_URL_TEST`, a repository secret: branch runs need it); the
+  # database is the record.
   e2e:
     if: ${{ !inputs.skip_e2e && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
@@ -191,12 +191,16 @@ jobs:
 
       - run: npm ci
 
-      # The pinned CLI that `npm ci` installed. The connection string stays in
-      # the step's `env:`, never in a `run:` line. A network error here is
-      # the secret's shape: the session pooler, port 5432 (.claude/README.md,
-      # "The hosted E2E and the deploy").
+      # Not `supabase db push`: it refuses a history that holds another
+      # branch's migration, which every branch's `e2e` puts here. This
+      # applies the missing files one transaction each and lists the others
+      # (docs/DECISIONS.md, 2026-09-25, "CI applies the test project's
+      # migrations file by file and ignores other branches' versions"). The
+      # connection string stays in the step's `env:`, never in a `run:` line;
+      # a network error is the secret's shape: the session pooler, port 5432
+      # (.claude/README.md, "The hosted E2E and the deploy").
       - name: 'migrate-test: apply pending migrations to the test project'
-        run: node node_modules/supabase/dist/supabase.js db push --db-url "$SUPABASE_DB_URL" --yes
+        run: node tools/supabase/migrate-test.mjs
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_TEST }}
 
@@ -248,10 +252,63 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # Production's migrations, before `deploy` builds anything. A job of its
+  # own because `SUPABASE_DB_URL_PROD` lives in the Environment `production`
+  # (deployment branch `main` only, no reviewers), and `deploy` already holds
+  # `github-pages` - a job has one environment (docs/DECISIONS.md,
+  # 2026-09-25, "The production connection string lives in an Environment
+  # limited to `main`"). The same `needs` and `if:` as `deploy`, so a run
+  # that does not deploy never asks for the environment.
+  #
+  # A deploy that carried a migration is undone for the app as any other
+  # deploy (the "HOW TO UNDO" note below), never by deleting the migration:
+  # this job has applied it, and `db push` refuses a remote history that
+  # holds a version absent locally, so a deleted migration file would block
+  # every later deploy. Revert the app change only, or add a new migration
+  # whose body is the reversal file (`supabase/reversals/<name>`); restoring
+  # data is `.claude/README.md`, "Backups and restore".
+  migrate-prod:
+    needs: [check, audit, secrets, browser, db, e2e]
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.skip_e2e) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # The pinned CLI and the `postgres` client; nothing here drives a browser.
+      - run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+      # A `skip_e2e` dispatch skipped `migrate-test`, so nothing proved the
+      # branch's migrations on the test project: it may ship none that
+      # production has not received already. This job holds the one
+      # production credential in CI besides `backup.yml`'s.
+      - name: A skip_e2e dispatch ships no migration production has not received
+        if: inputs.skip_e2e
+        run: node tools/supabase/pending-check.mjs
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
+
+      # Before `deploy`'s build, so a failed push stops the publish before it
+      # starts.
+      - name: 'migrate-prod: apply pending migrations to production'
+        run: node node_modules/supabase/dist/supabase.js db push --db-url "$SUPABASE_DB_URL" --yes
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
+
   # ---------------------------------------------------------------------------
   # Publishing, gated on check, audit, secrets, browser (the sharded suite
   # that carries the structural goldens, among everything else run-all.js
-  # knows about), db and e2e.
+  # knows about), db, e2e and migrate-prod.
   #
   # What is published is the BUILT REWRITE: dist/index.html, dist/assets/ and
   # dist/data.js, assembled here with the generated data, the stub pages and the
@@ -280,13 +337,7 @@ jobs:
   # the *current* commit, since it would just republish stale content
   # instead.
   #
-  # A deploy that carried a migration is undone the same way for the app,
-  # never by deleting the migration: `migrate-prod` has applied it, and
-  # `db push` refuses a remote history that holds a version absent locally,
-  # so a deleted migration file would block every later deploy. Revert the
-  # app change only, or add a new migration whose body is the reversal file
-  # (`supabase/reversals/<name>`); restoring data is `.claude/README.md`,
-  # "Backups and restore".
+  # A deploy that carried a migration: see the `migrate-prod` job above.
   #
   # THE OLD APP IS GONE FROM THE REPOSITORY, NOT JUST FROM THE PUBLISHED SET
   #
@@ -306,7 +357,7 @@ jobs:
   # job is what publishes - nothing else does.
   # ---------------------------------------------------------------------------
   deploy:
-    needs: [check, audit, secrets, browser, db, e2e]
+    needs: [check, audit, secrets, browser, db, e2e, migrate-prod]
     # A skipped `e2e` passes and a failed one blocks. A push to main deploys;
     # so does the owner's dispatch on main with `skip_e2e`, the escape hatch
     # for a test project that is down (.claude/README.md, "Supabase
@@ -339,24 +390,6 @@ jobs:
           cache: npm
 
       - run: npm ci
-
-      # A `skip_e2e` dispatch skipped `migrate-test`, so nothing proved the
-      # branch's migrations on the test project: it may ship none that
-      # production has not received already. This step and `migrate-prod`
-      # hold the one production credential in CI besides `backup.yml`'s
-      # (`docs/DECISIONS.md`, 2026-09-25, "Migrations deploy from CI as
-      # steps of `e2e` and `deploy`").
-      - name: A skip_e2e dispatch ships no migration production has not received
-        if: inputs.skip_e2e
-        run: node tools/supabase/pending-check.mjs
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
-
-      # Before the build, so a failed push stops the publish before it starts.
-      - name: 'migrate-prod: apply pending migrations to production'
-        run: node node_modules/supabase/dist/supabase.js db push --db-url "$SUPABASE_DB_URL" --yes
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
 
       # The one configured build: sign-in is on only where both values are
       # set. Actions variables, not secrets - the publishable key ships in

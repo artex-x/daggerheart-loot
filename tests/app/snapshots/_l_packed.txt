@@ -1,6 +1,6 @@
 # #/l/ ~ packed
 # route: #/l/~JY2hDsIwFAD9PqKrH5AUwwfVMIXCLqNIBAkWQUKCL6xkpdB-w70_IgN5d-K44nmRiaRquVhttuvOtmZmralU09Wc8TxIeM2IJ0kvB3ETBoqWvTjp8aqruVEY5Ugk67kmUcj_yh1PJhBlJ041tjU1JyKBTNFEBukp04WP-tULhUDgyXvSXw
-# why: the packed form, expanded and rewritten to the plain form - pixels identical to "~ shared, noted"; listAddress proves the rewrite
+# why: the packed form, expanded and rewritten to the plain form - pixels identical to "~ shared, noted", the 26 October line included; listAddress proves the rewrite
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAefh_QpdC-0LfRj9C40L0gLSDQutC-0L3RgtGA0LDQsdCw0L3QtNC40YHRgh4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0LweY2kxH9Cf0L7QtNC00LXQu9C60LA]
@@ -27,8 +27,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3Qu
     heading "Тайник" [level=1]
     StaticText "Список от другого игрока · 2 позиции"
     button "Сохранить себе"
-    StaticText "ДЛЯ ИГРОКОВ"
-    ... StaticText x6 of 10 same-shape siblings elided
+    StaticText "Ссылки вида #/l/ перестанут открываться 26 октября 2026 года. Со..." [namelen=107 namehash=f619a7e9]
+    ... StaticText x7 of 11 same-shape siblings elided
     checkbox "Выбрать все (2)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=93 namehash=d7aa186c]
@@ -95,8 +95,8 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaT
     heading "Тайник" [level=1]
     StaticText "A list from another player · 2 items"
     button "Save to my lists"
-    StaticText "FOR PLAYERS"
-    ... StaticText x6 of 10 same-shape siblings elided
+    StaticText "Links like this one (#/l/) stop opening on 26 October 2026. Save..." [namelen=99 namehash=211a3cb8]
+    ... StaticText x7 of 11 same-shape siblings elided
     checkbox "Select all (2)" [checked=false]
     checkbox "Premium Bedroll" [checked=false]
     button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=78 namehash=6c2c4cd7]

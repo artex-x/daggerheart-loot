@@ -22,6 +22,7 @@ colors:
   hope-amber: "#e9b949"
   fear-violet: "#8a72d6"
   alarm-red: "#e0685f"
+  alarm-red-text: "#f0a49d"
   tag-ground: "rgb(10 8 16 / 50%)"
 typography:
   headline:
@@ -105,7 +106,7 @@ components:
     height: "46px"
   button-danger:
     backgroundColor: "{colors.vault-wall}"
-    textColor: "#f0a49d"
+    textColor: "{colors.alarm-red-text}"
     rounded: "{rounded.sm}"
     padding: "0 18px"
     height: "46px"
@@ -244,6 +245,8 @@ ordinary item.
   Seal Gold reaches a focus treatment, because the glow says which die the
   person is changing.
 - **Alarm Red** (`#e0685f`): destructive actions and the error toast.
+- **Alarm Red Text** (`#f0a49d`, `--danger-text`): the same alarm as text on
+  the dark ground - a destructive button's label, an error line, a failed save.
 
 ### Neutral
 
@@ -416,7 +419,7 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Toggle:** gold label on a 45 per cent gold border with no fill. This is the
   filter button once a filter holds a value.
 - **Ghost and Danger:** a transparent fill beside a primary action; an Alarm Red
-  border with `#f0a49d` text for a destructive one.
+  border with Alarm Red Text for a destructive one.
 - **Icons:** every icon inside a button renders at 15px whatever its own
   attributes say. Dice are the single exception and keep their own silhouette,
   because squaring them makes a d4 look heavier than a d20.

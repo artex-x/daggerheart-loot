@@ -126,3 +126,32 @@ export async function revokeMember(env, admin, email) {
   const { error } = await admin.auth.admin.signOut(session.access_token, 'global');
   if (error) throw fail('signing the member out everywhere', error);
 }
+
+/** The user's account lists, each with its entries, read by the service role. */
+export async function listsOf(admin, userId) {
+  guard(admin);
+  const { data, error } = await admin
+    .from('lists')
+    .select('id,name,gm_note,list_entries(item_key,gm_note)')
+    .eq('owner_id', userId);
+  if (error) throw fail('reading lists', error);
+  return data ?? [];
+}
+
+/** The list's share links, stopped ones included, read by the service role. */
+export async function sharesOf(admin, listId) {
+  guard(admin);
+  const { data, error } = await admin
+    .from('list_shares')
+    .select('id,audience,token,revoked_at')
+    .eq('list_id', listId);
+  if (error) throw fail('reading shares', error);
+  return data ?? [];
+}
+
+/** Deletes the user's account lists; their entries and shares cascade. */
+export async function deleteListsOf(admin, userId) {
+  guard(admin);
+  const { error } = await admin.from('lists').delete().eq('owner_id', userId);
+  if (error) throw fail('deleting lists', error);
+}

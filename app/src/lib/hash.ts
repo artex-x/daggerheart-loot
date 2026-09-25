@@ -34,6 +34,9 @@ export type Route =
     }
   | { kind: 'storedList'; listId: string }
   | { kind: 'sharedList'; payload: string; packed: boolean }
+  /** An account list's share link; `token` is the leading run of `[A-Za-z0-9_-]`,
+   *  empty for a bare `#/s/` (docs/specs/ROUTES.md). */
+  | { kind: 'share'; token: string }
   /** In every build: with no sign-in configured it draws the not-found page,
    *  so the address never falls home (docs/specs/ROUTES.md, "Account"). */
   | { kind: 'account' }
@@ -119,6 +122,11 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
     return { kind: 'print', ids, dropped: asked.ids.length - ids.length, qty };
   }
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
+  /* A stray character a chat client leaves after the token is dropped; the
+     address is not rewritten. */
+  if (/^s\//.test(h)) {
+    return { kind: 'share', token: /^[A-Za-z0-9_-]*/.exec(h.slice(2))?.[0] ?? '' };
+  }
   if (h === 'account') return { kind: 'account' };
   /* Was `/^l\/[A-Za-z0-9_-]+$/`: a stray character after the payload - a chat
      client swallowing a trailing full stop is the reachable case (R5) - used
@@ -192,6 +200,10 @@ export function sharedListHash(payload: string): string {
 
 export function storedListHash(listId: string): string {
   return '#/lists/' + listId;
+}
+
+export function shareHash(token: string): string {
+  return '#/s/' + token;
 }
 
 /**

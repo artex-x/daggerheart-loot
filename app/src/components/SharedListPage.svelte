@@ -1,10 +1,12 @@
 <script lang="ts">
-  /* The page at `#/l/<payload>` for a payload that is nobody's own list - a
-     link somebody else made. Off `renderSharedList` (app.js 3130-3170).
-     Mounted by `ListPage.svelte`'s `{:else if route.kind === 'sharedList' &&
-     !own}` branch, which only reaches this once `app.index` is confirmed
-     non-null. */
-  import { onDestroy } from 'svelte';
+  /* A list somebody shared, read-only: `#/l/<payload>` for a payload that is
+     nobody's own list (off `renderSharedList`, app.js 3130-3170; mounted by
+     `ListPage.svelte`'s `{:else if route.kind === 'sharedList' && !own}`
+     branch), or `#/s/<token>`, an account list's share link, read through
+     `app.sharedView` (mounted by `App.svelte`). Both are mounted only once
+     `app.index` is confirmed non-null. docs/specs/FEATURES.md, "Lists" and
+     "Account lists". */
+  import { onDestroy, untrack } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import HitNote from './HitNote.svelte';
@@ -12,9 +14,12 @@
   import PageTitle from './PageTitle.svelte';
   import PickQty from './PickQty.svelte';
   import RecordHost from './RecordHost.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
   import TableRows from './TableRows.svelte';
+  import { agoText } from '../lib/ago.js';
+  import { sharedListOf } from '../lib/cloudLists.js';
   import type { Index } from '../lib/data.js';
-  import { sectionHash } from '../lib/hash.js';
+  import { sectionHash, storedListHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { plural } from '../lib/plural.js';
   import { decodeList, type ListEntryMeta } from '../lib/listLink.js';
@@ -23,18 +28,42 @@
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
+  /* Exactly one of `payload` and `token`. */
   interface Props {
     app: AppState;
     index: Index;
-    payload: string;
+    payload?: string;
+    token?: string;
   }
 
-  const { app, index, payload }: Props = $props();
+  const { app, index, payload, token }: Props = $props();
 
   const t = $derived(app.t);
 
   const knows = (id: string): boolean => index.byId.has(id);
-  const shared = $derived(decodeList(payload, knows));
+  const view = $derived(token === undefined ? null : app.sharedView);
+  /* Keyed on the token and the session only: `open` reads and writes the
+     view's own state, which must not re-run this. */
+  $effect(() => {
+    if (token === undefined) return;
+    const user = app.user;
+    const v = view;
+    untrack(() => {
+      void v?.open(token, user === undefined ? undefined : (user?.userId ?? null));
+    });
+  });
+  onDestroy(() => {
+    view?.close();
+  });
+  const shared = $derived(
+    token === undefined
+      ? decodeList(payload ?? '', knows)
+      : view?.status === 'ready' && view.shared
+        ? sharedListOf(view.shared, knows)
+        : null
+  );
+  /* The key the dropped-entries toast is told once for. */
+  const shownFor = $derived(token ?? payload ?? '');
 
   /* `decodeList` has already dropped every id the data does not know, so this
      never filters anything out in practice - the guard is only what keeps
@@ -76,9 +105,24 @@
     app.shared = null;
   });
 
+  /* Signed out, «Сохранить себе» opens the sign-in prompt under it; the
+     sign-in comes back here and saves into the account by itself. */
+  let prompting = $state(false);
+
   function saveShared(): void {
     const s = shared;
     if (!s) return;
+    const target = app.newListTarget;
+    if (target === 'cloud') {
+      if (token === undefined) app.saveCopyOf(s);
+      else void app.saveShareCopy(token);
+      return;
+    }
+    if (target === 'prompt') {
+      prompting = !prompting;
+      return;
+    }
+    if (target === 'wait') return;
     const l = app.lists.create(s.name, copyInit(s));
     /* `ListStore.save()` has already toasted `saveFailed` on a refusal. */
     if (app.lists.saved) app.say(t.listCreated.replace('%s', l.name));
@@ -91,8 +135,8 @@
   let toldFor = $state('');
   $effect(() => {
     const s = shared;
-    if (s && s.dropped > 0 && toldFor !== payload) {
-      toldFor = payload;
+    if (s && s.dropped > 0 && toldFor !== shownFor) {
+      toldFor = shownFor;
       app.say(plural(s.dropped, t.droppedItems, app.lang));
     }
   });
@@ -100,16 +144,53 @@
 
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}
-    {#if !shared}
+    {#if token !== undefined && (!view || view.status === 'gone')}
+      <PageTitle title={t.shareGone} sub={t.shareGoneSub} />
+      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+    {:else if token !== undefined && view?.status === 'error'}
+      <PageTitle title={t.sharedFailed} sub={t.sharedFailedSub} />
+      <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
+    {:else if token !== undefined && !shared}
+      <!-- The link is being read: nothing yet, so no "no longer available"
+           flashes. -->
+    {:else if !shared}
       <PageTitle title={t.notFound} sub={t.badShare} />
       <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
     {:else}
+      {#if view?.mine}
+        <p class="ownline">
+          {t.ownList} <a href={storedListHash(view.mine)}>{t.ownListEdit}</a>
+        </p>
+      {/if}
       <PageTitle title={shared.name || t.untitled} {sub} />
+      {#if view?.shared}
+        <p class="updated">
+          {agoText(Date.parse(view.shared.updated_at), app.now, app.lang, t, 'updated')}
+        </p>
+      {/if}
       <Actions style="margin-bottom:18px">
-        <Button size="sm" variant="primary" onclick={saveShared}
-          ><Icon name="plus" />{t.saveShared}</Button
+        <!-- Only the open prompt is announced: an aria-expanded=false on
+             every signed-out shared page would name a panel nobody opened. -->
+        <Button
+          size="sm"
+          variant="primary"
+          on={prompting}
+          expanded={prompting || undefined}
+          disabled={app.cloning}
+          onclick={saveShared}><Icon name="plus" />{t.saveShared}</Button
         >
       </Actions>
+      {#if prompting && app.newListTarget === 'prompt'}
+        <SignInPrompt
+          {app}
+          lead={t.signInToSave}
+          after={{ hash: app.hash, action: { do: 'saveList' } }}
+          boxed
+        />
+      {/if}
+      {#if token === undefined}
+        <p class="legacy">{t.legacyLinks}</p>
+      {/if}
       {#if shared.note || shared.hnote}
         <div class="notes">
           <HitNote icon="eye" label={t.notePub} text={shared.note} />
@@ -169,6 +250,29 @@
      rule of this component's own. */
   .notes {
     margin-bottom: 18px;
+  }
+
+  /* Under the title, as the index card's «изменён N назад». */
+  .updated {
+    margin: -14px 0 18px;
+    font-size: 12.5px;
+    color: var(--muted2);
+  }
+
+  .legacy {
+    margin: 0 0 18px;
+    font-size: 12.5px;
+    color: var(--muted2);
+    max-width: 70ch;
+  }
+
+  .ownline {
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    border: 1px solid rgb(var(--gold-rgb) / 45%);
+    border-radius: var(--r-sm);
+    background: rgb(var(--gold-rgb) / 6%);
+    font-size: 13.5px;
   }
 
   /* The take line inside a ticked row, under the art: the 42px select box

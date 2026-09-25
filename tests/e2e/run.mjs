@@ -41,14 +41,16 @@ try {
   console.log('e2e: sweep and member ok');
 
   await runRealContract(env, admin, member);
-  console.log('e2e: contract ok (6 cases)');
+  console.log('e2e: contract ok (8 cases)');
 
   /* The deploy job's own build, configured for the test project; `dist/`
      is left so until `npm run build` or `check:built` rebuilds it. */
+  /* On Windows `npm` is `npm.cmd`, which only a shell runs (ENOENT without one). */
   const build = spawnSync('npm', ['run', 'build'], {
     cwd: ROOT,
     stdio: 'inherit',
-    env: buildEnv(env)
+    env: buildEnv(env),
+    shell: process.platform === 'win32'
   });
   if (build.status !== 0) throw new Error('e2e: the configured build failed');
   assertBuilt(DIST, 'dist/');
