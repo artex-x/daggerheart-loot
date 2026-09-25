@@ -4,7 +4,7 @@
 
 For task work read, in order: `CLAUDE.md`, then `issues/<id>/context.md`,
 `plan.md` and `handoff.md`, then the `docs/specs/` files the change touches,
-and `docs/DECISIONS.md` when the change touches a recorded decision.
+and `docs/decisions/` (the index `docs/DECISIONS.md` lists it) when the change touches a recorded decision.
 
 Use the task id supplied by the human; there is no default task. Reuse
 `context.md`; re-fetch only missing, stale, or superseded facts.
@@ -49,7 +49,7 @@ It is scratch: nothing outside the directory may cite it, and closeout
 deletes it. Durable knowledge is written to its permanent home in the batch
 that establishes it - behaviour to `docs/specs/`, tooling and host facts to
 `.claude/README.md`, decisions and their rejected alternatives to
-`docs/DECISIONS.md`, a defect kept on purpose to `docs/specs/DEBT.md` - never
+a file under `docs/decisions/`, a defect kept on purpose to `docs/specs/DEBT.md` - never
 parked in a task document. Each has a
 size budget: the Stop hook warns past it; `.claude/skills/handoff/SKILL.md`
 (`/handoff`) is the closeout, retirement and compaction procedure.
@@ -169,7 +169,7 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
   doc section, a commit sha (`git show <sha>:<path>` for a deleted file), or
   a GitHub issue number - never a bare batch id, a review finding id, a plan
   or handoff section, an `issues/<id>/` path, or a line number.
-- One to three lines; a longer reason belongs in a spec, `docs/DECISIONS.md`
+- One to three lines; a longer reason belongs in a spec, `docs/decisions/`
   or `.claude/README.md`, cited from the comment. The rule binds test and
   suite titles and commit messages too: a title names the behaviour and, if
   it must, the coupling it guards, never a batch id, a finding id, or a line
@@ -187,7 +187,7 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 
 Feature work uses roles (see `.claude/`):
 - **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code);
-  decisions to `docs/DECISIONS.md`
+  decisions to `docs/decisions/`
 - **implementer** -> next batch only; routing: `.claude/README.md`, "Host-aware explicit routing policy"
 - **reviewer** -> required when a trigger in `.claude/prompts/orchestrate.prompt.md`, "When to run reviewer (do not skip these)" fires; one remediation cycle, which also carries the batch's local nits; nits alone defer mid-plan and clear on the terminal batch
 - **add-source** -> rare end-to-end content ingest

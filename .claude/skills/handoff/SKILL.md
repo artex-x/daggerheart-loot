@@ -45,6 +45,13 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
 4. `git rm -r issues/<id>`; `git commit --amend`. Rule 2i denies while a
    citation stands; that is the rule working - repair, do not bypass.
 5. `git push`. Once. Record the sha in the closeout summary.
+   A conflict on `docs/DECISIONS.md` at a rebase: `node tools/decisions.js`,
+   `git add docs/DECISIONS.md`, continue. A branch that still carries inline
+   `## <date> - <title>` entries: `node tools/decisions.js --split
+   docs/DECISIONS.md`; read the files it names (`git diff --
+   docs/decisions/`) and fix what `node tests/derived.js` reports; `git add
+   docs/DECISIONS.md docs/decisions/`; continue (`.claude/README.md`,
+   "Decisions registry").
 
 ## What is durable
 
@@ -52,7 +59,8 @@ Exactly these classes, nothing else:
 
 1. **Decision** - still in force, with the alternatives rejected and the
    reason. Not already recorded in a permanent file (grep a distinctive
-   phrase first).
+   phrase first). Record it only when an alternative was rejected; behaviour
+   goes to the spec, tooling and hooks to `.claude/README.md`.
 2. **Fact** - measured, not re-derivable from the repository or git history
    (a wall clock, a probe outcome, a count used as evidence for a threshold),
    whose subject still exists in the repository today.
@@ -64,7 +72,8 @@ Exactly these classes, nothing else:
 Homes: behaviour -> the spec that owns it; hook/harness/host ->
 `.claude/README.md` (a "Facts settled" list, a "Known limitations" bullet, a
 candidates row, or the section that owns the tool); other decisions ->
-`docs/DECISIONS.md`; defects -> `docs/specs/DEBT.md`.
+`docs/decisions/` (one file from `.claude/templates/decision.template.md`;
+`node tools/decisions.js` rebuilds the index); defects -> `docs/specs/DEBT.md`.
 
 ## Not durable
 

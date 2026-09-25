@@ -82,7 +82,7 @@ const MSG = {
   orphanTask: (target, hits) => {
     const shown = hits.slice(0, 4).join(', ');
     const more = hits.length > 4 ? ', ...' : '';
-    return `Blocked: \`${target}\` is still cited by ${hits.length} tracked line(s): ${shown}${more}. Repair every citation first - state the fact where it is cited, retarget it to its permanent home (\`docs/specs/\`, \`.claude/README.md\`, \`docs/DECISIONS.md\`), or qualify a history-only pointer as \`git show <sha>:<path>\` - then delete in the same commit.`;
+    return `Blocked: \`${target}\` is still cited by ${hits.length} tracked line(s): ${shown}${more}. Repair every citation first - state the fact where it is cited, retarget it to its permanent home (\`docs/specs/\`, \`.claude/README.md\`, \`docs/decisions/\`), or qualify a history-only pointer as \`git show <sha>:<path>\` - then delete in the same commit.`;
   },
   orphanTaskBare:
     "Blocked: `issues` (or `issues/`) deletes every task directory in one command, including the live task's own and anyone else's in-flight work - there is no legitimate reason to retire all of `issues/` at once. Retire one task at a time: `git rm -r issues/<id>`, after its citations are repaired.",

@@ -172,9 +172,9 @@ Host and tool facts behind this design, kept so nobody re-derives them:
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
 arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` (plain or `rtk`-prefixed), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
-| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). No file records applied migrations; a repository with no remote ref, or a git failure, blocks no migration. | **block** |
+| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). No file records applied migrations; a repository with no remote ref, or a git failure, blocks no migration. | **block** |
 | `PostToolUse` | `Bash\|PowerShell` | `check-observer.mjs` | `npm run check:db` from either tool: reads the output from `tool_response.stdout`, else `.output`, else a string response, plus `stderr`; a `check:db: PASS` line writes `.check-db-cache.json` and says "Commit gate armed for supabase/ and tests/db/", a `check:db: FAIL` line or a failure marker says FAIL, neither says it cannot attribute the run. `npm run check` arms from Bash only, as follows. Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` or `cd <dir>;` (PowerShell 5.1 has no `&&`), `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
-| `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js` and public-contract fixtures. Known false-positive, kept as a nag rather than fixed: it tests `p.startsWith('docs/fixtures/')`, so it fires its public-contract reminder on any write under `docs/fixtures/share/`, which is not itself a contract surface (`CONTRACTS.md` enumerates only `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`) - the reminder firing there is not evidence a contract moved. | warn |
+| `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and a write under `docs/decisions/` -> `node tools/decisions.js` (`remind:decisions`). Known false-positive, kept as a nag rather than fixed: it tests `p.startsWith('docs/fixtures/')`, so it fires its public-contract reminder on any write under `docs/fixtures/share/`, which is not itself a contract surface (`CONTRACTS.md` enumerates only `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`) - the reminder firing there is not evidence a contract moved. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
 
 **Settings besides hooks.** `.claude/settings.json` also sets `attribution`
@@ -983,6 +983,72 @@ Facts settled during measurement (issue 68, 2026-09-23), the Browser pane:
 - A hidden pane returns blank screenshots; read geometry with
   `read_page` or a script, or show the pane first.
 
+## Decisions registry
+
+A decision is one file, `docs/decisions/<YYYY-MM-DD>-<slug>.md` (the slug:
+at most eight lowercase words of the title), in the shape of
+`.claude/templates/decision.template.md`. `docs/DECISIONS.md` is the index
+that `tools/decisions.js` generates from those files; `edit-guard.mjs`
+blocks a hand edit of it, and `tests/derived.js` ("decisions registry")
+compares it with a fresh render and validates every file (name, heading,
+`Task`/`Decision`/`Rejected`, both-way supersession pointers, the
+15-line and 80-character caps on files dated 2026-09-26 or later, the
+template, every quoted citation and every cited path). A label matches by
+prefix, so the legacy `Decision (Q1 = B)` and `Rejected, Q1` count. The one
+legacy entry with no rejected alternative carries `- Rejected: none
+recorded.`, not a grandfather list: one rule, no list to drift, and the
+marker is refused on a file dated 2026-09-26 or later. Four legacy entries
+keep a status line after `- Task`, so that order rule, like the caps,
+starts on 2026-09-26, and the index reads the status from every line.
+Decision:
+`docs/decisions/2026-09-25-decisions-are-one-file-each-under-docs-decisions.md`.
+
+| Command | Effect |
+|---|---|
+| `node tools/decisions.js` | Rewrites the index from the files on disk. |
+| `node tools/decisions.js --split <path>` | Writes each inline `## <date> - <title>` entry of `<path>` to its own file (identity by title; `wrote`, or `rewrote` for a changed body), appends the missing mirror pointers and the `- Rejected: none recorded.` marker of a legacy file, then rewrites the index. It never deletes a file. |
+
+Add a decision: copy the template to `docs/decisions/<date>-<slug>.md`,
+fill it, run `node tools/decisions.js`, commit both. Supersede one: add
+the status line to the older file, the mirror line to the newer one, run
+the tool.
+
+Resolve a conflict on `docs/DECISIONS.md` at a rebase or merge (both sides
+added a decision): run `node tools/decisions.js`, then `git add
+docs/DECISIONS.md`, then continue. The merge has already united the files
+on disk, so the render is complete.
+
+Resolve a branch that still carries inline `## <date> - <title>` entries
+(cut before the registry):
+
+1. Run `node tools/decisions.js --split docs/DECISIONS.md` on the
+   conflicted file. New titles become files; an older entry whose block
+   differs is overwritten and named `rewrote`.
+2. Read each `rewrote` file with `git diff -- docs/decisions/`. A block
+   the branch amended keeps the branch's text; a block the branch did not
+   touch can revert a line the registry added (a status or pointer line),
+   so put that line back with the Edit tool.
+3. Run `node tests/derived.js`; expect no `docs/decisions/` failure.
+   Every pointer quotes the full title, not a prefix; the test names each
+   pointer to fix.
+4. Run `git add docs/DECISIONS.md docs/decisions/`, then continue. Do not
+   use `git checkout --ours/--theirs`: `bash-guard.mjs` denies it.
+
+A merge driver was evaluated and not adopted. `merge=union` gives no
+conflict but a silently wrong index (both sides' rows unsorted, and a
+legacy side's whole file appended), and `.md` is exempt from the commit
+gate. A custom driver needs a `git config` step in every clone, never
+runs in GitHub's merge, and cannot render from the tree mid-merge, so it
+would have to merge the two index texts by row; revisit that design only
+when a session resolves the index conflict more than once per release.
+
+Measured 2026-09-25 at `734794c4`, before the split: 107 entries written
+in ten days (2026-09-16 to 2026-09-25), 12.4 body lines on average;
+folding every entry to the old fifteen-line cap removed 22 of 1660 lines
+(1.3%). `734794c4` and the `persist-2-lists` task's commit both
+inserted entries at line 15 of the one file, a conflict on every
+concurrent pair.
+
 ## Persistence era: decided now, activated at Phase 0
 
 Moved here verbatim from `config-audit`'s plan at that task's retirement
@@ -994,7 +1060,7 @@ Trigger for every row: **the start of persistence Phase 0**, which runs after
 issue 47 closes at R0c (`DAGGERHEART-LOOT-PERSISTENCE-DESIGN.md`, sections
 17.4 and 18, revised 2026-09-08). Not a date; not this task. Aligned with
 17.4's table, not re-derived. A superseded contract is recorded in
-`docs/DECISIONS.md` (a decision, not a defect: `DEBT.md`'s sections are the
+a file under `docs/decisions/` (a decision, not a defect: `DEBT.md`'s sections are the
 tasks that owe its entries), in the same commit that edits `CLAUDE.md`,
 `docs/specs/CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js` and
 `llms.txt` (the standing contract-change rule).

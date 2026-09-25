@@ -121,6 +121,9 @@ function setupScratch() {
   // relPath()'s win32 case folding (case #60).
   writeFile('app/src/components/PageHead.svelte', '<h1>x</h1>\n');
   writeFile('tests/app/snapshots/x_state.txt', '# x_state\n');
+  // The generated decisions index and one decision file (#260-#263).
+  writeFile('docs/DECISIONS.md', '# Decisions\n');
+  writeFile('docs/decisions/2026-09-26-x.md', '# 2026-09-26 - X\n');
   // Near-misses for edit-guard's deny list, none of which may deny (#39a).
   writeFile('app/data.json', '{}\n');
   writeFile('docs/i/x.html', '<html></html>\n');
@@ -1768,6 +1771,11 @@ function testEditGuard() {
       '#35a tests/app/snapshots/x_state.txt',
       path.join(scratchRoot, 'tests', 'app', 'snapshots', 'x_state.txt'),
       'node tests/app/golden.js --update'
+    ],
+    [
+      '#260 docs/DECISIONS.md (generated index)',
+      path.join(scratchRoot, 'docs', 'DECISIONS.md'),
+      'node tools/decisions.js'
     ]
   ];
   for (const [label, filePath, fragment] of denyCases) {
@@ -1829,7 +1837,14 @@ function testEditGuard() {
       '#39i pages/src/en/install.html (authored)',
       path.join(scratchRoot, 'pages', 'src', 'en', 'install.html')
     ],
-    ['#39j docs/en/x.html (near-miss dir name)', path.join(scratchRoot, 'docs', 'en', 'x.html')]
+    [
+      '#39j docs/en/x.html (near-miss dir name)',
+      path.join(scratchRoot, 'docs', 'en', 'x.html')
+    ],
+    [
+      '#261 docs/decisions/2026-09-26-x.md (authored)',
+      path.join(scratchRoot, 'docs', 'decisions', '2026-09-26-x.md')
+    ]
   ];
   for (const [label, filePath] of silentCases) {
     const result = runHook('edit-guard.mjs', editPayload(filePath));
@@ -1966,6 +1981,27 @@ function testEditFollowup() {
       '#44 write recorded',
       Boolean(state.sessions[session] && state.sessions[session].wrote['app/src/lib/x.ts'])
     );
+  }
+  // #262-#263 - a decision file write reminds to rebuild the generated
+  // index, once per session.
+  const decision = path.join(scratchRoot, 'docs', 'decisions', '2026-09-26-x.md');
+  {
+    const result = runHook(
+      'edit-followup.mjs',
+      editPayload(decision, { session_id: session, event: 'PostToolUse' })
+    );
+    check(
+      '#262 decision file reminder',
+      systemMessage(result).includes('node tools/decisions.js'),
+      systemMessage(result)
+    );
+  }
+  {
+    const result = runHook(
+      'edit-followup.mjs',
+      editPayload(decision, { session_id: session, event: 'PostToolUse' })
+    );
+    check('#263 decision file reminder once per session', isSilent(result), result.stdout);
   }
 }
 

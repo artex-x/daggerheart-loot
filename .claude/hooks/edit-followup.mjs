@@ -29,6 +29,12 @@ const GROUPS = [
       p === 'llms.txt',
     message: (p) =>
       `A public contract surface changed (${p}). CLAUDE.md requires docs/fixtures/, tests/contracts.js, docs/specs/CONTRACTS.md and llms.txt to move together; \`node tests/contracts.js\` checks it.`
+  },
+  {
+    id: 'remind:decisions',
+    test: (p) => p.startsWith('docs/decisions/'),
+    message:
+      'A decision file changed. Run node tools/decisions.js so docs/DECISIONS.md (the generated index) matches; tests/derived.js compares them and checks the file against .claude/templates/decision.template.md.'
   }
 ];
 

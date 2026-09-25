@@ -3,7 +3,8 @@
    before this check, so here the generator is compared against itself, not
    against the committed copy. A rebuild skipped before commit is caught by a
    separate CI step (`git diff --exit-code` after `npm run check`), not by
-   this file. */
+   this file. The last section checks the decisions registry: the index
+   docs/DECISIONS.md against tools/decisions.js and every quoted citation. */
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.join(__dirname, '..');
@@ -1614,6 +1615,137 @@ const badStubs = fs
       fs.readFileSync(path.join(stubDir, f), 'utf8').indexOf('undefined') >= 0
   );
 ok(badStubs.length === 0, 'stubs containing "undefined": ' + badStubs.slice(0, 5).join(', '));
+
+console.log('decisions registry');
+const REG = require(path.join(ROOT, 'tools', 'decisions.js'));
+let decisions = [];
+try {
+  decisions = REG.readAll();
+} catch (e) {
+  ok(false, e.message);
+}
+const indexPath = path.join(ROOT, REG.INDEX);
+const indexDisk = fs.existsSync(indexPath)
+  ? fs.readFileSync(indexPath, 'utf8').replace(/\r\n/g, '\n')
+  : null;
+ok(indexDisk === REG.render(decisions), REG.INDEX + ': stale - run node tools/decisions.js');
+REG.validate(decisions).forEach(({ file, problem }) =>
+  ok(false, REG.DIR + '/' + file + ': ' + problem)
+);
+/* The template and the tool state the same shape: a pointer or a required
+   label renamed in one place only fails here. */
+const templateText = fs.readFileSync(path.join(ROOT, REG.TEMPLATE), 'utf8');
+const templateComment = (/<!--([\s\S]*?)-->/.exec(templateText) || ['', ''])[1].replace(
+  /\s+/g,
+  ' '
+);
+let template = null;
+try {
+  template = REG.parse('template', templateText.replace(/<YYYY-MM-DD>/, '2026-01-01'));
+} catch (e) {
+  ok(false, REG.TEMPLATE + ': ' + e.message);
+}
+REG.REQUIRED.forEach((label) =>
+  ok(
+    !!template && template.bullets.some((b) => new RegExp('^- ' + label + '\\b').test(b)),
+    REG.TEMPLATE + ': no "- ' + label + ':" line'
+  )
+);
+[...Object.keys(REG.MIRROR), ...Object.values(REG.MIRROR)].forEach((shape) =>
+  ok(
+    templateComment.includes('- ' + shape + ' "'),
+    REG.TEMPLATE + ': the comment does not name the "- ' + shape + '" pointer'
+  )
+);
+const RECORD_RULE = 'only when an alternative was rejected';
+ok(
+  templateComment.includes(RECORD_RULE),
+  REG.TEMPLATE + ': the what-to-record rule is missing'
+);
+ok(
+  REG.render([]).replace(/\s+/g, ' ').includes(RECORD_RULE),
+  REG.INDEX + ': the header lacks the what-to-record rule'
+);
+/* A citation quotes a title prefix after the file name; a title never
+   changes, so every quoted prefix must still name one. */
+const { execFileSync } = require('child_process');
+let citeLines = '';
+try {
+  citeLines = execFileSync(
+    'git',
+    [
+      'grep',
+      '-n',
+      '-e',
+      'DECISIONS.md',
+      '--',
+      '.',
+      ':!docs/decisions/',
+      ':!docs/DECISIONS.md',
+      ':!issues/',
+      ':!tests/derived.js',
+      ':!tools/decisions.js'
+    ],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
+} catch (e) {
+  if (e.status !== 1 || e.stdout) throw e;
+}
+const plainTitles = decisions.map((d) => d.title.replace(/`/g, ''));
+const CITATION = /DECISIONS\.md[^"]{0,40}"([^"]*)/g;
+/* A citation whose quote opens on the next line is read with that line
+   joined on, its comment leader dropped. */
+function withNextLine(grepLine) {
+  const m = /^([^:]+):(\d+):(.*)$/.exec(grepLine);
+  if (!m) return grepLine;
+  const next = fs.readFileSync(path.join(ROOT, m[1]), 'utf8').split(/\r?\n/)[Number(m[2])];
+  return next === undefined
+    ? grepLine
+    : grepLine + ' ' + next.replace(/^\s*(?:\/\/|\*|#|<!--)?\s*/, '');
+}
+citeLines
+  .split('\n')
+  .filter(Boolean)
+  .forEach((grepLine) => {
+    const line = [...grepLine.matchAll(CITATION)].length ? grepLine : withNextLine(grepLine);
+    for (const m of line.matchAll(CITATION)) {
+      const fragment = m[1].replace(/`/g, '').split('...')[0].trim();
+      if (fragment.startsWith('<')) continue;
+      ok(
+        plainTitles.some((t) => t.startsWith(fragment)),
+        'a DECISIONS.md citation names no title: ' + line.slice(0, 160)
+      );
+    }
+  });
+/* A citation by path names a decision file that exists. The hook selftest
+   names a scratch decision file, not a citation. */
+let pathCites = '';
+try {
+  pathCites = execFileSync(
+    'git',
+    [
+      'grep',
+      '-n',
+      '-o',
+      '-E',
+      'docs/decisions/[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+\\.md',
+      '--',
+      '.',
+      ':!issues/',
+      ':!.claude/hooks/selftest.mjs'
+    ],
+    { cwd: ROOT, encoding: 'utf8' }
+  );
+} catch (e) {
+  if (e.status !== 1 || e.stdout) throw e;
+}
+pathCites
+  .split('\n')
+  .filter(Boolean)
+  .forEach((hit) => {
+    const cited = hit.slice(hit.lastIndexOf(':') + 1);
+    ok(fs.existsSync(path.join(ROOT, cited)), 'a cited decision file is missing: ' + hit);
+  });
 
 console.log(failed() ? '\n' + failed() + ' FAILED' : '\nderived files: everything matches');
 process.exit(failed() ? 1 : 0);
