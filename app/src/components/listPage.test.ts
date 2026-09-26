@@ -1719,7 +1719,7 @@ describe('a browser list after the cutoff, and while the move is due', () => {
     });
     const router = memoryRouter('#/lists/a');
     render(App, { env: at('#/lists/a', { cloud, storage, router }) });
-    await screen.findByRole('link', { name: 'Аккаунт: gm1@example.test' });
+    await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
     expect(screen.getByRole('textbox', { name: 'Название списка' })).toHaveAttribute(
       'readonly'
     );

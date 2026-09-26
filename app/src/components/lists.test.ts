@@ -446,7 +446,7 @@ describe('with sign-in configured', () => {
   /* The header names the account once the session is in; the lists follow
      within the same turn. */
   const signedInAs = async (user: string): Promise<void> => {
-    await screen.findByRole('link', { name: 'Аккаунт: ' + user + '@example.test' });
+    await screen.findByRole('button', { name: 'Аккаунт: ' + user + '@example.test' });
     await new Promise((r) => setTimeout(r, 0));
   };
   const signInThroughAccount = async (): Promise<void> => {

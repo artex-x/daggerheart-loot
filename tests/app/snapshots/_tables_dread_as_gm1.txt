@@ -12,8 +12,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Аккаунт: gm1@example.test" [url=index.html?as=gm1#/account]
-      StaticText "G"
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
@@ -163,8 +162,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Account: gm1@example.test" [url=index.html?as=gm1#/account]
-      StaticText "G"
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]

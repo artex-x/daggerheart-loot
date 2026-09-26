@@ -103,9 +103,16 @@ nothing new redraws nothing, and an edit replaces only the list it changes.
 
 Signed in, the language, starting section, tables view and print layout
 follow the account (`user_prefs`, one row per user: `{ lang, home, view,
-printBw, printCompact }`; `app/src/lib/prefs.ts` reads it as untrusted data,
-the same as `dhloot.prefs.v1`). There is no settings page and no sync
-indicator; the controls stay where they are.
+printBw, printCompact, notifyGm }`; `app/src/lib/prefs.ts` reads it as
+untrusted data, the same as `dhloot.prefs.v1`). There is no sync indicator;
+the controls stay where they are, and the Display section of `#/account`
+(`FEATURES.md`, "Account") is a second writer of the same keys through the
+same setters.
+
+- **`notifyGm`** (`ask`, `always` or `never`), the remembered answer to
+  "notify the list owner?", lives in the row only: no local key. A row
+  without it reads as `ask`; it is `ask` signed out and before a new user's
+  row is pulled, so one user's answer never seeds another's row.
 
 - **First paint is local.** The page draws this browser's values, then
   switches once the account answers - a new device may flip its language or
@@ -114,7 +121,7 @@ indicator; the controls stay where they are.
   back; the values are written to their local keys too. A `home` the pin
   check refuses is ignored, not reset, and applying never navigates.
 - **A first sign-in seeds the account.** An account with no row gets this
-  browser's five values. A read that fails applies and saves nothing, so it
+  browser's five values and `notifyGm: 'ask'`. A read that fails applies and saves nothing, so it
   cannot pass as an empty account and be seeded over.
 - **Local first, then the account.** Every change is written to its local
   key, then, signed in, the whole object replaces the row. A change made
@@ -153,7 +160,7 @@ state exists, by what it was for:
 | Lists | `lists`, `cloudLists` (the account lists, their read status, the write buffer and its save status), `sharedView` (the open share link's list, its read status and whether the reader owns it), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session) |
 | Prices | `rp`, `guess`, `moneyHelp` |
 | Print | `printIds` |
-| UI | `sel`, `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen` |
+| UI | `sel`, `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen`, `menuOpen` (the header's account menu, in `Shell`, closed on a navigation and a user change), `hidden` (the move banner's «Скрыть», in `MoveNotice`, which `Shell` never remounts: hidden until the next page load) |
 
 `fSeg` is the filter segment already read back from the address. Reading the
 address on every render froze the filter at whatever the link said: the panel

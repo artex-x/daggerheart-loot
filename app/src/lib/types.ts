@@ -59,6 +59,9 @@ export const TABLE_IDS = [
 
 export type TableId = (typeof TABLE_IDS)[number];
 
+/** The table a bare `#/tables` opens on. */
+export const BARE_TABLE: TableId = 'core_item';
+
 export function isTableId(v: string): v is TableId {
   return (TABLE_IDS as readonly string[]).includes(v);
 }

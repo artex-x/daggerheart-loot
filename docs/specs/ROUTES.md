@@ -29,6 +29,11 @@ whichever table is on screen (`#/tables/<table>`), never as the bare tab
 address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
 stores and reads back.
 
+From the legacy write cutoff (2026-10-26) a build with sign-in draws nine
+of them in the tab bar, without `#/lists`; `#/lists` stays a section route,
+reached from the account menu's «Мои списки», a bookmark or a pin
+(`FEATURES.md`, "Chrome").
+
 ## Legacy section names
 
 `#/roll/core`, `#/roll/hnf` and `#/roll/all` predate the merged mode. Each

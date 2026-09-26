@@ -241,7 +241,7 @@ describe('a list made a moment ago', () => {
     const { container } = render(App, {
       env: fakeEnv({ router, data: fakeData(LOOT), cloud })
     });
-    await screen.findByRole('link', { name: 'Аккаунт: gm1@example.test' });
+    await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
     await userEvent.click(await screen.findByRole('button', { name: 'Сохранить себе' }));
     expect(router.hash()).toBe('#/lists/' + uuid(5000));
     await pressShare();

@@ -840,7 +840,7 @@ describe('the move into the account and the cutoff', () => {
     });
     await screen.findByRole('button', { name: 'Войти' });
     const sentence =
-      'Войдите - списки перенесутся в аккаунт сами. С 26 октября 2026 года списки в браузере нельзя будет менять.';
+      'Войдите до 26 октября 2026 года - и они перенесутся в аккаунт. После этой даты приложение перестанет их показывать.';
     expect(screen.getByText(sentence)).toBeInTheDocument();
     await expectNoA11yViolations(out.container);
     cleanup();

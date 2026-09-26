@@ -23,6 +23,10 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
+  status ""
+    StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
+    button "Войти и перенести списки"
+    button "Скрыть напоминание"
   main ""
     heading "Лавка" [level=1]
     StaticText "Список от другого игрока · 3 позиции"
@@ -56,6 +60,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
+Войти и перенести списки
 Доспешный Сшиватель
 К содержимому
 Конфиденциальность
@@ -63,6 +68,7 @@ daggerheart.com
 Обычные правила
 Первоклассный Спальный Мешок
 Поиск
+Скрыть напоминание
 Сообщества
 Сохранить себе
 Списки
@@ -93,6 +99,10 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
+  status ""
+    StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
+    button "Sign in and move the lists"
+    button "Dismiss the reminder"
   main ""
     heading "Лавка" [level=1]
     StaticText "A list from another player · 3 items"
@@ -120,6 +130,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
 Alt. tables
 Armor Stitcher
 Communities
+Dismiss the reminder
 Dragon's Vault
 Dread
 EN
@@ -131,6 +142,7 @@ RU
 Save to my lists
 Search
 Sign in
+Sign in and move the lists
 Skip to content
 Spidersilk Tunic
 Spidersilk Tunic1 handfulTier 2 · Thresholds 9/20 · Armor 4Wall-... [namelen=157 namehash=d6f04d1b]

@@ -37,7 +37,7 @@ import { legacyWritable } from '../lib/legacy.js';
 import { decodeList, encodeList, type DecodedList } from '../lib/listLink.js';
 import { copyInit, findListByPayload, LIST_PAGE, type StoredList } from '../lib/lists.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
-import { readPrefs, type Prefs } from '../lib/prefs.js';
+import { readPrefs, type NotifyGm, type Prefs } from '../lib/prefs.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Section } from '../lib/types.js';
 import type { AuthResult, Env, Provider, Session } from '../ports/index.js';
@@ -314,6 +314,9 @@ export class AppState {
    *  (docs/specs/FEATURES.md, "Print"). */
   #printBW = $state(false);
   #printCompact = $state(false);
+  /** The remembered answer to "notify the list owner?": in the account row
+   *  only, so it starts at `ask` for every user and signed out. */
+  #notifyGm = $state<NotifyGm>('ask');
   /** How many lists the index draws - kept for the session so a return from
    *  a list page shows the same cards; a reload starts at `LIST_PAGE`
    *  (`STATE.md`'s "Lists" group). */
@@ -524,6 +527,7 @@ export class AppState {
     this.user = s;
     if (!s) {
       this.#prefsFor = null;
+      this.#notifyGm = 'ask';
       if (was !== null) {
         this.#forgetPending();
         this.#listsSignedOut();
@@ -533,6 +537,8 @@ export class AppState {
     if (s.userId === this.#prefsFor) return;
     this.#prefsFor = s.userId;
     this.#stale = false;
+    /* One user's answer never seeds another's row. */
+    this.#notifyGm = 'ask';
     void this.#pull();
     /* Another user's move said nothing about this one's. */
     this.legacyMove?.reset();
@@ -678,9 +684,9 @@ export class AppState {
   }
 
   /**
-   * The account page's sign-out: the account's buffered writes are sent
-   * first, for at most `SIGN_OUT_WAIT_MS`; a write that did not land is lost,
-   * as a sign-out loses it.
+   * Signs out, for the account page and the account menu: the account's
+   * buffered writes are sent first, for at most `SIGN_OUT_WAIT_MS`; a write
+   * that did not land is lost, as a sign-out loses it.
    */
   async signOut(scope: 'local' | 'global' = 'local'): Promise<AuthResult> {
     const cloud = this.env.cloud;
@@ -809,6 +815,7 @@ export class AppState {
     if (p.view) this.#tablesView = p.view;
     if (p.printBw !== undefined) this.#printBW = p.printBw;
     if (p.printCompact !== undefined) this.#printCompact = p.printCompact;
+    this.#notifyGm = p.notifyGm ?? 'ask';
     this.#writeLocalPrefs();
   }
 
@@ -829,7 +836,8 @@ export class AppState {
         home: this.#home,
         view: this.#tablesView,
         printBw: this.#printBW,
-        printCompact: this.#printCompact
+        printCompact: this.#printCompact,
+        notifyGm: this.#notifyGm
       })
       .catch(() => false)
       .then((ok) => {
@@ -1023,6 +1031,16 @@ export class AppState {
     this.#changed();
   }
 
+  get notifyGm(): NotifyGm {
+    return this.#notifyGm;
+  }
+
+  /** Remembers the answer in the account row alone: no key in this browser. */
+  setNotifyGm(v: NotifyGm): void {
+    this.#notifyGm = v;
+    this.#changed();
+  }
+
   go(hash: string): void {
     /* Set before `navigate()`, which for a fake/in-memory router fires
        the change handler synchronously, inline in this same call - the
@@ -1181,6 +1199,21 @@ export class AppState {
 
   get home(): string {
     return this.#home;
+  }
+
+  /**
+   * Sets the starting section from the Display section of `#/account`; the
+   * pin button stays `toggleHome`'s. Returns false, and changes nothing, for
+   * an address a pin may not hold or a refused write.
+   */
+  setHome(hash: string): boolean {
+    const pin = pinOf(hash);
+    if (pin === null) return false;
+    if (pin === DEFAULT_HOME) this.env.storage.remove(HOME_KEY);
+    else if (!this.env.storage.set(HOME_KEY, pin)) return false;
+    this.#home = pin;
+    this.#changed();
+    return true;
   }
 
   /**

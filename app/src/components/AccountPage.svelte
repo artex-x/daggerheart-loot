@@ -1,6 +1,7 @@
 <script lang="ts">
-  /* `#/account`: who is signed in, the providers they sign in with, signing
-     out, and deleting the account - or, signed out, the way in. Drawn only
+  /* `#/account`: the display settings, who is signed in, the providers they
+     sign in with, signing out, and deleting the account - or, signed out,
+     the way in. Drawn only
      in a build with sign-in configured; `App.svelte` shows the not-found
      page otherwise (docs/specs/FEATURES.md, "Account"). */
   import { tick } from 'svelte';
@@ -9,7 +10,12 @@
   import NumRow from './NumRow.svelte';
   import PageTitle from './PageTitle.svelte';
   import Panel from './Panel.svelte';
+  import Seg from './Seg.svelte';
   import TextInput from './TextInput.svelte';
+  import { SECTION_LABEL } from '../lib/dict.js';
+  import { parseHash, sectionHash, tablesHash } from '../lib/hash.js';
+  import type { NotifyGm } from '../lib/prefs.js';
+  import { BARE_TABLE, SECTIONS, type Lang, type Section } from '../lib/types.js';
   import type { AuthResult, Identity, Provider } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -43,6 +49,45 @@
   let typedEl = $state<HTMLInputElement | undefined>(undefined);
 
   const typedOk = $derived(typed.trim().toLowerCase() === t.deleteWord);
+
+  /* The Display section: each control writes through the setter its page
+     already uses, so the account row follows (docs/specs/STATE.md, "Account
+     preferences"). */
+  const LANGS: readonly { value: Lang; label: string }[] = [
+    { value: 'ru', label: 'RU' },
+    { value: 'en', label: 'EN' }
+  ];
+  const views = $derived([
+    { value: 'list' as const, label: t.viewList },
+    { value: 'grid' as const, label: t.viewGrid }
+  ]);
+  const art = $derived([
+    { value: 'color' as const, label: t.printColor },
+    { value: 'bw' as const, label: t.printBW }
+  ]);
+  const notify = $derived<{ value: NotifyGm; label: string }[]>([
+    { value: 'ask', label: t.notifyAsk },
+    { value: 'always', label: t.notifyAlways },
+    { value: 'never', label: t.notifyNever }
+  ]);
+  /* The app writes the named form of a Tables pin, never a bare `#/tables`
+     (docs/specs/STATE.md, "localStorage keys"). */
+  const TABLES_HOME = tablesHash(BARE_TABLE);
+  const optionOf = (s: Section): string => (s === 'tables' ? TABLES_HOME : sectionHash(s));
+  /* Any Tables pin reads as the Tables option and keeps its address until
+     another section is chosen; an old section name reads as its section. */
+  const homeValue = $derived.by(() => {
+    const r = parseHash(app.home);
+    if (r.kind === 'tables') return TABLES_HOME;
+    return r.kind === 'section' ? optionOf(r.section) : app.home;
+  });
+
+  function setHome(e: Event & { currentTarget: HTMLSelectElement }): void {
+    const select = e.currentTarget;
+    if (app.setHome(select.value)) return;
+    select.value = homeValue;
+    app.say(t.saveFailed, { error: true });
+  }
 
   let loadedFor: string | null = null;
 
@@ -203,6 +248,72 @@
     {:else}
       {@const session = app.user}
       <PageTitle title={t.account} sub={t.accountSub} />
+
+      <Panel style={PANEL}>
+        <Field label={t.displayHead} heading>
+          <div class="set">
+            <span class="setname">{t.langLabel}</span>
+            <Seg
+              options={LANGS}
+              value={app.lang}
+              label={t.langLabel}
+              onchange={(l: Lang) => {
+                app.setLang(l);
+              }}
+            />
+          </div>
+          <div class="set">
+            <label class="setname" for="display-home">{t.displayHome}</label>
+            <select id="display-home" value={homeValue} onchange={setHome}>
+              {#each SECTIONS as s (s)}
+                <option value={optionOf(s)}>{t[SECTION_LABEL[s]]}</option>
+              {/each}
+            </select>
+          </div>
+          <div class="set">
+            <span class="setname">{t.tables}</span>
+            <Seg
+              options={views}
+              value={app.tablesView}
+              label={t.tables}
+              onchange={(v: 'list' | 'grid') => {
+                app.setTablesView(v);
+              }}
+            />
+          </div>
+          <div class="set">
+            <span class="setname">{t.print}</span>
+            <Seg
+              options={art}
+              value={app.printBW ? 'bw' : 'color'}
+              label={t.print}
+              onchange={(v: 'color' | 'bw') => {
+                app.setPrintBW(v === 'bw');
+              }}
+            />
+            <label class="chk"
+              ><input
+                type="checkbox"
+                checked={app.printCompact}
+                onchange={(e) => {
+                  app.setPrintCompact(e.currentTarget.checked);
+                }}
+              />{t.printCompactBox}</label
+            >
+          </div>
+          <div class="set">
+            <span class="setname">{t.displayNotify}</span>
+            <Seg
+              options={notify}
+              value={app.notifyGm}
+              label={t.displayNotify}
+              onchange={(v: NotifyGm) => {
+                app.setNotifyGm(v);
+              }}
+            />
+          </div>
+        </Field>
+      </Panel>
 
       <Panel style={PANEL}>
         <Field label={t.signedInAs} heading>
@@ -386,7 +497,8 @@
     padding: 0;
   }
 
-  .ids li {
+  .ids li,
+  .set {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -395,9 +507,56 @@
     border-top: 1px solid var(--line);
   }
 
-  .ids li:first-child {
+  .ids li:first-child,
+  .set:first-of-type {
     border-top: 0;
     padding-top: 2px;
+  }
+
+  .setname {
+    flex: 1 1 180px;
+    font-size: 14px;
+  }
+
+  /* TextInput.svelte's box at a button's height. */
+  select {
+    height: 38px;
+    width: auto;
+    max-width: 100%;
+    padding: 0 10px;
+    border-radius: var(--r-sm);
+    background: var(--bg2);
+    border: 1px solid var(--line2);
+    color: var(--txt);
+    font: inherit;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
+  }
+
+  .chk {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+  }
+
+  /* TableRows.svelte's row checkbox. */
+  .chk input {
+    accent-color: var(--gold);
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    select {
+      height: 44px;
+    }
   }
 
   .pv {

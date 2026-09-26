@@ -63,3 +63,24 @@ describe('keeping the lit tab in view', () => {
     expect(nav.scrollLeft).toBe(0);
   });
 });
+
+describe('the Lists tab', () => {
+  it('draws nine links without #/lists when lists is false, and Tables keeps its separator', () => {
+    const { container } = render(TabBar, {
+      t: dict('ru'),
+      current: null,
+      label: 'Разделы',
+      lists: false
+    });
+    const links = [...container.querySelectorAll('nav.tabs a')];
+    expect(links).toHaveLength(9);
+    expect(links.map((a) => a.getAttribute('href'))).not.toContain('#/lists');
+    expect(container.querySelector('a[href="#/tables"]')).toHaveClass('sep');
+  });
+
+  it('draws all ten by default', () => {
+    const { container } = render(TabBar, { t: dict('ru'), current: null, label: 'Разделы' });
+    expect(container.querySelectorAll('nav.tabs a')).toHaveLength(10);
+    expect(container.querySelector('a[href="#/lists"]')).not.toBeNull();
+  });
+});

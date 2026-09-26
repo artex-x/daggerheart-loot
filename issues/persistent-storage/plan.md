@@ -8,11 +8,12 @@
 - NEEDS_HUMAN_CONFIRMATION: no (decisions 1-41 answered, section 16).
 - R0 `persist-0-foundation` closed 2026-09-24; R1 `persist-1-auth` closed
   2026-09-25; R2 `persist-2-lists` and R5 `persist-5-migration` closed
-  2026-09-26. Each task directory was retired in its closeout commit; the
-  release records are section 16, "R1 closeout record", "R2 closeout
-  record" and "R5 closeout record". Next release: R5b
-  `persist-5b-account-menu` (its section 9 refresh, then `B5b.1`), then
-  the plan-review process task (section 9), R11, R3, R4.
+  2026-09-26; R5b `persist-5b-account-menu` closed 2026-09-27. Each task
+  directory was retired in its closeout commit; the release records are
+  section 16, "R1 closeout record", "R2 closeout record", "R5 closeout
+  record" and "R5b closeout record". Next: the plan-review process task
+  `process-guards` (section 9; planned ahead on a worktree branch, brought
+  onto `main` after R5b's push), then R11, R3, R4.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -428,8 +429,8 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R1 | `persist-1-auth` | `B1.1`-`B1.6` - **closed 2026-09-25**, live at the merge onto `main` | Fake cloud and test build (layer 2), sign in, `#/account` with linking and sign out everywhere, delete account, hosted E2E (layer 4) and CI `e2e` job, account preferences, CI migration deploys (decision 41), the nightly backup (decision 39) |
 | R2 | `persist-2-lists` | `B2.0`-`B2.3` - **closed 2026-09-26**, live at the push of `main` | The test-migration fix (`B2.0`), then cloud lists with "edited N ago", sign-in-only creation, player and GM share links with polling, save a copy; `llms.txt` and the shared page name the cutoff date |
 | R5 | `persist-5-migration` | `B5.1`, `B5.2a`-`B5.2d` - **closed 2026-09-26**, live at the push of `main` | **Moved directly after R2 (owner, 2026-09-25)** so that `LEGACY_WRITE_UNTIL` = 2026-10-26 is reachable (section 10). Shipped: the automatic move of browser lists into the account at sign-in (`move_legacy_list`, one RPC per list, a read-back, `dhloot.migrated.v1` with the first account's id, the one-time notice, `held` for a mismatch, read-only while the move is due); the cutoff `LEGACY_WRITE_UNTIL` with read-only browser lists after it; the retired `#/l/` page and its announcement; the account write buffer (2 s quiet window, early flushes, a `keepalive` close) sent as one `apply_list_writes` request per flush. Migrations `20260925130400` (the column, the index, the exempted limit triggers, `move_legacy_list`), `20260925130500` (its `40001` conflict path), `20260925130600` (`apply_list_writes`). Must be live on production by 2026-10-12, else the date moves |
-| R5b | `persist-5b-account-menu` (owner, 2026-09-26: its own release; `issues/persist-5b-account-menu/plan.md` is the authority) | `B5b.1` | Right after R5, live by 2026-10-19 (before the 2026-10-26 cutoff): the header's account menu («Аккаунт», «Мои списки», «Выйти»; «Мои предметы» joins in R7), the Display section of `#/account` (the five synced settings and R4's `notifyGm` choice), the Lists tab gone from the cutoff (`#/lists` stays a route) |
-| - | a process task (owner, 2026-09-26; no directory yet: its planner names the id and creates it) | set by its planner | Right after R5b, before R11: a plan review before the first implement batch when a plan adds a schema change or a SECURITY DEFINER function, changes a public contract, can lose data, or adds a write or sync protocol; a reviewer writes its full report to `issues/<id>/reviews/<batch>.md` (its Write tool limited to that path, enforced by a guard); a host-wide heavy-run lock across sessions, or gate credit for a backgrounded run by its exit code; `tests/db/run.mjs` takes and releases the local stack lock (`%TEMP%\dhloot-local-stack.lock`, 45-minute staleness, the holder's task id) itself; `bash-guard.mjs` denies `.`, `source` and `cat` on `.env*`; a schema batch runs `db:push` to the test project only after its review approves. Each rule was held by hand through R5 |
+| R5b | `persist-5b-account-menu` (owner, 2026-09-26: its own release) | `B5b.1` - **closed 2026-09-27**, live at the push of `main` (section 16, "R5b closeout record") | Right after R5, live by 2026-10-19 (before the 2026-10-26 cutoff): the header's account menu («Аккаунт», «Мои списки», «Выйти»; «Мои предметы» joins in R7), the Display section of `#/account` (the five synced settings and R4's `notifyGm` choice), the Lists tab gone from the cutoff (`#/lists` stays a route), and (owner, 2026-09-27) a banner under the header for a signed-out reader with browser lists: sign in before the date, or the app stops showing them |
+| - | `process-guards` (owner, 2026-09-26: a process task; planned ahead on the worktree branch `worktree-agent-a5ccc3820472f4e03`, commit `0e20730d`, brought onto `main` after R5b's push; one open owner question, Q1: gate credit for a backgrounded run or a host-wide heavy-run lock - recommended gate credit) | set by its plan | Right after R5b, before R11: a plan review before the first implement batch when a plan adds a schema change or a SECURITY DEFINER function, changes a public contract, can lose data, or adds a write or sync protocol; a reviewer writes its full report to `issues/<id>/reviews/<batch>.md` (its Write tool limited to that path, enforced by a guard); a host-wide heavy-run lock across sessions, or gate credit for a backgrounded run by its exit code; `tests/db/run.mjs` takes and releases the local stack lock (`%TEMP%\dhloot-local-stack.lock`, 45-minute staleness, the holder's task id) itself; `bash-guard.mjs` denies `.`, `source` and `cat` on `.env*`; a schema batch runs `db:push` to the test project only after its review approves. Each rule was held by hand through R5 |
 | R11 | `persist-usage-monitoring` (working id kept; its directory exists) | `B11.1` | **Placed after R5 (owner request 2026-09-25, "after r2"; planner 2026-09-25), and after R5b from 2026-09-26**: a nightly `usage.yml` report of production's free-plan usage - database and Storage size, rows per table, an MAU estimate, request counts, users near their count limits - with a forecast, a summary every night, a failed run (GitHub's email) near a limit, the `usage_snapshots` history table and the keep-alive Data API call. Plan: `issues/persist-usage-monitoring/plan.md` |
 | R3 | `persist-3-realtime` | `B3.1`, `B3.2` | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline, requester status |
@@ -437,10 +438,10 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-26; `issues/persist-7-homebrew/plan.md` is the authority) | Homebrew items as live references in the owner's lists, «Мои предметы» from the account menu and in search, the source tag «Хоумбрю» / "Homebrew" (owner, 2026-09-26), bundle schema v2 |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
-| R10 | `persist-10-legacy-removal` | `B10.1` | After the cutoff date has passed: the `#/l/` codec, its fixtures and contract text are removed |
+| R10 | `persist-10-legacy-removal` | `B10.1` | The first release after the cutoff date (owner, 2026-09-27; `docs/DECISIONS.md`, "R10 removes browser lists and the move; an old `#/l/` link is not found"): browser lists and all move support go - the codec, its fixtures and contract text, the `#/l/` list page and the retired page (an old `#/l/` link draws the not-found page, the address kept: a contract change), `ListStore`'s browser lists, `LegacyMove`, `MoveNotice`, `MoveStatus`, `StorageNotice`, the move's RPC path; its plan decides whether a migration drops `move_legacy_list` and `lists.legacy_fingerprint` (`DEBT.md` D62, D63). The browser's data is not deleted |
 
-The order is R0, R1, R2, R5, R5b, the process task, R11, R3, R4, R6-R9,
-R10 (owner, 2026-09-25;
+The order is R0, R1, R2, R5, R5b (closed 2026-09-27), the process task
+`process-guards`, R11, R3, R4, R6-R9, R10 (owner, 2026-09-25;
 `docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"; R11 placed after
 R5 so R5's 2026-10-12 deadline keeps priority; R5b split from R5 by the
 owner, 2026-09-26; the process task placed after R5b by the owner,
@@ -483,7 +484,12 @@ The design's 2026-10-07 cannot hold. Replacement rule, settled 2026-09-24
   fingerprint is a SHA-256 of a canonical JSON of the local list, not of
   the codec's text, so migration does not depend on the codec.
 - Nothing is deleted on a client clock; `dhloot.lists.v1` stays untouched
-  as `STATE.md` already requires.
+  as `STATE.md` already requires. From R10 the app stops knowing about
+  browser lists: it never reads, draws or moves them, and deletes nothing
+  (owner, 2026-09-27; `docs/DECISIONS.md`, "R10 removes browser lists and
+  the move; an old `#/l/` link is not found"; supersedes the move past R10
+  for a reader who never signed in). Before the date R5b's banner asks a
+  signed-out reader with browser lists to sign in, on every page.
 - Moving the date is a one-line commit and a deploy. If R5 shows a defect
   in production, the date moves before it elapses.
 - What the `#/l/` retirement breaks, and the answer:
@@ -499,10 +505,12 @@ The design's 2026-10-07 cannot hold. Replacement rule, settled 2026-09-24
   half of `tests/contracts.js`, `tests/app/contracts.js` list cases, states
   cases 13, 17 and 22, `listLink.test.ts`, `CONTRACTS.md` section 3 (a
   one-line history pointer stays), the `llms.txt` section and the
-  `ROUTES.md` rows; `#/l/` keeps a route kind `legacyList` in
-  `docs/fixtures/urls/routes.json` so the retired-link page is reached,
-  never the home fallback. `#/print/<id>*<n>` keeps its spelling: it is
-  print grammar, not the list link.
+  `ROUTES.md` rows; from R10 `#/l/` draws the app's not-found page, the
+  address kept, never the retired page and never the home fallback (owner,
+  2026-09-27, replacing the `legacyList` route kind that reached the
+  retired page); R10's contract batch sets the `#/l/` rows of
+  `docs/fixtures/urls/routes.json` to that. `#/print/<id>*<n>` keeps its
+  spelling: it is print grammar, not the list link.
 
 ## 11. Google OAuth, policy pages and `noindex`
 
@@ -561,7 +569,7 @@ carries "goldens".
 | `B4.1` | Revised by the R4 plan (2026-09-26; `issues/persist-4-requests/plan.md` section 10): section 5's R4 row in one migration and its reversal; layer 3 matrix: anon sends through an active player or GM token only, a stopped or wrong token is refused alike, bad and stale lines, the line limit, the rate (6th in a minute), the pending cap (11th), housekeeping, the status read shows nothing about the owner, another user cannot read, apply or decline, over-stock refused whole, clamp, zero removes the entry, the `request` events on the owner and share topics; the harness's anon function list and the limit rows | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db` x2 (~16 min) | required (schema rule; the first anonymous write) | new release (R4) |
 | `B4.2` | Revised by the R4 plan (section 11): `RequestRepository`, fake and contract case, `env.session`, the requester's send and status block, flow b with `notifyGm`, the owner's Requests panel with apply, «Принять доступное» and decline, the index card line, R3's feeds routing `request`, policy text; layer 2 states and cases; E2E: an anonymous request applied by the owner, stock lowered, the requester's status reads applied | section 6 row 17 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI, policy text | a commit the harness cannot reach (the E2E needs `B4.1`'s migration on the test project) |
 | `B5.1`-`B5.2d` | R5, closed 2026-09-26: the move RPC and its conflict path, the batching RPC `apply_list_writes`, the write buffer with the batching client, the automatic move with the cutoff and the retired `#/l/` page (section 9's R5 row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R5's commit history | - | - | - | - |
-| `B5b.1` | R5b: the account menu, `AppState.setHome`/`setNotifyGm`, the Display section of `#/account`, the Lists tab gone after the date (`issues/persist-5b-account-menu/plan.md` section 6) | `FEATURES.md` ("Account", "Chrome"), `ROUTES.md` ("Sections"), `STATE.md` | layer 1 `check` x2, `check:built`, layer 2 `app/states`, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI on every page | new release (R5b, the owner's split: a different component set and seed) |
+| `B5b.1` | R5b, closed 2026-09-27: the account menu, the Display section of `#/account`, the Lists tab gone after the date, the signed-out move banner (section 9's R5b row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch brief is in R5b's commit history | - | - | - | - |
 | `B6.1` | Refined 2026-09-26 (`issues/persist-6-import-export/plan.md` section 8): the contract and the database - `schema/import-v1.json` (draft 2020-12, `$id` the published URL, `additionalProperties: false`), `docs/fixtures/import/`, `tests/contracts.js` pins, `llms.txt` section "Lists as a file (import-v1)" (the bundle replaces LLM-built links), `CONTRACTS.md` section 4, the published-file lists (`ci.yml`, `check-site.lib.mjs`, `<noscript>`); `lib/bundle.ts` (build, validate with JSON paths, parse; a schema-drift test); `ListRepository.import` on the real adapter, the lazy port and the fake; `import_lists` migration, reversal, layer 3 matrix; contract case H and a real-only atomicity check | section 6 row 19 | layer 1 `check`, layer 3 `check:db`, `check:built`, layer 4 E2E (~12-15 min) | required: public contract, schema rule | new release (R6) |
 | `B6.2` | The UI: «Экспорт» (a checklist of the account lists, «Скачать JSON (N)») and «Импорт» (choose a file, validate, preview counts and skipped ids, one press) panels under the index's «Ваш аккаунт» heading; `#/account` «Ваши данные» with «Скачать все списки (JSON)»; «Скачать JSON» on an account list's page; `AppState.exportLists`, `CloudLists.import`; the driver's `download()` and `upload()` verbs; layer 2 states as `gm1`: the export panel, the import panel, the preview, the refused file, the imported list; states cases 43-45; E2E F8 | `FEATURES.md`, `META.md` section 3, `COVERAGE.md` | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~37 min) | required: new UI | a public-contract change and SQL apart from Svelte; a commit boundary the harness cannot reach (the states need `B6.1`'s fake `import` and fixtures) |
 | `B7.1` | Refreshed 2026-09-25, revised 2026-09-26 (`issues/persist-7-homebrew/plan.md`, the release's authority): R7 schema (section 5, R7 row), the matrix in `tests/db/homebrew.test.mjs` and the projection cases in `list-shares.test.mjs`, the reversal, `lib/homebrew.ts` (`validateDraft`, `toRecord`, `snapshotOf`, `withRecords`), `HomebrewRepository` in `ports/types.ts`, the real adapter and the fake, the seed's three items, a reference row in list 101 and a frozen row in `gm2`'s list, `cloud.contract.ts` case H, the shared fixtures `docs/fixtures/homebrew/` | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db`, layer 4 E2E (~11 min) | required (schema rule) | new release (R7); SQL and ports judged apart from Svelte |
@@ -687,9 +695,8 @@ yes) as a revision-free nudge, then a re-read; the poll covers a feed that
 is down.
 
 `B5.1`-`B5.2d`: shipped in R5 (section 9). The code, the specs and
-`docs/decisions/` are the record. `B5b.1` (R5b): planned in
-`issues/persist-5b-account-menu/plan.md`, the release's authority; live
-by 2026-10-19.
+`docs/decisions/` are the record. `B5b.1`: shipped in R5b (section 9);
+the same holds.
 
 `B6.1`-`B6.2` (planned 2026-09-26 in `issues/persist-6-import-export/
 plan.md`, the release's authority): the file `import-v1` - `format`
@@ -1274,11 +1281,27 @@ is in the R2 closeout summary):
 R5 closeout record (2026-09-26; one local commit on `main`, amended per
 batch and at closeout, pushed once by the owner's approval, "proceed with
 all release"):
-- Pushed sha: PLACEHOLDER (the orchestrator fills it from the closeout
-  summary). CI run of the push: PLACEHOLDER (id; the five `browser` shard
-  suite-step times; `migrate-test` expected to apply nothing; `migrate-prod`
-  expected to apply `20260925130400`, `20260925130500`, `20260925130600`
-  before `deploy`).
+- Pushed sha: `d679d285`. CI run of the push: 36272330997, success; the
+  five `browser` shard jobs took 368, 384, 394, 353 and 356 s (four shards
+  took up to 383 s, so the fifth did not shorten the slowest - a fixed
+  per-shard cost, for the process task); `migrate-prod` 21:22:36-21:22:53Z
+  applied `20260925130400`, `20260925130500`, `20260925130600` before
+  `deploy`.
+- Security Advisor, linter rerun on both projects after `migrate-prod`
+  (orchestrator, owner's Chrome session, 2026-09-26): 0 errors, 9 warnings,
+  2 info, the same on test and production. SECURITY DEFINER executable by
+  signed-in users: `clone_shared_list`, `create_list_share`,
+  `delete_account`, `get_shared_list`, `move_legacy_list` (new in R5, by
+  design; `DEBT.md` D62), `reorder_list`, `revoke_list_share`; by anon:
+  `get_shared_list` (the anonymous shared page); leaked password protection
+  off (no password sign-in). `apply_list_writes` (invoker) adds none.
+  Production Data API: 2 of 2 schemas, new tables not exposed
+  automatically, max rows 1000.
+- Organisation usage 2026-09-18 to 2026-10-18: Log Query 129.07 of 100 GB
+  ("upcoming", enforced from 2027), data only on 2026-09-25/26 (about 114
+  GB a day); everything else under 10 %. Cause unknown; the owner: worth a
+  light look, maybe a Supabase metering defect - R11's planner answers
+  which tool reads logs (Management API, CLI, Studio).
 - Shipped: section 9's R5 row. Batches `B5.1` (the column, the index, the
   exempted limit triggers, `move_legacy_list`), `B5.2a` (its `40001`
   conflict path), `B5.2b` (`apply_list_writes`), `B5.2c` (the write buffer
@@ -1316,6 +1339,41 @@ all release"):
   checkpoint: R5 live and the device check clean, or the date moves. The
   owner's decision on rotating the test database password (the R5
   closeout summary names why).
+
+R5b closeout record (2026-09-27; one local commit on `main`, amended per
+batch, fix pass and closeout, pushed once):
+- Pushed sha: PLACEHOLDER. CI run of the push: PLACEHOLDER.
+- Shipped: section 9's R5b row. One batch `B5b.1`: the header's account
+  menu («Аккаунт», «Мои списки», «Выйти»), the Display section of
+  `#/account` (language, starting section, tables view, print layout and
+  compact sheet, `notifyGm` in the account row only), nine tabs from the
+  cutoff in a build with sign-in, and the signed-out move banner. No
+  migration, no route or contract change. Reviewed once
+  (fix-then-continue): the one blocker - the «Таблицы» option stored a
+  bare `#/tables` against `STATE.md` - and six local nits fixed in the
+  one fix cycle; the eighth finding kept as `DEBT.md` D64.
+- Owner decisions during the release (2026-09-26/27): the first menu item
+  is «Аккаунт», not «Настройки отображения»; `notifyGm` lives in the
+  Display section; the move banner, its copy, and «Скрыть» in memory until
+  the next page load (`docs/decisions/`, "A signed-out reader with
+  browser lists sees a move banner until the cutoff"); R10 removes browser
+  lists and the move, and an old `#/l/` link draws the not-found page.
+- Gates: `B5b.1` - `npm run check` (vitest 64 files, 1984 tests),
+  goldens re-seeded in four shards (63 files: 61 changed, 2 new; 183
+  states), the whole layer 2 pool in five local shards (405-532 s each),
+  `check:built` 125.0 kB of 150 kB, the configured build 182.2 kB of
+  200 kB, `npm run e2e` PASS (contract 9 cases, F0-F10). Fix pass -
+  `npm run check` (1988 tests), `app/states` 254 s, goldens compared
+  unchanged in four shards, `check:built` passed. Closeout amend: `npm run
+  check` and `node tests/derived.js` (the R5b closeout summary has the
+  results).
+- Kept defects written at closeout: `DEBT.md` D64 (focus falls to `body`
+  after «Выйти» in the menu or «Скрыть»/«Скрыть напоминание» in
+  `MoveNotice`), in its own section with no owning release yet.
+- Pending, owner, after the push: CI (`check`, five `browser` shards,
+  `db`, `e2e`, `deploy`) green; the menu, the Display section and the
+  banner on production; the release live before 2026-10-19. Named to the
+  owner: which release owns D64 (recommended R7); `process-guards` Q1.
 
 ## 18. Cloud sessions (claude.ai/code)
 
@@ -1422,11 +1480,6 @@ Carried from R5 (`persist-5-migration`, closed 2026-09-26) for later
 releases; each planner refresh places its items or names them to the
 owner:
 
-- R5b: states case 50 (R5 took 47-49); «Выйти» calls
-  `AppState.signOut(scope)`, which R5 built (the buffer flushed for at
-  most 5 s, then the sign-out) and `AccountPage.svelte` already calls; the
-  tab bar reads `legacyWritable` (the date alone), never `localWritable`;
-  the batch is `B5b.1`. R5b's `plan.md` section 3 holds the checked facts.
 - R3: the account write buffer - `CloudLists` (`QUIET_MS` 2 s, `#seq`,
   `#cut`, `#inFlight`, `flushNow`), one `apply_list_writes` request per
   flush. R3's refresh re-reads: its section 5.3 (a flush is one transaction
@@ -1453,12 +1506,34 @@ owner:
   (`apply_list_writes` takes `source` and `snapshot`); a homebrew delete's
   re-read waits for the buffer. R4's owner-feed re-read waits for the
   buffer, as R3's does.
-- R10: `DEBT.md` D24, D61, D62, D63; the codec, `mergeLists`, the pre-date
-  `ListStore` writers, the browser group, `StorageNotice`, the pinned test
-  clock and `?today=`, the `tab` of `#/lists` in `routes.json` set to
-  `null`; `MoveNotice`, `MoveStatus` and `LegacyMove` stay unless R10
-  decides otherwise (a reader who never signed in before R10 still moves).
+- R10: `DEBT.md` D24, D61, D62, D63; the codec, `mergeLists`, `ListStore`'s
+  browser lists, the browser group, `StorageNotice`, `LegacyMove`,
+  `MoveNotice` (with R5b's banner), `MoveStatus`, the move's RPC path, the
+  retired page (`#/l/` draws the not-found page), the pinned test clock
+  and `?today=`, the `tab` of `#/lists` in `routes.json` set to `null`; a
+  planned decision on dropping `move_legacy_list` and
+  `lists.legacy_fingerprint` by a migration (owner, 2026-09-27;
+  `docs/DECISIONS.md`, "R10 removes browser lists and the move; an old
+  `#/l/` link is not found").
 - Not planned (ideas): a per-list move; a "not now" for the move.
+
+Carried from R5b (`persist-5b-account-menu`, closed 2026-09-27):
+
+- The process task `process-guards` is planned ahead on the worktree
+  branch `worktree-agent-a5ccc3820472f4e03`, commit `0e20730d`; bring it
+  onto `main` after R5b's push. Open owner question Q1: gate credit for a
+  backgrounded run by its exit code, or a host-wide heavy-run lock
+  (recommended: gate credit).
+- R4's refresh: `notifyGm` shipped in `B5b.1` (not `B5.3`, the name R4's
+  plan used before its fix at R5b's closeout); R4 reads `app.notifyGm` and
+  writes `app.setNotifyGm`.
+- R7: «Мои предметы» joins the account menu between «Мои списки» and
+  «Выйти» (`AccountMenu.svelte`).
+- R10: the move banner goes with `MoveNotice`; the `tab` of `#/lists` in
+  `routes.json` set to `null` (already in the R10 item above).
+- Owner question: which release owns `DEBT.md` D64 (focus falls to `body`
+  when a pressed control disappears); recommended R7, which next changes
+  the account menu.
 
 - Assumption: Chrome no longer requires a service worker for the install
   prompt. `B0.1`'s closeout has the owner try the install on Android Chrome

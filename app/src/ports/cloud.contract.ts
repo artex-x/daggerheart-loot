@@ -26,7 +26,7 @@ const PROVIDERS: readonly string[] = ['google', 'discord'];
 /** No port holds an identity with this id. */
 const UNKNOWN_IDENTITY = '00000000-0000-4000-8000-000000000999';
 
-const PREF_KEYS = ['lang', 'home', 'view', 'printBw', 'printCompact'] as const;
+const PREF_KEYS = ['lang', 'home', 'view', 'printBw', 'printCompact', 'notifyGm'] as const;
 
 function samePrefs(a: Prefs | null, b: Prefs): boolean {
   if (!a) return false;
@@ -451,7 +451,8 @@ export async function runCloudContract(
     home: '#/lists',
     view: 'grid',
     printBw: true,
-    printCompact: false
+    printCompact: false,
+    notifyGm: 'always'
   };
   assert(await doomedPort.prefs.save(P1), 'prefs: save() of a whole row was refused');
   const saved = await doomedPort.prefs.load();

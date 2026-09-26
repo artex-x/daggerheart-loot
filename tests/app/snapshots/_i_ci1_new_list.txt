@@ -23,6 +23,10 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
+  status ""
+    StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
+    button "Войти и перенести списки"
+    button "Скрыть напоминание"
   main ""
     heading "Первоклассный Спальный Мешок" [level=1]
     StaticText "Core · Предметы · номер 1 "
@@ -60,6 +64,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
+Войти и перенести списки
 Добавить в список
 К содержимому
 Клад дракона
@@ -74,6 +79,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Скрыть напоминание
 Собрать карточки для печати: девять на лист A4
 Сообщества
 Списки
@@ -104,6 +110,10 @@ RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
+  status ""
+    StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
+    button "Sign in and move the lists"
+    button "Dismiss the reminder"
   main ""
     heading "Premium Bedroll" [level=1]
     StaticText "Core · Items · roll 1 "
@@ -135,6 +145,7 @@ Copy image
 Copy link
 Copy name
 Copy text
+Dismiss the reminder
 Dragon's Vault
 Dread
 EN
@@ -147,6 +158,7 @@ RU
 Search
 Share
 Sign in
+Sign in and move the lists
 Skip to content
 Standard rules
 Tables

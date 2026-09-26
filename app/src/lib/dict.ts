@@ -410,7 +410,16 @@ const ru = {
      "Rules"). `%s` is a provider name, Google or Discord, never translated. */
   account: 'Аккаунт',
   signIn: 'Войти',
-  accountSub: 'Способы входа, выход и ваши данные.',
+  accountSub: 'Отображение, способы входа, выход и ваши данные.',
+  menuLabel: 'Меню аккаунта',
+  menuLists: 'Мои списки',
+  displayHead: 'Отображение',
+  displayHome: 'Раздел при запуске',
+  printCompactBox: 'Компактный лист',
+  displayNotify: 'Сообщать владельцу списка',
+  notifyAsk: 'Спрашивать',
+  notifyAlways: 'Всегда',
+  notifyNever: 'Никогда',
   signInLead:
     'Войдите, чтобы ваши данные были доступны на всех устройствах. Всё остальное работает и без входа.',
   signInWith: 'Войти через %s',
@@ -512,7 +521,10 @@ const ru = {
   moveHeldWhy:
     'Копия в аккаунте не совпала со списком. Напишите на daggerheart.loot@gmail.com.',
   localOnlyMove:
-    'Войдите - списки перенесутся в аккаунт сами. С %d списки в браузере нельзя будет менять.',
+    'Войдите до %d - и они перенесутся в аккаунт. После этой даты приложение перестанет их показывать.',
+  moveBannerLead: 'Ваши списки хранятся только в этом браузере.',
+  moveBannerSignIn: 'Войти и перенести списки',
+  moveBannerHide: 'Скрыть напоминание',
   localReadOnlyTitle: 'Списки в этом браузере только для чтения с %d.',
   localReadOnly:
     'Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать текст и напечатать можно и так.',
@@ -841,7 +853,16 @@ const en: Dict = {
   /* The account */
   account: 'Account',
   signIn: 'Sign in',
-  accountSub: 'Sign-in methods, signing out and your data.',
+  accountSub: 'Display, sign-in methods, signing out and your data.',
+  menuLabel: 'Account menu',
+  menuLists: 'My lists',
+  displayHead: 'Display',
+  displayHome: 'Section on start',
+  printCompactBox: 'Compact sheet',
+  displayNotify: 'Notify the list owner',
+  notifyAsk: 'Ask',
+  notifyAlways: 'Always',
+  notifyNever: 'Never',
   signInLead:
     'Sign in to have your data on all your devices. Everything else works without signing in.',
   signInWith: 'Sign in with %s',
@@ -937,7 +958,10 @@ const en: Dict = {
   moveHeldWhy:
     'The copy in your account did not match the list. Write to daggerheart.loot@gmail.com.',
   localOnlyMove:
-    'Sign in and your lists move to your account by themselves. From %d, lists in the browser cannot be changed.',
+    'Sign in before %d and they move to your account. After that date the app stops showing them.',
+  moveBannerLead: 'Your lists are stored only in this browser.',
+  moveBannerSignIn: 'Sign in and move the lists',
+  moveBannerHide: 'Dismiss the reminder',
   localReadOnlyTitle: 'Lists in this browser are read-only from %d.',
   localReadOnly:
     'Sign in and they move to your account, where you can edit them again. Copying the text and printing still work.',

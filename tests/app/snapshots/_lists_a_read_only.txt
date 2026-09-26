@@ -22,7 +22,6 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?today=
       link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
       link "Сообщества" [url=index.html?today=2026-10-26#/roll/community]
       link "Таблицы" [url=index.html?today=2026-10-26#/tables]
-      link "Списки" [url=index.html?today=2026-10-26#/lists]
       link "Поиск" [url=index.html?today=2026-10-26#/search]
   main ""
     textbox "Название списка" [value=Клад дракона multiline=false readonly=true required=false]
@@ -129,7 +128,6 @@ daggerheart.com
 Случайно 1–7
 Собрать карточки для печати: девять на лист A4
 Сообщества
-Списки
 Таблицы
 Удалить
 Условия использования
@@ -156,7 +154,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists
       link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
       link "Communities" [url=index.html?today=2026-10-26#/roll/community]
       link "Tables" [url=index.html?today=2026-10-26#/tables]
-      link "Lists" [url=index.html?today=2026-10-26#/lists]
       link "Search" [url=index.html?today=2026-10-26#/search]
   main ""
     textbox "List name" [value=Клад дракона multiline=false readonly=true required=false]
@@ -239,7 +236,6 @@ In coins
 Install as an app
 Lay these out for printing: nine to an A4 sheet
 List name
-Lists
 Manacles
 ManaclesThis pair of locking cuffs comes with a key.ItemCore
 Note

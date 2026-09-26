@@ -232,7 +232,13 @@ function makeDriver(page, target, url = TARGETS[target]) {
       const ok = await page.evaluate(
         (ph, val, ev, nameSrc) => {
           const nameOf = eval(nameSrc);
-          const inputs = [...document.querySelectorAll('input, textarea')];
+          /* A checkbox has an empty placeholder too: without the filter,
+             `type('')` on `#/account` found the Display section's box first. */
+          const inputs = [
+            ...document.querySelectorAll(
+              'input:not([type=checkbox]):not([type=radio]), textarea'
+            )
+          ];
           const el =
             inputs.find((i) => i.placeholder === ph) ?? inputs.find((i) => nameOf(i) === ph);
           if (!el) return false;

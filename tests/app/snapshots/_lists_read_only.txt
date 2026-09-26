@@ -22,7 +22,6 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
       link "Сообщества" [url=index.html?today=2026-10-26#/roll/community]
       link "Таблицы" [url=index.html?today=2026-10-26#/tables]
-      link "Списки" [url=index.html?today=2026-10-26#/lists]
       link "Поиск" [url=index.html?today=2026-10-26#/search]
   main ""
     heading "Списки" [level=1]
@@ -70,7 +69,6 @@ daggerheart.com
 Открывать этот раздел при запуске
 Поиск
 Сообщества
-Списки
 Таблицы
 Удалить
 Условия использования
@@ -95,7 +93,6 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?today=2026-10
       link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
       link "Communities" [url=index.html?today=2026-10-26#/roll/community]
       link "Tables" [url=index.html?today=2026-10-26#/tables]
-      link "Lists" [url=index.html?today=2026-10-26#/lists]
       link "Search" [url=index.html?today=2026-10-26#/search]
   main ""
     heading "Lists" [level=1]
@@ -132,7 +129,6 @@ Dread
 EN
 How this works
 Install as an app
-Lists
 Open this section on start
 Privacy
 RU

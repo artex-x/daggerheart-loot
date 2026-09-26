@@ -696,7 +696,7 @@ describe('a share link', () => {
   it('draws a GM link read-only for another user, with the GM notes and the save button', async () => {
     open('#/s/gm-token-1', fakeCloud(SEED, 'gm2'));
     await screen.findByText('Кузнец торгуется, если назвать имя его брата.');
-    await screen.findByRole('link', { name: 'Аккаунт: gm2@example.test' });
+    await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
     expect(screen.queryByText(ru.ownList, { exact: false })).not.toBeInTheDocument();
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
@@ -739,7 +739,7 @@ describe('a share link', () => {
 
   it('saves a copy signed in and opens it', async () => {
     const { router } = open('#/s/player-token-1', fakeCloud(SEED, 'gm2'));
-    await screen.findByRole('link', { name: 'Аккаунт: gm2@example.test' });
+    await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
     await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
     await waitFor(() => {
@@ -839,7 +839,7 @@ describe('saving with sign-in configured', () => {
     const storage = memoryStorage();
     const page = fakePage();
     render(App, { env: at('#/l/' + PAYLOAD, { router, storage, cloud, page }) });
-    await screen.findByRole('link', { name: 'Аккаунт: gm2@example.test' });
+    await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
     await new Promise((r) => setTimeout(r, 0));
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
     expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');

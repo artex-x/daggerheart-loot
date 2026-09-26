@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Forty-nine cases in
- * forty-eight runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Fifty-one cases in
+ * fifty runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -2409,7 +2409,14 @@ async function accountPreferences() {
   await b.d.open('#/roll/std', { as: 'gm2' });
   const want = {
     ok: true,
-    prefs: { lang: 'en', home: '#/roll/std', view: 'grid', printBw: false, printCompact: true }
+    prefs: {
+      lang: 'en',
+      home: '#/roll/std',
+      view: 'grid',
+      printBw: false,
+      printCompact: true,
+      notifyGm: 'ask'
+    }
   };
   ok(
     await until(
@@ -3133,6 +3140,20 @@ async function readOnlyAfterTheCutoff() {
     at + 'the own #/l/ payload does not draw the retired page'
   );
   await d.open('#/lists', { today });
+  const bar = await page.evaluate(() => {
+    const links = [...document.querySelectorAll('nav.tabs a')];
+    return {
+      n: links.length,
+      lists: links.some((a) => a.textContent.trim() === 'Списки'),
+      h1: document.querySelector('h1')?.textContent ?? ''
+    };
+  });
+  ok(
+    bar.n === 9 && !bar.lists && bar.h1 === 'Списки',
+    at +
+      'the bar is not nine tabs without «Списки» over the lists index - ' +
+      JSON.stringify(bar)
+  );
   await d.press('Клад дракона');
   ok(
     await waitIn(page, () => location.hash === '#/lists/a'),
@@ -3141,6 +3162,194 @@ async function readOnlyAfterTheCutoff() {
       (await page.evaluate(() => location.hash))
   );
   await ctx.close();
+}
+
+/** 50. The signed-in header control's menu under real clicks and keys: its
+ *  three items, Escape, «Мои списки», «Выйти» from an account list, and the
+ *  open menu and `#/account` at 360 (docs/specs/FEATURES.md, "Chrome"). */
+async function accountMenu() {
+  const at = '50 (the account menu): ';
+  const CONTROL = 'Аккаунт: gm1@example.test';
+  const menuItems = (page) =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('[role="menuitem"]')].map((e) => e.textContent.trim())
+    );
+
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/roll/std', { as: 'gm1' });
+  await d.press(CONTROL);
+  const items = await menuItems(page);
+  ok(
+    items.join('|') === 'Аккаунт|Мои списки|Выйти',
+    at + 'the menu does not hold the three items in order - ' + JSON.stringify(items)
+  );
+  ok(
+    await waitIn(
+      page,
+      () => document.activeElement === document.querySelector('[role="menuitem"]')
+    ),
+    at + 'the first item does not have the focus'
+  );
+  await page.keyboard.press('Escape');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        !document.querySelector('[role="menu"]') &&
+        document.activeElement === document.querySelector('header button[aria-haspopup="menu"]')
+    ),
+    at + 'Escape did not close the menu and give the focus back to the control'
+  );
+  await d.press(CONTROL);
+  await d.press('Мои списки');
+  ok(
+    await waitIn(
+      page,
+      () => location.hash === '#/lists' && !document.querySelector('[role="menu"]')
+    ),
+    at + '«Мои списки» did not land on #/lists with the menu closed - ' + (await d.hash())
+  );
+
+  await d.open(SHOP, { as: 'gm1' });
+  ok(
+    await waitIn(
+      page,
+      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
+    ),
+    at + 'the account list did not open'
+  );
+  await d.press(CONTROL);
+  await d.press('Выйти');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        location.hash === '#/lists' &&
+        document.body.innerText.includes('Вы вышли из аккаунта.') &&
+        (document.querySelector('header a.acct')?.textContent ?? '').includes('Войти')
+    ),
+    at + '«Выйти» did not sign out to #/lists with its toast and «Войти» - ' + (await d.hash())
+  );
+  await ctx.close();
+
+  const narrow = await fresh({ width: 360, height: 800 });
+  await narrow.d.open('#/roll/std', { as: 'gm1' });
+  await narrow.d.press(CONTROL);
+  const box = await narrow.page.evaluate(() => {
+    const menu = document.querySelector('.acctmenu')?.getBoundingClientRect();
+    return {
+      left: menu?.left ?? -1,
+      right: menu?.right ?? Infinity,
+      width: innerWidth,
+      heights: [...document.querySelectorAll('[role="menuitem"]')].map(
+        (e) => e.getBoundingClientRect().height
+      ),
+      overflow: document.documentElement.scrollWidth > innerWidth
+    };
+  });
+  ok(
+    box.left >= 0 && box.right <= box.width && !box.overflow,
+    at +
+      '360: the open menu leaves the viewport or the page scrolls sideways - ' +
+      JSON.stringify(box)
+  );
+  ok(
+    box.heights.length === 3 && box.heights.every((h) => h >= 44),
+    at + '360: a menu item is shorter than 44px - ' + JSON.stringify(box.heights)
+  );
+  await narrow.d.open('#/account', { as: 'gm1' });
+  ok(
+    await waitIn(narrow.page, () => !!document.querySelector('#display-home')),
+    at + '360: the Display section did not draw'
+  );
+  const page360 = await narrow.page.evaluate(() => {
+    const r = document.querySelector('#display-home')?.getBoundingClientRect();
+    return {
+      overflow: document.documentElement.scrollWidth > innerWidth,
+      select: r ? [r.left, r.right, r.width, innerWidth] : null
+    };
+  });
+  ok(
+    !page360.overflow &&
+      !!page360.select &&
+      page360.select[2] > 0 &&
+      page360.select[0] >= 0 &&
+      page360.select[1] <= page360.select[3],
+    at + '360: #/account scrolls sideways or hides the select - ' + JSON.stringify(page360)
+  );
+  await narrow.ctx.close();
+}
+
+/** 51. The signed-out move banner: its text, «Скрыть» until the next page
+ *  load, and «Войти» through the sign-in back to the page with the list
+ *  moved; at 360 it stays inside the viewport (docs/specs/FEATURES.md,
+ *  "Account and browser lists"). */
+async function moveBanner() {
+  const at = '51 (the move banner): ';
+  const TEXT =
+    'Ваши списки хранятся только в этом браузере. Войдите до 26 октября 2026 года - и они перенесутся в аккаунт. После этой даты приложение перестанет их показывать.';
+  const storage = {
+    'dhloot.lists.v2': JSON.stringify([
+      { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 }
+    ])
+  };
+  const bannerText = (page) =>
+    page.evaluate(() => document.querySelector('.movenotice')?.textContent ?? null);
+
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage });
+  await d.open('#/tables');
+  ok(
+    (await bannerText(page))?.includes(TEXT) === true,
+    at + 'the banner does not read the full text - ' + JSON.stringify(await bannerText(page))
+  );
+  await d.press('Скрыть напоминание');
+  ok((await bannerText(page)) === null, at + '«Скрыть» did not hide the banner');
+  await d.go('#/roll/std');
+  ok((await bannerText(page)) === null, at + 'a navigation brought the banner back');
+  await d.open('#/roll/std');
+  ok((await bannerText(page)) !== null, at + 'a reload did not bring the banner back');
+  await d.press('Войти и перенести списки');
+  ok(
+    (await d.hash()) === '#/account' && (await bannerText(page)) === null,
+    at + '«Войти» did not open #/account without the banner - ' + (await d.hash())
+  );
+  await d.press('Войти через Google');
+  await d.moveSettled('51, after the sign-in');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        location.hash === '#/roll/std' &&
+        (document.querySelector('.movenotice')?.textContent ?? '').includes(
+          'Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона».'
+        )
+    ),
+    at +
+      'the sign-in did not come back to #/roll/std with the moved-lists notice - ' +
+      (await d.hash()) +
+      ' ' +
+      JSON.stringify(await bannerText(page))
+  );
+  await ctx.close();
+
+  const narrow = await fresh({ width: 360, height: 800, storage });
+  await narrow.d.open('#/roll/std');
+  const box = await narrow.page.evaluate(() => {
+    const rects = [
+      document.querySelector('.movenotice'),
+      ...document.querySelectorAll('.movenotice button')
+    ].map((e) => e?.getBoundingClientRect() ?? null);
+    return {
+      inside: rects.every((r) => !!r && r.width > 0 && r.left >= 0 && r.right <= innerWidth),
+      buttons: rects.length - 1,
+      overflow: document.documentElement.scrollWidth > innerWidth
+    };
+  });
+  ok(
+    box.inside && box.buttons === 2 && !box.overflow,
+    at + '360: the banner or a button leaves the viewport - ' + JSON.stringify(box)
+  );
+  await narrow.ctx.close();
 }
 
 const CASES = [
@@ -3191,7 +3400,9 @@ const CASES = [
   ['46 (shared page gone)', sharedPageGoneWhenShownAgain],
   ['47 (browser lists moved on sign-in)', browserListsMovedOnSignIn],
   ['48 (read-only after the cutoff)', readOnlyAfterTheCutoff],
-  ['49 (account edits wait two seconds, then go once)', accountEditsWaitThenGoOnce]
+  ['49 (account edits wait two seconds, then go once)', accountEditsWaitThenGoOnce],
+  ['50 (the account menu)', accountMenu],
+  ['51 (the move banner)', moveBanner]
 ];
 
 (async () => {

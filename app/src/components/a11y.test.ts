@@ -382,6 +382,26 @@ const STATES: {
       await userEvent.click(await screen.findByRole('button', { name: 'Удалить аккаунт...' }));
       await userEvent.type(screen.getByRole('textbox'), 'удалить');
     }
+  },
+  {
+    what: 'the move banner under the header, signed out with a browser list',
+    route: '#/roll/std',
+    storage: { 'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }]) },
+    cloud: () => fakeCloud(SEED),
+    enter: async () => {
+      await screen.findByRole('button', { name: 'Войти и перенести списки' });
+    }
+  },
+  {
+    what: 'the account menu open over a section, signed in',
+    route: '#/roll/std',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await userEvent.click(
+        await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' })
+      );
+      await screen.findByRole('menu');
+    }
   }
 ];
 
@@ -412,6 +432,7 @@ describe('states reached by pressing something', () => {
  * question and the one that was going unasked.
  */
 const COVERED: Record<string, string> = {
+  'AccountMenu.svelte': 'the account menu open, in the state above, and accountMenu.test.ts',
   'AccountPage.svelte':
     'accountPage.test.ts in every state, and the delete confirmation open above',
   'Actions.svelte': 'the card actions on every record state above, and record.test.ts',

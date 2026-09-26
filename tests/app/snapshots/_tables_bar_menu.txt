@@ -23,6 +23,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
+  status ""
+    StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
+    button "Войти и перенести списки"
+    button "Скрыть напоминание"
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -152,6 +156,7 @@ daggerheart.com
 Бездонная Сумка
 Ботинки Хождения по Воде
 Войти
+Войти и перенести списки
 Глиняный Спутник
 Двойная Фляга
 Добавить в список
@@ -217,6 +222,7 @@ daggerheart.com
 Сеткой
 Скелетный Ключ
 Скопировать
+Скрыть напоминание
 Снаряжение
 Снять выделение
 Собрать карточки для печати: девять на лист A4
@@ -254,6 +260,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
+  status ""
+    StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
+    button "Sign in and move the lists"
+    button "Dismiss the reminder"
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -384,6 +394,7 @@ Control Relic
 Copy
 Core
 Corrector Sprite
+Dismiss the reminder
 Dragon's Vault
 Dread
 Dread GM Toolbox
@@ -440,6 +451,7 @@ Ring of Unbreakable Resolve
 Search
 Shard of Memory
 Sign in
+Sign in and move the lists
 Skeleton Key
 Skip to content
 Speaking Orbs

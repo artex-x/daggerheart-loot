@@ -10,10 +10,20 @@ describe('readPrefs', () => {
       home: '#/tables/dread',
       view: 'grid',
       printBw: true,
-      printCompact: false
+      printCompact: false,
+      notifyGm: 'always'
     };
     expect(readPrefs(all)).toEqual(all);
     expect(readPrefs({ lang: 'ru', view: 'list' })).toEqual({ lang: 'ru', view: 'list' });
+  });
+
+  it('keeps each of the three notify answers and drops any other value', () => {
+    for (const v of ['ask', 'always', 'never'] as const) {
+      expect(readPrefs({ notifyGm: v })).toEqual({ notifyGm: v });
+    }
+    for (const v of ['sometimes', true, null]) {
+      expect(readPrefs({ notifyGm: v, view: 'grid' }), String(v)).toEqual({ view: 'grid' });
+    }
   });
 
   it('drops each invalid value and keeps the rest', () => {

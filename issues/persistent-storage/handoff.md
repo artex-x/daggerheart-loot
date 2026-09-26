@@ -3,13 +3,14 @@
 
 ## Status
 - Task status: in_progress (programme roadmap; R0 closed 2026-09-24, R1
-  closed 2026-09-25, R2 and R5 closed 2026-09-26, R5b next)
-- Last agent: implementer (2026-09-26: R5's closeout)
+  closed 2026-09-25, R2 and R5 closed 2026-09-26, R5b closed 2026-09-27;
+  the process task `process-guards` next)
+- Last agent: implementer (2026-09-27: R5b's closeout)
 - NEEDS_HUMAN_CONFIRMATION: no (decisions 1-41 answered, `plan.md` section 16)
 - Branch: `main`
-- Base / starting commit: `a7169532` (the restore drill on top of R2 and
-  the plans made ahead)
+- Base / starting commit: `d679d285` (R5 live)
 - Pushed: R5 yes (2026-09-26; the sha is in `plan.md` section 16, "R5
+  closeout record"); R5b at its closeout push (the sha goes in "R5b
   closeout record")
 
 ## Completed
@@ -38,19 +39,27 @@
   with `apply_list_writes`. Its task directory was retired in its closeout
   commit. Record: `plan.md` section 16, "R5 closeout record"; what later
   releases inherit: `plan.md` section 17, "Carried from R5".
+- Release R5b `persist-5b-account-menu` (batch `B5b.1`, one review fix
+  cycle, closed 2026-09-27): the account menu, the Display section of
+  `#/account`, nine tabs from the cutoff, the signed-out move banner. Its
+  task directory was retired in its closeout commit. Record: `plan.md`
+  section 16, "R5b closeout record"; what later releases inherit:
+  `plan.md` section 17, "Carried from R5b".
 
 ## Verification
-- R5: the gates of its closeout amend are in the R5 closeout summary; the
-  gates before it are in `plan.md` section 16, "R5 closeout record".
-- Plans made ahead: R5b, R11, R3, R4, R6 and R7 are on `main` under
+- R5b: the gates of its closeout amend are in the R5b closeout summary;
+  the gates before it are in `plan.md` section 16, "R5b closeout record".
+- Plans made ahead: R11, R3, R4, R6 and R7 are on `main` under
   `issues/<task id>/` with their decision files; every owner question in
-  them is answered.
+  them is answered. `process-guards` is planned on the worktree branch
+  `worktree-agent-a5ccc3820472f4e03` (`0e20730d`), not yet on `main`; its
+  Q1 is open.
 
 ## Next batch (implement-ready)
-- Orchestrator: R5b `persist-5b-account-menu` - the planner's section 9
-  refresh of its `plan.md` against R5 as shipped, then `B5b.1`. After R5b:
-  the plan-review process task (`plan.md` section 9; its planner creates
-  its directory).
+- Orchestrator: after R5b's push, bring `process-guards` (branch
+  `worktree-agent-a5ccc3820472f4e03`, commit `0e20730d`) onto `main`; the
+  owner answers its Q1 (gate credit for a backgrounded run, recommended,
+  or a host-wide heavy-run lock); then its first batch. After it: R11.
 
 ## Blockers
 - None.
@@ -66,7 +75,7 @@
 ## Notes
 - Mocks path: none this pass.
 - Screenshot findings: none (no issue, no screenshots).
-- Cleanup performed / retained artifacts: R5 closeout compacted `plan.md`
-  sections 9, 12, 14 and 17; the last pushed pre-compaction commit of this
-  directory is `a7169532` (R5's own earlier amends were never pushed).
+- Cleanup performed / retained artifacts: R5b closeout compacted `plan.md`
+  sections 9, 12, 14 and 17 for R5b; the last pushed pre-compaction commit
+  of this directory is `d679d285`.
 - Session end partial progress (if any): none.

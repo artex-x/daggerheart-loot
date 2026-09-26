@@ -11,7 +11,7 @@
   each writing through the existing setters. From the legacy write cutoff
   the tab bar draws nine tabs; `#/lists` stays a route reached from the
   menu. Supersedes the roadmap's "not in v1: a preferences page".
-- Rejected: a `#/account/display` route (a contract change for one panel);
-  a settings page for signed-out readers; keeping the Lists tab after the
-  cutoff (the owner); provider buttons there; the item name «Настройки отображения» (owner: the page also holds sign-in and delete).
+- Rejected: a `#/account/display` route (a contract change for one panel); a settings page for signed-out readers;
+  keeping the Lists tab after the cutoff (the owner); provider buttons there; the item name «Настройки отображения» (owner: the page also holds sign-in and delete).
 - Amends "Adding from a shared link asks to notify the owner, remembered in notifyGm" (2026-09-26): the remembered answer is changed in Display settings (owner, 2026-09-26).
+- Supersedes in part "Per-user UI preferences persist in the account, account wins" (2026-09-24).

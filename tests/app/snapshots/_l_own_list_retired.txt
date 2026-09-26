@@ -22,7 +22,6 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?today=
       link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
       link "Сообщества" [url=index.html?today=2026-10-26#/roll/community]
       link "Таблицы" [url=index.html?today=2026-10-26#/tables]
-      link "Списки" [url=index.html?today=2026-10-26#/lists]
       link "Поиск" [url=index.html?today=2026-10-26#/search]
   main ""
     heading "Ссылки такого вида перестали открываться 26 октября 2026 года." [level=1]
@@ -75,7 +74,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/l/0Jr
       link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
       link "Communities" [url=index.html?today=2026-10-26#/roll/community]
       link "Tables" [url=index.html?today=2026-10-26#/tables]
-      link "Lists" [url=index.html?today=2026-10-26#/lists]
       link "Search" [url=index.html?today=2026-10-26#/search]
   main ""
     heading "Links of this kind stopped opening on 26 October 2026." [level=1]

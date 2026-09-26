@@ -1,6 +1,6 @@
-# #/account as gm2
+# #/account ~ pinned table as gm2
 # route: #/account
-# why: one identity: no Disconnect, the only-method hint and Connect Discord
+# why: the Display section's starting section reads «Таблицы» for a pinned table
 # as: gm2
 
 ## ru :: tree
@@ -32,11 +32,11 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     ... StaticText x11 of 15 same-shape siblings elided
-    combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
-      option "Обычные правила" [selected=true]
+    combobox "Раздел при запуске" [value=Таблицы expanded=false haspopup=menu]
+      option "Обычные правила" [selected=false]
       option "Альт. таблицы" [selected=false]
-      option "Wondrous" [selected=false]
       ... option x5 of 9 same-shape siblings elided
+      option "Таблицы" [selected=true]
       option "Списки" [selected=false]
       option "Поиск" [selected=false]
     button "Списком" [pressed=true]
@@ -126,11 +126,11 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm2#/acc
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     ... StaticText x11 of 15 same-shape siblings elided
-    combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
-      option "Standard rules" [selected=true]
+    combobox "Section on start" [value=Tables expanded=false haspopup=menu]
+      option "Standard rules" [selected=false]
       option "Alt. tables" [selected=false]
-      option "Wondrous" [selected=false]
       ... option x5 of 9 same-shape siblings elided
+      option "Tables" [selected=true]
       option "Lists" [selected=false]
       option "Search" [selected=false]
     button "List" [pressed=true]

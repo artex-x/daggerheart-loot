@@ -1,5 +1,6 @@
 # 2026-09-24 - The `#/l/` link decoder retires at the legacy write cutoff
 
+- Superseded in part by "R10 removes browser lists and the move; an old `#/l/` link is not found" (2026-09-27): from R10 `#/l/` draws the not-found page, not a retired page.
 - Amended by "The restore-from-link field leaves the lists index with the account lists" (2026-09-25): link import leaves at R2.
 - Amended by "`LEGACY_WRITE_UNTIL` is 2026-10-26; the migration release moves directly after lists" (2026-09-25): the date is fixed, not derived.
 - Task: `persistent-storage` (owner decision, 2026-09-24).

@@ -332,7 +332,7 @@ parsing and the error mapping live in `app/src/lib/requests.ts`.
   `request` to `OwnerRequests`; the share feed routes `request` to
   `SentRequests` **[refresh]**.
 - `lib/prefs.ts`: `notifyGm?: 'ask' | 'always' | 'never'` (default `ask`),
-  with `AppState.notifyGm` and `setNotifyGm`, arrives with R5b's `B5.3`
+  with `AppState.notifyGm` and `setNotifyGm`, shipped in R5b's `B5b.1`
   together with its row in Display settings (owner, 2026-09-26); R4 reads
   and writes it through those, adds no field **[refresh]**.
 
@@ -644,7 +644,7 @@ pages; specs (section 7).
   state machine, poll gate and safety re-read are used as built.
 - **R5** (`persist-5-migration`): only the migration timestamp order. A
   migrated local list has no share until its owner makes one.
-- **R5b** (`persist-5b-account-menu`): ships `notifyGm` in `Prefs`,
+- **R5b** (`persist-5b-account-menu`, closed 2026-09-27): shipped `notifyGm` in `Prefs`,
   `AppState.notifyGm`/`setNotifyGm` and the Display settings row that
   changes it; R4's flow b uses them as built.
 - **R6** (`persist-6-import-export`): requests are not exported or
@@ -660,7 +660,8 @@ pages; specs (section 7).
 Answer (owner, 2026-09-26): option A's control, moved - the remembered
 answer (`prefs.notifyGm`: ask / always / never) is changed in «Настройки
 отображения» / "Display settings", the section R5b's account menu opens
-(`issues/persist-5b-account-menu/plan.md` section 4). R4 keeps «Запомнить
+(shipped in R5b as the Display section «Отображение» of `#/account`;
+`docs/specs/FEATURES.md`, "Account"). R4 keeps «Запомнить
 ответ» and adds no field to `#/account`. The question as asked:
 
 1. **Where a reader changes a remembered "notify the owner" answer.**

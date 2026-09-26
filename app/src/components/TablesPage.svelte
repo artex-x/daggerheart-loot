@@ -57,7 +57,7 @@
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
   import { TABLE_GROUPS, groupOf, subLabelOf } from '../lib/tables.js';
   import type { AppState } from '../state/app.svelte.js';
-  import type { Record_, TableId } from '../lib/types.js';
+  import { BARE_TABLE, type Record_, type TableId } from '../lib/types.js';
 
   interface Props {
     app: AppState;
@@ -70,8 +70,8 @@
 
   /* `S.tables.t`'s default off app.js: the name in the address may be missing
      or unknown, and the live app keeps whichever table was on screen rather
-     than resetting. `core_item` is what a bare `#/tables` opens on. */
-  let lastTable = $state<TableId>('core_item');
+     than resetting. */
+  let lastTable = $state<TableId>(BARE_TABLE);
   $effect(() => {
     const route = app.route;
     if (route.kind === 'tables' && route.table) {

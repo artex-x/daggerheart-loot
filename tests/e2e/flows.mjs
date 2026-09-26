@@ -136,7 +136,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
       page,
       "e2e F2: the header does not name the member's email",
       (email) =>
-        document.querySelector('header a[href="#/account"]')?.getAttribute('aria-label') ===
+        document
+          .querySelector('header button[aria-haspopup="menu"]')
+          ?.getAttribute('aria-label') ===
         'Аккаунт: ' + email,
       member.email
     );
@@ -440,7 +442,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
         'e2e F8: the copier is not signed in',
         () =>
           document
-            .querySelector('header a[href="#/account"]')
+            .querySelector('header button[aria-haspopup="menu"]')
             ?.getAttribute('aria-label')
             ?.startsWith('Аккаунт: ') ?? false
       );

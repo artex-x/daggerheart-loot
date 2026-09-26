@@ -284,8 +284,9 @@ Seven modes. Each keeps its own input in memory only.
   dismissing it. It is not nested inside the `<summary>` that opens and
   closes it - the two presses no longer have to fight over the same click.
   In a build with sign-in configured, while no account owns this browser's
-  lists, the unfolded notice adds «Войдите - списки перенесутся в аккаунт
-  сами. С 26 октября 2026 года списки в браузере нельзя будет менять.».
+  lists, the unfolded notice adds «Войдите до 26 октября 2026 года - и они
+  перенесутся в аккаунт. После этой даты приложение перестанет их
+  показывать.», the words of the move banner ("Account and browser lists").
   After the cutoff the notice is «Списки в этом браузере только для чтения
   с 26 октября 2026 года.», not dismissable and drawn even after a dismissal,
   with «Войдите - они перенесутся в аккаунт, и их снова можно будет
@@ -455,6 +456,20 @@ browser lists writable after the date.
   answer that was lost, answers the account row the first move made: no
   second row, and the copy leaves the browser. A move whose row is deleted
   meanwhile fails, and the next load moves the list again.
+- **The banner**: signed out, before the cutoff, while this browser holds
+  lists that no account owns (`dhloot.migrated.v1` names no owner), every
+  page but `#/account` draws a slim banner in the moved-lists notice's place
+  between the header and the page: «Ваши списки хранятся только в этом
+  браузере. Войдите до 26 октября 2026 года - и они перенесутся в аккаунт.
+  После этой даты приложение перестанет их показывать.» / "Your lists are
+  stored only in this browser. Sign in before 26 October 2026 and they
+  move to your account. After that date the app stops showing them.", the
+  date from `LEGACY_WRITE_UNTIL`, then «Войти» (named «Войти и перенести
+  списки» / "Sign in and move the lists"), which opens `#/account` and
+  returns to the page after the sign-in, where the move runs, and «Скрыть»
+  (named «Скрыть напоминание» / "Dismiss the reminder"), which hides it
+  until the next page load. Nothing is drawn while the session is unknown,
+  signed in, after the cutoff, or in a build with no sign-in.
 - **The move's status** stands in the storage notice's slot on `#/lists` and
   on a browser list's page: «Переносим списки в аккаунт...» while it runs;
   «Не все списки перенесены: нет связи. Попробуем при следующем открытии.»
@@ -749,7 +764,9 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   «Войти через Google» and «Войти через Discord» (each with the provider's
   own logo), then the consent line linking the terms and privacy pages of
   the language on screen.
-- **Signed in**, in this order: «Вы вошли как» (the email in bold, then the
+- **Signed in**, the subtitle «Отображение, способы входа, выход и ваши
+  данные.» / "Display, sign-in methods, signing out and your data.", then,
+  in this order: «Отображение» (below); «Вы вошли как» (the email in bold, then the
   first provider's logo and «через <provider>»; the provider alone when an
   account has no email); «Способы входа» - a row for Google, then Discord:
   a connected one shows its identity's email and, while two or more are
@@ -793,11 +810,28 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
 - Signed in, the language, starting section, tables view and print layout
   follow the account on every device (`STATE.md`, "Account preferences").
   The controls stay where they are; the page first draws this browser's
-  values and switches once the account answers. There is no settings page.
+  values and switches once the account answers.
+- **The Display section** «Отображение» / "Display", signed in only and
+  first, is a second place for the settings the pages already remember, in
+  five rows with six controls, each writing through the setter its page
+  uses, so the account row follows: «Язык» (the RU/EN switch); «Раздел при
+  запуске» / "Section on start" (a select over the ten sections; choosing
+  «Таблицы» pins `#/tables/core_item`, the table a bare `#/tables` opens
+  on, never the bare address (`STATE.md`, "localStorage keys"); a pinned
+  table, or an older bare `#/tables` pin, shows as «Таблицы» and keeps its
+  address until another section is chosen; an old section name shows as
+  the section it opens; a refused write says the save-failed error toast
+  and the select shows the section kept); «Таблицы» («Списком» / «Сеткой»); «Печать»
+  («Цветная» / «Чёрно-белая») and the checkbox «Компактный лист» /
+  "Compact sheet"; «Сообщать владельцу списка» / "Notify the list owner"
+  («Спрашивать» / «Всегда» / «Никогда», "Ask" / "Always" / "Never"), the
+  remembered answer to the question a copy from a shared link asks, kept in
+  the account only and «Спрашивать» by default. The page's account actions
+  do not disable these controls.
 
 ## Chrome
 
-- Language switch, tab bar, skip link, starting-section pin (eight sections
+- Language switch, tab bar, skip link, starting-section pin (nine sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   never a record or a list).
 - Focusing the skip link moves focus straight to `#main` and never touches
@@ -845,13 +879,30 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   pages").
 - The account control sits 8px after the language switch, in a build with
   sign-in configured only, and only once the session is known (a signed-in
-  reader never sees «Войти» flash). It is a link to `#/account` on
-  `Seg`'s track: signed out, the person icon and «Войти» / "Sign in", the
-  label visually hidden below 420px (it stays the name); signed in, a 38px
-  circle (44px at 600px and below) with the email's first letter
-  (the icon when there is no email), named «Аккаунт: <email>» / "Account:
-  <email>". On `#/account` it carries `aria-current="page"` and the gold
-  ring. A build with no sign-in draws no control at all.
+  reader never sees «Войти» flash), on `Seg`'s track. Signed out it is a
+  link to `#/account`: the person icon and «Войти» / "Sign in", the label
+  visually hidden below 420px (it stays the name). Signed in it is a menu
+  button: a 38px circle (44px at 600px and below) with the email's first
+  letter (the icon when there is no email), named «Аккаунт: <email>» /
+  "Account: <email>", with `aria-haspopup="menu"` and `aria-expanded`. On
+  `#/account` either one carries `aria-current="page"` and the gold ring;
+  the button also carries the ring while its menu is open. A build with no
+  sign-in draws no control at all.
+- The account menu «Меню аккаунта» / "Account menu" opens under the
+  signed-in control, right-aligned, and holds, in this order, «Аккаунт» /
+  "Account" (`#/account`), «Мои списки» / "My lists" (`#/lists`) and,
+  after a rule, «Выйти» / "Sign out", which signs out as the account page's
+  «Выйти» does and says «Вы вышли из аккаунта.» (from an account list's
+  page the address becomes `#/lists`). The first item takes the focus; Up
+  and Down move with wrap-around, Home and End go to the ends. Escape
+  closes it and returns the focus to the control; a choice, a click outside
+  the menu and the control, focus moving elsewhere, a navigation or a
+  change of user close it. A second press on the control closes it. An
+  item is 44px tall at 600px and below.
+- The tab bar draws the ten sections; from the legacy write cutoff
+  (2026-10-26, `legacyWritable`) a build with sign-in draws nine, without
+  «Списки»: `#/lists` is then reached from the account menu (`ROUTES.md`,
+  "Sections"). A build with no sign-in keeps ten.
 - No tab is lit on a record, a list page, a print sheet or the account page -
   the live `renderTabs` compared against the raw route string, and none of
   those route kinds was ever that string.

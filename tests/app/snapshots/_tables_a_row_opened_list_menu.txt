@@ -103,6 +103,7 @@ daggerheart.com
 Бездонная Сумка
 Ботинки Хождения по Воде
 Войти
+Войти и перенести списки
 Глиняный Спутник
 Двойная Фляга
 Добавить в список
@@ -173,6 +174,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Скрыть напоминание
 Снаряжение
 Собрать карточки для печати: девять на лист A4
 Сообщества
@@ -295,6 +297,7 @@ Copy name
 Copy text
 Core
 Corrector Sprite
+Dismiss the reminder
 Dragon's Vault
 Dread
 Dread GM Toolbox
@@ -353,6 +356,7 @@ Search
 Shard of Memory
 Share
 Sign in
+Sign in and move the lists
 Skeleton Key
 Skip to content
 Speaking Orbs

@@ -5,6 +5,8 @@
 
 import type { Lang } from './types.js';
 
+export type NotifyGm = 'ask' | 'always' | 'never';
+
 export interface Prefs {
   lang?: Lang;
   /** The pinned starting section, as an address (`#/...`). */
@@ -12,6 +14,9 @@ export interface Prefs {
   view?: 'list' | 'grid';
   printBw?: boolean;
   printCompact?: boolean;
+  /** The remembered answer to "notify the list owner?"; kept in the account
+   *  row only, never in this browser. */
+  notifyGm?: NotifyGm;
 }
 
 const HOME_MAX = 2048;
@@ -31,5 +36,7 @@ export function readPrefs(raw: unknown): Prefs {
   if (r['view'] === 'list' || r['view'] === 'grid') out.view = r['view'];
   if (typeof r['printBw'] === 'boolean') out.printBw = r['printBw'];
   if (typeof r['printCompact'] === 'boolean') out.printCompact = r['printCompact'];
+  const notify = r['notifyGm'];
+  if (notify === 'ask' || notify === 'always' || notify === 'never') out.notifyGm = notify;
   return out;
 }

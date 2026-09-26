@@ -23,6 +23,10 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
+  status ""
+    StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
+    button "Войти и перенести списки"
+    button "Скрыть напоминание"
   main ""
     textbox "Название списка" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 позиций"
@@ -91,6 +95,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
+Войти и перенести списки
 Выбрать все
 Заметка
 Заряжающий Колчан
@@ -117,6 +122,7 @@ daggerheart.com
 Результат броска
 Скопировать текст
 Скрыть
+Скрыть напоминание
 Случайно 1–7
 Собрать карточки для печати: девять на лист A4
 Сообщества
@@ -152,6 +158,10 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
+  status ""
+    StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
+    button "Sign in and move the lists"
+    button "Dismiss the reminder"
   main ""
     textbox "List name" [value=Клад дракона multiline=false readonly=false required=false]
     StaticText "7 items"
@@ -222,6 +232,7 @@ Communities
 Copy text
 Delete
 Dismiss
+Dismiss the reminder
 Dragon's Vault
 Dread
 EN
@@ -248,6 +259,7 @@ Roll result
 Search
 Select all
 Sign in
+Sign in and move the lists
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]

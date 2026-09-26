@@ -122,16 +122,19 @@ describe('signed out', () => {
 });
 
 describe('signed in as gm1', () => {
-  it('draws the four sections in order, with a Disconnect on each identity', async () => {
+  it('draws the five sections in order, with a Disconnect on each identity', async () => {
     const { container } = open(as('gm1'));
     await screen.findByRole('button', { name: 'Отключить Discord' });
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
+      'Отображение',
       'Вы вошли как',
       'Способы входа',
       'Выход',
       'Удаление аккаунта'
     ]);
-    expect(screen.getByText('Способы входа, выход и ваши данные.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Отображение, способы входа, выход и ваши данные.')
+    ).toBeInTheDocument();
     expect(rows()).toHaveLength(2);
     expect(within(rows()[1]!).getByText('gm1.discord@example.test')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Отключить Google' })).toBeInTheDocument();
@@ -335,7 +338,12 @@ describe('signed in as gm2', () => {
     const { container } = open(as('gm2'), 'en');
     expect(await screen.findByRole('button', { name: 'Connect Discord' })).toBeVisible();
     await screen.findByText('not connected');
-    expect(screen.getByText('Sign-in methods, signing out and your data.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Display, sign-in methods, signing out and your data.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Display', level: 2 })).toBeInTheDocument();
+    expect(screen.getByLabelText('Section on start')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Notify the list owner' })).toBeInTheDocument();
     expect(screen.getByText('with Google')).toBeInTheDocument();
     expect(screen.getByText('not connected')).toBeInTheDocument();
     expect(
@@ -387,5 +395,148 @@ describe('a stale answer', () => {
     await waitFor(() => {
       expect(screen.queryByRole('list')).not.toBeInTheDocument();
     });
+  });
+});
+
+describe('the Display section', () => {
+  const HOME_KEY = 'dhloot.home.v1';
+  const PREFS_KEY = 'dhloot.prefs.v1';
+
+  function openWith(cloud: CloudPort, initial: Record<string, string> = {}) {
+    const storage = memoryStorage(initial);
+    const view = render(App, {
+      env: fakeEnv({ cloud, router: memoryRouter('#/account'), storage })
+    });
+    return { ...view, storage };
+  }
+
+  const scopeOf = (el: HTMLElement) => within(el);
+  type Scope = ReturnType<typeof scopeOf>;
+
+  const section = async (name = 'Отображение'): Promise<Scope> =>
+    scopeOf((await screen.findByRole('heading', { name, level: 2 })).parentElement!);
+
+  const pressed = (scope: Scope, group: string): string | undefined =>
+    within(scope.getByRole('group', { name: group }))
+      .getAllByRole('button')
+      .find((b) => b.getAttribute('aria-pressed') === 'true')?.textContent ?? undefined;
+
+  it('reads every current value and writes each one to this browser and the row', async () => {
+    const cloud = as('gm1');
+    const { container, storage } = openWith(cloud);
+    const d = await section();
+    /* gm1's row: grid, black and white, compact. */
+    await waitFor(() => {
+      expect(pressed(d, 'Таблицы')).toBe('Сеткой');
+    });
+    expect(pressed(d, 'Язык')).toBe('RU');
+    expect(pressed(d, 'Печать')).toBe('Чёрно-белая');
+    expect(pressed(d, 'Сообщать владельцу списка')).toBe('Спрашивать');
+    expect(d.getByRole('checkbox', { name: 'Компактный лист' })).toBeChecked();
+    const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
+    expect(select.value).toBe('#/roll/std');
+    expect([...select.options].map((o) => o.textContent)).toHaveLength(10);
+    await expectNoA11yViolations(container);
+
+    await userEvent.selectOptions(select, 'Поиск');
+    expect(storage.get(HOME_KEY)).toBe('#/search');
+    await userEvent.click(d.getByRole('button', { name: 'Списком' }));
+    await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
+    await userEvent.click(d.getByRole('checkbox', { name: 'Компактный лист' }));
+    expect(storage.get(PREFS_KEY)).toBe('{"view":"list","printBw":false,"printCompact":false}');
+    await userEvent.click(d.getByRole('button', { name: 'Всегда' }));
+    expect(pressed(d, 'Сообщать владельцу списка')).toBe('Всегда');
+    await userEvent.click(d.getByRole('button', { name: 'EN' }));
+    expect(storage.get('dhloot.lang.v1')).toBe('en');
+    await waitFor(async () => {
+      expect(await cloud.prefs.load()).toEqual({
+        ok: true,
+        prefs: {
+          lang: 'en',
+          home: '#/search',
+          view: 'list',
+          printBw: false,
+          printCompact: false,
+          notifyGm: 'always'
+        }
+      });
+    });
+    expect(storage.get(PREFS_KEY)).not.toContain('notifyGm');
+    await expectNoA11yViolations(container);
+  });
+
+  it('shows a pinned table as Tables and keeps its address until another is chosen', async () => {
+    const { storage } = openWith(as('gm2'), { [HOME_KEY]: '#/tables/dread' });
+    const d = await section();
+    const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
+    expect(select.value).toBe('#/tables/core_item');
+    expect(select.selectedOptions[0]?.textContent).toBe('Таблицы');
+    expect(storage.get(HOME_KEY)).toBe('#/tables/dread');
+    await userEvent.selectOptions(select, 'Сообщества');
+    expect(storage.get(HOME_KEY)).toBe('#/roll/community');
+    await userEvent.selectOptions(select, 'Обычные правила');
+    expect(storage.get(HOME_KEY)).toBeNull();
+  });
+
+  it('pins the named table a bare Tables address opens on, never the bare address', async () => {
+    const { storage } = openWith(as('gm2'));
+    const d = await section();
+    const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
+    expect(select.value).toBe('#/roll/std');
+    await userEvent.selectOptions(select, 'Таблицы');
+    expect(storage.get(HOME_KEY)).toBe('#/tables/core_item');
+    expect(select.selectedOptions[0]?.textContent).toBe('Таблицы');
+  });
+
+  it('shows an older bare Tables pin and an old section name as their sections', async () => {
+    openWith(as('gm2'), { [HOME_KEY]: '#/tables' });
+    let select = (await section()).getByLabelText<HTMLSelectElement>('Раздел при запуске');
+    expect(select.selectedOptions[0]?.textContent).toBe('Таблицы');
+    cleanup();
+    openWith(as('gm2'), { [HOME_KEY]: '#/roll/core' });
+    select = (await section()).getByLabelText<HTMLSelectElement>('Раздел при запуске');
+    expect(select.selectedOptions[0]?.textContent).toBe('Обычные правила');
+  });
+
+  it('says a refused starting section and shows the section it kept', async () => {
+    const setHome = vi.spyOn(AppState.prototype, 'setHome').mockReturnValue(false);
+    try {
+      openWith(as('gm2'));
+      const d = await section();
+      const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
+      await userEvent.selectOptions(select, 'Поиск');
+      expect(setHome).toHaveBeenCalledWith('#/search');
+      expect(await screen.findByRole('alert')).toHaveTextContent(/Не удалось сохранить/);
+      expect(select.value).toBe('#/roll/std');
+    } finally {
+      setHome.mockRestore();
+    }
+  });
+
+  it('is not drawn signed out, nor while the session is unknown', async () => {
+    open(as());
+    await screen.findByRole('button', { name: 'Войти через Google' });
+    expect(screen.queryByRole('heading', { name: 'Отображение' })).not.toBeInTheDocument();
+    cleanup();
+    const cloud = as('gm1');
+    cloud.auth.session = () => new Promise(() => undefined);
+    open(cloud);
+    expect(screen.getByRole('heading', { name: 'Аккаунт', level: 1 })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Отображение' })).not.toBeInTheDocument();
+  });
+
+  it('keeps its controls working while an account action is under way', async () => {
+    const cloud = as('gm1');
+    cloud.auth.signOut = () => new Promise(() => undefined);
+    const { storage } = openWith(cloud);
+    const d = await section();
+    await press('Выйти');
+    expect(screen.getByRole('button', { name: 'Выйти на всех устройствах' })).toBeDisabled();
+    const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
+    expect(select).toBeEnabled();
+    await userEvent.selectOptions(select, 'Поиск');
+    expect(storage.get(HOME_KEY)).toBe('#/search');
+    await userEvent.click(d.getByRole('button', { name: 'Никогда' }));
+    expect(pressed(d, 'Сообщать владельцу списка')).toBe('Никогда');
   });
 });

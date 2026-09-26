@@ -1,6 +1,6 @@
 # #/account as gm1
 # route: #/account
-# why: two identities: the four sections in order, a Disconnect on each
+# why: two identities: the five sections in order, the Display section first, a Disconnect on each
 # as: gm1
 
 ## ru :: tree
@@ -12,8 +12,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Аккаунт: gm1@example.test" [url=index.html?as=gm1#/account]
-      StaticText "G"
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
@@ -27,10 +26,28 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Аккаунт" [level=1]
-    StaticText "Способы входа, выход и ваши данные."
+    StaticText "Отображение, способы входа, выход и ваши данные."
+    heading "ОТОБРАЖЕНИЕ" [level=2]
+    StaticText "Язык"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    ... StaticText x10 of 14 same-shape siblings elided
+    combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
+      option "Обычные правила" [selected=true]
+      option "Альт. таблицы" [selected=false]
+      option "Wondrous" [selected=false]
+      ... option x5 of 9 same-shape siblings elided
+      option "Списки" [selected=false]
+      option "Поиск" [selected=false]
+    button "Списком" [pressed=false]
+    button "Сеткой" [pressed=true]
+    button "Цветная" [pressed=false]
+    button "Чёрно-белая" [pressed=true]
+    checkbox "Компактный лист" [checked=true]
+    button "Спрашивать" [pressed=true]
+    button "Всегда" [pressed=false]
+    button "Никогда" [pressed=false]
     heading "ВЫ ВОШЛИ КАК" [level=2]
-    StaticText "gm1@example.test"
-    ... StaticText x5 of 9 same-shape siblings elided
     heading "СПОСОБЫ ВХОДА" [level=2]
     button "Отключить Google"
     button "Отключить Discord"
@@ -58,21 +75,29 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
+Всегда
 Выйти
 Выйти на всех устройствах
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
+Никогда
 Обычные правила
+Обычные правилаАльт. таблицыWondrousDreadVault of AgesDragon's V... [namelen=96 namehash=df6717c4]
 Отключить Discord
 Отключить Google
 Поиск
+Сеткой
 Сообщества
 Списки
+Списком
+Спрашивать
 Таблицы
 Удалить аккаунт...
 Условия использования
 Установить как приложение
+Цветная
+Чёрно-белая
 
 ## en :: tree
 RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/account]
@@ -83,8 +108,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Account: gm1@example.test" [url=index.html?as=gm1#/account]
-      StaticText "G"
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
@@ -98,10 +122,28 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Account" [level=1]
-    StaticText "Sign-in methods, signing out and your data."
+    StaticText "Display, sign-in methods, signing out and your data."
+    heading "DISPLAY" [level=2]
+    StaticText "Language"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    ... StaticText x10 of 14 same-shape siblings elided
+    combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
+      option "Standard rules" [selected=true]
+      option "Alt. tables" [selected=false]
+      option "Wondrous" [selected=false]
+      ... option x5 of 9 same-shape siblings elided
+      option "Lists" [selected=false]
+      option "Search" [selected=false]
+    button "List" [pressed=false]
+    button "Grid" [pressed=true]
+    button "Colour" [pressed=false]
+    button "Black and white" [pressed=true]
+    checkbox "Compact sheet" [checked=true]
+    button "Ask" [pressed=true]
+    button "Always" [pressed=false]
+    button "Never" [pressed=false]
     heading "SIGNED IN AS" [level=2]
-    StaticText "gm1@example.test"
-    ... StaticText x5 of 9 same-shape siblings elided
     heading "CONNECTED PROVIDERS" [level=2]
     button "Disconnect Google"
     button "Disconnect Discord"
@@ -122,6 +164,10 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
 ## en :: controls
 Account: gm1@example.test
 Alt. tables
+Always
+Ask
+Black and white
+Colour
 Communities
 Delete account...
 Disconnect Discord
@@ -129,8 +175,11 @@ Disconnect Google
 Dragon's Vault
 Dread
 EN
+Grid
 Install as an app
+List
 Lists
+Never
 Privacy
 RU
 Search
@@ -138,6 +187,7 @@ Sign out
 Sign out everywhere
 Skip to content
 Standard rules
+Standard rulesAlt. tablesWondrousDreadVault of AgesDragon's Vaul... [namelen=93 namehash=db671663]
 Tables
 Terms of use
 Vault of Ages

@@ -38,6 +38,32 @@ which brings the configured bundle back under its old 170 kB limit.
   (`.claude/README.md`, "The configured bundle budget") report
   about 27 kB less than before the fix; `npm run e2e` passes F0-F10.
 
+## Focus after a control that removes itself (no task filed yet; the owner names the release)
+
+Owns: where keyboard focus goes when a press removes the pressed control.
+No release plan owns it; the owner decides which one takes it.
+
+### D64 - focus falls to `body` when a pressed control disappears
+
+- **Where**: `app/src/components/AccountMenu.svelte` («Выйти»: the menu
+  closes and the signed-in control becomes the «Войти» link);
+  `app/src/components/MoveNotice.svelte` («Скрыть напоминание» on the move
+  banner, «Скрыть» on the moved-lists notice).
+- **What**: each press removes the element that has focus, and nothing
+  moves focus elsewhere, so focus falls to `body`. A keyboard reader's next
+  Tab starts again from the top of the page, and a screen reader announces
+  nothing about where focus went.
+- **Why deferred**: found in the account menu's review (2026-09-27), after
+  the gates of that release were green. The moved-lists «Скрыть» behaved
+  the same before that release, so it is one focus-management task, not a
+  fix to one control. R10 removes `MoveNotice` with both of its buttons;
+  the menu's «Выйти» stays.
+- **How to verify the fix**: signed in, open the account menu with the
+  keyboard, press «Выйти», and confirm that `document.activeElement` is a
+  named control (for example the «Войти» link), not `body`; the same for
+  «Скрыть напоминание» while `MoveNotice` exists. Cover it in
+  `accountMenu.test.ts`.
+
 ## Live updates (`persist-3-realtime`)
 
 Owns: Realtime on shared pages and the owner's lists, which replaces the
@@ -92,9 +118,12 @@ rework.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 
-Owns: the removal of the `#/l/` codec and the browser list store after the
-cutoff, and the decision on what stays of the move of browser lists into
-the account (`LegacyMove`, `MoveNotice`, `MoveStatus`, `move_legacy_list`).
+Owns: the removal, after the cutoff, of the `#/l/` codec, the browser list
+store and all move support (`LegacyMove`, `MoveNotice`, `MoveStatus`,
+`StorageNotice`, the move's RPC path), and a planned decision on whether a
+migration drops `move_legacy_list` and `lists.legacy_fingerprint`
+(`docs/DECISIONS.md`, "R10 removes browser lists and the move; an old
+`#/l/` link is not found").
 
 ### D62 - `move_legacy_list` adds lists and entries past every count limit, with no bound
 
@@ -108,15 +137,14 @@ the account (`LegacyMove`, `MoveNotice`, `MoveStatus`, `move_legacy_list`).
   number of calls.
 - **Why deferred**: owner decision, 2026-09-26. A genuine browser list is
   bounded by the catalog (about 1300 records, each id at most once), and
-  the rows count against their owner only. The legacy removal decides
-  whether `move_legacy_list` stays after the browser store goes: the move
-  outlives that release for a reader who never signed in before it.
-- **How to verify the fix**: if it is ever needed, per-owner caps on moved
-  lists and moved entries, read through `effective_limit()` under the
-  owner's advisory lock, after the fingerprint lookup (a repeated text
-  still answers `inserted = false`). In `tests/db/legacy-move.test.mjs`,
-  move past each cap and confirm that the move is refused
-  `limit: <key>` while a repeated text still answers its first row.
+  the rows count against their owner only. From R10 the app never calls
+  the move again (owner, 2026-09-27), so only a scripted caller reaches it.
+- **How to verify the fix**: R10 - either a migration drops
+  `move_legacy_list` (and the `dhloot.move` guard in both limit triggers),
+  and `tests/db/` confirms that a signed-in call is refused as an unknown
+  function and that a list or entry past a limit is refused; or, if R10's
+  plan keeps the function, confirm that `authenticated` has no EXECUTE on
+  it. Close this entry in the batch that does either.
 
 ### D63 - the move's status says «нет связи» for a failure that is not the network
 
@@ -132,11 +160,12 @@ the account (`LegacyMove`, `MoveNotice`, `MoveStatus`, `move_legacy_list`).
   lists stay, and the account holds each moved list once.
 - **Why deferred**: found in the last review of the move, after its texts
   were settled; every cause but the quota ends at the next run, and the
-  quota case needs its own text and a way out for the reader. The legacy
-  removal re-reads the move's code and decides what stays of it.
-- **How to verify the fix**: in `legacyMove.test.ts`, end a run with a
-  refused `settleMove` write and with a missing read-back row, and confirm
-  that `MoveStatus` draws a text for that cause, not «нет связи».
+  quota case needs its own text and a way out for the reader. R10 removes
+  `LegacyMove` and `MoveStatus` (owner, 2026-09-27), so the text goes with
+  them.
+- **How to verify the fix**: R10 - confirm that no file under `app/src/`
+  holds `MoveStatus`, `LegacyMove` or `moveFailed`, and close this entry
+  in that batch.
 
 ### D24 - a second `dhloot.lists.v2` corruption is never backed up, and the first backup is orphaned forever
 

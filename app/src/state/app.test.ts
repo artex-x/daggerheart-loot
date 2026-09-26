@@ -1138,7 +1138,8 @@ describe('account preferences', () => {
       home: '#/tables/dread',
       view: 'grid',
       printBw: false,
-      printCompact: true
+      printCompact: true,
+      notifyGm: 'ask'
     });
     app.stop();
   });
@@ -1197,7 +1198,8 @@ describe('account preferences', () => {
       home: '#/tables/dread',
       view: 'list',
       printBw: false,
-      printCompact: false
+      printCompact: false,
+      notifyGm: 'ask'
     });
     await flush();
     expect(await cloud.prefs.load()).toEqual({
@@ -1207,7 +1209,8 @@ describe('account preferences', () => {
         home: '#/tables/dread',
         view: 'list',
         printBw: false,
-        printCompact: false
+        printCompact: false,
+        notifyGm: 'ask'
       }
     });
     app.stop();
@@ -1361,6 +1364,107 @@ describe('account preferences', () => {
     await flush();
     expect(outLoad).not.toHaveBeenCalled();
     signedOut.app.stop();
+  });
+
+  it('sets the starting section from a section or a table, and saves it to the row', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = await signedIn(cloud);
+    for (const [hash, pin] of [
+      ['#/search', '#/search'],
+      ['#/tables/dread', '#/tables/dread'],
+      ['#/tables/frames', '#/tables/other_frames']
+    ] as const) {
+      expect(app.setHome(hash), hash).toBe(true);
+      expect(app.home).toBe(pin);
+      expect(storage.get(HOME_KEY)).toBe(pin);
+      await flush();
+      expect(await cloud.prefs.load()).toMatchObject({ ok: true, prefs: { home: pin } });
+    }
+    app.stop();
+  });
+
+  it('removes the pin key for the default section, and saves it to the row', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = await signedIn(cloud, { [HOME_KEY]: '#/tables/dread' });
+    expect(app.setHome('#/roll/std')).toBe(true);
+    expect(app.home).toBe('#/roll/std');
+    expect(storage.get(HOME_KEY)).toBeNull();
+    await flush();
+    expect(await cloud.prefs.load()).toMatchObject({ ok: true, prefs: { home: '#/roll/std' } });
+    app.stop();
+  });
+
+  it('refuses a record as the starting section, and a pin storage refused', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const { app, storage } = await signedIn(cloud, { [HOME_KEY]: '#/search' });
+    expect(app.setHome('#/i/ci1')).toBe(false);
+    expect(app.home).toBe('#/search');
+    expect(storage.get(HOME_KEY)).toBe('#/search');
+    expect(save).not.toHaveBeenCalled();
+    app.stop();
+
+    const broken = new AppState(
+      fakeEnv({ router: memoryRouter('#/roll/std'), storage: brokenStorage(), cloud })
+    );
+    broken.start();
+    await flush();
+    expect(broken.setHome('#/tables/dread')).toBe(false);
+    expect(broken.home).toBe('#/roll/std');
+    expect(save).not.toHaveBeenCalled();
+    broken.stop();
+  });
+
+  it('asks by default and keeps the notify answer in the row, in no storage key', async () => {
+    expect(new AppState(at('#/roll/std')).notifyGm).toBe('ask');
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = await signedIn(cloud);
+    expect(app.notifyGm).toBe('ask');
+    const set = vi.spyOn(storage, 'set');
+    app.setNotifyGm('always');
+    expect(app.notifyGm).toBe('always');
+    expect(set).not.toHaveBeenCalled();
+    await flush();
+    expect(await cloud.prefs.load()).toMatchObject({ ok: true, prefs: { notifyGm: 'always' } });
+    app.stop();
+  });
+
+  it("applies the row's notify answer, and reads a row without one as ask", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.prefs.save({ notifyGm: 'never' });
+    const { app, storage } = await signedIn(cloud);
+    expect(app.notifyGm).toBe('never');
+    await cloud.prefs.save({ view: 'list' });
+    storage.fireExternalChange(null);
+    await flush();
+    expect(app.notifyGm).toBe('ask');
+    app.stop();
+  });
+
+  it("seeds a new user's row with ask after the previous user chose always", async () => {
+    const cloud = fakeCloud({ ...SEED, defaultUser: 'gm2' }, 'gm1');
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const { app } = await signedIn(cloud);
+    app.setNotifyGm('always');
+    await flush();
+    await cloud.auth.signOut();
+    expect(app.notifyGm).toBe('ask');
+    save.mockClear();
+    await cloud.auth.signIn('google');
+    await flush();
+    expect(save).toHaveBeenCalledOnce();
+    expect(save.mock.calls[0]?.[0]).toMatchObject({ notifyGm: 'ask' });
+    app.stop();
+  });
+
+  it('saves no notify answer signed out', async () => {
+    const out = fakeCloud(SEED);
+    const save = vi.spyOn(out.prefs, 'save');
+    const { app } = await signedIn(out);
+    app.setNotifyGm('never');
+    await flush();
+    expect(save).not.toHaveBeenCalled();
+    app.stop();
   });
 });
 

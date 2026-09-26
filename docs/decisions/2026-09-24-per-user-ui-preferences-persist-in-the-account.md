@@ -1,6 +1,7 @@
 # 2026-09-24 - Per-user UI preferences persist in the account, account wins
 
 - Superseded in part by "Account preferences drop the default money mode; the print layout persists for everyone" (2026-09-24).
+- Superseded in part by "The account control opens a menu; display settings live on `#/account`" (2026-09-26): "No settings page" - `#/account` gains a Display section; the controls also stay where they are.
 - Task: `persistent-storage` (owner decision, 2026-09-24; reopens the
   `profiles` cut of the same day's scope decision as one row).
 - Decision: for a signed-in user the settings that live in `localStorage`

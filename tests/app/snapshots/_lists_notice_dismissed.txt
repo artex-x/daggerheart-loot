@@ -23,6 +23,10 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
+  status ""
+    StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
+    button "Войти и перенести списки"
+    button "Скрыть напоминание"
   main ""
     heading "Списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -59,6 +63,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
+Войти и перенести списки
 К содержимому
 Как это работает
 Клад дракона, 7 позиций
@@ -69,6 +74,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Поделиться
 Поиск
+Скрыть напоминание
 Сообщества
 Списки
 Таблицы
@@ -97,6 +103,10 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
+  status ""
+    StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
+    button "Sign in and move the lists"
+    button "Dismiss the reminder"
   main ""
     heading "Lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -127,6 +137,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
 Alt. tables
 Communities
 Delete
+Dismiss the reminder
 Dragon's Vault
 Dread
 EN
@@ -139,6 +150,7 @@ RU
 Search
 Share
 Sign in
+Sign in and move the lists
 Skip to content
 Standard rules
 Tables

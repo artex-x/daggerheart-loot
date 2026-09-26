@@ -2,6 +2,7 @@
   /* The frame every route sits in: brand, tabs and language, and the move's
      one-time notice under them. The storage notice moved to the lists index,
      where the live app draws it. */
+  import AccountMenu from './AccountMenu.svelte';
   import Icon from './Icon.svelte';
   import MoveNotice from './MoveNotice.svelte';
   import Seg from './Seg.svelte';
@@ -31,6 +32,24 @@
      reader never sees «Войти» flash; a build with no sign-in draws none. */
   const accountShown = $derived(app.env.cloud !== null && app.user !== undefined);
   const onAccount = $derived(app.route.kind === 'account');
+  const userId = $derived(app.user?.userId ?? null);
+
+  /* The account menu forgets itself on a navigation and on a user change. */
+  let menuOpen = $state(false);
+  let acctButton = $state<HTMLButtonElement | undefined>(undefined);
+  $effect(() => {
+    void app.navigations;
+    void userId;
+    menuOpen = false;
+  });
+
+  /* Focus that lands outside the control and its menu closes the menu. Only a
+     focus that lands somewhere counts: Safari does not focus a pressed button,
+     so a click on «Выйти» would read as focus leaving to nothing. */
+  function closeOnFocusOut(e: FocusEvent & { currentTarget: HTMLElement }): void {
+    const to = e.relatedTarget;
+    if (to instanceof Node && !e.currentTarget.contains(to)) menuOpen = false;
+  }
   const moveState = $derived(
     !app.env.cloud
       ? undefined
@@ -110,14 +129,34 @@
       />
       {#if accountShown}
         {#if app.user}
-          <a
-            class="acct in"
-            class:on={onAccount}
-            href={ACCOUNT_HASH}
-            aria-label={`${app.t.account}: ${app.user.email}`}
-            aria-current={onAccount ? 'page' : undefined}
-            >{#if app.user.email}{app.user.email.charAt(0)}{:else}<Icon name="user" />{/if}</a
-          >
+          <div class="acctwrap" onfocusout={closeOnFocusOut}>
+            <button
+              type="button"
+              class="acct in"
+              class:on={onAccount}
+              bind:this={acctButton}
+              aria-label={`${app.t.account}: ${app.user.email}`}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-controls={menuOpen ? 'account-menu' : undefined}
+              aria-current={onAccount ? 'page' : undefined}
+              onclick={() => {
+                menuOpen = !menuOpen;
+              }}
+              >{#if app.user.email}{app.user.email.charAt(0)}{:else}<Icon
+                  name="user"
+                />{/if}</button
+            >
+            {#if menuOpen && acctButton}
+              <AccountMenu
+                {app}
+                control={acctButton}
+                onclose={() => {
+                  menuOpen = false;
+                }}
+              />
+            {/if}
+          </div>
         {:else}
           <a
             class="acct"
@@ -130,7 +169,12 @@
       {/if}
     </div>
   </div>
-  <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} />
+  <TabBar
+    t={app.t}
+    current={app.section}
+    label={app.t.sectionsLabel}
+    lists={app.legacyWritable}
+  />
 </header>
 
 {#if app.env.cloud}
@@ -286,9 +330,15 @@
     font-size: 12.5px;
     font-weight: 650;
     letter-spacing: 0.05em;
+    font-family: inherit;
     text-decoration: none;
     white-space: nowrap;
     transition: 0.15s;
+    cursor: pointer;
+  }
+
+  .acctwrap {
+    position: relative;
   }
 
   .acct:hover {
@@ -308,8 +358,10 @@
     text-transform: uppercase;
   }
 
-  /* On `#/account`: the gold ring instead of a lit tab. */
-  .acct.on {
+  /* On `#/account`, and while the menu is open: the gold ring instead of a
+     lit tab. */
+  .acct.on,
+  .acct[aria-expanded='true'] {
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }

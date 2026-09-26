@@ -1,5 +1,6 @@
 <script lang="ts">
-  /* The ten sections.
+  /* The ten sections, nine from the cutoff: `#/lists` is then reached from the
+   * account menu (docs/specs/ROUTES.md, "Sections").
    *
    * Real links, not buttons: middle-click, copy-link and open-in-new-tab all
    * work for free, and the address is the state. The separator before Tables
@@ -12,9 +13,11 @@
     t: Dict;
     current: Section | null;
     label: string;
+    /** False drops the Lists tab. */
+    lists?: boolean;
   }
 
-  const { t, current, label }: Props = $props();
+  const { t, current, label, lists = true }: Props = $props();
 
   const TABS: [Section, keyof Dict][] = [
     ['roll/std', 'std'],
@@ -28,6 +31,8 @@
     ['lists', 'lists'],
     ['search', 'search']
   ];
+
+  const tabs = $derived(lists ? TABS : TABS.filter(([s]) => s !== 'lists'));
 
   let nav = $state<HTMLElement | undefined>(undefined);
 
@@ -52,7 +57,7 @@
 </script>
 
 <nav class="tabs" aria-label={label} bind:this={nav}>
-  {#each TABS as [section, key] (section)}
+  {#each tabs as [section, key] (section)}
     <a
       href={sectionHash(section)}
       class:on={section === current}

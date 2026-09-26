@@ -550,6 +550,15 @@ release: `npm run check` 396-404 s (vitest 63 files, about 1945 tests) and
 shard 175-182 s (181 states); `node tests/app/sweep.js 360` 430 s; `npm
 run e2e` 104-117 s (contract cases A-I, F0-F10); `check:built` 23 s.
 
+Re-measured on this host on 2026-09-27, at the account menu release: a
+golden shard 186-199 s (183 states); `node tests/run-all.js
+--exclude=app/golden --shard=n/5` 405-532 s per call, each under the 600 s
+cap (`app/states`, 51 cases, 299 s; one `app/sweep` width 328-532 s);
+vitest 64 files, 1984 tests. The same day, after the review's fixes:
+`node tests/run-all.js app/states` alone 254 s; a golden shard in compare
+mode 186-201 s; `npm run check` passed inside one 600 s call (vitest 207 s,
+1988 tests).
+
 `check:built` and the `tests/app/` filters are paid once per batch; `npm run
 check` is paid once per commit inside it. None of these scale with the
 diff: eight paths and forty paths cost the same minutes.
@@ -1320,6 +1329,26 @@ The history rows that `migrate-test` writes hold a version and a name and
 no `statements` (`tools/supabase/db.mjs`), so `supabase migration fetch`
 against the test project writes empty files; never fetch migrations from it.
 
+**Expected Security Advisor warnings.** On both projects after R5's
+`migrate-prod` (2026-09-26) the Security Advisor reports 0 errors, 9
+warnings and 2 info. Eight warnings are the execute grants of seven
+SECURITY DEFINER functions: seven executable by a signed-in user, and
+`get_shared_list` also by `anon`; the reasons below:
+
+| Function | Reason |
+|---|---|
+| `delete_account` | Deletes the caller's `auth.users` row, which the caller may not touch; the user is always `auth.uid()`. |
+| `reorder_list` | Rewrites every position of the caller's list in one statement; it checks the owner itself. |
+| `create_list_share`, `revoke_list_share` | `list_shares` has no insert or update grant; a share changes only through them, and they check the owner. |
+| `get_shared_list` | Returns the projection to whoever holds the token, never the table. It is also executable by `anon` for the anonymous shared page: a second warning. |
+| `clone_shared_list` | Copies a list that the caller reaches only through the token. |
+| `move_legacy_list` | Moves a browser list whole, past the count limits (`docs/specs/DEBT.md` D62). |
+
+The ninth warning is leaked password protection, which is off because there
+is no password sign-in (Google and Discord only). `apply_list_writes` is
+`security invoker` and adds none. A warning that is not in this list stops
+the release until a review accepts it and adds it here with its reason.
+
 **The hosted E2E and the deploy.** CI's `e2e` job runs `npm run e2e` (layer
 4, `docs/specs/COVERAGE.md`, "Test layers") against the test project, and
 `deploy` needs it. `migrate-test` applies the schema before every `e2e`
@@ -1389,8 +1418,8 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 200 kB budget (with the account client chunk)`; 178.2
-kB on 2026-09-26. `dist/` stays configured until `npm run build` or
+Expected: `within the 200 kB budget (with the account client chunk)`; 182.2
+kB on 2026-09-27 (178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
 `check:built` rebuilds it. Decision: "The bundle budget is 150 kB
 unconfigured and 200 kB configured"; the slimmer client it no longer waits
 on is still `docs/specs/DEBT.md`, D60.

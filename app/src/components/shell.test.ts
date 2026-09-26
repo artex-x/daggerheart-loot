@@ -16,11 +16,13 @@ import {
   fakeData,
   fakeEnv,
   fakePwa,
+  fixedClock,
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import type { Loot } from '../lib/data.js';
+import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import type { StoredList } from '../lib/lists.js';
 import { AppState } from '../state/app.svelte.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
@@ -605,22 +607,53 @@ describe('the account control', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('shows the initial signed in, named by the email', async () => {
+  it('shows the initial signed in on a menu button, named by the email', async () => {
     const { container } = render(App, {
       env: at('#/roll/std', { cloud: fakeCloud(SEED, 'gm1') })
     });
-    const link = await screen.findByRole('link', { name: 'Аккаунт: gm1@example.test' });
-    expect(link).toHaveTextContent(/^g$/);
+    const button = await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
+    expect(button).toHaveTextContent(/^g$/);
+    expect(button).toHaveAttribute('aria-haspopup', 'menu');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(button).not.toHaveAttribute('aria-controls');
     expect(screen.queryByRole('link', { name: 'Войти' })).not.toBeInTheDocument();
+    expect(document.querySelector('header a[href="#/account"]')).toBeNull();
     await expectNoA11yViolations(container);
+  });
+
+  it('opens the menu on a press and closes it on a second press', async () => {
+    const { container } = render(App, {
+      env: at('#/roll/std', { cloud: fakeCloud(SEED, 'gm1') })
+    });
+    const button = await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
+    await userEvent.click(button);
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(button).toHaveAttribute('aria-controls', 'account-menu');
+    expect(screen.getByRole('menu')).toHaveAttribute('id', 'account-menu');
+    await expectNoA11yViolations(container);
+    await userEvent.click(button);
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('closes the menu on a navigation', async () => {
+    const env = at('#/roll/std', { cloud: fakeCloud(SEED, 'gm1') });
+    render(App, { env });
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' })
+    );
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    env.router.navigate('#/search');
+    await tick();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 
   it('draws the person icon for an account with no email', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     cloud.auth.session = () => Promise.resolve({ userId: 'u', email: '', provider: 'google' });
     render(App, { env: at('#/roll/std', { cloud }) });
-    const link = await screen.findByRole('link', { name: 'Аккаунт:' });
-    expect(link.querySelector('svg')).not.toBeNull();
+    const button = await screen.findByRole('button', { name: 'Аккаунт:' });
+    expect(button.querySelector('svg')).not.toBeNull();
   });
 
   it('waits for the session, so a signed-in reader never sees «Войти»', () => {
@@ -628,15 +661,16 @@ describe('the account control', () => {
     cloud.auth.session = () => new Promise(() => undefined);
     render(App, { env: at('#/roll/std', { cloud }) });
     expect(document.querySelector('a[href="#/account"]')).toBeNull();
+    expect(document.querySelector('[aria-haspopup]')).toBeNull();
   });
 
   it('marks the account page as current, lights no tab and titles the tab', async () => {
     const { container } = render(App, {
       env: at('#/account', { cloud: fakeCloud(SEED, 'gm1') })
     });
-    const link = await screen.findByRole('link', { name: 'Аккаунт: gm1@example.test' });
-    expect(link).toHaveAttribute('aria-current', 'page');
-    expect(link).toHaveClass('on');
+    const button = await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
+    expect(button).toHaveAttribute('aria-current', 'page');
+    expect(button).toHaveClass('on');
     const tabs = screen.getByRole('navigation', { name: 'Разделы' });
     expect(tabs.querySelector('[aria-current]')).toBeNull();
     expect(document.title).toBe('Аккаунт — Генератор лута — Daggerheart');
@@ -656,6 +690,40 @@ describe('the account control', () => {
     await screen.findByRole('link', { name: 'Войти' });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
+  });
+});
+
+describe('the Lists tab and the cutoff', () => {
+  const tabLinks = (): string[] =>
+    [...screen.getByRole('navigation', { name: 'Разделы' }).querySelectorAll('a')].map(
+      (a) => a.getAttribute('href') ?? ''
+    );
+
+  it('draws nine tabs and no Lists tab from the cutoff, in a build with sign-in', () => {
+    render(App, {
+      env: at('#/roll/std', {
+        cloud: fakeCloud(SEED),
+        clock: fixedClock(LEGACY_WRITE_UNTIL)
+      })
+    });
+    expect(tabLinks()).toHaveLength(9);
+    expect(tabLinks()).not.toContain('#/lists');
+  });
+
+  it('draws ten tabs the moment before the cutoff', () => {
+    render(App, {
+      env: at('#/roll/std', {
+        cloud: fakeCloud(SEED),
+        clock: fixedClock(LEGACY_WRITE_UNTIL - 1)
+      })
+    });
+    expect(tabLinks()).toHaveLength(10);
+    expect(tabLinks()).toContain('#/lists');
+  });
+
+  it('keeps ten tabs after the cutoff in a build with no sign-in', () => {
+    render(App, { env: at('#/roll/std', { clock: fixedClock(LEGACY_WRITE_UNTIL) }) });
+    expect(tabLinks()).toHaveLength(10);
   });
 });
 
@@ -725,6 +793,19 @@ describe("the move's mark on the page and its notice", () => {
     await waitFor(() => {
       expect(main(container)?.dataset['move']).toBe('idle');
     });
+  });
+
+  it('draws the move banner signed out between the header and the page, and none with no sign-in', async () => {
+    const storage = (): ReturnType<typeof memoryStorage> =>
+      memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED), storage: storage() }) });
+    const signIn = await screen.findByRole('button', { name: 'Войти и перенести списки' });
+    const box = signIn.closest('.movenotice');
+    expect(box?.previousElementSibling?.tagName).toBe('HEADER');
+    expect(box?.nextElementSibling?.tagName).toBe('MAIN');
+    cleanup();
+    const bare = render(App, { env: at('#/roll/std', { storage: storage() }) });
+    expect(bare.container.querySelector('.movenotice')).toBeNull();
   });
 
   it('draws no mark signed out, nor in a build with no sign-in', async () => {

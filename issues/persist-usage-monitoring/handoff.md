@@ -52,6 +52,12 @@
 - R5 and R5b ship first (roadmap order).
 
 ## Deferred
+- Owner question for the refresh (2026-09-26, a light look): the org's Log
+  Query reads 129.07 of 100 GB for 2026-09-18 to 10-18, data only on
+  09-25/26 (about 114 GB a day), enforced from 2027. Find which tool reads
+  logs (Management API, CLI, Studio) or call it a metering defect; any
+  report that reads `analytics/endpoints/logs` must count against this
+  allowance. Facts: the roadmap's R5 closeout record.
 - Egress bytes estimate from `analytics/endpoints/logs` (unverified log schema; needs "Logs: Read").
 - Storage GB-hours (the quota is time-weighted; the report reads the current size).
 

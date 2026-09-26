@@ -1707,7 +1707,7 @@ const STATES = [
     id: '#/account as gm1',
     route: '#/account',
     as: 'gm1',
-    why: 'two identities: the four sections in order, a Disconnect on each'
+    why: 'two identities: the five sections in order, the Display section first, a Disconnect on each'
   },
   {
     id: '#/account ~ delete confirmation as gm1',
@@ -1725,7 +1725,25 @@ const STATES = [
     id: '#/roll/std as gm1',
     route: '#/roll/std',
     as: 'gm1',
-    why: 'the header signed in: the initial in place of «Войти»'
+    why: 'the header signed in: the initial on a menu button in place of «Войти»'
+  },
+  /* The English half is captured after the EN press, an outside click that
+     closes the menu, as it closes the add-to-list menu. */
+  {
+    id: '#/roll/std ~ account menu as gm1',
+    route: '#/roll/std',
+    as: 'gm1',
+    why: 'the account menu open: «Аккаунт», «Мои списки», «Выйти»',
+    enter: async (d) => {
+      await d.press('Аккаунт: gm1@example.test');
+    }
+  },
+  {
+    id: '#/account ~ pinned table as gm2',
+    route: '#/account',
+    as: 'gm2',
+    storage: { 'dhloot.home.v1': '#/tables/dread' },
+    why: "the Display section's starting section reads «Таблицы» for a pinned table"
   },
   {
     id: '#/tables/dread as gm1',
