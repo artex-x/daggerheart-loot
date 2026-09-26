@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { buildIndex } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
+import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import { encodeList } from '../lib/listLink.js';
 import type { Loot } from '../lib/data.js';
 import { priceText } from '../lib/money.js';
@@ -21,12 +22,14 @@ import {
   fakeDialog,
   fakeDrag,
   fakeEnv,
+  fakePage,
+  fixedClock,
   memoryRouter,
   memoryStorage,
   noData,
   plainCompress
 } from '../ports/index.js';
-import type { CloudPort, CompressPort, Env, ListWrite } from '../ports/index.js';
+import type { CloudPort, CompressPort, Env, ListWrites } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -1341,11 +1344,14 @@ describe('accessibility', () => {
 
 describe('an account list', () => {
   const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
+  /* `page.fireHidden()` sends the account's write buffer at once, as a
+     hidden tab does, so a test reads the fake without the 2 s wait. */
   const openAs = (cloud: CloudPort, hash = SHOP, over: Partial<Env> = {}) => {
     const router = memoryRouter(hash);
     const dialog = fakeDialog();
-    const view = render(App, { env: at(hash, { router, dialog, cloud, ...over }) });
-    return { ...view, router, dialog };
+    const page = fakePage();
+    const view = render(App, { env: at(hash, { router, dialog, cloud, page, ...over }) });
+    return { ...view, router, dialog, page };
   };
   const sub = (container: HTMLElement): string =>
     container.querySelector('.page-sub')?.textContent.replace(/\s+/g, ' ').trim() ?? '';
@@ -1387,28 +1393,42 @@ describe('an account list', () => {
     expect(screen.queryByRole('button', { name: 'Поделиться' })).not.toBeInTheDocument();
   });
 
-  it('says saving while a write is in flight, then saved', async () => {
+  it('says saving from the first buffered edit until the write lands, then saved', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    let answer: (w: ListWrite) => void = () => undefined;
-    cloud.lists.update = () =>
-      new Promise((r) => {
+    let answer: (w: ListWrites) => void = () => undefined;
+    const sent = vi.fn();
+    cloud.lists.apply = (ops) => {
+      sent(ops);
+      return new Promise((r) => {
         answer = r;
       });
-    const { container } = openAs(cloud);
+    };
+    const { container, page } = openAs(cloud);
+    const saving = () => container.querySelector('.sync')?.hasAttribute('data-saving');
     await userEvent.type(await screen.findByRole('textbox', { name: 'Название списка' }), '!');
     expect(sub(container)).toBe('3 позиции · Сохраняем...');
-    answer({ ok: true });
+    expect(saving()).toBe(true);
+    expect(sent).not.toHaveBeenCalled();
+    page.fireHidden();
+    await waitFor(() => {
+      expect(sent).toHaveBeenCalledOnce();
+    });
+    expect(saving()).toBe(true);
+    answer({ ok: true, results: [{ ok: true }] });
     await waitFor(() => {
       expect(sub(container)).toBe('3 позиции · Сохранено');
     });
+    expect(saving()).toBe(false);
+    await expectNoA11yViolations(container);
   });
 
   it('says not saved offline, keeps the edit, and announces the retry that saves it', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    const { container } = openAs(cloud);
+    const { container, page } = openAs(cloud);
     const input = await screen.findByRole('textbox', { name: 'Название списка' });
     cloud.setOffline(true);
     await userEvent.type(input, '!');
+    page.fireHidden();
     await waitFor(() => {
       expect(sub(container)).toBe('3 позиции · Не сохраненоПовторить');
     });
@@ -1433,9 +1453,10 @@ describe('an account list', () => {
 
   it('deletes after a confirm that names its links, back on the index, with no undo', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    const { router, dialog } = openAs(cloud);
+    const { router, dialog, page } = openAs(cloud);
     await screen.findByRole('textbox', { name: 'Название списка' });
     await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
+    page.fireHidden();
     expect(dialog.asked).toEqual([
       'Удалить список «Лавка кузнеца»? Ссылки для игроков и мастера перестанут работать. Отменить удаление нельзя.'
     ]);
@@ -1450,8 +1471,12 @@ describe('an account list', () => {
 
   it('puts a removed row back into the account list when the undo runs on a browser list', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { router } = openAs(cloud, SHOP, { storage });
+    /* Another account's browser list: it stays in the browser, writable. */
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([listA]),
+      'dhloot.migrated.v1': JSON.stringify({ owner: 'another-account', lists: {} })
+    });
+    const { router, page } = openAs(cloud, SHOP, { storage });
     await screen.findByRole('textbox', { name: 'Название списка' });
     await userEvent.click(screen.getAllByRole('button', { name: 'Убрать из списка' })[0]!);
     router.navigate('#/lists/a');
@@ -1459,6 +1484,7 @@ describe('an account list', () => {
       'Тайник'
     );
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    page.fireHidden();
     await waitFor(async () => {
       const read = await cloud.lists.list();
       const shop = read.ok ? read.lists.find((l) => l.name === 'Лавка кузнеца') : undefined;
@@ -1510,5 +1536,218 @@ describe('an account list', () => {
     expect(
       await screen.findByText('Возможно, он удалён или открыт в другом браузере.')
     ).toBeInTheDocument();
+  });
+});
+
+describe('a browser list after the cutoff, and while the move is due', () => {
+  const AFTER = { clock: fixedClock(LEGACY_WRITE_UNTIL) };
+  const signedOut = () => fakeCloud(SEED);
+  const buttonNames = (): string[] =>
+    screen.getAllByRole('button').map((b) => b.getAttribute('aria-label') ?? b.textContent);
+
+  it('draws every write control before the cutoff', () => {
+    const { container } = render(App, { env: withA('#/lists/a', { cloud: signedOut() }) });
+    expect(screen.getByRole('textbox', { name: 'Название списка' })).not.toHaveAttribute(
+      'readonly'
+    );
+    expect(screen.getByRole('button', { name: 'Ссылка игрокам' })).toBeInTheDocument();
+    expect(container.querySelectorAll('.lrow-grip')).toHaveLength(3);
+    expect(screen.getAllByRole('button', { name: 'Убрать из списка' })).toHaveLength(3);
+  });
+
+  it('is read-only after it: no link buttons, grip or cross, fields read-only, chips off', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const router = memoryRouter('#/lists/a');
+    const { container } = render(App, {
+      env: at('#/lists/a', { storage, router, cloud: signedOut(), ...AFTER })
+    });
+    const title = screen.getByRole('textbox', { name: 'Название списка' });
+    expect(title).toHaveAttribute('readonly');
+    expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Ссылка себе' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Удалить' })).toBeInTheDocument();
+    expect(container.querySelectorAll('.lrow-grip')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Убрать из списка' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Очистить заметку' })).toBeNull();
+    for (const f of container.querySelectorAll('input[data-qty], input[data-gold], .lrow-n'))
+      expect(f).toHaveAttribute('readonly');
+    for (const ta of container.querySelectorAll('textarea'))
+      expect(ta).toHaveAttribute('readonly');
+    for (const chip of screen.getAllByRole('button', { name: /Мешками|Монетами/ }))
+      expect(chip).toBeDisabled();
+    expect(
+      screen.getByText('Списки в этом браузере только для чтения с 26 октября 2026 года.')
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Зелье' }));
+    expect(buttonNames()).toContain('Скопировать');
+    expect(screen.queryByRole('button', { name: 'Цены' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Удалить (1)' })).toBeNull();
+    await expectNoA11yViolations(container);
+
+    /* A typed name, quantity, price, note or position writes nothing. */
+    const before = storage.get('dhloot.lists.v2');
+    await fireEvent.input(title, { target: { value: 'Другое' } });
+    const qty = container.querySelector('input[data-qty]') as HTMLInputElement;
+    await fireEvent.input(qty, { target: { value: '9' } });
+    const gold = container.querySelector('input[data-gold]') as HTMLInputElement;
+    await fireEvent.input(gold, { target: { value: '9' } });
+    await fireEvent.input(container.querySelector('textarea') as HTMLTextAreaElement, {
+      target: { value: 'x' }
+    });
+    await fireEvent.change(container.querySelector('.lrow-n') as HTMLInputElement, {
+      target: { value: '3' }
+    });
+    await new Promise((r) => setTimeout(r, 200));
+    expect(storage.get('dhloot.lists.v2')).toBe(before);
+    expect(router.hash()).toBe('#/lists/a');
+  });
+
+  it('deletes after the cutoff with the confirm and no undo', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const router = memoryRouter('#/lists/a');
+    const dialog = fakeDialog(true);
+    render(App, {
+      env: at('#/lists/a', { storage, router, dialog, cloud: signedOut(), ...AFTER })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
+    expect(dialog.asked).toEqual(['Удалить список «Тайник»? Это действие необратимо.']);
+    expect(router.hash()).toBe('#/lists');
+    expect(readLists(storage)).toEqual([]);
+    expect(screen.getByText('Список «Тайник» удалён')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Вернуть' })).toBeNull();
+  });
+
+  it('draws the retired page for a plain, a packed and an own #/l/ address, decoding nothing', async () => {
+    const other = encodeList({ name: 'Другой', ids: ['ci1'] }, true);
+    const unpack = vi.fn((p: string) => Promise.resolve(p.slice(1)));
+    const compress: CompressPort = {
+      available: () => true,
+      pack: (raw) => Promise.resolve(raw),
+      unpack
+    };
+    for (const hash of ['#/l/' + other, '#/l/~' + other, '#/l/' + encodeList(listA, true)]) {
+      const router = memoryRouter(hash);
+      const { container } = render(App, {
+        env: withA(hash, { router, compress, cloud: signedOut(), ...AFTER })
+      });
+      expect(
+        screen.getByRole('heading', {
+          level: 1,
+          name: 'Ссылки такого вида перестали открываться 26 октября 2026 года.'
+        })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Попросите у отправителя новую ссылку или войдите, чтобы собрать список.'
+        )
+      ).toBeInTheDocument();
+      const links = screen.getAllByRole('link', { name: 'Списки' });
+      expect(links.some((l) => l.className.includes('btn'))).toBe(true);
+      expect(screen.queryByRole('textbox', { name: 'Название списка' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Сохранить себе' })).toBeNull();
+      await new Promise((r) => setTimeout(r, 200));
+      expect(router.hash()).toBe(hash);
+      await expectNoA11yViolations(container);
+      cleanup();
+    }
+    expect(unpack).not.toHaveBeenCalled();
+  });
+
+  it('keeps an account list and its «Поделиться» as they are after the cutoff', async () => {
+    render(App, {
+      env: at('#/lists/00000000-0000-4000-8000-000000000101', {
+        cloud: fakeCloud(SEED, 'gm1'),
+        ...AFTER
+      })
+    });
+    const title = await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(title).not.toHaveAttribute('readonly');
+    expect(screen.getByRole('button', { name: 'Поделиться' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Убрать из списка' }).length).toBeGreaterThan(
+      0
+    );
+  });
+
+  it('follows its own #/l/ page to the account address, and writes the old one no more', async () => {
+    const hash = '#/l/' + encodeList(listA, true);
+    const router = memoryRouter(hash);
+    render(App, { env: withA(hash, { router, cloud: fakeCloud(SEED, 'gm1') }) });
+    const title = await screen.findByRole('textbox', { name: 'Название списка' });
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+    });
+    await new Promise((r) => setTimeout(r, 200));
+    expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+    expect(screen.getByRole('textbox', { name: 'Название списка' })).toHaveValue(
+      (title as HTMLInputElement).value
+    );
+    expect(screen.queryByRole('button', { name: 'Сохранить себе' })).toBeNull();
+  });
+
+  it("opens a moved list's old address as the account list it moved into", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const storage = memoryStorage({
+      'dhloot.lists.v2': '[]',
+      'dhloot.migrated.v1': JSON.stringify({
+        owner: SEED.users.gm1.id,
+        lists: { a: '00000000-0000-4000-8000-000000000101' }
+      })
+    });
+    const router = memoryRouter('#/lists/a');
+    render(App, { env: at('#/lists/a', { cloud, storage, router }) });
+    const title = await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(title).toHaveValue('Лавка кузнеца');
+    expect(screen.getByRole('button', { name: 'Поделиться' })).toBeInTheDocument();
+  });
+
+  it('is read-only with no «Удалить» while the move is due, and editable once it is done', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const foreign = JSON.stringify({ owner: 'another-account', lists: {} });
+    let release = (): void => undefined;
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const list = cloud.lists.list.bind(cloud.lists);
+    cloud.lists.list = async () => {
+      await gate;
+      return list();
+    };
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([listA]),
+      'dhloot.migrated.v1': foreign
+    });
+    const router = memoryRouter('#/lists/a');
+    render(App, { env: at('#/lists/a', { cloud, storage, router }) });
+    await screen.findByRole('link', { name: 'Аккаунт: gm1@example.test' });
+    expect(screen.getByRole('textbox', { name: 'Название списка' })).toHaveAttribute(
+      'readonly'
+    );
+    expect(screen.queryByRole('button', { name: 'Удалить' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).toBeNull();
+    await new Promise((r) => setTimeout(r, 200));
+    expect(router.hash()).toBe('#/lists/a');
+    release();
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: 'Название списка' })).not.toHaveAttribute(
+        'readonly'
+      );
+    });
+    expect(screen.getByRole('button', { name: 'Удалить' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
+    });
+  });
+
+  it("says the move's status in the notice's slot for the account that owns the lists", async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    const router = memoryRouter('#/lists/a');
+    render(App, { env: withA('#/lists/a', { cloud, router }) });
+    expect(
+      await screen.findByText(
+        'Не все списки перенесены: нет связи. Попробуем при следующем открытии.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Списки живут только в этом браузере.')).toBeNull();
   });
 });

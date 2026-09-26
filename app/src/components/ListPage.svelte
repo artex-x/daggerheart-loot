@@ -31,6 +31,7 @@
   import RecordHost from './RecordHost.svelte';
   import RowMain from './RowMain.svelte';
   import SharePanel from './SharePanel.svelte';
+  import MoveStatus from './MoveStatus.svelte';
   import SharedListPage from './SharedListPage.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import { isCloudId } from '../lib/cloudLists.js';
@@ -86,7 +87,19 @@
    */
   const own = $derived.by((): StoredList | null => {
     const r = route;
-    if (r.kind === 'storedList') return app.lists.get(r.listId) ?? cloud?.get(r.listId) ?? null;
+    if (r.kind === 'storedList') {
+      /* A moved list's old address opens the account list it moved into. */
+      const moved = app.lists.migrated.lists[r.listId];
+      return (
+        app.lists.get(r.listId) ??
+        cloud?.get(r.listId) ??
+        (moved === undefined ? undefined : cloud?.get(moved)) ??
+        null
+      );
+    }
+    /* After the cutoff a `#/l/` address draws the retired page, even for a
+       list of this browser's own. */
+    if (r.kind === 'sharedList' && !app.legacyWritable) return null;
     if (r.kind === 'sharedList' && !r.packed) {
       if (r.payload === app.urlPayload) {
         const mine = app.lists.get(app.openList);
@@ -101,6 +114,10 @@
      no link buttons, no storage notice, and a save status in the sub. */
   const isCloud = $derived(own !== null && cloud?.get(own.id) === own);
   const store: ListModel = $derived(isCloud && cloud ? cloud : app.lists);
+  /* A browser list after the cutoff, or while the move is due: every control
+     that writes is gone or read-only (docs/specs/FEATURES.md, "Account and
+     browser lists"). */
+  const readOnly = $derived(!isCloud && !app.localWritable);
   /* A `#/lists/<uuid>` the account store does not hold (yet). */
   const cloudAddress = $derived(
     route.kind === 'storedList' && isCloudId(route.listId) && cloud !== null
@@ -181,7 +198,8 @@
     if (syncTimer !== null) clearTimeout(syncTimer);
     syncTimer = setTimeout(() => {
       syncTimer = null;
-      app.syncListUrl(l);
+      /* The session may have answered meanwhile, and made the move due. */
+      if (app.localWritable) app.syncListUrl(l);
     }, 150);
   }
 
@@ -203,12 +221,20 @@
     clearTimeout(syncTimer);
     syncTimer = null;
     const l = own;
-    if (l && !isCloud) app.syncListUrl(l);
+    if (l && !isCloud && app.localWritable) app.syncListUrl(l);
   }
 
+  /* A read-only browser list keeps the address it opened at: no `#/l/` is
+     written after the cutoff, nor while the move is due. */
   $effect(() => {
     const l = own;
-    if (l && !isCloud) scheduleUrlSync(l);
+    if (l && !isCloud && app.localWritable) {
+      scheduleUrlSync(l);
+      return;
+    }
+    /* A list that moved into the account, or turned read-only, must not
+       have its old address written back after the page followed it. */
+    cancelUrlSync();
   });
 
   $effect(() => {
@@ -364,6 +390,13 @@
        this list, and must not flush into the address bar after it is gone -
        see `cancelUrlSync`. */
     cancelUrlSync();
+    /* After the cutoff the only browser writes are removals: no undo. */
+    if (!app.legacyWritable) {
+      const gone = app.lists.removeMany([l.id]);
+      app.go('#/lists');
+      if (gone) app.say(t.listDeleted.replace('%s', l.name));
+      return;
+    }
     const removed = app.lists.remove(l.id);
     app.go('#/lists');
     /* Delete gets an undo, like every other destructive action here. */
@@ -779,46 +812,57 @@
   <div class="npair">
     <div class="nfield n-pub">
       <span class="nlbl"
-        ><Icon name="eye" />{t.notePub}<i>{t.notePubHint}</i><button
-          type="button"
-          class="note-x"
-          title={t.noteClear}
-          aria-label={t.noteClear}
-          onclick={clearNote}>&times;</button
-        ></span
+        ><Icon name="eye" />{t.notePub}<i>{t.notePubHint}</i>{#if !readOnly}<button
+            type="button"
+            class="note-x"
+            title={t.noteClear}
+            aria-label={t.noteClear}
+            onclick={clearNote}>&times;</button
+          >{/if}</span
       >
       <textarea
         rows="3"
         placeholder={key === 'list' ? t.listNotePhPub : t.notePhPub}
+        readonly={readOnly}
         use:seedText={o.note ?? ''}
-        oninput={(e) => {
-          noteInput(key, 'note', e);
-        }}></textarea>
+        oninput={readOnly
+          ? undefined
+          : (e) => {
+              noteInput(key, 'note', e);
+            }}></textarea>
     </div>
     <div class="nfield n-hid">
       <span class="nlbl"
-        ><Icon name="eyeOff" />{t.noteHid}<i>{t.noteHidHint}</i><button
-          type="button"
-          class="note-x"
-          title={t.noteClear}
-          aria-label={t.noteClear}
-          onclick={clearNote}>&times;</button
-        ></span
+        ><Icon name="eyeOff" />{t.noteHid}<i>{t.noteHidHint}</i>{#if !readOnly}<button
+            type="button"
+            class="note-x"
+            title={t.noteClear}
+            aria-label={t.noteClear}
+            onclick={clearNote}>&times;</button
+          >{/if}</span
       >
       <textarea
         rows="3"
         placeholder={key === 'list' ? t.listNotePhHid : t.notePhHid}
+        readonly={readOnly}
         use:seedText={o.hnote ?? ''}
-        oninput={(e) => {
-          noteInput(key, 'hnote', e);
-        }}></textarea>
+        oninput={readOnly
+          ? undefined
+          : (e) => {
+              noteInput(key, 'hnote', e);
+            }}></textarea>
     </div>
   </div>
 {/snippet}
 
 <RecordHost {app} {index} extra={(it: Record_) => entryNoteBlock(metaOf(it.id), t)}>
   {#snippet children(openRecord)}
-    {#if !index}
+    {#if route.kind === 'sharedList' && !app.legacyWritable}
+      <!-- After the cutoff every `#/l/` address, own or not, plain or packed,
+           draws this: the payload is never decoded, the address is kept. -->
+      <PageTitle title={t.linkRetired} sub={t.linkRetiredSub} />
+      <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+    {:else if !index}
       <NoData>{t.noData}</NoData>
     {:else if route.kind === 'storedList' && !own}
       {#if cloudAddress && app.user === null}
@@ -832,10 +876,11 @@
         >
       {:else if cloudAddress && cloud?.status === 'error'}
         <PageTitle title={t.listNotFound} sub={t.cloudLoadFailed} />
-        <Button variant="primary" onclick={() => void cloud.load()}>{t.retry}</Button>
-      {:else if cloudAddress && (app.user === undefined || cloud?.status !== 'ready')}
-        <!-- The account is still answering: nothing yet, so neither the
-             sign-in line nor "not found" flashes. -->
+        <Button variant="primary" onclick={() => void app.retryLists()}>{t.retry}</Button>
+      {:else if cloudAddress && (app.user === undefined || cloud?.status !== 'ready' || app.legacyMove?.status === 'moving')}
+        <!-- The account is still answering, or a moved list's page waits for
+             the account to be read again: nothing yet, so neither the sign-in
+             line nor "not found" flashes. -->
       {:else}
         <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
         <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
@@ -874,14 +919,19 @@
         <input
           type="text"
           class="titleinput"
+          class:ro={readOnly}
           value={own.name}
           aria-label={t.rename}
-          oninput={rename}
+          readonly={readOnly}
+          oninput={readOnly ? undefined : rename}
         />
       {/snippet}
       {#snippet cloudSub()}
         {plural(items.length, t.itemsN, app.lang)} ·
-        <span class="sync" class:bad={syncFailed}
+        <span
+          class="sync"
+          class:bad={syncFailed}
+          data-saving={cloud?.sync === 'saving' || undefined}
           >{syncFailed ? t.notSaved : cloud?.sync === 'saving' ? t.saving : t.savedState}</span
         >{#if syncFailed}<button
             type="button"
@@ -906,7 +956,7 @@
               sharing = !sharing;
             }}><Icon name="link" />{t.share}</Button
           >
-        {:else}
+        {:else if !readOnly}
           <Button size="sm" onclick={() => void sharePlayers()}
             ><Icon name="link" />{t.sharePlayers}</Button
           >
@@ -928,14 +978,21 @@
             title={t.printHint}><Icon name="print" />{t.print}</Button
           >
         {/if}
-        <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
+        <!-- A delete during the move would race its removal. -->
+        {#if isCloud || !app.moveDue}
+          <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
+        {/if}
       </Actions>
       {#if isCloud && sharing}
         <SharePanel {app} listId={own.id} />
       {/if}
 
       {#if !isCloud}
-        <StorageNotice {app} />
+        {#if app.user && app.legacyMove && !app.legacyMove.foreign}
+          <MoveStatus {app} />
+        {:else}
+          <StorageNotice {app} />
+        {/if}
       {/if}
 
       {#if priced}
@@ -945,6 +1002,7 @@
             <Chip
               label={t[`money_${m}`]}
               on={m === mode}
+              disabled={readOnly}
               onclick={() => {
                 pickMoney(m);
               }}
@@ -1050,18 +1108,22 @@
           >
           {#if ticked.length}
             <span class="batch-acts">
-              <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
-                >{t.batchMoney}</Button
-              >
+              {#if !readOnly}
+                <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
+                  >{t.batchMoney}</Button
+                >
+              {/if}
               <Button size="sm" onclick={() => void copyTicked()}
                 ><Icon name="copy" />{t.copySel}</Button
               >
-              <Button size="sm" variant="danger" onclick={batchDelete}
-                >{t.del} ({String(ticked.length)})</Button
-              >
+              {#if !readOnly}
+                <Button size="sm" variant="danger" onclick={batchDelete}
+                  >{t.del} ({String(ticked.length)})</Button
+                >
+              {/if}
             </span>
           {/if}
-          {#if ticked.length && guess}
+          {#if ticked.length && guess && !readOnly}
             <div class="guess">
               {#if pricedCount}
                 <div class="money-act">
@@ -1122,13 +1184,15 @@
               class:drop-after={dropGap === i + 1}
               data-index={i}
             >
-              <span
-                class="lrow-grip"
-                draggable="true"
-                data-drag="{own.id}:{it.id}"
-                title={t.dragHint}
-                aria-hidden="true"><Icon name="grip" /></span
-              >
+              {#if !readOnly}
+                <span
+                  class="lrow-grip"
+                  draggable="true"
+                  data-drag="{own.id}:{it.id}"
+                  title={t.dragHint}
+                  aria-hidden="true"><Icon name="grip" /></span
+                >
+              {/if}
               <label class="lrow-pick"
                 ><input
                   type="checkbox"
@@ -1147,9 +1211,12 @@
                 inputmode="numeric"
                 value={i + 1}
                 aria-label={t.position}
-                onchange={(e) => {
-                  setPos(it, i, e);
-                }}
+                readonly={readOnly}
+                onchange={readOnly
+                  ? undefined
+                  : (e) => {
+                      setPos(it, i, e);
+                    }}
               />
               <RowMain
                 {it}
@@ -1171,9 +1238,12 @@
                     data-qty
                     value={m.qty || ''}
                     placeholder="1"
-                    oninput={(e) => {
-                      setQty(it.id, e);
-                    }}
+                    readonly={readOnly}
+                    oninput={readOnly
+                      ? undefined
+                      : (e) => {
+                          setQty(it.id, e);
+                        }}
                   /></label
                 >
                 <label
@@ -1192,9 +1262,12 @@
                     value={m.gold || ''}
                     placeholder="—"
                     title={goldText(m.gold ?? 0) || undefined}
-                    oninput={(e) => {
-                      setGold(it.id, e);
-                    }}
+                    readonly={readOnly}
+                    oninput={readOnly
+                      ? undefined
+                      : (e) => {
+                          setGold(it.id, e);
+                        }}
                   /></label
                 >
               </div>
@@ -1209,15 +1282,17 @@
                     toggleNote(it.id, e);
                   }}><Icon name="note" /></button
                 >
-                <button
-                  type="button"
-                  class="row-x"
-                  title={t.removeItem}
-                  aria-label={t.removeItem}
-                  onclick={() => {
-                    removeEntry(it, i);
-                  }}>&times;</button
-                >
+                {#if !readOnly}
+                  <button
+                    type="button"
+                    class="row-x"
+                    title={t.removeItem}
+                    aria-label={t.removeItem}
+                    onclick={() => {
+                      removeEntry(it, i);
+                    }}>&times;</button
+                  >
+                {/if}
               </div>
               {#if lsel.has(it.id) && (m.qty ?? 0) > 1}
                 {@const n = takenOf(it.id)}
@@ -1301,6 +1376,11 @@
 
   .titleinput:hover {
     border-bottom-color: var(--muted2);
+  }
+
+  .titleinput.ro {
+    border-bottom-color: transparent;
+    cursor: default;
   }
 
   /* `.card-acts` moved to `Actions.svelte` - `margin-bottom:16px` is
@@ -2048,6 +2128,14 @@
   .lrow-meta input:focus {
     outline: none;
     border-color: var(--gold);
+  }
+
+  /* A read-only browser list: the same boxes, muted, with no frame to type
+     into. */
+  .lrow-meta input[readonly] {
+    color: var(--muted);
+    border-color: transparent;
+    background: transparent;
   }
 
   /* off `.lrow-acts` and its four (style.css:777-784) */

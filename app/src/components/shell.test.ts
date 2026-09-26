@@ -686,3 +686,54 @@ describe('accessibility', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe("the move's mark on the page and its notice", () => {
+  const main = (container: HTMLElement): HTMLElement | null => container.querySelector('main');
+
+  it('marks the page pending while the session is unknown, then the move status', async () => {
+    let answer: (
+      s: { userId: string; email: string; provider: 'google' } | null
+    ) => void = () => undefined;
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.auth.session = () =>
+      new Promise((r) => {
+        answer = r;
+      });
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: [] }])
+    });
+    const { container } = render(App, {
+      env: at('#/i/ci1', { cloud, storage, data: fakeData(LOOT) })
+    });
+    expect(main(container)?.dataset['move']).toBe('pending');
+    answer({ userId: SEED.users.gm1.id, email: SEED.users.gm1.email, provider: 'google' });
+    await waitFor(() => {
+      expect(main(container)?.dataset['move']).toBe('done');
+    });
+    /* The notice sits between the header and the page, on a record page too. */
+    const notice = container.querySelector('.movenotice');
+    expect(notice?.previousElementSibling?.tagName).toBe('HEADER');
+    expect(notice?.nextElementSibling?.tagName).toBe('MAIN');
+    expect(notice?.textContent).toContain('«Тайник»');
+    await expectNoA11yViolations(container);
+  });
+
+  it('holds the mark at idle until the first read of the account answers', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.lists.list = () => new Promise(() => undefined);
+    const { container } = render(App, { env: at('#/roll/std', { cloud }) });
+    await waitFor(() => {
+      expect(main(container)?.dataset['move']).toBe('idle');
+    });
+  });
+
+  it('draws no mark signed out, nor in a build with no sign-in', async () => {
+    const { container } = render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED) }) });
+    await screen.findByRole('link', { name: 'Войти' });
+    expect(main(container)?.hasAttribute('data-move')).toBe(false);
+    cleanup();
+    const bare = render(App, { env: at('#/roll/std') });
+    expect(main(bare.container)?.hasAttribute('data-move')).toBe(false);
+    expect(bare.container.querySelector('.movenotice')).toBeNull();
+  });
+});

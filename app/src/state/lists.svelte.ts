@@ -23,6 +23,7 @@ import {
   type StoredList
 } from '../lib/lists.js';
 import type { Dict } from '../lib/dict.js';
+import { canonicalList } from '../lib/legacy.js';
 import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
 import type { Env } from '../ports/index.js';
 
@@ -31,6 +32,83 @@ const LISTS_KEY_V1 = 'dhloot.lists.v1';
 /** Where a `dhloot.lists.v2` value that will not parse is copied before this
  *  tab's own next write would otherwise silently overwrite it - R1. */
 const LISTS_KEY_BAD = 'dhloot.lists.v2.bad';
+/** The move into the account: who owns this browser's lists, the moved ones,
+ *  and what the one-time notice still says (docs/specs/STATE.md). */
+const MIGRATED_KEY = 'dhloot.migrated.v1';
+
+/**
+ * `dhloot.migrated.v1`: `owner` the first account whose app loaded with browser
+ * lists, `lists` the tombstones (local id to account id), `notice` the names the
+ * one-time notice still shows, `bad` the damaged-backup sentence (true to show,
+ * false dismissed), `held` the local ids whose account copy did not match.
+ */
+export interface Migrated {
+  owner?: string;
+  lists: Record<string, string>;
+  notice?: string[];
+  bad?: boolean;
+  held?: string[];
+}
+
+/** One list the move verified: the text sent and the account row it made or found. */
+export interface MovePair {
+  localId: string;
+  accountId: string;
+  canonical: string;
+  name: string;
+}
+
+/** A browser list that left this browser for the account list `accountId`. */
+export interface MovedList {
+  list: StoredList;
+  accountId: string;
+}
+
+const strings = (v: unknown): string[] | undefined =>
+  Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : undefined;
+
+function parsed(raw: string | null): unknown {
+  try {
+    return raw === null ? null : JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+/* A value that does not parse reads as absent, field by field. */
+function readMigrated(raw: string | null): Migrated {
+  const v = parsed(raw);
+  const o =
+    v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
+  const lists: Record<string, string> = {};
+  const rawLists = o['lists'];
+  if (rawLists && typeof rawLists === 'object' && !Array.isArray(rawLists)) {
+    for (const [k, id] of Object.entries(rawLists)) if (typeof id === 'string') lists[k] = id;
+  }
+  const m: Migrated = { lists };
+  if (typeof o['owner'] === 'string') m.owner = o['owner'];
+  const notice = strings(o['notice']);
+  if (notice?.length) m.notice = notice;
+  if (typeof o['bad'] === 'boolean') m.bad = o['bad'];
+  const held = strings(o['held']);
+  if (held?.length) m.held = held;
+  return m;
+}
+
+/* One key order, so two tabs write the same text for the same state. */
+function writeMigrated(m: Migrated): string {
+  return JSON.stringify({
+    owner: m.owner,
+    lists: m.lists,
+    notice: m.notice?.length ? m.notice : undefined,
+    bad: m.bad,
+    held: m.held?.length ? m.held : undefined
+  });
+}
+
+const union = (a: readonly string[] | undefined, b: readonly string[]): string[] => [
+  ...new Set([...(a ?? []), ...b])
+];
 
 /** Four base-36 digits off `env.random`, the same shape `Math.random()
  *  .toString(36).slice(2, 6)` produces but not tied to the global. */
@@ -91,8 +169,14 @@ export class ListStore implements ListModel {
    * the raw value up under `.bad` before either can overwrite it.
    */
   unreadable = $state(false);
+  /** `dhloot.migrated.v1` as last read: read fresh on every read of the lists, so a
+   *  tab hides a list another tab moved on the next signal. */
+  migrated = $state.raw<Migrated>({ lists: {} });
 
   readonly #env: Env;
+  /* The raw `dhloot.migrated.v1` `migrated` was parsed from; undefined before
+     the first read. */
+  #migratedRaw: string | null | undefined = undefined;
   /** What the app's own `say` needs, without this module knowing `AppState`. */
   readonly #say: (msg: string, error?: boolean) => void;
   readonly #dict: () => Dict;
@@ -138,21 +222,27 @@ export class ListStore implements ListModel {
    * calls this directly on another tab's write.
    */
   #readCurrent(): StoredList[] | null {
+    /* Read with no lists key too: the notice and the owner check read it. */
+    const moved = this.#readMigrated().lists;
     const raw = this.#env.storage.get(LISTS_KEY);
     if (raw === null) {
       this.#lastRaw = null;
       return null;
     }
+    /* A moved list is hidden like a deleted one: a copy another tab still
+       held, or a storage rollback, never draws it again. */
+    const kept = (l: StoredList): boolean =>
+      !this.#deleted[l.id] && !Object.hasOwn(moved, l.id);
     if (raw === this.#lastRaw) {
       this.unreadable = false;
-      return this.#lastParsed.filter((l) => !this.#deleted[l.id]);
+      return this.#lastParsed.filter(kept);
     }
     try {
       const all = keepLists(JSON.parse(raw));
       this.#lastRaw = raw;
       this.#lastParsed = all;
       this.unreadable = false;
-      return all.filter((l) => !this.#deleted[l.id]);
+      return all.filter(kept);
     } catch {
       this.#lastRaw = null;
       this.unreadable = true;
@@ -326,13 +416,191 @@ export class ListStore implements ListModel {
    *  key, becoming visible again, or a bfcache restore): take theirs, the
    *  way the live app's `storage` listener does (`mergeLists(loadLists())`
    *  with an empty `theirs`). */
-  watch(): () => void {
+  watch(onMoved?: (moved: MovedList[]) => void): () => void {
     return this.#env.storage.onExternalChange((key) => {
-      if (key !== LISTS_KEY && key !== null) return;
+      if (key !== LISTS_KEY && key !== MIGRATED_KEY && key !== null) return;
       const raw = this.#env.storage.get(LISTS_KEY);
-      if (raw !== null && raw === this.#shownRaw) return;
+      /* The early return is for the lists key alone: a new tombstone hides a
+         list whose stored text did not change. */
+      const sameMoved = this.#env.storage.get(MIGRATED_KEY) === this.#migratedRaw;
+      if (key !== MIGRATED_KEY && sameMoved && raw !== null && raw === this.#shownRaw) return;
+      const before = this.lists;
       this.#reload();
+      const moved = this.migrated.lists;
+      const left = before.flatMap((list): MovedList[] => {
+        const accountId = moved[list.id];
+        return accountId !== undefined && !this.get(list.id) ? [{ list, accountId }] : [];
+      });
+      if (left.length) onMoved?.(left);
     });
+  }
+
+  /* ---------- the move into the account ---------- */
+
+  /** Parses `dhloot.migrated.v1` again only when its raw value changed. */
+  #readMigrated(): Migrated {
+    const raw = this.#env.storage.get(MIGRATED_KEY);
+    if (raw !== this.#migratedRaw) {
+      this.#migratedRaw = raw;
+      this.migrated = readMigrated(raw);
+    }
+    return this.migrated;
+  }
+
+  /* Every writer merges into a fresh read, so two tabs never write over each
+     other's tombstones, names or dismissal. */
+  #changeMigrated(change: (m: Migrated) => Migrated): boolean {
+    this.#migratedRaw = undefined;
+    const next = change(this.#readMigrated());
+    const raw = writeMigrated(next);
+    if (!this.#env.storage.set(MIGRATED_KEY, raw)) return false;
+    this.#migratedRaw = raw;
+    this.migrated = next;
+    return true;
+  }
+
+  /** The browser lists as storage holds them now, less the deleted and the moved. */
+  current(): StoredList[] {
+    return this.#readCurrent() ?? [];
+  }
+
+  /** Whether `dhloot.lists.v2.bad` holds a value: read, never written or deleted here. */
+  get hasBadBackup(): boolean {
+    return this.#env.storage.get(LISTS_KEY_BAD) !== null;
+  }
+
+  /** Records `owner` as the account that owns this browser's lists, once. */
+  claim(owner: string): boolean {
+    if (this.#readMigrated().owner !== undefined) return true;
+    return this.#changeMigrated((m) => ({ ...m, owner: m.owner ?? owner }));
+  }
+
+  /** Holds lists whose account copy did not match: no run sends them again. */
+  markHeld(owner: string, ids: readonly string[]): boolean {
+    return this.#changeMigrated((m) => ({
+      ...m,
+      owner: m.owner ?? owner,
+      held: union(m.held, ids)
+    }));
+  }
+
+  /** Asks the notice for the damaged-backup sentence, unless it was already asked or dismissed. */
+  markBad(owner: string): boolean {
+    return this.#changeMigrated((m) => ({
+      ...m,
+      owner: m.owner ?? owner,
+      bad: m.bad ?? true
+    }));
+  }
+
+  /** «Скрыть»: the names leave the notice, and a shown backup sentence is not shown again. */
+  dismissNotice(): boolean {
+    return this.#changeMigrated((m) => {
+      const next: Migrated = { ...m };
+      delete next.notice;
+      if (m.bad === true) next.bad = false;
+      return next;
+    });
+  }
+
+  /**
+   * Removes lists by id against fresh storage - a delete after the cutoff, with no
+   * merge: another tab's additions survive, and this tab's memory becomes the stored
+   * truth. A removed id leaves `held` with it.
+   */
+  removeMany(ids: readonly string[]): boolean {
+    const next = (this.#readCurrent() ?? []).filter((l) => !ids.includes(l.id));
+    for (const id of ids) this.#deleted[id] = true;
+    const ok = this.#writeLists(next);
+    this.lists = next;
+    this.#shownRaw = ok ? this.#lastRaw : null;
+    if (this.migrated.held?.some((id) => ids.includes(id))) {
+      this.#changeMigrated((m) => ({
+        ...m,
+        held: (m.held ?? []).filter((id) => !ids.includes(id))
+      }));
+    }
+    return ok;
+  }
+
+  #writeLists(next: StoredList[]): boolean {
+    const json = JSON.stringify(next);
+    const ok = this.#env.storage.set(LISTS_KEY, json);
+    this.saved = ok;
+    if (!ok) {
+      this.#say(this.#dict().saveFailed, true);
+      return false;
+    }
+    this.#lastRaw = json;
+    this.#lastParsed = next;
+    return true;
+  }
+
+  /**
+   * The move's removal, in a fixed order. Reads `dhloot.lists.v2` raw (a list another
+   * tab tombstoned is still compared), splits the pairs into unchanged or gone from
+   * storage and changed, writes `dhloot.migrated.v1` first - tombstones for the
+   * unchanged and gone, names for those whose tombstone is new, `held` for the changed
+   * (and no tombstone: a changed list draws again, named in the status) - then the lists
+   * without the unchanged ones. A pair another tab already holds is left alone. A crash between the two writes leaves a
+   * notice with no removal, never a removal with no notice. Answers the removed lists
+   * and the changed ids; null, with nothing written, when the lists key does not parse
+   * or the tombstones could not be written.
+   */
+  settleMove(
+    owner: string,
+    pairs: readonly MovePair[]
+  ): { removed: MovedList[]; changed: string[] } | null {
+    const raw = this.#env.storage.get(LISTS_KEY);
+    let stored: StoredList[] = [];
+    try {
+      if (raw !== null) stored = keepLists(JSON.parse(raw));
+    } catch {
+      return null;
+    }
+    const byId = (id: string): StoredList | undefined => stored.find((l) => l.id === id);
+    const settled: MovePair[] = [];
+    const changed: string[] = [];
+    const held = this.#readMigrated().held ?? [];
+    for (const p of pairs) {
+      /* Another tab found its account copy different: never settled here. */
+      if (held.includes(p.localId)) continue;
+      const l = byId(p.localId);
+      if (!l || canonicalList(l) === p.canonical) settled.push(p);
+      else changed.push(p.localId);
+    }
+    const before = { ...this.#readMigrated().lists };
+    const wrote = this.#changeMigrated((m) => {
+      const lists = { ...m.lists };
+      const names = [...(m.notice ?? [])];
+      for (const p of settled) {
+        if (!Object.hasOwn(lists, p.localId)) names.push(p.name);
+        lists[p.localId] = p.accountId;
+      }
+      /* A changed list under another tab's older tombstone loses it, so the
+         edit is drawn, held, and no later write drops it. */
+      for (const id of changed) Reflect.deleteProperty(lists, id);
+      const next: Migrated = { ...m, owner: m.owner ?? owner, lists };
+      if (names.length) next.notice = names;
+      if (changed.length) next.held = union(m.held, changed);
+      return next;
+    });
+    if (!wrote) return null;
+    const unchanged = settled.filter((p) => byId(p.localId)).map((p) => p.localId);
+    /* A changed list is held and stays in storage, its older tombstone gone. */
+    const prune = (l: StoredList): boolean =>
+      unchanged.includes(l.id) || (Object.hasOwn(before, l.id) && !changed.includes(l.id));
+    const removed = settled.flatMap((p): MovedList[] => {
+      const list = byId(p.localId) ?? this.get(p.localId);
+      return list ? [{ list, accountId: p.accountId }] : [];
+    });
+    for (const id of unchanged) this.#deleted[id] = true;
+    if (stored.some(prune)) {
+      const ok = this.#writeLists(stored.filter((l) => !prune(l)));
+      this.#shownRaw = ok ? this.#lastRaw : null;
+    }
+    this.lists = (this.#readCurrent() ?? []).filter((l) => !unchanged.includes(l.id));
+    return { removed, changed };
   }
 
   /* ---------- the list page's own writers ---------- */

@@ -50,12 +50,15 @@
   const one = $derived(ids.length === 1 ? ids[0] : undefined);
   const label = $derived(one !== undefined ? t.inLists : t.addTo);
 
-  /* One plain list: the account's lists, once read, and this browser's. */
+  /* One plain list: the account's lists, once read, and this browser's -
+     only while a browser list may be written (not after the cutoff, nor
+     while the move is due). */
   const target = $derived(app.newListTarget);
+  const browser = $derived(app.localWritable ? app.lists.lists : []);
   const all = $derived<StoredList[]>(
     app.cloudLists?.status === 'ready' && target === 'cloud'
-      ? [...app.cloudLists.lists, ...app.lists.lists]
-      : app.lists.lists
+      ? [...app.cloudLists.lists, ...browser]
+      : browser
   );
 
   /* Taken when the menu opens, so a pressed chip keeps its place until the

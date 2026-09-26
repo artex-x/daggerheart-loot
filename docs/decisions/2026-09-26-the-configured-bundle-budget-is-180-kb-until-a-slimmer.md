@@ -1,5 +1,7 @@
 # 2026-09-26 - The configured bundle budget is 180 kB until a slimmer account client
 
+- Superseded by "The bundle budget is 150 kB unconfigured and 200 kB configured" (2026-09-26).
+
 - Task: `persist-2-lists` (owner, 2026-09-26, after CI run 36228323330).
 - Decision: `tools/bundle-budget.mjs` allows 180 kB gzip for the configured
   build (with the account client chunk); the unconfigured limit stays 120.

@@ -9,13 +9,7 @@
  * would race the router. docs/specs/FEATURES.md, "Account". */
 
 import { createClient, type User, type UserIdentity } from '@supabase/supabase-js';
-import {
-  entryOrder,
-  type EntryRow,
-  type ListRow,
-  type SharedRow,
-  type ShareRow
-} from '../lib/cloudLists.js';
+import { entryOrder, type ListRow, type SharedRow, type ShareRow } from '../lib/cloudLists.js';
 import type { SignInAfter } from '../lib/pending.js';
 import { readPrefs } from '../lib/prefs.js';
 import { callbackUrl, saveReturn, type Redirect, type RedirectWindow } from './redirect.js';
@@ -26,8 +20,11 @@ import type {
   AuthResult,
   CloudPort,
   Identity,
+  ListOpResult,
   ListRepository,
   ListWrite,
+  ListWrites,
+  MoveWrite,
   PreferencesPort,
   Provider,
   Session,
@@ -66,13 +63,17 @@ interface Answer {
 const WRITTEN: ListWrite = { ok: true };
 const NETWORK: ListWrite = { ok: false, error: 'network' };
 const LIMIT = /^limit: ([\w-]+)$/;
+/* A lapsed or missing session: the write is kept and sent again once the
+   client has a session again (docs/specs/FEATURES.md, "Account and browser lists"). */
+const SESSION_CODES: ReadonlySet<string> = new Set(['PGRST301', 'PGRST303', '28000']);
 
-/** Returns a write's outcome: a limit trigger's `limit: <key>` (P0001, the limit in
- *  `details`), no answer or a server fault as `network`, any other error as `refused`. */
-function writeOf(answer: Answer): ListWrite {
-  const { error, status } = answer;
-  if (!error) return WRITTEN;
-  if (status === 0 || status >= 500 || !error.code) return NETWORK;
+/** Returns a refusal as the client reads it: a limit trigger's `limit: <key>` (P0001, the
+ *  limit in `details`), else `refused`. */
+function refusalOf(error: {
+  code?: string | undefined;
+  message?: string | undefined;
+  details?: string | null | undefined;
+}): Exclude<ListWrite, { ok: true } | { error: 'network' }> {
   const limit = error.code === 'P0001' ? LIMIT.exec(error.message ?? '') : null;
   if (limit?.[1]) {
     const value = Number(error.details);
@@ -86,6 +87,16 @@ function writeOf(answer: Answer): ListWrite {
   return { ok: false, error: 'refused' };
 }
 
+/** Returns a write's outcome: no answer, a server fault or a lapsed session as `network`,
+ *  else what `refusalOf` reads. */
+function writeOf(answer: Answer): ListWrite {
+  const { error, status } = answer;
+  if (!error) return WRITTEN;
+  if (status === 0 || status === 401 || status >= 500 || !error.code) return NETWORK;
+  if (SESSION_CODES.has(error.code)) return NETWORK;
+  return refusalOf(error);
+}
+
 /* A thrown call never reached the database, so it may be sent again. */
 async function written(call: () => PromiseLike<Answer>): Promise<ListWrite> {
   try {
@@ -93,6 +104,73 @@ async function written(call: () => PromiseLike<Answer>): Promise<ListWrite> {
   } catch {
     return NETWORK;
   }
+}
+
+/* The database failed an `apply_list_writes` call itself - a statement
+   timeout or a defect - which repeats. A restart, a lock and class 40 answer
+   HTTP 500 too but pass, so they stay `network` (docs/DECISIONS.md,
+   2026-09-26, "A request the database fails three times is halved"). */
+const FAULT_CODE = /^(?:57014|(?:22|23|42|P0|XX)[0-9A-Z]{3})$/;
+
+const FAULT: ListWrites = { ok: false, error: 'fault' };
+const UNSENT: ListWrites = { ok: false, error: 'network' };
+const REFUSED: ListWrites = { ok: false, error: 'refused' };
+const MOVE_REFUSED: MoveWrite = { ok: false, error: 'refused' };
+
+/** Returns an `apply` call's own failure: `fault`, `network`, or `refused`. */
+function callFailure(answer: Answer): ListWrites {
+  if (answer.status === 500 && FAULT_CODE.test(answer.error?.code ?? '')) return FAULT;
+  /* A stale schema cache or a reverted migration: waited out, never up to
+     200 writes refused with one toast. */
+  if (answer.status === 404 && answer.error?.code === 'PGRST202') return UNSENT;
+  /* A limit is refused whole too: the call itself never raises one. */
+  return writeOf(answer) === NETWORK ? UNSENT : REFUSED;
+}
+
+/** Returns one write's result inside an `apply` answer (`{ ok }` or `{ ok, code, message,
+ *  details }`): `P0002` is a row gone or not the caller's. */
+function resultOf(r: unknown): ListOpResult {
+  if (r === null || typeof r !== 'object') return { ok: false, error: 'refused' };
+  const one = r as { ok?: unknown; code?: string; message?: string; details?: string | null };
+  if (one.ok === true) return { ok: true };
+  if (one.code === 'P0002') return { ok: false, error: 'gone' };
+  return refusalOf(one);
+}
+
+/** The most bytes a request body may hold to go with `keepalive`: the Fetch standard gives
+ *  the `keepalive` requests of a page 64 KiB together. */
+const KEEPALIVE_BYTES = 64_000;
+const utf8 = new TextEncoder();
+
+type Fetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
+/* A database write outlives a page closed while it is sent: the write
+   buffer's flush on `pagehide` is one such request. An auth request never
+   carries the flag - a token refresh that lands after the page closed would
+   rotate a refresh token the page never stores. A request the browser
+   refuses with the flag is sent once more without it; every write is
+   idempotent. The prefix is parsed as supabase-js parses the URL, so an
+   uppercase host or an explicit default port still matches. */
+function keepaliveFetch(url: string): Fetch {
+  const rest = new URL('rest/v1/', url.replace(/\/*$/, '/')).href;
+  return async (input, init) => {
+    const target =
+      typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const body = init?.body;
+    if (
+      !target.startsWith(rest) ||
+      typeof body !== 'string' ||
+      utf8.encode(body).length > KEEPALIVE_BYTES
+    ) {
+      return fetch(input, init);
+    }
+    try {
+      return await fetch(input, { ...init, keepalive: true });
+    } catch (err) {
+      if (init?.signal?.aborted) throw err;
+      return fetch(input, init);
+    }
+  };
 }
 
 /** What `create_list_share` answers: a `returns table`, so an array. */
@@ -114,7 +192,7 @@ async function made(call: () => PromiseLike<MadeAnswer>): Promise<ShareMade> {
 /* One read of the owner's lists with their entries; row level security keeps
    it to the owner (tests/db/lists.test.mjs). */
 const LIST_SELECT =
-  'id,name,money_mode,player_note,gm_note,created_at,updated_at,' +
+  'id,name,money_mode,player_note,gm_note,created_at,updated_at,legacy_fingerprint,' +
   'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)';
 
 type CloudWindow = RedirectWindow & Pick<Window, 'addEventListener' | 'removeEventListener'>;
@@ -136,7 +214,8 @@ export function createCloud(
       persistSession: true,
       autoRefreshToken: true,
       ...(storage ? { storage } : {})
-    }
+    },
+    global: { fetch: keepaliveFetch(url) }
   });
 
   /* Started at once: the page mounts meanwhile, and every read waits for it. */
@@ -319,12 +398,6 @@ export function createCloud(
     }
   };
 
-  const entriesOf = (listId: string, entries: EntryRow[]) =>
-    client.from('list_entries').upsert(
-      entries.map((e) => ({ ...e, list_id: listId })),
-      { onConflict: 'id', ignoreDuplicates: true }
-    );
-
   const lists: ListRepository = {
     newId: () => crypto.randomUUID(),
     async list() {
@@ -342,29 +415,40 @@ export function createCloud(
         return { ok: false };
       }
     },
-    async create(list, entries) {
-      /* lists.owner_id has no default; its insert policy checks it against
-         the session's user. */
-      const owner = await userId();
-      if (!owner) return { ok: false, error: 'refused' };
-      const made = await written(() =>
-        client
-          .from('lists')
-          .upsert({ ...list, owner_id: owner }, { onConflict: 'id', ignoreDuplicates: true })
-      );
-      if (!made.ok || !entries.length) return made;
-      return written(() => entriesOf(list.id, entries));
+    async apply(ops) {
+      if (!ops.length) return { ok: true, results: [] };
+      try {
+        const answer = await client.rpc('apply_list_writes', { p_ops: ops });
+        if (answer.error) return callFailure(answer);
+        const data: unknown = answer.data;
+        if (!Array.isArray(data) || data.length !== ops.length) return REFUSED;
+        return { ok: true, results: data.map(resultOf) };
+      } catch {
+        return UNSENT;
+      }
     },
-    update: (id, patch) => written(() => client.from('lists').update(patch).eq('id', id)),
-    addEntries: (listId, entries) =>
-      entries.length ? written(() => entriesOf(listId, entries)) : Promise.resolve(WRITTEN),
-    updateEntry: (entryId, patch) =>
-      written(() => client.from('list_entries').update(patch).eq('id', entryId)),
-    removeEntries: (entryIds) =>
-      written(() => client.from('list_entries').delete().in('id', entryIds)),
-    reorder: (listId, entryIds) =>
-      written(() => client.rpc('reorder_list', { p_list: listId, p_entries: entryIds })),
-    remove: (id) => written(() => client.from('lists').delete().eq('id', id))
+    /* `writeOf` reads the answer: a lapsed session (`28000`) and the row deleted
+       during the move (`40001`, HTTP 500) are `network`, so the next load moves
+       the list again. */
+    async move(id, canonical) {
+      try {
+        const answer = await client.rpc('move_legacy_list', {
+          p_id: id,
+          p_canonical: canonical
+        });
+        const failed = writeOf(answer);
+        if (!failed.ok) return failed.error === 'network' ? failed : MOVE_REFUSED;
+        const data: unknown = answer.data;
+        const row = Array.isArray(data) ? (data[0] as unknown) : null;
+        if (!row || typeof row !== 'object') return MOVE_REFUSED;
+        const { id: moved, inserted } = row as { id?: unknown; inserted?: unknown };
+        return typeof moved === 'string' && typeof inserted === 'boolean'
+          ? { ok: true, id: moved, inserted }
+          : MOVE_REFUSED;
+      } catch {
+        return { ok: false, error: 'network' };
+      }
+    }
   };
 
   /* Row level security keeps a share's row to its list's owner, stopped rows

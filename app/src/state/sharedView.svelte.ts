@@ -1,7 +1,7 @@
 /* The list behind the open share link `#/s/<token>`: its read status, the
  * projection the link's audience sees, and whether the reader owns the
  * list. The poll and the shown-again signal re-read it through `refresh()`
- * (docs/specs/FEATURES.md, "Account lists"). */
+ * (docs/specs/FEATURES.md, "Account and browser lists"). */
 
 import type { SharedRow } from '../lib/cloudLists.js';
 import type { ShareRepository } from '../ports/index.js';

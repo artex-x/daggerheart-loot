@@ -10,9 +10,10 @@ plan-implement-review-remediate loops per batch.
 ## Release status
 - R0 closed 2026-09-24; R1 `persist-1-auth` closed 2026-09-25 (record:
   `plan.md` section 16, "R1 closeout record"); R2 `persist-2-lists` live
-  2026-09-26 (`012462e1`, budget fix `8ebf03ea`). Next: R5
-  `persist-5-migration` (its `plan.md` section 13 refresh, then `B5.1`),
-  then R5b `persist-5b-account-menu`.
+  2026-09-26 (`012462e1`, budget fix `8ebf03ea`); R5 `persist-5-migration`
+  closed 2026-09-26 (record: `plan.md` section 16, "R5 closeout record").
+  Next: R5b `persist-5b-account-menu`, then the plan-review process task
+  (`plan.md` section 9).
 
 ## Input design (external, not authoritative)
 - `C:\Users\Ignat\OneDrive\Desktop\persist\DAGGERHEART-LOOT-PERSISTENCE-DESIGN.md`

@@ -7,11 +7,12 @@
   `claude/persistent-storage-plan-d74d73`.
 - NEEDS_HUMAN_CONFIRMATION: no (decisions 1-41 answered, section 16).
 - R0 `persist-0-foundation` closed 2026-09-24; R1 `persist-1-auth` closed
-  2026-09-25; R2 `persist-2-lists` closed 2026-09-26. Each task directory
-  was retired in its closeout commit; the release records are section 16,
-  "R1 closeout record" and "R2 closeout record". Next release: R5
-  `persist-5-migration` (its plan waits on a worktree branch,
-  `context.md`, "Plans made ahead"), then R5b, R3, R4.
+  2026-09-25; R2 `persist-2-lists` and R5 `persist-5-migration` closed
+  2026-09-26. Each task directory was retired in its closeout commit; the
+  release records are section 16, "R1 closeout record", "R2 closeout
+  record" and "R5 closeout record". Next release: R5b
+  `persist-5b-account-menu` (its section 9 refresh, then `B5b.1`), then
+  the plan-review process task (section 9), R11, R3, R4.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -426,8 +427,9 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R0 | `persist-0-foundation` | `B0.1`, `B0.2` | HTTP-only build, retired worker, laws superseded, policy pages `privacy` and `terms`, Supabase tooling and guards, CI `db` job; no user-visible cloud feature. After it is live the owner publishes the Google app |
 | R1 | `persist-1-auth` | `B1.1`-`B1.6` - **closed 2026-09-25**, live at the merge onto `main` | Fake cloud and test build (layer 2), sign in, `#/account` with linking and sign out everywhere, delete account, hosted E2E (layer 4) and CI `e2e` job, account preferences, CI migration deploys (decision 41), the nightly backup (decision 39) |
 | R2 | `persist-2-lists` | `B2.0`-`B2.3` - **closed 2026-09-26**, live at the push of `main` | The test-migration fix (`B2.0`), then cloud lists with "edited N ago", sign-in-only creation, player and GM share links with polling, save a copy; `llms.txt` and the shared page name the cutoff date |
-| R5 | `persist-5-migration` | `B5.1`, `B5.2` - **planned 2026-09-26** (`issues/persist-5-migration/plan.md` is the authority) | **Moved directly after R2 (owner, 2026-09-25)** so that `LEGACY_WRITE_UNTIL` = 2026-10-26 is reachable (section 10): `B5.1` the `legacy_fingerprint` column and index, the exempted limit triggers and the `move_legacy_list` RPC; `B5.2` the automatic move at sign-in with its one-time notice and first-account guard (owner, 2026-09-26), the read-only cutoff, the date-gated `#/l/` retirement and its announcement, the post-date write path without the merge. Must be live on production by 2026-10-12, else the date moves |
-| R5b | `persist-5b-account-menu` (owner, 2026-09-26: its own release; `issues/persist-5-migration/plan.md` section 9b is its brief until the refresh gives it a directory) | `B5.3` | Right after R5, live by 2026-10-19 (before the 2026-10-26 cutoff): the header's account menu («Настройки отображения», «Мои списки», «Выйти»; «Мои предметы» joins in R7), the Display section of `#/account` (the five synced settings and R4's `notifyGm` choice), the Lists tab gone from the cutoff (`#/lists` stays a route) |
+| R5 | `persist-5-migration` | `B5.1`, `B5.2a`-`B5.2d` - **closed 2026-09-26**, live at the push of `main` | **Moved directly after R2 (owner, 2026-09-25)** so that `LEGACY_WRITE_UNTIL` = 2026-10-26 is reachable (section 10). Shipped: the automatic move of browser lists into the account at sign-in (`move_legacy_list`, one RPC per list, a read-back, `dhloot.migrated.v1` with the first account's id, the one-time notice, `held` for a mismatch, read-only while the move is due); the cutoff `LEGACY_WRITE_UNTIL` with read-only browser lists after it; the retired `#/l/` page and its announcement; the account write buffer (2 s quiet window, early flushes, a `keepalive` close) sent as one `apply_list_writes` request per flush. Migrations `20260925130400` (the column, the index, the exempted limit triggers, `move_legacy_list`), `20260925130500` (its `40001` conflict path), `20260925130600` (`apply_list_writes`). Must be live on production by 2026-10-12, else the date moves |
+| R5b | `persist-5b-account-menu` (owner, 2026-09-26: its own release; `issues/persist-5b-account-menu/plan.md` is the authority) | `B5b.1` | Right after R5, live by 2026-10-19 (before the 2026-10-26 cutoff): the header's account menu («Аккаунт», «Мои списки», «Выйти»; «Мои предметы» joins in R7), the Display section of `#/account` (the five synced settings and R4's `notifyGm` choice), the Lists tab gone from the cutoff (`#/lists` stays a route) |
+| - | a process task (owner, 2026-09-26; no directory yet: its planner names the id and creates it) | set by its planner | Right after R5b, before R11: a plan review before the first implement batch when a plan adds a schema change or a SECURITY DEFINER function, changes a public contract, can lose data, or adds a write or sync protocol; a reviewer writes its full report to `issues/<id>/reviews/<batch>.md` (its Write tool limited to that path, enforced by a guard); a host-wide heavy-run lock across sessions, or gate credit for a backgrounded run by its exit code; `tests/db/run.mjs` takes and releases the local stack lock (`%TEMP%\dhloot-local-stack.lock`, 45-minute staleness, the holder's task id) itself; `bash-guard.mjs` denies `.`, `source` and `cat` on `.env*`; a schema batch runs `db:push` to the test project only after its review approves. Each rule was held by hand through R5 |
 | R11 | `persist-usage-monitoring` (working id kept; its directory exists) | `B11.1` | **Placed after R5 (owner request 2026-09-25, "after r2"; planner 2026-09-25), and after R5b from 2026-09-26**: a nightly `usage.yml` report of production's free-plan usage - database and Storage size, rows per table, an MAU estimate, request counts, users near their count limits - with a forecast, a summary every night, a failed run (GitHub's email) near a limit, the `usage_snapshots` history table and the keep-alive Data API call. Plan: `issues/persist-usage-monitoring/plan.md` |
 | R3 | `persist-3-realtime` | `B3.1`, `B3.2` | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline, requester status |
@@ -437,10 +439,12 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
 | R10 | `persist-10-legacy-removal` | `B10.1` | After the cutoff date has passed: the `#/l/` codec, its fixtures and contract text are removed |
 
-The order is R0, R1, R2, R5, R5b, R11, R3, R4, R6-R9, R10 (owner, 2026-09-25;
+The order is R0, R1, R2, R5, R5b, the process task, R11, R3, R4, R6-R9,
+R10 (owner, 2026-09-25;
 `docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"; R11 placed after
 R5 so R5's 2026-10-12 deadline keeps priority; R5b split from R5 by the
-owner, 2026-09-26). R10 is the
+owner, 2026-09-26; the process task placed after R5b by the owner,
+2026-09-26). R10 is the
 first release dispatched after the cutoff date; R3, R4, R5b, R6-R9 and R11 may
 ship before it. Each release is deployable alone.
 
@@ -556,9 +560,8 @@ carries "goldens".
 | `B3.2` | The client half (R3 plan section 11): `EventsPort` (real, lazy, fake with `play` and `setLive`), the `connecting`/`live`/`down` feed with backoff, the share page and (Q1) the owner lists on it, the poll only while down, a 20 s write timeout (R2 review row R4), a hidden status region; layer 2 states; E2E: live update, live revoke, two owner pages | section 6 row 16 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~30 min) | required: UI and a new port | a commit the harness cannot reach (the E2E needs `B3.1`'s migration on the test project) |
 | `B4.1` | Revised by the R4 plan (2026-09-26; `issues/persist-4-requests/plan.md` section 10): section 5's R4 row in one migration and its reversal; layer 3 matrix: anon sends through an active player or GM token only, a stopped or wrong token is refused alike, bad and stale lines, the line limit, the rate (6th in a minute), the pending cap (11th), housekeeping, the status read shows nothing about the owner, another user cannot read, apply or decline, over-stock refused whole, clamp, zero removes the entry, the `request` events on the owner and share topics; the harness's anon function list and the limit rows | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db` x2 (~16 min) | required (schema rule; the first anonymous write) | new release (R4) |
 | `B4.2` | Revised by the R4 plan (section 11): `RequestRepository`, fake and contract case, `env.session`, the requester's send and status block, flow b with `notifyGm`, the owner's Requests panel with apply, «Принять доступное» and decline, the index card line, R3's feeds routing `request`, policy text; layer 2 states and cases; E2E: an anonymous request applied by the owner, stock lowered, the requester's status reads applied | section 6 row 17 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI, policy text | a commit the harness cannot reach (the E2E needs `B4.1`'s migration on the test project) |
-| `B5.1` | Refreshed 2026-09-26 (`issues/persist-5-migration/plan.md` section 8): `lists.legacy_fingerprint` with its check and the partial unique index `(owner_id, legacy_fingerprint)`; the two limit triggers re-created to skip a move (`dhloot.move`, decision 31's exemption); `move_legacy_list(p_id, p_canonical)` - the database hashes the canonical text, inserts the list and entries in one transaction, answers the existing id with `inserted = false`; the layer 3 matrix and the reversal | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db` (~10 min) | required (schema rule) | new release (R5) |
-| `B5.2` | The move and the cutoff (`issues/persist-5-migration/plan.md` section 9): `LEGACY_WRITE_UNTIL` in `lib/legacy.ts` with `canonicalList`, a clock port (the test build pinned before the cutoff, `?today=` beside `?as=`), `ListRepository.move`, the `LegacyMove` store run at sign-in (per-list RPC, one read-back, one storage write, `dhloot.migrated.v1` with the first account's id, the tombstones and the notice), the one-time `MoveNotice` under the header and the quiet `MoveStatus` in the storage notice's slot, read-only browser lists after the date (every control in the plan's table; delete stays), the retired-link page for every `#/l/` shape, the texts and specs, `tests/derived.js` pinning the date in every document that names it; layer 2 states (the moved index with the notice, the dismissed notice, another account, read-only index and list, the retired page), states cases 43-44, contract case H, E2E F8 | section 6 row 18 (less the install guide, done in `B2.2`) | layer 1 `check` x2, `check:built`, layer 2 `app/states`, `app/contracts`, goldens, sweep at 360, layer 4 E2E (~45 min) | required: new UI, data safety | SQL judged apart from Svelte; layer 4 needs the RPC on the test project |
-| `B5.3` | The account menu, `AppState.signOut`/`setHome`/`setNotifyGm`, the Display section of `#/account`, the Lists tab gone after the date (`issues/persist-5-migration/plan.md` section 9b); recommended as release R5b | `FEATURES.md` ("Account", "Chrome"), `ROUTES.md` ("Sections"), `STATE.md` | layer 1 `check` x2, `check:built`, layer 2 `app/states`, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI on every page | a different component set and seed (`Shell`, `AccountPage`); a review apart from `B5.2` |
+| `B5.1`-`B5.2d` | R5, closed 2026-09-26: the move RPC and its conflict path, the batching RPC `apply_list_writes`, the write buffer with the batching client, the automatic move with the cutoff and the retired `#/l/` page (section 9's R5 row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R5's commit history | - | - | - | - |
+| `B5b.1` | R5b: the account menu, `AppState.setHome`/`setNotifyGm`, the Display section of `#/account`, the Lists tab gone after the date (`issues/persist-5b-account-menu/plan.md` section 6) | `FEATURES.md` ("Account", "Chrome"), `ROUTES.md` ("Sections"), `STATE.md` | layer 1 `check` x2, `check:built`, layer 2 `app/states`, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI on every page | new release (R5b, the owner's split: a different component set and seed) |
 | `B6.1` | Refined 2026-09-26 (`issues/persist-6-import-export/plan.md` section 8): the contract and the database - `schema/import-v1.json` (draft 2020-12, `$id` the published URL, `additionalProperties: false`), `docs/fixtures/import/`, `tests/contracts.js` pins, `llms.txt` section "Lists as a file (import-v1)" (the bundle replaces LLM-built links), `CONTRACTS.md` section 4, the published-file lists (`ci.yml`, `check-site.lib.mjs`, `<noscript>`); `lib/bundle.ts` (build, validate with JSON paths, parse; a schema-drift test); `ListRepository.import` on the real adapter, the lazy port and the fake; `import_lists` migration, reversal, layer 3 matrix; contract case H and a real-only atomicity check | section 6 row 19 | layer 1 `check`, layer 3 `check:db`, `check:built`, layer 4 E2E (~12-15 min) | required: public contract, schema rule | new release (R6) |
 | `B6.2` | The UI: «Экспорт» (a checklist of the account lists, «Скачать JSON (N)») and «Импорт» (choose a file, validate, preview counts and skipped ids, one press) panels under the index's «Ваш аккаунт» heading; `#/account` «Ваши данные» with «Скачать все списки (JSON)»; «Скачать JSON» on an account list's page; `AppState.exportLists`, `CloudLists.import`; the driver's `download()` and `upload()` verbs; layer 2 states as `gm1`: the export panel, the import panel, the preview, the refused file, the imported list; states cases 43-45; E2E F8 | `FEATURES.md`, `META.md` section 3, `COVERAGE.md` | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~37 min) | required: new UI | a public-contract change and SQL apart from Svelte; a commit boundary the harness cannot reach (the states need `B6.1`'s fake `import` and fixtures) |
 | `B7.1` | Refreshed 2026-09-25, revised 2026-09-26 (`issues/persist-7-homebrew/plan.md`, the release's authority): R7 schema (section 5, R7 row), the matrix in `tests/db/homebrew.test.mjs` and the projection cases in `list-shares.test.mjs`, the reversal, `lib/homebrew.ts` (`validateDraft`, `toRecord`, `snapshotOf`, `withRecords`), `HomebrewRepository` in `ports/types.ts`, the real adapter and the fake, the seed's three items, a reference row in list 101 and a frozen row in `gm2`'s list, `cloud.contract.ts` case H, the shared fixtures `docs/fixtures/homebrew/` | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db`, layer 4 E2E (~11 min) | required (schema rule) | new release (R7); SQL and ports judged apart from Svelte |
@@ -683,29 +686,10 @@ owner's notification rides R3's `owner:<uid>` topic (R3's Q1 answered
 yes) as a revision-free nudge, then a re-read; the poll covers a feed that
 is down.
 
-`B5.1`-`B5.2` (planned 2026-09-26 in `issues/persist-5-migration/plan.md`,
-which is the release's authority): the fingerprint is SHA-256 of a
-canonical JSON of the normalised local list (keys sorted, no codec),
-computed by the database inside `move_legacy_list`, unique per owner;
-the move runs by itself when a signed-in reader's app loads with browser
-lists (owner, 2026-09-26: an RPC per list, one read-back, one storage
-write, `dhloot.migrated.v1` with the first account's id, the tombstones by
-local id and the names for a one-time notice; a later account on that
-browser moves nothing); the move is exempt from the count limits; a quiet
-status in the storage notice's slot says moving, failed (retried on the
-next load) or refused (the list stays, named); `LEGACY_WRITE_UNTIL` gates
-every item of section 10 in a configured build, the test build's clock is
-pinned before it and `?today=` moves it; the retired-link page for every
-`#/l/` shape; after the date the only browser-list writes are the move's
-removal and a delete through a fresh read (no merge), and R10 deletes the
-pre-date writers and `mergeLists` with the codec; `B5.2` also pays
-`docs/specs/DEBT.md` D24's R5 part (a readable `dhloot.lists.v2.bad`
-backup moves or is named in the notice). `B5.3` (release R5b, owner,
-2026-09-26): the account menu, the Display section of `#/account` with R4's
-`notifyGm` choice, nine tabs from the cutoff. The install guide's iOS
-paragraph was rewritten by `B2.2`. Decisions: `docs/DECISIONS.md`,
-2026-09-26, four entries. Live on production by 2026-10-12 or the date
-moves; R5b by 2026-10-19.
+`B5.1`-`B5.2d`: shipped in R5 (section 9). The code, the specs and
+`docs/decisions/` are the record. `B5b.1` (R5b): planned in
+`issues/persist-5b-account-menu/plan.md`, the release's authority; live
+by 2026-10-19.
 
 `B6.1`-`B6.2` (planned 2026-09-26 in `issues/persist-6-import-export/
 plan.md`, the release's authority): the file `import-v1` - `format`
@@ -862,7 +846,7 @@ GitHub, repository settings -> Secrets and variables -> Actions:
     owner's steps in `.claude/README.md`, "The hosted E2E and the deploy".
 
 Every release that carries a migration or a `config.toml` change (R0
-config, R1, R2, R3, R4, R6, R7, R8):
+config, R1, R2, R3, R4, R5, R6, R7, R8):
 
 15. Before the merge onto `main`, for `test` then `prod`: `npm run
     config:diff -- --project <name>`, then `npm run config:push --
@@ -1287,6 +1271,52 @@ is in the R2 closeout summary):
   RPCs); no `rotate_list_share` on
   production.
 
+R5 closeout record (2026-09-26; one local commit on `main`, amended per
+batch and at closeout, pushed once by the owner's approval, "proceed with
+all release"):
+- Pushed sha: PLACEHOLDER (the orchestrator fills it from the closeout
+  summary). CI run of the push: PLACEHOLDER (id; the five `browser` shard
+  suite-step times; `migrate-test` expected to apply nothing; `migrate-prod`
+  expected to apply `20260925130400`, `20260925130500`, `20260925130600`
+  before `deploy`).
+- Shipped: section 9's R5 row. Batches `B5.1` (the column, the index, the
+  exempted limit triggers, `move_legacy_list`), `B5.2a` (its `40001`
+  conflict path), `B5.2b` (`apply_list_writes`), `B5.2c` (the write buffer
+  with the batching client; `DEBT.md` D54, D55 and D58 paid), `B5.2d` (the
+  move, the cutoff, the retired page, the fifth CI `browser` shard); each
+  reviewed once and remediated once where the review asked. The three
+  migrations were on the test project before the push (each after its
+  review approved).
+- Owner decisions during the release (2026-09-26): the move is automatic
+  with two guards (the notice, the first account only); browser lists are
+  read-only while the move is due; the write buffer with a batching RPC
+  (Q1 option C); the bundle budget 150 kB unconfigured and 200 kB
+  configured; F10 proves that edits made before a close land, and the
+  `keepalive` flag is proven by unit tests (`COVERAGE.md`, known gap);
+  the limit bypass of the move accepted (`DEBT.md` D62).
+- Gates on the closeout amend: `rtk npm run check` (the R5 closeout
+  summary has the result). The gates before it: `check` 396-404 s,
+  vitest 63 files, 1946 tests; `check:db` 216 tests (403 s, `B5.2b`'s fix
+  pass); `npm run e2e` PASS (contract A-I, F0-F10; the 1300-entry move
+  304-354 ms); goldens re-seeded in four shards (181 states); sweep clean
+  at 360; `check:built` 121.0 kB of 150 kB; the configured build 178.2 kB
+  of 200 kB.
+- Kept defects written at closeout: `DEBT.md` D62 moved under the legacy
+  removal; D63 (the move's status says «нет связи» for any failure).
+- Pending, owner: the Data API look and the Security Advisor rerun on
+  production (expect one more SECURITY DEFINER warning, `move_legacy_list`,
+  by design; `apply_list_writes` is `security invoker` and adds none); the
+  device check (section 10, question f): sign in on a desktop browser and
+  a phone that hold real browser lists, watch them move and the notice
+  name them, confirm them in «Ваш аккаунт» on the other device and the
+  browser group empty; type a note on an account list on the phone and
+  switch apps at once, then confirm it on the desktop; on the desktop type
+  a note and a new name and close the tab within two seconds, then confirm
+  both on the phone. A defect moves the date (section 10). The 2026-10-12
+  checkpoint: R5 live and the device check clean, or the date moves. The
+  owner's decision on rotating the test database password (the R5
+  closeout summary names why).
+
 ## 18. Cloud sessions (claude.ai/code)
 
 Facts relied on (code.claude.com cloud-environments docs, 2026-09-24; the
@@ -1373,26 +1403,62 @@ them; any batch that touches those files takes them).
 Carried from R1: the three items (the test-migration trap, the
 `edit-guard.mjs` lock, rule 2n's gaps) were built in R2's first batch.
 
-Carried from R2 (`persist-2-lists`, closed 2026-09-26) for the R5 planner
-refresh, which places each one or names it to the owner:
+Carried from R2 (`persist-2-lists`, closed 2026-09-26), all placed by R5:
+`legacy_fingerprint` shipped in `B5.1`; D54 paid by the atomic create of
+`apply_list_writes`; the restore field and the iOS paragraph were already
+gone; question f is R5's owner device check (section 16, "R5 closeout
+record"). Still open: `Intl.RelativeTimeFormat` output - the goldens hold
+Node's text («изменён 1 час назад», «3 дня назад», «в прошлом месяце»); if
+a CI Chrome build differs, pin the text per runtime in the test.
 
-- `legacy_fingerprint` and its unique index: deferred by R2 to R5's own
-  migration (`B5.1`), which therefore also pays layer 3 `check:db`.
-- `docs/specs/DEBT.md` D54: a `#/l/` link with more than 100 items saves
-  an empty account list; R5's move of browser lists meets the same limit.
-- R2 already removed «Восстановить из ссылки» and the install guide's iOS
-  paragraph, and old `#/l/` "Save" already saves into the account; R5's
-  refresh drops them from `B5.1`. Between R2 and R5 an iPhone reader
-  cannot move a browser list from Safari into the installed app.
-- Question f is answered (section 10): an R5 closeout step.
-- `Intl.RelativeTimeFormat` output: the goldens hold Node's text
-  («изменён 1 час назад», «3 дня назад», «в прошлом месяце»); if a CI
-  Chrome build differs, pin the text per runtime in the test.
+For the R3 (Realtime) planner: `docs/specs/DEBT.md` D56, D57 and D59 (a
+reorder refused after another device's edit, no timeout on a hanging
+write - reworded by R5: «Поделиться», a `#/s/` copy and the move wait
+behind it too -, a failed first `#/s/` read not retried); R5 paid D55 (a
+lapsed session is `network`, never a refusal) and D58 («Поделиться»
+flushes the buffer first).
 
-For the R3 (Realtime) planner: `docs/specs/DEBT.md` D55-D59 (a lapsed
-session drops a write, a reorder refused after another device's edit, no
-timeout on a hanging write, «Поделиться» before a queued create lands, a
-failed first `#/s/` read not retried); R3's plan names D56 and D57.
+Carried from R5 (`persist-5-migration`, closed 2026-09-26) for later
+releases; each planner refresh places its items or names them to the
+owner:
+
+- R5b: states case 50 (R5 took 47-49); «Выйти» calls
+  `AppState.signOut(scope)`, which R5 built (the buffer flushed for at
+  most 5 s, then the sign-out) and `AccountPage.svelte` already calls; the
+  tab bar reads `legacyWritable` (the date alone), never `localWritable`;
+  the batch is `B5b.1`. R5b's `plan.md` section 3 holds the checked facts.
+- R3: the account write buffer - `CloudLists` (`QUIET_MS` 2 s, `#seq`,
+  `#cut`, `#inFlight`, `flushNow`), one `apply_list_writes` request per
+  flush. R3's refresh re-reads: its section 5.3 (a flush is one transaction
+  for the whole request, so the deferred trigger sends one owner message
+  per list per request with the final revision; a refused write rolls back
+  its subtransaction and its queued `realtime.send` row); 5.4 (the `apply`
+  request carries `x-dhloot-tab` like any other, a `keepalive` request
+  keeps its headers, and `apply_list_writes` is `security invoker`, so
+  `current_setting('request.headers')` reads the same in its triggers);
+  5.5 (`apply_list_writes` calls `public.reorder_list(uuid, uuid[])` by
+  name - keep the signature and `authenticated`'s EXECUTE); 6.1 (the fake
+  sends one message per changed list per `apply` call); 6.6 (the 20 s
+  abort: one `AbortSignal.timeout(20000)` per `apply` request,
+  `keepaliveFetch` does not resend an aborted one, an abort is `network`
+  and the buffer keeps the request); its "deferral while a write is
+  queued" case also covers a write waiting in the buffer; `writeOf`, the
+  echo suppression (own writes arrive as one request per flush, one tab
+  id); D55 and D58 paid, D57 reworded.
+- R6 and R7: `ListRepository` is now `newId`, `list`, `apply`, `move`; the
+  seven write methods (`create`, `addEntries`, `reorder` and the others)
+  are gone. R6's `import` is its own RPC beside `apply`, and
+  `CloudLists.import` then `load()` calls `flushNow()` first. R7 adds a
+  homebrew reference through `CloudLists.add` or an `add` op
+  (`apply_list_writes` takes `source` and `snapshot`); a homebrew delete's
+  re-read waits for the buffer. R4's owner-feed re-read waits for the
+  buffer, as R3's does.
+- R10: `DEBT.md` D24, D61, D62, D63; the codec, `mergeLists`, the pre-date
+  `ListStore` writers, the browser group, `StorageNotice`, the pinned test
+  clock and `?today=`, the `tab` of `#/lists` in `routes.json` set to
+  `null`; `MoveNotice`, `MoveStatus` and `LegacyMove` stay unless R10
+  decides otherwise (a reader who never signed in before R10 still moves).
+- Not planned (ideas): a per-list move; a "not now" for the move.
 
 - Assumption: Chrome no longer requires a service worker for the install
   prompt. `B0.1`'s closeout has the owner try the install on Android Chrome
@@ -1440,7 +1506,7 @@ failed first `#/s/` read not retried); R3's plan names D56 and D57.
 - Not in v1 (owner, 2026-09-24, from the brainstorm): list templates; a
   restock note field; a preferences page (**superseded 2026-09-26**: the
   owner asked for «Настройки отображения» in the account menu - a section
-  of `#/account`, `B5.3`); a shop restock roll mode;
+  of `#/account`, `B5b.1`); a shop restock roll mode;
   homebrew import by pasting a stat block; a player wishlist on a shared
   list (issue 50 with a server); a recent-activity view on `#/account`;
   homebrew sets. Rejected outright: a duplicate-list button; a share-link

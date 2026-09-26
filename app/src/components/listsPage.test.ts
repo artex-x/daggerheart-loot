@@ -16,6 +16,8 @@ import {
   fakeData,
   fakeDialog,
   fakeEnv,
+  fakePage,
+  fixedClock,
   memoryRouter,
   memoryStorage,
   noData,
@@ -23,7 +25,9 @@ import {
 } from '../ports/index.js';
 import type { CloudPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import { encodeList, encodeListRaw } from '../lib/listLink.js';
+import { AppState } from '../state/app.svelte.js';
 import type { Loot } from '../lib/data.js';
 import type { StoredList } from '../lib/lists.js';
 
@@ -561,9 +565,13 @@ describe('with sign-in configured', () => {
     expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
   });
 
+  /* Another account's browser lists: they stay in the browser group, beside
+     the account's own. */
+  const FOREIGN = JSON.stringify({ owner: 'another-account', lists: {} });
+
   it('draws the account group newest edit first, then this browser with its notice', async () => {
     const { container } = withCloud(fakeCloud(SEED, 'gm1'), {
-      storage: memoryStorage({ 'dhloot.lists.v2': TWO })
+      storage: memoryStorage({ 'dhloot.lists.v2': TWO, 'dhloot.migrated.v1': FOREIGN })
     });
     await screen.findByText('Пустой список');
     expect(groupNames(container)).toEqual(['Ваш аккаунт', 'Этот браузер']);
@@ -584,6 +592,8 @@ describe('with sign-in configured', () => {
     /* An account card has one action: delete. */
     const acts = shop.parentElement?.querySelectorAll('.listcard-acts button');
     expect([...(acts ?? [])].map((b) => b.textContent)).toEqual(['Удалить']);
+    /* Drawn once the move found the lists another account's. */
+    await screen.findByText('Списки живут только в этом браузере.');
     const browser = container.querySelectorAll('.group')[1];
     expect(browser?.textContent).toContain('Списки живут только в этом браузере.');
     await expectNoA11yViolations(container);
@@ -615,7 +625,8 @@ describe('with sign-in configured', () => {
 
   it('creates an account list, first in the account group', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
-    const { container } = withCloud(cloud);
+    const page = fakePage();
+    const { container } = withCloud(cloud, { page });
     await screen.findByText('Список второго ГМа');
     await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
@@ -625,6 +636,7 @@ describe('with sign-in configured', () => {
       'href',
       '#/lists/00000000-0000-4000-8000-000000005000'
     );
+    page.fireHidden();
     await waitFor(async () => {
       const read = await cloud.lists.list();
       expect(read.ok && read.lists.map((l) => l.name)).toContain('Тайник');
@@ -681,7 +693,10 @@ describe('with sign-in configured', () => {
 
   it('filters both groups with one box and folds them as one sequence', async () => {
     const { container } = withCloud(fakeCloud(SEED, 'gm1'), {
-      storage: memoryStorage({ 'dhloot.lists.v2': many(30, ['Лавка у моря']) })
+      storage: memoryStorage({
+        'dhloot.lists.v2': many(30, ['Лавка у моря']),
+        'dhloot.migrated.v1': FOREIGN
+      })
     });
     await screen.findByText('Лавка кузнеца');
     expect(container.querySelectorAll('.listcard')).toHaveLength(24);
@@ -701,5 +716,196 @@ describe('with sign-in configured', () => {
     await userEvent.type(findBox(), 'zzz');
     expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
     expect(container.querySelectorAll('.listcard')).toHaveLength(0);
+  });
+});
+
+describe('the move into the account and the cutoff', () => {
+  const GM1 = SEED.users.gm1.id;
+  const AFTER = { clock: fixedClock(LEGACY_WRITE_UNTIL) };
+  const slot = (container: HTMLElement): string =>
+    [...container.querySelectorAll('.group')].at(1)?.textContent ?? '';
+  const actionsOf = (name: RegExp): string[] => {
+    const card = screen.getByRole('link', { name }).parentElement;
+    return [...(card?.querySelectorAll('.listcard-acts button') ?? [])].map(
+      (b) => b.textContent
+    );
+  };
+
+  it('says «Переносим...» while the lists move, the cards read-only, then the notice', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let release = (): void => undefined;
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const move = cloud.lists.move.bind(cloud.lists);
+    cloud.lists.move = async (id, text) => {
+      await gate;
+      return move(id, text);
+    };
+    const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
+    const { container } = render(App, { env: at({ cloud, storage }) });
+    expect(await screen.findByText('Переносим списки в аккаунт...')).toBeInTheDocument();
+    expect(actionsOf(/Клад дракона/)).toEqual([]);
+    expect(screen.getByRole('link', { name: /Клад дракона/ })).toHaveAttribute(
+      'href',
+      '#/lists/a'
+    );
+    await expectNoA11yViolations(container);
+    release();
+    expect(
+      await screen.findByText(
+        'Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона», «Лавка в порту».'
+      )
+    ).toBeInTheDocument();
+    expect(readLists(storage)).toEqual([]);
+    expect(screen.queryByRole('heading', { level: 2, name: 'Этот браузер' })).toBeNull();
+  });
+
+  it('says the network stopped the move, and «Повторить» reads the account and moves', async () => {
+    const retry = vi.spyOn(AppState.prototype, 'retryLists');
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
+    const { container } = render(App, { env: at({ cloud, storage }) });
+    expect(
+      await screen.findByText(
+        'Не все списки перенесены: нет связи. Попробуем при следующем открытии.'
+      )
+    ).toBeInTheDocument();
+    expect(actionsOf(/Лавка в порту/)).toEqual([]);
+    await expectNoA11yViolations(container);
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    expect(retry).toHaveBeenCalledOnce();
+    await waitFor(() => {
+      expect(readLists(storage)).toEqual([]);
+    });
+    retry.mockRestore();
+  });
+
+  it('names a list the server refused, and keeps it', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    vi.spyOn(cloud.lists, 'move').mockResolvedValueOnce({ ok: false, error: 'refused' });
+    const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
+    const { container } = render(App, { env: at({ cloud, storage }) });
+    await screen.findByText('Не перенесён: «Клад дракона».');
+    expect(slot(container)).toContain(
+      'Не перенесён: «Клад дракона». Сервер не принял список. Напишите на daggerheart.loot@gmail.com.'
+    );
+    await waitFor(() => {
+      expect(readLists(storage).map((l) => l.id)).toEqual(['a']);
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('names a held list, and a delete takes the list and its text away', async () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': TWO,
+      'dhloot.migrated.v1': JSON.stringify({ owner: GM1, lists: { b: 'x' }, held: ['a'] })
+    });
+    const { container } = render(App, {
+      env: at({ cloud: fakeCloud(SEED, 'gm1'), storage, dialog: fakeDialog(true) })
+    });
+    await screen.findByText('Не перенесён: «Клад дракона».');
+    expect(slot(container)).toContain(
+      'Копия в аккаунте не совпала со списком. Напишите на daggerheart.loot@gmail.com.'
+    );
+    await expectNoA11yViolations(container);
+    const card = screen.getByRole('link', { name: /Клад дракона/ }).parentElement;
+    const del = [...(card?.querySelectorAll('.listcard-acts button') ?? [])].find(
+      (btn) => btn.textContent === 'Удалить'
+    );
+    await userEvent.click(del as HTMLElement);
+    expect(screen.queryByText('Не перенесён: «Клад дракона».')).toBeNull();
+    expect(readLists(storage)).toEqual([]);
+  });
+
+  it('prunes a held list from the tombstones when it is deleted after the cutoff', async () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': TWO,
+      'dhloot.migrated.v1': JSON.stringify({ owner: GM1, lists: {}, held: ['a'] })
+    });
+    render(App, {
+      env: at({ storage, dialog: fakeDialog(true), cloud: fakeCloud(SEED), ...AFTER })
+    });
+    await screen.findByRole('button', { name: 'Войти' });
+    await userEvent.click(screen.getAllByRole('button', { name: 'Удалить' })[0] as HTMLElement);
+    expect(
+      (JSON.parse(storage.get('dhloot.migrated.v1') ?? '{}') as { held?: string[] }).held
+    ).toBeUndefined();
+  });
+
+  it('adds the move sentence signed out only while no account owns the lists', async () => {
+    const out = render(App, {
+      env: at({ cloud: fakeCloud(SEED), storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
+    });
+    await screen.findByRole('button', { name: 'Войти' });
+    const sentence =
+      'Войдите - списки перенесутся в аккаунт сами. С 26 октября 2026 года списки в браузере нельзя будет менять.';
+    expect(screen.getByText(sentence)).toBeInTheDocument();
+    await expectNoA11yViolations(out.container);
+    cleanup();
+    render(App, {
+      env: at({
+        cloud: fakeCloud(SEED),
+        storage: memoryStorage({
+          'dhloot.lists.v2': TWO,
+          'dhloot.migrated.v1': JSON.stringify({ owner: GM1, lists: {} })
+        })
+      })
+    });
+    await screen.findByRole('button', { name: 'Войти' });
+    expect(screen.queryByText(sentence)).toBeNull();
+    expect(screen.getByText('Списки живут только в этом браузере.')).toBeInTheDocument();
+    cleanup();
+    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) }) });
+    expect(screen.queryByText(sentence)).toBeNull();
+  });
+
+  it('draws the read-only notice and cards after the cutoff, with a delete that has no undo', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
+    const dialog = fakeDialog(true);
+    const { container } = render(App, {
+      env: at({ cloud: fakeCloud(SEED), storage, dialog, ...AFTER })
+    });
+    await screen.findByRole('button', { name: 'Войти' });
+    expect(
+      screen.getByText('Списки в этом браузере только для чтения с 26 октября 2026 года.')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать текст и напечатать можно и так.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Скрыть' })).toBeNull();
+    expect(actionsOf(/Клад дракона/)).toEqual(['Удалить']);
+    expect(screen.getByRole('link', { name: /Клад дракона/ })).toHaveAttribute(
+      'href',
+      '#/lists/a'
+    );
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getAllByRole('button', { name: 'Удалить' })[0] as HTMLElement);
+    expect(dialog.asked).toEqual(['Удалить список «Клад дракона»? Это действие необратимо.']);
+    expect(readLists(storage).map((l) => l.id)).toEqual(['b']);
+    expect(screen.getByText('Список «Клад дракона» удалён')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Вернуть' })).toBeNull();
+  });
+
+  it('draws the read-only title alone after the cutoff once an account owns the lists', async () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': TWO,
+      'dhloot.migrated.v1': JSON.stringify({ owner: GM1, lists: {} })
+    });
+    render(App, { env: at({ cloud: fakeCloud(SEED), storage, ...AFTER }) });
+    await screen.findByRole('button', { name: 'Войти' });
+    expect(
+      screen.getByText('Списки в этом браузере только для чтения с 26 октября 2026 года.')
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Войдите - они перенесутся/)).toBeNull();
+  });
+
+  it('keeps a build with no sign-in writable after the cutoff', () => {
+    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }), ...AFTER }) });
+    expect(actionsOf(/Клад дракона/)).toEqual(['Поделиться', 'Удалить']);
+    expect(screen.getByText('Списки живут только в этом браузере.')).toBeInTheDocument();
   });
 });

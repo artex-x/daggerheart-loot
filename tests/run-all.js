@@ -33,51 +33,44 @@ const path = require('path');
 const HERE = __dirname;
 
 /* Weight column: CI seconds, not a local guess. Measured on GitHub's
-   ubuntu-latest runners, run 35214847899, 2026-09-17 - a local run is
+   ubuntu-latest runners, the mean of runs 36229149582 and 36230695846,
+   2026-09-26 (each suite prints `ok  <name> <what> <secs>s`) - a local run is
    advisory, the same doctrine `.claude/README.md` states for every other
    cost table in this repository. These numbers are the input to
    `--shard`'s bin packer below, so an entry that is off by multiples
-   mis-packs a shard, not just a sort order.
+   mis-packs a shard, not just a sort order. The slowest suite step passed
+   360 s on both runs, so ci.yml's `browser` matrix went from four shards to
+   five (roadmap, "the shard trigger").
 
-   `app/sweep`'s 1180 row is split into a `ru` and an `en` row: at 550.5s
-   measured it was 25% of all browser work and 1.7x its narrower siblings -
-   axe running both languages there, plus the RU-only focus walk, account
-   for the whole excess. The two halves below are kept at
-   an even ~275s split rather than the two rows' real measured weights
-   (371.9s ru, 172.7s en, re-measured after this
-   comment was first written): re-running the packer with the corrected
-   numbers still produces the same four bins, because each CI runner is
-   itself a 4-way pool, so wall clock is max(longest row, total/4) and the
-   bin sums this packer minimises never bind at this table's scale.
-   Correcting the split buys documentation accuracy, not a faster `browser`
-   matrix - not worth invalidating the shard proof this table already has.
+   `app/sweep`'s 1180 row is split into a `ru` and an `en` row: axe runs
+   both languages there, plus the RU-only focus walk, which made the unsplit
+   row the longest in the table.
 
    `app/golden`'s four rows keep their own weight and continue to mean "every
-   fourth state" (`tests/app/golden.js`'s own `--shard=n/4`); they used to be
-   excluded from every CI run of this file and driven by a separate `golden`
-   job instead (`--exclude=app/golden`, still supported below for a local run
-   that wants to skip them) - under `--shard` they join the pool like any
-   other row, which is the first time their granularity earns anything in CI. */
+   fourth state" (`tests/app/golden.js`'s own `--shard=n/4`, a split of its
+   own, apart from this file's); under `--shard` they join the pool like any
+   other row (`--exclude=app/golden`, still supported below, is for a local
+   run that wants to skip them). */
 const SUITES = [
-  ['app/sweep', 'dist-test/: page sweep 390', 326.6, ['390']],
-  ['app/sweep', 'dist-test/: page sweep 360', 325.0, ['360']],
-  ['app/sweep', 'dist-test/: page sweep 768', 318.8, ['768']],
-  ['app/sweep', 'dist-test/: page sweep 1180 ru', 275, ['1180', 'ru']],
-  ['app/sweep', 'dist-test/: page sweep 1180 en', 275, ['1180', 'en']],
-  ['app/contracts', 'dist-test/: contracts and fixtures', 256.4],
-  ['app/print', 'dist-test/: card printing', 159.7],
-  ['app/golden', 'dist-test/: structural snapshots 1/4', 106, ['--shard=1/4']],
-  ['app/states', 'dist-test/: real input', 102.7],
-  ['app/golden', 'dist-test/: structural snapshots 2/4', 102, ['--shard=2/4']],
-  ['app/golden', 'dist-test/: structural snapshots 3/4', 98, ['--shard=3/4']],
-  ['app/golden', 'dist-test/: structural snapshots 4/4', 94, ['--shard=4/4']],
-  ['app/typo', 'dist-test/: fonts and scale', 78.1],
-  ['app/hues', 'dist-test/: label colours', 66.9],
-  ['stub', 'stub pages i/', 1.6],
-  ['dataint', 'data.js invariants', 0.3],
-  ['derived', 'derived files and catalog', 0.3],
-  ['craft', 'upgrade chains', 0.1],
-  ['contracts', 'contracts and golden fixtures', 0]
+  ['app/sweep', 'dist-test/: page sweep 360', 382.9, ['360']],
+  ['app/sweep', 'dist-test/: page sweep 390', 381.6, ['390']],
+  ['app/sweep', 'dist-test/: page sweep 768', 357.9, ['768']],
+  ['app/print', 'dist-test/: card printing', 340.8],
+  ['app/contracts', 'dist-test/: contracts and fixtures', 328.4],
+  ['app/sweep', 'dist-test/: page sweep 1180 ru', 223.3, ['1180', 'ru']],
+  ['app/sweep', 'dist-test/: page sweep 1180 en', 204.4, ['1180', 'en']],
+  ['app/states', 'dist-test/: real input', 179.3],
+  ['app/golden', 'dist-test/: structural snapshots 3/4', 158.1, ['--shard=3/4']],
+  ['app/golden', 'dist-test/: structural snapshots 1/4', 157.5, ['--shard=1/4']],
+  ['app/golden', 'dist-test/: structural snapshots 4/4', 156, ['--shard=4/4']],
+  ['app/golden', 'dist-test/: structural snapshots 2/4', 151.5, ['--shard=2/4']],
+  ['app/typo', 'dist-test/: fonts and scale', 89.6],
+  ['app/hues', 'dist-test/: label colours', 77],
+  ['stub', 'stub pages i/', 4],
+  ['derived', 'derived files and catalog', 1.8],
+  ['dataint', 'data.js invariants', 0.4],
+  ['craft', 'upgrade chains', 0.2],
+  ['contracts', 'contracts and golden fixtures', 0.1]
 ];
 
 const args = process.argv.slice(2);
@@ -104,7 +97,7 @@ node tests/app/sweep.js <width> [ru|en], one call each.
 --shard=n/m (1-indexed) packs the whole queue longest-first over the weight
 column into m bins and runs only bin n - disjoint and exhaustive across
 n=1..m, the same contract tests/app/golden.js's own --shard=n/of promises for
-its states. This is what ci.yml's browser matrix runs, four times.`);
+its states. This is what ci.yml's browser matrix runs, five times.`);
   process.exit(0);
 }
 const jobsArg = args.indexOf('--jobs');

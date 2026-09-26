@@ -429,9 +429,10 @@ const STATES = [
     id: '#/i/ci1 ~ new list as gm2',
     route: '#/i/ci1',
     as: 'gm2',
-    why: 'signed in: the inline form, focused, over the account list and the browser lists',
+    why: "signed in: the inline form, focused, over the account lists; the seed's two browser lists moved into the account (the notice above names them) and are account chips now",
     storage: two,
     enter: async (d) => {
+      await d.moveSettled();
       await d.click('Добавить в список');
       await d.click('+ Новый список');
     }
@@ -440,9 +441,10 @@ const STATES = [
     id: '#/i/ci1 ~ list menu as gm1',
     route: '#/i/ci1',
     as: 'gm1',
-    why: "one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest, account and browser lists together",
+    why: "one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest; the seed's two browser lists moved into the account first, so every chip is an account list and the notice above names the two",
     storage: two,
     enter: async (d) => {
+      await d.moveSettled();
       await d.click('Добавить в список');
     }
   },
@@ -459,9 +461,10 @@ const STATES = [
     id: '#/i/ci1 ~ new list from a search as gm2',
     route: '#/i/ci1',
     as: 'gm2',
-    why: 'the new-list form started with the query nothing matched',
+    why: "the new-list form started with the query nothing matched; the seed's twelve browser lists moved into the account first (the notice above names them)",
     storage: twelve,
     enter: async (d) => {
+      await d.moveSettled();
       await d.click('Добавить в список');
       await d.type('Найти список', 'Шкатулка');
       await d.click('+ Новый список');
@@ -955,8 +958,42 @@ const STATES = [
     id: '#/lists as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: "«Ваш аккаунт»: gm1's three lists newest edit first with «изменён N назад» and one «Удалить» each; then «Этот браузер» with the notice at its head and the two browser cards",
-    storage: two
+    why: "the seed's two browser lists moved on sign-in: the notice under the header names both; «Ваш аккаунт» holds them first (uuid(5000), uuid(5001)) with «изменён только что», then gm1's three lists with «изменён N назад», one «Удалить» each; no browser group",
+    storage: two,
+    enter: async (d) => {
+      await d.moveSettled();
+    }
+  },
+  {
+    id: '#/lists ~ move notice dismissed as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: 'the move notice dismissed with «Скрыть»: no notice, the two moved lists stay in «Ваш аккаунт»',
+    storage: two,
+    enter: async (d) => {
+      await d.moveSettled();
+      await d.click('Скрыть');
+    }
+  },
+  {
+    id: '#/lists ~ another account as gm2',
+    route: '#/lists',
+    as: 'gm2',
+    why: "the browser's lists belong to another account's move (dhloot.migrated.v1 names gm1): nothing moves, no notice above; «Этот браузер» keeps today's notice, without the move sentences, and both cards",
+    storage: {
+      ...two,
+      'dhloot.migrated.v1': JSON.stringify({
+        owner: '00000000-0000-4000-8000-000000000001',
+        lists: {}
+      })
+    }
+  },
+  {
+    id: '#/lists ~ read-only',
+    route: '#/lists',
+    today: '2026-10-26',
+    why: 'after the legacy write cutoff, signed out: the read-only notice with its title and sentence, not dismissable; the cards have no «Поделиться» and link #/lists/<id>; «Удалить» stays',
+    storage: seven
   },
   {
     id: '#/lists ~ load failed',
@@ -1101,7 +1138,8 @@ const STATES = [
     enter: async (d) => {
       await d.fake('setOffline', true);
       await d.type('Например: лавка закрыта до утра', 'Открыта с рассвета до полуночи.');
-      await d.settle();
+      /* The buffer is sent 2 s after the edit, and fails. */
+      await d.writesSettled();
     }
   },
   {
@@ -1123,6 +1161,13 @@ const STATES = [
     route: '#/lists/a',
     storage: noted,
     why: 'the money picker, the list note open with two texts, row 2 priced and noted, its note box open, has-note'
+  },
+  {
+    id: '#/lists/a ~ read-only',
+    route: '#/lists/a',
+    today: '2026-10-26',
+    storage: noted,
+    why: 'after the cutoff, signed out: the title read-only, no link buttons, the read-only notice, the chips disabled, the notes read-only with no clear cross, no grip, positions, quantity and price read-only, no remove cross; copy, print, «Удалить» and the roll panel stay; the address stays #/lists/a'
   },
   {
     id: '#/lists/a ~ money help',
@@ -1271,6 +1316,19 @@ const STATES = [
     storage: seven,
     why: 'own-list recognition: the same page as #/lists/a'
   },
+  {
+    id: '#/l/ ~ own list, retired',
+    route: '#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw',
+    today: '2026-10-26',
+    storage: seven,
+    why: "after the cutoff this browser's own payload draws the retired page too, never the list; the address kept"
+  },
+  {
+    id: '#/l/ ~ retired',
+    route: '#/l/' + QTY_AND_PRICE.player.payload,
+    today: '2026-10-26',
+    why: 'after the cutoff a #/l/ link draws the retired page: the heading with the date, the sub, one «Списки» button; the address kept, nothing decoded'
+  },
 
   {
     id: '#/l/ ~ shared',
@@ -1324,7 +1382,8 @@ const STATES = [
     as: 'gm2',
     why:
       'signed in, after "Сохранить себе": the new account list "Лавка" at #/lists/<uuid(5000)>, ' +
-      '«Сохранено», «Поделиться», the toast "Список «Лавка» создан"',
+      '«Сохраняем...» in the sub while the create waits in the write buffer, «Поделиться», ' +
+      'the toast "Список «Лавка» создан"',
     enter: async (d) => {
       await d.click('Сохранить себе');
     },

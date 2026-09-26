@@ -241,7 +241,8 @@ function serializeTree(n, depth, out) {
 /* ---------- comparison ---------- */
 
 /** The lines before the first `## ` heading - `render()`'s `# <id>`,
- *  `# route:`, `# why:` and, on a signed-in state only, `# as:` lines.
+ *  `# route:`, `# why:` and, on a signed-in state only, `# as:` lines, and
+ *  `# today:` on a state that sets the test build's day.
  *  `sectionsOf` only ever collects lines after a `## ` heading, so without
  *  this the header is never compared and an `inventory.js` route/why edit
  *  made without `--update` leaves a golden whose header silently disagrees
@@ -393,6 +394,7 @@ if (require.main === module) {
       '# route: ' + state.route,
       '# why: ' + state.why,
       ...(state.as ? ['# as: ' + state.as] : []),
+      ...(state.today ? ['# today: ' + state.today] : []),
       '',
       '## ru :: tree',
       ...ru.tree,
@@ -424,8 +426,11 @@ if (require.main === module) {
         storage: state.storage
       });
       try {
-        await d.open(state.route, { as: state.as });
+        await d.open(state.route, { as: state.as, today: state.today });
         if (state.enter) await state.enter(d);
+        /* Every capture waits for the move of browser lists to settle; a
+           state with no move passes at once. */
+        await d.moveSettled(state.id);
         await d.addressSettled();
         const ru = await captureLang(page, d);
         await d.click('EN');
@@ -444,8 +449,9 @@ if (require.main === module) {
         storage: state.storage
       });
       try {
-        await d.open(state.route, { as: state.as });
+        await d.open(state.route, { as: state.as, today: state.today });
         if (state.enter) await state.enter(d);
+        await d.moveSettled(state.id);
         if (lang !== 'ru') await d.click('EN');
         await waitForToast(page, state.id, lang);
         /* `addressSettled()` runs unconditionally here too (see the ordinary

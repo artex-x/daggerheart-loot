@@ -18,7 +18,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
-import { fakeData, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import { fakeData, fakeEnv, fixedClock, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { CloudPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
@@ -130,6 +130,8 @@ const STATES: {
   route: string;
   storage?: Record<string, string>;
   cloud?: () => CloudPort;
+  /** The day the page opens on, for a state after the legacy write cutoff. */
+  today?: number;
   enter?: (() => Promise<void>) | undefined;
 }[] = [
   {
@@ -340,6 +342,39 @@ const STATES: {
     }
   },
   {
+    what: 'the notice under the header after a sign-in moved two browser lists',
+    route: '#/lists',
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        { id: 'a', name: 'Тайник', ids: ['ci1'] },
+        { id: 'b', name: 'Лавка', ids: [] }
+      ])
+    },
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await screen.findByText(
+        'Списки из этого браузера перенесены в ваш аккаунт: «Тайник», «Лавка».'
+      );
+    }
+  },
+  {
+    what: 'a browser list page read-only after the legacy write cutoff, a row ticked',
+    route: '#/lists/a',
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        { id: 'a', name: 'Тайник', ids: ['ci1', 'cc1'], meta: { ci1: { qty: 2, gold: 100 } } }
+      ])
+    },
+    cloud: () => fakeCloud(SEED),
+    today: Date.UTC(2026, 9, 26),
+    enter: async () => {
+      await screen.findByText(
+        'Списки в этом браузере только для чтения с 26 октября 2026 года.'
+      );
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Предмет корника' }));
+    }
+  },
+  {
     what: 'the account page with the delete confirmation open',
     route: '#/account',
     cloud: () => fakeCloud(SEED, 'gm1'),
@@ -353,11 +388,12 @@ const STATES: {
 describe('states reached by pressing something', () => {
   it.each(STATES)(
     'has no axe violations on $what',
-    async ({ route, storage, cloud, enter }) => {
+    async ({ route, storage, cloud, today, enter }) => {
       const { container } = render(App, {
         env: at(route, {
           ...(storage ? { storage: memoryStorage(storage) } : {}),
-          ...(cloud ? { cloud: cloud() } : {})
+          ...(cloud ? { cloud: cloud() } : {}),
+          ...(today === undefined ? {} : { clock: fixedClock(today) })
         })
       });
       await enter?.();
@@ -404,6 +440,9 @@ const COVERED: Record<string, string> = {
   'Field.svelte': 'the number row on every roll page, and both pickers',
   'Icon.svelte': 'the card actions and the pin toggle',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
+  'MoveNotice.svelte': 'moveNotice.test.ts in every form, and the moved-lists state above',
+  'MoveStatus.svelte': 'moveStatus.test.ts in every form, and listsPage.test.ts',
+  'NoticeBox.svelte': 'through MoveNotice and MoveStatus, in their tests and the state above',
   'NoData.svelte': "record.test.ts's no-data case, and every page test's own",
   'NumberField.svelte': 'the number row on every roll page',
   'NumRow.svelte': 'the number row on every roll page, and the lists index above',

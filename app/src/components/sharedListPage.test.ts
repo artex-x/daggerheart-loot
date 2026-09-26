@@ -21,6 +21,7 @@ import {
   fakeClipboard,
   fakeData,
   fakeEnv,
+  fakePage,
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
@@ -666,6 +667,32 @@ describe('a share link', () => {
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
   });
 
+  it('disables «Сохранить себе» while the browser lists move into the account', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    let release = (): void => undefined;
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const move = cloud.lists.move.bind(cloud.lists);
+    cloud.lists.move = async (id, text) => {
+      await gate;
+      return move(id, text);
+    };
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: [] }])
+    });
+    const { container } = open('#/s/player-token-1', cloud, { storage });
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeDisabled();
+    });
+    await expectNoA11yViolations(container);
+    release();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeEnabled();
+    });
+  });
+
   it('draws a GM link read-only for another user, with the GM notes and the save button', async () => {
     open('#/s/gm-token-1', fakeCloud(SEED, 'gm2'));
     await screen.findByText('Кузнец торгуется, если назвать имя его брата.');
@@ -810,17 +837,22 @@ describe('saving with sign-in configured', () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const router = memoryRouter('#/l/' + PAYLOAD);
     const storage = memoryStorage();
-    render(App, { env: at('#/l/' + PAYLOAD, { router, storage, cloud }) });
+    const page = fakePage();
+    render(App, { env: at('#/l/' + PAYLOAD, { router, storage, cloud, page }) });
     await screen.findByRole('link', { name: 'Аккаунт: gm2@example.test' });
     await new Promise((r) => setTimeout(r, 0));
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
     expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
     expect(screen.getByText('Список «Лавка» создан')).toBeInTheDocument();
     expect(readLists(storage)).toEqual([]);
-    const read = await cloud.lists.list();
-    const made = read.ok ? read.lists.find((l) => l.name === 'Лавка') : undefined;
-    expect(made?.money_mode).toBe('coin');
-    expect(made?.list_entries.map((e) => e.item_key)).toEqual(['ci1', 'cc1']);
+    /* The create waits in the account's write buffer until the tab is hidden. */
+    page.fireHidden();
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      const made = read.ok ? read.lists.find((l) => l.name === 'Лавка') : undefined;
+      expect(made?.money_mode).toBe('coin');
+      expect(made?.list_entries.map((e) => e.item_key)).toEqual(['ci1', 'cc1']);
+    });
   });
 
   it('opens the prompt under the pressed button signed out, and a second press folds it', async () => {

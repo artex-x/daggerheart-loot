@@ -199,7 +199,7 @@ of two or three usually plays better than assigning one each.
 
 ## List links
 
-`#/l/` links stop opening on 2026-10-26. Until then the format below still
+`#/l/` links stop opening on 2026-10-26, and the app writes none from that day. Until then the format below still
 works; a list that must outlive that date belongs in an account (sign in, then
 "Сохранить себе" on its page).
 

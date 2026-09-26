@@ -232,7 +232,8 @@ Seven modes. Each keeps its own input in memory only.
 - Two notes per list and per entry - see `CONTRACTS.md` for how they encode and
   which link carries which.
 - The address bar always holds the player link and is refreshed on every edit
-  - opening the page, and after every writer on it.
+  - opening the page, and after every writer on it. A read-only browser list
+  (after the cutoff, or while the move is due) keeps the address it opened at.
 - Every other address the app copies - a list's players link, a table, a
   filter, a section anchor, a print sheet - is `<site>#/...` in Russian and
   `<site>en/#/...` in English, so a messenger builds its preview in that
@@ -266,7 +267,8 @@ Seven modes. Each keeps its own input in memory only.
   shape sent the reader to `#/l/zzzz` instead, which cost a slow unpack
   resolving after the reader had already moved on the shared list they had
   since left for.
-- Two open tabs merge rather than overwrite (`STATE.md`).
+- Two open tabs merge rather than overwrite (`STATE.md`); after the cutoff a
+  browser list is written only by the move and by a delete.
 - A storage notice at the head of the index's browser group and at the top
   of a browser list's page (never on an account list's page): when storage
   refuses, a plain warning that cannot be dismissed; otherwise a folded "lists
@@ -281,12 +283,23 @@ Seven modes. Each keeps its own input in memory only.
   overlap, so a tap on the summary's row unfolds the notice rather than
   dismissing it. It is not nested inside the `<summary>` that opens and
   closes it - the two presses no longer have to fight over the same click.
+  In a build with sign-in configured, while no account owns this browser's
+  lists, the unfolded notice adds «Войдите - списки перенесутся в аккаунт
+  сами. С 26 октября 2026 года списки в браузере нельзя будет менять.».
+  After the cutoff the notice is «Списки в этом браузере только для чтения
+  с 26 октября 2026 года.», not dismissable and drawn even after a dismissal,
+  with «Войдите - они перенесутся в аккаунт, и их снова можно будет
+  править. Скопировать текст и напечатать можно и так.» while no account owns
+  the lists.
 
-### Account lists
+### Account and browser lists
 
 A build with sign-in configured keeps a signed-in reader's lists in the
-account (`docs/specs/META.md` section 3); browser lists stay as they are until
-the legacy write cutoff, and no control offers to move one yet.
+account (`docs/specs/META.md` section 3). A signed-in reader's browser lists
+move into the account by themselves, with no press (below). From 2026-10-26
+(`LEGACY_WRITE_UNTIL`, 00:00 UTC) browser lists are read-only and `#/l/` links
+stop opening. A build with no sign-in configured moves nothing and keeps its
+browser lists writable after the date.
 
 - **Where a list is made**: signed in, every list made on the index, in the
   add-to-list menu or by "Сохранить себе" on a shared page is an account list.
@@ -326,11 +339,34 @@ the legacy write cutoff, and no control offers to move one yet.
   «Не сохранено» in the danger colour and «Повторить». Only the failure and
   the save that ends it («Сохранено») are announced (a permanently mounted,
   visually hidden status region); the next save empties the region. Every
-  edit shows at once; the writes go one at a time, in order, and a queued
-  edit of one field is sent once. A write with no network stays queued and is
-  sent again every 15 s, when the tab is shown again, and on «Повторить»; a
-  reload while «Не сохранено» loses it. A limit or another refusal drops that
-  write, toasts, and shows the list from the account again.
+  edit shows at once and waits in one buffer; two seconds after the last
+  edit the buffer is sent as one request, in order, and repeated edits of
+  one field go as one write (ten presses of «+» send the final quantity
+  once); making and deleting a list go through the same buffer. The buffer
+  is sent at once when the tab is hidden or closed, on sign-out (which
+  waits for it 5 s at most), before «Поделиться» reads the links, before
+  «Сохранить себе» on a shared page makes its copy, and before the move. «Сохраняем...»
+  shows from the first buffered edit until the send lands. A write with no
+  network, or with a lapsed session, stays in the buffer and is sent again
+  every 15 s, when the tab is shown again, after the next edit's quiet
+  window, and on «Повторить»; a reload while «Не сохранено» loses it. When
+  the tab is hidden or closed, the buffer is sent at once as one request
+  that outlives the page; an edit made while an earlier send is still on
+  its way, a buffer of more than 60 000 bytes, or, after a split, every
+  edit past the first capped request, may be lost when the tab closes (only
+  that first request goes at a close); a sign-out in another tab drops this tab's unsent edits. A limit
+  or another refusal drops that write, toasts, and shows the list from the
+  account again. An edit to a list or an entry that was deleted meanwhile,
+  on another device or in another tab, is dropped with no toast, together
+  with that list's or that entry's other waiting edits, and the account is
+  read again; the page of a deleted list then says «Список не найден». A
+  send that the server fails three times in a row, at
+  least 15 s apart, is split in half, and each half is sent on its own; a
+  single edit that the server still fails three times is dropped as
+  refused, with the toast, and the account is read again. A lost network, a
+  server that does not answer or a database that is restarting is waited
+  out, never split. An old `#/l/` link saved over the entry limit makes no
+  list, and the toast names the limit.
 - **Share links**: «Поделиться» reads pressed and expanded and opens a panel
   under the actions with two rows, «Ссылка для игроков» and «Ссылка для
   мастера», both ready on open: the panel reads the list's links (stopped
@@ -383,7 +419,8 @@ the legacy write cutoff, and no control offers to move one yet.
 - **Sign-out** on an account list's page replaces the address with `#/lists`;
   no account list stays on screen.
 - **Two devices**: the index and an account list's page read the account again
-  when the tab is shown again and every 45 s while no write is queued, and a
+  when the tab is shown again and every 45 s while no write is buffered or
+  in flight, and a
   shared page `#/s/<token>` reads its list again on the same signals; the
   last write wins per entry and there is no conflict dialog. A read that
   finds nothing new redraws nothing. «изменён N назад» and «Обновлено N
@@ -393,6 +430,63 @@ the legacy write cutoff, and no control offers to move one yet.
   «Достигнут предел списков в аккаунте: 50. Нужно больше - напишите на
   daggerheart.loot@gmail.com.» / «Достигнут предел позиций в списке: 100. ...»,
   the number the database applied.
+- **The move**: when a signed-in reader's page has read the account and this
+  browser holds lists, each list moves into the account as it is - entries,
+  quantities, prices, both notes, the list notes and the money mode, every
+  entry id kept, whether or not the catalog knows it - through one request
+  per list, exempt from the count limits (the limits bind again from the next
+  ordinary write). The account is then read back, and a list leaves the
+  browser only when its account copy matches what was sent and its stored
+  text did not change meanwhile. The move waits for the catalog: a page whose
+  `data.js` did not load moves nothing. Two guards, for a shared computer:
+  the move runs only for the first account whose page loaded with browser
+  lists (another account sees them untouched, and no notice), and a one-time
+  notice between the header and the page, on every page, names the moved
+  lists: «Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона»,
+  «Лавка в порту».», until «Скрыть»; it is drawn only for the account that
+  owns them. When a damaged copy of the lists (`dhloot.lists.v2.bad`) is
+  present, the notice adds «В этом браузере осталась повреждённая копия
+  списков: её не получилось прочитать и перенести. Если в ней было что-то
+  важное, напишите на daggerheart.loot@gmail.com.»; the copy itself is never
+  moved or deleted. The open page of a moved list, at its `#/lists/<id>` or
+  its own `#/l/` address, follows it to the account list's address, and a
+  bookmark of `#/lists/<id>` opens the account list. A second move of the
+  same list, from a second device, a copy brought back from storage or an
+  answer that was lost, answers the account row the first move made: no
+  second row, and the copy leaves the browser. A move whose row is deleted
+  meanwhile fails, and the next load moves the list again.
+- **The move's status** stands in the storage notice's slot on `#/lists` and
+  on a browser list's page: «Переносим списки в аккаунт...» while it runs;
+  «Не все списки перенесены: нет связи. Попробуем при следующем открытии.»
+  when the network stopped it (what moved has left the browser, the rest
+  waits); «Не перенесён: «Клад дракона». Сервер не принял список. Напишите на
+  daggerheart.loot@gmail.com.» for a list the server refused, tried again on
+  the next page load; «Не перенесён: «Клад дракона». Копия в аккаунте не
+  совпала со списком. Напишите на daggerheart.loot@gmail.com.» for a held
+  list, whose account copy did not match - it stays in the browser for good
+  and is not sent again; «Удалить» takes it away. A move stopped by the
+  network runs again when the tab is shown again, on the 45 s clock on any
+  page, and on «Повторить», with no reload.
+- **Read-only**: after the cutoff, in a build with sign-in configured, a
+  browser list's page has a read-only title, no link buttons and no address
+  rewrite; the money chips are disabled; the list and entry notes, the
+  positions, quantities and prices are read-only, with no clear cross, no
+  drag grip and no remove cross; the selection bar keeps the tick and its
+  «Скопировать», not «Цены» or «Удалить (N)»; copy text, print and the roll
+  panel work. «Удалить» stays, with the confirm and no «Вернуть». On
+  `#/lists` a browser card links `#/lists/<id>` and has «Удалить» alone; the
+  add-to-list menu offers the account lists alone, and signed out only the
+  prompt. A `#/l/` address, plain, packed or this browser's own, draws «Ссылки
+  такого вида перестали открываться 26 октября 2026 года.», «Попросите у
+  отправителя новую ссылку или войдите, чтобы собрать список.» and «Списки»
+  to `#/lists`, the address kept and the payload never decoded; a waiting
+  «Сохранить себе» of an old link is dropped. An account list and the `#/s/`
+  page do not change. While the lists move, and while the move waits for the
+  network, a signed-in reader's browser lists are read-only and cannot be
+  deleted; they are editable again once the move has ended. A list that
+  changed while it moved stays in the browser, named in the status, and is
+  not sent again. «Сохранить себе» on a `#/s/` page is disabled while the move
+  runs, and a remembered one runs after it.
 
 ## Records
 
@@ -673,7 +767,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   Connect say «Переходим в <provider>...» on the pressed button, record
   where to come back to (`STATE.md`, `dhloot.auth.return`) and leave for the
   provider - the page itself, or, when a sign-in prompt's «Войти» led here,
-  the prompt's page and the action it started ("Lists", "Account lists"); the buttons stay disabled and the pressed one keeps its text
+  the prompt's page and the action it started ("Lists", "Account and browser lists"); the buttons stay disabled and the pressed one keeps its text
   until the page is gone, and a return with the browser's Back button
   enables them again. The return lands on `?auth-callback=1`, which is read
   before the app mounts and replaced by the page the reader left

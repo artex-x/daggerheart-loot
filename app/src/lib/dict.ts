@@ -13,6 +13,7 @@
  * advance - an unused string is a translation somebody maintains for nothing,
  * and the old dictionary accumulated five of those. */
 
+import { legacyDateText } from './legacy.js';
 import type { Lang, Section } from './types.js';
 
 const ru = {
@@ -471,7 +472,7 @@ const ru = {
   writeRefused: 'Изменение не сохранилось: сервер его не принял. Показан список из аккаунта.',
 
   /* Share links of an account list and the shared page `#/s/<token>`
-     (docs/specs/FEATURES.md, "Account lists"). */
+     (docs/specs/FEATURES.md, "Account and browser lists"). */
   shareLinkPlayers: 'Ссылка для игроков',
   shareLinkGm: 'Ссылка для мастера',
   shareCopy: 'Скопировать',
@@ -495,7 +496,28 @@ const ru = {
   sharedFailedSub: 'Проверьте сеть и нажмите «Повторить».',
   cloneFailed: 'Не получилось сохранить список себе. Попробуйте ещё раз.',
   legacyLinks:
-    'Ссылки вида #/l/ перестанут открываться 26 октября 2026 года. Сохраните список себе, чтобы не потерять его.'
+    'Ссылки вида #/l/ перестанут открываться %d. Сохраните список себе, чтобы не потерять его.',
+
+  /* Browser lists moved into the account, and read-only after the cutoff
+     (docs/specs/FEATURES.md, "Account and browser lists"). `%d` is the
+     cutoff date (`legacyDateText`). */
+  quoted: '«%s»',
+  movedNotice: 'Списки из этого браузера перенесены в ваш аккаунт: %s.',
+  movedBad:
+    'В этом браузере осталась повреждённая копия списков: её не получилось прочитать и перенести. Если в ней было что-то важное, напишите на daggerheart.loot@gmail.com.',
+  moving: 'Переносим списки в аккаунт...',
+  moveFailed: 'Не все списки перенесены: нет связи. Попробуем при следующем открытии.',
+  moveAttention: 'Не перенесён: %s.',
+  moveAttentionWhy: 'Сервер не принял список. Напишите на daggerheart.loot@gmail.com.',
+  moveHeldWhy:
+    'Копия в аккаунте не совпала со списком. Напишите на daggerheart.loot@gmail.com.',
+  localOnlyMove:
+    'Войдите - списки перенесутся в аккаунт сами. С %d списки в браузере нельзя будет менять.',
+  localReadOnlyTitle: 'Списки в этом браузере только для чтения с %d.',
+  localReadOnly:
+    'Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать текст и напечатать можно и так.',
+  linkRetired: 'Ссылки такого вида перестали открываться %d.',
+  linkRetiredSub: 'Попросите у отправителя новую ссылку или войдите, чтобы собрать список.'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -902,10 +924,42 @@ const en: Dict = {
   sharedFailedSub: 'Check the network and press "Retry".',
   cloneFailed: 'Could not save the list to your lists. Try again.',
   legacyLinks:
-    'Links like this one (#/l/) stop opening on 26 October 2026. Save the list to your lists to keep it.'
+    'Links like this one (#/l/) stop opening on %d. Save the list to your lists to keep it.',
+
+  quoted: '"%s"',
+  movedNotice: 'Lists from this browser were moved to your account: %s.',
+  movedBad:
+    'This browser still holds a damaged copy of your lists: it could not be read or moved. If it held something important, write to daggerheart.loot@gmail.com.',
+  moving: 'Moving your lists to your account...',
+  moveFailed: 'Not every list was moved: no connection. We will try again next time.',
+  moveAttention: 'Not moved: %s.',
+  moveAttentionWhy: 'The server did not take the list. Write to daggerheart.loot@gmail.com.',
+  moveHeldWhy:
+    'The copy in your account did not match the list. Write to daggerheart.loot@gmail.com.',
+  localOnlyMove:
+    'Sign in and your lists move to your account by themselves. From %d, lists in the browser cannot be changed.',
+  localReadOnlyTitle: 'Lists in this browser are read-only from %d.',
+  localReadOnly:
+    'Sign in and they move to your account, where you can edit them again. Copying the text and printing still work.',
+  linkRetired: 'Links of this kind stopped opening on %d.',
+  linkRetiredSub: 'Ask the sender for a new link, or sign in to build a list.'
 };
 
-const DICTS: Record<Lang, Dict> = { ru, en };
+/* The texts that name the cutoff take its date from the one constant. */
+const DATED: readonly (keyof Dict)[] = [
+  'legacyLinks',
+  'localOnlyMove',
+  'localReadOnlyTitle',
+  'linkRetired'
+];
+
+function dated(d: Dict, lang: Lang): Dict {
+  const out: Dict = { ...d };
+  for (const k of DATED) out[k] = d[k].replace('%d', legacyDateText(lang));
+  return out;
+}
+
+const DICTS: Record<Lang, Dict> = { ru: dated(ru, 'ru'), en: dated(en, 'en') };
 
 export function dict(lang: Lang): Dict {
   return DICTS[lang];

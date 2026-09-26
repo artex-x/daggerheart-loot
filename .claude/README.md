@@ -290,7 +290,9 @@ Each part is load-bearing:
   prints in full): about 3 KB, shown inline, and the observer armed. The
   observer's marker is the summary block (`= Coverage summary =` and its
   `Lines` row); the per-file table prints with `npx vitest run --coverage
-  --coverage.reporter=text`. If a result is persisted again, grep the
+  --coverage.reporter=text`. A focused vitest file runs from the repository
+  root (`npx vitest run app/src/state/lists.test.ts`); from `app/` it finds
+  no file and exits 1. If a result is persisted again, grep the
   persisted file for `Coverage summary` or `fail` rather than re-running the
   check, and commit a green run as the first bullet of "More host facts
   about a long check" says - the deleted parity
@@ -540,6 +542,14 @@ app/contracts` 343 s. The same day a check died with Windows status
 0xC000012D (the commit limit): the host ran out of memory with seven agents
 and their worktrees open. Run the heavy gates with one agent session open.
 
+Re-measured on this host on 2026-09-26, at the end of the migration
+release: `npm run check` 396-404 s (vitest 63 files, about 1945 tests) and
+528-593 s on a loaded host, close to the 600 s cap; `npm run check:db`
+403 s for 216 tests under the stack lock (422 s for 211 on a loaded host);
+`node tests/run-all.js app/states` 218 s, `app/contracts` 364 s; a golden
+shard 175-182 s (181 states); `node tests/app/sweep.js 360` 430 s; `npm
+run e2e` 104-117 s (contract cases A-I, F0-F10); `check:built` 23 s.
+
 `check:built` and the `tests/app/` filters are paid once per batch; `npm run
 check` is paid once per commit inside it. None of these scale with the
 diff: eight paths and forty paths cost the same minutes.
@@ -578,7 +588,9 @@ above is the only one that belongs in a foreground call.
 This table is about a **local** foreground call. A CI job's fixed cost is
 about twenty seconds (checkout, setup-node, `npm ci`, `npm run build`), not
 minutes - `tests/run-all.js`'s `--shard=n/m` and `ci.yml`'s `browser` matrix
-split the real-Chrome suites across four such jobs for exactly that reason.
+split the real-Chrome suites across five such jobs for exactly that reason
+(four until 2026-09-26, when the slowest suite step passed 360 s on two
+consecutive runs, 36229149582 and 36230695846).
 CI run 36105652165 (2026-09-25): the `browser` shards' suite steps 361, 367,
 367 and 224 s; the `e2e` job's `npm run e2e` step 20 s. CI run 36124766953
 (2026-09-25): `migrate-test` 1 s when the test project is up to date, `npm
@@ -1265,7 +1277,12 @@ write to the test project only (owner decision 2026-09-25; `docs/DECISIONS.md`,
 command whose target is provably the test project and denies production,
 `--linked` and every target a command does not name. `db:push --project
 test --yes` passes `SUPABASE_DB_PASSWORD_TEST` to the CLI as its own
-`SUPABASE_DB_PASSWORD`, in the child's environment only.
+`SUPABASE_DB_PASSWORD`, in the child's environment only. On the owner's
+Windows host `SUPABASE_DB_PASSWORD_TEST` is in the gitignored
+`.env.test.local` (owner, 2026-09-26), not in the shell environment; the
+wrapper does not read the file. Pass it with `node --env-file=.env.test.local`
+or a parser, never `. .env.test.local`: a line that is not shell syntax
+prints part of its value in the error (2026-09-26).
 
 **Migration names.** A new migration's 14-digit stamp must sort after every
 migration already applied: `supabase db push` refuses a local migration that
@@ -1358,9 +1375,9 @@ expect about three back-to-back local runs per five minutes before Auth
 refuses a mint.
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-120 kB for the unconfigured build and 180 kB for the configured one, which
+150 kB for the unconfigured build and 200 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 120 kB limit. The 180 kB limit runs in
+unconfigured and so measures only the 150 kB limit. The 200 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -1372,11 +1389,11 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 180 kB budget (with the account client chunk)`; 172.0
+Expected: `within the 200 kB budget (with the account client chunk)`; 178.2
 kB on 2026-09-26. `dist/` stays configured until `npm run build` or
-`check:built` rebuilds it. Decision: "The configured bundle budget is 180 kB
-until a slimmer account client"; the debt it waits on: `docs/specs/DEBT.md`,
-D60.
+`check:built` rebuilds it. Decision: "The bundle budget is 150 kB
+unconfigured and 200 kB configured"; the slimmer client it no longer waits
+on is still `docs/specs/DEBT.md`, D60.
 
 Branch migrations on the test project: `migrate-test` runs on every
 branch's `e2e`, so a migration that a branch pushed is in the test project

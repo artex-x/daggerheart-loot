@@ -16,10 +16,13 @@ import type { StoredList } from '../lib/lists.js';
 import { LOOT_KINDS } from '../lib/std.js';
 import type { Prefs } from '../lib/prefs.js';
 import { KINDS } from '../lib/types.js';
+import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import {
   brokenStorage,
   fakeEnv,
+  fakePage,
   fakePwa,
+  fixedClock,
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
@@ -33,7 +36,7 @@ import type {
 } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
-import { AppState, LIST_POLL_MS } from './app.svelte.js';
+import { AppState, LIST_POLL_MS, SIGN_OUT_WAIT_MS } from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
@@ -1797,6 +1800,459 @@ describe('account lists', () => {
     expect(app.cloudLists?.get('00000000-0000-4000-8000-000000005000')?.hnote).toBe(
       'Кузнец торгуется, если назвать имя его брата.'
     );
+    app.stop();
+  });
+});
+
+describe("the account's write buffer", () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const SHOP = '00000000-0000-4000-8000-000000000101';
+  const nameOf = async (cloud: CloudPort, id: string): Promise<string | undefined> => {
+    const read = await cloud.lists.list();
+    return read.ok ? read.lists.find((l) => l.id === id)?.name : undefined;
+  };
+
+  function started(cloud: CloudPort, hash = '#/lists/' + SHOP, over: Partial<Env> = {}) {
+    const page = fakePage();
+    const app = new AppState(fakeEnv({ router: memoryRouter(hash), cloud, page, ...over }));
+    app.start();
+    return { app, page };
+  }
+
+  it('sends a buffered edit at once when the tab is hidden, and listens no more once stopped', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const apply = vi.spyOn(cloud.lists, 'apply');
+    const { app, page } = started(cloud);
+    await flush();
+    app.cloudLists?.rename(SHOP, 'Лавка у моста');
+    page.fireHidden();
+    await flush();
+    expect(apply).toHaveBeenCalledOnce();
+    expect(await nameOf(cloud, SHOP)).toBe('Лавка у моста');
+    app.stop();
+    app.cloudLists?.rename(SHOP, 'Лавка');
+    page.fireHidden();
+    await flush();
+    expect(apply).toHaveBeenCalledOnce();
+    app.cloudLists?.clear();
+  });
+
+  it('sends the buffer before it signs out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const order: string[] = [];
+    const apply = cloud.lists.apply.bind(cloud.lists);
+    cloud.lists.apply = (ops) => {
+      order.push('apply');
+      return apply(ops);
+    };
+    const signOut = cloud.auth.signOut.bind(cloud.auth);
+    cloud.auth.signOut = (scope) => {
+      order.push('signOut ' + String(scope));
+      return signOut(scope);
+    };
+    const { app } = started(cloud);
+    await flush();
+    app.cloudLists?.rename(SHOP, 'Лавка у моста');
+    expect(await app.signOut('global')).toEqual({ ok: true });
+    expect(order).toEqual(['apply', 'signOut global']);
+    await cloud.auth.signIn('google');
+    expect(await nameOf(cloud, SHOP)).toBe('Лавка у моста');
+    app.stop();
+  });
+
+  it('signs out after 5 s when the buffered write never answers', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED, 'gm1');
+      cloud.lists.apply = () => new Promise(() => undefined);
+      const signOut = vi.spyOn(cloud.auth, 'signOut');
+      const { app } = started(cloud);
+      await vi.advanceTimersByTimeAsync(0);
+      app.cloudLists?.rename(SHOP, 'Не дойдёт');
+      let done = false;
+      void app.signOut().then(() => {
+        done = true;
+      });
+      await vi.advanceTimersByTimeAsync(SIGN_OUT_WAIT_MS - 1);
+      expect(signOut).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(signOut).toHaveBeenCalledWith('local');
+      expect(done).toBe(true);
+      expect(app.user).toBeNull();
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('answers failed to a sign-out in a build with no sign-in', async () => {
+    expect(await new AppState(at('#/account')).signOut()).toEqual({
+      ok: false,
+      error: 'failed'
+    });
+  });
+
+  it('sends the buffer before a share link is copied, and copies nothing offline', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const order: string[] = [];
+    const apply = cloud.lists.apply.bind(cloud.lists);
+    cloud.lists.apply = (ops) => {
+      order.push('apply');
+      return apply(ops);
+    };
+    const clone = vi.spyOn(cloud.shares, 'clone');
+    const { app } = started(cloud, '#/s/player-token-1');
+    await flush();
+    const own = '00000000-0000-4000-8000-000000000201';
+    app.cloudLists?.rename(own, 'Своё');
+    await app.saveShareCopy('player-token-1');
+    expect(order).toEqual(['apply']);
+    expect(clone).toHaveBeenCalledOnce();
+    expect(await nameOf(cloud, own)).toBe('Своё');
+
+    app.go('#/s/player-token-1');
+    cloud.setOffline(true);
+    app.cloudLists?.rename(own, 'Не дойдёт');
+    await app.saveShareCopy('player-token-1');
+    expect(clone).toHaveBeenCalledOnce();
+    expect(app.toast?.msg).toBe('Не получилось сохранить список себе. Попробуйте ещё раз.');
+    expect(app.cloning).toBe(false);
+    app.stop();
+    app.cloudLists?.clear();
+  });
+
+  it('makes no list for an old link over the entry limit, and names the limit', async () => {
+    const keys = Array.from({ length: 101 }, (_, i) => 'r' + String(i));
+    const loot: Loot = {
+      items: {
+        core_item: keys.map((id, i) => ({
+          id,
+          src: 'core',
+          kind: 'item',
+          en: id,
+          ende: '',
+          ru: id,
+          rud: '',
+          roll: i + 1
+        }))
+      }
+    };
+    const shared = encodeList({ name: 'Сто одна', ids: keys }, true);
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { app } = started(cloud, sharedListHash(shared), { data: { load: () => loot } });
+    await flush();
+    app.saveCopyOf({ name: 'Сто одна', ids: keys, dropped: 0 });
+    expect(await app.cloudLists?.flushNow()).toBe(true);
+    await flush();
+    expect(app.toast?.msg).toBe(
+      'Достигнут предел позиций в списке: 100. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+    );
+    const read = await cloud.lists.list();
+    expect(read.ok && read.lists.map((l) => l.name)).not.toContain('Сто одна');
+    expect(app.cloudLists?.lists.map((l) => l.name)).not.toContain('Сто одна');
+    app.stop();
+  });
+});
+
+describe('the move of browser lists and the cutoff', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  /* The move chains several answers after the list read. */
+  const settled = async (): Promise<void> => {
+    for (let i = 0; i < 4; i++) await flush();
+  };
+  const loot: Loot = {
+    items: {
+      core_item: [
+        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 },
+        { id: 'q1', src: 'core', kind: 'item', en: 'B', ende: '', ru: 'Б', rud: '', roll: 2 }
+      ]
+    }
+  };
+  const A: StoredList = { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 };
+  const B: StoredList = { id: 'b', name: 'Лавка в порту', ids: [], created: 2 };
+  const TWO = { 'dhloot.lists.v2': JSON.stringify([A, B]) };
+  const MOVED_A = '00000000-0000-4000-8000-000000005000';
+  const idsIn = (storage: FakeStoragePort): string[] =>
+    (JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as { id: string }[]).map((l) => l.id);
+
+  function started(
+    cloud: CloudPort | null,
+    hash: string,
+    initial: Record<string, string> = TWO,
+    over: Partial<Env> = {}
+  ) {
+    const router = memoryRouter(hash);
+    const storage = memoryStorage(initial);
+    const app = new AppState(
+      fakeEnv({ router, storage, cloud, data: { load: () => loot }, ...over })
+    );
+    app.start();
+    return { app, router, storage };
+  }
+
+  /* Holds every read of the account until `open()`. */
+  function gated(cloud: CloudPort): () => void {
+    let open = (): void => undefined;
+    const gate = new Promise<void>((r) => {
+      open = r;
+    });
+    const list = cloud.lists.list.bind(cloud.lists);
+    cloud.lists.list = async () => {
+      await gate;
+      return list();
+    };
+    return open;
+  }
+
+  it('moves the browser lists after a sign-in, and is due until then', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const open = gated(cloud);
+    const { app, storage } = started(cloud, '#/lists');
+    expect(app.moveDue).toBe(false);
+    await flush();
+    expect(app.moveDue).toBe(true);
+    expect(app.localWritable).toBe(false);
+    open();
+    await settled();
+    expect(app.legacyMove?.status).toBe('done');
+    expect(app.moveDue).toBe(false);
+    expect(app.localWritable).toBe(true);
+    expect(idsIn(storage)).toEqual([]);
+    expect(app.cloudLists?.get(MOVED_A)?.name).toBe('Клад дракона');
+    app.stop();
+  });
+
+  it('makes no move without browser lists, and none signed out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const move = vi.spyOn(cloud.lists, 'move');
+    const { app } = started(cloud, '#/lists', {});
+    await settled();
+    expect(app.legacyMove?.status).toBe('done');
+    const out = fakeCloud(SEED);
+    const outMove = vi.spyOn(out.lists, 'move');
+    const signedOut = started(out, '#/lists');
+    await settled();
+    expect(signedOut.app.moveDue).toBe(false);
+    expect(signedOut.app.localWritable).toBe(true);
+    expect(move).not.toHaveBeenCalled();
+    expect(outMove).not.toHaveBeenCalled();
+    app.stop();
+    signedOut.app.stop();
+  });
+
+  it('is never due for another account, and leaves its lists writable', async () => {
+    const { app, storage } = started(fakeCloud(SEED, 'gm1'), '#/lists', {
+      ...TWO,
+      'dhloot.migrated.v1': JSON.stringify({ owner: 'someone', lists: {} })
+    });
+    await settled();
+    expect(app.legacyMove?.foreign).toBe(true);
+    expect(app.moveDue).toBe(false);
+    expect(idsIn(storage)).toEqual(['a', 'b']);
+    app.stop();
+  });
+
+  it('moves an offline sign-in once the network returns, on the shown signal, with no reload', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    const { app, storage } = started(cloud, '#/lists');
+    await settled();
+    expect(app.cloudLists?.status).toBe('error');
+    expect(app.legacyMove?.status).toBe('failed');
+    expect(app.moveDue).toBe(true);
+    cloud.setOffline(false);
+    storage.fireExternalChange(null);
+    await settled();
+    expect(app.cloudLists?.status).toBe('ready');
+    expect(idsIn(storage)).toEqual([]);
+    expect(app.moveDue).toBe(false);
+    app.stop();
+  });
+
+  it('moves an offline sign-in on the 45 s poll on any route', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+      const { app, storage } = started(cloud, '#/i/ci1');
+      await vi.advanceTimersByTimeAsync(0);
+      expect(app.legacyMove?.status).toBe('failed');
+      cloud.setOffline(false);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(app.cloudLists?.status).toBe('ready');
+      expect(idsIn(storage)).toEqual([]);
+      expect(app.moveDue).toBe(false);
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('retries a move the network stopped on the 45 s poll, on a browser list page', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED, 'gm1');
+      const move = cloud.lists.move.bind(cloud.lists);
+      let calls = 0;
+      cloud.lists.move = (id, text) =>
+        ++calls === 2 ? Promise.resolve({ ok: false, error: 'network' }) : move(id, text);
+      const { app, storage } = started(cloud, '#/lists/b');
+      await vi.advanceTimersByTimeAsync(0);
+      expect(app.legacyMove?.status).toBe('failed');
+      expect(app.cloudLists?.status).toBe('ready');
+      expect(idsIn(storage)).toEqual(['b']);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(idsIn(storage)).toEqual([]);
+      expect(app.legacyMove?.status).toBe('done');
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('runs the move at once on «Повторить»', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    const { app, storage } = started(cloud, '#/lists');
+    await settled();
+    cloud.setOffline(false);
+    await app.retryLists();
+    expect(app.legacyMove?.status).toBe('done');
+    expect(idsIn(storage)).toEqual([]);
+    app.stop();
+  });
+
+  it('runs a move skipped for a share copy once the copy lands', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const open = gated(cloud);
+    const order: string[] = [];
+    const move = cloud.lists.move.bind(cloud.lists);
+    cloud.lists.move = (id, text) => {
+      order.push('move');
+      return move(id, text);
+    };
+    const clone = cloud.shares.clone.bind(cloud.shares);
+    cloud.shares.clone = (token, id) => {
+      order.push('clone');
+      return clone(token, id);
+    };
+    const { app, storage } = started(cloud, '#/s/player-token-1');
+    await flush();
+    /* The first read is held: the copy starts while the move waits for it. */
+    const copying = app.saveShareCopy('player-token-1');
+    open();
+    await copying;
+    await settled();
+    expect(order).toEqual(['clone', 'move', 'move']);
+    expect(app.legacyMove?.status).toBe('done');
+    expect(idsIn(storage)).toEqual([]);
+    expect(app.cloudLists?.lists.map((l) => l.name)).toEqual(
+      expect.arrayContaining(['Клад дракона', 'Лавка в порту', 'Лавка кузнеца'])
+    );
+    app.stop();
+  });
+
+  it('makes a remembered share copy only after the move read the account back', async () => {
+    const action = { do: 'saveList' as const };
+    const cloud = fakeCloud(SEED, 'gm2', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const order: string[] = [];
+    const list = cloud.lists.list.bind(cloud.lists);
+    cloud.lists.list = () => {
+      order.push('list');
+      return list();
+    };
+    const clone = cloud.shares.clone.bind(cloud.shares);
+    cloud.shares.clone = (token, id) => {
+      order.push('clone');
+      return clone(token, id);
+    };
+    const move = cloud.lists.move.bind(cloud.lists);
+    cloud.lists.move = (id, text) => {
+      order.push('move');
+      return move(id, text);
+    };
+    const { app, storage } = started(cloud, '#/s/player-token-1');
+    await settled();
+    await settled();
+    expect(order.indexOf('clone')).toBeGreaterThan(order.lastIndexOf('move') + 1);
+    expect(order.slice(0, 4)).toEqual(['list', 'move', 'move', 'list']);
+    expect(idsIn(storage)).toEqual([]);
+    expect(app.cloudLists?.lists.map((l) => l.name)).toEqual(
+      expect.arrayContaining(['Клад дракона', 'Лавка в порту', 'Лавка кузнеца'])
+    );
+    app.stop();
+  });
+
+  it("follows a moved list's page to its account address, keeping a waiting action", async () => {
+    const action = { do: 'addToList' as const, key: 'ci1', ids: ['ci1'] };
+    const cloud = fakeCloud(SEED, 'gm1', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const { app, router } = started(cloud, '#/lists/a');
+    await settled();
+    expect(app.hash).toBe('#/lists/' + MOVED_A);
+    expect(router.hash()).toBe('#/lists/' + MOVED_A);
+    expect(app.menuFor).toBe('ci1');
+    app.stop();
+  });
+
+  it('follows an own #/l/ page that no list claimed, the OAuth return with openList empty', async () => {
+    const { app } = started(fakeCloud(SEED, 'gm1'), sharedListHash(encodeList(A, false)));
+    expect(app.openList).toBe('');
+    await settled();
+    expect(app.hash).toBe('#/lists/' + MOVED_A);
+    app.stop();
+  });
+
+  it('follows the open page when another tab moved its list', async () => {
+    const { app, storage } = started(fakeCloud(SEED), '#/lists/a');
+    await settled();
+    storage.set('dhloot.migrated.v1', JSON.stringify({ owner: 'x', lists: { a: MOVED_A } }));
+    storage.fireExternalChange('dhloot.migrated.v1');
+    expect(app.hash).toBe('#/lists/' + MOVED_A);
+    expect(app.lists.lists.map((l) => l.id)).toEqual(['b']);
+    app.stop();
+  });
+
+  it('leaves a page that is not a moved list where it is', () => {
+    const { app } = started(fakeCloud(SEED, 'gm1'), '#/lists/zz');
+    app.followMoved([]);
+    app.followMoved([{ list: B, accountId: MOVED_A }]);
+    expect(app.hash).toBe('#/lists/zz');
+    app.stop();
+  });
+
+  it('reads the cutoff once, only in a build with a cloud', () => {
+    const after = { clock: fixedClock(LEGACY_WRITE_UNTIL) };
+    const before = { clock: fixedClock(LEGACY_WRITE_UNTIL - 1) };
+    const cloud = fakeCloud(SEED);
+    expect(new AppState(at('#/lists', { cloud, ...after })).legacyWritable).toBe(false);
+    expect(new AppState(at('#/lists', { cloud, ...before })).legacyWritable).toBe(true);
+    expect(new AppState(at('#/lists', after)).legacyWritable).toBe(true);
+  });
+
+  it('never unpacks a packed link after the cutoff, and saves no #/l/ copy then', async () => {
+    const unpack = vi.fn(() => Promise.resolve('x'));
+    const compress: CompressPort = {
+      available: () => true,
+      pack: (raw) => Promise.resolve(raw),
+      unpack
+    };
+    const clock = fixedClock(LEGACY_WRITE_UNTIL);
+    const packed = started(fakeCloud(SEED), '#/l/~packed', {}, { compress, clock });
+    await settled();
+    expect(unpack).not.toHaveBeenCalled();
+    expect(packed.app.expandFailed).toBe('');
+    packed.app.stop();
+
+    const shared = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
+    const action = { do: 'saveList' as const };
+    const cloud = fakeCloud(SEED, 'gm2', {
+      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
+    });
+    const { app } = started(cloud, sharedListHash(shared), {}, { clock });
+    await settled();
+    expect(app.hash).toBe(sharedListHash(shared));
+    expect(app.cloudLists?.lists).toHaveLength(1);
     app.stop();
   });
 });

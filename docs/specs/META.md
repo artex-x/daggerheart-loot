@@ -55,16 +55,20 @@ release. Sign-in (Google or Discord) and `#/account` exist in a build
 configured with the two `VITE_SUPABASE_*` values, and an account holds the
 reader's preferences and lists (`STATE.md`); a signed-in reader makes every
 new list there, and a signed-out one is asked to sign in first
-(`FEATURES.md`, "Account lists"). An account list is shared through `#/s/`
+(`FEATURES.md`, "Account and browser lists"). An account list is shared through `#/s/`
 links, a players' one and a GM's one, which its owner can delete and make
 again; a link opens the list as it is now, read-only. A nightly job backs the database up,
 encrypted to the owner's key, and each copy is kept 30 days
-(`.claude/README.md`, "Backups and restore"). Browser lists stay editable
-until the legacy write cutoff, and an old shared list is still its address,
-with deliberate consequences:
+(`.claude/README.md`, "Backups and restore"). A signed-in reader's browser
+lists move into the account by themselves; browser lists stay editable
+until the legacy write cutoff, 2026-10-26, and are read-only from then
+(`FEATURES.md`, "Account and browser lists"). An old shared list is still
+its address, with deliberate consequences:
 
 - a `#/l/` link cannot be revoked, and it stays readable until the legacy
-  write cutoff, 2026-10-26 (`LEGACY_WRITE_UNTIL`), when its decoder retires
+  write cutoff, 2026-10-26 (`LEGACY_WRITE_UNTIL`), when its decoder retires:
+  from then the app writes no `#/l/` address and draws the retired page for
+  one
 - a link is as long as its contents, hence the checksum and the short form
 - a browser list is in `localStorage` and can be lost; the app says so over
   the browser lists, and **Your own link** (`shareGm`) doubles as its backup

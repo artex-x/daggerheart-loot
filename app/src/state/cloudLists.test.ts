@@ -1,16 +1,18 @@
 /* The account list store over the fake cloud: the same writers as the local
- * store, a write queue that survives a lost network, and re-reads that redraw
- * only what changed. docs/specs/FEATURES.md, "Lists". */
+ * store, a write buffer sent as one request two seconds after the last edit,
+ * a lost network kept and retried, a row deleted elsewhere dropped quietly, a
+ * request the database keeps failing halved, and re-reads that redraw only
+ * what changed. docs/specs/FEATURES.md, "Account and browser lists". */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { toCloudList, type CloudList } from '../lib/cloudLists.js';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
+import { BATCH_BYTES, toCloudList, type CloudList, type ListOp } from '../lib/cloudLists.js';
 import { dict } from '../lib/dict.js';
 import type { StoredList } from '../lib/lists.js';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, memoryStorage } from '../ports/index.js';
-import type { ListRepository, ListWrite } from '../ports/index.js';
-import { CloudLists, RETRY_MS } from './cloudLists.svelte.js';
+import type { ListRepository, ListWrites } from '../ports/index.js';
+import { CloudLists, FAULT_LIMIT, QUIET_MS, RETRY_MS } from './cloudLists.svelte.js';
 import { ListStore } from './lists.svelte.js';
 
 const t = () => dict('ru');
@@ -18,27 +20,68 @@ const said: { msg: string; error?: boolean | undefined }[] = [];
 const say = (msg: string, error?: boolean): void => {
   said.push({ msg, error });
 };
+const REFUSED_TEXT =
+  'Изменение не сохранилось: сервер его не принял. Показан список из аккаунта.';
 
 /* Every answer of the fake is already resolved; a flush is a chain of them. */
 const settle = async (): Promise<void> => {
   for (let i = 0; i < 40; i++) await Promise.resolve();
 };
+/* The buffer's quiet window passes, and the flush it starts settles. */
+const quiet = async (): Promise<void> => {
+  await vi.advanceTimersByTimeAsync(QUIET_MS);
+  await settle();
+};
+const later = async (ms: number): Promise<void> => {
+  await vi.advanceTimersByTimeAsync(ms);
+  await settle();
+};
 
 const SHOP = uuid(101);
 const EMPTY = uuid(102);
 const TROPHIES = uuid(103);
+/* «Лавка кузнеца»'s first entry's row id. */
+const CI1_ROW = uuid(1101);
 
 async function loaded(options: FakeCloudOptions = {}, as = 'gm1') {
   const cloud = fakeCloud(SEED, as, options);
   const store = new CloudLists(cloud.lists, say, t);
   await store.load();
-  return { cloud, store };
+  /* The fake's own `apply`, for a test that wraps the spy's answer. */
+  const real = cloud.lists.apply.bind(cloud.lists);
+  const apply = vi.spyOn(cloud.lists, 'apply');
+  return { cloud, store, apply, real };
 }
 
 async function serverList(repo: ListRepository, id: string) {
   const read = await repo.list();
   if (!read.ok) throw new Error('the read failed');
   return read.lists.find((l) => l.id === id);
+}
+
+/** The writes of each `apply` call, by kind. */
+const kinds = (apply: { mock: { calls: [ListOp[]][] } }): string[][] =>
+  apply.mock.calls.map(([ops]) => ops.map((o) => o.op));
+/** How many writes each `apply` call carried. */
+const sizes = (apply: { mock: { calls: [ListOp[]][] } }): number[] =>
+  apply.mock.calls.map(([ops]) => ops.length);
+
+type Apply = ListRepository['apply'];
+
+/**
+ * Holds the next `apply` call until `release()`; the fake applies it then.
+ * `answer` replaces what the fake would answer for that call.
+ */
+function holdNext(apply: MockInstance<Apply>, real: Apply, answer?: ListWrites) {
+  let open: () => void = () => undefined;
+  const gate = new Promise<void>((r) => {
+    open = r;
+  });
+  apply.mockImplementationOnce(async (ops) => {
+    await gate;
+    return answer ?? real(ops);
+  });
+  return { release: open };
 }
 
 /** The local store's shape of an account list. */
@@ -52,6 +95,7 @@ const plain = (l: CloudList | undefined): StoredList | undefined => {
 
 beforeEach(() => {
   said.length = 0;
+  vi.useFakeTimers();
 });
 afterEach(() => {
   vi.useRealTimers();
@@ -76,7 +120,7 @@ describe('reading the account', () => {
     expect(shop?.note).toBe('Открыта с рассвета до заката.');
     expect(shop?.meta?.['ci1']).toEqual({ qty: 2, gold: 150 });
     expect(shop?.meta?.['voa2_a3']).toEqual({ hnote: 'Проклят.' });
-    expect(shop?.entryIds['ci1']).toBe(uuid(1101));
+    expect(shop?.entryIds['ci1']).toBe(CI1_ROW);
     expect(store.saved).toBe(true);
   });
 
@@ -100,7 +144,7 @@ describe('reading the account', () => {
   it("re-reads another device's edit, redrawing that list alone", async () => {
     const { cloud, store } = await loaded();
     const trophies = store.get(TROPHIES);
-    await cloud.lists.update(SHOP, { name: 'Лавка у моста' });
+    await cloud.lists.apply([{ op: 'update', id: SHOP, patch: { name: 'Лавка у моста' } }]);
     await store.refresh();
     expect(store.lists[0]?.name).toBe('Лавка у моста');
     expect(store.get(TROPHIES)).toBe(trophies);
@@ -115,10 +159,36 @@ describe('reading the account', () => {
     expect(store.status).toBe('ready');
   });
 
+  it('re-reads while in error on refresh without a loading flash', async () => {
+    const { cloud, store } = await loaded({ offline: true });
+    expect(store.status).toBe('error');
+    cloud.setOffline(false);
+    const reading = store.refresh();
+    expect(store.status).toBe('error');
+    await reading;
+    expect(store.status).toBe('ready');
+    expect(store.lists.map((l) => l.name)).toContain('Лавка кузнеца');
+  });
+
+  it('keeps error while the network is still gone', async () => {
+    const { store } = await loaded({ offline: true });
+    await expect(store.refresh()).resolves.toBeUndefined();
+    expect(store.status).toBe('error');
+    expect(store.lists).toEqual([]);
+  });
+
   it('re-reads nothing before the first load', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const list = vi.spyOn(cloud.lists, 'list');
     const store = new CloudLists(cloud.lists, say, t);
+    await store.refresh();
+    expect(list).not.toHaveBeenCalled();
+  });
+
+  it('refreshes nothing while an edit waits in the buffer', async () => {
+    const { cloud, store } = await loaded();
+    const list = vi.spyOn(cloud.lists, 'list');
+    store.rename(SHOP, 'Новое');
     await store.refresh();
     expect(list).not.toHaveBeenCalled();
   });
@@ -129,7 +199,7 @@ describe('reading the account', () => {
     const pending = store.refresh();
     store.rename(SHOP, 'Новое');
     await pending;
-    await settle();
+    await quiet();
     expect(list).toHaveBeenCalledTimes(2);
     expect(store.get(SHOP)?.name).toBe('Новое');
     expect((await serverList(cloud.lists, SHOP))?.name).toBe('Новое');
@@ -141,18 +211,16 @@ describe('reading the account', () => {
     const loading = store.load();
     store.create('Пока грузится');
     await loading;
-    await settle();
+    await quiet();
     expect(store.status).toBe('ready');
     expect(store.lists.map((l) => l.name)).toEqual(['Пока грузится', 'Список второго ГМа']);
   });
 
-  it('forgets everything on clear, the queued writes too', async () => {
-    const { cloud, store } = await loaded({ offline: true });
-    cloud.setOffline(false);
-    await store.load();
+  it('forgets everything on clear, the buffered writes too', async () => {
+    const { cloud, store } = await loaded();
     cloud.setOffline(true);
     store.rename(SHOP, 'Не дойдёт');
-    await settle();
+    await quiet();
     expect(store.sync).toBe('failed');
     store.clear();
     expect(store.status).toBe('idle');
@@ -160,21 +228,25 @@ describe('reading the account', () => {
     expect(store.sync).toBe('saved');
     cloud.setOffline(false);
     store.retry();
-    await settle();
+    await later(RETRY_MS);
     expect((await serverList(cloud.lists, SHOP))?.name).toBe('Лавка кузнеца');
   });
 
-  it('drops an answer that arrives after clear', async () => {
-    const { cloud, store } = await loaded();
-    let answer: (w: ListWrite) => void = () => undefined;
-    cloud.lists.update = () =>
-      new Promise((r) => {
-        answer = r;
-      });
-    store.rename(SHOP, 'x');
-    await settle();
+  it('drops the buffer and its timer on clear', async () => {
+    const { store, apply } = await loaded();
+    store.rename(SHOP, 'Не уйдёт');
     store.clear();
-    answer({ ok: true });
+    await quiet();
+    expect(apply).not.toHaveBeenCalled();
+  });
+
+  it('drops an answer that arrives after clear', async () => {
+    const { store, apply, real } = await loaded();
+    const held = holdNext(apply, real, { ok: true, results: [{ ok: true }] });
+    store.rename(SHOP, 'x');
+    await quiet();
+    store.clear();
+    held.release();
     await settle();
     expect(store.sync).toBe('saved');
     const read = store.load();
@@ -277,7 +349,7 @@ describe('the writers', () => {
       expect(run(store), name).toEqual(run(local));
       expect(plain(store.get(SHOP)), name).toEqual(local.get(SHOP));
     }
-    await settle();
+    await quiet();
     expect(store.sync).toBe('saved');
     const row = await serverList(cloud.lists, SHOP);
     const got = row && toCloudList(row);
@@ -295,8 +367,7 @@ describe('the writers', () => {
   });
 
   it('does nothing for a list or an entry it does not hold', async () => {
-    const { cloud, store } = await loaded();
-    const write = vi.spyOn(cloud.lists, 'update');
+    const { store, apply } = await loaded();
     const drawn = store.lists;
     store.rename('nope', 'x');
     store.setNote('nope', 'note', 'x');
@@ -308,7 +379,9 @@ describe('the writers', () => {
     expect(store.add('nope', ['q1'], () => true)).toEqual([]);
     expect(store.add(SHOP, ['ci1'], () => true)).toEqual([]);
     expect(store.lists).toBe(drawn);
-    expect(write).not.toHaveBeenCalled();
+    await quiet();
+    expect(apply).not.toHaveBeenCalled();
+    expect(store.sync).toBe('saved');
   });
 
   it('puts the edited list first and keeps the other lists as they were', async () => {
@@ -318,25 +391,6 @@ describe('the writers', () => {
     expect(store.lists.map((l) => l.id)).toEqual([SHOP, EMPTY, TROPHIES]);
     expect(store.lists[1]).toBe(empty);
     expect(store.lists[2]).toBe(trophies);
-  });
-
-  it('sends the writes in order, and a queued edit of one field once', async () => {
-    const { cloud, store } = await loaded();
-    const update = vi.spyOn(cloud.lists, 'update');
-    store.rename(SHOP, 'a');
-    store.rename(SHOP, 'ab');
-    store.rename(SHOP, 'abc');
-    store.setMoney(SHOP, 'bag');
-    await settle();
-    expect(update.mock.calls).toEqual([
-      [SHOP, { name: 'a' }],
-      [SHOP, { name: 'abc' }],
-      [SHOP, { money_mode: 'bag' }]
-    ]);
-    expect(await serverList(cloud.lists, SHOP)).toMatchObject({
-      name: 'abc',
-      money_mode: 'bag'
-    });
   });
 
   it('creates a list first, with its entries, its name trimmed or untitled', async () => {
@@ -351,7 +405,7 @@ describe('the writers', () => {
     expect(l.id).toBe(uuid(5000));
     expect(store.lists[0]).toBe(l);
     expect(store.create('   ').name).toBe('Без названия');
-    await settle();
+    await quiet();
     const row = await serverList(cloud.lists, l.id);
     expect(row).toMatchObject({
       name: 'Клад',
@@ -388,7 +442,7 @@ describe('the writers', () => {
     expect([shop?.name, shop?.note, shop?.hnote, shop?.meta?.['ci1']?.note].map(chars)).toEqual(
       [200, 4000, 4000, 4000]
     );
-    await settle();
+    await quiet();
     const made = await serverList(cloud.lists, l.id);
     const row = await serverList(cloud.lists, SHOP);
     const ci1 = row?.list_entries.find((e) => e.item_key === 'ci1');
@@ -412,45 +466,246 @@ describe('the writers', () => {
     const { cloud, store } = await loaded();
     store.remove(TROPHIES);
     expect(store.get(TROPHIES)).toBeUndefined();
-    await settle();
+    await quiet();
     expect(await serverList(cloud.lists, TROPHIES)).toBeUndefined();
     await store.refresh();
     expect(store.get(TROPHIES)).toBeUndefined();
   });
 });
 
+describe('the write buffer', () => {
+  it('sends nothing until two seconds after the last edit', async () => {
+    const { store, apply } = await loaded();
+    store.rename(SHOP, 'Новое');
+    expect(store.sync).toBe('saving');
+    await later(QUIET_MS - 1);
+    expect(apply).not.toHaveBeenCalled();
+    expect(store.sync).toBe('saving');
+    await later(1);
+    expect(apply).toHaveBeenCalledOnce();
+    expect(store.sync).toBe('saved');
+  });
+
+  it('restarts the wait on every edit', async () => {
+    const { store, apply } = await loaded();
+    store.rename(SHOP, 'a');
+    await later(1500);
+    store.setNote(SHOP, 'note', 'n');
+    await later(500);
+    expect(apply).not.toHaveBeenCalled();
+    await later(1500);
+    expect(apply.mock.calls).toEqual([
+      [
+        [
+          { op: 'update', id: SHOP, patch: { name: 'a' } },
+          { op: 'update', id: SHOP, patch: { player_note: 'n' } }
+        ]
+      ]
+    ]);
+  });
+
+  it('sends ten presses of one quantity as one write with the last value', async () => {
+    const { cloud, store, apply } = await loaded();
+    for (let n = 3; n <= 12; n++) store.setMeta(SHOP, 'ci1', 'qty', n);
+    await quiet();
+    expect(apply.mock.calls).toEqual([
+      [[{ op: 'update_entry', id: CI1_ROW, patch: { quantity: 12 } }]]
+    ]);
+    const row = await serverList(cloud.lists, SHOP);
+    expect(row?.list_entries.find((e) => e.id === CI1_ROW)?.quantity).toBe(12);
+  });
+
+  it('sends a typed name once, after the writes before it', async () => {
+    const { cloud, store, apply } = await loaded();
+    store.rename(SHOP, 'a');
+    store.rename(SHOP, 'ab');
+    store.rename(SHOP, 'abc');
+    store.setMoney(SHOP, 'bag');
+    await quiet();
+    expect(
+      apply.mock.calls.map(([ops]) => ops.map((o) => (o.op === 'update' ? o.patch : o)))
+    ).toEqual([[{ name: 'abc' }, { money_mode: 'bag' }]]);
+    expect(await serverList(cloud.lists, SHOP)).toMatchObject({
+      name: 'abc',
+      money_mode: 'bag'
+    });
+  });
+
+  it("keeps a list's create before its entries' edits", async () => {
+    const { store, apply } = await loaded({}, 'gm2');
+    const l = store.create('Клад');
+    store.add(l.id, ['ci1', 'q1'], () => true);
+    store.setMeta(l.id, 'ci1', 'qty', 3);
+    store.setNote(l.id, 'note', 'n');
+    store.move(l.id, 'q1', 0);
+    await quiet();
+    expect(kinds(apply)).toEqual([['create', 'add', 'update_entry', 'update', 'reorder']]);
+    expect(store.sync).toBe('saved');
+    expect(said).toEqual([]);
+  });
+
+  it('keeps an edit made during a flush for its own quiet window', async () => {
+    const { store, apply, real } = await loaded();
+    const held = holdNext(apply, real);
+    store.rename(SHOP, 'a');
+    await quiet();
+    store.setNote(SHOP, 'note', 'n');
+    held.release();
+    await settle();
+    expect(kinds(apply)).toEqual([['update']]);
+    expect(store.sync).toBe('saving');
+    await later(QUIET_MS - 1);
+    expect(apply).toHaveBeenCalledOnce();
+    await later(1);
+    expect(apply.mock.calls[1]).toEqual([
+      [{ op: 'update', id: SHOP, patch: { player_note: 'n' } }]
+    ]);
+    expect(store.sync).toBe('saved');
+  });
+
+  it('never merges an edit into the request in flight', async () => {
+    const { cloud, store, apply, real } = await loaded();
+    const held = holdNext(apply, real);
+    store.rename(SHOP, 'a');
+    await quiet();
+    store.rename(SHOP, 'ab');
+    held.release();
+    await quiet();
+    expect(apply.mock.calls).toEqual([
+      [[{ op: 'update', id: SHOP, patch: { name: 'a' } }]],
+      [[{ op: 'update', id: SHOP, patch: { name: 'ab' } }]]
+    ]);
+    expect((await serverList(cloud.lists, SHOP))?.name).toBe('ab');
+  });
+
+  it('splits a buffer over 60 000 bytes into requests sent one after another, in order', async () => {
+    const { cloud, store, apply, real } = await loaded({}, 'gm2');
+    const keys = Array.from({ length: 20 }, (_, i) => 'k' + String(i));
+    const l = store.create('Длинные заметки', { ids: keys });
+    for (const k of keys) store.setMeta(l.id, k, 'note', 'я'.repeat(4000));
+    let flying = 0;
+    let most = 0;
+    apply.mockImplementation(async (ops) => {
+      most = Math.max(most, ++flying);
+      await Promise.resolve();
+      const r = await real(ops);
+      flying--;
+      return r;
+    });
+    await quiet();
+    expect(apply.mock.calls.length).toBeGreaterThan(2);
+    expect(most).toBe(1);
+    for (const [ops] of apply.mock.calls) {
+      /* `batchSize` counts each write and a comma; the array adds one bracket more. */
+      expect(new TextEncoder().encode(JSON.stringify(ops)).length).toBeLessThanOrEqual(
+        BATCH_BYTES + 1
+      );
+    }
+    const sent = apply.mock.calls.flatMap(([ops]) => ops);
+    expect(sent.map((o) => o.op)).toEqual(['create', ...keys.map(() => 'update_entry')]);
+    const row = await serverList(cloud.lists, l.id);
+    expect(row?.list_entries.every((e) => e.player_note.length === 4000)).toBe(true);
+    expect(store.sync).toBe('saved');
+  });
+
+  it('keeps the whole request on a network failure and sends it again with the edits made since, in one request', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setOffline(true);
+    store.rename(SHOP, 'a');
+    store.setMoney(SHOP, 'bag');
+    await quiet();
+    expect(store.sync).toBe('failed');
+    store.setNote(SHOP, 'note', 'n');
+    cloud.setOffline(false);
+    await quiet();
+    expect(sizes(apply)).toEqual([2, 3]);
+    expect(store.sync).toBe('saved');
+    expect(await serverList(cloud.lists, SHOP)).toMatchObject({
+      name: 'a',
+      money_mode: 'bag',
+      player_note: 'n'
+    });
+  });
+
+  it('keeps «Не сохранено» for an edit while not saved, and retries after the quiet window', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setOffline(true);
+    store.rename(SHOP, 'a');
+    await quiet();
+    cloud.setOffline(false);
+    store.rename(SHOP, 'ab');
+    expect(store.sync).toBe('failed');
+    await later(QUIET_MS - 1);
+    expect(store.sync).toBe('failed');
+    await later(1);
+    expect(store.sync).toBe('saved');
+    expect(apply.mock.calls.map(([ops]) => ops)).toEqual([
+      [{ op: 'update', id: SHOP, patch: { name: 'a' } }],
+      [{ op: 'update', id: SHOP, patch: { name: 'ab' } }]
+    ]);
+  });
+
+  it('flushNow sends at once and says whether the buffer emptied', async () => {
+    const { cloud, store, apply, real } = await loaded({ limits: { entries: 9 } });
+    store.rename(SHOP, 'a');
+    expect(await store.flushNow()).toBe(true);
+    expect(apply).toHaveBeenCalledOnce();
+
+    cloud.setOffline(true);
+    store.rename(SHOP, 'b');
+    expect(await store.flushNow()).toBe(false);
+    expect(store.sync).toBe('failed');
+    cloud.setOffline(false);
+    expect(await store.flushNow()).toBe(true);
+
+    /* During a running flush it waits, then sends what came after. */
+    const held = holdNext(apply, real);
+    store.rename(SHOP, 'c');
+    await quiet();
+    store.setNote(SHOP, 'note', 'd');
+    const flushed = store.flushNow();
+    held.release();
+    expect(await flushed).toBe(true);
+    expect(apply.mock.calls.slice(-2).map(([ops]) => ops.length)).toEqual([1, 1]);
+
+    /* A refused write counts as gone. */
+    store.add(SHOP, ['q2'], () => true);
+    expect(await store.flushNow()).toBe(true);
+    expect(said).toHaveLength(1);
+    expect(await store.flushNow()).toBe(true);
+  });
+});
+
 describe('a lost network', () => {
   it('keeps the edit, says not saved, retries every 15 s, and saves when the network is back', async () => {
-    vi.useFakeTimers();
     const { cloud, store } = await loaded();
     cloud.setOffline(true);
     store.rename(SHOP, 'Офлайн');
     expect(store.sync).toBe('saving');
-    await settle();
+    await quiet();
     expect(store.sync).toBe('failed');
     expect(store.saved).toBe(false);
     expect(store.get(SHOP)?.name).toBe('Офлайн');
-    await vi.advanceTimersByTimeAsync(RETRY_MS);
+    await later(RETRY_MS);
     expect(store.sync).toBe('failed');
     cloud.setOffline(false);
-    await vi.advanceTimersByTimeAsync(RETRY_MS);
+    await later(RETRY_MS);
     expect(store.sync).toBe('saved');
     expect((await serverList(cloud.lists, SHOP))?.name).toBe('Офлайн');
   });
 
   it('sends at once on retry, and on refresh while a write waits', async () => {
-    vi.useFakeTimers();
     const { cloud, store } = await loaded();
     cloud.setOffline(true);
     store.rename(SHOP, 'Раз');
-    await settle();
+    await quiet();
     cloud.setOffline(false);
     store.retry();
     await settle();
     expect(store.sync).toBe('saved');
     cloud.setOffline(true);
     store.rename(SHOP, 'Два');
-    await settle();
+    await quiet();
     cloud.setOffline(false);
     await store.refresh();
     await settle();
@@ -459,21 +714,17 @@ describe('a lost network', () => {
   });
 
   it('replaces a waiting edit of the same field with the newer one', async () => {
-    vi.useFakeTimers();
-    const { cloud, store } = await loaded();
-    const update = vi.spyOn(cloud.lists, 'update');
+    const { cloud, store, apply } = await loaded();
     cloud.setOffline(true);
     store.rename(SHOP, 'a');
-    await settle();
+    await quiet();
     store.rename(SHOP, 'ab');
-    await settle();
     cloud.setOffline(false);
     store.retry();
     await settle();
-    expect(update.mock.calls.map((c) => c[1])).toEqual([
-      { name: 'a' },
-      { name: 'ab' },
-      { name: 'ab' }
+    expect(apply.mock.calls.map(([ops]) => ops)).toEqual([
+      [{ op: 'update', id: SHOP, patch: { name: 'a' } }],
+      [{ op: 'update', id: SHOP, patch: { name: 'ab' } }]
     ]);
   });
 });
@@ -483,7 +734,7 @@ describe('a refused write', () => {
     const { store } = await loaded({ limits: { entries: 9 } });
     expect(store.add(SHOP, ['q2'], () => true)).toEqual(['q2']);
     expect(store.get(SHOP)?.ids).toContain('q2');
-    await settle();
+    await quiet();
     expect(said).toEqual([
       {
         msg: 'Достигнут предел позиций в списке: 9. Нужно больше - напишите на daggerheart.loot@gmail.com.',
@@ -497,7 +748,7 @@ describe('a refused write', () => {
   it('says the entry limit alone when the refused add is followed by its reorder', async () => {
     const { store } = await loaded({ limits: { entries: 9 } });
     store.restoreEntry(SHOP, 'q2', 0, {});
-    await settle();
+    await quiet();
     expect(said).toEqual([
       {
         msg: 'Достигнут предел позиций в списке: 9. Нужно больше - напишите на daggerheart.loot@gmail.com.',
@@ -507,30 +758,387 @@ describe('a refused write', () => {
     expect(store.get(SHOP)?.ids).not.toContain('q2');
   });
 
-  it('says the list limit once, and drops the new list with its queued writes', async () => {
-    const { cloud, store } = await loaded({ limits: { lists: 3 } });
-    const add = vi.spyOn(cloud.lists, 'addEntries');
+  it('drops only a refused write, toasts once and re-reads', async () => {
+    const { cloud, store } = await loaded({ limits: { entries: 9 } });
+    store.rename(SHOP, 'Лавка у моста');
+    store.add(SHOP, ['q2'], () => true);
+    store.setNote(SHOP, 'note', 'Закрыто');
+    await quiet();
+    expect(said.map((s) => s.msg)).toEqual([
+      'Достигнут предел позиций в списке: 9. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+    ]);
+    expect(await serverList(cloud.lists, SHOP)).toMatchObject({
+      name: 'Лавка у моста',
+      player_note: 'Закрыто'
+    });
+    expect(store.get(SHOP)?.ids).not.toContain('q2');
+    expect(store.get(SHOP)?.name).toBe('Лавка у моста');
+  });
+
+  it('says the list limit once, and drops the new list with the writes sent beside it', async () => {
+    const { store } = await loaded({ limits: { lists: 3 } });
     const l = store.create('Четвёртый');
     store.add(l.id, ['ci1'], () => true);
-    await settle();
+    await quiet();
     expect(said.map((s) => s.msg)).toEqual([
       'Достигнут предел списков в аккаунте: 3. Нужно больше - напишите на daggerheart.loot@gmail.com.'
     ]);
-    expect(add).not.toHaveBeenCalled();
+    expect(store.get(l.id)).toBeUndefined();
+  });
+
+  it("drops a refused create with the list's writes still in the buffer", async () => {
+    const { store, apply, real } = await loaded({ limits: { lists: 3 } });
+    const held = holdNext(apply, real);
+    const l = store.create('Четвёртый');
+    await quiet();
+    store.add(l.id, ['ci1'], () => true);
+    store.rename(SHOP, 'Лавка у моста');
+    held.release();
+    await quiet();
+    expect(kinds(apply)).toEqual([['create'], ['update']]);
+    expect(said).toHaveLength(1);
     expect(store.get(l.id)).toBeUndefined();
   });
 
   it('says a refusal and shows the list from the account again', async () => {
-    const { cloud, store } = await loaded();
-    cloud.lists.update = () => Promise.resolve({ ok: false, error: 'refused' });
+    const { store, apply } = await loaded();
+    apply.mockResolvedValueOnce({ ok: true, results: [{ ok: false, error: 'refused' }] });
     store.rename(SHOP, 'Не примут');
-    await settle();
-    expect(said).toEqual([
-      {
-        msg: 'Изменение не сохранилось: сервер его не принял. Показан список из аккаунта.',
-        error: true
-      }
-    ]);
+    await quiet();
+    expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
     expect(store.get(SHOP)?.name).toBe('Лавка кузнеца');
+  });
+
+  it('drops what a request refused whole sent, toasts once and re-reads', async () => {
+    const { cloud, store, apply } = await loaded();
+    apply.mockResolvedValueOnce({ ok: false, error: 'refused' });
+    store.rename(SHOP, 'Не примут');
+    store.setNote(SHOP, 'note', 'Тоже');
+    await quiet();
+    expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
+    expect(store.get(SHOP)?.name).toBe('Лавка кузнеца');
+    expect(store.sync).toBe('saved');
+    expect((await serverList(cloud.lists, SHOP))?.name).toBe('Лавка кузнеца');
+  });
+});
+
+describe('a row deleted elsewhere', () => {
+  /* Through the fake's own `apply`, so the spy counts only the store's calls. */
+  const removedOnTheServer = async (real: Apply, op: ListOp): Promise<void> => {
+    await real([op]);
+  };
+
+  it('drops an edit to a list deleted elsewhere with no toast and re-reads', async () => {
+    const { store, real } = await loaded();
+    await removedOnTheServer(real, { op: 'remove', id: SHOP });
+    store.rename(SHOP, 'Уже нет');
+    await quiet();
+    expect(said).toEqual([]);
+    expect(store.sync).toBe('saved');
+    expect(store.get(SHOP)).toBeUndefined();
+  });
+
+  it("drops the gone list's other buffered writes", async () => {
+    const { store, apply, real } = await loaded();
+    await removedOnTheServer(real, { op: 'remove', id: SHOP });
+    const held = holdNext(apply, real);
+    store.rename(SHOP, 'Уже нет');
+    await quiet();
+    store.setNote(SHOP, 'note', 'n');
+    store.setMeta(SHOP, 'ci1', 'qty', 5);
+    held.release();
+    await quiet();
+    await later(RETRY_MS);
+    expect(kinds(apply)).toEqual([['update']]);
+    expect(said).toEqual([]);
+    expect(store.sync).toBe('saved');
+  });
+
+  it("drops only a gone entry's writes and keeps the list's", async () => {
+    const { cloud, store, apply, real } = await loaded();
+    await removedOnTheServer(real, { op: 'remove_entries', ids: [CI1_ROW] });
+    const held = holdNext(apply, real);
+    store.setMeta(SHOP, 'ci1', 'qty', 5);
+    store.rename(SHOP, 'Лавка у моста');
+    await quiet();
+    store.setMeta(SHOP, 'ci1', 'qty', 6);
+    held.release();
+    await quiet();
+    expect(kinds(apply)).toEqual([['update_entry', 'update']]);
+    expect(said).toEqual([]);
+    expect((await serverList(cloud.lists, SHOP))?.name).toBe('Лавка у моста');
+    expect(store.get(SHOP)?.ids).not.toContain('ci1');
+  });
+
+  it('reads a later refusal of a gone list as gone', async () => {
+    const { store, apply } = await loaded();
+    apply.mockResolvedValueOnce({
+      ok: true,
+      results: [
+        { ok: false, error: 'gone' },
+        { ok: false, error: 'refused' }
+      ]
+    });
+    store.rename(SHOP, 'Уже нет');
+    store.move(SHOP, 'di11', 0);
+    await quiet();
+    expect(kinds(apply)[0]).toEqual(['update', 'reorder']);
+    expect(said).toEqual([]);
+  });
+
+  it('drops an add into a list deleted elsewhere with no toast', async () => {
+    const { store, real } = await loaded();
+    await removedOnTheServer(real, { op: 'remove', id: SHOP });
+    store.add(SHOP, ['q2'], () => true);
+    await quiet();
+    expect(said).toEqual([]);
+    expect(store.get(SHOP)).toBeUndefined();
+  });
+
+  it("keeps the list's rename when a replayed request answers a false gone", async () => {
+    const { cloud, store, apply, real } = await loaded();
+    store.setMeta(SHOP, 'di11', 'qty', 5);
+    store.removeEntry(SHOP, 'di11');
+    apply.mockResolvedValueOnce({ ok: false, error: 'network' });
+    await quiet();
+    expect(store.sync).toBe('failed');
+    const held = holdNext(apply, real, {
+      ok: true,
+      results: [{ ok: false, error: 'gone' }, { ok: true }]
+    });
+    store.retry();
+    await settle();
+    store.rename(SHOP, 'Лавка у моста');
+    held.release();
+    await quiet();
+    expect(kinds(apply)).toEqual([
+      ['update_entry', 'remove_entries'],
+      ['update_entry', 'remove_entries'],
+      ['update']
+    ]);
+    expect((await serverList(cloud.lists, SHOP))?.name).toBe('Лавка у моста');
+    expect(said).toEqual([]);
+    expect(store.sync).toBe('saved');
+  });
+});
+
+describe('a request the database keeps failing', () => {
+  /* Four writes to four fields of «Лавка кузнеца»; the rename is the last. */
+  const four = (store: CloudLists, name = 'bad'): void => {
+    store.setNote(SHOP, 'note', 'a');
+    store.setNote(SHOP, 'hnote', 'b');
+    store.setMoney(SHOP, 'bag');
+    store.rename(SHOP, name);
+  };
+  const isBad = (op: ListOp): boolean => op.op === 'update' && op.patch.name === 'bad';
+
+  it('is FAULT_LIMIT, 3', () => {
+    expect(FAULT_LIMIT).toBe(3);
+  });
+
+  it('treats a fault as a lost network twice', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(true);
+    four(store);
+    await quiet();
+    expect(store.sync).toBe('failed');
+    await later(RETRY_MS - 1);
+    expect(apply).toHaveBeenCalledOnce();
+    await later(1);
+    expect(sizes(apply)).toEqual([4, 4]);
+    expect(store.sync).toBe('failed');
+    expect(said).toEqual([]);
+  });
+
+  it('splits the request in half after the third fault', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(isBad);
+    four(store);
+    await quiet();
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([4, 4]);
+    await later(RETRY_MS);
+    /* The third fault: the first half goes at once and lands, then the
+       second half faults. */
+    expect(sizes(apply)).toEqual([4, 4, 4, 2, 2]);
+    await later(RETRY_MS);
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([4, 4, 4, 2, 2, 2, 2, 1, 1]);
+    await later(RETRY_MS);
+    expect(said).toEqual([]);
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([4, 4, 4, 2, 2, 2, 2, 1, 1, 1, 1]);
+    expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
+    expect(store.sync).toBe('saved');
+    const row = await serverList(cloud.lists, SHOP);
+    expect(row).toMatchObject({
+      name: 'Лавка кузнеца',
+      player_note: 'a',
+      gm_note: 'b',
+      money_mode: 'bag'
+    });
+    expect(store.get(SHOP)?.name).toBe('Лавка кузнеца');
+  });
+
+  it('drops a single write the database keeps failing', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(true);
+    store.rename(SHOP, 'bad');
+    await quiet();
+    await later(RETRY_MS);
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([1, 1, 1]);
+    expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
+    expect(store.sync).toBe('saved');
+    await later(RETRY_MS);
+    expect(apply).toHaveBeenCalledTimes(3);
+  });
+
+  it("takes a dropped create's buffered writes with it", async () => {
+    const { cloud, store, apply } = await loaded({}, 'gm2');
+    cloud.setFault((op) => op.op === 'create');
+    const l = store.create('Клад');
+    store.rename(l.id, 'Клад дракона');
+    await quiet();
+    await later(RETRY_MS);
+    await later(RETRY_MS);
+    await later(RETRY_MS);
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([2, 2, 2, 1, 1, 1]);
+    await later(RETRY_MS);
+    expect(apply).toHaveBeenCalledTimes(6);
+    expect(said).toHaveLength(1);
+    expect(store.get(l.id)).toBeUndefined();
+  });
+
+  it('neither counts nor resets on a network answer between faults', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(true);
+    four(store);
+    await quiet();
+    await later(RETRY_MS);
+    cloud.setOffline(true);
+    await later(RETRY_MS);
+    cloud.setOffline(false);
+    await later(RETRY_MS);
+    /* Counted at 2 s and 17 s; offline at 32 s; the third counted at 47 s. */
+    expect(sizes(apply)).toEqual([4, 4, 4, 4, 2]);
+  });
+
+  it('resets the count on an answer with results', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(true);
+    four(store, 'x');
+    await quiet();
+    await later(RETRY_MS);
+    cloud.setFault(false);
+    await later(RETRY_MS);
+    expect(store.sync).toBe('saved');
+    cloud.setFault(true);
+    four(store, 'y');
+    await quiet();
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([4, 4, 4, 4, 4]);
+  });
+
+  it('resets the count on a request refused whole', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(true);
+    four(store, 'x');
+    await quiet();
+    await later(RETRY_MS);
+    apply.mockResolvedValueOnce({ ok: false, error: 'refused' });
+    await later(RETRY_MS);
+    expect(said).toHaveLength(1);
+    four(store, 'y');
+    await quiet();
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([4, 4, 4, 4, 4]);
+  });
+
+  it('ends the cap with the buffer', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(isBad);
+    store.setNote(SHOP, 'note', 'a');
+    store.rename(SHOP, 'bad');
+    await quiet();
+    for (let i = 0; i < 5; i++) await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([2, 2, 2, 1, 1, 1, 1]);
+    expect(store.sync).toBe('saved');
+    store.setNote(SHOP, 'note', 'b');
+    store.setNote(SHOP, 'hnote', 'c');
+    store.setMoney(SHOP, 'bag');
+    await quiet();
+    expect(sizes(apply).slice(-1)).toEqual([3]);
+  });
+
+  it('ends the count and the cap on clear', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(isBad);
+    store.setNote(SHOP, 'note', 'a');
+    store.rename(SHOP, 'bad');
+    await quiet();
+    await later(RETRY_MS);
+    await later(RETRY_MS);
+    /* Split: the note landed, the rename faulted once more, counted. */
+    expect(sizes(apply)).toEqual([2, 2, 2, 1, 1]);
+    store.clear();
+    await store.load();
+    cloud.setFault(true);
+    store.setNote(SHOP, 'note', 'x');
+    store.setMoney(SHOP, 'coin');
+    await quiet();
+    await later(RETRY_MS);
+    await later(RETRY_MS);
+    expect(sizes(apply).slice(5)).toEqual([2, 2, 2, 1]);
+  });
+
+  it('counts at most one fault per RETRY_MS', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(true);
+    store.setNote(SHOP, 'note', 'a');
+    store.rename(SHOP, 'b');
+    await quiet();
+    /* 0: the first fault, counted. */
+    await later(100);
+    store.retry();
+    await settle();
+    await later(9_900);
+    store.retry();
+    await settle();
+    /* 100 ms and 10 s: not counted; the timer is re-armed from 10 s. */
+    expect(sizes(apply)).toEqual([2, 2, 2]);
+    expect(store.sync).toBe('failed');
+    await later(RETRY_MS);
+    /* 25 s: the second counted fault. */
+    expect(sizes(apply)).toEqual([2, 2, 2, 2]);
+    await later(100);
+    store.retry();
+    await settle();
+    /* 25.1 s: not counted. */
+    expect(sizes(apply)).toEqual([2, 2, 2, 2, 2]);
+    await later(RETRY_MS - 1);
+    expect(sizes(apply)).toEqual([2, 2, 2, 2, 2]);
+    await later(1);
+    /* 40.1 s: the third counted fault, and the split. */
+    expect(sizes(apply)).toEqual([2, 2, 2, 2, 2, 2, 1]);
+  });
+
+  it('counts a fault after a long quiet', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(true);
+    store.rename(SHOP, 'a');
+    await quiet();
+    cloud.setFault(false);
+    await later(RETRY_MS);
+    expect(store.sync).toBe('saved');
+    await later(45_000);
+    cloud.setFault(true);
+    store.setNote(SHOP, 'note', 'b');
+    store.setMoney(SHOP, 'bag');
+    await quiet();
+    await later(RETRY_MS);
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([1, 1, 2, 2, 2, 1]);
   });
 });

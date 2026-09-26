@@ -33,7 +33,8 @@ is for.
 | `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |
 | `dhloot.probe` | written and removed to test whether storage works at all |
 | `sb-<ref>-auth-token` | the signed-in session (`<ref>` is the Supabase project). A provider redirect also writes its PKCE verifier three ways (supabase-js 2.117.1): `sb-<ref>-auth-token-flow-<id>-code-verifier` per flow, the index `sb-<ref>-auth-token-flows-code-verifier` (a ring of five flows, the oldest evicted), and `sb-<ref>-auth-token-code-verifier`, the latest flow's copy. The return's code exchange reads and removes only that last key (the callback address carries no flow id), so the per-flow key and the index stay until sign-out or deletion ends the session. Written and removed by supabase-js, never by the app |
-| `dhloot.lists.v2.bad` | a `dhloot.lists.v2` value that would not parse, copied here once before this tab's own next write would otherwise silently overwrite it - what a newer build, a browser extension, or another page on the shared origin left behind, kept rather than lost (R1) |
+| `dhloot.lists.v2.bad` | a `dhloot.lists.v2` value that would not parse, copied here once before this tab's own next write would otherwise silently overwrite it - what a newer build, a browser extension, or another page on the shared origin left behind, kept rather than lost (R1). The move into the account reads it (the notice names it) and never writes or deletes it |
+| `dhloot.migrated.v1` | the move of browser lists into the account (`FEATURES.md`, "Account and browser lists"): `{ owner, lists, notice?, bad?, held? }` - `owner` the first account whose page loaded with browser lists (only it moves them), `lists` the tombstones (local id to account id: a tombstoned list is never drawn again and leaves `dhloot.lists.v2` on the next removal), `notice` the names the one-time notice still shows, `bad` the damaged-backup sentence (`true` to show, `false` shown and dismissed), `held` the local ids whose account copy did not match (never sent again; a delete prunes the id). Read fresh on every read of the lists; every writer reads it fresh and merges - `owner` kept once set, `lists` and `held` unions, a name appended only with a new tombstone - so two tabs never undo each other's write or a «Скрыть». The tombstones are written before the lists they remove. A value that does not parse reads as absent. Kept after the legacy write cutoff, 2026-10-26 |
 
 `dhloot.auth.return` (`sessionStorage`) is `{ hash, at, kind, provider,
 action? }`, written just before sign-in or Connect leaves for the provider
@@ -80,11 +81,19 @@ now redrawn rather than silently ignored.
 A signal that finds in storage the very string the tab's lists were drawn
 from redraws nothing, and a save does not parse the string it last read or
 wrote again (`docs/DECISIONS.md`, 2026-09-23, "The list store is raw
-state...", for the measured cost).
+state...", for the measured cost). A signal for `dhloot.migrated.v1` redraws
+even then: a new tombstone hides a list whose stored text did not change,
+and the page of a list that moved follows it to its account address.
+
+After the legacy write cutoff, 2026-10-26, a build with sign-in configured
+writes a browser list only through the move's removal and a delete, and
+neither merges: each reads storage fresh, removes by id, and makes this
+tab's memory the stored array. The merge above stays for the weeks before
+the date (and in a build with no sign-in configured).
 
 Account lists do not ride the `storage` event: every tab and device reads the
 account again when it is shown again and every 45 s while the index or an
-account list's page is open and no write is queued. A shared page
+account list's page is open and no write is buffered or in flight. A shared page
 `#/s/<token>` reads its list again on the same two signals, signed in or
 not. A read keeps each list
 whose `updated_at` has not moved as the same object, so a read that finds
@@ -141,7 +150,7 @@ state exists, by what it was for:
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `comm {c, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}` |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |
-| Lists | `lists`, `cloudLists` (the account lists, their read status, the write queue and its save status), `sharedView` (the open share link's list, its read status and whether the reader owns it), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session) |
+| Lists | `lists`, `cloudLists` (the account lists, their read status, the write buffer and its save status), `sharedView` (the open share link's list, its read status and whether the reader owns it), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session) |
 | Prices | `rp`, `guess`, `moneyHelp` |
 | Print | `printIds` |
 | UI | `sel`, `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen` |

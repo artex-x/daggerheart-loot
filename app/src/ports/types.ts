@@ -28,16 +28,7 @@
  * answer `null`, writes answer whether they succeeded. The app shows a warning
  * and keeps running; it does not pretend the lists are saved.
  */
-import type {
-  EntryPatch,
-  EntryRow,
-  ListPatch,
-  ListRow,
-  NewListRow,
-  ShareAudience,
-  SharedRow,
-  ShareRow
-} from '../lib/cloudLists.js';
+import type { ListOp, ListRow, ShareAudience, SharedRow, ShareRow } from '../lib/cloudLists.js';
 import type { Loot } from '../lib/data.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
@@ -242,6 +233,24 @@ export interface MotionPort {
   reduced(): boolean;
 }
 
+/**
+ * The page going out of sight: the tab hidden, or the page closed or left.
+ * The account's write buffer is sent at once then (docs/specs/FEATURES.md,
+ * "Account and browser lists").
+ */
+export interface PagePort {
+  /** Calls `fn` on `visibilitychange` to hidden and on `pagehide`. Returns an unsubscribe. */
+  onHidden(fn: () => void): () => void;
+}
+
+/**
+ * The time of day the app reads for the legacy write cutoff. A test build pins it
+ * (`?today=`), so its states stay on one side of the date whatever day they run.
+ */
+export interface ClockPort {
+  now(): number;
+}
+
 /* ---------- cloud ---------- */
 
 export type Provider = 'google' | 'discord';
@@ -327,6 +336,32 @@ export type ListWrite =
 /** `{ ok: false }` is signed out or a read that failed, never an empty account. */
 export type ListsRead = { ok: true; lists: ListRow[] } | { ok: false };
 
+/** One write's answer inside an `apply` call: never `network`; `gone` when the row it
+ *  edits was deleted or is not the caller's (`P0002`). */
+export type ListOpResult =
+  Exclude<ListWrite, { error: 'network' }> | { ok: false; error: 'gone' };
+
+/** An `apply` call's answer: a result per write, or the call's own failure. */
+export type ListWrites =
+  | { ok: true; results: ListOpResult[] }
+  /** No answer, a lapsed session or a passing server fault: the call may be sent again. */
+  | { ok: false; error: 'network' }
+  /** The database failed the call itself (a statement timeout, a defect): the caller
+   *  counts it and splits a request that keeps failing. */
+  | { ok: false; error: 'fault' }
+  /** The call was refused whole: every write in it is dropped. */
+  | { ok: false; error: 'refused' };
+
+/** A browser list's move: the account row, and whether this call made it (false: the
+ *  owner moved the same text before, and the answer is that first row). */
+export type MoveWrite =
+  | { ok: true; id: string; inserted: boolean }
+  /** No answer, a lapsed session or a row deleted during the move: the next load moves
+   *  it again. */
+  | { ok: false; error: 'network' }
+  /** The text is not a list the database takes. */
+  | { ok: false; error: 'refused' };
+
 /** The signed-in owner's lists (docs/specs/FEATURES.md, "Lists"). Every write is
  *  idempotent on the client-made ids, so a retry cannot duplicate a row. */
 export interface ListRepository {
@@ -334,16 +369,13 @@ export interface ListRepository {
   newId(): string;
   /** The owner's lists, each with its entries in list order. */
   list(): Promise<ListsRead>;
-  /** Inserts the list and its entries; a second call with the same ids inserts nothing. */
-  create(list: NewListRow, entries: EntryRow[]): Promise<ListWrite>;
-  update(id: string, patch: ListPatch): Promise<ListWrite>;
-  /** Inserts the entries; an id already there is left as it is. */
-  addEntries(listId: string, entries: EntryRow[]): Promise<ListWrite>;
-  updateEntry(entryId: string, patch: EntryPatch): Promise<ListWrite>;
-  removeEntries(entryIds: string[]): Promise<ListWrite>;
-  /** Sets every entry's position from its index in `entryIds` (`reorder_list`). */
-  reorder(listId: string, entryIds: string[]): Promise<ListWrite>;
-  remove(id: string): Promise<ListWrite>;
+  /** Applies the writes in order in one request (`apply_list_writes`), each on its own:
+   *  a refused write rolls back alone. */
+  apply(ops: ListOp[]): Promise<ListWrites>;
+  /** Moves one browser list, as its canonical text, into the account as the list `id`
+   *  (`move_legacy_list`); idempotent per owner on the text. Exempt from the count
+   *  limits (docs/specs/FEATURES.md, "Account and browser lists"). */
+  move(id: string, canonical: string): Promise<MoveWrite>;
 }
 
 /** The owner's shares of one list, stopped ones included; `{ ok: false }` is signed out
@@ -355,7 +387,7 @@ export type ShareMade =
 /** `shared: null` is a link that opens nothing: stopped, deleted, unknown or malformed. */
 export type SharedRead = { ok: true; shared: SharedRow | null } | { ok: false };
 
-/** An account list's share links (docs/specs/FEATURES.md, "Account lists"). The owner
+/** An account list's share links (docs/specs/FEATURES.md, "Account and browser lists"). The owner
  *  makes and deletes them; anyone holding a token reads the list through it. */
 export interface ShareRepository {
   /** The list's shares, stopped ones included; another user's list reads none. */
@@ -420,6 +452,8 @@ export interface Env {
   dialog: DialogPort;
   pwa: PwaPort;
   motion: MotionPort;
+  page: PagePort;
+  clock: ClockPort;
   /** null in an unconfigured build: no cloud control is drawn. */
   cloud: CloudPort | null;
 }

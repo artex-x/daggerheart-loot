@@ -2,7 +2,7 @@
  * mapping onto the `StoredList` shape the list page already draws.
  *
  * Column names follow the schema (`supabase/migrations/20260925130100_lists.sql`).
- * Pure module: no port, no storage. docs/specs/FEATURES.md, "Account lists". */
+ * Pure module: no port, no storage. docs/specs/FEATURES.md, "Account and browser lists". */
 
 import type { Dict } from './dict.js';
 import type { DecodedList, ListEntryMeta, MoneyMode } from './listLink.js';
@@ -44,6 +44,9 @@ export interface ListRow {
   gm_note: string;
   created_at: string;
   updated_at: string;
+  /** The SHA-256 of the canonical text a moved browser list was made from; null for
+   *  every other list. */
+  legacy_fingerprint: string | null;
   list_entries: EntryRow[];
 }
 
@@ -57,6 +60,40 @@ export type ListPatch = Partial<
 export type EntryPatch = Partial<
   Pick<EntryRow, 'quantity' | 'price_coins' | 'player_note' | 'gm_note'>
 >;
+
+/** One write of `apply_list_writes`, in the shape the function reads
+ *  (`supabase/migrations/20260925130600_list_writes.sql`). */
+export type ListOp =
+  | { op: 'create'; list: NewListRow; entries: EntryRow[] }
+  | { op: 'update'; id: string; patch: ListPatch }
+  | { op: 'remove'; id: string }
+  | { op: 'add'; list_id: string; entries: EntryRow[] }
+  | { op: 'update_entry'; id: string; patch: EntryPatch }
+  | { op: 'remove_entries'; ids: string[] }
+  | { op: 'reorder'; list_id: string; ids: string[] };
+
+/** The most bytes of writes one request carries: under the 64 KiB a `keepalive`
+ *  request may hold, with room for its headers. */
+export const BATCH_BYTES = 60_000;
+/** The most writes one request carries; `apply_list_writes` refuses more. */
+export const BATCH_OPS = 200;
+
+const utf8 = new TextEncoder();
+
+/** Returns how many writes from the first go in one request: at least one, then while the
+ *  JSON of the writes stays within `BATCH_BYTES` and their count within `BATCH_OPS`. */
+export function batchSize(ops: readonly ListOp[]): number {
+  let bytes = 0;
+  let n = 0;
+  for (const op of ops) {
+    if (n >= BATCH_OPS) break;
+    const size = utf8.encode(JSON.stringify(op)).length + 1;
+    if (n > 0 && bytes + size > BATCH_BYTES) break;
+    bytes += size;
+    n++;
+  }
+  return n;
+}
 
 /** An account list as the pages draw it: `ids` are the entries' record ids in list order,
  *  `entryIds` maps each to its row id, `updated` is the last edit in ms. */

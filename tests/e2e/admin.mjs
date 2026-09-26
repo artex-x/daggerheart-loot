@@ -132,7 +132,9 @@ export async function listsOf(admin, userId) {
   guard(admin);
   const { data, error } = await admin
     .from('lists')
-    .select('id,name,gm_note,list_entries(item_key,gm_note)')
+    .select(
+      'id,name,player_note,gm_note,legacy_fingerprint,list_entries(item_key,quantity,price_coins,gm_note)'
+    )
     .eq('owner_id', userId);
   if (error) throw fail('reading lists', error);
   return data ?? [];

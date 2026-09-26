@@ -14,6 +14,8 @@ import {
   brokenStorage,
   fakeData,
   fakeEnv,
+  fakePage,
+  fixedClock,
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
@@ -22,6 +24,7 @@ import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
+import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import type { StoredList } from '../lib/lists.js';
 
 afterEach(cleanup);
@@ -419,17 +422,26 @@ describe('accessibility', () => {
 });
 
 describe('with sign-in configured', () => {
-  const withCloud = (cloud: CloudPort, hash = '#/i/ci1', storage = TWO) => {
+  /* `page.fireHidden()` sends the account's write buffer at once, as a
+     hidden tab does, so a test reads the fake without the 2 s wait. */
+  const withCloud = (
+    cloud: CloudPort,
+    hash = '#/i/ci1',
+    storage = TWO,
+    more: Record<string, string> = {}
+  ) => {
     const router = memoryRouter(hash);
+    const page = fakePage();
     const view = render(App, {
       env: fakeEnv({
         router,
         data: fakeData(LOOT),
         cloud,
-        storage: memoryStorage({ 'dhloot.lists.v2': storage })
+        page,
+        storage: memoryStorage({ 'dhloot.lists.v2': storage, ...more })
       })
     });
-    return { ...view, router };
+    return { ...view, router, page };
   };
   /* The header names the account once the session is in; the lists follow
      within the same turn. */
@@ -477,12 +489,13 @@ describe('with sign-in configured', () => {
       expect(router.hash()).toBe('#/i/ci1');
     });
     await screen.findByRole('button', { name: '✓ Лавка кузнеца' });
+    /* The browser lists moved into the account before the menu reopened. */
     expect(chipNames(container)).toEqual([
       '✓ Лавка кузнеца',
       '✓ Трофеи',
-      'Пустой список',
       'Лавка в порту',
-      'Клад дракона'
+      'Клад дракона',
+      'Пустой список'
     ]);
     expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
   });
@@ -536,7 +549,10 @@ describe('with sign-in configured', () => {
 
   it('makes an account list signed in, and lists both kinds in one menu', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
-    const { container } = withCloud(cloud);
+    /* Another account's browser lists stay in the browser, and writable. */
+    const { container, page } = withCloud(cloud, '#/i/ci1', TWO, {
+      'dhloot.migrated.v1': JSON.stringify({ owner: 'another-account', lists: {} })
+    });
     await signedInAs('gm2');
     await openMenu();
     expect(chipNames(container)).toEqual([
@@ -548,6 +564,7 @@ describe('with sign-in configured', () => {
     await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
     expect(screen.getByText('Добавлено в «Тайник»')).toBeInTheDocument();
+    page.fireHidden();
     await waitFor(async () => {
       const read = await cloud.lists.list();
       const made = read.ok ? read.lists.find((l) => l.name === 'Тайник') : undefined;
@@ -555,9 +572,51 @@ describe('with sign-in configured', () => {
     });
   });
 
+  it('offers the account lists alone after the cutoff, and the prompt alone signed out', async () => {
+    const after = { clock: fixedClock(LEGACY_WRITE_UNTIL) };
+    const foreign = { 'dhloot.migrated.v1': JSON.stringify({ owner: 'x', lists: {} }) };
+    const view = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/i/ci1'),
+        data: fakeData(LOOT),
+        cloud: fakeCloud(SEED, 'gm2'),
+        storage: memoryStorage({ 'dhloot.lists.v2': TWO, ...foreign }),
+        ...after
+      })
+    });
+    await signedInAs('gm2');
+    await openMenu();
+    expect(chipNames(view.container)).toEqual(['Список второго ГМа']);
+    await expectNoA11yViolations(view.container);
+    cleanup();
+    const out = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/i/ci1'),
+        data: fakeData(LOOT),
+        cloud: fakeCloud(SEED),
+        storage: memoryStorage({ 'dhloot.lists.v2': TWO }),
+        ...after
+      })
+    });
+    await screen.findByRole('link', { name: 'Войти' });
+    await openMenu();
+    expect(chipNames(out.container)).toEqual([]);
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    expect(screen.getByText('Войдите, чтобы создать список.')).toBeInTheDocument();
+  });
+
+  it('offers no browser list while the move is due', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    cloud.lists.list = () => new Promise(() => undefined);
+    const { container } = withCloud(cloud);
+    await signedInAs('gm2');
+    await openMenu();
+    expect(chipNames(container)).toEqual([]);
+  });
+
   it('adds to and removes from an account list, with an undo', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
-    withCloud(cloud);
+    const { page } = withCloud(cloud);
     await signedInAs('gm2');
     await openMenu();
     await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
@@ -566,6 +625,7 @@ describe('with sign-in configured', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     await openMenu();
     expect(screen.getByRole('button', { name: '✓ Список второго ГМа' })).toBeInTheDocument();
+    page.fireHidden();
     await waitFor(async () => {
       const read = await cloud.lists.list();
       const l = read.ok ? read.lists[0] : undefined;

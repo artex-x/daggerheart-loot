@@ -546,7 +546,7 @@ const LISTS: Record<Lang, Help> = {
         'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «Добавить в список». То же самое можно сделать прямо с карточки предмета — меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
       ),
       p(
-        'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве. Списки, созданные до входа, остаются в этом браузере.'
+        'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве. Списки, созданные до входа, при входе переносятся в аккаунт сами; с 26 октября 2026 года списки в браузере нельзя будет менять.'
       ),
       {
         parts: [
@@ -581,7 +581,7 @@ const LISTS: Record<Lang, Help> = {
         'Build a list: tick what you need in Tables or Search and press “Add to list”. The same works straight from an item card — the menu stays open, so one item goes into several lists without reopening anything.'
       ),
       p(
-        'Sign in and your lists are kept in your account: they save themselves and open on any device. Lists made before signing in stay in this browser.'
+        'Sign in and your lists are kept in your account: they save themselves and open on any device. Lists made before signing in move to your account by themselves when you sign in; from 26 October 2026, lists in the browser cannot be changed.'
       ),
       {
         parts: [

@@ -28,7 +28,7 @@ function hasGmNote(o) {
   return Object.entries(o).some(([k, v]) => k === 'gm_note' || hasGmNote(v));
 }
 
-/** Runs cases A-H and the real-only checks; throws `contract: <what>`. */
+/** Runs cases A-I and the real-only checks; throws `contract: <what>`. */
 export async function runRealContract(env, admin, member) {
   assertTestProject(env.E2E_SUPABASE_URL);
   const url = env.E2E_SUPABASE_URL;
@@ -51,6 +51,9 @@ export async function runRealContract(env, admin, member) {
     { member: { as: 'member', userId: member.id, email: member.email }, doomed: 'doomed' },
     (cond, msg) => {
       if (!cond) throw new Error('contract: ' + msg);
+    },
+    (msg) => {
+      console.log('contract: ' + msg);
     }
   );
 
@@ -59,21 +62,27 @@ export async function runRealContract(env, admin, member) {
      migration). service_role has no grant on user_limit_overrides, so the
      default is the limit a throwaway user meets. */
   const { lists: limited } = await make('doomed');
-  const over = await limited.create(
-    { id: limited.newId(), name: 'e2e', money_mode: 'bag', player_note: '', gm_note: '' },
-    Array.from({ length: 101 }, (_, i) => ({
-      id: limited.newId(),
-      item_key: 'e2e' + String(i),
-      source: 'official',
-      snapshot: null,
-      position: i,
-      quantity: 1,
-      price_coins: null,
-      player_note: '',
-      gm_note: ''
-    }))
-  );
+  const overId = limited.newId();
+  const answer = await limited.apply([
+    {
+      op: 'create',
+      list: { id: overId, name: 'e2e', money_mode: 'bag', player_note: '', gm_note: '' },
+      entries: Array.from({ length: 101 }, (_, i) => ({
+        id: limited.newId(),
+        item_key: 'e2e' + String(i),
+        source: 'official',
+        snapshot: null,
+        position: i,
+        quantity: 1,
+        price_coins: null,
+        player_note: '',
+        gm_note: ''
+      }))
+    }
+  ]);
+  const over = answer.ok ? answer.results[0] : answer;
   if (
+    !over ||
     over.ok ||
     over.error !== 'limit' ||
     over.key !== 'entries_per_list' ||
@@ -82,6 +91,11 @@ export async function runRealContract(env, admin, member) {
     throw new Error(
       `contract: 101 entries answered ${JSON.stringify(over)}, not the entries_per_list limit of 100`
     );
+  }
+  /* The create is refused whole: no empty list is left behind. */
+  const afterOver = await limited.list();
+  if (!afterOver.ok || afterOver.lists.some((l) => l.id === overId)) {
+    throw new Error('contract: a create refused by the entry limit left its list');
   }
 
   /* A share link read by other people: signed out, the two projections; a
@@ -95,23 +109,32 @@ export async function runRealContract(env, admin, member) {
   const reader = await make('doomed');
   const out = await make();
   const listId = owner.lists.newId();
-  const made = await owner.lists.create(
-    { id: listId, name: 'e2e ссылки', money_mode: 'bag', player_note: 'p', gm_note: 'g' },
-    [
-      {
-        id: owner.lists.newId(),
-        item_key: 'ci1',
-        source: 'official',
-        snapshot: null,
-        position: 0,
-        quantity: 1,
-        price_coins: null,
-        player_note: 'n',
-        gm_note: 'h'
-      }
-    ]
-  );
-  check(made.ok, 'the owner could not create the list');
+  const made = await owner.lists.apply([
+    {
+      op: 'create',
+      list: {
+        id: listId,
+        name: 'e2e ссылки',
+        money_mode: 'bag',
+        player_note: 'p',
+        gm_note: 'g'
+      },
+      entries: [
+        {
+          id: owner.lists.newId(),
+          item_key: 'ci1',
+          source: 'official',
+          snapshot: null,
+          position: 0,
+          quantity: 1,
+          price_coins: null,
+          player_note: 'n',
+          gm_note: 'h'
+        }
+      ]
+    }
+  ]);
+  check(made.ok && made.results[0]?.ok === true, 'the owner could not create the list');
   const playerShare = await owner.shares.create(listId, 'player');
   const gmShare = await owner.shares.create(listId, 'gm');
   check(playerShare.ok && gmShare.ok, 'the owner could not make both links');
@@ -159,8 +182,9 @@ export async function runRealContract(env, admin, member) {
       copyOf(playerCopy)?.list_entries.every((e) => e.gm_note === ''),
     'the player copy holds a GM note'
   );
+  /* Signed out is a lapsed session to a write: `network`, kept and sent again. */
   const outClone = await out.shares.clone(playerShare.token, out.lists.newId());
-  check(!outClone.ok && outClone.error === 'refused', 'signed out, a copy was made');
+  check(!outClone.ok && outClone.error === 'network', 'signed out, a copy was made');
 
   /* anon has no EXECUTE on delete_account(), end to end through PostgREST. */
   const anon = createClient(url, key, {

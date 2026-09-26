@@ -686,7 +686,7 @@ main {
   color: #202124;
 }
 
-/* ---- R5 additions (issues/persist-5-migration/mocks). NEW = proposal. ---- */
+/* ---- R5 and R5b additions. NEW = proposal. ---- */
 /* NEW: MoveBanner.svelte - the gold offer box B2.3 drew for "Это ваш список"
    (.ownline), in the storage notice's slot: same padding, radius and
    bottom margin as .warn, so the page does not move when one replaces the

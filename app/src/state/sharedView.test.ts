@@ -1,6 +1,6 @@
 /* The open share link's list over the fake cloud: its read status, the
  * owner check, and re-reads that redraw only what changed.
- * docs/specs/FEATURES.md, "Account lists". */
+ * docs/specs/FEATURES.md, "Account and browser lists". */
 
 import { describe, expect, it } from 'vitest';
 import { fakeCloud } from '../ports/fake-cloud.js';
@@ -52,7 +52,9 @@ describe('SharedView', () => {
     const view = new SharedView(owner.shares);
     await view.open('player-token-1', null);
     const first = view.shared;
-    await owner.lists.update(uuid(101), { name: 'Лавка у моста' });
+    await owner.lists.apply([
+      { op: 'update', id: uuid(101), patch: { name: 'Лавка у моста' } }
+    ]);
     await view.refresh();
     expect(view.shared).not.toBe(first);
     expect(view.shared?.list.name).toBe('Лавка у моста');

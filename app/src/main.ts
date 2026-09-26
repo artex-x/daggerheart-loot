@@ -1,6 +1,6 @@
 import { mount } from 'svelte';
 import App from './App.svelte';
-import { browserEnv } from './ports/index.js';
+import { browserEnv, queryClock, TEST_NOW } from './ports/index.js';
 import type { Env } from './ports/index.js';
 import { lazyCloud } from './ports/lazy-cloud.js';
 import { takeRedirect } from './ports/redirect.js';
@@ -29,7 +29,9 @@ function boot(withCloud: Env): void {
 if (import.meta.env.VITE_CLOUD_FAKE) {
   void import('./ports/fake-cloud.js')
     .then((m) => {
-      boot({ ...env, cloud: m.installFakeCloud() });
+      /* The test build's day is pinned before the cutoff; `?today=` moves it. */
+      const clock = queryClock(window.location.search, TEST_NOW);
+      boot({ ...env, clock, cloud: m.installFakeCloud() });
     })
     .catch((err: unknown) => {
       /* An unknown `?as=` user: said on the page, so the browser suites'

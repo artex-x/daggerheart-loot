@@ -108,7 +108,7 @@
 
   function signOut(scope: 'local' | 'global'): void {
     void act(
-      () => cloud?.auth.signOut(scope) ?? Promise.resolve({ ok: false, error: 'failed' }),
+      () => app.signOut(scope),
       (r) => {
         app.say(r.ok ? t.signedOut : t.accountFailed, { error: !r.ok });
       }

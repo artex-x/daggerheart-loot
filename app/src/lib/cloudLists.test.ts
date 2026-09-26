@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BATCH_BYTES,
+  batchSize,
   entryOrder,
   entryRowsOf,
   isCloudId,
@@ -10,6 +12,7 @@ import {
   shareOf,
   toCloudList,
   type EntryRow,
+  type ListOp,
   type ListRow,
   type SharedRow,
   type ShareRow
@@ -37,6 +40,7 @@ const row = (over: Partial<ListRow> = {}): ListRow => ({
   gm_note: '',
   created_at: '2026-09-20T10:00:00.000Z',
   updated_at: '2026-09-22T10:00:00.000Z',
+  legacy_fingerprint: null,
   list_entries: [],
   ...over
 });
@@ -220,5 +224,42 @@ describe('shareOf', () => {
   it('answers none when the audience has no row, the other audience ignored', () => {
     expect(shareOf([share('a', 'player', false)], 'gm')).toBe('none');
     expect(shareOf([], 'player')).toBe('none');
+  });
+});
+
+describe('batchSize', () => {
+  /* One write's size in the request: its JSON in UTF-8, and a comma. */
+  const note = (text: string): ListOp => ({
+    op: 'update',
+    id: 'l1',
+    patch: { player_note: text }
+  });
+  const size = (op: ListOp): number => new TextEncoder().encode(JSON.stringify(op)).length + 1;
+
+  it('answers every write when they fit', () => {
+    expect(batchSize([note('a'), note('b'), note('c')])).toBe(3);
+    expect(batchSize([])).toBe(0);
+  });
+
+  it('stops before the write that would pass 60 000 bytes', () => {
+    const big = note('a'.repeat(29_000));
+    expect(2 * size(big)).toBeLessThanOrEqual(BATCH_BYTES);
+    expect(3 * size(big)).toBeGreaterThan(BATCH_BYTES);
+    expect(batchSize([big, big, big, note('b')])).toBe(2);
+  });
+
+  it('counts a Cyrillic text in UTF-8 bytes', () => {
+    const cyrillic = note('я'.repeat(20_000));
+    expect(size(cyrillic)).toBeGreaterThan(40_000);
+    expect(batchSize([cyrillic, cyrillic])).toBe(1);
+    expect(batchSize([note('a'.repeat(20_000)), note('a'.repeat(20_000))])).toBe(2);
+  });
+
+  it('answers 1 for a first write over 60 000 bytes', () => {
+    expect(batchSize([note('a'.repeat(70_000)), note('b')])).toBe(1);
+  });
+
+  it('stops at 200 writes', () => {
+    expect(batchSize(Array.from({ length: 250 }, () => note('a')))).toBe(200);
   });
 });

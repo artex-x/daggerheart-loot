@@ -10,57 +10,6 @@ user-visible defect does not belong here. Why this file is the home:
 `docs/DECISIONS.md`, "Kept defects live in `docs/specs/DEBT.md`, grouped by
 the task that owes them".
 
-## Account data migration (`persist-5-migration`)
-
-Owns: the move of this browser's lists into the account, the legacy write
-cutoff (`LEGACY_WRITE_UNTIL`, 2026-10-26) and the retired `#/l/` page.
-
-### D24 - a second `dhloot.lists.v2` corruption is never backed up, and the first backup is orphaned forever
-
-- **Where**: `app/src/state/lists.svelte.ts`, `ListStore#readCurrent`.
-- **What**: the first unreadable `dhloot.lists.v2` value is backed up once,
-  under `dhloot.lists.v2.bad` - `get(LISTS_KEY_BAD) === null` guards it, on
-  purpose, so this tab's own next successful write does not overwrite the
-  one copy of what was actually lost. The guard has a consequence nothing
-  else in the code addresses: once that key reads back as valid again (this
-  tab's own next `save()`, or another tab's write), `unreadable` clears and
-  the storage notice stops warning - but the `.bad` backup stays sitting
-  there with no UI that ever reads it, orphaned for good. A **second**
-  corruption after that point is not backed up at all (the guard still
-  finds `.bad` occupied by the first one) and `save()` writes straight over
-  it, while the notice tells the reader their data survived.
-- **Why deferred**: the real fix needs a backup keying scheme and a way for
-  a person to reach a backup, which today has no UI anywhere. The browser
-  list store stops being written at the cutoff, so R5 pays the part a
-  reader can lose: the automatic move also moves a readable
-  `dhloot.lists.v2.bad` backup into the account, or names it in the move
-  notice. R10 (`persist-10-legacy-removal`) removes the browser list store
-  and deletes this entry.
-- **How to verify the fix**: R5 - seed a readable `dhloot.lists.v2.bad`
-  beside `dhloot.lists.v2`, sign in, and confirm that the backup's lists
-  reach the account or that the move notice names the backup. R10 - confirm
-  that no code reads or writes `dhloot.lists.v2` or its `.bad` key.
-- **Copy** (was D31): `app/src/lib/dict.ts` `badStorage` (`ru`, `en`) tells
-  the reader their unreadable data is kept "under a separate key", which no
-  one can act on outside devtools. Rewrite it once a backup is reachable.
-
-### D54 - a `#/l/` link with more than 100 items saves an empty account list
-
-- **Where**: `app/src/state/app.svelte.ts` `AppState.saveCopyOf`, and
-  `CloudLists.create` in `app/src/state/cloudLists.svelte.ts`.
-- **What**: «Сохранить» on an old `#/l/` link creates the account list, then
-  queues all its entries in one write. The server's `entries_per_list` limit
-  (100 by default) refuses that whole write, so the reader gets a list with
-  its name and no entries, and the limit toast.
-- **Why deferred**: a link of more than 100 items is rare, and the move of
-  browser lists into the account meets the same limit with the same data.
-  One fix (cut at the limit and say how many were left out, or refuse
-  before the list is made) serves both paths.
-- **How to verify the fix**: open a `#/l/` link that holds 101 items, press
-  «Сохранить» signed in, and confirm that the account list holds the items
-  the limit allows, or that no empty list is made, and that the text says
-  what happened.
-
 ## Slimmer account client (no task filed yet; runs before `persist-3-realtime`)
 
 Owns: an account client built from the Supabase packages the app uses,
@@ -75,10 +24,10 @@ which brings the configured bundle back under its old 170 kB limit.
   settles before mount", which names supabase-js as the one import.
 - **What**: the full client carries realtime-js (16.1 kB gzip), storage-js
   (7.1 kB) and functions-js (1.5 kB), which the app does not call. The
-  account chunk is 55.1 kB and the configured build 172.0 kB (measured
+  account chunk is 55.4 kB and the configured build 178.2 kB (measured
   2026-09-26), so every signed-in reader downloads them after first paint.
-  The budget is 180 kB until this is paid (decision "The configured bundle
-  budget is 180 kB until a slimmer account client").
+  The budget is 200 kB (decision "The bundle budget is 150 kB unconfigured
+  and 200 kB configured"), so it no longer forces this fix.
 - **Why deferred**: the fix replaces `createClient` with `AuthClient` from
   `@supabase/auth-js` and `PostgrestClient` from `@supabase/postgrest-js`
   (27.0 kB together against 54.8 kB) and changes who may import what. The
@@ -87,29 +36,14 @@ which brings the configured bundle back under its old 170 kB limit.
   gate. It is its own release, not a fix to a pushed commit.
 - **How to verify the fix**: the configured build and its budget
   (`.claude/README.md`, "The configured bundle budget") report
-  below 170 kB, about 160 kB after `persist-3-realtime` adds realtime-js
-  back; the limit returns to 170; `npm run e2e` passes F0-F8.
+  about 27 kB less than before the fix; `npm run e2e` passes F0-F10.
 
 ## Live updates (`persist-3-realtime`)
 
 Owns: Realtime on shared pages and the owner's lists, which replaces the
-45 s poll as the primary path and reworks the account write queue. The
-Realtime release's plan owns D56 and D57 by name; D55, D58 and D59 go with
-the same rework.
-
-### D55 - any refused account write, a lapsed session included, is dropped
-
-- **Where**: `app/src/ports/supabase.ts` `writeOf`; `CloudLists#flush` in
-  `app/src/state/cloudLists.svelte.ts`.
-- **What**: every 4xx answer with an error code, 401 included, maps to
-  `refused`. The queue drops a refused write and re-reads the account, so an
-  edit made while the session token lapsed is lost, with the refusal toast.
-- **Why deferred**: the Supabase client renews the session before it
-  expires, so a 401 needs a device that slept past the renewal. The queue
-  rework for Realtime decides which answers keep a write for a retry.
-- **How to verify the fix**: in `supabase.test.ts`, answer one list write
-  with status 401 and confirm that the write stays queued and is sent again
-  after the session is renewed.
+45 s poll as the primary path and reworks the account write buffer. The
+Realtime release's plan owns D56 and D57 by name; D59 goes with the same
+rework.
 
 ### D56 - a reorder after another device changed the entries is refused
 
@@ -128,32 +62,19 @@ the same rework.
 
 ### D57 - a fetch that never answers holds «Сохраняем...» with no end
 
-- **Where**: `CloudLists#flush` in `app/src/state/cloudLists.svelte.ts`.
-- **What**: the queue sends one write at a time and waits for its answer.
-  A request that hangs (no answer and no error) keeps the status on
+- **Where**: `CloudLists#send` in `app/src/state/cloudLists.svelte.ts`.
+- **What**: the write buffer sends one request at a time and waits for its
+  answer. A request that hangs (no answer and no error) keeps the status on
   «Сохраняем...», and every later edit waits behind it until the page is
-  reloaded.
+  reloaded. «Поделиться», «Сохранить себе» on a shared page and the move of
+  browser lists into the account wait behind it too, and never open or
+  start; a sign-out waits for it 5 s at most.
 - **Why deferred**: the browser ends most dead connections with an error,
-  which the queue retries. A timeout belongs to the queue rework that
+  which the buffer retries. A timeout belongs to the buffer rework that
   Realtime brings.
-- **How to verify the fix**: in `cloudLists.test.ts`, make one write return
-  a promise that never settles and confirm that the queue gives up after a
-  set time, shows «Не сохранено» and retries.
-
-### D58 - «Поделиться» on a list whose create is still queued says the links did not load
-
-- **Where**: `app/src/components/SharePanel.svelte` `load`.
-- **What**: a new account list exists on the server only after its queued
-  create is sent. «Поделиться» pressed before that reads no shares and calls
-  `create_list_share`, which refuses (`42501`, not the owner of the list).
-  The panel then says the links did not load. «Повторить» works once the
-  create has landed.
-- **Why deferred**: the window is the queue's latency, usually well under a
-  second, and «Повторить» recovers. The fix is to wait for the list's own
-  queued writes before the panel reads, which is part of the queue rework.
-- **How to verify the fix**: in `sharePanel.test.ts`, hold the list's create
-  in the fake, press «Поделиться», release the create, and confirm that both
-  links show with no error.
+- **How to verify the fix**: in `cloudLists.test.ts`, make one `apply` call
+  return a promise that never settles and confirm that the buffer gives up
+  after a set time, shows «Не сохранено» and retries.
 
 ### D59 - a failed first read of a `#/s/` link is not retried by itself
 
@@ -172,7 +93,77 @@ the same rework.
 ## Legacy removal (`persist-10-legacy-removal`)
 
 Owns: the removal of the `#/l/` codec and the browser list store after the
-cutoff.
+cutoff, and the decision on what stays of the move of browser lists into
+the account (`LegacyMove`, `MoveNotice`, `MoveStatus`, `move_legacy_list`).
+
+### D62 - `move_legacy_list` adds lists and entries past every count limit, with no bound
+
+- **Where**: `move_legacy_list` and the `dhloot.move` guard in `lists_limit`
+  and `list_entries_limit`,
+  `supabase/migrations/20260925130400_legacy_move.sql`.
+- **What**: a move skips the count limits, so every browser list reaches
+  the account whole. The skip has no bound of its own: a scripted
+  signed-in caller can add lists and entries past every limit through
+  `move_legacy_list`, up to 5000 entries per call, with no bound on the
+  number of calls.
+- **Why deferred**: owner decision, 2026-09-26. A genuine browser list is
+  bounded by the catalog (about 1300 records, each id at most once), and
+  the rows count against their owner only. The legacy removal decides
+  whether `move_legacy_list` stays after the browser store goes: the move
+  outlives that release for a reader who never signed in before it.
+- **How to verify the fix**: if it is ever needed, per-owner caps on moved
+  lists and moved entries, read through `effective_limit()` under the
+  owner's advisory lock, after the fingerprint lookup (a repeated text
+  still answers `inserted = false`). In `tests/db/legacy-move.test.mjs`,
+  move past each cap and confirm that the move is refused
+  `limit: <key>` while a repeated text still answers its first row.
+
+### D63 - the move's status says «нет связи» for a failure that is not the network
+
+- **Where**: `app/src/components/MoveStatus.svelte` (the `failed` branch),
+  `moveFailed` in `app/src/lib/dict.ts`, `LegacyMove#run` in
+  `app/src/state/legacyMove.svelte.ts`.
+- **What**: every run that ends `failed` draws «Не все списки перенесены:
+  нет связи. Попробуем при следующем открытии.», also when the cause is a
+  user switch during the run, a row missing from the read-back, or a
+  refused storage write in `settleMove` (a full quota). With a full quota
+  each retry calls `move_legacy_list` for every list again, answers
+  `inserted: false` and removes nothing. No data is lost: the browser
+  lists stay, and the account holds each moved list once.
+- **Why deferred**: found in the last review of the move, after its texts
+  were settled; every cause but the quota ends at the next run, and the
+  quota case needs its own text and a way out for the reader. The legacy
+  removal re-reads the move's code and decides what stays of it.
+- **How to verify the fix**: in `legacyMove.test.ts`, end a run with a
+  refused `settleMove` write and with a missing read-back row, and confirm
+  that `MoveStatus` draws a text for that cause, not «нет связи».
+
+### D24 - a second `dhloot.lists.v2` corruption is never backed up, and the first backup is orphaned forever
+
+- **Where**: `app/src/state/lists.svelte.ts`, `ListStore#readCurrent`.
+- **What**: the first unreadable `dhloot.lists.v2` value is backed up once,
+  under `dhloot.lists.v2.bad` - `get(LISTS_KEY_BAD) === null` guards it, on
+  purpose, so this tab's own next successful write does not overwrite the
+  one copy of what was actually lost. The guard has a consequence nothing
+  else in the code addresses: once that key reads back as valid again (this
+  tab's own next `save()`, or another tab's write), `unreadable` clears and
+  the storage notice stops warning - but the `.bad` backup stays sitting
+  there, orphaned for good. A **second** corruption after that point is not
+  backed up at all (the guard still finds `.bad` occupied by the first one)
+  and `save()` writes straight over it, while the notice tells the reader
+  their data survived.
+- **Why deferred**: the real fix needs a backup keying scheme and a way for
+  a person to reach a backup. R5 (`persist-5-migration`) paid the part a
+  reader can lose: the move's one-time notice names a `.bad` backup and the
+  contact address, and the browser list store is written only by the move
+  and by a delete after the cutoff. The backup cannot be moved: its only
+  writer stores a value that failed `JSON.parse`. R10 removes the browser
+  list store and deletes this entry.
+- **How to verify the fix**: R10 - confirm that no code reads or writes
+  `dhloot.lists.v2` or its `.bad` key.
+- **Copy** (was D31): `app/src/lib/dict.ts` `badStorage` (`ru`, `en`) tells
+  the reader their unreadable data is kept "under a separate key", which no
+  one can act on outside devtools. Rewrite it once a backup is reachable.
 
 ### D61 - a signed-out tab keeps its old language, start section and warning until reload
 

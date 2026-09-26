@@ -17,8 +17,8 @@
   access off) and Q3 (a 5-minute safety re-read while live) are yes too.
   This plan builds on those answers; there is no "no" branch.
 - NEEDS_HUMAN_CONFIRMATION: no - the owner answered section 13 on
-  2026-09-26: the remembered answer is changed in «Настройки отображения»
-  / "Display settings", the section R5b's account menu opens, not in a
+  2026-09-26: the remembered answer is changed in the «Отображение»
+  / "Display" section of `#/account`, which R5b's menu item «Аккаунт» opens, not in a
   field R4 adds to `#/account`.
 - Batches: `B4.1` (database) - implement-ready apart from the [refresh]
   marks; `B4.2` (client) - outline with the design settled; closeout.
@@ -660,7 +660,7 @@ pages; specs (section 7).
 Answer (owner, 2026-09-26): option A's control, moved - the remembered
 answer (`prefs.notifyGm`: ask / always / never) is changed in «Настройки
 отображения» / "Display settings", the section R5b's account menu opens
-(`issues/persist-5-migration/plan.md` section 4.9). R4 keeps «Запомнить
+(`issues/persist-5b-account-menu/plan.md` section 4). R4 keeps «Запомнить
 ответ» and adds no field to `#/account`. The question as asked:
 
 1. **Where a reader changes a remembered "notify the owner" answer.**

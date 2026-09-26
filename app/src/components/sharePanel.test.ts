@@ -1,7 +1,7 @@
 /* The share panel of an account list, through `App` on the list's page over
  * the fake cloud as gm1: both links ready on open, a link made only for an
  * audience that never had one, and a deleted link that stays deleted.
- * docs/specs/FEATURES.md, "Account lists". */
+ * docs/specs/FEATURES.md, "Account and browser lists". */
 
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
+import { encodeList } from '../lib/listLink.js';
 import { fakeClipboard, fakeData, fakeEnv, memoryRouter } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
@@ -219,5 +220,43 @@ describe('the share panel', () => {
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: ru.retry }));
     expect(await row(ru.shareLinkPlayers)).toBeInTheDocument();
+  });
+});
+
+describe('a list made a moment ago', () => {
+  it('waits for the buffered create before it reads the links', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const real = cloud.lists.apply.bind(cloud.lists);
+    let release: () => void = () => undefined;
+    const held = new Promise<void>((r) => {
+      release = r;
+    });
+    const apply = vi.fn(async (ops: Parameters<typeof real>[0]) => {
+      await held;
+      return real(ops);
+    });
+    cloud.lists.apply = apply;
+    const payload = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
+    const router = memoryRouter('#/l/' + payload);
+    const { container } = render(App, {
+      env: fakeEnv({ router, data: fakeData(LOOT), cloud })
+    });
+    await screen.findByRole('link', { name: 'Аккаунт: gm1@example.test' });
+    await userEvent.click(await screen.findByRole('button', { name: 'Сохранить себе' }));
+    expect(router.hash()).toBe('#/lists/' + uuid(5000));
+    await pressShare();
+    await waitFor(() => {
+      expect(apply).toHaveBeenCalledOnce();
+    });
+    expect(apply.mock.calls[0]?.[0].map((o) => o.op)).toEqual(['create']);
+    release();
+    expect(
+      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '#/s/share-token-1' })
+    ).toBeInTheDocument();
+    expect(
+      within(await row(ru.shareLinkGm)).getByRole('link', { name: '#/s/share-token-2' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Не получилось загрузить ссылки.')).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
   });
 });

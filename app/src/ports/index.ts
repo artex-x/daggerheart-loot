@@ -5,12 +5,14 @@
  * implementation it is talking to. */
 
 import { browserClipboard, fakeClipboard } from './clipboard.js';
+import { browserClock, fixedClock, TEST_NOW } from './clock.js';
 import { browserCompress, plainCompress } from './compress.js';
 import { browserData, fakeData } from './data.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { browserImage, fakeImage } from './image.js';
 import { nativeDrag, noDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
+import { browserPage, fakePage } from './page.js';
 import { browserPwa, fakePwa } from './pwa.js';
 import { hashRouter, memoryRouter } from './router.js';
 import { browserShare, fakeShare } from './share.js';
@@ -19,12 +21,14 @@ import type { Env } from './types.js';
 
 export * from './types.js';
 export { browserClipboard, fakeClipboard } from './clipboard.js';
+export { browserClock, fixedClock, queryClock, TEST_NOW } from './clock.js';
 export { browserCompress, plainCompress } from './compress.js';
 export { browserData, fakeData, noData } from './data.js';
 export { browserDialog, fakeDialog } from './dialog.js';
 export { browserImage, fakeImage } from './image.js';
 export { fakeDrag, nativeDrag, noDrag } from './drag.js';
 export { browserMotion, fakeMotion } from './motion.js';
+export { browserPage, fakePage } from './page.js';
 export { browserPwa, fakePwa, registerWith } from './pwa.js';
 export { hashRouter, memoryRouter } from './router.js';
 export { browserShare, fakeShare } from './share.js';
@@ -46,6 +50,8 @@ export function browserEnv(): Env {
     dialog: browserDialog(),
     pwa: browserPwa(),
     motion: browserMotion(),
+    page: browserPage(),
+    clock: browserClock(),
     cloud: null
   };
 }
@@ -68,6 +74,9 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     dialog: fakeDialog(),
     pwa: fakePwa(),
     motion: fakeMotion(),
+    page: fakePage(),
+    /* Before the cutoff, as the test build: a test after it says so. */
+    clock: fixedClock(TEST_NOW),
     cloud: null,
     ...over
   };

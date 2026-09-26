@@ -7,11 +7,11 @@
  * port does belongs here; what depends on the fake's seed stays in its own
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
  * cases for the port member it adds: A-F the account, G the lists, H the
- * share links. */
+ * share links, I the move of a browser list. */
 
 import type { EntryRow, ListRow } from '../lib/cloudLists.js';
 import type { Prefs } from '../lib/prefs.js';
-import type { CloudPort, Session } from './types.js';
+import type { CloudPort, ListWrites, Session } from './types.js';
 
 export interface ContractUsers {
   /** A user that is never deleted, and what its session must say. */
@@ -83,6 +83,10 @@ async function theList(
 const view = (e: EntryRow): string =>
   [e.item_key, e.quantity, e.price_coins, e.player_note, e.gm_note].join('|');
 
+/** An `apply` answer in short: each write's `ok` or error, or the call's own error. */
+const answered = (w: ListWrites): string =>
+  w.ok ? w.results.map((r) => (r.ok ? 'ok' : r.error)).join(',') : 'call:' + w.error;
+
 async function listCases(port: CloudPort, assert: Assert): Promise<void> {
   const { lists } = port;
   const before = (await listsOf(port, assert, 'at first'))?.length ?? 0;
@@ -94,8 +98,9 @@ async function listCases(port: CloudPort, assert: Assert): Promise<void> {
     entryOf(a, 'ci1', 0, { quantity: 2, price_coins: 150, player_note: 'a' }),
     entryOf(b, 'q1', 1, { gm_note: 'b' })
   ];
-  assert((await lists.create(row, two)).ok, 'lists: create() was refused');
-  assert((await lists.create(row, two)).ok, 'lists: a second create() was refused');
+  const create = { op: 'create' as const, list: row, entries: two };
+  assert(answered(await lists.apply([create])) === 'ok', 'lists: a create was refused');
+  assert(answered(await lists.apply([create])) === 'ok', 'lists: a second create was refused');
   let got = await theList(port, id, assert, 'after create');
   assert(
     got?.name === 'Клад' &&
@@ -109,60 +114,76 @@ async function listCases(port: CloudPort, assert: Assert): Promise<void> {
     'lists: the entries do not read back in order'
   );
 
-  assert(
-    (
-      await lists.update(id, {
-        name: 'Клад дракона',
-        money_mode: 'bag',
-        player_note: '',
-        gm_note: 'G'
-      })
-    ).ok,
-    'lists: update() was refused'
-  );
-  assert(
-    (await lists.addEntries(id, [entryOf(c, 'q313', 2)])).ok,
-    'lists: addEntries() was refused'
-  );
-  assert(
-    (
-      await lists.updateEntry(b, {
-        quantity: 5,
-        price_coins: 20,
-        player_note: 'n',
-        gm_note: ''
-      })
-    ).ok,
-    'lists: updateEntry() was refused'
-  );
-  assert((await lists.reorder(id, [c, a, b])).ok, 'lists: reorder() was refused');
+  const edits = await lists.apply([
+    {
+      op: 'update',
+      id,
+      patch: { name: 'Клад дракона', money_mode: 'bag', player_note: '', gm_note: 'G' }
+    },
+    { op: 'add', list_id: id, entries: [entryOf(c, 'q313', 2)] },
+    {
+      op: 'update_entry',
+      id: b,
+      patch: { quantity: 5, price_coins: 20, player_note: 'n', gm_note: '' }
+    },
+    { op: 'reorder', list_id: id, ids: [c, a, b] }
+  ]);
+  assert(answered(edits) === 'ok,ok,ok,ok', 'lists: the edits answered ' + answered(edits));
   got = await theList(port, id, assert, 'after the edits');
   assert(
     got?.name === 'Клад дракона' &&
       got.money_mode === 'bag' &&
       got.player_note === '' &&
       got.gm_note === 'G',
-    'lists: update() does not read back'
+    'lists: an update does not read back'
   );
   assert(
     got?.list_entries.map(view).join(';') === 'q313|1|||;ci1|2|150|a|;q1|5|20|n|',
-    'lists: addEntries(), updateEntry() or reorder() does not read back'
+    'lists: an add, an entry update or a reorder does not read back'
   );
 
-  const missed = await lists.reorder(id, [c, a]);
+  /* A refused write drops alone: the write after it lands. */
+  const missed = await lists.apply([
+    { op: 'reorder', list_id: id, ids: [c, a] },
+    { op: 'update', id, patch: { name: 'Клад дракона II' } }
+  ]);
   assert(
-    !missed.ok && missed.error === 'refused',
-    'lists: a reorder that misses an entry was taken'
+    answered(missed) === 'refused,ok',
+    'lists: a reorder that misses an entry, then a rename, answered ' + answered(missed)
+  );
+  got = await theList(port, id, assert, 'after the refused reorder');
+  assert(got?.name === 'Клад дракона II', 'lists: the rename after a refused write was lost');
+
+  /* A row that is not there: an edit of it is gone, a delete of it is ok. */
+  const [x, y] = [lists.newId(), lists.newId()];
+  const gone = await lists.apply([
+    { op: 'update', id: x, patch: { name: 'Нет' } },
+    { op: 'update', id: x, patch: {} },
+    { op: 'update_entry', id: y, patch: { quantity: 2 } },
+    { op: 'reorder', list_id: x, ids: [] },
+    { op: 'add', list_id: x, entries: [entryOf(lists.newId(), 'ci1', 0)] },
+    { op: 'remove', id: x },
+    { op: 'remove_entries', ids: [y] }
+  ]);
+  assert(
+    answered(gone) === 'gone,ok,gone,gone,gone,ok,ok',
+    'lists: the writes of a missing row answered ' + answered(gone)
   );
 
-  assert((await lists.removeEntries([a, b, c])).ok, 'lists: removeEntries() was refused');
-  got = await theList(port, id, assert, 'after removeEntries');
-  assert(got?.list_entries.length === 0, 'lists: removeEntries() left an entry');
-  assert((await lists.remove(id)).ok, 'lists: remove() was refused');
+  assert(
+    answered(await lists.apply([{ op: 'remove_entries', ids: [a, b, c] }])) === 'ok',
+    'lists: a removal of the entries was refused'
+  );
+  got = await theList(port, id, assert, 'after the entries were removed');
+  assert(got?.list_entries.length === 0, 'lists: the removal left an entry');
+  assert(
+    answered(await lists.apply([{ op: 'remove', id }])) === 'ok',
+    'lists: a removal of the list was refused'
+  );
   const after = await listsOf(port, assert, 'after remove');
   assert(
     after?.length === before && !after.some((l) => l.id === id),
-    'lists: remove() left the list'
+    'lists: the removal left the list'
   );
 }
 
@@ -184,10 +205,14 @@ async function shareCases(port: CloudPort, assert: Assert): Promise<void> {
     player_note: 'p',
     gm_note: 'g'
   };
-  assert(
-    (await lists.create(row, [entryOf(a, 'ci1', 0), entryOf(b, 'q1', 1, { gm_note: 'h' })])).ok,
-    'shares: the list was not created'
-  );
+  const made = await lists.apply([
+    {
+      op: 'create',
+      list: row,
+      entries: [entryOf(a, 'ci1', 0), entryOf(b, 'q1', 1, { gm_note: 'h' })]
+    }
+  ]);
+  assert(answered(made) === 'ok', 'shares: the list was not created');
   const none = await shares.list(id);
   assert(none.ok && none.shares.length === 0, 'shares: a new list does not read no shares');
 
@@ -275,10 +300,73 @@ async function shareCases(port: CloudPort, assert: Assert): Promise<void> {
   assert(!nobody.ok && nobody.error === 'refused', 'shares: a share of no list was made');
 }
 
+/* The most a catalog-size move may take: the hosted `authenticated` role's
+   statement timeout is 8 s. */
+const MOVE_MS = 6000;
+
+async function moveCases(
+  port: CloudPort,
+  assert: Assert,
+  log: (msg: string) => void
+): Promise<void> {
+  const { lists } = port;
+  const text = JSON.stringify({
+    hnote: 'g',
+    ids: ['ci1', 'q1', 'zz_unknown'],
+    meta: { ci1: { gold: 150, note: 'a', qty: 2 }, q1: { hnote: 'b' } },
+    money: 'coin',
+    name: 'Перенос',
+    note: 'p'
+  });
+  const id = lists.newId();
+  const first = await lists.move(id, text);
+  assert(
+    first.ok && first.id === id && first.inserted,
+    'move: the first move answered ' + JSON.stringify(first)
+  );
+  const again = await lists.move(lists.newId(), text);
+  assert(
+    again.ok && again.id === id && !again.inserted,
+    'move: the same text again answered ' + JSON.stringify(again)
+  );
+  const got = await theList(port, id, assert, 'after the move');
+  assert(
+    /^[0-9a-f]{64}$/.test(got?.legacy_fingerprint ?? ''),
+    'move: the row has no 64-hex fingerprint'
+  );
+  assert(
+    got?.name === 'Перенос' &&
+      got.money_mode === 'coin' &&
+      got.player_note === 'p' &&
+      got.gm_note === 'g',
+    'move: the list does not read back as moved'
+  );
+  assert(
+    got?.list_entries.map(view).join(';') === 'ci1|2|150|a|;q1|1|||b;zz_unknown|1|||',
+    'move: the entries do not read back in order'
+  );
+  const bad = await lists.move(lists.newId(), '{"ids":["a b"]}');
+  assert(!bad.ok && bad.error === 'refused', 'move: a text that is not a list was taken');
+
+  /* A catalog-size list: the move is one statement pair, timed against the
+     hosted statement timeout. */
+  const ids = Array.from({ length: 1300 }, (_, i) => 'r' + String(i).padStart(4, '0'));
+  const meta = Object.fromEntries(
+    ids.filter((_, i) => i % 10 === 0).map((k) => [k, { note: 'n ' + k }])
+  );
+  const started = Date.now();
+  const big = await lists.move(lists.newId(), JSON.stringify({ ids, meta, name: 'e2e 1300' }));
+  const ms = Date.now() - started;
+  log('move of 1300 entries: ' + String(ms) + ' ms');
+  assert(big.ok && big.inserted, 'move: 1300 entries answered ' + JSON.stringify(big));
+  assert(ms < MOVE_MS, 'move: 1300 entries took ' + String(ms) + ' ms');
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
-  assert: (cond: boolean, msg: string) => void
+  assert: (cond: boolean, msg: string) => void,
+  log: (msg: string) => void = () => undefined
 ): Promise<void> {
   /* A. signed out, with no redirect to report and no preferences */
   const signedOut = await make();
@@ -300,10 +388,21 @@ export async function runCloudContract(
     (await signedOut.shares.ownerOf('nonsense')) === null,
     'shares: signed out, ownerOf() is not null'
   );
+  /* Signed out is a lapsed session to a write: kept, and sent again. */
   const outClone = await signedOut.shares.clone('nonsense', signedOut.lists.newId());
   assert(
-    !outClone.ok && outClone.error === 'refused',
-    'shares: signed out, clone() was not refused'
+    !outClone.ok && outClone.error === 'network',
+    'shares: signed out, clone() does not answer network'
+  );
+  const outApply = await signedOut.lists.apply([{ op: 'remove', id: signedOut.lists.newId() }]);
+  assert(
+    answered(outApply) === 'call:network',
+    'lists: signed out, apply() answered ' + answered(outApply)
+  );
+  const outMove = await signedOut.lists.move(signedOut.lists.newId(), '{"ids":[]}');
+  assert(
+    !outMove.ok && outMove.error === 'network',
+    'move: signed out, move() does not answer network'
   );
 
   /* B. a port made as the member is signed in as the member */
@@ -372,6 +471,10 @@ export async function runCloudContract(
   /* H. share links made, read, deleted, made again and copied, on the doomed
      user; the account's deletion takes them with it. */
   await shareCases(doomedPort, assert);
+
+  /* I. browser lists moved into the account, once per text, on the doomed
+     user; the account's deletion takes the rows with it. */
+  await moveCases(doomedPort, assert, log);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

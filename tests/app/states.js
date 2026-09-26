@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Forty-two cases in forty-one
- * runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Forty-nine cases in
+ * forty-eight runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -2531,6 +2531,7 @@ async function saveOldLinkAfterSignIn() {
     ),
     at + 'the sign-in did not open the saved «Лавка» - ' + (await d.hash())
   );
+  await d.writesSettled();
   const read = await d.fake('lists.list');
   ok(
     !!read?.ok && read.lists.some((l) => l.name === 'Лавка' && l.list_entries.length === 3),
@@ -2835,9 +2836,13 @@ async function sharedPageRereadWhenShownAgain() {
     await waitIn(page, bodyHas, 'Обновлено 3 дня назад'),
     at + 'the page does not say «Обновлено 3 дня назад»'
   );
-  await d.fake('lists.update', '00000000-0000-4000-8000-000000000101', {
-    name: 'Лавка у моста'
-  });
+  await d.fake('lists.apply', [
+    {
+      op: 'update',
+      id: '00000000-0000-4000-8000-000000000101',
+      patch: { name: 'Лавка у моста' }
+    }
+  ]);
   await d.shownAgain();
   ok(
     await waitIn(
@@ -2865,6 +2870,276 @@ async function sharedPageGoneWhenShownAgain() {
     at + 'the deleted link still draws the list'
   );
   ok((await d.hash()) === '#/s/gm-token-1', at + 'the address moved - ' + (await d.hash()));
+  await ctx.close();
+}
+
+/** 49. Account edits wait two seconds, then go once: ten presses of the
+ *  first row's quantity and a list note typed key by key reach the fake as
+ *  one request of two writes; hidden, the tab sends the buffer at once. */
+async function accountEditsWaitThenGoOnce() {
+  const at = '49 (account edits wait two seconds, then go once): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open(SHOP, { as: 'gm1' });
+  await waitIn(
+    page,
+    () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
+  );
+  const shopRow = async () => {
+    const read = await d.fake('lists.list');
+    const shop = read?.ok
+      ? read.lists.find((l) => l.id === '00000000-0000-4000-8000-000000000101')
+      : null;
+    return {
+      qty: shop?.list_entries.find((e) => e.item_key === 'ci1')?.quantity,
+      note: shop?.player_note
+    };
+  };
+  const before = await shopRow();
+  const c0 = await d.fake('writeCount');
+  const o0 = await d.fake('opCount');
+  const noteShown = () =>
+    [...document.querySelectorAll('textarea')].some(
+      (t) => t.placeholder === 'Например: лавка закрыта до утра' && t.offsetParent !== null
+    );
+  /* «Лавка кузнеца» has a list note, so its notes may already be open. */
+  if (!(await page.evaluate(noteShown))) await d.press('Заметки');
+  ok(await page.evaluate(noteShown), at + 'the list note field is not on screen');
+  await page.focus('[data-qty]');
+  for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowUp');
+  await page.evaluate(() => {
+    const note = [...document.querySelectorAll('textarea')].find(
+      (t) => t.placeholder === 'Например: лавка закрыта до утра'
+    );
+    note.focus();
+    note.setSelectionRange(note.value.length, note.value.length);
+  });
+  const typed = ' Закрыто в полночь!!';
+  await page.keyboard.type(typed);
+  const sub = () => document.querySelector('.page-sub')?.textContent ?? '';
+  ok(
+    (await page.evaluate(sub)).includes('Сохраняем...') &&
+      (await page.evaluate(() => !!document.querySelector('[data-saving]'))),
+    at +
+      'the sub does not say «Сохраняем...» while the edits wait - ' +
+      (await page.evaluate(sub))
+  );
+  const waiting = await shopRow();
+  ok(
+    waiting.qty === before.qty && waiting.note === before.note,
+    at + 'an edit reached the fake before the quiet window - ' + JSON.stringify(waiting)
+  );
+  await d.writesSettled();
+  ok(
+    (await page.evaluate(sub)).includes('Сохранено'),
+    at + 'the sub does not say «Сохранено» - ' + (await page.evaluate(sub))
+  );
+  const requests = (await d.fake('writeCount')) - c0;
+  const writes = (await d.fake('opCount')) - o0;
+  ok(
+    requests === 1 && writes === 2,
+    at + `the edits went as ${requests} requests of ${writes} writes, not one of two`
+  );
+  const saved = await shopRow();
+  ok(
+    saved.qty === before.qty + 10 && saved.note === before.note + typed,
+    at +
+      'the fake does not hold the quantity + 10 and the whole note - ' +
+      JSON.stringify(saved)
+  );
+  await page.keyboard.type('abc');
+  await d.hidden();
+  let sent = false;
+  for (let waited = 0; waited <= 1000 && !sent; waited += 50) {
+    sent = (await shopRow()).note === before.note + typed + 'abc';
+    if (!sent) await new Promise((r) => setTimeout(r, 50));
+  }
+  ok(sent, at + 'the hidden tab did not send the buffer within 1000 ms');
+  await ctx.close();
+}
+
+/** Two browser lists, one with two entries, a quantity and a price, for the
+ *  move of case 47; `MOVE_A_GM` is the first one's own GM payload,
+ *  `encodeList(<list a>, false)`, computed once by hand. */
+const MOVE_SEED = {
+  'dhloot.lists.v2': JSON.stringify([
+    {
+      id: 'a',
+      name: 'Клад дракона',
+      ids: ['ci1', 'ci2'],
+      meta: { ci1: { qty: 2, gold: 150 } },
+      created: 1
+    },
+    { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+  ])
+};
+const MOVE_A_GM = '#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMi42eWoyfmNpMSoyKjE1MCxjaTI';
+/** The fake seed's `gm1` and the ids the fake hands the two moved lists. */
+const GM1_ID = '00000000-0000-4000-8000-000000000001';
+const MOVED_A = '00000000-0000-4000-8000-000000005000';
+const MOVED_B = '00000000-0000-4000-8000-000000005001';
+
+async function storedOf(page) {
+  return page.evaluate(() => ({
+    lists: localStorage.getItem('dhloot.lists.v2'),
+    migrated: JSON.parse(localStorage.getItem('dhloot.migrated.v1') ?? 'null')
+  }));
+}
+
+async function browserListsMovedOnSignIn() {
+  const at = '47 (browser lists moved on sign-in): ';
+  /* Tab B, signed out, holds the lists in memory while tab A signs in. */
+  const b = await sharedPage({ width: 1180, height: 900, storage: MOVE_SEED });
+  await b.d.open('#/lists');
+  ok(
+    (await b.page.evaluate(() => document.querySelectorAll('.listcard').length)) === 2,
+    at + 'tab B does not start with the two browser cards'
+  );
+  const a = await sharedPage({ width: 1180, height: 900, storage: MOVE_SEED });
+  await a.d.open('#/lists', { as: 'gm1' });
+  await a.d.moveSettled('47, tab A');
+  const stored = await storedOf(a.page);
+  ok(stored.lists === '[]', at + 'dhloot.lists.v2 does not read [] - ' + stored.lists);
+  const m = stored.migrated;
+  ok(
+    m?.owner === GM1_ID &&
+      m.lists?.a === MOVED_A &&
+      m.lists?.b === MOVED_B &&
+      JSON.stringify(m.notice) === JSON.stringify(['Клад дракона', 'Лавка в порту']),
+    at +
+      'dhloot.migrated.v1 does not hold the owner, both tombstones and both names - ' +
+      JSON.stringify(m)
+  );
+  const read = await a.d.fake('lists.list');
+  const rows = read?.ok ? read.lists.filter((l) => l.legacy_fingerprint !== null) : [];
+  const moved = rows.find((l) => l.id === MOVED_A);
+  ok(
+    rows.length === 2 &&
+      rows.every((l) => /^[0-9a-f]{64}$/.test(l.legacy_fingerprint)) &&
+      moved?.list_entries.map((e) => [e.item_key, e.quantity, e.price_coins]).join(';') ===
+        'ci1,2,150;ci2,1,',
+    at +
+      'the fake does not hold both rows with a fingerprint and the entries - ' +
+      JSON.stringify(rows.map((l) => [l.id, l.legacy_fingerprint, l.list_entries.length]))
+  );
+  const notice =
+    'Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона», «Лавка в порту».';
+  ok(
+    (await a.page.evaluate(() => document.body.innerText)).includes(notice),
+    at + 'the notice does not name the two lists'
+  );
+  await a.d.press('Скрыть');
+  const dismissed = await storedOf(a.page);
+  ok(
+    dismissed.migrated && !('notice' in dismissed.migrated),
+    at + '«Скрыть» left the names - ' + JSON.stringify(dismissed.migrated)
+  );
+  await b.d.shownAgain();
+  ok(
+    await waitIn(b.page, () => !document.querySelector('.listcard')),
+    at + 'tab B, shown again, still draws a browser card'
+  );
+  await a.page.close();
+  await b.page.close();
+
+  /* Another account on the same browser moves nothing. */
+  const other = await fresh({
+    width: 1180,
+    height: 900,
+    storage: {
+      ...MOVE_SEED,
+      'dhloot.migrated.v1': JSON.stringify({ owner: GM1_ID, lists: {} })
+    }
+  });
+  await other.d.open('#/lists', { as: 'gm2' });
+  await other.d.moveSettled('47, another account');
+  const theirs = await other.d.fake('lists.list');
+  ok(
+    theirs?.ok && theirs.lists.length === 1 && theirs.lists[0].name === 'Список второго ГМа',
+    at + "another account's move took a list - " + JSON.stringify(theirs)
+  );
+  ok(
+    (await other.page.evaluate(() => document.querySelectorAll('.listcard').length)) === 3,
+    at + "another account does not see its own list and the browser's two"
+  );
+  await other.ctx.close();
+
+  /* The OAuth return lands on the first list's own #/l/ page: it follows the
+     list to its account address. */
+  const back = await fresh({ width: 1180, height: 900, storage: MOVE_SEED });
+  await back.d.open(MOVE_A_GM, { as: 'gm1' });
+  await back.d.moveSettled('47, the own #/l/ page');
+  await back.d.addressSettled();
+  ok(
+    await waitIn(
+      back.page,
+      (want) =>
+        location.hash === want &&
+        document.querySelector('input.titleinput')?.value === 'Клад дракона' &&
+        (document.querySelector('.page-sub')?.textContent ?? '').includes('2 позиции'),
+      '#/lists/' + MOVED_A
+    ),
+    at +
+      'the own #/l/ page did not follow the list to its account address - ' +
+      (await back.page.evaluate(() => location.hash))
+  );
+  ok(
+    !(await back.page.evaluate(() =>
+      [...document.querySelectorAll('button')].some((x) =>
+        x.textContent.includes('Сохранить себе')
+      )
+    )),
+    at + 'the moved list draws «Сохранить себе»'
+  );
+  await back.ctx.close();
+}
+
+/** A browser list for case 48: two entries, the second counted and priced;
+ *  `READ_ONLY_OWN` is its own players' payload, computed once by hand. */
+const READ_ONLY_SEED = {
+  'dhloot.lists.v2': JSON.stringify([
+    {
+      id: 'a',
+      name: 'Клад дракона',
+      ids: ['ci1', 'ci2'],
+      meta: { ci2: { qty: 2, gold: 750 } },
+      created: 1
+    }
+  ])
+};
+const READ_ONLY_OWN = '#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMi5rdTl3fmNpMSxjaTIqMio3NTA';
+
+async function readOnlyAfterTheCutoff() {
+  const at = '48 (read-only after the cutoff): ';
+  const today = '2026-10-26';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage: READ_ONLY_SEED });
+  await d.open('#/lists/a', { today });
+  const before = (await storedOf(page)).lists;
+  await d.type('Название списка', 'Другое имя');
+  await d.type('1', '9');
+  await d.addressSettled();
+  ok(
+    (await storedOf(page)).lists === before,
+    at + 'a typed name or quantity changed dhloot.lists.v2'
+  );
+  ok(
+    (await page.evaluate(() => location.hash)) === '#/lists/a',
+    at + 'the address left #/lists/a - ' + (await page.evaluate(() => location.hash))
+  );
+  await d.open(READ_ONLY_OWN, { today });
+  ok(
+    (await page.evaluate(() => document.querySelector('h1')?.textContent ?? '')).includes(
+      'Ссылки такого вида перестали открываться 26 октября 2026 года.'
+    ),
+    at + 'the own #/l/ payload does not draw the retired page'
+  );
+  await d.open('#/lists', { today });
+  await d.press('Клад дракона');
+  ok(
+    await waitIn(page, () => location.hash === '#/lists/a'),
+    at +
+      'a click on the browser card did not land on #/lists/a - ' +
+      (await page.evaluate(() => location.hash))
+  );
   await ctx.close();
 }
 
@@ -2913,7 +3188,10 @@ const CASES = [
   ['43 (share links)', shareLinksOfAnAccountList],
   ['44 (share link saved after sign-in)', saveShareLinkAfterSignIn],
   ['45 (shared page re-read)', sharedPageRereadWhenShownAgain],
-  ['46 (shared page gone)', sharedPageGoneWhenShownAgain]
+  ['46 (shared page gone)', sharedPageGoneWhenShownAgain],
+  ['47 (browser lists moved on sign-in)', browserListsMovedOnSignIn],
+  ['48 (read-only after the cutoff)', readOnlyAfterTheCutoff],
+  ['49 (account edits wait two seconds, then go once)', accountEditsWaitThenGoOnce]
 ];
 
 (async () => {

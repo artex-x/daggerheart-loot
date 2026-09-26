@@ -1,6 +1,6 @@
 # #/lists as gm1
 # route: #/lists
-# why: «Ваш аккаунт»: gm1's three lists newest edit first with «изменён N назад» and one «Удалить» each; then «Этот браузер» with the notice at its head and the two browser cards
+# why: the seed's two browser lists moved on sign-in: the notice under the header names both; «Ваш аккаунт» holds them first (uuid(5000), uuid(5001)) with «изменён только что», then gm1's three lists with «изменён N назад», one «Удалить» each; no browser group
 # as: gm1
 
 ## ru :: tree
@@ -25,6 +25,9 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
+  status ""
+    StaticText "Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона..." [namelen=83 namehash=f2bd8dcc]
+    button "Скрыть"
   main ""
     heading "Списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -34,33 +37,32 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
     heading "ВАШ АККАУНТ" [level=2]
+    link "Лавка в порту, 0 позиций, изменён только что" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005001]
+      StaticText "Лавка в порту"
+      StaticText "0"
+      StaticText "изменён только что"
+      StaticText "Список пуст"
+    button "Удалить"
+    link "Клад дракона, 0 позиций, изменён только что" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005000]
+      StaticText "Клад дракона"
+      StaticText "0"
+      StaticText "изменён только что"
+      StaticText "Список пуст"
+    ... button x2 of 6 same-shape siblings elided
     link "Пустой список, 0 позиций, изменён 1 час назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0"
       StaticText "изменён 1 час назад"
       StaticText "Список пуст"
-    button "Удалить"
     link "Лавка кузнеца, 9 позиций, изменён 3 дня назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "9"
       StaticText "изменён 3 дня назад"
-    ... button x4 of 8 same-shape siblings elided
+    button "Удалить"
     link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2"
       StaticText "изменён в прошлом месяце"
-    heading "ЭТОТ БРАУЗЕР" [level=2]
-    DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
-    button "Скрыть" [description=Скрыть]
-    link "Клад дракона, 0 позиций" [url=index.html?as=gm1#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMC5udGZwfg]
-      StaticText "Клад дракона"
-      StaticText "0"
-      StaticText "Список пуст"
-    link "Лавка в порту, 0 позиций" [url=index.html?as=gm1#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
-      StaticText "Лавка в порту"
-      StaticText "0"
-      StaticText "Список пуст"
-    button "Поделиться"
     button "Удалить"
   contentinfo ""
     navigation "Страницы сайта"
@@ -81,15 +83,14 @@ daggerheart.com
 Альт. таблицы
 К содержимому
 Как это работает
-Клад дракона, 0 позиций
+Клад дракона, 0 позиций, изменён только что
 Конфиденциальность
-Лавка в порту, 0 позиций
+Лавка в порту, 0 позиций, изменён только что
 Лавка кузнеца, 9 позиций, изменён 3 дня назад
 ЛутDaggerheart
 Новый список
 Обычные правила
 Открывать этот раздел при запуске
-Поделиться
 Поиск
 Пустой список, 0 позиций, изменён 1 час назад
 Скрыть
@@ -124,6 +125,9 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
+  status ""
+    StaticText "Lists from this browser were moved to your account: "Клад дракон..." [namelen=84 namehash=5748a9e2]
+    button "Dismiss"
   main ""
     heading "Lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -133,33 +137,32 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
     textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
     heading "YOUR ACCOUNT" [level=2]
+    link "Лавка в порту, 0 items, edited just now" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005001]
+      StaticText "Лавка в порту"
+      StaticText "0"
+      StaticText "edited just now"
+      StaticText "The list is empty"
+    button "Delete"
+    link "Клад дракона, 0 items, edited just now" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005000]
+      StaticText "Клад дракона"
+      StaticText "0"
+      StaticText "edited just now"
+      StaticText "The list is empty"
+    ... button x2 of 6 same-shape siblings elided
     link "Пустой список, 0 items, edited 1 hour ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0"
       StaticText "edited 1 hour ago"
       StaticText "The list is empty"
-    button "Delete"
     link "Лавка кузнеца, 9 items, edited 3 days ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
       StaticText "9"
       StaticText "edited 3 days ago"
-    ... button x4 of 8 same-shape siblings elided
+    button "Delete"
     link "Трофеи, 2 items, edited last month" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2"
       StaticText "edited last month"
-    heading "THIS BROWSER" [level=2]
-    DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
-    button "Dismiss" [description=Dismiss]
-    link "Клад дракона, 0 items" [url=index.html?as=gm1#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMC5udGZwfg]
-      StaticText "Клад дракона"
-      StaticText "0"
-      StaticText "The list is empty"
-    link "Лавка в порту, 0 items" [url=index.html?as=gm1#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
-      StaticText "Лавка в порту"
-      StaticText "0"
-      StaticText "The list is empty"
-    button "Share"
     button "Delete"
   contentinfo ""
     navigation "Site pages"
@@ -186,7 +189,6 @@ Open this section on start
 Privacy
 RU
 Search
-Share
 Skip to content
 Standard rules
 Tables
@@ -194,8 +196,8 @@ Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com
-Клад дракона, 0 items
-Лавка в порту, 0 items
+Клад дракона, 0 items, edited just now
+Лавка в порту, 0 items, edited just now
 Лавка кузнеца, 9 items, edited 3 days ago
 ЛутDaggerheart
 Пустой список, 0 items, edited 1 hour ago

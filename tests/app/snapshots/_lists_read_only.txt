@@ -1,0 +1,150 @@
+# #/lists ~ read-only
+# route: #/lists
+# why: after the legacy write cutoff, signed out: the read-only notice with its title and sentence, not dismissable; the cards have no «Поделиться» and link #/lists/<id>; «Удалить» stays
+# today: 2026-10-26
+
+## ru :: tree
+RootWebArea "Списки — Генератор лута — Daggerheart" [url=index.html?today=2026-10-26#/lists]
+  link "К содержимому" [url=index.html?today=2026-10-26#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=index.html?today=2026-10-26#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?today=2026-10-26#/roll/std]
+      link "Альт. таблицы" [url=index.html?today=2026-10-26#/roll/alt]
+      link "Wondrous" [url=index.html?today=2026-10-26#/roll/wondrous]
+      link "Dread" [url=index.html?today=2026-10-26#/roll/dread]
+      link "Vault of Ages" [url=index.html?today=2026-10-26#/roll/voa]
+      link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
+      link "Сообщества" [url=index.html?today=2026-10-26#/roll/community]
+      link "Таблицы" [url=index.html?today=2026-10-26#/tables]
+      link "Списки" [url=index.html?today=2026-10-26#/lists]
+      link "Поиск" [url=index.html?today=2026-10-26#/search]
+  main ""
+    heading "Списки" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
+    heading "НОВЫЙ СПИСОК" [level=2]
+    StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
+    button "Войти"
+    StaticText "Списки в этом браузере только для чтения с 26 октября 2026 года."
+    StaticText "Войдите - они перенесутся в аккаунт, и их снова можно будет прав..." [namelen=112 namehash=45898194]
+    link "Клад дракона, 7 позиций" [url=index.html?today=2026-10-26#/lists/a]
+      StaticText "Клад дракона"
+      StaticText "7"
+    button "Удалить"
+    link "Лавка в порту, 0 позиций" [url=index.html?today=2026-10-26#/lists/b]
+      StaticText "Лавка в порту"
+      StaticText "0"
+      StaticText "Список пуст"
+    button "Удалить"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Войти
+К содержимому
+Как это работает
+Клад дракона, 7 позиций
+Конфиденциальность
+Лавка в порту, 0 позиций
+ЛутDaggerheart
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Сообщества
+Списки
+Таблицы
+Удалить
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists]
+  link "Skip to content" [url=index.html?today=2026-10-26#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=index.html?today=2026-10-26#/account]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?today=2026-10-26#/roll/std]
+      link "Alt. tables" [url=index.html?today=2026-10-26#/roll/alt]
+      link "Wondrous" [url=index.html?today=2026-10-26#/roll/wondrous]
+      link "Dread" [url=index.html?today=2026-10-26#/roll/dread]
+      link "Vault of Ages" [url=index.html?today=2026-10-26#/roll/voa]
+      link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
+      link "Communities" [url=index.html?today=2026-10-26#/roll/community]
+      link "Tables" [url=index.html?today=2026-10-26#/tables]
+      link "Lists" [url=index.html?today=2026-10-26#/lists]
+      link "Search" [url=index.html?today=2026-10-26#/search]
+  main ""
+    heading "Lists" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
+    heading "NEW LIST" [level=2]
+    StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]
+    button "Sign in"
+    StaticText "Lists in this browser are read-only from 26 October 2026."
+    StaticText "Sign in and they move to your account, where you can edit them a..." [namelen=111 namehash=8c0f0911]
+    link "Клад дракона, 7 items" [url=index.html?today=2026-10-26#/lists/a]
+      StaticText "Клад дракона"
+      StaticText "7"
+    button "Delete"
+    link "Лавка в порту, 0 items" [url=index.html?today=2026-10-26#/lists/b]
+      StaticText "Лавка в порту"
+      StaticText "0"
+      StaticText "The list is empty"
+    button "Delete"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Alt. tables
+Communities
+Delete
+Dragon's Vault
+Dread
+EN
+How this works
+Install as an app
+Lists
+Open this section on start
+Privacy
+RU
+Search
+Sign in
+Skip to content
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+Клад дракона, 7 items
+Лавка в порту, 0 items
+ЛутDaggerheart

@@ -14,23 +14,15 @@ Desktop.ini
 node_modules/
 *.log
 
-# Sources and drafts
+# Source books and the local extraction script: never published
 Vol*.pdf
 tools/__pycache__/
 tools/vault_extract.py
-
-# Drafts and one-off exports: needed while working, not on the site
-export/
-*-PLAN.md
-*-DESIGN.md
-# ...except those under docs/: those are the specs, and they are the source of truth
-!docs/**
 
 # Build output of the app, and its test build (tests/app/ drive it).
 dist/
 dist-test/
 coverage/
-.svelte-kit/
 
 # A dispatched agent's isolated worktree is host infrastructure, not source.
 .claude/worktrees/

@@ -7,6 +7,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dict } from '../lib/dict.js';
+import { canonicalList } from '../lib/legacy.js';
+import type { StoredList } from '../lib/lists.js';
 import { brokenStorage, fakeEnv, memoryStorage } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { ListStore } from './lists.svelte.js';
@@ -589,5 +591,312 @@ describe('the list page writers', () => {
       store.removeEntry('ghost', 'x');
       expect(store.get('a')?.ids).toEqual(['x']);
     });
+  });
+});
+
+describe('the move into the account: removal and dhloot.migrated.v1', () => {
+  const A = { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 };
+  const B = { id: 'b', name: 'Лавка в порту', ids: [], created: 2 };
+  const C = { id: 'c', name: 'Сундук', ids: ['q1'], created: 3 };
+  const seedOf = (lists: unknown[], more: Record<string, string> = {}) =>
+    memoryStorage({ 'dhloot.lists.v2': JSON.stringify(lists), ...more });
+  const pair = (l: StoredList, accountId: string) => ({
+    localId: l.id,
+    accountId,
+    canonical: canonicalList(l),
+    name: l.name
+  });
+  const migratedOf = (storage: { get(k: string): string | null }) =>
+    JSON.parse(storage.get('dhloot.migrated.v1') ?? 'null') as Record<string, unknown> | null;
+  const storedIds = (storage: { get(k: string): string | null }) =>
+    (JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as { id: string }[]).map((l) => l.id);
+
+  it('removes by id against fresh storage another tab grew, keeping its list', () => {
+    const storage = seedOf([A, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    storage.set('dhloot.lists.v2', JSON.stringify([A, B, C]));
+    expect(store.removeMany(['a'])).toBe(true);
+    expect(storedIds(storage)).toEqual(['b', 'c']);
+    expect(store.lists.map((l) => l.id)).toEqual(['b', 'c']);
+    /* Remembered: another tab's stale copy does not bring it back. */
+    storage.set('dhloot.lists.v2', JSON.stringify([A, B, C]));
+    const off = store.watch();
+    storage.fireExternalChange('dhloot.lists.v2');
+    off();
+    expect(store.lists.map((l) => l.id)).toEqual(['b', 'c']);
+  });
+
+  it('reports a refused removal through saved', () => {
+    const storage = seedOf([A, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    storage.set = () => false;
+    expect(store.removeMany(['a'])).toBe(false);
+    expect(store.saved).toBe(false);
+    expect(said.at(-1)?.msg).toBe(t().saveFailed);
+  });
+
+  it('settles an unchanged pair: tombstoned, named, and removed after the tombstone is written', () => {
+    const storage = seedOf([A, B]);
+    const order: string[] = [];
+    const set = storage.set.bind(storage);
+    storage.set = (k, v) => {
+      order.push(k);
+      return set(k, v);
+    };
+    const store = new ListStore(at({ storage }), say, t);
+    const r = store.settleMove('u1', [pair(A, 'x1')]);
+    expect(r?.removed.map((m) => [m.list.id, m.accountId])).toEqual([['a', 'x1']]);
+    expect(r?.changed).toEqual([]);
+    expect(order).toEqual(['dhloot.migrated.v1', 'dhloot.lists.v2']);
+    expect(migratedOf(storage)).toEqual({
+      owner: 'u1',
+      lists: { a: 'x1' },
+      notice: ['Клад дракона']
+    });
+    expect(storedIds(storage)).toEqual(['b']);
+    expect(store.lists.map((l) => l.id)).toEqual(['b']);
+  });
+
+  it('holds a changed pair: kept in storage and in memory, neither tombstoned nor named', () => {
+    const storage = seedOf([{ ...A, name: 'Переименован' }, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    const r = store.settleMove('u1', [pair(A, 'x1'), pair(B, 'x2')]);
+    expect(r?.changed).toEqual(['a']);
+    expect(migratedOf(storage)).toEqual({
+      owner: 'u1',
+      lists: { b: 'x2' },
+      notice: ['Лавка в порту'],
+      held: ['a']
+    });
+    expect(storedIds(storage)).toEqual(['a']);
+    expect(store.lists.map((l) => l.id)).toEqual(['a']);
+  });
+
+  it('compares a list another tab tombstoned meanwhile: the raw read still sees it', () => {
+    const storage = seedOf([A, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    storage.set('dhloot.migrated.v1', JSON.stringify({ owner: 'u1', lists: { a: 'x1' } }));
+    const r = store.settleMove('u1', [pair(A, 'x1')]);
+    /* Seen and removed, but not named again: its tombstone is not new. */
+    expect(r?.removed.map((m) => m.list.id)).toEqual(['a']);
+    expect(storedIds(storage)).toEqual(['b']);
+    expect(migratedOf(storage)?.['notice']).toBeUndefined();
+  });
+
+  it('holds a changed list under a tombstone another tab wrote, and lifts that tombstone', () => {
+    const storage = seedOf([{ ...A, name: 'Изменён' }]);
+    const store = new ListStore(at({ storage }), say, t);
+    storage.set('dhloot.migrated.v1', JSON.stringify({ owner: 'u1', lists: { a: 'x1' } }));
+    const r = store.settleMove('u1', [pair(A, 'x1')]);
+    expect(r?.changed).toEqual(['a']);
+    expect(migratedOf(storage)).toEqual({ owner: 'u1', lists: {}, held: ['a'] });
+    expect(storedIds(storage)).toEqual(['a']);
+    expect(store.lists.map((l) => [l.id, l.name])).toEqual([['a', 'Изменён']]);
+    /* No later write drops it: a removal of another id keeps it. */
+    store.removeMany(['zz']);
+    expect(storedIds(storage)).toEqual(['a']);
+  });
+
+  it('leaves a pair another tab already holds: not tombstoned, not removed', () => {
+    const storage = seedOf([A, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    const other = new ListStore(at({ storage }), say, t);
+    other.markHeld('u1', ['a']);
+    const r = store.settleMove('u1', [pair(A, 'x1'), pair(B, 'x2')]);
+    expect(r?.removed.map((m) => m.list.id)).toEqual(['b']);
+    expect(r?.changed).toEqual([]);
+    expect(storedIds(storage)).toEqual(['a']);
+    expect(migratedOf(storage)).toEqual({
+      owner: 'u1',
+      lists: { b: 'x2' },
+      notice: ['Лавка в порту'],
+      held: ['a']
+    });
+  });
+
+  it('reads dhloot.migrated.v1 with no lists key at all', () => {
+    const store = new ListStore(
+      at({
+        storage: memoryStorage({
+          'dhloot.migrated.v1': JSON.stringify({ owner: 'u1', lists: {}, notice: ['Н'] })
+        })
+      }),
+      say,
+      t
+    );
+    expect(store.migrated).toEqual({ owner: 'u1', lists: {}, notice: ['Н'] });
+    expect(store.current()).toEqual([]);
+  });
+
+  it('tombstones and names a pair gone from storage without writing the lists', () => {
+    const storage = seedOf([B]);
+    const store = new ListStore(at({ storage }), say, t);
+    const raw = storage.get('dhloot.lists.v2');
+    const r = store.settleMove('u1', [pair(A, 'x1')]);
+    expect(r?.removed).toEqual([]);
+    expect(storage.get('dhloot.lists.v2')).toBe(raw);
+    expect(migratedOf(storage)).toEqual({
+      owner: 'u1',
+      lists: { a: 'x1' },
+      notice: ['Клад дракона']
+    });
+  });
+
+  it('hides a tombstoned list seeded in storage and drops it on the next removal', () => {
+    const storage = seedOf([A, B, C], {
+      'dhloot.migrated.v1': JSON.stringify({ owner: 'u1', lists: { a: 'x1' } })
+    });
+    const store = new ListStore(at({ storage }), say, t);
+    expect(store.lists.map((l) => l.id)).toEqual(['b', 'c']);
+    store.removeMany(['c']);
+    expect(storedIds(storage)).toEqual(['b']);
+  });
+
+  it('writes nothing and answers null over a lists key that does not parse', () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': '{not json' });
+    const store = new ListStore(at({ storage }), say, t);
+    storage.set('dhloot.migrated.v1', '{"owner":"u1","lists":{}}');
+    expect(store.settleMove('u1', [pair(A, 'x1')])).toBeNull();
+    expect(storage.get('dhloot.lists.v2')).toBe('{not json');
+    expect(storage.get('dhloot.migrated.v1')).toBe('{"owner":"u1","lists":{}}');
+  });
+
+  it('answers null and removes nothing when the tombstones cannot be written', () => {
+    const storage = seedOf([A]);
+    const store = new ListStore(at({ storage }), say, t);
+    const set = storage.set.bind(storage);
+    storage.set = (k, v) => k !== 'dhloot.migrated.v1' && set(k, v);
+    expect(store.settleMove('u1', [pair(A, 'x1')])).toBeNull();
+    expect(storedIds(storage)).toEqual(['a']);
+  });
+
+  it('keeps the tombstones when the lists write is refused, and hides the list', () => {
+    const storage = seedOf([A, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    const set = storage.set.bind(storage);
+    storage.set = (k, v) => k !== 'dhloot.lists.v2' && set(k, v);
+    const r = store.settleMove('u1', [pair(A, 'x1')]);
+    expect(r?.removed).toHaveLength(1);
+    expect(store.saved).toBe(false);
+    expect(storedIds(storage)).toEqual(['a', 'b']);
+    expect(store.lists.map((l) => l.id)).toEqual(['b']);
+  });
+
+  it('hides a list on the next signal for the tombstone key, the lists key unchanged', () => {
+    const storage = seedOf([A, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    const moved = vi.fn();
+    const off = store.watch(moved);
+    const raw = storage.get('dhloot.lists.v2');
+    storage.set('dhloot.migrated.v1', JSON.stringify({ owner: 'u1', lists: { a: 'x1' } }));
+    storage.fireExternalChange('dhloot.migrated.v1');
+    off();
+    expect(storage.get('dhloot.lists.v2')).toBe(raw);
+    expect(store.lists.map((l) => l.id)).toEqual(['b']);
+    expect(moved).toHaveBeenCalledWith([{ list: A, accountId: 'x1' }]);
+    expect(store.migrated.lists).toEqual({ a: 'x1' });
+  });
+
+  it('hides a moved list on a shown-again signal too, and calls back only for a list that left', () => {
+    const storage = seedOf([A, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    const moved = vi.fn();
+    const off = store.watch(moved);
+    storage.fireExternalChange(null);
+    expect(moved).not.toHaveBeenCalled();
+    storage.set('dhloot.migrated.v1', JSON.stringify({ lists: { b: 'x2' } }));
+    storage.fireExternalChange(null);
+    off();
+    expect(moved).toHaveBeenCalledWith([{ list: B, accountId: 'x2' }]);
+  });
+
+  it('merges two stores over one storage: both pairs and both names stay', () => {
+    const storage = seedOf([A, B]);
+    const one = new ListStore(at({ storage }), say, t);
+    const two = new ListStore(at({ storage }), say, t);
+    one.settleMove('u1', [pair(A, 'x1')]);
+    two.settleMove('u1', [pair(B, 'x2')]);
+    expect(migratedOf(storage)).toEqual({
+      owner: 'u1',
+      lists: { a: 'x1', b: 'x2' },
+      notice: ['Клад дракона', 'Лавка в порту']
+    });
+    expect(storedIds(storage)).toEqual([]);
+  });
+
+  it('keeps a dismissal made in one store through the other store later marking the backup', () => {
+    const storage = seedOf([A], { 'dhloot.lists.v2.bad': '{' });
+    const one = new ListStore(at({ storage }), say, t);
+    const two = new ListStore(at({ storage }), say, t);
+    one.markBad('u1');
+    one.settleMove('u1', [pair(A, 'x1')]);
+    expect(migratedOf(storage)?.['bad']).toBe(true);
+    one.dismissNotice();
+    two.markBad('u1');
+    expect(migratedOf(storage)).toEqual({ owner: 'u1', lists: { a: 'x1' }, bad: false });
+    expect(two.migrated.bad).toBe(false);
+    expect(two.hasBadBackup).toBe(true);
+    expect(storage.get('dhloot.lists.v2.bad')).toBe('{');
+  });
+
+  it('names a list only with a new tombstone: a slower store does not bring a dismissed notice back', () => {
+    const storage = seedOf([A]);
+    const one = new ListStore(at({ storage }), say, t);
+    const two = new ListStore(at({ storage }), say, t);
+    one.settleMove('u1', [pair(A, 'x1')]);
+    one.dismissNotice();
+    two.settleMove('u1', [pair(A, 'x1')]);
+    expect(migratedOf(storage)?.['notice']).toBeUndefined();
+    expect(two.migrated.notice).toBeUndefined();
+  });
+
+  it('reads a value that does not parse as absent, field by field', () => {
+    const bad = new ListStore(
+      at({ storage: seedOf([A], { 'dhloot.migrated.v1': '{nope' }) }),
+      say,
+      t
+    );
+    expect(bad.migrated).toEqual({ lists: {} });
+    expect(bad.lists).toHaveLength(1);
+    const odd = JSON.stringify({
+      owner: 5,
+      lists: { a: 7, b: 'x2' },
+      notice: ['Н', 3],
+      bad: 'yes',
+      held: 'a'
+    });
+    const store = new ListStore(
+      at({ storage: seedOf([A], { 'dhloot.migrated.v1': odd }) }),
+      say,
+      t
+    );
+    expect(store.migrated).toEqual({ lists: { b: 'x2' }, notice: ['Н'] });
+    const list = new ListStore(
+      at({ storage: seedOf([A], { 'dhloot.migrated.v1': '[1]' }) }),
+      say,
+      t
+    );
+    expect(list.migrated).toEqual({ lists: {} });
+  });
+
+  it('holds an id once however often it is held, and a removal of a held list prunes it', () => {
+    const storage = seedOf([A, B]);
+    const store = new ListStore(at({ storage }), say, t);
+    store.markHeld('u1', ['a']);
+    store.markHeld('u2', ['a', 'b']);
+    expect(migratedOf(storage)).toEqual({ owner: 'u1', lists: {}, held: ['a', 'b'] });
+    store.removeMany(['a']);
+    expect(store.migrated.held).toEqual(['b']);
+    store.removeMany(['b']);
+    expect(migratedOf(storage)?.['held']).toBeUndefined();
+  });
+
+  it('claims the browser for the first account only', () => {
+    const storage = seedOf([A]);
+    const store = new ListStore(at({ storage }), say, t);
+    expect(store.claim('u1')).toBe(true);
+    expect(store.claim('u2')).toBe(true);
+    expect(migratedOf(storage)).toEqual({ owner: 'u1', lists: {} });
+    expect(store.hasBadBackup).toBe(false);
   });
 });

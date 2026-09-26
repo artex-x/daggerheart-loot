@@ -3,7 +3,10 @@
  * sign-out, F4 sign-out everywhere, F5 delete account, F6 a preference read
  * back on a fresh session, F7 an account list made, filled, renamed, read
  * back from the server and deleted, F8 its share links made, read, deleted,
- * made again and copied. Each flow gets its own browser context, the
+ * made again and copied, F9 a browser list moved into the account at
+ * sign-in, once, and not for another account, F10 two edits kept by a page
+ * closed inside the write buffer's quiet window. Each flow gets its own
+ * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
  * screenshots or throws a value of an `E2E_*` variable or the member's
@@ -67,11 +70,21 @@ async function expectInPage(page, flow, what, fn, ...args) {
   if (!(await page.evaluate(fn, ...args))) throw new Error('e2e ' + flow + ': ' + what);
 }
 
-async function withPage({ browser, base, env }, session, run) {
+async function withPage({ browser, base, env }, session, run, seed = null) {
   const ctx = await browser.createBrowserContext();
   try {
     const page = await ctx.newPage();
     await prepare(page);
+    /* After prepare()'s own clear, on every document: browser lists. */
+    if (seed) {
+      await page.evaluateOnNewDocument((kv) => {
+        try {
+          for (const k of Object.keys(kv)) localStorage.setItem(k, kv[k]);
+        } catch {
+          /* about:blank has no storage */
+        }
+      }, seed);
+    }
     if (session) {
       await page.evaluateOnNewDocument(
         (k, v) => {
@@ -452,4 +465,148 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteListsOf(admin, member.id);
   }
   console.log('e2e: F8 ok');
+
+  /* F9: a browser list moves into the account at sign-in through the real
+     `move_legacy_list`: once, found again by its fingerprint from a second
+     browser, and never for an account that is not the browser's first. */
+  await deleteListsOf(admin, member.id);
+  try {
+    const seed = {
+      'dhloot.lists.v2': JSON.stringify([
+        {
+          id: 'e2e1',
+          name: 'E2E перенос',
+          ids: ['ci1'],
+          meta: { ci1: { qty: 2, gold: 150, note: 'e2e f9' } },
+          created: 1
+        }
+      ])
+    };
+    const mine = () => listsOf(admin, member.id);
+    const settled = (page, flow) =>
+      waitFor(page, 'e2e ' + flow + ': the move did not settle', () =>
+        ['done', 'failed'].includes(document.querySelector('main')?.dataset.move ?? '')
+      );
+    const storedOf = (page) =>
+      page.evaluate(() => ({
+        lists: localStorage.getItem('dhloot.lists.v2'),
+        migrated: JSON.parse(localStorage.getItem('dhloot.migrated.v1') ?? 'null')
+      }));
+    let moved = '';
+    await withPage(
+      ctx,
+      await mint(env, admin, member.email),
+      async (page, d) => {
+        await d.open('#/lists');
+        await waitText(page, 'F9', 'Ваш аккаунт');
+        await settled(page, 'F9');
+        await waitText(page, 'F9', 'перенесены в ваш аккаунт: «E2E перенос».');
+        const rows = await mine();
+        const row = rows[0];
+        if (
+          rows.length !== 1 ||
+          !/^[0-9a-f]{64}$/.test(row.legacy_fingerprint ?? '') ||
+          row.list_entries.length !== 1 ||
+          row.list_entries[0].item_key !== 'ci1' ||
+          row.list_entries[0].quantity !== 2 ||
+          row.list_entries[0].price_coins !== 150
+        ) {
+          throw new Error('e2e F9: the account does not hold the moved list once');
+        }
+        moved = row.id;
+        const stored = await storedOf(page);
+        if (
+          stored.lists !== '[]' ||
+          stored.migrated?.owner !== member.id ||
+          stored.migrated?.lists?.e2e1 !== moved
+        ) {
+          throw new Error('e2e F9: the browser does not hold the tombstone of the move');
+        }
+        await waitFor(page, 'e2e F9: the moved list is not in «Ваш аккаунт»', () =>
+          [...document.querySelectorAll('.listcard b')].some(
+            (b) => b.textContent === 'E2E перенос'
+          )
+        );
+      },
+      seed
+    );
+    /* A second browser with the same list: the same row, no second one. */
+    await withPage(
+      ctx,
+      await mint(env, admin, member.email),
+      async (page, d) => {
+        await d.open('#/lists');
+        await settled(page, 'F9');
+        const rows = await mine();
+        if (rows.length !== 1 || rows[0].id !== moved) {
+          throw new Error('e2e F9: a second browser made a second row');
+        }
+        if ((await storedOf(page)).lists !== '[]') {
+          throw new Error('e2e F9: the second browser kept its copy');
+        }
+      },
+      seed
+    );
+    /* A browser whose lists are the member's: another account moves nothing. */
+    const other = await createThrowaway(admin, member.email);
+    await withPage(
+      ctx,
+      await mint(env, admin, other.email),
+      async (page, d) => {
+        await d.open('#/lists');
+        await settled(page, 'F9');
+        await waitText(page, 'F9', 'E2E перенос');
+        if ((await listsOf(admin, other.id)).length !== 0) {
+          throw new Error("e2e F9: another account's sign-in moved the member's list");
+        }
+      },
+      { ...seed, 'dhloot.migrated.v1': JSON.stringify({ owner: member.id, lists: {} }) }
+    );
+  } finally {
+    await deleteListsOf(admin, member.id);
+  }
+  console.log('e2e: F9 ok');
+
+  /* F10: two edits, then the page is closed less than 500 ms after the last
+     key - inside the buffer's 2 s window - and both reach the account (the
+     `pagehide` flush). It does not prove the `keepalive` flag: a plain fetch
+     passes here too (measured 2026-09-26 on this host); the flag is proven by
+     `supabase.test.ts` (docs/specs/COVERAGE.md, "Test layers"). */
+  await deleteListsOf(admin, member.id);
+  try {
+    const mine = () => listsOf(admin, member.id);
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/lists');
+      await waitText(page, 'F10', 'Ваш аккаунт');
+      await d.type('Например: клад дракона', 'E2E закрытие');
+      await d.press('Создать');
+      await until('F10: the new list did not reach the account', async () => {
+        const rows = await mine();
+        return rows.length === 1 && rows[0].name === 'E2E закрытие';
+      });
+      const [made] = await mine();
+      await d.open('#/lists/' + made.id);
+      await waitText(page, 'F10', 'Сохранено');
+      await d.press('Заметки');
+      await d.type('Например: лавка закрыта до утра', 'e2e f10');
+      await d.type('Название списка', 'F10');
+      /* 800 ms of latency holds the request past the close. */
+      const cdp = await page.createCDPSession();
+      await cdp.send('Network.enable');
+      await cdp.send('Network.emulateNetworkConditions', {
+        offline: false,
+        latency: 800,
+        downloadThroughput: -1,
+        uploadThroughput: -1
+      });
+      await page.close();
+    });
+    await until('F10: the edits made before the close did not reach the account', async () => {
+      const [row] = await mine();
+      return row?.name === 'F10' && row.player_note === 'e2e f10';
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+  }
+  console.log('e2e: F10 ok');
 }

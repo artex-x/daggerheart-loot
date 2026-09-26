@@ -15,3 +15,4 @@
 - Rejected: pessimistic writes (the page waits on the network per key);
   a styled delete dialog (a new component for one question the port asks);
   a conflict dialog (owner: last write wins per entry).
+- Amended by "Account list writes are buffered and sent two seconds after the last edit" (2026-09-26): writes wait in a 2 s buffer, go as one request, and a lapsed session is retried.

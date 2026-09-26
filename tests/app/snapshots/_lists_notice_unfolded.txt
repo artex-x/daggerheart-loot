@@ -33,6 +33,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Войти"
     DisclosureTriangle "Списки живут только в этом браузере." [expanded=true]
     StaticText "Очистка данных сайта, режим инкогнито или другое устройство — и ..." [namelen=713 namehash=98c1858a]
+    StaticText "Войдите - списки перенесутся в аккаунт сами. С 26 октября 2026 г..." [namelen=106 namehash=83783646]
     button "Скрыть" [description=Скрыть]
     link "Клад дракона, 7 позиций" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
       StaticText "Клад дракона"

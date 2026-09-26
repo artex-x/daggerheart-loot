@@ -1,6 +1,6 @@
 # #/i/ci1 ~ list menu as gm1
 # route: #/i/ci1
-# why: one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest, account and browser lists together
+# why: one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest; the seed's two browser lists moved into the account first, so every chip is an account list and the notice above names the two
 # as: gm1
 
 ## ru :: tree
@@ -25,6 +25,9 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
+  status ""
+    StaticText "Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона..." [namelen=83 namehash=f2bd8dcc]
+    button "Скрыть"
   main ""
     heading "Первоклассный Спальный Мешок" [level=1]
     StaticText "Core · Предметы · номер 1 "
@@ -42,9 +45,9 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
     StaticText "ЛЕЖИТ В СПИСКАХ"
     button "✓ Лавка кузнеца" [pressed=true]
     button "✓ Трофеи" [pressed=true]
-    button "Пустой список" [pressed=false]
     button "Лавка в порту" [pressed=false]
     button "Клад дракона" [pressed=false]
+    button "Пустой список" [pressed=false]
     button "+ Новый список" [pressed=false]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/ci1]
   contentinfo ""
@@ -79,6 +82,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Скрыть
 Собрать карточки для печати: девять на лист A4
 Сообщества
 Списки
@@ -112,6 +116,9 @@ RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=index.html?as=
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
+  status ""
+    StaticText "Lists from this browser were moved to your account: "Клад дракон..." [namelen=84 namehash=5748a9e2]
+    button "Dismiss"
   main ""
     heading "Premium Bedroll" [level=1]
     StaticText "Core · Items · roll 1 "
@@ -144,6 +151,7 @@ Copy image
 Copy link
 Copy name
 Copy text
+Dismiss
 Dragon's Vault
 Dread
 EN

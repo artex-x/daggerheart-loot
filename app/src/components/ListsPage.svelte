@@ -10,6 +10,7 @@
   import Field from './Field.svelte';
   import Icon from './Icon.svelte';
   import ListCard from './ListCard.svelte';
+  import MoveStatus from './MoveStatus.svelte';
   import NoData from './NoData.svelte';
   import NumRow from './NumRow.svelte';
   import PageHead from './PageHead.svelte';
@@ -124,6 +125,11 @@
 
   function del(l: StoredList): void {
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
+    /* After the cutoff the only browser writes are removals: no undo. */
+    if (!app.legacyWritable) {
+      if (app.lists.removeMany([l.id])) app.say(t.listDeleted.replace('%s', l.name));
+      return;
+    }
     const removed = app.lists.remove(l.id);
     /* Delete gets an undo, like every other destructive action here. */
     if (removed) {
@@ -187,7 +193,7 @@
         <Field label={t.groupAccount} heading>
           {#if cloud.status === 'error'}
             <p class="grouptext err">{t.cloudLoadFailed}</p>
-            <Button size="sm" onclick={() => void cloud.load()}>{t.retry}</Button>
+            <Button size="sm" onclick={() => void app.retryLists()}>{t.retry}</Button>
           {:else if cloud.status !== 'ready'}
             <p class="grouptext">{t.cloudLoading}</p>
           {:else if !account.length}
@@ -221,27 +227,39 @@
     {#if browserGroup}
       <div class="group" class:first={!signedIn}>
         <Field label={signedIn ? t.groupBrowser : undefined} heading>
-          <StorageNotice {app} />
+          {#if app.user && app.legacyMove && !app.legacyMove.foreign}
+            <MoveStatus {app} />
+          {:else}
+            <StorageNotice {app} />
+          {/if}
           {#if drawnLocal.length}
             <div class="listgrid">
               {#each drawnLocal as l (l.id)}
+                <!-- Read-only, a card opens the list at its own address:
+                     after the cutoff `#/l/` draws the retired page. -->
                 <ListCard
                   {app}
                   list={l}
-                  href={sharedListHash(encodeList(l, false))}
+                  href={app.localWritable
+                    ? sharedListHash(encodeList(l, false))
+                    : storedListHash(l.id)}
                   items={knownItems(l)}
                 >
                   {#snippet actions()}
-                    <Button size="sm" onclick={() => void share(l)}
-                      ><Icon name="link" />{t.share}</Button
-                    >
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onclick={() => {
-                        del(l);
-                      }}>{t.del}</Button
-                    >
+                    {#if app.localWritable}
+                      <Button size="sm" onclick={() => void share(l)}
+                        ><Icon name="link" />{t.share}</Button
+                      >
+                    {/if}
+                    {#if !app.moveDue}
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onclick={() => {
+                          del(l);
+                        }}>{t.del}</Button
+                      >
+                    {/if}
                   {/snippet}
                 </ListCard>
               {/each}

@@ -25,7 +25,7 @@ const FAILED: AuthResult = { ok: false, error: 'failed' };
 const UNREAD: PrefsRead = { ok: false };
 const UNLISTED: ListsRead = { ok: false };
 /* A chunk that never arrived sent nothing, so the write may be sent again. */
-const UNSENT: ListWrite = { ok: false, error: 'network' };
+const UNSENT: Extract<ListWrite, { error: 'network' }> = { ok: false, error: 'network' };
 const NO_SHARES: SharesRead = { ok: false };
 const UNSHARED: SharedRead = { ok: false };
 
@@ -72,18 +72,12 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
   const lists: ListRepository = {
     newId: () => crypto.randomUUID(),
     list: async () => (await port())?.lists.list() ?? UNLISTED,
-    create: async (l, e) => (await port())?.lists.create(l, e) ?? UNSENT,
-    update: async (id, patch) => (await port())?.lists.update(id, patch) ?? UNSENT,
-    addEntries: async (id, e) => (await port())?.lists.addEntries(id, e) ?? UNSENT,
-    updateEntry: async (id, patch) => (await port())?.lists.updateEntry(id, patch) ?? UNSENT,
-    removeEntries: async (ids) => (await port())?.lists.removeEntries(ids) ?? UNSENT,
-    reorder: async (id, ids) => (await port())?.lists.reorder(id, ids) ?? UNSENT,
-    remove: async (id) => (await port())?.lists.remove(id) ?? UNSENT
+    apply: async (ops) => (await port())?.lists.apply(ops) ?? UNSENT,
+    move: async (id, canonical) => (await port())?.lists.move(id, canonical) ?? UNSENT
   };
   const shares: ShareRepository = {
     list: async (id) => (await port())?.shares.list(id) ?? NO_SHARES,
-    create: async (id, audience) =>
-      (await port())?.shares.create(id, audience) ?? { ok: false, error: 'network' },
+    create: async (id, audience) => (await port())?.shares.create(id, audience) ?? UNSENT,
     revoke: async (id) => (await port())?.shares.revoke(id) ?? UNSENT,
     read: async (token) => (await port())?.shares.read(token) ?? UNSHARED,
     ownerOf: async (token) => (await port())?.shares.ownerOf(token) ?? null,

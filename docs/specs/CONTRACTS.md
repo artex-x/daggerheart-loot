@@ -58,6 +58,8 @@ removed by a later release.
 replaced by `-`/`_`.
 
 The address bar always holds the **plain** form and the **player** variant.
+From 2026-10-26 the app writes no `#/l/` address and expands no packed link; a
+`#/l/` address then draws the retired page (`ROUTES.md`).
 
 A list link opens from the site root, `<site>#/l/<payload>`, and from the
 English entry document, `<site>en/#/l/<payload>`: the second redirects to the

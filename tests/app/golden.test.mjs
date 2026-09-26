@@ -199,6 +199,37 @@ describe('signed-in states - the `as` field and the id suffix agree', () => {
   });
 });
 
+describe('dated states - the `today` field and the golden header agree', () => {
+  /* The test build is pinned before the legacy write cutoff (ports/clock.ts);
+     a state after it says so with `today`, and its golden says `# today:`. */
+  const cutoff = /LEGACY_WRITE_UNTIL = Date\.UTC\((\d{4}), (\d{1,2}), (\d{1,2})\)/.exec(
+    readFileSync(path.join(HERE, '..', '..', 'app', 'src', 'lib', 'legacy.ts'), 'utf8')
+  );
+  const pinned = /TEST_NOW = Date\.UTC\((\d{4}), (\d{1,2}), (\d{1,2}), (\d{1,2})\)/.exec(
+    readFileSync(path.join(HERE, '..', '..', 'app', 'src', 'ports', 'clock.ts'), 'utf8')
+  );
+
+  it('pins the test build before the cutoff', () => {
+    assert.ok(cutoff && pinned, 'LEGACY_WRITE_UNTIL or TEST_NOW is not a Date.UTC literal');
+    const [, y, m, d] = cutoff.map(Number);
+    const [, py, pm, pd, ph] = pinned.map(Number);
+    assert.ok(Date.UTC(py, pm, pd, ph) < Date.UTC(y, m, d));
+  });
+
+  it('writes `# today:` exactly for a state with `today`, a YYYY-MM-DD day', () => {
+    for (const s of STATES) {
+      const text = readFileSync(path.join(HERE, 'snapshots', slugOf(s.id) + '.txt'), 'utf8');
+      const header = headerOf(text);
+      if (s.today) {
+        assert.match(s.today, /^\d{4}-\d{2}-\d{2}$/, `"${s.id}": today is not YYYY-MM-DD`);
+        assert.ok(header.includes('# today: ' + s.today), `"${s.id}": no # today: line`);
+      } else {
+        assert.ok(!header.some((l) => l.startsWith('# today:')), `"${s.id}": a # today: line`);
+      }
+    }
+  });
+});
+
 describe('capName - rule B, the 64-code-point boundary', () => {
   it('does not cap a 63-code-point name', () => {
     const name = 'a'.repeat(63);

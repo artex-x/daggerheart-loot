@@ -35,6 +35,8 @@
     /** `sm` is the table nav's second row - a book's own sections, quieter
      *  than the row of books above them. */
     size?: 'md' | 'sm';
+    /** A choice that cannot change now: a browser list read-only after the cutoff. */
+    disabled?: boolean | undefined;
   }
 
   /* One or the other, never both: a chip that both navigates and handles a
@@ -42,7 +44,17 @@
   type Props = Base &
     ({ href: string; onclick?: never } | { href?: never; onclick: () => void });
 
-  const { label, on, title, sub, size = 'md', href, onclick, value }: Props = $props();
+  const {
+    label,
+    on,
+    title,
+    sub,
+    size = 'md',
+    href,
+    onclick,
+    value,
+    disabled
+  }: Props = $props();
 </script>
 
 {#if href}
@@ -65,6 +77,7 @@
     aria-pressed={on}
     data-val={value}
     {title}
+    {disabled}
     {onclick}
     >{label}{#if sub}<small>{sub}</small>{/if}</button
   >
@@ -95,9 +108,14 @@
     letter-spacing: 0.02em;
   }
 
-  .chip:hover {
+  .chip:hover:not(:disabled) {
     border-color: var(--gold);
     color: var(--txt);
+  }
+
+  .chip:disabled {
+    opacity: 0.5;
+    cursor: default;
   }
 
   .chip.on {

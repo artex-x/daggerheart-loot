@@ -164,10 +164,19 @@ function makeDriver(page, target, url = TARGETS[target]) {
      * signed out (docs/specs/COVERAGE.md, "Test layers"). A user the seed
      * does not have stops the boot with `#boot-error` (main.ts), which
      * fails here at once rather than as a page that never draws.
+     *
+     * `today` (`YYYY-MM-DD`) is the test build's clock: `?today=` sets the
+     * day the app reads for the legacy write cutoff. Without it the build is
+     * pinned before the cutoff (`ports/clock.ts`).
      */
-    async open(route, { as } = {}) {
+    async open(route, { as, today } = {}) {
       await page.goto('about:blank');
-      await page.goto(url + (as ? '?as=' + encodeURIComponent(as) : '') + route, {
+      const query = new URLSearchParams();
+      if (as) query.set('as', as);
+      if (today) query.set('today', today);
+      const qs = query.toString();
+      const search = qs ? '?' + qs : '';
+      await page.goto(url + search + route, {
         waitUntil: 'networkidle0'
       });
       await ready(page);
@@ -426,6 +435,76 @@ function makeDriver(page, target, url = TARGETS[target]) {
         document.dispatchEvent(new Event('visibilitychange'));
       });
       await settle(page);
+    },
+
+    /**
+     * Waits up to 6 s until no account write waits in the buffer or is in
+     * flight - no `[data-saving]` on the list page's save status. The buffer
+     * is sent 2 s after the last edit (docs/specs/FEATURES.md, "Account
+     * and browser lists"); a page with no buffered write passes at once.
+     */
+    async writesSettled() {
+      try {
+        await page.waitForFunction(() => !document.querySelector('[data-saving]'), {
+          timeout: 6000,
+          polling: 50
+        });
+      } catch {
+        throw new Error(`${target}: an account write still waits after 6 s`);
+      }
+      await settle(page);
+    },
+
+    /**
+     * Waits up to 6 s until the move of browser lists into the account has
+     * settled: `<main>` has no `data-move` (signed out, or no cloud), or it
+     * reads `done` or `failed`. `pending` (the session is unknown), `idle`
+     * and `moving` hold the wait. A page still waiting at 6 s throws with
+     * `name` (the state; the address when none is given) and the value: a
+     * capture never waits the timeout out silently (docs/specs/COVERAGE.md,
+     * "Test layers").
+     */
+    async moveSettled(name) {
+      try {
+        await page.waitForFunction(
+          () => {
+            const v = document.querySelector('main')?.getAttribute('data-move');
+            return v === null || v === undefined || v === 'done' || v === 'failed';
+          },
+          { timeout: 6000, polling: 50 }
+        );
+      } catch {
+        const state = await page.evaluate(() => [
+          location.hash,
+          document.querySelector('main')?.getAttribute('data-move') ?? 'no main'
+        ]);
+        throw new Error(
+          target +
+            ': ' +
+            (name ?? state[0]) +
+            ': the move did not settle in 6 s (data-move="' +
+            state[1] +
+            '")'
+        );
+      }
+      await settle(page);
+    },
+
+    /**
+     * Hides the tab for one `visibilitychange`, as a switch to another tab
+     * does, then reads visible again with no event. The account's write
+     * buffer is sent on that signal.
+     */
+    async hidden() {
+      await page.evaluate(() => {
+        Object.defineProperty(document, 'visibilityState', {
+          configurable: true,
+          get: () => 'hidden'
+        });
+        document.dispatchEvent(new Event('visibilitychange'));
+        /* The own property goes; the prototype's getter answers again. */
+        delete document.visibilityState;
+      });
     },
 
     /**

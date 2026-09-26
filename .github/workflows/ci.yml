@@ -99,11 +99,12 @@ jobs:
 
   # The built app's real-Chrome suites - page sweeps, structural goldens,
   # contracts, print, everything tests/run-all.js knows about - spread over
-  # four runners by CI-measured weight instead of one `check`-job step owning
+  # five runners by CI-measured weight instead of one `check`-job step owning
   # 84% of that job plus a separate `golden` matrix that then sat idle for
-  # 9m21s waiting on it. `--shard=n/4` packs the whole pool, goldens
-  # included; four jobs because a CI job's fixed cost is ~20 s, not minutes,
-  # and `tests/derived.js` asserts the shard count matches. See
+  # 9m21s waiting on it. `--shard=n/5` packs the whole pool, goldens
+  # included; five jobs because a CI job's fixed cost is ~20 s, not minutes,
+  # and the slowest suite step passed 360 s at four (runs 36229149582 and
+  # 36230695846). `tests/derived.js` asserts the shard count matches. See
   # tests/run-all.js's own weight comment.
   browser:
     runs-on: ubuntu-latest
@@ -112,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v5
 
@@ -128,8 +129,8 @@ jobs:
       - name: Build
         run: npm run build:test
 
-      - name: The built app's suites - shard ${{ matrix.shard }} of 4
-        run: node tests/run-all.js --shard=${{ matrix.shard }}/4
+      - name: The built app's suites - shard ${{ matrix.shard }} of 5
+        run: node tests/run-all.js --shard=${{ matrix.shard }}/5
 
       - name: Everything a failed shard left behind
         if: failure()

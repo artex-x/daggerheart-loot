@@ -3,7 +3,7 @@
      players' row and a GM row, both ready when the panel opens. A link is
      made on open only for an audience that never had one; a deleted link
      stays deleted until «Создать ссылку» (docs/specs/FEATURES.md, "Account
-     lists"; docs/DECISIONS.md, 2026-09-25, "Share links are made when the
+     and browser lists"; docs/DECISIONS.md, 2026-09-25, "Share links are made when the
      Share panel opens; a deleted one stays deleted"). */
   import { onMount, tick } from 'svelte';
   import Actions from './Actions.svelte';
@@ -38,7 +38,10 @@
   async function load(): Promise<void> {
     const repo = shares();
     status = 'loading';
-    const read = repo ? await repo.list(listId) : { ok: false as const };
+    /* A list made a moment ago exists on the server only once the account's
+       buffered writes are in. */
+    const flushed = (await app.cloudLists?.flushNow()) ?? false;
+    const read = repo && flushed ? await repo.list(listId) : { ok: false as const };
     if (!repo || !read.ok) {
       status = 'error';
       return;

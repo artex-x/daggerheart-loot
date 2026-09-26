@@ -1,7 +1,9 @@
 <script lang="ts">
-  /* The frame every route sits in: brand, tabs and language. The storage
-     notice moved to the lists index, where the live app draws it. */
+  /* The frame every route sits in: brand, tabs and language, and the move's
+     one-time notice under them. The storage notice moved to the lists index,
+     where the live app draws it. */
   import Icon from './Icon.svelte';
+  import MoveNotice from './MoveNotice.svelte';
   import Seg from './Seg.svelte';
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
@@ -29,6 +31,15 @@
      reader never sees «Войти» flash; a build with no sign-in draws none. */
   const accountShown = $derived(app.env.cloud !== null && app.user !== undefined);
   const onAccount = $derived(app.route.kind === 'account');
+  const moveState = $derived(
+    !app.env.cloud
+      ? undefined
+      : app.user === undefined
+        ? 'pending'
+        : app.user && app.legacyMove
+          ? app.legacyMove.status
+          : undefined
+  );
 
   /**
    * A record, a section or an owned list titles the tab
@@ -122,7 +133,14 @@
   <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} />
 </header>
 
-<main id="main" tabindex="-1">
+{#if app.env.cloud}
+  <MoveNotice {app} />
+{/if}
+
+<!-- `data-move` is what the browser suites wait on before a capture
+     (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session is
+     unknown, the move's status once signed in, none signed out. -->
+<main id="main" tabindex="-1" data-move={moveState}>
   {@render children()}
 </main>
 

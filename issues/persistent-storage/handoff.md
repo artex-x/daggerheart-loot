@@ -3,15 +3,14 @@
 
 ## Status
 - Task status: in_progress (programme roadmap; R0 closed 2026-09-24, R1
-  closed 2026-09-25, R2 closed 2026-09-26, R5 next)
-- Last agent: implementer (2026-09-26: the plans made ahead for R3-R7 and
-  R11 integrated onto `main` in one docs commit, with the owner's answers)
+  closed 2026-09-25, R2 and R5 closed 2026-09-26, R5b next)
+- Last agent: implementer (2026-09-26: R5's closeout)
 - NEEDS_HUMAN_CONFIRMATION: no (decisions 1-41 answered, `plan.md` section 16)
 - Branch: `main`
-- Base / starting commit: `8ebf03ea` (R2 live: `012462e1` and the budget
-  fix `8ebf03ea`)
-- Pushed: R2 yes (2026-09-26); the docs commit that integrates the plans
-  made ahead is local
+- Base / starting commit: `a7169532` (the restore drill on top of R2 and
+  the plans made ahead)
+- Pushed: R5 yes (2026-09-26; the sha is in `plan.md` section 16, "R5
+  closeout record")
 
 ## Completed
 - Release R0 `persist-0-foundation` (batches `B0.1`, `B0.2`, each reviewed
@@ -33,20 +32,25 @@
   retired in its closeout commit. Record: `plan.md` section 16, "R2
   closeout record"; what R5 and R3 inherit: `plan.md` section 17,
   "Carried from R2".
+- Release R5 `persist-5-migration` (batches `B5.1`, `B5.2a`-`B5.2d`,
+  closed 2026-09-26): the automatic move of browser lists into the
+  account, the cutoff, the retired `#/l/` page, the account write buffer
+  with `apply_list_writes`. Its task directory was retired in its closeout
+  commit. Record: `plan.md` section 16, "R5 closeout record"; what later
+  releases inherit: `plan.md` section 17, "Carried from R5".
 
 ## Verification
-- R2: the gates of its closeout amend are in the R2 closeout summary; the
-  gates before it are in `plan.md` section 16, "R2 closeout record".
-
-- Plans made ahead: R5, R5b (as R5's section 9b), R11, R3, R4, R6 and R7
-  are on `main` under `issues/<task id>/` with their decision files; every
-  owner question in them is answered (`context.md`, "Plans made ahead,
-  2026-09-25").
+- R5: the gates of its closeout amend are in the R5 closeout summary; the
+  gates before it are in `plan.md` section 16, "R5 closeout record".
+- Plans made ahead: R5b, R11, R3, R4, R6 and R7 are on `main` under
+  `issues/<task id>/` with their decision files; every owner question in
+  them is answered.
 
 ## Next batch (implement-ready)
-- Orchestrator: R5 `persist-5-migration` - the planner refresh of its
-  `plan.md` section 13 against R2 as shipped (it also gives R5b its own
-  task directory), then `B5.1`.
+- Orchestrator: R5b `persist-5b-account-menu` - the planner's section 9
+  refresh of its `plan.md` against R5 as shipped, then `B5b.1`. After R5b:
+  the plan-review process task (`plan.md` section 9; its planner creates
+  its directory).
 
 ## Blockers
 - None.
@@ -62,8 +66,7 @@
 ## Notes
 - Mocks path: none this pass.
 - Screenshot findings: none (no issue, no screenshots).
-- Cleanup performed / retained artifacts: R2 closeout compacted `plan.md`
-  sections 5, 9, 10, 12, 14, 16 and 17; the last pushed pre-compaction
-  commit of this directory is `ad80634d` (R2's own earlier amends were
-  never pushed).
+- Cleanup performed / retained artifacts: R5 closeout compacted `plan.md`
+  sections 9, 12, 14 and 17; the last pushed pre-compaction commit of this
+  directory is `a7169532` (R5's own earlier amends were never pushed).
 - Session end partial progress (if any): none.

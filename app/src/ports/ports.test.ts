@@ -4,10 +4,12 @@
    share sheet dismissed on purpose. */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { browserClipboard, fakeClipboard } from './clipboard.js';
+import { browserClock, fixedClock, queryClock, TEST_NOW } from './clock.js';
 import { browserCompress, plainCompress } from './compress.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { edgeSpeed, nativeDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
+import { browserPage, fakePage } from './page.js';
 import { hashRouter, memoryRouter } from './router.js';
 import { browserShare } from './share.js';
 import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
@@ -1296,5 +1298,81 @@ describe('the motion port', () => {
   it('has a fake that answers what it is told', () => {
     expect(fakeMotion(true).reduced()).toBe(true);
     expect(fakeMotion().reduced()).toBe(false);
+  });
+});
+
+describe('the page going out of sight', () => {
+  const pageWin = (state: 'visible' | 'hidden' = 'visible') => {
+    const doc = new EventTarget() as EventTarget & { visibilityState: string };
+    doc.visibilityState = state;
+    const win = new EventTarget() as EventTarget & { document: typeof doc };
+    win.document = doc;
+    return { win, doc };
+  };
+
+  it('fires on visibilitychange to hidden and on pagehide, not on visibilitychange to visible', () => {
+    const { win, doc } = pageWin();
+    const fn = vi.fn();
+    browserPage(win as unknown as Parameters<typeof browserPage>[0]).onHidden(fn);
+    doc.dispatchEvent(new Event('visibilitychange'));
+    expect(fn).not.toHaveBeenCalled();
+    doc.visibilityState = 'hidden';
+    doc.dispatchEvent(new Event('visibilitychange'));
+    expect(fn).toHaveBeenCalledOnce();
+    win.dispatchEvent(new Event('pagehide'));
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('removes both listeners on unsubscribe', () => {
+    const { win, doc } = pageWin('hidden');
+    const fn = vi.fn();
+    const off = browserPage(win as unknown as Parameters<typeof browserPage>[0]).onHidden(fn);
+    off();
+    doc.dispatchEvent(new Event('visibilitychange'));
+    win.dispatchEvent(new Event('pagehide'));
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it('listens to the real window by default', () => {
+    const fn = vi.fn();
+    const off = browserPage().onHidden(fn);
+    window.dispatchEvent(new Event('pagehide'));
+    off();
+    window.dispatchEvent(new Event('pagehide'));
+    expect(fn).toHaveBeenCalledOnce();
+  });
+
+  it('has a fake that a test hides', () => {
+    const page = fakePage();
+    const fn = vi.fn();
+    const off = page.onHidden(fn);
+    page.fireHidden();
+    off();
+    page.fireHidden();
+    expect(fn).toHaveBeenCalledOnce();
+  });
+});
+
+describe('the clock', () => {
+  it('reads the browser time, or a fixed one', () => {
+    vi.useFakeTimers({ now: Date.UTC(2026, 9, 3) });
+    try {
+      expect(browserClock().now()).toBe(Date.UTC(2026, 9, 3));
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(fixedClock(5).now()).toBe(5);
+    expect(fakeEnv().clock.now()).toBe(TEST_NOW);
+    expect(new Date(TEST_NOW).toISOString()).toBe('2026-10-01T12:00:00.000Z');
+  });
+
+  it('reads ?today= as UTC midnight, and falls back for a bad or absent value', () => {
+    expect(queryClock('?today=2026-10-26', 1).now()).toBe(Date.UTC(2026, 9, 26));
+    expect(queryClock('?as=gm1&today=2026-10-25', 1).now()).toBe(Date.UTC(2026, 9, 25));
+    expect(queryClock('?today=2026-02-30', 1).now()).toBe(1);
+    expect(queryClock('?today=26.10.2026', 1).now()).toBe(1);
+    expect(queryClock('?today=', 1).now()).toBe(1);
+    expect(queryClock('?as=gm1', 1).now()).toBe(1);
+    expect(queryClock('', 2).now()).toBe(2);
   });
 });

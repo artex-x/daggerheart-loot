@@ -9,6 +9,7 @@ import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { AuthResult, CloudPort } from '../ports/index.js';
+import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -176,6 +177,18 @@ describe('signed in as gm1', () => {
     await press('Выйти на всех устройствах');
     expect(signOut).toHaveBeenCalledWith('global');
     expect(await screen.findByText('Вы вышли из аккаунта.')).toBeInTheDocument();
+  });
+
+  it("signs out through the app, which sends the account's buffered writes first", async () => {
+    const signOut = vi.spyOn(AppState.prototype, 'signOut');
+    try {
+      open(as('gm1'));
+      await press('Выйти');
+      expect(signOut).toHaveBeenCalledWith('local');
+      expect(await screen.findByText('Вы вышли из аккаунта.')).toBeInTheDocument();
+    } finally {
+      signOut.mockRestore();
+    }
   });
 
   it('says so, and offers no Connect, when the providers cannot be read', async () => {

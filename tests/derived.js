@@ -1121,6 +1121,48 @@ COUNT_BEARING_FILES.forEach(function (file) {
   ok(text.indexOf(String(N.all)) >= 0, file + ': the overall record count went unmentioned');
 });
 
+console.log('legacy write cutoff');
+/* The cutoff date lives in one constant, `LEGACY_WRITE_UNTIL`; the app's texts
+   read it, and every document that spells it out is named here. Moving the
+   date is one edit in legacy.ts, then the edits this check names. */
+const legacyTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'legacy.ts'), 'utf8');
+const cutoff = /LEGACY_WRITE_UNTIL = Date\.UTC\((\d{4}), (\d{1,2}), (\d{1,2})\)/.exec(legacyTs);
+ok(cutoff, 'app/src/lib/legacy.ts: no "LEGACY_WRITE_UNTIL = Date.UTC(y, m, d)"');
+if (cutoff) {
+  const at = new Date(Date.UTC(+cutoff[1], +cutoff[2], +cutoff[3]));
+  const iso = at.toISOString().slice(0, 10);
+  const utc = { timeZone: 'UTC' };
+  const ru =
+    new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long', ...utc }).format(at) +
+    ' ' +
+    String(at.getUTCFullYear());
+  const en = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    ...utc
+  }).format(at);
+  const LEGACY_DATE_FILES = [
+    ['llms.txt', [iso]],
+    ['docs/specs/CONTRACTS.md', [iso]],
+    ['docs/specs/FEATURES.md', [iso]],
+    ['docs/specs/META.md', [iso]],
+    ['docs/specs/STATE.md', [iso]],
+    ['docs/specs/ROUTES.md', [iso]],
+    ['tests/contracts.js', [iso]],
+    ['app/src/lib/help.ts', [ru, en]]
+  ];
+  LEGACY_DATE_FILES.forEach(function ([file, wants]) {
+    const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    wants.forEach(function (want) {
+      ok(
+        text.includes(want),
+        file + ': the legacy write cutoff «' + want + '» went unmentioned'
+      );
+    });
+  });
+}
+
 /* Dice drawn on buttons use the same paths that print on the card. The
    paths are written out in dice.ts, so a button draws with no request, and
    this is where they are checked against the actual files. Otherwise an edit to a vector in `card/` would

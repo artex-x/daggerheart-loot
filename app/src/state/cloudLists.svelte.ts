@@ -1,14 +1,22 @@
 /* The signed-in owner's account lists, held in memory and written through
  * `ListRepository`.
  *
- * A writer changes `lists` at once and queues one write; the queue sends
- * them one at a time, in order, and a queued text edit of the same field is
- * replaced rather than sent twice. A network failure keeps the queue and
- * retries; a limit or another refusal drops that write, says why, and
- * re-reads the account (docs/DECISIONS.md, 2026-09-25, "Account list writes
- * are optimistic, queued in order, and retried ..."). */
+ * A writer changes `lists` at once and puts one write in the buffer; an
+ * edit of the same field replaces its waiting write. Two seconds after the
+ * last change the buffer goes to the server in order as one `apply` request
+ * (more only past `BATCH_BYTES` or `BATCH_OPS`), and at once when the page is
+ * hidden or another action needs it (`flushNow`). A network failure keeps
+ * the request and retries; a limit or another refusal drops that write, says
+ * why, and re-reads the account; a write to a row deleted elsewhere (`gone`)
+ * is dropped with no toast; a request the database keeps failing is halved.
+ * docs/DECISIONS.md, 2026-09-26: "Account list writes are buffered and sent
+ * two seconds after the last edit", "The write buffer goes to the server as
+ * one invoker RPC with a result per write", "A request the database fails
+ * three times is halved; a lone write is dropped". */
 
 import {
+  BATCH_OPS,
+  batchSize,
   clip,
   entryRowsOf,
   limitText,
@@ -19,6 +27,7 @@ import {
   toCloudList,
   type CloudList,
   type EntryPatch,
+  type ListOp,
   type ListRow,
   type NewListRow
 } from '../lib/cloudLists.js';
@@ -35,20 +44,28 @@ import {
   type StoredList
 } from '../lib/lists.js';
 import { MONEY_DEFAULT } from '../lib/money.js';
-import type { ListRepository, ListWrite } from '../ports/index.js';
+import type { ListOpResult, ListRepository } from '../ports/index.js';
 import type { ListModel } from './lists.svelte.js';
 
 /** How long a write that found no network waits before it is sent again. */
 export const RETRY_MS = 15_000;
+/** How long the buffer waits after the last change before it is sent. */
+export const QUIET_MS = 2_000;
+/** How many counted faults in a row split a request, or drop a lone write. */
+export const FAULT_LIMIT = 3;
+
+const DROPPED: ListOpResult = { ok: false, error: 'refused' };
 
 interface Op {
-  /** A queued op with the same key, not yet sent, is replaced by a newer one. */
+  /** A waiting op with the same key, not in flight, is replaced by a newer one. */
   key?: string;
   /** The list the op writes to. */
   list: string;
-  /** A refused create takes the list's other queued ops with it. */
+  /** A refused create takes the list's other waiting ops with it. */
   create?: boolean;
-  run: () => Promise<ListWrite>;
+  /** The buffer's order: an op merged into is pushed again with the newest. */
+  seq: number;
+  write: ListOp;
 }
 
 const byUpdated = (a: CloudList, b: CloudList): number =>
@@ -70,6 +87,19 @@ export class CloudLists implements ListModel {
 
   #queue: Op[] = [];
   #flushing = false;
+  #running: Promise<void> | null = null;
+  /* The newest op's seq, and the newest a flush may send: an edit made
+     during a flush waits for its own quiet window. */
+  #seq = 0;
+  #cut = 0;
+  /* The head ops of the request in flight: never merged into or replaced. */
+  #inFlight = 0;
+  #quiet: ReturnType<typeof setTimeout> | null = null;
+  /* The counted faults of the request at the head, when the last one came,
+     and the most ops the next request may hold (null: no cap). */
+  #faults = 0;
+  #faultAt: number | null = null;
+  #cap: number | null = null;
   /* Bumped by `clear()`: an answer that started before it is dropped. */
   #epoch = 0;
   /* Bumped by every local write: a read that overlapped one is dropped and
@@ -105,29 +135,57 @@ export class CloudLists implements ListModel {
     await this.#pull();
   }
 
-  /** Sends a failed write again, or re-reads the account while nothing is queued. */
+  /** Sends a failed write again, or re-reads the account while nothing is buffered. After a
+   *  failed first read it reads again with no «Загружаем...»: the error stays drawn until a
+   *  read answers. */
   async refresh(): Promise<void> {
     if (this.sync === 'failed') {
-      await this.#flush();
+      await this.flushNow();
+      return;
+    }
+    if (this.status === 'error') {
+      await this.#pull();
       return;
     }
     if (this.status !== 'ready' || this.#queue.length || this.#flushing) return;
     await this.#pull();
   }
 
-  /** Sends the queue now. */
+  /** Sends the buffer now. */
   retry(): void {
-    void this.#flush();
+    void this.flushNow();
   }
 
-  /** Signed out: nothing of the account stays, queued writes included. */
+  /**
+   * Sends the whole buffer now, after a flush that is running. Answers
+   * whether the buffer is empty after it (a refused write counts as gone);
+   * false while a write waits for the network or when `clear()` ran meanwhile.
+   */
+  async flushNow(): Promise<boolean> {
+    const epoch = this.#epoch;
+    this.#stopQuiet();
+    this.#cut = this.#seq;
+    if (this.#running) await this.#running;
+    if (epoch !== this.#epoch) return false;
+    this.#cut = this.#seq;
+    await this.#flush();
+    return epoch === this.#epoch && !this.#queue.length;
+  }
+
+  /** Signed out: nothing of the account stays, buffered writes included. */
   clear(): void {
     this.#epoch++;
     this.#edits++;
     this.#queue = [];
     this.#flushing = false;
+    this.#running = null;
+    this.#inFlight = 0;
+    this.#faults = 0;
+    this.#faultAt = null;
+    this.#cap = null;
     this.#reread = false;
     this.#stopRetry();
+    this.#stopQuiet();
     this.#read = {};
     this.lists = [];
     this.status = 'idle';
@@ -172,65 +230,135 @@ export class CloudLists implements ListModel {
     void this.#pull();
   }
 
-  #enqueue(op: Op): void {
+  #enqueue(op: Omit<Op, 'seq'>): void {
     this.#edits++;
     if (op.key) {
-      const at = this.#queue.findIndex(
-        (q, i) => q.key === op.key && !(i === 0 && this.#flushing)
-      );
+      const at = this.#queue.findIndex((q, i) => i >= this.#inFlight && q.key === op.key);
       if (at >= 0) this.#queue.splice(at, 1);
     }
-    this.#queue.push(op);
-    void this.#flush();
+    this.#queue.push({ ...op, seq: ++this.#seq });
+    /* A write known unsent keeps «Не сохранено»: the next send is a retry. */
+    if (this.sync !== 'failed') this.sync = 'saving';
+    this.#stopQuiet();
+    this.#quiet = setTimeout(() => {
+      this.#quiet = null;
+      this.#cut = this.#seq;
+      void this.#flush();
+    }, QUIET_MS);
   }
 
-  async #flush(): Promise<void> {
-    if (this.#flushing) return;
+  /* One flush at a time; a second call joins the running one, which goes on
+     into the ops a raised `#cut` makes due. */
+  #flush(): Promise<void> {
+    if (!this.#running) {
+      const run: Promise<void> = this.#send().finally(() => {
+        if (this.#running === run) this.#running = null;
+      });
+      this.#running = run;
+    }
+    return this.#running;
+  }
+
+  async #send(): Promise<void> {
     this.#stopRetry();
     this.#flushing = true;
     const epoch = this.#epoch;
     /* One toast per flush: a refused add is followed by its reorder, and the
        reorder's refusal must not replace the limit text. */
     let told = false;
-    for (let op = this.#queue[0]; op; op = this.#queue[0]) {
+    while (this.#queue[0] && this.#queue[0].seq <= this.#cut) {
+      /* The queue is in seq order, so the due ops are its head. */
+      const due = this.#queue.filter((o) => o.seq <= this.#cut);
+      const n = Math.min(batchSize(due.map((o) => o.write)), this.#cap ?? BATCH_OPS);
+      const sent = this.#queue.slice(0, n);
+      this.#inFlight = n;
       this.sync = 'saving';
-      const answer = await op.run();
+      const answer = await this.#repo.apply(sent.map((o) => o.write));
       if (epoch !== this.#epoch) return;
-      if (answer.ok) {
-        this.#queue.shift();
-        continue;
-      }
-      if (answer.error === 'network') {
-        this.#flushing = false;
-        this.sync = 'failed';
-        this.#timer = setTimeout(() => {
-          this.#timer = null;
-          void this.#flush();
-        }, RETRY_MS);
+      this.#inFlight = 0;
+      if (!answer.ok && answer.error === 'network') {
+        this.#failed();
         return;
       }
-      this.#queue.shift();
-      const list = op.list;
-      if (op.create) this.#queue = this.#queue.filter((q) => q.list !== list);
-      const t = this.#dict();
-      if (!told) {
-        this.#say(
-          answer.error === 'limit' ? limitText(answer.key, answer.value, t) : t.writeRefused,
-          true
-        );
+      if (!answer.ok && answer.error === 'fault') {
+        const now = Date.now();
+        /* Several paths send again within seconds (the early flushes,
+           «Повторить», the shown-again signal): faults that close together
+           are one failure, not several. */
+        if (this.#faultAt !== null && now - this.#faultAt < RETRY_MS) {
+          this.#failed();
+          return;
+        }
+        this.#faultAt = now;
+        if (++this.#faults < FAULT_LIMIT) {
+          this.#failed();
+          return;
+        }
+        this.#faults = 0;
+        this.#faultAt = null;
+        if (n > 1) {
+          /* The first half goes at once; the second follows when it lands. */
+          this.#cap = Math.ceil(n / 2);
+          continue;
+        }
+        /* One write the database keeps failing: dropped below as refused. */
+      } else {
+        this.#faults = 0;
+        this.#faultAt = null;
       }
-      told = true;
-      this.#reread = true;
+      this.#queue.splice(0, n);
+      const goneLists: string[] = [];
+      sent.forEach((o, i) => {
+        const r = answer.ok ? answer.results[i] : DROPPED;
+        if (!r || r.ok) return;
+        this.#reread = true;
+        if (r.error === 'gone' || goneLists.includes(o.list)) {
+          /* A gone entry says nothing of its list: a replay can answer a
+             false gone for an entry that a later write of the request removed. */
+          if (o.write.op === 'update_entry') {
+            const k = `entry:${o.write.id}:`;
+            this.#queue = this.#queue.filter((q) => !q.key?.startsWith(k));
+          } else {
+            goneLists.push(o.list);
+            this.#queue = this.#queue.filter((q) => q.list !== o.list);
+          }
+          return;
+        }
+        if (o.create) this.#queue = this.#queue.filter((q) => q.list !== o.list);
+        if (!told) {
+          const t = this.#dict();
+          this.#say(r.error === 'limit' ? limitText(r.key, r.value, t) : t.writeRefused, true);
+        }
+        told = true;
+      });
     }
     this.#flushing = false;
-    this.sync = 'saved';
+    if (!this.#queue.length) this.#cap = null;
+    this.sync = this.#queue.length ? 'saving' : 'saved';
     this.#rereadWhenIdle();
+  }
+
+  /* The request at the head waits for the network: sent again after RETRY_MS. */
+  #failed(): void {
+    this.#flushing = false;
+    this.sync = 'failed';
+    this.#timer = setTimeout(() => {
+      this.#timer = null;
+      this.#cut = this.#seq;
+      void this.#flush();
+    }, RETRY_MS);
   }
 
   #stopRetry(): void {
     if (this.#timer === null) return;
     clearTimeout(this.#timer);
     this.#timer = null;
+  }
+
+  #stopQuiet(): void {
+    if (this.#quiet === null) return;
+    clearTimeout(this.#quiet);
+    this.#quiet = null;
   }
 
   /* Puts the edited list first: it is the newest edit. */
@@ -247,11 +375,11 @@ export class CloudLists implements ListModel {
   }
 
   #reorder(l: CloudList): void {
-    const entryIds = l.ids.map((k) => l.entryIds[k] ?? '');
+    const ids = l.ids.map((k) => l.entryIds[k] ?? '');
     this.#enqueue({
       key: 'reorder:' + l.id,
       list: l.id,
-      run: () => this.#repo.reorder(l.id, entryIds)
+      write: { op: 'reorder', list_id: l.id, ids }
     });
   }
 
@@ -283,7 +411,7 @@ export class CloudLists implements ListModel {
       gm_note: l.hnote ?? ''
     };
     this.lists = [l, ...this.lists];
-    this.#enqueue({ list: id, create: true, run: () => this.#repo.create(row, entries) });
+    this.#enqueue({ list: id, create: true, write: { op: 'create', list: row, entries } });
     return l;
   }
 
@@ -291,7 +419,7 @@ export class CloudLists implements ListModel {
   remove(id: string): void {
     this.lists = this.lists.filter((l) => l.id !== id);
     Reflect.deleteProperty(this.#read, id);
-    this.#enqueue({ list: id, run: () => this.#repo.remove(id) });
+    this.#enqueue({ list: id, write: { op: 'remove', id } });
   }
 
   /* The texts are cut to the schema's bounds here: a longer one is refused
@@ -302,7 +430,7 @@ export class CloudLists implements ListModel {
     this.#enqueue({
       key: `list:${id}:name`,
       list: id,
-      run: () => this.#repo.update(id, { name })
+      write: { op: 'update', id, patch: { name } }
     });
   }
 
@@ -315,7 +443,7 @@ export class CloudLists implements ListModel {
     this.#enqueue({
       key: `list:${id}:${kind}`,
       list: id,
-      run: () => this.#repo.update(id, patch)
+      write: { op: 'update', id, patch }
     });
   }
 
@@ -324,7 +452,7 @@ export class CloudLists implements ListModel {
     this.#enqueue({
       key: `list:${id}:money`,
       list: id,
-      run: () => this.#repo.update(id, { money_mode: mode })
+      write: { op: 'update', id, patch: { money_mode: mode } }
     });
   }
 
@@ -350,7 +478,7 @@ export class CloudLists implements ListModel {
     this.#enqueue({
       key: `entry:${rowId}:${field}`,
       list: id,
-      run: () => this.#repo.updateEntry(rowId, patch)
+      write: { op: 'update_entry', id: rowId, patch }
     });
   }
 
@@ -375,7 +503,7 @@ export class CloudLists implements ListModel {
       ids: x.ids.filter((k) => k !== entryId),
       entryIds
     }));
-    this.#enqueue({ list: id, run: () => this.#repo.removeEntries([rowId]) });
+    this.#enqueue({ list: id, write: { op: 'remove_entries', ids: [rowId] } });
     /* Positions stay 0..n-1, so an entry added at the end never shares one. */
     if (next && at < next.ids.length) this.#reorder(next);
   }
@@ -391,7 +519,7 @@ export class CloudLists implements ListModel {
     if (!next) return;
     const place = next.ids.indexOf(entryId);
     const rows = entryRowsOf([entryId], { [entryId]: meta }, () => rowId, place);
-    this.#enqueue({ list: id, run: () => this.#repo.addEntries(id, rows) });
+    this.#enqueue({ list: id, write: { op: 'add', list_id: id, entries: rows } });
     if (place < next.ids.length - 1) this.#reorder(next);
   }
 
@@ -411,7 +539,7 @@ export class CloudLists implements ListModel {
       ...added,
       entryIds: { ...l.entryIds, ...Object.fromEntries(rows.map((r) => [r.item_key, r.id])) }
     }));
-    this.#enqueue({ list: id, run: () => this.#repo.addEntries(id, rows) });
+    this.#enqueue({ list: id, write: { op: 'add', list_id: id, entries: rows } });
     return fresh;
   }
 }

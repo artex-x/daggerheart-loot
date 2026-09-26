@@ -147,6 +147,15 @@ describe('the help for a section', () => {
     expect(textOf(helpFor('lists', 'en'), 4)).toContain('26 October 2026');
   });
 
+  it('says the browser lists move by themselves at sign-in, and the date they turn read-only', () => {
+    expect(textOf(helpFor('lists', 'ru'), 1)).toContain(
+      'Списки, созданные до входа, при входе переносятся в аккаунт сами; с 26 октября 2026 года списки в браузере нельзя будет менять.'
+    );
+    expect(textOf(helpFor('lists', 'en'), 1)).toContain(
+      'Lists made before signing in move to your account by themselves when you sign in; from 26 October 2026, lists in the browser cannot be changed.'
+    );
+  });
+
   it('bolds the three-unit list and the three worked examples in the money help', () => {
     /* Not a section's help (no page route is called "money"), so it is read
        through its own function rather than helpFor. */

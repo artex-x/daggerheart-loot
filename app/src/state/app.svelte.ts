@@ -33,15 +33,17 @@ import {
   type Route,
   type Site
 } from '../lib/hash.js';
+import { legacyWritable } from '../lib/legacy.js';
 import { decodeList, encodeList, type DecodedList } from '../lib/listLink.js';
-import { copyInit, LIST_PAGE, type StoredList } from '../lib/lists.js';
+import { copyInit, findListByPayload, LIST_PAGE, type StoredList } from '../lib/lists.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import { readPrefs, type Prefs } from '../lib/prefs.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Section } from '../lib/types.js';
 import type { AuthResult, Env, Provider, Session } from '../ports/index.js';
 import { CloudLists } from './cloudLists.svelte.js';
-import { ListStore, type ListModel } from './lists.svelte.js';
+import { LegacyMove } from './legacyMove.svelte.js';
+import { ListStore, type ListModel, type MovedList } from './lists.svelte.js';
 import { SharedView } from './sharedView.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -54,6 +56,10 @@ const DEFAULT_HOME = '#/roll/std';
 /** How often the index, an account list page and a share page re-read the account's
  *  lists, and the relative times move. */
 export const LIST_POLL_MS = 45_000;
+
+/** The longest a sign-out waits for the account's buffered writes: a write that
+ *  hangs must never keep a reader signed in. */
+export const SIGN_OUT_WAIT_MS = 5_000;
 
 /** What `dhloot.prefs.v1` holds, whole: the tables view and the print
  *  layout (docs/specs/STATE.md). */
@@ -178,6 +184,14 @@ export class AppState {
   readonly cloudLists: CloudLists | null;
   /** The list behind the open share link; null in a build with no sign-in configured. */
   readonly sharedView: SharedView | null;
+  /** The move of this browser's lists into the account; null with no sign-in configured. */
+  readonly legacyMove: LegacyMove | null;
+  /**
+   * Whether browser lists may be written: before the legacy write cutoff, read once
+   * at load (a tab open across the midnight keeps its value). Always true in a
+   * build with no sign-in configured: it has no account to move into.
+   */
+  readonly legacyWritable: boolean;
   /** The clock the relative times read: moved every 45 s and when the tab is shown again. */
   now = $state(Date.now());
   /** True while «Сохранить себе» copies a share link's list. */
@@ -330,6 +344,7 @@ export class AppState {
   #stopRouter: (() => void) | null = null;
   #stopListWatch: (() => void) | null = null;
   #stopAuth: (() => void) | null = null;
+  #stopHidden: (() => void) | null = null;
   /* The account sync (docs/specs/STATE.md, "Account preferences"): whether
      `#watchAccount` is listening, the user whose row was last pulled, how
      many local edits there have been (a pull that sees it move drops its
@@ -369,6 +384,8 @@ export class AppState {
     this.lists = new ListStore(env, say, () => this.t);
     this.cloudLists = env.cloud ? new CloudLists(env.cloud.lists, say, () => this.t) : null;
     this.sharedView = env.cloud ? new SharedView(env.cloud.shares) : null;
+    this.legacyMove = env.cloud ? new LegacyMove(this, () => this.user?.userId ?? null) : null;
+    this.legacyWritable = !env.cloud || legacyWritable(env.clock.now());
 
     /* A bare address opens the pinned section - but only at boot, and only a
        bare one: a link to a record or a shared list must not be overridden by
@@ -424,12 +441,19 @@ export class AppState {
       this.#applySource();
       this.#expand();
     });
-    this.#stopListWatch = this.lists.watch();
+    /* A list another tab moved leaves this one; its open page follows it. */
+    this.#stopListWatch = this.lists.watch((moved) => {
+      this.followMoved(moved);
+    });
     this.#watchAccount();
     if (this.cloudLists) {
       this.#listPoll = setInterval(() => {
         this.#pollLists();
       }, LIST_POLL_MS);
+      /* A hidden or closing tab sends the account's buffered writes at once. */
+      this.#stopHidden = this.env.page.onHidden(() => {
+        void this.cloudLists?.flushNow();
+      });
     }
     return () => {
       this.stop();
@@ -458,7 +482,7 @@ export class AppState {
       if (!this.user) return;
       if (this.#stale) this.#saveAccount();
       else void this.#pull();
-      void this.cloudLists?.refresh();
+      void this.cloudLists?.refresh().then(() => this.#listsReady());
     });
     this.#stopAuth = () => {
       live = false;
@@ -510,13 +534,69 @@ export class AppState {
     this.#prefsFor = s.userId;
     this.#stale = false;
     void this.#pull();
+    /* Another user's move said nothing about this one's. */
+    this.legacyMove?.reset();
     const lists = this.cloudLists;
     if (lists) {
       lists.clear();
-      void lists.load().then(() => {
-        this.#runPending();
-      });
+      void lists.load().then(() => this.#listsReady());
     }
+  }
+
+  /* The account's lists were read: the move runs when it is due, then the
+     action a sign-in left. The move first, so the action never runs beside
+     it (docs/specs/FEATURES.md, "Account and browser lists"). */
+  async #listsReady(): Promise<void> {
+    const id = this.user?.userId;
+    if (id && this.legacyMove) await this.legacyMove.runIfDue(id);
+    this.#runPending();
+  }
+
+  /** «Повторить» after a failed read of the account: reads again, then runs the move. */
+  async retryLists(): Promise<void> {
+    await this.cloudLists?.load();
+    await this.#listsReady();
+  }
+
+  /**
+   * Whether a signed-in reader's browser lists wait for the move: from sign-in until a
+   * run ends with nothing left (or finds the lists another account's). They are
+   * read-only and cannot be deleted meanwhile (docs/DECISIONS.md, 2026-09-26,
+   * "Browser lists are read-only while the move is due").
+   */
+  get moveDue(): boolean {
+    return !!this.user && !!this.legacyMove && this.legacyMove.status !== 'done';
+  }
+
+  /** Whether a browser list may be edited now: before the cutoff, and not while the move is due. */
+  get localWritable(): boolean {
+    return this.legacyWritable && !this.moveDue;
+  }
+
+  /**
+   * Moves the address of a browser list's open page to the account list it moved into:
+   * the list the page holds (`openList`), the `#/lists/<id>` on screen, or a `#/l/`
+   * payload that matches a removed list. `replace`, so a waiting action is kept.
+   */
+  followMoved(removed: readonly MovedList[]): void {
+    if (!removed.length) return;
+    const into = (id: string): string | undefined =>
+      removed.find((m) => m.list.id === id)?.accountId;
+    const r = this.route;
+    let to = this.openList ? into(this.openList) : undefined;
+    if (!to && r.kind === 'storedList') to = into(r.listId);
+    if (!to && r.kind === 'sharedList' && !r.packed) {
+      const knows = (id: string): boolean => this.index?.byId.has(id) ?? false;
+      const mine = findListByPayload(
+        removed.map((m) => m.list),
+        r.payload,
+        knows
+      );
+      if (mine) to = into(mine.id);
+    }
+    if (!to) return;
+    this.clearOpenList();
+    this.replace(storedListHash(to));
   }
 
   #listsSignedOut(): void {
@@ -530,7 +610,9 @@ export class AppState {
     if (this.route.kind === 'share') void this.sharedView?.refresh();
   }
 
-  /* The index and an account list page re-read while they are on screen. */
+  /* The index and an account list page re-read while they are on screen; a
+     failed first read, or a move the network stopped, is retried on every
+     route, so the browser's lists move once the network returns. */
   #pollLists(): void {
     this.now = Date.now();
     this.#refreshShared();
@@ -540,7 +622,8 @@ export class AppState {
     const shown =
       (r.kind === 'section' && r.section === 'lists') ||
       (r.kind === 'storedList' && lists.get(r.listId) !== undefined);
-    if (shown) void lists.refresh();
+    const retry = lists.status === 'error' || this.legacyMove?.status === 'failed';
+    if (shown || retry) void lists.refresh().then(() => this.#listsReady());
   }
 
   /**
@@ -594,12 +677,36 @@ export class AppState {
     return r;
   }
 
+  /**
+   * The account page's sign-out: the account's buffered writes are sent
+   * first, for at most `SIGN_OUT_WAIT_MS`; a write that did not land is lost,
+   * as a sign-out loses it.
+   */
+  async signOut(scope: 'local' | 'global' = 'local'): Promise<AuthResult> {
+    const cloud = this.env.cloud;
+    if (!cloud) return { ok: false, error: 'failed' };
+    const lists = this.cloudLists;
+    if (lists) {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const waited = new Promise<void>((done) => {
+        timer = setTimeout(done, SIGN_OUT_WAIT_MS);
+      });
+      await Promise.race([lists.flushNow(), waited]);
+      clearTimeout(timer);
+    }
+    return cloud.auth.signOut(scope);
+  }
+
   /* Waits for a user and the account's lists, and for a packed `#/l/`
      address to expand. */
   #runPending(): void {
     const action = this.#pending;
     const lists = this.cloudLists;
     if (!action || !this.user || lists?.status !== 'ready') return;
+    /* The move settles first - it has not run yet (`idle`) or runs now -
+       and `#listsReady` runs this again when it ends. */
+    const move = this.legacyMove?.status;
+    if (move === 'idle' || move === 'moving') return;
     if (action.do === 'addToList') {
       this.#pending = null;
       /* Only the bar's menu acts on the ticks; a card's acts on its record. */
@@ -619,7 +726,8 @@ export class AppState {
       void this.saveShareCopy(r.token);
       return;
     }
-    if (r.kind !== 'sharedList') return;
+    /* After the cutoff a `#/l/` address draws the retired page: nothing to save. */
+    if (r.kind !== 'sharedList' || !this.legacyWritable) return;
     const d = decodeList(r.payload, (id) => this.index?.byId.has(id) ?? false);
     if (d) this.saveCopyOf(d);
   }
@@ -642,6 +750,12 @@ export class AppState {
     this.cloning = true;
     const id = cloud.lists.newId();
     try {
+      /* The account must hold every buffered write first: the read-back
+         below waits while a write is buffered. */
+      if (!(await lists.flushNow())) {
+        this.say(this.t.cloneFailed, { error: true });
+        return;
+      }
       const r = await cloud.shares.clone(token, id);
       if (!r.ok) {
         const t = this.t;
@@ -653,6 +767,8 @@ export class AppState {
       await lists.load();
     } finally {
       this.cloning = false;
+      /* A move skipped for the copy runs now. */
+      void this.#listsReady();
     }
     const t = this.t;
     const name = lists.get(id)?.name ?? this.sharedView?.shared?.list.name ?? '';
@@ -755,6 +871,8 @@ export class AppState {
     this.#stopListWatch = null;
     this.#stopAuth?.();
     this.#stopAuth = null;
+    this.#stopHidden?.();
+    this.#stopHidden = null;
     /* A timer left running past the listeners it would otherwise update is a
        leak of the same kind `#stopRouter`/`#stopListWatch` already guard
        against. */
@@ -988,7 +1106,8 @@ export class AppState {
    */
   #expand(): void {
     const r = this.route;
-    if (r.kind !== 'sharedList' || !r.packed) return;
+    /* After the cutoff a packed link is never unpacked: it draws the retired page. */
+    if (r.kind !== 'sharedList' || !r.packed || !this.legacyWritable) return;
     const { payload } = r;
     const stillHere = (): boolean => {
       const cur = this.route;

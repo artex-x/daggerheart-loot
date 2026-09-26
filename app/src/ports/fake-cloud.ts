@@ -7,8 +7,12 @@
 
 import {
   entryOrder,
+  type EntryPatch,
   type EntryRow,
+  type ListOp,
+  type ListPatch,
   type ListRow,
+  type NewListRow,
   type ShareAudience,
   type SharedRow,
   type ShareRow
@@ -21,8 +25,11 @@ import type {
   AuthRedirect,
   CloudPort,
   Identity,
+  ListOpResult,
   ListRepository,
   ListWrite,
+  ListWrites,
+  MoveWrite,
   PreferencesPort,
   Session,
   ShareMade,
@@ -41,8 +48,18 @@ export interface FakeCloudOptions {
   limits?: { lists?: number; entries?: number };
 }
 
-/** The fake, plus the test build's failure switch; the switch is not part of `CloudPort`. */
-export type FakeCloud = CloudPort & { setOffline(on: boolean): void };
+/** The fake, plus the test build's switches and counters, which are not part of
+ *  `CloudPort`. */
+export type FakeCloud = CloudPort & {
+  setOffline(on: boolean): void;
+  /** `true`: every `apply` call answers `fault`; a function: a call answers `fault` while
+   *  any of its writes matches, as a write that alone fails the call; `false`: off. */
+  setFault(match: boolean | ((op: ListOp) => boolean)): void;
+  /** The `apply` calls answered since the port was made, faulted ones included. */
+  writeCount(): number;
+  /** The writes inside the `apply` calls that were applied. */
+  opCount(): number;
+};
 
 /** The string the production-bundle guard looks for; renaming it without the
  *  guard makes the guard fail, not pass. */
@@ -77,7 +94,8 @@ function seedLists(lists: readonly SeedList[], boot: number): Held[] {
       player_note: l.note ?? '',
       gm_note: l.hnote ?? '',
       created_at: iso(boot - l.createdAgoMs),
-      updated_at: iso(boot - l.editedAgoMs)
+      updated_at: iso(boot - l.editedAgoMs),
+      legacy_fingerprint: null
     },
     entries: l.entries.map((e) => ({
       id: e.id,
@@ -93,15 +111,82 @@ function seedLists(lists: readonly SeedList[], boot: number): Held[] {
   }));
 }
 
+/** A moved list's text as `move_legacy_list` reads it. */
+interface Canonical {
+  name?: string;
+  ids: string[];
+  meta?: Record<string, { qty?: number; gold?: number; note?: string; hnote?: string }>;
+  money?: 'bag' | 'coin';
+  note?: string;
+  hnote?: string;
+}
+
+const ID = /^[A-Za-z0-9_-]{1,64}$/;
+const chars = (s: string): number => Array.from(s).length;
+const textUpTo = (v: unknown, max: number): boolean => typeof v === 'string' && chars(v) <= max;
+const whole = (v: unknown, lo: number, hi: number): boolean =>
+  typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
+
+/* The checks `move_legacy_list` makes; null where it raises `22023`. */
+function canonicalOf(text: string): Canonical | null {
+  let v: unknown;
+  try {
+    v = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  const o = v as Record<string, unknown>;
+  const keys = ['name', 'ids', 'meta', 'money', 'note', 'hnote'];
+  if (Object.keys(o).some((k) => !keys.includes(k))) return null;
+  if ('name' in o && !textUpTo(o['name'], 200)) return null;
+  if ('money' in o && o['money'] !== 'bag' && o['money'] !== 'coin') return null;
+  if ('note' in o && !textUpTo(o['note'], 4000)) return null;
+  if ('hnote' in o && !textUpTo(o['hnote'], 4000)) return null;
+  const ids = o['ids'];
+  if (!Array.isArray(ids) || ids.length > 5000) return null;
+  if (!ids.every((id) => typeof id === 'string' && ID.test(id))) return null;
+  if (new Set(ids).size !== ids.length) return null;
+  const meta = o['meta'];
+  if ('meta' in o) {
+    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return null;
+    for (const [key, m] of Object.entries(meta)) {
+      if (!ids.includes(key) || !m || typeof m !== 'object' || Array.isArray(m)) return null;
+      const e = m as Record<string, unknown>;
+      if (Object.keys(e).some((k) => !['qty', 'gold', 'note', 'hnote'].includes(k)))
+        return null;
+      if ('qty' in e && !whole(e['qty'], 1, 99)) return null;
+      if ('gold' in e && !whole(e['gold'], 1, 99999)) return null;
+      if ('note' in e && !textUpTo(e['note'], 4000)) return null;
+      if ('hnote' in e && !textUpTo(e['hnote'], 4000)) return null;
+    }
+  }
+  return o as unknown as Canonical;
+}
+
+/* FNV-1a over the text, repeated to the 64 hex characters of a SHA-256: the
+   fake never meets the database, so its fingerprint only has to be stable. */
+function fingerprint(text: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(16).padStart(8, '0').repeat(8);
+}
+
 /** A share as the fake holds it: the row and its list. */
 interface HeldShare extends ShareRow {
   listId: string;
 }
 
-const OK: ListWrite = { ok: true };
-const NETWORK: ListWrite = { ok: false, error: 'network' };
-const REFUSED: ListWrite = { ok: false, error: 'refused' };
-const limited = (key: string, value: number): ListWrite => ({
+const OK: Extract<ListWrite, { ok: true }> = { ok: true };
+const NETWORK: Extract<ListWrite, { error: 'network' }> = { ok: false, error: 'network' };
+const REFUSED: Extract<ListWrite, { error: 'refused' }> = { ok: false, error: 'refused' };
+/* `P0002` in `apply_list_writes`: the row is deleted or not the caller's. */
+const GONE: ListOpResult = { ok: false, error: 'gone' };
+const FAULT: ListWrites = { ok: false, error: 'fault' };
+const limited = (key: string, value: number): Extract<ListWrite, { error: 'limit' }> => ({
   ok: false,
   error: 'limit',
   key,
@@ -228,7 +313,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   };
   /* One list's new entries: an id already there is skipped; a record already
      in the list or the entry limit refuses the whole call. */
-  const insertEntries = (h: Held, entries: EntryRow[]): ListWrite => {
+  const insertEntries = (h: Held, entries: EntryRow[]): ListOpResult => {
     const fresh = entries.filter((e) => !h.entries.some((x) => x.id === e.id));
     if (!fresh.length) return OK;
     const keys = new Set(h.entries.map((e) => e.item_key));
@@ -243,12 +328,11 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     h.row.updated_at = stamp();
     return OK;
   };
-  /* Every list write goes through here: offline answers `network`, signed
-     out `refused`. */
+  /* Every share write goes through here: offline and signed out answer
+     `network`, as the real port reads a lapsed session. */
   const write = (run: (mine: Held[]) => ListWrite): Promise<ListWrite> => {
-    if (offline) return Promise.resolve(NETWORK);
-    const mine = own();
-    return Promise.resolve(mine ? run(mine) : REFUSED);
+    const mine = offline ? null : own();
+    return Promise.resolve(mine ? run(mine) : NETWORK);
   };
   const find = (mine: Held[], id: string): Held | undefined =>
     mine.find((h) => h.row.id === id);
@@ -271,6 +355,137 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     created_at: iso(boot),
     revoked_at: null
   }));
+  /* The `apply` calls answered and the writes applied, and the fault switch. */
+  let requests = 0;
+  let applied = 0;
+  let fault: boolean | ((op: ListOp) => boolean) = false;
+
+  /* One write of `apply_list_writes`, as the function applies it: a refused
+     write changes nothing, a refused create leaves no list. */
+  const createList = (mine: Held[], list: NewListRow, entries: EntryRow[]): ListOpResult => {
+    const h = find(mine, list.id);
+    if (h) return insertEntries(h, entries);
+    if ([...lists.values()].some((all) => find(all, list.id))) return REFUSED;
+    if (mine.length >= maxLists) return limited('lists_per_owner', maxLists);
+    const at = stamp();
+    const made: Held = {
+      row: { ...list, created_at: at, updated_at: at, legacy_fingerprint: null },
+      entries: []
+    };
+    const r = insertEntries(made, entries);
+    if (r.ok) mine.push(made);
+    return r;
+  };
+  const updateList = (mine: Held[], id: string, patch: ListPatch): ListOpResult => {
+    if (!Object.keys(patch).length) return OK;
+    const h = find(mine, id);
+    if (!h) return GONE;
+    h.row = { ...h.row, ...patch, updated_at: stamp() };
+    return OK;
+  };
+  const updateEntry = (mine: Held[], entryId: string, patch: EntryPatch): ListOpResult => {
+    if (!Object.keys(patch).length) return OK;
+    for (const h of mine) {
+      const at = h.entries.findIndex((e) => e.id === entryId);
+      if (at < 0) continue;
+      h.entries[at] = { ...(h.entries[at] as EntryRow), ...patch };
+      h.row.updated_at = stamp();
+      return OK;
+    }
+    return GONE;
+  };
+  const removeEntries = (mine: Held[], entryIds: readonly string[]): ListOpResult => {
+    for (const h of mine) {
+      const kept = h.entries.filter((e) => !entryIds.includes(e.id));
+      if (kept.length === h.entries.length) continue;
+      h.entries = kept;
+      h.row.updated_at = stamp();
+    }
+    return OK;
+  };
+  const reorder = (mine: Held[], listId: string, entryIds: readonly string[]): ListOpResult => {
+    const h = find(mine, listId);
+    if (!h) return GONE;
+    const have = new Set(h.entries.map((e) => e.id));
+    const same =
+      entryIds.length === have.size &&
+      new Set(entryIds).size === entryIds.length &&
+      entryIds.every((id) => have.has(id));
+    if (!same) return REFUSED;
+    h.entries = h.entries.map((e) => ({ ...e, position: entryIds.indexOf(e.id) }));
+    h.row.updated_at = stamp();
+    return OK;
+  };
+  const removeList = (mine: Held[], id: string): ListOpResult => {
+    const at = mine.findIndex((h) => h.row.id === id);
+    if (at >= 0) {
+      mine.splice(at, 1);
+      shareRows = shareRows.filter((sh) => sh.listId !== id);
+    }
+    return OK;
+  };
+  const applyOne = (mine: Held[], op: ListOp): ListOpResult => {
+    switch (op.op) {
+      case 'create':
+        return createList(mine, op.list, op.entries);
+      case 'update':
+        return updateList(mine, op.id, op.patch);
+      case 'remove':
+        return removeList(mine, op.id);
+      case 'add': {
+        const h = find(mine, op.list_id);
+        return h ? insertEntries(h, op.entries) : GONE;
+      }
+      case 'update_entry':
+        return updateEntry(mine, op.id, op.patch);
+      case 'remove_entries':
+        return removeEntries(mine, op.ids);
+      case 'reorder':
+        return reorder(mine, op.list_id, op.ids);
+    }
+  };
+
+  /* `move_legacy_list`: an entry id from its own counter, so the list ids
+     `newId()` hands out stay `uuid(5000)`, `uuid(5001)`, ... whatever the
+     entry counts. */
+  let movedEntries = 0;
+  const moveList = (mine: Held[], id: string, canonical: string): MoveWrite => {
+    const v = canonicalOf(canonical);
+    if (!v) return REFUSED;
+    const fp = fingerprint(canonical);
+    const had = mine.find((h) => h.row.legacy_fingerprint === fp);
+    if (had) return { ok: true, id: had.row.id, inserted: false };
+    if (anyList(id)) return REFUSED;
+    const at = stamp();
+    mine.push({
+      row: {
+        id,
+        name: v.name ?? '',
+        money_mode: v.money ?? 'bag',
+        player_note: v.note ?? '',
+        gm_note: v.hnote ?? '',
+        created_at: at,
+        updated_at: at,
+        legacy_fingerprint: fp
+      },
+      entries: v.ids.map((key, i) => {
+        const m = v.meta?.[key] ?? {};
+        return {
+          id: uuid(7000 + movedEntries++),
+          item_key: key,
+          source: 'official',
+          snapshot: null,
+          position: i,
+          quantity: m.qty ?? 1,
+          price_coins: m.gold ?? null,
+          player_note: m.note ?? '',
+          gm_note: m.hnote ?? ''
+        };
+      })
+    });
+    return { ok: true, id, inserted: true };
+  };
+
   const listRepo: ListRepository = {
     newId: () => uuid(made++),
     list() {
@@ -284,79 +499,28 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         }))
       });
     },
-    create: (list, entries) =>
-      write((mine) => {
-        let h = find(mine, list.id);
-        if (!h) {
-          if ([...lists.values()].some((all) => find(all, list.id))) return REFUSED;
-          if (mine.length >= maxLists) return limited('lists_per_owner', maxLists);
-          const at = stamp();
-          h = { row: { ...list, created_at: at, updated_at: at }, entries: [] };
-          mine.push(h);
-        }
-        return insertEntries(h, entries);
-      }),
-    update: (id, patch) =>
-      write((mine) => {
-        const h = find(mine, id);
-        if (h) h.row = { ...h.row, ...patch, updated_at: stamp() };
-        return OK;
-      }),
-    addEntries: (listId, entries) =>
-      write((mine) => {
-        const h = find(mine, listId);
-        return h ? insertEntries(h, entries) : REFUSED;
-      }),
-    updateEntry: (entryId, patch) =>
-      write((mine) => {
-        for (const h of mine) {
-          const at = h.entries.findIndex((e) => e.id === entryId);
-          if (at < 0) continue;
-          h.entries[at] = { ...(h.entries[at] as EntryRow), ...patch };
-          h.row.updated_at = stamp();
-        }
-        return OK;
-      }),
-    removeEntries: (entryIds) =>
-      write((mine) => {
-        for (const h of mine) {
-          const kept = h.entries.filter((e) => !entryIds.includes(e.id));
-          if (kept.length === h.entries.length) continue;
-          h.entries = kept;
-          h.row.updated_at = stamp();
-        }
-        return OK;
-      }),
-    reorder: (listId, entryIds) =>
-      write((mine) => {
-        const h = find(mine, listId);
-        if (!h) return REFUSED;
-        const have = new Set(h.entries.map((e) => e.id));
-        const same =
-          entryIds.length === have.size &&
-          new Set(entryIds).size === entryIds.length &&
-          entryIds.every((id) => have.has(id));
-        if (!same) return REFUSED;
-        h.entries = h.entries.map((e) => ({ ...e, position: entryIds.indexOf(e.id) }));
-        h.row.updated_at = stamp();
-        return OK;
-      }),
-    remove: (id) =>
-      write((mine) => {
-        const at = mine.findIndex((h) => h.row.id === id);
-        if (at >= 0) {
-          mine.splice(at, 1);
-          shareRows = shareRows.filter((sh) => sh.listId !== id);
-        }
-        return OK;
-      })
+    apply(ops) {
+      /* The real port makes no call for no writes, offline or signed out too. */
+      if (!ops.length) return Promise.resolve({ ok: true, results: [] });
+      const mine = offline ? null : own();
+      if (!mine) return Promise.resolve(NETWORK);
+      requests++;
+      if (fault === true || (fault && ops.some(fault))) return Promise.resolve(FAULT);
+      applied += ops.length;
+      return Promise.resolve({ ok: true, results: ops.map((op) => applyOne(mine, op)) });
+    },
+    /* Offline and signed out answer `network`, as the real port reads `28000`;
+       the count limits are skipped, as the RPC skips them. */
+    move(id, canonical) {
+      const mine = offline ? null : own();
+      return Promise.resolve(mine ? moveList(mine, id, canonical) : NETWORK);
+    }
   };
 
   let shared = 0;
   const shareWrite = (run: (mine: Held[]) => ShareMade): Promise<ShareMade> => {
-    if (offline) return Promise.resolve({ ok: false, error: 'network' });
-    const mine = own();
-    return Promise.resolve(mine ? run(mine) : { ok: false, error: 'refused' });
+    const mine = offline ? null : own();
+    return Promise.resolve(mine ? run(mine) : NETWORK);
   };
   const newShare = (listId: string, audience: ShareAudience): ShareMade => {
     shared++;
@@ -461,7 +625,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
             player_note: p.list.player_note,
             gm_note: p.list.gm_note ?? '',
             created_at: at,
-            updated_at: at
+            updated_at: at,
+            legacy_fingerprint: null
           },
           entries: p.entries.map((e) => ({ ...e, id: uuid(made++), gm_note: e.gm_note ?? '' }))
         });
@@ -476,7 +641,12 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     shares: shareRepo,
     setOffline(on) {
       offline = on;
-    }
+    },
+    setFault(match) {
+      fault = match;
+    },
+    writeCount: () => requests,
+    opCount: () => applied
   };
 }
 

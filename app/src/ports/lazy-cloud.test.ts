@@ -100,16 +100,19 @@ describe('lazyCloud', () => {
       player_note: '',
       gm_note: ''
     };
-    const ok = { ok: true };
-    expect(await lists.create(row, [])).toEqual(ok);
-    expect(await lists.update(uuid(7000), { name: 'Клад' })).toEqual(ok);
-    expect(await lists.addEntries(uuid(7000), [e])).toEqual(ok);
-    expect(await lists.updateEntry(uuid(7001), { quantity: 2 })).toEqual(ok);
-    expect(await lists.reorder(uuid(7000), [uuid(7001)])).toEqual(ok);
-    expect(await lists.removeEntries([uuid(7001)])).toEqual(ok);
+    expect(
+      await lists.apply([
+        { op: 'create', list: row, entries: [] },
+        { op: 'add', list_id: uuid(7000), entries: [e] }
+      ])
+    ).toEqual({ ok: true, results: [{ ok: true }, { ok: true }] });
     const read = await lists.list();
-    expect(read.ok && read.lists.map((l) => l.name)).toEqual(['Список второго ГМа', 'Клад']);
-    expect(await lists.remove(uuid(7000))).toEqual(ok);
+    expect(read.ok && read.lists.map((l) => l.name)).toEqual(['Список второго ГМа', 'К']);
+    expect(await lists.move(uuid(7002), '{"ids":[],"name":"Перенос"}')).toEqual({
+      ok: true,
+      id: uuid(7002),
+      inserted: true
+    });
     expect(load).toHaveBeenCalledOnce();
   });
 
@@ -145,18 +148,8 @@ describe('lazyCloud', () => {
     expect(await prefs.save({ view: 'grid' })).toBe(false);
     expect(await lists.list()).toEqual({ ok: false });
     const unsent = { ok: false, error: 'network' };
-    expect(
-      await lists.create(
-        { id: 'x', name: '', money_mode: 'bag', player_note: '', gm_note: '' },
-        []
-      )
-    ).toEqual(unsent);
-    expect(await lists.update('x', {})).toEqual(unsent);
-    expect(await lists.addEntries('x', [])).toEqual(unsent);
-    expect(await lists.updateEntry('x', {})).toEqual(unsent);
-    expect(await lists.removeEntries([])).toEqual(unsent);
-    expect(await lists.reorder('x', [])).toEqual(unsent);
-    expect(await lists.remove('x')).toEqual(unsent);
+    expect(await lists.apply([{ op: 'remove', id: 'x' }])).toEqual(unsent);
+    expect(await lists.move('x', '{}')).toEqual(unsent);
     expect(await shares.list('x')).toEqual({ ok: false });
     expect(await shares.read('t')).toEqual({ ok: false });
     expect(await shares.create('x', 'player')).toEqual(unsent);

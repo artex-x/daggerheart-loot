@@ -50,6 +50,12 @@
   /* The danger colour as text on the dark ground: a destructive button's
      label, an error line, an account list's failed save. */
   --danger-text: #f0a49d;
+  /* The warning box: the storage notice and the move's failed status - the
+     danger colour at the tints `StorageNotice.svelte` has always drawn. */
+  --warn-bg: rgb(224 104 95 / 9%);
+  --warn-line: rgb(224 104 95 / 30%);
+  --warn-text: #e0b6b1;
+  --warn-strong: #f5c0ba;
 
   /* The badge's own ground - moved here from `Badge.svelte`, where it
      was the base rule's `background` alone; every variant sits on it. */

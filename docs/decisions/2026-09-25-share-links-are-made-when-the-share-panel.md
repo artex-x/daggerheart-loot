@@ -10,7 +10,7 @@
   replaced by deleting it and making a new one. A link is `#/s/<token>`;
   the shared page learns that the reader owns the list from the owner's
   `list_shares` row, not from the projection.
-  Behaviour: `docs/specs/FEATURES.md`, "Account lists".
+  Behaviour: `docs/specs/FEATURES.md`, "Account and browser lists".
 - Rejected: a row with no link offering «Скопировать» that makes the link
   on its first press (one more state per row); making a missing link again
   on every open (a deleted link would come back by itself); `list_id` in

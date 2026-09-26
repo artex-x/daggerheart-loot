@@ -2,7 +2,9 @@
   /* The storage warning, off `storageWarning`/`hideWarn` (app.js 2872-2886,
    * 4175). Two live forms in one slot: storage does not work at all (no
    * dismiss - nothing would remember it), or it works and the "lists live
-   * only in this browser" notice has not been dismissed yet.
+   * only in this browser" notice has not been dismissed yet. After the legacy
+   * write cutoff a third form, read-only and not dismissable, takes the
+   * second's place.
    *
    * Extracted here on its second use - the lists index and the list page
    * both draw it in the same slot, and nowhere else. */
@@ -15,6 +17,10 @@
   const { app }: Props = $props();
 
   const t = $derived(app.t);
+  /* The move sentences are for a browser no account owns yet: once one does,
+     the reader signed out here may be someone else, whose sign-in moves
+     nothing (docs/specs/FEATURES.md, "Account and browser lists"). */
+  const unclaimed = $derived(app.env.cloud !== null && app.lists.migrated.owner === undefined);
 
   function dismiss(): void {
     app.hideWarn();
@@ -34,6 +40,13 @@
        remember a dismissal against that would survive the next reload
        finding the same bad value again. -->
   <div class="warn"><b>{t.badStorageTitle}</b>{' ' + t.badStorage}</div>
+{:else if !app.legacyWritable}
+  <!-- After the cutoff: read-only, and nothing to dismiss - the lists stay
+       read-only whatever the reader does here. -->
+  <div class="warn">
+    <b>{t.localReadOnlyTitle}</b>
+    {#if unclaimed}<p>{t.localReadOnly}</p>{/if}
+  </div>
 {:else if !app.warnHidden}
   <!-- The live `render()` builds this notice fresh on a language switch, and
        `restoreOpen` (app.js 3769) only re-applies a person's fold/unfold to
@@ -59,6 +72,7 @@
       <details>
         <summary><b>{t.localOnlyTitle}</b><i>{t.readMore}</i></summary>
         <p>{t.localOnly}</p>
+        {#if unclaimed}<p>{t.localOnlyMove}</p>{/if}
       </details>
       <button
         type="button"
@@ -78,16 +92,16 @@
     padding: 11px 14px;
     border-radius: var(--r-sm);
     line-height: 1.5;
-    background: rgb(224 104 95 / 9%);
-    border: 1px solid rgb(224 104 95 / 30%);
-    color: #e0b6b1;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-line);
+    color: var(--warn-text);
     font-size: 13px;
     position: relative;
     margin-bottom: 16px;
   }
 
   .warn b {
-    color: #f5c0ba;
+    color: var(--warn-strong);
     font-weight: 650;
   }
 
@@ -114,7 +128,7 @@
   .warn summary i {
     font-style: normal;
     font-size: 12px;
-    color: #e0b6b1;
+    color: var(--warn-text);
     opacity: 0.75;
     text-decoration: underline;
   }

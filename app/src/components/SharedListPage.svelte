@@ -5,7 +5,7 @@
      branch), or `#/s/<token>`, an account list's share link, read through
      `app.sharedView` (mounted by `App.svelte`). Both are mounted only once
      `app.index` is confirmed non-null. docs/specs/FEATURES.md, "Lists" and
-     "Account lists". */
+     "Account and browser lists". */
   import { onDestroy, untrack } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
@@ -176,7 +176,7 @@
           variant="primary"
           on={prompting}
           expanded={prompting || undefined}
-          disabled={app.cloning}
+          disabled={app.cloning || app.legacyMove?.status === 'moving'}
           onclick={saveShared}><Icon name="plus" />{t.saveShared}</Button
         >
       </Actions>

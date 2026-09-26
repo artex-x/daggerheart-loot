@@ -3,22 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>B5.3 account menu and display settings</title>
+    <title>B5b.1 account menu and display settings</title>
     <link rel="stylesheet" href="mock.css" />
   </head>
   <body>
     <div class="mockbar">
       <h1>
-        B5.3 - the account menu, the Display section of `#/account`, the bar after the cutoff
+        B5b.1 (planned as B5.3) - the account menu, the Display section of `#/account`, the bar
+        after the cutoff
       </h1>
       <p>
-        Owner, 2026-09-26: the header's account control opens a menu «Настройки отображения»,
-        «Мои списки», «Мои предметы» (R7), «Выйти»; the Lists tab leaves the bar at the cutoff;
-        «Настройки отображения» is the smallest form over the settings the account already
-        syncs. The control (the same 38px circle) becomes a button with `aria-haspopup="menu"`;
-        the menu (NEW) reuses the add-to-list menu's box values, right-aligned under it. Signed
-        out nothing changes («Войти» link). «Настройки отображения» leads to `#/account`, whose
-        first section (NEW) holds the five controls; no new route.
+        Owner, 2026-09-26: the header's account control opens a menu «Аккаунт» (renamed by the
+        owner 2026-09-26 from «Настройки отображения»), «Мои списки», «Мои предметы» (R7),
+        «Выйти»; the Lists tab leaves the bar at the cutoff; the Display section is the smallest
+        form over the settings the account already syncs. The control (the same 38px circle)
+        becomes a button with `aria-haspopup="menu"`; the menu (NEW) reuses the add-to-list
+        menu's box values, right-aligned under it. Signed out nothing changes («Войти» link).
+        «Аккаунт» leads to `#/account`, whose first section (NEW) holds the five controls; no
+        new route.
       </p>
     </div>
 
@@ -34,7 +36,7 @@
               >g</span
             >
             <div class="acctmenu new" role="menu">
-              <a role="menuitem" href="#/account">Настройки отображения</a>
+              <a role="menuitem" href="#/account">Аккаунт</a>
               <a role="menuitem" href="#/lists">Мои списки</a>
               <button role="menuitem">Выйти</button>
             </div>
@@ -64,7 +66,7 @@
         >
         <main class="in">
           <h1 class="page-h">Аккаунт</h1>
-          <p class="page-sub">Способы входа, выход и ваши данные.</p>
+          <p class="page-sub">Отображение, способы входа, выход и ваши данные.</p>
           <div class="panel new" style="margin-bottom: 16px">
             <div class="field">
               <h2 class="lbl">Отображение</h2>

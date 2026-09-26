@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EntryRow } from '../lib/cloudLists.js';
+import type { EntryRow, ListOp } from '../lib/cloudLists.js';
 import { buildIndex, type Loot } from '../lib/data.js';
 import { runCloudContract } from './cloud.contract.js';
 import { fakeCloud, installFakeCloud } from './fake-cloud.js';
@@ -215,6 +215,10 @@ describe("the fake's lists", () => {
     player_note: '',
     gm_note: ''
   });
+  const OK = { ok: true };
+  const OK1 = { ok: true, results: [OK] };
+  const GONE = { ok: false, error: 'gone' };
+  const REFUSED = { ok: false, error: 'refused' };
   const rowsOf = async (port: CloudPort) => {
     const read = await port.lists.list();
     if (!read.ok) throw new Error('the read failed');
@@ -269,26 +273,28 @@ describe("the fake's lists", () => {
     const port = fakeCloud(SEED, 'gm2');
     const { lists } = port;
     const e1 = entry(uuid(7001), 'ci1', 0);
-    expect(await lists.create(newList(uuid(7000), 'Клад'), [e1])).toEqual({ ok: true });
-    expect(await lists.create(newList(uuid(7000), 'Клад'), [e1])).toEqual({ ok: true });
+    const create: ListOp = { op: 'create', list: newList(uuid(7000), 'Клад'), entries: [e1] };
+    expect(await lists.apply([create])).toEqual(OK1);
+    expect(await lists.apply([create])).toEqual(OK1);
     let mine = await rowsOf(port);
     expect(mine.filter((l) => l.id === uuid(7000))).toHaveLength(1);
     const made = Date.parse(mine.find((l) => l.id === uuid(7000))?.updated_at ?? '');
     expect(made).toBeGreaterThanOrEqual(Date.now());
 
+    const add: ListOp = {
+      op: 'add',
+      list_id: uuid(7000),
+      entries: [entry(uuid(7002), 'q1', 1)]
+    };
     expect(
-      await lists.update(uuid(7000), { name: 'Клад дракона', money_mode: 'coin' })
-    ).toEqual({ ok: true });
-    expect(await lists.addEntries(uuid(7000), [entry(uuid(7002), 'q1', 1)])).toEqual({
-      ok: true
-    });
-    expect(await lists.addEntries(uuid(7000), [entry(uuid(7002), 'q1', 1)])).toEqual({
-      ok: true
-    });
-    expect(await lists.updateEntry(uuid(7002), { quantity: 3, gm_note: 'x' })).toEqual({
-      ok: true
-    });
-    expect(await lists.reorder(uuid(7000), [uuid(7002), uuid(7001)])).toEqual({ ok: true });
+      await lists.apply([
+        { op: 'update', id: uuid(7000), patch: { name: 'Клад дракона', money_mode: 'coin' } },
+        add,
+        add,
+        { op: 'update_entry', id: uuid(7002), patch: { quantity: 3, gm_note: 'x' } },
+        { op: 'reorder', list_id: uuid(7000), ids: [uuid(7002), uuid(7001)] }
+      ])
+    ).toEqual({ ok: true, results: [OK, OK, OK, OK, OK] });
     mine = await rowsOf(port);
     const got = mine.find((l) => l.id === uuid(7000));
     expect(got).toMatchObject({ name: 'Клад дракона', money_mode: 'coin' });
@@ -298,96 +304,165 @@ describe("the fake's lists", () => {
     ]);
     expect(Date.parse(got?.updated_at ?? '')).toBeGreaterThan(made);
 
-    expect(await lists.removeEntries([uuid(7001)])).toEqual({ ok: true });
+    expect(await lists.apply([{ op: 'remove_entries', ids: [uuid(7001)] }])).toEqual(OK1);
     expect((await rowsOf(port)).find((l) => l.id === uuid(7000))?.list_entries).toHaveLength(1);
-    expect(await lists.remove(uuid(7000))).toEqual({ ok: true });
+    expect(await lists.apply([{ op: 'remove', id: uuid(7000) }])).toEqual(OK1);
     expect((await rowsOf(port)).map((l) => l.id)).toEqual([uuid(201)]);
   });
 
-  it('leaves an unknown row alone and answers ok, as a database update of no row does', async () => {
+  it('answers gone to an update of an unknown row and ok to its delete', async () => {
     const port = fakeCloud(SEED, 'gm2');
     const before = await rowsOf(port);
-    expect(await port.lists.update(uuid(9), { name: 'x' })).toEqual({ ok: true });
-    expect(await port.lists.updateEntry(uuid(9), { quantity: 2 })).toEqual({ ok: true });
-    expect(await port.lists.removeEntries([uuid(9)])).toEqual({ ok: true });
-    expect(await port.lists.remove(uuid(9))).toEqual({ ok: true });
+    expect(
+      await port.lists.apply([
+        { op: 'update', id: uuid(9), patch: { name: 'x' } },
+        { op: 'update_entry', id: uuid(9), patch: { quantity: 2 } },
+        { op: 'remove_entries', ids: [uuid(9)] },
+        { op: 'remove', id: uuid(9) },
+        { op: 'update', id: uuid(9), patch: {} },
+        { op: 'update_entry', id: uuid(9), patch: {} }
+      ])
+    ).toEqual({ ok: true, results: [GONE, GONE, OK, OK, OK, OK] });
     expect(await rowsOf(port)).toEqual(before);
   });
 
-  it("refuses another user's list, a second entry for one record and a reorder that misses an entry", async () => {
+  it("answers another user's list as gone or refused, and refuses a second entry for one record and a reorder that misses an entry", async () => {
     const port = fakeCloud(SEED, 'gm2');
-    const { lists } = port;
-    expect(await lists.create(newList(uuid(101)), [])).toEqual({
-      ok: false,
-      error: 'refused'
+    expect(
+      await port.lists.apply([
+        { op: 'create', list: newList(uuid(101)), entries: [] },
+        { op: 'add', list_id: uuid(101), entries: [entry(uuid(7003), 'q2', 0)] },
+        { op: 'add', list_id: uuid(201), entries: [entry(uuid(7004), 'q23', 1)] },
+        { op: 'reorder', list_id: uuid(201), ids: [] },
+        { op: 'reorder', list_id: uuid(101), ids: [uuid(1101)] },
+        { op: 'reorder', list_id: uuid(201), ids: [uuid(2101)] }
+      ])
+    ).toEqual({ ok: true, results: [REFUSED, GONE, REFUSED, REFUSED, GONE, OK] });
+  });
+
+  it('refuses a create over the entry limit whole, leaving no list', async () => {
+    const port = fakeCloud(SEED, 'gm2', { limits: { entries: 1 } });
+    const r = await port.lists.apply([
+      {
+        op: 'create',
+        list: newList(uuid(7000)),
+        entries: [entry(uuid(7001), 'ci1', 0), entry(uuid(7002), 'q1', 1)]
+      }
+    ]);
+    expect(r).toEqual({
+      ok: true,
+      results: [{ ok: false, error: 'limit', key: 'entries_per_list', value: 1 }]
     });
-    expect(await lists.addEntries(uuid(101), [entry(uuid(7003), 'q2', 0)])).toEqual({
-      ok: false,
-      error: 'refused'
-    });
-    expect(await lists.addEntries(uuid(201), [entry(uuid(7004), 'q23', 1)])).toEqual({
-      ok: false,
-      error: 'refused'
-    });
-    expect(await lists.reorder(uuid(201), [])).toEqual({ ok: false, error: 'refused' });
-    expect(await lists.reorder(uuid(101), [uuid(1101)])).toEqual({
-      ok: false,
-      error: 'refused'
-    });
-    expect(await lists.reorder(uuid(201), [uuid(2101)])).toEqual({ ok: true });
+    expect((await rowsOf(port)).map((l) => l.id)).toEqual([uuid(201)]);
+  });
+
+  it('applies the writes beside a refused one, in one call', async () => {
+    const port = fakeCloud(SEED, 'gm2');
+    expect(
+      await port.lists.apply([
+        { op: 'update', id: uuid(201), patch: { name: 'a' } },
+        { op: 'reorder', list_id: uuid(201), ids: [] },
+        { op: 'update', id: uuid(201), patch: { player_note: 'b' } }
+      ])
+    ).toEqual({ ok: true, results: [OK, REFUSED, OK] });
+    expect((await rowsOf(port))[0]).toMatchObject({ name: 'a', player_note: 'b' });
   });
 
   it('answers the 51st list and the 101st entry with the limit and its value', async () => {
     const port = fakeCloud(SEED, 'gm2');
     const { lists } = port;
-    for (let n = 0; n < 49; n++) {
-      expect(await lists.create(newList(lists.newId()), [])).toEqual({ ok: true });
-    }
-    expect(await lists.create(newList(lists.newId()), [])).toEqual({
-      ok: false,
-      error: 'limit',
-      key: 'lists_per_owner',
-      value: 50
+    const creates: ListOp[] = Array.from({ length: 49 }, () => ({
+      op: 'create',
+      list: newList(lists.newId()),
+      entries: []
+    }));
+    const made = await lists.apply(creates);
+    expect(made.ok && made.results.every((r) => r.ok)).toBe(true);
+    expect(
+      await lists.apply([{ op: 'create', list: newList(lists.newId()), entries: [] }])
+    ).toEqual({
+      ok: true,
+      results: [{ ok: false, error: 'limit', key: 'lists_per_owner', value: 50 }]
     });
     const hundred = Array.from({ length: 99 }, (_, i) =>
       entry(lists.newId(), 'k' + String(i), i + 1)
     );
-    expect(await lists.addEntries(uuid(201), hundred)).toEqual({ ok: true });
-    expect(await lists.addEntries(uuid(201), [entry(lists.newId(), 'last', 100)])).toEqual({
-      ok: false,
-      error: 'limit',
-      key: 'entries_per_list',
-      value: 100
+    expect(await lists.apply([{ op: 'add', list_id: uuid(201), entries: hundred }])).toEqual(
+      OK1
+    );
+    expect(
+      await lists.apply([
+        { op: 'add', list_id: uuid(201), entries: [entry(lists.newId(), 'last', 100)] }
+      ])
+    ).toEqual({
+      ok: true,
+      results: [{ ok: false, error: 'limit', key: 'entries_per_list', value: 100 }]
     });
   });
 
   it('takes its limits from the options', async () => {
     const { lists } = fakeCloud(SEED, 'gm2', { limits: { lists: 1, entries: 1 } });
-    expect(await lists.create(newList(uuid(7000)), [])).toMatchObject({ error: 'limit' });
-    expect(await lists.addEntries(uuid(201), [entry(uuid(7001), 'q1', 1)])).toMatchObject({
-      key: 'entries_per_list',
-      value: 1
+    expect(
+      await lists.apply([
+        { op: 'create', list: newList(uuid(7000)), entries: [] },
+        { op: 'add', list_id: uuid(201), entries: [entry(uuid(7001), 'q1', 1)] }
+      ])
+    ).toMatchObject({
+      results: [
+        { error: 'limit', key: 'lists_per_owner', value: 1 },
+        { error: 'limit', key: 'entries_per_list', value: 1 }
+      ]
     });
   });
 
-  it('answers network offline and refused signed out, and reads again when online', async () => {
+  it('answers network offline and signed out, and reads again when online', async () => {
     const port = fakeCloud(SEED, 'gm1', { offline: true });
+    const network = { ok: false, error: 'network' };
     expect(await port.lists.list()).toEqual({ ok: false });
-    expect(await port.lists.update(uuid(101), { name: 'x' })).toEqual({
-      ok: false,
-      error: 'network'
-    });
+    expect(
+      await port.lists.apply([{ op: 'update', id: uuid(101), patch: { name: 'x' } }])
+    ).toEqual(network);
     port.setOffline(false);
     expect((await rowsOf(port)).map((l) => l.name)).toContain('Лавка кузнеца');
     port.setOffline(true);
-    expect(await port.lists.remove(uuid(101))).toEqual({ ok: false, error: 'network' });
+    expect(await port.lists.apply([{ op: 'remove', id: uuid(101) }])).toEqual(network);
     const out = fakeCloud(SEED);
-    expect(await out.lists.remove(uuid(101))).toEqual({ ok: false, error: 'refused' });
+    expect(await out.lists.apply([{ op: 'remove', id: uuid(101) }])).toEqual(network);
+    /* No writes make no call, offline or signed out, as the real port. */
+    expect(await port.lists.apply([])).toEqual({ ok: true, results: [] });
+    expect(await out.lists.apply([])).toEqual({ ok: true, results: [] });
+    expect(port.writeCount()).toBe(0);
+  });
+
+  it('counts the calls it answered and the writes it applied', async () => {
+    const port = fakeCloud(SEED, 'gm2');
+    await port.lists.apply([
+      { op: 'update', id: uuid(201), patch: { name: 'a' } },
+      { op: 'update', id: uuid(201), patch: { name: 'b' } }
+    ]);
+    await port.lists.apply([]);
+    expect([port.writeCount(), port.opCount()]).toEqual([1, 2]);
+  });
+
+  it('answers fault while the switch matches, applying nothing, and ends with false', async () => {
+    const port = fakeCloud(SEED, 'gm2');
+    const rename: ListOp = { op: 'update', id: uuid(201), patch: { name: 'a' } };
+    const remove: ListOp = { op: 'remove_entries', ids: [uuid(9)] };
+    port.setFault(true);
+    expect(await port.lists.apply([rename])).toEqual({ ok: false, error: 'fault' });
+    expect([port.writeCount(), port.opCount()]).toEqual([1, 0]);
+    port.setFault((op) => op.op === 'remove_entries');
+    expect(await port.lists.apply([rename, remove])).toEqual({ ok: false, error: 'fault' });
+    expect(await port.lists.apply([rename])).toEqual(OK1);
+    port.setFault(false);
+    expect(await port.lists.apply([rename, remove])).toEqual({ ok: true, results: [OK, OK] });
+    expect([port.writeCount(), port.opCount()]).toEqual([4, 3]);
+    expect((await rowsOf(port))[0]?.name).toBe('a');
   });
 
   it('keeps each port apart, and drops the lists with the account', async () => {
     const one = fakeCloud(SEED, 'gm1');
-    await one.lists.remove(uuid(101));
+    await one.lists.apply([{ op: 'remove', id: uuid(101) }]);
     expect(await rowsOf(fakeCloud(SEED, 'gm1'))).toHaveLength(3);
     await one.auth.deleteAccount();
     await one.auth.signIn('google');
@@ -396,10 +471,111 @@ describe("the fake's lists", () => {
 
   it('holds two edits in one millisecond as two', async () => {
     const port = fakeCloud(SEED, 'gm2');
-    await port.lists.update(uuid(201), { name: 'a' });
+    await port.lists.apply([{ op: 'update', id: uuid(201), patch: { name: 'a' } }]);
     const first = (await rowsOf(port))[0]?.updated_at;
-    await port.lists.update(uuid(201), { name: 'b' });
+    await port.lists.apply([{ op: 'update', id: uuid(201), patch: { name: 'b' } }]);
     expect((await rowsOf(port))[0]?.updated_at).not.toBe(first);
+  });
+});
+
+describe("the fake's move of a browser list", () => {
+  const TEXT =
+    '{"ids":["ci1","q1"],"meta":{"ci1":{"gold":150,"note":"n","qty":2}},"money":"coin","name":"Клад","note":"p"}';
+
+  it('inserts once per text, then answers the first row, with a stable fingerprint', async () => {
+    const port = fakeCloud(SEED, 'gm2');
+    const id = port.lists.newId();
+    expect(await port.lists.move(id, TEXT)).toEqual({ ok: true, id, inserted: true });
+    expect(await port.lists.move(port.lists.newId(), TEXT)).toEqual({
+      ok: true,
+      id,
+      inserted: false
+    });
+    const read = await port.lists.list();
+    const row = read.ok ? read.lists.find((l) => l.id === id) : undefined;
+    expect(row?.legacy_fingerprint).toMatch(/^[0-9a-f]{64}$/);
+    expect(row?.money_mode).toBe('coin');
+    expect(row?.player_note).toBe('p');
+    expect(
+      row?.list_entries.map((e) => [e.item_key, e.quantity, e.price_coins, e.player_note])
+    ).toEqual([
+      ['ci1', 2, 150, 'n'],
+      ['q1', 1, null, '']
+    ]);
+    const other = read.ok ? read.lists.find((l) => l.id !== id) : undefined;
+    expect(other?.legacy_fingerprint).toBeNull();
+  });
+
+  it('keeps the list ids at uuid(5000) and uuid(5001) whatever the entry counts', async () => {
+    const port = fakeCloud(SEED, 'gm1');
+    const many = JSON.stringify({ ids: ['ci1', 'ci2', 'ci3'], name: 'А' });
+    expect(await port.lists.move(port.lists.newId(), many)).toMatchObject({ id: uuid(5000) });
+    expect(await port.lists.move(port.lists.newId(), '{"ids":[],"name":"Б"}')).toMatchObject({
+      id: uuid(5001)
+    });
+    const read = await port.lists.list();
+    const first = read.ok ? read.lists.find((l) => l.id === uuid(5000)) : undefined;
+    expect(first?.list_entries.map((e) => e.id)).toEqual([uuid(7000), uuid(7001), uuid(7002)]);
+  });
+
+  it('moves again as a new row once the first row is deleted', async () => {
+    const port = fakeCloud(SEED, 'gm2');
+    const id = port.lists.newId();
+    await port.lists.move(id, TEXT);
+    await port.lists.apply([{ op: 'remove', id }]);
+    const again = port.lists.newId();
+    expect(await port.lists.move(again, TEXT)).toEqual({ ok: true, id: again, inserted: true });
+  });
+
+  it('skips the count limits, as the RPC does', async () => {
+    const port = fakeCloud(SEED, 'gm2', { limits: { lists: 1, entries: 1 } });
+    const big = JSON.stringify({ ids: ['ci1', 'ci2', 'ci3'], name: 'Много' });
+    expect(await port.lists.move(port.lists.newId(), big)).toMatchObject({ inserted: true });
+  });
+
+  it.each([
+    ['not JSON', 'nope'],
+    ['not an object', '[]'],
+    ['an unknown key', '{"ids":[],"x":1}'],
+    ['no ids', '{"name":"a"}'],
+    ['an id of another form', '{"ids":["a b"]}'],
+    ['a repeated id', '{"ids":["ci1","ci1"]}'],
+    ['a name too long', JSON.stringify({ ids: [], name: 'я'.repeat(201) })],
+    ['an odd money mode', '{"ids":[],"money":"gems"}'],
+    ['a note that is not text', '{"ids":[],"note":5}'],
+    ['a GM note too long', JSON.stringify({ ids: [], hnote: 'x'.repeat(4001) })],
+    ['meta that is not an object', '{"ids":["ci1"],"meta":[]}'],
+    ['meta of an id not in ids', '{"ids":["ci1"],"meta":{"q1":{"qty":2}}}'],
+    ['an entry that is not an object', '{"ids":["ci1"],"meta":{"ci1":1}}'],
+    ['an unknown meta key', '{"ids":["ci1"],"meta":{"ci1":{"x":1}}}'],
+    ['a qty of 0', '{"ids":["ci1"],"meta":{"ci1":{"qty":0}}}'],
+    ['a qty of 1.5', '{"ids":["ci1"],"meta":{"ci1":{"qty":1.5}}}'],
+    ['a gold of 100000', '{"ids":["ci1"],"meta":{"ci1":{"gold":100000}}}'],
+    ['an entry note that is not text', '{"ids":["ci1"],"meta":{"ci1":{"note":1}}}'],
+    [
+      'an entry GM note too long',
+      JSON.stringify({ ids: ['ci1'], meta: { ci1: { hnote: 'x'.repeat(4001) } } })
+    ]
+  ])('refuses a text with %s', async (_what, text) => {
+    const port = fakeCloud(SEED, 'gm2');
+    expect(await port.lists.move(port.lists.newId(), text)).toEqual({
+      ok: false,
+      error: 'refused'
+    });
+  });
+
+  it('refuses an id another list holds, and answers network offline and signed out', async () => {
+    const port = fakeCloud(SEED, 'gm2');
+    expect(await port.lists.move(uuid(101), TEXT)).toEqual({ ok: false, error: 'refused' });
+    port.setOffline(true);
+    expect(await port.lists.move(port.lists.newId(), TEXT)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+    expect(await fakeCloud(SEED).lists.move(uuid(9000), TEXT)).toEqual({
+      ok: false,
+      error: 'network'
+    });
   });
 });
 
@@ -486,7 +662,10 @@ describe("the fake's share links", () => {
 
   it("reads nothing through a removed list's link", async () => {
     const port = fakeCloud(SEED, 'gm1');
-    expect(await port.lists.remove(uuid(101))).toEqual({ ok: true });
+    expect(await port.lists.apply([{ op: 'remove', id: uuid(101) }])).toEqual({
+      ok: true,
+      results: [{ ok: true }]
+    });
     expect(await port.shares.read('player-token-1')).toEqual({ ok: true, shared: null });
   });
 
@@ -510,7 +689,7 @@ describe("the fake's share links", () => {
     });
   });
 
-  it('answers not ok, network and null offline', async () => {
+  it('answers not ok, network and null offline, and network to a write signed out', async () => {
     const port = fakeCloud(SEED, 'gm1', { offline: true });
     const network = { ok: false, error: 'network' };
     expect(await port.shares.list(uuid(101))).toEqual({ ok: false });
@@ -519,10 +698,10 @@ describe("the fake's share links", () => {
     expect(await port.shares.create(uuid(101), 'gm')).toEqual(network);
     expect(await port.shares.revoke(uuid(111))).toEqual(network);
     expect(await port.shares.clone('player-token-1', uuid(9))).toEqual(network);
-    expect(await fakeCloud(SEED).shares.create(uuid(101), 'gm')).toEqual({
-      ok: false,
-      error: 'refused'
-    });
+    const out = fakeCloud(SEED).shares;
+    expect(await out.create(uuid(101), 'gm')).toEqual(network);
+    expect(await out.revoke(uuid(111))).toEqual(network);
+    expect(await out.clone('player-token-1', uuid(9))).toEqual(network);
   });
 });
 
