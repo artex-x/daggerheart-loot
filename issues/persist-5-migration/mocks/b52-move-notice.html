@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B5.2 automatic move: notice and status</title>
+    <link rel="stylesheet" href="mock.css" />
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>
+        B5.2 - the automatic move: the one-time notice, the quiet status, the notice around the
+        date
+      </h1>
+      <p>
+        No button anywhere (owner, 2026-09-26). When a signed-in reader's app loads with browser
+        lists, they move on the reader's behalf. Guard (a): a one-time notice (NEW, dashed
+        purple) between the header and the page, on every route, until «Скрыть». Guard (b): the
+        browser records the first account; another account sees no move. The quiet status (NEW)
+        takes the storage notice's slot at the head of «Этот браузер» on `#/lists` (and on a
+        browser list's page) while a run is in flight, failed or has a refused list. Signed out,
+        today's notice stays and gains one sentence; after the date it is the read-only form.
+        Data: the golden seed `two` and the fake seed `gm1`.
+      </p>
+    </div>
+
+    <div class="frames">
+      <section class="frame">
+        <span class="cap"
+          >A. right after sign-in (`?as=gm1`, seed `two`) - state `#/lists as gm1` (re-seeded:
+          the move settled)</span
+        >
+        <div class="topbar">
+          <a class="brand"
+            ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></a
+          >
+          <span class="acct in">g</span>
+        </div>
+        <div class="tabs">
+          <span>Обычные правила</span><span>Таблицы</span><span class="on">Списки</span
+          ><span>Поиск</span>
+        </div>
+        <div class="move new" role="status" style="margin: 14px auto 0; width: var(--wrap)">
+          <div class="lead">
+            Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона», «Лавка в порту».
+          </div>
+          <button class="btn sm">Скрыть</button>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Списки</h1>
+          <p class="page-sub">Соберите добычу в список и отправьте игрокам одной ссылкой.</p>
+          <div class="panel">
+            <div class="field">
+              <span class="lbl">Новый список</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input class="input" placeholder="Например: клад дракона" />
+                </div>
+                <button class="btn primary">Создать</button>
+              </div>
+            </div>
+          </div>
+          <div class="group">
+            <h2 class="lbl">Ваш аккаунт</h2>
+            <div class="listgrid">
+              <div class="listcard">
+                <a class="listcard-main"
+                  ><div class="listcard-top">
+                    <b>Лавка в порту</b><span class="badge num">0</span>
+                  </div>
+                  <p class="listcard-edited">изменён только что</p>
+                  <p class="listcard-empty">Список пуст</p></a
+                >
+                <div class="listcard-acts"><button class="btn sm danger">Удалить</button></div>
+              </div>
+              <div class="listcard">
+                <a class="listcard-main"
+                  ><div class="listcard-top">
+                    <b>Клад дракона</b><span class="badge num">0</span>
+                  </div>
+                  <p class="listcard-edited">изменён только что</p>
+                  <p class="listcard-empty">Список пуст</p></a
+                >
+                <div class="listcard-acts"><button class="btn sm danger">Удалить</button></div>
+              </div>
+              <div class="listcard">
+                <a class="listcard-main"
+                  ><div class="listcard-top">
+                    <b>Пустой список</b><span class="badge num">0</span>
+                  </div>
+                  <p class="listcard-edited">изменён 1 час назад</p>
+                  <p class="listcard-empty">Список пуст</p></a
+                >
+                <div class="listcard-acts"><button class="btn sm danger">Удалить</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The two browser lists are now account lists (`#/lists/&lt;uuid(5000)&gt;`,
+            `&lt;uuid(5001)&gt;`, newest edit first); the browser group is gone (no lists, no
+            notice, no status). `dhloot.lists.v2` holds `[]`; `dhloot.migrated.v1` holds `owner`
+            uuid(1), both tombstones and both names. The notice stays across pages and reloads
+            until «Скрыть» (state `~ notice dismissed as gm1`). A reader who signed in on
+            `#/i/ci1` sees the same notice there, over the item page.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap"
+          >B. the quiet status in the browser group's slot: moving, failed, attention,
+          foreign</span
+        >
+        <main class="in">
+          <div class="group">
+            <h2 class="lbl">Этот браузер</h2>
+            <div class="move new" data-moving>
+              <div class="lead">Переносим списки в аккаунт...</div>
+            </div>
+            <div class="listgrid">
+              <div class="listcard">
+                <a class="listcard-main"
+                  ><div class="listcard-top">
+                    <b>Клад дракона</b><span class="badge num">0</span>
+                  </div>
+                  <p class="listcard-empty">Список пуст</p></a
+                >
+                <div class="listcard-acts">
+                  <button class="btn sm">Поделиться</button
+                  ><button class="btn sm danger">Удалить</button>
+                </div>
+              </div>
+            </div>
+            <div class="note">
+              `moving`: an RPC per list, then one read-back, then one storage write; the cards
+              stay until the removal. `data-moving` is what the harness's `moveSettled()` waits
+              on. Transient: no golden captures it.
+            </div>
+          </div>
+          <div class="group">
+            <h2 class="lbl">Этот браузер</h2>
+            <div class="move bad new">
+              <div class="lead">
+                Не все списки перенесены: нет связи. Попробуем при следующем открытии.
+              </div>
+            </div>
+            <div class="note">
+              `failed` (a network drop mid-run): what was moved is in the account and out of the
+              browser; the rest waits. No button: the next page load, or the tab shown again,
+              runs the loop again; the RPC is idempotent, so a list whose answer was lost is
+              found by its fingerprint and never made twice.
+            </div>
+          </div>
+          <div class="group">
+            <h2 class="lbl">Этот браузер</h2>
+            <div class="move bad new">
+              <div class="lead">
+                <b>Не перенесён: «Клад дракона».</b> Сервер не принял список. Напишите на
+                daggerheart.loot@gmail.com.
+              </div>
+            </div>
+            <div class="note">
+              attention: a list the server refused (a shape the RPC rejects, or a read-back that
+              differs from what was sent) stays in the browser, named; the others moved. Tried
+              again on the next load. Not a limit: the move is exempt from the count limits
+              (decision 31).
+            </div>
+          </div>
+          <div class="group">
+            <h2 class="lbl">Этот браузер</h2>
+            <div class="warn"><b>Списки живут только в этом браузере.</b><i>подробнее</i></div>
+            <div class="note">
+              foreign - state `#/lists ~ another account as gm2`: `dhloot.migrated.v1.owner` is
+              another account, so nothing moves and no notice is drawn; today's storage notice
+              and the cards, as for a signed-out reader. Guard (b).
+            </div>
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap"
+          >C. signed out, before the date - `#/lists ~ two lists` (re-seeded)</span
+        >
+        <main class="in">
+          <div class="panel">
+            <div class="field">
+              <h2 class="lbl">Новый список</h2>
+              <div class="signin">
+                <p class="signin-lead">
+                  Войдите, чтобы создавать списки: они хранятся в аккаунте и открываются на
+                  любом устройстве.
+                </p>
+                <button class="btn primary">Войти</button>
+              </div>
+            </div>
+          </div>
+          <div class="group">
+            <div class="warn">
+              <b>Списки живут только в этом браузере.</b><i>подробнее</i>
+              <p style="margin: 9px 0 0">
+                Очистка данных сайта, режим инкогнито или другое устройство - и списки пропадут.
+                ... (today's text, unchanged)
+              </p>
+              <p class="new" style="margin: 9px 0 0">
+                Войдите - списки перенесутся в аккаунт сами. С 26 октября 2026 г. списки в
+                браузере нельзя будет менять.
+              </p>
+            </div>
+            <div class="note">
+              Signed out: today's notice, folded as before, with one more paragraph when
+              unfolded (drawn only in a build with a cloud). The cards keep «Поделиться» and
+              «Удалить».
+            </div>
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap"
+          >D. after the date (`?today=2026-10-26`), signed out - state `#/lists ~
+          read-only`</span
+        >
+        <div class="tabs">
+          <span>Обычные правила</span><span>Таблицы</span><span>Поиск</span>
+        </div>
+        <main class="in">
+          <div class="group">
+            <div class="warn new">
+              <b>Списки в этом браузере только для чтения с 26 октября 2026 г.</b>
+              <p style="margin: 9px 0 0">
+                Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать
+                текст и напечатать можно и так.
+              </p>
+            </div>
+            <div class="listgrid">
+              <div class="listcard">
+                <a class="listcard-main"
+                  ><div class="listcard-top">
+                    <b>Клад дракона</b><span class="badge num">7</span>
+                  </div>
+                  <div class="listcard-thumbs">
+                    <img src="../../../img/thumb/ci1.webp" alt="" /><img
+                      src="../../../img/thumb/ci2.webp"
+                      alt=""
+                    /></div
+                ></a>
+                <div class="listcard-acts"><button class="btn sm danger">Удалить</button></div>
+              </div>
+            </div>
+            <div class="note">
+              The third notice form (no dismiss, no fold); the card has no «Поделиться»;
+              «Удалить» stays with the confirm and no undo (owner). Nine tabs: «Списки» left the
+              bar at the cutoff (B5.3); `#/lists` still opens by address. Signed in after the
+              date the lists move as in frame A.
+            </div>
+          </div>
+        </main>
+      </section>
+    </div>
+  </body>
+</html>

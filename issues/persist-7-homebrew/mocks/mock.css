@@ -1,0 +1,687 @@
+/* Mock stylesheet for issues/persist-2-lists/mocks/*.html.
+ * The :root block is app/src/styles/tokens.css verbatim (values, not a
+ * redesign). The component rules are copied from the named .svelte files so
+ * the mocks draw with the shipped look. The app has one theme (dark,
+ * `color-scheme: dark`); there is no light mock because there is no light
+ * theme. Classes marked NEW are the proposal; everything else exists. */
+
+:root {
+  color-scheme: dark;
+  --bg: #0e0c15;
+  --bg2: #14111d;
+  --surface: #1a1626;
+  --surface2: #221d31;
+  --line: #312a45;
+  --line2: #3f3758;
+  --txt: #ece8f6;
+  --muted: #9b93b3;
+  --muted2: #8a83a3;
+  --gold: #d8ab5e;
+  --gold-soft: #f0d091;
+  --gold-rgb: 216 171 94;
+  --danger: #e0685f;
+  --badge-bg: rgb(10 8 16 / 50%);
+  --r: 14px;
+  --r-sm: 9px;
+  --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
+  --ui:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --step-0: 15.5px;
+  --wrap: min(1180px, 100% - 32px);
+  --h-page-size: 23px;
+  --h-page-weight: 680;
+  --h-page-spacing: -0.01em;
+  --ink-on-gold: #1a1206;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 700px at 12% -8%, #251c3d 0%, transparent 62%),
+    radial-gradient(900px 600px at 100% 0%, #1b2b3d 0%, transparent 55%), var(--bg);
+  background-attachment: fixed;
+  color: var(--txt);
+  font: var(--step-0) / 1.6 var(--ui);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+a {
+  color: var(--gold-soft);
+}
+
+/* ---- mock chrome (not app UI) ---- */
+.mockbar {
+  width: var(--wrap);
+  margin: 24px auto 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.mockbar h1 {
+  font-size: 18px;
+  color: var(--txt);
+  margin: 0 0 4px;
+}
+.mockbar p {
+  margin: 4px 0;
+  max-width: 110ch;
+}
+.frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  width: var(--wrap);
+  margin: 0 auto 40px;
+}
+.frame {
+  flex: 1 1 560px;
+  border: 1px dashed #5a5070;
+  border-radius: 6px;
+  padding: 0 0 18px;
+  min-width: 0;
+  background: transparent;
+}
+.frame.phone {
+  flex: 0 0 360px;
+  max-width: 360px;
+}
+.frame > .cap {
+  display: block;
+  font: 600 12px/1.4 var(--mono);
+  color: #c8a0ff;
+  padding: 6px 10px;
+  border-bottom: 1px dashed #5a5070;
+  margin-bottom: 14px;
+}
+.frame .in {
+  padding: 0 16px;
+}
+.note {
+  border: 1px dashed #c8a0ff;
+  background: rgb(200 160 255 / 8%);
+  color: #d9c8f5;
+  font-size: 12.5px;
+  padding: 6px 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+.new {
+  outline: 2px dashed #c8a0ff;
+  outline-offset: 3px;
+}
+
+/* ---- Shell.svelte (header, simplified: tabs omitted) ---- */
+.topbar {
+  background: rgb(14 12 21 / 86%);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  gap: 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--txt);
+  text-decoration: none;
+}
+.brand .star {
+  color: var(--gold);
+  font-size: 22px;
+  line-height: 1;
+}
+.brand b {
+  font-size: 16px;
+  display: block;
+  line-height: 1.1;
+}
+.brand i {
+  font-style: normal;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted2);
+}
+.acct {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 14px 0 11px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+}
+.acct.in {
+  padding: 0;
+  width: 38px;
+  background: var(--surface2);
+  border-color: rgb(216 171 94 / 45%);
+  color: var(--gold-soft);
+  font-size: 14px;
+}
+.tabs {
+  display: flex;
+  gap: 18px;
+  padding: 8px 16px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.tabs span {
+  padding-bottom: 8px;
+  border-bottom: 2px solid transparent;
+}
+.tabs span.on {
+  color: var(--gold-soft);
+  border-bottom-color: var(--gold);
+}
+main {
+  padding-top: 22px;
+}
+
+/* ---- PageTitle / PageHead ---- */
+.page-h {
+  margin: 0 0 4px;
+  font-size: var(--h-page-size);
+  font-weight: var(--h-page-weight);
+  letter-spacing: var(--h-page-spacing);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.page-sub {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 70ch;
+}
+.titleinput {
+  font: inherit;
+  color: var(--txt);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 2px 6px;
+  margin-left: -7px;
+  width: 100%;
+  max-width: 520px;
+}
+
+/* ---- Panel / Field ---- */
+.panel {
+  background: linear-gradient(180deg, var(--surface2), var(--surface));
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.field {
+  margin-bottom: 16px;
+}
+.field:last-child {
+  margin-bottom: 0;
+}
+.lbl {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin: 0 0 8px;
+}
+.numrow {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.grow {
+  flex: 1 1 170px;
+  min-width: 0;
+}
+.input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: var(--r-sm);
+  background: var(--bg2);
+  border: 1px solid var(--line2);
+  color: var(--txt);
+  font: inherit;
+}
+.input::placeholder {
+  color: var(--muted2);
+  opacity: 0.7;
+}
+
+/* ---- Button.svelte ---- */
+.btn {
+  border: 1px solid var(--line2);
+  background: var(--surface);
+  color: var(--txt);
+  padding: 0 18px;
+  height: 46px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.btn.sm {
+  height: 32px;
+  padding: 0 11px;
+  font-size: 12.5px;
+  border-radius: 8px;
+  gap: 6px;
+  white-space: nowrap;
+}
+.btn.primary {
+  background: linear-gradient(180deg, #e2b76c, var(--gold));
+  border-color: #e8c27c;
+  color: var(--ink-on-gold);
+  font-weight: 700;
+}
+.btn.primary.on {
+  background: linear-gradient(180deg, #c99b52, #b8873f);
+  border-color: #c99b52;
+  box-shadow: inset 0 2px 5px rgb(0 0 0 / 35%);
+}
+.btn.ghost {
+  background: transparent;
+  border-color: var(--line);
+}
+.btn.danger {
+  border-color: rgb(224 104 95 / 40%);
+  color: #f0a49d;
+}
+.btn svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+.caret {
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  border: 4px solid transparent;
+  border-top-color: currentcolor;
+  transform: translateY(2px);
+  display: inline-block;
+}
+.card-acts {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---- Chip.svelte ---- */
+.chip {
+  display: inline-block;
+  border: 1px solid var(--line2);
+  background: var(--surface);
+  color: var(--muted);
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 540;
+  text-align: left;
+}
+.chip.on {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink-on-gold);
+  font-weight: 650;
+}
+
+/* ---- Badge.svelte (.num) ---- */
+.badge {
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: var(--badge-bg);
+  border: 1px solid var(--line2);
+  color: var(--muted);
+}
+.badge.num {
+  font-family: var(--mono);
+  color: var(--gold-soft);
+  border-color: rgb(var(--gold-rgb) / 45%);
+}
+
+/* ---- ListsPage.svelte cards ---- */
+.listgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.listcard {
+  background: linear-gradient(180deg, var(--surface2), var(--surface));
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.listcard-main {
+  display: block;
+  padding: 14px 15px 12px;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+}
+.listcard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.listcard-top b {
+  font-size: var(--step-0);
+  font-weight: 650;
+  line-height: 1.3;
+}
+.listcard-thumbs {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.listcard-thumbs img {
+  width: 40px;
+  height: 40px;
+  border-radius: 7px;
+  object-fit: cover;
+  background: #0a0810;
+}
+.listcard-empty {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted2);
+}
+.listcard-acts {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 0 15px 14px;
+}
+/* NEW: the "edited N ago" line, 12.5px Ash Violet Low, under the name */
+.listcard-edited {
+  margin: -6px 0 10px;
+  font-size: 12.5px;
+  color: var(--muted2);
+}
+/* NEW: a group is a Field with `heading` - the existing h2.lbl, no new rule */
+.group {
+  margin-top: 22px;
+}
+
+/* ---- StorageNotice.svelte ---- */
+.warn {
+  padding: 11px 14px;
+  border-radius: var(--r-sm);
+  line-height: 1.5;
+  background: rgb(224 104 95 / 9%);
+  border: 1px solid rgb(224 104 95 / 30%);
+  color: #e0b6b1;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.warn b {
+  color: #f5c0ba;
+  font-weight: 650;
+}
+.warn i {
+  font-style: normal;
+  text-decoration: underline;
+  margin-left: 8px;
+}
+
+/* ---- AddToList.svelte menu ---- */
+.seldrop {
+  position: relative;
+  display: inline-block;
+}
+.dropmenu {
+  min-width: 230px;
+  max-width: min(320px, 90vw);
+  border: 1px solid var(--line2);
+  border-radius: 11px;
+  background: var(--surface);
+  padding: 10px;
+  box-shadow: 0 16px 40px -14px rgb(0 0 0 / 85%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+.dropmenu .chip {
+  width: 100%;
+  font-size: 13px;
+}
+.picker-new {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+}
+.picker-new input {
+  flex: 1;
+  min-width: 150px;
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--line2);
+  color: var(--txt);
+  font: inherit;
+  font-size: 13px;
+}
+
+/* ---- NEW: SignInPrompt (a line and one «Войти» button to #/account) ---- */
+.signin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.signin-lead {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--txt);
+  max-width: 62ch;
+  flex: 1 1 240px;
+}
+.signin.compact {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.signin.compact .signin-lead {
+  font-size: 13px;
+  flex: none;
+}
+.hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.signin.boxed {
+  border: 1px solid var(--line2);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  background: var(--bg2);
+  margin-bottom: 18px;
+}
+
+/* ---- NEW: the save status in the list page's sub line ---- */
+.sync {
+  color: var(--muted);
+}
+.sync.bad {
+  color: #f0a49d;
+  font-weight: 600;
+}
+.linkbtn {
+  background: none;
+  border: 0;
+  padding: 0 2px;
+  color: var(--gold-soft);
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+/* ---- list page rows, simplified from TableRows / ListPage ---- */
+.lrows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lrow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: linear-gradient(180deg, var(--surface2), var(--surface));
+}
+.lrow img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #0a0810;
+}
+.lrow .nm {
+  font-weight: 600;
+  font-size: 14px;
+}
+.lrow .st {
+  font-size: 12.5px;
+  color: var(--muted2);
+}
+.lrow .tail {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--gold-soft);
+  white-space: nowrap;
+}
+.hitnote {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line2);
+  border-left: 2px solid var(--gold);
+  border-radius: 9px;
+  background: rgb(216 171 94 / 6%);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.hitnote b {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  font-weight: 650;
+}
+
+/* ---- NEW (B2.3): share panel rows ---- */
+.sharerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.sharerow:first-of-type {
+  border-top: 0;
+  padding-top: 2px;
+}
+.sharerow .who {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.sharerow .who b {
+  display: block;
+  font-size: 14px;
+}
+.sharerow .who code {
+  display: block;
+  font: 12px/1.4 var(--mono);
+  color: var(--muted2);
+  overflow-wrap: anywhere;
+}
+.ownline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid rgb(216 171 94 / 45%);
+  border-radius: var(--r-sm);
+  background: rgb(216 171 94 / 6%);
+  font-size: 13.5px;
+  margin-bottom: 16px;
+}
+
+/* ---- native confirm frame (drawn by the browser, not the app; a flat stand-in) ---- */
+.native {
+  max-width: 460px;
+  background: #2b2b2b;
+  color: #eee;
+  font:
+    13px/1.5 system-ui,
+    sans-serif;
+  border-radius: 8px;
+  padding: 18px 18px 14px;
+  border: 1px solid #444;
+}
+.native .origin {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.native .acts {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+.native .acts span {
+  padding: 6px 16px;
+  border-radius: 4px;
+  background: #3c3c3c;
+}
+.native .acts span.ok {
+  background: #8ab4f8;
+  color: #202124;
+}

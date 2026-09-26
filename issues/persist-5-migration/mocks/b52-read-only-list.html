@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B5.2 read-only browser list</title>
+    <link rel="stylesheet" href="mock.css" />
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>B5.2 - a browser list's page after the cutoff (`#/lists/a`, `?today=2026-10-26`)</h1>
+      <p>
+        Left: the page today (seed `noted`, signed out). Right: the same page after the date.
+        Every control that writes is gone or read-only; every control that reads stays: copy
+        text, print, the roll panel, ticks and the bar's «Скопировать». The address stays
+        `#/lists/a`: no `#/l/` rewrite after the date. Signed in, the banner of
+        b52-move-banner.html takes the notice's slot here too.
+      </p>
+    </div>
+
+    <div class="frames">
+      <section class="frame">
+        <span class="cap"
+          >A. today (before the date) - state `#/lists/a ~ noted`, unchanged</span
+        >
+        <main class="in">
+          <h1 class="page-h"><input class="titleinput" value="Клад дракона" /></h1>
+          <p class="subline">7 позиций</p>
+          <div class="card-acts" style="margin-bottom: 16px">
+            <button class="btn sm">Ссылка игрокам</button>
+            <button class="btn sm">Ссылка себе</button>
+            <button class="btn sm">Скопировать текст</button>
+            <button class="btn sm">Печать</button>
+            <button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="warn"><b>Списки живут только в этом браузере.</b><i>подробнее</i></div>
+          <div style="margin: 0 0 12px; font-size: 13px; color: var(--muted)">
+            Цены как: <span class="chip on">Мешками</span> <span class="chip">Монетами</span>
+          </div>
+          <div class="batch">
+            <label><input type="checkbox" /> Выбрать все</label>
+          </div>
+          <div class="lrows">
+            <div class="lrow">
+              <span class="grip">&#8942;&#8942;</span>
+              <input type="checkbox" />
+              <input class="lrow-n" value="1" />
+              <img src="../../../img/thumb/ci1.webp" alt="" />
+              <div>
+                <div class="nm">Первоклассный Спальный Мешок</div>
+                <div class="st">Предмет · Core</div>
+              </div>
+              <button class="x" title="Убрать из списка">&times;</button>
+            </div>
+            <div class="lrow">
+              <span class="grip">&#8942;&#8942;</span>
+              <input type="checkbox" />
+              <input class="lrow-n" value="2" />
+              <img src="../../../img/thumb/ci2.webp" alt="" />
+              <div>
+                <div class="nm">Пронзительная Свирель</div>
+                <div class="st">
+                  Кол-во <input class="qty" value="2" /> Цена <input class="qty" value="750" />
+                  <button class="btn sm">Заметка</button>
+                </div>
+              </div>
+              <button class="x" title="Убрать из списка">&times;</button>
+            </div>
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap">B. after the date - state `#/lists/a ~ read-only` (NEW)</span>
+        <main class="in">
+          <h1 class="page-h">
+            <input class="titleinput ro new" value="Клад дракона" readonly />
+          </h1>
+          <p class="subline">7 позиций</p>
+          <div class="card-acts new" style="margin-bottom: 16px">
+            <button class="btn sm">Скопировать текст</button>
+            <button class="btn sm">Печать</button>
+            <button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="warn new">
+            <b>Списки в этом браузере только для чтения с 26 октября 2026 г.</b>
+            <p style="margin: 9px 0 0">
+              Войдите и перенесите их в аккаунт, чтобы править. Скопировать текст и напечатать
+              можно и так.
+            </p>
+          </div>
+          <div style="margin: 0 0 12px; font-size: 13px; color: var(--muted)">
+            Цены как: <span class="chip on" disabled>Мешками</span>
+            <button class="chip" disabled>Монетами</button>
+          </div>
+          <div class="batch on new">
+            <label><input type="checkbox" checked /></label>
+            <span>Выбрана 1 позиция · 2 шт. Итого: <b>1 сундук 5 мешков</b></span>
+            <span class="acts"><button class="btn sm">Скопировать</button></span>
+          </div>
+          <div class="lrows new">
+            <div class="lrow">
+              <input type="checkbox" />
+              <input class="lrow-n ro" value="1" readonly />
+              <img src="../../../img/thumb/ci1.webp" alt="" />
+              <div>
+                <div class="nm">Первоклассный Спальный Мешок</div>
+                <div class="st">Предмет · Core</div>
+              </div>
+            </div>
+            <div class="lrow">
+              <input type="checkbox" checked />
+              <input class="lrow-n ro" value="2" readonly />
+              <img src="../../../img/thumb/ci2.webp" alt="" />
+              <div>
+                <div class="nm">Пронзительная Свирель</div>
+                <div class="st">
+                  Кол-во <input class="qty ro" value="2" readonly /> Цена
+                  <input class="qty ro" value="750" readonly />
+                  <button class="btn sm">Заметка</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            Gone: the two link buttons, the drag grip, the row's remove cross, the bar's «Цены»
+            and «Удалить (N)», the address rewrite. Read-only (`readonly`, no handler - a
+            synthetic `input` event writes nothing): the title, the position field, quantity,
+            price, both note boxes, the list note. Disabled: the money chips. Kept: copy text,
+            print, the roll panel, ticks and the bar's copy, «Удалить» (confirm, no undo). The
+            notice is the read-only form; signed in it is the banner instead.
+          </div>
+        </main>
+      </section>
+    </div>
+  </body>
+</html>

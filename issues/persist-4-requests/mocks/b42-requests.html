@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B4.2 purchase requests</title>
+    <link rel="stylesheet" href="mock.css" />
+    <link rel="stylesheet" href="r4.css" />
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>B4.2 - purchase requests: the shared page, the owner's panel, the index, flow b</h1>
+      <p>
+        Composed from the shipped screens: the shared page `#/s/&lt;token&gt;` (R2 `B2.3`), its
+        selection bar (`SelBar.svelte`), an account list page and the lists index as `gm1`.
+        Everything marked with a gold outline (`.new`) is proposed; the rest exists. Owner
+        answers drawn: both link kinds may send (35), no name field and a 1-hour expiry (36), a
+        status for the requester (34), refuse over-stock then «Принять доступное» (32), zero
+        removes the entry (37), in-app only (38), flow b asks and remembers (33). Seed of the
+        fake cloud: «Лавка кузнеца» (`uuid(101)`) with two pending requests.
+      </p>
+    </div>
+
+    <div class="frames">
+      <section class="frame">
+        <span class="cap">A. `#/s/player-token-1`, signed out, two rows ticked</span>
+        <main class="in">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">Список от другого игрока · 9 позиций</p>
+          <p
+            class="page-sub"
+            style="margin-top: -14px; font-size: 12.5px; color: var(--muted2)"
+          >
+            Обновлено 3 дня назад
+          </p>
+          <div class="lrows">
+            <div class="lrow on">
+              <span class="tick"></span>
+              <img src="../../../img/thumb/ci1.webp" alt="" />
+              <div><div class="nm">Первоклассный Спальный Мешок</div></div>
+              <span class="tail">×2 · 150</span>
+            </div>
+            <div class="lrow">
+              <span class="tick"></span>
+              <img src="../../../img/thumb/q1.webp" alt="" />
+              <div><div class="nm">Палаш</div></div>
+            </div>
+            <div class="lrow on">
+              <span class="tick"></span>
+              <img src="../../../img/thumb/cc1.webp" alt="" />
+              <div><div class="nm">Зелье Быстрого Шага</div></div>
+              <span class="tail">×5 · 20</span>
+            </div>
+          </div>
+          <div class="selbar">
+            <span class="selsumm"
+              ><span><b>Выбрано 2 позиции · 4 шт.</b></span
+              ><span>Итого: <b>210</b></span></span
+            ><button class="selx">&times;</button>
+            <div class="selacts">
+              <button class="btn sm primary">+ Добавить в список</button
+              ><button class="btn sm">Печать</button><button class="btn sm">Скопировать</button
+              ><button class="btn sm new">Сообщить владельцу</button>
+            </div>
+          </div>
+          <div class="note">
+            «Сообщить владельцу» / "Notify the owner" is drawn on a `#/s/` page only, for every
+            reader except the list's owner (`sharedView.mine` set), signed in or not. One press
+            sends the ticked entries with their taken counts (here ci1 ×1 of 2 - the take line
+            narrowed it - and cc1 ×3 of 5); no form, no name (answer 36). The button reads
+            «Отправляем...» and is disabled while the call runs. An old `#/l/` page and a build
+            with no sign-in draw no button.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap">B. the same page after the send, and later</span>
+        <main class="in">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">Список от другого игрока · 9 позиций</p>
+          <p
+            class="page-sub"
+            style="margin-top: -14px; font-size: 12.5px; color: var(--muted2)"
+          >
+            Обновлено только что
+          </p>
+          <div class="myreqs new" role="status">
+            <b>Ваши запросы владельцу</b>
+            <ul>
+              <li>
+                2 позиции, 4 шт. · 1 минуту назад · <span class="st-wait">ждёт ответа</span>
+              </li>
+              <li>1 позиция, 1 шт. · 20 минут назад · <span class="st-ok">принят</span></li>
+              <li>
+                2 позиции, 9 шт. · 30 минут назад ·
+                <span class="st-ok">принят частично: 6 шт.</span>
+              </li>
+              <li>1 позиция, 2 шт. · 40 минут назад · <span class="st-no">отклонён</span></li>
+              <li>
+                3 позиции, 3 шт. · 2 часа назад · <span class="st-old">истёк без ответа</span>
+              </li>
+            </ul>
+          </div>
+          <span class="toast">Запрос отправлен владельцу списка.</span>
+          <div class="note">
+            The block sits under the «Обновлено» line and lists this tab's requests for this
+            link, newest first, at most five (`sessionStorage['dhloot.requests.v1']`). A change
+            of status is announced once through the block's polite status region. Statuses
+            refresh on every re-read of the page (live message, poll, tab shown again) and on
+            the decision nudge (`request` on the share topic). A key the database no longer
+            holds (24 h after a decision or expiry) drops its line. The selection clears after a
+            successful send. Errors are toasts: «Слишком много запросов по этой ссылке:
+            подождите минуту.»; «У владельца уже 10 запросов без ответа - попробуйте позже.»;
+            «Список изменился - проверьте выбор и отправьте снова.» (the page re-reads); «Не
+            получилось отправить. Проверьте соединение.»; a deleted link draws the «Список
+            больше не доступен» page.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap">C. `#/lists/&lt;uuid(101)&gt;` as gm1: the Requests panel</span>
+        <main class="in">
+          <h1 class="page-h"><input class="titleinput" value="Лавка кузнеца" /></h1>
+          <p class="page-sub">9 позиций · <span class="sync">Сохранено</span></p>
+          <div class="card-acts" style="margin-bottom: 12px">
+            <button class="btn sm">Поделиться <span class="caret"></span></button>
+            <button class="btn sm">Скопировать текст</button>
+            <button class="btn sm">Печать</button>
+            <button class="btn sm danger">Удалить</button>
+          </div>
+          <section class="reqpanel new" aria-labelledby="rq">
+            <h2 id="rq">Запросы (2)</h2>
+            <div class="req">
+              <div class="who">
+                По ссылке для игроков · 10 минут назад · истечёт через 50 минут
+              </div>
+              <table>
+                <tr>
+                  <td>Первоклассный Спальный Мешок</td>
+                  <td class="n">×1 из 2</td>
+                  <td class="n">150</td>
+                </tr>
+                <tr>
+                  <td>Зелье Быстрого Шага</td>
+                  <td class="n">×3 из 5</td>
+                  <td class="n">60</td>
+                </tr>
+              </table>
+              <div class="total">Итого: <b>210</b></div>
+              <div class="card-acts">
+                <button class="btn sm primary">Принять</button
+                ><button class="btn sm">Отклонить</button>
+              </div>
+            </div>
+            <div class="req">
+              <div class="who">
+                По ссылке для мастера · 25 минут назад · истечёт через 35 минут
+              </div>
+              <table>
+                <tr>
+                  <td>Зелье Быстрого Шага</td>
+                  <td class="n short">×9 из 5</td>
+                  <td class="n">180</td>
+                </tr>
+                <tr>
+                  <td>Палаш</td>
+                  <td class="n">×1 из 1</td>
+                  <td class="n">-</td>
+                </tr>
+              </table>
+              <div class="total">Итого: <b>180</b> (без цены: 1)</div>
+              <div class="card-acts">
+                <button class="btn sm primary">Принять</button
+                ><button class="btn sm">Отклонить</button>
+              </div>
+            </div>
+            <p class="decided">Решённые в этот раз (1) <span class="caret"></span></p>
+          </section>
+          <div class="note">
+            Between the action row and the list notes; drawn only while the list has a pending,
+            unexpired request or a decision made on this page load (the «Решённые в этот раз»
+            fold, closed by default, session memory). Newest first. «×1 из 2» is the request
+            over the entry's current stock; a line above the stock is drawn in `--danger-text`
+            before any press. The sum is price x requested count in the list's money mode
+            (`priceText`), the total as the selection bar's (`totalParts`). A line whose entry
+            was deleted reads «нет в списке» in `--danger-text`. Expired requests are not drawn;
+            the owner cannot act on them. A live `request` message or the poll adds a new
+            request without a reload; a polite hidden status region says «Новый запрос» once.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">C2. «Принять» on the over-stock request (360 wide)</span>
+        <main class="in">
+          <section class="reqpanel new">
+            <h2>Запросы (2)</h2>
+            <div class="req">
+              <div class="who">По ссылке для мастера · 25 минут назад</div>
+              <table>
+                <tr>
+                  <td>Зелье Быстрого Шага</td>
+                  <td class="n short">×9 из 5</td>
+                </tr>
+                <tr>
+                  <td>Палаш</td>
+                  <td class="n">×1 из 1</td>
+                </tr>
+              </table>
+              <p class="shortmsg" role="alert">
+                Не хватает: Зелье Быстрого Шага - просят 9, есть 5. Ничего не списано.
+              </p>
+              <div class="card-acts">
+                <button class="btn sm primary">Принять доступное</button
+                ><button class="btn sm">Отклонить</button>
+              </div>
+            </div>
+          </section>
+          <div class="note">
+            The refusal changes nothing (answer 32). «Принять доступное» takes 5 and 1: the
+            potion and the sword reach zero and leave the list (answer 37); the toast says
+            «Запрос принят: списано 6 шт.». A plain «Принять» within stock toasts «Запрос
+            принят»; «Отклонить» toasts «Запрос отклонён». Neither asks a question and neither
+            has an undo (the requester has already been told). If nothing is left of any line,
+            only «Отклонить» is offered.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap">D. `#/lists` as gm1: the pending count on a card</span>
+        <main class="in">
+          <div class="listgrid">
+            <div class="listcard">
+              <a class="listcard-main"
+                ><div class="listcard-top">
+                  <b>Лавка кузнеца</b><span class="badge num">9</span>
+                </div>
+                <p class="listcard-edited">изменён 3 дня назад</p>
+                <p class="listcard-edited new" style="color: var(--gold-soft)">
+                  2 запроса ждут ответа
+                </p></a
+              >
+              <div class="listcard-acts"><button class="btn sm danger">Удалить</button></div>
+            </div>
+            <div class="listcard">
+              <a class="listcard-main"
+                ><div class="listcard-top">
+                  <b>Пустой список</b><span class="badge num">0</span>
+                </div>
+                <p class="listcard-edited">изменён 1 час назад</p>
+                <p class="listcard-empty">Список пуст</p></a
+              >
+              <div class="listcard-acts"><button class="btn sm danger">Удалить</button></div>
+            </div>
+          </div>
+          <div class="note">
+            One gold line under «изменён N назад», only while the count is above zero; the
+            existing `.badge.num` stays the entry count (a second badge would read as a second
+            count of entries). Plural by `plural()`: «1 запрос ждёт ответа», «2 запроса ждут
+            ответа», «5 запросов ждут ответа»; EN "1 request waiting" / "2 requests waiting". It
+            is part of the card's link text, so a screen reader hears it with the name.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap"
+          >E. flow b: `#/s/player-token-1` as gm2, after «Добавить в список»</span
+        >
+        <main class="in">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">Список от другого игрока · 9 позиций</p>
+          <div class="selbar">
+            <span class="selsumm"
+              ><span><b>Выбрано 2 позиции · 4 шт.</b></span
+              ><span>Итого: <b>210</b></span></span
+            ><button class="selx">&times;</button>
+            <div class="notifyq new" role="group" aria-label="Сообщить владельцу?">
+              <span>Сообщить владельцу списка, что вы взяли эти предметы?</span>
+              <button class="btn sm primary">Сообщить</button
+              ><button class="btn sm">Не сообщать</button>
+              <label><input type="checkbox" /> Запомнить ответ</label>
+            </div>
+          </div>
+          <span class="toast">Добавлено в список «Список второго ГМа»: 2</span>
+          <div class="note">
+            Drawn in the bar in place of its action row after a successful add from this page's
+            bar, when the reader is signed in, is not the owner, and `prefs.notifyGm` is absent.
+            «Сообщить» sends the same entries and counts as frame A; «Не сообщать» closes it.
+            With «Запомнить ответ» ticked the answer becomes `notifyGm` `always` or `never`.
+            `always`: no question; the add toast reads «Добавлено в список «...»: 2. Владелец
+            получил запрос.». `never`: no question and no request. Clearing the selection or a
+            navigation drops an unanswered question. The item card's own add-to-list menu does
+            not ask (one item, not a purchase).
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">F. `#/account` as gm1 (owner question 1, option A)</span>
+        <main class="in">
+          <div class="panel new">
+            <div class="field">
+              <span class="lbl">Добавление из чужого списка по ссылке</span>
+              <div class="card-acts">
+                <button class="chip on">Спрашивать</button
+                ><button class="chip">Сообщать владельцу</button
+                ><button class="chip">Не сообщать</button>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            Only if the owner picks option A: one field between «Подключённые входы» and
+            «Выход», a segmented control over `prefs.notifyGm` (`Seg.svelte`). Option B draws
+            nothing here.
+          </div>
+        </main>
+      </section>
+    </div>
+  </body>
+</html>

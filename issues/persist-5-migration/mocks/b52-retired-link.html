@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B5.2 retired link page</title>
+    <link rel="stylesheet" href="mock.css" />
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>B5.2 - `#/l/&lt;payload&gt;` after the cutoff (`?today=2026-10-26`)</h1>
+      <p>
+        The same page for a plain payload, a packed `#/l/~` payload and a payload that was this
+        browser's own list: the payload is never decoded, a packed one never unpacked, the
+        address is kept (never the home fallback). The shape is the not-found page's
+        (`PageTitle` and one primary button), with the retirement text. One button, «Списки», to
+        `#/lists`, where the sign-in prompt and the reader's own lists are.
+      </p>
+    </div>
+
+    <div class="frames">
+      <section class="frame">
+        <span class="cap"
+          >A. state `#/l/ ~ retired` (and `~ own list, retired`, `#/l/~AAAA` alike)</span
+        >
+        <main class="in new">
+          <h1 class="page-h">Ссылки такого вида перестали открываться 26 октября 2026 г.</h1>
+          <p class="page-sub">
+            Попросите у отправителя новую ссылку или войдите, чтобы собрать список.
+          </p>
+          <a class="btn primary" href="#/lists">Списки</a>
+          <div class="note">
+            Before the date, the same address draws the shared page (not ours) or the list
+            (ours) as today. The texts take the date from the one constant. English: "Links of
+            this kind stopped opening on 26 October 2026." / "Ask the sender for a new link, or
+            sign in to build a list." / "Lists".
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">B. the same at 360 wide</span>
+        <main class="in new">
+          <h1 class="page-h">Ссылки такого вида перестали открываться 26 октября 2026 г.</h1>
+          <p class="page-sub">
+            Попросите у отправителя новую ссылку или войдите, чтобы собрать список.
+          </p>
+          <a class="btn primary" href="#/lists">Списки</a>
+        </main>
+      </section>
+    </div>
+  </body>
+</html>

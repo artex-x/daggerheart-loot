@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B6.2 export and import</title>
+    <link rel="stylesheet" href="mock.css" />
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>
+        B6.2 - JSON export and import on the lists index, the account page and a list page
+      </h1>
+      <p>
+        Existing: the index as `B2.2` built it («Ваш аккаунт» group, cards with «изменён N
+        назад» and «Удалить»), the account page's panels, the list page's action row. Proposed
+        (dashed outline): a row of two `sm` buttons under the group heading - «Экспорт» and
+        «Импорт» - each folding one panel open under it (one at a time); a «Ваши данные» panel
+        on the account page between «Способы входа» and «Выход»; a «Скачать JSON» button in the
+        list page's action row after «Скопировать текст». Every control reuses `Button`,
+        `Panel`, `Field` and the tokens; nothing new in `tokens.css`.
+      </p>
+    </div>
+
+    <div class="frames">
+      <section class="frame">
+        <span class="cap">A. `#/lists` as gm1 - «Экспорт» open: the checklist, all ticked</span>
+        <main class="in">
+          <h1 class="page-h">Списки</h1>
+          <p class="page-sub">Списки предметов для вашей партии.</p>
+          <div class="panel" style="margin-bottom: 22px">
+            <div class="field">
+              <span class="lbl">Новый список</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input class="input" placeholder="Например: клад дракона" />
+                </div>
+                <button class="btn primary">Создать</button>
+              </div>
+            </div>
+          </div>
+          <div class="group">
+            <span class="lbl">Ваш аккаунт</span>
+            <div class="groupacts new">
+              <button class="btn sm on">Экспорт <span class="caret"></span></button>
+              <button class="btn sm">Импорт <span class="caret"></span></button>
+            </div>
+            <div class="panel new" style="margin-bottom: 16px">
+              <div class="field">
+                <span class="lbl">Какие списки сохранить в файл</span>
+                <div class="pickrow"><input type="checkbox" checked /><b>Выбрать все</b></div>
+                <div class="pickrow">
+                  <input type="checkbox" checked />Лавка кузнеца<small>9 позиций</small>
+                </div>
+                <div class="pickrow">
+                  <input type="checkbox" checked />Пустой список<small>0 позиций</small>
+                </div>
+                <div class="pickrow">
+                  <input type="checkbox" checked />Трофеи<small>2 позиции</small>
+                </div>
+                <div class="card-acts" style="margin-top: 12px">
+                  <button class="btn sm primary">Скачать JSON (3)</button>
+                </div>
+                <p class="hint">
+                  Файл содержит названия, позиции, количество, цены и обе заметки. Ссылки для
+                  игроков и мастера в него не попадают.
+                </p>
+              </div>
+            </div>
+            <div class="listgrid">
+              <div class="listcard">
+                <a class="listcard-main" href="#">
+                  <div class="listcard-top">
+                    <b>Лавка кузнеца</b><span class="badge num">9</span>
+                  </div>
+                  <p class="listcard-edited">изменён 3 дня назад</p>
+                  <div class="listcard-thumbs">
+                    <img src="../../../img/thumb/ci1.webp" alt="" /><img
+                      src="../../../img/thumb/q1.webp"
+                      alt=""
+                    />
+                  </div>
+                </a>
+                <div class="listcard-acts"><button class="btn sm danger">Удалить</button></div>
+              </div>
+              <div class="listcard">
+                <a class="listcard-main" href="#">
+                  <div class="listcard-top"><b>Пустой список</b></div>
+                  <p class="listcard-edited">изменён 1 час назад</p>
+                  <p class="listcard-empty">Пока пусто</p>
+                </a>
+                <div class="listcard-acts"><button class="btn sm danger">Удалить</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The two buttons are drawn only signed in and once the account's lists are read
+            (`cloud.status === 'ready'`); «Экспорт» only when the account holds a list. The
+            checklist's first row is the select-all box, mixed while some are unticked. «Скачать
+            JSON (N)» is disabled at 0. The download is `env.image.download()` (the existing
+            port method), file `daggerheart-loot-lists-2026-09-25.json`. No toast: the browser
+            shows its own download.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap">B. `#/lists` as gm1 - «Импорт» open, a file chosen, the preview</span>
+        <main class="in">
+          <div class="group" style="margin-top: 0">
+            <span class="lbl">Ваш аккаунт</span>
+            <div class="groupacts new">
+              <button class="btn sm">Экспорт <span class="caret"></span></button>
+              <button class="btn sm on">Импорт <span class="caret"></span></button>
+            </div>
+            <div class="panel new" style="margin-bottom: 16px">
+              <div class="field">
+                <span class="lbl">Импорт из файла JSON</span>
+                <div class="card-acts">
+                  <button class="btn sm">Выбрать файл...</button>
+                  <span style="font-size: 13px; color: var(--muted)">lavka.json</span>
+                </div>
+                <p class="preview">
+                  Списков: <b>2</b>, позиций: <b>11</b>.<br />
+                  Пропущено позиций, которых нет в данных: 1 (<code>zzz1</code>).<br />
+                  Повторы внутри списка убраны: 1.
+                </p>
+                <div class="card-acts" style="margin-top: 12px">
+                  <button class="btn sm primary">Импортировать (2)</button>
+                  <button class="btn sm ghost">Отмена</button>
+                </div>
+                <p class="hint">
+                  Файл JSON, сохранённый кнопкой «Экспорт» или собранный по схеме import-v1.
+                  Списки добавятся как новые; существующие не изменятся.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            «Выбрать файл...» is a `Button`-styled label over a visually hidden `&lt;input
+            type="file" accept=".json,application/json"&gt;`. The preview is drawn from the pure
+            validator (`lib/bundle.ts`) before anything is sent: counts, the unknown ids
+            (skipped, never refused - the `#/l/` rule) and the duplicates dropped.
+            «Импортировать (N)» sends one `import_lists` call; on success the panel folds, the
+            new lists go first in the group with «изменён только что» and the toast reads
+            «Импортировано списков: 2». A limit refusal is the existing limit toast; no network
+            is «Не получилось. Попробуйте ещё раз.» and the preview stays.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap">C. `#/lists` as gm1 - a refused file: the error report</span>
+        <main class="in">
+          <div class="group" style="margin-top: 0">
+            <span class="lbl">Ваш аккаунт</span>
+            <div class="groupacts new">
+              <button class="btn sm">Экспорт <span class="caret"></span></button>
+              <button class="btn sm on">Импорт <span class="caret"></span></button>
+            </div>
+            <div class="panel new" style="margin-bottom: 16px">
+              <div class="field">
+                <span class="lbl">Импорт из файла JSON</span>
+                <div class="card-acts">
+                  <button class="btn sm">Выбрать файл...</button>
+                  <span style="font-size: 13px; color: var(--muted)">from-llm.json</span>
+                </div>
+                <div class="errs" role="alert">
+                  <b>В файле ошибки:</b>
+                  <ul>
+                    <li><code>lists[0].name</code>: длиннее 200 символов</li>
+                    <li>
+                      <code>lists[0].entries[3].quantity</code>: значение вне диапазона 1..99
+                    </li>
+                    <li><code>lists[1].entries[0].qty</code>: неизвестное поле</li>
+                    <li><code>lists[1].money_mode</code>: допустимые значения - bag, coin</li>
+                  </ul>
+                </div>
+                <div class="card-acts" style="margin-top: 12px">
+                  <button class="btn sm ghost">Отмена</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The first ten errors, each with its JSON path, then «...и ещё N». One-line refusals
+            take the same box with one line: not JSON, not a lists file (no `format`), an
+            unknown `version`, no lists, a file over 5 MB. Nothing is imported from a refused
+            file; the preview and the button are not drawn.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">D. `#/account` as gm1 - the «Ваши данные» panel</span>
+        <main class="in">
+          <h1 class="page-h">Аккаунт</h1>
+          <div class="panel" style="margin-top: 16px">
+            <div class="field">
+              <span class="lbl">Способы входа</span>
+              <p class="hint" style="margin: 0">Google, Discord (existing rows)</p>
+            </div>
+          </div>
+          <div class="panel new" style="margin-top: 16px">
+            <div class="field">
+              <span class="lbl">Ваши данные</span>
+              <p class="hint" style="margin: 0 0 12px">
+                Все списки аккаунта одним файлом JSON. Его можно импортировать в другой аккаунт
+                на странице «Списки».
+              </p>
+              <button class="btn">Скачать все списки (JSON)</button>
+            </div>
+          </div>
+          <div class="panel" style="margin-top: 16px">
+            <div class="field">
+              <span class="lbl">Выход</span>
+              <div class="row-btns" style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button class="btn">Выйти</button
+                ><button class="btn ghost">Выйти на всех устройствах</button>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The section the roadmap reserved (decision 14): export only, next to the deletion it
+            serves (the privacy page's "export, delete, import into the account you keep").
+            Import stays on the lists page, where the lists are. The button is disabled until
+            the account's lists are read; a failed read shows the existing «Не получилось
+            загрузить списки аккаунта.» line and «Повторить».
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap"
+          >E. `#/lists/&lt;uuid&gt;` as gm1 - one list: «Скачать JSON» in the action row</span
+        >
+        <main class="in">
+          <h1 class="page-h"><input class="titleinput" value="Лавка кузнеца" /></h1>
+          <p class="page-sub">9 позиций · <span class="sync">Сохранено</span></p>
+          <div class="card-acts" style="margin-bottom: 16px">
+            <button class="btn sm">Поделиться <span class="caret"></span></button>
+            <button class="btn sm">Скопировать текст</button>
+            <button class="btn sm new">Скачать JSON</button>
+            <button class="btn sm">Печать</button>
+            <button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="note">
+            After «Скопировать текст», before «Печать»; account lists only (a browser list keeps
+            its two link buttons and gets no JSON button - local lists end at the cutoff). The
+            file is `&lt;name&gt;.json` with the characters `\ / : * ? " &lt; &gt; |` replaced
+            by `_`. «Поделиться» is `B2.3`'s button, drawn here as it stands in the main tree.
+          </div>
+        </main>
+      </section>
+    </div>
+  </body>
+</html>

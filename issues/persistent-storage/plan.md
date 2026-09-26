@@ -108,16 +108,16 @@ In v1 (releases R0-R10, section 12):
   live updates through Realtime Broadcast with the poll kept as the
   fallback (R3).
 - Purchase requests (R4): anyone with a player or GM link selects entries
-  and taken counts on the shared page and sends "Notify the owner" with an
-  optional name; a signed-in viewer who adds the selection to their own
-  list is asked "Notify the GM?" (remembered in `user_prefs.notifyGm`).
-  The owner sees a Requests panel on the list page, live through a private
-  Realtime topic with the 45 s poll as fallback, and applies (stock
-  deducted in one transaction) or declines; the requester sees Sent /
-  Applied / Declined / Expired through a request key kept in
-  `sessionStorage`. The first anonymous write in the system, bounded by
-  caps (section 5, R4 row). Details and open questions: section 16, items
-  32-38.
+  and taken counts on the shared page and sends "Notify the owner" - no
+  name field (answer 36); a signed-in viewer who adds the selection to
+  their own list is asked whether to notify the owner (remembered in
+  `user_prefs.notifyGm`). The owner sees a Requests panel on the list
+  page, live through the owner topic `owner:<uid>` with the poll as
+  fallback, and applies (stock deducted in one transaction) or declines;
+  the requester sees pending / applied / declined / expired through a
+  request key kept in `sessionStorage`. The first anonymous write in the
+  system, bounded by caps (section 5, R4 row). Design:
+  `issues/persist-4-requests/plan.md`; answers: section 16, items 32-38.
 - From R2 on, only a signed-in user creates a list: anonymous "New list",
   "Add to list" and "Save a copy" ask the user to sign in. Existing local
   lists stay editable until the cutoff (section 10).
@@ -127,8 +127,9 @@ In v1 (releases R0-R10, section 12):
   (section 10).
 - JSON export (all, selected, one list) and create-only import of a
   versioned bundle (`import-v1`), published as a JSON Schema for LLM use.
-- Homebrew items (same record shape as official items), a "Your homebrew"
-  search group, add-to-list as an immutable snapshot, art upload (client
+- Homebrew items (same record shape as official items), a "My items"
+  search group, add-to-list as a live reference inside the account and a
+  frozen copy outside it (owner, 2026-09-26), art upload (client
   resize to 640 and 160 WebP, owner folder in one public bucket), one
   standalone link per item (`#/h/<token>`), add-to-list and clone from it,
   print routes for cloud lists (`#/print/list/<id>`, `#/print/s/<token>`).
@@ -167,7 +168,7 @@ Dropped from the design, with the reason (confirmed by the owner
 | Design 17.4 names `docs/agent-audit.v6.prompt.md`; no such file | Ignored; `.claude/README.md` row 42 already records the mismatch |
 | Design 15.3 proposes five policy pages | Two pages (`privacy`, `terms`); acceptable use, retention and deletion are sections of them. A submitted URL is frozen, so the names are settled now |
 | Design 17.3 A.6 wants branch protection and a `supabase-production` environment with reviewers | Not in v1: migrations are pushed by the owner from the CLI before each release push (section 9, 15) |
-| Design 14 target routes `#/my/lists`, `#/my/homebrew`, `#/my/data/import` | Rejected. `#/lists` and `#/lists/<id>` are reused (the id class `[\w-]+` admits a UUID); homebrew lives at `#/homebrew` and `#/homebrew/<key>` (one new section, R7); import/export is a panel on the lists index and an "Export JSON" section of `#/account`. Fewer contract changes |
+| Design 14 target routes `#/my/lists`, `#/my/homebrew`, `#/my/data/import` | Rejected. `#/lists` and `#/lists/<id>` are reused (the id class `[\w-]+` admits a UUID); homebrew lives at `#/homebrew` and `#/homebrew/<key>` (routes reached from the account menu, no tab - owner, 2026-09-26; R7); import/export is a panel on the lists index and an "Export JSON" section of `#/account`. Fewer contract changes |
 | Design 5.3: account section in navigation | Owner 2026-09-24 (decision 14): a header control beside the language switch reads "Sign in" or the account name and opens the route `#/account`; the tab bar keeps ten sections. A dialog was rejected: it needs extra code to reopen after an OAuth redirect, and a plain route is what the privacy page links to for erasure |
 
 Raised, not settled: none beyond section 16.
@@ -181,11 +182,12 @@ Raised, not settled: none beyond section 16.
 |---|---|
 | R1 | `public.delete_account()` security definer: deletes the caller's rows and `auth.users` row; `user_prefs(user_id uuid pk references auth.users on delete cascade, prefs jsonb not null default '{}', updated_at)` with owner-only RLS and a `CHECK (pg_column_size(prefs) < 4096)` |
 | R2 | As shipped (2026-09-26; migrations `20260925130000`-`20260925130300` are the record): `limit_defaults(key pk, value int null)`, `user_limit_overrides(user_id, key, value int null)`, `effective_limit(user, key)` (decision 31 as amended); `lists(id uuid pk client-generated, owner_id, name, money_mode, player_note, gm_note, revision, created_at, updated_at)` - no `position` (lists are never reordered), `legacy_fingerprint` arrives with R5's writer; `list_entries(id, list_id, item_key, source 'official'\|'homebrew', snapshot jsonb null, position, quantity, price_coins, player_note, gm_note)`; `list_shares(id, list_id, audience, token unique, topic_key uuid default gen_random_uuid(), created_at, revoked_at)` - the raw token, no hash (decision 29); RLS: owner CRUD on `lists` and `list_entries`, owner select on `list_shares`, nothing for `anon`; RPCs `create_list_share`, `revoke_list_share` (no rotate: a link is replaced by delete, then create), `get_shared_list(token)` (the projection, `revision` and `topic_key`; null for a bad or revoked token), `clone_shared_list(token, new_id)`, `reorder_list(list_id, entry_ids)`; triggers bump `lists.revision` and `updated_at` on any list or entry write and hold the limits `effective_limit` reads (50 lists per owner, 100 entries per list) |
-| R3 | An `after update of revision on lists` trigger calls `realtime.send(jsonb_build_object('revision', new.revision), 'revision', 'share:' \|\| s.topic_key, false)` for every active share of the list; a policy on `realtime.messages` lets `anon` and `authenticated` `select` where `realtime.topic() like 'share:%'` (topics are random and unguessable; a forged message can only cause a refetch). Both are SQL migrations, never dashboard clicks |
-| R4 | `purchase_requests(id uuid pk, list_id fk cascade, share_id fk list_shares, audience, requester_user uuid null, requester_name varchar(40) null, status 'pending'\|'applied'\|'declined'\|'expired', status_key uuid unique default gen_random_uuid(), created_at, decided_at null, expires_at = created_at + 14 days)`, `purchase_request_lines(request_id fk cascade, entry_id fk list_entries on delete set null, item_key, name_snapshot, quantity 1..99, unit_price_coins null)`; RLS: the list owner selects, updates status and deletes; nothing for `anon` on the tables. RPCs: `create_purchase_request(raw_token, lines jsonb, requester_name text)` security definer with `execute` to `anon` and `authenticated` - validates the active share (player or GM), 1..20 lines each naming an entry of that list with 1..99, name trimmed and bounded, refuses when the list has 20 pending requests or the share sent 5 in the last minute (counted from the table, no IP), deletes that list's requests decided or expired more than 30 days ago (write-time housekeeping), returns `{ id, status_key }`; `get_purchase_request(status_key)` returns status and lines only; `apply_purchase_request(id, clamp boolean default false)` owner-only, one transaction: every line's quantity must be at or below the entry's current stock or the whole request is refused with the failing lines, unless `clamp` - then each line takes what is there; an entry that reaches zero leaves the list (today's remove semantics); `lists.revision` bumps through the existing trigger; `decline_purchase_request(id)`. A `status` read past `expires_at` reports `expired`. An `after insert` trigger calls `realtime.send({ list_id }, 'request', 'owner:' \|\| owner_id, true)`; a policy on `realtime.messages` lets `authenticated` `select` where `realtime.topic() = 'owner:' \|\| auth.uid()` |
-| R6 | `import_lists(bundle jsonb)` security definer, create-only, one transaction |
-| R7 | `homebrew_items(id, owner_id, catalog_key unique, kind, content jsonb, art_url null, revision, created_at, updated_at)`, `homebrew_shares` (as `list_shares`, with `topic_key`); RPCs `get_shared_homebrew`, `clone_shared_homebrew`, `add_shared_homebrew_to_list`, share create/rotate/revoke; 500 items per owner |
-| R8 | Storage bucket `homebrew-art` (`insert into storage.buckets`) and its policies, public read, insert/update/delete only under `<auth.uid()>/` - a SQL migration |
+| R3 | Revised by the R3 plan (2026-09-25, `issues/persist-3-realtime/plan.md` section 5): a deferred constraint trigger on `lists` sends one message per list per transaction with the final revision, `realtime.send(jsonb_build_object('revision', v_rev), 'revision', 'share:' \|\| topic_key, true)` to every active share (`private` is `true`; the earlier `false` was wrong for private channels), and, if the owner agrees, `{ list, revision, by }` to `owner:<uid>`; a revoke or a deleted list sends `{ revision: null }` to the share topic; `select` policies on `realtime.messages` for `share:<uuid>` (`anon`, `authenticated`) and `owner:<uid>` (`authenticated`), no `insert` policy (no client can send); `reorder_list` becomes tolerant of a stale entry set. All SQL migrations |
+| R4 | Revised by the R4 plan (2026-09-26, `issues/persist-4-requests/plan.md` section 5; owner answers 32-38, 36 as changed): `purchase_requests(id, list_id fk cascade, share_id fk cascade, audience, status 'pending'\|'applied'\|'declined', status_key uuid unique, created_at, expires_at = created_at + 1 hour set by the function, decided_at)` - no name, no requester id; "expired" is a pending row past `expires_at`, read, never stored; `purchase_request_lines(request_id, item_key, entry_id on delete set null, quantity 1..99, price_coins snapshot, applied_quantity)`; RLS: the owner selects, no write grant. `limit_defaults` rows `request_lines` 100 and `pending_requests_per_list` 10; the rate (5 per share per minute, from the table), the expiry and a 24-hour retention after a decision or expiry are constants; housekeeping at write time. `create_purchase_request(token, lines)` (`anon`, `authenticated`) answers the `status_key`; `get_purchase_requests(keys)` (`anon`, at most five) answers status and the request's own lines; `apply_purchase_request(id, clamp)` refuses over-stock whole unless `clamp`, zero removes the entry; `decline_purchase_request(id)`. A trigger sends event `request` with `{ list, by }` to R3's `owner:<uid>` on a new or decided request, and `{}` to the sending share's topic on a decision; no new `realtime.messages` policy |
+| R6 | Refined by the R6 planning pass (2026-09-26, `issues/persist-6-import-export/plan.md` section 4.5): `import_lists(p_lists jsonb) returns integer` security definer for `authenticated`, create-only with client-made ids (`on conflict (id) do nothing`), one transaction - the table checks and the limit triggers unwind the whole call; `source` and `snapshot` pass through for R7's bundle v2. No table change |
+| R7 | Revised by the R7 refresh (2026-09-25, `issues/persist-7-homebrew/plan.md` section 4.3): `homebrew_items(id uuid pk client-generated, owner_id, catalog_key text check '^hb_[a-z2-7]{16}$', content jsonb check homebrew_content_valid(content) and octet_length <= 16384, revision, created_at, updated_at, unique (owner_id, catalog_key))` - the record shape (`kind`, `en`, `ru`, `ende`, `rud`, `tier`, `eq`) in one column, validated by `public.homebrew_content_valid(jsonb)`; no `kind` or `art_url` column (R8 adds `art_url`); owner-only RLS, nothing for `anon`; `homebrew_items_before_update` (pins id, owner, key, created; revision + 1) and `homebrew_items_limit` on `effective_limit(owner, 'homebrew_items_per_owner')` = 50 (decision 31); `homebrew_items_touch` (an edit bumps every referencing list's `revision`) and `homebrew_items_before_delete` (removes the owner's references); `homebrew_snapshot_of(key, content)` = `jsonb_build_object('id', key, 'src', 'homebrew') \|\| content` after the language fallbacks - the frozen form; `list_entries`' R2 CHECK is replaced by `source = 'homebrew' or snapshot is null` and `snapshot is null or homebrew_snapshot_valid(snapshot)` (owner, 2026-09-26: an own entry is a reference with `snapshot` null, a copy that leaves the account is frozen); `get_shared_list` and `clone_shared_list` re-created (the projection fills a reference's `snapshot` from the item; a clone freezes unless the caller owns the list); `service_role` select and delete. `B7.3` adds `import_bundle(p_items, p_lists)` beside R6's `import_lists`. Shares and their RPCs are R9's |
+| R8 | Storage bucket `homebrew-art` (`insert into storage.buckets`) and its policies, public read, insert/update/delete only under `<auth.uid()>/` - a SQL migration; `alter table homebrew_items add column art_url text` with a URL-shape CHECK, and a new `homebrew_snapshot_valid` that admits `img` (the R7 refresh, 2026-09-25); the `delete-account` Edge Function of decision 40 lands here, not in R7 |
+| R9 | `homebrew_shares` (as `list_shares`: `item_id`, `token`, `topic_key`, `revoked_at`, one active link per item); RPCs `get_shared_homebrew(token)` for `anon`, `clone_shared_homebrew(token, new_id)` with a new key made in SQL, `add_shared_homebrew_to_list(token, list_id, entry_id)` writing the R7 snapshot formula, share create and revoke (the R7 refresh, 2026-09-25) |
 
 Everything that can be code is code (decision 27): Auth configuration in
 `supabase/config.toml`, schema, RLS, Realtime and Storage in
@@ -266,7 +268,7 @@ other key stays out of the repository, `VITE_*`, task documents and chat.
 | `docs/specs/STATE.md` (`dhloot.migrated.v1`), `FEATURES.md` "Lists" (cloud paragraphs; list creation needs an account; the sign-in prompt; "edited N ago" and the sort), `META.md` section 3 | `B2.2` |
 | `ROUTES.md`, `CONTRACTS.md` section 1 and 3, `docs/fixtures/urls/routes.json`, `tests/contracts.js`, `llms.txt` list-link section (`#/s/`; cloud lists never write `#/l/`; `#/l/` links retire at the cutoff, LLM-built links end - use the JSON bundle from R6) | `B2.3` |
 | `FEATURES.md` "Lists" shared page (live update, `Updated just now`), `COVERAGE.md` | `B3.1` |
-| `FEATURES.md` "Lists" (the Requests panel, "Notify the owner", the requester's status line, apply and decline semantics), `STATE.md` (`sessionStorage['dhloot.requests.v1']`, `user_prefs.notifyGm`), `pages/src/privacy.html` and `en/` (requests store the typed name and the items for the owner, deleted 30 days after decision or expiry), `pages/src/terms.html` and `en/` (a request is not a binding order), `COVERAGE.md` | `B4.2` |
+| `FEATURES.md` "Account lists" (the Requests panel, "Notify the owner", the requester's status, apply and decline, the index line, flow b, the limits), `STATE.md` (`sessionStorage['dhloot.requests.v1']`; `prefs.notifyGm` and its Display settings row are R5b's, owner 2026-09-26), `META.md` section 3 (the first anonymous write), `I18N.md`, `pages/src/privacy.html` and `en/` (a request stores items, counts, link kind and time - no name, account or address; expires in 1 hour; deleted 24 hours after a decision or expiry, at the next send), `pages/src/terms.html` and `en/` (a request is not an order), `COVERAGE.md` | `B4.2` |
 | `STATE.md` cutoff and the two-tab merge section; `FEATURES.md` migration banner, `#/l/` retired-link page, local list controls after the cutoff; `META.md` section 3 final text and section 9 install guide; `llms.txt` and `CONTRACTS.md` section 3 gain the retirement date; `pages/src/install.html` and `en/` iOS paragraph | `B5.1` |
 | `CONTRACTS.md` section 4 (`schema/import-v1.json`), `llms.txt` import section | `B6.1` |
 | `ROUTES.md`, `CONTRACTS.md`, fixtures, `tests/contracts.js`, `llms.txt`: `#/homebrew` | `B7.2` |
@@ -424,19 +426,23 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R0 | `persist-0-foundation` | `B0.1`, `B0.2` | HTTP-only build, retired worker, laws superseded, policy pages `privacy` and `terms`, Supabase tooling and guards, CI `db` job; no user-visible cloud feature. After it is live the owner publishes the Google app |
 | R1 | `persist-1-auth` | `B1.1`-`B1.6` - **closed 2026-09-25**, live at the merge onto `main` | Fake cloud and test build (layer 2), sign in, `#/account` with linking and sign out everywhere, delete account, hosted E2E (layer 4) and CI `e2e` job, account preferences, CI migration deploys (decision 41), the nightly backup (decision 39) |
 | R2 | `persist-2-lists` | `B2.0`-`B2.3` - **closed 2026-09-26**, live at the push of `main` | The test-migration fix (`B2.0`), then cloud lists with "edited N ago", sign-in-only creation, player and GM share links with polling, save a copy; `llms.txt` and the shared page name the cutoff date |
-| R5 | `persist-5-migration` | `B5.1` | **Moved directly after R2 (owner, 2026-09-25)** so that `LEGACY_WRITE_UNTIL` = 2026-10-26 is reachable (section 10): migration banner and flow, the `legacy_fingerprint` migration, legacy write cutoff, date-gated `#/l/` retirement, two-tab merge removed. Must be live on production by 2026-10-12, else the date moves |
-| R3 | `persist-3-realtime` | `B3.1` | Live updates on shared pages; polling stays as the fallback |
+| R5 | `persist-5-migration` | `B5.1`, `B5.2` - **planned 2026-09-26** (`issues/persist-5-migration/plan.md` is the authority) | **Moved directly after R2 (owner, 2026-09-25)** so that `LEGACY_WRITE_UNTIL` = 2026-10-26 is reachable (section 10): `B5.1` the `legacy_fingerprint` column and index, the exempted limit triggers and the `move_legacy_list` RPC; `B5.2` the automatic move at sign-in with its one-time notice and first-account guard (owner, 2026-09-26), the read-only cutoff, the date-gated `#/l/` retirement and its announcement, the post-date write path without the merge. Must be live on production by 2026-10-12, else the date moves |
+| R5b | `persist-5b-account-menu` (owner, 2026-09-26: its own release; `issues/persist-5-migration/plan.md` section 9b is its brief until the refresh gives it a directory) | `B5.3` | Right after R5, live by 2026-10-19 (before the 2026-10-26 cutoff): the header's account menu («Настройки отображения», «Мои списки», «Выйти»; «Мои предметы» joins in R7), the Display section of `#/account` (the five synced settings and R4's `notifyGm` choice), the Lists tab gone from the cutoff (`#/lists` stays a route) |
+| R11 | `persist-usage-monitoring` (working id kept; its directory exists) | `B11.1` | **Placed after R5 (owner request 2026-09-25, "after r2"; planner 2026-09-25), and after R5b from 2026-09-26**: a nightly `usage.yml` report of production's free-plan usage - database and Storage size, rows per table, an MAU estimate, request counts, users near their count limits - with a forecast, a summary every night, a failed run (GitHub's email) near a limit, the `usage_snapshots` history table and the keep-alive Data API call. Plan: `issues/persist-usage-monitoring/plan.md` |
+| R3 | `persist-3-realtime` | `B3.1`, `B3.2` | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline, requester status |
-| R6 | `persist-6-import-export` | `B6.1` | JSON export and import, published schema |
-| R7 | `persist-7-homebrew` | `B7.1`, `B7.2` | Homebrew items, search group, add to list, bundle schema v2 |
+| R6 | `persist-6-import-export` | `B6.1`, `B6.2` (planned 2026-09-26) | JSON export and import, published schema `schema/import-v1.json` |
+| R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-26; `issues/persist-7-homebrew/plan.md` is the authority) | Homebrew items as live references in the owner's lists, «Мои предметы» from the account menu and in search, the source tag «Хоумбрю» / "Homebrew" (owner, 2026-09-26), bundle schema v2 |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
 | R10 | `persist-10-legacy-removal` | `B10.1` | After the cutoff date has passed: the `#/l/` codec, its fixtures and contract text are removed |
 
-The order is R0, R1, R2, R5, R3, R4, R6-R9, R10 (owner, 2026-09-25;
-`docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"). R10 is the
-first release dispatched after the cutoff date; R3, R4 and R6-R9 may ship
-before it. Each release is deployable alone.
+The order is R0, R1, R2, R5, R5b, R11, R3, R4, R6-R9, R10 (owner, 2026-09-25;
+`docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"; R11 placed after
+R5 so R5's 2026-10-12 deadline keeps priority; R5b split from R5 by the
+owner, 2026-09-26). R10 is the
+first release dispatched after the cutoff date; R3, R4, R5b, R6-R9 and R11 may
+ship before it. Each release is deployable alone.
 
 ## 10. Legacy write cutoff (owner decision D2)
 
@@ -545,18 +551,26 @@ carries "goldens".
 | `B0.2` | `supabase/` init, layer 3 `check:db` chain and RLS harness, reversibility gate, applied-migration guard, gitleaks hook, CI `db` job with the `applied.json` check, `db:push` wrapper | section 6 rows 9-10 | layer 1 `check`, layer 3 `check:db`, CI (~5 min + first stack start) | required (plan rule: every hook and every `supabase/` batch) | a review that cannot be held in one pass: build and product source vs hooks and tooling (the `B12b`/`B12c` precedent) |
 | `B1.1`-`B1.6` | R1, closed 2026-09-25: the fake cloud and test build, sign-in and `#/account`, the hosted E2E and the CI `e2e` job, account preferences, CI migration deploys and the nightly backup, a states-case fix. The design as built is in `docs/specs/`, `docs/DECISIONS.md` and `.claude/README.md`; the batch briefs are in R1's commit history | - | - | - | - |
 | `B2.0`-`B2.3` | R2, closed 2026-09-26: the test-migration fix and the `production` Environment, the lists schema with limits and share links, account lists in the app with sign-in-only creation, share links `#/s/<token>` with "Save a copy". The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R2's commit history | - | - | - | - |
-| `B3.1` | Realtime: `realtime.send` trigger and `realtime.messages` policy (migration, reversal, `check:db` case that an update inserts one message per active share and none for a revoked one), real `CapabilityEventsPort` adapter, shared page subscribes to `share:<topic_key>`, coalesces events 250 ms, refetches, keeps the 45 s poll as the fallback, `Updated just now` and an `aria-live` announcement; layer 2 states: the fake's `emit` plays an edit into an open shared page; E2E: owner edit reaches an open viewer without reload | section 6 row 16 | layer 1 `check` x2, layer 3 `check:db`, `check:built`, layer 2 `app/states`, goldens, layer 4 E2E (~24 min) | required: schema rule and UI | new release (R3) |
-| `B4.1` | R4 schema and RPCs (section 5, R4 row), owner topic policy, RLS, reversals; layer 3 matrix: anon creates through a valid token only, a revoked or wrong token is refused, the caps refuse the 21st pending and the 6th in a minute, another user cannot read or apply, apply refuses over-stock and clamps on request, zero removes the entry, the status key reads status and lines only, the insert broadcasts to `owner:<uid>` and to nobody else | - | layer 1 `check`, layer 3 `check:db` (~5 min) | required (schema rule; the first anonymous write) | new release (R4); SQL judged apart from Svelte |
-| `B4.2` | Shared page: "Notify the owner" on the selection bar with an optional name field (signed out) and a Sent state with a status line; signed-in add-to-list asks "Notify the GM?" with "always / never" remembered in `user_prefs.notifyGm`; list page: a Requests panel above the entries (requester, lines, total, Apply, Apply available, Decline), a badge on the lists index card; `CapabilityEventsPort` subscribes to `owner:<uid>` when signed in, poll fallback; fake seed gains two requests (one over stock); layer 2 states: the form signed out and as `gm2`, Sent, the panel as `gm1` with a pending and an over-stock request, refused apply, declined; E2E: anonymous request, owner applies, stock deducted, requester status reads applied; privacy and terms fragments | section 6 row 17 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~29 min) | required: new UI, policy text | a commit boundary the harness cannot reach (needs `B4.1`) |
-| `B5.1` | Directly after R2 (owner, 2026-09-25). Migration banner and flow (canonical-JSON fingerprint, the `legacy_fingerprint` column and its unique index as R5's own migration - the R2 refresh deferred it here, so this batch also pays layer 3 `check:db`; read-back, per-list removal, `dhloot.migrated.v1`), `LEGACY_WRITE_UNTIL` = 2026-10-26 read-only mode, date-gated `#/l/` retirement (retired-link page, hidden link buttons and link import) and its announcement (`llms.txt`, `CONTRACTS.md`, install guide iOS paragraph), remove the two-tab merge with the local write path; layer 2 states: banner as `gm1` with seeded local lists, read-only local list and retired-link page with the constant forced past (a test-build-only `?today=` switch beside `?as=`) | section 6 row 18 | layer 1 `check`, `check:built`, layer 2 `app/states`, `app/contracts`, goldens, layer 4 E2E (~23 min) | required: UI, data safety, contract text | new release (R5) |
-| `B6.1` | `schema/import-v1.json` published, export all/selected/one (and the `#/account` "Your data" section), upload-validate-preview-import, `import_lists` RPC, `llms.txt` (the bundle replaces LLM-built links); layer 2 states: the import panel's preview and error report as `gm1` | section 6 row 19 | layer 1 `check` x2, layer 3 `check:db`, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~29 min) | required: public contract | new release (R6) |
-| `B7.1` | R7 schema, RLS, RPCs, tests, reversals; seed gains homebrew | - | layer 1 `check`, layer 3 `check:db` (~5 min) | required (schema rule) | new release (R7) |
-| `B7.2` | `#/homebrew` section and item form (kind-specific fields, EN and RU), "Your homebrew" search group, add to list as snapshot, delete with confirm, bundle schema v2 with homebrew; layer 2 states as `gm1`: the section, the form per kind, the search group | section 6 row 20 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~27 min) | required: contract and UI | a commit boundary the harness cannot reach |
+| `B11.1` | R11, after R5 and R5b: `usage_snapshots` migration and reversal, `tools/supabase/usage-lib.mjs` and `usage.mjs`, `.github/workflows/usage.yml` (Environment `production`, `contents: read`), `tests/derived.js` pins, layer 1 and layer 3 tests, `.claude/README.md` "Usage monitoring" | `COVERAGE.md`, `META.md` | layer 1 `check`, layer 3 `check:db` (~15 min) | required (schema rule; a workflow that reads a production secret) | new release (R11) |
+| `B3.1` | Revised by the R3 plan (2026-09-25; `issues/persist-3-realtime/plan.md` section 10): the database half - broadcast triggers, `realtime.messages` policies, tolerant `reorder_list` (R2 review row R3), `check:db` with `realtime` and `kong` running and WebSocket clients proving delivery, one message per transaction, no client send, reversal of the policies | - | layer 1 `check`, layer 3 `check:db` (~20-25 min, first image pull included) | required: schema rule | new release (R3) |
+| `B3.2` | The client half (R3 plan section 11): `EventsPort` (real, lazy, fake with `play` and `setLive`), the `connecting`/`live`/`down` feed with backoff, the share page and (Q1) the owner lists on it, the poll only while down, a 20 s write timeout (R2 review row R4), a hidden status region; layer 2 states; E2E: live update, live revoke, two owner pages | section 6 row 16 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~30 min) | required: UI and a new port | a commit the harness cannot reach (the E2E needs `B3.1`'s migration on the test project) |
+| `B4.1` | Revised by the R4 plan (2026-09-26; `issues/persist-4-requests/plan.md` section 10): section 5's R4 row in one migration and its reversal; layer 3 matrix: anon sends through an active player or GM token only, a stopped or wrong token is refused alike, bad and stale lines, the line limit, the rate (6th in a minute), the pending cap (11th), housekeeping, the status read shows nothing about the owner, another user cannot read, apply or decline, over-stock refused whole, clamp, zero removes the entry, the `request` events on the owner and share topics; the harness's anon function list and the limit rows | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db` x2 (~16 min) | required (schema rule; the first anonymous write) | new release (R4) |
+| `B4.2` | Revised by the R4 plan (section 11): `RequestRepository`, fake and contract case, `env.session`, the requester's send and status block, flow b with `notifyGm`, the owner's Requests panel with apply, «Принять доступное» and decline, the index card line, R3's feeds routing `request`, policy text; layer 2 states and cases; E2E: an anonymous request applied by the owner, stock lowered, the requester's status reads applied | section 6 row 17 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI, policy text | a commit the harness cannot reach (the E2E needs `B4.1`'s migration on the test project) |
+| `B5.1` | Refreshed 2026-09-26 (`issues/persist-5-migration/plan.md` section 8): `lists.legacy_fingerprint` with its check and the partial unique index `(owner_id, legacy_fingerprint)`; the two limit triggers re-created to skip a move (`dhloot.move`, decision 31's exemption); `move_legacy_list(p_id, p_canonical)` - the database hashes the canonical text, inserts the list and entries in one transaction, answers the existing id with `inserted = false`; the layer 3 matrix and the reversal | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db` (~10 min) | required (schema rule) | new release (R5) |
+| `B5.2` | The move and the cutoff (`issues/persist-5-migration/plan.md` section 9): `LEGACY_WRITE_UNTIL` in `lib/legacy.ts` with `canonicalList`, a clock port (the test build pinned before the cutoff, `?today=` beside `?as=`), `ListRepository.move`, the `LegacyMove` store run at sign-in (per-list RPC, one read-back, one storage write, `dhloot.migrated.v1` with the first account's id, the tombstones and the notice), the one-time `MoveNotice` under the header and the quiet `MoveStatus` in the storage notice's slot, read-only browser lists after the date (every control in the plan's table; delete stays), the retired-link page for every `#/l/` shape, the texts and specs, `tests/derived.js` pinning the date in every document that names it; layer 2 states (the moved index with the notice, the dismissed notice, another account, read-only index and list, the retired page), states cases 43-44, contract case H, E2E F8 | section 6 row 18 (less the install guide, done in `B2.2`) | layer 1 `check` x2, `check:built`, layer 2 `app/states`, `app/contracts`, goldens, sweep at 360, layer 4 E2E (~45 min) | required: new UI, data safety | SQL judged apart from Svelte; layer 4 needs the RPC on the test project |
+| `B5.3` | The account menu, `AppState.signOut`/`setHome`/`setNotifyGm`, the Display section of `#/account`, the Lists tab gone after the date (`issues/persist-5-migration/plan.md` section 9b); recommended as release R5b | `FEATURES.md` ("Account", "Chrome"), `ROUTES.md` ("Sections"), `STATE.md` | layer 1 `check` x2, `check:built`, layer 2 `app/states`, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI on every page | a different component set and seed (`Shell`, `AccountPage`); a review apart from `B5.2` |
+| `B6.1` | Refined 2026-09-26 (`issues/persist-6-import-export/plan.md` section 8): the contract and the database - `schema/import-v1.json` (draft 2020-12, `$id` the published URL, `additionalProperties: false`), `docs/fixtures/import/`, `tests/contracts.js` pins, `llms.txt` section "Lists as a file (import-v1)" (the bundle replaces LLM-built links), `CONTRACTS.md` section 4, the published-file lists (`ci.yml`, `check-site.lib.mjs`, `<noscript>`); `lib/bundle.ts` (build, validate with JSON paths, parse; a schema-drift test); `ListRepository.import` on the real adapter, the lazy port and the fake; `import_lists` migration, reversal, layer 3 matrix; contract case H and a real-only atomicity check | section 6 row 19 | layer 1 `check`, layer 3 `check:db`, `check:built`, layer 4 E2E (~12-15 min) | required: public contract, schema rule | new release (R6) |
+| `B6.2` | The UI: «Экспорт» (a checklist of the account lists, «Скачать JSON (N)») and «Импорт» (choose a file, validate, preview counts and skipped ids, one press) panels under the index's «Ваш аккаунт» heading; `#/account` «Ваши данные» with «Скачать все списки (JSON)»; «Скачать JSON» on an account list's page; `AppState.exportLists`, `CloudLists.import`; the driver's `download()` and `upload()` verbs; layer 2 states as `gm1`: the export panel, the import panel, the preview, the refused file, the imported list; states cases 43-45; E2E F8 | `FEATURES.md`, `META.md` section 3, `COVERAGE.md` | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~37 min) | required: new UI | a public-contract change and SQL apart from Svelte; a commit boundary the harness cannot reach (the states need `B6.1`'s fake `import` and fixtures) |
+| `B7.1` | Refreshed 2026-09-25, revised 2026-09-26 (`issues/persist-7-homebrew/plan.md`, the release's authority): R7 schema (section 5, R7 row), the matrix in `tests/db/homebrew.test.mjs` and the projection cases in `list-shares.test.mjs`, the reversal, `lib/homebrew.ts` (`validateDraft`, `toRecord`, `snapshotOf`, `withRecords`), `HomebrewRepository` in `ports/types.ts`, the real adapter and the fake, the seed's three items, a reference row in list 101 and a frozen row in `gm2`'s list, `cloud.contract.ts` case H, the shared fixtures `docs/fixtures/homebrew/` | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db`, layer 4 E2E (~11 min) | required (schema rule) | new release (R7); SQL and ports judged apart from Svelte |
+| `B7.2` | `#/homebrew`, `#/homebrew/new`, `#/homebrew/<key>` reached from the account menu's «Мои предметы» (owner, 2026-09-26; no tab current), the editor with the live card preview and the "in N lists" line, the «Мои предметы» search group over `Index.homebrew`, `AppState.index` derived through `withRecords`, add to list as a reference, the list, shared and index pages drawing references and frozen copies, `#/i/<key>` for the owner, print of a homebrew card, delete with the count warning, the `Homebrew` store's refresh on R3's owner topic; layer 2 states as `gm1` and `gm2`; E2E F8; the `DEBT.md` entry for the print address (retired by R9) | section 6 row 20 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~29 min) | required: public contract, new UI | a commit boundary the harness cannot reach (needs `B7.1` and R5's menu) and a public-contract change |
+| `B7.3` | Bundle schema v2 as an extension of R6's v1: `schema/import-v2.json`, top-level `homebrew`, entries with `source: homebrew` and a frozen `snapshot` (a file never carries a bare reference), export all with items, create-only import through `import_bundle(p_items, p_lists)` beside `import_lists` (one migration; a held key becomes a reference again); `llms.txt`, `CONTRACTS.md` section 4; layer 2 import preview as `gm1`; E2E export-delete-import | section 6 row 20 | layer 1 `check` x2, layer 3 `check:db`, `check:built`, layer 2 `app/states,app/contracts`, goldens, layer 4 E2E (~30 min) | required: public contract | a second public contract with its own fixtures and a migration `B7.2` has none of |
 | `B8.1` | Art: decode, square crop, 640 and 160 WebP, upload to the owner folder, `art_url`, rows and cards draw it, replace and remove; layer 2 states: a homebrew row and card with seeded art | `FEATURES.md` | layer 1 `check`, `check:built`, layer 2 `app/states`, goldens, layer 4 E2E (~20 min) | required: UI | new release (R8) |
 | `B9.1` | `#/h/<token>` (subscribes to its topic as `B3.1` does), add to list and clone, print routes `#/print/list/<id>` and `#/print/s/<token>` with homebrew cards; layer 2 states: `#/h/` signed out and as `gm2`, both print routes | section 6 row 21 | layer 1 `check` x2, `check:built`, layer 2 filter group, `app/print`, goldens, layer 4 E2E (~27 min) | required: public contract | new release (R9); a public-contract change |
 | `B10.1` | After the cutoff date: remove the `#/l/` codec, its writers, fixtures, tests and contract text (section 10 (c)); `legacyList` route kind kept for the retired-link page | section 6 row 22 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens (~28 min) | required: public contract | new release (R10), gated on the date |
 
-Total gate cost, one green pass per batch, idle host: about 7.1 hours
+Total gate cost, one green pass per batch, idle host: about 7.7 hours
+(R7's three batches are 70 minutes by the 2026-09-25 re-measured figures),
+plus about 15 minutes for R11's `B11.1`
 (`B0.1` alone is one hour because every browser suite re-runs over HTTP;
 the layer 2 goldens add ~10 minutes to every UI batch from `B1.1` on). A
 stalled host doubles a batch's cost; no batch above needs more than one
@@ -626,67 +640,141 @@ release's own plan; the code, the specs and `docs/DECISIONS.md` are the record.
 `B2.0`-`B2.3`: shipped in R2 (section 9). Their outlines were superseded by the
 release's own plan; the code, the specs and `docs/decisions/` are the record.
 
-`B3.1`: the `realtime.send` trigger and policy (section 5, R3 row);
-`CapabilityEventsPort` `{ subscribe(topic, onRevision): unsubscribe }` over
-`supabase.channel('share:<key>', { config: { private: true } })`; the
-shared page refetches when a received revision is above the one drawn,
-coalesced 250 ms, and on reconnect; the 45 s poll stays; owner devices are
-not subscribed (they refetch on focus). Free-plan limits (200 peak
-connections, 2 million messages a month) are a monthly owner check
-(section 15, step 18).
+`B3.1`-`B3.2`: planned 2026-09-25 in `issues/persist-3-realtime/plan.md`,
+which is the release's authority (owner questions Q1-Q3 answered as
+recommended, 2026-09-26).
+`B3.1` is the database half, `B3.2` the client half (`EventsPort` over
+`supabase.channel(topic, { config: { private: true } })`). The shared page
+refetches when a received revision is above the one drawn, coalesced
+250 ms, and on every join; the 45 s poll runs only while the feed is down
+(`docs/DECISIONS.md`, 2026-09-25, "Realtime is the primary live path ...").
+Free-plan limits (200 peak connections, 2 million messages a month; a
+Broadcast counts one message plus one per receiver) are a monthly owner
+check (section 15, step 18).
+Acceptance line placed by R11 on `B3.1`: the nightly usage report gains
+`realtime_rows_24h`, the rows of `realtime.messages` inserted in the last
+24 hours (a lower bound of billed messages), as an info row; its request
+counts already hold `realtime` (`issues/persist-usage-monitoring/plan.md`,
+section 11).
 
-`B4.1`-`B4.2` Purchase requests. Schema and RPCs as in section 5's R4
-row; the RPC is the system's first anonymous write, so its bounds are
-constraints and counts inside the function, not client checks: 20 lines,
-quantities 1..99, 40-character name, 20 pending per list, 5 per share per
-minute, 14-day expiry, 30-day housekeeping at write time. Shared page:
-the selection bar (taken counts already exist, `FEATURES.md` "Lists")
-gains "Notify the owner"; signed out it opens a one-field form (name,
-optional) and sends; the response's `status_key` is kept in
-`sessionStorage['dhloot.requests.v1']` (`{ [listToken]: [{ key, at }] }`,
-bounded to the last five) so the page draws a status line - Sent, Applied,
-Declined, Expired - refreshed with the page's own poll and the R3
-subscription (the owner's apply bumps the list revision, which the shared
-page already refetches on). Flow b: the add-to-list control on the shared
-page, after copying the selection into the viewer's own list, asks "Notify
-the GM?" with "Yes" / "No" and "Remember my choice"; the answer lands in
-`user_prefs.notifyGm` (`ask` default, `always`, `never`), editable nowhere
-else in v1 (reset by choosing the other answer once `ask` is gone - the
-`#/account` page gains one line only if the owner wants it). Owner side:
-`ListRepository.requests(listId)` and `apply(id, clamp)`, `decline(id)`;
-the Requests panel lists pending requests newest first with requester,
-lines (name, quantity, unit price), total in the list's money mode, and
-three buttons; Apply on an over-stock request shows the failing lines and
-offers "Apply available"; applied and declined requests fold under
-"Decided" for the session. Lists index cards carry a pending count badge.
-`CapabilityEventsPort.subscribe('owner:<uid>')` when signed in, one
-subscription for the session, refetches the open list's requests and the
-index badges; the 45 s poll stays. Privacy fragment: one paragraph on
-requests; terms: a request is a message to the owner, not an order.
-Anonymous requester name is plain text through Svelte text nodes, as every
-user string.
+`B11.1` (R11, after R5 and R5b; its own plan is the authority): a
+nightly `usage.yml` in the Environment `production` reads database size
+(`pg_database_size`), rows and bytes per `public` table, Storage bytes
+(`storage.objects`), an MAU estimate from `auth.users` and `auth.sessions`,
+users near their count limits, and request counts per service from the
+Management API's `usage.api-counts` with a scoped read-only token
+(`SUPABASE_USAGE_TOKEN_PROD`); stores one `public.usage_snapshots` row a
+day; forecasts days left by a 28-day least-squares slope; warns at 50 %
+or under 60 days and fails at 80 % or under 14 days (owner, 2026-09-26);
+makes one Data API call as the free-tier keep-alive. Billed egress, MAU
+and Realtime connections have no public API (2026-09-25) and stay the
+dashboard's.
 
-`B5.1` (directly after R2; live by 2026-10-12 or the date moves):
-migration - fingerprint = SHA-256 of a canonical JSON of the local
-list (sorted keys, no codec), `legacy_fingerprint` unique per owner (its
-migration and reversal are this batch's; `check:db` joins its gates),
-`dhloot.migrated.v1` map, per-list states Waiting / Moving / Moved / Needs
-attention, resume on next sign-in; `LEGACY_WRITE_UNTIL` and every item
-section 10 gates on it; the retired-link page for `#/l/`; install guide
-iOS paragraph; the two-tab merge deleted with the local write path.
+`B4.1`-`B4.2` Purchase requests: planned 2026-09-26 in
+`issues/persist-4-requests/plan.md`, which is the release's authority
+(its owner question answered 2026-09-26: the remembered "notify the
+owner" answer is changed in R5b's Display settings, not in a field R4
+adds to `#/account`). The owner's
+answer to 36 stands as given: 100 lines per request and 10 pending per
+list as `limit_defaults` rows, 5 per share per minute and a 1-hour expiry
+as constants, no requester name. The function's bounds are inside it, not
+client checks. `B4.1` is the database half, `B4.2` the client half; the
+owner's notification rides R3's `owner:<uid>` topic (R3's Q1 answered
+yes) as a revision-free nudge, then a re-read; the poll covers a feed that
+is down.
 
-`B6.1`: `schema/import-v1.json` in the repository root (copied to `_site`
-by `ci.yml`, linked from `llms.txt` and the `<noscript>` block), lists only
-in v1; export builds the bundle client-side from the cloud store; import
-validates with a hand-written validator in `lib/` (no dependency), previews
-counts and unknown official keys, then one `import_lists` call.
+`B5.1`-`B5.2` (planned 2026-09-26 in `issues/persist-5-migration/plan.md`,
+which is the release's authority): the fingerprint is SHA-256 of a
+canonical JSON of the normalised local list (keys sorted, no codec),
+computed by the database inside `move_legacy_list`, unique per owner;
+the move runs by itself when a signed-in reader's app loads with browser
+lists (owner, 2026-09-26: an RPC per list, one read-back, one storage
+write, `dhloot.migrated.v1` with the first account's id, the tombstones by
+local id and the names for a one-time notice; a later account on that
+browser moves nothing); the move is exempt from the count limits; a quiet
+status in the storage notice's slot says moving, failed (retried on the
+next load) or refused (the list stays, named); `LEGACY_WRITE_UNTIL` gates
+every item of section 10 in a configured build, the test build's clock is
+pinned before it and `?today=` moves it; the retired-link page for every
+`#/l/` shape; after the date the only browser-list writes are the move's
+removal and a delete through a fresh read (no merge), and R10 deletes the
+pre-date writers and `mergeLists` with the codec; `B5.2` also pays
+`docs/specs/DEBT.md` D24's R5 part (a readable `dhloot.lists.v2.bad`
+backup moves or is named in the notice). `B5.3` (release R5b, owner,
+2026-09-26): the account menu, the Display section of `#/account` with R4's
+`notifyGm` choice, nine tabs from the cutoff. The install guide's iOS
+paragraph was rewritten by `B2.2`. Decisions: `docs/DECISIONS.md`,
+2026-09-26, four entries. Live on production by 2026-10-12 or the date
+moves; R5b by 2026-10-19.
 
-`B7.1`-`B9.1`: section 5 schema; homebrew content is the existing record
-shape (`Record_` fields the form can fill: kind, tier or rarity, names and
-descriptions in both languages, stat line for equipment); `catalog_key`
-`hb_<base32>`; search groups official then "Your homebrew"; `RowMain`
-draws `art_url` through the same thumb rule; `#/print/list/<id>` and
-`#/print/s/<token>` load entries then reuse `PrintPage`.
+`B6.1`-`B6.2` (planned 2026-09-26 in `issues/persist-6-import-export/
+plan.md`, the release's authority): the file `import-v1` - `format`
+`daggerheart-loot/lists`, `version` 1, `lists[]` in `snake_case` (`name`,
+`money_mode`, `player_note`, `gm_note`, `entries[]` with the `catalog.csv`
+`id`, `quantity`, `price_coins`, both notes; `source` reserved for v2), no
+ids or timestamps, both notes always; `schema/import-v1.json` in the
+repository root (copied to `_site` by `ci.yml`, probed by
+`check-site.lib.mjs`, linked from `llms.txt` and the `<noscript>` block),
+strict (`additionalProperties: false`), frozen; import is create-only with
+client-made ids, one `import_lists` transaction (all or none), unknown ids
+skipped and named in the preview, the schema's bounds checked in the
+client (`lib/bundle.ts`, no dependency) and the account limits by the
+database; export from `#/account` (all), the lists index (a checklist) and
+an account list's page (one) through `ImagePort.download`. Three decision
+files of 2026-09-26 in `docs/decisions/`. Owner questions (all-or-nothing,
+both notes, three surfaces, unknown ids skipped) in that plan's section
+11. Bundle v2 (R7) bumps `version`, widens `source` and adds the homebrew
+snapshot; the RPC's signature holds.
+
+`B7.1`-`B7.3` (refreshed 2026-09-25 in `issues/persist-7-homebrew/plan.md`,
+the release's authority): section 5 schema; homebrew content is the
+`Record_` shape narrowed to what the form fills (`kind`, names and
+descriptions in both languages with at least one name, `tier` 1-4 typed
+by the owner and never derived, `eq` for equipment), one jsonb column
+validated in SQL and in `lib/homebrew.ts` over shared fixtures; keys
+`hb_` + 16 base32 characters, per owner; `Index.homebrew` and
+`withRecords(index, records)` merge the owner's items into `byId` and a
+second search group without touching `data.js`, the tables or the rolls;
+an own item in a list is a live reference (`snapshot` null) drawn from
+the merged index, so an edit reaches every list and every open shared
+page (the item's touch trigger bumps the lists' `revision`; R3's topics
+carry it); a copy that leaves the account - "Save a copy", R4's
+add-to-my-list, R6's export, R9's add from a link - is frozen by
+`homebrew_snapshot_of`; a delete warns with the count and removes the
+references; the pages resolve frozen copies through the same
+`withRecords`; the page is reached from the account menu's «Мои
+предметы» (R5b builds the menu); saves are a form submit; bundle v2
+extends v1 with a `homebrew` array and frozen entries, imported through
+`import_bundle(p_items, p_lists)` beside R6's `import_lists` (a held key
+becomes a reference). Decisions: `docs/DECISIONS.md`, 2026-09-25, "A
+homebrew item is stored as the catalog record shape ...", "A homebrew
+save is a form submit ..."; 2026-09-26, "Homebrew in the owner's lists
+is a live reference; a copy that leaves is frozen", "Homebrew is reached
+from the account menu, not from a tab".
+
+`B8.1`: `art_url` as an additive column with a URL-shape CHECK;
+`toRecord` maps it to `Record_.img` as an absolute URL, `artSrc` passes an
+absolute `img` through and derives the 160 px name by R8's own rule;
+`homebrew_snapshot_of`, `snapshotOf` and a new `homebrew_snapshot_valid`
+carry `img`; a replaced picture whose URL a frozen copy still names is
+answered by the broken-art fallback, so files may be deleted freely (a
+reference always draws the current picture); the editor's card
+preview reserves the picture slot; decision 40's `delete-account` Edge
+Function ships here with the bucket (nothing to delete before R8).
+Acceptance line placed by R11 on `B8.1`: the usage report's Storage row
+reads the `homebrew-art` bucket - after the E2E upload, the test project's
+report shows a non-zero `storage_bytes`.
+
+`B9.1`: section 5's R9 row; `#/h/<token>` draws `RecordCard` over
+`toRecord()` of the projection and subscribes to `share:<topic_key>` as
+`B3.1` does; `add_shared_homebrew_to_list` writes a frozen copy; a clone
+is the cloner's own item (a new row, a new key, a reference in the
+cloner's lists), and «Сделать своим» from a frozen list row is R9's
+call; `#/print/list/<id>` and `#/print/s/<token>` load entries, resolve
+them through `withRecords(index, snapshots)` (a reference from the
+owner's items, a frozen row from itself) and reuse `PrintPage`, retiring
+the `DEBT.md` entry `B7.2` writes for the `#/print/<ids>` address of a
+list with homebrew entries.
 
 `B10.1`: section 10 (c). Dispatched only after `LEGACY_WRITE_UNTIL` has
 passed in production; the planner refresh checks the date first.
@@ -812,6 +900,10 @@ Monthly, from R2 on:
 
 At the cutoff date (2026-10-26, fixed 2026-09-25):
 
+18a. For R11, after its push: the scoped usage token, the secret
+    `SUPABASE_USAGE_TOKEN_PROD` in the Environment `production`, the
+    failed-run email setting, and one dispatch of `usage.yml`
+    (`issues/persist-usage-monitoring/plan.md`, section 9).
 19. Confirm in production that `#/l/<payload>` draws the retired-link page
     and a local list shows no link buttons; then ask for R10.
 
@@ -1073,8 +1165,10 @@ to sections 3, 5, 12 and 14 and writes the durable ones to
     `.claude/README.md`, "Backups and restore". Still owed here: from R7 the
     job also copies the `homebrew-art` objects. The production connection
     string it uses is shared with `migrate-prod` (decision 41).
-40. **Edge Functions: one, in R7.** Orchestrator recommendation, discussed
-    with the owner 2026-09-24; the R7 refresh confirms it. `delete-account`
+40. **Edge Functions: one, in R8** (was R7; the R7 refresh of 2026-09-25
+    moved it: no file exists before the bucket, so R7's cascade delete is
+    complete). Orchestrator recommendation, discussed
+    with the owner 2026-09-24. `delete-account`
     (in `supabase/functions/`, deployed from the owner's CLI) verifies the
     caller's session, removes `homebrew-art/<uid>/` through the Storage API
     (Supabase advises against deleting `storage.objects` rows from SQL,
@@ -1320,17 +1414,18 @@ failed first `#/s/` read not retried); R3's plan names D56 and D57.
 - Risk: Realtime Broadcast from the database (`realtime.send`) and the
   `private: true` channel with a `realtime.messages` policy for `anon` are
   planned from platform documentation, not measured here; `B3.1`'s
-  `check:db` case and E2E flow are the proof, and the 45 s poll is the
-  fallback if the platform behaves otherwise.
+  `check:db` WebSocket cases and `B3.2`'s E2E flow are the proof, and the
+  45 s poll is the fallback if the platform behaves otherwise (the R3
+  plan, section 14, adds the `db reset` and CORS risks).
 - Risk: `create_purchase_request` is the first RPC `anon` can write
   through; its bounds are inside the function and proven by the layer 3
   matrix (`B4.1`), and a valid share token is the only capability it
   accepts - a leaked GM link is the same exposure it already was, plus
   bounded requests the owner can decline and a rotate that ends it.
-- Privacy impact of R4: a typed requester name and the requested items are
-  stored for the list owner until 30 days after decision or expiry; the
-  privacy page says so and names the deletion (`B4.2`); the name is
-  optional and plain text.
+- Privacy impact of R4: a request stores the items, counts, link kind and
+  time, and no name, account or address (answer 36); it expires after an
+  hour and is deleted 24 hours after a decision or expiry, at the next
+  send; the privacy page says so (`B4.2`).
 - Risk: a `#/l/` link pasted before the cutoff and opened after it is dead
   by the owner's decision; the retired-link page and the `llms.txt`
   announcement are the whole mitigation.
@@ -1343,7 +1438,9 @@ failed first `#/s/` read not retried); R3's plan names D56 and D57.
 - Deferred: CSP meta policy; homebrew Trash; homebrew import beyond v2's
   create-only; an owner-scoped Realtime topic; brand verification.
 - Not in v1 (owner, 2026-09-24, from the brainstorm): list templates; a
-  restock note field; a preferences page; a shop restock roll mode;
+  restock note field; a preferences page (**superseded 2026-09-26**: the
+  owner asked for «Настройки отображения» in the account menu - a section
+  of `#/account`, `B5.3`); a shop restock roll mode;
   homebrew import by pasting a stat block; a player wishlist on a shared
   list (issue 50 with a server); a recent-activity view on `#/account`;
   homebrew sets. Rejected outright: a duplicate-list button; a share-link

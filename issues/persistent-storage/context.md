@@ -9,7 +9,10 @@ plan-implement-review-remediate loops per batch.
 
 ## Release status
 - R0 closed 2026-09-24; R1 `persist-1-auth` closed 2026-09-25 (record:
-  `plan.md` section 16, "R1 closeout record"). Next: R2 `persist-2-lists`.
+  `plan.md` section 16, "R1 closeout record"); R2 `persist-2-lists` live
+  2026-09-26 (`012462e1`, budget fix `8ebf03ea`). Next: R5
+  `persist-5-migration` (its `plan.md` section 13 refresh, then `B5.1`),
+  then R5b `persist-5b-account-menu`.
 
 ## Input design (external, not authoritative)
 - `C:\Users\Ignat\OneDrive\Desktop\persist\DAGGERHEART-LOOT-PERSISTENCE-DESIGN.md`
@@ -256,20 +259,21 @@ own local branch (not pushed), all based on R2's local task commit
 `da7378cb`. Each planner commits its plan on its branch. After R2 closes
 and is pushed, the orchestrator brings each planning commit onto `main`
 (conflicts expected only in this roadmap's `plan.md`), then removes the
-worktree. Until then, do not delete these worktrees or branches.
+worktree. All six plan commits were integrated in this commit (one docs
+commit on `main`, 2026-09-26) with every owner answer below applied; the
+worktrees and branches may now be removed.
 
-| Release | Task id | Worktree (`.claude/worktrees/`) | Branch | Planner model |
-|---|---|---|---|---|
-| R5 migration and cutoff | `persist-5-migration` | `agent-ab6237f88fb7735f1` | `worktree-agent-ab6237f88fb7735f1`, plan commit `6cae06e4` (revised, replaces `146be6ab`) | Fable |
-| R3 Realtime (polling stays plan B) | `persist-3-realtime` | `agent-ae90a050b0e40090a` | `worktree-agent-ae90a050b0e40090a`, plan commit `c39f3de1` | Opus |
-| R11 usage monitoring (after R5) | `persist-usage-monitoring` | `agent-acf8d4e7cebcec311` | `worktree-agent-acf8d4e7cebcec311`, plan commit `43e0e7dd` | Opus |
-| R6 import and export | `persist-6-import-export` | `agent-a7cedf410497c36ee` | `worktree-agent-a7cedf410497c36ee`, plan commit `a22a4230` | Fable |
-| R7 homebrew | `persist-7-homebrew` | `agent-ae9a09b5c219f2c0f` | `worktree-agent-ae9a09b5c219f2c0f`, plan commit `764ff8e7` (revised 2026-09-26, replaces `e9f82755`) | Fable |
-| R4 purchase requests | `persist-4-requests` | `agent-a1edb43d760ec7422` | `worktree-agent-a1edb43d760ec7422` (on top of R3's `c39f3de1`), plan commit `d8268062` | Opus |
+| Release | Task id | Worktree (`.claude/worktrees/`) | Branch | Planner model | Integrated |
+|---|---|---|---|---|---|
+| R5 migration and cutoff | `persist-5-migration` | `agent-ab6237f88fb7735f1` | `worktree-agent-ab6237f88fb7735f1`, plan commit `6cae06e4` (revised, replaces `146be6ab`) | Fable | in this commit |
+| R3 Realtime (polling stays plan B) | `persist-3-realtime` | `agent-ae90a050b0e40090a` | `worktree-agent-ae90a050b0e40090a`, plan commit `c39f3de1` | Opus | in this commit |
+| R11 usage monitoring (after R5) | `persist-usage-monitoring` | `agent-acf8d4e7cebcec311` | `worktree-agent-acf8d4e7cebcec311`, plan commit `43e0e7dd` | Opus | in this commit |
+| R6 import and export | `persist-6-import-export` | `agent-a7cedf410497c36ee` | `worktree-agent-a7cedf410497c36ee`, plan commit `a22a4230` | Fable | in this commit |
+| R7 homebrew | `persist-7-homebrew` | `agent-ae9a09b5c219f2c0f` | `worktree-agent-ae9a09b5c219f2c0f`, plan commit `764ff8e7` (revised 2026-09-26, replaces `e9f82755`) | Fable | in this commit |
+| R4 purchase requests | `persist-4-requests` | `agent-a1edb43d760ec7422` | `worktree-agent-a1edb43d760ec7422` (on top of R3's `c39f3de1`), plan commit `d8268062` | Opus | in this commit |
 
-Starter `context.md` files for these tasks also sit untracked in the main
-tree under `issues/<task id>/` (the planners copied them). Find the plan
-commits with `git log --oneline main..<branch>` per branch.
+The untracked starter `context.md` files in the main tree were deleted
+before the integration; the planners' refined copies replaced them.
 
 Owner answers for R11 usage monitoring (2026-09-26), to apply when its
 plan is integrated: thresholds warn at 50% or under 60 days, fail at 80%
@@ -333,3 +337,43 @@ Owner answer (2026-09-26): the account menu ships as its own release R5b
 `persist-5b-account-menu` right after R5 (live before the 2026-10-26
 cutoff); R5 keeps `B5.1`, `B5.2`. R8, R9 and R10 are not planned yet
 (owner: finish R2 first).
+
+Owner answer (2026-09-26): DEBT D24 moves under R5 (`persist-5-migration`)
+with one acceptance line - the automatic move also moves a readable
+`dhloot.lists.v2.bad` backup, or names it in the move notice - and the
+entry is deleted at R10. The "Consistent storage" section is retired as
+superseded by the persistence programme; its signed-out cross-tab settings
+note (`dhloot.lang`/`home`/`warn`) becomes a one-line entry. Lands in the
+docs commit that integrates the plans made ahead. Applied there: D24 under
+R5 with the line in R5's `B5.2` acceptance; the settings note is D61 under
+a new R10 `persist-10-legacy-removal` section.
+
+R2 live (2026-09-26): push `cd1b3b15..012462e1`; CI run 36228323330 red
+only in `e2e`'s configured bundle budget (172.0 of 170 kB; every flow
+passed; `migrate-prod`/`deploy` skipped); fix `8ebf03ea` (budget 180 kB,
+DEBT D60); CI run 36229149582 green in every job - `migrate-prod` in the
+`production` Environment applied `20260925130000`-`130300`, `deploy`
+green. Backup run 36229596679 (`dump` in `production`) green,
+08:22:49-08:24:01Z. Owed: owner step 4 (delete the repository secret
+`SUPABASE_DB_URL_PROD`), the production Security Advisor look (Claude in
+Chrome was not connected at 08:25Z).
+Production Security Advisor after R2 (orchestrator, Claude in Chrome,
+linter rerun 2026-09-26): 0 errors; 8 warnings - SECURITY DEFINER
+executable by signed-in users for `clone_shared_list`, `create_list_share`,
+`delete_account`, `get_shared_list`, `reorder_list`, `revoke_list_share`,
+and by anon for `get_shared_list` (all by design, pinned by layer 3), plus
+leaked password protection off (no password sign-in); 2 info - RLS on with
+no policy for `limit_defaults` and `user_limit_overrides` (by design, no
+client access). No `rotate_list_share`.
+Owner step 4 done (2026-09-26, verified by `gh secret list`, names only):
+the repository secret `SUPABASE_DB_URL_PROD` is gone; it exists only in
+the `production` Environment. The production connection string is now
+readable only by jobs that run from `main`.
+
+Restore drill task planned (2026-09-26): `persist-restore-drill`, worktree
+`.claude/worktrees/agent-a3eca8d34368886ab`, branch
+`worktree-agent-a3eca8d34368886ab`, plan commit `29f38394` on `8ebf03ea`;
+one batch B1 (`npm run restore:drill`, key `BACKUP_AGE_IDENTITY` in the
+git-ignored `.env.restore.local`, in-memory decrypt with `age-encryption`,
+local stack only, counts from the dump, cleanup in `finally`, hook rule
+2q). Not integrated yet; no owner question.

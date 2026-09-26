@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>B5.3 account menu and display settings</title>
+    <link rel="stylesheet" href="mock.css" />
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>
+        B5.3 - the account menu, the Display section of `#/account`, the bar after the cutoff
+      </h1>
+      <p>
+        Owner, 2026-09-26: the header's account control opens a menu «Настройки отображения»,
+        «Мои списки», «Мои предметы» (R7), «Выйти»; the Lists tab leaves the bar at the cutoff;
+        «Настройки отображения» is the smallest form over the settings the account already
+        syncs. The control (the same 38px circle) becomes a button with `aria-haspopup="menu"`;
+        the menu (NEW) reuses the add-to-list menu's box values, right-aligned under it. Signed
+        out nothing changes («Войти» link). «Настройки отображения» leads to `#/account`, whose
+        first section (NEW) holds the five controls; no new route.
+      </p>
+    </div>
+
+    <div class="frames">
+      <section class="frame">
+        <span class="cap">A. the menu open - state `#/roll/std ~ account menu as gm1`</span>
+        <div class="topbar">
+          <a class="brand"
+            ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></a
+          >
+          <span style="position: relative; display: inline-block">
+            <span class="acct in" style="outline: 2px solid var(--gold); outline-offset: 2px"
+              >g</span
+            >
+            <div class="acctmenu new" role="menu">
+              <a role="menuitem" href="#/account">Настройки отображения</a>
+              <a role="menuitem" href="#/lists">Мои списки</a>
+              <button role="menuitem">Выйти</button>
+            </div>
+          </span>
+        </div>
+        <div class="tabs">
+          <span class="on">Обычные правила</span><span>Альт. таблицы</span><span>Таблицы</span
+          ><span>Списки</span><span>Поиск</span>
+        </div>
+        <main class="in">
+          <div class="note">
+            The button: `aria-label` «Аккаунт: gm1@example.test», `aria-haspopup="menu"`,
+            `aria-expanded="true"`. Items in this order; R7 inserts «Мои предметы» before
+            «Выйти». Up/Down/Home/End move; Escape closes and returns focus to the button; an
+            outside click or a choice closes. «Выйти» signs out with the toast «Вы вышли из
+            аккаунта.»; from an account list's page the address becomes `#/lists`. Signed out:
+            today's «Войти» link, no menu. Before the cutoff «Списки» is still a tab (this
+            frame).
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap"
+          >B. `#/account` signed in - state `#/account ~ display as gm2` (the first section,
+          NEW)</span
+        >
+        <main class="in">
+          <h1 class="page-h">Аккаунт</h1>
+          <p class="page-sub">Способы входа, выход и ваши данные.</p>
+          <div class="panel new" style="margin-bottom: 16px">
+            <div class="field">
+              <h2 class="lbl">Отображение</h2>
+              <div class="settings">
+                <label
+                  ><span>Язык</span>
+                  <span class="seg"><b class="on">RU</b><b>EN</b></span></label
+                >
+                <label
+                  ><span>Раздел при запуске</span>
+                  <select class="input" style="height: 36px; width: auto; padding: 0 10px">
+                    <option selected>Обычные правила</option>
+                    <option>Альт. таблицы</option>
+                    <option>Чудесная добыча</option>
+                    <option>Dread GM Toolbox</option>
+                    <option>Vault of Ages</option>
+                    <option>The Dragon's Vault</option>
+                    <option>Сообщества</option>
+                    <option>Таблицы</option>
+                    <option>Списки</option>
+                    <option>Поиск</option>
+                  </select>
+                </label>
+                <label
+                  ><span>Таблицы</span>
+                  <span class="seg"><b>Списком</b><b class="on">Сеткой</b></span></label
+                >
+                <label
+                  ><span>Печать</span>
+                  <span class="seg"><b>Цветная</b><b class="on">Чёрно-белая</b></span>
+                  <span class="chk"><input type="checkbox" checked /> Компактный лист</span>
+                </label>
+                <label
+                  ><span>Сообщать владельцу списка</span>
+                  <span class="seg"
+                    ><b class="on">спрашивать</b><b>всегда</b><b>никогда</b></span
+                  ></label
+                >
+              </div>
+            </div>
+          </div>
+          <div class="panel" style="margin-bottom: 16px">
+            <div class="field">
+              <h2 class="lbl">Вы вошли как</h2>
+              <p style="margin: 0"><b>gm2@example.test</b> через Google</p>
+            </div>
+          </div>
+          <div class="panel" style="margin-bottom: 16px">
+            <div class="field">
+              <h2 class="lbl">Способы входа</h2>
+              <p style="margin: 0; color: var(--muted)">... unchanged ...</p>
+            </div>
+          </div>
+          <div class="note">
+            The five controls are the ones the pages already persist (`STATE.md`, "Account
+            preferences"): the language `Seg`, a `select` over the ten sections for the starting
+            section (a pinned table shows as «Таблицы» and keeps its hash until changed; the
+            default is «Обычные правила»), the tables view `Seg`, the print layout `Seg` and the
+            compact-sheet checkbox, and the remembered answer to R4's «Сообщать владельцу
+            списка?» (`user_prefs.notifyGm`, account-only, «спрашивать» by default; owner,
+            2026-09-26). Each writes through the existing setters, so the account row follows.
+            The section is drawn signed in only, first; the rest of the page is unchanged.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap"
+          >C. after the cutoff (`?today=2026-10-26`): nine tabs, «Мои списки» in the menu</span
+        >
+        <div class="topbar">
+          <a class="brand"
+            ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></a
+          >
+          <span class="acct in">g</span>
+        </div>
+        <div class="tabs new">
+          <span class="on">Обычные правила</span><span>Альт.</span><span>Таблицы</span
+          ><span>Поиск</span>
+        </div>
+        <main class="in">
+          <div class="note">
+            «Списки» left the bar (nine tabs); `#/lists` stays a readable route - the menu's
+            «Мои списки», a bookmark, the pin and the retired page's button reach it. No fixture
+            or contract-test change in R5 (the test build is pinned before the date); R10 sets
+            the `tab` of `#/lists` in `routes.json` to `null` when it removes the pinned clock.
+          </div>
+        </main>
+      </section>
+    </div>
+  </body>
+</html>

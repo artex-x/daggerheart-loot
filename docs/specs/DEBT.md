@@ -10,12 +10,10 @@ user-visible defect does not belong here. Why this file is the home:
 `docs/DECISIONS.md`, "Kept defects live in `docs/specs/DEBT.md`, grouped by
 the task that owes them".
 
-## Consistent storage (no issue filed yet)
+## Account data migration (`persist-5-migration`)
 
-Owns: a versioned storage envelope with validation and migration, per-entry
-reconciliation, the `dhloot.lang`/`home`/`warn` keys (not watched across
-tabs today - a second tab keeps the old value until reload), a `save()`
-debounce, a local `.json` export, and backups a person can reach.
+Owns: the move of this browser's lists into the account, the legacy write
+cutoff (`LEGACY_WRITE_UNTIL`, 2026-10-26) and the retired `#/l/` page.
 
 ### D24 - a second `dhloot.lists.v2` corruption is never backed up, and the first backup is orphaned forever
 
@@ -31,25 +29,20 @@ debounce, a local `.json` export, and backups a person can reach.
   corruption after that point is not backed up at all (the guard still
   finds `.bad` occupied by the first one) and `save()` writes straight over
   it, while the notice tells the reader their data survived.
-- **Why deferred**: the real fix needs a backup **keying scheme** - a
-  timestamped key grows `localStorage` without bound, and dropping `.bad`
-  the moment a read succeeds discards the one copy of the first loss before
-  anyone could reach it - plus a way for a person to actually reach a
-  backup at all, which today has no UI anywhere. The consistent-storage
-  ticket already owns ".bad-key recovery beyond a notice"; this is that same
-  design question, not a second one.
-- **How to verify the fix**: corrupt `dhloot.lists.v2` twice in a row (a
-  plain write of unparsable text, then - after the app has re-validated the
-  key once, clearing `unreadable` - corrupt it again) and confirm two
-  distinct, reachable backups exist rather than one overwritten copy.
+- **Why deferred**: the real fix needs a backup keying scheme and a way for
+  a person to reach a backup, which today has no UI anywhere. The browser
+  list store stops being written at the cutoff, so R5 pays the part a
+  reader can lose: the automatic move also moves a readable
+  `dhloot.lists.v2.bad` backup into the account, or names it in the move
+  notice. R10 (`persist-10-legacy-removal`) removes the browser list store
+  and deletes this entry.
+- **How to verify the fix**: R5 - seed a readable `dhloot.lists.v2.bad`
+  beside `dhloot.lists.v2`, sign in, and confirm that the backup's lists
+  reach the account or that the move notice names the backup. R10 - confirm
+  that no code reads or writes `dhloot.lists.v2` or its `.bad` key.
 - **Copy** (was D31): `app/src/lib/dict.ts` `badStorage` (`ru`, `en`) tells
   the reader their unreadable data is kept "under a separate key", which no
   one can act on outside devtools. Rewrite it once a backup is reachable.
-
-## Account data migration (`persist-5-migration`)
-
-Owns: the move of this browser's lists into the account, the legacy write
-cutoff (`LEGACY_WRITE_UNTIL`, 2026-10-26) and the retired `#/l/` page.
 
 ### D54 - a `#/l/` link with more than 100 items saves an empty account list
 
@@ -175,3 +168,20 @@ the same rework.
 - **How to verify the fix**: open `#/s/<token>` offline, go back online, and
   confirm that the list shows on the next poll or when the tab is shown
   again, with no press.
+
+## Legacy removal (`persist-10-legacy-removal`)
+
+Owns: the removal of the `#/l/` codec and the browser list store after the
+cutoff.
+
+### D61 - a signed-out tab keeps its old language, start section and warning until reload
+
+- **Where**: `dhloot.lang.v1`, `dhloot.home.v1` and `dhloot.warn.v1` in
+  `app/src/state/app.svelte.ts`; nothing watches them across tabs.
+- **What**: a change in one tab reaches another open tab only when that tab
+  reloads. A signed-in tab re-reads the account row when it is shown again;
+  a signed-out tab does not.
+- **Why deferred**: the consistent-storage ticket owned it and was superseded
+  by the persistence programme (2026-09-26); the cost is one reload.
+- **How to verify the fix**: signed out, open two tabs, change the language
+  in the first, and confirm that the second tab shows it without a reload.

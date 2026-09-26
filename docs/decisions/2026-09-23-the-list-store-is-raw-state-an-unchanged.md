@@ -13,9 +13,10 @@
   Measured after the change (built `dist/`, 1100x900): a keystroke at 200
   lists 22 -> 2.5 ms; an unchanged `storage` signal 62 -> under 1 ms with
   no DOM mutation; opening `#/lists` at 500 lists 467 -> 32 ms (24 cards).
-- Rejected: a `save()` debounce (the consistent-storage ticket owns it,
-  `DEBT.md`, "Consistent storage"); one key per list (a stored-format change
-  and a new two-tab merge).
+- Rejected: a `save()` debounce (the consistent-storage ticket owned it;
+  the persistence programme superseded that ticket on 2026-09-26, and
+  browser lists become read-only at the cutoff); one key per list (a
+  stored-format change and a new two-tab merge).
 - Accepted trade-off: an in-place write to a stored list redraws nothing -
   the reason phase 8 kept deep state; writers stay immutable.
 - Supersedes in part "Rejected UI/architecture options from the phase-8 review, recorded once" (2026-09-17).

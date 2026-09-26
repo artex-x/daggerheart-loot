@@ -1,5 +1,6 @@
 # 2026-09-24 - The browser suites drive a test build with a deterministic fake cloud
 
+- Amended by "The test build's clock is pinned before the cutoff, and `?today=` moves it" (2026-09-26): the test build also has a pinned clock.
 - Task: `persistent-storage` (owner decision, 2026-09-24).
 - Decision: `vite build --mode test` writes `dist-test/` with an in-memory
   `CloudPort` fake seeded with fixed users, lists, homebrew, ids, tokens

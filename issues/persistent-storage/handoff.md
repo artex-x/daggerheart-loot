@@ -4,11 +4,14 @@
 ## Status
 - Task status: in_progress (programme roadmap; R0 closed 2026-09-24, R1
   closed 2026-09-25, R2 closed 2026-09-26, R5 next)
-- Last agent: implementer (R2 closeout, 2026-09-26)
+- Last agent: implementer (2026-09-26: the plans made ahead for R3-R7 and
+  R11 integrated onto `main` in one docs commit, with the owner's answers)
 - NEEDS_HUMAN_CONFIRMATION: no (decisions 1-41 answered, `plan.md` section 16)
-- Branch: `main`; R2's one commit is local until the owner approves its push
-- Base / starting commit: `cd1b3b15` (R2's base)
-- Pushed: R2 not yet; the pushed sha goes into the R2 closeout summary
+- Branch: `main`
+- Base / starting commit: `8ebf03ea` (R2 live: `012462e1` and the budget
+  fix `8ebf03ea`)
+- Pushed: R2 yes (2026-09-26); the docs commit that integrates the plans
+  made ahead is local
 
 ## Completed
 - Release R0 `persist-0-foundation` (batches `B0.1`, `B0.2`, each reviewed
@@ -24,8 +27,7 @@
   and the CI `e2e` job, account preferences, CI migration deploys, the
   nightly encrypted backup. Record: `plan.md` section 16, "R1 closeout
   record".
-- Release R2 `persist-2-lists` (batches `B2.0`-`B2.3`, one local commit on
-  `main`): the test-migration fix and the `production` Environment, the
+- Release R2 `persist-2-lists` (batches `B2.0`-`B2.3`, live 2026-09-26): the test-migration fix and the `production` Environment, the
   lists schema with count limits and share links, account lists in the
   app, share links `#/s/<token>` and "Save a copy". Its task directory was
   retired in its closeout commit. Record: `plan.md` section 16, "R2
@@ -36,23 +38,25 @@
 - R2: the gates of its closeout amend are in the R2 closeout summary; the
   gates before it are in `plan.md` section 16, "R2 closeout record".
 
+- Plans made ahead: R5, R5b (as R5's section 9b), R11, R3, R4, R6 and R7
+  are on `main` under `issues/<task id>/` with their decision files; every
+  owner question in them is answered (`context.md`, "Plans made ahead,
+  2026-09-25").
+
 ## Next batch (implement-ready)
-- Owner: approve and push R2's commit, then Environment steps 3-4 and the
-  post-push checks (`plan.md` section 16, "R2 closeout record", Pending).
-- Orchestrator: integrate the plans made ahead onto `main`
-  (`context.md`, "Plans made ahead, 2026-09-25"), then R5
-  `persist-5-migration`: a planner refresh of `B5.1` against R2 as shipped
-  and "Carried from R2".
+- Orchestrator: R5 `persist-5-migration` - the planner refresh of its
+  `plan.md` section 13 against R2 as shipped (it also gives R5b its own
+  task directory), then `B5.1`.
 
 ## Blockers
-- R2's push waits on the owner's approval.
+- None.
 
 ## Deferred
 - The owner's R0 device checks (install prompt, no preload warning after
   the upgrade): `plan.md` section 17.
-- Mockups for `B3.1`, `B4.2`, `B5.1`, `B6.1`, `B7.2`, `B8.1`, `B9.1` are
-  produced by each batch's planner refresh (`plan.md` section 12, last
-  paragraph).
+- Mockups for `B8.1` and `B9.1` are produced by each batch's planner
+  refresh (`plan.md` section 12, last paragraph); R4, R5, R6 and R7 carry
+  theirs under `issues/<task id>/mocks/`.
 - Ideas the owner set aside for after v1: `plan.md` section 17.
 
 ## Notes

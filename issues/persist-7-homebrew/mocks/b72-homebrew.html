@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      B7.2 homebrew: the page, the editor, the search group, the menu, the delete warning
+    </title>
+    <link rel="stylesheet" href="mock.css" />
+    <style>
+      /* NEW rules for this mock only; each names the shipped rule it copies. */
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--line2);
+        border-radius: 999px;
+        background: var(--bg2);
+        padding: 3px;
+        gap: 2px;
+      }
+      .seg span {
+        padding: 6px 13px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .seg span.on {
+        background: var(--gold);
+        color: var(--ink-on-gold);
+        font-weight: 650;
+      }
+      textarea.input {
+        height: 92px;
+        padding: 10px 14px;
+        resize: vertical;
+        line-height: 1.45;
+      }
+      .editor {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 18px;
+        align-items: start;
+      }
+      .frame.phone .editor {
+        grid-template-columns: 1fr;
+      }
+      .twocol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      /* RecordCard.svelte compact variant, simplified */
+      .card {
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        overflow: hidden;
+      }
+      .card img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        background: #0a0810;
+        display: block;
+      }
+      .card-body {
+        padding: 12px 14px 14px;
+      }
+      .card-meta {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+      .badge.eq-weapon {
+        color: #d48e6a;
+        border-color: rgb(212 142 106 / 45%);
+      }
+      .badge.item {
+        color: #7a8ee0;
+        border-color: rgb(122 142 224 / 45%);
+      }
+      .badge.cons {
+        color: #9ec96a;
+        border-color: rgb(158 201 106 / 45%);
+      }
+      .card-name {
+        margin: 0 0 6px;
+        font-size: 17px;
+        font-weight: 680;
+      }
+      .stats {
+        font: 600 11.5px/1.4 var(--mono);
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .card-desc {
+        margin: 0;
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: var(--txt);
+      }
+      .count {
+        font: 600 12px/1 var(--mono);
+        color: var(--muted2);
+        margin: -8px 0 14px;
+      }
+      .lrow .src {
+        margin-left: auto;
+      }
+      /* the account menu: the AddToList `.dropmenu` shape under the header's
+         `.acct` control (R5 builds it; the entry marked NEW is R7's) */
+      .acctmenu {
+        position: relative;
+        display: inline-block;
+        margin-left: auto;
+      }
+      .acctmenu .dropmenu {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        z-index: 2;
+        min-width: 220px;
+      }
+      .acctmenu .dropmenu a {
+        display: block;
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--txt);
+        text-decoration: none;
+        font-size: 13.5px;
+      }
+      .acctmenu .dropmenu a.on {
+        background: var(--surface2);
+      }
+      .topbar.tall {
+        min-height: 190px;
+        align-items: flex-start;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>
+        B7.2 - homebrew: `#/homebrew`, the editor, the "My items" search group, the account menu
+        entry, the delete warning
+      </h1>
+      <p>
+        Owner answers of 2026-09-26 drawn here: the page is reached from the account menu («Мои
+        предметы», between «Мои списки» and «Выйти»; the menu itself is R5's); an item in the
+        owner's lists is a live reference, so the editor says "in N lists: changes appear there
+        at once, for players too"; a delete warns with the count and removes the item from those
+        lists; a copy that left the account (frame F) is frozen and never changes. The search
+        page draws a second group «Мои предметы» whose heading links to the page. A row opens
+        the editor, which draws the same compact card the catalog draws as a live preview.
+      </p>
+      <p>
+        Dashed purple outline = new. Everything else exists today (`b22-lists-index.html`,
+        `b23-share.html`, the search page, `RecordCard`, the header's account control). The app
+        has one (dark) theme. The source tag word is «Хоумбрю» / "Homebrew" (owner, 2026-09-26,
+        Q3).
+      </p>
+    </div>
+
+    <div class="frames">
+      <section class="frame">
+        <span class="cap"
+          >A. `#/homebrew as gm1`, 1180 wide - the owner's items (no tab current)</span
+        >
+        <div class="topbar">
+          <a class="brand"
+            ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></a
+          ><span class="acct in">g</span>
+        </div>
+        <div class="tabs">
+          <span>Обычные правила</span><span>Таблицы</span><span>Списки</span><span>Поиск</span>
+        </div>
+        <main class="in">
+          <h1 class="page-h new">Мои предметы</h1>
+          <p class="page-sub">
+            Предметы, которых нет в книгах: они ищутся вместе с каталогом и добавляются в
+            списки.
+          </p>
+          <p class="count new">3 предмета из 50</p>
+          <div class="panel new" style="margin-bottom: 16px">
+            <div class="card-acts">
+              <a class="btn primary">+ Новый предмет</a>
+            </div>
+          </div>
+          <div class="lrows new">
+            <div class="lrow">
+              <img src="../../../img/thumb/_none.webp" alt="" />
+              <div>
+                <div class="nm">Топор Тлеющих Углей</div>
+                <div class="st">
+                  Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг · Двуручное
+                </div>
+              </div>
+              <span class="badge eq-weapon src">Основное оружие</span
+              ><span class="badge">Хоумбрю</span>
+            </div>
+            <div class="lrow">
+              <img src="../../../img/thumb/_none.webp" alt="" />
+              <div>
+                <div class="nm">Настой кузнеца</div>
+                <div class="st">Выпейте перед работой у горна: до конца сцены...</div>
+              </div>
+              <span class="badge cons src">Расходник</span><span class="badge">Хоумбрю</span>
+            </div>
+            <div class="lrow">
+              <img src="../../../img/thumb/_none.webp" alt="" />
+              <div>
+                <div class="nm">Whispering Cap</div>
+                <div class="st">Once per rest, hear one sentence spoken within Far range.</div>
+              </div>
+              <span class="badge item src">Предмет</span><span class="badge">Хоумбрю</span>
+            </div>
+          </div>
+          <div class="note">
+            The rows are `TableRows` in list view - the same row search draws - with a tick per
+            row, so the selection bar's «Добавить в список» and «Печать» serve this page with no
+            control of its own. A row opens the editor (frame B), not the modal. The
+            English-only item shows its English name in Russian (the record-build fallback, plan
+            4.1). No tab reads current: the page is the account's, like `#/account`. Signed in
+            as `gm2`: the head, «0 предметов из 50», the panel, and «Своих предметов пока нет -
+            создайте первый.»
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap"
+          >B. `#/homebrew/hb_seedaxeaaaaaaaaa as gm1` - the editor with the live card
+          preview</span
+        >
+        <main class="in">
+          <h1 class="page-h">Топор Тлеющих Углей</h1>
+          <p class="page-sub">Хоумбрю · Ранг 2</p>
+          <div class="editor new">
+            <div class="panel">
+              <div class="field">
+                <span class="lbl">Вид</span>
+                <div class="seg">
+                  <span>Предмет</span><span>Расходник</span><span class="on">Снаряжение</span>
+                </div>
+                &nbsp;
+                <div class="seg">
+                  <span class="on">Основное оружие</span><span>Вторичное оружие</span
+                  ><span>Броня</span>
+                </div>
+              </div>
+              <div class="field twocol">
+                <div>
+                  <span class="lbl">Название</span>
+                  <input class="input" value="Топор Тлеющих Углей" />
+                </div>
+                <div>
+                  <span class="lbl">Name (EN)</span>
+                  <input class="input" value="Ember Axe" />
+                </div>
+              </div>
+              <div class="field twocol">
+                <div>
+                  <span class="lbl">Описание</span>
+                  <textarea class="input">
+Лезвие тлеет и не гаснет под дождём.
+- Разжечь: потратьте Надежду, чтобы поджечь цель в пределах Близкой дистанции.</textarea>
+                </div>
+                <div>
+                  <span class="lbl">Description (EN)</span>
+                  <textarea
+                    class="input"
+                    placeholder="Лезвие тлеет и не гаснет под дождём. ..."
+                  ></textarea>
+                </div>
+              </div>
+              <div class="field">
+                <span class="lbl">Ранг</span>
+                <div class="seg">
+                  <span>1</span><span class="on">2</span><span>3</span><span>4</span>
+                </div>
+              </div>
+              <div class="field">
+                <span class="lbl">Класс</span>
+                <div class="seg"><span>Физическое</span><span class="on">Магическое</span></div>
+              </div>
+              <div class="field">
+                <span class="lbl">Характеристика</span>
+                <div class="chips">
+                  <span class="chip">Проворность</span><span class="chip">Сила</span
+                  ><span class="chip">Искусность</span><span class="chip">Инстинкт</span
+                  ><span class="chip">Влияние</span><span class="chip">Знание</span
+                  ><span class="chip on">Характеристика Заклинателя</span>
+                </div>
+              </div>
+              <div class="field">
+                <span class="lbl">Дистанция</span>
+                <div class="seg">
+                  <span class="on">Вплотную</span><span>Близко</span><span>Средне</span
+                  ><span>Далеко</span><span>Очень далеко</span>
+                </div>
+              </div>
+              <div class="field twocol">
+                <div>
+                  <span class="lbl">Урон</span>
+                  <input class="input" value="d10+2" placeholder="d8+1" />
+                </div>
+                <div>
+                  <span class="lbl">Тип урона</span>
+                  <div class="seg">
+                    <span>физ</span><span class="on">маг</span><span>физ/маг</span>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <span class="lbl">Хват</span>
+                <div class="seg">
+                  <span>Одноручное</span><span class="on">Двуручное</span
+                  ><span>Одноручное/двуручное</span>
+                </div>
+              </div>
+              <div class="card-acts" style="margin-top: 18px">
+                <button class="btn primary">Сохранить</button>
+                <a class="btn ghost">Отмена</a>
+                <button class="btn danger" style="margin-left: auto">Удалить</button>
+              </div>
+              <p class="hint">
+                Предмет есть в 1 списке: изменения появятся в нём сразу, в том числе у игроков
+                по ссылке.
+              </p>
+            </div>
+            <div class="card">
+              <img src="../../../img/_none.webp" alt="" />
+              <div class="card-body">
+                <div class="card-meta">
+                  <span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge">Уникальное</span><span class="badge">Хоумбрю</span>
+                </div>
+                <h2 class="card-name">Топор Тлеющих Углей</h2>
+                <div class="stats">
+                  Ранг 2 · Магическое · Характеристика Заклинателя · Вплотную · d10+2 маг ·
+                  Двуручное
+                </div>
+                <p class="card-desc">
+                  Лезвие тлеет и не гаснет под дождём.<br />• <i>Разжечь:</i> потратьте Надежду,
+                  чтобы поджечь цель в пределах Близкой дистанции.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The right column is `RecordCard` compact over `toRecord(draft)` - the same card
+            search and the tables draw, redrawn on every keystroke. The picture slot is the
+            `_none` placeholder until R8 adds the upload control beside it. A loot kind hides
+            the weapon fields and offers «Ранг» with a «Нет» segment; armour shows «Показатель
+            брони» and two «Пороги» number fields instead of class, trait, range, damage and
+            burden. The English description placeholder is the Russian text: the fallback the
+            record will draw. A refusal reads under the buttons in the danger text colour, e.g.
+            «Урон записывается как d8 или d10+2», and focus moves to that field. The hint line
+            is drawn only while a list holds the item (the count from the loaded lists).
+            `#/homebrew/new` is the same form, empty, kind «Предмет», title «Новый предмет», no
+            «Удалить», no hint.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame">
+        <span class="cap">C. `#/search as gm1`, query «топор» - both groups</span>
+        <main class="in">
+          <h1 class="page-h">Поиск</h1>
+          <p class="page-sub">
+            По названиям, описаниям и характеристикам, на обоих языках сразу.
+          </p>
+          <div class="panel" style="margin-bottom: 16px">
+            <div class="field"><input class="input" value="топор" /></div>
+            <div class="field">
+              <span class="lbl">Фильтр</span>
+              <div class="chips">
+                <span class="chip on">Предметы</span><span class="chip on">Расходники</span
+                ><span class="chip on">Снаряжение</span>
+              </div>
+            </div>
+          </div>
+          <div class="lrows">
+            <div class="lrow">
+              <img src="../../../img/thumb/q3.webp" alt="" />
+              <div>
+                <div class="nm">Секира</div>
+                <div class="st">
+                  Ранг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуручное
+                </div>
+              </div>
+              <span class="badge eq-weapon src">Основное оружие</span
+              ><span class="badge">Основные правила</span>
+            </div>
+            <div class="lrow">
+              <img src="../../../img/thumb/q6.webp" alt="" />
+              <div>
+                <div class="nm">Боевой Молот</div>
+                <div class="st">Тяжелое: −1 к Уклонению</div>
+              </div>
+              <span class="badge eq-weapon src">Основное оружие</span
+              ><span class="badge">Основные правила</span>
+            </div>
+          </div>
+          <div class="group new">
+            <h2 class="lbl"><a href="#">Мои предметы</a></h2>
+            <div class="lrows">
+              <div class="lrow">
+                <img src="../../../img/thumb/_none.webp" alt="" />
+                <div>
+                  <div class="nm">Топор Тлеющих Углей</div>
+                  <div class="st">
+                    Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг · Двуручное
+                  </div>
+                </div>
+                <span class="badge eq-weapon src">Основное оружие</span
+                ><span class="badge">Хоумбрю</span>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The official group is today's result list with its 300 cap and the «300 из N» line;
+            the second group is uncapped (at most 50 items), drawn only with a hit, its heading
+            a link to `#/homebrew`. With hits only in the second group the first is not drawn
+            and «Ничего не найдено» is not said. Signed out: no group, no heading - the search
+            goldens without `as` do not move. A homebrew row opens the record modal, as any
+            result does; the modal of an own item carries «Изменить» beside add-to-list.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap"
+          >D. the account menu (R5's) with «Мои предметы», and `#/homebrew` signed out</span
+        >
+        <div class="topbar tall">
+          <a class="brand"
+            ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></a
+          >
+          <span class="acctmenu">
+            <span class="acct in on">g</span>
+            <div class="dropmenu">
+              <a href="#">Настройки отображения</a>
+              <a href="#">Мои списки</a>
+              <a href="#" class="new">Мои предметы</a>
+              <a href="#">Выйти</a>
+            </div>
+          </span>
+        </div>
+        <main class="in">
+          <div class="note">
+            The menu is R5's (display settings, my lists, sign out); R7 inserts one entry
+            between «Мои списки» and «Выйти», a link to `#/homebrew`. The menu's own shape (a
+            disclosure under the account control, drawn like `AddToList`'s `.dropmenu`) is R5's
+            to settle; this frame only places the entry.
+          </div>
+          <hr style="border: 0; border-top: 1px dashed #5a5070; margin: 24px 0" />
+          <h1 class="page-h">Мои предметы</h1>
+          <p class="page-sub">
+            Предметы, которых нет в книгах: они ищутся вместе с каталогом и добавляются в
+            списки.
+          </p>
+          <div class="panel new">
+            <div class="signin">
+              <p class="signin-lead">Войдите, чтобы создавать свои предметы.</p>
+              <button class="btn primary">Войти</button>
+            </div>
+          </div>
+          <div class="note">
+            Signed out, `#/homebrew` (a pasted address; the menu does not exist signed out)
+            draws the head and the same `SignInPrompt` the lists index draws; «Войти» returns to
+            `#/homebrew`. An unconfigured build draws the not-found page and keeps the address,
+            as `#/account` does.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">E. «Удалить» on an item that lists hold - the browser's confirm</span>
+        <main class="in">
+          <div class="native">
+            <div class="origin">artex-x.github.io</div>
+            <div>
+              Предмет «Топор Тлеющих Углей» есть в 3 списках. Удалить его и убрать из них?
+              Отменить нельзя.
+            </div>
+            <div class="acts"><span>Отмена</span><span class="ok">ОК</span></div>
+          </div>
+          <div class="note">
+            `env.dialog.confirm`, the same dialog a list delete uses; the count is the number of
+            the owner's lists holding a reference (1 списке / 2 списках / 5 списках through
+            `plural`). An item in no list asks «Удалить предмет «%s»? Отменить нельзя.» On OK
+            the item is deleted, the database removes it from those lists, the page returns to
+            `#/homebrew` with a toast and no undo. Frozen copies in other accounts are
+            untouched.
+          </div>
+        </main>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap"
+          >F. a frozen copy in another account's list (`#/lists/<201> as gm2`, after «Сохранить
+          себе»)</span
+        >
+        <main class="in">
+          <h1 class="page-h">Список второго ГМа</h1>
+          <p class="page-sub">2 позиции · <span class="sync">Сохранено</span></p>
+          <div class="lrows">
+            <div class="lrow">
+              <img src="../../../img/thumb/q23.webp" alt="" />
+              <div><div class="nm">Пращa</div></div>
+            </div>
+            <div class="lrow new">
+              <img src="../../../img/thumb/_none.webp" alt="" />
+              <div>
+                <div class="nm">Топор Тлеющих Углей</div>
+                <div class="st">
+                  Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг · Двуручное
+                </div>
+              </div>
+              <span class="badge eq-weapon src">Основное оружие</span
+              ><span class="badge">Хоумбрю</span>
+            </div>
+          </div>
+          <div class="note">
+            The second row is the seed's frozen copy of `gm1`'s axe in `gm2`'s list: `gm2` holds
+            no such item, the row draws from the entry's own snapshot, opens the modal without
+            «Изменить», copies and prints through the list's own snapshot index. `gm1`'s later
+            edits never reach it. In `gm1`'s own «Лавка кузнеца» the same axe is a reference and
+            follows every edit; the shared page `#/s/player-token-1` draws it live too, signed
+            out (the projection fills the reference from the item).
+          </div>
+        </main>
+      </section>
+    </div>
+  </body>
+</html>
