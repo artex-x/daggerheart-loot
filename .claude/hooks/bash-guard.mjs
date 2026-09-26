@@ -5,9 +5,12 @@
 // sanitiser's known limits. Never blocks anything not listed there.
 // segmentInfo already skips READERS and unwraps env/command/nohup/time/xargs,
 // so `echo npm run check` never matches and `nohup npm run check` does.
+// 2s (the reviewer's read-only Bash) runs right after the blocklist; 2r (a
+// migration write to the test project needs an approving review report)
+// runs right after 2n.
 
 import { spawnSync } from 'node:child_process';
-import { readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import {
   readInput,
@@ -31,9 +34,11 @@ import {
   remoteRefsHoldingMigration,
   migrationLockedMessage,
   MIGRATIONS_DIR,
-  CHECK_INVOCATION_RE
+  CHECK_INVOCATION_RE,
+  parseReviewHead
 } from './lib.mjs';
 import { treeKey, readCache } from './tree-key.mjs';
+import { foreignStackLock, holderText } from './stack-lock.mjs';
 
 const READERS = new Set([
   'echo',
@@ -76,6 +81,18 @@ const MSG = {
     'Blocked: restore:prod writes production. Only the owner runs it, in an interactive terminal; agents write to the test project only.',
   keyFile:
     "Blocked: this command names .env.restore.local, which holds the owner's backup key. Only `npm run restore:drill` reads it; run that instead.",
+  envReader:
+    'Blocked: this command reads a .env file into the shell or the transcript. Let the program load it: node --env-file=<file> <script> (npm run e2e already does). The values never reach the transcript that way.',
+  stackLock: (lock) =>
+    `Blocked: the local Supabase stack is held by ${holderText(lock)}. This command starts, stops or resets that stack under the other run. The lock is free when that run ends, or 45 minutes after it started.`,
+  creditBypass:
+    'Blocked: only npm run check and npm run check:db run gate-credit.mjs; run the check instead. SKIP_CHECK_GATE=1 is the visible bypass when a check cannot run.',
+  reviewerWrite:
+    'Blocked: the reviewer is read-only in Bash and PowerShell: no git write, file writer, in-place sed or perl, writing cmdlet, npm script, Supabase CLI call but status or help, or output redirect to a file (docs/decisions/, 2026-09-27, "The reviewer writes its report to issues/<id>/reviews/ and nowhere else"). Write the report with the Write tool; return every other fix to the orchestrator.',
+  migrationUnapproved: (tree, seen) =>
+    `Blocked: this writes supabase/migrations to the test project, and no report under issues/*/reviews/ approves that tree (${tree}): a report with "Verdict: approve" and a "Reviewed: <sha>" whose supabase/migrations tree equals HEAD's is required first (docs/decisions/, 2026-09-27, "An agent pushes migrations to the test project only after an approving review") - seen: ${seen}. Run npm run check:db, commit, get the review, then push; --dry-run is allowed now.`,
+  migrationUncommitted:
+    'Blocked: supabase/migrations has uncommitted changes; a review approves a commit. Commit them (npm run check:db first), get the review, then push.',
   cloudPush:
     'Blocked: a cloud session pushes only its own task branch, never `main`; the orchestrator squash-merges it onto `main` (`CLAUDE.md`). Push the current branch by name, for example `git push -u origin <current branch>`, without --all, --mirror, --tags or --delete.',
   gitleaksFinding: (hits) =>
@@ -84,7 +101,7 @@ const MSG = {
   gitleaksFailed: (what) =>
     `gitleaks did not finish (${what}); this commit was not scanned for secrets.`,
   backgroundCheck:
-    "Blocked: a backgrounded `npm run check` can never satisfy the commit gate - there is no stdout to attribute, and a turn that ends with it running loses the result. Run it in the foreground in this turn, Bash timeout 600000: `rtk npm run check` (no pipe, no `set -o pipefail` - with nothing piping the output away, the exit code the tool reports is already the check's).",
+    "Blocked: a subagent's backgrounded `npm run check` dies with its turn. The check arms the commit gate by its own exit, but the result is lost. Run it in the foreground in this turn, Bash timeout 600000: `rtk npm run check` (no pipe, no `set -o pipefail` - with nothing piping the output away, the exit code the tool reports is already the check's).",
   blindCheckPipe:
     "Blocked: piping the check hands the Bash tool the *last* stage's exit status, not the check's, so a failed run comes back indistinguishable from a passing one and you spend a second run learning what you already ran. Drop the pipe: `rtk npm run check`, Bash timeout 600000. `rtk` propagates the child's exit code directly and prints both stdout and stderr (measured: 21,382 characters, under the tool's output cap), and check-observer.mjs reports PASS or FAIL in one line of its own - there is nothing left to recover through a pipe.",
   blindCheckRedirect:
@@ -227,6 +244,174 @@ function evaluateBlocklist(segList, cwd) {
       if (rmHasRecursive(tokens) && rmTargetInsideRepo(tokens, cwd)) {
         return { id: 'rm-rf-repo', message: MSG.rmRfRepo };
       }
+    }
+  }
+  return null;
+}
+
+// ---------- 2s: the reviewer's Bash is read-only (deny) ----------
+//
+// The reviewer has the Write tool for its report and no permission mode
+// (docs/decisions/, 2026-09-27, "The reviewer writes its report to
+// issues/<id>/reviews/ and nowhere else"); edit-guard.mjs limits the Write
+// tool, and this family limits the shell, whatever the session's mode.
+// Only `agent_type === 'reviewer'` is judged. A habit guard: `node -e` can
+// write a file, and `bash -c "..."` is erased with its quotes. READERS hides
+// `sed` and `echo` from segmentInfo, so this reads the tokens itself.
+
+const GIT_WRITE = new Set([
+  'add',
+  'am',
+  'apply',
+  'checkout',
+  'cherry-pick',
+  'clean',
+  'commit',
+  'merge',
+  'mv',
+  'pull',
+  'push',
+  'rebase',
+  'reset',
+  'restore',
+  'revert',
+  'rm',
+  'stash',
+  'switch',
+  'update-ref',
+  'worktree'
+]);
+// `git stash list` and `git stash show` only read.
+const GIT_STASH_READ = new Set(['list', 'show']);
+const FILE_WRITERS = new Set([
+  'rm',
+  'rmdir',
+  'mv',
+  'cp',
+  'touch',
+  'mkdir',
+  'tee',
+  'ln',
+  'chmod',
+  'chown',
+  'truncate',
+  'dd',
+  'patch'
+]);
+const WRITE_CMDLETS = new Set([
+  'set-content',
+  'add-content',
+  'out-file',
+  'new-item',
+  'remove-item',
+  'move-item',
+  'copy-item',
+  'rename-item',
+  'clear-content',
+  'set-item',
+  'sc',
+  'ac',
+  'ni',
+  'ri',
+  'mi',
+  'cpi',
+  'rni',
+  'clc',
+  'si',
+  'del',
+  'erase',
+  'rd',
+  'copy',
+  'move',
+  'ren',
+  'md'
+]);
+// A `git branch` delete, move, copy or force, and a `git tag` delete; a bare
+// `git branch <name>` or `git tag <name>` creates a ref and is not judged.
+const GIT_BRANCH_WRITE = /^(?:-[a-zA-Z]*[dDmMcCf]|--(?:delete|move|copy|force)$)/;
+const GIT_TAG_WRITE = /^(?:-[a-zA-Z]*d|--delete$)/;
+const BIN_RUNNERS = new Set(['npx', 'pnpx', 'bunx']);
+const NPM_READ = new Set([
+  'ls',
+  'list',
+  'll',
+  'la',
+  'view',
+  'info',
+  'show',
+  'outdated',
+  'explain',
+  'why',
+  'help'
+]);
+const NULL_SINKS = new Set(['/dev/null', 'nul', '$null']);
+
+/** Returns the target of each output redirect in `tokens`. `2>&1` reaches a
+ * rule as a trailing `2>` (segments() splits on `&`), so an operator with no
+ * operand, or one starting with `&`, is not a file. */
+function redirectTargets(tokens) {
+  const targets = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (/^(?:\d*|&)>{1,2}$/.test(t)) {
+      const next = tokens[i + 1];
+      if (next !== undefined && !next.startsWith('&')) targets.push(next);
+      continue;
+    }
+    const m = /^(?:\d*|&)>{1,2}(.+)$/.exec(t);
+    if (m && !m[1].startsWith('&')) targets.push(m[1]);
+  }
+  return targets;
+}
+
+function reviewerWrites(tokens) {
+  let t = tokens;
+  if (t[0] === 'rtk') t = t.slice(t[1] === 'proxy' ? 2 : 1);
+  if (!t.length) return false;
+  const program = programName(t[0]).toLowerCase();
+  if (program === 'git') {
+    const { subcommand, rest } = gitSubcommand(t);
+    if (subcommand === 'stash' && GIT_STASH_READ.has(rest[0])) return false;
+    if (GIT_WRITE.has(subcommand)) return true;
+    if (subcommand === 'branch' && rest.some((x) => GIT_BRANCH_WRITE.test(x))) return true;
+    if (subcommand === 'tag' && rest.some((x) => GIT_TAG_WRITE.test(x))) return true;
+  }
+  if (FILE_WRITERS.has(program) || WRITE_CMDLETS.has(program)) return true;
+  // A formatter or linter that rewrites files: `--write` or `--fix` anywhere,
+  // and Prettier's `-w`, run directly or through a package runner.
+  if (t.some((x) => x === '--write' || x === '--fix')) return true;
+  const tool = BIN_RUNNERS.has(program)
+    ? programName(t.slice(1).find((x) => !x.startsWith('-')) ?? '').toLowerCase()
+    : program;
+  if (tool.split('/').pop() === 'prettier' && t.includes('-w')) return true;
+  // `-i` alone, with a suffix (`-i.bak`) or in a cluster (`perl -pi`).
+  if (
+    (program === 'sed' || program === 'perl') &&
+    t.some((x) => /^-[a-zA-Z]*i/.test(x) || /^--in-place/.test(x))
+  ) {
+    return true;
+  }
+  if (program === 'npm') {
+    const verb = t.slice(1).find((x) => !x.startsWith('-'));
+    if (verb !== undefined && !NPM_READ.has(verb)) return true;
+  }
+  const rest = isSupabaseCall(t);
+  if (
+    rest !== null &&
+    !rest.some((x) => x === '--help' || x === '-h') &&
+    supabaseWords(rest)[0] !== 'status'
+  ) {
+    return true;
+  }
+  return redirectTargets(t).some((target) => !NULL_SINKS.has(target.toLowerCase()));
+}
+
+function evaluateReviewerWrite(quotedSegs, agentType) {
+  if (agentType !== 'reviewer') return null;
+  for (const segment of quotedSegs) {
+    const tokens = unwrap(tokensOf(segment));
+    if (tokens.length && reviewerWrites(tokens)) {
+      return { id: 'reviewer-write', message: MSG.reviewerWrite };
     }
   }
   return null;
@@ -962,6 +1147,181 @@ function evaluateHostedWrite(segList) {
   return null;
 }
 
+// ---------- 2r: a migration write to the test project after an approving review (deny) ----------
+//
+// "An agent pushes migrations to the test project only after an approving
+// review" (docs/decisions/, 2026-09-27). After 2n, which has already denied a
+// production or unnamed target. A report under issues/*/reviews/ approves
+// when its head (lib.mjs, parseReviewHead; the shape is
+// .claude/templates/review.template.md) reads "Verdict: approve" and its
+// "Reviewed:" commit has HEAD's supabase/migrations tree, so a `.md` amend
+// or a rebase keeps the approval and a changed migration needs a new one.
+// A local `git push` is not judged: a local release pushes once, at
+// closeout, after the review. Git runs only for a matching command.
+
+const DB_PUSH_FILE = 'db-push.mjs';
+
+function namesDbPushFile(token) {
+  const eq = token.indexOf('=');
+  const candidates = eq === -1 ? [token] : [token, token.slice(eq + 1)];
+  return candidates.some((c) => c.replace(/\\/g, '/').split('/').pop() === DB_PUSH_FILE);
+}
+
+function migrationTree(ref, cwd) {
+  const out = git(['rev-parse', '--verify', '--quiet', `${ref}:supabase/migrations`], {
+    cwd: cwd || repoRoot()
+  });
+  return out === null ? null : out.trim() || null;
+}
+
+/** True when a cloud session's `git push` carries a supabase/migrations
+ * tree that its upstream (else origin/main) does not have. */
+function cloudPushChangesMigrations(info, cwd) {
+  if (process.env.CLAUDE_CODE_REMOTE !== 'true' || info.program !== 'git') return false;
+  const { subcommand, rest } = gitSubcommand(info.tokens);
+  if (subcommand !== 'push' || rest.includes('--dry-run') || rest.includes('-n')) return false;
+  const upstream = git(['rev-parse', '--verify', '--quiet', '@{u}'], {
+    cwd: cwd || repoRoot()
+  });
+  const base = migrationTree(upstream === null ? 'origin/main' : '@{u}', cwd);
+  const head = migrationTree('HEAD', cwd);
+  return base !== null && head !== null && base !== head;
+}
+
+function writesTestMigrations(info, cwd) {
+  const { tokens } = info;
+  if (npmRunScript(tokens) === 'db:push' && npmTargetsTest(tokens)) return true;
+  if (
+    runsNode(tokens) &&
+    tokens.some(namesDbPushFile) &&
+    flagValues(tokens, '--project').includes('test')
+  ) {
+    return true;
+  }
+  const rest = isSupabaseCall(tokens);
+  if (rest !== null && provenTestTarget(rest)) {
+    const pair = supabaseWords(rest).join(' ');
+    if (pair === 'db push' && !boolFlagOn(rest, '--dry-run')) return true;
+    if (pair === 'migration up') return true;
+  }
+  return cloudPushChangesMigrations(info, cwd);
+}
+
+/** Returns every issues/<task>/reviews/*.md as `{ task, file, full }`. */
+function reviewReports() {
+  const issuesDir = path.join(repoRoot(), 'issues');
+  const list = (dir, opts) => {
+    try {
+      return readdirSync(dir, opts);
+    } catch {
+      return [];
+    }
+  };
+  const reports = [];
+  for (const task of list(issuesDir, { withFileTypes: true })) {
+    if (!task.isDirectory()) continue;
+    const dir = path.join(issuesDir, task.name, 'reviews');
+    for (const file of list(dir)
+      .filter((n) => n.endsWith('.md'))
+      .sort()) {
+      reports.push({ task: task.name, file, full: path.join(dir, file) });
+    }
+  }
+  return reports;
+}
+
+function reviewHeadOf(file) {
+  try {
+    return parseReviewHead(readFileSync(file, 'utf8'));
+  } catch {
+    return parseReviewHead(null);
+  }
+}
+
+/** Returns null when a report approves HEAD's migrations tree, else a
+ * verdict. */
+function migrationsApproved(cwd) {
+  const status = git(
+    ['status', '--porcelain', '--untracked-files=all', '--', 'supabase/migrations'],
+    {
+      cwd: cwd || repoRoot()
+    }
+  );
+  if (status !== null && status.trim()) {
+    return { id: 'migration-uncommitted', message: MSG.migrationUncommitted };
+  }
+  const head = migrationTree('HEAD', cwd);
+  if (head === null) return null;
+  const trees = new Map();
+  const seen = [];
+  for (const { task, file, full } of reviewReports()) {
+    const report = reviewHeadOf(full);
+    seen.push(`${task}/${file}: ${report.verdict || 'no Verdict: line'}`);
+    if (report.verdict !== 'approve' || !report.reviewed) continue;
+    if (!trees.has(report.reviewed)) {
+      trees.set(report.reviewed, migrationTree(report.reviewed, cwd));
+    }
+    if (trees.get(report.reviewed) === head) return null;
+  }
+  return {
+    id: 'migration-unapproved',
+    message: MSG.migrationUnapproved(head.slice(0, 12), seen.length ? seen.join(', ') : 'none')
+  };
+}
+
+function evaluateMigrationPush(segList, cwd) {
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info || !writesTestMigrations(info, cwd)) continue;
+    return migrationsApproved(cwd);
+  }
+  return null;
+}
+
+// ---------- 2u: a manual local-stack command under a foreign lock (deny) ----------
+//
+// tests/db/run.mjs and restore-drill.mjs take the local stack lock
+// (stack-lock.mjs). A manual command that starts, stops or resets the local
+// stack while another checkout holds that lock would break the other run.
+// A command with a hosted target does not touch the local stack. A manual
+// command takes no lock itself (.claude/README.md, "Known limitations").
+
+const STACK_ALWAYS = new Set(['start', 'stop', 'db start']);
+const STACK_UNLESS_HOSTED = new Set([
+  'db reset',
+  'db push',
+  'db diff',
+  'migration up',
+  'migration down',
+  'test db',
+  'seed buckets'
+]);
+
+function touchesLocalStack(rest) {
+  if (rest.some((t) => t === '--help' || t === '-h')) return false;
+  const words = supabaseWords(rest);
+  if (SINGLE_WORD.has(words[0])) return STACK_ALWAYS.has(words[0]);
+  const pair = words.join(' ');
+  if (STACK_ALWAYS.has(pair)) return true;
+  if (!STACK_UNLESS_HOSTED.has(pair)) return false;
+  const hosted =
+    boolFlagOn(rest, '--linked') || hasFlag(rest, '--db-url') || hasFlag(rest, '--project-ref');
+  return !hosted;
+}
+
+function evaluateStackLock(segList) {
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    const rest = isSupabaseCall(info.tokens);
+    if (!rest || !touchesLocalStack(rest)) continue;
+    const lock = foreignStackLock();
+    if (lock) return { id: 'stack-lock', message: MSG.stackLock(lock) };
+    return null;
+  }
+  return null;
+}
+
 // ---------- 2n: the owner-only production restore (deny) ----------
 //
 // `restore:prod` writes production. A package runner with a token that is
@@ -1049,6 +1409,81 @@ function evaluateKeyFile(quotedSegs) {
   for (const segment of quotedSegs) {
     if (tokensOf(segment).some(namesKeyFile)) {
       return { id: 'key-file', message: MSG.keyFile };
+    }
+  }
+  return null;
+}
+
+// ---------- 2t: a .env file read into the shell or the transcript (deny) ----------
+//
+// `. .env.test.local` printed part of a value once (.claude/README.md,
+// "Supabase configuration"). A dot-source, `source` or a file printer with
+// an operand whose last path segment starts with `.env` is refused; `node
+// --env-file=<file>` loads the file without showing it. `sed`, `awk` and
+// `grep` take a pattern first and are not judged (a known gap). READERS
+// hides `cat` and the other printers from segmentInfo, so this reads the
+// tokens itself, as 2q does. After 2q, which keeps its own message.
+
+const ENV_READERS = new Set([
+  '.',
+  'source',
+  'cat',
+  'type',
+  'gc',
+  'get-content',
+  'more',
+  'less',
+  'head',
+  'tail',
+  'bat',
+  'nl',
+  'od',
+  'xxd',
+  'strings'
+]);
+
+function namesEnvFile(token) {
+  const bare = token.replace(/^\d*<+/, '');
+  return /^\.env/i.test(bare.replace(/\\/g, '/').split('/').pop());
+}
+
+/** `quotedSegs` keeps a quoted single word (`"./.env.test.local"`) and
+ * erases a quoted phrase (a commit message). */
+function evaluateEnvReader(quotedSegs) {
+  for (const segment of quotedSegs) {
+    const tokens = unwrap(tokensOf(segment));
+    if (!tokens.length) continue;
+    const program = tokens[0].toLowerCase();
+    let operands = null;
+    if (program === 'rtk' && tokens[1] === 'read') operands = tokens.slice(2);
+    else if (ENV_READERS.has(program)) operands = tokens.slice(1);
+    if (operands && operands.some(namesEnvFile)) {
+      return { id: 'env-reader', message: MSG.envReader };
+    }
+  }
+  return null;
+}
+
+// ---------- 2v: a hand run of gate-credit.mjs (deny) ----------
+//
+// `gate-credit.mjs arm` writes a commit gate's cache. Only the check chain
+// in package.json and tests/db/run.mjs run it, where no hook sees the call;
+// a hand run would arm a gate that no check earned.
+
+const CREDIT_FILE = 'gate-credit.mjs';
+
+function namesCreditFile(token) {
+  const eq = token.indexOf('=');
+  const candidates = eq === -1 ? [token] : [token, token.slice(eq + 1)];
+  return candidates.some((c) => c.replace(/\\/g, '/').split('/').pop() === CREDIT_FILE);
+}
+
+function evaluateCreditBypass(quotedSegs) {
+  for (const segment of quotedSegs) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    if (runsNode(info.tokens) && info.tokens.some(namesCreditFile)) {
+      return { id: 'credit-bypass', message: MSG.creditBypass };
     }
   }
   return null;
@@ -1201,11 +1636,15 @@ const LONG_CHECKS = [
     // entry has its own message instead of the Bash one below.
     re: /^(?:rtk\s+)?npm run check:db(?![:\w-])/,
     family: 'check:db',
-    cost: 'first run 3-5 min (image pull), then ~1-2 min; on Windows run it through the PowerShell tool',
+    cost: '403-517 s on this host (measured 2026-09-26/27), more with a first image pull; on Windows run it through the PowerShell tool',
     message: (joined, cost) =>
-      `\`${joined}\` takes ${cost}. Set the tool timeout to 600000 and stay in this turn until it prints its final \`check:db: PASS\` or \`check:db: FAIL\` line - check-observer.mjs arms the commit gate for supabase/ and tests/db/ from that line. Run it in the foreground, with no pipe and no redirect.`
+      `\`${joined}\` takes ${cost}. Set the tool timeout to 600000 and stay in this turn until it prints its final \`check:db: PASS\`, \`check:db: FAIL\` or \`check:db: BUSY\` line (BUSY: another checkout holds the local stack lock, and nothing ran). check-observer.mjs arms the commit gate for supabase/ and tests/db/ from the PASS line, and the suite also arms it by its own exit. Run it in the foreground, with no pipe and no redirect.`
   },
-  { re: /^(?:rtk\s+)?npm run check(?![:\w-])/, family: 'check', cost: '~165s on an idle host' },
+  {
+    re: /^(?:rtk\s+)?npm run check(?![:\w-])/,
+    family: 'check',
+    cost: '396-544 s on this host (measured 2026-09-26/27)'
+  },
   {
     // No `--shard=` exemption, unlike `golden`/`sweep` below: a run-all
     // shard packs a whole `browser` matrix row of suites, not one small
@@ -1232,19 +1671,20 @@ const LONG_CHECKS = [
   }
 ];
 
-// ---------- 2g: a backgrounded npm run check (deny) ----------
+// ---------- 2g: a subagent's backgrounded npm run check (deny) ----------
 //
-// check-observer.mjs refuses a run_in_background launch by design (no
-// stdout to attribute), so such a run can never satisfy the commit gate,
-// and a worker whose turn ends with it running loses the result - observed
-// three times despite the dispatch warning against it. Blocking it forbids
-// nothing that works. Only the gate-feeding check:
-// the other long checks can legitimately run detached from a main session.
+// A worker whose turn ends with a backgrounded check loses the result -
+// observed three times despite the dispatch warning against it. Since gate
+// credit the check arms the gate by its own exit, and the main session is
+// notified when a background command exits, so only a subagent (`agent_id`
+// in the hook input) is denied. Only the gate-feeding check: the other long
+// checks can legitimately run detached from a main session.
 // Per segment, not first-segment: the recorded shapes were piped, chained,
 // `cd`-prefixed and file-redirected. Strict boolean, as the observer: an
 // absent field must make this rule inert, never a false block.
 
-function evaluateBackgroundCheck(segList, toolInput) {
+function evaluateBackgroundCheck(segList, toolInput, agentId) {
+  if (typeof agentId !== 'string' || !agentId) return null;
   if (!toolInput || toolInput.run_in_background !== true) return null;
   for (const segment of segList) {
     const info = segmentInfo(segment);
@@ -1511,6 +1951,9 @@ guard(() => {
   const blocked = evaluateBlocklist(segList, cwd);
   if (blocked) return deny(event, blocked.message);
 
+  const reviewer = evaluateReviewerWrite(quotedSegs, input.agent_type);
+  if (reviewer) return deny(event, reviewer.message);
+
   const orphanTask = evaluateOrphanTask(segList, cwd);
   if (orphanTask) return deny(event, orphanTask.message);
 
@@ -1526,11 +1969,23 @@ guard(() => {
   const hosted = evaluateHostedWrite(segList);
   if (hosted) return deny(event, hosted.message);
 
+  const migrationPush = evaluateMigrationPush(segList, cwd);
+  if (migrationPush) return deny(event, migrationPush.message);
+
+  const stackLock = evaluateStackLock(segList);
+  if (stackLock) return deny(event, stackLock.message);
+
   const ownerRestore = evaluateOwnerRestore(quotedSegs);
   if (ownerRestore) return deny(event, ownerRestore.message);
 
   const keyFile = evaluateKeyFile(quotedSegs);
   if (keyFile) return deny(event, keyFile.message);
+
+  const envReader = evaluateEnvReader(quotedSegs);
+  if (envReader) return deny(event, envReader.message);
+
+  const creditBypass = evaluateCreditBypass(quotedSegs);
+  if (creditBypass) return deny(event, creditBypass.message);
 
   const cloudPush = evaluateCloudPush(segList, cwd);
   if (cloudPush) return deny(event, cloudPush.message);
@@ -1547,7 +2002,7 @@ guard(() => {
     return gate.type === 'deny' ? deny(event, gate.message) : say(gate.message);
   }
 
-  const background = evaluateBackgroundCheck(segList, input.tool_input);
+  const background = evaluateBackgroundCheck(segList, input.tool_input, input.agent_id);
   if (background) return deny(event, background.message);
 
   const blindCheck = evaluateBlindCheck(sanitized);

@@ -6,6 +6,14 @@
     "GIT_COMMITTER_NAME": "artex-x",
     "GIT_COMMITTER_EMAIL": "artex-x@users.noreply.github.com"
   },
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./supabase/.env)",
+      "Read(./supabase/.env.*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -29,6 +37,18 @@
         "matcher": "Edit|MultiEdit|Write|NotebookEdit",
         "hooks": [
           { "type": "command", "command": "node .claude/hooks/edit-guard.mjs", "timeout": 10 }
+        ]
+      },
+      {
+        "matcher": "Agent|Task|SubagentDispatch",
+        "hooks": [
+          { "type": "command", "command": "node .claude/hooks/agent-guard.mjs", "timeout": 10 }
+        ]
+      },
+      {
+        "matcher": "Read|Grep",
+        "hooks": [
+          { "type": "command", "command": "node .claude/hooks/read-guard.mjs", "timeout": 10 }
         ]
       }
     ],

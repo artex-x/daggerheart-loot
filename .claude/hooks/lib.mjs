@@ -390,6 +390,31 @@ export function migrationLockedMessage(rel, refs) {
   return `Blocked: ${rel} is on ${refs.join(', ')}; CI applies every pushed migration to the test project and every migration on main to production, so it is history - write a new migration instead.`;
 }
 
+const REVIEW_HEAD_LINES = 30;
+const VERDICT_RE = /^Verdict:\s*(approve|fix-then-continue|replan)\s*$/;
+const REVIEWED_RE = /^Reviewed:\s*([0-9a-fA-F]{7,40})\s*$/;
+const SCOPE_RE = /^Scope:\s*(batch|plan before)\s+([A-Za-z0-9][A-Za-z0-9._-]*)\s*$/;
+
+/** Returns the head of a review report, `{ verdict, reviewed, scope }`, read
+ * from its first 30 lines; each field is null when its line is missing or
+ * malformed. Shared by agent-guard.mjs and bash-guard.mjs rule 2r; the shape
+ * is .claude/templates/review.template.md, so a `## Verdict:` heading or a
+ * `**Verdict:**` list item does not count. */
+export function parseReviewHead(text) {
+  const head = { verdict: null, reviewed: null, scope: null };
+  if (typeof text !== 'string') return head;
+  for (const line of text.split(/\r?\n/).slice(0, REVIEW_HEAD_LINES)) {
+    let m;
+    if (head.verdict === null && (m = VERDICT_RE.exec(line))) head.verdict = m[1];
+    else if (head.reviewed === null && (m = REVIEWED_RE.exec(line))) {
+      head.reviewed = m[1].toLowerCase();
+    } else if (head.scope === null && (m = SCOPE_RE.exec(line))) {
+      head.scope = { kind: m[1] === 'batch' ? 'batch' : 'plan', id: m[2] };
+    }
+  }
+  return head;
+}
+
 /** Most recently touched issues/<id>/ directory, by the newest mtime among
  * its own files. "Most recently touched", not "active" - this repo has no
  * feature branches, so mtime is the only signal, and it is a guess. */

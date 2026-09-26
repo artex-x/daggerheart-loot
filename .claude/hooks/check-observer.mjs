@@ -1,7 +1,9 @@
 // PostToolUse(Bash|PowerShell): observes a real `npm run check` (Bash only)
 // or `npm run check:db` (either tool), records its tree key when it passed -
 // so bash-guard.mjs's commit gates have something to check against - and
-// states the verdict in one line either way. Never blocks.
+// states the verdict in one line either way. Never blocks. Since gate credit
+// (gate-credit.mjs) a check also arms its gate by its own exit 0, so a run
+// this hook cannot attribute may still have armed it; the line says so.
 // See .claude/README.md, "Hooks".
 //
 // It speaks because the verdict was measurably not obvious. Across 65
@@ -50,7 +52,7 @@ import {
   CHECK_INVOCATION_RE,
   CHECK_DB_INVOCATION_RE
 } from './lib.mjs';
-import { treeKey, writeCache } from './tree-key.mjs';
+import { readCache, treeKey, writeCache } from './tree-key.mjs';
 
 const EVENT = 'PostToolUse';
 
@@ -152,12 +154,37 @@ function responseText(response) {
   return out;
 }
 
+/** True when the named cache already holds the current tree key: the
+ * check's own exit armed the gate (gate-credit.mjs) although this hook
+ * could not attribute the output. */
+function armedByExit(cacheName) {
+  const cache = readCache(cacheName);
+  if (!cache || cache.by !== 'exit') return false;
+  const key = treeKey();
+  return key !== null && cache.key === key;
+}
+
+/** Writes the cache unless it already holds `key`, so a record that the
+ * check's own exit wrote (`by: "exit"`) is kept. */
+function recordPass(key, cacheName, command) {
+  const cache = readCache(cacheName);
+  if (cache && cache.key === key) return;
+  writeCache(key, cacheName, command);
+}
+
 function observeCheckDb(response) {
   if (response && typeof response === 'object' && response.interrupted === true)
     return undefined;
   const exitCode = firstExitCode(response);
   const text = responseText(response);
   const code = exitCode === undefined ? '' : ` (exit ${exitCode})`;
+  // Before the FAIL test: npm prints its own error lines for the exit 3.
+  if (/^check:db: BUSY\s*$/m.test(text)) {
+    return speak(
+      EVENT,
+      'npm run check:db: BUSY - the local stack is held by another checkout (the line above names it). Nothing ran; the gate is not armed.'
+    );
+  }
   if (
     (exitCode !== undefined && exitCode !== 0) ||
     /^check:db: FAIL\s*$/m.test(text) ||
@@ -169,6 +196,9 @@ function observeCheckDb(response) {
     );
   }
   if (!/^check:db: PASS\s*$/m.test(text)) {
+    if (armedByExit('.check-db-cache.json')) {
+      return speak(EVENT, "npm run check:db: PASS - armed by the check's own exit.");
+    }
     return speak(
       EVENT,
       `npm run check:db: no failure seen${code}, but its final PASS line never reached this hook, so the run cannot be attributed and the commit gate for supabase/ and tests/db/ is not armed. Run it plainly in the foreground, with no pipe and no redirect.`
@@ -176,7 +206,7 @@ function observeCheckDb(response) {
   }
   const key = treeKey();
   if (key === null) return undefined; // fail open: nothing to cache against
-  writeCache(key, '.check-db-cache.json', 'npm run check:db');
+  recordPass(key, '.check-db-cache.json', 'npm run check:db');
   return speak(
     EVENT,
     `npm run check:db: PASS${code}. Commit gate armed for supabase/ and tests/db/.`
@@ -224,6 +254,9 @@ guard(() => {
   }
 
   if (!COVERAGE_SUMMARY_RE.test(stdout) || !COVERAGE_LINES_RE.test(stdout)) {
+    if (armedByExit('.check-cache.json')) {
+      return speak(EVENT, "npm run check: PASS - armed by the check's own exit.");
+    }
     return speak(
       EVENT,
       `npm run check: no failure seen${code}, but its coverage summary never reached this hook, so the run cannot be attributed and the commit gate is not armed. Run it plainly - \`rtk npm run check\`, no pipe and no redirect.`
@@ -233,7 +266,7 @@ guard(() => {
   const key = treeKey();
   if (key === null) return undefined; // fail open: nothing to cache against
 
-  writeCache(key);
+  recordPass(key, '.check-cache.json', 'npm run check');
   return speak(
     EVENT,
     `npm run check: PASS${code}. Commit gate armed for this tree - it stays armed until a covered file changes.`

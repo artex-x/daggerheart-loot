@@ -67,6 +67,7 @@ Session rules:
   review nit, a nit carried from an earlier batch) is only done when its own
   acceptance-criteria line is checked, not when it is merely mentioned in a
   commit or a comment - a plan has already lost items this way
+* A schema batch (a change under `supabase/migrations/`) stops after `npm run check`, `npm run check:db` and the commit: it does not push migrations to the test project and does not run `npm run e2e` before the review approves (rule 2r denies the push); the orchestrator resumes you for the push
 * If primary approach fails: stop; present named fallback only with human confirmation; else report blocker + recommendation
 * If human ends session mid-batch: stop coding, do not commit a half-batch, update handoff partial progress and exact next step
 * Write a durable fact or decision to its permanent home in this batch (`CLAUDE.md`, "Task and session protocol"); a comment follows `CLAUDE.md`, "Comments"

@@ -116,6 +116,7 @@ Each implement-ready batch must include:
 - Verification commands (see gate matrix below)
 - Risks / do-nots / settled decisions not to reopen
 - Fallback alternatives only when a meaningful secondary approach was considered
+- A schema batch lists `db:push --project test` and `npm run e2e` after the review's approve, never before
 
 A placement has to be acceptance, not a footnote: an item this plan places in a
 future batch (a deferred review nit, a nit from an earlier batch, anything not
@@ -152,6 +153,7 @@ Planning is complete only when:
 - `handoff.md` uses `.claude/templates/handoff.template.md` headings and names that exact next batch
 - Open product/architecture questions are decided or listed as blockers
 - Nothing critical is left for the implementer to invent
+- `plan.md` Status carries one `- Plan review: required before <batch> (trigger: <which>)` or `- Plan review: not required (no trigger fired)` line. The triggers: a migration or a SECURITY DEFINER function, a public contract change, possible loss of stored data or `localStorage` keys, a new write or sync protocol. A refresh that adds a triggering batch writes a new `required` line. `agent-guard.mjs` denies the implementer dispatch without the line, or while a required plan review has no approve
 
 After investigation:
 

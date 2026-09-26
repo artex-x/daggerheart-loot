@@ -272,11 +272,18 @@ not run. CI's `browser` matrix runs the rows as five shards
 - `tests/db/` - layer 3, the database, run by `npm run check:db`, not by
   `npm run check`: Docker for every check on a CSS fix is not acceptable,
   and on Windows Docker answers only the PowerShell tool, so run it there.
-  `tests/db/run.mjs` starts the local Supabase stack with only the database
-  container when it is down, runs `supabase db reset --local`, then every
-  `tests/db/*.test.mjs` one file at a time, and prints `check:db: PASS` or
-  `check:db: FAIL` last; a commit that stages `supabase/**` or `tests/db/**`
-  needs that PASS for its tree (`.claude/README.md`, "Hooks"). A test acts as
+  `tests/db/run.mjs` takes the host's local stack lock first; while another
+  run holds it, it prints the holder and `check:db: BUSY` and exits 3,
+  touching nothing (`.claude/README.md`, "Supabase configuration", "The
+  local stack lock"). Then it starts the local Supabase stack with only the
+  database container when it is down, runs `supabase db reset --local`, then
+  every `tests/db/*.test.mjs` one file at a time, releases the lock, and
+  prints `check:db: PASS` or `check:db: FAIL` last; a commit that stages
+  `supabase/**` or `tests/db/**` needs that PASS for its tree
+  (`.claude/README.md`, "Hooks"). A PASS arms that gate by the suite's own
+  exit too, when the tree did not change during the run (the
+  `gate credit: armed` line before PASS; `.claude/README.md`, "Run a long
+  check", "Gate credit"). A test acts as
   a Data API role through `tests/db/roles.mjs`: `asRole` runs `set local
   role anon|authenticated` and sets `request.jwt.claims` to `{ role, sub }`
   inside a transaction that always rolls back, on a direct `postgres`

@@ -6,3 +6,5 @@ settings.local.json
 .check-db-cache.json
 .restore-receipts.json
 .restore-receipts.json.*.tmp
+.check-pending.json
+.check-db-pending.json

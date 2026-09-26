@@ -3,15 +3,15 @@
 
 ## Status
 - Task status: in_progress (programme roadmap; R0 closed 2026-09-24, R1
-  closed 2026-09-25, R2 and R5 closed 2026-09-26, R5b closed 2026-09-27;
-  the process task `process-guards` next)
-- Last agent: implementer (2026-09-27: R5b's closeout)
+  closed 2026-09-25, R2 and R5 closed 2026-09-26, R5b and the process
+  task `process-guards` closed 2026-09-27; R11 next)
+- Last agent: implementer (2026-09-27: the `process-guards` closeout)
 - NEEDS_HUMAN_CONFIRMATION: no (decisions 1-41 answered, `plan.md` section 16)
 - Branch: `main`
 - Base / starting commit: `d679d285` (R5 live)
 - Pushed: R5 yes (2026-09-26; the sha is in `plan.md` section 16, "R5
-  closeout record"); R5b at its closeout push (the sha goes in "R5b
-  closeout record")
+  closeout record"); R5b yes (`d0acbe13`, "R5b closeout record");
+  `process-guards` at its closeout push
 
 ## Completed
 - Release R0 `persist-0-foundation` (batches `B0.1`, `B0.2`, each reviewed
@@ -51,15 +51,15 @@
   the gates before it are in `plan.md` section 16, "R5b closeout record".
 - Plans made ahead: R11, R3, R4, R6 and R7 are on `main` under
   `issues/<task id>/` with their decision files; every owner question in
-  them is answered. `process-guards` is planned on the worktree branch
-  `worktree-agent-a5ccc3820472f4e03` (`0e20730d`), not yet on `main`; its
-  Q1 is open.
+  them is answered. `process-guards` closed 2026-09-27 (Q1 answered A,
+  gate credit); its record is `plan.md` section 9's row and section 12.
 
 ## Next batch (implement-ready)
-- Orchestrator: after R5b's push, bring `process-guards` (branch
-  `worktree-agent-a5ccc3820472f4e03`, commit `0e20730d`) onto `main`; the
-  owner answers its Q1 (gate credit for a backgrounded run, recommended,
-  or a host-wide heavy-run lock); then its first batch. After it: R11.
+- R11. Its refresh (2026-09-27) is commit `382d7420` on the worktree
+  branch `worktree-agent-a739573d9a05f0ce9`, based on `d343cc95`;
+  cherry-pick it onto `main` after the `process-guards` push. `B11.1`
+  then needs its plan review to approve (`plan.md` section 17, "Carried
+  from `process-guards`").
 
 ## Blockers
 - None.

@@ -13,10 +13,8 @@ plan-implement-review-remediate loops per batch.
   2026-09-26 (`012462e1`, budget fix `8ebf03ea`); R5 `persist-5-migration`
   closed 2026-09-26 (record: `plan.md` section 16, "R5 closeout record");
   R5b `persist-5b-account-menu` closed 2026-09-27 (record: "R5b closeout
-  record"). Next: the plan-review process task `process-guards` (`plan.md`
-  section 9), planned ahead on the worktree branch
-  `worktree-agent-a5ccc3820472f4e03` (`0e20730d`), brought onto `main`
-  after R5b's push; owner question Q1 open.
+  record"); the process task `process-guards` closed 2026-09-27 (`plan.md`
+  section 9). Next: R11.
 
 ## Input design (external, not authoritative)
 - `C:\Users\Ignat\OneDrive\Desktop\persist\DAGGERHEART-LOOT-PERSISTENCE-DESIGN.md`

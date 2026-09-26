@@ -11,9 +11,8 @@
   2026-09-26; R5b `persist-5b-account-menu` closed 2026-09-27. Each task
   directory was retired in its closeout commit; the release records are
   section 16, "R1 closeout record", "R2 closeout record", "R5 closeout
-  record" and "R5b closeout record". Next: the plan-review process task
-  `process-guards` (section 9; planned ahead on a worktree branch, brought
-  onto `main` after R5b's push), then R11, R3, R4.
+  record" and "R5b closeout record". The process task `process-guards`
+  closed 2026-09-27 (section 9). Next: R11, then R3, R4.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -430,7 +429,7 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R2 | `persist-2-lists` | `B2.0`-`B2.3` - **closed 2026-09-26**, live at the push of `main` | The test-migration fix (`B2.0`), then cloud lists with "edited N ago", sign-in-only creation, player and GM share links with polling, save a copy; `llms.txt` and the shared page name the cutoff date |
 | R5 | `persist-5-migration` | `B5.1`, `B5.2a`-`B5.2d` - **closed 2026-09-26**, live at the push of `main` | **Moved directly after R2 (owner, 2026-09-25)** so that `LEGACY_WRITE_UNTIL` = 2026-10-26 is reachable (section 10). Shipped: the automatic move of browser lists into the account at sign-in (`move_legacy_list`, one RPC per list, a read-back, `dhloot.migrated.v1` with the first account's id, the one-time notice, `held` for a mismatch, read-only while the move is due); the cutoff `LEGACY_WRITE_UNTIL` with read-only browser lists after it; the retired `#/l/` page and its announcement; the account write buffer (2 s quiet window, early flushes, a `keepalive` close) sent as one `apply_list_writes` request per flush. Migrations `20260925130400` (the column, the index, the exempted limit triggers, `move_legacy_list`), `20260925130500` (its `40001` conflict path), `20260925130600` (`apply_list_writes`). Must be live on production by 2026-10-12, else the date moves |
 | R5b | `persist-5b-account-menu` (owner, 2026-09-26: its own release) | `B5b.1` - **closed 2026-09-27**, live at the push of `main` (section 16, "R5b closeout record") | Right after R5, live by 2026-10-19 (before the 2026-10-26 cutoff): the header's account menu («Аккаунт», «Мои списки», «Выйти»; «Мои предметы» joins in R7), the Display section of `#/account` (the five synced settings and R4's `notifyGm` choice), the Lists tab gone from the cutoff (`#/lists` stays a route), and (owner, 2026-09-27) a banner under the header for a signed-out reader with browser lists: sign in before the date, or the app stops showing them |
-| - | `process-guards` (owner, 2026-09-26: a process task; planned ahead on the worktree branch `worktree-agent-a5ccc3820472f4e03`, commit `0e20730d`, brought onto `main` after R5b's push; one open owner question, Q1: gate credit for a backgrounded run or a host-wide heavy-run lock - recommended gate credit) | set by its plan | Right after R5b, before R11: a plan review before the first implement batch when a plan adds a schema change or a SECURITY DEFINER function, changes a public contract, can lose data, or adds a write or sync protocol; a reviewer writes its full report to `issues/<id>/reviews/<batch>.md` (its Write tool limited to that path, enforced by a guard); a host-wide heavy-run lock across sessions, or gate credit for a backgrounded run by its exit code; `tests/db/run.mjs` takes and releases the local stack lock (`%TEMP%\dhloot-local-stack.lock`, 45-minute staleness, the holder's task id) itself; `bash-guard.mjs` denies `.`, `source` and `cat` on `.env*`; a schema batch runs `db:push` to the test project only after its review approves. Each rule was held by hand through R5 |
+| - | `process-guards` (owner, 2026-09-26: a process task; Q1 answered A, gate credit, owner 2026-09-27) | `B1`, `B2` - **closed 2026-09-27**. Shipped: the six rules as hooks and scripts (gate credit, the local stack lock, the `.env` guards, the plan review before an implementer dispatch, the reviewer's report-only writes, a test-project migration push after an approving review) and seven decision files under `docs/decisions/` | Right after R5b, before R11: a plan review before the first implement batch when a plan adds a schema change or a SECURITY DEFINER function, changes a public contract, can lose data, or adds a write or sync protocol; a reviewer writes its full report to `issues/<id>/reviews/<batch>.md` (its Write tool limited to that path, enforced by a guard); a host-wide heavy-run lock across sessions, or gate credit for a backgrounded run by its exit code; `tests/db/run.mjs` takes and releases the local stack lock (`%TEMP%\dhloot-local-stack.lock`, 45-minute staleness, the holder's task id) itself; `bash-guard.mjs` denies `.`, `source` and `cat` on `.env*`; a schema batch runs `db:push` to the test project only after its review approves. Each rule was held by hand through R5 |
 | R11 | `persist-usage-monitoring` (working id kept; its directory exists) | `B11.1` | **Placed after R5 (owner request 2026-09-25, "after r2"; planner 2026-09-25), and after R5b from 2026-09-26**: a nightly `usage.yml` report of production's free-plan usage - database and Storage size, rows per table, an MAU estimate, request counts, users near their count limits - with a forecast, a summary every night, a failed run (GitHub's email) near a limit, the `usage_snapshots` history table and the keep-alive Data API call. Plan: `issues/persist-usage-monitoring/plan.md` |
 | R3 | `persist-3-realtime` | `B3.1`, `B3.2` | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline, requester status |
@@ -570,6 +569,7 @@ carries "goldens".
 | `B4.2` | Revised by the R4 plan (section 11): `RequestRepository`, fake and contract case, `env.session`, the requester's send and status block, flow b with `notifyGm`, the owner's Requests panel with apply, «Принять доступное» and decline, the index card line, R3's feeds routing `request`, policy text; layer 2 states and cases; E2E: an anonymous request applied by the owner, stock lowered, the requester's status reads applied | section 6 row 17 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI, policy text | a commit the harness cannot reach (the E2E needs `B4.1`'s migration on the test project) |
 | `B5.1`-`B5.2d` | R5, closed 2026-09-26: the move RPC and its conflict path, the batching RPC `apply_list_writes`, the write buffer with the batching client, the automatic move with the cutoff and the retired `#/l/` page (section 9's R5 row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R5's commit history | - | - | - | - |
 | `B5b.1` | R5b, closed 2026-09-27: the account menu, the Display section of `#/account`, the Lists tab gone after the date, the signed-out move banner (section 9's R5b row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch brief is in R5b's commit history | - | - | - | - |
+| `B1`-`B2` | `process-guards`, closed 2026-09-27: host guards (gate credit, the local stack lock, the `.env` guards) and review gates (the plan review, the reviewer's report file, a migration push after an approving review). The design as built is in `.claude/README.md`, the prompts and `docs/decisions/`; the batch briefs are in the task's commit history | - | - | - | - |
 | `B6.1` | Refined 2026-09-26 (`issues/persist-6-import-export/plan.md` section 8): the contract and the database - `schema/import-v1.json` (draft 2020-12, `$id` the published URL, `additionalProperties: false`), `docs/fixtures/import/`, `tests/contracts.js` pins, `llms.txt` section "Lists as a file (import-v1)" (the bundle replaces LLM-built links), `CONTRACTS.md` section 4, the published-file lists (`ci.yml`, `check-site.lib.mjs`, `<noscript>`); `lib/bundle.ts` (build, validate with JSON paths, parse; a schema-drift test); `ListRepository.import` on the real adapter, the lazy port and the fake; `import_lists` migration, reversal, layer 3 matrix; contract case H and a real-only atomicity check | section 6 row 19 | layer 1 `check`, layer 3 `check:db`, `check:built`, layer 4 E2E (~12-15 min) | required: public contract, schema rule | new release (R6) |
 | `B6.2` | The UI: «Экспорт» (a checklist of the account lists, «Скачать JSON (N)») and «Импорт» (choose a file, validate, preview counts and skipped ids, one press) panels under the index's «Ваш аккаунт» heading; `#/account` «Ваши данные» with «Скачать все списки (JSON)»; «Скачать JSON» on an account list's page; `AppState.exportLists`, `CloudLists.import`; the driver's `download()` and `upload()` verbs; layer 2 states as `gm1`: the export panel, the import panel, the preview, the refused file, the imported list; states cases 43-45; E2E F8 | `FEATURES.md`, `META.md` section 3, `COVERAGE.md` | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~37 min) | required: new UI | a public-contract change and SQL apart from Svelte; a commit boundary the harness cannot reach (the states need `B6.1`'s fake `import` and fixtures) |
 | `B7.1` | Refreshed 2026-09-25, revised 2026-09-26 (`issues/persist-7-homebrew/plan.md`, the release's authority): R7 schema (section 5, R7 row), the matrix in `tests/db/homebrew.test.mjs` and the projection cases in `list-shares.test.mjs`, the reversal, `lib/homebrew.ts` (`validateDraft`, `toRecord`, `snapshotOf`, `withRecords`), `HomebrewRepository` in `ports/types.ts`, the real adapter and the fake, the seed's three items, a reference row in list 101 and a frozen row in `gm2`'s list, `cloud.contract.ts` case H, the shared fixtures `docs/fixtures/homebrew/` | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db`, layer 4 E2E (~11 min) | required (schema rule) | new release (R7); SQL and ports judged apart from Svelte |
@@ -1342,7 +1342,9 @@ all release"):
 
 R5b closeout record (2026-09-27; one local commit on `main`, amended per
 batch, fix pass and closeout, pushed once):
-- Pushed sha: PLACEHOLDER. CI run of the push: PLACEHOLDER.
+- Pushed sha: `d0acbe13`. CI run of the push: 36284549476, success; the
+  five `browser` shard jobs took 395, 397, 384, 347 and 354 s;
+  `migrate-prod` 01:14:19-01:14:34Z applied nothing, then `deploy`.
 - Shipped: section 9's R5b row. One batch `B5b.1`: the header's account
   menu («Аккаунт», «Мои списки», «Выйти»), the Display section of
   `#/account` (language, starting section, tables view, print layout and
@@ -1373,7 +1375,8 @@ batch, fix pass and closeout, pushed once):
 - Pending, owner, after the push: CI (`check`, five `browser` shards,
   `db`, `e2e`, `deploy`) green; the menu, the Display section and the
   banner on production; the release live before 2026-10-19. Named to the
-  owner: which release owns D64 (recommended R7); `process-guards` Q1.
+  owner: which release owns D64 (recommended R7); `process-guards` Q1
+  (answered A, gate credit, 2026-09-27).
 
 ## 18. Cloud sessions (claude.ai/code)
 
@@ -1519,11 +1522,6 @@ owner:
 
 Carried from R5b (`persist-5b-account-menu`, closed 2026-09-27):
 
-- The process task `process-guards` is planned ahead on the worktree
-  branch `worktree-agent-a5ccc3820472f4e03`, commit `0e20730d`; bring it
-  onto `main` after R5b's push. Open owner question Q1: gate credit for a
-  backgrounded run by its exit code, or a host-wide heavy-run lock
-  (recommended: gate credit).
 - R4's refresh: `notifyGm` shipped in `B5b.1` (not `B5.3`, the name R4's
   plan used before its fix at R5b's closeout); R4 reads `app.notifyGm` and
   writes `app.setNotifyGm`.
@@ -1534,6 +1532,18 @@ Carried from R5b (`persist-5b-account-menu`, closed 2026-09-27):
 - Owner question: which release owns `DEBT.md` D64 (focus falls to `body`
   when a pressed control disappears); recommended R7, which next changes
   the account menu.
+
+Carried from `process-guards` (closed 2026-09-27):
+
+- Every plan made ahead (R11, R3, R4, R6, R7) writes its `Plan review:`
+  line at its refresh, or `agent-guard.mjs` denies its implementer.
+- Each schema batch (`B11.1`, `B3.1`, `B4.1`, `B6.1`, `B7.1`, `B7.3`)
+  moves its test-project push and `npm run e2e` after the approving
+  review (`orchestrate.prompt.md`, "Schema batches"); R7's `B7.1` step 12
+  ("the owner's `db:push --project test` in a local release") becomes
+  the agent's push after the approve.
+- R11's `B11.1` is the first live use of the plan review and the
+  migration-push gate.
 
 - Assumption: Chrome no longer requires a service worker for the install
   prompt. `B0.1`'s closeout has the owner try the install on Android Chrome

@@ -42,6 +42,8 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
    a deleted file - qualify it as `git show <sha>:<path>`. The handoff's
    Deferred list: a defect goes to `DEBT.md`;
    an idea is named to the human in the closeout summary; then it drops.
+   `issues/<id>/reviews.md` and `issues/<id>/reviews/` are scratch: their
+   open rows go the same way, and the files drop with the directory.
 4. `git rm -r issues/<id>`; `git commit --amend`. Rule 2i denies while a
    citation stands; that is the rule working - repair, do not bypass.
 5. `git push`. Once. Record the sha in the closeout summary.

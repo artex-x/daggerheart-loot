@@ -1,5 +1,6 @@
 # 2026-09-25 - Agents may write to the test project; production is CI's or the owner's
 
+- Amended by "An agent pushes migrations to the test project only after an approving review" (2026-09-27): a migration write waits for an approving review.
 - Task: `persist-1-auth` (owner, 2026-09-25).
 - Decision: `bash-guard.mjs` rule 2n allows a `db`, `migration` or
   `config push` command whose target is provably the test project (a

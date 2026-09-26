@@ -77,18 +77,25 @@ for the command (`node`/`vitest`/`parity`, plus a stray `chrome.exe`).
   it, and do not start a heavy run of your own alongside it - two heavy runs on
   one tree corrupt each other's results. Say so to the human and hold.
 - **Nothing is running: the result is gone**, whether or not the command
-  finished. Resume the worker - `SendMessage` to its name, see "Resume, do
-  not replace" - with one instruction: re-run the check in the foreground,
-  one call, `rtk npm run check` with the
+  finished. First read `.claude/.check-cache.json` (`.check-db-cache.json`
+  for `check:db`): a `key` equal to `treeKey()` with `by: "exit"` means the
+  run passed and armed the gate by its own exit ("Gate credit"), so resume
+  the worker to commit. Otherwise resume the worker - `SendMessage` to its
+  name, see "Resume, do not replace" - with one instruction: re-run the
+  check in the foreground, one call, `rtk npm run check` with the
   Bash timeout at 600000, then commit or report. It holds the context a
   fresh agent would re-derive at full cost.
 
-Prose failed at this three times; `bash-guard.mjs` now denies a backgrounded
-`npm run check` (rule 2g) - `.claude/README.md`, "Run a long check". Name the
-checks in the dispatch, say they fit one foreground call, and do not write a
-fourth paragraph. The parity harness's own heavy-run lock (rule 2h) retired
-with it at R0c (issue 47, `23c00a6`); `.claude/README.md`, "One heavy run at a
-time", names what is unguarded now.
+Prose failed at this three times; `bash-guard.mjs` now denies a subagent's
+backgrounded `npm run check` (rule 2g, a subagent rule) - `.claude/README.md`,
+"Run a long check". The check arms the gate by its own exit, so a run the
+harness moved to the background is not lost to the gate, only to a worker
+whose turn ended. Name the checks in the dispatch, say they fit one
+foreground call, and do not write a fourth paragraph. The parity harness's
+own heavy-run lock (rule 2h) retired with it at R0c (issue 47, `23c00a6`),
+and no host-wide lock replaces it (`docs/decisions/`, 2026-09-27, "A green
+check arms the commit gate by its own exit, not a host-wide lock";
+`.claude/README.md`, "One heavy run at a time").
 
 While nothing is running, a foreground `npm run check` of your own is worth
 the few minutes: it is a status, so it is yours to take, it arms the commit
@@ -113,7 +120,9 @@ So, before dispatching:
 - If a full `app/sweep` (all four widths) or `app/golden` (all four shards) is
   required, expect to run it yourself width by width or shard by shard after
   the worker commits, rather than asking a worker to babysit it in one call.
-- Never let two heavy runs overlap - a vitest coverage pass started while a
+- Never let two heavy runs overlap on one tree, and run at most two heavy
+  agents on this host (seven exhausted its memory on 2026-09-26, status
+  0xC000012D) - a vitest coverage pass started while a
   `tests/app/` run's browsers are alive produces spurious 5000ms timeouts.
   But `chrome.exe` is not always the culprit: vitest has timed out a single
   test (`sections.test.ts`, 5000 ms) with zero `chrome.exe` running, then
@@ -213,13 +222,20 @@ nits, it collects nits. A blocker demoted into it ships the defect for every
 batch in between and quietly redefines what that batch is for. Remediate a
 blocker on its own schedule, even when that means waiting for the tree.
 
-**Persist a review's findings when the review lands.** Reviewers return
-findings as messages, not files, so they live only in the orchestrator's
-context and die with the session. 2026-09-17: four reviews' worth of nits,
-risks and evidence were one context away from being lost. Write them to a
-register in `issues/<id>/` as they arrive - not when somebody actions them;
-at closeout the register's open rows go to `docs/specs/DEBT.md` or are named
-to the human and dropped.
+**Persist a review's findings when the review lands.** The reviewer writes
+its full report to `issues/<id>/reviews/<batch>.md` (a plan review:
+`plan-<batch>.md`; a second look: `<name>-2.md`) from
+`.claude/templates/review.template.md`; `edit-guard.mjs` allows it that one
+path. You keep the register `issues/<id>/reviews.md`, one row per finding:
+the id `<batch>-<n>`, the severity, `local` or `deferred-scope`, and the
+status (`open`, `fixed <batch>`, `deferred`, `DEBT D<n>` or `named`). When
+the report file is missing after a review (the reviewer could not write),
+write the returned text there word for word before anything else. A finding
+that lives only in your context dies with the session - 2026-09-17: four
+reviews' worth of nits, risks and evidence were one context away from being
+lost. Add the rows as the review lands, not when somebody actions them; at
+closeout the register's open rows go to `docs/specs/DEBT.md` or are named to
+the human and dropped.
 
 ## Model selection (orchestrator only)
 Agents must not choose models or effort.
@@ -305,17 +321,43 @@ Run reviewer after implement or add-source when ANY of:
 - large data ingest or new source mechanics
 - a large artwork refresh changed many catalog assets or required crop/pad/regeneration exceptions
 - worker reported uncertainty or deviation from plan
+- a migration, a SECURITY DEFINER function or an RLS policy changed
+- a hook, an agent definition, a prompt or `.claude/settings.json` changed
 Otherwise skip review. Record the verdict in the batch's handoff Completed
-section: `Review: required (trigger: <which>)` or `not required (no trigger
-fired)` - both derivable from what the record already holds. A batch whose
+section: `Review: required (trigger: <which>), report
+issues/<id>/reviews/<batch>.md` or `not required (no trigger fired)` - both
+derivable from what the record already holds. A batch whose
 whole scope is other reviews' findings may run without a reviewer on the
 owner's say-so - each routed finding then proves itself in the failing
 direction as an acceptance line - and the handoff says `Review: not run
 (owner's decision)`, never `not required`.
 
+## Plan review
+A plan is reviewed before its first implement batch when it adds a schema
+change (a file under `supabase/migrations/`) or a SECURITY DEFINER function;
+changes a public contract (`CONTRACTS.md`, `docs/fixtures/`,
+`tests/contracts.js`, `llms.txt`); can lose data (a delete, an overwrite or a
+move of stored rows or `localStorage` keys, a migration that drops or
+rewrites); or adds a write or sync protocol (a new writing RPC, a buffer, a
+feed, an import).
+
+- The planner declares it in `plan.md` Status on every pass: `- Plan
+  review: required before <batch> (trigger: <which>)` or `- Plan review:
+  not required (no trigger fired)`.
+- A `required` line: dispatch the reviewer with `Scope: plan before
+  <batch>`; it writes `issues/<id>/reviews/plan-<batch>.md`.
+- approve -> the implementer. fix-then-continue or replan -> resume the
+  planner once, then the same reviewer for a second look
+  (`plan-<batch>-2.md`). Still blocked -> ask the human.
+- `agent-guard.mjs` denies the implementer dispatch while the line is
+  missing, or while no `plan-<batch>*.md` reads `Verdict: approve`; the
+  deny names the file (`docs/decisions/`, 2026-09-27, "A plan that changes
+  schema, contracts, stored data or sync is reviewed first").
+
 ## Procedure (feature path)
 1. Ensure context.md exists/refreshed for TASK
 2. If no usable plan/handoff for TASK -> run planner
+2b. If `plan.md` Status reads `Plan review: required before <batch>` and no `reviews/plan-<batch>*.md` approves -> run reviewer with that scope first (**Plan review**, above)
 3. HARD STOP: if planner reports NEEDS_HUMAN_CONFIRMATION: yes, stop and ask the human. Do NOT dispatch implementer until answered and planner/handoff updated
 4. Run implementer for the next batch only (after tree preflight)
 5. Run reviewer when required by the risk rules above
@@ -356,6 +398,14 @@ you count the one cycle.
   contracts/UI still changed and risk rules still match; when a second
   look is due, resume the same reviewer - it holds the batch
 - If still blocked after one remediation cycle -> stop and ask the human
+
+**Schema batches.** A schema batch's implementer stops after `npm run check`,
+`npm run check:db` and the commit. After the review approves, resume it once
+for `node --env-file=.env.test.local tools/supabase/db-push.mjs --project
+test --yes`, `npm run e2e` and the handoff amend. A fix that changes a
+migration needs a new approve: rule 2r compares the `supabase/migrations`
+tree of the report's `Reviewed:` commit with `HEAD`'s. In a cloud release the
+branch push waits the same way.
 
 ### Nits: they ride a fix pass; alone, they defer mid-plan and clear on the terminal batch
 

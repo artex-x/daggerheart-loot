@@ -1,7 +1,9 @@
 // PreToolUse(Edit|MultiEdit|Write|NotebookEdit): block direct writes to
 // generated files and to a migration that a remote-tracking ref holds, after
 // a bounded fetch - CI applies every pushed migration, so a pushed one is
-// history. Git is the record; no file lists applied migrations. See
+// history. Git is the record; no file lists applied migrations. The
+// reviewer writes only its report, issues/<id>/reviews/<name>.md (docs/decisions/,
+// 2026-09-27), a path outside the repository included. See
 // .claude/README.md, "Hooks".
 
 import {
@@ -66,11 +68,22 @@ const DENY = [
   }
 ];
 
+const REVIEW_REPORT_RE = /^issues\/[a-z0-9][a-z0-9._-]*\/reviews\/[a-z0-9][a-z0-9._-]*\.md$/;
+const REVIEW_TOOLS = new Set(['Write', 'Edit', 'MultiEdit']);
+const REVIEWER_MESSAGE =
+  'Blocked: the reviewer writes only its report, issues/<id>/reviews/<name>.md, with Write or Edit; everything else is read-only (docs/decisions/, 2026-09-27, "The reviewer writes its report to issues/<id>/reviews/ and nowhere else"). Return the fix to the orchestrator.';
+
 guard(() => {
   const input = readInput();
   const event = input.hook_event_name || 'PreToolUse';
   const filePath = input.tool_input && input.tool_input.file_path;
   const rel = relPath(filePath, input.cwd);
+  if (
+    input.agent_type === 'reviewer' &&
+    !(rel !== null && REVIEW_TOOLS.has(input.tool_name) && REVIEW_REPORT_RE.test(pathKey(rel)))
+  ) {
+    return deny(event, REVIEWER_MESSAGE);
+  }
   if (rel === null) return undefined;
   const key = pathKey(rel);
 

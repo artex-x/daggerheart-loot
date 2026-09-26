@@ -6,7 +6,8 @@
   only. A PASS writes the receipt that restore-prod.mjs needs for the same
   source. The key comes from BACKUP_AGE_IDENTITY or from .env.restore.local
   at the main checkout's root; no child process sees it, and no plaintext
-  file is written. On Windows run it through the PowerShell tool: Git Bash
+  file is written. It holds the local stack lock from the key check to the
+  final reset. On Windows run it through the PowerShell tool: Git Bash
   hangs on docker. Procedure: .claude/README.md, "Run the agent drill".
 */
 import { readFileSync } from 'node:fs';
@@ -40,6 +41,11 @@ import {
   takeIdentity,
   writeReceipts
 } from './restore.mjs';
+import {
+  holderText,
+  releaseStackLock,
+  takeStackLock
+} from '../../.claude/hooks/stack-lock.mjs';
 
 /* Describes a source that matched no backup. */
 function notFound(source) {
@@ -66,6 +72,7 @@ async function main() {
   let env = null;
   let stackUp = false;
   let cleaned = null;
+  let lockNonce = null;
 
   const cleanup = () => {
     if (cleaned) return cleaned;
@@ -77,6 +84,7 @@ async function main() {
       tempRemoved = false;
     }
     const reset = stackUp ? resetLocal(env) : null;
+    releaseStackLock(lockNonce);
     cleaned = { tempRemoved, reset };
     return cleaned;
   };
@@ -110,6 +118,12 @@ async function main() {
       state.failure = `the backup key is missing or malformed. Put one line BACKUP_AGE_IDENTITY=AGE-SECRET-KEY-1... in ${KEY_FILE} at the main checkout's root, or set BACKUP_AGE_IDENTITY.`;
       return state;
     }
+    const lock = takeStackLock({ command: 'npm run restore:drill' });
+    if (!lock.ok) {
+      state.failure = `the local stack is held by ${holderText(lock.lock)}; run the drill after that run ends.`;
+      return state;
+    }
+    lockNonce = lock.nonce;
     env = childEnv();
     removeStaleTemp();
 

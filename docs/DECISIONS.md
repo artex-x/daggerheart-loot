@@ -14,8 +14,15 @@ deleted.
 
 ## Index
 
+- 2026-09-27 - [A green check arms the commit gate by its own exit, not a host-wide lock](decisions/2026-09-27-a-green-check-arms-the-commit-gate-by.md)
+- 2026-09-27 - [A plan that changes schema, contracts, stored data or sync is reviewed first](decisions/2026-09-27-a-plan-that-changes-schema-contracts-stored-data.md)
 - 2026-09-27 - [A signed-out reader with browser lists sees a move banner until the cutoff](decisions/2026-09-27-a-signed-out-reader-with-browser-lists-sees-a-move-banner.md)
+- 2026-09-27 - [Agents read no .env file; the program loads it with `--env-file`](decisions/2026-09-27-agents-read-no-env-file-the-program-loads.md)
+- 2026-09-27 - [An agent pushes migrations to the test project only after an approving review](decisions/2026-09-27-an-agent-pushes-migrations-to-the-test-project.md)
 - 2026-09-27 - [R10 removes browser lists and the move; an old `#/l/` link is not found](decisions/2026-09-27-r10-removes-browser-lists-and-the-move.md)
+- 2026-09-27 - [The Read and Grep tools are denied `.env` files by a hook, not only by settings](decisions/2026-09-27-the-read-and-grep-tools-are-denied-env.md)
+- 2026-09-27 - [The reviewer writes its report to `issues/<id>/reviews/` and nowhere else](decisions/2026-09-27-the-reviewer-writes-its-report-to-issues-id.md)
+- 2026-09-27 - [The Supabase scripts take the local stack lock themselves](decisions/2026-09-27-the-supabase-scripts-take-the-local-stack-lock.md)
 - 2026-09-26 - [A browser list moves through one RPC that hashes its canonical text](decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md)
 - 2026-09-26 - [Homebrew in the owner's lists is a live reference; a copy that leaves is frozen](decisions/2026-09-26-a-homebrew-entry-in-the-owners-lists-is.md)
 - 2026-09-26 - [A request the database fails three times is halved; a lone write is dropped](decisions/2026-09-26-a-request-the-database-fails-three-times-is-halved.md)

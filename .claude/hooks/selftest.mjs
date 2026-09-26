@@ -23,7 +23,11 @@ const ALL_SCRIPTS = [
   'check-observer.mjs',
   'edit-guard.mjs',
   'edit-followup.mjs',
-  'session-stop.mjs'
+  'session-stop.mjs',
+  'gate-credit.mjs',
+  'stack-lock.mjs',
+  'agent-guard.mjs',
+  'read-guard.mjs'
 ];
 
 let pass = 0;
@@ -95,6 +99,10 @@ function cacheFilePath() {
 
 function clearCache() {
   fs.rmSync(cacheFilePath(), { force: true });
+}
+
+function scratchLockPath() {
+  return path.join(scratchState, 'dhloot-local-stack.lock');
 }
 
 function setupScratch() {
@@ -190,6 +198,9 @@ function runHook(hookName, payload, opts = {}) {
       LOOT_GITLEAKS_CMD: JSON.stringify([process.execPath, '-e', 'process.exit(0)']),
       LOOT_HOOK_ROOT: opts.root !== undefined ? opts.root : scratchRoot,
       LOOT_HOOK_STATE_DIR: opts.state !== undefined ? opts.state : scratchState,
+      // Never the host's real lock: another checkout's check:db would
+      // otherwise decide the stack-command cases here.
+      DHLOOT_STACK_LOCK: scratchLockPath(),
       ...(opts.env || {})
     }
   });
@@ -1476,7 +1487,13 @@ async function testPersistenceGuards() {
     );
     check(
       '#226 check:db reminder is not the check one',
-      !systemMessage(result).includes('~165s'),
+      !systemMessage(result).includes('396-544 s'),
+      systemMessage(result)
+    );
+    check(
+      '#226 check:db reminder names BUSY and the credit',
+      systemMessage(result).includes('check:db: BUSY') &&
+        systemMessage(result).includes('by its own exit'),
       systemMessage(result)
     );
   }
@@ -3095,6 +3112,49 @@ async function testSessionStop() {
     check('#111 second Stop, unchanged state: silent', isSilent(result), result.stdout);
   }
 
+  // #299 - the review register and the reports are task documents; a sibling
+  // scratch file in the same directory is still a candidate.
+  const reviewSession = 's-stop-reviews';
+  const reviewFiles = [
+    'issues/orphan-demo/reviews/B1.md',
+    'issues/orphan-demo/reviews.md',
+    'issues/orphan-demo/scratch.js'
+  ];
+  try {
+    for (const rel of reviewFiles) {
+      writeFile(rel, '# scratch\n');
+      runHook(
+        'edit-followup.mjs',
+        editPayload(path.join(scratchRoot, ...rel.split('/')), {
+          session_id: reviewSession,
+          event: 'PostToolUse'
+        })
+      );
+    }
+    const result = runHook('session-stop.mjs', {
+      session_id: reviewSession,
+      cwd: scratchRoot,
+      hook_event_name: 'Stop',
+      stop_hook_active: false
+    });
+    check(
+      '#299 the scratch sibling is still a candidate',
+      systemMessage(result).includes('issues/orphan-demo/scratch.js'),
+      systemMessage(result)
+    );
+    check(
+      '#299 reviews.md and reviews/ are not candidates',
+      !systemMessage(result).includes('reviews'),
+      systemMessage(result)
+    );
+  } finally {
+    for (const rel of reviewFiles) fs.rmSync(path.join(scratchRoot, rel), { force: true });
+    fs.rmSync(path.join(scratchRoot, 'issues/orphan-demo/reviews'), {
+      recursive: true,
+      force: true
+    });
+  }
+
   // Clean up this block's own untracked scratch so testFailOpen() sees the
   // tree it expects.
   fs.rmSync(path.join(scratchRoot, 'tools/scratch-tmp.js'), { force: true });
@@ -3467,7 +3527,1201 @@ async function testStateCap() {
   }
 }
 
-// ---------- fail-open contract, all eight scripts (#56-58) ----------
+// ---------- host guards: 2t, 2u, 2v (#272-#275, #281-#282) ----------
+
+function writeScratchLock(body) {
+  fs.writeFileSync(scratchLockPath(), typeof body === 'string' ? body : JSON.stringify(body));
+}
+
+function clearScratchLock() {
+  fs.rmSync(scratchLockPath(), { force: true });
+}
+
+function testHostGuards() {
+  // ----- 2v a hand run of gate-credit.mjs -----
+  for (const [command, payload] of [
+    ['node .claude/hooks/gate-credit.mjs arm check', bashPayload],
+    ['node .claude/hooks/gate-credit.mjs begin check-db', bashPayload],
+    ['rtk proxy node .claude/hooks/gate-credit.mjs arm check', bashPayload],
+    ['node .\\.claude\\hooks\\gate-credit.mjs arm check', psPayload]
+  ]) {
+    const result = runHook('bash-guard.mjs', payload(command));
+    check(`#272 gate credit by hand denied: ${command}`, isDeny(result), result.stdout);
+    check(
+      `#272 reason: ${command}`,
+      denyReason(result).includes('SKIP_CHECK_GATE=1'),
+      denyReason(result)
+    );
+  }
+  for (const command of [
+    'rtk grep gate-credit.mjs .claude',
+    'npm run check',
+    'node .claude/hooks/selftest.mjs'
+  ]) {
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-credit' }));
+    check(`#273 gate credit not matched: ${command}`, !isDeny(result), denyReason(result));
+  }
+
+  // ----- 2t a .env file read into the shell or the transcript -----
+  for (const [command, payload] of [
+    ['. .env.test.local', bashPayload],
+    ['source .env', bashPayload],
+    ['cat .env.test.local', bashPayload],
+    ['cat supabase/.env', bashPayload],
+    ['cat "./.env.test.local"', bashPayload],
+    ['cat < .env', bashPayload],
+    ['head -n 3 .env', bashPayload],
+    ['rtk read .env.test.local', bashPayload],
+    ['type .env.local', psPayload],
+    ['Get-Content .env.test.local', psPayload],
+    ['gc ./.env.test.local', psPayload],
+    ['. ./.env.test.local', psPayload]
+  ]) {
+    const result = runHook('bash-guard.mjs', payload(command));
+    check(`#274 .env reader denied: ${command}`, isDeny(result), result.stdout);
+    check(
+      `#274 reason names --env-file: ${command}`,
+      denyReason(result).includes('--env-file'),
+      denyReason(result)
+    );
+  }
+  for (const command of [
+    'node --env-file=.env.test.local tools/supabase/db-push.mjs --project test --yes',
+    'npm run e2e',
+    'git grep .env.test.local',
+    'rtk grep ".env" README.md',
+    'cat README.md',
+    'echo .env',
+    'git commit -m "never cat .env.test.local"'
+  ]) {
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-env' }));
+    check(`#275 not a .env reader: ${command}`, !isDeny(result), denyReason(result));
+  }
+  {
+    const result = runHook('bash-guard.mjs', bashPayload('cat .env.restore.local'));
+    check(
+      '#275 the key file keeps rule 2q',
+      denyReason(result).includes('backup key'),
+      denyReason(result)
+    );
+  }
+
+  // ----- 2u a manual local-stack command under a foreign lock -----
+  const otherRoot = path.join(os.tmpdir(), 'loot-hooks-other-checkout');
+  const freshLock = () => ({
+    task: 'other-task',
+    branch: 'main',
+    root: otherRoot,
+    command: 'npm run check:db',
+    at: new Date().toISOString(),
+    nonce: '0123456789abcdef'
+  });
+  const stackCommands = [
+    ['npx supabase db reset --local', bashPayload],
+    ['npx supabase start', bashPayload],
+    ['npx supabase stop', bashPayload],
+    ['node node_modules/supabase/dist/supabase.js db reset --local', bashPayload],
+    ['npx.cmd supabase db reset --local', psPayload]
+  ];
+  const otherCommands = [
+    'npx supabase status',
+    'npx supabase migration new x',
+    'npx supabase db push --project-ref rdjxcjkhsklhprmzxajq --dry-run'
+  ];
+  try {
+    writeScratchLock(freshLock());
+    for (const [command, payload] of stackCommands) {
+      const result = runHook('bash-guard.mjs', payload(command));
+      check(`#281 foreign stack lock denies: ${command}`, isDeny(result), result.stdout);
+      check(
+        `#281 reason names the holder: ${command}`,
+        denyReason(result).includes('other-task') && denyReason(result).includes('45 minutes'),
+        denyReason(result)
+      );
+    }
+    for (const command of otherCommands) {
+      const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-stack' }));
+      check(`#282 not a local-stack command: ${command}`, !isDeny(result), denyReason(result));
+    }
+    writeScratchLock('process-guards 2026-09-27T09:00\n');
+    {
+      const result = runHook('bash-guard.mjs', bashPayload('npx supabase db reset --local'));
+      check('#281 a raw lock is foreign: denies', isDeny(result), result.stdout);
+      check(
+        '#281 a raw lock: the reason quotes its line',
+        denyReason(result).includes('process-guards 2026-09-27T09:00'),
+        denyReason(result)
+      );
+    }
+    for (const [label, body] of [
+      ['a lock of this checkout', { ...freshLock(), root: scratchRoot }],
+      [
+        'a stale lock',
+        { ...freshLock(), at: new Date(Date.now() - 46 * 60 * 1000).toISOString() }
+      ],
+      ['no lock', null]
+    ]) {
+      if (body) writeScratchLock(body);
+      else clearScratchLock();
+      for (const [command, payload] of stackCommands) {
+        const result = runHook('bash-guard.mjs', payload(command, { session_id: 's-stack' }));
+        check(`#282 ${label}: not denied: ${command}`, !isDeny(result), denyReason(result));
+      }
+    }
+  } finally {
+    clearScratchLock();
+  }
+}
+
+// ---------- bash-guard.mjs: rule 2g is a subagent rule (#271) ----------
+
+function testBackgroundCheckScope() {
+  const payload = bashPayload('npm run check', {
+    run_in_background: true,
+    session_id: 's-bg-scope'
+  });
+  const sub = runHook('bash-guard.mjs', payload);
+  check('#271 background check in a subagent: denies', isDeny(sub), sub.stdout);
+  delete payload.agent_id;
+  delete payload.agent_type;
+  const main = runHook('bash-guard.mjs', payload);
+  check('#271 background check in the main session: not denied', !isDeny(main), main.stdout);
+  const empty = runHook('bash-guard.mjs', { ...payload, agent_id: '' });
+  check('#271 an empty agent_id: not denied', !isDeny(empty), empty.stdout);
+}
+
+// ---------- check-observer.mjs: BUSY and gate credit (#283-#285) ----------
+
+async function testCreditObserver() {
+  process.env.LOOT_HOOK_ROOT = scratchRoot;
+  process.env.LOOT_HOOK_STATE_DIR = scratchState;
+  const { treeKey, writeCache } = await importTreeKey();
+  const readJson = (file) =>
+    fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+  clearCache();
+  clearDbCache();
+
+  const busyText =
+    'check:db: the local stack is held by other-task (main, C:/probe), npm run check:db, since x; it is free when that run ends, or 45 minutes after it started.\ncheck:db: BUSY\nnpm error code 3\n';
+  for (const response of [{ stdout: busyText, stderr: '' }, busyText]) {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('PowerShell', 'npm run check:db', response)
+    );
+    check(
+      `#283 check:db BUSY (${typeof response}): says BUSY`,
+      systemMessage(result).includes('BUSY') && systemMessage(result).includes('Nothing ran'),
+      systemMessage(result)
+    );
+    check(
+      `#283 check:db BUSY (${typeof response}): no db cache`,
+      !fs.existsSync(dbCacheFilePath())
+    );
+  }
+
+  writeCache(treeKey(), '.check-cache.json', 'npm run check', 'exit');
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('Bash', 'npm run check', {
+        stdout: 'the output was persisted\n',
+        stderr: '',
+        interrupted: false
+      })
+    );
+    check(
+      '#284 unattributable check, armed by its exit: says PASS',
+      systemMessage(result).includes("npm run check: PASS - armed by the check's own exit."),
+      systemMessage(result)
+    );
+  }
+  writeCache(treeKey(), '.check-db-cache.json', 'npm run check:db', 'exit');
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('PowerShell', 'npm run check:db', { stdout: 'nothing useful\n' })
+    );
+    check(
+      '#284 unattributable check:db, armed by its exit: says PASS',
+      systemMessage(result).includes("npm run check:db: PASS - armed by the check's own exit."),
+      systemMessage(result)
+    );
+  }
+  writeCache(treeKey(), '.check-cache.json', 'npm run check', 'observer');
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('Bash', 'npm run check', {
+        stdout: 'x\n',
+        stderr: '',
+        interrupted: false
+      })
+    );
+    check(
+      '#284 unattributable check, cache written by the observer: not credited to an exit',
+      !systemMessage(result).includes('armed by the check') &&
+        systemMessage(result).includes('not armed'),
+      systemMessage(result)
+    );
+  }
+  writeCache('0000000000000000', '.check-cache.json', 'npm run check', 'exit');
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('Bash', 'npm run check', {
+        stdout: 'x\n',
+        stderr: '',
+        interrupted: false
+      })
+    );
+    check(
+      '#284 unattributable check, cache of another tree: not armed',
+      systemMessage(result).includes('not armed'),
+      systemMessage(result)
+    );
+  }
+
+  const passing = { stdout: 'x\n' + COVERAGE_SUMMARY, stderr: '', interrupted: false };
+  writeCache(treeKey(), '.check-cache.json', 'npm run check', 'exit');
+  runHook('check-observer.mjs', observerPayload('Bash', 'npm run check', passing));
+  {
+    const cache = readJson(cacheFilePath());
+    check(
+      '#285 an attributed pass keeps the by-exit record of the same tree',
+      cache && cache.key === treeKey() && cache.by === 'exit',
+      JSON.stringify(cache)
+    );
+  }
+  clearCache();
+  runHook('check-observer.mjs', observerPayload('Bash', 'npm run check', passing));
+  {
+    const cache = readJson(cacheFilePath());
+    check(
+      '#285 an attributed pass with no cache writes by observer',
+      cache && cache.key === treeKey() && cache.by === 'observer',
+      JSON.stringify(cache)
+    );
+  }
+  clearCache();
+  clearDbCache();
+}
+
+// ---------- gate-credit.mjs (#268-#270) ----------
+
+function runCredit(args, env = {}) {
+  return spawnSync(process.execPath, [path.join(hooksDir, 'gate-credit.mjs'), ...args], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      LOOT_HOOK_ROOT: scratchRoot,
+      LOOT_HOOK_STATE_DIR: scratchState,
+      ...env
+    }
+  });
+}
+
+async function testGateCredit() {
+  process.env.LOOT_HOOK_ROOT = scratchRoot;
+  process.env.LOOT_HOOK_STATE_DIR = scratchState;
+  const { treeKey } = await importTreeKey();
+  const pendingPath = (name) => path.join(scratchState, `.${name}-pending.json`);
+  const readJson = (file) =>
+    fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+  // git cannot find a repository, so treeKey() is null in that process.
+  const noGit = { GIT_DIR: path.join(scratchState, 'no-such-git-dir') };
+  clearCache();
+  clearDbCache();
+
+  for (const [name, cacheFile, command] of [
+    ['check', cacheFilePath(), 'npm run check'],
+    ['check-db', dbCacheFilePath(), 'npm run check:db']
+  ]) {
+    const begin = runCredit(['begin', name]);
+    check(
+      `#268 ${name} begin: exit 0 and silent`,
+      begin.status === 0 && !begin.stdout.trim(),
+      begin.stdout + begin.stderr
+    );
+    check(`#268 ${name} begin: writes the pending file`, fs.existsSync(pendingPath(name)));
+    const arm = runCredit(['arm', name]);
+    check(`#268 ${name} arm: exit 0`, arm.status === 0, arm.stderr);
+    check(
+      `#268 ${name} arm: says armed`,
+      arm.stdout.trim() === `gate credit: armed (${command} exited 0)`,
+      arm.stdout
+    );
+    const cache = readJson(cacheFile);
+    check(
+      `#268 ${name} arm: the cache holds the current key, by exit`,
+      cache && cache.key === treeKey() && cache.by === 'exit' && cache.command === command,
+      JSON.stringify(cache)
+    );
+    check(`#268 ${name} arm: removes the pending file`, !fs.existsSync(pendingPath(name)));
+  }
+  {
+    clearDbCache();
+    const mod = await import(pathToFileUrlHref('gate-credit.mjs'));
+    const printed = [];
+    const write = process.stdout.write;
+    process.stdout.write = (chunk) => {
+      printed.push(String(chunk));
+      return true;
+    };
+    try {
+      mod.beginCredit('check-db');
+      mod.armCredit('check-db');
+    } finally {
+      process.stdout.write = write;
+    }
+    check(
+      '#268 beginCredit and armCredit (tests/db/run.mjs): armed',
+      printed.join('') === 'gate credit: armed (npm run check:db exited 0)\n' &&
+        readJson(dbCacheFilePath())?.by === 'exit',
+      printed.join('')
+    );
+  }
+
+  clearCache();
+  {
+    runCredit(['begin', 'check']);
+    appendFile('app/src/lib/x.ts', '// changed during the run\n');
+    const arm = runCredit(['arm', 'check']);
+    check(
+      '#269 a covered file changed during the run: not armed',
+      arm.status === 0 &&
+        arm.stdout.trim() === 'gate credit: not armed - the tree changed during the run',
+      arm.stdout
+    );
+    check(
+      '#269 a covered file changed during the run: no cache',
+      !fs.existsSync(cacheFilePath())
+    );
+  }
+
+  clearCache();
+  clearDbCache();
+  {
+    fs.rmSync(pendingPath('check'), { force: true });
+    const arm = runCredit(['arm', 'check']);
+    check('#270 arm with no pending file: exit 0, silent', isSilent(arm), arm.stdout);
+    check('#270 arm with no pending file: no cache', !fs.existsSync(cacheFilePath()));
+  }
+  for (const args of [['begin', 'nope'], ['arm', 'nope'], ['frob', 'check'], []]) {
+    const result = runCredit(args);
+    check(`#270 CLI "${args.join(' ')}": exit 0, silent`, isSilent(result), result.stdout);
+  }
+  check(
+    '#270 an unknown name writes nothing',
+    !fs.existsSync(pendingPath('nope')) && !fs.existsSync(cacheFilePath())
+  );
+  {
+    const missing = path.join(scratchState, 'no-such-dir', 'deeper');
+    const env = { LOOT_HOOK_STATE_DIR: missing };
+    const begin = runCredit(['begin', 'check'], env);
+    const arm = runCredit(['arm', 'check'], env);
+    check(
+      '#270 an unwritable state directory: exit 0, silent',
+      isSilent(begin) && isSilent(arm),
+      begin.stdout + arm.stdout + begin.stderr + arm.stderr
+    );
+    check('#270 an unwritable state directory: no cache', !fs.existsSync(missing));
+  }
+  for (const [label, beginEnv, armEnv] of [
+    ['at the start', noGit, {}],
+    ['at the end', {}, noGit]
+  ]) {
+    runCredit(['begin', 'check'], beginEnv);
+    const arm = runCredit(['arm', 'check'], armEnv);
+    check(
+      `#270 a null tree key ${label}: says it could not be read`,
+      arm.status === 0 &&
+        arm.stdout.trim() === 'gate credit: not armed - the tree key could not be read',
+      arm.stdout
+    );
+    check(`#270 a null tree key ${label}: no cache`, !fs.existsSync(cacheFilePath()));
+  }
+  // #287 - two overlapping runs: a pending file written by another run's
+  // shell holds a key this run never tested, even when it equals the tree.
+  {
+    clearCache();
+    const foreign = { key: treeKey(), at: Math.floor(Date.now() / 1000), ppid: 999999999 };
+    fs.writeFileSync(pendingPath('check'), JSON.stringify(foreign));
+    const arm = runCredit(['arm', 'check']);
+    check(
+      '#287 a pending key of another run: not armed',
+      arm.status === 0 &&
+        arm.stdout.trim() === 'gate credit: not armed - another run began after this one',
+      arm.stdout
+    );
+    check('#287 a pending key of another run: no cache', !fs.existsSync(cacheFilePath()));
+    check(
+      '#287 a pending key of another run: the pending file stays',
+      readJson(pendingPath('check'))?.ppid === 999999999
+    );
+    fs.rmSync(pendingPath('check'), { force: true });
+  }
+  // beginCredit replaces an older pending file, whatever it held.
+  {
+    fs.writeFileSync(pendingPath('check'), JSON.stringify({ key: 'x', ppid: 999999999 }));
+    runCredit(['begin', 'check']);
+    const pending = readJson(pendingPath('check'));
+    check(
+      '#287 begin replaces an older pending file with its own key and ppid',
+      pending && pending.key === treeKey() && pending.ppid === process.pid,
+      JSON.stringify(pending)
+    );
+    fs.rmSync(pendingPath('check'), { force: true });
+  }
+  clearCache();
+  clearDbCache();
+}
+
+// ---------- stack-lock.mjs (#276-#280) ----------
+
+async function testStackLock() {
+  const names = ['DHLOOT_STACK_LOCK', 'DHLOOT_TASK'];
+  const saved = names.map((name) => process.env[name]);
+  process.env.DHLOOT_STACK_LOCK = scratchLockPath();
+  process.env.DHLOOT_TASK = 'selftest-task';
+  process.env.LOOT_HOOK_ROOT = scratchRoot;
+  process.env.LOOT_HOOK_STATE_DIR = scratchState;
+  const lockMod = await import(pathToFileUrlHref('stack-lock.mjs'));
+  const readBody = () => JSON.parse(fs.readFileSync(scratchLockPath(), 'utf8'));
+  const ago = (ms) => new Date(Date.now() - ms).toISOString();
+  const rawLine = 'process-guards 2026-09-27T09:00';
+  try {
+    clearScratchLock();
+    check(
+      '#276 DHLOOT_STACK_LOCK names the lock path',
+      lockMod.stackLockPath() === scratchLockPath()
+    );
+    const first = lockMod.takeStackLock({ command: 'npm run check:db' });
+    check(
+      '#276 take on no file: ok, with a 16-hex nonce',
+      first.ok === true && /^[0-9a-f]{16}$/.test(first.nonce),
+      JSON.stringify(first)
+    );
+    const body = readBody();
+    check(
+      '#276 take on no file: the body carries every field',
+      body.task === 'selftest-task' &&
+        typeof body.branch === 'string' &&
+        body.branch.length > 0 &&
+        body.root === scratchRoot &&
+        body.pid === process.pid &&
+        body.host === os.hostname() &&
+        body.command === 'npm run check:db' &&
+        !Number.isNaN(Date.parse(body.at)) &&
+        body.nonce === first.nonce,
+      JSON.stringify(body)
+    );
+
+    const second = lockMod.takeStackLock({ command: 'npm run restore:drill' });
+    check(
+      '#277 a second take under a fresh lock with a live pid: busy',
+      second.ok === false && second.lock && second.lock.holder.nonce === first.nonce,
+      JSON.stringify(second)
+    );
+    check(
+      '#277 holderText names the task, the root and the command',
+      lockMod.holderText(second.lock).includes('selftest-task') &&
+        lockMod.holderText(second.lock).includes(scratchRoot) &&
+        lockMod.holderText(second.lock).includes('npm run check:db'),
+      lockMod.holderText(second.lock)
+    );
+
+    lockMod.releaseStackLock('ffffffffffffffff');
+    check('#278 a release with a wrong nonce keeps the lock', fs.existsSync(scratchLockPath()));
+    lockMod.releaseStackLock(first.nonce);
+    check('#278 a release with the right nonce removes it', !fs.existsSync(scratchLockPath()));
+
+    const deadPid = spawnSync(process.execPath, ['-e', '0']).pid;
+    for (const [label, write] of [
+      [
+        '46 minutes old',
+        () => writeScratchLock({ ...body, nonce: 'a'.repeat(16), at: ago(46 * 60 * 1000) })
+      ],
+      [
+        'a dead pid on this host',
+        () => writeScratchLock({ ...body, nonce: 'a'.repeat(16), at: ago(0), pid: deadPid })
+      ],
+      [
+        'a raw lock with an old mtime',
+        () => {
+          writeScratchLock(`${rawLine}\n`);
+          const old = new Date(Date.now() - 46 * 60 * 1000);
+          fs.utimesSync(scratchLockPath(), old, old);
+        }
+      ]
+    ]) {
+      write();
+      const taken = lockMod.takeStackLock({ command: 'npm run check:db' });
+      check(
+        `#279 ${label}: taken over`,
+        taken.ok === true && readBody().nonce === taken.nonce,
+        JSON.stringify(taken)
+      );
+      lockMod.releaseStackLock(taken.nonce);
+    }
+
+    writeScratchLock(`${rawLine}\n`);
+    const raw = lockMod.takeStackLock({ command: 'npm run check:db' });
+    check('#280 a raw lock with a fresh mtime: busy', raw.ok === false, JSON.stringify(raw));
+    check(
+      '#280 holderText quotes the raw line',
+      lockMod.holderText(raw.lock).includes(rawLine),
+      lockMod.holderText(raw.lock)
+    );
+    check(
+      '#280 a busy take leaves the raw lock unchanged',
+      fs.readFileSync(scratchLockPath(), 'utf8') === `${rawLine}\n`
+    );
+    check('#280 a raw lock is foreign', lockMod.foreignStackLock() !== null);
+    writeScratchLock({ ...body, at: ago(0) });
+    check('#280 a lock of this checkout is not foreign', lockMod.foreignStackLock() === null);
+
+    // #286 - a BUSY check:db returns before it records a pending key, so it
+    // cannot replace the key of the suite that holds the lock. The BUSY path
+    // returns before `docker info`.
+    const pendingDb = path.join(scratchState, '.check-db-pending.json');
+    fs.rmSync(pendingDb, { force: true });
+    const held = {
+      ...body,
+      task: 'other-task',
+      root: path.join(os.tmpdir(), 'loot-hooks-other-checkout'),
+      pid: process.pid,
+      at: ago(0),
+      nonce: 'b'.repeat(16)
+    };
+    writeScratchLock(held);
+    const busy = spawnSync(
+      process.execPath,
+      [path.join(hooksDir, '..', '..', 'tests', 'db', 'run.mjs')],
+      {
+        encoding: 'utf8',
+        timeout: 30000,
+        env: {
+          ...process.env,
+          DHLOOT_STACK_LOCK: scratchLockPath(),
+          LOOT_HOOK_ROOT: scratchRoot,
+          LOOT_HOOK_STATE_DIR: scratchState
+        }
+      }
+    );
+    check(
+      '#286 check:db under a held lock: exit 3',
+      busy.status === 3,
+      busy.stdout + busy.stderr
+    );
+    check(
+      '#286 check:db under a held lock: BUSY last, naming the holder',
+      /check:db: BUSY\s*$/.test(busy.stdout) && busy.stdout.includes('other-task'),
+      busy.stdout
+    );
+    check('#286 check:db under a held lock: no pending key', !fs.existsSync(pendingDb));
+    check('#286 check:db under a held lock: the lock stays', readBody().nonce === held.nonce);
+  } finally {
+    clearScratchLock();
+    names.forEach((name, i) => {
+      if (saved[i] === undefined) Reflect.deleteProperty(process.env, name);
+      else process.env[name] = saved[i];
+    });
+  }
+}
+
+// ---------- lib.mjs parseReviewHead: the report head and its template (#293) ----------
+
+async function testReviewHead() {
+  const { parseReviewHead } = await import(pathToFileUrlHref('lib.mjs'));
+  const none = { verdict: null, reviewed: null, scope: null };
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const sha = 'a'.repeat(40);
+  let text = fs.readFileSync(
+    path.join(hooksDir, '..', 'templates', 'review.template.md'),
+    'utf8'
+  );
+  for (const [from, to] of [
+    ['approve | fix-then-continue | replan', 'approve'],
+    ['<full HEAD sha>', sha],
+    ['batch <id> | plan before <id>', 'plan before B1']
+  ]) {
+    const next = text.replace(from, to);
+    check(`#293 the template holds the placeholder: ${from}`, next !== text);
+    text = next;
+  }
+  const filled = parseReviewHead(text);
+  check(
+    '#293 the filled template parses',
+    same(filled, { verdict: 'approve', reviewed: sha, scope: { kind: 'plan', id: 'B1' } }),
+    JSON.stringify(filled)
+  );
+  for (const [label, input, expected] of [
+    [
+      'a heading form parses as all null',
+      '# Review - B1\n\n## Verdict: fix-then-continue\n',
+      none
+    ],
+    [
+      'a malformed Reviewed: line gives null',
+      'Verdict: replan\nReviewed: xyz\n',
+      { verdict: 'replan', reviewed: null, scope: null }
+    ],
+    [
+      'Scope: batch B2',
+      'Scope: batch B2\n',
+      { verdict: null, reviewed: null, scope: { kind: 'batch', id: 'B2' } }
+    ],
+    ['a non-string gives all null', undefined, none],
+    ['a Verdict: on line 31 is not read', `${'x\n'.repeat(30)}Verdict: approve\n`, none],
+    [
+      'a CRLF head and an upper-case sha',
+      'Verdict: approve\r\nReviewed: ABCDEF1\r\n',
+      { verdict: 'approve', reviewed: 'abcdef1', scope: null }
+    ]
+  ]) {
+    const head = parseReviewHead(input);
+    check(`#293 ${label}`, same(head, expected), JSON.stringify(head));
+  }
+}
+
+// ---------- agent-guard.mjs: the plan review before an implementer (#288-#292) ----------
+
+function agentPayload(subagentType, prompt) {
+  return {
+    session_id: 's-agent',
+    cwd: scratchRoot,
+    hook_event_name: 'PreToolUse',
+    tool_name: 'Agent',
+    tool_input: { subagent_type: subagentType, prompt, description: 'x' }
+  };
+}
+
+function testAgentGuard() {
+  const taskDir = path.join(scratchRoot, 'issues', 'x');
+  const reset = () => fs.rmSync(taskDir, { recursive: true, force: true });
+  const plan = (status) => {
+    reset();
+    writeFile(
+      'issues/x/plan.md',
+      `# Plan - x\n\n## Status\n\n- Task status: in_progress\n${status}\n## 1. Design\n\nText.\n`
+    );
+  };
+  const review = (name, text) => writeFile(`issues/x/reviews/${name}`, text);
+  const implementer = (prompt = 'TASK: x\n\nImplement the next batch.') =>
+    runHook('agent-guard.mjs', agentPayload('implementer', prompt));
+  try {
+    // #288 silent
+    plan('');
+    for (const [label, result] of [
+      ['no TASK line', implementer('Implement the next batch of x.')],
+      ['a reviewer dispatch', runHook('agent-guard.mjs', agentPayload('reviewer', 'TASK: x'))],
+      ['a planner dispatch', runHook('agent-guard.mjs', agentPayload('planner', 'TASK: x'))],
+      ['a TASK: <id> placeholder', implementer('TASK: <id>\n\nImplement.')],
+      ['no plan.md', implementer('TASK: no-such-task\n\nImplement.')],
+      [
+        'a payload without tool_input',
+        runHook('agent-guard.mjs', {
+          ...agentPayload('implementer', 'TASK: x'),
+          tool_input: undefined
+        })
+      ]
+    ]) {
+      check(`#288 agent-guard silent: ${label}`, isSilent(result), result.stdout);
+    }
+    plan('- Plan review: not required (no trigger fired)\n');
+    {
+      const result = implementer();
+      check(
+        '#288 agent-guard silent: a plan review not required',
+        isSilent(result),
+        result.stdout
+      );
+    }
+
+    // #289 deny, "declare it"
+    for (const [label, write] of [
+      [
+        'a Status without the line (a line outside Status does not count)',
+        () => {
+          plan('');
+          appendFile('issues/x/plan.md', '\n- Plan review: not required (no trigger fired)\n');
+        }
+      ],
+      [
+        'no Status heading and no line',
+        () => {
+          reset();
+          writeFile('issues/x/plan.md', '# Plan - x\n\nText.\n');
+        }
+      ],
+      ['a malformed line', () => plan('- Plan review: maybe\n')]
+    ]) {
+      write();
+      const result = implementer();
+      check(`#289 agent-guard denies: ${label}`, isDeny(result), result.stdout);
+      check(
+        `#289 reason: ${label}`,
+        denyReason(result).includes('declares no plan review') &&
+          denyReason(result).includes('docs/decisions/'),
+        denyReason(result)
+      );
+    }
+
+    // #290 deny, required and not approved
+    const required = '- Plan review: required before B1 (trigger: a migration)\n';
+    for (const [label, write, seen] of [
+      ['no reviews/ directory', () => {}, 'seen: none'],
+      [
+        'plan-B1.md reads fix-then-continue',
+        () => review('plan-B1.md', 'Verdict: fix-then-continue\n'),
+        'plan-B1.md: fix-then-continue'
+      ],
+      [
+        'plan-B1.md has the heading form',
+        () => review('plan-B1.md', '## Verdict: approve\n'),
+        'plan-B1.md: (no Verdict: line)'
+      ],
+      [
+        'only a batch report approves',
+        () => review('B1.md', 'Verdict: approve\n'),
+        'seen: none'
+      ]
+    ]) {
+      plan(required);
+      write();
+      const result = implementer();
+      check(`#290 agent-guard denies: ${label}`, isDeny(result), result.stdout);
+      check(
+        `#290 reason names the file, the seen list and the tool: ${label}`,
+        denyReason(result).includes('reviews/plan-B1.md') &&
+          denyReason(result).includes(seen) &&
+          denyReason(result).includes('(dispatch tool: Agent)'),
+        denyReason(result)
+      );
+    }
+
+    // #291 silent, approved
+    for (const [label, status, write] of [
+      ['plan-B1.md approves', required, () => review('plan-B1.md', 'Verdict: approve\n')],
+      [
+        'a second look approves',
+        required,
+        () => {
+          review('plan-B1.md', 'Verdict: fix-then-continue\n');
+          review('plan-B1-2.md', 'Verdict: approve\n');
+        }
+      ],
+      [
+        'the template layout',
+        required,
+        () =>
+          review(
+            'plan-B1.md',
+            '# Review - plan before B1 (x)\n\nVerdict: approve\nReviewed: abcdef1\nScope: plan before B1\n'
+          )
+      ],
+      [
+        'a batch id with a dot',
+        '- Plan review: required before B11.1 (trigger: a migration)\n',
+        () => review('plan-B11.1.md', 'Verdict: approve\n')
+      ]
+    ]) {
+      plan(status);
+      write();
+      const result = implementer();
+      check(`#291 agent-guard silent: ${label}`, isSilent(result), result.stdout);
+    }
+
+    // #292 two required lines, one approved
+    plan(`${required}- Plan review: required before B3 (trigger: a sync protocol)\n`);
+    review('plan-B1.md', 'Verdict: approve\n');
+    {
+      const result = implementer();
+      check('#292 the unapproved second line denies', isDeny(result), result.stdout);
+      check(
+        '#292 the reason names plan-B3.md',
+        denyReason(result).includes('reviews/plan-B3.md') &&
+          !denyReason(result).includes('reviews/plan-B1.md'),
+        denyReason(result)
+      );
+    }
+  } finally {
+    reset();
+  }
+}
+
+// ---------- read-guard.mjs: the Read and Grep tools on a .env file (#300) ----------
+
+function readPayload(toolName, toolInput) {
+  return {
+    session_id: 's-read',
+    cwd: scratchRoot,
+    hook_event_name: 'PreToolUse',
+    tool_name: toolName,
+    tool_input: toolInput
+  };
+}
+
+function testReadGuard() {
+  for (const [label, payload] of [
+    ['Read .env', readPayload('Read', { file_path: path.join(scratchRoot, '.env') })],
+    [
+      'Read .env.test.local',
+      readPayload('Read', { file_path: path.join(scratchRoot, '.env.test.local') })
+    ],
+    [
+      'Read supabase/.env',
+      readPayload('Read', { file_path: path.join(scratchRoot, 'supabase', '.env') })
+    ],
+    [
+      'Read SUPABASE/.ENV.LOCAL',
+      readPayload('Read', { file_path: path.join(scratchRoot, 'SUPABASE', '.ENV.LOCAL') })
+    ],
+    [
+      'Read a .env file outside the repository',
+      readPayload('Read', { file_path: path.join(os.tmpdir(), '.env.probe') })
+    ],
+    [
+      'Read a backslash path',
+      readPayload('Read', { file_path: 'E:\\dev\\daggerheart-loot\\.env.process-guards-probe' })
+    ],
+    ['Grep with a .env path', readPayload('Grep', { pattern: 'x', path: '.env.test.local' })],
+    ['Grep with a .env glob', readPayload('Grep', { pattern: 'x', glob: '.env*' })]
+  ]) {
+    const result = runHook('read-guard.mjs', payload);
+    check(`#300 read-guard denies: ${label}`, isDeny(result), result.stdout);
+    check(
+      `#300 reason names --env-file: ${label}`,
+      denyReason(result).includes('--env-file'),
+      denyReason(result)
+    );
+  }
+  for (const [label, payload] of [
+    ['Read README.md', readPayload('Read', { file_path: path.join(scratchRoot, 'README.md') })],
+    [
+      'Read .gitignore',
+      readPayload('Read', { file_path: path.join(scratchRoot, '.gitignore') })
+    ],
+    [
+      'Read docs/env/x.md',
+      readPayload('Read', { file_path: path.join(scratchRoot, 'docs', 'env', 'x.md') })
+    ],
+    [
+      'Read envelope.md',
+      readPayload('Read', { file_path: path.join(scratchRoot, 'envelope.md') })
+    ],
+    [
+      'Read app/src/lib/x.ts',
+      readPayload('Read', { file_path: path.join(scratchRoot, 'app', 'src', 'lib', 'x.ts') })
+    ],
+    ['Grep by pattern', readPayload('Grep', { pattern: 'PASSWORD', path: '.' })],
+    ['a Write payload', readPayload('Write', { file_path: '.env', content: 'x' })],
+    ['a payload without tool_input', readPayload('Read', undefined)]
+  ]) {
+    const result = runHook('read-guard.mjs', payload);
+    check(`#300 read-guard silent: ${label}`, isSilent(result), result.stdout);
+  }
+}
+
+// ---------- the reviewer: edit-guard.mjs and bash-guard.mjs rule 2s (#294-#297) ----------
+
+function asReviewer(payload) {
+  return { ...payload, agent_type: 'reviewer' };
+}
+
+function testReviewerGuards() {
+  const at = (...parts) => path.join(scratchRoot, ...parts);
+  for (const [label, file, tool] of [
+    ['Write a batch report', at('issues', 'x', 'reviews', 'B1.md'), 'Write'],
+    ['Edit a batch report', at('issues', 'x', 'reviews', 'B1.md'), 'Edit'],
+    ['MultiEdit a batch report', at('issues', 'x', 'reviews', 'B1.md'), 'MultiEdit'],
+    ['Write a second plan look', at('issues', 'x', 'reviews', 'plan-B1-2.md'), 'Write']
+  ]) {
+    const result = runHook(
+      'edit-guard.mjs',
+      asReviewer(editPayload(file, { tool_name: tool }))
+    );
+    check(`#294 reviewer report write allowed: ${label}`, isSilent(result), result.stdout);
+  }
+  for (const [label, file, tool] of [
+    ['the register', at('issues', 'x', 'reviews.md'), 'Write'],
+    ['a plan', at('issues', 'x', 'plan.md'), 'Write'],
+    ['source', at('app', 'src', 'lib', 'x.ts'), 'Write'],
+    ['a non-.md file under reviews/', at('issues', 'x', 'reviews', 'notes.txt'), 'Write'],
+    ['a spec', at('docs', 'specs', 'CONTRACTS.md'), 'Write'],
+    ['a path outside the repository', path.join(os.tmpdir(), 'x.md'), 'Write'],
+    ['NotebookEdit on a report', at('issues', 'x', 'reviews', 'B1.md'), 'NotebookEdit']
+  ]) {
+    const result = runHook(
+      'edit-guard.mjs',
+      asReviewer(editPayload(file, { tool_name: tool }))
+    );
+    check(`#295 reviewer write denied: ${label}`, isDeny(result), result.stdout);
+    check(
+      `#295 reason: ${label}`,
+      denyReason(result).includes('reviews/') && denyReason(result).includes('read-only'),
+      denyReason(result)
+    );
+  }
+  for (const file of [at('issues', 'x', 'plan.md'), at('app', 'src', 'lib', 'x.ts')]) {
+    const result = runHook('edit-guard.mjs', editPayload(file));
+    check(
+      `#295 the implementer's write is unchanged: ${file}`,
+      isSilent(result),
+      result.stdout
+    );
+  }
+
+  // ----- 2s the reviewer's read-only Bash -----
+  for (const [command, payload] of [
+    ['git commit -m "x"', bashPayload],
+    ['git add x', bashPayload],
+    ['git stash', bashPayload],
+    ['git checkout x', bashPayload],
+    ['git push', bashPayload],
+    ['rm x', bashPayload],
+    ['touch x', bashPayload],
+    ['mkdir y', bashPayload],
+    ['cp a b', bashPayload],
+    ['echo x > f', bashPayload],
+    ['echo x >> f', bashPayload],
+    ['echo x 2> err.log', bashPayload],
+    ['sed -i s/a/b/ f', bashPayload],
+    ['perl -pi -e s/a/b/ f', bashPayload],
+    ['npm run check', bashPayload],
+    ['npm ci', bashPayload],
+    ['npx supabase db reset --local', bashPayload],
+    ['rtk git commit -m "x"', bashPayload],
+    ['git branch -D feature', bashPayload],
+    ['git branch -d feature', bashPayload],
+    ['git branch --delete feature', bashPayload],
+    ['git branch -m a b', bashPayload],
+    ['git tag -d v1', bashPayload],
+    ['git tag --delete v1', bashPayload],
+    ['prettier --write .', bashPayload],
+    ['npx prettier --write .', bashPayload],
+    ['npx prettier -w README.md', bashPayload],
+    ['npx eslint --fix .', bashPayload],
+    ['Set-Content f x', psPayload],
+    ['ni f', psPayload],
+    ['Out-File f', psPayload],
+    ['del x', psPayload],
+    ['erase x', psPayload],
+    ['rd y', psPayload],
+    ['copy a b', psPayload],
+    ['move a b', psPayload],
+    ['ren a b', psPayload],
+    ['md y', psPayload]
+  ]) {
+    const result = runHook(
+      'bash-guard.mjs',
+      asReviewer(payload(command, { session_id: 's-review' }))
+    );
+    check(`#296 reviewer write denied: ${command}`, isDeny(result), result.stdout);
+    check(
+      `#296 reason: ${command}`,
+      denyReason(result).includes('read-only') && denyReason(result).includes('Write tool'),
+      denyReason(result)
+    );
+  }
+  {
+    // The blocklist runs first and keeps its own message.
+    const result = runHook('bash-guard.mjs', asReviewer(bashPayload('git checkout -- x')));
+    check(
+      '#296 git checkout -- x keeps the blocklist message',
+      isDeny(result) && denyReason(result).includes('overwrites working-tree changes'),
+      denyReason(result)
+    );
+  }
+  for (const [command, payload] of [
+    ['git diff HEAD~1', bashPayload],
+    ['git log --oneline 2>&1', bashPayload],
+    ['git show HEAD:package.json', bashPayload],
+    ['git status', bashPayload],
+    ['git stash list', bashPayload],
+    ['git branch -vv', bashPayload],
+    ['git branch --contains HEAD', bashPayload],
+    ['git tag -l', bashPayload],
+    ['npx prettier --check .', bashPayload],
+    ['rtk grep x .', bashPayload],
+    ['node tests/derived.js', bashPayload],
+    ['node .claude/hooks/selftest.mjs', bashPayload],
+    ['npx supabase status', bashPayload],
+    ['npx supabase db push --help', bashPayload],
+    ['npm ls', bashPayload],
+    ['npm view x', bashPayload],
+    ['echo x > /dev/null', bashPayload],
+    ['echo x >&2', bashPayload],
+    ['cat README.md', bashPayload],
+    ['sed -n 1,3p README.md', bashPayload],
+    ['echo x > $null', psPayload],
+    ['Get-Content README.md', psPayload]
+  ]) {
+    const result = runHook(
+      'bash-guard.mjs',
+      asReviewer(payload(command, { session_id: 's-review' }))
+    );
+    check(`#297 reviewer read allowed: ${command}`, !isDeny(result), denyReason(result));
+  }
+  for (const command of ['rm x', 'touch x', 'npm run check']) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { session_id: 's-review-impl' })
+    );
+    check(
+      `#297 the implementer is not judged by 2s: ${command}`,
+      !denyReason(result).includes('read-only'),
+      denyReason(result)
+    );
+  }
+}
+
+// ---------- bash-guard.mjs rule 2r: a migration push after an approving review (#298) ----------
+
+function testMigrationPush() {
+  const originalBranch = gitSh(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
+  const originalHead = gitSh(['rev-parse', 'HEAD']).trim();
+  const reviews = path.join(scratchRoot, 'issues', 'x', 'reviews');
+  const report = (name, text) => writeFile(`issues/x/reviews/${name}`, text);
+  const head = (verdict, sha) => `Verdict: ${verdict}\nReviewed: ${sha}\nScope: batch B9\n`;
+  const commitFile = (rel, content, message) => {
+    writeFile(rel, content);
+    gitSh(['add', rel]);
+    gitCommit(message);
+    return gitSh(['rev-parse', 'HEAD']).trim();
+  };
+  const tree = () => gitSh(['rev-parse', 'HEAD:supabase/migrations']).trim();
+  const pushes = [
+    'npm run db:push -- --project test --yes',
+    'node --env-file=.env.test.local tools/supabase/db-push.mjs --project test --yes',
+    'npx supabase db push --project-ref rdjxcjkhsklhprmzxajq',
+    'npx supabase migration up --db-url postgresql://postgres.rdjxcjkhsklhprmzxajq:x@aws-0.pooler.supabase.com:6543/postgres'
+  ];
+  const run = (command, opts) =>
+    runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-migration-push' }), opts);
+  const expectDenied = (label, ...needles) => {
+    for (const command of pushes) {
+      const result = run(command);
+      check(`#298 ${label}: denied: ${command}`, isDeny(result), result.stdout);
+      check(
+        `#298 ${label}: reason: ${command}`,
+        needles.every((needle) => denyReason(result).includes(needle)),
+        denyReason(result)
+      );
+    }
+  };
+  const expectAllowed = (label) => {
+    for (const command of pushes) {
+      const result = run(command);
+      check(`#298 ${label}: allowed: ${command}`, !isDeny(result), denyReason(result));
+    }
+  };
+  try {
+    const c1 = commitFile(
+      'supabase/migrations/20261101120000_reviewed.sql',
+      'select 1;\n',
+      'chore: a reviewed migration'
+    );
+    const treeC1 = tree();
+    expectDenied('no report', treeC1.slice(0, 12), 'Verdict: approve', 'seen: none');
+    {
+      const result = run('npx supabase db push --project-ref rdjxcjkhsklhprmzxajq --dry-run');
+      check('#298 a dry run is allowed', !isDeny(result), denyReason(result));
+    }
+    {
+      const result = run('npm run db:push -- --project prod --yes');
+      check(
+        '#298 production keeps rule 2n',
+        isDeny(result) &&
+          denyReason(result).includes('allowlist') &&
+          !denyReason(result).includes('Verdict: approve'),
+        denyReason(result)
+      );
+    }
+    report('B9.md', head('approve', c1));
+    expectAllowed('an approving report on C1');
+    // C2 commits the dirty README.md as it is; the soft reset below makes it
+    // dirty again with the same text.
+    gitSh(['add', 'README.md']);
+    gitCommit('docs: C2');
+    expectAllowed('C2 keeps the migrations tree');
+
+    const c3 = commitFile(
+      'supabase/migrations/20261102120000_second.sql',
+      'select 2;\n',
+      'chore: a second migration'
+    );
+    const treeC3 = tree();
+    expectDenied('a changed migrations tree', treeC3.slice(0, 12));
+    report('B10.md', head('fix-then-continue', c3));
+    expectDenied('a fix-then-continue report', 'B10.md: fix-then-continue');
+    report('B10.md', `## ${head('approve', c3)}`);
+    expectDenied('a malformed head', 'B10.md: no Verdict: line');
+    report('B10.md', head('approve', c3));
+    expectAllowed('an approving report on C3');
+
+    writeFile('supabase/migrations/20261103120000_new.sql', 'select 3;\n');
+    expectDenied('an untracked migration', 'uncommitted');
+    fs.rmSync(path.join(scratchRoot, 'supabase/migrations/20261103120000_new.sql'));
+    expectAllowed('the untracked migration deleted');
+
+    report('B10.md', head('approve', '0123456789abcdef0123456789abcdef01234567'));
+    expectDenied('a Reviewed: sha that does not exist', treeC3.slice(0, 12));
+
+    // A cloud push: CI applies a pushed branch's migrations to the test project.
+    const cloud = { env: { CLAUDE_CODE_REMOTE: 'true' } };
+    gitSh(['checkout', '-q', '-B', 'task-y']);
+    gitSh(['update-ref', 'refs/remotes/origin/main', c1]);
+    {
+      const result = run('git push -u origin task-y', cloud);
+      check('#298 cloud push of a new migrations tree: denied', isDeny(result), result.stdout);
+      check(
+        '#298 cloud push: the reason is 2r',
+        denyReason(result).includes('Verdict: approve'),
+        denyReason(result)
+      );
+    }
+    {
+      const result = run('git push --dry-run', cloud);
+      check('#298 cloud dry-run push: allowed', !isDeny(result), denyReason(result));
+    }
+    {
+      const result = run('git push -u origin task-y');
+      check(
+        '#298 a local push is not judged by 2r',
+        !denyReason(result).includes('Verdict: approve'),
+        denyReason(result)
+      );
+    }
+    report('B10.md', head('approve', c3));
+    {
+      const result = run('git push -u origin task-y', cloud);
+      check(
+        '#298 cloud push with an approving report: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    report('B10.md', head('fix-then-continue', c3));
+    gitSh(['update-ref', 'refs/remotes/origin/main', c3]);
+    {
+      const result = run('git push -u origin task-y', cloud);
+      check('#298 cloud push of the same tree: allowed', !isDeny(result), denyReason(result));
+    }
+  } finally {
+    spawnSync('git', ['update-ref', '-d', 'refs/remotes/origin/main'], { cwd: scratchRoot });
+    gitSh(['checkout', '-q', originalBranch]);
+    spawnSync('git', ['branch', '-q', '-D', 'task-y'], { cwd: scratchRoot });
+    // A soft reset keeps the working tree, so the dirty baseline survives.
+    gitSh(['reset', '-q', '--soft', originalHead]);
+    gitSh(['reset', '-q']);
+    fs.rmSync(path.join(scratchRoot, 'supabase'), { recursive: true, force: true });
+    fs.rmSync(path.dirname(reviews), { recursive: true, force: true });
+    dirtyBaseline();
+  }
+}
+
+// ---------- fail-open contract, all twelve scripts (#56-58) ----------
 
 function testFailOpen() {
   const stdins = [
@@ -3537,14 +4791,24 @@ async function main() {
     await testCommitGateAsync();
     await testWorktreeTreeKey();
     await testPersistenceGuards();
+    testHostGuards();
+    testReviewerGuards();
+    testMigrationPush();
     testLongCheck();
     testBackgroundCheck();
+    testBackgroundCheckScope();
     testBlindCheck();
     testRtkReaders();
     testEditGuard();
     testEditFollowup();
+    await testReviewHead();
+    testAgentGuard();
+    testReadGuard();
     await testCheckObserver();
     await testCheckDbObserver();
+    await testCreditObserver();
+    await testGateCredit();
+    await testStackLock();
     await testPathKeyPortability();
     testSessionStart();
     await testSessionStop();

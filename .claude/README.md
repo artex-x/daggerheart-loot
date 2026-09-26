@@ -110,8 +110,12 @@ do not replace":
 - Resuming a finished writer while another writer is live is two writers
   on one tree - the same violation as spawning one. The orchestrator does
   the `ListAgents` and HEAD preflight before a resume as before a spawn.
-- Whether the reviewer's `permissionMode: plan` blocks `SendMessage` is
-  unknown; the review prompt forbids the send in prose (candidate 36).
+- The reviewer has had no `permissionMode` since `process-guards`: it has
+  the Write tool for its report, and rule 2s with `edit-guard.mjs`'s
+  reviewer rule is its read-only guarantee (`docs/decisions/`, 2026-09-27,
+  "The reviewer writes its report to `issues/<id>/reviews/` and nowhere
+  else"). The review prompt still forbids `SendMessage` in prose
+  (candidate 36).
 - The Bash tool resets its cwd to the session's pinned directory between
   calls - carry an explicit `cd` prefix when working pinned elsewhere. An
   `issues/<id>/` directory can exist on more than one branch at once; only
@@ -168,14 +172,23 @@ Host and tool facts behind this design, kept so nobody re-derives them:
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. In a cloud session (`CLAUDE_CODE_REMOTE=true`) also runs seven probes - Node against `.nvmrc`, `docker info` (3 s), the puppeteer cache, `node_modules`, `gitleaks version` and `rtk --version` (2 s each), and the proxy's authorities in `~/.pki/nssdb` (`bash .claude/cloud-nss.sh --check`, 3 s: every CA by sha256 fingerprint; on a failure it names `bash .claude/cloud-nss.sh`) - each "ok" or what failed, and states the three cloud rules ("Cloud sessions"). `LOOT_SKIP_PROBES=1` (selftest) reads each probe as "skipped". | warn (informational) |
-| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push`/`limits:set` is allowed only with `--project test` and no other `--project`; the script is read past a leading `rtk`, npm's flags on either side of the verb (`-s`, `--silent`, `-q`, `--loglevel <v>` or `=<v>`, any other `-` token; before the verb, any other `--name` without `=` takes the next token as its value unless that token is a verb or a flag, so `npm --registry x run db:push` is judged) and the verbs `run`, `run-script`, `rum` and `urn`. The owner-only restore: a segment whose program (past `rtk`) is a package runner - `npm`, `pnpm`, `yarn`, `bun`, `npx`, `pnpx`, `bunx`, `corepack` - with a token that is exactly `restore:prod` (quoted as one word or not), or a `node` run (past `rtk`, `rtk proxy`, `npx`, `npm exec`) with a token, or the value after its first `=`, whose last path segment is `restore-prod.mjs` is denied, because only the owner restores production ("Restore production (owner)"); a search for the name (`git grep restore:prod`, `rtk grep restore:prod docs`, `git log -S restore:prod`) and reading, diffing or staging the file are not. Not matched, and left to `main`'s terminal check: `bash -c "npm run restore:prod"`, `bun <file>` and PowerShell's `Start-Process`; the rule stops accidents, and the TTY check stops an agent's run of any of them. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (the tools' own entry), a package runner - `npx`, `bunx`, `pnpx`, `npm exec`/`x`, `pnpm exec`/`dlx`, `yarn exec`/`dlx`, `bun x` (past its flags, a `-p`/`--package` value and a bare `--`) - or `rtk`; **2q** (after 2n) denies a Bash or PowerShell command with a token, or the value after a token's first `=`, whose last path segment is exactly `.env.restore.local` (the owner's backup key; readers such as `cat` and `type`, a quoted single-word path and a `<` redirect included, a quoted phrase such as a commit message not), because only `npm run restore:drill` reads that file ("Run the agent drill"); a glob that expands to it, and a PowerShell colon-bound parameter (`-Path:.env.restore.local`, whose last segment is the whole token), are not caught; **2p** (after 2i) denies a `git rm`, `git mv`, `rm` or `mv` whose positional token is a `supabase/migrations/<file>` that a remote-tracking ref holds, with edit-guard's lookup, fetch and message (a deletion or a rename never reaches an Edit-family tool); a source token that is a directory at, under or above `supabase/migrations/` expands to the migrations under it, and a glob in a token's last segment (`*` or `?`) expands against its parent directory, because the shell expands it only after the hook has judged the command; a move's destination directory only receives and is not expanded; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
+| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push`/`limits:set` is allowed only with `--project test` and no other `--project`; the script is read past a leading `rtk`, npm's flags on either side of the verb (`-s`, `--silent`, `-q`, `--loglevel <v>` or `=<v>`, any other `-` token; before the verb, any other `--name` without `=` takes the next token as its value unless that token is a verb or a flag, so `npm --registry x run db:push` is judged) and the verbs `run`, `run-script`, `rum` and `urn`. The owner-only restore: a segment whose program (past `rtk`) is a package runner - `npm`, `pnpm`, `yarn`, `bun`, `npx`, `pnpx`, `bunx`, `corepack` - with a token that is exactly `restore:prod` (quoted as one word or not), or a `node` run (past `rtk`, `rtk proxy`, `npx`, `npm exec`) with a token, or the value after its first `=`, whose last path segment is `restore-prod.mjs` is denied, because only the owner restores production ("Restore production (owner)"); a search for the name (`git grep restore:prod`, `rtk grep restore:prod docs`, `git log -S restore:prod`) and reading, diffing or staging the file are not. Not matched, and left to `main`'s terminal check: `bash -c "npm run restore:prod"`, `bun <file>` and PowerShell's `Start-Process`; the rule stops accidents, and the TTY check stops an agent's run of any of them. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (the tools' own entry), a package runner - `npx`, `bunx`, `pnpx`, `npm exec`/`x`, `pnpm exec`/`dlx`, `yarn exec`/`dlx`, `bun x` (past its flags, a `-p`/`--package` value and a bare `--`) - or `rtk`; **2q** (after 2n) denies a Bash or PowerShell command with a token, or the value after a token's first `=`, whose last path segment is exactly `.env.restore.local` (the owner's backup key; readers such as `cat` and `type`, a quoted single-word path and a `<` redirect included, a quoted phrase such as a commit message not), because only `npm run restore:drill` reads that file ("Run the agent drill"); a glob that expands to it, and a PowerShell colon-bound parameter (`-Path:.env.restore.local`, whose last segment is the whole token), are not caught; **2u** (after 2n) denies a Supabase CLI command that starts, stops or resets the local stack - `start`, `stop`, `db start`, and `db reset`, `db push`, `db diff`, `migration up`, `migration down`, `test db` or `seed buckets` with none of `--linked`/`--db-url`/`--project-ref` (help is never judged) - while `stack-lock.mjs`'s `foreignStackLock()` finds a fresh lock of another checkout (a hand-written lock is always foreign), naming the holder and "45 minutes" ("Supabase configuration", "The local stack lock"); **2t** (after 2q) denies a dot-source, `source` or a file printer - `cat`, `type`, `gc`, `Get-Content`, `more`, `less`, `head`, `tail`, `bat`, `nl`, `od`, `xxd`, `strings`, `rtk read` - with an operand (a leading `<` stripped) whose last path segment starts with `.env`, because `. .env.test.local` once printed part of a value; `node --env-file=<file>`, `npm run e2e`, a search (`git grep`, `rtk grep`) and a quoted phrase are not judged (`docs/decisions/`, 2026-09-27, "Agents read no .env file; the program loads it with `--env-file`"); **2v** (after 2t) denies a `node` run with a token whose last path segment is `gate-credit.mjs`, because only the check chain arms a gate by its exit ("Run a long check", "Gate credit"); **2p** (after 2i) denies a `git rm`, `git mv`, `rm` or `mv` whose positional token is a `supabase/migrations/<file>` that a remote-tracking ref holds, with edit-guard's lookup, fetch and message (a deletion or a rename never reaches an Edit-family tool); a source token that is a directory at, under or above `supabase/migrations/` expands to the migrations under it, and a glob in a token's last segment (`*` or `?`) expands against its parent directory, because the shell expands it only after the hook has judged the command; a move's destination directory only receives and is not expanded; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2s** (right after the blocklist, so a reviewer's `git reset --hard` keeps the blocklist's message) judges only `agent_type` `reviewer` and denies a git write subcommand (`add`, `am`, `apply`, `checkout`, `cherry-pick`, `clean`, `commit`, `merge`, `mv`, `pull`, `push`, `rebase`, `reset`, `restore`, `revert`, `rm`, `stash` but `stash list` and `stash show`, `switch`, `update-ref`, `worktree`; `branch` with a delete, move, copy or force flag; `tag` with a delete flag), a file writer (`rm`, `rmdir`, `mv`, `cp`, `touch`, `mkdir`, `tee`, `ln`, `chmod`, `chown`, `truncate`, `dd`, `patch`, `sed` or `perl` with `-i` alone, with a suffix, in a cluster or as `--in-place`), a writing cmdlet (`Set-Content`, `Add-Content`, `Out-File`, `New-Item`, `Remove-Item`, `Move-Item`, `Copy-Item`, `Rename-Item`, `Clear-Content`, `Set-Item` and their aliases, `del`, `erase`, `rd`, `copy`, `move`, `ren` and `md` included), a formatter or linter run with a `--write` or `--fix` token (Prettier's `-w` too, directly or through `npx`, `pnpx` or `bunx`), an `npm` verb but `ls`, `list`, `ll`, `la`, `view`, `info`, `show`, `outdated`, `explain`, `why` and `help`, a Supabase CLI call but `status` and help, and an output redirect to a file but `/dev/null`, `nul` or `$null` (`2>&1` and `>&2` are not a file), because the reviewer is read-only except its report (`docs/decisions/`, 2026-09-27, "The reviewer writes its report to `issues/<id>/reviews/` and nowhere else"); **2r** (right after 2n) denies a migration write to the test project - `npm run db:push` with `--project test`, a `node` run of `db-push.mjs` with `--project test`, a Supabase CLI `db push` without `--dry-run` or `migration up` whose target is the test project, and, in a cloud session only, a `git push` without `--dry-run`/`-n` whose `HEAD:supabase/migrations` tree differs from its upstream's (else `origin/main`'s) - while `supabase/migrations` has uncommitted changes, or while no `issues/*/reviews/*.md` reads `Verdict: approve` with a `Reviewed:` commit whose `supabase/migrations` tree equals `HEAD`'s (`lib.mjs`, `parseReviewHead`; the head lines of `.claude/templates/review.template.md`); the deny names the short tree hash and each report seen; no migrations tree at `HEAD`, or a git failure, allows; a local `git push` is not judged, because a local release pushes once, at closeout, after its review (`docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review"); **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
-arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` (plain or `rtk`-prefixed), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
-| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git fetch --quiet origin` first when a remote `origin` exists - 5 s at most, `GIT_TERMINAL_PROMPT=0`, so a push from another clone is seen - then `git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). `lib.mjs`'s `remoteRefsHoldingMigration` is the lookup, shared with rule 2p. No file records applied migrations; a failed or slow fetch reads the local refs as they are, and a repository with no remote ref, or a git failure, blocks no migration (fail open). | **block** |
-| `PostToolUse` | `Bash\|PowerShell` | `check-observer.mjs` | `npm run check:db` from either tool: reads the output from `tool_response.stdout`, else `.output`, else a string response, plus `stderr`; a `check:db: PASS` line writes `.check-db-cache.json` and says "Commit gate armed for supabase/ and tests/db/", a `check:db: FAIL` line or a failure marker says FAIL, neither says it cannot attribute the run. `npm run check` arms from Bash only, as follows. Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` or `cd <dir>;` (PowerShell 5.1 has no `&&`), `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
+arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` in a subagent (rule 2g, plain or `rtk`-prefixed; only when `agent_id` is in the hook input, because a subagent's background run dies with its turn, while the main session is notified at the exit and the check arms the gate by its own exit), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
+| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git fetch --quiet origin` first when a remote `origin` exists - 5 s at most, `GIT_TERMINAL_PROMPT=0`, so a push from another clone is seen - then `git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). `lib.mjs`'s `remoteRefsHoldingMigration` is the lookup, shared with rule 2p. No file records applied migrations; a failed or slow fetch reads the local refs as they are, and a repository with no remote ref, or a git failure, blocks no migration (fail open). For `agent_type` `reviewer`, before every other rule: only `Write`, `Edit` or `MultiEdit` on `issues/<id>/reviews/<name>.md` is allowed, and every other write is denied, a path outside the repository included (`docs/decisions/`, 2026-09-27, "The reviewer writes its report to `issues/<id>/reviews/` and nowhere else"). | **block** |
+| `PreToolUse` | `Agent\|Task\|SubagentDispatch` | `agent-guard.mjs` | Judges an `implementer` dispatch whose prompt names `TASK: <id>` against `issues/<id>/plan.md` Status: denies when it has no `- Plan review:` line or a malformed one ("declare it"), and when a `required before <batch>` line has no `issues/<id>/reviews/plan-<batch>.md` or `plan-<batch>-<n>.md` whose head reads `Verdict: approve` (`lib.mjs`, `parseReviewHead`); the deny names the file, each report seen with its verdict, and the dispatch tool (`docs/decisions/`, 2026-09-27, "A plan that changes schema, contracts, stored data or sync is reviewed first"). Silent for another agent type, no `TASK:` line, a `TASK: <id>` placeholder, no `plan.md`, and any throw; a resume (`SendMessage`) is not a dispatch. This host's dispatch tool is `Agent`; `Task` and `SubagentDispatch` are other builds' names. | **block** |
+| `PreToolUse` | `Read\|Grep` | `read-guard.mjs` | Denies the Read tool's `file_path`, and the Grep tool's `path` or `glob`, whose last path segment starts with `.env` (case folded, `\` read as `/`), from any checkout, because a `./` pattern in `permissions.deny` binds the session's working directory and an absolute path from a worktree passed it (`docs/decisions/`, 2026-09-27, "The Read and Grep tools are denied `.env` files by a hook, not only by settings"). A Grep by pattern over a directory is not judged ("Known limitations"). A worktree agent is guarded by its worktree's tree, cut from `origin/main`, so a change reaches it only after the push ("Known limitations"). No git and no file read; any throw allows. | **block** |
+| `PostToolUse` | `Bash\|PowerShell` | `check-observer.mjs` | `npm run check:db` from either tool: reads the output from `tool_response.stdout`, else `.output`, else a string response, plus `stderr`; a `check:db: BUSY` line (the local stack lock is held; tested before the FAIL markers, because npm prints its own error lines for exit 3) says BUSY and writes nothing, a `check:db: PASS` line writes `.check-db-cache.json` and says "Commit gate armed for supabase/ and tests/db/", a `check:db: FAIL` line or a failure marker says FAIL, neither says it cannot attribute the run. When a run cannot be attributed (`check:db` without its PASS line, `check` without its coverage summary) but the cache already holds the current tree key, the check's own exit armed the gate (`gate-credit.mjs`), and the line says `PASS - armed by the check's own exit.` An attributed pass does not rewrite a cache that already holds the current key, so a `by: "exit"` record stays. `npm run check` arms from Bash only, as follows. Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` or `cd <dir>;` (PowerShell 5.1 has no `&&`), `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and a write under `docs/decisions/` -> `node tools/decisions.js` (`remind:decisions`). Known false-positive, kept as a nag rather than fixed: it tests `p.startsWith('docs/fixtures/')`, so it fires its public-contract reminder on any write under `docs/fixtures/share/`, which is not itself a contract surface (`CONTRACTS.md` enumerates only `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`) - the reminder firing there is not evidence a contract moved. | warn |
-| `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
+| `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`, where the review register `reviews.md` and the reports under `reviews/` count as task documents too), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
+
+Two modules under `.claude/hooks/` are not registered hooks: `gate-credit.mjs`
+(the `begin` and `arm` steps of the `npm run check` chain, and the credit
+that `tests/db/run.mjs` imports; "Run a long check", "Gate credit") and
+`stack-lock.mjs` (the local stack lock that `tests/db/run.mjs`,
+`restore-drill.mjs` and rule 2u read; "Supabase configuration", "The local
+stack lock"). Both are in the selftest's fail-open loop.
 
 **Settings besides hooks.** `.claude/settings.json` also sets `attribution`
 (`commit` and `pr` empty, so the harness adds no attribution line) and `env`
@@ -185,7 +198,16 @@ arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` (plain or
 `.claude/settings.json`"). Both are read at session start, so an edit
 applies from the next session. `bash-guard.mjs` rule 2d (an attribution line
 in a commit message) stays as the backstop for a session or host that does
-not load them.
+not load them. Since 2026-09-27 it also sets `permissions.deny`: the Read
+tool on `.env*` files at the root and under `supabase/` ("Supabase
+configuration"; `tests/derived.js` pins `Read(./.env.*)`). A `./` pattern
+binds the session's working directory: from a worktree, a Read of the main
+checkout's `.env` file by its absolute path passed (probed 2026-09-27), so
+`read-guard.mjs` is the deny that reaches an absolute path (`docs/decisions/`,
+2026-09-27, "The Read and Grep tools are denied `.env` files by a hook, not
+only by settings"; `tests/derived.js` pins its registration). A worktree
+agent is guarded by the hooks of its worktree's tree, so only from a
+commit that `origin/main` carries ("Known limitations").
 
 **There is no git pre-commit hook** - not to be confused with the Claude
 Code hooks above, which run in this harness, not in `git` itself. One
@@ -204,13 +226,15 @@ opposite has now been observed twice, deny path included: a script edited
 mid-session blocked a command minutes later, so the scripts are re-read per
 invocation here. Do not rely on either behaviour across hosts.
 
-Five runtime files live under `.claude/` and are gitignored
+Seven runtime files live under `.claude/` and are gitignored
 (`.claude/.gitignore`):
 
 | File | Written by | Contents |
 |---|---|---|
-| `.check-cache.json` | `check-observer.mjs` | `{ key, at, command }` for the last observed passing `npm run check`. |
-| `.check-db-cache.json` | `check-observer.mjs` | `{ key, at, command }` for the last observed passing `npm run check:db`, against the same tree key. |
+| `.check-cache.json` | `check-observer.mjs`, `gate-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check`; `by` is `observer` (the hook saw the output) or `exit` (the check's own exit armed it). |
+| `.check-db-cache.json` | `check-observer.mjs`, `gate-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check:db`, against the same tree key. |
+| `.check-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }`: the tree key at the start of the running `npm run check` and its script shell; `arm` reads it, and deletes it when the `ppid` is its own run's. Gitignored, because an unignored file would change the key it records (`tests/derived.js` pins the line). |
+| `.check-db-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }` of the running `npm run check:db`. |
 | `.check-index` | `tree-key.mjs` | A throwaway copy of the real index, never the index itself. `tree-key.mjs` finds the index with `git rev-parse --git-path index`: in a linked worktree `.git` is a file, and the old `<root>/.git/index` path made the key null there, so every commit gate failed open in a worktree until 2026-09-24. |
 | `.restore-receipts.json` | `tools/supabase/restore-drill.mjs` | The receipts of passed restore drills, newest first, 20 at most, one per source: the source id, the hashes of the decrypted files, the newest migration, the host and the time; no row count and no row. `npm run restore:prod` refuses a source without a receipt under 24 h old. It lives in the main checkout's `.claude/`, also for a drill run from a worktree. |
 | `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. Holds the 64 most recently active sessions; the session being written is always kept. The cap bounds the session count, not a session's own `wrote` map, which still grows without limit for the life of one session. A save writes a temp file and renames it over this one, so a reader never parses a half write. The read-modify-write is not guarded against a second session saving in between: one session per working tree is the protocol, and a lost save costs one duplicate reminder or one missing Stop sentence (fail open). |
@@ -293,9 +317,10 @@ Each part is load-bearing:
   --coverage.reporter=text`. A focused vitest file runs from the repository
   root (`npx vitest run app/src/state/lists.test.ts`); from `app/` it finds
   no file and exits 1. If a result is persisted again, grep the
-  persisted file for `Coverage summary` or `fail` rather than re-running the
-  check, and commit a green run as the first bullet of "More host facts
-  about a long check" says - the deleted parity
+  persisted file for `Coverage summary`, `fail` or `gate credit:` rather
+  than re-running the check: since gate credit a green run arms the gate by
+  its own exit even when the observer cannot attribute it ("Gate credit"
+  below) - the deleted parity
   harness hit the same cap from its diff lines carrying a page's whole
   text; nothing that survives R0c produces a single line that large,
   but the technique still applies if something ever does.
@@ -303,11 +328,14 @@ Each part is load-bearing:
 `npm run check > out.txt 2>&1` then reading the file does **not**
 satisfy the gate, however genuinely the run passed - the hook never
 saw the output, and reading the file back costs a second call. It is
-blocked at `PreToolUse` alongside the pipe (rule 2k). Nor does a run started with
-`run_in_background`: `check-observer.mjs` returns early on it by
-design, because there is no stdout to attribute yet. Backgrounding
-cost three worker runs on issue 47 and is now blocked at
-`PreToolUse` (candidate 27), for a plain or `rtk`-prefixed check alike.
+blocked at `PreToolUse` alongside the pipe (rule 2k). A run started with
+`run_in_background` is not attributed either: `check-observer.mjs`
+returns early on it by design, because there is no stdout to attribute
+yet. Since gate credit the check arms the gate by its own exit there too,
+but a subagent whose turn ends with the run still going loses the result:
+backgrounding cost three worker runs on issue 47, and rule 2g (candidate
+27) still denies it inside a subagent, for a plain or `rtk`-prefixed check
+alike. The main session is notified when the run exits.
 
 **The database suite.** `npm run check:db` (layer 3, `docs/specs/COVERAGE.md`)
 needs Docker. On this Windows host run it through the **PowerShell** tool,
@@ -333,20 +361,55 @@ last stdout line is `check:db: PASS` or `check:db: FAIL`, and
 `check-observer.mjs` arms the `supabase/` and `tests/db/` commit rule from
 the PASS line. The observer matches the command at its start, so a run
 wrapped in anything (a timer such as `$s = Get-Date; npm run check:db; ...`)
-passes and arms nothing; the commit is then refused by rule 2m
-(2026-09-25). Run the command alone. Measured live on 2026-09-24: a PowerShell call reaches the
+passed and armed nothing, and the commit was then refused by rule 2m
+(2026-09-25); since gate credit the suite arms its gate by its own exit
+("Gate credit" below), but the observer still cannot state the verdict.
+Run the command alone. Measured live on 2026-09-24: a PowerShell call reaches the
 `PostToolUse` hook with the PASS line in its text and no exit-code field
 (the verdict line carried no `(exit n)`), and the `Bash|PowerShell`
 matchers took effect in the session that saved them. The CLI's progress
 lines go to stderr and print after the suite's stdout.
 
+**Gate credit.** Both checks arm their commit gate by their own exit 0
+(`docs/decisions/`, 2026-09-27, "A green check arms the commit gate by its
+own exit, not a host-wide lock"). `npm run check` starts with `node
+.claude/hooks/gate-credit.mjs begin check` and ends with `node
+.claude/hooks/gate-credit.mjs arm check`; `&&` runs `arm` only after every
+step passed. `tests/db/run.mjs` calls `beginCredit('check-db')` once it holds the stack lock and
+`armCredit('check-db')` before its PASS line. `begin` records the tree key
+in `.check-pending.json` (`.check-db-pending.json`); `arm` computes the key
+again and writes the cache with `by: "exit"` only when the two are equal,
+because a background run leaves the agent free to edit, and a key taken
+only at the end would credit edits the run never saw. It prints one line:
+`gate credit: armed (npm run check exited 0)`, `gate credit: not armed -
+the tree changed during the run`, `gate credit: not armed - the tree key
+could not be read`, or `gate credit: not armed - another run began after
+this one`. The pending file also records `ppid`, the run's script shell
+(`begin` and `arm` of one chain are its children; `tests/db/run.mjs` calls
+both in one process), and `arm` accepts only its own run's key: when two
+runs of one check overlap in one tree, the older run's `arm` must not
+credit the key of a newer run that failed. `beginCredit` deletes an older
+pending file first, and `tests/db/run.mjs` calls it only after it holds the
+stack lock, so a BUSY run never replaces the running suite's key. So a run that the harness moved to the background, a
+run in the human's terminal and a run whose output is over the tool's cap
+all arm the gate. Every path of `gate-credit.mjs` exits 0: a credit step
+never turns a green check red. To confirm without a commit, read
+`.claude/.check-cache.json`: `by: "exit"` and a `key` equal to `treeKey()`
+(computed by invoking `tree-key.mjs` against the working tree) mean the run
+passed and armed the gate. A hand run of `gate-credit.mjs` is denied (rule
+2v); `SKIP_CHECK_GATE=1` stays the visible bypass. The trade-off: the credit
+trusts the chain's exit, so a step that exits 0 on a failure would credit
+it; the observer's FAIL markers still speak for a foreground run.
+
 **More host facts about a long check, recorded so nobody re-derives them:**
 
 - Without `rtk` (the Linux cloud container, measured 2026-09-24) a plain
   `npm run check` prints about 65 KB, over the tool's output cap, so the
-  result is persisted to a file and `check-observer.mjs` cannot arm the
-  gate. A green run there is committed with `SKIP_CHECK_GATE=1`, and the
-  exact command and result are recorded in the task's handoff. Chromium is
+  result is persisted to a file and `check-observer.mjs` cannot attribute
+  it. Since gate credit the check arms the gate by its own exit there
+  ("Gate credit"); grep the persisted file for `gate credit: armed`. Commit
+  with `SKIP_CHECK_GATE=1` only when a green run lacks that line, and record
+  the exact command and result in the task's handoff. Chromium is
   at `/opt/pw-browsers` there (`PLAYWRIGHT_BROWSERS_PATH`, Playwright's
   browser path); the puppeteer suites under `tests/app/` do not read it -
   `tests/app/lib.js` launches puppeteer's own Chrome from
@@ -358,12 +421,16 @@ lines go to stderr and print after the suite's stdout.
   (`CreateInstance: E_ACCESSDENIED`); any Bash-only wrapper for the check is
   then unavailable too, and the fallback is running `rtk npm run check`
   directly, in the foreground.
-- Rule 2g denies an explicitly backgrounded check, but a foreground call
-  that outlives its 600 s timeout is backgrounded by the harness itself,
-  and `check-observer.mjs` then never reports to a live agent - the gate
-  cannot arm and the rule cannot see it either. Hit three times in one
-  task. Candidate fixes considered, none chosen: Stop-time reconciliation,
-  a longer-lived observer, accept-and-document.
+- Rule 2g denies a subagent's explicitly backgrounded check, but a
+  foreground call that outlives its 600 s timeout is backgrounded by the
+  harness itself, and `check-observer.mjs` then never reports to a live
+  agent - the rule cannot see it either. Hit three times in one task.
+  Candidate fixes considered: Stop-time reconciliation, a longer-lived
+  observer, accept-and-document, a host-wide heavy-run lock. The chosen
+  fix is gate credit (`docs/decisions/`, 2026-09-27, "A green check arms
+  the commit gate by its own exit, not a host-wide lock"): the check arms
+  the gate by its own exit, so such a run is no longer lost - wait for its
+  exit, then confirm the cache before the commit.
 - A PowerShell here-string (`@'...'@`) inside the Bash tool is not a
   here-string there - it left a literal `@` as a commit subject once. Use
   a real heredoc in Bash instead.
@@ -374,8 +441,10 @@ lines go to stderr and print after the suite's stdout.
   output cap, `npm run check` never among them.
 - Claude Code desktop notifies the main session when a background command
   exits, so a backgrounded run is lost only when the launcher is a
-  subagent whose own turn has already ended - the commit gate cannot see
-  either case, which is why rule 2g is scoped to the gate-feeding check.
+  subagent whose own turn has already ended. The commit gate sees both
+  cases since gate credit (the check's own exit arms it), which is why rule
+  2g is scoped to a subagent (`agent_id` in the hook input) and to the
+  gate-feeding check.
 - Git Bash here: `set -o pipefail` turns a SIGPIPE into a failure -
   `yes | head -n 2` exits 0 without the prefix and 141 with it; `| tail`
   drains its input so it never fires there. Prefix a run whose exit status
@@ -396,9 +465,10 @@ lines go to stderr and print after the suite's stdout.
   the memory-starvation caveat above).
 - How to falsify a claimed-armed commit gate without committing: read
   `.claude/.check-cache.json`'s `key`, compute `treeKey()` by invoking the
-  module against the working tree, and compare. A tool-auto-backgrounded run
-  that completed exit 0 did not move the cache; a probe commit was denied
-  naming "35 checked files" as still unaccounted for.
+  module against the working tree, and compare. Before gate credit, a
+  tool-auto-backgrounded run that completed exit 0 did not move the cache;
+  a probe commit was denied naming "35 checked files" as still unaccounted
+  for. Such a run now writes the cache with `by: "exit"`.
 - Vitest traps that cost time to notice: `--reporter=basic` no longer exists
   in the installed version; `coverage.reportOnFailure` is off by default, so
   a red vitest run writes no coverage summary at all; and a component test
@@ -518,7 +588,7 @@ documented; the parity rows below are replaced by the gates that survive.
 
 | gate | idle host | loaded host |
 |---|---|---|
-| `npm run check` | ~165s | past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded, cannot arm the commit gate, and must be re-run - not salvaged |
+| `npm run check` | ~165s | near or past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded and still arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
 | `npm run check:built` | a few minutes | longer |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | longer; `app/sweep` as a whole (`run-all.js app/sweep`, all four widths) is past the cap and must run width by width |
@@ -680,12 +750,17 @@ parity/run-all families) beside a live one. Nothing writes that lock
 today - `run-all.js` and `golden.js` never did - so two heavy runs (a
 `npm run check` and a `node tests/app/golden.js`, say) can now collide on
 one tree with no guard against it beyond "one session at a time per
-working tree" (`CLAUDE.md`). Still open, owned by no task, and this
-paragraph is its home: whether the still-surviving heavy
-runs (`run-all.js`'s pool, the four `golden.js` shards) need a lock of their
-own, now that the class of collision the old one caught can recur - weighed
-against the Playwright decision beside it, since a second real-browser
-driver would need a guard of its own too.
+working tree" (`CLAUDE.md`). Settled on 2026-09-27 (`process-guards`,
+`docs/decisions/`, "A green check arms the commit gate by its own exit, not
+a host-wide lock"): no heavy-run lock. A lock guards data; two heavy runs
+share CPU and memory, not files, so a lock converts the cost into a wait,
+and every heavy entry point would need a writer with stale-lock recovery.
+The costly failure, a green run lost at the 600 s cap, is removed by gate
+credit instead ("Run a long check", "Gate credit"). "At most two heavy
+agents on this host" stays an orchestrator rule
+(`.claude/prompts/orchestrate.prompt.md`, "Long-running checks"). The one
+shared resource that is data, the local Supabase stack, has its own lock
+("Supabase configuration", "The local stack lock").
 
 **This host silently downclocks under load.** `% Processor Performance` read
 20 on its i7-8565U across four samples while vitest tests took 27-264 s and
@@ -764,7 +839,34 @@ adversary:
 - There is no guard at all against two heavy runs (`npm run check`, a
   `run-all.js` pool, a `golden.js` shard) colliding on one tree - the
   `test-output/parity.lock` mechanism that used to catch this retired with
-  the parity harness at R0c, above.
+  the parity harness at R0c, above, and none replaces it on purpose
+  (`docs/decisions/`, 2026-09-27, "A green check arms the commit gate by its
+  own exit, not a host-wide lock").
+- A manual local-stack command (`npx supabase db reset --local`) is refused
+  under another checkout's stack lock (rule 2u) but takes no lock itself, so
+  a `check:db` started while it runs does not see it.
+- Rule 2t does not judge `sed`, `awk` or `grep` with a `.env` operand: their
+  first operand is a pattern, so the rule would be noisy. A glob that
+  expands to a `.env` file is not caught either.
+- The Read deny in `.claude/settings.json` (`Read(./.env.*)` and the
+  others) uses `./`-relative patterns, which resolve against the
+  session's working directory. Probed 2026-09-27 from a worktree: a Read of
+  the main checkout's `.env` file by its absolute path passed the deny.
+  `read-guard.mjs` closes it for the Read and Grep tools; rule 2t covers
+  Bash and PowerShell.
+- A worktree agent is guarded by the hooks of its worktree's tree, which
+  is cut from `origin/main`, not by the main checkout's unpushed hooks.
+  Measured: the tree had no new hook and no deny came. Inferred cause:
+  the relative hook command runs the worktree's copy, or the agent loads
+  the worktree's `settings.json`. So a hook change guards worktree agents
+  only after it is pushed (P3 in the `process-guards` facts list).
+- Rule 2s, `edit-guard.mjs`'s reviewer rule and `read-guard.mjs` are habit
+  guards: `node -e` can write a file, `bash -c "..."` is erased with its
+  quotes, and a Grep by pattern over a directory is not judged (`rg` skips
+  hidden and ignored files unless told otherwise). Rule 2s does not judge
+  a bare `git branch <name>` or `git tag <name>`, which creates a ref:
+  to tell it from a list form (`git tag -l <pattern>`, `git branch
+  --contains <sha>`) the rule would need each subcommand's option grammar.
 - The orphan-task-directory rule (row 40) is invisible to a deletion through
   `git clean`, through `node -e "fs.rmSync(...)"`, through an unexpanded glob
   (`rm issues/<id>/*` reaches the hook as the literal token), or from the
@@ -886,6 +988,8 @@ Facts settled during measurement (`agent-effort`, 2026-09-11):
 - Writes to `.claude/agents/**` are refused by the permission classifier on
   this host ("Blocked by classifier"), via both `sed -i` and the Edit tool,
   until the owner approves - a frontmatter probe needs that approval first.
+  On 2026-09-27 a Write of `.claude/agents/reviewer.md` passed with no
+  prompt (the `process-guards` facts list), so the refusal is not constant.
 - Hook input's `effort` field is `{ level }` (docs; not measured here - the
   fallback instrument that would read it was not needed).
 - **Propagation, measured**: three probes against three controls read
@@ -1033,6 +1137,88 @@ Facts settled during measurement (issue 68, 2026-09-23), the Browser pane:
   `localStorage` key, so it cannot measure a real browser's quota.
 - A hidden pane returns blank screenshots; read geometry with
   `read_page` or a script, or show the pane first.
+
+Facts settled during measurement (`process-guards`, 2026-09-27), gate
+credit, the local stack lock and the `.env` guards:
+
+- `node -e "console.log(require('os').tmpdir())"` prints
+  `C:\Users\Ignat\AppData\Local\Temp` from both the Bash and the
+  PowerShell tool, so `stack-lock.mjs` uses `os.tmpdir()` with no
+  fallback.
+- `rtk npm run check` took 544 s wall clock (vitest 219 s, 1988 tests; the
+  hook selftest 1016 cases) and ended with `gate credit: armed (npm run
+  check exited 0)`. `.check-cache.json` then held `by: "exit"` and a key
+  equal to `treeKey()`; the observer also said PASS and kept that record.
+  The first run failed at `format:check`: Prettier checked the new
+  `.claude/.check-pending.json`, which `.prettierignore` now lists.
+- Under a hand-written foreign JSON lock (root `C:/probe`, no pid), `npm run
+  check:db` printed the holder and `check:db: BUSY` and exited 3 within
+  seconds, and the lock's SHA-256 did not change. The observer said
+  nothing: the failed call did not reach it, as for every failed call on
+  this host. `npx supabase db reset --local` from the PowerShell tool was
+  denied by rule 2u, naming the holder. `npm run restore:drill` failed with
+  the holder in its `FAIL:` line and `cleanup: ... the drill stopped before
+  the local stack`, and left the lock unchanged.
+- `npm run check:db` with no lock took 517 s wall clock (the suite 437 s,
+  216 tests), printed `gate credit: armed (npm run check:db exited 0)`
+  before `check:db: PASS`, and left no lock file.
+- The `permissions.deny` edit of `.claude/settings.json` passed the
+  permission classifier without a prompt and took effect in the session
+  that saved it: a Read of a missing `.env.<name>` at the root was refused
+  ("denied by your permission settings"), while a Read of another missing
+  file said "File does not exist". The probe used a missing file, so no
+  value could reach the transcript. `cat` of the same missing file was
+  denied by rule 2t.
+- The `./` Read deny binds the session's working directory. A
+  `general-purpose` agent with `isolation: worktree` (cwd
+  `.claude/worktrees/agent-<id>`) used the Read tool on missing files only:
+  the relative `.env.process-guards-probe` answered "File is in a directory
+  that is denied by your permission settings."; the absolute
+  `E:\dev\daggerheart-loot\.env.process-guards-probe` and
+  `E:\dev\daggerheart-loot\supabase\.env.process-guards-probe` answered
+  "File does not exist." - the same answer as the control
+  `E:\dev\daggerheart-loot\.no-such-file-process-guards-probe`. So the deny
+  did not reach an absolute path into another checkout; `read-guard.mjs`
+  does, but only in a worktree cut from a commit that carries it (P3
+  below).
+- The Write of `.claude/agents/reviewer.md` (the `Write` tool added, the
+  `permissionMode` line removed) and the two new `PreToolUse` entries in
+  `.claude/settings.json` passed the permission classifier without a
+  prompt, in an implementer subagent, 2026-09-27.
+- P1, the `Agent` matcher, in a session started after the commit that
+  added it: with a probe `plan.md` that declares `- Plan review: required
+  before B1 (trigger: probe)` and no `reviews/`, an `implementer`
+  dispatch was denied ("PreToolUse:Agent hook error: Blocked: ... requires
+  a plan review before B1 ... seen: none ... (dispatch tool: Agent)").
+  After a `reviews/plan-B1.md` from the template with `Verdict: approve`,
+  the same dispatch ran.
+- P2, the reviewer definition: a `reviewer` subagent wrote
+  `issues/<id>/reviews/probe.md` with no permission prompt; its Write of
+  `issues/<id>/notes.md` was denied ("the reviewer writes only its
+  report, issues/<id>/reviews/<name>.md"); `git status --short` ran;
+  `touch x` was denied ("the reviewer is read-only in Bash and
+  PowerShell"). So the hook input's `agent_type` is `reviewer`, the
+  agent's name.
+- P3, before the push: a `general-purpose` agent with `isolation:
+  worktree` read the missing `E:\dev\daggerheart-loot\.env.process-guards-probe`
+  by absolute path and got "File does not exist." - the control's answer,
+  no deny. Measured: the worktree was cut from `origin/main` in the probe
+  (HEAD `d0acbe13`, not the local unpushed commit), and its tree had no
+  `read-guard.mjs` or `agent-guard.mjs`. The cause is inferred, not
+  measured: either the relative hook command (`node
+  .claude/hooks/read-guard.mjs`) ran the worktree's missing copy, and
+  `node`'s exit 1 does not block, or the agent loaded the worktree's
+  `.claude/settings.json`, which has no `Read|Grep` entry. Both vanish
+  once the hook is on `origin/main`. In the same agent, `git log --oneline -1` (rewritten by
+  the RTK hook) was refused by the worktree isolation guard ("a
+  worktree-isolated agent's git operations must target its own
+  worktree"); `pwd`, `git rev-parse HEAD` and `git grep` ran.
+- Gate credit in live use: an implementer's foreground `rtk npm run
+  check` (Bash timeout 600000) outlived the timeout and was moved to the
+  background (vitest 217.50 s, selftest 1295 cases). It exited 0, printed
+  `gate credit: armed (npm run check exited 0)`, and `.check-cache.json`
+  held `by: "exit"`; the observer said the run could not be attributed,
+  and the next `git commit --amend` passed the gate.
 
 ## Decisions registry
 
@@ -1271,7 +1457,7 @@ CLI facts (2.117.0, measured 2026-09-24):
 |---|---|---|
 | `npm run config:diff -- --project test\|prod [--env-file <path>]` | anyone; an agent only against `test` | read-only diff of `config.toml` against the project; prints `drift: none (N not-owned)` or `drift: N`, exits 2 on drift |
 | `npm run config:push -- --project test\|prod [--env-file <path>]` | the owner, in an interactive terminal | refuses without a TTY; for `prod` refuses while an `env(...)` name is unset; diffs, asks for a typed `yes`, then runs `config push` with the CLI's own prompt |
-| `npm run db:push -- --project test [--yes]` | anyone, an agent included; `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing. It keeps `db push`, so it refuses while another branch's migration sits on the test project; CI's `migrate-test` is the path then |
+| `npm run db:push -- --project test [--yes]` | the owner; an agent only after an approving report under `issues/*/reviews/` whose `Reviewed:` commit has `HEAD`'s `supabase/migrations` tree (rule 2r; `docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review"); `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing. It keeps `db push`, so it refuses while another branch's migration sits on the test project; CI's `migrate-test` is the path then |
 | `npm run db:push -- --project prod` | the owner, in an interactive terminal | the fallback while CI's `migrate-prod` is broken; refuses without a TTY, and refuses `--yes`; dry run, typed `yes`, `db push`; records nothing |
 | `npm run limits:set -- --project test\|prod --user <email\|uuid> --key <key> --value <n>\|--default\|--clear\|--unlimited` | an agent only against `test` (rule 2n); `prod` the owner, in an interactive terminal | sets or removes one user's override of one count limit over `SUPABASE_DB_URL` from the environment; refuses a string that is not the named project's, a key not in `limit_defaults`, and a user that is not exactly one row; prints `before:` and `after:` (`200`, `unlimited`, `default 50`). `--clear` is `--default`: it deletes the override |
 | `npm run check:db` | anyone (Docker; PowerShell on Windows) | layer 3 against the local stack |
@@ -1291,7 +1477,13 @@ Windows host `SUPABASE_DB_PASSWORD_TEST` is in the gitignored
 `.env.test.local` (owner, 2026-09-26), not in the shell environment; the
 wrapper does not read the file. Pass it with `node --env-file=.env.test.local`
 or a parser, never `. .env.test.local`: a line that is not shell syntax
-prints part of its value in the error (2026-09-26).
+prints part of its value in the error (2026-09-26). `bash-guard.mjs` rule
+2t denies a dot-source, `source` or a file printer on a `.env*` file, and
+`.claude/settings.json` denies the Read tool on `./.env`, `./.env.*`,
+`./supabase/.env` and `./supabase/.env.*` (a Read deny also covers Edit and
+Write of the path); `node --env-file=<file>` stays the way to load one
+(`docs/decisions/`, 2026-09-27, "Agents read no .env file; the program
+loads it with `--env-file`").
 
 **Migration names.** A new migration's 14-digit stamp must sort after every
 migration already applied: `supabase db push` refuses a local migration that
@@ -1348,6 +1540,33 @@ The ninth warning is leaked password protection, which is off because there
 is no password sign-in (Google and Discord only). `apply_list_writes` is
 `security invoker` and adds none. A warning that is not in this list stops
 the release until a review accepts it and adds it here with its reason.
+
+**The local stack lock.** One local Supabase stack serves every checkout on
+this host, and `npm run check:db` and `npm run restore:drill` reset it.
+Both take the lock `dhloot-local-stack.lock` in the OS temporary directory
+(`C:\Users\Ignat\AppData\Local\Temp` from both the Bash and the PowerShell
+tool, measured 2026-09-27) through `.claude/hooks/stack-lock.mjs`
+(`docs/decisions/`, 2026-09-27, "The Supabase scripts take the local stack
+lock themselves"). The body is JSON: `task` (`DHLOOT_TASK`, else the most
+recently touched `issues/<id>/`, which can name another task - `branch` and
+`root` identify the holder), `branch`, `root`, `pid`, `host`, `command`,
+`at` and a `nonce`; the file is created exclusively, and a release deletes
+it only when its `nonce` matches. A lock is stale 45 minutes after its `at`
+(a hand-written lock: after its mtime), or when its `pid` on this host is
+gone (`ESRCH`); a stale lock is taken over. Under a fresh lock `check:db`
+prints the holder and `check:db: BUSY` and exits 3 (the observer says BUSY
+and arms nothing); the drill fails with the holder in its failure line;
+both touch nothing. The drill takes the lock after its Docker and key
+checks and releases it after its final reset. `bash-guard.mjs` rule 2u
+refuses a manual command that starts, stops or resets the local stack
+while another checkout holds the lock. Run `npm run check:db` alone; a
+PowerShell chain such as `$env:DHLOOT_TASK = 'x'; npm run check:db` is not
+attributed by the observer ("Run a long check"), although the check's own
+exit still arms the gate. `DHLOOT_STACK_LOCK` moves the lock file; only
+the selftest sets it. Two limits are kept by design: two runs that take
+over the same stale lock at once can both proceed (a small window), and
+`tests/db/run.mjs` cannot release on a signal while `spawnSync` blocks;
+the dead-pid check and the 45-minute staleness recover the lock.
 
 **The hosted E2E and the deploy.** CI's `e2e` job runs `npm run e2e` (layer
 4, `docs/specs/COVERAGE.md`, "Test layers") against the test project, and
@@ -1552,7 +1771,10 @@ stack only, and it has no option for another target:
 Prerequisites:
 
 - Docker (Rancher Desktop) is running, and no other session uses the local
-  stack: the drill resets the local database twice.
+  stack: the drill resets the local database twice. The drill takes the
+  local stack lock after its Docker and key checks and fails, naming the
+  holder, while another run holds it ("Supabase configuration", "The local
+  stack lock").
 - `gh auth status` shows a login that can read this repository's Actions
   artifacts.
 - `.env.restore.local` at the main checkout's root holds the line
@@ -1987,7 +2209,7 @@ not changed.
 | 16 | Report the last CI conclusion at session start | `SessionStart` | **reject** | Needs `gh` over the network. Network in a hook can hang the session start, and the rule is that no hook path touches the network - even the one that is not a tool path. |
 | 17 | Enforce Conventional Commits subject format | `PreToolUse(Bash)` | **reject** | Never a recorded failure here - every commit in the log conforms - and extracting a subject from an arbitrary `git commit` invocation (`-F`, two `-m` flags, `$'...'`) is exactly where a false block would land on a legitimate commit. The attribution check (#9) gets the value without the parsing risk, because it scans the raw string for a literal. |
 | 18 | Verify `git config user.email` matches the required author | `SessionStart` | **reject** | Already configured globally on this host and has never failed. A rule that has never fired and can never fire is clutter. |
-| 19 | Restrict the planner to writing under `issues/<id>/` using `agent_type` | `PreToolUse(Edit\|Write)` | **reject, top deferred candidate** | Fully enforceable in principle and a real failure mode. But `agent_type`'s value strings are unverified on this host: a wrong string either never fires (useless) or blocks a legitimate writer (harmful). The cheaper instrument is agent frontmatter - `reviewer.md` already uses `permissionMode: plan`. Settle it by logging `agent_type` from `session-start.mjs` for a session or two first. |
+| 19 | Restrict the planner to writing under `issues/<id>/` using `agent_type` | `PreToolUse(Edit\|Write)` | **reject, top deferred candidate** | Fully enforceable in principle and a real failure mode. But `agent_type`'s value strings are unverified on this host: a wrong string either never fires (useless) or blocks a legitimate writer (harmful). The cheaper instrument is agent frontmatter. Since `process-guards`, `edit-guard.mjs` and rule 2s read `agent_type` for the reviewer, and P2 measured the value as `reviewer`, the agent's name ("Facts settled during measurement (`process-guards`, 2026-09-27)"). |
 | 20 | Require `npm run check:built` when a screen changes | `PreToolUse(Bash)` | **reject** | "Alters what a screen draws" is judgment, not a path test. CLAUDE.md's `check:built` rule keeps it, and a hook must not pretend to enforce it. |
 | 21 | Enforce the per-file coverage threshold | `PostToolUse(Write)` | **reject** | Already enforced by `vite.config.mts` at the real moment. A second copy would say nothing new. |
 | 22 | Inject the active task on every prompt | `UserPromptSubmit` | **reject** | Duplicates `SessionStart` on every single turn. The definition of the noise the human warned against. |
@@ -1995,7 +2217,7 @@ not changed.
 | 24 | Anything reading the five-hour usage window | any | **reject** | Measured impossible on this host (`79e26c9`). Explicitly out of scope. Also rejected: an autonomous usage guard summing `message.usage` from the transcript - it measures the session's own spend, not the account's shared five-hour window, so it cannot stand in for the thing being asked about. |
 | 25 | Block edits to `docs/fixtures/**` as "generated" | `PreToolUse(Edit\|Write)` | **reject** | They look generated but CLAUDE.md requires updating them by hand in the same commit as a contract change. Blocking them would block the correct fix. Listed here because it is the tempting mistake in hook 4. |
 | 26 | `SessionEnd` bookkeeping | `SessionEnd` | **reject** | Cannot influence the model or the human in time. `Stop` already covers the moment that matters. |
-| 27 | Block `npm run check` launched with `run_in_background` | `PreToolUse(Bash)` | **adopt** | Three workers on issue 47 backgrounded the check, the third with three paragraphs of dispatch warning against it; prose is exhausted. False-positive-free: `check-observer.mjs` refuses a backgrounded run by design, so one can never satisfy the gate, and blocking it forbids nothing that works. Scoped to the gate-feeding check only - `check:built`, parity and run-all can legitimately run detached from a main session, and the reminder already covers them. Matched per segment, because the recorded shapes were piped, chained, `cd`-prefixed and file-redirected. The message names the replacement in one line, including the Bash timeout. Measured 2026-09-10: `PreToolUse(Bash)` fires for a backgrounded call and denies it (probe A); `tool_input.run_in_background` reaches the hook as `true`. |
+| 27 | Block `npm run check` launched with `run_in_background` | `PreToolUse(Bash)` | **adopt** | Three workers on issue 47 backgrounded the check, the third with three paragraphs of dispatch warning against it; prose is exhausted. False-positive-free: `check-observer.mjs` refuses a backgrounded run by design, so one can never satisfy the gate, and blocking it forbids nothing that works. Scoped to the gate-feeding check only - `check:built`, parity and run-all can legitimately run detached from a main session, and the reminder already covers them. Matched per segment, because the recorded shapes were piped, chained, `cd`-prefixed and file-redirected. The message names the replacement in one line, including the Bash timeout. Measured 2026-09-10: `PreToolUse(Bash)` fires for a backgrounded call and denies it (probe A); `tool_input.run_in_background` reaches the hook as `true`. **Narrowed to a subagent at `process-guards`** (2026-09-27): a backgrounded check now arms the gate by its own exit (`docs/decisions/`, 2026-09-27, "A green check arms the commit gate by its own exit, not a host-wide lock"), so only a subagent's run, which dies with its turn, is denied. |
 | 28 | Block a heavy run while a parity run is alive, via a lockfile `tests/parity.js` writes | `PreToolUse(Bash)` | **adopt** (bundled with #27 by owner decision, 2026-09-10) | #15's deferred alternative. The input problem #15 rejected on is gone: the run itself writes the lock, so the hook stats one file instead of enumerating processes, and a human's terminal run is seen too. The stale-lock false positive is closed by liveness (`process.kill(pid, 0)`, no `tasklist`) plus a heartbeat TTL - a dead pid or a stale heartbeat is ignored, so the rule can only fire on a run that is actually alive, and a second heavy run beside it produces garbage, so the block forbids nothing that works. `parity.js` also refuses to start over a live lock, which covers parity-vs-parity with no hook in the loop. Fifteen peers on one tree make the overlap a matter of when. Known gaps, recorded above: the vitest-alive side is invisible; a container run is invisible; on Windows a crashed run's pid can be reused inside the TTL, which the message answers with "delete the lock". Measured 2026-09-10 (probe B): a live lock denies, a dead-pid lock does not. **Retired at R0c `23c00a6`**: `tests/parity.js` and `tests/parity/lock.js` are both deleted, and nothing replaced the writer - see "One heavy run at a time" above. |
 | 29 | Report HEAD moving under a session | `PreToolUse(Bash)` on `git commit`, or `Stop` | **reject for now** | Nothing collided in the recorded case; the prose that owns it ("Your writers are not the only writers", `3541a23`/`e5a26a2`) is one day old and has not been given a chance to fail, and the standing bar is a repeated mistake. Not `PreToolUse(Task)`: the dispatch tool is `Agent` on this host and `Task` in the reference, an unverified matcher (#19-shaped). Not `UserPromptSubmit`: #22. If the prose fails once, the cheapest deterministic form needs no unverified input: `session-start.mjs` records the HEAD sha in the session's `.hook-state.json` entry; `bash-guard.mjs`, on a `git commit` segment it already parses, compares `git rev-parse HEAD` against it and speaks (never denies) "HEAD moved since this session started: X -> Y, N commits not yours - `git log --oneline X..Y`; your commit lands on top, record Y as the base in the handoff"; `check-observer.mjs` refreshes the stored sha after the session's own commit. |
 | 30 | Accept a leading `set -o pipefail` in the observer's attribution rule, and make the canonical invocation carry it | `PostToolUse(Bash)` (attribution only) | **adopt** (owner decision, 2026-09-10) | The recommended pipe reports `tail`'s status, so a failed check comes back with no exit line and reads as a pass; twelve check runs across five sessions were spent learning the status a second way. With the prefix the tool prints `Exit code 1` on a failed check, `check-observer.mjs` sees `exit_code: 1` and refuses to arm, and the worker reads one line. Forgery: `set -o pipefail` writes nothing to stdout, so the check stays the only stdout producer; the strip removes exactly the tokens `set -o pipefail` plus one `;` or `&&` at the start, on either side of the `cd` strip, and nothing else, after which every existing refusal applies unchanged. `set -o pipefail; echo "All files"`, `set -o pipefail; npm run check > o.txt 2>&1; grep "All files" o.txt`, `set -o pipefail; true; npm run check ...`, `set -eo pipefail; ...` and `set -x; ...` are all still refused. A forger gains nothing: omitting the prefix is today's state, and with it the exit code only tightens the gate. Measured 2026-09-10 on the Bash tool. |
@@ -2004,7 +2226,7 @@ not changed.
 | 33 | Speak on `echo $?` as the first command of a call | `PreToolUse(Bash)` | **reject** | Two occurrences, both inside one session; row 30 removes the reason to ask. One README sentence instead. |
 | 34 | A hook for a result over the output cap | any | **reject** | The size is unknowable before the run, and the tool already persists the full output and names the file. The failure is re-running instead of reading it: the reminder gains one clause and the README one sentence. Parity's one-line-per-page diff text is the producer; shortening it is a `tests/` change with diagnostic cost, not this task's. |
 | 35 | Deny `SendMessage` to a writer while another writer is live | `PreToolUse(SendMessage)` | **reject** | The input does not exist in a hook: liveness and role come from `ListAgents`, which a hook cannot call - it gets stdin JSON and nothing else. The matcher is unverified on this host (`tool_name` for `SendMessage` has never reached a hook here; #19/#29-shaped). Zero recorded failures; the standing bar is a repeated one. The prompt's "a resume is a dispatch" sentence owns it. |
-| 36 | Deny the reviewer any `SendMessage` (write-by-proxy) | agent frontmatter `disallowedTools`, not a hook | **reject for now**, sketched | The cheaper instrument exists (row 19's argument): one frontmatter line in `reviewer.md`. But `disallowedTools` is unverified as a key this host honours, `SendMessage` is not in a subagent's default tool list so sending needs a deliberate `ToolSearch` load - a guard against habit and haste has no habit to guard here - and the failure has never been recorded. If a reviewer ever sends: add `disallowedTools: SendMessage` (or the key the host documents) under `permissionMode: plan` in `.claude/agents/reviewer.md`, and verify with a probe that the reviewer's `ToolSearch select:SendMessage` then returns nothing. |
+| 36 | Deny the reviewer any `SendMessage` (write-by-proxy) | agent frontmatter `disallowedTools`, not a hook | **reject for now**, sketched | The cheaper instrument exists (row 19's argument): one frontmatter line in `reviewer.md`. But `disallowedTools` is unverified as a key this host honours, `SendMessage` is not in a subagent's default tool list so sending needs a deliberate `ToolSearch` load - a guard against habit and haste has no habit to guard here - and the failure has never been recorded. If a reviewer ever sends: add `disallowedTools: SendMessage` (or the key the host documents) under `permissionMode: plan` in `.claude/agents/reviewer.md`, and verify with a probe that the reviewer's `ToolSearch select:SendMessage` then returns nothing. Since `process-guards` the reviewer has no `permissionMode`; the review prompt still forbids the send. |
 | 37 | Warn on a second implementer dispatch for the same task while a completed one is listed | `PreToolUse(Agent)` | **reject** | The dispatch tool is `Agent` here and `Task` in the reference - the unverified matcher row 29 already rejects - and the hook cannot see the agent list. "Resume, do not replace" is a preference, and a wrong warning on a legitimate fresh dispatch (tier change, killed agent) is the one thing a guard must not do. |
 | 38 | Log effort from a hook | `PreToolUse(Bash)` | **reject** | The Bash tool's `$CLAUDE_EFFORT` is the same value with no edit (measured 2026-09-11); an observe-only hook would be the first here, guards no recorded mistake, and re-measurement is one echo from any worker. Fallback, not built: an observe-only `PreToolUse(Bash)` hook that echoes `$CLAUDE_EFFORT` once per session, reverted if used. Three effort questions stayed open at the measurement: `permissionMode: plan` vs `effort` (untested); a skill-frontmatter `effort` key (none declared on this host); a `SubagentStop` hook reading `effort.level` (this row's own objection applies to that too). |
 | 39 | Stop names this session's own untracked writes | `Stop` | **adopt** | `closeout-hygiene`. The ten dead citations to issue 65's retired `plan.md` were found only by a human-initiated audit; the checklist step that would have caught the underlying pattern (an untracked scratch file left behind) can be skipped without anything noticing. Excludes `docs/` and the task-document set (`context.md`/`plan.md`/`handoff.md`/`mocks/` in any `issues/<id>/`) rather than the whole active issue directory, so the rule still catches a scratch script that lives inside one (a Pillow
@@ -2020,7 +2242,7 @@ instead). If the checklist step this row backstops keeps being skipped
 anyway, the named fallback is a read-only closeout auditor (reviewer-shaped);
 not built. |
 | 40 | Deny `rm`/`git rm` of a still-cited file under `issues/<id>/`, or the directory itself | `PreToolUse(Bash)` | **adopt** | A retirement looks complete on its own - nothing breaks, `npm run check` still passes - and the orphans are found months later by someone reading a citation that points at nothing; ten of them shipped this way for issue 65's retired `plan.md`. Deny, not warn: a `speak` at `PreToolUse` is acknowledged and stepped past, which is the thing being guarded against, and the escape (repair the citations first, or run the command in the human's own terminal) is the same shape every other block in this family offers. Considered and rejected: `edit-guard.mjs` never sees a deletion (no Edit-family tool fires for one); `session-stop.mjs` would fire on history rather than on the action, after the content is only recoverable from git history; `selftest.mjs` cannot be the rule, since it runs inside `npm run check` and a `.md`-only retirement commit is gate-exempt, so the check need never run between the deletion and the commit. `bash-guard.mjs` is the only site with both the input and the timing. Fallback if this proves too blunt: downgrade to `speak` at the one call site (trigger, lookup and message unchanged) - record the downgrade here rather than deleting the row. **Tightened 2026-09-18** (`workflow-hygiene`) to every file under `issues/<id>/` and the directory itself, with the unslashed `issues/<id>` as the needle: retirement is now every task's closeout, not a rare event, so the deny fires wherever the orphans would be made. Rows 31 and 38 above used to cite their originating task directories (`hooks-guardrails`, `agent-effort`) for the sketch each carries; retiring those directories needed the citations folded into the rows themselves first, or this rule denied the retirement - that is the rule working. Both rows are now fully self-contained, discharging that debt. A second, milder fallback was recorded and then overtaken by events: narrow the rule to live pointers only, recognising a `git show <sha>:path`-qualified citation as exempt - proposed while `plan.md` was still blocked by seven citations resolving only that way. The exemption above (`a git show <sha>:path citation is exempt`) is that fallback, already adopted rather than merely recorded. |
-| 41 | Reviewer `tools:` allowlist (`Read, Grep, Glob, Bash`) | agent frontmatter | **adopt** (`config-audit` B2) | Read-only posture becomes deterministic instead of prose plus `permissionMode: plan`; Edit/Write/NotebookEdit/Agent/ToolSearch drop out, which also closes row 36 (no `ToolSearch`, no `SendMessage`). Bash stays for `git status`/`diff`/`log` and focused checks. **Probed 2026-09-16 on this host: enforced.** A dispatched reviewer reported exactly `Read`, `Grep`, `Glob`, `Bash` and no others; `Edit`, `Write`, `NotebookEdit`, `Agent`, `ToolSearch` and `SendMessage` were all absent, which closes row 36 in fact and not only on paper. Two limits on what the probe establishes: it covers the tool allowlist only - `permissionMode` is not observable from inside a subagent without performing an action the probe forbade, so that half stays unverified; and `Bash` in the allowlist means the read-only posture still rests on the reviewer prompt and the permission settings, since a shell redirection writes. The allowlist is not by itself a read-only guarantee. |
+| 41 | Reviewer `tools:` allowlist (`Read, Grep, Glob, Bash`) | agent frontmatter | **adopt** (`config-audit` B2) | Read-only posture becomes deterministic instead of prose plus `permissionMode: plan`; Edit/Write/NotebookEdit/Agent/ToolSearch drop out, which also closes row 36 (no `ToolSearch`, no `SendMessage`). Bash stays for `git status`/`diff`/`log` and focused checks. **Probed 2026-09-16 on this host: enforced.** A dispatched reviewer reported exactly `Read`, `Grep`, `Glob`, `Bash` and no others; `Edit`, `Write`, `NotebookEdit`, `Agent`, `ToolSearch` and `SendMessage` were all absent, which closes row 36 in fact and not only on paper. Two limits on what the probe establishes: it covers the tool allowlist only - `permissionMode` is not observable from inside a subagent without performing an action the probe forbade, so that half stays unverified; and `Bash` in the allowlist means the read-only posture still rests on the reviewer prompt and the permission settings, since a shell redirection writes. The allowlist is not by itself a read-only guarantee. Since `process-guards` the allowlist also has `Write` for the report, and rule 2s with `edit-guard.mjs`'s reviewer rule is the read-only guarantee the allowlist is not. |
 | 42 | Persistence-era guards: RLS gate, migration-reversibility gate, applied-migration `edit-guard.mjs` rule, gitleaks-on-commit, one session per shared database | gates, `edit-guard.mjs`, `bash-guard.mjs`, `CLAUDE.md` | **installed 2026-09-24** | Installed by `persist-0-foundation`: `npm run check:db` with the reversibility gate, rule 2m, rule 2l (gitleaks), the applied-migration `edit-guard.mjs` rule, the hosted-write rule 2n, and the `CLAUDE.md` sentence; design and status in this file's "Persistence era: decided now, activated at Phase 0" section. |
 | 43 | Deny `grep -n` and `tail -c` (readers that bypass RTK) | `PreToolUse(Bash)` | **adopt** (`config-audit` B3) | Measured 2026-09-16: 198 sessions / 20,710 Bash commands over thirty days; ~281.4K tokens missed over 1,052 commands; `grep -n` 342 calls / ~117.6K and `tail -c` 159 / ~40.8K, together 158.4K of 281.4K = 56.3%, over half, in two commands. RTK's hook rewrites only at line start, so the miss is the piped, `$(...)` and `cd`-prefixed shapes prose has not moved. Matches the program token only, so `echo`, `git grep -n` and `rtk grep -n` are untouched; a line-start `grep -n` that RTK would have rewritten now costs one retry, the accepted price. Not `npm run check` and never `rtk npm run check`: the commit-gate trap this exemption once needed explaining for is superseded by row 45, which arms the gate directly on `rtk npm run check`. Fallback if the retry proves noisy: exempt a single-segment, single-line shape - record here, do not delete the row. **Narrowed twice at `rtk-coverage` B1** (first cut, then corrected on remediation against a direct probe): a bare leading `grep -n foo path` denied that exact shape RTK rewrites cleanly, so denying it earned nothing but a wasted round trip before the model took the offered escape to the Grep tool (103 such calls across the sampled transcripts) - net effect strictly worse than no rule. The first cut's own replacement boundary ("piped, substituted, or chained") was itself wrong and is not what shipped - it treated every pipe stage and every chain position alike, which a direct probe of the installed `rtk 0.48.0` (`rtk hook check "<command>"`, reproducible) disproved on both counts. **Measured boundary, pinned to `rtk 0.48.0`** (full table: this file, "Facts settled during measurement (rtk-coverage, 2026-09-18)"): `grep -n` rewrites on a bare command, an env-var prefix, and on either side of `&&`/`;`/`&`/a leading `cd` - a list operator never blocks it - and inside a pipe (`|`, never `||`) only as that pipe's own FINAL stage (`cat f | grep -n x` rewrites; `grep -n x | wc -l` and a pipe's middle stage do not); it never rewrites inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time` (not `env`/`command`, which are transparent, but `unwrap()` cannot tell the two groups apart so both are treated as blocking - a same-cost-as-before false deny for the transparent two, never a false allow). `tail -c`/`--bytes` gets none of `grep`'s exemptions - measured never rewritten in any position, pipe or chain, because `rtk read` has no byte-offset mode at all (only `--tail-lines`, which is why `tail -n` is unaffected by this rule) - so it denies unconditionally once matched. The deny messages point at restructuring into a standalone `rtk grep -n` / `rtk read`, not at the Grep/Read tool. |
 | 44 | Warn when a task document is past its size budget | `Stop` | **adopt** (`config-audit` B3) | Measured 2026-09-15: issue 47's `plan.md` 1,031 KB (57.7% shipped-batch briefs), `handoff.md` 523 KB (96% of Status superseded snapshots), `context.md` 227 KB, growing 350-1,400 lines per working day, read by every worker at dispatch. Warn, never block: a Stop hook that blocks session-end is worse than a large file. Scoped to the session that wrote into the directory, deduped per state. The procedure and the never-drop / always-drop lists live in `.claude/skills/handoff/SKILL.md`. Rejected: a `PreToolUse(Write)` size deny (blocks the closeout write that fixes it); a `SessionStart` notice (the writer is who needs it). |

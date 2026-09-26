@@ -1489,6 +1489,77 @@ ok(
   '.claude/.gitignore must keep the line `.restore-receipts.json`: it holds backup hashes'
 );
 
+/* Gate credit (docs/decisions/2026-09-27-a-green-check-arms-the-commit-gate-by.md):
+   `npm run check` arms its commit gate by its own exit only while the chain
+   starts with `begin` and ends with `arm`; `&&` makes `arm` run only after
+   every step passed. */
+const checkScript = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).scripts
+  .check;
+ok(
+  checkScript.startsWith('node .claude/hooks/gate-credit.mjs begin check && '),
+  'package.json scripts.check must start with `node .claude/hooks/gate-credit.mjs begin check && `: the credit compares the tree key at the start of the run'
+);
+ok(
+  checkScript.endsWith(' && node .claude/hooks/gate-credit.mjs arm check'),
+  'package.json scripts.check must end with ` && node .claude/hooks/gate-credit.mjs arm check`: a green check arms the commit gate by its own exit'
+);
+ok(
+  /^\.check-pending\.json\r?$/m.test(
+    fs.readFileSync(path.join(ROOT, '.claude', '.gitignore'), 'utf8')
+  ),
+  '.claude/.gitignore must keep the line `.check-pending.json`: an unignored pending file changes the tree key it records'
+);
+
+/* Agents read no .env file
+   (docs/decisions/2026-09-27-agents-read-no-env-file-the-program-loads.md):
+   the Read tool is denied on them; `node --env-file=<file>` loads one. */
+const settingsDeny =
+  (
+    JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8'))
+      .permissions || {}
+  ).deny || [];
+ok(
+  settingsDeny.includes('Read(./.env.*)'),
+  '.claude/settings.json permissions.deny must list `Read(./.env.*)`: an agent never reads a .env file into the transcript'
+);
+
+/* The reviewer writes its report
+   (docs/decisions/2026-09-27-the-reviewer-writes-its-report-to-issues-id.md):
+   its agent definition lists the Write tool and carries no permissionMode,
+   because plan mode refuses Write. */
+const reviewerFrontmatter = (/^---\r?\n([\s\S]*?)\r?\n---/.exec(
+  fs.readFileSync(path.join(ROOT, '.claude', 'agents', 'reviewer.md'), 'utf8')
+) || ['', ''])[1];
+ok(
+  /^tools:.*\bWrite\b/m.test(reviewerFrontmatter) &&
+    !/^permissionMode:/m.test(reviewerFrontmatter),
+  '.claude/agents/reviewer.md must list Write in tools: and carry no permissionMode: line: the reviewer writes its report, and plan mode refuses Write (docs/decisions/2026-09-27-the-reviewer-writes-its-report-to-issues-id.md)'
+);
+
+/* Rule 1 and the worktree Read gap have no mechanism but their hooks: the
+   plan review (docs/decisions/2026-09-27-a-plan-that-changes-schema-contracts-stored-data.md)
+   and the .env deny that reaches an absolute path
+   (docs/decisions/2026-09-27-the-read-and-grep-tools-are-denied-env.md). */
+const preToolUse =
+  (JSON.parse(fs.readFileSync(path.join(ROOT, '.claude', 'settings.json'), 'utf8')).hooks || {})
+    .PreToolUse || [];
+const registers = (tool, script) =>
+  preToolUse.some(
+    (entry) =>
+      String(entry.matcher || '')
+        .split('|')
+        .includes(tool) &&
+      (entry.hooks || []).some((hook) => String(hook.command || '').includes(script))
+  );
+ok(
+  registers('Agent', 'agent-guard.mjs'),
+  '.claude/settings.json hooks.PreToolUse must run agent-guard.mjs for the Agent tool: an implementer dispatch waits for a required plan review (docs/decisions/2026-09-27-a-plan-that-changes-schema-contracts-stored-data.md)'
+);
+ok(
+  registers('Read', 'read-guard.mjs'),
+  '.claude/settings.json hooks.PreToolUse must run read-guard.mjs for the Read tool: a ./ deny binds the session working directory, and the hook reaches an absolute path (docs/decisions/2026-09-27-the-read-and-grep-tools-are-denied-env.md)'
+);
+
 /* The browser matrix and
    the divisor tests/run-all.js's own --shard flag divides by have to agree,
    and three ways of breaking that are loud - a divisor above the matrix

@@ -1,6 +1,7 @@
 // Working-tree fingerprint for the commit gates in bash-guard.mjs, and the
-// caches that check-observer.mjs writes after a passing `npm run check`
-// (`.check-cache.json`) or `npm run check:db` (`.check-db-cache.json`).
+// caches that check-observer.mjs and gate-credit.mjs write after a passing
+// `npm run check` (`.check-cache.json`) or `npm run check:db`
+// (`.check-db-cache.json`).
 // See .claude/README.md, "Hooks", for the commit gate's rationale.
 
 import { createHash } from 'node:crypto';
@@ -67,9 +68,10 @@ export function treeKey() {
   }
 }
 
-/** { key, at, command } of the last observed passing run recorded in the
- * named cache file, or null if there is none or the file is unreadable or
- * corrupt. */
+/** { key, at, command, by } of the last passing run recorded in the named
+ * cache file, or null if there is none or the file is unreadable or
+ * corrupt. `by` is `observer` (check-observer.mjs saw the output) or `exit`
+ * (gate-credit.mjs, after the check's own exit 0). */
 export function readCache(name = '.check-cache.json') {
   try {
     const raw = readFileSync(cacheFilePath(name), 'utf8');
@@ -81,9 +83,14 @@ export function readCache(name = '.check-cache.json') {
   }
 }
 
-export function writeCache(key, name = '.check-cache.json', command = 'npm run check') {
+export function writeCache(
+  key,
+  name = '.check-cache.json',
+  command = 'npm run check',
+  by = 'observer'
+) {
   try {
-    const payload = { key, at: Math.floor(Date.now() / 1000), command };
+    const payload = { key, at: Math.floor(Date.now() / 1000), command, by };
     writeFileSync(cacheFilePath(name), JSON.stringify(payload));
   } catch {
     // fail open: a lost cache write just means the gate asks again

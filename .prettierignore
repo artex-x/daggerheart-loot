@@ -30,6 +30,8 @@ docs/fixtures/
 # a live hook wrote during the session.
 .claude/.check-cache.json
 .claude/.check-db-cache.json
+.claude/.check-pending.json
+.claude/.check-db-pending.json
 .claude/.check-index
 .claude/.hook-state.json
 

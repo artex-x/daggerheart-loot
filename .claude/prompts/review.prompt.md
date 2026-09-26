@@ -7,7 +7,7 @@ Interpret it as:
 * `TASK_ID`: the entire non-empty value after `TASK:`, trimmed; hyphens are part of the id
 * `TASK_DIR`: `issues/<TASK_ID>`
 
-You are reviewing a completed batch. This role is read-only; return fixes to the orchestrator.
+You are reviewing a completed batch, or a plan before its first implement batch. This role is read-only except for its report; return fixes to the orchestrator.
 
 This prompt is agent-agnostic (Claude Code, Codex, or similar).
 Always read and follow `CLAUDE.md` first.
@@ -114,7 +114,31 @@ section, or an `issues/<id>/` path violates `CLAUDE.md`, "Comments". Always a
 `local` nit; on a terminal batch it is cleared, because rule 2i denies the
 retirement while an `issues/<id>/` citation stands.
 
+### H. Plan review (`Scope: plan before <batch>`)
+The plan, not a diff: `plan.md` Status reads `Plan review: required before
+<batch> (trigger: <which>)`. Check each trigger the plan fires:
+- Each migration: its reversal, and the layer 3 test matrix planned for it
+- Each SECURITY DEFINER function: a fixed `search_path`, the `auth.uid()`
+  checks, and `EXECUTE` revoked from the roles that must not call it
+- A contract change: the same-commit set (`docs/fixtures/`,
+  `tests/contracts.js`, `docs/specs/CONTRACTS.md`, `llms.txt`)
+- Possible data loss: what can be lost, the recovery path, and the test
+  that proves it
+- A write or sync protocol: ordering, retries, idempotency, conflicts,
+  partial failure, two tabs, and the fake and the contract case on both
+  adapters
+- Batch sizing against the gates (`.claude/README.md`, "Batch size and the
+  fixed cost of a run")
+
 ## Output format
+First write the full report to `<TASK_DIR>/reviews/<batch>.md` (a plan
+review: `plan-<batch>.md`; a second look: `<name>-2.md`) from
+`.claude/templates/review.template.md`, with `Reviewed:` set to the output of
+`git rev-parse HEAD`. Then return the same text and the report path. The
+three head lines (`Verdict:`, `Reviewed:`, `Scope:`) are read by hooks
+(`agent-guard.mjs`, `bash-guard.mjs` rule 2r): keep them first, one value
+each, no markup.
+
 1. **Verdict:** approve | fix-then-continue | replan
 2. **Blockers**
 3. **Risks**
@@ -125,8 +149,9 @@ retirement while an `issues/<id>/` citation stands.
    Prose that narrates the session (G) is never a blocker - it breaks
    nothing - so it is always a nit, scoped `local` or `deferred-scope` the
    same way.
-5. **Suggested next action**
-6. **Checks still needed**
+5. **Deviations** - each deviation the handoff records, accepted or not
+6. **Suggested next action**
+7. **Checks still needed**
 
 Do not implement fixes. Return findings to the orchestrator for a separate implementer or add-source fix-pass.
 Do not message the implementer or any other agent: the orchestrator filters blockers from nits, counts the one remediation cycle, and is the only role that resumes a writer.

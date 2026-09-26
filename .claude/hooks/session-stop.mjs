@@ -8,8 +8,10 @@ import { statSync } from 'node:fs';
 import path from 'node:path';
 import { readInput, guard, warn, git, activeTask, getWrote, once, pathKey } from './lib.mjs';
 
-/** issues/<id>/context.md, plan.md, handoff.md, or anything under
- * issues/<id>/mocks/ - the task-document set. Excluded from the untracked-
+/** issues/<id>/context.md, plan.md, handoff.md, the review register
+ * issues/<id>/reviews.md, or anything under issues/<id>/mocks/ or
+ * issues/<id>/reviews/ (the reviewer's reports) - the task-document set,
+ * which closeout deletes with the directory. Excluded from the untracked-
  * writes candidate list below: a scratch script left inside a task
  * directory (one recorded instance, since deleted) is why the whole active
  * directory is not excluded - that would blind this rule to its only
@@ -18,7 +20,9 @@ import { readInput, guard, warn, git, activeTask, getWrote, once, pathKey } from
 function isTaskDocument(key) {
   return (
     /^issues\/[^/]+\/(context|plan|handoff)\.md$/.test(key) ||
-    /^issues\/[^/]+\/mocks\//.test(key)
+    /^issues\/[^/]+\/mocks\//.test(key) ||
+    /^issues\/[^/]+\/reviews\.md$/.test(key) ||
+    /^issues\/[^/]+\/reviews\//.test(key)
   );
 }
 
