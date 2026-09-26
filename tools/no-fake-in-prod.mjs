@@ -50,7 +50,7 @@ if (prodSeed?.length) {
 }
 
 // Every caller builds dist/ unconfigured, so a chunk here is a shell that
-// leaked VITE_SUPABASE_*, and the budget would measure it against 170 kB.
+// leaked VITE_SUPABASE_*, and the budget would measure it against 180 kB.
 const accountChunks = prod
   ? readdirSync(join(ROOT, 'dist', 'assets'))
       .map((f) => join('dist', 'assets', f))

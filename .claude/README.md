@@ -1304,6 +1304,27 @@ Auth limits (`token_verifications = 30` per five minutes, `config.toml`), so
 expect about three back-to-back local runs per five minutes before Auth
 refuses a mint.
 
+**The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
+120 kB for the unconfigured build and 180 kB for the configured one, which
+carries the account client chunk. `npm run check:built` builds `dist/`
+unconfigured and so measures only the 120 kB limit. The 180 kB limit runs in
+CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
+and in `deploy`. The lists release passed `check:built` locally and failed
+this step in CI (run 36228323330). A batch that adds code to the app or to
+`ports/supabase.ts` also runs this line from the repository root; it reads
+the test project's two public values from `.env.test.local`, and `buildEnv`
+drops every `E2E_*` name, the secret key included, before the build:
+
+```text
+node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
+```
+
+Expected: `within the 180 kB budget (with the account client chunk)`; 172.0
+kB on 2026-09-26. `dist/` stays configured until `npm run build` or
+`check:built` rebuilds it. Decision: "The configured bundle budget is 180 kB
+until a slimmer account client"; the debt it waits on: `docs/specs/DEBT.md`,
+D60.
+
 Branch migrations on the test project: `migrate-test` runs on every
 branch's `e2e`, so a migration that a branch pushed is in the test project
 before `main` has its file. `db push` refuses such a history ("Remote

@@ -119,7 +119,7 @@ value of those variables; CI's `e2e` job uploads nothing. In order:
   and no `E2E_*` variable in its environment - the deploy job's own code
   path. `dist/` is left configured for the test project until `npm run
   build` or `check:built` rebuilds it; CI's `e2e` job then runs `npm run
-  budget` on it (the 170 kB limit with the account client chunk);
+  budget` on it (the 180 kB limit with the account client chunk);
 - the flows in Chrome over that `dist/`, each in its own browser context
   with the browser suites' `prepare()` and driver and the session written
   where supabase-js keeps it: F1 signed out (the chooser, «Войти» in the

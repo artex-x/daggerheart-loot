@@ -68,6 +68,35 @@ cutoff (`LEGACY_WRITE_UNTIL`, 2026-10-26) and the retired `#/l/` page.
   the limit allows, or that no empty list is made, and that the text says
   what happened.
 
+## Slimmer account client (no task filed yet; runs before `persist-3-realtime`)
+
+Owns: an account client built from the Supabase packages the app uses,
+which brings the configured bundle back under its old 170 kB limit.
+
+### D60 - the configured build ships 28 kB of account client that nothing calls
+
+- **Where**: `app/src/ports/supabase.ts` (`createClient` from
+  `@supabase/supabase-js`); `SUPABASE_ONLY_IN_PORT` in `eslint.config.mjs`
+  (its `@supabase/*` pattern already covers the smaller packages); the
+  decision "The account client loads after first paint; a provider redirect
+  settles before mount", which names supabase-js as the one import.
+- **What**: the full client carries realtime-js (16.1 kB gzip), storage-js
+  (7.1 kB) and functions-js (1.5 kB), which the app does not call. The
+  account chunk is 55.1 kB and the configured build 172.0 kB (measured
+  2026-09-26), so every signed-in reader downloads them after first paint.
+  The budget is 180 kB until this is paid (decision "The configured bundle
+  budget is 180 kB until a slimmer account client").
+- **Why deferred**: the fix replaces `createClient` with `AuthClient` from
+  `@supabase/auth-js` and `PostgrestClient` from `@supabase/postgrest-js`
+  (27.0 kB together against 54.8 kB) and changes who may import what. The
+  risk: the session's access token must follow every auth change into the
+  postgrest client's headers, or writes run as anon. `npm run e2e` is the
+  gate. It is its own release, not a fix to a pushed commit.
+- **How to verify the fix**: the configured build and its budget
+  (`.claude/README.md`, "The configured bundle budget") report
+  below 170 kB, about 160 kB after `persist-3-realtime` adds realtime-js
+  back; the limit returns to 170; `npm run e2e` passes F0-F8.
+
 ## Live updates (`persist-3-realtime`)
 
 Owns: Realtime on shared pages and the owner's lists, which replaces the

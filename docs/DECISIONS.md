@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-09-26 - [The configured bundle budget is 180 kB until a slimmer account client](decisions/2026-09-26-the-configured-bundle-budget-is-180-kb-until-a-slimmer.md)
 - 2026-09-25 - [A blocker fix pass also carries the batch's local nits](decisions/2026-09-25-a-blocker-fix-pass-also-carries-the-batchs.md)
 - 2026-09-25 - [A sign-in prompt opens the account page and returns to the action through the redirect record](decisions/2026-09-25-a-sign-in-prompt-opens-the-account-page.md)
 - 2026-09-25 - [A static page links the manifest in its head and registers no worker](decisions/2026-09-25-a-static-page-links-the-manifest-in-its.md)
