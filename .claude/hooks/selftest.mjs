@@ -1263,6 +1263,93 @@ async function testPersistenceGuards() {
     check(`#249 limits:set on the test project allowed`, isSilent(result), result.stdout);
   }
 
+  // ----- 2q the owner's backup key file -----
+  for (const [command, payload] of [
+    ['cat .env.restore.local', bashPayload],
+    ['cat "./.env.restore.local"', bashPayload],
+    ['Get-Content E:\\x\\.env.restore.local', psPayload],
+    ['node --env-file=.env.restore.local x.mjs', bashPayload],
+    ['type .env.restore.local', bashPayload],
+    ['sort < .env.restore.local', bashPayload]
+  ]) {
+    const result = runHook('bash-guard.mjs', payload(command));
+    check(`#264 key file denied: ${command}`, isDeny(result), result.stdout);
+    check(
+      `#264 key file reason: ${command}`,
+      denyReason(result).includes('backup key'),
+      denyReason(result)
+    );
+  }
+  for (const command of [
+    'npm run restore:drill',
+    'git commit -m "docs: name .env.restore.local"',
+    'rtk grep BACKUP_AGE_IDENTITY docs',
+    'cat .env.restore.local.example'
+  ]) {
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-key' }));
+    check(
+      `#265 key file not named: ${command}`,
+      !denyReason(result).includes('backup key'),
+      denyReason(result)
+    );
+  }
+  for (const payload of [bashPayload, psPayload]) {
+    const result = runHook(
+      'bash-guard.mjs',
+      payload('npm run restore:drill', { session_id: 's-key-drill' })
+    );
+    check(`#265 the drill runs silently (${payload.name})`, isSilent(result), result.stdout);
+  }
+
+  // ----- 2n the owner-only production restore -----
+  for (const [command, payload] of [
+    ['npm run restore:prod -- --backup 2026-09-27', bashPayload],
+    ['npm run restore:prod -- --project test', bashPayload],
+    ['npm run-script restore:prod', bashPayload],
+    ['npm --silent run restore:prod', bashPayload],
+    ['rtk npm run restore:prod', bashPayload],
+    ['npm run "restore:prod"', bashPayload],
+    ['pnpm restore:prod', bashPayload],
+    ['pnpm run restore:prod', bashPayload],
+    ['yarn restore:prod', bashPayload],
+    ['yarn run restore:prod', bashPayload],
+    ['bun run restore:prod', bashPayload],
+    ['node tools/supabase/restore-prod.mjs --backup 2026-09-27', bashPayload],
+    ['node --env-file=x tools/supabase/restore-prod.mjs', bashPayload],
+    ['rtk proxy node tools/supabase/restore-prod.mjs', bashPayload],
+    ['npx node tools/supabase/restore-prod.mjs', bashPayload],
+    ['node E:/dev/daggerheart-loot/tools/supabase/restore-prod.mjs', bashPayload],
+    ['npm.cmd run restore:prod', psPayload],
+    ['node .\\tools\\supabase\\restore-prod.mjs', psPayload]
+  ]) {
+    const result = runHook('bash-guard.mjs', payload(command));
+    check(`#266 owner restore denied: ${command}`, isDeny(result), result.stdout);
+    check(
+      `#266 owner restore reason: ${command}`,
+      denyReason(result).includes('Only the owner runs it'),
+      denyReason(result)
+    );
+  }
+  for (const command of [
+    'npm run restore:drill',
+    'npm run restore:drill -- --backup 2026-09-27',
+    'npm run restore:drill -- --safety 20260927T101500Z',
+    'git add tools/supabase/restore-prod.mjs',
+    'git diff -- tools/supabase/restore-prod.mjs',
+    'git commit -m "docs: describe restore:prod"',
+    'node --test tests/db/restore-prod.test.mjs',
+    'rtk grep restore:prod docs',
+    'git grep restore:prod',
+    'git log -S restore:prod'
+  ]) {
+    const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-owner' }));
+    check(
+      `#267 owner restore not matched: ${command}`,
+      !denyReason(result).includes('Only the owner runs it'),
+      denyReason(result)
+    );
+  }
+
   // ----- 2o the cloud push rule -----
   const original = gitSh(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
   const cloud = { env: { CLAUDE_CODE_REMOTE: 'true' } };

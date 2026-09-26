@@ -1425,6 +1425,28 @@ ok(
   'bash-guard.mjs TEST_PROJECT_REF must equal PROJECTS.test in tools/supabase/lib.mjs'
 );
 
+/* The owner's backup key lives in .env.restore.local
+   (docs/decisions/2026-09-26-the-backup-key-lives-in-env-restore-local.md);
+   the `.env.*` line keeps it out of every commit. */
+ok(
+  /^\.env\.\*\r?$/m.test(fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8')),
+  '.gitignore must keep the line `.env.*`: it ignores .env.restore.local, which holds the backup key'
+);
+
+/* restore:prod writes production's rows, encrypted, to .restore-safety/, and
+   the drill writes backup hashes to .claude/.restore-receipts.json
+   (.claude/README.md, "Restore production (owner)"); neither is committed. */
+ok(
+  /^\/\.restore-safety\/\r?$/m.test(fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8')),
+  '.gitignore must keep the line `/.restore-safety/`: it holds the safety backups of production'
+);
+ok(
+  /^\.restore-receipts\.json\r?$/m.test(
+    fs.readFileSync(path.join(ROOT, '.claude', '.gitignore'), 'utf8')
+  ),
+  '.claude/.gitignore must keep the line `.restore-receipts.json`: it holds backup hashes'
+);
+
 /* The browser matrix and
    the divisor tests/run-all.js's own --shard flag divides by have to agree,
    and three ways of breaking that are loud - a divisor above the matrix

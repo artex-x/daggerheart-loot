@@ -168,7 +168,7 @@ Host and tool facts behind this design, kept so nobody re-derives them:
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. In a cloud session (`CLAUDE_CODE_REMOTE=true`) also runs seven probes - Node against `.nvmrc`, `docker info` (3 s), the puppeteer cache, `node_modules`, `gitleaks version` and `rtk --version` (2 s each), and the proxy's authorities in `~/.pki/nssdb` (`bash .claude/cloud-nss.sh --check`, 3 s: every CA by sha256 fingerprint; on a failure it names `bash .claude/cloud-nss.sh`) - each "ok" or what failed, and states the three cloud rules ("Cloud sessions"). `LOOT_SKIP_PROBES=1` (selftest) reads each probe as "skipped". | warn (informational) |
-| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push`/`limits:set` is allowed only with `--project test` and no other `--project`; the script is read past a leading `rtk`, npm's flags on either side of the verb (`-s`, `--silent`, `-q`, `--loglevel <v>` or `=<v>`, any other `-` token; before the verb, any other `--name` without `=` takes the next token as its value unless that token is a verb or a flag, so `npm --registry x run db:push` is judged) and the verbs `run`, `run-script`, `rum` and `urn`. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (the tools' own entry), a package runner - `npx`, `bunx`, `pnpx`, `npm exec`/`x`, `pnpm exec`/`dlx`, `yarn exec`/`dlx`, `bun x` (past its flags, a `-p`/`--package` value and a bare `--`) - or `rtk`; **2p** (after 2i) denies a `git rm`, `git mv`, `rm` or `mv` whose positional token is a `supabase/migrations/<file>` that a remote-tracking ref holds, with edit-guard's lookup, fetch and message (a deletion or a rename never reaches an Edit-family tool); a source token that is a directory at, under or above `supabase/migrations/` expands to the migrations under it, and a glob in a token's last segment (`*` or `?`) expands against its parent directory, because the shell expands it only after the hook has judged the command; a move's destination directory only receives and is not expanded; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
+| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push`/`limits:set` is allowed only with `--project test` and no other `--project`; the script is read past a leading `rtk`, npm's flags on either side of the verb (`-s`, `--silent`, `-q`, `--loglevel <v>` or `=<v>`, any other `-` token; before the verb, any other `--name` without `=` takes the next token as its value unless that token is a verb or a flag, so `npm --registry x run db:push` is judged) and the verbs `run`, `run-script`, `rum` and `urn`. The owner-only restore: a segment whose program (past `rtk`) is a package runner - `npm`, `pnpm`, `yarn`, `bun`, `npx`, `pnpx`, `bunx`, `corepack` - with a token that is exactly `restore:prod` (quoted as one word or not), or a `node` run (past `rtk`, `rtk proxy`, `npx`, `npm exec`) with a token, or the value after its first `=`, whose last path segment is `restore-prod.mjs` is denied, because only the owner restores production ("Restore production (owner)"); a search for the name (`git grep restore:prod`, `rtk grep restore:prod docs`, `git log -S restore:prod`) and reading, diffing or staging the file are not. Not matched, and left to `main`'s terminal check: `bash -c "npm run restore:prod"`, `bun <file>` and PowerShell's `Start-Process`; the rule stops accidents, and the TTY check stops an agent's run of any of them. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (the tools' own entry), a package runner - `npx`, `bunx`, `pnpx`, `npm exec`/`x`, `pnpm exec`/`dlx`, `yarn exec`/`dlx`, `bun x` (past its flags, a `-p`/`--package` value and a bare `--`) - or `rtk`; **2q** (after 2n) denies a Bash or PowerShell command with a token, or the value after a token's first `=`, whose last path segment is exactly `.env.restore.local` (the owner's backup key; readers such as `cat` and `type`, a quoted single-word path and a `<` redirect included, a quoted phrase such as a commit message not), because only `npm run restore:drill` reads that file ("Run the agent drill"); a glob that expands to it, and a PowerShell colon-bound parameter (`-Path:.env.restore.local`, whose last segment is the whole token), are not caught; **2p** (after 2i) denies a `git rm`, `git mv`, `rm` or `mv` whose positional token is a `supabase/migrations/<file>` that a remote-tracking ref holds, with edit-guard's lookup, fetch and message (a deletion or a rename never reaches an Edit-family tool); a source token that is a directory at, under or above `supabase/migrations/` expands to the migrations under it, and a glob in a token's last segment (`*` or `?`) expands against its parent directory, because the shell expands it only after the hook has judged the command; a move's destination directory only receives and is not expanded; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
 arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` (plain or `rtk`-prefixed), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
@@ -204,7 +204,7 @@ opposite has now been observed twice, deny path included: a script edited
 mid-session blocked a command minutes later, so the scripts are re-read per
 invocation here. Do not rely on either behaviour across hosts.
 
-Four runtime files live under `.claude/` and are gitignored
+Five runtime files live under `.claude/` and are gitignored
 (`.claude/.gitignore`):
 
 | File | Written by | Contents |
@@ -212,6 +212,7 @@ Four runtime files live under `.claude/` and are gitignored
 | `.check-cache.json` | `check-observer.mjs` | `{ key, at, command }` for the last observed passing `npm run check`. |
 | `.check-db-cache.json` | `check-observer.mjs` | `{ key, at, command }` for the last observed passing `npm run check:db`, against the same tree key. |
 | `.check-index` | `tree-key.mjs` | A throwaway copy of the real index, never the index itself. `tree-key.mjs` finds the index with `git rev-parse --git-path index`: in a linked worktree `.git` is a file, and the old `<root>/.git/index` path made the key null there, so every commit gate failed open in a worktree until 2026-09-24. |
+| `.restore-receipts.json` | `tools/supabase/restore-drill.mjs` | The receipts of passed restore drills, newest first, 20 at most, one per source: the source id, the hashes of the decrypted files, the newest migration, the host and the time; no row count and no row. `npm run restore:prod` refuses a source without a receipt under 24 h old. It lives in the main checkout's `.claude/`, also for a drill run from a worktree. |
 | `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. Holds the 64 most recently active sessions; the session being written is always kept. The cap bounds the session count, not a session's own `wrote` map, which still grows without limit for the life of one session. A save writes a temp file and renames it over this one, so a reader never parses a half write. The read-modify-write is not guarded against a second session saving in between: one session per working tree is the protocol, and a lost save costs one duplicate reminder or one missing Stop sentence (fail open). |
 
 **Escape hatch:** `SKIP_CHECK_GATE=1 git commit -m "..."` bypasses the commit
@@ -1190,6 +1191,56 @@ CLI facts (2.117.0, measured 2026-09-24):
   the file starts with `SET session_replication_role = replica;` (measured by
   `--dry-run`, 2026-09-25). The schema dump leaves out `auth`, `storage`,
   `supabase_migrations` and roles (`--role-only` is a separate dump).
+- The data dump's rows are `INSERT`, not `COPY`: the CLI runs `pg_dump
+  --data-only --quote-all-identifier --role "postgres" --column-inserts
+  --rows-per-insert 100000`, so each table is one or more `INSERT INTO
+  "schema"."table" ("col", ...) VALUES (...), (...);` with up to 100000
+  rows. It pipes the output through `sed -E 's/^\\(un)?restrict .*$/-- &/'`,
+  so newer pg_dump's `\restrict` and `\unrestrict` lines arrive as `--`
+  comments, and it ends the file with `RESET ALL;`. No `ON CONFLICT` clause
+  (`db dump --local --data-only --schema auth,public --dry-run`, 2026-09-26).
+- The first real restore drill (`npm run restore:drill`, 2026-09-26,
+  artifact `backup-2026-09-26`, PASS, 12 tables matched; 159 s with a
+  stack restart, 90 s warm): production's data dump holds rows in six
+  `auth` tables - `users`, `identities`, `sessions`, `refresh_tokens`,
+  `mfa_amr_claims`, `flow_state` - and each one's primary key is the single
+  column `id` (`refresh_tokens.id` is `bigint`, the others `uuid`), read
+  from the local catalog with Auth running. `identities` and `sessions`
+  reference `auth.users` with `on delete cascade`; `refresh_tokens` and
+  `mfa_amr_claims` reference `auth.sessions` with `on delete cascade`;
+  `flow_state` has no foreign key. The load ran as `postgres`, which is not
+  a superuser locally, and the dump's `SET session_replication_role =
+  replica` passed with it; `supabase_admin` was not needed. No Auth skew:
+  the pinned CLI's Auth image (`gotrue:v2.196.0`) had every column the
+  dump names. `psql` prefixes an error with `psql:<stdin>:<line>:` only
+  when it reads standard input as a file (`-f -`); without it, the line
+  number is absent.
+- `supabase start -x` with every service but the database and `gotrue`
+  (so without `kong`) brings Auth up healthy, and `db reset --local`
+  restarts it (2026-09-26).
+- The data dump carries the sequences it touches: with one fake
+  `auth.refresh_tokens` row in the local stack, `db dump --local
+  --data-only --schema auth,public` wrote `SELECT
+  pg_catalog.setval('"auth"."refresh_tokens_id_seq"', 1, true);`
+  (2026-09-26). A restore that loads such a line into a live database
+  lowers the sequence to the backup's value, so both restore commands
+  wrap the load in a guard that sets it back to the higher of its value
+  before the load and its column's highest value.
+- `pg_dump --version` in `supabase_db_daggerheart-loot` is 17.6, the local
+  server is 17.6, and `[db] major_version` in `supabase/config.toml` is 17
+  (2026-09-26). `pg_dump` refuses a server of a newer major version, so
+  the safety backup of `restore:prod` fails before any write when
+  production's major version passes the local image's.
+- The `check:db` stack runs without the Auth container. Started that way
+  after a run with Auth (the volume kept), its `auth` schema held every
+  table the drill found in production (`identities` and `sessions`
+  included), `auth.refresh_tokens` had `instance_id`, `id` (`bigint`,
+  sequence `auth.refresh_tokens_id_seq`), `token`, `user_id`, `revoked`,
+  `created_at`, `updated_at`, `parent` and `session_id`, and `auth.users`
+  had `instance_id`, `id`, `aud`, `role`, `email`, `created_at` and
+  `updated_at` among its columns (2026-09-26). The restore fixtures in
+  `tests/db/fixtures/` name only those early columns, so they load on a
+  database image's baseline too.
 - `db push` takes `--db-url` (percent-encoded), `--dry-run`, `--include-all`,
   `--skip-vault` and the global `--yes`. `db reset --version <timestamp>`
   resets up to that migration, so `--version` is not always the CLI's
@@ -1203,6 +1254,8 @@ CLI facts (2.117.0, measured 2026-09-24):
 | `npm run db:push -- --project prod` | the owner, in an interactive terminal | the fallback while CI's `migrate-prod` is broken; refuses without a TTY, and refuses `--yes`; dry run, typed `yes`, `db push`; records nothing |
 | `npm run limits:set -- --project test\|prod --user <email\|uuid> --key <key> --value <n>\|--default\|--clear\|--unlimited` | an agent only against `test` (rule 2n); `prod` the owner, in an interactive terminal | sets or removes one user's override of one count limit over `SUPABASE_DB_URL` from the environment; refuses a string that is not the named project's, a key not in `limit_defaults`, and a user that is not exactly one row; prints `before:` and `after:` (`200`, `unlimited`, `default 50`). `--clear` is `--default`: it deletes the override |
 | `npm run check:db` | anyone (Docker; PowerShell on Windows) | layer 3 against the local stack |
+| `npm run restore:drill [-- --backup <YYYY-MM-DD\|run id> \| --safety <stamp>]` | anyone, an agent included (Docker, `gh`, the key; PowerShell on Windows) | loads a backup (the newest by default) or a safety backup into the local stack, compares the rows and resets; a PASS writes the receipt that `restore:prod` needs ("Run the agent drill") |
+| `npm run restore:prod -- --backup <YYYY-MM-DD\|run id> \| --safety <stamp>` | the owner, in an interactive terminal (rule 2n denies it for agents) | refuses without a TTY and without a receipt of the same source; takes an encrypted safety backup, wants the typed production ref, restores production in one transaction and verifies ("Restore production (owner)") |
 
 The env file defaults to `supabase/.env` (gitignored by the root `*.env`
 rule); its values reach the CLI's environment and are never printed. Agents
@@ -1353,8 +1406,11 @@ lists the version.
 and on dispatch: `schema.sql` and `data.sql` (the `auth` and `public` rows),
 each encrypted to the owner's `age` public key (the Actions variable
 `BACKUP_AGE_RECIPIENT`) and kept as the artifact `backup-<date>` for 30
-days. The private key lives in the owner's password manager, never on disk
-longer than a restore. `docs/DECISIONS.md`, 2026-09-25, "Production is
+days. The private key lives in the git-ignored `.env.restore.local` at the
+main checkout's root, as `BACKUP_AGE_IDENTITY`, so that an agent can run the
+drill: `docs/decisions/2026-09-26-the-backup-key-lives-in-env-restore-local.md`,
+"The backup key lives in .env.restore.local so an agent runs the restore
+drill". `docs/DECISIONS.md`, 2026-09-25, "Production is
 backed up nightly, encrypted to the owner's key, kept 30 days". The `dump`
 job reads `SUPABASE_DB_URL_PROD` from the Environment `production`, so it
 runs only on `main`; the four steps in "The hosted E2E and the deploy"
@@ -1383,30 +1439,246 @@ then production. The dump restores against the schema the migrations
 produce, and it sets `session_replication_role = replica`, so triggers stay
 off while it loads.
 
+Steps 1-3 and 7 against the local stack are one command for anyone, an
+agent included: `npm run restore:drill` ("Run the agent drill" below).
+
 1. Decrypt the data file: `age -d -i <the owner's key file> -o data.sql
-   data.sql.age`. Expected: `data.sql`, plain SQL.
-2. Start the local stack: `npx supabase start`, then `npx supabase db reset
-   --local` (PowerShell on Windows). Expected: every migration applied.
-3. Load the data locally: `psql
+   data.sql.age`. The key file can be one that holds the value of
+   `BACKUP_AGE_IDENTITY` from `.env.restore.local`. Expected: `data.sql`,
+   plain SQL.
+2. Start the local stack with Auth: `npx supabase start -x <list>`, where
+   `<list>` is `LOCAL_STACK_EXCLUDES` (`tools/supabase/lib.mjs`) without
+   `gotrue`, comma-separated; then `npx supabase db reset --local` (PowerShell on Windows). A
+   production dump names the `auth` columns that hosted Auth migrated, and
+   the database image's baseline lacks them. Expected: every migration
+   applied.
+3. Load the data locally in one transaction, after a truncate of every
+   `public` table: the migrations seed `public.limit_defaults`, and the
+   dump holds the same keys. Prepend `TRUNCATE TABLE "public"."<t1>",
+   "public"."<t2>", ... CASCADE;` (every table of `select tablename from
+   pg_tables where schemaname = 'public'`) to the file, then `psql
    "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
    --single-transaction --variable ON_ERROR_STOP=1 --file data.sql`.
    Expected: exit 0, and the rows are in the tables.
-4. Load it into the test project: the same `psql` command with the
-   `SUPABASE_DB_URL_TEST` connection string (the session pooler, port 5432).
-   Expected: exit 0.
+4. Load it into the test project: first `delete from
+   public.limit_defaults` (it cascades to `user_limit_overrides`), because
+   the dump's `limit_defaults` rows collide with the test project's; then
+   the same `psql` command with the `SUPABASE_DB_URL_TEST` connection
+   string (the session pooler, port 5432). Expected: exit 0.
 5. Clean the test project: `delete from auth.users where id in (...)` with
    the user ids the dump holds; their `user_prefs` rows cascade. The E2E's
    member is not in a production dump. Expected: the E2E runs green again.
-6. Load it into production, only after steps 3 and 4 passed: the same
-   command with `SUPABASE_DB_URL_PROD`, on a project whose schema matches the
-   dump's. The dump inserts rows, so a live database with conflicting rows
-   fails the whole transaction: load into an empty project, or first
-   truncate the `public` tables and delete the `auth.users` rows that the
-   dump holds. A new project needs the schema first: decrypt
-   `schema.sql.age` and run `psql --file schema.sql` before `data.sql`.
+6. Load it into production, the owner only, after a drill of the same
+   backup passed on this machine: `npm run restore:drill -- --backup
+   <date|run id>`, then, in your own terminal, `npm run restore:prod --
+   --backup <date|run id>` ("Restore production (owner)" below). Expected:
+   the prompts for the connection string and the production ref, and the
+   last line `restore:prod: PASS`.
+   The manual fallback, when the command cannot run: on a project whose
+   migrations match the checkout, one `psql --single-transaction
+   --variable ON_ERROR_STOP=1` over `SUPABASE_DB_URL_PROD` with, in this
+   order: `CREATE TEMP TABLE restore_seq_before ON COMMIT DROP AS SELECT
+   '"auth"."refresh_tokens_id_seq"'::text AS seq, last_value FROM
+   "auth"."refresh_tokens_id_seq";`; `TRUNCATE TABLE` of every `public`
+   table `CASCADE`; `DELETE FROM "auth"."<t>" WHERE "id" IN (...)` with
+   the ids the dump holds, children first - `flow_state`, `identities`,
+   `mfa_amr_claims`, `refresh_tokens`, `sessions`, `users`; the file
+   `data.sql`; then `SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"',
+   GREATEST(COALESCE((SELECT max("id") FROM "auth"."refresh_tokens"), 1),
+   (SELECT last_value FROM pg_temp.restore_seq_before)), true);`. A user
+   created after the backup keeps the `auth` rows and loses the `public`
+   rows. A new project gets its schema from the migrations (CI
+   `migrate-prod`), never from `schema.sql`.
 7. Delete the decrypted `data.sql` and `schema.sql` from every place they
-   were written, after a restore or a drill: the privacy pages promise that
-   a backup lives 30 days. Expected: only the `.age` files are left.
+   were written, after a restore by hand: the privacy pages promise that a
+   backup lives 30 days. Expected: only the `.age` files are left.
+   `npm run restore:drill` writes no plaintext file; its final database
+   reset is its cleanup.
+
+#### Run the agent drill
+
+`npm run restore:drill` (`tools/supabase/restore-drill.mjs`) proves that the
+newest nightly backup opens with the key and loads into the local stack
+against the migrations. It runs on demand only; its target is the local
+stack only, and it has no option for another target:
+`docs/decisions/2026-09-26-the-restore-drill-loads-the-newest-backup-into.md`.
+
+Prerequisites:
+
+- Docker (Rancher Desktop) is running, and no other session uses the local
+  stack: the drill resets the local database twice.
+- `gh auth status` shows a login that can read this repository's Actions
+  artifacts.
+- `.env.restore.local` at the main checkout's root holds the line
+  `BACKUP_AGE_IDENTITY=AGE-SECRET-KEY-1...` (the owner creates it once), or
+  the variable is set in the terminal. The script finds the main checkout
+  from a worktree too (`git rev-parse --git-common-dir`).
+
+Steps:
+
+1. Run `npm run restore:drill` in the foreground, through the PowerShell
+   tool on Windows (Git Bash hangs on docker), tool timeout 600000.
+   Expected: the last line is `restore:drill: PASS`, the `cleanup:` line
+   says `temp files deleted, local database reset`, and the line before
+   the verdict is `receipt: written for run <id>`.
+
+Other sources: `npm run restore:drill -- --backup <YYYY-MM-DD>` drills the
+newest successful `backup.yml` run of the last 30 whose unexpired artifact
+is `backup-<date>`; `-- --backup <run id>` drills that run's artifact; `--
+--safety <stamp>` drills a safety backup that `restore:prod` wrote to
+`.restore-safety/<stamp>/` (the first line then reads `source: safety
+<stamp>`). A PASS writes a receipt to `.claude/.restore-receipts.json` at
+the main checkout's root: the source id (`run <id>` or `safety <stamp>`),
+the SHA-256 of both decrypted files, the newest migration, the host and
+the time. `npm run restore:prod` accepts a receipt
+of the same source id and data hash, from the same newest migration and
+host, for 24 h. The load keeps each sequence the dumped tables own from
+moving down, as the production restore does, so the drill proves that
+guard too.
+
+The script takes the key, removes it from its own environment, and gives
+no child process the variable. It starts the stack with Auth when the Auth
+container is not running, resets the local database, downloads the newest
+`backup-<date>` artifact of the last 10 successful `backup.yml` runs into a
+temp directory, reads the two files into memory and deletes the directory,
+decrypts in memory (`age-encryption`), pipes `TRUNCATE` of every `public`
+table and the dump into `psql` inside the database container in one
+transaction, compares each table's rows with the rows the dump holds
+(`dumpRowCounts`), and resets the local database again. It prints counts
+only; never a row, an email or a dump line. `psql` errors are reduced to
+the SQLSTATE and the dump line.
+
+The final reset removes the restored rows at the SQL level only. The load
+writes them into Postgres data files and WAL in the local Docker volume,
+and `db reset` does not scrub freed pages or recycled WAL segments, so row
+bytes can stay on this host's disk until Postgres overwrites them. The
+drill writes no plaintext file, and it does not scrub the volume. To
+remove every trace, the owner deletes the volume (`supabase stop
+--no-backup`, which also drops the local stack's data).
+
+| FAIL line | Meaning | Action |
+|---|---|---|
+| `FAIL: Docker did not answer in 20 s.` | Docker is down | start Rancher Desktop, run again |
+| `FAIL: the backup key is missing or malformed.` | no `BACKUP_AGE_IDENTITY` of the `AGE-SECRET-KEY-1` shape | the owner writes the file (prerequisites) |
+| `FAIL: gh run list ...` or `FAIL: no backup artifact ...` | `gh` is signed out, or no successful backup run in the last 10 has an unexpired artifact | `gh auth login`; check `backup.yml` runs |
+| `FAIL: the key does not open <file>.` | the key is not the pair of `BACKUP_AGE_RECIPIENT` | the owner checks the key |
+| `FAIL: production has a table the migrations do not make` | the checkout is older than production's schema | update the checkout, run again |
+| `load: FAIL SQLSTATE <code> at dump line <n> (<hint>)` | `psql` stopped; the transaction rolled back | `42703`: hosted Auth is newer than the pinned CLI's Auth image - upgrade the `supabase` devDependency |
+| `  <table> <loaded> / <in dump> MISMATCH` | a table lost or gained rows in the load | a finding for the owner |
+| `WARN: the newest backup is N days old` | the nightly backup may be failing | check `backup.yml` runs; the verdict does not change |
+
+What a partial failure leaves behind:
+
+| Where it stops | What is left | Recovery |
+|---|---|---|
+| Docker, key, `gh` or decryption | nothing decrypted; the temp directory is removed | fix the named cause, run again |
+| The load (a `psql` error) | nothing: the transaction rolled back, and the drill resets anyway | read the SQLSTATE hint |
+| A count mismatch | production rows in the local database until the drill's final reset | none |
+| The final reset fails (`cleanup: FAIL`) | production rows in the local database | PowerShell: `node node_modules/supabase/dist/supabase.js db reset --local`, then `npm run restore:drill` again |
+| The process is killed (tool timeout, closed terminal) | production rows in the local database; maybe encrypted files in `%TEMP%\restore-drill-*` | `npm run restore:drill` again (it resets first and deletes stale `restore-drill-*` directories), or the reset command above |
+
+An agent runs the command and never opens, prints or searches the key file
+(`bash-guard.mjs` rule 2q refuses a command that names it). The Read tool
+is not guarded for it from a worktree: the user-global `Read(./.env.*)`
+deny is relative to the session's project root, so a session in a
+worktree is not covered for the main checkout's file. An agent never
+writes production counts into a committed file, a handoff or a commit
+message: the repository is public. It records the date, the artifact name,
+the duration and "N tables matched".
+
+#### Restore production (owner)
+
+`npm run restore:prod` (`tools/supabase/restore-prod.mjs`) restores
+production from a backup that a local drill of the same backup passed on
+this machine. Only the owner runs it, in an interactive terminal: it
+refuses without a TTY, and `bash-guard.mjs` rule 2n denies it for agents
+in every spelling. Decision:
+`docs/decisions/2026-09-26-production-restore-is-an-owner-run-command-gated.md`.
+
+Prerequisites:
+
+- A receipt of the same source under 24 h old, from this checkout's newest
+  migration and this host: `npm run restore:drill -- --backup <date|run
+  id>` printed `receipt: written for run <id>` and `restore:drill: PASS`.
+- Docker with the local stack (the database container runs `psql` and
+  `pg_dump`; the local database is not written), `gh` signed in, and the
+  key as for the drill. A running `supabase_db_daggerheart-loot` container
+  is used as it is; when it is down, the command starts the stack with
+  Auth, as the drill does. It never restarts a running stack, so run it
+  while no other session uses the stack.
+- Production's migrations equal the checkout's (CI `migrate-prod` ran).
+- The production session pooler string, ready to paste (the form in "The
+  hosted E2E and the deploy"). It is never an argument, an environment
+  variable or a file.
+
+Steps:
+
+1. Run `npm run restore:prod -- --backup <date|run id>` in your own
+   terminal. Expected: the prompt `Paste the production session pooler
+   connection string (not shown):`.
+2. Paste the string and press Enter. Expected: `source:`, `target:
+   migrations match`, `safety backup: <path>` and the table `rows
+   (production now -> backup):`, then the prompt `Type the production ref
+   to write production:`.
+3. Read the rows. Type `zzmrftmzefcqehhyztjq` and press Enter to write
+   production; anything else aborts. Expected: `load: ok (1 transaction)`,
+   `verify: N tables match; sequences not lowered: ...`, the `undo:` line
+   and `restore:prod: PASS`.
+
+Before it asks for the ref, the command checks the receipt, reads
+production's migrations, tables, keys, foreign keys and sequences, and
+takes a safety backup: `pg_dump` of production in memory, encrypted to
+`BACKUP_AGE_RECIPIENT` (the command first proves the key on this machine
+is that recipient's pair), written to `.restore-safety/<stamp>/` at the
+main checkout's root (git-ignored). No plaintext file is written. Both
+restore commands delete safety backups older than 30 days at start. After
+the ref, one transaction keeps each sequence from moving down, empties
+every `public` table, deletes the `auth` rows the dump holds by primary
+key, children first, and loads the dump; then the command compares every
+`public` table and each dumped key set with the dump. A user created after
+the backup keeps the `auth` rows and loses the `public` rows.
+
+The undo, after a PASS that was wrong: `npm run restore:drill -- --safety
+<stamp>`, then `npm run restore:prod -- --safety <stamp>`. The safety
+backup restores through the same path as a nightly one. The undo is exact
+for `public` and for the `auth` rows the safety backup holds, but it only
+adds and replaces `auth` rows: a user that the restore brought back (in
+the backup, deleted from production before the restore) keeps the `auth`
+row after the undo, with no `public` rows. Delete such a user by hand if
+it must stay deleted.
+
+The rehearsal: run the steps and answer the ref with anything else.
+Production is read, a safety backup is written, nothing in production
+changes, and the last line is `restore:prod: ABORTED`.
+
+**Known limit.** Production keeps taking writes. A write between the
+safety backup and the commit is in neither and is lost: run the restore at
+a quiet time; the window is the time to read the rows and type the ref.
+
+| FAIL line | Meaning | Action |
+|---|---|---|
+| `FAIL: run this in your own terminal` | no TTY | run it in your own terminal |
+| `FAIL: no passed drill of <source> ... (receipt: <reason>)` | `none`, `older than 24 h`, `other data`, `other newest migration` or `other host` | run the drill command the line names, then again |
+| `FAIL: the target's migrations are not this checkout's` or `the target lacks public.<t>` | production and the checkout differ | apply the migrations (CI `migrate-prod`) or update the checkout |
+| `FAIL: the key on this machine is not the pair of ... BACKUP_AGE_RECIPIENT` | the safety backup would not open with the nightly key | the owner fixes the key or the variable |
+| `FAIL: the connection string is not the production project` | the string names another project or has a query string | paste the production session pooler string |
+| `FAIL: the safety backup failed: pg_dump failed: ... server version mismatch` | production's major version is newer than the local image's | upgrade the `supabase` devDependency and `[db] major_version` |
+| `load: FAIL SQLSTATE 42501 ...` | the hosted `postgres` user may not run a statement of the load | production is unchanged; record the statement, see Risk R2 in the decision (no other role exists on the hosted project) |
+| `load: FAIL SQLSTATE 42703 ...` | a column the backup names is missing in production | production is unchanged; apply the migrations or check hosted Auth |
+| `load: FAIL psql exited with status <n>; no SQLSTATE was reported` | psql stopped without an SQL error (killed, network) | production state is unknown: compare the counts with a drill of the backup, and run the undo line if they differ |
+| `verify: FAIL` and `MISMATCH` lines | the load committed and a count differs | run the undo line |
+
+What a partial failure leaves behind:
+
+| Where it stops | Production | Left on disk | Recovery |
+|---|---|---|---|
+| TTY, key, arguments, receipt, recipient, prompt, read checks | unchanged | nothing | fix the named cause |
+| The safety backup | unchanged | nothing (a half directory is removed) | fix the cause (`pg_dump` version, network) |
+| A wrong ref | unchanged | the safety backup | none; it is deleted after 30 days |
+| The load, with an SQL error (a SQLSTATE, or psql's exit 3) | unchanged: the transaction rolled back | the safety backup | read the SQLSTATE |
+| The load, without an SQL error | unknown: committed or not | the safety backup | compare the counts with a drill of the backup; the undo line if they differ |
+| The verify, after the commit | restored, with a mismatch | the safety backup | the undo line |
+| Killed after the load started | committed or not (one transaction) | the safety backup | compare by a drill of the backup and the counts; the undo if needed |
 
 **Undo a deploy that carried a migration.** Revert the app change only, or
 add a new migration whose body is the reversal file

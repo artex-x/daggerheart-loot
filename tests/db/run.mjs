@@ -11,28 +11,10 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SUPABASE_CLI, envRefs } from '../../tools/supabase/lib.mjs';
+import { LOCAL_STACK_EXCLUDES, SUPABASE_CLI, envRefs } from '../../tools/supabase/lib.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
-
-// Every service but the database. The release that ships Realtime removes
-// `realtime` from this list.
-const STACK_EXCLUDES = [
-  'gotrue',
-  'realtime',
-  'storage-api',
-  'imgproxy',
-  'kong',
-  'mailpit',
-  'postgrest',
-  'postgres-meta',
-  'studio',
-  'edge-runtime',
-  'logflare',
-  'vector',
-  'supavisor'
-];
 
 function finish(status) {
   console.log(status === 0 ? 'check:db: PASS' : 'check:db: FAIL');
@@ -82,7 +64,7 @@ function main() {
 
   let url = dbUrl(env);
   if (!url) {
-    const start = cli(['start', '-x', STACK_EXCLUDES.join(',')], env);
+    const start = cli(['start', '-x', LOCAL_STACK_EXCLUDES.join(',')], env);
     if (start.error || start.status !== 0) {
       console.error('supabase start failed.');
       return 1;

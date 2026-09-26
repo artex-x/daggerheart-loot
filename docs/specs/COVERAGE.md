@@ -303,6 +303,38 @@ not run:
   the run with its name, keeps neither its table nor its history row, and
   keeps the good file before it. It runs first and leaves every migration
   applied, with the CLI's history rows; only a failed run resets.
+  `restore-drill.test.mjs` proves the restore drill's load
+  (`tools/supabase/restore.mjs`, `restoreDump`) with the fake dumps
+  in `tests/db/fixtures/restore-drill/`, written in the CLI's format and
+  encrypted at run time to a generated key: a dump whose `auth.users` rows
+  name a missing column fails with SQLSTATE `42703`, its report holds no
+  fixture value, and it leaves every table and the `limit_defaults` seed
+  as before (one transaction); the good dump loads after the truncate,
+  every table matches the rows the dump holds, and `limit_defaults` holds
+  the dump's values, not the seed's, and the sequence guard lifts the
+  dump's low `setval` of `auth.refresh_tokens_id_seq` to the highest id;
+  after `resetLocal` no fixture row is left and the seed is back. It
+  resets the database once more, which leaves it fully migrated for the
+  files after it.
+  `restore-prod.test.mjs` proves the production restore's core
+  (`tools/supabase/restore-prod.mjs`, `restoreToTarget`) against a fake
+  production: the local database seeded from
+  `tests/db/fixtures/restore-prod/current.sql` and reached through the
+  same libpq environment as a hosted target. The right ref restores
+  `data.sql` after a safety backup whose two `.age` files decrypt to the
+  seeded counts: every `public` table equals the dump, a user the backup
+  lacks keeps the `auth` row and loses the lists, the backup's user takes
+  the backup's email, and the refresh-token sequence, seeded at 80, stays
+  at or above 80 although the dump sets it to 3; the safety backup, read back through
+  `readSource`, undoes it; a wrong ref aborts with every table as seeded
+  and the safety backup kept; no receipt, one 25 h old, one of other
+  data, another newest migration or another host refuses before any
+  safety backup, and so does a backup whose schema names a table the
+  target lacks; `data-bad-column.sql` fails with SQLSTATE `42703`, rolls
+  back and reports no fixture value. It also reads `main`'s source (the
+  TTY check is its first statement, before the key) and proves that a
+  failed `dumpDatabase` names neither the password nor the string. It
+  resets the database twice.
 
 The table immediately below is kept as a **record**, not a current list: it
 describes the twenty suites that tested the deleted static root, and each
@@ -852,14 +884,51 @@ type` refused; a pure `create` and `alter table x add column` accepted),
 pending against an empty history; nothing without a local file), and
 `splitDrift` with `driftSummary` (the four `NOT_OWNED` rows alone are no
 drift; an owned update, a declared or updated not-owned path, and an
-undeclared path outside the set are drift). The
-wrappers that spawn the CLI (`config.mjs`, `db-push.mjs`) and the scripts
-that connect to a database (`db.mjs`, `migrate-test.mjs`,
-`pending-check.mjs`) are outside it for the same reason as `run.mjs` above;
+undeclared path outside the set are drift), and the restore drill's pure
+half: `localProjectId` (the value, absent, a commented line),
+`isAgeIdentity` (a generated identity; not a recipient, empty, lower case
+or truncated), `decryptAge` (a round trip; a wrong identity gives one
+message that names no key), `pickBackupArtifact` (expired and other names
+skipped, none is `null`), `dumpRowCounts` (one and many rows per `INSERT`,
+a string that holds `(`, `)`, `;`, `''`, `),(`, `--` and a newline,
+`OVERRIDING SYSTEM VALUE` and `ON CONFLICT`, a `COPY` block, `\restrict`
+skipped, empty text, an unterminated string or statement refused without
+quoting the dump), `dumpPublicTables`, `truncateStatement` and
+`drillReport` (a PASS, a count mismatch, a table missing locally, a load
+failure with its hint, a failed cleanup turning a PASS into a FAIL, an
+early stop, the 2-day `WARN`, a safety backup as the source; no line holds
+a fixture email), and the production restore's pure half:
+`parseRestoreArgs` (a date, a run id, a stamp, both spellings; both
+sources, an unknown argument and a bad value refused), `safetyStamp` and
+`staleSafetyStamps`, `dumpColumnValues` (a string holding `,` and `''`, a
+`NULL`, a multi-row statement, a missing column and a COPY block
+refused), `keyLiteral`, `authDeleteOrder` (the measured graph, a cycle
+refused), `quoteQualified`, `keyDeleteStatements` (1000-key chunks, an
+empty table, a table without a single key refused), `sequenceGuard`
+(qualified names, `GREATEST`), `cliShapedDataDump`, `receiptFor`,
+`addReceipt` and `checkReceipt` (every reason, 20 kept, one per source),
+`pgEnvFromUrl` (percent-decoding, defaults, no part of the string in an
+error) and `prodReport` (PASS, ABORTED, a refusal, a load failure with a
+SQLSTATE (unchanged), a psql stop without one (state unknown, the undo
+line), a verify mismatch, a prefix that stays a prefix; no line holds a fixture
+email). The key
+is always generated at run time: gitleaks flags a committed age key. The
+wrappers that spawn the CLI (`config.mjs`, `db-push.mjs`,
+`restore.mjs`, the `main` of `restore-drill.mjs` and `restore-prod.mjs`)
+and the scripts that connect to a database
+(`db.mjs`, `migrate-test.mjs`, `pending-check.mjs`) are outside it for the
+same reason as `run.mjs` above;
 `config:push` refuses without a terminal, `db:push` without one unless
 `--project test --yes`, `check:db` exercises the pairing and marker logic
-against the real directories and `db.mjs`'s `applyPending` against the
-local stack (`apply-pending.test.mjs`), and `pending-check.mjs` refuses any
+against the real directories, `db.mjs`'s `applyPending` against the
+local stack (`apply-pending.test.mjs`) and the drill's `restoreDump` and
+`resetLocal` (`restore-drill.test.mjs`) and the production restore's
+`restoreToTarget`, `dumpDatabase` and `readSource` of a safety backup
+(`restore-prod.test.mjs`); `restore-drill.mjs`'s `main` (Docker, `gh`,
+the key) is proven only by a real `npm run restore:drill`, and
+`restore-prod.mjs`'s `main` (a terminal, the hidden prompt, production)
+only by the owner's first use or rehearsal,
+and `pending-check.mjs` refuses any
 connection that is not production (`dbUrlProject`), the local stack too.
 `dbUrlProject`, which both scripts use to refuse the wrong project, is
 covered here (both hosts, both projects, a foreign ref, a query string,

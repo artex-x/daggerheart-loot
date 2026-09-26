@@ -4,3 +4,5 @@
 .hook-state.json.*.tmp
 settings.local.json
 .check-db-cache.json
+.restore-receipts.json
+.restore-receipts.json.*.tmp

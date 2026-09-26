@@ -79,6 +79,9 @@ test-output/
 .env
 .env.*
 *.env
+# Encrypted safety backups that npm run restore:prod takes before it writes
+# production (.claude/README.md, "Restore production (owner)").
+/.restore-safety/
 # The atomic state write's temp file, left behind only if a run is killed
 # between write and rename.
 tools/tg-preview/state.json.tmp

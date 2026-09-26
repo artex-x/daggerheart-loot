@@ -72,6 +72,10 @@ const MSG = {
     `Blocked: \`npm run check:db\` has not passed for this working tree (${count} files under supabase/ or tests/db/ in this commit). Run \`npm run check:db\` in the foreground with the tool timeout set to 600000 - on Windows through the PowerShell tool, because Git Bash hangs on docker - then commit again. A passing result is remembered until the tree changes.\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`,
   hostedWrite: (shape) =>
     `Blocked: \`${shape}\` is not on the allowlist of \`supabase\` commands; agents write to the test project only, never to production or to a target the command does not name. Allowed: the local stack (\`--local\`), \`--dry-run\` forms, \`status\`, \`config diff\`, \`--help\`, and a \`db\`, \`migration\` or \`config push\` command that names the test project (\`--project-ref rdjxcjkhsklhprmzxajq\`, a \`--db-url\` that carries that ref, \`npm run db:push -- --project test\`, \`npm run limits:set -- --project test\`); production is CI's (\`migrate-prod\`) or the owner's interactive \`npm run db:push -- --project prod\` (.claude/README.md, "Supabase configuration").`,
+  ownerRestore:
+    'Blocked: restore:prod writes production. Only the owner runs it, in an interactive terminal; agents write to the test project only.',
+  keyFile:
+    "Blocked: this command names .env.restore.local, which holds the owner's backup key. Only `npm run restore:drill` reads it; run that instead.",
   cloudPush:
     'Blocked: a cloud session pushes only its own task branch, never `main`; the orchestrator squash-merges it onto `main` (`CLAUDE.md`). Push the current branch by name, for example `git push -u origin <current branch>`, without --all, --mirror, --tags or --delete.',
   gitleaksFinding: (hits) =>
@@ -958,6 +962,98 @@ function evaluateHostedWrite(segList) {
   return null;
 }
 
+// ---------- 2n: the owner-only production restore (deny) ----------
+//
+// `restore:prod` writes production. A package runner with a token that is
+// exactly the script name (every npm, pnpm, yarn and bun spelling), or a
+// `node` run of restore-prod.mjs, is refused. Not in HOSTED_SCRIPTS: that
+// set's `--project test` exception must not apply. Searching for the name,
+// and reading or staging the file, stay allowed.
+
+const OWNER_RESTORE_SCRIPT = 'restore:prod';
+const OWNER_RESTORE_FILE = 'restore-prod.mjs';
+
+/** True when `tokens` (unwrapped) run node, past `rtk`, `rtk proxy`,
+ * `npx` and `npm exec`/`x`. */
+function runsNode(tokens) {
+  let t = tokens;
+  if (t[0] === 'rtk') t = t.slice(t[1] === 'proxy' ? 2 : 1);
+  if (t.length && programName(t[0]) === 'npx') t = t.slice(1);
+  else if (t.length > 1 && programName(t[0]) === 'npm' && (t[1] === 'exec' || t[1] === 'x')) {
+    t = t.slice(2);
+  }
+  while (t.length && t[0].startsWith('-')) t = t.slice(1);
+  return t.length > 0 && programName(t[0]) === 'node';
+}
+
+const PACKAGE_RUNNERS = new Set([
+  'npm',
+  'pnpm',
+  'yarn',
+  'bun',
+  'npx',
+  'pnpx',
+  'bunx',
+  'corepack'
+]);
+
+/** True when `tokens` (unwrapped) run a package runner, past `rtk` and
+ * `rtk proxy`: only a runner can start the `restore:prod` script, so a
+ * search for the name (`git grep restore:prod`) stays allowed. */
+function runsPackageRunner(tokens) {
+  let t = tokens;
+  if (t[0] === 'rtk') t = t.slice(t[1] === 'proxy' ? 2 : 1);
+  return t.length > 0 && PACKAGE_RUNNERS.has(programName(t[0]));
+}
+
+function namesOwnerRestoreFile(token) {
+  const eq = token.indexOf('=');
+  const candidates = eq === -1 ? [token] : [token, token.slice(eq + 1)];
+  return candidates.some((c) => c.replace(/\\/g, '/').split('/').pop() === OWNER_RESTORE_FILE);
+}
+
+/** `quotedSegs` keeps a quoted single word (`npm run "restore:prod"`) and
+ * erases a quoted phrase (a commit message). */
+function evaluateOwnerRestore(quotedSegs) {
+  for (const segment of quotedSegs) {
+    const info = segmentInfo(segment);
+    if (!info) continue;
+    if (
+      (runsPackageRunner(info.tokens) && info.tokens.includes(OWNER_RESTORE_SCRIPT)) ||
+      (runsNode(info.tokens) && info.tokens.some(namesOwnerRestoreFile))
+    ) {
+      return { id: 'owner-restore', message: MSG.ownerRestore };
+    }
+  }
+  return null;
+}
+
+// ---------- 2q: the owner's backup key file (deny) ----------
+//
+// Only `npm run restore:drill` reads .env.restore.local. A token, or the
+// value after a token's first `=`, whose last path segment is the file name
+// is refused - readers included. A glob that expands to it is not caught.
+
+const KEY_FILE_NAME = '.env.restore.local';
+
+function namesKeyFile(token) {
+  const bare = token.replace(/^\d*[<>]+&?/, '');
+  const eq = bare.indexOf('=');
+  const candidates = eq === -1 ? [bare] : [bare, bare.slice(eq + 1)];
+  return candidates.some((c) => c.replace(/\\/g, '/').split('/').pop() === KEY_FILE_NAME);
+}
+
+/** `quotedSegs` keeps a quoted single word (`"./.env.restore.local"`) and
+ * erases a quoted phrase (a commit message), so it is the view judged. */
+function evaluateKeyFile(quotedSegs) {
+  for (const segment of quotedSegs) {
+    if (tokensOf(segment).some(namesKeyFile)) {
+      return { id: 'key-file', message: MSG.keyFile };
+    }
+  }
+  return null;
+}
+
 // ---------- 2o: a cloud session pushes only its own branch (deny) ----------
 //
 // Only in a cloud session (CLAUDE_CODE_REMOTE=true): a release there
@@ -1429,6 +1525,12 @@ guard(() => {
 
   const hosted = evaluateHostedWrite(segList);
   if (hosted) return deny(event, hosted.message);
+
+  const ownerRestore = evaluateOwnerRestore(quotedSegs);
+  if (ownerRestore) return deny(event, ownerRestore.message);
+
+  const keyFile = evaluateKeyFile(quotedSegs);
+  if (keyFile) return deny(event, keyFile.message);
 
   const cloudPush = evaluateCloudPush(segList, cwd);
   if (cloudPush) return deny(event, cloudPush.message);

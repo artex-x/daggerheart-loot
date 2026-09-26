@@ -1,6 +1,7 @@
 # 2026-09-25 - Production is backed up nightly, encrypted to the owner's key, kept 30 days
 
 - Amended by "The free-tier keep-alive is the usage report's Data API call, not the dump" (2026-09-25): the keep-alive clause.
+- Amended by "The backup key lives in .env.restore.local so an agent runs the restore drill" (2026-09-26): the private key is also on the owner's disk, for the drill.
 - Task: `persist-1-auth` (owner, 2026-09-24: `auth` rows, `17 3 * * *` UTC).
 - Decision: `backup.yml` runs nightly and on dispatch: `supabase db dump`
   of the schema and of the `auth` and `public` data (`--schema auth,public`;

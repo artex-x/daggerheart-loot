@@ -4,6 +4,7 @@
 */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { Encrypter, generateX25519Identity, identityToRecipient } from 'age-encryption';
 import {
   PROJECTS,
   parseProjectArg,
@@ -22,7 +23,30 @@ import {
   pendingMigrations,
   NOT_OWNED,
   splitDrift,
-  driftSummary
+  driftSummary,
+  localProjectId,
+  isAgeIdentity,
+  decryptAge,
+  pickBackupArtifact,
+  dumpRowCounts,
+  dumpPublicTables,
+  truncateStatement,
+  drillReport,
+  parseRestoreArgs,
+  safetyStamp,
+  staleSafetyStamps,
+  dumpColumnValues,
+  keyLiteral,
+  authDeleteOrder,
+  quoteQualified,
+  keyDeleteStatements,
+  sequenceGuard,
+  cliShapedDataDump,
+  receiptFor,
+  addReceipt,
+  checkReceipt,
+  pgEnvFromUrl,
+  prodReport
 } from './lib.mjs';
 
 const M1 = '20261001120000_lists.sql';
@@ -370,5 +394,857 @@ describe('pending migrations', () => {
 
   it('gives an empty list when there is no local migration', () => {
     assert.deepEqual(pendingMigrations([], ['20261001120000']), []);
+  });
+});
+
+describe('localProjectId', () => {
+  it('reads the top-level project_id', () => {
+    assert.equal(
+      localProjectId('# x\nproject_id = "daggerheart-loot"\n\n[api]\n'),
+      'daggerheart-loot'
+    );
+  });
+
+  it('gives null when the key is absent or only in a section', () => {
+    assert.equal(localProjectId('[api]\nproject_id = "x"\n'), null);
+    assert.equal(localProjectId(''), null);
+  });
+
+  it('ignores a commented line', () => {
+    assert.equal(localProjectId('# project_id = "old"\n[api]\n'), null);
+  });
+});
+
+describe('age keys and decryption', () => {
+  it('accepts a generated identity and nothing else', async () => {
+    const identity = await generateX25519Identity();
+    assert.equal(identity.length, 74);
+    assert.equal(isAgeIdentity(identity), true);
+    assert.equal(isAgeIdentity(`${identity}\n`), true);
+    assert.equal(isAgeIdentity(await identityToRecipient(identity)), false);
+    assert.equal(isAgeIdentity(''), false);
+    assert.equal(isAgeIdentity(undefined), false);
+    assert.equal(isAgeIdentity(identity.toLowerCase()), false);
+    assert.equal(isAgeIdentity(identity.slice(0, -1)), false);
+  });
+
+  it('decrypts what the recipient of the identity can open', async () => {
+    const identity = await generateX25519Identity();
+    const e = new Encrypter();
+    e.addRecipient(await identityToRecipient(identity));
+    const bytes = await e.encrypt('select 1;\n');
+    const plain = await decryptAge(bytes, identity);
+    assert.equal(new TextDecoder().decode(plain), 'select 1;\n');
+  });
+
+  it('turns a wrong identity into one message that names no key', async () => {
+    const owner = await generateX25519Identity();
+    const other = await generateX25519Identity();
+    const e = new Encrypter();
+    e.addRecipient(await identityToRecipient(owner));
+    const bytes = await e.encrypt('select 1;\n');
+    await assert.rejects(decryptAge(bytes, other), (err) => {
+      assert.equal(err.message, 'the key does not open the file');
+      assert.ok(!err.message.includes('AGE-SECRET-KEY'));
+      return true;
+    });
+  });
+});
+
+describe('pickBackupArtifact', () => {
+  const art = (name, expired = false) => ({
+    name,
+    expired,
+    created_at: '2026-09-26T03:20:00Z'
+  });
+
+  it('takes the first backup artifact that has not expired', () => {
+    assert.deepEqual(
+      pickBackupArtifact([
+        art('backup-2026-09-25', true),
+        art('other'),
+        art('backup-2026-09-26')
+      ]),
+      { name: 'backup-2026-09-26', createdAt: '2026-09-26T03:20:00Z' }
+    );
+  });
+
+  it('skips a name that is not backup-<date>', () => {
+    assert.equal(
+      pickBackupArtifact([art('backup-latest'), art('backup-2026-09-26.zip')]),
+      null
+    );
+  });
+
+  it('gives null for no artifact', () => {
+    assert.equal(pickBackupArtifact([]), null);
+    assert.equal(pickBackupArtifact(undefined), null);
+  });
+});
+
+describe('dumpRowCounts', () => {
+  const EMAIL = 'drill-user@example.invalid';
+
+  it('counts one row per statement and many rows per statement', () => {
+    const text = [
+      'SET session_replication_role = replica;',
+      'INSERT INTO "public"."lists" ("id", "name") VALUES (\'a\', \'one\');',
+      'INSERT INTO "public"."lists" ("id", "name") VALUES (\'b\', \'two\');',
+      'INSERT INTO "auth"."users" ("id", "email") VALUES',
+      "\t('u1', 'x@example.invalid'),",
+      "\t('u2', 'y@example.invalid'),",
+      "\t('u3', NULL);",
+      'RESET ALL;'
+    ].join('\n');
+    assert.deepEqual(
+      dumpRowCounts(text),
+      new Map([
+        ['public.lists', 2],
+        ['auth.users', 3]
+      ])
+    );
+  });
+
+  it('reads through a string that holds quotes, brackets, a comment and a newline', () => {
+    const tricky = "a ( b ) ; c '' d ),( e -- f\n g";
+    const text = `INSERT INTO "public"."list_entries" ("id", "gm_note") VALUES ('e1', '${tricky.replace(/'/g, "''")}'), ('e2', 'plain');\n`;
+    assert.deepEqual(dumpRowCounts(text), new Map([['public.list_entries', 2]]));
+  });
+
+  it('counts past OVERRIDING SYSTEM VALUE and ON CONFLICT', () => {
+    const text =
+      'INSERT INTO "auth"."refresh_tokens" ("id", "token") OVERRIDING SYSTEM VALUE VALUES (1, \'t\'), (2, \'u\') ON CONFLICT DO NOTHING;\n';
+    assert.deepEqual(dumpRowCounts(text), new Map([['auth.refresh_tokens', 2]]));
+  });
+
+  it('counts the data lines of a COPY block', () => {
+    const text = [
+      'COPY "public"."lists" ("id", "name") FROM stdin;',
+      'a\tone',
+      'b\ttwo',
+      'c\tthree',
+      '\\.',
+      "INSERT INTO public.user_prefs (user_id) VALUES ('u1');",
+      ''
+    ].join('\n');
+    assert.deepEqual(
+      dumpRowCounts(text),
+      new Map([
+        ['public.lists', 3],
+        ['public.user_prefs', 1]
+      ])
+    );
+  });
+
+  it('skips psql meta lines and comments', () => {
+    const text = [
+      '\\restrict abc',
+      '-- \\restrict abc',
+      '-- INSERT INTO "public"."lists" VALUES (\'x\');',
+      'INSERT INTO "public"."lists" ("id") VALUES (\'a\');',
+      '\\unrestrict abc'
+    ].join('\n');
+    assert.deepEqual(dumpRowCounts(text), new Map([['public.lists', 1]]));
+  });
+
+  it('gives an empty map for empty text', () => {
+    assert.deepEqual(dumpRowCounts(''), new Map());
+  });
+
+  it('throws on an unterminated string without quoting the dump', () => {
+    const text = `INSERT INTO "auth"."users" ("email") VALUES ('${EMAIL});\n`;
+    assert.throws(
+      () => dumpRowCounts(text),
+      (err) => {
+        assert.equal(err.message, 'the dump has an unterminated string or statement');
+        assert.ok(!err.message.includes(EMAIL));
+        return true;
+      }
+    );
+  });
+
+  it('throws on an unterminated statement', () => {
+    assert.throws(
+      () => dumpRowCounts('INSERT INTO "public"."lists" VALUES (1)'),
+      /unterminated/
+    );
+  });
+});
+
+describe('dumpPublicTables', () => {
+  it('reads quoted, unquoted and IF NOT EXISTS names of the public schema only', () => {
+    const schema = [
+      'CREATE TABLE IF NOT EXISTS "public"."lists" (',
+      '  "id" "uuid" NOT NULL',
+      ');',
+      'CREATE TABLE public.user_prefs (user_id uuid);',
+      'create table "public"."odd""name" (x int);',
+      'CREATE TABLE "auth"."users" (id uuid);',
+      'CREATE TABLE IF NOT EXISTS "storage"."objects" (id uuid);',
+      'CREATE TABLE "public"."lists" (id uuid);'
+    ].join('\n');
+    assert.deepEqual(dumpPublicTables(schema), ['lists', 'odd"name', 'user_prefs']);
+  });
+
+  it('gives an empty list for no table', () => {
+    assert.deepEqual(dumpPublicTables('CREATE SCHEMA x;'), []);
+  });
+});
+
+describe('truncateStatement', () => {
+  it('quotes each public table and doubles a quote inside a name', () => {
+    assert.equal(
+      truncateStatement(['lists', 'odd"name']),
+      'TRUNCATE TABLE "public"."lists", "public"."odd""name" CASCADE;\n'
+    );
+  });
+
+  it('gives an empty string for no table', () => {
+    assert.equal(truncateStatement([]), '');
+  });
+});
+
+describe('drillReport', () => {
+  const EMAIL = 'drill-user@example.invalid';
+  const base = () => ({
+    artifact: { name: 'backup-2026-09-26', runId: 123, ageDays: 0 },
+    failure: null,
+    decrypted: true,
+    dumpTables: ['limit_defaults', 'lists'],
+    localTables: ['limit_defaults', 'lists'],
+    load: { ok: true },
+    counts: new Map([
+      ['auth.identities', { loaded: 2, dump: 2 }],
+      ['auth.sessions', { loaded: 1, dump: 1 }],
+      ['auth.users', { loaded: 2, dump: 2 }],
+      ['public.limit_defaults', { loaded: 2, dump: 2 }],
+      ['public.lists', { loaded: 5, dump: 5 }]
+    ]),
+    cleanup: { tempRemoved: true, reset: true }
+  });
+  const noEmail = (lines) =>
+    assert.ok(
+      lines.every((l) => !l.includes(EMAIL)),
+      lines.join('\n')
+    );
+
+  it('passes when every step and every count matches', () => {
+    const { pass, lines } = drillReport(base());
+    assert.equal(pass, true);
+    assert.deepEqual(lines, [
+      'artifact: backup-2026-09-26 (run 123, 0 d old)',
+      'decrypt: schema.sql.age ok, data.sql.age ok',
+      'schema: 2 public tables in the dump, 2 local; missing locally: none',
+      'load: ok (1 transaction)',
+      'rows (loaded / in dump):',
+      '  auth.users 2 / 2',
+      '  public.limit_defaults 2 / 2',
+      '  public.lists 5 / 5',
+      '  auth: 2 other tables match (auth.identities, auth.sessions)',
+      'cleanup: temp files deleted, local database reset'
+    ]);
+    noEmail(lines);
+  });
+
+  it('fails on a count mismatch and lists the auth table that differs', () => {
+    const input = base();
+    input.counts.set('public.lists', { loaded: 4, dump: 5 });
+    input.counts.set('auth.sessions', { loaded: 0, dump: 1 });
+    const { pass, lines } = drillReport(input);
+    assert.equal(pass, false);
+    assert.ok(lines.includes('  public.lists 4 / 5 MISMATCH'));
+    assert.ok(lines.includes('  auth.sessions 0 / 1 MISMATCH'));
+    assert.ok(lines.includes('  auth.identities 2 / 2'));
+    noEmail(lines);
+  });
+
+  it('fails when the dump has a table the migrations do not make', () => {
+    const input = {
+      ...base(),
+      dumpTables: ['limit_defaults', 'lists', 'new_table'],
+      load: { ok: false, skipped: true },
+      counts: null
+    };
+    const { pass, lines } = drillReport(input);
+    assert.equal(pass, false);
+    assert.ok(
+      lines.includes('schema: 3 public tables in the dump, 2 local; missing locally: new_table')
+    );
+    assert.ok(
+      lines.includes(
+        'FAIL: production has a table the migrations do not make: public.new_table'
+      )
+    );
+    assert.ok(lines.includes('load: skipped (the schema check failed)'));
+  });
+
+  it('names a local table that the dump lacks without failing', () => {
+    const input = { ...base(), localTables: ['limit_defaults', 'lists', 'user_prefs'] };
+    const { pass, lines } = drillReport(input);
+    assert.equal(pass, true);
+    assert.ok(lines.includes('info: local tables not in the dump: public.user_prefs'));
+  });
+
+  it('fails a load with the SQLSTATE, the dump line and a hint', () => {
+    const input = {
+      ...base(),
+      load: { ok: false, sqlstate: '42703', line: 812, status: 3 },
+      counts: null
+    };
+    const { pass, lines } = drillReport(input);
+    assert.equal(pass, false);
+    assert.ok(
+      lines.includes(
+        'load: FAIL SQLSTATE 42703 at dump line 812 (a column the backup names is missing locally - hosted Auth may be newer than the pinned CLI)'
+      ),
+      lines.join('\n')
+    );
+    const bare = drillReport({
+      ...input,
+      load: { ok: false, sqlstate: '22P02', line: 3, status: 3 }
+    });
+    assert.ok(bare.lines.includes('load: FAIL SQLSTATE 22P02 at dump line 3'));
+    const none = drillReport({ ...input, load: { ok: false, status: 1 } });
+    assert.ok(
+      none.lines.includes('load: FAIL psql exited with status 1; no SQLSTATE was reported')
+    );
+    noEmail(lines);
+  });
+
+  it('turns a PASS into a FAIL when the cleanup failed', () => {
+    const { pass, lines } = drillReport({
+      ...base(),
+      cleanup: { tempRemoved: true, reset: false }
+    });
+    assert.equal(pass, false);
+    assert.match(lines.at(-1), /^cleanup: FAIL the local database was not reset/);
+    assert.match(lines.at(-1), /db reset --local$/);
+  });
+
+  it('fails a drill that stopped early and says the stack was not reached', () => {
+    const { pass, lines } = drillReport({
+      artifact: null,
+      failure: 'Docker did not answer in 20 s.',
+      decrypted: false,
+      dumpTables: null,
+      localTables: null,
+      load: null,
+      counts: null,
+      cleanup: { tempRemoved: true, reset: null }
+    });
+    assert.equal(pass, false);
+    assert.deepEqual(lines, [
+      'FAIL: Docker did not answer in 20 s.',
+      'cleanup: temp files deleted; the drill stopped before the local stack'
+    ]);
+  });
+
+  it('warns on a backup older than 2 days and keeps the verdict', () => {
+    const input = base();
+    input.artifact.ageDays = 3;
+    const { pass, lines } = drillReport(input);
+    assert.equal(pass, true);
+    assert.ok(
+      lines.includes('WARN: the newest backup is 3 days old; the nightly backup may be failing')
+    );
+    const fresh = base();
+    fresh.artifact.ageDays = 2;
+    assert.ok(!drillReport(fresh).lines.some((l) => l.startsWith('WARN')));
+  });
+
+  it('names a safety backup as the source and never warns on its age', () => {
+    const { pass, lines } = drillReport({
+      ...base(),
+      artifact: { safety: '20260927T101500Z' }
+    });
+    assert.equal(pass, true);
+    assert.equal(lines[0], 'source: safety 20260927T101500Z');
+    assert.ok(!lines.some((l) => l.startsWith('WARN')));
+  });
+});
+
+describe('parseRestoreArgs', () => {
+  it('reads a date, a run id and a safety stamp in both spellings', () => {
+    assert.deepEqual(parseRestoreArgs([]), { source: null });
+    assert.deepEqual(parseRestoreArgs(['--backup', '2026-09-27']), {
+      source: { kind: 'backup', date: '2026-09-27' }
+    });
+    assert.deepEqual(parseRestoreArgs(['--backup=18123456789']), {
+      source: { kind: 'backup', runId: '18123456789' }
+    });
+    assert.deepEqual(parseRestoreArgs(['--safety', '20260927T101500Z']), {
+      source: { kind: 'safety', stamp: '20260927T101500Z' }
+    });
+  });
+
+  it('refuses both sources, an unknown argument and a bad or missing value', () => {
+    assert.throws(
+      () => parseRestoreArgs(['--backup', '2026-09-27', '--safety', '20260927T101500Z']),
+      /Two sources/
+    );
+    assert.throws(() => parseRestoreArgs(['--db-url', 'x']), /Unknown argument/);
+    assert.throws(() => parseRestoreArgs(['--backup', 'latest']), /bad value/);
+    assert.throws(() => parseRestoreArgs(['--safety', '2026-09-27']), /bad value/);
+    assert.throws(() => parseRestoreArgs(['--backup']), /missing or bad value/);
+  });
+});
+
+describe('safety stamps', () => {
+  it('stamps a time to the second in UTC', () => {
+    assert.equal(safetyStamp(new Date('2026-09-27T10:15:00.123Z')), '20260927T101500Z');
+  });
+
+  it('lists the stamps older than 30 days and never another name', () => {
+    const now = new Date('2026-10-30T00:00:00Z');
+    assert.deepEqual(
+      staleSafetyStamps(['20260927T101500Z', '20261001T000000Z', 'notes', '.tmp'], now),
+      ['20260927T101500Z']
+    );
+    assert.deepEqual(staleSafetyStamps(['20261029T000000Z'], now, 0), ['20261029T000000Z']);
+  });
+});
+
+describe('dumpColumnValues', () => {
+  const dump = [
+    'SET session_replication_role = replica;',
+    'INSERT INTO "auth"."users" ("instance_id", "id", "email", "raw") VALUES',
+    "\t(NULL, 'a0000000-0000-4000-8000-000000000001', 'x@example.invalid', 'a, b '') (c'),",
+    "\t(NULL, 'a0000000-0000-4000-8000-000000000002', NULL, '{\"k\": [1, 2]}');",
+    'INSERT INTO "auth"."refresh_tokens" ("id", "token") VALUES (1, \'t\'), (22, \'u\');',
+    'INSERT INTO "auth"."users" ("id") VALUES (\'a0000000-0000-4000-8000-000000000003\');',
+    'SELECT pg_catalog.setval(\'"auth"."refresh_tokens_id_seq"\', 22, true);',
+    'RESET ALL;'
+  ].join('\n');
+
+  it('returns the column of every row, across statements and past odd strings', () => {
+    assert.deepEqual(dumpColumnValues(dump, 'auth.users', 'id'), [
+      "'a0000000-0000-4000-8000-000000000001'",
+      "'a0000000-0000-4000-8000-000000000002'",
+      "'a0000000-0000-4000-8000-000000000003'"
+    ]);
+    assert.deepEqual(dumpColumnValues(dump, 'auth.refresh_tokens', 'id'), ['1', '22']);
+    // The third users statement names only "id", so the other columns are
+    // read from the first statement alone.
+    const first = dump.slice(0, dump.indexOf('INSERT INTO "auth"."refresh_tokens"'));
+    assert.equal(dumpColumnValues(first, 'auth.users', 'raw')[0], "'a, b '') (c'");
+    assert.equal(dumpColumnValues(first, 'auth.users', 'instance_id')[1], 'NULL');
+    assert.throws(() => dumpColumnValues(dump, 'auth.users', 'raw'), /no column raw/);
+    assert.deepEqual(dumpColumnValues(dump, 'auth.sessions', 'id'), []);
+  });
+
+  it('refuses a missing column and a COPY block without quoting a value', () => {
+    assert.throws(
+      () => dumpColumnValues(dump, 'auth.refresh_tokens', 'session_id'),
+      (err) => /no column session_id/.test(err.message) && !err.message.includes("'t'")
+    );
+    const copy = 'COPY "auth"."users" ("id") FROM stdin;\nabc\n\\.\n';
+    assert.throws(() => dumpColumnValues(copy, 'auth.users', 'id'), /COPY rows/);
+  });
+});
+
+describe('keyLiteral', () => {
+  it('accepts a quoted uuid and a bare integer and refuses anything else', () => {
+    assert.equal(
+      keyLiteral("'a0000000-0000-4000-8000-000000000001'"),
+      "'a0000000-0000-4000-8000-000000000001'"
+    );
+    assert.equal(keyLiteral('42'), '42');
+    for (const bad of ['NULL', "'x'); drop table t; --'", "'secret@example.invalid'", '-1']) {
+      assert.throws(
+        () => keyLiteral(bad),
+        (err) => err.message === 'a key of the dump is not a uuid or an integer'
+      );
+    }
+  });
+});
+
+describe('authDeleteOrder', () => {
+  const measured = [
+    { from: 'auth.identities', to: 'auth.users' },
+    { from: 'auth.sessions', to: 'auth.users' },
+    { from: 'auth.refresh_tokens', to: 'auth.sessions' },
+    { from: 'auth.mfa_amr_claims', to: 'auth.sessions' }
+  ];
+  const tables = [
+    'auth.users',
+    'auth.sessions',
+    'auth.identities',
+    'auth.refresh_tokens',
+    'auth.mfa_amr_claims',
+    'auth.flow_state'
+  ];
+
+  it('orders the measured graph children first, ties by name', () => {
+    assert.deepEqual(authDeleteOrder(tables, measured), [
+      'auth.flow_state',
+      'auth.identities',
+      'auth.mfa_amr_claims',
+      'auth.refresh_tokens',
+      'auth.sessions',
+      'auth.users'
+    ]);
+  });
+
+  it('ignores an edge to a table not dumped and a self reference', () => {
+    assert.deepEqual(
+      authDeleteOrder(
+        ['auth.users', 'auth.refresh_tokens'],
+        [...measured, { from: 'auth.users', to: 'auth.users' }]
+      ),
+      ['auth.refresh_tokens', 'auth.users']
+    );
+  });
+
+  it('refuses a cycle', () => {
+    assert.throws(
+      () =>
+        authDeleteOrder(
+          ['auth.a', 'auth.b'],
+          [
+            { from: 'auth.a', to: 'auth.b' },
+            { from: 'auth.b', to: 'auth.a' }
+          ]
+        ),
+      /cycle/
+    );
+  });
+});
+
+describe('keyDeleteStatements', () => {
+  it('deletes in the given order, 1000 keys per statement, and skips an empty table', () => {
+    const ids = Array.from({ length: 1001 }, (_, i) => String(i + 1));
+    const text = keyDeleteStatements(
+      ['auth.refresh_tokens', 'auth.sessions', 'auth.users'],
+      new Map([
+        ['auth.refresh_tokens', ids],
+        ['auth.users', ["'a0000000-0000-4000-8000-000000000001'"]]
+      ]),
+      new Map([
+        ['auth.refresh_tokens', 'id'],
+        ['auth.sessions', 'id'],
+        ['auth.users', 'id']
+      ])
+    );
+    const lines = text.trim().split('\n');
+    assert.equal(lines.length, 3);
+    assert.ok(lines[0].startsWith('DELETE FROM "auth"."refresh_tokens" WHERE "id" IN (1, 2, '));
+    assert.ok(lines[0].endsWith(', 1000);'));
+    assert.equal(lines[1], 'DELETE FROM "auth"."refresh_tokens" WHERE "id" IN (1001);');
+    assert.equal(
+      lines[2],
+      'DELETE FROM "auth"."users" WHERE "id" IN (\'a0000000-0000-4000-8000-000000000001\');'
+    );
+    assert.equal(keyDeleteStatements(['auth.users'], new Map(), new Map()), '');
+  });
+
+  it('refuses a table without a single key column before any statement', () => {
+    assert.throws(
+      () =>
+        keyDeleteStatements(
+          ['auth.users', 'auth.odd'],
+          new Map([
+            ['auth.users', ['1']],
+            ['auth.odd', ['2']]
+          ]),
+          new Map([
+            ['auth.users', 'id'],
+            ['auth.odd', null]
+          ])
+        ),
+      /auth\.odd has no single-column primary key/
+    );
+  });
+
+  it('refuses a key that is not a uuid or an integer', () => {
+    assert.throws(
+      () =>
+        keyDeleteStatements(
+          ['auth.users'],
+          new Map([['auth.users', ["'x'"]]]),
+          new Map([['auth.users', 'id']])
+        ),
+      /not a uuid or an integer/
+    );
+  });
+});
+
+describe('quoteQualified and sequenceGuard', () => {
+  it('quotes both parts of a name', () => {
+    assert.equal(quoteQualified('auth.refresh_tokens'), '"auth"."refresh_tokens"');
+    assert.equal(quoteQualified('public.a"b'), '"public"."a""b"');
+  });
+
+  it('keeps the old value and the column maximum with GREATEST, all names qualified', () => {
+    const { before, after } = sequenceGuard([
+      { seq: 'auth.refresh_tokens_id_seq', table: 'auth.refresh_tokens', column: 'id' }
+    ]);
+    assert.equal(
+      before,
+      'CREATE TEMP TABLE restore_seq_before ON COMMIT DROP AS SELECT \'"auth"."refresh_tokens_id_seq"\'::text AS seq, last_value FROM "auth"."refresh_tokens_id_seq";\n'
+    );
+    assert.equal(
+      after,
+      'SELECT pg_catalog.setval(\'"auth"."refresh_tokens_id_seq"\', GREATEST(COALESCE((SELECT max("id") FROM "auth"."refresh_tokens"), 1), (SELECT last_value FROM pg_temp.restore_seq_before WHERE seq = \'"auth"."refresh_tokens_id_seq"\')), true);\n'
+    );
+    assert.deepEqual(sequenceGuard([]), { before: '', after: '' });
+  });
+
+  it('joins two sequences into one temp table', () => {
+    const { before, after } = sequenceGuard([
+      { seq: 'auth.a_seq', table: 'auth.a', column: 'id' },
+      { seq: 'public.b_seq', table: 'public.b', column: 'n' }
+    ]);
+    assert.equal(before.split(' UNION ALL ').length, 2);
+    assert.equal(after.trim().split('\n').length, 2);
+  });
+});
+
+describe('cliShapedDataDump', () => {
+  it('adds the replication role and RESET ALL and comments out the restrict lines', () => {
+    const text = cliShapedDataDump(
+      '\\restrict abc\nINSERT INTO "public"."t" ("a") VALUES (1);\n\\unrestrict abc'
+    );
+    assert.equal(
+      text,
+      'SET session_replication_role = replica;\n-- \\restrict abc\nINSERT INTO "public"."t" ("a") VALUES (1);\n-- \\unrestrict abc\nRESET ALL;\n'
+    );
+    assert.deepEqual([...dumpRowCounts(text)], [['public.t', 1]]);
+  });
+});
+
+describe('receipts', () => {
+  const at = new Date('2026-09-27T10:00:00Z');
+  const receipt = receiptFor({
+    source: 'run 123',
+    schemaHash: 's1',
+    dataHash: 'd1',
+    // A count the caller passes is not recorded: nothing reads it.
+    counts: new Map([['public.lists', 2]]),
+    newestMigration: '20260925130300_lists_service_role.sql',
+    host: 'owner-pc',
+    at
+  });
+  const want = {
+    sourceId: 'run 123',
+    dataHash: 'd1',
+    newestMigration: '20260925130300_lists_service_role.sql',
+    host: 'owner-pc',
+    now: new Date('2026-09-27T12:00:00Z')
+  };
+
+  it('records the source, hashes, migration, host and time, and no row count', () => {
+    assert.deepEqual(receipt, {
+      source: 'run 123',
+      schemaHash: 's1',
+      dataHash: 'd1',
+      newestMigration: '20260925130300_lists_service_role.sql',
+      host: 'owner-pc',
+      at: '2026-09-27T10:00:00.000Z'
+    });
+  });
+
+  it('keeps the newest first, one per source, at most 20', () => {
+    let list = [];
+    for (let i = 0; i < 25; i++) list = addReceipt(list, { ...receipt, source: `run ${i}` });
+    assert.equal(list.length, 20);
+    assert.equal(list[0].source, 'run 24');
+    list = addReceipt(list, { ...receipt, source: 'run 10', dataHash: 'new' });
+    assert.equal(list.filter((r) => r.source === 'run 10').length, 1);
+    assert.equal(list[0].dataHash, 'new');
+  });
+
+  it('accepts a matching receipt and names each reason it refuses', () => {
+    assert.deepEqual(checkReceipt([receipt], want), { ok: true, receipt });
+    assert.deepEqual(checkReceipt([], want), { ok: false, reason: 'none' });
+    assert.deepEqual(checkReceipt([receipt], { ...want, sourceId: 'run 124' }), {
+      ok: false,
+      reason: 'none'
+    });
+    assert.deepEqual(
+      checkReceipt([receipt], { ...want, now: new Date('2026-09-28T11:00:00Z') }),
+      { ok: false, reason: 'older than 24 h' }
+    );
+    assert.deepEqual(checkReceipt([receipt], { ...want, dataHash: 'd2' }), {
+      ok: false,
+      reason: 'other data'
+    });
+    assert.deepEqual(checkReceipt([receipt], { ...want, newestMigration: 'x.sql' }), {
+      ok: false,
+      reason: 'other newest migration'
+    });
+    assert.deepEqual(checkReceipt([receipt], { ...want, host: 'laptop' }), {
+      ok: false,
+      reason: 'other host'
+    });
+  });
+});
+
+describe('pgEnvFromUrl', () => {
+  const PASSWORD = 'p@ss:w/rd';
+  const url = `postgresql://postgres.${PROJECTS.prod}:${encodeURIComponent(PASSWORD)}@aws-0-eu-central-1.pooler.supabase.com:5432/postgres`;
+
+  it('returns the libpq variables with the user and password decoded', () => {
+    assert.deepEqual(pgEnvFromUrl(url), {
+      PGHOST: 'aws-0-eu-central-1.pooler.supabase.com',
+      PGPORT: '5432',
+      PGUSER: `postgres.${PROJECTS.prod}`,
+      PGPASSWORD: PASSWORD,
+      PGDATABASE: 'postgres',
+      PGSSLMODE: 'require'
+    });
+    const bare = pgEnvFromUrl('postgres://u:p@h');
+    assert.equal(bare.PGPORT, '5432');
+    assert.equal(bare.PGDATABASE, 'postgres');
+  });
+
+  it('refuses a query string or another scheme and quotes no part of the string', () => {
+    for (const bad of [`${url}?sslmode=require`, url.replace('postgresql:', 'mysql:'), 'x']) {
+      assert.throws(
+        () => pgEnvFromUrl(bad),
+        (err) =>
+          !err.message.includes('p%40ss') &&
+          !err.message.includes(PASSWORD) &&
+          !err.message.includes(PROJECTS.prod)
+      );
+    }
+  });
+});
+
+describe('prodReport', () => {
+  const EMAIL = 'prod-user@example.invalid';
+  const base = () => ({
+    failure: null,
+    source: { name: 'backup-2026-09-27 (run 123)' },
+    receipt: { at: '2026-09-27T10:02:00.000Z' },
+    target: { publicTables: 2 },
+    safety: { dir: '/x/.restore-safety/20260927T101500Z' },
+    rows: [
+      { table: 'auth.users', now: 5, backup: 4 },
+      { table: 'public.lists', now: 12, backup: 9 }
+    ],
+    confirmed: true,
+    load: { ok: true },
+    verify: {
+      tables: 3,
+      mismatches: [],
+      sequences: [{ seq: 'auth.refresh_tokens_id_seq', ok: true }]
+    }
+  });
+  const noEmail = (lines) =>
+    assert.ok(
+      lines.every((l) => !l.includes(EMAIL)),
+      lines.join('\n')
+    );
+
+  it('passes a restore that loaded and verified', () => {
+    const { verdict, pass, lines } = prodReport(base());
+    assert.equal(verdict, 'PASS');
+    assert.equal(pass, true);
+    assert.deepEqual(lines, [
+      'source: backup-2026-09-27 (run 123), receipt 2026-09-27 10:02 UTC ok',
+      'target: migrations match; 2 public tables present',
+      'safety backup: /x/.restore-safety/20260927T101500Z (schema.sql.age, data.sql.age)',
+      'rows (production now -> backup):',
+      '  auth.users 5 -> 4',
+      '  public.lists 12 -> 9',
+      'confirm: typed ref ok',
+      'load: ok (1 transaction)',
+      'verify: 3 tables match; sequences not lowered: auth.refresh_tokens_id_seq',
+      'undo: npm run restore:drill -- --safety 20260927T101500Z, then npm run restore:prod -- --safety 20260927T101500Z'
+    ]);
+    noEmail(lines);
+  });
+
+  it('aborts on a wrong ref and keeps the safety backup', () => {
+    const { verdict, lines } = prodReport({
+      ...base(),
+      confirmed: false,
+      load: undefined,
+      verify: undefined
+    });
+    assert.equal(verdict, 'ABORTED');
+    assert.deepEqual(lines.slice(-2), [
+      'confirm: the typed text is not the production ref; nothing was written',
+      'safety backup kept: /x/.restore-safety/20260927T101500Z; production is unchanged'
+    ]);
+  });
+
+  it('fails a refusal before the safety backup', () => {
+    const { verdict, lines } = prodReport({
+      source: { name: 'safety 20260927T101500Z' },
+      failure: 'no passed drill (receipt: none); nothing was written'
+    });
+    assert.equal(verdict, 'FAIL');
+    assert.deepEqual(lines, [
+      'source: safety 20260927T101500Z',
+      'FAIL: no passed drill (receipt: none); nothing was written'
+    ]);
+  });
+
+  it('fails a load with the SQLSTATE and says production is unchanged', () => {
+    const { verdict, lines } = prodReport({
+      ...base(),
+      load: { ok: false, sqlstate: '42501', line: 3, status: 3 },
+      verify: undefined
+    });
+    assert.equal(verdict, 'FAIL');
+    assert.ok(
+      lines.includes(
+        'load: FAIL SQLSTATE 42501 at dump line 3 (the database user may not run a statement of the load, for example SET session_replication_role)'
+      ),
+      lines.join('\n')
+    );
+    assert.ok(lines.includes('  production is unchanged: the transaction rolled back'));
+    assert.equal(
+      lines.at(-1),
+      'safety backup kept: /x/.restore-safety/20260927T101500Z; production is unchanged'
+    );
+    noEmail(lines);
+  });
+
+  it('claims no rollback when psql stopped without an SQL error, and names the undo', () => {
+    for (const load of [
+      { ok: false, status: 'error' },
+      { ok: false, status: 1 }
+    ]) {
+      const { verdict, lines } = prodReport({ ...base(), load, verify: undefined });
+      assert.equal(verdict, 'FAIL');
+      assert.ok(!lines.some((l) => l.includes('unchanged')), lines.join('\n'));
+      assert.ok(
+        lines.includes(
+          '  production state is unknown: psql stopped without an SQL error; compare the counts with a drill of the backup, and run the undo line if they differ'
+        )
+      );
+      assert.match(lines.at(-1), /^undo: npm run restore:drill -- --safety 20260927T101500Z/);
+    }
+    const exit3 = prodReport({ ...base(), load: { ok: false, status: 3 }, verify: undefined });
+    assert.ok(exit3.lines.includes('  production is unchanged: the transaction rolled back'));
+  });
+
+  it('fails a verify mismatch and a lowered sequence and names the undo', () => {
+    const { verdict, lines } = prodReport({
+      ...base(),
+      verify: {
+        tables: 3,
+        mismatches: [{ name: 'public.lists', got: 8, want: 9 }],
+        sequences: [{ seq: 'auth.refresh_tokens_id_seq', ok: false }]
+      }
+    });
+    assert.equal(verdict, 'FAIL');
+    assert.ok(lines.includes('verify: FAIL'));
+    assert.ok(lines.includes('  public.lists 8 / 9 MISMATCH'));
+    assert.ok(
+      lines.includes("  auth.refresh_tokens_id_seq is below its column's highest value")
+    );
+    assert.match(lines.at(-1), /^undo: npm run restore:drill -- --safety 20260927T101500Z/);
+  });
+
+  it('grows its lines as the state grows, so a prefix can be printed early', () => {
+    const early = { ...base(), confirmed: undefined, load: undefined, verify: undefined };
+    const first = prodReport(early).lines;
+    assert.equal(first.at(-1), '  public.lists 12 -> 9');
+    for (const done of [base(), { ...early, confirmed: false }]) {
+      assert.deepEqual(prodReport(done).lines.slice(0, first.length), first);
+    }
   });
 });
