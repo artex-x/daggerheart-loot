@@ -328,6 +328,15 @@ describe('each write, as A', () => {
     ]);
   });
 
+  it('reorder with a stale entry set answers ok and puts the other entries after the given ones', async () => {
+    const out = await asA(world, async (tx) => ({
+      r: await batch(tx, [{ op: 'reorder', list_id: L, ids: [E3, E1] }]),
+      order: (await entriesOf(tx, L)).map((e) => e.id)
+    }));
+    assert.deepEqual(out.r, [OK]);
+    assert.deepEqual(out.order, [E3, E1, E2]);
+  });
+
   it('remove deletes the list and its entries', async () => {
     const out = await asA(world, async (tx) => ({
       r: await batch(tx, [{ op: 'remove', id: L }]),

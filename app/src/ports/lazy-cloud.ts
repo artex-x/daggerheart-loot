@@ -10,6 +10,7 @@ import type {
   AuthPort,
   AuthResult,
   CloudPort,
+  EventsPort,
   ListRepository,
   ListsRead,
   ListWrite,
@@ -31,9 +32,10 @@ const UNSHARED: SharedRead = { ok: false };
 
 export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
   let loading: Promise<CloudPort | null> | null = null;
+  let loaded: CloudPort | null = null;
   const port = (): Promise<CloudPort | null> =>
     (loading ??= load().then(
-      (p) => p,
+      (p) => (loaded = p),
       () => null
     ));
 
@@ -83,5 +85,25 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     ownerOf: async (token) => (await port())?.shares.ownerOf(token) ?? null,
     clone: async (token, id) => (await port())?.shares.clone(token, id) ?? UNSENT
   };
-  return { auth, prefs, lists, shares };
+  /* A message arrives only through the loaded port, so its tab id is the one
+     to compare with; before the load there is none. */
+  const events: EventsPort = {
+    get tab() {
+      return loaded?.events.tab ?? '';
+    },
+    subscribe(topic, on) {
+      let leave: (() => void) | null = null;
+      let cancelled = false;
+      void port().then((p) => {
+        if (cancelled) return;
+        if (p) leave = p.events.subscribe(topic, on);
+        else on.status('down');
+      });
+      return () => {
+        cancelled = true;
+        leave?.();
+      };
+    }
+  };
+  return { auth, prefs, lists, shares, events };
 }

@@ -123,6 +123,7 @@ describe('canonicalList', () => {
       gm_note: '',
       created_at: '2026-09-26T10:00:00.000Z',
       updated_at: '2026-09-26T10:00:00.000Z',
+      revision: 1,
       legacy_fingerprint: 'f'.repeat(64),
       list_entries: entryRowsOf(once.ids, once.meta, () => 'e' + String(n++))
     };

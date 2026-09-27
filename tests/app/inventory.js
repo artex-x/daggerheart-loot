@@ -1454,6 +1454,18 @@ const STATES = [
     why: 'another user on the GM link: read-only, the GM notes, «Сохранить себе», no own line'
   },
   {
+    id: '#/s/player-token-1 ~ updated live',
+    route: '#/s/player-token-1',
+    why: 'signed out, after another device renamed the list while the share topic was joined: «Лавка у моста», «Обновлено только что», and the hidden status «Список обновлён», with no reload',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++)
+        await d.settle();
+      await d.fake('play', '00000000-0000-4000-8000-000000000101', { name: 'Лавка у моста' });
+      for (let i = 0; i < 40 && !(await d.text()).includes('Лавка у моста'); i++)
+        await d.settle();
+    }
+  },
+  {
     id: '#/s/player-token-1 ~ saved',
     route: '#/s/player-token-1',
     why: 'signed out, after «Сохранить себе»: the button pressed and the sign-in prompt under it',

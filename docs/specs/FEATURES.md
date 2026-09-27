@@ -355,7 +355,9 @@ browser lists writable after the date.
   shows from the first buffered edit until the send lands. A write with no
   network, or with a lapsed session, stays in the buffer and is sent again
   every 15 s, when the tab is shown again, after the next edit's quiet
-  window, and on «Повторить»; a reload while «Не сохранено» loses it. When
+  window, and on «Повторить»; a reload while «Не сохранено» loses it. A
+  send with no answer in 20 s counts as no network: «Не сохранено», and it
+  is sent again. When
   the tab is hidden or closed, the buffer is sent at once as one request
   that outlives the page; an edit made while an earlier send is still on
   its way, a buffer of more than 60 000 bytes, or, after a split, every
@@ -399,9 +401,15 @@ browser lists writable after the date.
   «Список от другого игрока · N позиций», «Обновлено N назад» / "Updated N
   ago" under them (`I18N.md`), «Сохранить себе», the notes the link shows (a
   GM link adds the «Только для мастера» notes) and the rows, with the
-  selection bar as on a `#/l/` page. It reads the list again when the tab is
-  shown again and every 45 s, signed in or not; the relative time moves with
-  the same clock. The owner, signed in, sees «Это ваш список.» and «Открыть
+  selection bar as on a `#/l/` page. While the share's Realtime topic is
+  joined it draws an owner's edit within about a second; it also reads the
+  list again when the tab is shown again, every 45 s while Realtime is not
+  joined, and every 5 minutes while it is, signed in or not; a failed first
+  read is read again on the same signals, with no press. A visually hidden
+  status says «Список обновлён» / "The list was updated" once per change of
+  what the page draws, and nothing for a change the link does not show (a GM
+  note on a players' link). The relative time moves with the 45 s clock and
+  after each read that changed the list. The owner, signed in, sees «Это ваш список.» and «Открыть
   для правки» to `#/lists/<uuid>` above the title. «Сохранить себе» saves a
   copy into the account with only the notes the link shows (a player link's
   copy has no GM note) and opens it; signed out it opens the sign-in prompt
@@ -424,11 +432,18 @@ browser lists writable after the date.
   toast has no «Вернуть». On the list page it returns to `#/lists`.
 - **Sign-out** on an account list's page replaces the address with `#/lists`;
   no account list stays on screen.
-- **Two devices**: the index and an account list's page read the account again
-  when the tab is shown again and every 45 s while no write is buffered or
-  in flight, and a
-  shared page `#/s/<token>` reads its list again on the same signals; the
-  last write wins per entry and there is no conflict dialog. A read that
+- **Two devices**: signed in, every page joins the owner's Realtime topic from
+  the account's first read until sign-out; the owner's other tabs and devices
+  then redraw a change within about a second, once no write of theirs is
+  buffered or in flight, and a tab's own writes cause no re-read. Every page
+  also reads the account again when the tab is shown again and every 5
+  minutes while the owner's topic is joined; the index and an account list's
+  page read it every 45 s while Realtime is not joined. Each read waits until
+  no write is buffered or in flight. A shared page
+  `#/s/<token>` reads its list again on the same signals. The last write wins per entry and there is no conflict
+  dialog. A reorder made
+  on a device with an old entry set keeps the given order and puts the
+  other entries after it; nothing is refused. A read that
   finds nothing new redraws nothing. «изменён N назад» and «Обновлено N
   назад» move with the same 45 s clock while the page stays open.
 - **Limits**: the 51st list and the 101st entry of a list (the defaults;

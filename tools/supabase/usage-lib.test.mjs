@@ -233,10 +233,18 @@ describe('evaluate', () => {
   it('infoRowsNeverWarn', () => {
     const history = [7, 6, 5, 4, 3, 2, 1].map((n) => ({
       taken_on: dayBefore(n),
-      metrics: { auth_users: 1_000_000 * (8 - n), storage_objects: 1_000_000 * (8 - n) }
+      metrics: {
+        auth_users: 1_000_000 * (8 - n),
+        storage_objects: 1_000_000 * (8 - n),
+        realtime_rows_24h: 1_000_000 * (8 - n)
+      }
     }));
     const rows = evaluate(
-      snapshot({ auth_users: 9_000_000, storage_objects: 9_000_000 }),
+      snapshot({
+        auth_users: 9_000_000,
+        storage_objects: 9_000_000,
+        realtime_rows_24h: 9_000_000
+      }),
       history,
       TODAY,
       {}
@@ -244,12 +252,29 @@ describe('evaluate', () => {
     const info = rows.filter((r) => r.kind === 'info');
     assert.deepEqual(
       info.map((r) => r.key),
-      ['auth_users', 'storage_objects']
+      ['auth_users', 'storage_objects', 'realtime_rows_24h']
+    );
+    assert.equal(
+      rowOf(rows, 'realtime_rows_24h').label,
+      'Realtime messages (24 h, lower bound)'
     );
     for (const r of info) {
       assert.equal(r.state, 'info');
       assert.ok(r.perDay > 0);
     }
+  });
+
+  it('readsANullRealtimeCountAsNullWithItsNote', () => {
+    const rows = evaluate(
+      snapshot({ realtime_rows_24h: null, realtime_note: 'no realtime.messages access' }),
+      [],
+      TODAY,
+      {}
+    );
+    const realtime = rowOf(rows, 'realtime_rows_24h');
+    assert.equal(realtime.state, 'info');
+    assert.equal(realtime.now, null);
+    assert.equal(realtime.note, 'no realtime.messages access');
   });
 
   it('warnsWhenNoMauSource', () => {

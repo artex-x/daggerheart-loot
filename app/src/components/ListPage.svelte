@@ -1320,7 +1320,9 @@
       {/if}
       <div class="lsaid" role="status" aria-live="polite">{said}</div>
       {#if isCloud}
-        <div class="lsaid" role="status">{syncSaid}</div>
+        <div class="lsaid" role="status" data-live={app.cloudLists?.live ? 'live' : undefined}>
+          {syncSaid}
+        </div>
       {/if}
     {/if}
   {/snippet}

@@ -2857,8 +2857,9 @@ async function saveShareLinkAfterSignIn() {
   await ctx.close();
 }
 
-/** 45. The owner on their own link: «Обновлено 3 дня назад»; an edit made
- *  elsewhere shows when the tab is shown again, with «Обновлено только что». */
+/** 45. The owner on their own link: «Обновлено 3 дня назад»; with Realtime
+ *  down, an edit made elsewhere shows when the tab is shown again, with
+ *  «Обновлено только что». */
 async function sharedPageRereadWhenShownAgain() {
   const at = '45 (shared page re-read): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
@@ -2867,6 +2868,7 @@ async function sharedPageRereadWhenShownAgain() {
     await waitIn(page, bodyHas, 'Обновлено 3 дня назад'),
     at + 'the page does not say «Обновлено 3 дня назад»'
   );
+  await d.fake('setLive', false);
   await d.fake('lists.apply', [
     {
       op: 'update',
@@ -2887,13 +2889,14 @@ async function sharedPageRereadWhenShownAgain() {
   await ctx.close();
 }
 
-/** 46. A link deleted while its page is open draws the no-longer-available
- *  page when the tab is shown again, the address kept. */
+/** 46. With Realtime down, a link deleted while its page is open draws the
+ *  no-longer-available page when the tab is shown again, the address kept. */
 async function sharedPageGoneWhenShownAgain() {
   const at = '46 (shared page gone): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/s/gm-token-1', { as: 'gm1' });
   await waitIn(page, bodyHas, 'Лавка кузнеца');
+  await d.fake('setLive', false);
   await d.fake('shares.revoke', '00000000-0000-4000-8000-000000000113');
   await d.shownAgain();
   ok(
@@ -2901,6 +2904,103 @@ async function sharedPageGoneWhenShownAgain() {
     at + 'the deleted link still draws the list'
   );
   ok((await d.hash()) === '#/s/gm-token-1', at + 'the address moved - ' + (await d.hash()));
+  await ctx.close();
+}
+
+/** Like `waitIn`, with its own limit: a live redraw has to land within `ms`. */
+async function waitWithin(page, ms, fn, ...args) {
+  try {
+    await page.waitForFunction(fn, { timeout: ms, polling: 50 }, ...args);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const SHOP_ID = '00000000-0000-4000-8000-000000000101';
+const liveShare = () => !!document.querySelector('.said[data-live="live"]');
+
+/** 52. A share page, signed out, draws another device's edit within a second
+ *  with no reload and no shown-again signal, says «Список обновлён», and
+ *  draws the no-longer-available page within a second of its link's delete. */
+async function liveSharePage() {
+  const at = '52 (live share page): ';
+  let { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/s/player-token-1');
+  ok(await waitIn(page, liveShare), at + 'the share topic did not join');
+  await d.fake('play', SHOP_ID, { name: 'Лавка у моста' });
+  ok(
+    await waitWithin(
+      page,
+      1000,
+      () =>
+        document.querySelector('h1')?.textContent === 'Лавка у моста' &&
+        document.body.innerText.includes('Обновлено только что') &&
+        document.querySelector('.said')?.textContent === 'Список обновлён'
+    ),
+    at + 'the edit, «Обновлено только что» or «Список обновлён» did not show within 1 s'
+  );
+  await ctx.close();
+  ({ ctx, page, d } = await fresh({ width: 1180, height: 900 }));
+  await d.open('#/s/gm-token-1', { as: 'gm1' });
+  ok(await waitIn(page, liveShare), at + 'the GM link did not join its topic');
+  await d.fake('shares.revoke', '00000000-0000-4000-8000-000000000113');
+  ok(
+    await waitWithin(page, 1000, bodyHas, 'Список больше не доступен'),
+    at + 'the deleted link still draws the list after 1 s'
+  );
+  ok((await d.hash()) === '#/s/gm-token-1', at + 'the address moved - ' + (await d.hash()));
+  await ctx.close();
+}
+
+/** 53. An account list page redraws another device's rename within a second
+ *  while the owner topic is joined; with Realtime down it waits for the tab
+ *  to be shown again. */
+async function liveAccountList() {
+  const at = '53 (live account list): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open(SHOP, { as: 'gm1' });
+  ok(
+    await waitIn(page, () => !!document.querySelector('.lsaid[data-live="live"]')),
+    at + 'the owner topic did not join'
+  );
+  const title = (name) => document.querySelector('input.titleinput')?.value === name;
+  await d.fake('play', SHOP_ID, { name: 'Лавка у моста' });
+  ok(
+    await waitWithin(page, 1000, title, 'Лавка у моста'),
+    at + 'the rename did not show in 1 s'
+  );
+  /* The loss re-reads the account once by itself; count the fake's answered
+     reads so the next rename lands after that read, not inside it. */
+  await page.evaluate(() => {
+    const repo = window.__dhlootFake.lists;
+    const list = repo.list.bind(repo);
+    window.__dhlootReads = 0;
+    repo.list = async () => {
+      const read = await list();
+      window.__dhlootReads++;
+      return read;
+    };
+  });
+  await d.fake('setLive', false);
+  ok(
+    await waitIn(page, () => !document.querySelector('.lsaid[data-live]')),
+    at + 'the sync status stayed live with Realtime down'
+  );
+  ok(
+    await waitIn(page, () => window.__dhlootReads >= 1),
+    at + 'the loss did not re-read the account'
+  );
+  await d.fake('play', SHOP_ID, { name: 'Лавка у реки' });
+  ok(
+    !(await waitWithin(page, 1000, title, 'Лавка у реки')),
+    at + 'the rename showed with Realtime down and no signal'
+  );
+  await d.shownAgain();
+  ok(
+    await waitIn(page, title, 'Лавка у реки'),
+    at + 'the rename did not show when the tab was shown again'
+  );
   await ctx.close();
 }
 
@@ -3426,7 +3526,9 @@ const CASES = [
   ['48 (read-only after the cutoff)', readOnlyAfterTheCutoff],
   ['49 (account edits wait two seconds, then go once)', accountEditsWaitThenGoOnce],
   ['50 (the account menu)', accountMenu],
-  ['51 (the move banner)', moveBanner]
+  ['51 (the move banner)', moveBanner],
+  ['52 (live share page)', liveSharePage],
+  ['53 (live account list)', liveAccountList]
 ];
 
 (async () => {

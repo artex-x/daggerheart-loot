@@ -8,7 +8,12 @@
  * mount by `redirect.ts`, so supabase-js's own URL detection is off - it
  * would race the router. docs/specs/FEATURES.md, "Account". */
 
-import { createClient, type User, type UserIdentity } from '@supabase/supabase-js';
+import {
+  createClient,
+  REALTIME_SUBSCRIBE_STATES,
+  type User,
+  type UserIdentity
+} from '@supabase/supabase-js';
 import { entryOrder, type ListRow, type SharedRow, type ShareRow } from '../lib/cloudLists.js';
 import type { SignInAfter } from '../lib/pending.js';
 import { readPrefs } from '../lib/prefs.js';
@@ -19,6 +24,7 @@ import type {
   AuthRedirect,
   AuthResult,
   CloudPort,
+  EventsPort,
   Identity,
   ListOpResult,
   ListRepository,
@@ -144,33 +150,59 @@ const utf8 = new TextEncoder();
 
 type Fetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
-/* A database write outlives a page closed while it is sent: the write
-   buffer's flush on `pagehide` is one such request. An auth request never
-   carries the flag - a token refresh that lands after the page closed would
-   rotate a refresh token the page never stores. A request the browser
-   refuses with the flag is sent once more without it; every write is
-   idempotent. The prefix is parsed as supabase-js parses the URL, so an
-   uppercase host or an explicit default port still matches. */
-function keepaliveFetch(url: string): Fetch {
+/* Two jobs on the requests that reach PostgREST. Each carries this page
+   load's tab id as `x-dhloot-tab`, which the broadcast trigger reads as the
+   owner message's `by` (docs/DECISIONS.md, 2026-09-26, "The owner's devices
+   subscribe to a private owner topic"); an auth, Realtime or storage request
+   carries no custom header. And a database write outlives a page closed
+   while it is sent: the write buffer's flush on `pagehide` is one such
+   request. An auth request never carries the flag - a token refresh that
+   lands after the page closed would rotate a refresh token the page never
+   stores. A request the browser refuses with the flag is sent once more
+   without it; every write is idempotent. The prefix is parsed as
+   supabase-js parses the URL, so an uppercase host or an explicit default
+   port still matches. */
+function keepaliveFetch(url: string, tab: string): Fetch {
   const rest = new URL('rest/v1/', url.replace(/\/*$/, '/')).href;
   return async (input, init) => {
     const target =
       typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    if (!target.startsWith(rest)) return fetch(input, init);
+    const headers = new Headers(
+      init?.headers ?? (input instanceof Request ? input.headers : undefined)
+    );
+    headers.set('x-dhloot-tab', tab);
+    const tagged: RequestInit = { ...init, headers };
     const body = init?.body;
-    if (
-      !target.startsWith(rest) ||
-      typeof body !== 'string' ||
-      utf8.encode(body).length > KEEPALIVE_BYTES
-    ) {
-      return fetch(input, init);
+    if (typeof body !== 'string' || utf8.encode(body).length > KEEPALIVE_BYTES) {
+      return fetch(input, tagged);
     }
     try {
-      return await fetch(input, { ...init, keepalive: true });
+      return await fetch(input, { ...tagged, keepalive: true });
     } catch (err) {
       if (init?.signal?.aborted) throw err;
-      return fetch(input, init);
+      return fetch(input, tagged);
     }
   };
+}
+
+/** How long a write waits for its answer before it counts as `network`. */
+export const WRITE_TIMEOUT_MS = 20_000;
+
+/* A call with no answer ends as `network` and is sent again; every write is
+   idempotent on client-made ids (docs/specs/FEATURES.md, "Account and browser lists").
+   The abort lives here, not in the store: a store timeout would leave the request
+   running and send it a second time while the first may still land. */
+async function timed<T>(call: (signal: AbortSignal) => PromiseLike<T>): Promise<T> {
+  const c = new AbortController();
+  const timer = setTimeout(() => {
+    c.abort();
+  }, WRITE_TIMEOUT_MS);
+  try {
+    return await call(c.signal);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** What `create_list_share` answers: a `returns table`, so an array. */
@@ -192,7 +224,7 @@ async function made(call: () => PromiseLike<MadeAnswer>): Promise<ShareMade> {
 /* One read of the owner's lists with their entries; row level security keeps
    it to the owner (tests/db/lists.test.mjs). */
 const LIST_SELECT =
-  'id,name,money_mode,player_note,gm_note,created_at,updated_at,legacy_fingerprint,' +
+  'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
   'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)';
 
 type CloudWindow = RedirectWindow & Pick<Window, 'addEventListener' | 'removeEventListener'>;
@@ -207,6 +239,7 @@ export function createCloud(
      store in (tests/e2e/contract.mjs). */
   storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
 ): CloudPort {
+  const tab = crypto.randomUUID();
   const client = createClient(url, key, {
     auth: {
       flowType: 'pkce',
@@ -215,7 +248,7 @@ export function createCloud(
       autoRefreshToken: true,
       ...(storage ? { storage } : {})
     },
-    global: { fetch: keepaliveFetch(url) }
+    global: { fetch: keepaliveFetch(url, tab) }
   });
 
   /* Started at once: the page mounts meanwhile, and every read waits for it. */
@@ -418,7 +451,9 @@ export function createCloud(
     async apply(ops) {
       if (!ops.length) return { ok: true, results: [] };
       try {
-        const answer = await client.rpc('apply_list_writes', { p_ops: ops });
+        const answer = await timed((signal) =>
+          client.rpc('apply_list_writes', { p_ops: ops }).abortSignal(signal)
+        );
         if (answer.error) return callFailure(answer);
         const data: unknown = answer.data;
         if (!Array.isArray(data) || data.length !== ops.length) return REFUSED;
@@ -432,10 +467,11 @@ export function createCloud(
        the list again. */
     async move(id, canonical) {
       try {
-        const answer = await client.rpc('move_legacy_list', {
-          p_id: id,
-          p_canonical: canonical
-        });
+        const answer = await timed((signal) =>
+          client
+            .rpc('move_legacy_list', { p_id: id, p_canonical: canonical })
+            .abortSignal(signal)
+        );
         const failed = writeOf(answer);
         if (!failed.ok) return failed.error === 'network' ? failed : MOVE_REFUSED;
         const data: unknown = answer.data;
@@ -468,8 +504,19 @@ export function createCloud(
       }
     },
     create: (listId, audience) =>
-      made(() => client.rpc('create_list_share', { p_list: listId, p_audience: audience })),
-    revoke: (shareId) => written(() => client.rpc('revoke_list_share', { p_share: shareId })),
+      made(() =>
+        timed((signal) =>
+          client
+            .rpc('create_list_share', { p_list: listId, p_audience: audience })
+            .abortSignal(signal)
+        )
+      ),
+    revoke: (shareId) =>
+      written(() =>
+        timed((signal) =>
+          client.rpc('revoke_list_share', { p_share: shareId }).abortSignal(signal)
+        )
+      ),
     async read(token) {
       try {
         const answer = await client.rpc('get_shared_list', { p_token: token });
@@ -495,7 +542,40 @@ export function createCloud(
       }
     },
     clone: (token, id) =>
-      written(() => client.rpc('clone_shared_list', { p_token: token, p_id: id }))
+      written(() =>
+        timed((signal) =>
+          client.rpc('clone_shared_list', { p_token: token, p_id: id }).abortSignal(signal)
+        )
+      )
   };
-  return { auth, prefs, lists, shares };
+
+  /* A channel is used once: its first loss removes it, so realtime-js's own
+     rejoin stops and the feed's backoff decides the next join
+     (state/liveFeed.svelte.ts). Every topic is private (docs/specs/META.md). */
+  const events: EventsPort = {
+    tab,
+    subscribe(topic, on) {
+      let open = true;
+      const ch = client.channel(topic, { config: { private: true } });
+      ch.on('broadcast', { event: '*' }, (m) => {
+        if (open) on.message(m.event, m['payload']);
+      });
+      ch.subscribe((s) => {
+        if (!open) return;
+        if (s === REALTIME_SUBSCRIBE_STATES.SUBSCRIBED) {
+          on.status('live');
+          return;
+        }
+        open = false;
+        void client.removeChannel(ch);
+        on.status('down');
+      });
+      return () => {
+        if (!open) return;
+        open = false;
+        void client.removeChannel(ch);
+      };
+    }
+  };
+  return { auth, prefs, lists, shares, events };
 }

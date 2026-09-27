@@ -239,6 +239,14 @@
           <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(it.id).hnote} />
         {/snippet}
       </TableRows>
+      {#if token !== undefined}
+        <!-- Says a re-read changed what the page draws; keyed, so a second
+             change is announced again. `data-live` marks a joined topic for
+             the hosted E2E and draws nothing. -->
+        <div class="said" role="status" data-live={view?.live ? 'live' : undefined}>
+          {#key view?.changes}{#if view?.changes}<span>{t.listUpdated}</span>{/if}{/key}
+        </div>
+      {/if}
     {/if}
   {/snippet}
 </RecordHost>
@@ -264,6 +272,16 @@
     font-size: 12.5px;
     color: var(--muted2);
     max-width: 70ch;
+  }
+
+  /* Visually hidden, as `ListPage.svelte`'s `.lsaid`. */
+  .said {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .ownline {

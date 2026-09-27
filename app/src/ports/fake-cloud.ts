@@ -24,11 +24,13 @@ import type {
   AuthPort,
   AuthRedirect,
   CloudPort,
+  EventsPort,
   Identity,
   ListOpResult,
   ListRepository,
   ListWrite,
   ListWrites,
+  LiveStatus,
   MoveWrite,
   PreferencesPort,
   Session,
@@ -46,6 +48,8 @@ export interface FakeCloudOptions {
   offline?: boolean;
   /** The count limits in place of the database defaults (50 lists, 100 entries). */
   limits?: { lists?: number; entries?: number };
+  /** Whether a subscribe joins (default `true`); `false` keeps every feed on the poll. */
+  live?: boolean;
 }
 
 /** The fake, plus the test build's switches and counters, which are not part of
@@ -59,6 +63,11 @@ export type FakeCloud = CloudPort & {
   writeCount(): number;
   /** The writes inside the `apply` calls that were applied. */
   opCount(): number;
+  /** Off: every joined topic reports `down` and no subscribe joins; on: the next one joins. */
+  setLive(on: boolean): void;
+  /** Edits any user's list as another device would, with its messages; false for an
+   *  unknown list. */
+  play(listId: string, patch: ListPatch): boolean;
 };
 
 /** The string the production-bundle guard looks for; renaming it without the
@@ -95,6 +104,7 @@ function seedLists(lists: readonly SeedList[], boot: number): Held[] {
       gm_note: l.hnote ?? '',
       created_at: iso(boot - l.createdAgoMs),
       updated_at: iso(boot - l.editedAgoMs),
+      revision: 1,
       legacy_fingerprint: null
     },
     entries: l.entries.map((e) => ({
@@ -175,9 +185,20 @@ function fingerprint(text: string): string {
   return (h >>> 0).toString(16).padStart(8, '0').repeat(8);
 }
 
-/** A share as the fake holds it: the row and its list. */
+/** A share as the fake holds it: the row, its list and its live topic's key. */
 interface HeldShare extends ShareRow {
   listId: string;
+  topic_key: string;
+}
+
+/** The tab id the fake's writes carry; another device's are `other-device`. */
+const TAB = 'fake-tab';
+const SHARE_TOPIC = /^share:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+interface Subscriber {
+  topic: string;
+  on: { message(event: string, payload: unknown): void; status(s: LiveStatus): void };
+  joined: boolean;
 }
 
 const OK: Extract<ListWrite, { ok: true }> = { ok: true };
@@ -311,6 +332,11 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     lastStamp = Math.max(Date.now(), lastStamp + 1);
     return iso(lastStamp);
   };
+  /* A change of the list or an entry, as `lists_before_update` sees it. */
+  const touch = (h: Held): void => {
+    h.row.updated_at = stamp();
+    h.row.revision++;
+  };
   /* One list's new entries: an id already there is skipped; a record already
      in the list or the entry limit refuses the whole call. */
   const insertEntries = (h: Held, entries: EntryRow[]): ListOpResult => {
@@ -325,7 +351,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       return limited('entries_per_list', maxEntries);
     }
     h.entries.push(...fresh.map((e) => ({ ...e })));
-    h.row.updated_at = stamp();
+    touch(h);
     return OK;
   };
   /* Every share write goes through here: offline and signed out answer
@@ -346,15 +372,100 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   };
 
   /* The seed's shares, made at boot; a new one is `uuid(3000 + n)` with the
-     token `share-token-<n>`, so a golden reads the same on every run. */
+     token `share-token-<n>`, so a golden reads the same on every run. A new
+     share's topic key is `uuid(4100 + n)`, clear of every other range. */
   let shareRows: HeldShare[] = seed.shares.map((sh) => ({
     id: sh.id,
     listId: sh.listId,
     audience: sh.audience,
     token: sh.token,
     created_at: iso(boot),
-    revoked_at: null
+    revoked_at: null,
+    topic_key: sh.topicKey
   }));
+
+  /* Realtime: the joined topics, and what the broadcast triggers send. */
+  let live = options.live ?? true;
+  const subscribers = new Set<Subscriber>();
+  let messages = 0;
+  const send = (topic: string, event: string, payload: Record<string, unknown>): void => {
+    const id = String(++messages);
+    queueMicrotask(() => {
+      for (const sub of [...subscribers]) {
+        if (sub.joined && sub.topic === topic) sub.on.message(event, { ...payload, id });
+      }
+    });
+  };
+  const userIdOf = (h: Held): string | null => {
+    for (const [k, all] of lists) if (all.includes(h)) return users.get(k)?.id ?? null;
+    return null;
+  };
+  const activeShares = (listId: string): HeldShare[] =>
+    shareRows.filter((sh) => sh.listId === listId && sh.revoked_at === null);
+  /* Every list's revision, owner and active shares before a write. */
+  interface Before {
+    revision: number;
+    owner: string | null;
+    shares: HeldShare[];
+  }
+  const before = (): Map<string, Before> => {
+    const all = new Map<string, Before>();
+    for (const mine of lists.values()) {
+      for (const h of mine) {
+        all.set(h.row.id, {
+          revision: h.row.revision,
+          owner: userIdOf(h),
+          shares: activeShares(h.row.id)
+        });
+      }
+    }
+    return all;
+  };
+  /* One owner message per changed list and one per active share, as the
+     deferred trigger sends at commit; a list gone sends `null`. */
+  const announce = (was: Map<string, Before>, by: string): void => {
+    const seen = new Set<string>();
+    for (const mine of lists.values()) {
+      for (const h of mine) {
+        seen.add(h.row.id);
+        if (was.get(h.row.id)?.revision === h.row.revision) continue;
+        const owner = userIdOf(h);
+        if (owner)
+          send('owner:' + owner, 'list', { list: h.row.id, revision: h.row.revision, by });
+        for (const sh of activeShares(h.row.id)) {
+          send('share:' + sh.topic_key, 'revision', { revision: h.row.revision });
+        }
+      }
+    }
+    for (const [id, b] of was) {
+      if (seen.has(id)) continue;
+      if (b.owner) send('owner:' + b.owner, 'list', { list: id, revision: null, by });
+      for (const sh of b.shares) send('share:' + sh.topic_key, 'revision', { revision: null });
+    }
+  };
+  const events: EventsPort = {
+    tab: TAB,
+    subscribe(topic, on) {
+      const sub: Subscriber = { topic, on, joined: false };
+      subscribers.add(sub);
+      const mine = sessionOf(user());
+      const allowed =
+        SHARE_TOPIC.test(topic) || (mine !== null && topic === 'owner:' + mine.userId);
+      queueMicrotask(() => {
+        if (!subscribers.has(sub)) return;
+        if (live && allowed && !offline) {
+          sub.joined = true;
+          on.status('live');
+        } else {
+          subscribers.delete(sub);
+          on.status('down');
+        }
+      });
+      return () => {
+        subscribers.delete(sub);
+      };
+    }
+  };
   /* The `apply` calls answered and the writes applied, and the fault switch. */
   let requests = 0;
   let applied = 0;
@@ -369,7 +480,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (mine.length >= maxLists) return limited('lists_per_owner', maxLists);
     const at = stamp();
     const made: Held = {
-      row: { ...list, created_at: at, updated_at: at, legacy_fingerprint: null },
+      row: { ...list, created_at: at, updated_at: at, revision: 1, legacy_fingerprint: null },
       entries: []
     };
     const r = insertEntries(made, entries);
@@ -380,7 +491,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (!Object.keys(patch).length) return OK;
     const h = find(mine, id);
     if (!h) return GONE;
-    h.row = { ...h.row, ...patch, updated_at: stamp() };
+    h.row = { ...h.row, ...patch };
+    touch(h);
     return OK;
   };
   const updateEntry = (mine: Held[], entryId: string, patch: EntryPatch): ListOpResult => {
@@ -389,7 +501,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       const at = h.entries.findIndex((e) => e.id === entryId);
       if (at < 0) continue;
       h.entries[at] = { ...(h.entries[at] as EntryRow), ...patch };
-      h.row.updated_at = stamp();
+      touch(h);
       return OK;
     }
     return GONE;
@@ -399,21 +511,24 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       const kept = h.entries.filter((e) => !entryIds.includes(e.id));
       if (kept.length === h.entries.length) continue;
       h.entries = kept;
-      h.row.updated_at = stamp();
+      touch(h);
     }
     return OK;
   };
   const reorder = (mine: Held[], listId: string, entryIds: readonly string[]): ListOpResult => {
     const h = find(mine, listId);
     if (!h) return GONE;
+    // reorder_list's rule: the given entries first, a repeated id once;
+    // the entries not given follow in their (position, id) order.
     const have = new Set(h.entries.map((e) => e.id));
-    const same =
-      entryIds.length === have.size &&
-      new Set(entryIds).size === entryIds.length &&
-      entryIds.every((id) => have.has(id));
-    if (!same) return REFUSED;
-    h.entries = h.entries.map((e) => ({ ...e, position: entryIds.indexOf(e.id) }));
-    h.row.updated_at = stamp();
+    const given = [...new Set(entryIds)].filter((id) => have.has(id));
+    const rest = h.entries
+      .filter((e) => !given.includes(e.id))
+      .sort((x, y) => x.position - y.position || (x.id < y.id ? -1 : x.id > y.id ? 1 : 0))
+      .map((e) => e.id);
+    const order = [...given, ...rest];
+    h.entries = h.entries.map((e) => ({ ...e, position: order.indexOf(e.id) }));
+    touch(h);
     return OK;
   };
   const removeList = (mine: Held[], id: string): ListOpResult => {
@@ -466,6 +581,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         gm_note: v.hnote ?? '',
         created_at: at,
         updated_at: at,
+        revision: 1,
         legacy_fingerprint: fp
       },
       entries: v.ids.map((key, i) => {
@@ -507,13 +623,20 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       requests++;
       if (fault === true || (fault && ops.some(fault))) return Promise.resolve(FAULT);
       applied += ops.length;
-      return Promise.resolve({ ok: true, results: ops.map((op) => applyOne(mine, op)) });
+      const was = before();
+      const results = ops.map((op) => applyOne(mine, op));
+      announce(was, TAB);
+      return Promise.resolve({ ok: true, results });
     },
     /* Offline and signed out answer `network`, as the real port reads `28000`;
        the count limits are skipped, as the RPC skips them. */
     move(id, canonical) {
       const mine = offline ? null : own();
-      return Promise.resolve(mine ? moveList(mine, id, canonical) : NETWORK);
+      if (!mine) return Promise.resolve(NETWORK);
+      const was = before();
+      const moved = moveList(mine, id, canonical);
+      announce(was, TAB);
+      return Promise.resolve(moved);
     }
   };
 
@@ -530,7 +653,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       audience,
       token: 'share-token-' + String(shared),
       created_at: stamp(),
-      revoked_at: null
+      revoked_at: null,
+      topic_key: uuid(4100 + shared)
     };
     shareRows = [...shareRows, sh];
     return { ok: true, id: sh.id, token: sh.token };
@@ -550,6 +674,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     return {
       audience: sh.audience,
       updated_at: h.row.updated_at,
+      revision: h.row.revision,
+      topic_key: sh.topic_key,
       list: {
         name: h.row.name,
         money_mode: h.row.money_mode,
@@ -596,6 +722,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         if (sh.revoked_at === null) {
           const at = stamp();
           shareRows = shareRows.map((x) => (x === sh ? { ...x, revoked_at: at } : x));
+          send('share:' + sh.topic_key, 'revision', { revision: null });
         }
         return OK;
       }),
@@ -616,6 +743,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         if (find(mine, id)) return OK;
         if (anyList(id)) return REFUSED;
         if (mine.length >= maxLists) return limited('lists_per_owner', maxLists);
+        const was = before();
         const at = stamp();
         mine.push({
           row: {
@@ -626,10 +754,12 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
             gm_note: p.list.gm_note ?? '',
             created_at: at,
             updated_at: at,
+            revision: 1,
             legacy_fingerprint: null
           },
           entries: p.entries.map((e) => ({ ...e, id: uuid(made++), gm_note: e.gm_note ?? '' }))
         });
+        announce(was, TAB);
         return OK;
       })
   };
@@ -639,6 +769,24 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     prefs,
     lists: listRepo,
     shares: shareRepo,
+    events,
+    setLive(on) {
+      live = on;
+      if (on) return;
+      for (const sub of [...subscribers]) {
+        subscribers.delete(sub);
+        if (sub.joined) sub.on.status('down');
+      }
+    },
+    play(listId, patch) {
+      const h = anyList(listId);
+      if (!h) return false;
+      const was = before();
+      h.row = { ...h.row, ...patch };
+      touch(h);
+      announce(was, 'other-device');
+      return true;
+    },
     setOffline(on) {
       offline = on;
     },

@@ -1,5 +1,6 @@
 # 2026-09-25 - Realtime is the primary live path; the 45 s poll runs while it is down
 
+- Amended by "While Realtime is live, a safety re-read runs every 5 minutes" (2026-09-26): a 5-minute re-read also runs while `live`.
 - Task: `persist-3-realtime` (owner, 2026-09-25; planner, the state machine).
 - Decision: a page with a live topic joins it as a private channel and
   moves through `connecting`, `live` and `down` (`app/src/lib/live.ts`).

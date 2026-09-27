@@ -142,7 +142,15 @@ const LIMITED = [
 ];
 const INFO = [
   { key: 'auth_users', label: 'Accounts', unit: 'count' },
-  { key: 'storage_objects', label: 'Storage objects', unit: 'count' }
+  { key: 'storage_objects', label: 'Storage objects', unit: 'count' },
+  // Rows of realtime.messages: one per broadcast, delivered once per
+  // subscriber, so the billed messages are at least this many.
+  {
+    key: 'realtime_rows_24h',
+    label: 'Realtime messages (24 h, lower bound)',
+    unit: 'count',
+    noteKey: 'realtime_note'
+  }
 ];
 const MISSING_NOTE = { storage_bytes: 'no storage.objects access', mau: 'no MAU source' };
 
@@ -231,7 +239,7 @@ export function evaluate(snapshot, history, today, checks = {}) {
       perDay: f.perDay,
       daysLeft: null,
       state: 'info',
-      note: f.note
+      note: [m.noteKey && snapshot[m.noteKey], f.note].filter(Boolean).join('; ')
     });
   }
   rows.push(requestsRow(checks.requests), keepAliveRow(checks.keepAlive));

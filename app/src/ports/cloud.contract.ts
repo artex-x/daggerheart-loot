@@ -7,11 +7,12 @@
  * port does belongs here; what depends on the fake's seed stays in its own
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
  * cases for the port member it adds: A-F the account, G the lists, H the
- * share links, I the move of a browser list. */
+ * share links, I the move of a browser list, J the live topics. */
 
 import type { EntryRow, ListRow } from '../lib/cloudLists.js';
+import { readOwnerMessage, readShareMessage } from '../lib/live.js';
 import type { Prefs } from '../lib/prefs.js';
-import type { CloudPort, ListWrites, Session } from './types.js';
+import type { CloudPort, ListWrites, LiveStatus, Session } from './types.js';
 
 export interface ContractUsers {
   /** A user that is never deleted, and what its session must say. */
@@ -153,6 +154,16 @@ async function listCases(port: CloudPort, assert: Assert): Promise<void> {
   );
   got = await theList(port, id, assert, 'after the refused add');
   assert(got?.name === 'Клад дракона II', 'lists: the rename after a refused write was lost');
+
+  /* A reorder from a device with an old entry set is applied, not refused:
+     the given entries first, the others after them. The order is c, a, b. */
+  const stale = await lists.apply([{ op: 'reorder', list_id: id, ids: [a, c] }]);
+  assert(answered(stale) === 'ok', 'lists: a stale reorder answered ' + answered(stale));
+  got = await theList(port, id, assert, 'after the stale reorder');
+  assert(
+    got?.list_entries.map((e) => e.item_key).join(',') === 'ci1,q313,q1',
+    'lists: a stale reorder does not put the entries it was not given after the given ones'
+  );
 
   /* A row that is not there: an edit of it is gone, a delete of it is ok. */
   const [x, y] = [lists.newId(), lists.newId()];
@@ -362,6 +373,137 @@ async function moveCases(
   assert(ms < MOVE_MS, 'move: 1300 entries took ' + String(ms) + ' ms');
 }
 
+/** A message a joined topic delivered. */
+export interface Delivered {
+  topic: string;
+  event: string;
+  payload: unknown;
+}
+
+const JOIN_WAIT_MS = 10_000;
+const pause = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+/** Waits up to `ms` for `pred`, checking every 50 ms; answers whether it held. */
+async function waitFor(pred: () => boolean, ms = JOIN_WAIT_MS): Promise<boolean> {
+  const until = Date.now() + ms;
+  while (!pred()) {
+    if (Date.now() >= until) return false;
+    await pause(50);
+  }
+  return true;
+}
+
+/** Subscribes once and answers the first status (null when none came in 10 s), with the
+ *  leave. */
+async function joinOnce(
+  port: CloudPort,
+  topic: string,
+  into: Delivered[]
+): Promise<{ status: LiveStatus | null; leave: () => void }> {
+  let status: LiveStatus | null = null;
+  const leave = port.events.subscribe(topic, {
+    message: (event, payload) => into.push({ topic, event, payload }),
+    status: (s) => {
+      status ??= s;
+    }
+  });
+  await waitFor(() => status !== null);
+  return { status, leave };
+}
+
+/**
+ * Joins `topic`, up to three attempts 2 s apart: a project's first join after a quiet
+ * spell can be refused once while Realtime makes its message partitions. Answers the
+ * leave, or null after three refusals.
+ */
+export async function joinLive(
+  port: CloudPort,
+  topic: string,
+  into: Delivered[]
+): Promise<(() => void) | null> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { status, leave } = await joinOnce(port, topic, into);
+    if (status === 'live') return leave;
+    leave();
+    await pause(2000);
+  }
+  return null;
+}
+
+/* J. The owner topic and a share topic deliver the broadcast triggers' messages to a
+   joined port; a signed-out port cannot join the owner topic. */
+async function liveCases(
+  port: CloudPort,
+  signedOut: CloudPort,
+  userId: string,
+  assert: Assert
+): Promise<void> {
+  const got: Delivered[] = [];
+  const leaves: (() => void)[] = [];
+  const { lists, shares } = port;
+  const id = lists.newId();
+  try {
+    const ownerTopic = 'owner:' + userId;
+    const owner = await joinLive(port, ownerTopic, got);
+    assert(owner !== null, 'live: the owner topic was refused three times');
+    if (!owner) return;
+    leaves.push(owner);
+    const made = await lists.apply([
+      {
+        op: 'create',
+        list: { id, name: 'Живой', money_mode: 'bag', player_note: '', gm_note: '' },
+        entries: [entryOf(lists.newId(), 'ci1', 0)]
+      }
+    ]);
+    assert(answered(made) === 'ok', 'live: the list was not created');
+    const share = await shares.create(id, 'player');
+    assert(share.ok, 'live: the share was not made');
+    if (!share.ok) return;
+    const read = await shares.read(share.token);
+    const key = read.ok ? read.shared?.topic_key : undefined;
+    assert(typeof key === 'string', 'live: the share read has no topic key');
+    if (typeof key !== 'string') return;
+    const shareTopic = 'share:' + key;
+    const joined = await joinLive(port, shareTopic, got);
+    assert(joined !== null, 'live: the share topic was refused three times');
+    if (!joined) return;
+    leaves.push(joined);
+
+    const renamed = await lists.apply([{ op: 'update', id, patch: { name: 'J' } }]);
+    assert(answered(renamed) === 'ok', 'live: the rename was refused');
+    const revision = (await theList(port, id, assert, 'after the live rename'))?.revision;
+    const ownerSaw = await waitFor(() =>
+      got.some((m) => {
+        const o = m.topic === ownerTopic ? readOwnerMessage(m.event, m.payload) : null;
+        return o?.list === id && o.revision === revision && o.by === port.events.tab;
+      })
+    );
+    assert(ownerSaw, "live: no owner message named the list, its revision and this port's tab");
+    const shareSaw = await waitFor(() =>
+      got.some(
+        (m) =>
+          m.topic === shareTopic && readShareMessage(m.event, m.payload)?.revision === revision
+      )
+    );
+    assert(shareSaw, 'live: no share message named the revision');
+
+    assert((await shares.revoke(share.id)).ok, 'live: the revoke was refused');
+    const goneSaw = await waitFor(() =>
+      got.some(
+        (m) => m.topic === shareTopic && readShareMessage(m.event, m.payload)?.revision === null
+      )
+    );
+    assert(goneSaw, 'live: no share message said the link is gone');
+
+    const refused = await joinOnce(signedOut, ownerTopic, got);
+    leaves.push(refused.leave);
+    assert(refused.status === 'down', 'live: a signed-out port joined the owner topic');
+  } finally {
+    for (const leave of leaves) leave();
+    await lists.apply([{ op: 'remove', id }]);
+  }
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -476,6 +618,9 @@ export async function runCloudContract(
   /* I. browser lists moved into the account, once per text, on the doomed
      user; the account's deletion takes the rows with it. */
   await moveCases(doomedPort, assert, log);
+
+  /* J. the live topics, on a fresh member port; the list it makes is removed. */
+  await liveCases(await make(member.as), await make(), member.userId, assert);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

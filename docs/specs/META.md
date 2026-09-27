@@ -75,6 +75,13 @@ its address, with deliberate consequences:
   the browser lists, and **Your own link** (`shareGm`) doubles as its backup
 - a build with no sign-in configured keeps making browser lists
 
+Live updates reach an open shared page and the owner's other tabs and
+devices only through Supabase Realtime private channels, sent by the
+database; the backend is still Supabase alone, and no client sends on a
+channel. "Allow public access" is off on both projects, a dashboard setting
+the owner reads back each release (`docs/DECISIONS.md`, 2026-09-26,
+"Realtime public access is off; the owner sets it in the dashboard").
+
 Add no server beside the Supabase backend: no upload endpoint and no paste
 service.
 

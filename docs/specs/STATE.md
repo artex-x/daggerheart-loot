@@ -94,10 +94,13 @@ tab's memory the stored array. The merge above stays for the weeks before
 the date (and in a build with no sign-in configured).
 
 Account lists do not ride the `storage` event: every tab and device reads the
-account again when it is shown again and every 45 s while the index or an
-account list's page is open and no write is buffered or in flight. A shared page
-`#/s/<token>` reads its list again on the same two signals, signed in or
-not. A read keeps each list
+account again on a message of the owner's Realtime topic from another tab or
+device, when it is shown again, every 45 s while Realtime is not joined and
+the index or an account list's page is open, and every 5 minutes on any route
+while the owner's topic is joined, always once no write is buffered or in
+flight. A shared page `#/s/<token>` reads its list again on a message of its
+share's topic, when it is shown again, every 45 s while that topic is not
+joined and every 5 minutes while it is, signed in or not. A read keeps each list
 whose `updated_at` has not moved as the same object, so a read that finds
 nothing new redraws nothing, and an edit replaces only the list it changes.
 
@@ -167,7 +170,7 @@ state exists, by what it was for:
 
 | Group | Fields |
 |---|---|
-| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), `pendingListName` (a name typed before a sign-in, taken once by the menu that reopens; the pending action and this name are forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list) |
+| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), the tab id sent as `x-dhloot-tab` (one per page load, in the cloud port), the owner feed's and the share feed's states (`off`, `connecting`, `live`, `down`), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), `pendingListName` (a name typed before a sign-in, taken once by the menu that reopens; the pending action and this name are forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list) |
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `comm {c, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}`, the tables view a page switch picked for this visit (`AppState`) |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |

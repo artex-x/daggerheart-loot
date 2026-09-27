@@ -297,16 +297,13 @@ export function pendingMigrations(localNames, appliedVersions) {
     .sort();
 }
 
-// Every service of the local stack but the database. `npm run check:db`
-// starts the stack without them; the restore drill keeps `gotrue` (a
-// production dump names the columns that hosted Auth migrated). The release
-// that ships Realtime removes `realtime` from this list.
+// The local stack's services that no suite uses. `npm run check:db` and the
+// restore drill start the database, Auth, Realtime and Kong (the gateway
+// the WebSocket clients join through). With Auth excluded, `supabase status`
+// names no key and no JWT secret; the drill needs Auth's migrated columns.
 export const LOCAL_STACK_EXCLUDES = Object.freeze([
-  'gotrue',
-  'realtime',
   'storage-api',
   'imgproxy',
-  'kong',
   'mailpit',
   'postgrest',
   'postgres-meta',

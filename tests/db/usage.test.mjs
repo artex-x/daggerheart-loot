@@ -3,12 +3,13 @@
   collect() on seeded rows relative to a baseline (the host volume can hold
   committed Auth rows), the Storage branch this stack has, the near-limit
   counts with the part above 100 %, the one-row-a-day upsert and the
-  400-day delete, the 28-day history before today, and no Data API role on
+  400-day delete, the 28-day history before today, the realtime.messages
+  rows of the last 24 hours, and no Data API role on
   public.usage_snapshots. .claude/README.md, "Usage monitoring".
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { asRole, connect } from './roles.mjs';
+import { asRole, connect, realtimePartition } from './roles.mjs';
 import { collect, readHistory, saveSnapshot } from '../../tools/supabase/usage.mjs';
 import { mauPlan, monthStart } from '../../tools/supabase/usage-lib.mjs';
 
@@ -171,6 +172,18 @@ describe('collect()', () => {
       plus(out.base, { owners_near: 1, owners_over: 1, lists_near: 1, lists_over: 1 })
     );
     assert.deepEqual(out.unlimited, out.above);
+  });
+
+  it('counts the realtime.messages rows of the last 24 hours over a baseline', async () => {
+    await realtimePartition(sql);
+    const out = await rolledBack(async (tx) => {
+      const base = await collect(tx, new Date());
+      await tx`select realtime.send(${tx.json({ revision: 1 })}::jsonb, 'revision',
+        ${'share:' + crypto.randomUUID()}, true)`;
+      return { base, next: await collect(tx, new Date()) };
+    });
+    assert.equal(typeof out.base.realtime_rows_24h, 'number');
+    assert.equal(out.next.realtime_rows_24h, out.base.realtime_rows_24h + 1);
   });
 
   it('runs in a read only transaction, as the nightly report does', async () => {

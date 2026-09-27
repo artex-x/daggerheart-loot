@@ -44,6 +44,8 @@ export interface ListRow {
   gm_note: string;
   created_at: string;
   updated_at: string;
+  /** Bumped by every change of the list or of one of its entries. */
+  revision: number;
   /** The SHA-256 of the canonical text a moved browser list was made from; null for
    *  every other list. */
   legacy_fingerprint: string | null;
@@ -169,8 +171,21 @@ export interface ShareRow {
 export interface SharedRow {
   audience: ShareAudience;
   updated_at: string;
+  /** The list's revision (`ListRow.revision`). */
+  revision: number;
+  /** The share's live topic is `share:<topic_key>`; a random id of its own, not the token. */
+  topic_key: string;
   list: { name: string; money_mode: MoneyMode; player_note: string; gm_note?: string };
   entries: (Omit<EntryRow, 'gm_note'> & { gm_note?: string })[];
+}
+
+/** Returns whether two reads draw the same page; `revision`, `updated_at` and `topic_key`
+ *  are not drawn. */
+export function sameProjection(a: SharedRow, b: SharedRow): boolean {
+  return (
+    JSON.stringify([a.audience, a.list, a.entries]) ===
+    JSON.stringify([b.audience, b.list, b.entries])
+  );
 }
 
 /** Returns the shared page's shape of a share link's list, as a `#/l/` payload decodes:

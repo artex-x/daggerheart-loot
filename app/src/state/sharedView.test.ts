@@ -2,9 +2,11 @@
  * owner check, and re-reads that redraw only what changed.
  * docs/specs/FEATURES.md, "Account and browser lists". */
 
-import { describe, expect, it } from 'vitest';
-import { fakeCloud } from '../ports/fake-cloud.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { COALESCE_MS } from '../lib/live.js';
+import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
+import type { EventsPort } from '../ports/index.js';
 import { SharedView } from './sharedView.svelte.js';
 
 const GM1 = SEED.users.gm1.id;
@@ -115,5 +117,122 @@ describe('SharedView', () => {
       null,
       null
     ]);
+  });
+
+  describe('live', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    /* The fake's events, with each subscriber's handlers kept so a test can
+       send a message the fake would not. */
+    function tapped(cloud: FakeCloud) {
+      const handlers: Parameters<EventsPort['subscribe']>[1][] = [];
+      const events: EventsPort = {
+        tab: cloud.events.tab,
+        subscribe(topic, on) {
+          handlers.push(on);
+          return cloud.events.subscribe(topic, on);
+        }
+      };
+      return { events, handlers };
+    }
+
+    async function opened(cloud: FakeCloud, token = 'player-token-1') {
+      vi.useFakeTimers();
+      const tap = tapped(cloud);
+      const view = new SharedView(cloud.shares, { events: tap.events, random: () => 0.5 });
+      await view.open(token, null);
+      await vi.advanceTimersByTimeAsync(COALESCE_MS);
+      const read = vi.spyOn(cloud.shares, 'read');
+      return { view, read, tap };
+    }
+
+    it('joins the share topic once the list is drawn', async () => {
+      const { view } = await opened(fakeCloud(SEED));
+      expect(view.live).toBe(true);
+    });
+
+    it("draws another device's edit after the coalescing window, two messages in one read", async () => {
+      const cloud = fakeCloud(SEED);
+      const { view, read } = await opened(cloud);
+      cloud.play(uuid(101), { name: 'Лавка у моста' });
+      cloud.play(uuid(101), { name: 'Лавка у реки' });
+      await vi.advanceTimersByTimeAsync(COALESCE_MS - 1);
+      expect(read).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(read).toHaveBeenCalledOnce();
+      expect(view.shared?.list.name).toBe('Лавка у реки');
+      expect(view.changes).toBe(1);
+    });
+
+    it('reads nothing for a revision it already draws, or a message of another shape', async () => {
+      const cloud = fakeCloud(SEED);
+      const { view, read, tap } = await opened(cloud);
+      const on = tap.handlers[0];
+      on?.message('revision', { revision: view.shared?.revision ?? 0, id: '9' });
+      on?.message('list', { revision: 99 });
+      await vi.advanceTimersByTimeAsync(COALESCE_MS);
+      expect(read).not.toHaveBeenCalled();
+    });
+
+    it('draws gone after a revoke, and leaves the topic', async () => {
+      const owner = fakeCloud(SEED, 'gm1');
+      const { view } = await opened(owner);
+      await owner.shares.revoke(uuid(111));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(view.status).toBe('gone');
+      expect(view.live).toBe(false);
+    });
+
+    it('leaves the topic on close', async () => {
+      const { view } = await opened(fakeCloud(SEED));
+      view.close();
+      expect(view.live).toBe(false);
+    });
+
+    it('moves the time but says nothing for a GM note edit on a player link, once for a name', async () => {
+      const cloud = fakeCloud(SEED);
+      const { view } = await opened(cloud);
+      const at = view.shared?.updated_at;
+      cloud.play(uuid(101), { gm_note: 'новая' });
+      await vi.advanceTimersByTimeAsync(COALESCE_MS);
+      expect(view.shared?.updated_at).not.toBe(at);
+      expect(view.changes).toBe(0);
+      cloud.play(uuid(101), { name: 'Лавка у моста' });
+      await vi.advanceTimersByTimeAsync(COALESCE_MS);
+      expect(view.changes).toBe(1);
+    });
+  });
+
+  it('reads a failed first read again through refresh, with no loading, and draws it once online', async () => {
+    const cloud = fakeCloud(SEED, undefined, { offline: true });
+    const view = new SharedView(cloud.shares);
+    await view.open('player-token-1', null);
+    expect(view.status).toBe('error');
+    const statuses: string[] = [];
+    const read = cloud.shares.read.bind(cloud.shares);
+    vi.spyOn(cloud.shares, 'read').mockImplementation((token) => {
+      statuses.push(view.status);
+      return read(token);
+    });
+    await view.refresh();
+    expect(view.status).toBe('error');
+    cloud.setOffline(false);
+    await view.refresh();
+    expect(statuses).toEqual(['error', 'error']);
+    expect(view.status).toBe('ready');
+    expect(view.shared?.list.name).toBe('Лавка кузнеца');
+  });
+
+  it('knows the owner after a failed first read is read again through refresh', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    const view = new SharedView(cloud.shares);
+    await view.open('player-token-1', GM1);
+    expect([view.status, view.mine]).toEqual(['error', null]);
+    cloud.setOffline(false);
+    await view.refresh();
+    expect(view.status).toBe('ready');
+    expect(view.mine).toBe(uuid(101));
   });
 });

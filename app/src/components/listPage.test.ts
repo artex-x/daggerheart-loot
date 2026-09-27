@@ -1371,6 +1371,22 @@ describe('an account list', () => {
     await expectNoA11yViolations(container);
   });
 
+  it("marks the sync status live once the owner's topic joins, and not while Realtime is down", async () => {
+    const live = openAs(fakeCloud(SEED, 'gm1'));
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    const sync = (c: HTMLElement): Element | undefined =>
+      [...c.querySelectorAll('.lsaid')].at(-1);
+    await waitFor(() => {
+      expect(sync(live.container)).toHaveAttribute('data-live', 'live');
+    });
+    await expectNoA11yViolations(live.container);
+    cleanup();
+    const down = openAs(fakeCloud(SEED, 'gm1', { live: false }));
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(sync(down.container)).not.toHaveAttribute('data-live');
+    await expectNoA11yViolations(down.container);
+  });
+
   it('draws Поделиться on an account list only, and folds its panel', async () => {
     const clipboard = fakeClipboard();
     const { container } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { clipboard });

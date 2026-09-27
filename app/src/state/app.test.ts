@@ -1848,10 +1848,10 @@ describe('account lists', () => {
     app.stop();
   });
 
-  it('re-reads every 45 s on the index and an account list page, not elsewhere', async () => {
+  it('re-reads every 45 s on the index and an account list page while Realtime is down, not elsewhere', async () => {
     vi.useFakeTimers();
     try {
-      const cloud = fakeCloud(SEED, 'gm1');
+      const cloud = fakeCloud(SEED, 'gm1', { live: false });
       const { app } = started(cloud, '#/lists');
       await vi.advanceTimersByTimeAsync(0);
       const list = vi.spyOn(cloud.lists, 'list');
@@ -1886,10 +1886,10 @@ describe('account lists', () => {
     }
   });
 
-  it('re-reads an open share link every 45 s signed out, not elsewhere, and moves the clock', async () => {
+  it('re-reads an open share link every 45 s signed out while Realtime is down, not elsewhere, and moves the clock', async () => {
     vi.useFakeTimers({ now: new Date('2026-09-25T12:00:00Z') });
     try {
-      const cloud = fakeCloud(SEED);
+      const cloud = fakeCloud(SEED, undefined, { live: false });
       const { app } = started(cloud, '#/s/player-token-1');
       await app.sharedView?.open('player-token-1', null);
       const read = vi.spyOn(cloud.shares, 'read');
@@ -1922,6 +1922,92 @@ describe('account lists', () => {
     await flush();
     expect(read).toHaveBeenCalledOnce();
     app.stop();
+  });
+
+  it('reads an open share link on no 45 s tick while Realtime is live, and still when shown again', async () => {
+    vi.useFakeTimers({ now: new Date('2026-09-25T12:00:00Z') });
+    try {
+      const cloud = fakeCloud(SEED);
+      const { app, storage } = started(cloud, '#/s/player-token-1');
+      await app.sharedView?.open('player-token-1', null);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(app.sharedView?.live).toBe(true);
+      const read = vi.spyOn(cloud.shares, 'read');
+      const before = app.now;
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(read).not.toHaveBeenCalled();
+      expect(app.now).toBe(before + LIST_POLL_MS);
+      storage.fireExternalChange(null);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(read).toHaveBeenCalledOnce();
+      cloud.setLive(false);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(app.sharedView?.live).toBe(false);
+      expect(read.mock.calls.length).toBeGreaterThanOrEqual(3);
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reads the account on no 45 s tick while Realtime is live, and retries a failed first read', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED, 'gm1');
+      const list = vi.spyOn(cloud.lists, 'list').mockResolvedValueOnce({ ok: false });
+      const { app } = started(cloud, '#/lists');
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(app.cloudLists?.status).toBe('error');
+      expect(app.cloudLists?.live).toBe(true);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(app.cloudLists?.status).toBe('ready');
+      const reads = list.mock.calls.length;
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).toHaveBeenCalledTimes(reads);
+      cloud.setLive(false);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(app.cloudLists?.live).toBe(false);
+      expect(list.mock.calls.length).toBeGreaterThan(reads);
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaves the owner topic on sign-out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app } = started(cloud, '#/lists');
+    await flush();
+    await flush();
+    expect(app.cloudLists?.live).toBe(true);
+    await cloud.auth.signOut();
+    expect(app.cloudLists?.live).toBe(false);
+    app.stop();
+  });
+
+  it('reads a share link whose first read failed again on the next tick and when shown again', async () => {
+    vi.useFakeTimers({ now: new Date('2026-09-25T12:00:00Z') });
+    try {
+      const cloud = fakeCloud(SEED);
+      const read = vi
+        .spyOn(cloud.shares, 'read')
+        .mockResolvedValueOnce({ ok: false })
+        .mockResolvedValueOnce({ ok: false });
+      const { app, storage } = started(cloud, '#/s/player-token-1');
+      await app.sharedView?.open('player-token-1', null);
+      expect(app.sharedView?.status).toBe('error');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(read).toHaveBeenCalledTimes(2);
+      expect(app.sharedView?.status).toBe('error');
+      storage.fireExternalChange(null);
+      await vi.advanceTimersByTimeAsync(0);
+      /* The third read draws the list; the join's own re-read may follow it. */
+      expect(read.mock.calls.length).toBeGreaterThanOrEqual(3);
+      expect(app.sharedView?.status).toBe('ready');
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('saves a share link into the account and opens the copy', async () => {

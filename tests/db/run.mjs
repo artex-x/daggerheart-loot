@@ -1,7 +1,8 @@
 /*
   `npm run check:db`: the database layer (layer 3) against a local Supabase
-  stack in Docker. Starts only the database container when the stack is
-  down, resets it to supabase/migrations/, runs every tests/db/*.test.mjs
+  stack in Docker. Starts the database, Auth, Realtime and Kong when the
+  stack is down, or restarts a stack that runs without Auth or Realtime;
+  resets it to supabase/migrations/, runs every tests/db/*.test.mjs
   and prints one final `check:db: PASS`, `check:db: FAIL` or `check:db: BUSY`
   line, which .claude/hooks/check-observer.mjs reads to arm the commit gate.
   It holds the local stack lock for the run and arms its gate by its own exit.
@@ -12,7 +13,13 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LOCAL_STACK_EXCLUDES, SUPABASE_CLI, envRefs } from '../../tools/supabase/lib.mjs';
+import {
+  LOCAL_STACK_EXCLUDES,
+  SUPABASE_CLI,
+  envRefs,
+  localProjectId
+} from '../../tools/supabase/lib.mjs';
+import { runningContainer } from '../../tools/supabase/restore.mjs';
 import {
   holderText,
   releaseStackLock,
@@ -43,16 +50,17 @@ function cli(args, env, capture = false) {
   });
 }
 
-/** The local database URL from `supabase status -o json`, or null when the
- * stack is down. The JSON also holds the local keys; nothing of it is
- * printed. */
-function dbUrl(env) {
+/** Returns `{ db, api, anonKey, jwtSecret }` from `supabase status -o
+ * json`, or null when the stack is down or a value is missing. The keys and
+ * the secret are named only while Auth runs; nothing of them is printed. */
+function stackStatus(env) {
   const r = cli(['status', '-o', 'json'], env, true);
   if (r.error || r.status !== 0) return null;
   try {
     const start = r.stdout.indexOf('{');
-    const status = JSON.parse(r.stdout.slice(start));
-    return typeof status.DB_URL === 'string' ? status.DB_URL : null;
+    const s = JSON.parse(r.stdout.slice(start));
+    const out = { db: s.DB_URL, api: s.API_URL, anonKey: s.ANON_KEY, jwtSecret: s.JWT_SECRET };
+    return Object.values(out).every((v) => typeof v === 'string' && v) ? out : null;
   } catch {
     return null;
   }
@@ -101,17 +109,31 @@ function runSuite() {
     if (!env[name]) env[name] = 'unused-local-stack';
   }
 
-  let url = dbUrl(env);
-  if (!url) {
-    const start = cli(['start', '-x', LOCAL_STACK_EXCLUDES.join(',')], env);
+  // A stack another run started without Auth or Realtime (an older
+  // checkout's excludes) is started again with this list.
+  const id = localProjectId(toml);
+  const complete = ['auth', 'realtime', 'kong'].every((s) =>
+    runningContainer(`supabase_${s}_${id}`)
+  );
+  let status = complete ? stackStatus(env) : null;
+  if (!status) {
+    if (runningContainer(`supabase_db_${id}`)) {
+      const stop = cli(['stop'], env);
+      if (stop.error || stop.status !== 0) {
+        console.error('supabase stop failed.');
+        return 1;
+      }
+    }
+    const start = cli(['start', '-x', LOCAL_STACK_EXCLUDES.join(',')], env, true);
     if (start.error || start.status !== 0) {
-      console.error('supabase start failed.');
+      console.error(`supabase start failed.
+${start.stderr ?? ''}`);
       return 1;
     }
-    url = dbUrl(env);
+    status = stackStatus(env);
   }
-  if (!url) {
-    console.error('supabase status did not report DB_URL.');
+  if (!status) {
+    console.error('supabase status did not report DB_URL, API_URL, ANON_KEY and JWT_SECRET.');
     return 1;
   }
 
@@ -128,7 +150,13 @@ function runSuite() {
   // One file at a time: every file shares the one local database.
   const tests = spawnSync(process.execPath, ['--test', '--test-concurrency=1', ...files], {
     cwd: ROOT,
-    env: { ...env, DHLOOT_DB_URL: url },
+    env: {
+      ...env,
+      DHLOOT_DB_URL: status.db,
+      DHLOOT_API_URL: status.api,
+      DHLOOT_ANON_KEY: status.anonKey,
+      DHLOOT_JWT_SECRET: status.jwtSecret
+    },
     stdio: 'inherit'
   });
   if (tests.error) return 1;

@@ -3,7 +3,8 @@
  * ts-hooks.mjs). Each port gets its own store, holding a minted session or
  * none; the ports are used one after another, never interleaved. */
 
-import { runCloudContract } from '../../app/src/ports/cloud.contract.ts';
+import { readShareMessage } from '../../app/src/lib/live.ts';
+import { joinLive, runCloudContract } from '../../app/src/ports/cloud.contract.ts';
 import { createCloud } from '../../app/src/ports/supabase.ts';
 import { createClient } from '@supabase/supabase-js';
 import { createThrowaway, mint } from './admin.mjs';
@@ -21,6 +22,28 @@ function winStub() {
   };
 }
 
+/** A real port in Node holding `session` (a minted one), or signed out with null. */
+export function portOf(env, session) {
+  const store = memoryStorage();
+  if (session) store.setItem(storageKey(env.E2E_SUPABASE_URL), JSON.stringify(session));
+  return createCloud(
+    env.E2E_SUPABASE_URL,
+    env.E2E_SUPABASE_PUBLISHABLE_KEY,
+    null,
+    winStub(),
+    store
+  );
+}
+
+/* Polls `pred` every 100 ms, 10 s at most; answers whether it held. */
+async function heard(pred) {
+  for (let waited = 0; waited <= 10_000; waited += 100) {
+    if (pred()) return true;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  return false;
+}
+
 /* No key of `o`, at any depth, is `gm_note`. */
 function hasGmNote(o) {
   if (Array.isArray(o)) return o.some(hasGmNote);
@@ -28,22 +51,20 @@ function hasGmNote(o) {
   return Object.entries(o).some(([k, v]) => k === 'gm_note' || hasGmNote(v));
 }
 
-/** Runs cases A-I and the real-only checks; throws `contract: <what>`. */
+/** Runs cases A-J and the real-only checks; throws `contract: <what>`. */
 export async function runRealContract(env, admin, member) {
   assertTestProject(env.E2E_SUPABASE_URL);
   const url = env.E2E_SUPABASE_URL;
   const key = env.E2E_SUPABASE_PUBLISHABLE_KEY;
 
   const make = async (as) => {
-    const store = memoryStorage();
     let session = null;
     if (as === 'member') session = await mint(env, admin, member.email);
     else if (as === 'doomed') {
       const doomed = await createThrowaway(admin, member.email);
       session = await mint(env, admin, doomed.email);
     }
-    if (session) store.setItem(storageKey(url), JSON.stringify(session));
-    return createCloud(url, key, null, winStub(), store);
+    return portOf(env, session);
   };
 
   await runCloudContract(
@@ -185,6 +206,41 @@ export async function runRealContract(env, admin, member) {
   /* Signed out is a lapsed session to a write: `network`, kept and sent again. */
   const outClone = await out.shares.clone(playerShare.token, out.lists.newId());
   check(!outClone.ok && outClone.error === 'network', 'signed out, a copy was made');
+
+  /* A signed-out port joins the player link's private topic with the
+     publishable key and hears the owner's rename, then the delete. A first
+     join can be refused once while Realtime makes its message partitions. */
+  const outRead = await out.shares.read(playerShare.token);
+  const topicKey = outRead.ok ? outRead.shared?.topic_key : undefined;
+  check(typeof topicKey === 'string', 'signed out, the player link read has no topic key');
+  const got = [];
+  const leave = await joinLive(out, 'share:' + topicKey, got);
+  check(leave !== null, 'signed out, the share topic was refused three times');
+  try {
+    const before = outRead.shared.revision;
+    const renamed = await owner.lists.apply([
+      { op: 'update', id: listId, patch: { name: 'e2e живой' } }
+    ]);
+    check(renamed.ok && renamed.results[0]?.ok === true, 'the owner could not rename the list');
+    check(
+      await heard(() =>
+        got.some((m) => (readShareMessage(m.event, m.payload)?.revision ?? -1) > before)
+      ),
+      'signed out, the share topic did not deliver the rename in 10 s'
+    );
+    check(
+      (await owner.shares.revoke(playerShare.id)).ok,
+      'the owner could not delete the link'
+    );
+    check(
+      await heard(() =>
+        got.some((m) => readShareMessage(m.event, m.payload)?.revision === null)
+      ),
+      'signed out, the share topic did not deliver the delete in 10 s'
+    );
+  } finally {
+    leave?.();
+  }
 
   /* anon has no EXECUTE on delete_account(), end to end through PostgREST. */
   const anon = createClient(url, key, {

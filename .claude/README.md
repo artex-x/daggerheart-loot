@@ -356,7 +356,13 @@ a run resets three times whatever the migration count (the runner, the
 applier test, the walk): seven migrations took 192-203 s wall clock, the
 suite about 146 s of it, 72-76 s the walk (measured 2026-09-25 on this
 host); each
-new migration adds about 10 s. Its
+new migration adds about 10 s. Since `persist-3-realtime` the stack also
+runs Auth, Realtime and Kong: the first `supabase start` pulled Kong and
+took 82 s, a restart 51 s, and each `db reset --local` 55-71 s, because
+the CLI restarts the containers after it. A warm run with 238 tests took
+545 s wall clock, the suite 487 s (measured 2026-09-27 on this host), close
+to the tool's 600 s cap; a run past it arms the gate by its own exit
+("Run a long check", "Gate credit"). Its
 last stdout line is `check:db: PASS` or `check:db: FAIL`, and
 `check-observer.mjs` arms the `supabase/` and `tests/db/` commit rule from
 the PASS line. The observer matches the command at its start, so a run
@@ -631,6 +637,20 @@ mode 186-201 s; `npm run check` passed inside one 600 s call (vitest 207 s,
 check` (1988 tests, selftest 1295 cases) and `npm run check:db` (one more
 migration and test file) each ran past the 600 s cap in one pass and armed
 the gate by its own exit.
+
+Re-measured on this host on 2026-09-27, at the Realtime database batch:
+`npm run check` passed in one call (vitest 277 s, 2003 tests); `npm run
+check:db` with Realtime, Auth and Kong in the stack 545 s wall clock for
+238 tests (each `db reset --local` 55-71 s, the reversibility walk 131 s,
+the restore suites 198 s).
+
+Re-measured on this host on 2026-09-27, at the Realtime client batch:
+`npm run check` passed in one call (vitest 187 s, 66 files, 2078 tests);
+`npm run check:db` 432 s of suite time for 239 tests; `node
+tests/run-all.js app/states` 243 s (53 cases); `node tests/run-all.js
+app/print,app/contracts,app/typo,app/hues,stub` 432 s pooled
+(`app/contracts` 414 s); `npm run e2e` (contract cases A-J, F0-F11)
+passed inside one 600 s call.
 
 `check:built` and the `tests/app/` filters are paid once per batch; `npm run
 check` is paid once per commit inside it. None of these scale with the
@@ -1446,6 +1466,32 @@ CLI facts (2.117.0, measured 2026-09-24):
 - `supabase start -x` with every service but the database and `gotrue`
   (so without `kong`) brings Auth up healthy, and `db reset --local`
   restarts it (2026-09-26).
+- `supabase status -o json` names `ANON_KEY`, `PUBLISHABLE_KEY`,
+  `JWT_SECRET` (HS256, a fixed local value), `SECRET_KEY` and
+  `SERVICE_ROLE_KEY` only while Auth runs; with `gotrue` excluded it names
+  `API_URL` and `DB_URL` alone (2026-09-27). The second answer applies to
+  a stack started without Auth, for example by a checkout older than the
+  current `LOCAL_STACK_EXCLUDES` after a run with it. The Realtime suite
+  needs the anon key and the secret, so the `check:db` stack and the
+  drill's stack are the same: the database, Auth, Realtime and Kong
+  (`LOCAL_STACK_EXCLUDES`).
+- With Realtime running, `db reset --local` applies a migration that makes
+  a policy on `realtime.messages`, and restarts the realtime container
+  itself; Realtime makes the day partitions of `realtime.messages` when it
+  starts, and the first send after a restart was not delivered once
+  (2026-09-27). `realtime.send` adds the message id to the payload as `id`.
+- A hosted project's `realtime.messages` has no partition until Realtime
+  starts for it, on a client's join. On the test project after the
+  `persist-3-realtime` migration push, the list writes of `npm run e2e`
+  left 0 rows and no partition (each send only warned); the first anon
+  private join answered `CHANNEL_ERROR` with `MissingPartition` and made 5
+  partitions, and the next e2e run left 55 `owner:*` and 15 `share:*`
+  rows (2026-09-27). Read the count as `postgres` through
+  `SUPABASE_DB_URL_TEST`; 0 rows with no partition means no client has
+  joined yet, not a broken trigger. The app has no warm-up join: a send
+  dropped for a missing partition had no subscriber to reach, and the first
+  viewer pays one `down` and a rejoin about 2 s later, whose read covers
+  the gap.
 - The data dump carries the sequences it touches: with one fake
   `auth.refresh_tokens` row in the local stack, `db dump --local
   --data-only --schema auth,public` wrote `SELECT
@@ -1459,7 +1505,8 @@ CLI facts (2.117.0, measured 2026-09-24):
   (2026-09-26). `pg_dump` refuses a server of a newer major version, so
   the safety backup of `restore:prod` fails before any write when
   production's major version passes the local image's.
-- The `check:db` stack runs without the Auth container. Started that way
+- The `check:db` stack ran without the Auth container until
+  `persist-3-realtime`. Started that way
   after a run with Auth (the volume kept), its `auth` schema held every
   table the drill found in production (`identities` and `sessions`
   included), `auth.refresh_tokens` had `instance_id`, `id` (`bigint`,
@@ -1663,8 +1710,9 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 200 kB budget (with the account client chunk)`; 182.2
-kB on 2026-09-27 (178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
+Expected: `within the 200 kB budget (with the account client chunk)`; 184.5
+kB on 2026-09-27 with the Realtime client (182.2 kB earlier that day, 178.2
+kB on 2026-09-26). `dist/` stays configured until `npm run build` or
 `check:built` rebuilds it. Decision: "The bundle budget is 150 kB
 unconfigured and 200 kB configured"; the slimmer client it no longer waits
 on is still `docs/specs/DEBT.md`, D60.
@@ -1738,8 +1786,8 @@ agent included: `npm run restore:drill` ("Run the agent drill" below).
    `BACKUP_AGE_IDENTITY` from `.env.restore.local`. Expected: `data.sql`,
    plain SQL.
 2. Start the local stack with Auth: `npx supabase start -x <list>`, where
-   `<list>` is `LOCAL_STACK_EXCLUDES` (`tools/supabase/lib.mjs`) without
-   `gotrue`, comma-separated; then `npx supabase db reset --local` (PowerShell on Windows). A
+   `<list>` is `LOCAL_STACK_EXCLUDES` (`tools/supabase/lib.mjs`, which
+   no longer excludes `gotrue`), comma-separated; then `npx supabase db reset --local` (PowerShell on Windows). A
    production dump names the `auth` columns that hosted Auth migrated, and
    the database image's baseline lacks them. Expected: every migration
    applied.
@@ -1999,6 +2047,7 @@ call, not the dump".
 | Storage | `sum((metadata->>'size')::bigint)` over `storage.objects`; 0 without the table; `null` and a `warn` row `no storage.objects access` when `postgres` may not read it | 1,000,000,000 bytes | as Database |
 | MAU (estimate) | distinct users since the 1st of the month (UTC): `auth.users.last_sign_in_at`, union `auth.sessions` by `refreshed_at` (else `updated_at`); a lower bound; no source gives a `warn` row `no MAU source` | 50,000 | the month's rate so far; "resets first" when the crossing falls in the next month |
 | Accounts, Storage objects | `count(*)` | none | growth a day |
+| Realtime messages (24 h, lower bound) | `count(*)` of `realtime.messages` with `inserted_at` in the last 24 hours: one row per broadcast, delivered once per subscriber, so the billed messages are at least this many; 0 and a note without the table, `null` and a note when the role may not read it | none (the quota is 2 million a month, the dashboard's) | growth a day |
 | requests | Management API `usage.api-counts?interval=1day`, summed per service: an egress proxy, never bytes | none | none |
 | keep-alive | one Data API call a night (below) | none | none |
 

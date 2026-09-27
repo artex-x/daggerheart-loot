@@ -12,6 +12,7 @@ import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, memoryStorage } from '../ports/index.js';
 import type { ListRepository, ListWrites } from '../ports/index.js';
+import { COALESCE_MS } from '../lib/live.js';
 import { CloudLists, FAULT_LIMIT, QUIET_MS, RETRY_MS } from './cloudLists.svelte.js';
 import { ListStore } from './lists.svelte.js';
 
@@ -745,7 +746,7 @@ describe('a refused write', () => {
     expect(store.sync).toBe('saved');
   });
 
-  it('says the entry limit alone when the refused add is followed by its reorder', async () => {
+  it('says the entry limit alone when an add is refused', async () => {
     const { store } = await loaded({ limits: { entries: 9 } });
     store.restoreEntry(SHOP, 'q2', 0, {});
     await quiet();
@@ -756,6 +757,44 @@ describe('a refused write', () => {
       }
     ]);
     expect(store.get(SHOP)?.ids).not.toContain('q2');
+  });
+
+  it("applies a reorder that misses another device's new entry with no toast, that entry after the given ones", async () => {
+    const { cloud, store, real } = await loaded();
+    await real([
+      {
+        op: 'add',
+        list_id: SHOP,
+        entries: [
+          {
+            id: uuid(9001),
+            item_key: 'q2',
+            source: 'official',
+            snapshot: null,
+            position: 9,
+            quantity: 1,
+            price_coins: null,
+            player_note: '',
+            gm_note: ''
+          }
+        ]
+      }
+    ]);
+    store.move(SHOP, 'di11', 0);
+    await quiet();
+    expect(said).toEqual([]);
+    expect((await serverList(cloud.lists, SHOP))?.list_entries.map((e) => e.item_key)).toEqual([
+      'di11',
+      'ci1',
+      'q1',
+      'q313',
+      'cc1',
+      'voa2_a3',
+      'q23',
+      'w51',
+      'q35',
+      'q2'
+    ]);
   });
 
   it('drops only a refused write, toasts once and re-reads', async () => {
@@ -1140,5 +1179,101 @@ describe('a request the database keeps failing', () => {
     await later(RETRY_MS);
     await later(RETRY_MS);
     expect(sizes(apply)).toEqual([1, 1, 2, 2, 2, 1]);
+  });
+});
+
+describe('the owner topic', () => {
+  /* A store that watches gm1's topic over the fake, with its handlers kept so a
+     test can send a message the fake would not. */
+  async function watching() {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const handlers: { message(event: string, payload: unknown): void }[] = [];
+    const events = {
+      tab: cloud.events.tab,
+      subscribe: (topic: string, on: Parameters<typeof cloud.events.subscribe>[1]) => {
+        handlers.push(on);
+        return cloud.events.subscribe(topic, on);
+      }
+    };
+    const store = new CloudLists(cloud.lists, say, t, { events, random: () => 0.5 });
+    await store.load();
+    store.watch(SEED.users.gm1.id);
+    await later(COALESCE_MS);
+    const real = cloud.lists.apply.bind(cloud.lists);
+    const apply = vi.spyOn(cloud.lists, 'apply');
+    const list = vi.spyOn(cloud.lists, 'list');
+    return { cloud, store, apply, real, list, handlers };
+  }
+
+  it('joins, and reads nothing for its own write', async () => {
+    const { store, list } = await watching();
+    expect(store.live).toBe(true);
+    store.rename(SHOP, 'Своё');
+    await quiet();
+    await later(COALESCE_MS);
+    expect(list).not.toHaveBeenCalled();
+  });
+
+  it('reads nothing for a revision already read, or a message of another shape', async () => {
+    const { list, handlers } = await watching();
+    const on = handlers[0];
+    on?.message('list', { list: SHOP, revision: 1, by: 'other-device', id: '1' });
+    on?.message('list', { list: uuid(999), revision: null, by: 'other-device' });
+    on?.message('revision', { revision: 5 });
+    await later(COALESCE_MS);
+    expect(list).not.toHaveBeenCalled();
+  });
+
+  it("re-reads once, after the coalescing window, for another device's edits", async () => {
+    const { cloud, store, list } = await watching();
+    cloud.play(SHOP, { name: 'Лавка у моста' });
+    cloud.play(SHOP, { name: 'Лавка у реки' });
+    await later(COALESCE_MS - 1);
+    expect(list).not.toHaveBeenCalled();
+    await later(1);
+    expect(list).toHaveBeenCalledOnce();
+    expect(store.get(SHOP)?.name).toBe('Лавка у реки');
+  });
+
+  it('re-reads for a list deleted elsewhere', async () => {
+    const { store, list, handlers } = await watching();
+    handlers[0]?.message('list', { list: SHOP, revision: null, by: 'other-device' });
+    await later(COALESCE_MS);
+    expect(list).toHaveBeenCalledOnce();
+    expect(store.status).toBe('ready');
+  });
+
+  it('re-reads only once the buffer is empty, for a message while a write waits', async () => {
+    const { cloud, store, list } = await watching();
+    store.setNote(SHOP, 'note', 'моё');
+    cloud.play(SHOP, { name: 'Лавка у моста' });
+    await later(COALESCE_MS);
+    expect(list).not.toHaveBeenCalled();
+    await quiet();
+    expect(list).toHaveBeenCalledOnce();
+    expect(store.get(SHOP)).toMatchObject({ name: 'Лавка у моста', note: 'моё' });
+  });
+
+  it('re-reads only once the request in flight has landed, for a message meanwhile', async () => {
+    const { cloud, store, list, apply, real } = await watching();
+    const held = holdNext(apply, real);
+    store.setNote(SHOP, 'note', 'моё');
+    await later(QUIET_MS);
+    cloud.play(SHOP, { name: 'Лавка у моста' });
+    await later(COALESCE_MS);
+    expect(list).not.toHaveBeenCalled();
+    held.release();
+    await settle();
+    expect(list).toHaveBeenCalledOnce();
+    expect(store.get(SHOP)?.name).toBe('Лавка у моста');
+  });
+
+  it('leaves the topic on clear', async () => {
+    const { store, cloud, list } = await watching();
+    store.clear();
+    expect(store.live).toBe(false);
+    cloud.play(SHOP, { name: 'Лавка у моста' });
+    await later(COALESCE_MS);
+    expect(list).not.toHaveBeenCalled();
   });
 });

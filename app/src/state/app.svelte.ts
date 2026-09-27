@@ -387,8 +387,15 @@ export class AppState {
       this.say(msg, { error });
     };
     this.lists = new ListStore(env, say, () => this.t);
-    this.cloudLists = env.cloud ? new CloudLists(env.cloud.lists, say, () => this.t) : null;
-    this.sharedView = env.cloud ? new SharedView(env.cloud.shares) : null;
+    this.cloudLists = env.cloud
+      ? new CloudLists(env.cloud.lists, say, () => this.t, {
+          events: env.cloud.events,
+          random: env.random
+        })
+      : null;
+    this.sharedView = env.cloud
+      ? new SharedView(env.cloud.shares, { events: env.cloud.events, random: env.random })
+      : null;
     this.legacyMove = env.cloud ? new LegacyMove(this, () => this.user?.userId ?? null) : null;
     this.legacyWritable = !env.cloud || legacyWritable(env.clock.now());
 
@@ -483,7 +490,7 @@ export class AppState {
     const offShown = this.env.storage.onExternalChange((key) => {
       if (key !== null) return;
       this.now = Date.now();
-      this.#refreshShared();
+      this.#refreshShared(true);
       if (!this.user) return;
       if (this.#stale) this.#saveAccount();
       else void this.#pull();
@@ -547,7 +554,11 @@ export class AppState {
     const lists = this.cloudLists;
     if (lists) {
       lists.clear();
-      void lists.load().then(() => this.#listsReady());
+      void lists.load().then(() => {
+        /* The owner's topic from the first read until sign-out, on every route. */
+        if (this.#prefsFor === s.userId) lists.watch(s.userId);
+        return this.#listsReady();
+      });
     }
   }
 
@@ -613,17 +624,20 @@ export class AppState {
     if (r.kind === 'storedList' && isCloudId(r.listId)) this.replace(sectionHash('lists'));
   }
 
-  /* A share page re-reads its list, signed in or not. */
-  #refreshShared(): void {
-    if (this.route.kind === 'share') void this.sharedView?.refresh();
+  /* A share page re-reads its list, signed in or not; the poll only while its
+     Realtime topic is not joined (`always` is the shown-again signal). */
+  #refreshShared(always = false): void {
+    const view = this.sharedView;
+    if (this.route.kind === 'share' && (always || !view?.live)) void view?.refresh();
   }
 
-  /* The index and an account list page re-read while they are on screen; a
-     failed first read, or a move the network stopped, is retried on every
-     route, so the browser's lists move once the network returns. */
+  /* The index and an account list page re-read while they are on screen and the
+     owner's topic is not joined; a failed first read, or a move the network
+     stopped, is retried on every route, so the browser's lists move once the
+     network returns. */
   #pollLists(): void {
     this.now = Date.now();
-    this.#refreshShared();
+    this.#refreshShared(false);
     const lists = this.cloudLists;
     if (!lists || !this.user) return;
     const r = this.route;
@@ -631,7 +645,7 @@ export class AppState {
       (r.kind === 'section' && r.section === 'lists') ||
       (r.kind === 'storedList' && lists.get(r.listId) !== undefined);
     const retry = lists.status === 'error' || this.legacyMove?.status === 'failed';
-    if (shown || retry) void lists.refresh().then(() => this.#listsReady());
+    if ((shown && !lists.live) || retry) void lists.refresh().then(() => this.#listsReady());
   }
 
   /**
@@ -883,6 +897,7 @@ export class AppState {
     this.#stopAuth = null;
     this.#stopHidden?.();
     this.#stopHidden = null;
+    this.cloudLists?.unwatch();
     /* A timer left running past the listeners it would otherwise update is a
        leak of the same kind `#stopRouter`/`#stopListWatch` already guard
        against. */

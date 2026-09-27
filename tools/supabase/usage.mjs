@@ -76,8 +76,25 @@ async function readStorage(db) {
   return { storage_bytes: num(r.bytes), storage_objects: num(r.n) };
 }
 
+/* The rows of realtime.messages inserted in the last 24 hours: 0 without
+   the table, null when the role may not read it. */
+async function readRealtime(db) {
+  const [s] = await db`
+    select to_regclass('realtime.messages') is not null as present,
+      coalesce(has_table_privilege(to_regclass('realtime.messages'), 'select'), false) as readable`;
+  if (!s.present) return { realtime_rows_24h: 0, realtime_note: 'no realtime.messages' };
+  if (!s.readable) {
+    return { realtime_rows_24h: null, realtime_note: 'no realtime.messages access' };
+  }
+  const [r] = await db`
+    select count(*)::bigint as n from realtime.messages
+    where inserted_at >= now() - interval '24 hours'`;
+  return { realtime_rows_24h: num(r.n) };
+}
+
 /** Returns today's metrics from `db` (a connection or a transaction):
- * `db_bytes`, the Storage figures, `mau`, `auth_users`, `tables` (every
+ * `db_bytes`, the Storage figures, `mau`, `auth_users`,
+ * `realtime_rows_24h`, `tables` (every
  * `public` table's exact rows and total bytes) and `near_limits`. Totals
  * only: no id, email or name leaves the database. */
 export async function collect(db, now) {
@@ -116,6 +133,7 @@ export async function collect(db, now) {
     ...(await readStorage(db)),
     mau: await readMau(db, now),
     auth_users: num(users),
+    ...(await readRealtime(db)),
     tables,
     near_limits: { ...near }
   };

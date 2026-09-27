@@ -184,7 +184,7 @@ Raised, not settled: none beyond section 16.
 |---|---|
 | R1 | `public.delete_account()` security definer: deletes the caller's rows and `auth.users` row; `user_prefs(user_id uuid pk references auth.users on delete cascade, prefs jsonb not null default '{}', updated_at)` with owner-only RLS and a `CHECK (pg_column_size(prefs) < 4096)` |
 | R2 | As shipped (2026-09-26; migrations `20260925130000`-`20260925130300` are the record): `limit_defaults(key pk, value int null)`, `user_limit_overrides(user_id, key, value int null)`, `effective_limit(user, key)` (decision 31 as amended); `lists(id uuid pk client-generated, owner_id, name, money_mode, player_note, gm_note, revision, created_at, updated_at)` - no `position` (lists are never reordered), `legacy_fingerprint` arrives with R5's writer; `list_entries(id, list_id, item_key, source 'official'\|'homebrew', snapshot jsonb null, position, quantity, price_coins, player_note, gm_note)`; `list_shares(id, list_id, audience, token unique, topic_key uuid default gen_random_uuid(), created_at, revoked_at)` - the raw token, no hash (decision 29); RLS: owner CRUD on `lists` and `list_entries`, owner select on `list_shares`, nothing for `anon`; RPCs `create_list_share`, `revoke_list_share` (no rotate: a link is replaced by delete, then create), `get_shared_list(token)` (the projection, `revision` and `topic_key`; null for a bad or revoked token), `clone_shared_list(token, new_id)`, `reorder_list(list_id, entry_ids)`; triggers bump `lists.revision` and `updated_at` on any list or entry write and hold the limits `effective_limit` reads (50 lists per owner, 100 entries per list) |
-| R3 | Revised by the R3 plan (2026-09-25, `issues/persist-3-realtime/plan.md` section 5): a deferred constraint trigger on `lists` sends one message per list per transaction with the final revision, `realtime.send(jsonb_build_object('revision', v_rev), 'revision', 'share:' \|\| topic_key, true)` to every active share (`private` is `true`; the earlier `false` was wrong for private channels), and, if the owner agrees, `{ list, revision, by }` to `owner:<uid>`; a revoke or a deleted list sends `{ revision: null }` to the share topic; `select` policies on `realtime.messages` for `share:<uuid>` (`anon`, `authenticated`) and `owner:<uid>` (`authenticated`), no `insert` policy (no client can send); `reorder_list` becomes tolerant of a stale entry set. All SQL migrations |
+| R3 | As shipped (2026-09-27; migration `20260927120000_realtime.sql` is the record): a deferred constraint trigger on `lists` sends one message per list per transaction with the final revision, privately, to `share:<topic_key>` of every active share and `{ list, revision, by }` to `owner:<uid>` (`by` from the `x-dhloot-tab` header); a revoke or a deleted list sends `{ revision: null }` to the share topic; `select` policies on `realtime.messages` for `share:<uuid>` (`anon`, `authenticated`) and `owner:<uid>` (`authenticated`), no `insert` policy (no client can send); `reorder_list` keeps the given order and puts the other entries after it. Decisions: the 2026-09-25 and 2026-09-26 Realtime files under `docs/decisions/` |
 | R4 | Revised by the R4 plan (2026-09-26, `issues/persist-4-requests/plan.md` section 5; owner answers 32-38, 36 as changed): `purchase_requests(id, list_id fk cascade, share_id fk cascade, audience, status 'pending'\|'applied'\|'declined', status_key uuid unique, created_at, expires_at = created_at + 1 hour set by the function, decided_at)` - no name, no requester id; "expired" is a pending row past `expires_at`, read, never stored; `purchase_request_lines(request_id, item_key, entry_id on delete set null, quantity 1..99, price_coins snapshot, applied_quantity)`; RLS: the owner selects, no write grant. `limit_defaults` rows `request_lines` 100 and `pending_requests_per_list` 10; the rate (5 per share per minute, from the table), the expiry and a 24-hour retention after a decision or expiry are constants; housekeeping at write time. `create_purchase_request(token, lines)` (`anon`, `authenticated`) answers the `status_key`; `get_purchase_requests(keys)` (`anon`, at most five) answers status and the request's own lines; `apply_purchase_request(id, clamp)` refuses over-stock whole unless `clamp`, zero removes the entry; `decline_purchase_request(id)`. A trigger sends event `request` with `{ list, by }` to R3's `owner:<uid>` on a new or decided request, and `{}` to the sending share's topic on a decision; no new `realtime.messages` policy |
 | R6 | Refined by the R6 planning pass (2026-09-26, `issues/persist-6-import-export/plan.md` section 4.5): `import_lists(p_lists jsonb) returns integer` security definer for `authenticated`, create-only with client-made ids (`on conflict (id) do nothing`), one transaction - the table checks and the limit triggers unwind the whole call; `source` and `snapshot` pass through for R7's bundle v2. No table change |
 | R7 | Revised by the R7 refresh (2026-09-25, `issues/persist-7-homebrew/plan.md` section 4.3): `homebrew_items(id uuid pk client-generated, owner_id, catalog_key text check '^hb_[a-z2-7]{16}$', content jsonb check homebrew_content_valid(content) and octet_length <= 16384, revision, created_at, updated_at, unique (owner_id, catalog_key))` - the record shape (`kind`, `en`, `ru`, `ende`, `rud`, `tier`, `eq`) in one column, validated by `public.homebrew_content_valid(jsonb)`; no `kind` or `art_url` column (R8 adds `art_url`); owner-only RLS, nothing for `anon`; `homebrew_items_before_update` (pins id, owner, key, created; revision + 1) and `homebrew_items_limit` on `effective_limit(owner, 'homebrew_items_per_owner')` = 50 (decision 31); `homebrew_items_touch` (an edit bumps every referencing list's `revision`) and `homebrew_items_before_delete` (removes the owner's references); `homebrew_snapshot_of(key, content)` = `jsonb_build_object('id', key, 'src', 'homebrew') \|\| content` after the language fallbacks - the frozen form; `list_entries`' R2 CHECK is replaced by `source = 'homebrew' or snapshot is null` and `snapshot is null or homebrew_snapshot_valid(snapshot)` (owner, 2026-09-26: an own entry is a reference with `snapshot` null, a copy that leaves the account is frozen); `get_shared_list` and `clone_shared_list` re-created (the projection fills a reference's `snapshot` from the item; a clone freezes unless the caller owns the list); `service_role` select and delete. `B7.3` adds `import_bundle(p_items, p_lists)` beside R6's `import_lists`. Shares and their RPCs are R9's |
@@ -433,16 +433,18 @@ Releases, in the order the owner set (batch ids carry the release number):
 | - | `process-guards` (owner, 2026-09-26: a process task; Q1 answered A, gate credit, owner 2026-09-27) | `B1`, `B2` - **closed 2026-09-27**. Shipped: the six rules as hooks and scripts (gate credit, the local stack lock, the `.env` guards, the plan review before an implementer dispatch, the reviewer's report-only writes, a test-project migration push after an approving review) and seven decision files under `docs/decisions/` | Right after R5b, before R11: a plan review before the first implement batch when a plan adds a schema change or a SECURITY DEFINER function, changes a public contract, can lose data, or adds a write or sync protocol; a reviewer writes its full report to `issues/<id>/reviews/<batch>.md` (its Write tool limited to that path, enforced by a guard); a host-wide heavy-run lock across sessions, or gate credit for a backgrounded run by its exit code; `tests/db/run.mjs` takes and releases the local stack lock (`%TEMP%\dhloot-local-stack.lock`, 45-minute staleness, the holder's task id) itself; `bash-guard.mjs` denies `.`, `source` and `cat` on `.env*`; a schema batch runs `db:push` to the test project only after its review approves. Each rule was held by hand through R5 |
 | R11 | `persist-usage-monitoring` | `B11.1` - **closed 2026-09-27**, live at the push of `main` (commit "feat(persist): report production's free-plan usage nightly"). Shipped: `usage.yml`, `tools/supabase/usage-lib.mjs` and `usage.mjs`, the `usage_snapshots` migration, the `tests/derived.js` pins and three decision files under `docs/decisions/`. The owner's setup steps 1-9 are open (section 15, step 18a) | **Placed after R5 (owner request 2026-09-25, "after r2"; planner 2026-09-25), and after R5b from 2026-09-26**: a nightly `usage.yml` report of production's free-plan usage - database and Storage size, rows per table, an MAU estimate, request counts, users near their count limits - with a forecast, a summary every night, a failed run (GitHub's email) near a limit, the `usage_snapshots` history table and the keep-alive Data API call. The design as built: `.claude/README.md`, "Usage monitoring" |
 | - | `display-settings` (owner, 2026-09-27: answers Q1-Q3 A) | `B1` - **closed 2026-09-27**, live at the push of `main`. Shipped: page switches for the tables view and print layout last until a reload, `KeepNote.svelte` links `#/account`, the Display lead line; decision `docs/decisions/2026-09-27-display-defaults-are-set-in-the-account-a-page-switch-lasts-a-visit.md` | **After R11, before R3**: the Display section of `#/account` becomes the one source of defaults - a print layout or tables view picked on its page lasts until a reload, with a note linking `#/account`; the language and the starting-section pin stay saved settings; one page, no tabs |
-| R3 | `persist-3-realtime` | `B3.1`, `B3.2` | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
+| R3 | `persist-3-realtime` | `B3.0`-`B3.2` - **closed 2026-09-27**, live at the push of `main` (commit "feat(persist): update shared pages and the owner's lists live"). The owner's steps: "Allow public access" off on both projects, read back each release; confirm a share page updates live on a phone | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline, requester status |
-| R6 | `persist-6-import-export` | `B6.1`, `B6.2` (planned 2026-09-26) | JSON export and import, published schema `schema/import-v1.json` |
+| R6 | `persist-6-import-export` | `B6.1`, `B6.2` (planned 2026-09-26) | JSON export and import, published schema `schema/import-v1.json`; `llms.txt` gets extra attention so AI users can write an import file and read an export from it alone (owner, 2026-09-27) |
 | R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-26; `issues/persist-7-homebrew/plan.md` is the authority) | Homebrew items as live references in the owner's lists, «Мои предметы» from the account menu and in search, the source tag «Хоумбрю» / "Homebrew" (owner, 2026-09-26), bundle schema v2 |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
+| - | `general-review` (owner, 2026-09-27; working id, no directory yet) | to plan | **After R9, before R10** (owner: "one of the latest releases before clean up"): a whole-app review - code, security, functionality, UX, accessibility, performance - and a brainstorm of what could be added or done differently. Its output is findings and ideas for the owner to choose from; each chosen item becomes its own task or a `DEBT.md` entry. Its planner decides the review's shape and cost |
 | R10 | `persist-10-legacy-removal` | `B10.1` | The first release after the cutoff date (owner, 2026-09-27; `docs/DECISIONS.md`, "R10 removes browser lists and the move; an old `#/l/` link is not found"): browser lists and all move support go - the codec, its fixtures and contract text, the `#/l/` list page and the retired page (an old `#/l/` link draws the not-found page, the address kept: a contract change), `ListStore`'s browser lists, `LegacyMove`, `MoveNotice`, `MoveStatus`, `StorageNotice`, the move's RPC path; its plan decides whether a migration drops `move_legacy_list` and `lists.legacy_fingerprint` (`DEBT.md` D62, D63). The browser's data is not deleted |
 
 The order is R0, R1, R2, R5, R5b (closed 2026-09-27), the process task
-`process-guards`, R11, `display-settings`, R3, R4, R6-R9, R10 (owner, 2026-09-25;
+`process-guards`, R11, `display-settings`, R3, R4, R6-R9, `general-review`,
+R10 (owner, 2026-09-25; `general-review` placed before R10 by the owner, 2026-09-27;
 `docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"; R11 placed after
 R5 so R5's 2026-10-12 deadline keeps priority; R5b split from R5 by the
 owner, 2026-09-26; the process task placed after R5b by the owner,
@@ -565,8 +567,7 @@ carries "goldens".
 | `B1.1`-`B1.6` | R1, closed 2026-09-25: the fake cloud and test build, sign-in and `#/account`, the hosted E2E and the CI `e2e` job, account preferences, CI migration deploys and the nightly backup, a states-case fix. The design as built is in `docs/specs/`, `docs/DECISIONS.md` and `.claude/README.md`; the batch briefs are in R1's commit history | - | - | - | - |
 | `B2.0`-`B2.3` | R2, closed 2026-09-26: the test-migration fix and the `production` Environment, the lists schema with limits and share links, account lists in the app with sign-in-only creation, share links `#/s/<token>` with "Save a copy". The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R2's commit history | - | - | - | - |
 | `B11.1` | R11, closed 2026-09-27: the `usage_snapshots` migration, `tools/supabase/usage-lib.mjs` and `usage.mjs`, `.github/workflows/usage.yml`, the `tests/derived.js` pins (section 9's R11 row). The design as built is in `.claude/README.md` ("Usage monitoring"), `docs/specs/COVERAGE.md` and `docs/decisions/`; the batch brief is in R11's commit history | - | - | - | - |
-| `B3.1` | Revised by the R3 plan (2026-09-25; `issues/persist-3-realtime/plan.md` section 10): the database half - broadcast triggers, `realtime.messages` policies, tolerant `reorder_list` (R2 review row R3), `check:db` with `realtime` and `kong` running and WebSocket clients proving delivery, one message per transaction, no client send, reversal of the policies | - | layer 1 `check`, layer 3 `check:db` (~20-25 min, first image pull included) | required: schema rule | new release (R3) |
-| `B3.2` | The client half (R3 plan section 11): `EventsPort` (real, lazy, fake with `play` and `setLive`), the `connecting`/`live`/`down` feed with backoff, the share page and (Q1) the owner lists on it, the poll only while down, a 20 s write timeout (R2 review row R4), a hidden status region; layer 2 states; E2E: live update, live revoke, two owner pages | section 6 row 16 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~30 min) | required: UI and a new port | a commit the harness cannot reach (the E2E needs `B3.1`'s migration on the test project) |
+| `B3.0`-`B3.2` | R3, closed 2026-09-27: the contract's reorder case made tolerant (`B3.0`), the broadcast triggers and `realtime.messages` policies with `check:db` WebSocket cases (`B3.1`), `EventsPort`, the live feed with the poll only while down, the owner topic on every route, the 20 s write timeout and the share page's hidden status (`B3.2`). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R3's commit history | - | - | - | - |
 | `B4.1` | Revised by the R4 plan (2026-09-26; `issues/persist-4-requests/plan.md` section 10): section 5's R4 row in one migration and its reversal; layer 3 matrix: anon sends through an active player or GM token only, a stopped or wrong token is refused alike, bad and stale lines, the line limit, the rate (6th in a minute), the pending cap (11th), housekeeping, the status read shows nothing about the owner, another user cannot read, apply or decline, over-stock refused whole, clamp, zero removes the entry, the `request` events on the owner and share topics; the harness's anon function list and the limit rows | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db` x2 (~16 min) | required (schema rule; the first anonymous write) | new release (R4) |
 | `B4.2` | Revised by the R4 plan (section 11): `RequestRepository`, fake and contract case, `env.session`, the requester's send and status block, flow b with `notifyGm`, the owner's Requests panel with apply, «Принять доступное» and decline, the index card line, R3's feeds routing `request`, policy text; layer 2 states and cases; E2E: an anonymous request applied by the owner, stock lowered, the requester's status reads applied | section 6 row 17 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI, policy text | a commit the harness cannot reach (the E2E needs `B4.1`'s migration on the test project) |
 | `B5.1`-`B5.2d` | R5, closed 2026-09-26: the move RPC and its conflict path, the batching RPC `apply_list_writes`, the write buffer with the batching client, the automatic move with the cutoff and the retired `#/l/` page (section 9's R5 row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R5's commit history | - | - | - | - |
@@ -653,23 +654,11 @@ release's own plan; the code, the specs and `docs/DECISIONS.md` are the record.
 `B2.0`-`B2.3`: shipped in R2 (section 9). Their outlines were superseded by the
 release's own plan; the code, the specs and `docs/decisions/` are the record.
 
-`B3.1`-`B3.2`: planned 2026-09-25 in `issues/persist-3-realtime/plan.md`,
-which is the release's authority (owner questions Q1-Q3 answered as
-recommended, 2026-09-26).
-`B3.1` is the database half, `B3.2` the client half (`EventsPort` over
-`supabase.channel(topic, { config: { private: true } })`). The shared page
-refetches when a received revision is above the one drawn, coalesced
-250 ms, and on every join; the 45 s poll runs only while the feed is down
-(`docs/DECISIONS.md`, 2026-09-25, "Realtime is the primary live path ...").
-Free-plan limits (200 peak connections, 2 million messages a month; a
-Broadcast counts one message plus one per receiver) are a monthly owner
-check (section 15, step 18).
-Acceptance line placed by R11 on `B3.1`: the nightly usage report gains
-`realtime_rows_24h`, the rows of `realtime.messages` inserted in the last
-24 hours (a lower bound of billed messages; one row is delivered once per
-subscriber), as an info row in `tools/supabase/usage.mjs`'s `collect` and
-`usage-lib.mjs`'s `evaluate`; its request counts already hold `realtime`.
-Peak connections and billed messages stay section 15, step 18.
+`B3.0`-`B3.2`: shipped in R3 (section 9). Their outlines were superseded by
+the release's own plan; the code, the specs and `docs/decisions/` are the
+record. Free-plan limits (200 peak connections, 2 million messages a month)
+stay a monthly owner check (section 15, step 18); the nightly usage report
+carries the Realtime row count of the last 24 hours.
 
 `B11.1` (R11) closed 2026-09-27; the design as built is `.claude/README.md`,
 "Usage monitoring". Billed egress, MAU and Realtime connections have no
@@ -1472,35 +1461,13 @@ record"). Still open: `Intl.RelativeTimeFormat` output - the goldens hold
 Node's text («изменён 1 час назад», «3 дня назад», «в прошлом месяце»); if
 a CI Chrome build differs, pin the text per runtime in the test.
 
-For the R3 (Realtime) planner: `docs/specs/DEBT.md` D56, D57 and D59 (a
-reorder refused after another device's edit, no timeout on a hanging
-write - reworded by R5: «Поделиться», a `#/s/` copy and the move wait
-behind it too -, a failed first `#/s/` read not retried); R5 paid D55 (a
-lapsed session is `network`, never a refusal) and D58 («Поделиться»
-flushes the buffer first).
+R3 paid D56, D57 and D59 (closed 2026-09-27); R5 paid D55 and D58.
 
 Carried from R5 (`persist-5-migration`, closed 2026-09-26) for later
 releases; each planner refresh places its items or names them to the
 owner:
 
-- R3: the account write buffer - `CloudLists` (`QUIET_MS` 2 s, `#seq`,
-  `#cut`, `#inFlight`, `flushNow`), one `apply_list_writes` request per
-  flush. R3's refresh re-reads: its section 5.3 (a flush is one transaction
-  for the whole request, so the deferred trigger sends one owner message
-  per list per request with the final revision; a refused write rolls back
-  its subtransaction and its queued `realtime.send` row); 5.4 (the `apply`
-  request carries `x-dhloot-tab` like any other, a `keepalive` request
-  keeps its headers, and `apply_list_writes` is `security invoker`, so
-  `current_setting('request.headers')` reads the same in its triggers);
-  5.5 (`apply_list_writes` calls `public.reorder_list(uuid, uuid[])` by
-  name - keep the signature and `authenticated`'s EXECUTE); 6.1 (the fake
-  sends one message per changed list per `apply` call); 6.6 (the 20 s
-  abort: one `AbortSignal.timeout(20000)` per `apply` request,
-  `keepaliveFetch` does not resend an aborted one, an abort is `network`
-  and the buffer keeps the request); its "deferral while a write is
-  queued" case also covers a write waiting in the buffer; `writeOf`, the
-  echo suppression (own writes arrive as one request per flush, one tab
-  id); D55 and D58 paid, D57 reworded.
+- R3: placed and shipped (closed 2026-09-27).
 - R6 and R7: `ListRepository` is now `newId`, `list`, `apply`, `move`; the
   seven write methods (`create`, `addEntries`, `reorder` and the others)
   are gone. R6's `import` is its own RPC beside `apply`, and
@@ -1574,12 +1541,10 @@ Carried from R11 (`persist-usage-monitoring`, closed 2026-09-27):
   reviewer reads the diff both times.
 - Risk: the hosted E2E needs the test project's schema current;
   `migrate-test` applies it before every `e2e` run (decision 41).
-- Risk: Realtime Broadcast from the database (`realtime.send`) and the
-  `private: true` channel with a `realtime.messages` policy for `anon` are
-  planned from platform documentation, not measured here; `B3.1`'s
-  `check:db` WebSocket cases and `B3.2`'s E2E flow are the proof, and the
-  45 s poll is the fallback if the platform behaves otherwise (the R3
-  plan, section 14, adds the `db reset` and CORS risks).
+- Fact (R3, 2026-09-27): Realtime Broadcast from the database and an
+  `anon` join of a private channel are proven by `check:db`'s WebSocket
+  cases and the hosted E2E; the 45 s poll stays the fallback while
+  Realtime is down.
 - Risk: `create_purchase_request` is the first RPC `anon` can write
   through; its bounds are inside the function and proven by the layer 3
   matrix (`B4.1`), and a valid share token is the only capability it

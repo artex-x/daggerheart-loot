@@ -13,5 +13,7 @@
   row leaks `owner_id`); the projection in the payload (per-audience
   payloads, GM notes kept in `realtime.messages`, the 256 KB cap); an
   active-share lookup in the policy (a revoked topic receives nothing
-  more anyway); a row trigger (a reorder of N entries sent N messages).
+  more anyway); a row trigger (a reorder of N entries sent N messages);
+  announcing each new revision on the page (a GM note edit would announce
+  a change a players' link does not draw; the page compares what it draws).
 - Amends "Realtime ships in v1, directly after lists, over polling" (2026-09-24): private sends, and no client can forge a message.

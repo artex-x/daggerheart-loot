@@ -508,6 +508,7 @@ const ru = {
   shareGoneSub: 'Владелец удалил эту ссылку или список.',
   sharedFailed: 'Список не загрузился',
   sharedFailedSub: 'Проверьте сеть и нажмите «Повторить».',
+  listUpdated: 'Список обновлён',
   cloneFailed: 'Не получилось сохранить список себе. Попробуйте ещё раз.',
   legacyLinks:
     'Ссылки вида #/l/ перестанут открываться %d. Сохраните список себе, чтобы не потерять его.',
@@ -953,6 +954,7 @@ const en: Dict = {
   shareGoneSub: 'The owner deleted this link or the list.',
   sharedFailed: 'The list did not load',
   sharedFailedSub: 'Check the network and press "Retry".',
+  listUpdated: 'The list was updated',
   cloneFailed: 'Could not save the list to your lists. Try again.',
   legacyLinks:
     'Links like this one (#/l/) stop opening on %d. Save the list to your lists to keep it.',

@@ -41,6 +41,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     button "Колдующий Кинжал Ранг 1 · Магическое · Инстинкт · Средне · d6 ма..." [namelen=217 namehash=4560dddc]
     checkbox "Брошюра по Истории Искусства" [checked=false]
     button "11 Брошюра по Истории Искусства Это прекрасно иллюстрированная б..." [namelen=616 namehash=5c84c6ba]
+    status ""
   generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -128,6 +129,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     button "Casting Dagger Tier 1 · Magic · Instinct · Close · d6 mag · One-..." [namelen=180 namehash=33c9b4cf]
     checkbox "Art History Booklet" [checked=false]
     button "11 Art History Booklet This is a finely illustrated booklet (don..." [namelen=538 namehash=326f6b17]
+    status ""
   generic ""
   contentinfo ""
     navigation "Site pages"

@@ -1,5 +1,6 @@
 # 2026-09-24 - Supabase configuration is code; the dashboard is read-only; no Branching
 
+- Amended by "Realtime public access is off; the owner sets it in the dashboard" (2026-09-26): one named dashboard setting, read back each release.
 - Task: `persistent-storage` (owner decision, 2026-09-24).
 - Decision: everything that can be code is code. Auth settings live in
   `supabase/config.toml` (site URL, redirect URLs, email, phone and

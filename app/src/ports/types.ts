@@ -406,12 +406,28 @@ export interface ShareRepository {
   clone(token: string, id: string): Promise<ListWrite>;
 }
 
-/** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, ...). */
+/** A feed's channel joined (`live`) or lost (`down`). */
+export type LiveStatus = 'live' | 'down';
+
+/** Private Realtime topics (docs/specs/FEATURES.md, "Account and browser lists"). */
+export interface EventsPort {
+  /** Joins `topic` on a private channel; `status` reports the join and each loss.
+   *  Returns the leave. A message is untyped here; `lib/live.ts` reads it. */
+  subscribe(
+    topic: string,
+    on: { message(event: string, payload: unknown): void; status(s: LiveStatus): void }
+  ): () => void;
+  /** This page load's id, sent as `x-dhloot-tab` on every PostgREST request. */
+  readonly tab: string;
+}
+
+/** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, R3 events, ...). */
 export interface CloudPort {
   auth: AuthPort;
   prefs: PreferencesPort;
   lists: ListRepository;
   shares: ShareRepository;
+  events: EventsPort;
 }
 
 /**

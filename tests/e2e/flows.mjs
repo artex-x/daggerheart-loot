@@ -5,7 +5,8 @@
  * back from the server and deleted, F8 its share links made, read, deleted,
  * made again and copied, F9 a browser list moved into the account at
  * sign-in, once, and not for another account, F10 two edits kept by a page
- * closed inside the write buffer's quiet window. Each flow gets its own
+ * closed inside the write buffer's quiet window, F11 an edit drawn live on an
+ * open share page and on the owner's second page. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -24,6 +25,7 @@ import {
   sharesOf,
   userGone
 } from './admin.mjs';
+import { portOf } from './contract.mjs';
 import { storageKey } from './lib.mjs';
 import { probePage } from './probe.mjs';
 
@@ -63,6 +65,15 @@ async function until(what, fn) {
     if (await fn()) return;
     if (waited >= 10_000) throw new Error('e2e ' + what);
     await new Promise((r) => setTimeout(r, 250));
+  }
+}
+
+/* A live redraw: 10 s at most, far below the 45 s poll. */
+async function within10(page, what, fn, ...args) {
+  try {
+    await page.waitForFunction(fn, { timeout: 10_000, polling: 100 }, ...args);
+  } catch {
+    throw new Error('e2e ' + what);
   }
 }
 
@@ -608,4 +619,91 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteListsOf(admin, member.id);
   }
   console.log('e2e: F10 ok');
+
+  /* F11: Realtime on the hosted project. (a) A signed-out share page, once
+     its topic joined, draws a rename made in Node within 10 s - the poll is
+     45 s, so only the live path passes - and a delete. (b) Two pages of the
+     member draw each other's rename; every write in them carries the tab
+     header through the gateway, so a CORS refusal of it fails here. */
+  await deleteListsOf(admin, member.id);
+  try {
+    const port = portOf(env, await mint(env, admin, member.email));
+    const listId = port.lists.newId();
+    const made = await port.lists.apply([
+      {
+        op: 'create',
+        list: { id: listId, name: 'E2E live', money_mode: 'bag', player_note: '', gm_note: '' },
+        entries: [
+          {
+            id: port.lists.newId(),
+            item_key: 'ci1',
+            source: 'official',
+            snapshot: null,
+            position: 0,
+            quantity: 1,
+            price_coins: null,
+            player_note: '',
+            gm_note: ''
+          }
+        ]
+      }
+    ]);
+    if (!made.ok || made.results[0]?.ok !== true) throw new Error('e2e F11: no list made');
+    const share = await port.shares.create(listId, 'player');
+    if (!share.ok) throw new Error('e2e F11: no players link made');
+
+    await withPage(ctx, null, async (page, d) => {
+      await d.open('#/s/' + share.token);
+      await waitText(page, 'F11', 'E2E live');
+      await waitFor(
+        page,
+        'e2e F11: the share page never joined its topic',
+        () => !!document.querySelector('[data-live="live"]')
+      );
+      const renamed = await port.lists.apply([
+        { op: 'update', id: listId, patch: { name: 'E2E live 2' } }
+      ]);
+      if (!renamed.ok || renamed.results[0]?.ok !== true) {
+        throw new Error('e2e F11: the rename was refused');
+      }
+      await within10(
+        page,
+        'F11: the share page did not draw the rename in 10 s',
+        () =>
+          document.querySelector('h1')?.textContent === 'E2E live 2' &&
+          document.querySelector('.said')?.textContent === 'Список обновлён'
+      );
+      if (!(await port.shares.revoke(share.id)).ok) throw new Error('e2e F11: no delete');
+      await within10(page, 'F11: the share page did not draw the delete in 10 s', () =>
+        document.body.textContent.includes('Список больше не доступен')
+      );
+    });
+
+    const live = (page) =>
+      waitFor(
+        page,
+        "e2e F11: the list page never joined the owner's topic",
+        () => !!document.querySelector('.lsaid[data-live="live"]')
+      );
+    await withPage(ctx, await mint(env, admin, member.email), async (pageA, a) => {
+      await a.open('#/lists/' + listId);
+      await waitText(pageA, 'F11', 'Сохранено');
+      await live(pageA);
+      await withPage(ctx, await mint(env, admin, member.email), async (pageB, b) => {
+        await b.open('#/lists/' + listId);
+        await waitText(pageB, 'F11', 'Сохранено');
+        await live(pageB);
+        await a.type('Название списка', 'E2E live 3');
+        await a.writesSettled();
+        await within10(
+          pageB,
+          "F11: the second page did not draw the first page's rename in 10 s",
+          () => document.querySelector('input.titleinput')?.value === 'E2E live 3'
+        );
+      });
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+  }
+  console.log('e2e: F11 ok');
 }

@@ -9,6 +9,8 @@
  * the request and retries; a limit or another refusal drops that write, says
  * why, and re-reads the account; a write to a row deleted elsewhere (`gone`)
  * is dropped with no toast; a request the database keeps failing is halved.
+ * Signed in, the store watches the owner's Realtime topic: another tab's or
+ * device's change re-reads the account once the buffer is empty.
  * docs/DECISIONS.md, 2026-09-26: "Account list writes are buffered and sent
  * two seconds after the last edit", "The write buffer goes to the server as
  * one invoker RPC with a result per write", "A request the database fails
@@ -32,6 +34,7 @@ import {
   type NewListRow
 } from '../lib/cloudLists.js';
 import type { Dict } from '../lib/dict.js';
+import { COALESCE_MS, readOwnerMessage } from '../lib/live.js';
 import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
 import {
   freshIds,
@@ -44,8 +47,10 @@ import {
   type StoredList
 } from '../lib/lists.js';
 import { MONEY_DEFAULT } from '../lib/money.js';
-import type { ListOpResult, ListRepository } from '../ports/index.js';
+import type { Random } from '../lib/roll.js';
+import type { EventsPort, ListOpResult, ListRepository } from '../ports/index.js';
 import type { ListModel } from './lists.svelte.js';
+import { LiveFeed } from './liveFeed.svelte.js';
 
 /** How long a write that found no network waits before it is sent again. */
 export const RETRY_MS = 15_000;
@@ -108,17 +113,50 @@ export class CloudLists implements ListModel {
   #reread = false;
   #timer: ReturnType<typeof setTimeout> | null = null;
   /* Each list as last read, by its `updated_at`: an unchanged row keeps its
-     object, so a re-read that finds nothing new redraws nothing. */
-  #read: Record<string, { at: string; list: CloudList }> = {};
+     object, so a re-read that finds nothing new redraws nothing. `rev` is the
+     revision read, which an owner message is compared with. */
+  #read: Record<string, { at: string; rev: number; list: CloudList }> = {};
+  readonly #events: EventsPort | null;
+  readonly #feed: LiveFeed | null;
+  #remoteTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     repo: ListRepository,
     say: (msg: string, error?: boolean) => void,
-    dict: () => Dict
+    dict: () => Dict,
+    live?: { events: EventsPort; random: Random }
   ) {
     this.#repo = repo;
     this.#say = say;
     this.#dict = dict;
+    this.#events = live?.events ?? null;
+    this.#feed = live
+      ? new LiveFeed(live.events, live.random, {
+          message: (event, payload) => {
+            this.#message(event, payload);
+          },
+          refetch: () => {
+            this.#remote();
+          }
+        })
+      : null;
+  }
+
+  /** Whether the owner's Realtime topic is joined. */
+  get live(): boolean {
+    return this.#feed?.state === 'live';
+  }
+
+  /** Watches the owner's topic: another tab's or device's change re-reads the account. */
+  watch(userId: string): void {
+    this.#feed?.watch('owner:' + userId);
+  }
+
+  /** Leaves the owner's topic. */
+  unwatch(): void {
+    this.#feed?.stop();
+    if (this.#remoteTimer !== null) clearTimeout(this.#remoteTimer);
+    this.#remoteTimer = null;
   }
 
   get saved(): boolean {
@@ -174,6 +212,7 @@ export class CloudLists implements ListModel {
 
   /** Signed out: nothing of the account stays, buffered writes included. */
   clear(): void {
+    this.unwatch();
     this.#epoch++;
     this.#edits++;
     this.#queue = [];
@@ -211,17 +250,38 @@ export class CloudLists implements ListModel {
   }
 
   #apply(rows: readonly ListRow[]): void {
-    const read: Record<string, { at: string; list: CloudList }> = {};
+    const read: Record<string, { at: string; rev: number; list: CloudList }> = {};
     const next = rows.map((row) => {
       const had = this.#read[row.id];
       const list = had?.at === row.updated_at ? had.list : toCloudList(row);
-      read[row.id] = { at: row.updated_at, list };
+      read[row.id] = { at: row.updated_at, rev: row.revision, list };
       return list;
     });
     this.#read = read;
     next.sort(byUpdated);
     const same = next.length === this.lists.length && next.every((l, i) => l === this.lists[i]);
     if (!same) this.lists = next;
+  }
+
+  /* A message from this tab's own write, or of a revision already read, asks
+     for nothing; a list deleted elsewhere is a re-read too. */
+  #message(event: string, payload: unknown): void {
+    const m = readOwnerMessage(event, payload);
+    if (!m || m.by === this.#events?.tab) return;
+    const had = this.#read[m.list];
+    if (m.revision === null ? !had : had && m.revision <= had.rev) return;
+    this.#remote();
+  }
+
+  /* A change elsewhere: one re-read per burst, made once the buffer is empty
+     and nothing is in flight. */
+  #remote(): void {
+    this.#remoteTimer ??= setTimeout(() => {
+      this.#remoteTimer = null;
+      if (this.status !== 'ready') return;
+      this.#reread = true;
+      this.#rereadWhenIdle();
+    }, COALESCE_MS);
   }
 
   #rereadWhenIdle(): void {
@@ -263,8 +323,8 @@ export class CloudLists implements ListModel {
     this.#stopRetry();
     this.#flushing = true;
     const epoch = this.#epoch;
-    /* One toast per flush: a refused add is followed by its reorder, and the
-       reorder's refusal must not replace the limit text. */
+    /* One toast per flush: a request can hold several refused writes, and a
+       later refusal must not replace the first one's text (a limit). */
     let told = false;
     while (this.#queue[0] && this.#queue[0].seq <= this.#cut) {
       /* The queue is in seq order, so the due ops are its head. */

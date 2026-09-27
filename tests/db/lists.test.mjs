@@ -4,7 +4,8 @@
   no user id get nothing; every update and every entry change bumps the
   list's revision and updated_at; the checks bound each field; the limits
   refuse the 51st list and the 101st entry; reorder_list() rewrites the
-  order of one list; the rows go with their user. docs/specs/FEATURES.md,
+  order of one list and puts the entries it was not given after the given
+  ones; the rows go with their user. docs/specs/FEATURES.md,
   "Lists".
 */
 import { after, before, describe, it } from 'node:test';
@@ -101,7 +102,7 @@ describe('lists grants', () => {
       cross join unnest(array['anon', 'authenticated', 'service_role']) as r(role)
       where p.pronamespace = 'public'::regnamespace
         and p.proname in ('lists_before_update', 'list_entries_touch', 'lists_limit',
-          'list_entries_limit')
+          'list_entries_limit', 'lists_broadcast', 'list_shares_gone')
         and has_function_privilege(r.role, p.oid, 'EXECUTE')`;
     assert.deepEqual([...rows], []);
   });
@@ -396,19 +397,37 @@ describe('reorder_list()', () => {
     assert.deepEqual(out, { ids: [E3, E1, E2], positions: [0, 1, 2], bumped: true });
   });
 
-  for (const [what, entries] of [
-    ['a missing id', [E3, E1]],
-    ['an extra id', [E3, E1, E2, EB]],
-    ['a duplicate', [E3, E1, E1]],
-    ['a null', [E3, E1, null]]
-  ]) {
-    it(`refuses ${what}`, async () => {
-      await assert.rejects(
-        asA(world, (tx) => tx`select public.reorder_list(${LA}, ${entries}::uuid[])`),
-        byCode('22023', /entries do not match the list/)
-      );
+  /* Reorders LA as A and reads back LA's order and EB's position. */
+  const reorder = (entries) =>
+    asA(world, async (tx) => {
+      await tx`select public.reorder_list(${LA}, ${entries}::uuid[])`;
+      await tx.unsafe('reset role');
+      const [eb] = await tx`select position from public.list_entries where id = ${EB}`;
+      return { ids: ids(await order(tx)), eb: eb.position };
     });
-  }
+
+  it("ignores another list's entry, which keeps its position there", async () => {
+    assert.deepEqual(await reorder([E3, EB, E1, E2]), { ids: [E3, E1, E2], eb: 0 });
+  });
+
+  it('puts an entry it was not given after the given ones', async () => {
+    assert.deepEqual(await reorder([E3, E1]), { ids: [E3, E1, E2], eb: 0 });
+  });
+
+  it('counts a repeated id once, at its first place', async () => {
+    assert.deepEqual(await reorder([E1, E3, E1]), { ids: [E1, E3, E2], eb: 0 });
+  });
+
+  it('ignores a null id', async () => {
+    assert.deepEqual(await reorder([E3, null, E1]), { ids: [E3, E1, E2], eb: 0 });
+  });
+
+  it('refuses a null order', async () => {
+    await assert.rejects(
+      asA(world, (tx) => tx`select public.reorder_list(${LA}, ${null}::uuid[])`),
+      byCode('22023', /no entry order given/)
+    );
+  });
 
   it("refuses B's list, and a caller with no user id", async () => {
     await assert.rejects(

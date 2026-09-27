@@ -10,33 +10,35 @@ user-visible defect does not belong here. Why this file is the home:
 `docs/DECISIONS.md`, "Kept defects live in `docs/specs/DEBT.md`, grouped by
 the task that owes them".
 
-## Slimmer account client (no task filed yet; runs before `persist-3-realtime`)
+## Slimmer account client (no task filed yet)
 
 Owns: an account client built from the Supabase packages the app uses,
 which brings the configured bundle back under its old 170 kB limit.
 
-### D60 - the configured build ships 28 kB of account client that nothing calls
+### D60 - the configured build ships about 9 kB of account client that nothing calls
 
 - **Where**: `app/src/ports/supabase.ts` (`createClient` from
   `@supabase/supabase-js`); `SUPABASE_ONLY_IN_PORT` in `eslint.config.mjs`
   (its `@supabase/*` pattern already covers the smaller packages); the
   decision "The account client loads after first paint; a provider redirect
   settles before mount", which names supabase-js as the one import.
-- **What**: the full client carries realtime-js (16.1 kB gzip), storage-js
-  (7.1 kB) and functions-js (1.5 kB), which the app does not call. The
-  account chunk is 55.4 kB and the configured build 178.2 kB (measured
-  2026-09-26), so every signed-in reader downloads them after first paint.
-  The budget is 200 kB (decision "The bundle budget is 150 kB unconfigured
-  and 200 kB configured"), so it no longer forces this fix.
+- **What**: the full client carries storage-js (7.1 kB gzip) and
+  functions-js (1.5 kB), which the app does not call; realtime-js is called
+  since the Realtime release and stays. The account chunk is 55.7 kB and
+  the configured build 184.5 kB (measured 2026-09-27), so every signed-in
+  reader downloads them after first paint. The budget is 200 kB (decision
+  "The bundle budget is 150 kB unconfigured and 200 kB configured"), so it
+  does not force this fix.
 - **Why deferred**: the fix replaces `createClient` with `AuthClient` from
-  `@supabase/auth-js` and `PostgrestClient` from `@supabase/postgrest-js`
-  (27.0 kB together against 54.8 kB) and changes who may import what. The
-  risk: the session's access token must follow every auth change into the
-  postgrest client's headers, or writes run as anon. `npm run e2e` is the
-  gate. It is its own release, not a fix to a pushed commit.
+  `@supabase/auth-js`, `PostgrestClient` from `@supabase/postgrest-js` and
+  `RealtimeClient` from `@supabase/realtime-js`, and changes who may import
+  what. The risk: the session's access token must follow every auth change
+  into the postgrest client's headers and into the Realtime client, or
+  writes run as anon and an owner topic's join is refused. `npm run e2e` is
+  the gate. It is its own release, not a fix to a pushed commit.
 - **How to verify the fix**: the configured build and its budget
-  (`.claude/README.md`, "The configured bundle budget") report
-  about 27 kB less than before the fix; `npm run e2e` passes F0-F10.
+  (`.claude/README.md`, "The configured bundle budget") report about 9 kB
+  less than before the fix; `npm run e2e` passes F0-F11 and contract case J.
 
 ## Focus after a control that removes itself (no task filed yet; the owner names the release)
 
@@ -64,57 +66,29 @@ No release plan owns it; the owner decides which one takes it.
   «Скрыть напоминание» while `MoveNotice` exists. Cover it in
   `accountMenu.test.ts`.
 
-## Live updates (`persist-3-realtime`)
+## A live revoke on the shared page (no task filed yet; the owner names the release)
 
-Owns: Realtime on shared pages and the owner's lists, which replaces the
-45 s poll as the primary path and reworks the account write buffer. The
-Realtime release's plan owns D56 and D57 by name; D59 goes with the same
-rework.
+Owns: what a screen reader hears when an open shared page stops drawing its
+list. No release plan owns it; the owner decides which one takes it.
 
-### D56 - a reorder after another device changed the entries is refused
+### D65 - a live revoke swaps the shared page with no announcement
 
-- **Where**: `reorder_list` in
-  `supabase/migrations/20260925130100_lists.sql`; `CloudLists#flush`.
-- **What**: `reorder_list` refuses (`22023`) an entry set that does not match
-  the list. When a second device added or removed an entry since this one
-  last read the list, a drag on this device shows the refusal toast and the
-  order snaps back after the re-read. No data is lost.
-- **Why deferred**: it needs two devices editing one list inside the 45 s
-  poll window. Realtime shortens that window, and its plan decides whether
-  the reorder merges instead of refusing.
-- **How to verify the fix**: open one account list on two devices, add an
-  entry on the first, drag an entry on the second before it re-reads, and
-  confirm that the order is kept or merged with no refusal toast.
-
-### D57 - a fetch that never answers holds «Сохраняем...» with no end
-
-- **Where**: `CloudLists#send` in `app/src/state/cloudLists.svelte.ts`.
-- **What**: the write buffer sends one request at a time and waits for its
-  answer. A request that hangs (no answer and no error) keeps the status on
-  «Сохраняем...», and every later edit waits behind it until the page is
-  reloaded. «Поделиться», «Сохранить себе» on a shared page and the move of
-  browser lists into the account wait behind it too, and never open or
-  start; a sign-out waits for it 5 s at most.
-- **Why deferred**: the browser ends most dead connections with an error,
-  which the buffer retries. A timeout belongs to the buffer rework that
-  Realtime brings.
-- **How to verify the fix**: in `cloudLists.test.ts`, make one `apply` call
-  return a promise that never settles and confirm that the buffer gives up
-  after a set time, shows «Не сохранено» and retries.
-
-### D59 - a failed first read of a `#/s/` link is not retried by itself
-
-- **Where**: `app/src/state/sharedView.svelte.ts` `SharedView.refresh`.
-- **What**: `refresh()` re-reads only a page in the `ready` or `gone`
-  state. When the first read fails (offline), the page shows the error and
-  «Повторить», and neither the 45 s poll nor the shown-again signal reads
-  it again. The reader must press «Повторить».
-- **Why deferred**: this is the planned behaviour of the poll release, and
-  the reader has a working button. Realtime replaces the poll and decides
-  how a shared page recovers from a failed read.
-- **How to verify the fix**: open `#/s/<token>` offline, go back online, and
-  confirm that the list shows on the next poll or when the tab is shown
-  again, with no press.
+- **Where**: `app/src/components/SharedListPage.svelte` (the status region
+  `.said` is inside the drawn-list branch); `SharedView.refresh()` in
+  `app/src/state/sharedView.svelte.ts` (status `gone`).
+- **What**: when the owner deletes the link or the list while `#/s/<token>`
+  is open, the page swaps to «Список больше не доступен» within about a
+  second. The status region leaves with the list, so a screen reader
+  announces nothing, and the reader learns of the change only by moving
+  through the page.
+- **Why deferred**: found in the Realtime release's review (2026-09-27).
+  That release scoped the region to a change of what a drawn list shows;
+  a region that outlives the list, or moved focus, is a new design for the
+  gone page, not a fix to the region.
+- **How to verify the fix**: open `#/s/player-token-1` over the fake, call
+  `shares.revoke` for its share, and confirm that a polite status region
+  (or the focused heading) reads «Список больше не доступен» once. Cover it
+  in `sharedListPage.test.ts`.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 

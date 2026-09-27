@@ -10,7 +10,8 @@
   up then its down, so a reversal that undoes too little is caught even
   when a second up would not fail; an additive one is only applied. The
   walk must end in the schema apply-pending.test.mjs left, which that test
-  proves equal to the CLI's own reset. The fixtures
+  proves equal to the CLI's own reset. Each snapshot also holds this
+  project's policies on realtime.messages, outside the public schema. The fixtures
   prove the gate in both directions on a scratch schema. docs/DECISIONS.md,
   2026-09-25, "The reversibility base check walks forward from one reset".
 */
@@ -24,7 +25,14 @@ import {
   isAdditiveMarker,
   nonAdditiveStatements
 } from '../../tools/supabase/lib.mjs';
-import { applySql, connect, lineDiff, resetLocal, snapshot } from './roles.mjs';
+import {
+  applySql,
+  connect,
+  lineDiff,
+  realtimePolicies,
+  resetLocal,
+  snapshot
+} from './roles.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SUPABASE = path.resolve(HERE, '..', '..', 'supabase');
@@ -42,20 +50,26 @@ function read(...parts) {
   return readFileSync(path.join(...parts), 'utf8');
 }
 
+/** Returns the schema dump of `schemas` and the realtime policies. */
+async function state(sql, schemas) {
+  return `${snapshot(schemas)}
+${await realtimePolicies(sql)}`;
+}
+
 /** Runs up-down-up over `steps` ({ up, down } texts, oldest first) with
  * every up already applied, and returns the problems found. With `base`
  * (the snapshot before any up), it also requires the reversals to restore
  * it. */
 async function upDownUp(sql, schemas, steps, base = null) {
   const problems = [];
-  const snapA = snapshot(schemas);
+  const snapA = await state(sql, schemas);
   try {
     for (const step of [...steps].reverse()) await applySql(sql, step.down);
   } catch (err) {
     return [`a reversal failed: ${err.message}`];
   }
   if (base !== null) {
-    const diff = lineDiff(base, snapshot(schemas));
+    const diff = lineDiff(base, await state(sql, schemas));
     if (diff.length)
       problems.push(`the reversals do not restore the schema:\n${diff.join('\n')}`);
   }
@@ -65,7 +79,7 @@ async function upDownUp(sql, schemas, steps, base = null) {
     problems.push(`a migration failed after its reversal: ${err.message}`);
     return problems;
   }
-  const diff = lineDiff(snapA, snapshot(schemas));
+  const diff = lineDiff(snapA, await state(sql, schemas));
   if (diff.length) problems.push(`up-down-up changed the schema:\n${diff.join('\n')}`);
   return problems;
 }
@@ -109,7 +123,7 @@ describe('supabase/migrations', () => {
       t.diagnostic('no migrations yet');
       return;
     }
-    fullSnapshot = snapshot(['public']);
+    fullSnapshot = await state(sql, ['public']);
     assert.deepEqual(await upDownUp(sql, ['public'], steps), []);
   });
 
@@ -130,10 +144,10 @@ describe('supabase/migrations', () => {
           await applySql(sql, up);
           continue;
         }
-        const base = snapshot(['public']);
+        const base = await state(sql, ['public']);
         await applySql(sql, up);
         await applySql(sql, down);
-        const diff = lineDiff(base, snapshot(['public']));
+        const diff = lineDiff(base, await state(sql, ['public']));
         assert.deepEqual(
           diff,
           [],
@@ -143,7 +157,7 @@ describe('supabase/migrations', () => {
       }
       assert.ok(fullSnapshot !== null, 'up-down-up took no snapshot of the full schema');
       assert.deepEqual(
-        lineDiff(fullSnapshot, snapshot(['public'])),
+        lineDiff(fullSnapshot, await state(sql, ['public'])),
         [],
         'the walk did not end in the schema the applier test left'
       );
@@ -168,7 +182,7 @@ describe('the gate on its fixtures', () => {
     const step = { up: read(dir, 'up.sql'), down: read(dir, 'down.sql') };
     await sql.unsafe(`drop schema if exists ${FIXTURE_SCHEMA} cascade`);
     try {
-      const base = snapshot([FIXTURE_SCHEMA]);
+      const base = await state(sql, [FIXTURE_SCHEMA]);
       await applySql(sql, step.up);
       return await upDownUp(sql, [FIXTURE_SCHEMA], [step], base);
     } finally {

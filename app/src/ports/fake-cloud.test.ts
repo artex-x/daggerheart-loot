@@ -326,7 +326,7 @@ describe("the fake's lists", () => {
     expect(await rowsOf(port)).toEqual(before);
   });
 
-  it("answers another user's list as gone or refused, and refuses a second entry for one record and a reorder that misses an entry", async () => {
+  it("answers another user's list as gone or refused, and refuses a second entry for one record", async () => {
     const port = fakeCloud(SEED, 'gm2');
     expect(
       await port.lists.apply([
@@ -337,7 +337,29 @@ describe("the fake's lists", () => {
         { op: 'reorder', list_id: uuid(101), ids: [uuid(1101)] },
         { op: 'reorder', list_id: uuid(201), ids: [uuid(2101)] }
       ])
-    ).toEqual({ ok: true, results: [REFUSED, GONE, REFUSED, REFUSED, GONE, OK] });
+    ).toEqual({ ok: true, results: [REFUSED, GONE, REFUSED, OK, GONE, OK] });
+  });
+
+  it('keeps the given order of a reorder with a stale entry set and puts the other entries after it', async () => {
+    const port = fakeCloud(SEED, 'gm2');
+    const [e1, e2, e3] = [uuid(7001), uuid(7002), uuid(7003)];
+    const create: ListOp = {
+      op: 'create',
+      list: newList(uuid(7000)),
+      entries: [entry(e1, 'ci1', 0), entry(e2, 'q1', 1), entry(e3, 'cc1', 2)]
+    };
+    expect(
+      await port.lists.apply([
+        create,
+        { op: 'reorder', list_id: uuid(7000), ids: [e3, uuid(2101), e1, e3] }
+      ])
+    ).toEqual({ ok: true, results: [OK, OK] });
+    const got = (await rowsOf(port)).find((l) => l.id === uuid(7000));
+    expect(got?.list_entries.map((e) => [e.id, e.position])).toEqual([
+      [e3, 0],
+      [e1, 1],
+      [e2, 2]
+    ]);
   });
 
   it('refuses a create over the entry limit whole, leaving no list', async () => {
@@ -361,7 +383,7 @@ describe("the fake's lists", () => {
     expect(
       await port.lists.apply([
         { op: 'update', id: uuid(201), patch: { name: 'a' } },
-        { op: 'reorder', list_id: uuid(201), ids: [] },
+        { op: 'add', list_id: uuid(201), entries: [entry(uuid(7005), 'q23', 1)] },
         { op: 'update', id: uuid(201), patch: { player_note: 'b' } }
       ])
     ).toEqual({ ok: true, results: [OK, REFUSED, OK] });
@@ -728,5 +750,141 @@ describe('the cloud slot of Env', () => {
   it('starts empty in both environments', () => {
     expect(browserEnv().cloud).toBeNull();
     expect(fakeEnv().cloud).toBeNull();
+  });
+});
+
+describe('the fake live topics', () => {
+  const SHOP = uuid(101);
+  const GM1 = SEED.users.gm1.id;
+  const tick = async (): Promise<void> => {
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+  };
+  function listen(cloud: ReturnType<typeof fakeCloud>, topic: string) {
+    const seen: unknown[] = [];
+    const leave = cloud.events.subscribe(topic, {
+      message: (event, payload) => seen.push([event, payload]),
+      status: (s) => seen.push(s)
+    });
+    return { seen, leave };
+  }
+  const revisionOf = async (cloud: ReturnType<typeof fakeCloud>, id: string) => {
+    const read = await cloud.lists.list();
+    return read.ok ? read.lists.find((l) => l.id === id)?.revision : undefined;
+  };
+
+  it('bumps a list revision once per changed list per write', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    expect(await revisionOf(cloud, SHOP)).toBe(1);
+    await cloud.lists.apply([
+      { op: 'update', id: SHOP, patch: { name: 'a' } },
+      { op: 'update_entry', id: uuid(1101), patch: { quantity: 3 } },
+      { op: 'reorder', list_id: SHOP, ids: [] }
+    ]);
+    expect(await revisionOf(cloud, SHOP)).toBe(4);
+  });
+
+  it("reads each share's topic key, the seed's and a new one's", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const player = await cloud.shares.read('player-token-1');
+    expect(player.ok && [player.shared?.topic_key, player.shared?.revision]).toEqual([
+      uuid(112),
+      1
+    ]);
+    const made = await cloud.shares.create(uuid(103), 'player');
+    const fresh = made.ok ? await cloud.shares.read(made.token) : null;
+    expect(fresh?.ok && fresh.shared?.topic_key).toBe(uuid(4101));
+  });
+
+  it('sends one owner and one share message per changed list of an apply', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const owner = listen(cloud, 'owner:' + GM1);
+    const share = listen(cloud, 'share:' + uuid(112));
+    await tick();
+    await cloud.lists.apply([
+      { op: 'update', id: SHOP, patch: { name: 'a' } },
+      { op: 'update', id: SHOP, patch: { player_note: 'b' } }
+    ]);
+    await tick();
+    expect(owner.seen).toEqual([
+      'live',
+      ['list', { list: SHOP, revision: 3, by: 'fake-tab', id: '1' }]
+    ]);
+    expect(share.seen).toEqual(['live', ['revision', { revision: 3, id: '2' }]]);
+  });
+
+  it('sends null for a removed list to its owner and each of its active shares', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const owner = listen(cloud, 'owner:' + GM1);
+    const gm = listen(cloud, 'share:' + uuid(114));
+    await tick();
+    await cloud.lists.apply([{ op: 'remove', id: SHOP }]);
+    await tick();
+    expect(owner.seen[1]).toEqual([
+      'list',
+      { list: SHOP, revision: null, by: 'fake-tab', id: '1' }
+    ]);
+    expect(gm.seen[1]).toEqual(['revision', { revision: null, id: '3' }]);
+  });
+
+  it('sends null to the topic of a revoked share, once', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const player = listen(cloud, 'share:' + uuid(112));
+    await tick();
+    await cloud.shares.revoke(uuid(111));
+    await cloud.shares.revoke(uuid(111));
+    await tick();
+    expect(player.seen).toEqual(['live', ['revision', { revision: null, id: '1' }]]);
+  });
+
+  it("refuses another user's owner topic, a malformed topic, and every topic offline", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const other = listen(cloud, 'owner:' + SEED.users.gm2.id);
+    const odd = listen(cloud, 'share:x');
+    await tick();
+    expect([other.seen, odd.seen]).toEqual([['down'], ['down']]);
+    cloud.setOffline(true);
+    const off = listen(cloud, 'owner:' + GM1);
+    await tick();
+    expect(off.seen).toEqual(['down']);
+  });
+
+  it('reports down to every joined topic when Realtime is switched off, and joins nothing then', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const owner = listen(cloud, 'owner:' + GM1);
+    await tick();
+    cloud.setLive(false);
+    const late = listen(cloud, 'share:' + uuid(112));
+    await tick();
+    await cloud.lists.apply([{ op: 'update', id: SHOP, patch: { name: 'a' } }]);
+    await tick();
+    expect(owner.seen).toEqual(['live', 'down']);
+    expect(late.seen).toEqual(['down']);
+    cloud.setLive(true);
+    const again = listen(cloud, 'owner:' + GM1);
+    await tick();
+    expect(again.seen).toEqual(['live']);
+    expect(fakeCloud(SEED, 'gm1', { live: false }).events.tab).toBe('fake-tab');
+  });
+
+  it("edits any user's list as another device, and says false for an unknown one", async () => {
+    const cloud = fakeCloud(SEED);
+    const share = listen(cloud, 'share:' + uuid(112));
+    await tick();
+    expect(cloud.play(SHOP, { name: 'Лавка у моста' })).toBe(true);
+    expect(cloud.play(uuid(999), { name: 'x' })).toBe(false);
+    await tick();
+    expect(share.seen).toEqual(['live', ['revision', { revision: 2, id: '2' }]]);
+    const read = await cloud.shares.read('player-token-1');
+    expect(read.ok && read.shared?.list.name).toBe('Лавка у моста');
+  });
+
+  it('delivers nothing after the leave', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const owner = listen(cloud, 'owner:' + GM1);
+    await tick();
+    owner.leave();
+    await cloud.lists.apply([{ op: 'update', id: SHOP, patch: { name: 'a' } }]);
+    await tick();
+    expect(owner.seen).toEqual(['live']);
   });
 });

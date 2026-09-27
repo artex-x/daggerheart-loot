@@ -14,7 +14,7 @@ import { readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { appliedVersions, applyPending, connect } from '../../tools/supabase/db.mjs';
-import { lineDiff, resetLocal, snapshot } from './roles.mjs';
+import { lineDiff, realtimePolicies, resetLocal, snapshot } from './roles.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS = path.resolve(HERE, '..', '..', 'supabase', 'migrations');
@@ -38,16 +38,24 @@ const guarded = (fn) => async () => {
     throw err;
   }
 };
-/* The schema the CLI's reset in run.mjs left, before this file resets. */
+/* The schema and the realtime policies the CLI's reset in run.mjs left,
+   before this file resets. */
 let cliSchema;
-before(() => {
+let cliPolicies;
+before(async () => {
   // A before hook that throws skips the cases; the after hook then resets.
   failed = true;
-  cliSchema = snapshot(['public']);
-  resetLocal(['--version', local[0].slice(0, 14)]);
   const url = process.env.DHLOOT_DB_URL;
   if (!url)
     throw new Error('DHLOOT_DB_URL is not set. Run the suite through `npm run check:db`.');
+  cliSchema = snapshot(['public']);
+  const first = connect(url);
+  try {
+    cliPolicies = await realtimePolicies(first);
+  } finally {
+    await first.end();
+  }
+  resetLocal(['--version', local[0].slice(0, 14)]);
   sql = connect(url);
   failed = false;
 });
@@ -82,6 +90,8 @@ describe('applyPending', () => {
       );
       // The applier's schema equals the CLI's; the reversibility walk ends on it.
       assert.deepEqual(lineDiff(cliSchema, snapshot(['public'])), []);
+      assert.equal(await realtimePolicies(sql), cliPolicies);
+      assert.match(cliPolicies, /dhloot_share_topics_receive/);
     })
   );
 

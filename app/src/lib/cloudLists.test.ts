@@ -8,6 +8,7 @@ import {
   limitText,
   priceOf,
   quantityOf,
+  sameProjection,
   sharedListOf,
   shareOf,
   toCloudList,
@@ -40,6 +41,7 @@ const row = (over: Partial<ListRow> = {}): ListRow => ({
   gm_note: '',
   created_at: '2026-09-20T10:00:00.000Z',
   updated_at: '2026-09-22T10:00:00.000Z',
+  revision: 1,
   legacy_fingerprint: null,
   list_entries: [],
   ...over
@@ -157,6 +159,8 @@ describe('sharedListOf', () => {
   const player: SharedRow = {
     audience: 'player',
     updated_at: '2026-09-22T10:00:00.000Z',
+    revision: 1,
+    topic_key: '00000000-0000-4000-8000-000000004000',
     list: { name: 'Лавка', money_mode: 'coin', player_note: 'p' },
     entries: [
       sharedEntry('q1', 0, { quantity: 2, price_coins: 150, player_note: 'a' }),
@@ -261,5 +265,40 @@ describe('batchSize', () => {
 
   it('stops at 200 writes', () => {
     expect(batchSize(Array.from({ length: 250 }, () => note('a')))).toBe(200);
+  });
+});
+
+describe('sameProjection', () => {
+  const base: SharedRow = {
+    audience: 'player',
+    updated_at: '2026-09-22T10:00:00.000Z',
+    revision: 1,
+    topic_key: '00000000-0000-4000-8000-000000004000',
+    list: { name: 'Лавка', money_mode: 'bag', player_note: '' },
+    entries: []
+  };
+
+  it('holds when only the revision, the time or the topic key moved', () => {
+    expect(
+      sameProjection(base, {
+        ...base,
+        revision: 2,
+        updated_at: '2026-09-23T10:00:00.000Z',
+        topic_key: '00000000-0000-4000-8000-000000004001'
+      })
+    ).toBe(true);
+  });
+
+  it('fails when the audience, the list or an entry changed', () => {
+    expect(sameProjection(base, { ...base, audience: 'gm' })).toBe(false);
+    expect(sameProjection(base, { ...base, list: { ...base.list, name: 'Другая' } })).toBe(
+      false
+    );
+    expect(
+      sameProjection(base, {
+        ...base,
+        entries: [entry('e1', 'ci1', 0)]
+      })
+    ).toBe(false);
   });
 });

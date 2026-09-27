@@ -159,4 +159,41 @@ describe('lazyCloud', () => {
     off();
     expect(fn).not.toHaveBeenCalled();
   });
+
+  it('subscribes once the port arrives, and names its tab id only then', async () => {
+    const real = fakeCloud(SEED);
+    const { events, auth } = lazyCloud(() => Promise.resolve(real));
+    expect(events.tab).toBe('');
+    const seen: string[] = [];
+    events.subscribe('share:' + uuid(112), {
+      message: () => undefined,
+      status: (s) => seen.push(s)
+    });
+    await auth.session();
+    await Promise.resolve();
+    expect(seen).toEqual(['live']);
+    expect(events.tab).toBe(real.events.tab);
+  });
+
+  it('subscribes nothing for a leave before the port arrives', async () => {
+    const real = fakeCloud(SEED);
+    const subscribe = vi.spyOn(real.events, 'subscribe');
+    const { events, auth } = lazyCloud(() => Promise.resolve(real));
+    const status = vi.fn();
+    events.subscribe('share:' + uuid(112), { message: () => undefined, status })();
+    await auth.session();
+    await Promise.resolve();
+    expect(subscribe).not.toHaveBeenCalled();
+    expect(status).not.toHaveBeenCalled();
+  });
+
+  it('answers down to a subscribe when the load fails', async () => {
+    const { events } = lazyCloud(() => Promise.reject(new Error('offline')));
+    const status = vi.fn();
+    events.subscribe('share:' + uuid(112), { message: () => undefined, status });
+    await vi.waitFor(() => {
+      expect(status).toHaveBeenCalledWith('down');
+    });
+    expect(events.tab).toBe('');
+  });
 });

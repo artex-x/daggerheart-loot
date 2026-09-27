@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ListOp } from '../lib/cloudLists.js';
 import { RETURN_KEY, type Redirect } from './redirect.js';
-import { createCloud } from './supabase.js';
+import { createCloud, WRITE_TIMEOUT_MS } from './supabase.js';
 
 const { client, createClient, rows } = vi.hoisted(() => {
   /* `from('user_prefs')`'s builder: `select().eq().maybeSingle()` and
@@ -29,12 +29,34 @@ const { client, createClient, rows } = vi.hoisted(() => {
       onAuthStateChange: vi.fn()
     },
     rpc: vi.fn(),
-    from: vi.fn<(table: string) => typeof rows>(() => rows)
+    from: vi.fn<(table: string) => typeof rows>(() => rows),
+    channel: vi.fn(),
+    removeChannel: vi.fn(() => Promise.resolve('ok'))
   };
-  return { client, createClient: vi.fn(() => client), rows };
+  /* `rpc()` answers what the test set, through a builder with
+     `abortSignal()`: an abort answers as postgrest-js does, `status: 0`. */
+  const signalled = (answer: unknown) => {
+    const settled = (): Promise<unknown> => Promise.resolve(answer);
+    return {
+      then: (ok: (v: unknown) => unknown, fail: (e: unknown) => unknown) =>
+        settled().then(ok, fail),
+      abortSignal: (signal: AbortSignal) =>
+        new Promise((resolve, reject) => {
+          signal.addEventListener('abort', () => {
+            resolve({ data: null, error: { code: '', message: 'AbortError' }, status: 0 });
+          });
+          settled().then(resolve, reject);
+        })
+    };
+  };
+  const facade = { ...client, rpc: (...args: unknown[]) => signalled(client.rpc(...args)) };
+  return { client, createClient: vi.fn(() => facade), rows };
 });
 
-vi.mock('@supabase/supabase-js', () => ({ createClient }));
+vi.mock('@supabase/supabase-js', () => ({
+  createClient,
+  REALTIME_SUBSCRIBE_STATES: { SUBSCRIBED: 'SUBSCRIBED' }
+}));
 
 const USER = {
   id: 'u1',
@@ -512,7 +534,7 @@ describe('the lists', () => {
       [
         'select',
         [
-          'id,name,money_mode,player_note,gm_note,created_at,updated_at,legacy_fingerprint,' +
+          'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
             'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)'
         ]
       ]
@@ -781,6 +803,185 @@ describe('the fetch the client is given', () => {
     abort.abort();
     await expect(f(RPC, { ...post('{}'), signal: abort.signal })).rejects.toThrow();
     expect(sent).toHaveLength(1);
+  });
+
+  const tabOf = (i: number): string | null => {
+    const [input, init] = sent[i] ?? [];
+    const headers = new Headers(
+      init?.headers ?? (input instanceof Request ? input.headers : undefined)
+    );
+    return headers.get('x-dhloot-tab');
+  };
+
+  it("tags every PostgREST request with the page's tab id, reads and Request inputs too", async () => {
+    const f = given();
+    await f(RPC, { ...post('{}'), headers: { apikey: 'k' } });
+    await f(URL_ + '/rest/v1/lists?select=id', { headers: { apikey: 'k' } });
+    await f(new Request(RPC, { method: 'POST', headers: { apikey: 'r' } }));
+    const tab = tabOf(0);
+    expect(tab).toMatch(/^[0-9a-f-]{36}$/);
+    expect([tabOf(1), tabOf(2)]).toEqual([tab, tab]);
+    expect(new Headers(sent[0]?.[1]?.headers).get('apikey')).toBe('k');
+    expect(new Headers(sent[2]?.[1]?.headers).get('apikey')).toBe('r');
+  });
+
+  it('sends an auth request with no tab id', async () => {
+    const f = given();
+    await f(URL_ + '/auth/v1/token?grant_type=refresh_token', post('{}'));
+    expect(sent[0]?.[1]).toEqual(post('{}'));
+    expect(tabOf(0)).toBeNull();
+  });
+});
+
+describe('the live topics', () => {
+  type Status = (s: string, err?: Error) => void;
+  /* One stub channel per `channel()` call: its broadcast handler and the
+     status callback its `subscribe` was given. */
+  function channels() {
+    const made: {
+      topic: string;
+      params: unknown;
+      message?: (m: { event: string; payload: unknown }) => void;
+      status?: Status;
+    }[] = [];
+    client.channel.mockImplementation((topic: string, params: unknown) => {
+      const one: (typeof made)[number] = { topic, params };
+      made.push(one);
+      const ch = {
+        on: (
+          _type: string,
+          _filter: unknown,
+          fn: (m: { event: string; payload: unknown }) => void
+        ) => {
+          one.message = fn;
+          return ch;
+        },
+        subscribe: (fn: Status) => {
+          one.status = fn;
+          return ch;
+        }
+      };
+      return ch;
+    });
+    return made;
+  }
+
+  it('joins a private channel and reports a join as live, with each message', () => {
+    const made = channels();
+    const seen: unknown[] = [];
+    make().events.subscribe('share:k', {
+      message: (event, payload) => seen.push([event, payload]),
+      status: (s) => seen.push(s)
+    });
+    expect(made[0]?.topic).toBe('share:k');
+    expect(made[0]?.params).toEqual({ config: { private: true } });
+    made[0]?.status?.('SUBSCRIBED');
+    made[0]?.message?.({ event: 'revision', payload: { revision: 2, id: 'm' } });
+    expect(seen).toEqual(['live', ['revision', { revision: 2, id: 'm' }]]);
+  });
+
+  it.each([
+    [
+      'CHANNEL_ERROR',
+      new Error('MissingPartition: Realtime was unable to find the expected messages partition')
+    ],
+    ['TIMED_OUT', undefined],
+    ['CLOSED', undefined]
+  ])(
+    'reports %s once as down, removes the channel, and says nothing after it',
+    (status, err) => {
+      const made = channels();
+      const seen: unknown[] = [];
+      make().events.subscribe('owner:u1', {
+        message: (event) => seen.push(event),
+        status: (s) => seen.push(s)
+      });
+      made[0]?.status?.(status, err);
+      made[0]?.status?.('SUBSCRIBED');
+      made[0]?.status?.('CLOSED');
+      made[0]?.message?.({ event: 'list', payload: {} });
+      expect(seen).toEqual(['down']);
+      expect(client.removeChannel).toHaveBeenCalledOnce();
+    }
+  );
+
+  it('removes the channel on leave, and says nothing after it', () => {
+    const made = channels();
+    const seen: unknown[] = [];
+    const leave = make().events.subscribe('owner:u1', {
+      message: (event) => seen.push(event),
+      status: (s) => seen.push(s)
+    });
+    leave();
+    leave();
+    made[0]?.status?.('SUBSCRIBED');
+    expect(seen).toEqual([]);
+    expect(client.removeChannel).toHaveBeenCalledOnce();
+  });
+
+  it("names the page's tab id, one per port", () => {
+    const one = make().events.tab;
+    expect(one).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(make().events.tab).not.toBe(one);
+  });
+});
+
+describe('a write with no answer', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const NEVER = (): Promise<never> => new Promise<never>(() => undefined);
+
+  it.each([
+    [
+      'apply',
+      (c: ReturnType<typeof make>) => c.lists.apply([{ op: 'remove', id: 'l1' }]),
+      { ok: false, error: 'network' }
+    ],
+    [
+      'move',
+      (c: ReturnType<typeof make>) => c.lists.move('l1', '{}'),
+      { ok: false, error: 'network' }
+    ],
+    [
+      'create',
+      (c: ReturnType<typeof make>) => c.shares.create('l1', 'gm'),
+      { ok: false, error: 'network' }
+    ],
+    [
+      'revoke',
+      (c: ReturnType<typeof make>) => c.shares.revoke('s1'),
+      { ok: false, error: 'network' }
+    ],
+    [
+      'clone',
+      (c: ReturnType<typeof make>) => c.shares.clone('t1', 'c1'),
+      { ok: false, error: 'network' }
+    ]
+  ])('answers network for %s after WRITE_TIMEOUT_MS', async (_name, call, want) => {
+    client.rpc.mockImplementationOnce(NEVER);
+    let answer: unknown = 'pending';
+    void call(make()).then((a) => {
+      answer = a;
+    });
+    await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS - 1);
+    expect(answer).toBe('pending');
+    await vi.advanceTimersByTimeAsync(1);
+    expect(answer).toEqual(want);
+  });
+
+  it('clears the timer once a write answers', async () => {
+    client.rpc.mockResolvedValueOnce({ data: [{ ok: true }], error: null, status: 200 });
+    const before = vi.getTimerCount();
+    expect(await make().lists.apply([{ op: 'remove', id: 'l1' }])).toEqual({
+      ok: true,
+      results: [{ ok: true }]
+    });
+    expect(vi.getTimerCount()).toBe(before);
   });
 });
 

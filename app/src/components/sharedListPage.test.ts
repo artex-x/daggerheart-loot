@@ -767,6 +767,74 @@ describe('a share link', () => {
     );
   });
 
+  describe('the live status', () => {
+    const region = (): HTMLElement | null => document.querySelector('.said[role="status"]');
+
+    it('is empty after the first read and marked live once the topic joins', async () => {
+      const { container } = open('#/s/player-token-1');
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      await waitFor(() => {
+        expect(region()).toHaveAttribute('data-live', 'live');
+      });
+      expect(region()).toHaveTextContent('');
+      await expectNoA11yViolations(container);
+    });
+
+    it('is not marked live while Realtime is down', async () => {
+      const { container } = open(
+        '#/s/player-token-1',
+        fakeCloud(SEED, undefined, { live: false })
+      );
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      expect(region()).not.toHaveAttribute('data-live');
+      await expectNoA11yViolations(container);
+    });
+
+    it("says the list was updated once after another device's rename, and nothing after a GM note edit", async () => {
+      const { cloud, container } = open('#/s/player-token-1');
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      await waitFor(() => {
+        expect(region()).toHaveAttribute('data-live', 'live');
+      });
+      cloud.play(uuid(101), { gm_note: 'новая' });
+      await waitFor(() => {
+        expect(screen.getByText('Обновлено только что')).toBeInTheDocument();
+      });
+      expect(region()).toHaveTextContent('');
+      cloud.play(uuid(101), { name: 'Лавка у моста' });
+      expect(
+        await screen.findByRole('heading', { level: 1, name: 'Лавка у моста' })
+      ).toBeInTheDocument();
+      expect(region()).toHaveTextContent(ru.listUpdated);
+      await expectNoA11yViolations(container);
+    });
+
+    it('says the list was updated again after a second change, in a new node', async () => {
+      const { cloud, container } = open('#/s/player-token-1');
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      await waitFor(() => {
+        expect(region()).toHaveAttribute('data-live', 'live');
+      });
+      cloud.play(uuid(101), { name: 'Лавка у моста' });
+      await screen.findByRole('heading', { level: 1, name: 'Лавка у моста' });
+      const first = region()?.querySelector('span');
+      expect(first).toHaveTextContent(ru.listUpdated);
+      cloud.play(uuid(101), { name: 'Лавка у реки' });
+      await screen.findByRole('heading', { level: 1, name: 'Лавка у реки' });
+      const second = region()?.querySelector('span');
+      expect(second).toHaveTextContent(ru.listUpdated);
+      expect(second).not.toBe(first);
+      expect(first?.isConnected).toBe(false);
+      await expectNoA11yViolations(container);
+    });
+
+    it('draws no region on a #/l/ page', async () => {
+      const { container } = render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
+      expect(region()).toBeNull();
+      await expectNoA11yViolations(container);
+    });
+  });
+
   it("has no violations on the players' view, the owner's view and the gone page", async () => {
     const player = open('#/s/player-token-1');
     await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
