@@ -211,7 +211,7 @@ user's preferences (no row, a whole row saved and read back, a second save
 replacing the row); G the same user's lists (a list with two entries
 created, created again as one, read back with its notes, money mode,
 quantities, prices and order; `update`, `addEntries`, `updateEntry` and
-`reorder` read back; a `reorder` that misses an entry refused; the entries
+`reorder` read back; a second entry for one record refused; the entries
 and the list removed, the count back where it started - counted relative to
 the start, because the fake's `gm2` holds a seeded list), after which E
 deletes that same port's account; I the same user's move of a browser

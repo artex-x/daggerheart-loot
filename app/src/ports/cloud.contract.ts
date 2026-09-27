@@ -144,14 +144,14 @@ async function listCases(port: CloudPort, assert: Assert): Promise<void> {
 
   /* A refused write drops alone: the write after it lands. */
   const missed = await lists.apply([
-    { op: 'reorder', list_id: id, ids: [c, a] },
+    { op: 'add', list_id: id, entries: [entryOf(lists.newId(), 'ci1', 3)] },
     { op: 'update', id, patch: { name: 'Клад дракона II' } }
   ]);
   assert(
     answered(missed) === 'refused,ok',
-    'lists: a reorder that misses an entry, then a rename, answered ' + answered(missed)
+    'lists: a second entry for one record, then a rename, answered ' + answered(missed)
   );
-  got = await theList(port, id, assert, 'after the refused reorder');
+  got = await theList(port, id, assert, 'after the refused add');
   assert(got?.name === 'Клад дракона II', 'lists: the rename after a refused write was lost');
 
   /* A row that is not there: an edit of it is gone, a delete of it is ok. */

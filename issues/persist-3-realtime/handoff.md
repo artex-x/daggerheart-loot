@@ -2,59 +2,76 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: blocked - waits for the second-look plan review
-  (`reviews/plan-B3.1-2.md`), then for its release slot: after
-  `display-settings`, before R4
-- Last agent: planner (2026-09-27, planning pass 2, fixes for the plan
-  review `reviews/plan-B3.1.md`, fix-then-continue)
+- Task status: in progress - `B3.0` implemented and gated; waits for
+  the orchestrator to push it to `origin/main` before `B3.1` starts
+- Last agent: implementer (2026-09-27, `B3.0`, the precursor contract
+  commit)
 - NEEDS_HUMAN_CONFIRMATION: no - Q1-Q3 answered 2026-09-26 (`plan.md`
   section 13); the owner chose the precursor commit `B3.0` on 2026-09-27
   (review B1)
-- Branch: planned on a worktree branch from `f6079277`; the release
-  starts on `main` after `display-settings` ships
-- Base / starting commit: `f6079277` (planning); the release starts on
-  `main`
-- Pushed: no
+- Branch: `main`
+- Base / starting commit: `d1a9e604` (the R3 plan, cherry-picked onto
+  `main`, on top of `30444209` `display-settings`)
+- Pushed: no (the orchestrator pushes, per plan section 10.0)
 
 ## Completed
 - Batch name/id: planning pass 1 (2026-09-25); planning pass 2
-  (2026-09-27, refresh against `f6079277`)
-- What shipped: pass 2 resolved every **[R2-refresh]** mark, moved the
-  tolerant reorder's fake and contract into `B3.1` (its E2E runs the
-  contract after the push), placed D56 on `B3.1` and D57, D59 and the
-  D60 rewording on `B3.2`, specified the usage row R11 placed, and
-  declared the plan review. The plan review returned
+  (2026-09-27, refresh against `f6079277`); `B3.0`, the precursor
+  contract commit (2026-09-27, implementer, plan section 10.0)
+- What shipped (planning): pass 2 resolved every **[R2-refresh]** mark,
+  moved the tolerant reorder's fake and contract into `B3.1` (its E2E
+  runs the contract after the push), placed D56 on `B3.1` and D57, D59
+  and the D60 rewording on `B3.2`, specified the usage row R11 placed,
+  and declared the plan review. The plan review returned
   fix-then-continue; the fixes add `B3.0` (the precursor contract
   commit, owner 2026-09-27), the safe header read and warning wrapper
   (B2), the spike's extra checks and fallbacks (R1-R3), the full overlap
-  list (R4) and nits N1-N9.
-- Files changed: `issues/persist-3-realtime/{context,plan,handoff,reviews}.md`,
-  `issues/persist-3-realtime/reviews/plan-B3.1.md` (the review, as
-  written by the orchestrator)
-- Previous sha (batch diff base): `f6079277`
+  list (R4) and nits N1-N9. The second-look review (`plan-B3.1-2.md`)
+  returned `approve` with two open nits, R7 and N10.
+- What shipped (`B3.0`): `cloud.contract.ts` case G's refused write
+  changed from a `reorder` that misses entry `c` to a duplicate `add`
+  of `ci1` (`unique (list_id, item_key)` refuses it under both the old
+  and the tolerant `reorder_list`); the assertion message and
+  `theList` label reworded to match; `COVERAGE.md`'s case G line
+  reworded to "a second entry for one record refused". Also applied
+  the second look's two cheap items in `plan.md` section 10.0: R7 (a
+  note that any other branch running `e2e` in the `B3.1`-test-push to
+  closeout-push window needs `B3.0` in its base) and N10 (`COVERAGE.md`
+  added to the Files line). `reviews.md` marks `plan-B3.1-2-R7` and
+  `-N10` fixed; `-N11` stays "named", no action.
+- Files changed: `app/src/ports/cloud.contract.ts`,
+  `docs/specs/COVERAGE.md`,
+  `issues/persist-3-realtime/{plan,handoff,reviews}.md`
+- Previous sha (batch diff base): `d1a9e604`
 - Deviations and rationale: `B3.1` now edits four `app/` files
   (`fake-cloud.ts`, `fake-cloud.test.ts`, `cloud.contract.ts`,
   `cloudLists.test.ts`): a schema batch runs `npm run e2e` after its
   approve (`process-guards`), and the contract's "reorder that misses an
   entry is refused" would fail against the tolerant `reorder_list`.
-- Review: required (trigger: migration, SECURITY DEFINER, sync feed),
-  report issues/persist-3-realtime/reviews/plan-B3.1.md -
-  fix-then-continue; second look next
+- Review: `B3.0` review not required (plan section 10.0: "no trigger
+  fired: a test-only change to one contract case, covered by this
+  plan's second-look review"). Planning review: required (trigger:
+  migration, SECURITY DEFINER, sync feed), report
+  issues/persist-3-realtime/reviews/plan-B3.1.md - fix-then-continue;
+  second look `reviews/plan-B3.1-2.md` - approve.
 
 ## Verification
-- Commands run (exact): none (planning pass; reading only)
-- Results: -
-- Gates: planning only; no `npm run check` (no code changed)
+- Commands run (exact): `rtk npm run check` (Bash, foreground, timeout
+  600000); `npm run e2e` (Bash, foreground, timeout 600000)
+- Results: `npm run check` - PASS (format, lint, typecheck 0
+  errors/warnings, `tools/build.js` and all invariants clean, vitest
+  2001 passed / 64 files, coverage 98.23% statements / 92.49% branches
+  / 98.78% functions / 98.93% lines). `npm run e2e` - PASS (contract ok,
+  9 cases, against the test project's current strict `reorder_list`;
+  F0-F10 ok; cleanup ok).
+- Gates: `check:db` not run (nothing under `supabase/` or `tests/db/`
+  changed); `check:built` not run (nothing drawn).
 
 ## Next batch (implement-ready)
-- First: `B3.0` - the precursor contract commit on `main` (`plan.md`
-  section 10.0): `cloud.contract.ts` case G's refused write becomes a
-  duplicate `add`, the reorder refusal goes; `COVERAGE.md` G; gates
-  `rtk npm run check`, `npm run e2e`; commit, push alone (owner,
-  2026-09-27). It closes the window from `B3.1`'s test push to R3's
-  closeout push in which every other `e2e`, and `main`'s deploy, would
-  fail.
-- Then: `B3.1` - the database half and the tolerant reorder (`plan.md`
+- `B3.0` is done (this batch, committed but not yet pushed - the
+  orchestrator pushes it alone, per the owner's 2026-09-27 decision,
+  before `B3.1` starts its test push).
+- Next: `B3.1` - the database half and the tolerant reorder (`plan.md`
   section 10)
 - Objective: broadcast triggers, `realtime.messages` policies, tolerant
   `reorder_list` with its fake and contract (D56), the usage report's
@@ -93,11 +110,11 @@
   migration cannot see `realtime.messages` during `db reset --local`.
 
 ## Blockers
-- The second-look plan review (`agent-guard.mjs` denies every
-  implementer of this task, `B3.0` included, until
-  `reviews/plan-B3.1-2.md` reads `Verdict: approve`).
-- `display-settings` ships first (release slot). Q2 is an owner action
-  after `B3.2` is live.
+- `B3.0`'s commit must reach `origin/main` before `B3.1`'s test push
+  (the orchestrator pushes it, per the owner's 2026-09-27 decision).
+  `B3.1` cannot start its test push, and no other branch should run
+  `npm run e2e`, until then.
+- Q2 is an owner action after `B3.2` is live.
 
 ## Deferred
 - Closing a hidden tab's channel after a minute (`plan.md` 6.4), only if

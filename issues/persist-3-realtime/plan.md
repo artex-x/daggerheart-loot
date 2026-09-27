@@ -446,8 +446,13 @@ amend window of that commit closes: `B3.1` makes a new commit, and
 is the owner's decision of 2026-09-27 (`CLAUDE.md`, "Source and commit
 conventions").
 
-**Files.** `app/src/ports/cloud.contract.ts` only (and this task's
-`handoff.md`).
+**Files.** `app/src/ports/cloud.contract.ts` and `docs/specs/COVERAGE.md`
+(and this task's `handoff.md`).
+
+**Note (review `plan-B3.1-2` R7).** Any other branch that runs `npm run
+e2e` in the window between `B3.1`'s test push and R3's closeout push
+needs `B3.0` in its base first, or its `cloud.contract.ts` case G fails
+against the tolerant `reorder_list`.
 
 **Steps.**
 

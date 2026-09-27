@@ -19,6 +19,6 @@
 | plan-B3.1-N7 | nit | local | fixed plan pass 2 (step 8: B's entry keeps its position) |
 | plan-B3.1-N8 | nit | local | fixed plan pass 2 (step 1: Node `postgres` script or `docker exec ... psql`) |
 | plan-B3.1-N9 | nit | deferred-scope | fixed plan pass 2 (handoff Status: `blocked`) |
-| plan-B3.1-2-R7 | risk | local | open (a branch cut before `B3.0` fails `e2e` after B3.1's test push; one-line note rides `B3.0`) |
-| plan-B3.1-2-N10 | nit | local | open (10.0 Files: add `docs/specs/COVERAGE.md`; rides `B3.0`) |
+| plan-B3.1-2-R7 | risk | local | fixed `B3.0` (plan 10.0: a one-line note on the window) |
+| plan-B3.1-2-N10 | nit | local | fixed `B3.0` (plan 10.0 Files: `docs/specs/COVERAGE.md` added) |
 | plan-B3.1-2-N11 | nit | local | named (no action in `B3.0`; B3.1 step 10 retitles) |
