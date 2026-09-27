@@ -414,6 +414,11 @@ const ru = {
   menuLabel: 'Меню аккаунта',
   menuLists: 'Мои списки',
   displayHead: 'Отображение',
+  displayLead:
+    'Эти настройки действуют на всех ваших устройствах. Вид таблиц и печать, выбранные на их страницах, сохраняются только до перезагрузки.',
+  keepBefore: 'Только до перезагрузки. Чтобы сохранить, измените в ',
+  keepLink: 'настройках аккаунта',
+  keepAfter: '.',
   displayHome: 'Раздел при запуске',
   printCompactBox: 'Компактный лист',
   displayNotify: 'Сообщать владельцу списка',
@@ -857,6 +862,11 @@ const en: Dict = {
   menuLabel: 'Account menu',
   menuLists: 'My lists',
   displayHead: 'Display',
+  displayLead:
+    'These settings apply on all your devices. A tables view or a print layout picked on its own page is kept only until the page reloads.',
+  keepBefore: 'Only until the page reloads. To keep it, change it in ',
+  keepLink: 'your account settings',
+  keepAfter: '.',
   displayHome: 'Section on start',
   printCompactBox: 'Compact sheet',
   displayNotify: 'Notify the list owner',

@@ -1,6 +1,6 @@
 # #/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11 ~ compact black and white
 # route: #/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11
-# why: every card shape on the compact sheet, in black and white: the grow rung at 44 mm
+# why: every card shape on the compact sheet, in black and white: the grow rung at 44 mm; the note under the bar
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11]
@@ -33,8 +33,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-q1-q3
     button "Обычная" [pressed=false]
     button "Компактная" [pressed=true]
     button "Ссылка на набор"
-    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x119 of 123 same-shape siblings elided
+    StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
+    link "настройках аккаунта" [url=#/account]
+    ... StaticText x121 of 125 same-shape siblings elided
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
     heading "ПАЛАШ" [level=2]
     ... heading x5 of 9 same-shape siblings elided
@@ -77,6 +78,7 @@ daggerheart.com
 Установить как приложение
 Цветная
 Чёрно-белая
+настройках аккаунта
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11]
@@ -109,8 +111,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-q1-q313-cc1-voa2_a3-q2
     button "Standard" [pressed=false]
     button "Compact" [pressed=true]
     button "Link to this set"
-    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x119 of 123 same-shape siblings elided
+    StaticText "Only until the page reloads. To keep it, change it in "
+    link "your account settings" [url=#/account]
+    ... StaticText x121 of 125 same-shape siblings elided
     heading "PREMIUM BEDROLL" [level=2]
     heading "BROADSWORD" [level=2]
     ... heading x5 of 9 same-shape siblings elided
@@ -152,4 +155,5 @@ Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com
+your account settings
 ЛутDaggerheart

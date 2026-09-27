@@ -5,6 +5,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/svelt
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import AccountPage from './AccountPage.svelte';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
@@ -463,6 +464,41 @@ describe('the Display section', () => {
     });
     expect(storage.get(PREFS_KEY)).not.toContain('notifyGm');
     await expectNoA11yViolations(container);
+  });
+
+  it('opens with the lead line, in either language', async () => {
+    openWith(as('gm1'));
+    const heading = await screen.findByRole('heading', { name: 'Отображение', level: 2 });
+    const lead = heading.parentElement?.querySelector('p');
+    expect(lead).toHaveTextContent(
+      'Эти настройки действуют на всех ваших устройствах. Вид таблиц и печать, выбранные на их страницах, сохраняются только до перезагрузки.'
+    );
+    expect(lead?.previousElementSibling).toBe(heading);
+    cleanup();
+    /* gm2 has no row, so the stored English stays. */
+    open(as('gm2'), 'en');
+    await screen.findByRole('heading', { name: 'Display', level: 2 });
+    expect(
+      screen.getByText(
+        'These settings apply on all your devices. A tables view or a print layout picked on its own page is kept only until the page reloads.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("drops a page's print pick when the default is set here", async () => {
+    const app = new AppState(
+      fakeEnv({ cloud: as('gm2'), router: memoryRouter('#/account'), storage: memoryStorage() })
+    );
+    app.start();
+    app.showPrintBW(true);
+    expect(app.printChanged).toBe(true);
+    render(AccountPage, { app });
+    const d = await section();
+    await userEvent.click(d.getByRole('button', { name: 'Чёрно-белая' }));
+    await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
+    expect(app.shownPrintBW).toBe(false);
+    expect(app.printChanged).toBe(false);
+    app.stop();
   });
 
   it('shows a pinned table as Tables and keeps its address until another is chosen', async () => {

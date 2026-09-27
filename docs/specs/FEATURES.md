@@ -68,6 +68,11 @@ Seven modes. Each keeps its own input in memory only.
 ## Tables and search
 
 - 16 tables (`TABLE_IDS`), each with its own search box and a list/grid switch.
+  The switch changes the view until the page reloads; the default is the
+  Display section's «Таблицы» row ("Account"). While the view differs from
+  the default, a build with sign-in draws the note «Только до перезагрузки.
+  Чтобы сохранить, измените в настройках аккаунта.» under the toolbar, its
+  last words a link to `#/account`.
 - Search covers all 1272 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
@@ -725,9 +730,13 @@ browser lists writable after the date.
   `heading` prop, only passed here) and the Hope/Fear column pair under it
   demoted to `<h3>`.
 - The black-and-white choice (`printBW`) and the sheet size (`printCompact`)
-  are remembered in this browser (`dhloot.prefs.v1`, for every reader) and,
-  signed in, in the account (`STATE.md`, "Account preferences"): they
-  survive leaving the print page, a reload and, signed in, a new device.
+  have defaults set in the Display section and kept in the account and in
+  `dhloot.prefs.v1` (`STATE.md`, "Account preferences"). The two switches
+  in the print bar change the layout for this visit: the pick survives
+  leaving the print page and coming back, and a reload draws the default.
+  While either switch differs from its default, a build with sign-in draws
+  the same note as the tables toolbar under the bar, with its link to
+  `#/account`; the bar never prints, so neither does the note.
 - A missing picture (a partial deploy, a cold cache) falls back to the same drawn glyph a record with no art gets,
   the same way `RecordCard` does - reached from a print sheet opened
   directly at a shared `#/print/...` address, where nothing has already
@@ -807,14 +816,21 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   every release (`I18N.md`, "Rules").
 - A build with no sign-in configured draws the not-found page on
   `#/account`, keeps the address, and draws no account control.
-- Signed in, the language, starting section, tables view and print layout
-  follow the account on every device (`STATE.md`, "Account preferences").
-  The controls stay where they are; the page first draws this browser's
-  values and switches once the account answers.
+- Signed in, the language, starting section, and the default tables view
+  and print layout follow the account on every device (`STATE.md`,
+  "Account preferences"). The page first draws this browser's values and
+  switches once the account answers.
 - **The Display section** «Отображение» / "Display", signed in only and
-  first, is a second place for the settings the pages already remember, in
-  five rows with six controls, each writing through the setter its page
-  uses, so the account row follows: «Язык» (the RU/EN switch); «Раздел при
+  first, is the place the tables view and print layout defaults are set;
+  a switch on the tables or print page changes only that visit ("Tables
+  and search", "Print"). The language row and the header RU/EN switch are
+  one setting, and so are the starting-section select and the pin
+  ("Chrome"). The section opens with the lead line «Эти настройки действуют
+  на всех ваших устройствах. Вид таблиц и печать, выбранные на их
+  страницах, сохраняются только до перезагрузки.» / "These settings apply
+  on all your devices. A tables view or a print layout picked on its own
+  page is kept only until the page reloads.", then five rows with six
+  controls, each saving the account row: «Язык» (the RU/EN switch); «Раздел при
   запуске» / "Section on start" (a select over the ten sections; choosing
   «Таблицы» pins `#/tables/core_item`, the table a bare `#/tables` opens
   on, never the bare address (`STATE.md`, "localStorage keys"); a pinned

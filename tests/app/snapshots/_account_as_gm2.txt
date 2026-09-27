@@ -28,10 +28,10 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     heading "Аккаунт" [level=1]
     StaticText "Отображение, способы входа, выход и ваши данные."
     heading "ОТОБРАЖЕНИЕ" [level=2]
-    StaticText "Язык"
+    StaticText "Эти настройки действуют на всех ваших устройствах. Вид таблиц и ..." [namelen=134 namehash=00161fc6]
+    ... StaticText x12 of 16 same-shape siblings elided
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    ... StaticText x11 of 15 same-shape siblings elided
     combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
       option "Обычные правила" [selected=true]
       option "Альт. таблицы" [selected=false]
@@ -122,10 +122,10 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm2#/acc
     heading "Account" [level=1]
     StaticText "Display, sign-in methods, signing out and your data."
     heading "DISPLAY" [level=2]
-    StaticText "Language"
+    StaticText "These settings apply on all your devices. A tables view or a pri..." [namelen=133 namehash=30d49185]
+    ... StaticText x12 of 16 same-shape siblings elided
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    ... StaticText x11 of 15 same-shape siblings elided
     combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
       option "Standard rules" [selected=true]
       option "Alt. tables" [selected=false]

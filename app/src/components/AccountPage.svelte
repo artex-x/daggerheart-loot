@@ -251,6 +251,7 @@
 
       <Panel style={PANEL}>
         <Field label={t.displayHead} heading>
+          <p class="hint lead">{t.displayLead}</p>
           <div class="set">
             <span class="setname">{t.langLabel}</span>
             <Seg

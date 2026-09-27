@@ -1,5 +1,6 @@
 # 2026-09-24 - Account preferences drop the default money mode; the print layout persists for everyone
 
+- Superseded in part by "Display defaults are set in the account; a page switch lasts a visit" (2026-09-27): a page switch no longer saves the layout.
 - Task: `persist-1-auth` (owner answers of this date to the preferences
   mock's questions 1 and 2).
 - Decision: the account preferences are the language, the starting

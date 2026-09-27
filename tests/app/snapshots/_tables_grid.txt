@@ -1,6 +1,6 @@
 # #/tables ~ grid
 # route: #/tables
-# why: the grid view, a different body entirely
+# why: the grid view, a different body entirely; the note under the toolbar
 
 ## ru :: tree
 RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
@@ -44,6 +44,9 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Ссылка на таблицу"
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
+    StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
+    link "настройках аккаунта" [url=#/account]
+    StaticText "."
     checkbox "Выбрать все (60)" [checked=false]
     StaticText "Выбрать все (60)"
     checkbox "Первоклассный Спальный Мешок" [checked=false]
@@ -214,6 +217,7 @@ daggerheart.com
 Футляр для Компаньона
 Хранитель Знаний
 Цепь Парагона
+настройках аккаунта
 
 ## en :: tree
 RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
@@ -257,6 +261,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
+    StaticText "Only until the page reloads. To keep it, change it in "
+    link "your account settings" [url=#/account]
+    StaticText "."
     checkbox "Select all (60)" [checked=false]
     StaticText "Select all (60)"
     checkbox "Premium Bedroll" [checked=false]
@@ -426,4 +433,5 @@ Wondrous
 Wondrous Loot
 Woven Net
 daggerheart.com
+your account settings
 ЛутDaggerheart

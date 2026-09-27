@@ -245,7 +245,7 @@ describe('pinning', () => {
   });
 });
 
-describe('the tables view preference (restored)', () => {
+describe('the default tables view', () => {
   const PREFS_KEY = 'dhloot.prefs.v1';
 
   it('defaults to list with nothing stored', () => {
@@ -287,7 +287,7 @@ describe('the tables view preference (restored)', () => {
   });
 });
 
-describe('the print layout (remembered for every reader)', () => {
+describe('the default print layout', () => {
   const PREFS_KEY = 'dhloot.prefs.v1';
 
   it('is read at boot', () => {
@@ -323,6 +323,110 @@ describe('the print layout (remembered for every reader)', () => {
     expect(env.storage.get(PREFS_KEY)).toBe(
       '{"view":"list","printBw":true,"printCompact":true}'
     );
+  });
+});
+
+describe('a page switch lasts the visit', () => {
+  const PREFS_KEY = 'dhloot.prefs.v1';
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+
+  it('changes what is shown and not the default, storing nothing', () => {
+    const env = at('#/print/ci1');
+    const app = new AppState(env);
+    expect(app.printChanged).toBe(false);
+    app.showPrintBW(true);
+    app.showPrintCompact(true);
+    app.showTablesView('grid');
+    expect([app.shownPrintBW, app.shownPrintCompact, app.shownTablesView]).toEqual([
+      true,
+      true,
+      'grid'
+    ]);
+    expect([app.printBW, app.printCompact, app.tablesView]).toEqual([false, false, 'list']);
+    expect([app.printChanged, app.tablesViewChanged]).toEqual([true, true]);
+    expect(env.storage.get(PREFS_KEY)).toBeNull();
+  });
+
+  it('clears the change when the switch is back on the default', () => {
+    const app = new AppState(at('#/print/ci1'));
+    app.showPrintBW(true);
+    app.showPrintCompact(true);
+    app.showPrintBW(false);
+    expect(app.printChanged).toBe(true);
+    app.showPrintCompact(false);
+    expect(app.printChanged).toBe(false);
+    app.showTablesView('grid');
+    app.showTablesView('list');
+    expect(app.tablesViewChanged).toBe(false);
+  });
+
+  it("drops a page's pick when the Display section sets the default", () => {
+    const app = new AppState(at('#/print/ci1'));
+    app.showPrintBW(true);
+    app.showTablesView('grid');
+    app.showPrintCompact(true);
+    app.setPrintBW(false);
+    app.setTablesView('list');
+    app.setPrintCompact(false);
+    expect([app.shownPrintBW, app.shownTablesView, app.shownPrintCompact]).toEqual([
+      false,
+      'list',
+      false
+    ]);
+    expect([app.printChanged, app.tablesViewChanged]).toEqual([false, false]);
+  });
+
+  it('starts a new visit from the default over the same storage', () => {
+    const env = at('#/print/ci1', {
+      storage: stored({ [PREFS_KEY]: '{"view":"grid","printBw":true,"printCompact":false}' })
+    });
+    const first = new AppState(env);
+    first.showPrintBW(false);
+    first.showTablesView('list');
+    const next = new AppState(env);
+    expect([next.shownPrintBW, next.shownTablesView, next.printChanged]).toEqual([
+      true,
+      'grid',
+      false
+    ]);
+  });
+
+  it('saves nothing to the account, signed in', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const save = vi.spyOn(cloud.prefs, 'save');
+    const storage = memoryStorage();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/print/ci1'), storage, cloud }));
+    app.start();
+    await flush();
+    const before = storage.get(PREFS_KEY);
+    app.showTablesView('list');
+    app.showPrintBW(false);
+    app.showPrintCompact(false);
+    await flush();
+    expect(save).not.toHaveBeenCalled();
+    expect(storage.get(PREFS_KEY)).toBe(before);
+    expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['grid', true, true]);
+    app.stop();
+  });
+
+  it("moves the default on the account's answer and keeps a page's pick", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const storage = memoryStorage();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/print/ci1'), storage, cloud }));
+    app.start();
+    await flush();
+    app.showPrintCompact(false);
+    await cloud.prefs.save({ view: 'list', printBw: false });
+    storage.fireExternalChange(null);
+    await flush();
+    expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['list', false, true]);
+    expect([app.shownTablesView, app.shownPrintBW, app.shownPrintCompact]).toEqual([
+      'list',
+      false,
+      false
+    ]);
+    expect(app.printChanged).toBe(true);
+    app.stop();
   });
 });
 

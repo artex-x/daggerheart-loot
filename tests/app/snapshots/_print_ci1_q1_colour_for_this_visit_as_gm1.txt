@@ -1,31 +1,32 @@
-# #/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10 ~ compact
-# route: #/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10
-# why: ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"; the note under the bar
+# #/print/ci1-q1 ~ colour for this visit as gm1
+# route: #/print/ci1-q1
+# why: a page pick away from the account's default: colour on the compact sheet; the note under the bar
+# as: gm1
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10]
-  link "К содержимому" [url=#main]
+RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1#/print/ci1-q1]
+  link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Сообщества" [url=#/roll/community]
-      link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 10. Листов A4: 1. Размер карты 44×63 мм — шестнадцать ..." [namelen=72 namehash=b64423e1]
+    StaticText "Карточек: 2. Листов A4: 1. Размер карты 44×63 мм — шестнадцать н..." [namelen=71 namehash=a55798f5]
     button "Назад"
     button "Отправить на печать"
     button "Цветная" [pressed=true]
@@ -34,13 +35,10 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-ci2-c
     button "Компактная" [pressed=true]
     button "Ссылка на набор"
     StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
-    link "настройках аккаунта" [url=#/account]
-    ... StaticText x40 of 44 same-shape siblings elided
+    link "настройках аккаунта" [url=index.html?as=gm1#/account]
+    ... StaticText x20 of 24 same-shape siblings elided
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
-    heading "ПРОНЗИТЕЛЬНАЯ СВИРЕЛЬ" [level=2]
-    ... heading x6 of 10 same-shape siblings elided
-    heading "БАНКА С ОГНЁМ" [level=2]
-    heading "ПОДВЕШЕННЫЙ ЖЕЗЛ" [level=2]
+    heading "ПАЛАШ" [level=2]
     StaticText "Daggerheart"
     StaticText "Core"
   contentinfo ""
@@ -58,8 +56,8 @@ RU
 Vault of Ages
 Wondrous
 daggerheart.com
+Аккаунт: gm1@example.test
 Альт. таблицы
-Войти
 К содержимому
 Компактная
 Конфиденциальность
@@ -80,29 +78,29 @@ daggerheart.com
 настройках аккаунта
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10]
-  link "Skip to content" [url=#main]
+RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/print/ci1-q1]
+  link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Communities" [url=#/roll/community]
-      link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Printing cards" [level=1]
-    StaticText "Cards: 10. A4 sheets: 1. Card size 44×63 mm - sixteen to a sheet..." [namelen=65 namehash=8bad63d8]
+    StaticText "Cards: 2. A4 sheets: 1. Card size 44×63 mm - sixteen to a sheet."
     button "Back"
     button "Send to printer"
     button "Colour" [pressed=true]
@@ -111,13 +109,10 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci
     button "Compact" [pressed=true]
     button "Link to this set"
     StaticText "Only until the page reloads. To keep it, change it in "
-    link "your account settings" [url=#/account]
-    ... StaticText x40 of 44 same-shape siblings elided
+    link "your account settings" [url=index.html?as=gm1#/account]
+    ... StaticText x20 of 24 same-shape siblings elided
     heading "PREMIUM BEDROLL" [level=2]
-    heading "PIPER WHISTLE" [level=2]
-    ... heading x6 of 10 same-shape siblings elided
-    heading "FIRE JAR" [level=2]
-    heading "SUSPENDED ROD" [level=2]
+    heading "BROADSWORD" [level=2]
     StaticText "Daggerheart"
     StaticText "Core"
   contentinfo ""
@@ -128,6 +123,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+Account: gm1@example.test
 Alt. tables
 Back
 Black and white
@@ -144,7 +140,6 @@ Privacy
 RU
 Search
 Send to printer
-Sign in
 Skip to content
 Standard
 Standard rules

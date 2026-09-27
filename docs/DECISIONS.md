@@ -19,6 +19,7 @@ deleted.
 - 2026-09-27 - [A signed-out reader with browser lists sees a move banner until the cutoff](decisions/2026-09-27-a-signed-out-reader-with-browser-lists-sees-a-move-banner.md)
 - 2026-09-27 - [Agents read no .env file; the program loads it with `--env-file`](decisions/2026-09-27-agents-read-no-env-file-the-program-loads.md)
 - 2026-09-27 - [An agent pushes migrations to the test project only after an approving review](decisions/2026-09-27-an-agent-pushes-migrations-to-the-test-project.md)
+- 2026-09-27 - [Display defaults are set in the account; a page switch lasts a visit](decisions/2026-09-27-display-defaults-are-set-in-the-account-a-page-switch-lasts-a-visit.md)
 - 2026-09-27 - [R10 removes browser lists and the move; an old `#/l/` link is not found](decisions/2026-09-27-r10-removes-browser-lists-and-the-move.md)
 - 2026-09-27 - [The Read and Grep tools are denied `.env` files by a hook, not only by settings](decisions/2026-09-27-the-read-and-grep-tools-are-denied-env.md)
 - 2026-09-27 - [The reviewer writes its report to `issues/<id>/reviews/` and nowhere else](decisions/2026-09-27-the-reviewer-writes-its-report-to-issues-id.md)
@@ -78,7 +79,7 @@ deleted.
 - 2026-09-24 - [A drag keeps its cached midpoints when another tab rewrites the list](decisions/2026-09-24-a-drag-keeps-its-cached-midpoints-when-another.md)
 - 2026-09-24 - [A drag whose own row leaves the list is void](decisions/2026-09-24-a-drag-whose-own-row-leaves-the-list.md)
 - 2026-09-24 - [A secondary weapon's stat line names its damage type, not its class](decisions/2026-09-24-a-secondary-weapons-stat-line-names-its-damage.md) - superseded
-- 2026-09-24 - [Account preferences drop the default money mode; the print layout persists for everyone](decisions/2026-09-24-account-preferences-drop-the-default-money-mode-the.md)
+- 2026-09-24 - [Account preferences drop the default money mode; the print layout persists for everyone](decisions/2026-09-24-account-preferences-drop-the-default-money-mode-the.md) - superseded in part
 - 2026-09-24 - [An undo toast takes focus; a plain toast never does](decisions/2026-09-24-an-undo-toast-takes-focus-a-plain-toast.md)
 - 2026-09-24 - [`data.js` in git is the only catalog authority](decisions/2026-09-24-data-js-in-git-is-the-only-catalog.md)
 - 2026-09-24 - [Every weapon's stat line names its class, secondary weapons too](decisions/2026-09-24-every-weapons-stat-line-names-its-class-secondary.md)

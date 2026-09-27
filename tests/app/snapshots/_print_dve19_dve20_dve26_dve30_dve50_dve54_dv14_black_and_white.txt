@@ -1,6 +1,6 @@
 # #/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14 ~ black and white
 # route: #/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14
-# why: the same seven, the other layout
+# why: the same seven, the other layout; the note under the bar
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14]
@@ -33,8 +33,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/dve19-dve
     button "Обычная" [pressed=true]
     button "Компактная" [pressed=false]
     button "Ссылка на набор"
-    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x138 of 142 same-shape siblings elided
+    StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
+    link "настройках аккаунта" [url=#/account]
+    ... StaticText x140 of 144 same-shape siblings elided
     heading "УГОЛЁК" [level=2]
     LineBreak " "
     heading "ИСКРА" [level=2]
@@ -81,6 +82,7 @@ daggerheart.com
 Установить как приложение
 Цветная
 Чёрно-белая
+настройках аккаунта
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14]
@@ -113,8 +115,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/dve19-dve20-dve26-dve30-dv
     button "Standard" [pressed=true]
     button "Compact" [pressed=false]
     button "Link to this set"
-    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x138 of 142 same-shape siblings elided
+    StaticText "Only until the page reloads. To keep it, change it in "
+    link "your account settings" [url=#/account]
+    ... StaticText x140 of 144 same-shape siblings elided
     heading "EMBER" [level=2]
     LineBreak " "
     heading "SPARK" [level=2]
@@ -160,4 +163,5 @@ Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com
+your account settings
 ЛутDaggerheart

@@ -460,6 +460,8 @@ const COVERED: Record<string, string> = {
   'Empty.svelte': "tables.test.ts's nothing-found states, and the lists index above",
   'Field.svelte': 'the number row on every roll page, and both pickers',
   'Icon.svelte': 'the card actions and the pin toggle',
+  'KeepNote.svelte':
+    'the note under the print bar in printPage.test.ts, and under the toolbar in tables.test.ts',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
   'MoveNotice.svelte': 'moveNotice.test.ts in every form, and the moved-lists state above',
   'MoveStatus.svelte': 'moveStatus.test.ts in every form, and listsPage.test.ts',

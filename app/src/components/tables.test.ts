@@ -22,6 +22,8 @@ import {
   noData
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
@@ -318,6 +320,31 @@ describe('the view switch', () => {
     const tile = screen.getByText('Кольцо Тишины').closest('.tilewrap');
     expect(tile?.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
     await expectNoA11yViolations(container);
+  });
+
+  it('changes the view for this visit and stores nothing', async () => {
+    const env = at();
+    render(App, { env });
+    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    expect(document.querySelector('.tilewrap')).toBeInTheDocument();
+    expect(env.storage.get('dhloot.prefs.v1')).toBeNull();
+    expect(document.querySelector('.keepnote')).toBeNull();
+  });
+
+  it('links the account while the view differs from the default, in a build with sign-in', async () => {
+    const { container } = render(App, { env: at({ cloud: fakeCloud(SEED) }) });
+    expect(document.querySelector('.keepnote')).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
+    expect(document.querySelector('.keepnote')).toHaveTextContent(
+      'Только до перезагрузки. Чтобы сохранить, измените в настройках аккаунта.'
+    );
+    expect(screen.getByRole('link', { name: 'настройках аккаунта' })).toHaveAttribute(
+      'href',
+      '#/account'
+    );
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Списком' }));
+    expect(document.querySelector('.keepnote')).toBeNull();
   });
 });
 

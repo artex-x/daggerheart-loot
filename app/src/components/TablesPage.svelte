@@ -25,6 +25,7 @@
   import Empty from './Empty.svelte';
   import FilterBar from './FilterBar.svelte';
   import Icon from './Icon.svelte';
+  import KeepNote from './KeepNote.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
   import RecordHost from './RecordHost.svelte';
@@ -96,11 +97,10 @@
 
   /* The search box is memory only - docs/specs/STATE.md is explicit that
      what was asked on a page is not remembered, and it does not touch the
-     address. The view switch is the one exception: how a page looks is
-     remembered (`dhloot.prefs.v1`, `AppState.tablesView`), restored
-     after the rewrite briefly dropped it. */
+     address. The view switch changes this visit; the default is the Display
+     section's (docs/specs/FEATURES.md, "Tables and search"). */
   let q = $state('');
-  const view = $derived(app.tablesView);
+  const view = $derived(app.shownTablesView);
   const VIEWS = $derived([
     { value: 'list', label: t.viewList },
     { value: 'grid', label: t.viewGrid }
@@ -487,10 +487,11 @@
           value={view}
           label={t.view}
           onchange={(v: 'list' | 'grid') => {
-            app.setTablesView(v);
+            app.showTablesView(v);
           }}
         />
       </div>
+      {#if app.tablesViewChanged}<KeepNote {app} />{/if}
 
       <FilterBar
         rows={facRows}
@@ -641,6 +642,11 @@
        The body below it also opens with a 6px margin-top, which collapses
        against this one and never wins: adjacent margins take the larger. */
     margin: 16px 0 18px;
+  }
+
+  /* The note belongs to the toolbar: 8 px under it, its own margin. */
+  .toolbar:has(+ :global(.keepnote)) {
+    margin-bottom: 0;
   }
 
   .toolbar .grow {

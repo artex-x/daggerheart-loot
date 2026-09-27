@@ -634,7 +634,7 @@ const STATES = [
   {
     id: '#/tables ~ grid',
     route: '#/tables',
-    why: 'the grid view, a different body entirely',
+    why: 'the grid view, a different body entirely; the note under the toolbar',
     enter: async (d) => {
       await d.click('Сеткой');
     }
@@ -1544,7 +1544,7 @@ const STATES = [
   {
     id: '#/print/ci1-q1 ~ black and white',
     route: '#/print/ci1-q1',
-    why: 'the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors',
+    why: 'the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors; the note under the bar',
     enter: async (d) => {
       await d.click('Чёрно-белая');
     }
@@ -1564,7 +1564,7 @@ const STATES = [
     id: NINE + ' ~ black and white',
     route: NINE,
     whole: true,
-    why: 'the same nine, the other layout',
+    why: 'the same nine, the other layout; the note under the bar',
     enter: async (d) => {
       await d.click('Чёрно-белая');
     }
@@ -1579,7 +1579,7 @@ const STATES = [
     id: LONG + ' ~ black and white',
     route: LONG,
     whole: true,
-    why: 'the same, with the black-and-white padding floor',
+    why: 'the same, with the black-and-white padding floor; the note under the bar',
     enter: async (d) => {
       await d.click('Чёрно-белая');
     }
@@ -1604,7 +1604,7 @@ const STATES = [
     id: DV_SET + ' ~ black and white',
     route: DV_SET,
     whole: true,
-    why: 'the same seven, the other layout',
+    why: 'the same seven, the other layout; the note under the bar',
     enter: async (d) => {
       await d.click('Чёрно-белая');
     }
@@ -1619,7 +1619,7 @@ const STATES = [
     id: VOA4_SET + ' ~ black and white',
     route: VOA4_SET,
     whole: true,
-    why: 'the same nine, the other layout',
+    why: 'the same nine, the other layout; the note under the bar',
     enter: async (d) => {
       await d.click('Чёрно-белая');
     }
@@ -1627,7 +1627,7 @@ const STATES = [
   {
     id: '#/print/ci1-q1 ~ compact',
     route: '#/print/ci1-q1',
-    why: 'the compact sheet in colour: the size switch pressed, the compact subtitle, sixteen places, fourteen blank',
+    why: 'the compact sheet in colour: the size switch pressed, the compact subtitle, sixteen places, fourteen blank; the note under the bar',
     enter: async (d) => {
       await d.click('Компактная');
     }
@@ -1635,7 +1635,7 @@ const STATES = [
   {
     id: '#/print/ci1-q1 ~ compact black and white',
     route: '#/print/ci1-q1',
-    why: 'the compact sheet in black and white: both switches pressed away from their defaults',
+    why: 'the compact sheet in black and white: both switches pressed away from their defaults; the note under the bar',
     enter: async (d) => {
       await d.click('Чёрно-белая');
       await d.click('Компактная');
@@ -1645,7 +1645,7 @@ const STATES = [
     id: NINE + ' ~ compact',
     route: NINE,
     whole: true,
-    why: 'every card shape on the compact sheet, in colour',
+    why: 'every card shape on the compact sheet, in colour; the note under the bar',
     enter: async (d) => {
       await d.click('Компактная');
     }
@@ -1654,7 +1654,7 @@ const STATES = [
     id: NINE + ' ~ compact black and white',
     route: NINE,
     whole: true,
-    why: 'every card shape on the compact sheet, in black and white: the grow rung at 44 mm',
+    why: 'every card shape on the compact sheet, in black and white: the grow rung at 44 mm; the note under the bar',
     enter: async (d) => {
       await d.click('Чёрно-белая');
       await d.click('Компактная');
@@ -1664,7 +1664,7 @@ const STATES = [
     id: LONG + ' ~ compact',
     route: LONG,
     whole: true,
-    why: 'the colour fit ladder at 44 mm on the longest texts',
+    why: 'the colour fit ladder at 44 mm on the longest texts; the note under the bar',
     enter: async (d) => {
       await d.click('Компактная');
     }
@@ -1673,7 +1673,7 @@ const STATES = [
     id: LONG + ' ~ compact black and white',
     route: LONG,
     whole: true,
-    why: 'the black-and-white fit at 44 mm on the longest texts',
+    why: 'the black-and-white fit at 44 mm on the longest texts; the note under the bar',
     enter: async (d) => {
       await d.click('Чёрно-белая');
       await d.click('Компактная');
@@ -1682,7 +1682,7 @@ const STATES = [
   {
     id: TEN + ' ~ compact',
     route: TEN,
-    why: 'ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"',
+    why: 'ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"; the note under the bar',
     enter: async (d) => {
       await d.click('Компактная');
     }
@@ -1707,7 +1707,7 @@ const STATES = [
     id: '#/account as gm1',
     route: '#/account',
     as: 'gm1',
-    why: 'two identities: the five sections in order, the Display section first, a Disconnect on each'
+    why: 'two identities: the five sections in order, the Display section first with its lead line, a Disconnect on each'
   },
   {
     id: '#/account ~ delete confirmation as gm1',
@@ -1756,6 +1756,15 @@ const STATES = [
     route: '#/print/ci1-q1',
     as: 'gm1',
     why: "the account's print layout: black and white on the compact sheet, where signed out it is colour on the standard sheet"
+  },
+  {
+    id: '#/print/ci1-q1 ~ colour for this visit as gm1',
+    route: '#/print/ci1-q1',
+    as: 'gm1',
+    why: "a page pick away from the account's default: colour on the compact sheet; the note under the bar",
+    enter: async (d) => {
+      await d.click('Цветная');
+    }
   }
 ];
 

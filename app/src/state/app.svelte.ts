@@ -302,18 +302,20 @@ export class AppState {
    *  for good - the live app's `dhloot.warn.v1`. App-level because the list
    *  page reads the same flag, not only the index. */
   #warnHidden = $state(false);
-  /** The tables page's list/grid switch (restored). App-level, the way
-   *  `#home` and `#warnHidden` are, rather than component-local, because how
-   *  a page looks is remembered (`STATE.md`) and `TablesPage` is never
-   *  destroyed between two `tables` addresses, so a component-local field
-   *  would survive a session but not explain where the persisted value
-   *  lives. */
+  /** The default tables view, list or grid, set by the Display section and
+   *  the account and stored in `dhloot.prefs.v1` (`STATE.md`, "Account
+   *  preferences"). */
   #tablesView = $state<'list' | 'grid'>('list');
-  /** The print page's colour/black-and-white and standard/compact choices,
-   *  remembered in `dhloot.prefs.v1` beside the tables view for every reader
-   *  (docs/specs/FEATURES.md, "Print"). */
+  /** The default print layout, colour or black-and-white and standard or
+   *  compact, set by the Display section and the account and stored beside
+   *  the tables view (docs/specs/FEATURES.md, "Print"). */
   #printBW = $state(false);
   #printCompact = $state(false);
+  /** The value a page switch picked for this visit, `null` to follow the
+   *  default; memory only, so a reload drops it (`STATE.md`, "The rule"). */
+  #tablesViewNow = $state<'list' | 'grid' | null>(null);
+  #printBWNow = $state<boolean | null>(null);
+  #printCompactNow = $state<boolean | null>(null);
   /** The remembered answer to "notify the list owner?": in the account row
    *  only, so it starts at `ask` for every user and signed out. */
   #notifyGm = $state<NotifyGm>('ask');
@@ -999,14 +1001,15 @@ export class AppState {
     this.#changed();
   }
 
-  /** Restored: the tables page's list/grid switch, remembered in
-   *  `dhloot.prefs.v1` the way the live app's `{ view }` was. */
+  /** Returns the default tables view, stored in `dhloot.prefs.v1`. */
   get tablesView(): 'list' | 'grid' {
     return this.#tablesView;
   }
 
+  /** Sets the default from the Display section and drops a page's pick. */
   setTablesView(view: 'list' | 'grid'): void {
     this.#tablesView = view;
+    this.#tablesViewNow = null;
     this.#writeLocalPrefs();
     this.#changed();
   }
@@ -1015,8 +1018,10 @@ export class AppState {
     return this.#printBW;
   }
 
+  /** Sets the default from the Display section and drops a page's pick. */
   setPrintBW(bw: boolean): void {
     this.#printBW = bw;
+    this.#printBWNow = null;
     this.#writeLocalPrefs();
     this.#changed();
   }
@@ -1025,10 +1030,46 @@ export class AppState {
     return this.#printCompact;
   }
 
+  /** Sets the default from the Display section and drops a page's pick. */
   setPrintCompact(compact: boolean): void {
     this.#printCompact = compact;
+    this.#printCompactNow = null;
     this.#writeLocalPrefs();
     this.#changed();
+  }
+
+  /** Returns the tables view the page draws: its pick for this visit, else the default. */
+  get shownTablesView(): 'list' | 'grid' {
+    return this.#tablesViewNow ?? this.#tablesView;
+  }
+
+  get shownPrintBW(): boolean {
+    return this.#printBWNow ?? this.#printBW;
+  }
+
+  get shownPrintCompact(): boolean {
+    return this.#printCompactNow ?? this.#printCompact;
+  }
+
+  get tablesViewChanged(): boolean {
+    return this.shownTablesView !== this.#tablesView;
+  }
+
+  get printChanged(): boolean {
+    return this.shownPrintBW !== this.#printBW || this.shownPrintCompact !== this.#printCompact;
+  }
+
+  /** Changes the tables view for this visit: no storage write, no account save. */
+  showTablesView(view: 'list' | 'grid'): void {
+    this.#tablesViewNow = view === this.#tablesView ? null : view;
+  }
+
+  showPrintBW(bw: boolean): void {
+    this.#printBWNow = bw === this.#printBW ? null : bw;
+  }
+
+  showPrintCompact(compact: boolean): void {
+    this.#printCompactNow = compact === this.#printCompact ? null : compact;
   }
 
   get notifyGm(): NotifyGm {

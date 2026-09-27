@@ -2371,8 +2371,9 @@ async function fakeCloudSignedState() {
 
 /** 36. Account preferences over the fake cloud: the account's language
  *  wins over this browser's and is written back; an account with no row is
- *  seeded from this browser; a signed-out print press is remembered
- *  (docs/specs/STATE.md, "Account preferences"). */
+ *  seeded from this browser; a signed-out print press lasts until a reload,
+ *  stores nothing and draws the note (docs/specs/STATE.md, "Account
+ *  preferences"). */
 async function accountPreferences() {
   const at = '36 (account preferences): ';
   const lang = (page) => page.evaluate(() => document.documentElement.lang);
@@ -2431,13 +2432,36 @@ async function accountPreferences() {
   ok((await lang(b.page)) === 'en', at + 'b: the page did not stay English');
   await b.ctx.close();
 
-  const c = await fresh({ width: 1180, height: 900 });
+  const SEEDED = '{"view":"list","printBw":false,"printCompact":false}';
+  const c = await fresh({ width: 1180, height: 900, storage: { 'dhloot.prefs.v1': SEEDED } });
+  const sheet = (page) =>
+    page.evaluate(() => ({
+      bw: document.querySelector('.psheet.bw') !== null,
+      note: document.querySelector('.keepnote a')?.getAttribute('href') ?? null
+    }));
   await c.d.open('#/print/ci1-q1');
   await c.d.click('Чёрно-белая');
   const kept = await c.d.storage('dhloot.prefs.v1');
+  ok(kept === SEEDED, at + 'c: the signed-out print press changed dhloot.prefs.v1 - ' + kept);
+  let seen = await sheet(c.page);
   ok(
-    kept === '{"view":"list","printBw":true,"printCompact":false}',
-    at + 'c: the signed-out print press was not remembered - ' + kept
+    seen.bw && seen.note === '#/account',
+    at + 'c: the press did not draw black and white with the note - ' + JSON.stringify(seen)
+  );
+  await c.d.go('#/lists');
+  await c.d.go('#/print/ci1-q1');
+  seen = await sheet(c.page);
+  ok(
+    seen.bw && seen.note === '#/account',
+    at + 'c: the pick did not survive a return from #/lists - ' + JSON.stringify(seen)
+  );
+  await c.d.open('#/print/ci1-q1');
+  seen = await sheet(c.page);
+  ok(
+    !seen.bw && seen.note === null,
+    at +
+      'c: a reload did not draw the colour default without the note - ' +
+      JSON.stringify(seen)
   );
   await c.ctx.close();
 }

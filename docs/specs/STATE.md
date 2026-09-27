@@ -13,9 +13,11 @@ implementation detail. A fifth holds one short-lived record.
 
 **The rule: how a page looks is remembered, what was asked on it is not.** A
 filter carried in from yesterday is a state nobody remembers, and the page just
-looks broken. Table view, print layout, language and starting section describe
-the app's behaviour, so they persist; a roll, a search, a rarity, a ticked row and an open
-help panel start over.
+looks broken. The language and the starting section describe the app's
+behaviour, so they persist. The table view and the print layout persist as
+defaults set on `#/account`; a switch on the tables or print page changes
+them for this visit only, until a reload. A roll, a search, a rarity, a
+ticked row and an open help panel start over.
 
 Do not persist filters, search text or selections, a selection's taken counts
 included. Filters are shared by link instead - that is what the `f_` segment
@@ -29,7 +31,7 @@ is for.
 | `dhloot.lists.v1` | the pre-split shape. Read once and migrated into v2, then **left untouched** so a rollback loses nothing. Never delete it. |
 | `dhloot.lang.v1` | `ru` or `en`. Also written, as `en` and only when absent, by an English redirect page (`i/en/<id>.html`, `en/index.html`) before it opens the app (`docs/specs/I18N.md`) |
 | `dhloot.home.v1` | the pinned starting section, as a full hash - a section, or a named table (`#/tables/<table>`); reading also accepts a bare `#/tables` from an older pin, but the app itself always writes the named form. A stored `#/tables/frames` (the legacy alias, `hash.ts` `TABLE_ALIASES`) normalises to `#/tables/other_frames` on read only, with no write-back; the home control compares the active route against the canonical path, and the next explicit save writes the canonical id (`app.svelte.ts` `pinOf`). |
-| `dhloot.prefs.v1` | `{ view: 'list' \| 'grid', printBw: boolean, printCompact: boolean }`, written whole, for every reader; live's old `{ view }` still reads (a missing field is `list`/`false`) |
+| `dhloot.prefs.v1` | the defaults `{ view: 'list' \| 'grid', printBw: boolean, printCompact: boolean }`, written whole by the Display section and the account's answer, never by a page switch; read at boot for every reader; live's old `{ view }` still reads (a missing field is `list`/`false`) |
 | `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |
 | `dhloot.probe` | written and removed to test whether storage works at all |
 | `sb-<ref>-auth-token` | the signed-in session (`<ref>` is the Supabase project). A provider redirect also writes its PKCE verifier three ways (supabase-js 2.117.1): `sb-<ref>-auth-token-flow-<id>-code-verifier` per flow, the index `sb-<ref>-auth-token-flows-code-verifier` (a ring of five flows, the oldest evicted), and `sb-<ref>-auth-token-code-verifier`, the latest flow's copy. The return's code exchange reads and removes only that last key (the callback address carries no flow id), so the per-flow key and the index stay until sign-out or deletion ends the session. Written and removed by supabase-js, never by the app |
@@ -104,10 +106,20 @@ nothing new redraws nothing, and an edit replaces only the list it changes.
 Signed in, the language, starting section, tables view and print layout
 follow the account (`user_prefs`, one row per user: `{ lang, home, view,
 printBw, printCompact, notifyGm }`; `app/src/lib/prefs.ts` reads it as
-untrusted data, the same as `dhloot.prefs.v1`). There is no sync indicator;
-the controls stay where they are, and the Display section of `#/account`
-(`FEATURES.md`, "Account") is a second writer of the same keys through the
-same setters.
+untrusted data, the same as `dhloot.prefs.v1`). There is no sync indicator.
+The header RU/EN switch and the Display section's language row write one
+setting, and so do the pin and the starting-section select.
+
+- **Defaults and a page's pick.** The tables view and the print layout each
+  have a default and, for this visit, an optional page value (`AppState`).
+  The default is read at boot from `dhloot.prefs.v1`, replaced by the
+  account's answer, and set by the Display section of `#/account`
+  (`FEATURES.md`, "Account"); nothing else writes it. A page switch sets
+  the page value in memory only: no storage write, no account save. A page
+  draws its page value when set, else the default. A Display change sets
+  the default and drops the page value; the account's answer moves the
+  default and keeps a page value. A signed-out reader keeps the default
+  `dhloot.prefs.v1` already holds and cannot change it.
 
 - **`notifyGm`** (`ask`, `always` or `never`), the remembered answer to
   "notify the list owner?", lives in the row only: no local key. A row
@@ -123,9 +135,11 @@ same setters.
 - **A first sign-in seeds the account.** An account with no row gets this
   browser's five values and `notifyGm: 'ask'`. A read that fails applies and saves nothing, so it
   cannot pass as an empty account and be seeded over.
-- **Local first, then the account.** Every change is written to its local
-  key, then, signed in, the whole object replaces the row. A change made
-  while the account's answer is pending wins over that answer.
+- **Local first, then the account.** Every change of the language, the
+  starting section, a default or `notifyGm` is written to its local key
+  (`notifyGm` has none), then, signed in, the whole object replaces the
+  row. A change made while the account's answer is pending wins over that
+  answer.
 - **Refetched when shown again.** The storage port's key-less signal (the
   tab shown again, a back-forward-cache restore) pulls the row again; after a
   refused save it saves instead, so a change made offline is not overwritten
@@ -155,11 +169,11 @@ state exists, by what it was for:
 |---|---|
 | Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), `pendingListName` (a name typed before a sign-in, taken once by the menu that reopens; the pending action and this name are forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list) |
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `comm {c, n}` |
-| Tables | `tables {t, q, view, anchor}`, `search {q}` |
+| Tables | `tables {t, q, view, anchor}`, `search {q}`, the tables view a page switch picked for this visit (`AppState`) |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |
 | Lists | `lists`, `cloudLists` (the account lists, their read status, the write buffer and its save status), `sharedView` (the open share link's list, its read status and whether the reader owns it), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session) |
 | Prices | `rp`, `guess`, `moneyHelp` |
-| Print | `printIds` |
+| Print | `printIds`, the print layout a page switch picked for this visit (`AppState`) |
 | UI | `sel`, `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen`, `menuOpen` (the header's account menu, in `Shell`, closed on a navigation and a user change), `hidden` (the move banner's «Скрыть», in `MoveNotice`, which `Shell` never remounts: hidden until the next page load) |
 
 `fSeg` is the filter segment already read back from the address. Reading the

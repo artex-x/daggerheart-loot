@@ -136,10 +136,9 @@
 {/if}
 
 <style>
-  /* off `.fbar` in style.css. The 16px never actually shows - it collapses
-     against `.toolbar`'s 18px margin-bottom above it, and adjacent margins
-     take the larger - but it is written down anyway, the way the live app
-     writes it, rather than left off because nothing currently depends on it. */
+  /* off `.fbar` in style.css. Under the bare toolbar the 16px collapses into
+     `.toolbar`'s 18px margin-bottom (adjacent margins take the larger); it
+     shows under the tables page's `.keepnote`, which zeroes that margin. */
   .fbar {
     display: flex;
     gap: 8px;

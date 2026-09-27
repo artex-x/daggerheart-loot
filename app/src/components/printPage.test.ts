@@ -25,6 +25,8 @@ import {
   noData
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -630,7 +632,7 @@ describe('black and white', () => {
     );
   });
 
-  it('survives leaving the print page, and a reload: remembered in dhloot.prefs.v1', async () => {
+  it('survives leaving the print page and coming back, stores nothing, and a reload draws the default', async () => {
     const env = at('#/print/q1-a1');
     const first = render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
@@ -641,13 +643,57 @@ describe('black and white', () => {
     env.router.navigate('#/print/q1-a1');
     await tick();
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
-    expect(env.storage.get('dhloot.prefs.v1')).toBe(
-      '{"view":"list","printBw":true,"printCompact":false}'
-    );
+    expect(env.storage.get('dhloot.prefs.v1')).toBeNull();
     first.unmount();
 
     render(App, { env: at('#/print/q1-a1', { storage: env.storage }) });
+    expect(document.querySelector('.psheet.bw')).toBeNull();
+  });
+
+  it('draws the stored default at arrival', () => {
+    render(App, {
+      env: at('#/print/q1-a1', {
+        storage: memoryStorage({
+          'dhloot.prefs.v1': '{"view":"list","printBw":true,"printCompact":false}'
+        })
+      })
+    });
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
+  });
+});
+
+describe('the note under the bar', () => {
+  const withSignIn = (): Env => at('#/print/ci1-q1', { cloud: fakeCloud(SEED) });
+  const note = (): Element | null => document.querySelector('.keepnote');
+
+  it('links the account while either switch differs from the default, and goes when both are back', async () => {
+    const { container } = render(App, { env: withSignIn() });
+    expect(note()).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    expect(note()).toHaveTextContent(
+      'Только до перезагрузки. Чтобы сохранить, измените в настройках аккаунта.'
+    );
+    expect(screen.getByRole('link', { name: 'настройках аккаунта' })).toHaveAttribute(
+      'href',
+      '#/account'
+    );
+    expect(document.querySelector('.printbar')).toContainElement(note() as HTMLElement);
+    expect(note()).not.toHaveClass('printnote');
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Цветная' }));
+    expect(note()).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Обычная' }));
+    expect(note()).toBeNull();
+  });
+
+  it('draws nothing in a build without sign-in', async () => {
+    render(App, { env: at('#/print/ci1-q1') });
+    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
+    expect(note()).toBeNull();
   });
 });
 

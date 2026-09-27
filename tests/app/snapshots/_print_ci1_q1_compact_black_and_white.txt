@@ -1,6 +1,6 @@
 # #/print/ci1-q1 ~ compact black and white
 # route: #/print/ci1-q1
-# why: the compact sheet in black and white: both switches pressed away from their defaults
+# why: the compact sheet in black and white: both switches pressed away from their defaults; the note under the bar
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-q1]
@@ -33,8 +33,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-q1]
     button "Обычная" [pressed=false]
     button "Компактная" [pressed=true]
     button "Ссылка на набор"
-    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x18 of 22 same-shape siblings elided
+    StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
+    link "настройках аккаунта" [url=#/account]
+    ... StaticText x20 of 24 same-shape siblings elided
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
     heading "ПАЛАШ" [level=2]
     StaticText "Daggerheart"
@@ -73,6 +74,7 @@ daggerheart.com
 Установить как приложение
 Цветная
 Чёрно-белая
+настройках аккаунта
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-q1]
@@ -105,8 +107,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-q1]
     button "Standard" [pressed=false]
     button "Compact" [pressed=true]
     button "Link to this set"
-    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x18 of 22 same-shape siblings elided
+    StaticText "Only until the page reloads. To keep it, change it in "
+    link "your account settings" [url=#/account]
+    ... StaticText x20 of 24 same-shape siblings elided
     heading "PREMIUM BEDROLL" [level=2]
     heading "BROADSWORD" [level=2]
     StaticText "Daggerheart"
@@ -144,4 +147,5 @@ Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com
+your account settings
 ЛутDaggerheart

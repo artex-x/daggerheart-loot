@@ -6,6 +6,7 @@
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
+  import KeepNote from './KeepNote.svelte';
   import NoData from './NoData.svelte';
   import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
@@ -36,7 +37,7 @@
         })
       : []
   );
-  const per = $derived(app.printCompact ? COMPACT_PER_SHEET : 9);
+  const per = $derived(app.shownPrintCompact ? COMPACT_PER_SHEET : 9);
   const sheet = $derived(pages(items, per));
   /** Just the keys `{#each}` needs for the blank places after the last
    *  card - an index array, built here so the template needs no unused
@@ -55,12 +56,10 @@
     };
   }
 
-  /* Both print switches are remembered on `AppState` (`dhloot.prefs.v1`,
-     and the account when signed in - docs/specs/FEATURES.md, "Print"),
-     unlike search's `q` and TablesPage's `q`, which stay component-local on
-     purpose. `app.printBW` and `app.printCompact` directly, not local
-     mirrors: this page remounts on every navigation, so a local copy would
-     have to be re-synced from `app` on mount anyway. */
+  /* Both print switches change the layout for this visit; the default is the
+     Display section's (docs/specs/FEATURES.md, "Print"). The pick lives on
+     `AppState`, not here: this page remounts on every navigation, and the
+     pick must survive a return from another page. */
 
   const ART = $derived([
     { value: 'color', label: t.printColor },
@@ -72,7 +71,7 @@
   ] as const);
 
   const sub = $derived(
-    (app.printCompact ? t.printSubCompact : t.printSub)
+    (app.shownPrintCompact ? t.printSubCompact : t.printSub)
       .replace('%n', String(items.length))
       .replace('%p', String(Math.ceil(items.length / per)))
   );
@@ -111,23 +110,24 @@
       <Seg
         small
         options={ART}
-        value={app.printBW ? 'bw' : 'color'}
+        value={app.shownPrintBW ? 'bw' : 'color'}
         label={t.printTitle}
         onchange={(v: 'color' | 'bw') => {
-          app.setPrintBW(v === 'bw');
+          app.showPrintBW(v === 'bw');
         }}
       />
       <Seg
         small
         options={SIZE}
-        value={app.printCompact ? 'compact' : 'std'}
+        value={app.shownPrintCompact ? 'compact' : 'std'}
         label={t.printSize}
         onchange={(v: 'std' | 'compact') => {
-          app.setPrintCompact(v === 'compact');
+          app.showPrintCompact(v === 'compact');
         }}
       />
       <Button onclick={() => void copyLink()}><Icon name="link" />{t.printLink}</Button>
     </Actions>
+    {#if app.printChanged}<KeepNote {app} />{/if}
     {#if dropped}
       <p class="printnote warnnote">{tooMany}</p>
     {/if}
@@ -139,15 +139,15 @@
     {#each sheet.pages as page, i (i)}
       <div
         class="psheet"
-        class:bw={app.printBW}
-        class:compact={app.printCompact}
+        class:bw={app.shownPrintBW}
+        class:compact={app.shownPrintCompact}
         data-next={i ? '1' : undefined}
       >
         {#each page as it (it.id)}
           <PrintCard
             {it}
             lang={app.lang}
-            bw={app.printBW}
+            bw={app.shownPrintBW}
             qty={qty[it.id]}
             setLine={setLine(it)}
             artBroken={app.artBroken(it.id)}

@@ -1,6 +1,6 @@
 # #/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11 ~ black and white
 # route: #/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11
-# why: the same, with the black-and-white padding floor
+# why: the same, with the black-and-white padding floor; the note under the bar
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11]
@@ -33,8 +33,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/voa2_a3-v
     button "Обычная" [pressed=true]
     button "Компактная" [pressed=false]
     button "Ссылка на набор"
-    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x81 of 85 same-shape siblings elided
+    StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
+    link "настройках аккаунта" [url=#/account]
+    ... StaticText x83 of 87 same-shape siblings elided
     heading "КОЛОДА СУМЕРЕК" [level=2]
     LineBreak " "
     heading "УЗЫ ДУШИ" [level=2]
@@ -81,6 +82,7 @@ daggerheart.com
 Установить как приложение
 Цветная
 Чёрно-белая
+настройках аккаунта
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11]
@@ -113,8 +115,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/voa2_a3-voa2_a1-voa2_c4-vo
     button "Standard" [pressed=true]
     button "Compact" [pressed=false]
     button "Link to this set"
-    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x81 of 85 same-shape siblings elided
+    StaticText "Only until the page reloads. To keep it, change it in "
+    link "your account settings" [url=#/account]
+    ... StaticText x83 of 87 same-shape siblings elided
     heading "TWILIGHT DECK" [level=2]
     LineBreak " "
     heading "ANIMA COLLIGATIONEM" [level=2]
@@ -160,4 +163,5 @@ Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com
+your account settings
 ЛутDaggerheart
