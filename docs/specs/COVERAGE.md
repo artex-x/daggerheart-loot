@@ -362,7 +362,18 @@ not run. CI's `browser` matrix runs the rows as five shards
   write with no id `22023`; the count limits per write with the key and
   the value, and a create over the entry limit refused whole, leaving no
   list; a refused or malformed write drops only itself; a `40001` fails the whole
-  call; a call sent twice changes nothing more. `reversibility.test.mjs`
+  call; a call sent twice changes nothing more. `usage.test.mjs` holds the
+  usage report's database half (`tools/supabase/usage.mjs`): `collect` on
+  seeded rows against a baseline taken in the same transaction (the sizes,
+  every `public` table's rows, `auth_users` and the MAU estimate with users
+  seeded at the month's first instant and one day before it), the Storage
+  branch this stack has, the near-limit counts with the part above 100 % and
+  a null limit that never counts, `collect` in a `read only` transaction as
+  production runs it, one snapshot row a day with the 400-day
+  delete (`today` - 401 gone, `today` - 400 kept), the 28 days before today
+  without today's row, and no privilege for `anon`, `authenticated` or
+  `service_role` on `usage_snapshots`, with row level security on.
+`reversibility.test.mjs`
   is the migration gate: every migration has a reversal of the same name in
   `supabase/reversals/` or the marker `-- additive` (refused over a `drop`,
   `rename` or type change), up-down-up leaves the `db dump` of `public`
@@ -1027,11 +1038,31 @@ covered here (both hosts, both projects, a foreign ref, a query string,
 garbage). `tests/derived.js` pins CI's migration steps (`migrate-test.mjs`,
 never `db push`, before `npm run e2e`; a `migrate-prod` job with deploy's
 `needs` and `if:`, `pending-check` on a `skip_e2e` dispatch, then `db
-push`; `deploy` needs `migrate-prod`), that `SUPABASE_DB_URL_PROD` is read
-only inside a job that declares `environment: production` in `ci.yml` and
-`backup.yml`, and `backup.yml`'s schedule, recipient, `--schema
-auth,public`, `contents: read`, 30-day retention and `*.age`-only,
-fail-closed upload.
+push`; `deploy` needs `migrate-prod`), that `SUPABASE_DB_URL_PROD` and
+`SUPABASE_USAGE_TOKEN_PROD` are read only inside a job that declares
+`environment: production` in every workflow file (`.yml` or `.yaml`), `backup.yml`'s schedule,
+recipient, `--schema auth,public`, `contents: read`, 30-day retention and
+`*.age`-only, fail-closed upload, and `usage.yml`'s schedule, dispatch,
+report step, `contents: read`, `environment: production`, no artifact and
+no permission of `write` or `write-all` in any scope, quoted or not.
+
+`tools/supabase/usage-lib.test.mjs` runs in the same `node --test` step as
+`tools/supabase/lib.test.mjs`: it covers the nightly usage report's pure
+half (`.claude/README.md`, "Usage monitoring") over the fixtures in
+`tools/supabase/fixtures/usage/` - the least-squares slope (null below
+seven points, real dates across a gap, null points skipped), the forecast
+(days left, no growth, the MAU projection to the month's end and "resets
+first"), the states at 50 % and 80 % and at 60 and 14 days, info rows that
+never warn, a `warn` row for no MAU source and for no Storage access,
+`mauPlan`, `parseApiCounts`, `fetchApiCounts` (401 and 403 fatal; 429,
+500, the timeout, a stalled body and a body without `result[]` a warning), `keepAlive`
+(only a 2xx is reached; `apikey` and no `Authorization` header; a network
+error and the timeout are a warning), a summary with no `@` and no uuid,
+and the exit code. Both HTTP calls take an injected `fetch`, so no case
+reaches the network. `usage.mjs`'s `collect`, `readHistory` and
+`saveSnapshot` are layer 3 (`tests/db/usage.test.mjs`); its `main` is
+proven only by the smoke on the test project and the owner's first
+dispatch.
 
 `tools/check-site.test.mjs` is the same pattern again:
 `tools/check-site.lib.mjs`'s `checks()`/`runChecks()` covers the assertion

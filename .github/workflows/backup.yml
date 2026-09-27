@@ -9,7 +9,8 @@ name: backup
 
 on:
   # 03:17 UTC. GitHub disables this after 60 days without a push; any push
-  # re-arms it. The run is also production's free-tier keep-alive.
+  # re-arms it. The keep-alive is usage.yml's Data API call
+  # (docs/DECISIONS.md, 2026-09-25).
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:

@@ -1386,21 +1386,21 @@ ok(
   'ci.yml: applied-check.mjs is gone; the database is the applied record'
 );
 
-/** The names of the jobs in `text` that read `secrets.SUPABASE_DB_URL_PROD`
+/** The names of the jobs in `text` that read the secret named `secret`
  * without declaring `environment: production`. */
-function prodSecretOutsideEnvironment(text) {
+function prodSecretOutsideEnvironment(text, secret) {
   // A comment may name the secret; only a YAML line can read it.
   const code = text.replace(/^\s*#.*$/gm, '');
   const jobsAt = code.search(/^jobs:\s*$/m);
-  if (jobsAt < 0) return code.indexOf('SUPABASE_DB_URL_PROD') >= 0 ? ['(no jobs)'] : [];
-  if (code.slice(0, jobsAt).indexOf('SUPABASE_DB_URL_PROD') >= 0) return ['(workflow level)'];
+  if (jobsAt < 0) return code.indexOf(secret) >= 0 ? ['(no jobs)'] : [];
+  if (code.slice(0, jobsAt).indexOf(secret) >= 0) return ['(workflow level)'];
   const jobs = code.slice(jobsAt);
   const bad = [];
   const jobRe =
     /^ {2}([A-Za-z0-9_-]+):\s*(?:#.*)?\r?\n([\s\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/gm;
   let m;
   while ((m = jobRe.exec(jobs))) {
-    if (m[2].indexOf('SUPABASE_DB_URL_PROD') < 0) continue;
+    if (m[2].indexOf(secret) < 0) continue;
     if (!/^ {4}environment:\s*production\s*$/m.test(m[2])) bad.push(m[1]);
   }
   return bad;
@@ -1432,19 +1432,6 @@ ok(
   /^\s+path:.*\/\*\.age\s*$/m.test(backup),
   'backup.yml: the upload path must end in *.age - nothing unencrypted leaves the job'
 );
-[
-  ['ci.yml', workflow],
-  ['backup.yml', backup]
-].forEach(function (pair) {
-  const bad = prodSecretOutsideEnvironment(pair[1]);
-  ok(
-    bad.length === 0,
-    pair[0] +
-      ': SUPABASE_DB_URL_PROD is read outside a job that declares environment: production (' +
-      bad.join(', ') +
-      ')'
-  );
-});
 ok(
   migrateProdJob && /^ {4}environment:\s*production\s*$/m.test(migrateProdJob[1]),
   'migrate-prod: the job must declare environment: production'
@@ -1454,6 +1441,58 @@ ok(
     backup.indexOf('SUPABASE_DB_URL_PROD') >= 0,
   'backup.yml: the dump job must declare environment: production'
 );
+
+/* The nightly usage report: a production job with a read-only token that
+   uploads nothing (.claude/README.md, "Usage monitoring"). */
+const usagePath = path.join(ROOT, '.github', 'workflows', 'usage.yml');
+const usage = fs.existsSync(usagePath) ? fs.readFileSync(usagePath, 'utf8') : '';
+ok(usage, 'usage.yml: the nightly usage report is missing');
+[
+  ["cron: '47 3 * * *'", 'the nightly schedule'],
+  ['workflow_dispatch', 'the manual run'],
+  ['node tools/supabase/usage.mjs --project prod', 'the report step']
+].forEach(function (pair) {
+  ok(usage.indexOf(pair[0]) >= 0, 'usage.yml: ' + pair[1] + ' (' + pair[0] + ') is missing');
+});
+ok(
+  /^permissions:\s*\r?\n\s+contents:\s*read\s*$/m.test(usage),
+  'usage.yml: permissions must be contents: read only'
+);
+ok(
+  /^ {4}environment:\s*production\s*$/m.test(usage) &&
+    usage.indexOf('SUPABASE_DB_URL_PROD') >= 0,
+  'usage.yml: the report job must declare environment: production and read SUPABASE_DB_URL_PROD'
+);
+ok(usage.indexOf('upload-artifact') < 0, 'usage.yml: the report must upload no artifact');
+ok(usage.indexOf('contents: write') < 0, 'usage.yml: the report must not hold contents: write');
+/* The job holds the production connection string: no scope, quoted or
+   spaced, may be `write`, and no `permissions: write-all`. */
+ok(
+  !/:\s*['"]?write(-all)?['"]?\s*$/m.test(usage.replace(/(^|\s)#.*$/gm, '$1')),
+  'usage.yml: no permission may be write or write-all'
+);
+
+/* Both production secrets, in every workflow file: only a job that
+   declares environment: production reads them. */
+const workflowsDir = path.join(ROOT, '.github', 'workflows');
+fs.readdirSync(workflowsDir)
+  .filter((name) => /\.ya?ml$/.test(name))
+  .sort()
+  .forEach(function (name) {
+    const text = fs.readFileSync(path.join(workflowsDir, name), 'utf8');
+    ['SUPABASE_DB_URL_PROD', 'SUPABASE_USAGE_TOKEN_PROD'].forEach(function (secret) {
+      const bad = prodSecretOutsideEnvironment(text, secret);
+      ok(
+        bad.length === 0,
+        name +
+          ': ' +
+          secret +
+          ' is read outside a job that declares environment: production (' +
+          bad.join(', ') +
+          ')'
+      );
+    });
+  });
 
 /* Rule 2n's test-project proof and the release tools name the same ref. */
 const hookRef = /const TEST_PROJECT_REF = '([a-z0-9]+)'/.exec(

@@ -1,0 +1,41 @@
+name: usage
+
+# Nightly report of production's free-plan usage: sizes, rows, an MAU
+# estimate, request counts, a forecast. A limit near its end fails the
+# run, so GitHub emails the owner. .claude/README.md, "Usage monitoring".
+
+on:
+  # 30 minutes after backup.yml. GitHub disables this after 60 days
+  # without a push; any push re-arms it.
+  schedule:
+    - cron: '47 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: usage
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+      - name: Report free-plan usage
+        run: node tools/supabase/usage.mjs --project prod
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
+          SUPABASE_USAGE_TOKEN: ${{ secrets.SUPABASE_USAGE_TOKEN_PROD }}
+          SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}

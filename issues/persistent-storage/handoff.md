@@ -3,15 +3,16 @@
 
 ## Status
 - Task status: in_progress (programme roadmap; R0 closed 2026-09-24, R1
-  closed 2026-09-25, R2 and R5 closed 2026-09-26, R5b and the process
-  task `process-guards` closed 2026-09-27; R11 next)
-- Last agent: implementer (2026-09-27: the `process-guards` closeout)
+  closed 2026-09-25, R2 and R5 closed 2026-09-26, R5b, the process task
+  `process-guards` and R11 closed 2026-09-27; R3 next)
+- Last agent: implementer (2026-09-27: the R11 closeout)
 - NEEDS_HUMAN_CONFIRMATION: no (decisions 1-41 answered, `plan.md` section 16)
 - Branch: `main`
 - Base / starting commit: `d679d285` (R5 live)
 - Pushed: R5 yes (2026-09-26; the sha is in `plan.md` section 16, "R5
   closeout record"); R5b yes (`d0acbe13`, "R5b closeout record");
-  `process-guards` at its closeout push
+  `process-guards` yes (`0559e62c` on `origin/main` holds it); R11 at its
+  closeout push
 
 ## Completed
 - Release R0 `persist-0-foundation` (batches `B0.1`, `B0.2`, each reviewed
@@ -45,21 +46,27 @@
   task directory was retired in its closeout commit. Record: `plan.md`
   section 16, "R5b closeout record"; what later releases inherit:
   `plan.md` section 17, "Carried from R5b".
+- Release R11 `persist-usage-monitoring` (batch `B11.1`, one review fix
+  cycle, closed 2026-09-27): the nightly `usage.yml` report with its
+  forecast, thresholds, `usage_snapshots` history and keep-alive call. Its
+  task directory was retired in its closeout commit. Record: `plan.md`
+  section 9's R11 row; what later releases and the owner inherit:
+  `plan.md` section 17, "Carried from R11".
 
 ## Verification
 - R5b: the gates of its closeout amend are in the R5b closeout summary;
   the gates before it are in `plan.md` section 16, "R5b closeout record".
-- Plans made ahead: R11, R3, R4, R6 and R7 are on `main` under
+- Plans made ahead: R3, R4, R6 and R7 are on `main` under
   `issues/<task id>/` with their decision files; every owner question in
   them is answered. `process-guards` closed 2026-09-27 (Q1 answered A,
   gate credit); its record is `plan.md` section 9's row and section 12.
+- R11: the gates of its closeout amend are in the R11 closeout summary.
 
 ## Next batch (implement-ready)
-- R11. Its refresh (2026-09-27) is commit `382d7420` on the worktree
-  branch `worktree-agent-a739573d9a05f0ce9`, based on `d343cc95`;
-  cherry-pick it onto `main` after the `process-guards` push. `B11.1`
-  then needs its plan review to approve (`plan.md` section 17, "Carried
-  from `process-guards`").
+- R3 (`persist-3-realtime`): its planner refresh, with a `Plan review:`
+  line, then the plan review before `B3.1` (`plan.md` section 17,
+  "Carried from `process-guards`"); `B3.1` also carries R11's usage-report
+  acceptance line (`plan.md` section 14).
 
 ## Blockers
 - None.

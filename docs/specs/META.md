@@ -59,7 +59,8 @@ new list there, and a signed-out one is asked to sign in first
 links, a players' one and a GM's one, which its owner can delete and make
 again; a link opens the list as it is now, read-only. A nightly job backs the database up,
 encrypted to the owner's key, and each copy is kept 30 days
-(`.claude/README.md`, "Backups and restore"). A signed-in reader's browser
+(`.claude/README.md`, "Backups and restore"). A nightly job reports the
+free-plan usage to the owner (`.claude/README.md`, "Usage monitoring"). A signed-in reader's browser
 lists move into the account by themselves; browser lists stay editable
 until the legacy write cutoff, 2026-10-26, and are read-only from then
 (`FEATURES.md`, "Account and browser lists"). An old shared list is still

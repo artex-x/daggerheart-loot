@@ -1,0 +1,282 @@
+[
+  {
+    "taken_on": "2026-08-30",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 10
+    }
+  },
+  {
+    "taken_on": "2026-08-31",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 11
+    }
+  },
+  {
+    "taken_on": "2026-09-01",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 12
+    }
+  },
+  {
+    "taken_on": "2026-09-02",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 13
+    }
+  },
+  {
+    "taken_on": "2026-09-03",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 14
+    }
+  },
+  {
+    "taken_on": "2026-09-04",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 15
+    }
+  },
+  {
+    "taken_on": "2026-09-05",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 16
+    }
+  },
+  {
+    "taken_on": "2026-09-06",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 17
+    }
+  },
+  {
+    "taken_on": "2026-09-07",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 18
+    }
+  },
+  {
+    "taken_on": "2026-09-08",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 19
+    }
+  },
+  {
+    "taken_on": "2026-09-09",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 20
+    }
+  },
+  {
+    "taken_on": "2026-09-10",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 21
+    }
+  },
+  {
+    "taken_on": "2026-09-11",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 22
+    }
+  },
+  {
+    "taken_on": "2026-09-12",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 23
+    }
+  },
+  {
+    "taken_on": "2026-09-13",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 24
+    }
+  },
+  {
+    "taken_on": "2026-09-14",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 25
+    }
+  },
+  {
+    "taken_on": "2026-09-15",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 26
+    }
+  },
+  {
+    "taken_on": "2026-09-16",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 27
+    }
+  },
+  {
+    "taken_on": "2026-09-17",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 28
+    }
+  },
+  {
+    "taken_on": "2026-09-18",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 29
+    }
+  },
+  {
+    "taken_on": "2026-09-19",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 30
+    }
+  },
+  {
+    "taken_on": "2026-09-20",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 31
+    }
+  },
+  {
+    "taken_on": "2026-09-21",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 32
+    }
+  },
+  {
+    "taken_on": "2026-09-22",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 33
+    }
+  },
+  {
+    "taken_on": "2026-09-23",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 34
+    }
+  },
+  {
+    "taken_on": "2026-09-24",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 35
+    }
+  },
+  {
+    "taken_on": "2026-09-25",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 36
+    }
+  },
+  {
+    "taken_on": "2026-09-26",
+    "metrics": {
+      "db_bytes": 300000000,
+      "storage_bytes": 0,
+      "storage_objects": 0,
+      "mau": 3,
+      "auth_users": 37
+    }
+  }
+]

@@ -12,7 +12,8 @@
   directory was retired in its closeout commit; the release records are
   section 16, "R1 closeout record", "R2 closeout record", "R5 closeout
   record" and "R5b closeout record". The process task `process-guards`
-  closed 2026-09-27 (section 9). Next: R11, then R3, R4.
+  and R11 `persist-usage-monitoring` closed 2026-09-27 (section 9). Next:
+  R3, R4.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -430,7 +431,7 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R5 | `persist-5-migration` | `B5.1`, `B5.2a`-`B5.2d` - **closed 2026-09-26**, live at the push of `main` | **Moved directly after R2 (owner, 2026-09-25)** so that `LEGACY_WRITE_UNTIL` = 2026-10-26 is reachable (section 10). Shipped: the automatic move of browser lists into the account at sign-in (`move_legacy_list`, one RPC per list, a read-back, `dhloot.migrated.v1` with the first account's id, the one-time notice, `held` for a mismatch, read-only while the move is due); the cutoff `LEGACY_WRITE_UNTIL` with read-only browser lists after it; the retired `#/l/` page and its announcement; the account write buffer (2 s quiet window, early flushes, a `keepalive` close) sent as one `apply_list_writes` request per flush. Migrations `20260925130400` (the column, the index, the exempted limit triggers, `move_legacy_list`), `20260925130500` (its `40001` conflict path), `20260925130600` (`apply_list_writes`). Must be live on production by 2026-10-12, else the date moves |
 | R5b | `persist-5b-account-menu` (owner, 2026-09-26: its own release) | `B5b.1` - **closed 2026-09-27**, live at the push of `main` (section 16, "R5b closeout record") | Right after R5, live by 2026-10-19 (before the 2026-10-26 cutoff): the header's account menu («Аккаунт», «Мои списки», «Выйти»; «Мои предметы» joins in R7), the Display section of `#/account` (the five synced settings and R4's `notifyGm` choice), the Lists tab gone from the cutoff (`#/lists` stays a route), and (owner, 2026-09-27) a banner under the header for a signed-out reader with browser lists: sign in before the date, or the app stops showing them |
 | - | `process-guards` (owner, 2026-09-26: a process task; Q1 answered A, gate credit, owner 2026-09-27) | `B1`, `B2` - **closed 2026-09-27**. Shipped: the six rules as hooks and scripts (gate credit, the local stack lock, the `.env` guards, the plan review before an implementer dispatch, the reviewer's report-only writes, a test-project migration push after an approving review) and seven decision files under `docs/decisions/` | Right after R5b, before R11: a plan review before the first implement batch when a plan adds a schema change or a SECURITY DEFINER function, changes a public contract, can lose data, or adds a write or sync protocol; a reviewer writes its full report to `issues/<id>/reviews/<batch>.md` (its Write tool limited to that path, enforced by a guard); a host-wide heavy-run lock across sessions, or gate credit for a backgrounded run by its exit code; `tests/db/run.mjs` takes and releases the local stack lock (`%TEMP%\dhloot-local-stack.lock`, 45-minute staleness, the holder's task id) itself; `bash-guard.mjs` denies `.`, `source` and `cat` on `.env*`; a schema batch runs `db:push` to the test project only after its review approves. Each rule was held by hand through R5 |
-| R11 | `persist-usage-monitoring` (working id kept; its directory exists) | `B11.1` | **Placed after R5 (owner request 2026-09-25, "after r2"; planner 2026-09-25), and after R5b from 2026-09-26**: a nightly `usage.yml` report of production's free-plan usage - database and Storage size, rows per table, an MAU estimate, request counts, users near their count limits - with a forecast, a summary every night, a failed run (GitHub's email) near a limit, the `usage_snapshots` history table and the keep-alive Data API call. Plan: `issues/persist-usage-monitoring/plan.md` |
+| R11 | `persist-usage-monitoring` | `B11.1` - **closed 2026-09-27**, live at the push of `main` (commit "feat(persist): report production's free-plan usage nightly"). Shipped: `usage.yml`, `tools/supabase/usage-lib.mjs` and `usage.mjs`, the `usage_snapshots` migration, the `tests/derived.js` pins and three decision files under `docs/decisions/`. The owner's setup steps 1-9 are open (section 15, step 18a) | **Placed after R5 (owner request 2026-09-25, "after r2"; planner 2026-09-25), and after R5b from 2026-09-26**: a nightly `usage.yml` report of production's free-plan usage - database and Storage size, rows per table, an MAU estimate, request counts, users near their count limits - with a forecast, a summary every night, a failed run (GitHub's email) near a limit, the `usage_snapshots` history table and the keep-alive Data API call. The design as built: `.claude/README.md`, "Usage monitoring" |
 | R3 | `persist-3-realtime` | `B3.1`, `B3.2` | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline, requester status |
 | R6 | `persist-6-import-export` | `B6.1`, `B6.2` (planned 2026-09-26) | JSON export and import, published schema `schema/import-v1.json` |
@@ -562,7 +563,7 @@ carries "goldens".
 | `B0.2` | `supabase/` init, layer 3 `check:db` chain and RLS harness, reversibility gate, applied-migration guard, gitleaks hook, CI `db` job with the `applied.json` check, `db:push` wrapper | section 6 rows 9-10 | layer 1 `check`, layer 3 `check:db`, CI (~5 min + first stack start) | required (plan rule: every hook and every `supabase/` batch) | a review that cannot be held in one pass: build and product source vs hooks and tooling (the `B12b`/`B12c` precedent) |
 | `B1.1`-`B1.6` | R1, closed 2026-09-25: the fake cloud and test build, sign-in and `#/account`, the hosted E2E and the CI `e2e` job, account preferences, CI migration deploys and the nightly backup, a states-case fix. The design as built is in `docs/specs/`, `docs/DECISIONS.md` and `.claude/README.md`; the batch briefs are in R1's commit history | - | - | - | - |
 | `B2.0`-`B2.3` | R2, closed 2026-09-26: the test-migration fix and the `production` Environment, the lists schema with limits and share links, account lists in the app with sign-in-only creation, share links `#/s/<token>` with "Save a copy". The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R2's commit history | - | - | - | - |
-| `B11.1` | R11, after R5 and R5b: `usage_snapshots` migration and reversal, `tools/supabase/usage-lib.mjs` and `usage.mjs`, `.github/workflows/usage.yml` (Environment `production`, `contents: read`), `tests/derived.js` pins, layer 1 and layer 3 tests, `.claude/README.md` "Usage monitoring" | `COVERAGE.md`, `META.md` | layer 1 `check`, layer 3 `check:db` (~15 min) | required (schema rule; a workflow that reads a production secret) | new release (R11) |
+| `B11.1` | R11, closed 2026-09-27: the `usage_snapshots` migration, `tools/supabase/usage-lib.mjs` and `usage.mjs`, `.github/workflows/usage.yml`, the `tests/derived.js` pins (section 9's R11 row). The design as built is in `.claude/README.md` ("Usage monitoring"), `docs/specs/COVERAGE.md` and `docs/decisions/`; the batch brief is in R11's commit history | - | - | - | - |
 | `B3.1` | Revised by the R3 plan (2026-09-25; `issues/persist-3-realtime/plan.md` section 10): the database half - broadcast triggers, `realtime.messages` policies, tolerant `reorder_list` (R2 review row R3), `check:db` with `realtime` and `kong` running and WebSocket clients proving delivery, one message per transaction, no client send, reversal of the policies | - | layer 1 `check`, layer 3 `check:db` (~20-25 min, first image pull included) | required: schema rule | new release (R3) |
 | `B3.2` | The client half (R3 plan section 11): `EventsPort` (real, lazy, fake with `play` and `setLive`), the `connecting`/`live`/`down` feed with backoff, the share page and (Q1) the owner lists on it, the poll only while down, a 20 s write timeout (R2 review row R4), a hidden status region; layer 2 states; E2E: live update, live revoke, two owner pages | section 6 row 16 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~30 min) | required: UI and a new port | a commit the harness cannot reach (the E2E needs `B3.1`'s migration on the test project) |
 | `B4.1` | Revised by the R4 plan (2026-09-26; `issues/persist-4-requests/plan.md` section 10): section 5's R4 row in one migration and its reversal; layer 3 matrix: anon sends through an active player or GM token only, a stopped or wrong token is refused alike, bad and stale lines, the line limit, the rate (6th in a minute), the pending cap (11th), housekeeping, the status read shows nothing about the owner, another user cannot read, apply or decline, over-stock refused whole, clamp, zero removes the entry, the `request` events on the owner and share topics; the harness's anon function list and the limit rows | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db` x2 (~16 min) | required (schema rule; the first anonymous write) | new release (R4) |
@@ -664,22 +665,14 @@ Broadcast counts one message plus one per receiver) are a monthly owner
 check (section 15, step 18).
 Acceptance line placed by R11 on `B3.1`: the nightly usage report gains
 `realtime_rows_24h`, the rows of `realtime.messages` inserted in the last
-24 hours (a lower bound of billed messages), as an info row; its request
-counts already hold `realtime` (`issues/persist-usage-monitoring/plan.md`,
-section 11).
+24 hours (a lower bound of billed messages; one row is delivered once per
+subscriber), as an info row in `tools/supabase/usage.mjs`'s `collect` and
+`usage-lib.mjs`'s `evaluate`; its request counts already hold `realtime`.
+Peak connections and billed messages stay section 15, step 18.
 
-`B11.1` (R11, after R5 and R5b; its own plan is the authority): a
-nightly `usage.yml` in the Environment `production` reads database size
-(`pg_database_size`), rows and bytes per `public` table, Storage bytes
-(`storage.objects`), an MAU estimate from `auth.users` and `auth.sessions`,
-users near their count limits, and request counts per service from the
-Management API's `usage.api-counts` with a scoped read-only token
-(`SUPABASE_USAGE_TOKEN_PROD`); stores one `public.usage_snapshots` row a
-day; forecasts days left by a 28-day least-squares slope; warns at 50 %
-or under 60 days and fails at 80 % or under 14 days (owner, 2026-09-26);
-makes one Data API call as the free-tier keep-alive. Billed egress, MAU
-and Realtime connections have no public API (2026-09-25) and stay the
-dashboard's.
+`B11.1` (R11) closed 2026-09-27; the design as built is `.claude/README.md`,
+"Usage monitoring". Billed egress, MAU and Realtime connections have no
+public API (2026-09-25) and stay the dashboard's.
 
 `B4.1`-`B4.2` Purchase requests: planned 2026-09-26 in
 `issues/persist-4-requests/plan.md`, which is the release's authority
@@ -891,10 +884,13 @@ Monthly, from R2 on:
 
 At the cutoff date (2026-10-26, fixed 2026-09-25):
 
-18a. For R11, after its push: the scoped usage token, the secret
-    `SUPABASE_USAGE_TOKEN_PROD` in the Environment `production`, the
-    failed-run email setting, and one dispatch of `usage.yml`
-    (`issues/persist-usage-monitoring/plan.md`, section 9).
+18a. For R11, after its push: the owner setup steps 1-9 of
+    `.claude/README.md`, "Usage monitoring" - confirm `migrate-prod`, the
+    scoped usage token, the secret `SUPABASE_USAGE_TOKEN_PROD` in the
+    Environment `production`, the failed-run email setting, the token's
+    expiry reminder, one dispatch of `usage.yml`, the Log Query look the
+    next day, the Security Advisor re-run (3 info), and the forecast after
+    seven nights.
 19. Confirm in production that `#/l/<payload>` draws the retired-link page
     and a local list shows no link buttons; then ask for R10.
 
@@ -1301,7 +1297,10 @@ all release"):
   ("upcoming", enforced from 2027), data only on 2026-09-25/26 (about 114
   GB a day); everything else under 10 %. Cause unknown; the owner: worth a
   light look, maybe a Supabase metering defect - R11's planner answers
-  which tool reads logs (Management API, CLI, Studio).
+  which tool reads logs (Management API, CLI, Studio). Answered at R11: no
+  repository tool reads hosted logs, so the scans came from outside the
+  repository (most likely dashboard pages; not provable); the owner reads
+  the per-day figures on the organisation's usage page.
 - Shipped: section 9's R5 row. Batches `B5.1` (the column, the index, the
   exempted limit triggers, `move_legacy_list`), `B5.2a` (its `40001`
   conflict path), `B5.2b` (`apply_list_writes`), `B5.2c` (the write buffer
@@ -1543,7 +1542,19 @@ Carried from `process-guards` (closed 2026-09-27):
   ("the owner's `db:push --project test` in a local release") becomes
   the agent's push after the approve.
 - R11's `B11.1` is the first live use of the plan review and the
-  migration-push gate.
+  migration-push gate (done at R11: both held).
+
+Carried from R11 (`persist-usage-monitoring`, closed 2026-09-27):
+
+- The owner: setup steps 1-9 (section 15, step 18a); the first dispatch's
+  summary shows the Storage branch production takes and whether the
+  keep-alive is reached.
+- R3's `B3.1` and R8's `B8.1` carry their usage-report acceptance lines
+  (section 14).
+- A release that renames `get_shared_list(p_token)` updates `keepAlive` in
+  `tools/supabase/usage-lib.mjs` in the same commit.
+- `usage.yml`'s schedule, like `backup.yml`'s, stops after 60 days without
+  a push; after the programme that is the owner's calendar.
 
 - Assumption: Chrome no longer requires a service worker for the install
   prompt. `B0.1`'s closeout has the owner try the install on Android Chrome

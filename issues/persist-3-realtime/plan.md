@@ -499,8 +499,8 @@ hosted project (CI's `migrate-test` and `migrate-prod`).
   policies are part of the compared snapshot.
 - R2 row R3 (inherited): a reorder with a stale entry set is applied by
   the tolerant rule, never refused; proven in `lists.test.mjs`.
-- Placed by R11 (`issues/persist-usage-monitoring/plan.md` section 11):
-  the nightly usage report gains `realtime_rows_24h`, the rows of
+- Placed by R11 (closed 2026-09-27; `.claude/README.md`, "Usage
+  monitoring"): the nightly usage report gains `realtime_rows_24h`, the rows of
   `realtime.messages` inserted in the last 24 hours (a lower bound of
   billed messages), as an info row; `tools/supabase/usage-lib.mjs` and its
   test carry it **[R2-refresh]** (R11 ships before R3).

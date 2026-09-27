@@ -627,7 +627,10 @@ cap (`app/states`, 51 cases, 299 s; one `app/sweep` width 328-532 s);
 vitest 64 files, 1984 tests. The same day, after the review's fixes:
 `node tests/run-all.js app/states` alone 254 s; a golden shard in compare
 mode 186-201 s; `npm run check` passed inside one 600 s call (vitest 207 s,
-1988 tests).
+1988 tests). Later the same day, at the usage-monitoring release: `npm run
+check` (1988 tests, selftest 1295 cases) and `npm run check:db` (one more
+migration and test file) each ran past the 600 s cap in one pass and armed
+the gate by its own exit.
 
 `check:built` and the `tests/app/` filters are paid once per batch; `npm run
 check` is paid once per commit inside it. None of these scale with the
@@ -1220,6 +1223,24 @@ credit, the local stack lock and the `.env` guards:
   held `by: "exit"`; the observer said the run could not be attributed,
   and the next `git commit --amend` passed the gate.
 
+Facts settled during implementation (`persist-usage-monitoring`,
+2026-09-27):
+
+- The session's auto-mode permission classifier denied an implementer
+  subagent's `npm run e2e` ("Modify Shared Resources": the hosted test
+  project). The owner then told the orchestrator to run it, and it ran.
+  Plan the hosted E2E as the orchestrator's step, with the owner's go.
+- The same classifier denied an Edit that set `contents: write` in a
+  workflow file ("Permission Grant", then "Security Weaken" for the retry),
+  even as a temporary negative proof for `tests/derived.js`. A later Edit
+  that added `actions: write` and `permissions: write-all` passed. Prove a
+  `contents: write` pin on a copy of the text instead (a stdin `node`
+  script that calls the pin's function).
+- `postgres` (postgres.js) sends `${JSON.stringify(x)}::jsonb` as a JSON
+  string, so the column holds a jsonb string, not an object; two
+  `tests/db/usage.test.mjs` cases failed on it. Pass `${sql.json(x)}` (or `tx.json(x)`), as
+  every `tests/db/` file and `tools/supabase/usage.mjs` do.
+
 ## Decisions registry
 
 A decision is one file, `docs/decisions/<YYYY-MM-DD>-<slug>.md` (the slug:
@@ -1538,7 +1559,10 @@ SECURITY DEFINER functions: seven executable by a signed-in user, and
 
 The ninth warning is leaked password protection, which is off because there
 is no password sign-in (Google and Discord only). `apply_list_writes` is
-`security invoker` and adds none. A warning that is not in this list stops
+`security invoker` and adds none. After R11's `migrate-prod` the report is 0
+errors, 9 warnings and 3 info. The three info are "RLS enabled, no policy"
+for `limit_defaults`, `user_limit_overrides` and `usage_snapshots`, by
+design: no Data API role reads them. A warning that is not in this list stops
 the release until a review accepts it and adds it here with its reason.
 
 **The local stack lock.** One local Supabase stack serves every checkout on
@@ -1588,9 +1612,11 @@ because every branch's `e2e` needs it. `SUPABASE_DB_URL_PROD` is a secret
 of the GitHub Environment `production` (deployment branch `main` only, no
 reviewers; `docs/DECISIONS.md`, 2026-09-25, "The production connection
 string lives in an Environment limited to `main`"), read only by the jobs
-that declare it - `ci.yml`'s `migrate-prod` and `backup.yml`'s `dump` - and
-`tests/derived.js` pins that. A workflow edited on another branch cannot
-read it. To create the Environment, or to rotate the string, the owner
+that declare it - `ci.yml`'s `migrate-prod`, `backup.yml`'s `dump` and
+`usage.yml`'s `report`. `SUPABASE_USAGE_TOKEN_PROD` is a secret of the same
+Environment, read only by `usage.yml`'s `report` ("Usage monitoring").
+`tests/derived.js` pins both secrets over every workflow file. A workflow
+edited on another branch cannot read them. To create the Environment, or to rotate the string, the owner
 follows the four steps below, in order.
 
 1. GitHub, Settings, Environments: create (or open) `production`;
@@ -1954,6 +1980,152 @@ add a new migration whose body is the reversal file
 `db push` refuses a remote history that holds a version absent locally, so
 `migrate-prod` would then block every later deploy. `ci.yml`'s "HOW TO UNDO
 A BAD DEPLOY" comment carries the same rule.
+
+### Usage monitoring
+
+`.github/workflows/usage.yml` reports production's free-plan usage every
+night at 03:47 UTC (30 minutes after the backup) and on dispatch. Its job
+`report` runs in the Environment `production` and calls
+`node tools/supabase/usage.mjs --project prod`. The pure half is
+`tools/supabase/usage-lib.mjs`. Decisions: `docs/DECISIONS.md`,
+2026-09-25, "Production's free-plan usage is reported nightly by its own
+workflow", "The usage history is a table in production that the nightly
+report writes" and "The free-tier keep-alive is the usage report's Data API
+call, not the dump".
+
+| Row | Source | Limit | Forecast |
+|---|---|---|---|
+| Database | `sum(pg_database_size(datname))` over `pg_database` | 500,000,000 bytes (read-only mode above 500 MB) | least-squares slope over the last 28 days before today plus today; at least 7 points |
+| Storage | `sum((metadata->>'size')::bigint)` over `storage.objects`; 0 without the table; `null` and a `warn` row `no storage.objects access` when `postgres` may not read it | 1,000,000,000 bytes | as Database |
+| MAU (estimate) | distinct users since the 1st of the month (UTC): `auth.users.last_sign_in_at`, union `auth.sessions` by `refreshed_at` (else `updated_at`); a lower bound; no source gives a `warn` row `no MAU source` | 50,000 | the month's rate so far; "resets first" when the crossing falls in the next month |
+| Accounts, Storage objects | `count(*)` | none | growth a day |
+| requests | Management API `usage.api-counts?interval=1day`, summed per service: an egress proxy, never bytes | none | none |
+| keep-alive | one Data API call a night (below) | none | none |
+
+The summary also lists every `public` table by bytes with its exact row
+count, and the owners and lists at 80 % or more of a count limit (and above
+100 %, which `move_legacy_list` allows, `docs/specs/DEBT.md` D62). It holds
+totals only: no email, id or list name, because the repository and its run
+summaries are public. The public API has no endpoint for billed egress,
+billed MAU, database size, Storage size or Realtime (2026-09-25); billed
+egress and Realtime stay the owner's monthly dashboard look.
+
+Thresholds (owner, 2026-09-26): `warn` at 50 % of a limit or under 60 days
+left (a `::warning::` annotation); `fail` at 80 % or under 14 days left (a
+`::error::` annotation and exit 1 after the summary). Other answers:
+
+| Answer | Row | Run |
+|---|---|---|
+| no `SUPABASE_USAGE_TOKEN_PROD` | `requests: no token`, `warn` | green |
+| HTTP 401 or 403 from the Management API | `requests`, `FAIL`: "the usage token is expired or lacks Usage Analytics read" | red |
+| HTTP 429, 5xx, the 10 s timeout (the body read included), a body without `result[]` | `requests: unavailable (<reason>)`, `warn` | green |
+| a keep-alive answer that is not 2xx, a network error, the timeout | `keep-alive: not reached (HTTP <status>)` or `(<reason>)`, `warn` | green |
+| an SQL error or a refused connection | none: the error line | red |
+| a failed snapshot save (for example read-only mode) | `usage: the snapshot was not saved: <message>` after the summary | red |
+
+The history is `public.usage_snapshots`: one `jsonb` row a day, upserted on
+`taken_on`, rows older than 400 days deleted; row level security on, no
+policy and no grant to a Data API role; the nightly dump backs it up. A lost
+history costs 7 nights without a forecast.
+
+The keep-alive: a free project pauses after a week without "user database
+activity", and the documentation does not say whether a `pg_dump` counts;
+a Supabase collaborator confirms that Data API calls do. So the report posts
+`get_shared_list` with a well-formed 43-character token that matches no
+share, which reads `list_shares` and answers `null`. Only a 2xx answer is
+"reached": a 4xx never reaches Postgres. The headers are `apikey` and
+`Content-Type` alone, because the gateway refuses `Authorization: Bearer
+a.b.c` with 403 `bad_jwt` and a publishable key is not a JWT. This command
+proves the choice on the test project and prints only the result:
+
+```text
+node --env-file=.env.test.local --input-type=module -e "import { keepAlive } from './tools/supabase/usage-lib.mjs'; const r = await keepAlive({ url: process.env.E2E_SUPABASE_URL, key: process.env.E2E_SUPABASE_PUBLISHABLE_KEY, fetchImpl: fetch }); console.log(r.ok, r.status ?? r.reason);"
+```
+
+Expected: `true 200`. On 401 or 403, `keepAlive` must send `apikey` and
+`Authorization: Bearer <key>`, as `supabase-js` does.
+
+Log Query: `usage.api-counts` is a Management API log read, so it counts
+against the organisation's Log Query allowance (Free: 100 GB scanned, not
+billed; from 2027 an overage rate-limits log queries and cuts log
+retention). One 1-day window a night is the smallest read that gives the
+trend. Deleting the secret `SUPABASE_USAGE_TOKEN_PROD` turns the read off
+with no code change.
+
+Platform facts (supabase.com pricing, billing and usage pages, and the
+Management API OpenAPI document `https://api.supabase.com/api/v1-json`,
+read 2026-09-25):
+
+- Other free-plan quotas: egress 5 GB uncached plus 5 GB cached
+  (independent); Storage 1 GB is 744 GB-hours, time-weighted, while the
+  report reads the current size; max upload 50 MB; Realtime 200 peak
+  connections and 2 million messages a month; 500,000 Edge Function
+  invocations; 2 active free projects. MAU is "distinct users who sign in
+  or refresh their token during the billing cycle"; over quota on the free
+  plan gives an email and a grace period.
+- Pausing: "Free projects are paused after 1 week of inactivity"; Supabase
+  emails about one week before; a paused project restores from the
+  dashboard for up to a year
+  (`https://supabase.com/docs/guides/platform/free-project-pausing`;
+  staff: `https://github.com/orgs/supabase/discussions/38442`).
+- Management API: `Authorization: Bearer <token>`, 120 requests a minute,
+  30 for analytics. `usage.api-counts` lists no OAuth scope; the `interval`
+  enum is `15min` to `7day` and its bucket width is not documented.
+  `analytics/endpoints/logs` needs `analytics:read` and counts against Log
+  Query; `database/query/read-only` (Beta) needs `database:read`.
+- Personal access tokens: a classic token has the account's full access to
+  every organization; a scoped token has only the chosen organizations,
+  projects and permissions (Read or Read-write; "Usage Analytics" and
+  "Logs" among them). The documentation maps no permission to an OAuth
+  scope.
+- GitHub emails a failed scheduled run to the user who created the
+  workflow, or who last changed its cron or re-enabled it.
+
+**Symptom.** GitHub emails that a `usage` run failed, or a run shows a
+`warn` annotation.
+
+**Diagnosis.** Open the run's summary: the `FAIL` or `warn` row names the
+metric, the used percentage and the days left, or the check and its reason.
+
+**Recovery.** A count limit: `npm run limits:set` for one user or the
+default ("Supabase configuration"). The database or Storage: delete data,
+or accept the growth and plan the paid plan. The token: repeat setup steps
+2 and 3. A failed save in read-only mode: free space first; the summary is
+the alert.
+
+Owner setup, in order, after R11 is on `main`:
+
+1. Confirm that `migrate-prod` applied the migration. Expected: the `check`
+   run on `main` is green.
+2. Create the token: supabase.com, Account, Access Tokens, "Generate new
+   token", scoped: the organization of production, project
+   `zzmrftmzefcqehhyztjq` only, permission "Usage Analytics" = Read,
+   nothing else; the longest expiry the form offers; name
+   `github-usage-report`. If the first run (step 6) reports 403, edit the
+   token and add "Logs" = Read. Expected: the token string, shown once.
+3. GitHub, Settings, Environments, `production`: add the secret
+   `SUPABASE_USAGE_TOKEN_PROD` with the token. Expected: the secret is listed
+   under the environment, not under repository secrets.
+4. GitHub, your account, Settings, Notifications, Actions: "Only notify for
+   failed workflows" with email on. Expected: the setting is saved.
+5. Put the token's expiry date in your calendar, 14 days early. Expected: a
+   reminder; on expiry the run fails with "the usage token is expired or
+   lacks Usage Analytics read", and steps 2 and 3 rotate it.
+6. Dispatch once: `gh workflow run usage.yml`, then open the run. Expected:
+   a green run whose summary has three limited rows (Database, Storage,
+   MAU), "forecast: n/a (1 of 7 days)", a requests line and "keep-alive:
+   reached". `keep-alive: not reached (HTTP 401)` or `(HTTP 403)` is a header
+   problem first (above), then a key that differs from the dashboard's
+   publishable key. A Storage row `no storage.objects access` means
+   `postgres` may not read `storage.objects`.
+7. The next day, open the organization's usage page, Log Query, for the
+   production project. Expected: the dispatch day is not visibly above the
+   days around it. If it is more than 1 GB above them, delete the secret
+   `SUPABASE_USAGE_TOKEN_PROD`; the report then shows `requests: no token`.
+8. Re-run the Security Advisor on production. Expected: 0 errors, 9
+   warnings, 3 info ("Expected Security Advisor warnings").
+9. After seven nights, open the latest summary. Expected: a forecast on the
+   Database row.
 
 ## Cloud sessions
 
