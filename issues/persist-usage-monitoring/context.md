@@ -105,8 +105,20 @@ Repository facts:
   deploy); they are public by design (the built bundle holds them).
 - `public.get_shared_list(p_token text)` is the anon-callable RPC; a token
   that is not 43 characters of `[A-Za-z0-9_-]` returns before any table
-  read (R2's `20260925130200_list_shares.sql`, uncommitted edits in the
-  main tree on 2026-09-25 - re-read at implementation).
+  read (R2's `20260925130200_list_shares.sql`, committed; unchanged by R5
+  and R5b, re-read 2026-09-27).
+- Logs Query (`https://supabase.com/docs/guides/platform/manage-your-usage/logs-query`,
+  read 2026-09-27): "the total GB of log data scanned" when logs are read
+  "through the Studio UI, the Management API, the CLI, or any other
+  interface"; allowance 100 x log ingest (Free: 100 GB); not billed; from
+  the start of 2027 an overage rate-limits log queries and cuts Free log
+  retention to 1 hour the next month, and a second overage in a row cuts
+  log access. A 1-day window scans about 7 times less than a 7-day one.
+- Local stack, read-only probe on 2026-09-27 (a volume that once ran
+  `gotrue`; the `check:db` stack excludes `gotrue` and `storage-api`):
+  `auth.sessions` with `refreshed_at`, `updated_at`, `created_at`,
+  `user_id`; `auth.users.last_sign_in_at`; `storage.objects` with
+  `metadata`, `bucket_id`. CI's fresh `db` job is not measured.
 - `backup.yml`'s comment and the backup decision call the dump "the
   free-tier keep-alive"; the documentation does not support that claim.
 
