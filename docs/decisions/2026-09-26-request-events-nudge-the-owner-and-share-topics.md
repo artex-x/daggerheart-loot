@@ -1,5 +1,6 @@
 # 2026-09-26 - Request events nudge the owner and share topics; each page refetches
 
+- Amended by "A requester sees no request status; the send toast is the only answer" (2026-09-27): no event on the share topic.
 - Task: `persist-4-requests` (owner answer 38, 2026-09-24: in-app only; planner, the channel).
 - Decision: a trigger on `purchase_requests` sends the event `request`
   with `{ list, by }` to `owner:<uid>` when a request is made or decided,

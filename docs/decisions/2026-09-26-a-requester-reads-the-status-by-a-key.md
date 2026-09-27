@@ -1,5 +1,6 @@
 # 2026-09-26 - A requester reads the status by a key kept in the tab's sessionStorage
 
+- Superseded by "A requester sees no request status; the send toast is the only answer" (2026-09-27).
 - Task: `persist-4-requests` (owner answer 34, 2026-09-24; planner, the storage).
 - Decision: `create_purchase_request` answers a random `status_key`; the
   page keeps the last five per link in

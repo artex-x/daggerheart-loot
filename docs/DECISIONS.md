@@ -16,6 +16,7 @@ deleted.
 
 - 2026-09-27 - [A green check arms the commit gate by its own exit, not a host-wide lock](decisions/2026-09-27-a-green-check-arms-the-commit-gate-by.md)
 - 2026-09-27 - [A plan that changes schema, contracts, stored data or sync is reviewed first](decisions/2026-09-27-a-plan-that-changes-schema-contracts-stored-data.md)
+- 2026-09-27 - [A requester sees no request status; the send toast is the only answer](decisions/2026-09-27-a-requester-sees-no-request-status-the-send-toast.md)
 - 2026-09-27 - [A signed-out reader with browser lists sees a move banner until the cutoff](decisions/2026-09-27-a-signed-out-reader-with-browser-lists-sees-a-move-banner.md)
 - 2026-09-27 - [A stale reorder keeps the given order and puts the other entries after it](decisions/2026-09-27-a-stale-reorder-keeps-the-given-order-and-puts-the.md)
 - 2026-09-27 - [Agents read no .env file; the program loads it with `--env-file`](decisions/2026-09-27-agents-read-no-env-file-the-program-loads.md)
@@ -28,7 +29,7 @@ deleted.
 - 2026-09-26 - [A browser list moves through one RPC that hashes its canonical text](decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md)
 - 2026-09-26 - [Homebrew in the owner's lists is a live reference; a copy that leaves is frozen](decisions/2026-09-26-a-homebrew-entry-in-the-owners-lists-is.md)
 - 2026-09-26 - [A request the database fails three times is halved; a lone write is dropped](decisions/2026-09-26-a-request-the-database-fails-three-times-is-halved.md)
-- 2026-09-26 - [A requester reads the status by a key kept in the tab's sessionStorage](decisions/2026-09-26-a-requester-reads-the-status-by-a-key.md)
+- 2026-09-26 - [A requester reads the status by a key kept in the tab's sessionStorage](decisions/2026-09-26-a-requester-reads-the-status-by-a-key.md) - superseded
 - 2026-09-26 - [Account list writes are buffered and sent two seconds after the last edit](decisions/2026-09-26-account-list-writes-are-buffered-and-sent-two.md)
 - 2026-09-26 - [Adding from a shared link asks to notify the owner, remembered in notifyGm](decisions/2026-09-26-adding-from-a-shared-link-asks-to-notify.md)
 - 2026-09-26 - [After the cutoff a browser list is written only by the move and a delete](decisions/2026-09-26-after-the-cutoff-a-browser-list-is-written-only-by-the-move.md) - superseded in part
