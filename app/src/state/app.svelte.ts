@@ -44,6 +44,8 @@ import type { AuthResult, Env, Provider, Session } from '../ports/index.js';
 import { CloudLists } from './cloudLists.svelte.js';
 import { LegacyMove } from './legacyMove.svelte.js';
 import { ListStore, type ListModel, type MovedList } from './lists.svelte.js';
+import { OwnerRequests } from './ownerRequests.svelte.js';
+import { RequestSender } from './requestSender.svelte.js';
 import { SharedView } from './sharedView.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -186,6 +188,10 @@ export class AppState {
   readonly sharedView: SharedView | null;
   /** The move of this browser's lists into the account; null with no sign-in configured. */
   readonly legacyMove: LegacyMove | null;
+  /** The signed-in owner's purchase requests; null with no sign-in configured. */
+  readonly ownerRequests: OwnerRequests | null;
+  /** A share page reader's purchase request; null with no sign-in configured. */
+  readonly requestSender: RequestSender | null;
   /**
    * Whether browser lists may be written: before the legacy write cutoff, read once
    * at load (a tab open across the midnight keeps its value). Always true in a
@@ -255,9 +261,11 @@ export class AppState {
     this.picked.set(id, n);
   }
 
+  /* An unanswered "notify the owner?" question belongs to the ticks it asks about. */
   #clearTicks(): void {
     this.sel.clear();
     this.picked.clear();
+    this.requestSender?.dismiss();
   }
 
   /**
@@ -387,10 +395,39 @@ export class AppState {
       this.say(msg, { error });
     };
     this.lists = new ListStore(env, say, () => this.t);
-    this.cloudLists = env.cloud
-      ? new CloudLists(env.cloud.lists, say, () => this.t, {
-          events: env.cloud.events,
-          random: env.random
+    const cloud = env.cloud;
+    this.ownerRequests = cloud
+      ? new OwnerRequests(cloud.requests, {
+          flush: () => this.cloudLists?.flushNow() ?? Promise.resolve(true),
+          refreshLists: () => this.cloudLists?.refresh() ?? Promise.resolve(),
+          say,
+          dict: () => this.t,
+          tab: () => cloud.events.tab
+        })
+      : null;
+    this.cloudLists = cloud
+      ? new CloudLists(cloud.lists, say, () => this.t, {
+          events: cloud.events,
+          random: env.random,
+          requests: this.ownerRequests ?? undefined
+        })
+      : null;
+    this.requestSender = cloud
+      ? new RequestSender(cloud.requests, {
+          newId: () => cloud.lists.newId(),
+          say,
+          dict: () => this.t,
+          lang: () => this.lang,
+          clearSel: () => {
+            this.clearSel();
+          },
+          reread: () => {
+            void this.sharedView?.refresh();
+          },
+          notifyGm: () => this.notifyGm,
+          setNotifyGm: (v) => {
+            this.setNotifyGm(v);
+          }
         })
       : null;
     this.sharedView = env.cloud
@@ -495,6 +532,7 @@ export class AppState {
       if (this.#stale) this.#saveAccount();
       else void this.#pull();
       void this.cloudLists?.refresh().then(() => this.#listsReady());
+      void this.ownerRequests?.read();
     });
     this.#stopAuth = () => {
       live = false;
@@ -554,9 +592,13 @@ export class AppState {
     const lists = this.cloudLists;
     if (lists) {
       lists.clear();
+      this.ownerRequests?.clear();
       void lists.load().then(() => {
         /* The owner's topic from the first read until sign-out, on every route. */
-        if (this.#prefsFor === s.userId) lists.watch(s.userId);
+        if (this.#prefsFor === s.userId) {
+          lists.watch(s.userId);
+          void this.ownerRequests?.read();
+        }
         return this.#listsReady();
       });
     }
@@ -620,6 +662,7 @@ export class AppState {
 
   #listsSignedOut(): void {
     this.cloudLists?.clear();
+    this.ownerRequests?.clear();
     const r = this.route;
     if (r.kind === 'storedList' && isCloudId(r.listId)) this.replace(sectionHash('lists'));
   }
@@ -646,6 +689,19 @@ export class AppState {
       (r.kind === 'storedList' && lists.get(r.listId) !== undefined);
     const retry = lists.status === 'error' || this.legacyMove?.status === 'failed';
     if ((shown && !lists.live) || retry) void lists.refresh().then(() => this.#listsReady());
+    if (shown && !lists.live) void this.ownerRequests?.read();
+  }
+
+  /**
+   * The open share link's token while a reader other than its owner can send a purchase
+   * request through it: on `#/s/`, the list read, and not the reader's own list.
+   */
+  get requestToken(): string | null {
+    const view = this.sharedView;
+    if (this.route.kind !== 'share' || view?.status !== 'ready' || view.mine !== null) {
+      return null;
+    }
+    return view.token;
   }
 
   /**
@@ -898,6 +954,7 @@ export class AppState {
     this.#stopHidden?.();
     this.#stopHidden = null;
     this.cloudLists?.unwatch();
+    this.ownerRequests?.clear();
     /* A timer left running past the listeners it would otherwise update is a
        leak of the same kind `#stopRouter`/`#stopListWatch` already guard
        against. */

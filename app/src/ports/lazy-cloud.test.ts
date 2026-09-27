@@ -129,8 +129,20 @@ describe('lazyCloud', () => {
     expect(await shares.clone('player-token-1', lists.newId())).toEqual({ ok: true });
   });
 
+  it('forwards every request call to the loaded port', async () => {
+    const { requests } = lazyCloud(() => Promise.resolve(fakeCloud(SEED, 'gm1')));
+    const id = uuid(6100);
+    expect(await requests.send(id, 'player-token-1', [{ item: 'ci1', qty: 1 }])).toEqual({
+      ok: true
+    });
+    const read = await requests.list();
+    expect(read.ok && read.requests.map((r) => r.id)).toEqual([id]);
+    expect(await requests.apply(id, false)).toEqual({ ok: true, taken: 1 });
+    expect(await requests.decline(id)).toEqual({ ok: false, error: 'decided' });
+  });
+
   it('answers signed out and refuses every change when the load fails', async () => {
-    const { auth, prefs, lists, shares } = lazyCloud(() =>
+    const { auth, prefs, lists, shares, requests } = lazyCloud(() =>
       Promise.reject(new Error('offline'))
     );
     const fn = vi.fn();
@@ -156,6 +168,10 @@ describe('lazyCloud', () => {
     expect(await shares.revoke('x')).toEqual(unsent);
     expect(await shares.clone('t', 'x')).toEqual(unsent);
     expect(await shares.ownerOf('t')).toBeNull();
+    expect(await requests.list()).toEqual({ ok: false });
+    expect(await requests.send('x', 't', [{ item: 'ci1', qty: 1 }])).toEqual(unsent);
+    expect(await requests.apply('x', false)).toEqual(unsent);
+    expect(await requests.decline('x')).toEqual(unsent);
     off();
     expect(fn).not.toHaveBeenCalled();
   });

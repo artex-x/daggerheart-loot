@@ -89,6 +89,12 @@
     app.say(t.saveFailed, { error: true });
   }
 
+  function setNotify(e: Event & { currentTarget: HTMLSelectElement }): void {
+    const picked = e.currentTarget.value;
+    const v = notify.find((o) => o.value === picked)?.value;
+    if (v) app.setNotifyGm(v);
+  }
+
   let loadedFor: string | null = null;
 
   /* An answer that arrives after the user changed is somebody else's. */
@@ -302,16 +308,21 @@
               />{t.printCompactBox}</label
             >
           </div>
+          <!-- A select at every width: three answers of the owner's length do not
+               fit a segmented control at 360 px. -->
           <div class="set">
-            <span class="setname">{t.displayNotify}</span>
-            <Seg
-              options={notify}
+            <label class="setname" for="display-notify">{t.displayNotify}</label>
+            <select
+              id="display-notify"
               value={app.notifyGm}
-              label={t.displayNotify}
-              onchange={(v: NotifyGm) => {
-                app.setNotifyGm(v);
-              }}
-            />
+              aria-describedby="display-notify-hint"
+              onchange={setNotify}
+            >
+              {#each notify as o (o.value)}
+                <option value={o.value}>{o.label}</option>
+              {/each}
+            </select>
+            <p id="display-notify-hint" class="hint sethint">{t.notifyHint}</p>
           </div>
         </Field>
       </Panel>
@@ -457,6 +468,12 @@
 
   .hint.lead {
     margin: 0 0 12px;
+  }
+
+  /* A hint under a row's control, on a line of its own. */
+  .sethint {
+    flex: 1 1 100%;
+    margin: 0;
   }
 
   .row-btns {

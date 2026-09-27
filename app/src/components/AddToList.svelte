@@ -123,10 +123,17 @@
      batch is held to is that a refusal is seen. */
   const knows = (id: string): boolean => !!app.index?.byId.has(id);
 
+  /* After an add from the bar on a share link, signed in and not its owner: flow b
+     asks whether to tell the owner, or sends, or not, by the remembered answer. A
+     card's own menu never asks. */
   function added(name: string, fresh: readonly string[]): void {
-    app.say(
-      t.addedTo.replace('%s', name) + (ids.length > 1 ? ': ' + String(fresh.length) : '')
-    );
+    const text =
+      t.addedTo.replace('%s', name) + (ids.length > 1 ? ': ' + String(fresh.length) : '');
+    app.say(text);
+    const token = app.requestToken;
+    if (key !== 'sel' || !fresh.length || !app.user || token === null) return;
+    const lines = ids.map((id) => ({ item: id, qty: carried?.[id]?.qty ?? 1 }));
+    app.requestSender?.afterAdd(token, lines, text);
   }
 
   function pick(l: StoredList): void {

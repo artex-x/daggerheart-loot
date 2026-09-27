@@ -481,6 +481,8 @@ const COVERED: Record<string, string> = {
     'the first state above (through RollPanel), and every page test that opens the modal',
   'RecordModal.svelte': 'the first state above, and the tier ladder in record.test.ts',
   'RecordPage.svelte': 'record.test.ts',
+  'RequestsPanel.svelte':
+    'requestsPanel.test.ts pending, short with and without «Принять доступное», and the fold open',
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'PrintCard.svelte': 'printPage.test.ts, and the black-and-white sheet below',
   'PrintPage.svelte': 'printPage.test.ts, and the black-and-white sheet below',

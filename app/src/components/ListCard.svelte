@@ -19,14 +19,16 @@
     items: Record_[];
     /** "edited N ago", for an account list. */
     edited?: string | undefined;
+    /** "N requests wait for an answer", for an account list with pending requests. */
+    requests?: string | undefined;
     actions: Snippet;
   }
 
-  const { app, list, href, items, edited, actions }: Props = $props();
+  const { app, list, href, items, edited, requests, actions }: Props = $props();
 
   const t = $derived(app.t);
   const label = $derived(
-    [list.name || t.untitled, plural(items.length, t.itemsN, app.lang), edited]
+    [list.name || t.untitled, plural(items.length, t.itemsN, app.lang), edited, requests]
       .filter(Boolean)
       .join(', ')
   );
@@ -43,7 +45,7 @@
   ><div class="listcard-top"><b>{list.name}</b><Badge cls="num"
       >{items.length}</Badge
     ></div
-  >{#if edited}<p class="listcard-edited">{edited}</p>{/if}{#if items.length}<div class="listcard-thumbs"
+  >{#if edited}<p class="listcard-edited">{edited}</p>{/if}{#if requests}<p class="listcard-req">{requests}</p>{/if}{#if items.length}<div class="listcard-thumbs"
       >{#each items.slice(0, 6) as it (it.id)}<img
           src={artSrc(it.img, app.artBroken(it.id), 'thumb')}
           alt=""
@@ -109,6 +111,14 @@
     margin: -6px 0 10px;
     font-size: 12.5px;
     color: var(--muted2);
+  }
+
+  /* The account list's pending purchase requests, under the last edit. */
+  .listcard-req {
+    margin: -6px 0 10px;
+    font-size: 12.5px;
+    color: var(--gold-soft);
+    font-weight: 600;
   }
 
   .listcard-thumbs {

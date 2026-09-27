@@ -6,8 +6,9 @@
 <h2>What the site stores now</h2>
 <ul>
   <li>
-    If you do not sign in, nothing about you is stored on a server. The site has no cookies, no
-    analytics and no advertising, and it loads nothing from other companies.
+    If you do not sign in, nothing about you is stored on a server except requests to a list's
+    owner (below), and they are linked neither to you nor to your device. The site has no
+    cookies, no analytics and no advertising, and it loads nothing from other companies.
   </li>
   <li>
     Your lists, the language and your other settings stay in your browser's local storage, on
@@ -43,6 +44,16 @@
   you can read it there, so you can copy it again at any time. A share link to a homebrew item
   works the same way. A share link never shows your name or your email.
 </p>
+<h3>Requests to a list's owner</h3>
+<p>
+  Anybody who holds a link to a list can send its owner a request for the items they picked. A
+  request keeps the items, their counts, the kind of link (the player link or the GM link) and
+  the time it was sent; it holds no name, email, account or IP address of the sender. Supabase,
+  like GitHub, receives the usual technical data of each request to its server. A request with
+  no answer expires after an hour. A day after its answer or its expiry, a request is deleted
+  when the next request of any list is sent; with the owner's list or account, it is deleted at
+  once. The sender's browser keeps nothing about the request.
+</p>
 <h3>Deleting your data</h3>
 <p>
   If you sign in, you delete your account on the <a href="%APP%#/account">account page</a>. The
@@ -63,4 +74,4 @@
   For a privacy question, a deletion request or a report of an abused share link, write to
   <a href="mailto:daggerheart.loot@gmail.com">daggerheart.loot@gmail.com</a>.
 </p>
-<p>Last changed: 25 September 2026.</p>
+<p>Last changed: 28 September 2026.</p>

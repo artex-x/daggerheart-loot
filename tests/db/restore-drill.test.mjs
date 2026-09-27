@@ -150,7 +150,12 @@ describe('restoreDump', () => {
     const now = await counts();
     assert.equal(now.get('public.lists'), 0);
     assert.equal(now.get('auth.users'), 0);
-    assert.deepEqual(await limitDefaults(), ['entries_per_list=100', 'lists_per_owner=50']);
+    assert.deepEqual(await limitDefaults(), [
+      'entries_per_list=100',
+      'lists_per_owner=50',
+      'pending_requests_per_list=10',
+      'request_lines=100'
+    ]);
     clean = true;
   });
 });

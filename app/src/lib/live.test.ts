@@ -4,6 +4,7 @@ import {
   BACKOFF_MAX_MS,
   feedStep,
   readOwnerMessage,
+  readRequestMessage,
   readShareMessage,
   type FeedEvent,
   type FeedState
@@ -187,5 +188,37 @@ describe('readOwnerMessage', () => {
     ] as const) {
       expect(readOwnerMessage(event, payload)).toBeNull();
     }
+  });
+});
+
+describe('readRequestMessage', () => {
+  it('reads a list and by or none, with Realtime id key ignored', () => {
+    expect(readRequestMessage('request', { list: LIST, by: null, id: 'm' })).toEqual({
+      list: LIST,
+      by: null
+    });
+    expect(readRequestMessage('request', { list: LIST, by: 'tab-1' })).toEqual({
+      list: LIST,
+      by: 'tab-1'
+    });
+    expect(readRequestMessage('request', { list: LIST })).toEqual({ list: LIST, by: null });
+  });
+
+  it('drops any other event or shape', () => {
+    for (const [event, payload] of [
+      ['list', { list: LIST, revision: 1, by: null }],
+      ['request', null],
+      ['request', [LIST]],
+      ['request', {}],
+      ['request', { list: 'l1' }],
+      ['request', { list: 5 }],
+      ['request', { list: LIST, by: 4 }]
+    ] as const) {
+      expect(readRequestMessage(event, payload)).toBeNull();
+    }
+  });
+
+  it('is not read as a list message, so a client without it drops the event', () => {
+    expect(readOwnerMessage('request', { list: LIST, by: null })).toBeNull();
   });
 });

@@ -29,7 +29,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     StaticText "Отображение, способы входа, выход и ваши данные."
     heading "ОТОБРАЖЕНИЕ" [level=2]
     StaticText "Эти настройки действуют на всех ваших устройствах. Вид таблиц и ..." [namelen=134 namehash=00161fc6]
-    ... StaticText x11 of 15 same-shape siblings elided
+    ... StaticText x12 of 16 same-shape siblings elided
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
@@ -44,9 +44,10 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     button "Цветная" [pressed=false]
     button "Чёрно-белая" [pressed=true]
     checkbox "Компактный лист" [checked=true]
-    button "Спрашивать" [pressed=true]
-    button "Всегда" [pressed=false]
-    button "Никогда" [pressed=false]
+    combobox "Добавление из чужого списка" [value=Спрашивать description=Когда вы добавляете предметы из чужого списка в свой, сообщить об этом его владельцу? expanded=false haspopup=menu]
+      option "Спрашивать" [selected=true]
+      option "Сообщать владельцу" [selected=false]
+      option "Не сообщать" [selected=false]
     heading "ВЫ ВОШЛИ КАК" [level=2]
     heading "СПОСОБЫ ВХОДА" [level=2]
     button "Отключить Google"
@@ -75,13 +76,11 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
-Всегда
 Выйти
 Выйти на всех устройствах
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Никогда
 Обычные правила
 Обычные правилаАльт. таблицыWondrousDreadVault of AgesDragon's V... [namelen=96 namehash=df6717c4]
 Отключить Discord
@@ -91,7 +90,7 @@ daggerheart.com
 Сообщества
 Списки
 Списком
-Спрашивать
+СпрашиватьСообщать владельцуНе сообщать
 Таблицы
 Удалить аккаунт...
 Условия использования
@@ -125,7 +124,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
     StaticText "Display, sign-in methods, signing out and your data."
     heading "DISPLAY" [level=2]
     StaticText "These settings apply on all your devices. A tables view or a pri..." [namelen=133 namehash=30d49185]
-    ... StaticText x11 of 15 same-shape siblings elided
+    ... StaticText x12 of 16 same-shape siblings elided
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
@@ -140,9 +139,10 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
     button "Colour" [pressed=false]
     button "Black and white" [pressed=true]
     checkbox "Compact sheet" [checked=true]
-    button "Ask" [pressed=true]
-    button "Always" [pressed=false]
-    button "Never" [pressed=false]
+    combobox "Adding from someone else's list" [value=Ask description=When you add items from someone else's list to yours, notify its owner? expanded=false haspopup=menu]
+      option "Ask" [selected=true]
+      option "Notify the owner" [selected=false]
+      option "Don't notify" [selected=false]
     heading "SIGNED IN AS" [level=2]
     heading "CONNECTED PROVIDERS" [level=2]
     button "Disconnect Google"
@@ -164,8 +164,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
 ## en :: controls
 Account: gm1@example.test
 Alt. tables
-Always
-Ask
+AskNotify the ownerDon't notify
 Black and white
 Colour
 Communities
@@ -179,7 +178,6 @@ Grid
 Install as an app
 List
 Lists
-Never
 Privacy
 RU
 Search

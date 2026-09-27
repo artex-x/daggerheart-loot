@@ -11,6 +11,7 @@
      idle for no reason. The shared page keeps the bar mounted, visually
      hidden while empty, so its live region exists before the first tick
      and announces it. */
+  import { tick } from 'svelte';
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
@@ -61,6 +62,32 @@
       : undefined
   );
 
+  /* A share link's reader other than its owner can send the ticked entries to the
+     owner, and after an add from this bar is asked whether to (flow b). */
+  const token = $derived(app.requestToken);
+  const sender = $derived(app.requestSender);
+  const lines = $derived(ids.map((id) => ({ item: id, qty: takenOf(id) })));
+  const asking = $derived(
+    sender?.asking && token !== null && sender.asking.token === token ? sender.asking : null
+  );
+  let remember = $state(false);
+  let bar = $state<HTMLDivElement | undefined>(undefined);
+  let question = $state<HTMLParagraphElement | undefined>(undefined);
+
+  /* The question replaces the row that held the focused menu, so the focus
+     moves to it, and back to «Добавить в список» after the answer. */
+  $effect(() => {
+    if (asking) question?.focus();
+  });
+
+  function answer(send: boolean): void {
+    sender?.answer(send, remember);
+    remember = false;
+    void tick().then(() => {
+      bar?.querySelector<HTMLElement>('.seldrop > .btn')?.focus();
+    });
+  }
+
   async function copySel(): Promise<void> {
     const index = app.index;
     if (!index) return;
@@ -74,7 +101,7 @@
 
 {#if n || shared}
   <div class="selbarwrap" class:idle={!n}>
-    <div class="selbar">
+    <div class="selbar" bind:this={bar}>
       <span class="selsumm" aria-live={shared ? 'polite' : undefined}
         >{#if n}<span class="selcount">{countText}</span>&#32;{#if total}<span class="seltotal"
               >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
@@ -89,15 +116,45 @@
             app.clearSel();
           }}>&times;</button
         >
-        <div class="selacts">
-          <AddToList {app} key="sel" {ids} meta={takenMeta} primary />
-          <Button size="sm" href={printHref} sameTab title={t.printHint}
-            ><Icon name="print" />{t.print}</Button
-          >
-          <Button size="sm" onclick={() => void copySel()}
-            ><Icon name="copy" />{t.copySel}</Button
-          >
-        </div>{/if}
+        {#if asking}
+          <div class="notifyq" role="group" aria-labelledby="notifyq-text">
+            <p id="notifyq-text" tabindex="-1" bind:this={question}>{t.notifyQuestion}</p>
+            <Button
+              size="sm"
+              variant="primary"
+              onclick={() => {
+                answer(true);
+              }}>{t.notifyYes}</Button
+            >
+            <Button
+              size="sm"
+              onclick={() => {
+                answer(false);
+              }}>{t.notifyNever}</Button
+            >
+            <label><input type="checkbox" bind:checked={remember} />{t.notifyRemember}</label>
+          </div>
+        {:else}
+          <div class="selacts">
+            <AddToList {app} key="sel" {ids} meta={takenMeta} primary />
+            <Button size="sm" href={printHref} sameTab title={t.printHint}
+              ><Icon name="print" />{t.print}</Button
+            >
+            <Button size="sm" onclick={() => void copySel()}
+              ><Icon name="copy" />{t.copySel}</Button
+            >
+            {#if token !== null && sender}
+              <span class="notify"
+                ><Button
+                  size="sm"
+                  disabled={sender.sending}
+                  onclick={() => void sender.send(token, lines)}
+                  >{sender.sending ? t.requestSending : t.requestSend}</Button
+                ></span
+              >
+            {/if}
+          </div>
+        {/if}{/if}
     </div>
   </div>
 {/if}
@@ -213,6 +270,42 @@
     margin-left: auto;
   }
 
+  .notify {
+    display: flex;
+  }
+
+  /* Flow b's question takes the action row's place. */
+  .notifyq {
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    font-size: 13.5px;
+    color: var(--txt);
+  }
+
+  .notifyq p {
+    margin: 0;
+    flex: 1 1 260px;
+  }
+
+  .notifyq label {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--muted);
+  }
+
+  /* TableRows.svelte's row checkbox. */
+  .notifyq input {
+    accent-color: var(--gold);
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    cursor: pointer;
+  }
+
   @media (max-width: 600px) {
     /* The summary wraps inside itself, so the clear button keeps its line. */
     .selsumm {
@@ -230,8 +323,14 @@
       margin-left: 0;
     }
 
-    .selacts :global(.seldrop) {
+    .selacts :global(.seldrop),
+    .notify {
       flex: 1 1 100%;
+    }
+
+    .notifyq :global(.btn) {
+      flex: 1 1 0;
+      justify-content: center;
     }
 
     .selacts :global(.btn) {

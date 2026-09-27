@@ -17,6 +17,7 @@ import {
 import { entryOrder, type ListRow, type SharedRow, type ShareRow } from '../lib/cloudLists.js';
 import type { SignInAfter } from '../lib/pending.js';
 import { readPrefs } from '../lib/prefs.js';
+import { readApplied, readRequests, requestRefusal } from '../lib/requests.js';
 import { callbackUrl, saveReturn, type Redirect, type RedirectWindow } from './redirect.js';
 import type {
   AuthError,
@@ -33,6 +34,9 @@ import type {
   MoveWrite,
   PreferencesPort,
   Provider,
+  RequestDeclined,
+  RequestRepository,
+  RequestSent,
   Session,
   ShareMade,
   ShareRepository
@@ -226,6 +230,43 @@ async function made(call: () => PromiseLike<MadeAnswer>): Promise<ShareMade> {
 const LIST_SELECT =
   'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
   'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)';
+
+/* The owner's pending requests with their lines; row level security keeps them to the
+   owner of each request's list. */
+const REQUEST_SELECT =
+  'id,list_id,audience,created_at,expires_at,' +
+  'purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
+
+type RequestFailure =
+  | { ok: false; error: 'gone' | 'stale' | 'decided' | 'expired' }
+  | Exclude<ListWrite, { ok: true }>;
+
+const REQUEST_REFUSED = { ok: false, error: 'refused' } as const;
+const REQUEST_UNSENT = { ok: false, error: 'network' } as const;
+
+/* A request function's own answers first: PostgREST gives `P0002` HTTP 500, which
+   `writeOf` would read as `network` and send again. */
+function requestFailure(answer: Answer): RequestFailure {
+  const known = requestRefusal(answer.error?.code, answer.error?.message);
+  if (known) return { ok: false, error: known };
+  const failed = writeOf(answer);
+  return failed.ok ? REQUEST_REFUSED : failed;
+}
+
+function sentOf(f: RequestFailure): RequestSent {
+  if (f.error === 'limit') return f;
+  if (f.error === 'gone' || f.error === 'stale' || f.error === 'network') {
+    return { ok: false, error: f.error };
+  }
+  return REQUEST_REFUSED;
+}
+
+function decisionOf(f: RequestFailure): Exclude<RequestDeclined, { ok: true }> {
+  if (f.error === 'decided' || f.error === 'expired' || f.error === 'gone') {
+    return { ok: false, error: f.error };
+  }
+  return f.error === 'network' ? REQUEST_UNSENT : REQUEST_REFUSED;
+}
 
 type CloudWindow = RedirectWindow & Pick<Window, 'addEventListener' | 'removeEventListener'>;
 
@@ -577,5 +618,57 @@ export function createCloud(
       };
     }
   };
-  return { auth, prefs, lists, shares, events };
+  /* Row level security keeps a request to its list's owner
+     (tests/db/purchase-requests.test.mjs); a send and a decision go through the
+     functions, which check the token or the owner again. */
+  const requests: RequestRepository = {
+    async list() {
+      try {
+        const { data, error } = await client
+          .from('purchase_requests')
+          .select(REQUEST_SELECT)
+          .eq('status', 'pending');
+        if (error) return { ok: false };
+        const read = readRequests(data);
+        return read ? { ok: true, requests: read } : { ok: false };
+      } catch {
+        return { ok: false };
+      }
+    },
+    async send(id, token, lines) {
+      try {
+        const answer = await timed((signal) =>
+          client
+            .rpc('create_purchase_request', { p_id: id, p_token: token, p_lines: lines })
+            .abortSignal(signal)
+        );
+        return answer.error ? sentOf(requestFailure(answer)) : { ok: true };
+      } catch {
+        return REQUEST_UNSENT;
+      }
+    },
+    async apply(id, clamp) {
+      try {
+        const answer = await timed((signal) =>
+          client.rpc('apply_purchase_request', { p_id: id, p_clamp: clamp }).abortSignal(signal)
+        );
+        if (answer.error) return decisionOf(requestFailure(answer));
+        const data: unknown = answer.data;
+        return readApplied(data) ?? REQUEST_REFUSED;
+      } catch {
+        return REQUEST_UNSENT;
+      }
+    },
+    async decline(id) {
+      try {
+        const answer = await timed((signal) =>
+          client.rpc('decline_purchase_request', { p_id: id }).abortSignal(signal)
+        );
+        return answer.error ? decisionOf(requestFailure(answer)) : { ok: true };
+      } catch {
+        return REQUEST_UNSENT;
+      }
+    }
+  };
+  return { auth, prefs, lists, shares, events, requests };
 }

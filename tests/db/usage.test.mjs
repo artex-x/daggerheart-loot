@@ -22,6 +22,8 @@ const PUBLIC_TABLES = [
   'list_entries',
   'list_shares',
   'lists',
+  'purchase_request_lines',
+  'purchase_requests',
   'usage_snapshots',
   'user_limit_overrides',
   'user_prefs'

@@ -6,7 +6,8 @@
  * made again and copied, F9 a browser list moved into the account at
  * sign-in, once, and not for another account, F10 two edits kept by a page
  * closed inside the write buffer's quiet window, F11 an edit drawn live on an
- * open share page and on the owner's second page. Each flow gets its own
+ * open share page and on the owner's second page, F12 a purchase request sent
+ * signed out, drawn on the owner's page and applied. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -706,4 +707,94 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteListsOf(admin, member.id);
   }
   console.log('e2e: F11 ok');
+
+  /* F12: a purchase request on the hosted project. A signed-out share page sends one
+     through create_purchase_request, the first function anon writes through; the
+     owner's open page draws it within 10 s, applies it, and the share page draws the
+     lowered stock within 10 s. */
+  await deleteListsOf(admin, member.id);
+  try {
+    const port = portOf(env, await mint(env, admin, member.email));
+    const listId = port.lists.newId();
+    const made = await port.lists.apply([
+      {
+        op: 'create',
+        list: {
+          id: listId,
+          name: 'E2E requests',
+          money_mode: 'bag',
+          player_note: '',
+          gm_note: ''
+        },
+        entries: [
+          {
+            id: port.lists.newId(),
+            item_key: 'ci1',
+            source: 'official',
+            snapshot: null,
+            position: 0,
+            quantity: 3,
+            price_coins: null,
+            player_note: '',
+            gm_note: ''
+          }
+        ]
+      }
+    ]);
+    if (!made.ok || made.results[0]?.ok !== true) throw new Error('e2e F12: no list made');
+    const share = await port.shares.create(listId, 'player');
+    if (!share.ok) throw new Error('e2e F12: no players link made');
+
+    await withPage(ctx, await mint(env, admin, member.email), async (pageA, a) => {
+      await a.open('#/lists/' + listId);
+      await waitText(pageA, 'F12', 'Сохранено');
+      await waitFor(
+        pageA,
+        "e2e F12: the list page never joined the owner's topic",
+        () => !!document.querySelector('.lsaid[data-live="live"]')
+      );
+      await withPage(ctx, null, async (pageB, b) => {
+        await b.open('#/s/' + share.token);
+        await waitText(pageB, 'F12', 'E2E requests');
+        await waitFor(
+          pageB,
+          'e2e F12: the share page never joined its topic',
+          () => !!document.querySelector('[data-live="live"]')
+        );
+        await b.tick('Первоклассный Спальный Мешок');
+        /* One of the three: the apply lowers the entry and does not remove it. */
+        const take = await pageB.$('input[aria-label="Взять: Первоклассный Спальный Мешок"]');
+        if (!take) throw new Error('e2e F12: no taken-count field');
+        await take.click({ count: 3 });
+        await take.type('1');
+        await waitFor(
+          pageB,
+          'e2e F12: the taken count is not 1',
+          () =>
+            document.querySelector('input[aria-label="Взять: Первоклассный Спальный Мешок"]')
+              ?.value === '1'
+        );
+        await b.press('Сообщить владельцу');
+        await waitText(pageB, 'F12', 'Запрос отправлен владельцу списка.');
+        await within10(pageA, 'F12: the owner page did not draw the request in 10 s', () =>
+          document.body.textContent.includes('Запросы (1)')
+        );
+        await a.press('Принять');
+        await waitText(pageA, 'F12', 'Запрос принят');
+        await until('F12: the apply did not lower ci1 to 2', async () => {
+          const lists = await listsOf(admin, member.id);
+          const entry = lists
+            .find((l) => l.id === listId)
+            ?.list_entries.find((e) => e.item_key === 'ci1');
+          return entry?.quantity === 2;
+        });
+        await within10(pageB, 'F12: the share page did not draw «×2» in 10 s', () =>
+          (document.querySelector('[data-row="ci1"]')?.textContent ?? '').includes('×2')
+        );
+      });
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+  }
+  console.log('e2e: F12 ok');
 }

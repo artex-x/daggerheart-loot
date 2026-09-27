@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { flushSync } from 'svelte';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
 import { buildIndex } from '../lib/data.js';
@@ -964,5 +964,223 @@ describe('saving with sign-in configured', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
     expect(router.hash()).toBe('#/l/' + PAYLOAD);
     expect(screen.queryByText(/Войдите/)).not.toBeInTheDocument();
+  });
+});
+
+describe('a purchase request', () => {
+  const open = (hash: string, cloud = fakeCloud(SEED), over: Partial<Env> = {}) => {
+    const r = render(App, { env: at(hash, { router: memoryRouter(hash), cloud, ...over }) });
+    return { ...r, cloud };
+  };
+  const bar = (): HTMLElement => document.querySelector('.selbarwrap') as HTMLElement;
+  const tickFirst = async (): Promise<void> => {
+    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
+  };
+  const ticked = (): number => document.querySelectorAll('.sel[data-row]').length;
+  const notify = (): HTMLElement | null =>
+    within(bar()).queryByRole('button', { name: 'Сообщить владельцу' });
+
+  it('offers «Сообщить владельцу» signed out and signed in, and sends the ticks with their counts', async () => {
+    const { cloud, container } = open('#/s/player-token-1');
+    const send = vi.spyOn(cloud.requests, 'send');
+    await tickFirst();
+    await userEvent.click(notify() as HTMLElement);
+    expect(send).toHaveBeenCalledWith(uuid(5000), 'player-token-1', [{ item: 'ci1', qty: 2 }]);
+    expect(await screen.findByText('Запрос отправлен владельцу списка.')).toBeInTheDocument();
+    expect(ticked()).toBe(0);
+    expect(cloud.decide(uuid(5000), 'declined')).toBe(true);
+    await expectNoA11yViolations(container);
+    cleanup();
+    const signed = open('#/s/player-token-1', fakeCloud(SEED, 'gm2'));
+    await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
+    await tickFirst();
+    expect(notify()).toBeInTheDocument();
+    await expectNoA11yViolations(signed.container);
+  });
+
+  it("is not offered to the list's owner, nor on a #/l/ page", async () => {
+    open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
+    await screen.findByRole('link', { name: dict('ru').ownListEdit });
+    await tickFirst();
+    expect(notify()).not.toBeInTheDocument();
+    cleanup();
+    const { container } = render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
+    expect(notify()).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('reads «Отправляем...» and is disabled while the call runs', async () => {
+    const { cloud, container } = open('#/s/player-token-1');
+    let release = (): void => undefined;
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const real = cloud.requests.send.bind(cloud.requests);
+    cloud.requests.send = async (...args) => {
+      await gate;
+      return real(...args);
+    };
+    await tickFirst();
+    await userEvent.click(notify() as HTMLElement);
+    const sending = within(bar()).getByRole('button', { name: 'Отправляем...' });
+    expect(sending).toBeDisabled();
+    await expectNoA11yViolations(container);
+    release();
+    expect(await screen.findByText('Запрос отправлен владельцу списка.')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it.each([
+    [
+      { ok: false, error: 'limit', key: 'request_rate', value: 5 },
+      'Слишком много запросов по этой ссылке: подождите минуту.'
+    ],
+    [
+      { ok: false, error: 'limit', key: 'pending_requests_per_list', value: 10 },
+      'У владельца уже 10 запросов без ответа. Попробуйте позже.'
+    ],
+    [{ ok: false, error: 'network' }, 'Не получилось отправить. Проверьте соединение.']
+  ] as const)('keeps the selection and says %j', async (answer, text) => {
+    const { cloud, container } = open('#/s/player-token-1');
+    vi.spyOn(cloud.requests, 'send').mockResolvedValueOnce(answer);
+    await tickFirst();
+    await userEvent.click(notify() as HTMLElement);
+    expect(await screen.findByRole('alert')).toHaveTextContent(text);
+    expect(ticked()).toBe(1);
+    await expectNoA11yViolations(container);
+  });
+
+  it('reads the link again for a stale list, and draws the gone page for a gone link', async () => {
+    const { cloud, container } = open('#/s/player-token-1');
+    const send = vi.spyOn(cloud.requests, 'send');
+    const read = vi.spyOn(cloud.shares, 'read');
+    send.mockResolvedValueOnce({ ok: false, error: 'stale' });
+    await tickFirst();
+    const reads = read.mock.calls.length;
+    await userEvent.click(notify() as HTMLElement);
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Список изменился. Проверьте выбор и отправьте снова.'
+    );
+    expect(read.mock.calls.length).toBe(reads + 1);
+    send.mockResolvedValueOnce({ ok: false, error: 'gone' });
+    read.mockResolvedValue({ ok: true, shared: null });
+    await userEvent.click(notify() as HTMLElement);
+    expect(
+      await screen.findByRole('heading', { level: 1, name: dict('ru').shareGone })
+    ).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  describe('flow b', () => {
+    const addButton = (): HTMLElement =>
+      within(bar()).getByRole('button', { name: 'Добавить в список' });
+    const addToOwn = async (): Promise<void> => {
+      await userEvent.click(within(bar()).getByRole('button', { name: 'Добавить в список' }));
+      await userEvent.click(within(bar()).getByRole('button', { name: 'Список второго ГМа' }));
+    };
+    const signedIn = async (notifyGm?: 'always' | 'never') => {
+      const cloud = fakeCloud(SEED, 'gm2');
+      if (notifyGm) await cloud.prefs.save({ notifyGm });
+      const view = open('#/s/player-token-1', cloud);
+      await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
+      await tickFirst();
+      return { ...view, send: vi.spyOn(cloud.requests, 'send') };
+    };
+
+    it('asks after an add from the bar, with the focus on the question, and «Сообщить» sends and keeps the ticks', async () => {
+      const { container, send } = await signedIn();
+      await addToOwn();
+      const q = within(bar()).getByRole('group', {
+        name: 'Сообщить владельцу списка, что вы взяли эти предметы?'
+      });
+      expect(within(bar()).queryByRole('button', { name: 'Добавить в список' })).toBeNull();
+      await waitFor(() => {
+        expect(document.activeElement?.id).toBe('notifyq-text');
+      });
+      await expectNoA11yViolations(container);
+      await userEvent.click(within(q).getByRole('button', { name: 'Сообщить' }));
+      expect(send).toHaveBeenCalledWith(uuid(5001), 'player-token-1', [
+        { item: 'ci1', qty: 2 }
+      ]);
+      expect(
+        await screen.findByText('Добавлено в «Список второго ГМа». Владелец получил запрос.')
+      ).toBeInTheDocument();
+      expect(ticked()).toBe(1);
+      expect(within(bar()).queryByRole('group')).toBeNull();
+      await waitFor(() => {
+        expect(document.activeElement).toBe(addButton());
+      });
+      await expectNoA11yViolations(container);
+    });
+
+    it('remembers «Не сообщать» with «Запомнить ответ», and then asks no more', async () => {
+      const { cloud, send, container } = await signedIn();
+      await addToOwn();
+      await userEvent.click(within(bar()).getByRole('checkbox', { name: 'Запомнить ответ' }));
+      await userEvent.click(within(bar()).getByRole('button', { name: 'Не сообщать' }));
+      await waitFor(async () => {
+        const read = await cloud.prefs.load();
+        expect(read.ok && read.prefs?.notifyGm).toBe('never');
+      });
+      expect(send).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(document.activeElement).toBe(addButton());
+      });
+      await expectNoA11yViolations(container);
+    });
+
+    it('remembers «Сообщить» as always', async () => {
+      const { cloud, container } = await signedIn();
+      await addToOwn();
+      await userEvent.click(within(bar()).getByRole('checkbox', { name: 'Запомнить ответ' }));
+      await userEvent.click(within(bar()).getByRole('button', { name: 'Сообщить' }));
+      await waitFor(async () => {
+        const read = await cloud.prefs.load();
+        expect(read.ok && read.prefs?.notifyGm).toBe('always');
+      });
+      await expectNoA11yViolations(container);
+    });
+
+    it('sends with no question on always, and does nothing on never', async () => {
+      const always = await signedIn('always');
+      await addToOwn();
+      expect(
+        await screen.findByText('Добавлено в «Список второго ГМа». Владелец получил запрос.')
+      ).toBeInTheDocument();
+      expect(always.send).toHaveBeenCalledOnce();
+      expect(within(bar()).queryByRole('group')).toBeNull();
+      cleanup();
+      const never = await signedIn('never');
+      await addToOwn();
+      expect(await screen.findByText('Добавлено в «Список второго ГМа»')).toBeInTheDocument();
+      expect(never.send).not.toHaveBeenCalled();
+      expect(within(bar()).queryByRole('group')).toBeNull();
+      await expectNoA11yViolations(never.container);
+    });
+
+    it('drops the question when the selection is cleared', async () => {
+      const { container } = await signedIn();
+      await addToOwn();
+      await userEvent.click(within(bar()).getByRole('button', { name: 'Снять выделение' }));
+      await userEvent.click(rowCheckboxes()[0] as HTMLElement);
+      expect(within(bar()).queryByRole('group')).toBeNull();
+      expect(notify()).toBeInTheDocument();
+      await expectNoA11yViolations(container);
+    });
+
+    it("never asks after a card's own add", async () => {
+      const { send, container } = await signedIn();
+      await userEvent.click(within(bar()).getByRole('button', { name: 'Снять выделение' }));
+      await userEvent.click(screen.getByRole('button', { name: /Спальный мешок/ }));
+      const dialog = screen.getByRole('dialog');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Список второго ГМа' }));
+      expect(await screen.findByText('Добавлено в «Список второго ГМа»')).toBeInTheDocument();
+      expect(document.querySelector('.notifyq')).toBeNull();
+      expect(send).not.toHaveBeenCalled();
+      await expectNoA11yViolations(container);
+    });
   });
 });

@@ -1409,6 +1409,23 @@ describe('an account list', () => {
     expect(screen.queryByRole('button', { name: 'Поделиться' })).not.toBeInTheDocument();
   });
 
+  it('draws the requests panel after the action row and an open share panel, before the money row; none on a browser list', async () => {
+    render(App, { env: withA('#/lists/a') });
+    expect(screen.queryByRole('heading', { name: /^Запросы/ })).not.toBeInTheDocument();
+    cleanup();
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    const { container } = openAs(cloud);
+    const panel = (await screen.findByRole('heading', { name: 'Запросы (1)' })).parentElement!;
+    await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
+    const shares = (await screen.findByText('Ссылка для игроков')).closest('div')!;
+    const money = container.querySelector('.money')!;
+    const after = Node.DOCUMENT_POSITION_FOLLOWING;
+    expect(shares.compareDocumentPosition(panel) & after).toBe(after);
+    expect(panel.compareDocumentPosition(money) & after).toBe(after);
+    await expectNoA11yViolations(container);
+  });
+
   it('says saving from the first buffered edit until the write lands, then saved', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     let answer: (w: ListWrites) => void = () => undefined;

@@ -23,6 +23,7 @@ deleted.
 - 2026-09-27 - [An agent pushes migrations to the test project only after an approving review](decisions/2026-09-27-an-agent-pushes-migrations-to-the-test-project.md)
 - 2026-09-27 - [Display defaults are set in the account; a page switch lasts a visit](decisions/2026-09-27-display-defaults-are-set-in-the-account-a-page-switch-lasts-a-visit.md)
 - 2026-09-27 - [R10 removes browser lists and the move; an old `#/l/` link is not found](decisions/2026-09-27-r10-removes-browser-lists-and-the-move.md)
+- 2026-09-27 - [The notify row is a select at every width](decisions/2026-09-27-the-notify-row-is-a-select-at-every.md)
 - 2026-09-27 - [The Read and Grep tools are denied `.env` files by a hook, not only by settings](decisions/2026-09-27-the-read-and-grep-tools-are-denied-env.md)
 - 2026-09-27 - [The reviewer writes its report to `issues/<id>/reviews/` and nowhere else](decisions/2026-09-27-the-reviewer-writes-its-report-to-issues-id.md)
 - 2026-09-27 - [The Supabase scripts take the local stack lock themselves](decisions/2026-09-27-the-supabase-scripts-take-the-local-stack-lock.md)

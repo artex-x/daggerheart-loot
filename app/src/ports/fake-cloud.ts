@@ -18,6 +18,7 @@ import {
   type ShareRow
 } from '../lib/cloudLists.js';
 import type { Prefs } from '../lib/prefs.js';
+import type { RequestLine, ShortLine } from '../lib/requests.js';
 import { SEED, uuid, type Seed, type SeedList, type SeedUser } from './fake-cloud-seed.js';
 import type {
   AuthError,
@@ -33,6 +34,9 @@ import type {
   LiveStatus,
   MoveWrite,
   PreferencesPort,
+  RequestApplied,
+  RequestRepository,
+  RequestSent,
   Session,
   ShareMade,
   ShareRepository
@@ -68,6 +72,12 @@ export type FakeCloud = CloudPort & {
   /** Edits any user's list as another device would, with its messages; false for an
    *  unknown list. */
   play(listId: string, patch: ListPatch): boolean;
+  /** Sends a purchase request as another reader of the link would, with its message;
+   *  answers the new request's id, or null when the send rules refuse it. */
+  request(token: string, lines: { item: string; qty: number }[]): string | null;
+  /** Applies (taking what is there) or declines any user's pending request as the owner's
+   *  other device would, with its messages; false for an unknown or decided request. */
+  decide(id: string, verdict: 'applied' | 'declined'): boolean;
 };
 
 /** The string the production-bundle guard looks for; renaming it without the
@@ -214,6 +224,40 @@ const limited = (key: string, value: number): Extract<ListWrite, { error: 'limit
   value
 });
 
+/* `create_purchase_request`'s bounds: its constants and the `limit_defaults` rows. */
+const HOUR_MS = 3_600_000;
+const RATE_MS = 60_000;
+const RATE_MAX = 5;
+const PENDING_MAX = 10;
+const LINES_MAX = 100;
+
+/** A purchase request as the fake holds it. */
+interface HeldRequest {
+  id: string;
+  listId: string;
+  shareId: string;
+  audience: ShareAudience;
+  status: 'pending' | 'applied' | 'declined';
+  createdAt: number;
+  expiresAt: number;
+  lines: RequestLine[];
+}
+
+/* The lines `create_purchase_request` takes: an array of `{ item, qty }` with no item
+   twice; other keys are ignored. */
+function linesOk(lines: unknown): lines is { item: string; qty: number }[] {
+  if (!Array.isArray(lines) || !lines.length) return false;
+  const seen = new Set<string>();
+  for (const l of lines as unknown[]) {
+    if (!l || typeof l !== 'object' || Array.isArray(l)) return false;
+    const { item, qty } = l as Record<string, unknown>;
+    if (typeof item !== 'string' || !ID.test(item) || !whole(qty, 1, 99)) return false;
+    if (seen.has(item)) return false;
+    seen.add(item);
+  }
+  return true;
+}
+
 export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {}): FakeCloud {
   const users = new Map<string, SeedUser>(
     Object.entries(seed.users).map(([k, u]) => [k, copyUser(u)])
@@ -238,6 +282,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     Object.entries(seed.lists).map(([k, l]): [string, Held[]] => [k, seedLists(l, boot)])
   );
   let offline = options.offline ?? false;
+  /* The purchase requests of every user's lists. */
+  let purchases: HeldRequest[] = [];
   /* `newId()` answers `uuid(5000)` first, so a golden's address is the same
      on every run. */
   let made = 5000;
@@ -290,6 +336,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     },
     deleteAccount() {
       if (current === null) return Promise.resolve({ ok: false, error: 'failed' });
+      const gone = new Set((lists.get(current) ?? []).map((h) => h.row.id));
+      purchases = purchases.filter((r) => !gone.has(r.listId));
       users.delete(current);
       rows.delete(current);
       lists.delete(current);
@@ -536,6 +584,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (at >= 0) {
       mine.splice(at, 1);
       shareRows = shareRows.filter((sh) => sh.listId !== id);
+      purchases = purchases.filter((r) => r.listId !== id);
     }
     return OK;
   };
@@ -764,12 +813,138 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       })
   };
 
+  /* Purchase requests, with the database's rules (docs/specs/FEATURES.md, "Account and
+     browser lists"); times from `Date.now()`, so a unit test moves them with its clock.
+     A request the driver makes is `uuid(6000 + n)`, a range no other fake id uses. */
+  let asked = 0;
+  const pendingOf = (listId: string, now: number): HeldRequest[] =>
+    purchases.filter((r) => r.listId === listId && r.status === 'pending' && r.expiresAt > now);
+  const requestSend = (id: string, token: string, lines: unknown): RequestSent => {
+    const sh = shareRows.find((x) => x.token === token && x.revoked_at === null);
+    const h = sh ? anyList(sh.listId) : undefined;
+    if (!sh || !h) return { ok: false, error: 'gone' };
+    const had = purchases.find((r) => r.id === id);
+    if (had) return had.shareId === sh.id ? OK : { ok: false, error: 'gone' };
+    if (!linesOk(lines)) return REFUSED;
+    if (lines.length > LINES_MAX) return limited('request_lines', LINES_MAX);
+    const stock = new Map(h.entries.map((e) => [e.item_key, e]));
+    if (lines.some((l) => !stock.has(l.item))) return { ok: false, error: 'stale' };
+    const now = Date.now();
+    const recent = purchases.filter((r) => r.shareId === sh.id && r.createdAt > now - RATE_MS);
+    if (recent.length >= RATE_MAX) return limited('request_rate', RATE_MAX);
+    if (pendingOf(h.row.id, now).length >= PENDING_MAX) {
+      return limited('pending_requests_per_list', PENDING_MAX);
+    }
+    purchases.push({
+      id,
+      listId: h.row.id,
+      shareId: sh.id,
+      audience: sh.audience,
+      status: 'pending',
+      createdAt: now,
+      expiresAt: now + HOUR_MS,
+      lines: lines.map((l) => ({
+        item: l.item,
+        qty: l.qty,
+        price: stock.get(l.item)?.price_coins ?? null,
+        applied: null
+      }))
+    });
+    const owner = userIdOf(h);
+    if (owner) send('owner:' + owner, 'request', { list: h.row.id, by: null });
+    return OK;
+  };
+  /* `apply_purchase_request` after its checks: stock by item, short, clamp, an entry
+     taken to zero deleted and the list renumbered. */
+  const applyHeld = (r: HeldRequest, h: Held, clamp: boolean, by: string): RequestApplied => {
+    const qtyOf = (item: string): number =>
+      h.entries.find((e) => e.item_key === item)?.quantity ?? 0;
+    const short: ShortLine[] = r.lines
+      .filter((l) => l.qty > qtyOf(l.item))
+      .map((l) => ({ item: l.item, want: l.qty, have: qtyOf(l.item) }))
+      .sort((a, b) => (a.item < b.item ? -1 : 1));
+    if (short.length && (!clamp || r.lines.every((l) => qtyOf(l.item) === 0))) {
+      return { ok: false, error: 'short', short };
+    }
+    const was = before();
+    const lines = r.lines.map((l) => ({ ...l, applied: Math.min(l.qty, qtyOf(l.item)) }));
+    const taken = lines.reduce((sum, l) => sum + l.applied, 0);
+    const emptied = new Set(
+      lines.filter((l) => l.applied > 0 && l.applied === qtyOf(l.item)).map((l) => l.item)
+    );
+    h.entries = h.entries
+      .filter((e) => !emptied.has(e.item_key))
+      .map((e) => {
+        const l = lines.find((x) => x.item === e.item_key);
+        return l ? { ...e, quantity: e.quantity - l.applied } : e;
+      });
+    r.lines = lines;
+    if (emptied.size) reorder([h], h.row.id, []);
+    else touch(h);
+    r.status = 'applied';
+    announce(was, by);
+    const owner = userIdOf(h);
+    if (owner) send('owner:' + owner, 'request', { list: h.row.id, by });
+    return { ok: true, taken };
+  };
+  const declineHeld = (r: HeldRequest, h: Held, by: string): void => {
+    r.status = 'declined';
+    const owner = userIdOf(h);
+    if (owner) send('owner:' + owner, 'request', { list: h.row.id, by });
+  };
+  /* The checks apply and decline share: the caller's own list, pending, not expired. */
+  type Undecidable = { ok: false; error: 'network' | 'gone' | 'decided' | 'expired' };
+  const decidable = (id: string): { r: HeldRequest; h: Held } | Undecidable => {
+    const mine = offline ? null : own();
+    if (!mine) return NETWORK;
+    const r = purchases.find((x) => x.id === id);
+    const h = r ? find(mine, r.listId) : undefined;
+    if (!r || !h) return { ok: false, error: 'gone' };
+    if (r.status !== 'pending') return { ok: false, error: 'decided' };
+    if (Date.now() >= r.expiresAt) return { ok: false, error: 'expired' };
+    return { r, h };
+  };
+  const requestRepo: RequestRepository = {
+    list() {
+      const mine = offline ? null : own();
+      if (!mine) return Promise.resolve({ ok: false });
+      const ids = new Set(mine.map((h) => h.row.id));
+      return Promise.resolve({
+        ok: true,
+        requests: purchases
+          .filter((r) => r.status === 'pending' && ids.has(r.listId))
+          .map((r) => ({
+            id: r.id,
+            listId: r.listId,
+            audience: r.audience,
+            createdAt: iso(r.createdAt),
+            expiresAt: iso(r.expiresAt),
+            lines: r.lines.map((l) => ({ ...l }))
+          }))
+      });
+    },
+    send(id, token, lines) {
+      return Promise.resolve(offline ? NETWORK : requestSend(id, token, lines));
+    },
+    apply(id, clamp) {
+      const d = decidable(id);
+      return Promise.resolve('r' in d ? applyHeld(d.r, d.h, clamp, TAB) : d);
+    },
+    decline(id) {
+      const d = decidable(id);
+      if (!('r' in d)) return Promise.resolve(d);
+      declineHeld(d.r, d.h, TAB);
+      return Promise.resolve(OK);
+    }
+  };
+
   return {
     auth,
     prefs,
     lists: listRepo,
     shares: shareRepo,
     events,
+    requests: requestRepo,
     setLive(on) {
       live = on;
       if (on) return;
@@ -786,6 +961,22 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       touch(h);
       announce(was, 'other-device');
       return true;
+    },
+    request(token, lines) {
+      const id = uuid(6000 + asked);
+      if (!requestSend(id, token, lines).ok) return null;
+      asked++;
+      return id;
+    },
+    decide(id, verdict) {
+      const r = purchases.find((x) => x.id === id);
+      const h = r ? anyList(r.listId) : undefined;
+      if (!r || !h || r.status !== 'pending' || Date.now() >= r.expiresAt) return false;
+      if (verdict === 'declined') {
+        declineHeld(r, h, 'other-device');
+        return true;
+      }
+      return applyHeld(r, h, true, 'other-device').ok;
     },
     setOffline(on) {
       offline = on;

@@ -58,11 +58,16 @@ async function rolledBack(fn) {
 }
 
 describe('limit tables', () => {
-  it('hold the two defaults', async () => {
+  it('hold the four defaults', async () => {
     const rows = await sql`select key, value from public.limit_defaults order by key`;
     assert.deepEqual(
       rows.map((r) => `${r.key}=${r.value}`),
-      ['entries_per_list=100', 'lists_per_owner=50']
+      [
+        'entries_per_list=100',
+        'lists_per_owner=50',
+        'pending_requests_per_list=10',
+        'request_lines=100'
+      ]
     );
   });
 

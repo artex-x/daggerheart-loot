@@ -36,6 +36,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     link "#/s/share-token-1" [url=index.html?as=gm1#/s/share-token-1]
     ... button x4 of 8 same-shape siblings elided
     link "#/s/share-token-2" [url=index.html?as=gm1#/s/share-token-2]
+    status ""
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
     checkbox "Выбрать все" [checked=false]
@@ -140,6 +141,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     link "#/s/share-token-1" [url=index.html?as=gm1#/s/share-token-1]
     ... button x4 of 8 same-shape siblings elided
     link "#/s/share-token-2" [url=index.html?as=gm1#/s/share-token-2]
+    status ""
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
     checkbox "Select all" [checked=false]

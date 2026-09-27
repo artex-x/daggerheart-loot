@@ -25,6 +25,7 @@
   import { helpFor } from '../lib/help.js';
   import { encodeList, encodeListRaw } from '../lib/listLink.js';
   import { LIST_PAGE, LIST_SEARCH_AT, matchLists, type StoredList } from '../lib/lists.js';
+  import { plural } from '../lib/plural.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -71,6 +72,12 @@
   const nothing = $derived(
     account.length + local.length > 0 && foundAccount.length + foundLocal.length === 0
   );
+
+  /* An account list's pending, unexpired purchase requests, for its card. */
+  function waiting(listId: string): string | undefined {
+    const n = app.ownerRequests?.pendingCount(listId, app.now) ?? 0;
+    return n ? plural(n, t.requestsWaitN, app.lang) : undefined;
+  }
 
   /* Any edit to the query starts the new result folded. */
   function setQuery(v: string): void {
@@ -207,6 +214,7 @@
                   href={storedListHash(l.id)}
                   items={knownItems(l)}
                   edited={agoText(l.updated, app.now, app.lang, t)}
+                  requests={waiting(l.id)}
                 >
                   {#snippet actions()}
                     <Button

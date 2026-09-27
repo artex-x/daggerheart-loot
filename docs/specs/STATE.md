@@ -124,10 +124,17 @@ setting, and so do the pin and the starting-section select.
   default and keeps a page value. A signed-out reader keeps the default
   `dhloot.prefs.v1` already holds and cannot change it.
 
-- **`notifyGm`** (`ask`, `always` or `never`), the remembered answer to
-  "notify the list owner?", lives in the row only: no local key. A row
-  without it reads as `ask`; it is `ask` signed out and before a new user's
-  row is pulled, so one user's answer never seeds another's row.
+- **`notifyGm`** (`ask`, `always` or `never`), the remembered answer of
+  flow b - the Display row «Добавление из чужого списка» / "Adding from
+  someone else's list" (`FEATURES.md`, "Account") - lives in the row only:
+  no local key. A row without it reads as `ask`; it is `ask` signed out and
+  before a new user's row is pulled, so one user's answer never seeds
+  another's row.
+- **A purchase request leaves nothing in the browser.** The request id a
+  send makes lives in memory, only so that a second press after a send with
+  no answer is a replay; no key of `localStorage` or `sessionStorage` holds
+  a request, its id or its status (`FEATURES.md`, "Account and browser
+  lists").
 
 - **First paint is local.** The page draws this browser's values, then
   switches once the account answers - a new device may flip its language or

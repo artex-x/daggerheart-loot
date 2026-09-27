@@ -16,6 +16,8 @@ import type {
   ListWrite,
   PreferencesPort,
   PrefsRead,
+  RequestRepository,
+  RequestsRead,
   Session,
   SharedRead,
   ShareRepository,
@@ -29,6 +31,7 @@ const UNLISTED: ListsRead = { ok: false };
 const UNSENT: Extract<ListWrite, { error: 'network' }> = { ok: false, error: 'network' };
 const NO_SHARES: SharesRead = { ok: false };
 const UNSHARED: SharedRead = { ok: false };
+const UNREQUESTED: RequestsRead = { ok: false };
 
 export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
   let loading: Promise<CloudPort | null> | null = null;
@@ -105,5 +108,11 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
       };
     }
   };
-  return { auth, prefs, lists, shares, events };
+  const requests: RequestRepository = {
+    list: async () => (await port())?.requests.list() ?? UNREQUESTED,
+    send: async (id, token, lines) => (await port())?.requests.send(id, token, lines) ?? UNSENT,
+    apply: async (id, clamp) => (await port())?.requests.apply(id, clamp) ?? UNSENT,
+    decline: async (id) => (await port())?.requests.decline(id) ?? UNSENT
+  };
+  return { auth, prefs, lists, shares, events, requests };
 }

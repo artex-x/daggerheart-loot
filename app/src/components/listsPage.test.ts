@@ -550,6 +550,40 @@ describe('with sign-in configured', () => {
     expect(screen.getByText('Списки живут только в этом браузере.')).toBeInTheDocument();
   });
 
+  const withRequests = () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const storage = memoryStorage();
+    cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
+    return { ...withCloud(cloud, { storage }), storage };
+  };
+
+  it("counts an account list's pending requests on its card and in its link's name", async () => {
+    const { container } = withRequests();
+    const line = await screen.findByText('2 запроса ждут ответа');
+    expect(line).toHaveClass('listcard-req');
+    const link = line.closest('a');
+    expect(link?.getAttribute('aria-label')).toMatch(/, 2 запроса ждут ответа$/);
+    expect(container.querySelectorAll('.listcard-req')).toHaveLength(1);
+    await expectNoA11yViolations(container);
+  });
+
+  it('drops the line once the requests expire', async () => {
+    const { container, storage } = withRequests();
+    await screen.findByText('2 запроса ждут ответа');
+    const now = Date.now;
+    try {
+      Date.now = () => now() + 3_600_000;
+      storage.fireExternalChange(null);
+      await waitFor(() => {
+        expect(container.querySelector('.listcard-req')).toBeNull();
+      });
+    } finally {
+      Date.now = now;
+    }
+    await expectNoA11yViolations(container);
+  });
+
   it('still says the stored lists could not be read, signed out', async () => {
     withCloud(fakeCloud(SEED), { storage: memoryStorage({ 'dhloot.lists.v2': '{' }) });
     expect(

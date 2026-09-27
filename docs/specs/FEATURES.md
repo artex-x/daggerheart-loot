@@ -446,11 +446,76 @@ browser lists writable after the date.
   other entries after it; nothing is refused. A read that
   finds nothing new redraws nothing. «изменён N назад» and «Обновлено N
   назад» move with the same 45 s clock while the page stays open.
+- **Purchase requests: the send**: on a `#/s/` page every reader but the
+  list's owner, signed in or not, has «Сообщить владельцу» / "Notify the
+  owner" last in the selection bar's actions, on its own line at 600 px or
+  less. It sends the owner a request for the ticked entries with their taken
+  counts; while it runs it reads «Отправляем...» and is disabled. Success
+  clears the selection and toasts «Запрос отправлен владельцу списка.».
+  Refusals toast an error and keep the selection: «Слишком много запросов по
+  этой ссылке: подождите минуту.» (5 a minute per link), «У владельца уже 10
+  запросов без ответа. Попробуйте позже.» (the pending cap, with its number),
+  «Список изменился. Проверьте выбор и отправьте снова.» (an entry the list no
+  longer holds; the page reads the list again), «Не получилось отправить.
+  Проверьте соединение.» (no answer in 20 s; a second press sends the same
+  request again, which the server stores once), the line limit through the
+  limit text, and «Сервер не принял запрос.»; a stopped or deleted link draws
+  «Список больше не доступен». The requester sees no status: the toast is the
+  only answer, and an applied request reaches an open page as a lowered or
+  removed entry, as any owner edit. Nothing of a request is kept in the
+  browser.
+- **Purchase requests: flow b**: after an add from a `#/s/` page's selection
+  bar (never a card's own menu), signed in and not the owner, `notifyGm`
+  decides: «Спрашивать» replaces the bar's actions with «Сообщить владельцу
+  списка, что вы взяли эти предметы?», «Сообщить», «Не сообщать» and
+  «Запомнить ответ», the ticks kept, and the question takes the focus; after an
+  answer the focus returns to «Добавить в список». «Сообщить» sends every
+  ticked entry with its taken count, one the reader's list already held
+  included, and the toast becomes «Добавлено в «...». Владелец получил
+  запрос.»; «Запомнить ответ» saves the answer as «Сообщать владельцу» or «Не
+  сообщать». «Сообщать владельцу» sends with no question; «Не сообщать» sends
+  nothing. Clearing the selection or leaving the page drops an unanswered
+  question.
+- **Purchase requests: the owner**: an account list's page draws «Запросы
+  (N)» after the actions (and an open share panel), before the money row,
+  while a pending request that has not expired, or a decision of this page
+  load, exists. Each request, newest first, names its link, its age and the
+  time to expiry («По ссылке для игроков · 10 минут назад · истечёт через 50
+  минут»), its lines («×3 из 5», the count over the stock now, in the danger
+  colour above the stock; «нет в списке» for an item the list no longer
+  holds; the line sum at the price when it was sent, or «-») and the total.
+  «Принять» sends the write buffer first (a write that waits for the network
+  stops it with «Не получилось ответить на запрос. Проверьте соединение.»),
+  takes the counts in one transaction, deletes an entry taken to zero, reads
+  the lists again (once the write buffer drains, when an edit waits) and
+  toasts «Запрос принят». A request above the stock
+  changes nothing and draws «Не хватает: ... - просят 9, есть 5. Ничего не
+  списано.» with «Принять доступное», which takes what is there («Запрос
+  принят: списано N шт.»), or only «Отклонить» when nothing is there.
+  «Отклонить» changes no entry («Запрос отклонён»). A folded «Решённые в этот
+  раз (N)» lists this page load's decisions. «Этот запрос уже решён на другом
+  устройстве.» and «Этот запрос истёк: прошёл час без ответа.» are refusals;
+  a decision this tab sent with no answer that comes back decided, and a
+  request that is gone (its list deleted, or removed after a day), are read
+  again with no toast. A new request arrives with no reload through the
+  owner's Realtime topic, or on the 45 s poll and the shown-again signal
+  while it is down, and a hidden status, on an account list's page before any
+  request, says «Новый запрос» once per arrival. A request's age, its time to
+  expiry and whether it has expired move with the 45 s clock and when the tab
+  is shown again: a new request reads «только что» and «истечёт через 60
+  минут» until the clock moves, and an expired one stays drawn until then. On the
+  index an account card with pending requests says «2 запроса ждут ответа»
+  in gold under «изменён N назад», in its link's name too. An apply cannot
+  be undone.
 - **Limits**: the 51st list and the 101st entry of a list (the defaults;
   `limits:set` changes them per user) are refused with the error toast
   «Достигнут предел списков в аккаунте: 50. Нужно больше - напишите на
   daggerheart.loot@gmail.com.» / «Достигнут предел позиций в списке: 100. ...»,
-  the number the database applied.
+  the number the database applied. A purchase request holds at most 100
+  lines, a list at most 10 pending requests (both defaults `limits:set`
+  changes per owner), a link sends at most 5 a minute; a request expires
+  after an hour and is deleted a day after its answer or expiry, when the
+  next request is sent.
 - **The move**: when a signed-in reader's page has read the account and this
   browser holds lists, each list moves into the account as it is - entries,
   quantities, prices, both notes, the list notes and the money mode, every
@@ -854,9 +919,13 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the section it opens; a refused write says the save-failed error toast
   and the select shows the section kept); «Таблицы» («Списком» / «Сеткой»); «Печать»
   («Цветная» / «Чёрно-белая») and the checkbox «Компактный лист» /
-  "Compact sheet"; «Сообщать владельцу списка» / "Notify the list owner"
-  («Спрашивать» / «Всегда» / «Никогда», "Ask" / "Always" / "Never"), the
-  remembered answer to the question a copy from a shared link asks, kept in
+  "Compact sheet"; «Добавление из чужого списка» / "Adding from someone
+  else's list", a select at every width («Спрашивать» / «Сообщать владельцу»
+  / «Не сообщать», "Ask" / "Notify the owner" / "Don't notify") with the hint
+  «Когда вы добавляете предметы из чужого списка в свой, сообщить об этом
+  его владельцу?» / "When you add items from someone else's list to yours,
+  notify its owner?" on a line of its own under it: the remembered answer of
+  flow b ("Account and browser lists", "Purchase requests: flow b"), kept in
   the account only and «Спрашивать» by default. The page's account actions
   do not disable these controls.
 

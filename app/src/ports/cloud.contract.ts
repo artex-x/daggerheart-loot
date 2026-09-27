@@ -7,10 +7,11 @@
  * port does belongs here; what depends on the fake's seed stays in its own
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
  * cases for the port member it adds: A-F the account, G the lists, H the
- * share links, I the move of a browser list, J the live topics. */
+ * share links, I the move of a browser list, J the live topics, K the purchase
+ * requests. */
 
 import type { EntryRow, ListRow } from '../lib/cloudLists.js';
-import { readOwnerMessage, readShareMessage } from '../lib/live.js';
+import { readOwnerMessage, readRequestMessage, readShareMessage } from '../lib/live.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { CloudPort, ListWrites, LiveStatus, Session } from './types.js';
 
@@ -504,6 +505,142 @@ async function liveCases(
   }
 }
 
+/* K. A request sent through the owner's own share link (any token holder may send),
+   replayed, read by the owner, applied short then clamped, declined twice, and refused
+   as stale, over the rate and for a link or a request that is not there. */
+async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
+  const got: Delivered[] = [];
+  let leave: (() => void) | null = null;
+  const { lists, shares, requests } = port;
+  const id = lists.newId();
+  try {
+    const userId = (await port.auth.session())?.userId;
+    assert(typeof userId === 'string', 'requests: the port is signed out');
+    if (typeof userId !== 'string') return;
+    const made = await lists.apply([
+      {
+        op: 'create',
+        list: { id, name: 'Запросы', money_mode: 'bag', player_note: '', gm_note: '' },
+        entries: [
+          entryOf(lists.newId(), 'ci1', 0, { quantity: 5, price_coins: 150 }),
+          entryOf(lists.newId(), 'cc1', 1, { quantity: 1, price_coins: 20 })
+        ]
+      }
+    ]);
+    assert(answered(made) === 'ok', 'requests: the list was not created');
+    const share = await shares.create(id, 'player');
+    assert(share.ok, 'requests: the share was not made');
+    if (!share.ok) return;
+    leave = await joinLive(port, 'owner:' + userId, got);
+    assert(leave !== null, 'requests: the owner topic was refused three times');
+    if (!leave) return;
+    const saw = (by: (b: string | null) => boolean): Promise<boolean> =>
+      waitFor(() =>
+        got.some((m) => {
+          const r = readRequestMessage(m.event, m.payload);
+          return r?.list === id && by(r.by);
+        })
+      );
+
+    const r1 = lists.newId();
+    const ONE = [{ item: 'ci1', qty: 1 }];
+    const sent = await requests.send(r1, share.token, ONE);
+    assert(sent.ok, 'requests: a send answered ' + JSON.stringify(sent));
+    assert(await saw((b) => b === null), 'requests: no request message with by null');
+    const replay = await requests.send(r1, share.token, ONE);
+    assert(replay.ok, 'requests: a replay answered ' + JSON.stringify(replay));
+
+    const read = await requests.list();
+    const mine = read.ok ? read.requests.filter((r) => r.listId === id) : [];
+    const first = mine[0];
+    assert(
+      mine.length === 1 &&
+        first?.id === r1 &&
+        first.audience === 'player' &&
+        JSON.stringify(first.lines) ===
+          JSON.stringify([{ item: 'ci1', qty: 1, price: 150, applied: null }]),
+      'requests: the owner does not read the one request: ' + JSON.stringify(mine)
+    );
+    const hour = first ? Date.parse(first.expiresAt) - Date.parse(first.createdAt) : 0;
+    assert(Math.abs(hour - 3_600_000) <= 1000, 'requests: it does not expire in an hour');
+
+    const r2 = lists.newId();
+    const two = [
+      { item: 'ci1', qty: 1 },
+      { item: 'cc1', qty: 2 }
+    ];
+    assert((await requests.send(r2, share.token, two)).ok, 'requests: the second send failed');
+    const short = await requests.apply(r2, false);
+    assert(
+      JSON.stringify(short) ===
+        JSON.stringify({
+          ok: false,
+          error: 'short',
+          short: [{ item: 'cc1', want: 2, have: 1 }]
+        }),
+      'requests: an over-stock apply answered ' + JSON.stringify(short)
+    );
+    const clamped = await requests.apply(r2, true);
+    assert(
+      clamped.ok && clamped.taken === 2,
+      'requests: a clamped apply answered ' + JSON.stringify(clamped)
+    );
+    const after = await theList(port, id, assert, 'after the apply');
+    assert(
+      after?.list_entries
+        .map((e) => [e.item_key, e.quantity, e.position].join('|'))
+        .join(';') === 'ci1|4|0',
+      'requests: the apply did not lower ci1 and delete cc1'
+    );
+
+    assert((await requests.decline(r1)).ok, 'requests: the decline was refused');
+    assert(
+      await saw((b) => b === port.events.tab),
+      "requests: no request message with this port's tab"
+    );
+    const twice = await requests.decline(r1);
+    assert(
+      !twice.ok && twice.error === 'decided',
+      'requests: a second decline was not decided'
+    );
+    const late = await requests.apply(r1, false);
+    assert(!late.ok && late.error === 'decided', 'requests: an apply after it was not decided');
+    const left = await requests.list();
+    assert(
+      left.ok && !left.requests.some((r) => r.listId === id),
+      'requests: a decided request is still pending'
+    );
+
+    const stale = await requests.send(lists.newId(), share.token, [{ item: 'zz1', qty: 1 }]);
+    assert(!stale.ok && stale.error === 'stale', 'requests: an unknown item was not stale');
+
+    for (let i = 0; i < 3; i++) {
+      assert(
+        (await requests.send(lists.newId(), share.token, ONE)).ok,
+        'requests: a send failed'
+      );
+    }
+    const rate = await requests.send(lists.newId(), share.token, ONE);
+    assert(
+      !rate.ok && rate.error === 'limit' && rate.key === 'request_rate' && rate.value === 5,
+      'requests: the sixth send in a minute answered ' + JSON.stringify(rate)
+    );
+
+    const nowhere = await requests.send(lists.newId(), 'nonsense', ONE);
+    assert(!nowhere.ok && nowhere.error === 'gone', 'requests: an unknown link was not gone');
+    const noApply = await requests.apply(lists.newId(), false);
+    assert(!noApply.ok && noApply.error === 'gone', 'requests: an unknown apply was not gone');
+    const noDecline = await requests.decline(lists.newId());
+    assert(
+      !noDecline.ok && noDecline.error === 'gone',
+      'requests: an unknown decline was not gone'
+    );
+  } finally {
+    leave?.();
+    await lists.apply([{ op: 'remove', id }]);
+  }
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -621,6 +758,9 @@ export async function runCloudContract(
 
   /* J. the live topics, on a fresh member port; the list it makes is removed. */
   await liveCases(await make(member.as), await make(), member.userId, assert);
+
+  /* K. the purchase requests, on the doomed user; the list it makes is removed. */
+  await requestCases(doomedPort, assert);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

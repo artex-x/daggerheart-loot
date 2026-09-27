@@ -2550,3 +2550,134 @@ describe('the move of browser lists and the cutoff', () => {
     app.stop();
   });
 });
+
+describe('purchase requests', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const SHOP = '00000000-0000-4000-8000-000000000101';
+  const ONE = [{ item: 'ci1', qty: 1 }];
+
+  function started(cloud: CloudPort | null, hash: string) {
+    const storage = memoryStorage();
+    const app = new AppState(fakeEnv({ router: memoryRouter(hash), storage, cloud }));
+    app.start();
+    return { app, storage };
+  }
+
+  it('has neither store in a build with no sign-in', () => {
+    const { app } = started(null, '#/lists');
+    expect(app.ownerRequests).toBeNull();
+    expect(app.requestSender).toBeNull();
+    expect(app.requestToken).toBeNull();
+    app.stop();
+  });
+
+  it("reads the owner's requests once the lists are read, and clears them on sign-out and sign-in", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.request('player-token-1', ONE);
+    const { app } = started(cloud, '#/lists');
+    await flush();
+    await flush();
+    expect(app.ownerRequests?.pendingCount(SHOP, Date.now())).toBe(1);
+    const clear = vi.spyOn(app.ownerRequests!, 'clear');
+    await cloud.auth.signOut();
+    expect(clear).toHaveBeenCalledOnce();
+    expect(app.ownerRequests?.requests).toEqual([]);
+    await cloud.auth.signIn('google');
+    expect(clear).toHaveBeenCalledTimes(2);
+    await flush();
+    await flush();
+    expect(app.ownerRequests?.pendingCount(SHOP, Date.now())).toBe(1);
+    app.stop();
+    expect(clear).toHaveBeenCalledTimes(3);
+  });
+
+  it('reads them on the 45 s poll while the owner topic is down, on the lists pages only', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED, 'gm1', { live: false });
+      const { app } = started(cloud, '#/lists');
+      await vi.advanceTimersByTimeAsync(0);
+      const list = vi.spyOn(cloud.requests, 'list');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).toHaveBeenCalledTimes(1);
+      app.go('#/lists/' + SHOP);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).toHaveBeenCalledTimes(2);
+      app.go('#/tables/eq_weapon');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).toHaveBeenCalledTimes(2);
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reads them on no poll tick while the owner topic is live, and when the tab is shown again', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED, 'gm1');
+      const { app, storage } = started(cloud, '#/lists');
+      await vi.advanceTimersByTimeAsync(1000);
+      const list = vi.spyOn(cloud.requests, 'list');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(list).not.toHaveBeenCalled();
+      storage.fireExternalChange(null);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(list).toHaveBeenCalledOnce();
+      app.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("names the open link's token for a reader who is not its owner, and none elsewhere", async () => {
+    const out = started(fakeCloud(SEED), '#/s/player-token-1');
+    await out.app.sharedView?.open('player-token-1', null);
+    expect(out.app.requestToken).toBe('player-token-1');
+    out.app.go('#/lists');
+    expect(out.app.requestToken).toBeNull();
+    out.app.stop();
+    const owner = started(fakeCloud(SEED, 'gm1'), '#/s/player-token-1');
+    await flush();
+    await owner.app.sharedView?.open('player-token-1', owner.app.user?.userId);
+    expect(owner.app.sharedView?.mine).toBe(SHOP);
+    expect(owner.app.requestToken).toBeNull();
+    owner.app.stop();
+    const gone = started(fakeCloud(SEED), '#/s/unknown');
+    await gone.app.sharedView?.open('unknown', null);
+    expect(gone.app.requestToken).toBeNull();
+    gone.app.stop();
+  });
+
+  it('drops an unanswered question on a navigation and on a cleared selection', async () => {
+    const { app } = started(fakeCloud(SEED, 'gm2'), '#/s/player-token-1');
+    await flush();
+    const sender = app.requestSender!;
+    sender.afterAdd('player-token-1', ONE, 'Добавлено');
+    expect(sender.asking).not.toBeNull();
+    app.clearSel();
+    expect(sender.asking).toBeNull();
+    sender.afterAdd('player-token-1', ONE, 'Добавлено');
+    app.go('#/lists');
+    expect(sender.asking).toBeNull();
+    app.stop();
+  });
+
+  it("sends through the account's answer, and saves the remembered one to the account", async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const send = vi.spyOn(cloud.requests, 'send');
+    const { app } = started(cloud, '#/s/player-token-1');
+    await flush();
+    const sender = app.requestSender!;
+    sender.afterAdd('player-token-1', ONE, 'Добавлено');
+    sender.answer(true, true);
+    await flush();
+    expect(send).toHaveBeenCalledWith(expect.any(String), 'player-token-1', ONE);
+    expect(app.notifyGm).toBe('always');
+    expect(app.toast?.msg).toBe('Добавлено. Владелец получил запрос.');
+    await flush();
+    const read = await cloud.prefs.load();
+    expect(read.ok && read.prefs?.notifyGm).toBe('always');
+    app.stop();
+  });
+});

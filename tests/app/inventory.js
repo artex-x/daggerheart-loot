@@ -189,6 +189,19 @@ const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
 /** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
 const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
 
+/** Two purchase requests on «Лавка кузнеца» from other readers, the players' link
+ *  first: the fake seed holds none, so a state makes its own. */
+async function twoRequests(d) {
+  await d.fake('request', 'player-token-1', [
+    { item: 'ci1', qty: 1 },
+    { item: 'cc1', qty: 3 }
+  ]);
+  await d.fake('request', 'gm-token-1', [
+    { item: 'cc1', qty: 9 },
+    { item: 'q1', qty: 1 }
+  ]);
+}
+
 /* Storage seeds for the list states below. A state that needs a list to
    exist cannot be entered - every state opens a fresh page whose `prepare()`
    clears storage - so it is seeded instead. */
@@ -1091,6 +1104,16 @@ const STATES = [
       await d.type('Найти список', 'zzz');
     }
   },
+  {
+    id: '#/lists ~ requests as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: 'two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its «изменён 3 дня назад», and in its link name; no line on the other cards',
+    enter: async (d) => {
+      await twoRequests(d);
+      for (let i = 0; i < 40 && !(await d.count('.listcard-req')); i++) await d.settle();
+    }
+  },
 
   /* An account list's page: the address kept, no link buttons, no notice,
      and the save status in the sub. */
@@ -1120,6 +1143,30 @@ const STATES = [
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
+  },
+  {
+    id: SHOP + ' ~ requests as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: "the requests panel after the action row, before the money row: «Запросы (2)», the GM link's request first (cc1 «×9 из 5» in the danger colour, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and «истечёт через 60 минут»",
+    enter: async (d) => {
+      await twoRequests(d);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (2)'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: SHOP + ' ~ short as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: "«Принять» on the GM link's over-stock request: the alert «Не хватает: Зелье Быстрого Шага - просят 9, есть 5. Ничего не списано.», «Принять доступное» in place of «Принять»; nothing changed in the list",
+    enter: async (d) => {
+      await twoRequests(d);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (2)'); i++)
+        await d.settle();
+      await d.click('Принять');
+      for (let i = 0; i < 40 && !(await d.count('.shortmsg')); i++) await d.settle();
+    }
   },
   {
     id: TROPHIES + ' ~ share as gm1',
@@ -1472,6 +1519,29 @@ const STATES = [
     enter: async (d) => {
       await d.click('Сохранить себе');
     }
+  },
+  {
+    id: '#/s/player-token-1 ~ ticked',
+    route: '#/s/player-token-1',
+    why: 'signed out, ci1 and cc1 ticked: the bar with «Добавить в список», «Печать», «Скопировать» and «Сообщить владельцу» last (its own line at 600 px or less)',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Зелье Быстрого Шага');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ notify question as gm2',
+    route: '#/s/player-token-1',
+    as: 'gm2',
+    why: 'ci1 and cc1 ticked and added to «Список второго ГМа»: the question «Сообщить владельцу списка, что вы взяли эти предметы?» with «Сообщить», «Не сообщать» and «Запомнить ответ» in place of the action row, the ticks kept, the add toast',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Зелье Быстрого Шага');
+      await d.click('Добавить в список');
+      await d.click('Список второго ГМа');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: '#/s/gm-token-1 ~ saved as gm2',

@@ -344,7 +344,15 @@ describe('signed in as gm2', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Display', level: 2 })).toBeInTheDocument();
     expect(screen.getByLabelText('Section on start')).toBeInTheDocument();
-    expect(screen.getByRole('group', { name: 'Notify the list owner' })).toBeInTheDocument();
+    const notify = screen.getByLabelText<HTMLSelectElement>("Adding from someone else's list");
+    expect([...notify.options].map((o) => o.textContent)).toEqual([
+      'Ask',
+      'Notify the owner',
+      "Don't notify"
+    ]);
+    expect(notify).toHaveAccessibleDescription(
+      "When you add items from someone else's list to yours, notify its owner?"
+    );
     expect(screen.getByText('with Google')).toBeInTheDocument();
     expect(screen.getByText('not connected')).toBeInTheDocument();
     expect(
@@ -432,7 +440,16 @@ describe('the Display section', () => {
     });
     expect(pressed(d, 'Язык')).toBe('RU');
     expect(pressed(d, 'Печать')).toBe('Чёрно-белая');
-    expect(pressed(d, 'Сообщать владельцу списка')).toBe('Спрашивать');
+    const notify = d.getByLabelText<HTMLSelectElement>('Добавление из чужого списка');
+    expect(notify.selectedOptions[0]?.textContent).toBe('Спрашивать');
+    expect([...notify.options].map((o) => o.textContent)).toEqual([
+      'Спрашивать',
+      'Сообщать владельцу',
+      'Не сообщать'
+    ]);
+    expect(notify).toHaveAccessibleDescription(
+      'Когда вы добавляете предметы из чужого списка в свой, сообщить об этом его владельцу?'
+    );
     expect(d.getByRole('checkbox', { name: 'Компактный лист' })).toBeChecked();
     const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
     expect(select.value).toBe('#/roll/std');
@@ -445,8 +462,8 @@ describe('the Display section', () => {
     await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
     await userEvent.click(d.getByRole('checkbox', { name: 'Компактный лист' }));
     expect(storage.get(PREFS_KEY)).toBe('{"view":"list","printBw":false,"printCompact":false}');
-    await userEvent.click(d.getByRole('button', { name: 'Всегда' }));
-    expect(pressed(d, 'Сообщать владельцу списка')).toBe('Всегда');
+    await userEvent.selectOptions(notify, 'always');
+    expect(notify.value).toBe('always');
     await userEvent.click(d.getByRole('button', { name: 'EN' }));
     expect(storage.get('dhloot.lang.v1')).toBe('en');
     await waitFor(async () => {
@@ -572,7 +589,12 @@ describe('the Display section', () => {
     expect(select).toBeEnabled();
     await userEvent.selectOptions(select, 'Поиск');
     expect(storage.get(HOME_KEY)).toBe('#/search');
-    await userEvent.click(d.getByRole('button', { name: 'Никогда' }));
-    expect(pressed(d, 'Сообщать владельцу списка')).toBe('Никогда');
+    const notify = d.getByLabelText<HTMLSelectElement>('Добавление из чужого списка');
+    await userEvent.selectOptions(notify, 'never');
+    expect(notify.selectedOptions[0]?.textContent).toBe('Не сообщать');
+    await waitFor(async () => {
+      const read = await cloud.prefs.load();
+      expect(read.ok && read.prefs?.notifyGm).toBe('never');
+    });
   });
 });

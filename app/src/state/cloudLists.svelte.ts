@@ -124,19 +124,28 @@ export class CloudLists implements ListModel {
     repo: ListRepository,
     say: (msg: string, error?: boolean) => void,
     dict: () => Dict,
-    live?: { events: EventsPort; random: Random }
+    live?: {
+      events: EventsPort;
+      random: Random;
+      /** The owner's purchase requests: one feed per topic, so they read its messages too. */
+      requests?:
+        { message(event: string, payload: unknown): void; refetch(): void } | undefined;
+    }
   ) {
     this.#repo = repo;
     this.#say = say;
     this.#dict = dict;
     this.#events = live?.events ?? null;
+    const requests = live?.requests;
     this.#feed = live
       ? new LiveFeed(live.events, live.random, {
           message: (event, payload) => {
             this.#message(event, payload);
+            requests?.message(event, payload);
           },
           refetch: () => {
             this.#remote();
+            requests?.refetch();
           }
         })
       : null;
@@ -173,7 +182,8 @@ export class CloudLists implements ListModel {
     await this.#pull();
   }
 
-  /** Sends a failed write again, or re-reads the account while nothing is buffered. After a
+  /** Sends a failed write again, or re-reads the account: at once while nothing is buffered,
+   *  else once the buffer drains. After a
    *  failed first read it reads again with no «Загружаем...»: the error stays drawn until a
    *  read answers. */
   async refresh(): Promise<void> {
@@ -185,7 +195,13 @@ export class CloudLists implements ListModel {
       await this.#pull();
       return;
     }
-    if (this.status !== 'ready' || this.#queue.length || this.#flushing) return;
+    if (this.status !== 'ready') return;
+    /* A busy buffer reads once it drains: an apply's own `list` message is
+       ignored as this tab's echo, so this read is the only one it gets. */
+    if (this.#queue.length || this.#flushing) {
+      this.#reread = true;
+      return;
+    }
     await this.#pull();
   }
 

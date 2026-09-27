@@ -12,8 +12,9 @@
   directory was retired in its closeout commit; the release records are
   section 16, "R1 closeout record", "R2 closeout record", "R5 closeout
   record" and "R5b closeout record". The process task `process-guards`
-  and R11 `persist-usage-monitoring` closed 2026-09-27 (section 9). Next:
-  R3, R4.
+  and R11 `persist-usage-monitoring` closed 2026-09-27, R3
+  `persist-3-realtime` closed 2026-09-27 and R4 `persist-4-requests` closed
+  2026-09-28 (section 9). Next: R6.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -118,8 +119,8 @@ In v1 (releases R0-R10, section 12):
   fallback, and applies (stock deducted in one transaction) or declines;
   the requester sees only the send's toast, no request status (owner's
   feedback, 2026-09-27). The first anonymous write in the
-  system, bounded by caps (section 5, R4 row). Design:
-  `issues/persist-4-requests/plan.md`; answers: section 16, items 32-38.
+  system, bounded by caps (section 5, R4 row). Shipped 2026-09-28 (section
+  9); answers: section 16, items 32-38.
 - From R2 on, only a signed-in user creates a list: anonymous "New list",
   "Add to list" and "Save a copy" ask the user to sign in. Existing local
   lists stay editable until the cutoff (section 10).
@@ -185,7 +186,7 @@ Raised, not settled: none beyond section 16.
 | R1 | `public.delete_account()` security definer: deletes the caller's rows and `auth.users` row; `user_prefs(user_id uuid pk references auth.users on delete cascade, prefs jsonb not null default '{}', updated_at)` with owner-only RLS and a `CHECK (pg_column_size(prefs) < 4096)` |
 | R2 | As shipped (2026-09-26; migrations `20260925130000`-`20260925130300` are the record): `limit_defaults(key pk, value int null)`, `user_limit_overrides(user_id, key, value int null)`, `effective_limit(user, key)` (decision 31 as amended); `lists(id uuid pk client-generated, owner_id, name, money_mode, player_note, gm_note, revision, created_at, updated_at)` - no `position` (lists are never reordered), `legacy_fingerprint` arrives with R5's writer; `list_entries(id, list_id, item_key, source 'official'\|'homebrew', snapshot jsonb null, position, quantity, price_coins, player_note, gm_note)`; `list_shares(id, list_id, audience, token unique, topic_key uuid default gen_random_uuid(), created_at, revoked_at)` - the raw token, no hash (decision 29); RLS: owner CRUD on `lists` and `list_entries`, owner select on `list_shares`, nothing for `anon`; RPCs `create_list_share`, `revoke_list_share` (no rotate: a link is replaced by delete, then create), `get_shared_list(token)` (the projection, `revision` and `topic_key`; null for a bad or revoked token), `clone_shared_list(token, new_id)`, `reorder_list(list_id, entry_ids)`; triggers bump `lists.revision` and `updated_at` on any list or entry write and hold the limits `effective_limit` reads (50 lists per owner, 100 entries per list) |
 | R3 | As shipped (2026-09-27; migration `20260927120000_realtime.sql` is the record): a deferred constraint trigger on `lists` sends one message per list per transaction with the final revision, privately, to `share:<topic_key>` of every active share and `{ list, revision, by }` to `owner:<uid>` (`by` from the `x-dhloot-tab` header); a revoke or a deleted list sends `{ revision: null }` to the share topic; `select` policies on `realtime.messages` for `share:<uuid>` (`anon`, `authenticated`) and `owner:<uid>` (`authenticated`), no `insert` policy (no client can send); `reorder_list` keeps the given order and puts the other entries after it. Decisions: the 2026-09-25 and 2026-09-26 Realtime files under `docs/decisions/` |
-| R4 | Revised by the R4 plan (2026-09-26, pass 3 2026-09-27, `issues/persist-4-requests/plan.md` section 5; owner answers 32-38, 36 as changed): `purchase_requests(id client-made, list_id fk cascade, share_id fk cascade, audience, status 'pending'\|'applied'\|'declined', created_at, expires_at = created_at + 1 hour set by the function, decided_at)` - no name, no requester id; "expired" is a pending row past `expires_at`, read, never stored; `purchase_request_lines(request_id, item_key, quantity 1..99, price_coins snapshot, applied_quantity)` - apply finds the entry by `list_id` and `item_key`; RLS: the owner selects, no write grant. `limit_defaults` rows `request_lines` 100 and `pending_requests_per_list` 10; the rate (5 per share per minute, from the table), the expiry and a 24-hour retention after a decision or expiry are constants; housekeeping at write time. `create_purchase_request(id, token, lines)` (`anon`, `authenticated`) answers nothing, and a replay with the same id inserts nothing; no requester status read; `apply_purchase_request(id, clamp)` refuses over-stock whole unless `clamp`, zero removes the entry and renumbers the positions; `decline_purchase_request(id)`. A trigger sends event `request` with `{ list, by }` to R3's `owner:<uid>` on a new request (`by` null) or a decided one; nothing to a share topic; no new `realtime.messages` policy |
+| R4 | As shipped (2026-09-28; migration `20260928120000_purchase_requests.sql` is the record): `purchase_requests` (a client-made id, the list and the share, the audience, `pending`, `applied` or `declined`, `created_at`, `expires_at` an hour on, `decided_at`; no name, no requester id; expired is read, never stored) and `purchase_request_lines` (item, quantity, the price when sent, the quantity applied); the owner selects both, no write grant; `limit_defaults` rows `request_lines` 100 and `pending_requests_per_list` 10; `create_purchase_request(id, token, lines)` for `anon` and `authenticated`, the only writer, with every bound inside it and a replay that inserts nothing; `apply_purchase_request(id, clamp)` and `decline_purchase_request(id)` for the owner; a trigger sends `request` with `{ list, by }` to `owner:<uid>` only. Decisions: the purchase-request files under `docs/decisions/` |
 | R6 | Refined by the R6 planning pass (2026-09-26, `issues/persist-6-import-export/plan.md` section 4.5): `import_lists(p_lists jsonb) returns integer` security definer for `authenticated`, create-only with client-made ids (`on conflict (id) do nothing`), one transaction - the table checks and the limit triggers unwind the whole call; `source` and `snapshot` pass through for R7's bundle v2. No table change |
 | R7 | Revised by the R7 refresh (2026-09-25, `issues/persist-7-homebrew/plan.md` section 4.3): `homebrew_items(id uuid pk client-generated, owner_id, catalog_key text check '^hb_[a-z2-7]{16}$', content jsonb check homebrew_content_valid(content) and octet_length <= 16384, revision, created_at, updated_at, unique (owner_id, catalog_key))` - the record shape (`kind`, `en`, `ru`, `ende`, `rud`, `tier`, `eq`) in one column, validated by `public.homebrew_content_valid(jsonb)`; no `kind` or `art_url` column (R8 adds `art_url`); owner-only RLS, nothing for `anon`; `homebrew_items_before_update` (pins id, owner, key, created; revision + 1) and `homebrew_items_limit` on `effective_limit(owner, 'homebrew_items_per_owner')` = 50 (decision 31); `homebrew_items_touch` (an edit bumps every referencing list's `revision`) and `homebrew_items_before_delete` (removes the owner's references); `homebrew_snapshot_of(key, content)` = `jsonb_build_object('id', key, 'src', 'homebrew') \|\| content` after the language fallbacks - the frozen form; `list_entries`' R2 CHECK is replaced by `source = 'homebrew' or snapshot is null` and `snapshot is null or homebrew_snapshot_valid(snapshot)` (owner, 2026-09-26: an own entry is a reference with `snapshot` null, a copy that leaves the account is frozen); `get_shared_list` and `clone_shared_list` re-created (the projection fills a reference's `snapshot` from the item; a clone freezes unless the caller owns the list); `service_role` select and delete. `B7.3` adds `import_bundle(p_items, p_lists)` beside R6's `import_lists`. Shares and their RPCs are R9's |
 | R8 | Storage bucket `homebrew-art` (`insert into storage.buckets`) and its policies, public read, insert/update/delete only under `<auth.uid()>/` - a SQL migration; `alter table homebrew_items add column art_url text` with a URL-shape CHECK, and a new `homebrew_snapshot_valid` that admits `img` (the R7 refresh, 2026-09-25); the `delete-account` Edge Function of decision 40 lands here, not in R7 |
@@ -434,17 +435,17 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R11 | `persist-usage-monitoring` | `B11.1` - **closed 2026-09-27**, live at the push of `main` (commit "feat(persist): report production's free-plan usage nightly"). Shipped: `usage.yml`, `tools/supabase/usage-lib.mjs` and `usage.mjs`, the `usage_snapshots` migration, the `tests/derived.js` pins and three decision files under `docs/decisions/`. The owner's setup steps 1-9 are open (section 15, step 18a) | **Placed after R5 (owner request 2026-09-25, "after r2"; planner 2026-09-25), and after R5b from 2026-09-26**: a nightly `usage.yml` report of production's free-plan usage - database and Storage size, rows per table, an MAU estimate, request counts, users near their count limits - with a forecast, a summary every night, a failed run (GitHub's email) near a limit, the `usage_snapshots` history table and the keep-alive Data API call. The design as built: `.claude/README.md`, "Usage monitoring" |
 | - | `display-settings` (owner, 2026-09-27: answers Q1-Q3 A) | `B1` - **closed 2026-09-27**, live at the push of `main`. Shipped: page switches for the tables view and print layout last until a reload, `KeepNote.svelte` links `#/account`, the Display lead line; decision `docs/decisions/2026-09-27-display-defaults-are-set-in-the-account-a-page-switch-lasts-a-visit.md` | **After R11, before R3**: the Display section of `#/account` becomes the one source of defaults - a print layout or tables view picked on its page lasts until a reload, with a note linking `#/account`; the language and the starting-section pin stay saved settings; one page, no tabs |
 | R3 | `persist-3-realtime` | `B3.0`-`B3.2` - **closed 2026-09-27**, live at the push of `main` (commit "feat(persist): update shared pages and the owner's lists live"). The owner's steps: "Allow public access" off on both projects, read back each release; confirm a share page updates live on a phone | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
-| R4 | `persist-4-requests` | `B4.1`, `B4.2` | Purchase requests from a shared list to its owner: anonymous "Notify the owner", the signed-in "add to my list, notify the GM" flow, the owner's Requests panel, apply and decline (no requester status: owner's feedback, 2026-09-27) |
+| R4 | `persist-4-requests` | `B4.1`, `B4.2` - **closed 2026-09-28**, live at the push of `main` (commit "feat(persist): send and answer purchase requests on share links"). The owner's steps: send a request from a phone on a player link and apply it on a desktop; read the privacy page and the reworded Display row in both languages | Purchase requests from a shared list to its owner: anonymous «Сообщить владельцу», the signed-in add that asks to notify (`notifyGm`, the Display row «Добавление из чужого списка» as a select), the owner's Requests panel with apply, «Принять доступное» and decline, the index card line (no requester status: owner's feedback, 2026-09-27) |
 | R6 | `persist-6-import-export` | `B6.1`, `B6.2` (planned 2026-09-26) | JSON export and import, published schema `schema/import-v1.json`; `llms.txt` gets extra attention so AI users can write an import file and read an export from it alone (owner, 2026-09-27) |
 | R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-26; `issues/persist-7-homebrew/plan.md` is the authority) | Homebrew items as live references in the owner's lists, «Мои предметы» from the account menu and in search, the source tag «Хоумбрю» / "Homebrew" (owner, 2026-09-26), bundle schema v2 |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
-| - | `general-review` (owner, 2026-09-27; working id, no directory yet) | to plan | **After R9, before R10** (owner: "one of the latest releases before clean up"): a whole-app review - code, security, functionality, UX, accessibility, performance - and a brainstorm of what could be added or done differently. Its output is findings and ideas for the owner to choose from; each chosen item becomes its own task or a `DEBT.md` entry. Its planner decides the review's shape and cost |
+| - | `persist-review` (owner, 2026-09-27; working id, no directory yet; scoped to persistence by the owner, 2026-09-27) | to plan | **After R9, before R10** (owner: "one of the latest releases before clean up"): a review of the persistence feature and its code only - the cloud lists, shares, Realtime, requests, import and export, homebrew, the database, its functions and policies, the ports and the account pages - for code, security, functionality, UX, accessibility and performance, and a brainstorm of what could be added or done differently there. Its output is findings and ideas for the owner to choose from; each chosen item becomes its own task or a `DEBT.md` entry. Its planner decides the review's shape and cost |
 | R10 | `persist-10-legacy-removal` | `B10.1` | The first release after the cutoff date (owner, 2026-09-27; `docs/DECISIONS.md`, "R10 removes browser lists and the move; an old `#/l/` link is not found"): browser lists and all move support go - the codec, its fixtures and contract text, the `#/l/` list page and the retired page (an old `#/l/` link draws the not-found page, the address kept: a contract change), `ListStore`'s browser lists, `LegacyMove`, `MoveNotice`, `MoveStatus`, `StorageNotice`, the move's RPC path; its plan decides whether a migration drops `move_legacy_list` and `lists.legacy_fingerprint` (`DEBT.md` D62, D63). The browser's data is not deleted |
 
 The order is R0, R1, R2, R5, R5b (closed 2026-09-27), the process task
-`process-guards`, R11, `display-settings`, R3, R4, R6-R9, `general-review`,
-R10 (owner, 2026-09-25; `general-review` placed before R10 by the owner, 2026-09-27;
+`process-guards`, R11, `display-settings`, R3, R4, R6-R9, `persist-review`,
+R10 (owner, 2026-09-25; `persist-review` placed before R10 by the owner, 2026-09-27;
 `docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"; R11 placed after
 R5 so R5's 2026-10-12 deadline keeps priority; R5b split from R5 by the
 owner, 2026-09-26; the process task placed after R5b by the owner,
@@ -568,8 +569,7 @@ carries "goldens".
 | `B2.0`-`B2.3` | R2, closed 2026-09-26: the test-migration fix and the `production` Environment, the lists schema with limits and share links, account lists in the app with sign-in-only creation, share links `#/s/<token>` with "Save a copy". The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R2's commit history | - | - | - | - |
 | `B11.1` | R11, closed 2026-09-27: the `usage_snapshots` migration, `tools/supabase/usage-lib.mjs` and `usage.mjs`, `.github/workflows/usage.yml`, the `tests/derived.js` pins (section 9's R11 row). The design as built is in `.claude/README.md` ("Usage monitoring"), `docs/specs/COVERAGE.md` and `docs/decisions/`; the batch brief is in R11's commit history | - | - | - | - |
 | `B3.0`-`B3.2` | R3, closed 2026-09-27: the contract's reorder case made tolerant (`B3.0`), the broadcast triggers and `realtime.messages` policies with `check:db` WebSocket cases (`B3.1`), `EventsPort`, the live feed with the poll only while down, the owner topic on every route, the 20 s write timeout and the share page's hidden status (`B3.2`). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R3's commit history | - | - | - | - |
-| `B4.1` | Revised by the R4 plan (2026-09-26; `issues/persist-4-requests/plan.md` section 10): section 5's R4 row in one migration and its reversal; layer 3 matrix: anon sends through an active player or GM token only, a stopped or wrong token is refused alike, bad and stale lines, the line limit, the rate (6th in a minute), the pending cap (11th), housekeeping, the status read shows nothing about the owner, another user cannot read, apply or decline, over-stock refused whole, clamp, zero removes the entry, the `request` events on the owner and share topics; the harness's anon function list and the limit rows | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db` x2 (~16 min) | required (schema rule; the first anonymous write) | new release (R4) |
-| `B4.2` | Revised by the R4 plan (section 11): `RequestRepository`, fake and contract case, the requester's send (a client id, replay-safe; no status), flow b with `notifyGm`, the reworded Display row as a select, the owner's Requests panel with apply, «Принять доступное» and decline, the index card line, R3's feeds routing `request`, policy text; layer 2 states and cases; E2E: an anonymous request applied by the owner, stock lowered, the signed-out page draws the lowered stock | section 6 row 17 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, sweep at 360, layer 4 E2E (~40 min) | required: new UI, policy text | a commit the harness cannot reach (the E2E needs `B4.1`'s migration on the test project) |
+| `B4.1`-`B4.2` | R4, closed 2026-09-28: the purchase-request tables, functions, limit rows and owner-topic trigger with their layer 3 cases (`B4.1`); the port and the fake with contract case K, the send and flow b, the owner's panel and the index line, the Display row as a select, the privacy and terms text, states cases 54-57 and F12 (`B4.2`). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R4's commit history | - | - | - | - |
 | `B5.1`-`B5.2d` | R5, closed 2026-09-26: the move RPC and its conflict path, the batching RPC `apply_list_writes`, the write buffer with the batching client, the automatic move with the cutoff and the retired `#/l/` page (section 9's R5 row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R5's commit history | - | - | - | - |
 | `B5b.1` | R5b, closed 2026-09-27: the account menu, the Display section of `#/account`, the Lists tab gone after the date, the signed-out move banner (section 9's R5b row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch brief is in R5b's commit history | - | - | - | - |
 | `B1`-`B2` | `process-guards`, closed 2026-09-27: host guards (gate credit, the local stack lock, the `.env` guards) and review gates (the plan review, the reviewer's report file, a migration push after an approving review). The design as built is in `.claude/README.md`, the prompts and `docs/decisions/`; the batch briefs are in the task's commit history | - | - | - | - |
@@ -664,18 +664,9 @@ carries the Realtime row count of the last 24 hours.
 "Usage monitoring". Billed egress, MAU and Realtime connections have no
 public API (2026-09-25) and stay the dashboard's.
 
-`B4.1`-`B4.2` Purchase requests: planned 2026-09-26 in
-`issues/persist-4-requests/plan.md`, which is the release's authority
-(its owner question answered 2026-09-26: the remembered "notify the
-owner" answer is changed in R5b's Display settings, not in a field R4
-adds to `#/account`). The owner's
-answer to 36 stands as given: 100 lines per request and 10 pending per
-list as `limit_defaults` rows, 5 per share per minute and a 1-hour expiry
-as constants, no requester name. The function's bounds are inside it, not
-client checks. `B4.1` is the database half, `B4.2` the client half; the
-owner's notification rides R3's `owner:<uid>` topic (R3's Q1 answered
-yes) as a revision-free nudge, then a re-read; the poll covers a feed that
-is down.
+`B4.1`-`B4.2`: shipped in R4 (section 9). Their outlines were superseded by
+the release's own plan; the code, the specs and `docs/decisions/` are the
+record.
 
 `B5.1`-`B5.2d`: shipped in R5 (section 9). The code, the specs and
 `docs/decisions/` are the record. `B5b.1`: shipped in R5b (section 9);
@@ -1489,9 +1480,8 @@ owner:
 
 Carried from R5b (`persist-5b-account-menu`, closed 2026-09-27):
 
-- R4's refresh: `notifyGm` shipped in `B5b.1` (not `B5.3`, the name R4's
-  plan used before its fix at R5b's closeout); R4 reads `app.notifyGm` and
-  writes `app.setNotifyGm`.
+- R4: placed and shipped (closed 2026-09-28): flow b reads
+  `app.notifyGm` and writes `app.setNotifyGm`.
 - R7: «Мои предметы» joins the account menu between «Мои списки» and
   «Выйти» (`AccountMenu.svelte`).
 - R10: the move banner goes with `MoveNotice`; the `tab` of `#/lists` in
@@ -1511,6 +1501,17 @@ Carried from `process-guards` (closed 2026-09-27):
   the agent's push after the approve.
 - R11's `B11.1` is the first live use of the plan review and the
   migration-push gate (done at R11: both held).
+
+Carried from R4 (`persist-4-requests`, closed 2026-09-28) for later
+releases:
+
+- R6: purchase requests are not exported or imported; its plan decides
+  whether the bundle says so.
+- R7: a request line stores the `item_key` only, so a homebrew entry's line
+  whose entry is gone has no name to draw; R7 decides whether lines keep
+  the snapshot's name.
+- R11's report counts both request tables by itself; no near-limit row
+  exists for the two new limits (the owner's call).
 
 Carried from R11 (`persist-usage-monitoring`, closed 2026-09-27):
 
@@ -1545,15 +1546,11 @@ Carried from R11 (`persist-usage-monitoring`, closed 2026-09-27):
   `anon` join of a private channel are proven by `check:db`'s WebSocket
   cases and the hosted E2E; the 45 s poll stays the fallback while
   Realtime is down.
-- Risk: `create_purchase_request` is the first RPC `anon` can write
-  through; its bounds are inside the function and proven by the layer 3
-  matrix (`B4.1`), and a valid share token is the only capability it
-  accepts - a leaked GM link is the same exposure it already was, plus
-  bounded requests the owner can decline and a rotate that ends it.
-- Privacy impact of R4: a request stores the items, counts, link kind and
-  time, and no name, account or address (answer 36); it expires after an
-  hour and is deleted 24 hours after a decision or expiry, at the next
-  send; the privacy page says so (`B4.2`).
+- Accepted (R4, shipped 2026-09-28): `create_purchase_request` is the
+  first function `anon` writes through; a leaked link costs at most 5
+  requests a minute and 10 pending on its list, which the owner declines or
+  ends with «Удалить ссылку»; a request a stopped link already sent stays
+  pending until it expires. The privacy page says what a request stores.
 - Risk: a `#/l/` link pasted before the cutoff and opened after it is dead
   by the owner's decision; the retired-link page and the `llms.txt`
   announcement are the whole mitigation.

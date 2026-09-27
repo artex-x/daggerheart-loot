@@ -1966,6 +1966,17 @@ Steps:
    production; anything else aborts. Expected: `load: ok (1 transaction)`,
    `verify: N tables match; sequences not lowered: ...`, the `undo:` line
    and `restore:prod: PASS`.
+4. Check the limit keys in the production SQL editor. A backup older than
+   a migration that seeds `limit_defaults` lacks that migration's keys
+   (`20260928120000_purchase_requests.sql` adds `request_lines` and
+   `pending_requests_per_list`), and every call that reads a missing key
+   raises `unknown limit key`. Run
+   `select key, value from public.limit_defaults order by key;`. Expected:
+   `entries_per_list`, `lists_per_owner`, `pending_requests_per_list` and
+   `request_lines`. For each missing key, insert it at its migration's
+   default, for example `insert into public.limit_defaults (key, value)
+   values ('request_lines', 100), ('pending_requests_per_list', 10) on
+   conflict (key) do nothing;`, and run the check again.
 
 Before it asks for the ref, the command checks the receipt, reads
 production's migrations, tables, keys, foreign keys and sequences, and

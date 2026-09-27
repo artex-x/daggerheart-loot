@@ -1197,3 +1197,216 @@ describe('a sign-in that a prompt started', () => {
     });
   });
 });
+
+describe('the purchase requests', () => {
+  type Call = [string, unknown[]];
+  const LIST = '00000000-0000-4000-8000-000000000101';
+
+  /* One PostgREST query: `select().eq()`, then the answer. */
+  function query(answer: unknown) {
+    const calls: Call[] = [];
+    const q: Record<string, unknown> = {};
+    for (const m of ['select', 'eq']) {
+      q[m] = (...args: unknown[]) => {
+        calls.push([m, args]);
+        return q;
+      };
+    }
+    q['then'] = (ok: (v: unknown) => unknown, fail: (e: unknown) => unknown) =>
+      (answer instanceof Error ? Promise.reject(answer) : Promise.resolve(answer)).then(
+        ok,
+        fail
+      );
+    client.from.mockImplementationOnce(() => q as unknown as typeof rows);
+    return calls;
+  }
+  const ROW = {
+    id: 'r1',
+    list_id: LIST,
+    audience: 'player',
+    created_at: '2026-09-27T10:00:00+00:00',
+    expires_at: '2026-09-27T11:00:00+00:00',
+    purchase_request_lines: [
+      { item_key: 'q1', quantity: 1, price_coins: null, applied_quantity: null },
+      { item_key: 'ci1', quantity: 2, price_coins: 150, applied_quantity: null }
+    ]
+  };
+
+  it("reads the owner's pending requests with their lines in one select", async () => {
+    const calls = query({ data: [ROW], error: null, status: 200 });
+    expect(await make().requests.list()).toEqual({
+      ok: true,
+      requests: [
+        {
+          id: 'r1',
+          listId: LIST,
+          audience: 'player',
+          createdAt: ROW.created_at,
+          expiresAt: ROW.expires_at,
+          lines: [
+            { item: 'ci1', qty: 2, price: 150, applied: null },
+            { item: 'q1', qty: 1, price: null, applied: null }
+          ]
+        }
+      ]
+    });
+    expect(client.from).toHaveBeenCalledWith('purchase_requests');
+    expect(calls).toEqual([
+      [
+        'select',
+        [
+          'id,list_id,audience,created_at,expires_at,' +
+            'purchase_request_lines(item_key,quantity,price_coins,applied_quantity)'
+        ]
+      ],
+      ['eq', ['status', 'pending']]
+    ]);
+  });
+
+  it('answers not ok to a failed, thrown or malformed read', async () => {
+    query({ data: null, error: { code: '42501' }, status: 401 });
+    query(new Error('offline'));
+    query({ data: { not: 'rows' }, error: null, status: 200 });
+    const { requests } = make();
+    for (let i = 0; i < 3; i++) expect(await requests.list()).toEqual({ ok: false });
+  });
+
+  it('sends the id, the token and the lines to create_purchase_request', async () => {
+    client.rpc.mockResolvedValueOnce({ data: null, error: null, status: 204 });
+    const lines = [{ item: 'ci1', qty: 2 }];
+    expect(await make().requests.send('r1', 't1', lines)).toEqual({ ok: true });
+    expect(client.rpc).toHaveBeenCalledWith('create_purchase_request', {
+      p_id: 'r1',
+      p_token: 't1',
+      p_lines: lines
+    });
+  });
+
+  it.each([
+    ['P0002 at HTTP 500', { code: 'P0002', message: 'request: unknown link' }, 500, 'gone'],
+    ['a stale item', { code: '22023', message: 'request: stale' }, 400, 'stale'],
+    ['bad lines', { code: '22023', message: 'request: bad lines' }, 400, 'refused'],
+    ['a decided answer', { code: '22023', message: 'request: decided' }, 400, 'refused'],
+    ['a lapsed session', { code: 'PGRST303', message: 'JWT expired' }, 401, 'network'],
+    ['a deadlock', { code: '40P01', message: 'deadlock detected' }, 500, 'network'],
+    ['no answer', { code: '', message: 'AbortError' }, 0, 'network']
+  ])('answers a send refused with %s', async (_name, error, status, want) => {
+    client.rpc.mockResolvedValueOnce({ data: null, error, status });
+    expect(await make().requests.send('r1', 't1', [{ item: 'ci1', qty: 1 }])).toEqual({
+      ok: false,
+      error: want
+    });
+  });
+
+  it('answers a limit of a send with its key and the value, and a throw as network', async () => {
+    client.rpc
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'P0001', message: 'limit: request_rate', details: '5' },
+        status: 400
+      })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { requests } = make();
+    expect(await requests.send('r1', 't1', [{ item: 'ci1', qty: 1 }])).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'request_rate',
+      value: 5
+    });
+    expect(await requests.send('r1', 't1', [{ item: 'ci1', qty: 1 }])).toEqual({
+      ok: false,
+      error: 'network'
+    });
+  });
+
+  it('applies through apply_purchase_request and reads its answer', async () => {
+    client.rpc
+      .mockResolvedValueOnce({ data: { applied: true, taken: 3 }, error: null, status: 200 })
+      .mockResolvedValueOnce({
+        data: { short: [{ item: 'cc1', want: 9, have: 5 }] },
+        error: null,
+        status: 200
+      })
+      .mockResolvedValueOnce({ data: { applied: 'yes' }, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: { short: [] }, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: { short: [{ item: 'cc1' }] }, error: null, status: 200 })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { requests } = make();
+    expect(await requests.apply('r1', true)).toEqual({ ok: true, taken: 3 });
+    expect(client.rpc).toHaveBeenLastCalledWith('apply_purchase_request', {
+      p_id: 'r1',
+      p_clamp: true
+    });
+    expect(await requests.apply('r1', false)).toEqual({
+      ok: false,
+      error: 'short',
+      short: [{ item: 'cc1', want: 9, have: 5 }]
+    });
+    for (let i = 0; i < 3; i++) {
+      expect(await requests.apply('r1', false)).toEqual({ ok: false, error: 'refused' });
+    }
+    expect(await requests.apply('r1', false)).toEqual({ ok: false, error: 'network' });
+  });
+
+  it.each([
+    ['decided', { code: '22023', message: 'request: decided' }, 400, 'decided'],
+    ['expired', { code: '22023', message: 'request: expired' }, 400, 'expired'],
+    [
+      'the owner message of 42501',
+      { code: '42501', message: 'request: not the owner of the request' },
+      403,
+      'gone'
+    ],
+    ['P0002 at HTTP 500', { code: 'P0002', message: 'x' }, 500, 'gone'],
+    ['another 42501', { code: '42501', message: 'permission denied' }, 401, 'network'],
+    ['another 42501 at 403', { code: '42501', message: 'permission denied' }, 403, 'refused'],
+    ['a stale answer', { code: '22023', message: 'request: stale' }, 400, 'refused'],
+    ['a limit', { code: 'P0001', message: 'limit: x', details: '1' }, 400, 'refused'],
+    ['a deadlock', { code: '40P01', message: 'deadlock detected' }, 500, 'network']
+  ])('answers an apply and a decline refused with %s', async (_name, error, status, want) => {
+    client.rpc
+      .mockResolvedValueOnce({ data: null, error, status })
+      .mockResolvedValueOnce({ data: null, error, status });
+    const { requests } = make();
+    expect(await requests.apply('r1', false)).toEqual({ ok: false, error: want });
+    expect(await requests.decline('r1')).toEqual({ ok: false, error: want });
+  });
+
+  it('declines through decline_purchase_request', async () => {
+    client.rpc
+      .mockResolvedValueOnce({ data: null, error: null, status: 204 })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { requests } = make();
+    expect(await requests.decline('r1')).toEqual({ ok: true });
+    expect(client.rpc).toHaveBeenLastCalledWith('decline_purchase_request', { p_id: 'r1' });
+    expect(await requests.decline('r1')).toEqual({ ok: false, error: 'network' });
+  });
+
+  describe('with no answer', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it.each([
+      [
+        'send',
+        (c: ReturnType<typeof make>) => c.requests.send('r1', 't1', [{ item: 'ci1', qty: 1 }])
+      ],
+      ['apply', (c: ReturnType<typeof make>) => c.requests.apply('r1', false)],
+      ['decline', (c: ReturnType<typeof make>) => c.requests.decline('r1')]
+    ])('answers network for %s after WRITE_TIMEOUT_MS', async (_name, call) => {
+      client.rpc.mockImplementationOnce(() => new Promise<never>(() => undefined));
+      let answer: unknown = 'pending';
+      void call(make()).then((a) => {
+        answer = a;
+      });
+      await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS - 1);
+      expect(answer).toBe('pending');
+      await vi.advanceTimersByTimeAsync(1);
+      expect(answer).toEqual({ ok: false, error: 'network' });
+    });
+  });
+});

@@ -13,8 +13,9 @@
      *  `toggle` is `.ftoggle.has` - the filter strip's own button, gold text
      *  on a gold-tinted border rather than a fill, and only once it has
      *  something picked. `ghost` is `.btn.ghost` - a transparent fill, the
-     *  cancel button beside a primary one. */
-    variant?: 'plain' | 'primary' | 'toggle' | 'ghost' | 'danger';
+     *  cancel button beside a primary one. `bare` is text alone, no box - the
+     *  requests panel's fold of decided requests. */
+    variant?: 'plain' | 'primary' | 'toggle' | 'ghost' | 'danger' | 'bare';
     /** `sm` is the 32px row on a card; the default 46px is the panel's. */
     size?: 'md' | 'sm';
     title?: string;
@@ -192,6 +193,23 @@
   .btn.danger:hover {
     border-color: var(--danger);
     background: rgb(224 104 95 / 12%);
+  }
+
+  /* Text alone, after `.btn.sm` so it wins: the requests panel's fold of decided
+     requests (RequestsPanel.svelte). */
+  .btn.bare {
+    background: none;
+    border: 0;
+    padding: 0;
+    height: auto;
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 400;
+  }
+
+  .btn.bare:hover {
+    background: none;
+    color: var(--txt);
   }
 
   /* off `.btn.on` / `.btn.primary.on` in style.css: gold outline on a plain

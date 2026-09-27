@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Fifty-one cases in
- * fifty runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Fifty-seven cases in
+ * fifty-six runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -3004,6 +3004,163 @@ async function liveAccountList() {
   await ctx.close();
 }
 
+/* Counts the fake's answered reads of the owner's requests in `window.__dhlootRequestReads`,
+   so a case can wait until a re-read it started has landed. */
+async function countRequestReads(page) {
+  await page.evaluate(() => {
+    const repo = window.__dhlootFake.requests;
+    const list = repo.list.bind(repo);
+    window.__dhlootRequestReads = 0;
+    repo.list = async () => {
+      const read = await list();
+      window.__dhlootRequestReads++;
+      return read;
+    };
+  });
+}
+
+/** 54. A purchase request reaches the owner's open list page and the index within a
+ *  second while the owner topic is joined; with Realtime down it waits for the tab to
+ *  be shown again. */
+async function liveRequests() {
+  const at = '54 (live requests): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open(SHOP, { as: 'gm1' });
+  ok(
+    await waitIn(page, () => !!document.querySelector('.lsaid[data-live="live"]')),
+    at + 'the owner topic did not join'
+  );
+  await d.fake('request', 'player-token-1', [{ item: 'ci1', qty: 1 }]);
+  ok(
+    await waitWithin(page, 1000, bodyHas, 'Запросы (1)'),
+    at + '«Запросы (1)» did not show within 1 s'
+  );
+  await d.go('#/lists');
+  ok(
+    await waitIn(page, bodyHas, '1 запрос ждёт ответа'),
+    at + 'the index does not say «1 запрос ждёт ответа»'
+  );
+  /* The loss re-reads the requests once by itself; the next request comes after it. */
+  await countRequestReads(page);
+  await d.fake('setLive', false);
+  ok(
+    await waitIn(page, () => window.__dhlootRequestReads >= 1),
+    at + 'the loss did not re-read the requests'
+  );
+  await d.fake('request', 'gm-token-1', [{ item: 'cc1', qty: 1 }]);
+  ok(
+    !(await waitWithin(page, 1000, bodyHas, '2 запроса ждут ответа')),
+    at + 'the second request showed with Realtime down and no signal'
+  );
+  await d.shownAgain();
+  ok(
+    await waitIn(page, bodyHas, '2 запроса ждут ответа'),
+    at + 'the second request did not show when the tab was shown again'
+  );
+  await ctx.close();
+}
+
+/** 55. A signed-out reader sends the ticked entry to the owner: the toast, the
+ *  selection cleared, nothing written to either storage; the sixth send in a minute
+ *  says the rate. */
+async function sendARequest() {
+  const at = '55 (send a request): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/s/player-token-1');
+  await waitIn(page, bodyHas, 'Лавка кузнеца');
+  const keys = () =>
+    page.evaluate(() => [Object.keys(localStorage).sort(), Object.keys(sessionStorage).sort()]);
+  const before = JSON.stringify(await keys());
+  const ticked = () => document.querySelectorAll('.sel[data-row]').length;
+  for (let n = 1; n <= 5; n++) {
+    await d.tick('Первоклассный Спальный Мешок');
+    await d.press('Сообщить владельцу');
+    ok(
+      await waitIn(page, (c) => document.querySelectorAll('.sel[data-row]').length === c, 0),
+      at + 'send ' + String(n) + ' left the row ticked'
+    );
+    if (n === 1) {
+      ok(
+        await waitIn(page, bodyHas, 'Запрос отправлен владельцу списка.'),
+        at + 'no «Запрос отправлен владельцу списка.»'
+      );
+    }
+  }
+  ok(JSON.stringify(await keys()) === before, at + 'a send wrote to browser storage');
+  await d.tick('Первоклассный Спальный Мешок');
+  await d.press('Сообщить владельцу');
+  ok(
+    await waitIn(page, bodyHas, 'Слишком много запросов по этой ссылке: подождите минуту.'),
+    at + 'the sixth send in a minute did not say the rate'
+  );
+  ok((await page.evaluate(ticked)) === 1, at + 'the refused send cleared the selection');
+  await ctx.close();
+}
+
+/** 56. The owner applies a request within stock: one entry lowered, one removed at
+ *  zero, the toast and the fold; an applied request redraws an open share page live. */
+async function applyARequest() {
+  const at = '56 (apply a request): ';
+  let { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open(SHOP, { as: 'gm1' });
+  await waitIn(page, () => !!document.querySelector('.lsaid[data-live="live"]'));
+  await d.fake('request', 'player-token-1', [
+    { item: 'ci1', qty: 1 },
+    { item: 'cc1', qty: 5 }
+  ]);
+  ok(await waitIn(page, bodyHas, 'Запросы (1)'), at + 'the request is not on the page');
+  const rows = await d.count('.lrow');
+  await d.press('Принять');
+  ok(await waitIn(page, bodyHas, 'Запрос принят'), at + 'no «Запрос принят»');
+  ok(
+    await waitIn(page, bodyHas, 'Решённые в этот раз (1)'),
+    at + 'no «Решённые в этот раз (1)»'
+  );
+  ok(
+    await waitIn(page, (n) => document.querySelectorAll('.lrow').length === n, rows - 1),
+    at + 'the entry taken whole is still a row'
+  );
+  const read = await d.fake('lists.list');
+  const shop = read?.ok ? read.lists.find((l) => l.id === SHOP_ID) : null;
+  const qty = (key) => shop?.list_entries.find((e) => e.item_key === key)?.quantity;
+  ok(qty('ci1') === 1 && qty('cc1') === undefined, at + 'the stock is ' + JSON.stringify(shop));
+  await ctx.close();
+
+  ({ ctx, page, d } = await fresh({ width: 1180, height: 900 }));
+  await d.open('#/s/player-token-1');
+  ok(await waitIn(page, liveShare), at + 'the share topic did not join');
+  const id = await d.fake('request', 'player-token-1', [{ item: 'cc1', qty: 3 }]);
+  await d.fake('decide', id, 'applied');
+  ok(
+    await waitWithin(page, 1000, () =>
+      (document.querySelector('[data-row="cc1"]')?.textContent ?? '').includes('×2')
+    ),
+    at + 'the open share page did not draw «×2» for cc1 within 1 s'
+  );
+  await ctx.close();
+}
+
+/** 57. With «Сообщать владельцу» chosen in the Display row, an add from a share page's
+ *  bar sends the request with no question and says so in the add toast. */
+async function notifyAlways() {
+  const at = '57 (notify always): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/account', { as: 'gm2' });
+  await waitIn(page, () => !!document.querySelector('#display-notify'));
+  await page.select('#display-notify', 'always');
+  await d.go('#/s/player-token-1');
+  await waitIn(page, bodyHas, 'Лавка кузнеца');
+  await d.tick('Первоклассный Спальный Мешок');
+  await d.press('Добавить в список');
+  await d.press('Список второго ГМа');
+  ok(
+    await waitIn(page, bodyHas, 'Добавлено в «Список второго ГМа». Владелец получил запрос.'),
+    at + 'the add toast does not say the owner got the request'
+  );
+  ok(!(await d.count('.notifyq')), at + 'the question was asked');
+  await ctx.close();
+}
+
 /** 49. Account edits wait two seconds, then go once: ten presses of the
  *  first row's quantity and a list note typed key by key reach the fake as
  *  one request of two writes; hidden, the tab sends the buffer at once. */
@@ -3528,7 +3685,11 @@ const CASES = [
   ['50 (the account menu)', accountMenu],
   ['51 (the move banner)', moveBanner],
   ['52 (live share page)', liveSharePage],
-  ['53 (live account list)', liveAccountList]
+  ['53 (live account list)', liveAccountList],
+  ['54 (live requests)', liveRequests],
+  ['55 (send a request)', sendARequest],
+  ['56 (apply a request)', applyARequest],
+  ['57 (notify always)', notifyAlways]
 ];
 
 (async () => {

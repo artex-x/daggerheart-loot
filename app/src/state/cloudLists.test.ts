@@ -1276,4 +1276,41 @@ describe('the owner topic', () => {
     await later(COALESCE_MS);
     expect(list).not.toHaveBeenCalled();
   });
+
+  it('reads the account once the buffer drains when refresh() comes while an edit waits', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const store = new CloudLists(cloud.lists, say, t);
+    await store.load();
+    const list = vi.spyOn(cloud.lists, 'list');
+    store.rename(SHOP, 'Своё');
+    await store.refresh();
+    expect(list).not.toHaveBeenCalled();
+    await quiet();
+    expect(list).toHaveBeenCalledOnce();
+    expect(store.get(SHOP)?.name).toBe('Своё');
+  });
+
+  it('passes every message and the join refetch to the requests; a request event reads no list', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const requests = { message: vi.fn(), refetch: vi.fn() };
+    const store = new CloudLists(cloud.lists, say, t, {
+      events: cloud.events,
+      random: () => 0.5,
+      requests
+    });
+    await store.load();
+    const list = vi.spyOn(cloud.lists, 'list');
+    store.watch(SEED.users.gm1.id);
+    await later(COALESCE_MS);
+    expect(requests.refetch).toHaveBeenCalledOnce();
+    list.mockClear();
+    cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    await later(COALESCE_MS);
+    expect(requests.message).toHaveBeenCalledWith('request', {
+      list: SHOP,
+      by: null,
+      id: expect.any(String) as unknown
+    });
+    expect(list).not.toHaveBeenCalled();
+  });
 });

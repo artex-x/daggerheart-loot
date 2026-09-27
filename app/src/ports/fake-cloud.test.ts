@@ -888,3 +888,262 @@ describe('the fake live topics', () => {
     expect(owner.seen).toEqual(['live']);
   });
 });
+
+describe("the fake's purchase requests", () => {
+  const SHOP = uuid(101);
+  const GM1 = SEED.users.gm1.id;
+  const ONE = [{ item: 'ci1', qty: 1 }];
+  const tick = async (): Promise<void> => {
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+  };
+  beforeEach(() => {
+    vi.useFakeTimers({ now: new Date('2026-09-25T12:00:00Z'), toFake: ['Date'] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+  const pending = async (cloud: ReturnType<typeof fakeCloud>) => {
+    const read = await cloud.requests.list();
+    return read.ok ? read.requests.map((r) => r.id) : null;
+  };
+
+  it('counts five sends a minute per link, and one more once the minute has passed', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    for (let i = 0; i < 5; i++) {
+      expect(await cloud.requests.send(uuid(6100 + i), 'player-token-1', ONE)).toEqual({
+        ok: true
+      });
+    }
+    expect(await cloud.requests.send(uuid(6105), 'player-token-1', ONE)).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'request_rate',
+      value: 5
+    });
+    expect(await cloud.requests.send(uuid(6106), 'gm-token-1', ONE)).toEqual({ ok: true });
+    vi.setSystemTime(Date.now() + 61_000);
+    expect(await cloud.requests.send(uuid(6107), 'player-token-1', ONE)).toEqual({ ok: true });
+  });
+
+  it('holds ten pending requests a list; an expired one counts for nothing and answers expired', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    for (let i = 0; i < 10; i++) {
+      vi.setSystemTime(Date.now() + 13_000);
+      expect((await cloud.requests.send(uuid(6100 + i), 'player-token-1', ONE)).ok).toBe(true);
+    }
+    vi.setSystemTime(Date.now() + 61_000);
+    expect(await cloud.requests.send(uuid(6110), 'player-token-1', ONE)).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'pending_requests_per_list',
+      value: 10
+    });
+    vi.setSystemTime(Date.parse('2026-09-25T13:00:14Z'));
+    expect(await cloud.requests.apply(uuid(6100), false)).toEqual({
+      ok: false,
+      error: 'expired'
+    });
+    expect(await cloud.requests.decline(uuid(6100))).toEqual({ ok: false, error: 'expired' });
+    expect(await cloud.requests.send(uuid(6110), 'player-token-1', ONE)).toEqual({ ok: true });
+    expect(await pending(cloud)).toHaveLength(11);
+  });
+
+  it('answers a replay on its own link ok and adds nothing; the id on another link is gone', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const id = uuid(6100);
+    expect(await cloud.requests.send(id, 'player-token-1', ONE)).toEqual({ ok: true });
+    expect(await cloud.requests.send(id, 'player-token-1', [{ item: 'zz1', qty: 1 }])).toEqual({
+      ok: true
+    });
+    expect(await cloud.requests.send(id, 'gm-token-1', ONE)).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+    expect(await pending(cloud)).toEqual([id]);
+  });
+
+  it('refuses bad lines, too many lines, a stale item and an unknown or stopped link', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const refused = { ok: false, error: 'refused' };
+    for (const lines of [
+      [],
+      'x',
+      [null],
+      [{ item: 'ci1', qty: 0 }],
+      [{ item: 'ci1', qty: 1.5 }],
+      [{ item: 'a b', qty: 1 }],
+      [
+        { item: 'ci1', qty: 1 },
+        { item: 'ci1', qty: 2 }
+      ]
+    ]) {
+      expect(
+        await cloud.requests.send(uuid(6100), 'player-token-1', lines as typeof ONE)
+      ).toEqual(refused);
+    }
+    const many = Array.from({ length: 101 }, (_, i) => ({ item: 'x' + String(i), qty: 1 }));
+    expect(await cloud.requests.send(uuid(6100), 'player-token-1', many)).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'request_lines',
+      value: 100
+    });
+    expect(
+      await cloud.requests.send(uuid(6100), 'player-token-1', [{ item: 'zz1', qty: 1 }])
+    ).toEqual({ ok: false, error: 'stale' });
+    expect(await cloud.requests.send(uuid(6100), 'nonsense', ONE)).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+    await cloud.shares.revoke(uuid(111));
+    expect(await cloud.requests.send(uuid(6100), 'player-token-1', ONE)).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+    cloud.setOffline(true);
+    expect(await cloud.requests.send(uuid(6100), 'gm-token-1', ONE)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+    expect(await cloud.requests.list()).toEqual({ ok: false });
+    expect(await cloud.requests.apply(uuid(6100), false)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+  });
+
+  it("reads the owner's pending requests with the prices at the send, for no one else", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.requests.send(uuid(6100), 'gm-token-1', [
+      { item: 'q1', qty: 1 },
+      { item: 'cc1', qty: 3 }
+    ]);
+    expect(await cloud.requests.list()).toEqual({
+      ok: true,
+      requests: [
+        {
+          id: uuid(6100),
+          listId: SHOP,
+          audience: 'gm',
+          createdAt: '2026-09-25T12:00:00.000Z',
+          expiresAt: '2026-09-25T13:00:00.000Z',
+          lines: [
+            { item: 'q1', qty: 1, price: null, applied: null },
+            { item: 'cc1', qty: 3, price: 20, applied: null }
+          ]
+        }
+      ]
+    });
+    expect(await pending(fakeCloud(SEED, 'gm2'))).toEqual([]);
+    const out = fakeCloud(SEED);
+    await out.requests.send(uuid(6100), 'gm-token-1', ONE);
+    expect(await out.requests.list()).toEqual({ ok: false });
+    expect(await out.requests.decline(uuid(6100))).toEqual({ ok: false, error: 'network' });
+  });
+
+  it('applies by item, answers short or clamps, deletes an entry taken whole and renumbers', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.requests.send(uuid(6100), 'player-token-1', [
+      { item: 'ci1', qty: 2 },
+      { item: 'cc1', qty: 9 }
+    ]);
+    expect(await cloud.requests.apply(uuid(6100), false)).toEqual({
+      ok: false,
+      error: 'short',
+      short: [{ item: 'cc1', want: 9, have: 5 }]
+    });
+    expect(await cloud.requests.apply(uuid(6100), true)).toEqual({ ok: true, taken: 7 });
+    const read = await cloud.lists.list();
+    const shop = read.ok ? read.lists.find((l) => l.id === SHOP) : undefined;
+    expect(shop?.list_entries.map((e) => `${e.item_key}@${String(e.position)}`)).toEqual([
+      'q1@0',
+      'q313@1',
+      'voa2_a3@2',
+      'q23@3',
+      'w51@4',
+      'q35@5',
+      'di11@6'
+    ]);
+    expect(await pending(cloud)).toEqual([]);
+    expect(await cloud.requests.apply(uuid(6100), false)).toEqual({
+      ok: false,
+      error: 'decided'
+    });
+    expect(await cloud.requests.apply(uuid(6999), false)).toEqual({ ok: false, error: 'gone' });
+    expect(await cloud.requests.decline(uuid(6999))).toEqual({ ok: false, error: 'gone' });
+  });
+
+  it('answers short to a clamp with nothing left, and lowers a stock without a renumber', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.requests.send(uuid(6100), 'player-token-1', [{ item: 'q1', qty: 2 }]);
+    await cloud.requests.send(uuid(6101), 'player-token-1', [{ item: 'cc1', qty: 2 }]);
+    await cloud.lists.apply([{ op: 'remove_entries', ids: [uuid(1102)] }]);
+    expect(await cloud.requests.apply(uuid(6100), true)).toEqual({
+      ok: false,
+      error: 'short',
+      short: [{ item: 'q1', want: 2, have: 0 }]
+    });
+    expect(await cloud.requests.apply(uuid(6101), false)).toEqual({ ok: true, taken: 2 });
+    const read = await cloud.lists.list();
+    const shop = read.ok ? read.lists.find((l) => l.id === SHOP) : undefined;
+    expect(shop?.list_entries.find((e) => e.item_key === 'cc1')?.quantity).toBe(3);
+  });
+
+  it('sends a request message on a send with by null, and on a decision with the tab', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const seen: unknown[] = [];
+    cloud.events.subscribe('owner:' + GM1, {
+      message: (event, payload) => seen.push([event, payload]),
+      status: () => undefined
+    });
+    await tick();
+    await cloud.requests.send(uuid(6100), 'player-token-1', ONE);
+    await cloud.requests.decline(uuid(6100));
+    await tick();
+    expect(seen).toEqual([
+      ['request', { list: SHOP, by: null, id: '1' }],
+      ['request', { list: SHOP, by: 'fake-tab', id: '2' }]
+    ]);
+  });
+
+  it('makes a request as another reader and decides it as another device', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const owner: unknown[] = [];
+    cloud.events.subscribe('owner:' + GM1, {
+      message: (event, payload) => owner.push([event, payload]),
+      status: () => undefined
+    });
+    await tick();
+    expect(cloud.request('player-token-1', ONE)).toBe(uuid(6000));
+    expect(cloud.request('player-token-1', [{ item: 'zz1', qty: 1 }])).toBeNull();
+    expect(cloud.request('player-token-1', ONE)).toBe(uuid(6001));
+    expect(cloud.decide(uuid(6000), 'applied')).toBe(true);
+    expect(cloud.decide(uuid(6000), 'declined')).toBe(false);
+    expect(cloud.decide(uuid(6001), 'declined')).toBe(true);
+    expect(cloud.decide(uuid(6999), 'applied')).toBe(false);
+    await tick();
+    expect(owner).toEqual([
+      ['request', { list: SHOP, by: null, id: '1' }],
+      ['request', { list: SHOP, by: null, id: '2' }],
+      ['list', { list: SHOP, revision: 2, by: 'other-device', id: '3' }],
+      ['request', { list: SHOP, by: 'other-device', id: '6' }],
+      ['request', { list: SHOP, by: 'other-device', id: '7' }]
+    ]);
+    const read = await cloud.shares.read('player-token-1');
+    expect(read.ok && read.shared?.entries.find((e) => e.item_key === 'ci1')?.quantity).toBe(1);
+    const q = cloud.request('player-token-1', [{ item: 'q1', qty: 1 }]);
+    await cloud.lists.apply([{ op: 'remove_entries', ids: [uuid(1102)] }]);
+    expect(q && cloud.decide(q, 'applied')).toBe(false);
+  });
+
+  it("drops a list's requests with the list and with the account", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.requests.send(uuid(6100), 'player-token-1', ONE);
+    await cloud.lists.apply([{ op: 'remove', id: SHOP }]);
+    expect(await pending(cloud)).toEqual([]);
+    const other = fakeCloud(SEED, 'gm1');
+    const id = other.request('gm-token-1', ONE);
+    await other.auth.deleteAccount();
+    expect(id && other.decide(id, 'declined')).toBe(false);
+  });
+});

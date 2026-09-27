@@ -32,6 +32,7 @@ import type { ListOp, ListRow, ShareAudience, SharedRow, ShareRow } from '../lib
 import type { Loot } from '../lib/data.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
+import type { OwnerRequest, ShortLine } from '../lib/requests.js';
 import type { Random } from '../lib/roll.js';
 
 export interface StoragePort {
@@ -421,13 +422,47 @@ export interface EventsPort {
   readonly tab: string;
 }
 
-/** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, R3 events, ...). */
+/** A request's send: `gone` is a link that opens nothing, `stale` an item the list no
+ *  longer holds, `limit` a bound of the function (`limit: <key>`). */
+export type RequestSent =
+  | { ok: true }
+  | { ok: false; error: 'gone' | 'stale' | 'network' | 'refused' }
+  | { ok: false; error: 'limit'; key: string; value: number | null };
+/** An apply: the count taken, the lines the stock cannot fill, or why not. `gone` is a
+ *  request that no longer exists or is not the caller's. */
+export type RequestApplied =
+  | { ok: true; taken: number }
+  | { ok: false; error: 'short'; short: ShortLine[] }
+  | { ok: false; error: 'decided' | 'expired' | 'gone' | 'network' | 'refused' };
+/** A decline, or why not; the errors read as an apply's. */
+export type RequestDeclined =
+  { ok: true } | { ok: false; error: 'decided' | 'expired' | 'gone' | 'network' | 'refused' };
+/** `{ ok: false }` is signed out or a read that failed, never an empty account. */
+export type RequestsRead = { ok: true; requests: OwnerRequest[] } | { ok: false };
+
+/** Purchase requests from a share link to its list's owner (docs/specs/FEATURES.md,
+ *  "Account and browser lists"). Any link holder sends; the owner reads and decides. */
+export interface RequestRepository {
+  /** The signed-in owner's pending requests over all lists, lines included; expired rows
+   *  too (the caller hides them by `expiresAt`). */
+  list(): Promise<RequestsRead>;
+  /** `id` is made by the caller; the same id again is a replay that inserts nothing and
+   *  answers ok. */
+  send(id: string, token: string, lines: { item: string; qty: number }[]): Promise<RequestSent>;
+  /** Takes the request's counts from its list; `clamp` takes what is there. */
+  apply(id: string, clamp: boolean): Promise<RequestApplied>;
+  decline(id: string): Promise<RequestDeclined>;
+}
+
+/** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, R3 events, R4
+ *  requests, ...). */
 export interface CloudPort {
   auth: AuthPort;
   prefs: PreferencesPort;
   lists: ListRepository;
   shares: ShareRepository;
   events: EventsPort;
+  requests: RequestRepository;
 }
 
 /**

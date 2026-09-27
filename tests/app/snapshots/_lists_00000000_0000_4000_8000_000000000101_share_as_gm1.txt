@@ -36,6 +36,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     link "#/s/player-token-1" [url=index.html?as=gm1#/s/player-token-1]
     ... button x11 of 15 same-shape siblings elided
     link "#/s/gm-token-1" [url=index.html?as=gm1#/s/gm-token-1]
+    status ""
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Как это работает" [description=Как это работает expanded=false]
@@ -201,6 +202,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     link "#/s/player-token-1" [url=index.html?as=gm1#/s/player-token-1]
     ... button x11 of 15 same-shape siblings elided
     link "#/s/gm-token-1" [url=index.html?as=gm1#/s/gm-token-1]
+    status ""
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "How this works" [description=How this works expanded=false]

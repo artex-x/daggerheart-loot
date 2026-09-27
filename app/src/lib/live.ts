@@ -120,3 +120,17 @@ export function readOwnerMessage(
   if (by !== null && typeof by !== 'string') return null;
   return { list, revision, by };
 }
+
+/** Returns an owner topic's purchase-request message (a request sent or decided), or null
+ *  for any other shape; a missing `by` reads as null, other keys are ignored. */
+export function readRequestMessage(
+  event: string,
+  payload: unknown
+): { list: string; by: string | null } | null {
+  if (event !== 'request' || !isRecord(payload)) return null;
+  const list = payload['list'];
+  const by = payload['by'] ?? null;
+  if (typeof list !== 'string' || !isCloudId(list)) return null;
+  if (by !== null && typeof by !== 'string') return null;
+  return { list, by };
+}

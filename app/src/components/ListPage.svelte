@@ -30,6 +30,7 @@
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
   import RowMain from './RowMain.svelte';
+  import RequestsPanel from './RequestsPanel.svelte';
   import SharePanel from './SharePanel.svelte';
   import MoveStatus from './MoveStatus.svelte';
   import SharedListPage from './SharedListPage.svelte';
@@ -985,6 +986,9 @@
       </Actions>
       {#if isCloud && sharing}
         <SharePanel {app} listId={own.id} />
+      {/if}
+      {#if isCloud}
+        <RequestsPanel {app} list={own} />
       {/if}
 
       {#if !isCloud}
