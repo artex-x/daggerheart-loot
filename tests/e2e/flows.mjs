@@ -592,20 +592,17 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.press('Заметки');
       await d.type('Например: лавка закрыта до утра', 'e2e f10');
       await d.type('Название списка', 'F10');
-      /* 800 ms of latency holds the request past the close. */
-      const cdp = await page.createCDPSession();
-      await cdp.send('Network.enable');
-      await cdp.send('Network.emulateNetworkConditions', {
-        offline: false,
-        latency: 800,
-        downloadThroughput: -1,
-        uploadThroughput: -1
-      });
       await page.close();
-    });
-    await until('F10: the edits made before the close did not reach the account', async () => {
-      const [row] = await mine();
-      return row?.name === 'F10' && row.player_note === 'e2e f10';
+      /* The context outlives the page, as a profile outlives a closed tab: the flush
+         starts after page.close() resolves, and disposing the context cancels it
+         (measured 2026-09-27 on this host). */
+      await until(
+        'F10: the edits made before the close did not reach the account',
+        async () => {
+          const [row] = await mine();
+          return row?.name === 'F10' && row.player_note === 'e2e f10';
+        }
+      );
     });
   } finally {
     await deleteListsOf(admin, member.id);

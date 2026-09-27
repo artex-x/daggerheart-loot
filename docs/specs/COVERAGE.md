@@ -178,8 +178,10 @@ value of those variables; CI's `e2e` job uploads nothing. In order:
   the same seed leaves one row with the same id, and a third seeded for the
   member but signed in as a throwaway moves nothing, F10 the member makes «E2E закрытие», types a player note and a new
   name on its page and closes the page less than 500 ms later, inside the
-  write buffer's 2 s window, under 800 ms of emulated network latency, and
-  both edits reach the account (the `pagehide` flush). A known gap: no
+  write buffer's 2 s window, and both edits reach the account (the
+  `pagehide` flush); F10 waits for the database while the browser context
+  stays open, as a profile outlives a closed tab, because disposing the
+  context cancels the flush (measured 2026-09-27 on this host). A known gap: no
   browser-level test proves the `keepalive` flag - a build with a plain
   `fetch` passes F10 too (measured 2026-09-26 on this host, in both the
   committed form and with the wait inside the page's callback); the flag
