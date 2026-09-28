@@ -1,1056 +1,870 @@
-# Plan - TASK persist-7-homebrew (release R7)
+# Plan - TASK persist-7-homebrew (releases R7 and R7b)
 
 ## Status
 
-- Planning pass 1, 2026-09-25, planner, in a worktree from `da7378cb`
-  (R2's local task commit; `B2.3` is being built in the main tree).
-  Revised 2026-09-26 after the owner's answers (roadmap `context.md`,
-  "Owner answers for R5 and R7"): homebrew entries are live references,
-  the page is reached from the account menu, a delete warns with the
-  count and removes the item from its lists.
-- NEEDS_HUMAN_CONFIRMATION: no - Q1-Q3 of section 13 are answered (Q3 on
-  2026-09-26: the source tag is «Хоумбрю» / "Homebrew").
-- Batches: `B7.1` (schema, port, fake, pure logic), `B7.2` (the app:
-  routes, the menu entry, editor, search group, references, print,
-  delete), `B7.3` (bundle v2). `B7.1` is implement-ready; `B7.2` and
-  `B7.3` are outlines that the refresh before the build expands, after
-  R5b (the account menu), R3 and R6 have shipped.
-- Refresh triggers before the build: R5b's account menu component and
-  its item list (section 4.7), R3's `CapabilityEventsPort` and
-  `lib/live.ts` message readers (section 4.6), R6's `lib/bundle.ts` and
-  `import_lists` (section 4.8), `B2.3`'s final `SharedListPage.svelte`
-  and `SharedView` (section 4.5).
+- Planning pass 2, phase A (design level), 2026-09-28, planner, on `main`
+  at `b38bc5ab` (R3 shipped at `676dd783`; R4 `B4.1` committed, `B4.2` in
+  progress; R6 planned at `287ba73b`, not built). Replaces pass 1
+  (2026-09-25/26, from `da7378cb`) under the owner's widened scope
+  (`context.md`, "Owner input for the R7 refresh", items 1-13, "Mocks
+  first", "Scope"). Phase B (a delta pass against R4 and R6 as shipped,
+  and `B7.1`'s implement-ready steps) is a later dispatch; nothing here is
+  implement-ready.
+- NEEDS_HUMAN_CONFIRMATION: yes - the mocks (`mocks/index.html`) and the
+  questions of section 9 wait for the owner. `Q1` and `Q2` are the two
+  readings `context.md` names (item 1 "unique", item 10 "a separate
+  table").
+- Plan review: required before `B7.1` (trigger: a migration with
+  SECURITY DEFINER functions, a public contract change - routes, a table
+  id, two file schemas - and a stored-data change on `list_entries`).
+- Releases and batches (section 7): R7 `B7.1` (schema, ports, pure logic),
+  `B7.2` (the account's pages: `#/homebrew`, the editor, sources, lists),
+  `B7.3` (the catalog integration: tables, search, cards and rows,
+  filters); R7b `persist-7b-homebrew-files` `B7b.1` (the import RPC),
+  `B7b.2` (the two file formats, `llms.txt`, import and export UI, the
+  zip). R8 and R9 change shape (section 7.3).
+- What pass 2 changed against pass 1: the record shape is the whole
+  catalog shape (relations, sets, references, a second stat set, a
+  source); sources («Источник» / `book`) and cards (sets and referenced
+  cards) are rows; homebrew records join `allEquip`, `searchable`, the
+  relation derivations and a table `#/tables/homebrew`, not only `byId`
+  and a search group; the search draws one merged result list; a
+  «Хоумбрю» show/hide chip; the snapshot embeds the cards it needs and
+  the `list_entries` bound widens to 32768; the bundle's `homebrew` array
+  moves to its own file `homebrew.json` (R6's zip); the editor keeps its
+  save button and gains an unsaved-changes guard; `import_bundle` is
+  replaced by a client-side reference conversion plus `import_homebrew`.
 
 ## 1. Objective and current state
 
-Release R7 adds homebrew items to a signed-in account: a record with the
-same shape as an official record, made and edited in the app, found by
-search under its own group, added to the owner's lists as a live
-reference (an edit reaches every list holding it, shared pages
-included), frozen into a snapshot when a copy leaves the account, printed
-like any other card, exported and imported in bundle schema v2.
+Release R7 adds homebrew items to a signed-in account as first-class
+catalog records: the same shape as an official record, made and edited in
+the app or imported from a file, grouped by the author's sources, found by
+search and on the tables, related to catalog items (upgrade lines, craft
+chains, sets, referenced cards), added to lists as live references,
+frozen when a copy leaves the account, printed as any card. R7b adds the
+file formats, `llms.txt` and the import and export surfaces.
 
-State at `da7378cb`: `list_entries.source` and `snapshot` exist and are
-never written (`source` is always `official`, `snapshot` null; the CHECK
+State at `b38bc5ab`: `list_entries.source` and `snapshot` exist and are
+never written (`source` always `official`, `snapshot` null; the CHECK
 `(source = 'official') = (snapshot is null)` and the 16384-byte bound are
-in `20260925130100_lists.sql`). `get_shared_list` and `clone_shared_list`
-copy `source` and `snapshot` through. `limit_defaults` holds
-`lists_per_owner` and `entries_per_list`; `effective_limit()` raises on
-any other key. `CloudPort` has `auth`, `prefs`, `lists`. The fake cloud
-seeds two users, four lists and two shares. `AppState.index` is built
-once from `LOOT` and every page reads records through `index.byId`.
-`Record_` (`app/src/lib/types.ts`) is the record shape; `data.js` is
-canonical and this release does not touch it, `data.json`, `catalog.csv`
-or `i/`. No record id starts with `hb` (checked over the 1272 ids).
+in `20260925130100_lists.sql`, "R7 may widen"). `get_shared_list` and
+`clone_shared_list` copy `source` and `snapshot` through. `CloudPort` has
+`auth`, `prefs`, `lists`, `shares`, `events`, `requests` (R4 `B4.2` adds
+`requests` to the fake and the contract now). `ListRepository` is `newId`,
+`list`, `apply`, `move` (R5's buffer, `apply_list_writes` takes `source`
+and `snapshot`). The account menu (`AccountMenu.svelte`) draws «Аккаунт»,
+«Мои списки», «Выйти». `AppState.index` is built once from `LOOT`;
+`Index` has `byId`, `all`, `rows`, `searchable`, `allEquip`, `craftedFrom`
+(one source per target), `setMembers`, `rarityOf`, `altRow`, `altColumn`,
+`refs`, `sets`. `TABLE_IDS` has 16 tables; `TABLE_GROUPS` ten groups;
+`EQ_SRC` is a fixed list of five books and the frames.
 
-Measured for the snapshot bound: the largest official record is 2466
-UTF-8 bytes (`voa2_a3`), the longest description 838 characters.
-
-Sibling plans read for the seams (their plan commits, 2026-09-25): R3
-`c39f3de1` (the `owner:<uid>` topic carries `{ list, revision, by }`,
-`lib/live.ts` reads messages, `CapabilityEventsPort.on.message(event,
-payload)`); R6 `a22a4230` (`schema/import-v1.json`, `format`
-`daggerheart-loot/lists`, `version` checked client-side, `import_lists
-(p_lists jsonb)` passes `source` and `snapshot` through, `v2.json` is a
-refused fixture); R5 `146be6ab` predates the account menu, which R5's
-own revision adds.
+The catalog (`data.js`, 1272 records, 2026-09-28): fields `id`, `src`,
+`kind`, `roll`, `en`, `ende`, `ru`, `rud`, `img`, `craft` (17 records),
+`refs` (13), `eq` (604, of which 288 in 72 upgrade lines - every line
+shares one image - and 20 with `alt`), `community`/`community_ru` (90),
+`frame` (95), `tier` (`A` 9, `C` 5), `recall` (102, stored, drawn
+nowhere in the app), `set` (5, two sets), `starting` (30); `LOOT.sets`
+(2), `LOOT.refs` (13), `LOOT.alt`. Id prefixes: `ci cc hi hc w cm di f
+voa dv dve q`; none starts with `hb`.
 
 ## 2. Scope and non-goals
 
-In scope: the `homebrew_items` table with owner-only RLS, the count limit
-`homebrew_items_per_owner` (50), the reference and frozen-copy rule on
-`list_entries`, the shared projection carrying the referenced content,
-the `HomebrewRepository` port in the real adapter and the fake, the pure
-module `lib/homebrew.ts`, the routes `#/homebrew`, `#/homebrew/new`,
-`#/homebrew/<key>`, the account menu entry «Мои предметы» / "My items",
-the editor, the "My items" search group, add-to-list as a reference, the
-list page, the shared page and print drawing references and frozen
-copies, delete with the count warning and the removal from lists,
-account deletion by cascade, layer 1-4 coverage, the goldens, bundle
-schema v2 (`B7.3`).
+In scope (R7): three tables (`homebrew_books`, `homebrew_cards`,
+`homebrew_items`) with owner-only RLS and count limits; the full record
+shape in one jsonb column, validated in SQL and in `lib/homebrew.ts`
+over shared fixtures; keys `hb_` + 16 base32 for every homebrew object;
+the reference and frozen-copy rule on `list_entries` with a widened bound
+and a reference-exists trigger; the shared projection carrying the
+referenced content and its cards; the `HomebrewRepository` port in the
+real adapter and the fake; the `Homebrew` store; the merged index
+(`withRecords`) that puts own records into `byId`, `searchable`,
+`allEquip`, the relation derivations, `sets`, `refs` and a `homebrew`
+table, and frozen copies into `byId` alone; routes `#/homebrew`,
+`#/homebrew/new`, `#/homebrew/<key>`, `#/tables/homebrew`; the account
+menu entry «Мои предметы»; the management page with sources; the editor
+with relation pickers and card forms; the record card and row drawing
+homebrew relations, marked; the tables (`homebrew`, the three equipment
+tables with dynamic `src` values); one merged search; the «Хоумбрю»
+show/hide chip; lists, shared pages and print resolving references and
+frozen copies; delete with the count warning; account deletion by
+cascade; the owner-topic `homebrew` event; layer 1-4 coverage; goldens.
 
-Non-goals (stay where the roadmap put them): art (R8), `#/h/<token>`,
-clone and add from a link, print routes for cloud lists (R9), a Trash or
-undo for a deleted item (deferred, decision 30), homebrew in the roll
-tables or the book tables, upgrade lines, sets, crafts, referenced cards
-and rarity on a homebrew record, turning a frozen copy into an own item
-(R9's clone, from a list row), homebrew for a signed-out reader, the
-account menu itself and "Display settings" (R5).
+In scope (R7b): `schema/homebrew-v1.json` and the file format
+`daggerheart-loot/homebrew`; `schema/import-v2.json` (lists with homebrew
+entries); `import_homebrew` RPC with skip or update of held keys;
+`llms.txt` sections for both, proven by a blind round; «Импорт предметов»
+and «Скачать предметы (JSON)» on `#/homebrew` (all, one source, a
+selection); `homebrew.json` in the account's data zip; the account page's
+hint.
 
-## 3. Existing behaviour and code paths
+Non-goals: art (R8); `#/h/<token>`, clone and add from a link, print
+routes for cloud lists (R9); books shared with other users, subscriptions,
+subcategories and roll tables per book (item 13, a later release); a
+Trash or undo for a deleted item (decision 30); homebrew in the roll
+pages (owner, item 10); `roll`, `frame`, `starting`, `recall` and
+`community` on a homebrew record (section 3); a per-field write buffer in
+the editor (section 4.10); `img` in the file format before R8.
 
-- Records: `app/src/lib/types.ts` `Record_`; `lib/i18n.ts` `nameOf`,
-  `descOf` (Russian falls back to English per field, English never falls
-  back), `eqLine`/`eqParts`; `lib/label.ts` `srcLabel` (a `switch` on
-  `it.src` whose `default` returns the raw key), `printSrc`, `tableOf`
-  (null for an unknown source), `cardBadges`; `lib/desc.ts` `artSrc`
-  (`img/` + name, `_none.webp` fallback); `lib/print.ts` `glyphKey`.
-- Index: `lib/data.ts` `buildIndex(loot)`; `Index.byId` is the one
-  lookup every page uses (`RecordPage`, `RecordModal`, `PrintPage`,
-  `ListPage` line 125, `SharedListPage` line 43, `ListsPage.knownItems`,
-  `AddToList.knows`, `parseHash`'s `knows`); `Index.searchable` is what
-  `SearchPage` filters; `Index.allEquip` and `rows` feed the tables.
-- Search: `lib/search.ts` `matches(it, q, statLine, hay)`, `hayFor`
-  memoised by id; `SearchPage.svelte` filters `index.searchable`, caps at
-  300, draws `TableRows` in list view.
-- Lists: `lib/cloudLists.ts` (`EntryRow` with `source` and `snapshot`,
-  `toCloudList`, `entryRowsOf` writes `source: 'official', snapshot:
-  null`), `state/cloudLists.svelte.ts` (optimistic queue, `refresh()` on
-  focus and every 45 s), `AddToList.svelte` (`store.add(l.id, ids, knows,
-  carried)`), `ListPage.svelte` (`byId` over `own.ids`),
-  `SharedListPage.svelte` (`B2.3` adds the `#/s/` loader `SharedView`).
-- Ports: `ports/types.ts` (`CloudPort`, `ListRepository`, `ListWrite`,
-  `ListsRead`), `ports/supabase.ts` (one `from()`/`rpc()` per method),
-  `ports/fake-cloud.ts` and `fake-cloud-seed.ts`, `ports/cloud.contract.ts`
-  (`runCloudContract`, one case group per port member).
-- Schema: `supabase/migrations/20260925130000_limits.sql`,
-  `20260925130100_lists.sql`, `20260925130200_list_shares.sql`
-  (`get_shared_list`, `clone_shared_list`), `20260925130300_lists_service_
-  role.sql`; conventions in `issues/persist-2-lists/plan.md` section 4.2
-  (every table `enable row level security`, `revoke all ... from public,
-  anon, authenticated` before a grant, `create function` never `or
-  replace`, `security definer`, `set search_path = public, pg_temp`, a
-  comment naming the spec section, a reversal per migration, a stamp
-  after the newest file; a changed function is dropped and created again
-  in a new migration, the reversal restores the old body).
-- Tests: `tests/db/lists.test.mjs` and `list-shares.test.mjs` (the
-  matrix through `roles.mjs` `asRole`), `tests/app/inventory.js` (states
-  with `as`), `tests/app/states.js` (pressed states), `tests/e2e/flows.mjs`
-  (F0-F7) and `admin.mjs` (`listsOf`, `deleteListsOf`),
-  `tests/e2e/contract.mjs` (runs `cloud.contract.ts`).
-- Routes: `lib/hash.ts` `parseHash` (`#/i/[\w-]+` is a record; `#/lists/
-  [\w-]+` a list; `#/account`), `ROUTES.md`, `CONTRACTS.md` sections 1
-  and 2, `docs/fixtures/urls/routes.json`, `tests/app/contracts.js`,
-  `llms.txt`.
-- Header: `Shell.svelte` draws the account control (`.acct`) as a link to
-  `#/account`; R5 turns it into the account menu («Настройки
-  отображения», «Мои списки», «Выйти»); R7 adds «Мои предметы».
-- Product text already uses «Хоумбрю» once: `dict.ts` `notePhHid` (the
-  GM note placeholder). The privacy pages already name homebrew items.
+## 3. The gap audit (item 12)
+
+Every surface that touches a catalog record, what a homebrew record would
+do there today, and the decision. "Include" is R7 or R7b (the batch in
+the last column); "defer" names the release; "ask" is a question of
+section 9.
+
+| # | Surface | What differs for a homebrew record | Decision | Where |
+|---|---|---|---|---|
+| G1 | `#/roll/std`, `#/roll/alt`, `#/roll/wondrous`, `#/roll/dread`, `#/roll/voa`, `#/roll/dv`, `#/roll/community` | Roll pools read `index.rows` and `LOOT.alt` by id; a homebrew record is in neither | Excluded by the owner (item 10). The shape does not close it off: a later `roll` field and a `hb_<book>` row table (section 4.13) | - |
+| G2 | The three equipment tables `#/tables/eq_*` | `equipOfKind` reads `allEquip`; the `src` facet lists `EQ_SRC` (five books, four frames) | Include: own equipment joins `allEquip`; `src` gains «Хоумбрю» (`hb`) and each source as a value; the tier sections and the `A` chip already follow the records | `B7.3` |
+| G3 | The book tables (`core_*`, `hnf_*`, `wondrous`, `dread`, `voa`, `dv`, `community`, `alt_*`, `other_*`) | Rows are a book's own; a homebrew record has no roll number and no book | By design, not drawn there. A homebrew table of its own instead (G4) | - |
+| G4 | A table for homebrew | None exists | Include: `homebrew` joins `TABLE_IDS` (a contract change), group «Хоумбрю» drawn only signed in, sectioned by source, facets `kind` and `src` (the author's sources) | `B7.3`, ask `Q2` |
+| G5 | Filter grammar and the `f_` address | `src` values are fixed keys; a homebrew source key in an address opened by another account narrows to nothing | Include: dynamic values `hb` and `hb_<16>`; an unknown value empties the table as any bogus value does today (accepted) | `B7.3` |
+| G6 | "With / without homebrew" (item 11) | No such narrowing | Include: a memory-only chip «Хоумбрю» (pressed = shown) beside the kind chips on `#/search` and in the equipment tables' toolbar, drawn only when the account has items; not in the address | `B7.3` |
+| G7 | A table's own search box, the copy-link button of a section, the grid tiles | Work over the table's rows; a tile's number badge reads `it.roll` | Include, nothing to change: a homebrew row has no number badge | `B7.3` |
+| G8 | `#/search` | Filters `index.searchable` (official only) | Include: one merged result list, official first, the 300 cap over all, the badge tells them apart (pass 1's second group dropped) | `B7.3` |
+| G9 | `#/i/<id>` | `byId` misses; the not-found page | Include: the owner's item resolves; the sub line reads the path «Хоумбрю · Pistolheart · Ранг 2»; «показать в таблице» leads to `#/tables/homebrew/<source>`; «Изменить» in the pick row; signed out or another account: not found | `B7.2` |
+| G10 | The record modal from a row | Same card | Include: «Изменить» for an own live item; none for a frozen copy | `B7.2` |
+| G11 | The record card: tier ladder, craft lines, set line, set bonus, refs | Derived from the index; a homebrew rung, target, member or card is unknown | Include: derived over the merged index; homebrew names dashed and titled; many targets folded (section 4.4) | `B7.3` |
+| G12 | The table and search row (`RowMain`): the craft line, badges | Same as G11 in one line | Include: first name plus «и ещё N»; dashed source badge | `B7.3` |
+| G13 | `RecordActions`: copy name, copy link, share, copy image, copy text | Copy link and share use `recordUrl` (a stub `i/<id>.html` that does not exist); copy image needs art | Include: `recordUrl` answers the app address for a `hb_` id (pass 1); copy image hidden while there is no art (the existing no-art rule); copy text works over the merged index | `B7.2` |
+| G14 | `#/print/<ids>` and the print card | Resolves through `app.index`; the source line is `printSrc` | Include: an own or frozen (own list) id prints; the source line is the path; the glyph until R8. A viewer's frozen copy cannot print from the address: `DEBT.md` under R9 (pass 1) | `B7.2` |
+| G15 | Add-to-list from a card, a row's tick and the selection bar, the record page | `entryRowsOf` writes `official` | Include: a resolver writes a reference for an own item, a frozen row for a carried snapshot (pass 1) | `B7.1`, `B7.2` |
+| G16 | The list page: rows, the modal, copy list text, the print button, undo of a removed entry, the batch bar | `byId` over `own.ids`; `shareList` takes an index | Include: one derived index per page (`withRecords` with the list's snapshots); `shareList` and the batch bar get that index; undo rewrites `source` and `snapshot` from the row it removed | `B7.2` |
+| G17 | The lists index: card thumbnails and count | `knownItems` reads `app.index` | Include: through the list's snapshots too, so a frozen copy counts and draws `_none` | `B7.2` |
+| G18 | `#/s/<token>` | `sharedListOf` drops unknown ids | Include: the projection fills a reference's snapshot (pass 1); the page merges snapshots into its index | `B7.1`, `B7.2` |
+| G19 | Purchase requests (R4): the owner's panel, the requester's send, apply and decline | Lines carry `item_key`; the panel names items through `app.index`; a frozen copy in the owner's own list is not in it | Include: the panel resolves names through the list's index (`withRecords`); R4's `B4.2` is being built now - phase B reads what shipped and places one line | `B7.2` |
+| G20 | «Сохранить себе» (clone) and R4's add-to-my-list | Copy `source` and `snapshot` through | Include: `clone_shared_list` freezes unless the caller owns the list (pass 1); add-to-my-list writes the carried snapshot | `B7.1`, `B7.2` |
+| G21 | Realtime (R3): the owner topic, share topics | A list bump reaches them; an item edit bumps nothing | Include: the touch trigger bumps referencing lists (pass 1); a `homebrew` event on `owner:<uid>` refreshes the store on other devices | `B7.1`, `B7.2` |
+| G22 | Export (R6): a list file, the account zip | v1 refuses `source: homebrew` | Include (R7b): `import-v2` for list files, `homebrew.json` in the zip, the account hint | `B7b.2` |
+| G23 | Import (R6) | `import_lists` passes `source` and `snapshot` through | Include (R7b): a v2 list file's homebrew entries import frozen, or as references when the account holds the key (client-side conversion); `import_homebrew` for the items file | `B7b.1`, `B7b.2` |
+| G24 | `llms.txt`, `schema/` | Nothing about homebrew | Include (R7b): two sections, two schemas, a blind round | `B7b.2` |
+| G25 | `catalog.csv`, `data.json`, `i/<id>.html`, `og/`, the English entry document | Generated from `data.js` | By design, never carry a homebrew record; `llms.txt` says so | `B7b.2` |
+| G26 | `#/account`: «Ваши данные», delete account | The zip hint names `lists.json`; `delete_account()` cascades | Include: the hint (R7b); the cascade (`B7.1`) | `B7.1`, `B7b.2` |
+| G27 | The account menu | «Аккаунт», «Мои списки», «Выйти» | Include: «Мои предметы» between «Мои списки» and «Выйти» (decision 2026-09-26) | `B7.2` |
+| G28 | Language switch, `nameOf` and `descOf` | English never falls back | Include: the record is built with a fallback from the other language, so a one-language item never draws blank (pass 1) | `B7.1` |
+| G29 | Description labels (`hasLabels`: equipment and Vault of Ages only) | A homebrew loot description with `Label: text` lines draws no italics | Include: a homebrew record has labels (`src === 'homebrew'`) | `B7.3` |
+| G30 | Sign-in prompt states, unconfigured build | - | Include: `#/homebrew*` and `#/tables/homebrew` signed out draw the prompt; unconfigured they draw the not-found page and keep the address (`#/account` precedent) | `B7.2`, `B7.3` |
+| G31 | Storage, the two-tab merge, `STATE.md` | Nothing local | Include: nothing of homebrew in `localStorage` or session memory beyond the store; `STATE.md` says so | `B7.2` |
+| G32 | Static pages `privacy`, `terms` | Name "homebrew items" already | Phase B checks the wording covers sources and cards (the same class of data) | `B7.2` |
+| G33 | Usage report (R11) | Counts tables by name | Include: the three tables and the new limit keys join the report's lists | `B7.1` |
+| G34 | Keyboard and screen readers: the pickers, the fold, the chip | New controls | Include: axe on every open state; the fold is a button with `aria-expanded`; the picker is a combobox pattern | `B7.2`, `B7.3` |
+| G35 | Roll "copy every option", `shareRoll` | Roll pages excluded | - | - |
+| G36 | The legacy `#/l/` codec | Official ids only; retires at R10 | Nothing: a homebrew entry never enters a browser list | - |
+| G37 | Set filter or set page | None for official records either (decision 2026-09-19) | Defer with the official ones | - |
+| G38 | The art slot: card, row, print, list thumbnails | `_none.webp` | R8; the editor's preview reserves the slot | R8 |
 
 ## 4. Design
 
-### 4.1 The record shape
+### 4.1 The record shape (items 1, 2)
 
 A homebrew item is a `Record_` whose stored part is `HomebrewContent`:
+every field a catalog record may carry except the ones tied to a book's
+own tables.
 
 ```ts
 /* lib/homebrew.ts - pure */
 export interface HomebrewContent {
   kind: 'item' | 'consumable' | 'equip';
-  en: string;   // 0..120 code points; at least one of en, ru non-empty
-  ru: string;   // 0..120
-  ende: string; // 0..3000
-  rud: string;  // 0..3000
-  tier?: 1 | 2 | 3 | 4;        // loot only, optional; equip carries eq.tier
-  eq?: HomebrewEquip;           // present iff kind === 'equip'
+  en?: string;   ru?: string;     // 0..120 code points; at least one non-empty
+  ende?: string; rud?: string;    // 0..3000
+  tier?: 1 | 2 | 3 | 4 | 'A' | 'C';   // loot only; 'A' artifact, 'C' cursed (the catalog's badges)
+  eq?: HomebrewEquip;             // iff kind === 'equip'
+  craft?: string;                 // upgrades to: an official id or a hb_ key
+  craft_from?: string;            // made from: the reverse, stored here because the official side is read-only
+  set?: string;                   // a catalog set key or a hb_ card key of kind 'set'
+  refs?: string[];                // 0..3 catalog ref keys or hb_ card keys of kind 'ref'
 }
 export interface HomebrewEquip {
   t: 'weapon' | 'secondary' | 'armor';
-  tier: 1 | 2 | 3 | 4;          // typed by the owner, never derived
-  cls?: 'phy' | 'mag';          // weapon, secondary: required
-  tr?: Trait;                   // weapon, secondary: required
-  rg?: Range;                   // weapon, secondary: required
-  dmg?: string;                 // weapon, secondary: required, /^d(4|6|8|10|12|20)([+-]\d{1,2})?$/
-  dt?: 'phy' | 'mag' | 'any';   // weapon, secondary: required
-  bu?: 1 | 2 | 'any';           // weapon: required; secondary: optional
-  as?: number;                  // armor: required, 0..12
-  th?: [number, number];        // armor: required, 1..99 each, th[0] <= th[1]
+  tier: 1 | 2 | 3 | 4 | 'A';     // typed by the author, never derived
+  cls?: 'phy' | 'mag'; tr?: Trait; rg?: Range; dmg?: string; dt?: 'phy' | 'mag' | 'any';
+  bu?: 1 | 2 | 'any'; as?: number; th?: [number, number];
+  line?: string;                  // the first item of the line: an official id or a hb_ key; absent = unique
+  alt?: Pick<HomebrewEquip, 'tr' | 'rg' | 'dmg' | 'dt'>;   // the second strip
 }
 ```
 
-Field names are `Record_`'s own, so one shape serves the form model, the
-database column, the frozen snapshot and bundle v2. Fields a homebrew
-record never carries: `roll`, `craft`, `refs`, `set`, `frame`,
-`community`, `starting`, `recall`, `line`, `alt`, `img` (R8 adds the
-picture through `art_url`, section 11). `tier` on loot is the book's
-`VoaTier` narrowed to 1-4: `A` and `C` are Vault of Ages categories, not
-a thing a homebrew item claims. `kind === 'equip'` iff `eq` is present,
-the rule `kindOf` already reads.
-
-Validated enums: `kind`, `eq.t`, `eq.tier`, `eq.cls`, `eq.tr`, `eq.rg`,
-`eq.dt`, `eq.bu`, `tier`. Free text: the four name and description
-fields and `eq.dmg` (bounded by the regex). `validateDraft(content):
-Problem[]` in `lib/homebrew.ts` and `public.homebrew_content_valid(jsonb)`
-in SQL enforce the same rules; `docs/fixtures/homebrew/valid.json` and
-`invalid.json` are run through both (layer 1 and layer 3), so the two
-cannot drift.
-
-Languages: both fields are optional and at least one name is required.
-`toRecord()` fills a missing language from the other one (`en = c.en ||
-c.ru`, `ru = c.ru || c.en`, the same for the descriptions), so a record
-never draws blank in either language and `nameOf`/`descOf` need no
-change. The stored content keeps only what was typed; the editor shows
-the fallback as a placeholder, not as a value. Rejected: both languages
-required - a GM at a Russian table writes one language.
-
-`toRecord(key, content): Record_` returns `{ id: key, src: 'homebrew',
-...content, en, ru, ende, rud }` with the fallbacks applied. `src:
-'homebrew'` is a new source key: `srcLabel` gains a `case 'homebrew'`
-returning `t.srcHomebrew` («Хоумбрю» / "Homebrew"; owner, section 13, Q3),
-`tableOf` returns null for it already, `cardBadges` and `glyphKey` need
-nothing, `printSrc` follows `srcLabel`.
-
-Size: names 120 and descriptions 3000 code points per language; a
-Cyrillic description is 2 bytes per character in UTF-8, so a maximal
-record is about 3000 x 2 + 3000 + 2 x 120 x 2 + 300 (eq and keys) =
-9.8 KB of JSON, under the 16384-byte snapshot bound with margin for the
-snapshot's own keys and R8's `art_url`. The bound stays 16384; nothing
-widens it. `content` carries the same bound as its own CHECK.
-
-### 4.2 Keys, ids and addresses
-
-`catalog_key` is `hb_` + 16 characters of lowercase base32 (`[a-z2-7]`),
-80 random bits, made on the client (`newKey()` on the port: the real
-adapter from `crypto.getRandomValues`, the fake from a counter so a
-golden's key is fixed). The prefix is reserved in `CONTRACTS.md` section
-2: no official record will ever start with `hb`. The shape fits
-`list_entries.item_key` (`^[A-Za-z0-9_-]{1,64}$`), `#/i/[\w-]+` and a
-`#/print/<ids>` address (19 characters per id, 180 ids fit the address).
-Uniqueness is per owner: `unique (owner_id, catalog_key)`. A bundle
-import keeps the keys it reads (a second import of the same bundle
-creates nothing); R9's clone makes a new key for the cloner. The row's
-own `id` is a client-made UUID, as `lists.id` is, so a retried create
-inserts nothing twice.
-
-`#/i/<key>` for a `hb_` key resolves in the app to the owner's item
-through the merged index (section 4.4); signed out, or for a key the
-account does not hold, it draws today's not-found record page. No stub
-page `i/hb_<key>.html` exists: `recordUrl()` for a homebrew id returns the
-app address (`appUrl(site, '#/i/<key>', lang)`) so copy-link and share
-carry an address that opens for the owner, and R9's `#/h/<token>` is the
-address for everyone else.
-
-### 4.3 Schema and RLS (`B7.1`)
-
-One migration `<stamp>_homebrew.sql` (the next free minute after the
-newest file on the day, `.claude/README.md`, "Migration names") and one
-reversal.
-
-```sql
--- Validates a homebrew record's stored content (docs/specs/FEATURES.md,
--- "Homebrew"). Immutable, so a CHECK may call it.
-create function public.homebrew_content_valid(p jsonb)
-returns boolean language plpgsql immutable set search_path = public, pg_temp as $$ ... $$;
--- rules: p is an object; kind in ('item','consumable','equip'); en, ru,
--- ende, rud are strings (char_length <= 120, 120, 3000, 3000); en or ru
--- non-empty after btrim; tier absent or in 1..4 (a number); eq present
--- iff kind = 'equip'; eq.t in (weapon, secondary, armor); eq.tier in
--- 1..4; weapon and secondary: cls in (phy, mag), tr in the seven traits,
--- rg in the five ranges, dmg ~ '^d(4|6|8|10|12|20)([+-][0-9]{1,2})?$',
--- dt in (phy, mag, any), bu (weapon: in (1, 2, 'any'); secondary:
--- absent or one of those); armor: as in 0..12, th an array of two
--- integers 1..99 with th[0] <= th[1], and no cls/tr/rg/dmg/dt/bu;
--- no key outside the list above.
-
--- A frozen copy: the record as the app builds it, with the language
--- fallbacks applied - the one formula the app (snapshotOf) and every
--- RPC use.
-create function public.homebrew_snapshot_of(p_key text, p_content jsonb)
-returns jsonb language sql immutable set search_path = public, pg_temp as $$
-  select jsonb_build_object('id', p_key, 'src', 'homebrew') || p_content
-    || jsonb_build_object(
-         'en',   coalesce(nullif(p_content ->> 'en', ''),   p_content ->> 'ru'),
-         'ru',   coalesce(nullif(p_content ->> 'ru', ''),   p_content ->> 'en'),
-         'ende', coalesce(nullif(p_content ->> 'ende', ''), p_content ->> 'rud'),
-         'rud',  coalesce(nullif(p_content ->> 'rud', ''),  p_content ->> 'ende'))
-$$;
-
-create function public.homebrew_snapshot_valid(p jsonb)
-returns boolean language sql immutable set search_path = public, pg_temp as $$
-  select p ? 'id' and p ? 'src' and p ->> 'src' = 'homebrew'
-     and (p ->> 'id') ~ '^hb_[a-z2-7]{16}$'
-     and public.homebrew_content_valid(p - 'id' - 'src')
-$$;
-
-create table public.homebrew_items (
-  id uuid primary key,
-  owner_id uuid not null references auth.users (id) on delete cascade,
-  catalog_key text not null check (catalog_key ~ '^hb_[a-z2-7]{16}$'),
-  content jsonb not null
-    check (public.homebrew_content_valid(content))
-    constraint homebrew_items_content_size check (octet_length(content::text) <= 16384),
-  revision bigint not null default 1,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (owner_id, catalog_key)
-);
-create index homebrew_items_owner_updated on public.homebrew_items (owner_id, updated_at desc);
-
-alter table public.homebrew_items enable row level security;
-revoke all on table public.homebrew_items from public, anon, authenticated;
-grant select, insert, update, delete on table public.homebrew_items to authenticated;
--- four policies to authenticated on (select auth.uid()) = owner_id, as lists.sql
-
-insert into public.limit_defaults (key, value) values ('homebrew_items_per_owner', 50);
-
--- homebrew_items_before_update: new.id, owner_id, catalog_key, created_at
---   := old.*; revision + 1; updated_at = now() (as lists_before_update).
--- homebrew_items_limit: after insert, pg_advisory_xact_lock(hashtext(
---   'homebrew:' || owner)), effective_limit(owner, 'homebrew_items_per_owner'),
---   raise 'limit: homebrew_items_per_owner' errcode P0001 detail = limit.
--- homebrew_items_touch: after update of content, security definer -
---   update public.lists set revision = revision + 1, updated_at = now()
---   where owner_id = new.owner_id and id in (
---     select e.list_id from public.list_entries e
---     where e.item_key = new.catalog_key and e.source = 'homebrew'
---       and e.snapshot is null);
---   an item edit is an edit of every list referencing it: the shared
---   page's poll, R3's share and owner topics and "edited N ago" all
---   follow lists.revision.
--- homebrew_items_before_delete: security definer - delete from
---   public.list_entries e using public.lists l where l.id = e.list_id
---   and l.owner_id = old.owner_id and e.item_key = old.catalog_key
---   and e.source = 'homebrew' and e.snapshot is null; return old.
---   The entries' own touch trigger bumps the lists. No dangling
---   reference can exist: the delete path is the table's, and this
---   trigger is on it.
--- EXECUTE on the four revoked from public, anon, authenticated.
-
--- A reference (snapshot null) or a frozen copy (a snapshot), both
--- homebrew; an official entry never carries one. Replaces the R2 CHECK
--- (source = 'official') = (snapshot is null).
-alter table public.list_entries
-  drop constraint list_entries_snapshot_check,
-  add constraint list_entries_snapshot_source
-    check (source = 'homebrew' or snapshot is null),
-  add constraint list_entries_snapshot_shape
-    check (snapshot is null or public.homebrew_snapshot_valid(snapshot));
-
--- get_shared_list(text): dropped and created again with one change - a
--- reference entry's `snapshot` in the projection is the referenced
--- item's frozen form:
---   coalesce(e.snapshot, case when e.source = 'homebrew' then
---     (select public.homebrew_snapshot_of(h.catalog_key, h.content)
---        from public.homebrew_items h
---        where h.owner_id = v_list.owner_id and h.catalog_key = e.item_key)
---   end)
--- so a viewer reads one shape, live or frozen, and the projection stays
--- the R2 shape. (A reference whose item is gone cannot occur: the delete
--- trigger removed the entry.)
--- clone_shared_list(text, uuid): dropped and created again with one
--- change - the entries insert `nullif(e -> 'snapshot', 'null')` as
--- today, which is now the frozen form for a homebrew entry (the
--- projection filled it), unless the caller owns the source list, in
--- which case a homebrew entry keeps `snapshot = null` (a copy inside the
--- account stays a reference).
-
-grant select, delete on table public.homebrew_items to service_role;
-```
-
-Reversal: create the R2 bodies of `get_shared_list` and
-`clone_shared_list` again (the text of `20260925130200_list_shares.sql`),
-drop the two new constraints and add the R2 CHECK back, drop the table,
-drop the five functions, `delete from limit_defaults where key =
-'homebrew_items_per_owner'` (the R2 precedent: a data insert has a real
-reversal, never `-- additive`).
-
-The R2 CHECK's generated name (`list_entries_snapshot_check`) is read
-from `pg_constraint` by the implementer before the migration is written;
-if it differs, the migration names the one found.
-
-Why one jsonb column and not typed columns: the record is one shape in
-the form, the port, the frozen copy and the bundle; typed columns would
-be a second shape to keep aligned and a wider migration for every field
-R8 or a later book adds. The SQL validator gives the same guarantees as
-column CHECKs. Recorded in `docs/decisions/2026-09-25-a-homebrew-item-is-stored-as-the-catalog.md`.
-
-No `kind` column: `content ->> 'kind'` answers, and a listing page sorts
-by `updated_at`, not by kind. No `art_url` in this migration: R8 adds it
-as an additive migration when the bucket exists.
-
-Account deletion: `owner_id ... on delete cascade` and R1's
-`delete_account()` cover it; the before-delete trigger fires per row
-under the cascade and removes the references first, so a `check:db` case
-proves the order does not matter (the lists cascade too). Decision 40's
-Edge Function moves to R8: no file exists before R8, so a SQL cascade is
-complete in R7. The roadmap's R8 outline is amended.
-
-### 4.4 The merged index and search
-
-`Index` gains one field, `homebrew: readonly Record_[]` (`[]` from
-`buildIndex`). `withRecords(index: Index, records: readonly Record_[]):
-Index` in `lib/homebrew.ts` returns an index whose `byId` holds both
-sets (official first; a `hb_` key can never shadow an official id) and
-whose `homebrew` is `records`; `all`, `rows`, `searchable`, `allEquip`,
-`craftedFrom`, `setMembers`, the alternate tables, `refs` and `sets` are
-the base's own objects, untouched. So the book tables, the rolls and the
-craft and set derivations never see a homebrew record; `byId` does, and
-every page that resolves an id through it (record page, modal, print,
-add-to-list's `knows`, `parseHash`'s `knows`, the owner's list page)
-resolves a homebrew item without a change of its own. Because the
-owner's list entries are references, the list page draws the live item
-through this index: an edit redraws every list at once, with no store
-change.
-
-`AppState.index` becomes a `$derived`: `#base` is the index built from
-`LOOT` at boot; `index = $derived(this.#base && withRecords(this.#base,
-this.homebrew?.records ?? []))`. A signed-out or unconfigured build
-keeps the base index object itself (`withRecords` returns `index` when
-`records` is empty), so nothing about today's goldens moves for a
-signed-out state.
-
-Search (`SearchPage.svelte`): two groups. The official group is today's
-`index.searchable.filter(...)` with the 300 cap and the shown-of-total
-line; the second group is `index.homebrew.filter(...)` with the same
-`matches`, `hay` and kind chips, uncapped (at most 50 rows), drawn under
-a `Field`-style heading («Мои предметы» / "My items", the heading a link
-to `#/homebrew`) only when it has a hit. When only the homebrew group
-has hits, the official group is not drawn and "nothing found" is not
-said. The `hayFor` cache is keyed by id; a homebrew edit changes the
-record object but keeps its id, so `hay` is derived from `index`, not
-from `t` alone (one line in `SearchPage`).
-
-Signed out or unconfigured: `index.homebrew` is empty, no group, no
-heading - the search goldens without `as` do not move.
-
-### 4.5 References and frozen copies
-
-Two kinds of homebrew entry share `source = 'homebrew'`:
-
-| Entry | `snapshot` | Where it occurs | Resolves through |
-|---|---|---|---|
-| Reference | null | the owner's own lists (add-to-list, a clone of the owner's own link, an import whose key the account holds) | the owner's live item, `index.byId` (section 4.4) |
-| Frozen copy | the record as `homebrew_snapshot_of` builds it | a list outside the account: a viewer's "Save a copy" (`clone_shared_list`), R4's add-to-my-list, R6's export and an import whose key the account does not hold, R9's add from a link | the entry's own `snapshot` |
-
-`snapshotOf(record: Record_): HomebrewSnapshot` in `lib/homebrew.ts` is
-the TypeScript twin of `homebrew_snapshot_of` (the record as `toRecord`
-built it, with the fallbacks, nothing else); `tests/db/homebrew.test.mjs`
-and `homebrew.test.ts` both pin `docs/fixtures/homebrew/snapshot.json`
-(content in, snapshot out), so the two agree.
-
-Writing: `entryRowsOf(ids, meta, newId, from, recordOf)` gains a last
-argument, a resolver `(id) => Record_ | undefined`; for a `hb_` id whose
-record is the owner's live item it writes `source: 'homebrew', snapshot:
-null` (a reference); for a `hb_` id resolved from a snapshot (the shared
-page's add-to-list carrying a frozen row - R4) it writes the snapshot;
-for an official id `official` and null as today. `CloudLists.add`,
-`create` and `restoreEntry` pass the store's resolver (section 4.6).
-The fake's `insertEntries` refuses a homebrew reference whose key the
-owner does not hold and a frozen row whose snapshot id is not the
-entry's `item_key`, the way the triggers and CHECKs do.
-
-Reading: `CloudList` gains `snapshots: Record<string, Record_>` (frozen
-rows only, through a defensive `snapshotRecord()`); `ListPage.svelte`,
-`SharedListPage.svelte` and `ListsPage.knownItems` resolve entries
-through `withRecords(app.index, Object.values(list.snapshots))` - one
-derived `Index` per page, so their `byId` sites stay as they are; a
-frozen copy wins over an own item with the same key (the shared page
-has no own items: the projection carries every homebrew row as a
-snapshot). The record modal opened from a frozen row draws the snapshot
-and no «Изменить»; from a reference row it draws the live item with
-«Изменить».
-
-Editing: an edit writes the item; the list, index, shared and print
-pages redraw from the index; the database bumps every referencing list's
-`revision` (the touch trigger), so the shared page's poll, R3's topics
-and "изменён N назад" follow. A frozen copy never changes.
-
-Deleting: the editor counts the owner's lists holding a reference
-(`app.cloudLists.lists.filter((l) => l.ids.includes(key) && !(key in
-l.snapshots))`) and asks through `env.dialog.confirm`: with lists,
-«Предмет «%s» есть в %n списках. Удалить его и убрать из них? Отменить
-нельзя.» (`plural`: 1 списке / 2 списках / 5 списках); without, «Удалить
-предмет «%s»? Отменить нельзя.». Then `homebrew.remove(id)`; the
-before-delete trigger removes the references; the store drops the item
-and `CloudLists` re-reads (the lists' `updated_at` moved). No undo
-(decision 30). Recorded in `docs/decisions/2026-09-26-a-homebrew-entry-in-the-owners-lists-is.md`.
-
-The `#/print/<ids>` address written by a list page's print button
-resolves `hb_` ids through `app.index`: a reference prints its live item
-(right), a frozen copy in a viewer's list prints nothing (the viewer has
-no such item). `B7.2` records this in `docs/specs/DEBT.md` under R9,
-which retires it with `#/print/list/<id>` (section 11).
-
-### 4.6 Port, fake, state
-
-`ports/types.ts`:
-
-```ts
-export interface HomebrewRow {
-  id: string; catalog_key: string; content: HomebrewContent;
-  revision: number; created_at: string; updated_at: string;
-}
-export type HomebrewRead = { ok: true; items: HomebrewRow[] } | { ok: false };
-export interface HomebrewRepository {
-  newId(): string;
-  newKey(): string;
-  list(): Promise<HomebrewRead>;
-  /** Inserts the row; a second call with the same id inserts nothing. */
-  create(row: Pick<HomebrewRow, 'id' | 'catalog_key' | 'content'>): Promise<ListWrite>;
-  update(id: string, content: HomebrewContent): Promise<ListWrite>;
-  /** Deletes the item; the database removes its references from the owner's lists. */
-  remove(id: string): Promise<ListWrite>;
-}
-export interface CloudPort { auth; prefs; lists; homebrew: HomebrewRepository; events? }
-```
-
-(`events` is R3's `CapabilityEventsPort`, present by the time R7 builds.)
-`ListWrite` is reused as the write answer (its shape is a write's answer,
-not a list's); a rename to `CloudWrite` would touch every list file for
-no behaviour and is not made.
-
-`ports/supabase.ts`: `from('homebrew_items')` select ordered by
-`updated_at desc`; insert with `owner_id` from the session (the B2.2 B1
-fix's pattern), `{ onConflict: 'id', ignoreDuplicates: true }`; update
-`content` by id; delete by id; the `limit: <key>` DETAIL mapping already
-in `written()`.
-
-`ports/fake-cloud-seed.ts`: `SeedHomebrew { id, key, content,
-createdAgoMs, editedAgoMs }`, `Seed.homebrew: Record<SeedUserId,
-SeedHomebrew[]>`. `gm1`: `uuid(301)` key `hb_seedaxeaaaaaaaaa` - a tier 2
-magic primary weapon, both languages («Топор Тлеющих Углей» / "Ember
-Axe", `cls: mag`, `tr: spellcast`, `rg: melee`, `dmg: d10+2`, `dt: mag`,
-`bu: 2`); `uuid(302)` key `hb_seedpotaaaaaaaaa` - a consumable, Russian
-only («Настой кузнеца», a two-line description with a `- ` list item);
-`uuid(303)` key `hb_seedcapaaaaaaaaa` - a loot item, English only
-("Whispering Cap", `tier: 1`). `gm2`: none (the empty state). List
-`uuid(101)` gains a tenth entry `uuid(1110)` at position 9: `item_key
-hb_seedaxeaaaaaaaaa`, `source homebrew`, `snapshot null` (a reference),
-`qty: 1, gold: 800`; `gm2`'s list `uuid(201)` gains `uuid(2102)` at
-position 1, key `hb_seedaxeaaaaaaaaa`, `snapshot` the axe's frozen form
-- what "Save a copy" of `player-token-1` leaves in `gm2`'s account. The
-fake's `homebrew` port copies rows per user, `newKey()` answers `hb_` +
-a 16-character base32 of a counter from 7000 (`base32(n)` in the seed
-file, alphabet `abcdefghijklmnopqrstuvwxyz234567`, left-padded with
-`a`), `newId()` is the lists' `uuid(made++)`, the limit is 50 or
-`options.limits.homebrew`, `offline` answers `network`, signed out
-`refused`; `remove` deletes the item and every reference to it in the
-user's lists, bumping those lists' `updated_at`; `update` bumps the
-referencing lists' `updated_at` too; the fake's `get_shared_list`
-projection fills a reference's snapshot from the item. `fake-cloud
-.test.ts` pins the seed: every key matches the regex, every content
-passes `validateDraft`, every reference names an item its owner holds,
-every frozen snapshot passes the snapshot check.
-
-`state/homebrew.svelte.ts` - `Homebrew` class: `status` idle/loading/
-ready/error, `items = $state.raw<HomebrewRow[]>([])` newest edit first,
-`records = $derived(items.map((r) => toRecord(r.catalog_key, r.content)))`,
-`load()`, `refresh()` (on focus, every 45 s while `#/homebrew*`, a list
-page or the search page is on screen, and on R3's `owner:<uid>` messages
-- section 11), `clear()` on sign-out, `get(key)`, `save(draft):
-Promise<ListWrite>` (create or update, awaited - the form's own submit),
-`remove(id): Promise<ListWrite>`. No optimistic queue: a form has one
-submit, the page shows «Сохраняем...» on the button, then navigates on
-`ok` or shows the refusal under the form and keeps the draft. Recorded
-in `docs/decisions/2026-09-25-a-homebrew-save-is-a-form-submit-not-the.md`.
-`AppState` owns `homebrew: Homebrew | null` (null in an unconfigured
-build), loads it beside `cloudLists` when a session resolves, clears it
-on sign-out. `CloudLists` takes `recordOf: (id) => Record_ | undefined`
-in its constructor (`app.svelte.ts` passes `(id) => this.index?.byId
-.get(id)`).
-
-`cloud.contract.ts` gains case H on the doomed user, between G and E:
-create an item, read it back (`content` equal, `catalog_key` equal), a
-second create with the same id inserts nothing, update the content and
-read it back, add it to a list as a reference through `lists.addEntries`
-and read the entry back (`source homebrew`, `snapshot null`), update the
-item and read the list (its `updated_at` moved), remove the item and
-read the list again (the entry is gone), remove the list.
-
-### 4.7 Routes, the menu entry and the pages (`B7.2`)
-
-`parseHash`: `/^homebrew(?:\/(new|hb_[a-z2-7]{16}))?$/` ->
-`{ kind: 'homebrew'; key: string | null; fresh: boolean }` (`fresh` for
-`new`). `homebrewHash(key?)` builder. `#/homebrew` is read in every
-build: unconfigured it draws the not-found page and keeps the address
-(the `#/account` precedent); signed out it draws the page head and the
-`SignInPrompt` in the place of the list («Войдите, чтобы создавать свои
-предметы» / "Sign in to make your own items", `after: { hash:
-'#/homebrew', action: null }`); signed in it draws the page. No tab
-reads current on `#/homebrew*` (`AppState.section` stays null, as for
-`#/account`): the page is the account's, not a section's. `App.svelte`
-gains one branch.
-
-Entry points (owner, 2026-09-26): the account menu R5 builds from the
-header's account control gains «Мои предметы» / "My items" between «Мои
-списки» and «Выйти», a link to `#/homebrew`; the search group's heading
-links there; a record page or modal of the owner's own item offers
-«Изменить» to the editor. Nothing on the lists index (the Lists tab goes
-away at the cutoff, R5). Seam with R5: the menu component takes its
-entries as an ordered list of `{ label, href }` (or a snippet) so R7
-inserts one entry and no markup; R7's refresh reads the component R5
-shipped.
-
-`HomebrewPage.svelte` (`#/homebrew`): `PageHead` («Мои предметы», sub
-«Предметы, которых нет в книгах: они ищутся вместе с каталогом и
-добавляются в списки.», help null, no pin - the page is not a section),
-a `Panel` with one primary `Button` «+ Новый предмет» (href
-`#/homebrew/new`), then the items as `TableRows` in list view (the same
-row as search: name, stat line, description, badges; `srcLabel» «Свой
-предмет»), each row opening the editor (`onopen` -> `app.go(homebrewHash
-(key))`, not the modal - a row on this page is the item, and the editor
-draws the card preview), «Загружаем...» while loading, «Не получилось
-загрузить предметы.» and «Повторить» on error, «Своих предметов пока
-нет - создайте первый.» when empty, and the count line «3 предмета из
-50» under the head (`plural`). Add-to-list and selection: the row's tick
-(`TableRows` `selected`/`ontoggle`) puts the item in `app.sel`, so the
-selection bar's «Добавить в список» and «Печать» work as on a table - no
-control of its own.
-
-`HomebrewEditor.svelte` (`#/homebrew/new` and `#/homebrew/<key>`): a
-`Panel` with the form and, beside it at 1180 wide (under it at phone
-width), a live `RecordCard` compact preview of `toRecord(draft)` - the
-same card search and the tables draw. Fields, in order, each a `Field`
-with the existing `lbl` caption: Kind (`Seg`: Предмет / Расходник /
-Снаряжение); for equipment a second `Seg` (Основное оружие / Вторичное
-оружие / Броня); Название RU and Name EN (`TextInput`, maxlength 120,
-the other language's value as the placeholder when one is typed); Описание
-RU and Description EN (`<textarea>` styled as the list page's note box,
-maxlength 3000); Ранг (`Seg` 1 2 3 4, plus «Нет» for loot); for weapons:
-Класс (`Seg` Физическое / Магическое), Характеристика (`Chip` row of the
-seven traits, one on), Дистанция (`Seg` of five), Урон (`TextInput`
-placeholder `d8+1`), Тип урона (`Seg` физ / маг / физ-маг), Хват (`Seg`
-Одноручное / Двуручное / Одноручное/двуручное); for armour: Показатель
-брони (`NumberField` 0..12) and Пороги (two `NumberField`s 1..99). The
-labels are `dict.ts` keys already used by the stat line and the filters
-where they exist (`t.tier`, `EQ_TRAIT`, `EQ_RANGE`, `EQ_CLS`, `EQ_DT`,
-`EQ_BURDEN`, `EQ_TYPE`); new keys only for the captions that do not
-exist yet. Buttons: «Сохранить» (primary), «Отмена» (back to
-`#/homebrew`), and for an existing item «Удалить» (danger) at the right.
-Validation on submit: `validateDraft` problems are drawn as one danger
-line under the form naming the first field («Заполните название хотя бы
-на одном языке», «Урон записывается как d8 или d10+2», ...) and focus
-moves to that field; the database's refusal reads «Не сохранилось: сервер
-не принял предмет.» and a limit reads `limitText('homebrew_items_per_owner',
-n)» («Достигнут предел своих предметов: 50. ...» - a new `limitHomebrew`
-key beside `limitLists`). After a successful save: toast «Предмет «%s»
-сохранён», navigate to `#/homebrew`. Under the form of an existing item
-that lists hold, one muted line: «Предмет есть в 3 списках: изменения
-появятся в них сразу, в том числе у игроков по ссылке.» (`plural`).
-Delete: the count warning of section 4.5, then `#/homebrew` and a toast
-without undo (decision 30). An unknown key draws «Предмет не найден» and
-a link to `#/homebrew`.
-
-Mocks: `issues/persist-7-homebrew/mocks/b72-homebrew.html` (frames A-F,
-composed from `mock.css`, R2's copy of the tokens and component rules:
-the page, the editor with its preview and the "in N lists" line, the
-search group, the account menu with «Мои предметы» and the signed-out
-page, the delete warning, a frozen row in another account's list).
-
-Record page and modal for a homebrew record: `RecordPage` at `#/i/<key>`
-draws the card as for any record (the `where` line reads «Хоумбрю»,
-no «показать в таблице» link since `tableOf` is null); its `pick` slot
-keeps add-to-list and print and gains «Изменить» (a `Button` link to the
-editor) for the owner's live item; the modal opened from a frozen row
-draws the snapshot and no «Изменить». `RecordActions` copy-link and share
-use `recordUrl`, which answers the app address for a `hb_` id (section 4.2).
-
-Print: `PrintCard` needs nothing; `printSrc` reads «Хоумбрю»; the
-picture slot draws the kind glyph (no art until R8). `tests/app/print.js`
-gains the fake's axe and consumable at `#/print/hb_seedaxeaaaaaaaaa-
-hb_seedpotaaaaaaaaa as gm1` in both layouts (the fit ladders run on a
-card with a Cyrillic-only description and a Spellcast strip).
-
-Dictionary: `srcHomebrew`, `homebrew` (the word for the page head, the
-menu entry and the search group), `subHomebrew`, `newItem`,
-`noHomebrew`, `homebrewCount` (plural form set), `save`, `itemSaved`,
-`deleteItemConfirm`, `deleteItemInListsConfirm` (plural form set),
-`inListsHint` (plural form set), `itemNotFound`, `signInToHomebrew`,
-`limitHomebrew`, the field captions (new: `nameRu`, `nameEn`, `descRu`,
-`descEn`, `tierNone`, `eqClass`, `eqTrait`, `eqRange`, `eqDamage`,
-`eqDamageType`, `eqBurden`, `eqArmorScore`, `eqThresholds`), the
-validation lines, `edit`. Both languages, `dict.ts`'s `Dict` type keeps
-them exhaustive.
-
-Specs: `FEATURES.md` gains a section "Homebrew" (the page, the editor,
-the menu entry, the search group, the reference and frozen-copy rule,
-the edit propagation, print, delete with the count, limits) and one
-paragraph in "Tables and search" (the second group); `ROUTES.md` gains
-the three homebrew routes and the `#/i/<key>` clause; `CONTRACTS.md`
-section 1 (the routes) and section 2 (`hb_` reserved, never an official
-prefix); `STATE.md` (nothing in storage; the account holds the items);
-`META.md` section 3 (homebrew now shipped); `I18N.md` (a homebrew record's
-language fallback); `COVERAGE.md` (the new suites and states);
-`docs/fixtures/urls/routes.json` (`#/homebrew`, `#/homebrew/new`,
-`#/homebrew/hb_seedaxeaaaaaaaaa` unconfigured -> not-found kept, and
-`#/homebrew/x` -> home); `tests/app/contracts.js`; `llms.txt` (a
-homebrew section: what a `hb_` id is, that `catalog.csv` never lists one,
-that a shared list may carry one with its content in the projection).
-
-### 4.8 Bundle schema v2 (`B7.3`)
-
-R6 publishes `schema/import-v1.json` (`format` `daggerheart-loot/lists`,
-`version` 1, `additionalProperties: false`, `source` enum `["official"]`)
-and `import_lists(p_lists jsonb)`, which passes `source` and `snapshot`
-through and checks nothing about homebrew. v2 extends v1:
-
-- `version: 2`; every v1 field unchanged;
-- a new top-level `homebrew: [{ key, content }]` (the `HomebrewContent`
-  shape of section 4.1, `key` the `hb_` key), at most 50 entries;
-- a list entry may carry `source: "homebrew"` and `snapshot` (the
-  snapshot shape; required for a homebrew entry in a file - a file never
-  carries a bare reference, so it is self-contained); v1 entries stay
-  `official` with no snapshot.
-
-Export: every homebrew entry is written frozen (`snapshotOf` of the live
-item for a reference, the row's own snapshot for a frozen copy); "all
-lists" also carries every item of the account in `homebrew`; "selected"
-and "one list" carry no `homebrew` array (the snapshots suffice; the
-items travel with the account, or through R9's link).
-
-Import (create-only, all or nothing - R6 Q1): one RPC `import_bundle
-(p_items jsonb, p_lists jsonb) returns integer` (a `B7.3` migration,
-beside `import_lists`, which it calls after the items): inserts each
-item whose key the account does not hold (a held key is skipped, the
-existing item stays; the limit trigger refuses the whole call past 50),
-then the lists through `import_lists`, then turns every inserted entry
-with `source = 'homebrew'` whose `item_key` the account now holds into a
-reference (`snapshot = null`) - so an own export re-imported restores
-references, and a friend's export leaves frozen copies. `lib/bundle.ts`
-gains the v2 branch of `parseBundle`/`validateBundle` (`version` 2, the
-`homebrew` array, entry snapshots through `validateDraft` on `snapshot -
-id - src`); the preview counts items too («3 предмета, 2 уже есть»).
-
-`B7.3` publishes `schema/import-v2.json`, keeps v1 published and
-accepted, updates `CONTRACTS.md` section 4, `llms.txt`, the `#/account`
-"Your data" text (export now carries homebrew), `tests/contracts.js` (v2
-fixtures under `docs/fixtures/import/`), a layer 3 case per rule above,
-a layer 2 state for the import preview with homebrew counts as `gm1`,
-and an E2E flow (export all, delete the item, import, the item is back
-with the same key and its list entry is a reference again).
-
-### 4.9 Deletion, account deletion, monitoring
-
-- Item delete: the count warning, then a hard delete that removes the
-  item's references from the owner's lists (the trigger); no undo, no
-  Trash (decision 30). A frozen copy in another account is not touched.
-- Account delete: the cascade (section 4.3); layer 3 proves a deleted
-  user's items and lists are gone and another user's frozen copies stay;
-  R8 replaces the SQL function by the Edge Function when files exist.
-- Usage monitoring (R11): `homebrew_items` is a table to count; named to
-  its planner through the roadmap.
+Field names are the catalog's own (`data.json`), so one shape serves the
+form, the column, the snapshot and the file; an LLM that read `data.json`
+can write it. `craft_from` is the one field the catalog does not have:
+`craft` is stored in one direction only, and a homebrew item that is
+made from an official item cannot write on the official record. Fields a
+homebrew record never carries: `roll`, `frame`, `starting`, `community`,
+`recall` (Vault of Ages' own, drawn nowhere), `img` (R8 adds it through
+`art_url`). `kind === 'equip'` iff `eq` is present (`kindOf`).
+
+Validation: enums as pass 1 plus `tier` `A`/`C` on loot, `eq.tier` `A`,
+`craft`, `craft_from`, `set`, `refs[]`, `eq.line` as ids
+(`^[A-Za-z0-9_-]{1,64}$`, the `item_key` grammar; a key nothing answers
+is not drawn, the rule `craftedFrom` already follows), `refs` at most 3,
+`alt` with the weapon subset. `validateDraft(content): Problem[]` and
+`public.homebrew_content_valid(jsonb)` enforce the same rules over
+`docs/fixtures/homebrew/valid.json` and `invalid.json` (pass 1).
+
+Languages (item 2, decided): the stored shape holds both languages,
+each optional, at least one name required; `toRecord()` fills a missing
+language from the other, so `nameOf`/`descOf` need no change. Migration
+cost either way: storing one language plus a `lang` field now and adding
+the second later means a migration that rewrites every `content` and
+every frozen `snapshot` in `list_entries` (a frozen copy is immutable by
+decision, so it would need a special case), a validator replacement and a
+file format bump to `homebrew-v2`; storing both now costs nothing later
+and the file format is bilingual from its first version, which item 13's
+converted books need. Recommendation `Q4`: bilingual shape; the editor
+shows the UI language's name and description and folds the other
+language under «Другой язык» / "Other language" (two fields the shape
+already has; a converted book keeps its English while the author writes
+Russian).
+
+Size: names 120 and descriptions 3000 code points per language as pass 1;
+a maximal item is about 13 KB of JSON before its cards (section 4.8).
+
+### 4.2 Sources: «Источник», `book` (items 9, 13)
+
+A source groups an author's items the way a book groups the catalog's.
+UI word: «Источник» / "Source" (the facet label `t.source` already);
+code and schema word: `book` (`homebrew_books`, `Record_.book`), so it
+does not collide with `list_entries.source` (`official` | `homebrew`)
+and names item 13's target. One word per layer, stated here once.
+
+- `homebrew_books(id, owner_id, key hb_..., content jsonb { en?, ru? } (1..80 code points, at least one), revision, created_at, updated_at)`,
+  `unique (owner_id, key)`, limit `homebrew_books_per_owner` 20.
+- An item's `book_id uuid null references homebrew_books on delete set null`:
+  null is the default source, tagged «Хоумбрю» / "Homebrew" (owner, Q3 of
+  pass 1). Deleting a source keeps its items and drops them to the
+  default (the confirm says so).
+- The record carries `book?: { key, en, ru }` (denormalised at build by
+  `toRecord`, rebuilt when a source is renamed; a frozen snapshot keeps
+  the name it was frozen with). `srcOf(it)` answers `it.book?.key ?? 'hb'`
+  for the facets; `srcLabel` answers the source name in the UI language
+  (fallback to the other) or «Хоумбрю»; `tableOf` answers `homebrew`;
+  `whereFrom` answers «Хоумбрю · <source>» (the group and its leaf, the
+  community rule) or «Хоумбрю» alone; `printSrc` follows `whereFrom` for
+  a homebrew record, as it does for a community record.
+- Label form (item 9, `Q5`): recommended - the tag reads the source name
+  alone («Pistolheart»; «Хоумбрю» for the default source) and takes a
+  dashed border (`.badge.src.hb`, the property style `.badge.uniq`
+  already uses) with the title «Хоумбрю: ваш источник» / "Homebrew: your
+  source"; the path form on the record page and the print card reads
+  «Хоумбрю · Pistolheart». Reason: a tag is one leaf, and "dashed means
+  homebrew" is the one visual rule this release adds (section 4.4).
+  Alternative: the text «Pistolheart (HB)» everywhere.
+- Sources live on `#/homebrew` (section 4.10): add, rename, delete;
+  `#/tables/homebrew` sections by them.
+
+### 4.3 Cards: sets and referenced cards
+
+A set's bonus and a referenced card are stored once and drawn on every
+record that names them (`LOOT.sets`, `LOOT.refs`). Homebrew needs the
+same store: `homebrew_cards(id, owner_id, kind 'set' | 'ref', key hb_...,
+book_id null, content jsonb, revision, created_at, updated_at)`,
+`unique (owner_id, key)`, limit `homebrew_cards_per_owner` 100. `content`
+is `SetCard` (`en`, `ru`, `ende`, `rud`; names 1..80, texts 0..1200) or
+`RefCard` (`en`, `ru`, `ensub`, `rusub`, `ende`, `rud`, `url` optional
+`https:` 0..300; names 1..80, subs 0..60, texts 0..1200), one language
+required. The merged index's `sets` and `refs` are the catalog's plus
+the account's, keyed by `hb_` keys, so nothing collides.
+
+An item may name a catalog set (`saints-ensemble`) or card
+(`vicious-entangle`) as well as an own one (item 3). A card's editor is
+inline in the item editor («+ новый комплект», «+ новая карта») and on
+`#/homebrew` (a «Карты» panel: rename, edit, delete; a deleted card's key
+stays on the items that named it and is simply not drawn).
+
+Rejected: the set card on one member (the 2026-09-19 decision), the
+cards inside a source row's jsonb (an item with no source has nowhere to
+put them), two tables (`homebrew_sets`, `homebrew_refs`: the same RLS,
+limit and revision code twice).
+
+### 4.4 Relations across the boundary (items 3-6)
+
+Storage: a homebrew item stores its relations as keys (`craft`,
+`craft_from`, `eq.line`, `set`, `refs`); an official record is never
+written. Derivation, over the merged index (section 4.6):
+
+- `upgradesTo(id): Record_[]` = records whose `craft_from` is `id`, plus
+  the record `byId.get(it.craft)` names; `madeFrom(id): Record_[]` = the
+  records whose `craft` is `id`, plus `byId.get(it.craft_from)`. Both
+  replace `Index.craftedFrom: Map<string, string>` (one source per
+  target) with maps to arrays; `RecordCard`, `RowMain`, `share.ts` and
+  `data.test.ts` read the new shape. Official first, then homebrew, each
+  group in catalog or name order.
+- `setMembers` groups own records by `set` beside the catalog's;
+  `upgradeLine` filters `allEquip` by `eq.line` (own equipment included)
+  and sorts by tier; a record that is not in `allEquip` (a frozen copy)
+  is appended to its own ladder so the "on" rung exists.
+
+Display (item 4, the 15 bedrolls): a craft line with more than three
+names draws the first three, then a button «и ещё 12» / "and 12 more"
+(`aria-expanded`) that unfolds the rest inline; the row (`RowMain`)
+draws the first name and «и ещё 14». The set line lists every member
+(a set of sixteen is a long line; accepted, the fold rule applies past
+eight). Copied text (`shareBlocks`) writes every target as today, one
+block per target, homebrew ones after official.
+
+Marking (item 5): one rule - dashed means homebrew. A homebrew record's
+name inside a relation (a craft target, a set member, a ladder rung)
+takes a dashed underline (`.craft a.hb`, `.step.hb` a dashed border) and
+the title «<source> · хоумбрю»; the source badge is dashed (4.2). The
+official record's own card is otherwise unchanged, so a reader without
+homebrew sees today's card byte for byte.
+
+Visibility (item 6): the merged index is built from the signed-in
+account's own rows, so only the author sees own relations on catalog
+cards. A frozen copy in a list merges into `byId` alone (section 4.6):
+its own card draws its outbound relations where they resolve (made from
+«Первоклассный Спальный Мешок» does; a target the viewer does not hold
+is not drawn), and the official card opened from that list page shows
+no homebrew relation. A cloned item (R9) is an own item and joins the
+derivations as one.
+
+### 4.5 Tier progression and "unique" (item 1)
+
+The catalog's upgrade line is `eq.line` (the first item's id; the four
+tiers of one weapon, one shared picture) and a one-off is an empty
+`line`, drawn as the «Уникальное» badge and offered by the `line` facet
+as `uniq`. The editor's «Линия улучшений» / "Upgrade line" is a `Seg`:
+«Уникальный» (no `line`, the badge) / «В линии» (a picker for the item
+that opens the line - official or own; `line` = that item's `eq.line` or
+its id) / «Новая линия» (`line` = the item's own key, the first rung).
+A homebrew rung on an official ladder is one more square, dashed
+(4.4); two rungs of one tier stand side by side. Artifact is the
+existing `eq.tier: 'A'` value (a `Seg` option «Артефакт»). R8 reuses the
+line for art: the uploader offers the line's picture.
+
+`Q1` (recommended): "unique" is the one-off outside a line - the
+existing mechanism, no new flag; "artifact" is `tier 'A'`, also existing.
+
+### 4.6 The merged index and where homebrew appears (items 10, 11)
+
+`withRecords(base: Index, own: { records, sets, refs, books }, frozen: Record_[]): Index`
+in `lib/homebrew.ts` returns:
+
+| Field | Own records | Frozen copies |
+|---|---|---|
+| `byId` | join (an official id is never shadowed: `hb_` keys) | join where the key is not held |
+| `searchable`, `allEquip` | join, after the catalog's | no |
+| `rows` | a new key `homebrew`: own records, sections by source in the page's order (default first, then sources by name), inside by name in the UI language | no |
+| `upgradesTo`, `madeFrom`, `setMembers` | derived over catalog + own | no |
+| `sets`, `refs` | catalog + own cards | the snapshot's embedded cards, for its own card only (4.8) |
+| `all`, `rarityOf`, `altRow`, `altColumn` | the catalog's objects, untouched | untouched |
+
+`AppState.index` becomes `$derived(withRecords(base, homebrew.own, []))`;
+a list, shared or print page derives its own `withRecords(app.index,
+none, snapshots)` (pass 1). `withRecords` returns `base` itself when both
+inputs are empty, so a signed-out build keeps today's index object and
+no golden without `as` moves.
+
+Tables (`Q2`, recommended reading: a table page of their own):
+`TABLE_IDS` gains `homebrew` (a contract change in `ROUTES.md` and
+`CONTRACTS.md` section 1); `TABLE_GROUPS` gains `{ id: 'hb', label:
+'srcHomebrew', top: 'homebrew', subs: ['homebrew'] }` last, its chip
+drawn only when a user is signed in (signed out the address still
+parses: the page draws the sign-in prompt; unconfigured, the not-found
+page); `PLAIN_GROUPS.homebrew = ['kind', 'src']` with `src` values built
+from the account's sources (`hb` and each `hb_` key), sectioned by
+source with the source key as the anchor. The equipment tables' `src`
+facet appends the same dynamic values after the fixed `EQ_SRC` list,
+through the presence filter that already hides a source with no rows of
+that kind; `srcName` takes a resolver for `hb` keys. The `line` facet's
+`uniq` and the tier `A` chip follow the records with no change.
+
+The chip (item 11): `app.homebrewShown` (memory only, default true, the
+`kinds` precedent), drawn as a pressed `Chip` «Хоумбрю» beside the kind
+chips on `#/search` and in the equipment tables' toolbar, only while the
+account holds at least one item; off, own records leave `searchable` and
+`allEquip` for those pages (the `homebrew` table ignores it). Not in the
+address: the frozen filter grammar does not change, and a link narrowed
+by private items has nobody to open it. Rejected: a `hb` filter group
+(a grammar change on three tables for a private narrowing).
+
+Search (G8): one merged list; the second group of pass 1 is dropped -
+first-class means the same rows, told apart by the tag. `hayFor` is
+keyed by id, so the page derives its cache from `index`, not `t` alone
+(an edit changes the object, not the id).
+
+### 4.7 Schema (design level; phase B writes the migration)
+
+One migration `<stamp>_homebrew.sql` and its reversal, the R2
+conventions (pass 1 section 4.3 lists them). Objects:
+
+- `homebrew_books`, `homebrew_cards`, `homebrew_items` (4.2, 4.3, 4.1):
+  `id uuid pk` client-made, `owner_id` cascade, `key text check '^hb_[a-z2-7]{16}$'`,
+  `content jsonb check (<kind>_valid(content))` with a size CHECK,
+  `book_id` on cards and items (`on delete set null`), `revision`,
+  `created_at`, `updated_at`, `unique (owner_id, key)`; owner-only RLS,
+  `service_role` select and delete; a `before_update` pin trigger and a
+  limit trigger each (`effective_limit`, keys `homebrew_books_per_owner`
+  20, `homebrew_cards_per_owner` 100, `homebrew_items_per_owner` - `Q3`).
+- Validators `homebrew_content_valid`, `homebrew_card_valid(kind, jsonb)`,
+  `homebrew_book_valid`, immutable, over the shared fixtures.
+- `homebrew_snapshot_of(p_key, p_content, p_book, p_cards)`: the record
+  with the fallbacks, `src 'homebrew'`, `book { key, en, ru }` and
+  `cards { sets: {...}, refs: {...} }` holding the own cards the item
+  names (4.8); `homebrew_snapshot_valid`.
+- `list_entries`: the R2 CHECK replaced by `source = 'homebrew' or
+  snapshot is null` and `snapshot is null or homebrew_snapshot_valid(snapshot)`;
+  the size bound widened to 32768 (R2 foresaw it); a new trigger
+  `list_entries_reference_exists` (before insert or update of `item_key`,
+  `source`, `snapshot`): a homebrew reference (`snapshot is null`) needs
+  `exists homebrew_items where owner = the list's owner and key = item_key`,
+  else `23503`-class refusal - no dangling reference can be written by
+  any path (import included).
+- `homebrew_items_touch` (an edit bumps every referencing list's
+  `revision`), `homebrew_items_before_delete` (removes the owner's
+  references; pass 1), `homebrew_books_touch` and `homebrew_cards_touch`
+  (a rename or card edit bumps the lists referencing an item of that
+  source or naming that card - the shared projection reads them).
+- `homebrew_broadcast`: after insert, update or delete on the three
+  tables, event `homebrew` `{ kind: 'book' | 'card' | 'item', key,
+  revision | null, by }` to `'owner:' || owner_id` (R3's send helper and
+  tab header).
+- `get_shared_list` and `clone_shared_list` re-created (pass 1): the
+  projection fills a reference's `snapshot` from the item, its source
+  and its cards; a clone freezes unless the caller owns the list.
+- `import_homebrew` is R7b's (`B7b.1`): `import_homebrew(p_books jsonb,
+  p_cards jsonb, p_items jsonb, p_update boolean) returns jsonb
+  { books, cards, items, updated }`, `security invoker` (the
+  `import_lists` reasoning), one transaction; a held key is skipped, or
+  updated when `p_update` (references stay live; frozen copies do not
+  move); the limit triggers refuse the whole call.
+- Reversal: the R2 bodies of the two share functions, the R2 CHECK and
+  bound back, the trigger and tables dropped, the limit rows deleted.
+
+Account deletion: `on delete cascade` from `auth.users`; the
+before-delete trigger removes references first (a layer 3 case proves
+the order does not matter). Decision 40's Edge Function stays R8's.
+
+### 4.8 References and frozen copies
+
+The pass 1 rule holds (decision 2026-09-26): an own item in an own list
+is a reference (`source 'homebrew'`, `snapshot` null) drawn from the
+merged index; a copy that leaves the account is frozen by
+`homebrew_snapshot_of`. Changes:
+
+- The snapshot embeds what its card needs and the viewer cannot resolve:
+  `book { key, en, ru }` for the tag and the path, and `cards` for its
+  own set bonus and referenced cards (parity: "referenced cards travel
+  with the item into copies and shares", `FEATURES.md`, "Records").
+  Relations stay keys and draw only where they resolve (4.4).
+- Size: an item of 13 KB plus three ref cards of up to 6 KB each is
+  under 32768 with margin; the `list_entries` bound widens to 32768
+  (both CHECKs, the R2 comment foresaw R7 doing it); `octet_length`
+  bounds on `content` of each table match the fixtures' maxima.
+- The resolver of `entryRowsOf` (pass 1) writes a reference for an own
+  item, the carried snapshot for a frozen row, `official` otherwise;
+  `restoreEntry` rewrites what it removed.
+- `CloudList.snapshots` and one derived index per list, shared, print
+  and lists-index page (pass 1, G16-G18).
+
+### 4.9 Ports and state
+
+`HomebrewRepository`: `newId()`, `newKey()`, `load(): Promise<{ ok, books,
+cards, items } | { ok: false }>`, and one create, update and remove per
+kind as plain PostgREST writes (`{ onConflict: 'id', ignoreDuplicates:
+true }` on create), each answering `ListWrite`; R7b adds `import(...)`.
+The row shapes carry `owner_id`, so the store computes `editable` per
+row now - item 13's subscribed rows will not be editable, and no page
+may assume that a visible row is the author's. The fake seeds `gm1` with
+two sources («Pistolheart», default), three items (the pass 1 axe, potion
+and cap, the axe in a line with `q1`'s Broadsword at tier 2 and made from
+`ci1`), one set card and one ref card; `gm2` with nothing; the
+reference row in list 101 and the frozen row in list 201 (pass 1). The
+`Homebrew` store: `status`, `books`, `cards`, `items`, `own = $derived`,
+`load`, `refresh` (on focus, on the `homebrew` event, every 45 s while a
+homebrew page is on screen), `clear`, `save`, `remove` per kind, and the
+counts a delete confirm needs.
+
+### 4.10 Routes, pages and the editor (item 7)
+
+Routes: `#/homebrew`, `#/homebrew/new`, `#/homebrew/<key>` (pass 1; the
+key grammar `hb_[a-z2-7]{16}`), `#/tables/homebrew[/<anchor or f_>]`
+(4.6). No tab reads current on `#/homebrew*`; `tables` is current on the
+table. Entry points: the account menu's «Мои предметы», the table
+group's chip, «Изменить» on an own record, the `#/i/` sub line's table
+link.
+
+`#/homebrew` («Мои предметы»): the head with «N предметов из 500»; a
+panel «Источники» listing the default «Хоумбрю» and each source with its
+count, an inline rename, «Скачать JSON» (R7b) and «Удалить» (confirm:
+«Удалить источник «Pistolheart»? Его 23 предмета останутся как
+«Хоумбрю».»), and a «+ Новый источник» name field; a panel «Карты» folded
+(sets and referenced cards, edit and delete); the actions row «+ Новый
+предмет» (primary), «Импорт предметов» (R7b, R6's panel pattern); then
+the items as `TableRows` grouped under one heading per source, each row
+opening the editor, with the row's tick feeding the selection bar
+(add-to-list, print, copy) and R6's `BatchBar` («Удалить (N)», «Скачать
+JSON (N)» in R7b) on its third use. Empty: «Своих предметов пока нет -
+создайте первый или импортируйте файл.» Signed out: the head and the
+`SignInPrompt`; unconfigured: not found, address kept.
+
+The editor (`#/homebrew/new`, `#/homebrew/<key>`): a `Panel` with the
+form and, beside it at 960 (under it at 360), the live `RecordCard`
+compact preview over `toRecord(draft)`. Fields, in order: Вид (`Seg`);
+for equipment the type `Seg`; Источник (a `<select>` of the sources plus
+«+ новый источник»); Название and Описание in the UI language; «Другой
+язык» folded (`Q4`); Ранг (`Seg`: Нет 1 2 3 4 Артефакт Проклятый for
+loot; 1 2 3 4 Артефакт for equipment); the weapon or armour fields (pass
+1); «Второй набор характеристик» folded (`alt`: trait, range, damage,
+type); a fieldset «Связи» / "Relations": Линия улучшений (`Seg` + a
+picker), Улучшается в (picker), Сделан из (picker), Комплект (picker of
+set cards, catalog and own, or «+ новый комплект» revealing name and
+bonus fields), Карты правил (up to three pickers, or «+ новая карта»
+revealing name, subtitle, text, link). The picker (`ItemPicker.svelte`,
+new, four uses): a text field searching the merged index (`matches`,
+eight rows), the chosen record as a small row with its badge and a
+remove button; a combobox for the keyboard. Buttons: «Сохранить»
+(primary), «Отмена», «Удалить» (danger, existing item). Validation on
+submit as pass 1; the "in N lists" hint; the delete confirm counts lists
+and the items whose relations name it («...и он указан в 2 связях»).
+
+Editing (item 7, decided; the owner asked): the editor keeps the explicit
+save (decision 2026-09-25) and gains an unsaved-changes guard: leaving
+the route with a dirty form asks through `env.dialog.confirm`
+(«Изменения не сохранены. Уйти?»), closing the tab through a
+`beforeunload` handler behind `PagePort`, and Ctrl+S submits. Rejected:
+R5's write buffer for the item text. Reasons, weighed: (1) an own entry
+is a live reference, so a buffered flush every 2 s would put a half-typed
+name on every referencing list, shared page and print sheet, and bump
+each list's revision on each flush - one owner topic message and one
+share topic message per list per flush while typing (R3's Realtime
+budget is 2 million messages a month); (2) a draft is invalid between
+keystrokes (an empty name, `dmg` "d1"), the database CHECK would refuse
+the flush and the buffer's refused-write path re-reads the row and
+reverts the form under the typist; (3) a form has one submit and the
+buffer's merge-into-last is built for a list's discrete fields. What the
+buffer gives - no lost edit on a closed tab - the guard gives at the
+cost of one dialog.
+
+### 4.11 Files, `llms.txt`, import and export (item 8; R7b)
+
+Two formats, both public contracts (`CONTRACTS.md` section 4), each a
+draft 2020-12 JSON Schema beside `import-v1.json`, `additionalProperties:
+false`, fixtures under `docs/fixtures/homebrew/` and `docs/fixtures/import/`:
+
+- `daggerheart-loot/homebrew` version 1, `schema/homebrew-v1.json`: `{
+  "$schema", "format", "version": 1, "exported_at"?, "books": [{ "key",
+  "ru"?, "en"? }], "cards": [{ "key", "kind": "set" | "ref", "book"?,
+  ...SetCard | RefCard }], "items": [{ "key", "book"?, ...HomebrewContent
+  }] }`. Keys are the objects' `hb_` keys (a file written by an agent
+  makes its own: 16 of `a-z2-7`; `llms.txt` says how); relations inside
+  the file name keys of the same file or catalog ids. Bounds are the
+  tables' (20, 100 and the item limit). Written by «Скачать предметы
+  (JSON)» (all, one source, a selection) and as `homebrew.json` in the
+  account zip (R6 4.14; the zip's frozen layout gains one root file, as
+  R6 wrote it would).
+- `daggerheart-loot/lists` version 2, `schema/import-v2.json`: v1 plus
+  `entries[].source: "homebrew"` with a required `snapshot` (the snapshot
+  shape; a file never carries a bare reference); v1 stays published and
+  imports for good; a v1 reader refuses `version` 2 as R6 wrote it.
+  Export writes an own entry frozen (`snapshotOf` of the live item) and
+  a frozen row as it is.
+
+Import: on `#/homebrew`, «Импорт предметов» (R6's panel: choose a file,
+validate in the client with paths, preview «Источников 1, карт 2,
+предметов 23; уже есть: 5», a `Seg` «Существующие: пропустить /
+обновить», one press) -> `import_homebrew`, all or nothing. A lists file
+with homebrew entries goes through R6's panel and `import_lists`
+unchanged: the client turns an entry whose snapshot key the account
+holds into a reference (`snapshot: null`) before the call, and the
+reference-exists trigger guards the rest. Rejected: `import_bundle` (a
+second RPC for a conversion the client can do), the `homebrew` array
+inside the lists file (R6 moved it to the zip; a lists file stays lists).
+
+`llms.txt`: a section "Homebrew items as a file (homebrew-v1)" after the
+lists section - what it is (convert a supplement into a file, import it
+under one source), the schema URL, a complete example file with one
+source, one set card, one ref card and three items (a weapon in a line
+with `q1`, a loot item made from `ci1`, a consumable naming a catalog
+ref), the field table (every key of the three objects with bounds and
+the `data.json` field it mirrors), the rules (keys, relations by id or
+key, both languages optional with one name, tiers from the book never
+from the stats, at most 3 refs, the limits, skip or update), how to hand
+it over; the lists section gains the v2 lines. Proof: `tests/contracts.js`
+completeness over both schemas (R6's P2 walk), the example imports clean
+(P1), and a blind round (P3): a fresh agent reads `llms.txt` and
+`catalog.csv` only and converts a short pasted stat block list into a
+file that imports clean and relates to the catalog as asked.
+
+### 4.12 Deletion, account deletion, monitoring
+
+An item delete: the confirm with the list count and the relation count,
+then a hard delete; the trigger removes references; other items keep
+their keys to it (not drawn). A source delete keeps its items. A card
+delete keeps the keys on items. No undo (decision 30). Account deletion:
+the cascade. Usage report (R11): the three tables and the three limit
+keys.
+
+### 4.13 Item 13: what R7 must not close off
+
+| Later need | R7 shape | Cost later |
+|---|---|---|
+| A book id on the item, not a tag | `book_id` FK; `book` on the record | none |
+| Stable references | per-owner `hb_` keys with 80 random bits; a subscribed item resolves by `(book, key)`, never by the reader's own key space; `list_entries` may gain `item_owner uuid null` additively | one additive column and a projection change |
+| Visibility apart from ownership | RLS is owner-only now; a `homebrew_subscriptions(user_id, book_id)` table and a `select` policy `exists subscription` are additive; the index merge takes "records visible to me" as input and the store carries `editable` per row from day one | one migration, no data rewrite |
+| Subcategories (community's `community`) | not stored; a `section` key is refused by the validator | a validator replacement (the R8 `img` pattern), an optional `section` on the content, a `sect` facet and an anchor on the book table |
+| Roll tables per book | `roll` refused now | `roll` on the content, a `rows` entry `hb_<book>` per book, a roll panel that takes a book |
+| Converting a catalog source into a book | the file format is the catalog's field names, so `tools/` can write a `homebrew-v1` file from `data.js` today | a tool, no schema |
+| Unsubscribing keeps list entries valid | an entry stores a key; a reference whose item is invisible draws as a frozen name only if the projection kept one | the projection embeds the snapshot for a subscriber's entry, or the entry freezes on unsubscribe |
+
+The direction is written to `docs/decisions/` at closeout (section 10,
+D6) since this file is deleted then.
 
 ## 5. Contracts and behaviour that stay stable
 
-`data.js`, `data.json`, `catalog.csv`, `i/`, `og/`, the record ids and
-prefixes of `CONTRACTS.md` section 2 (one reserved prefix added), the
-route grammar (three routes added, no existing route changes meaning),
-the list link encoding (`#/l/` carries official ids only; a homebrew
-entry never enters a local list because local lists are read-only from
-R5 and add-to-list writes to the account), `list_entries`' columns and
-the 16384 bound (one CHECK replaced by two: an official row is exactly
-as before), the share projection's shape (`snapshot` now filled for a
-reference), the ten tab sections (the page is not a section), the
-sign-in prompt rule, the count-limit mechanism, the print sheet
-geometry, R6's `import_lists` signature.
+`data.js`, `data.json`, `catalog.csv`, `i/`, `og/`; the record ids and
+prefixes (one reserved prefix `hb` added); the route grammar (the
+`#/homebrew*` routes and the `homebrew` table added, no existing route
+changes meaning; the filter grammar's groups per table unchanged, `src`
+gains values); the `#/l/` encoding; `list_entries`' columns (one CHECK
+replaced by two, the bound widened, a trigger added; an official row is
+exactly as before); the share projection's shape (`snapshot` filled for
+a reference); the ten sections and tabs (the homebrew page is not a
+section, the table group is a chip inside Tables); the sign-in prompt
+rule; the count-limit mechanism; the print geometry; R6's `import_lists`
+signature and `import-v1`; the account zip's layout (one root file
+added, as its contract allows).
 
-## 6. Tests, fixtures, documentation per batch
+## 6. Tests, fixtures, documentation per batch (outline; phase B expands)
 
 | Batch | Layer 1 | Layer 2 | Layer 3 | Layer 4 | Docs |
 |---|---|---|---|---|---|
-| `B7.1` | `homebrew.test.ts` (`validateDraft` over the fixtures, `toRecord` fallbacks, `snapshotOf` vs `snapshot.json`, `withRecords` shadows nothing and returns the base when empty, `newKey` shape), `fake-cloud.test.ts` (seed pins, the port, the limit, offline, `remove` takes the references, `update` bumps the referencing lists, the projection fills a reference), `cloud.contract.ts` case H over the fake, `supabase.test.ts` (the adapter's calls and the DETAIL mapping), `cloudLists.test.ts` (`entryRowsOf` with a resolver: reference, frozen, official; `toCloudList` snapshots) | none (no UI) | `tests/db/homebrew.test.mjs`: grants (authenticated CRUD, anon none, service_role select+delete), RLS (owner reads and writes own rows, other user nothing, anon nothing), `homebrew_content_valid` over `valid.json` and `invalid.json`, `homebrew_snapshot_of` over `snapshot.json`, the size CHECK, the key CHECK, `unique (owner_id, catalog_key)` and the same key for two owners, the before-update trigger pins id/owner/key/created and bumps revision, the touch trigger bumps every referencing list's revision and no other list, the before-delete trigger removes the owner's references and leaves another owner's frozen copy, the limit refuses the 51st and an override of 2 refuses the 3rd, the `list_entries` CHECKs (a bad snapshot refused, a good frozen row taken, a reference taken, official with a snapshot refused, official with null still fine), `get_shared_list` projects a reference with the item's frozen form and a frozen row as it is, `clone_shared_list` freezes for another user and keeps a reference for the owner, the cascade on `auth.users` delete, the reversal gate; `list-shares.test.mjs` cases that read the two functions stay green | `contract.mjs` runs case H against the test project; `admin.mjs` gains `homebrewOf(userId)` and `deleteHomebrewOf(userId)` for cleanup | `COVERAGE.md` (`tests/db/homebrew.test.mjs`, the fixtures) |
-| `B7.2` | `hash.test.ts` (the routes), `homebrewPage.test.ts`, `homebrewEditor.test.ts` (every field, validation focus, save, refusal, the "in N lists" line, the delete warning with and without lists, axe at the end and on the open kind states), `searchPage.test.ts` (the group), `listPage.test.ts` and `sharedListPage.test.ts` (a reference row, a frozen row, the modal from each), `recordPage.test.ts` (`#/i/<key>`, «Изменить»), the account menu test of R5's component (one more entry), `label.test.ts` (`srcLabel`, `printSrc`), `a11y.test.ts`, `app.test.ts` (`index` derived, `section` null for homebrew, load/clear/refresh) | `inventory.js` states: `#/homebrew` signed out; `#/homebrew as gm2` (empty); `#/homebrew as gm1`; `#/homebrew/new as gm1`; `#/homebrew/hb_seedaxeaaaaaaaaa as gm1` (with the "in 1 list" line); `#/search` with `q = "топор"` as gm1 (both groups) and `q = "настой"` as gm1 (homebrew only); `#/i/hb_seedaxeaaaaaaaaa as gm1`; `#/print/hb_seedaxeaaaaaaaaa-hb_seedpotaaaaaaaaa as gm1` (both layouts, `print.js`); the account menu open as `gm1` (R5's state gains one entry); the existing `#/lists/<101> as gm1`, `#/lists/<201> as gm2` and `#/s/player-token-1` goldens move (the reference row, the frozen row, the projected row); `states.js`: save a new item and find it on `#/homebrew`; edit the axe and see the list page row change without a reload; delete with the confirm stub and see the list lose the row; a validation refusal focuses the name field | none | `flows.mjs` F8: create an item, read it back through admin, add it to a list as a reference, the entry's `source`/`snapshot` read back, edit the item, the list's `updated_at` moved and the shared projection carries the new text, delete the item, the entry is gone; cleanup | `FEATURES.md`, `ROUTES.md`, `CONTRACTS.md` 1 and 2, `STATE.md`, `META.md` 3, `I18N.md`, `COVERAGE.md`, `DEBT.md` (the print-address entry under R9), `docs/fixtures/urls/routes.json`, `llms.txt`, `pages/src/privacy.html` and `en/` (no change needed - verified they already name homebrew items) |
-| `B7.3` | `bundle.test.ts` (v2 validation, v1 still valid, export shapes, the frozen write of a reference) | the import preview state as `gm1` | `tests/db/import-bundle.test.mjs`: items inserted, held keys skipped, entries turned into references where held, frozen otherwise, the limit refuses the whole call, all or nothing | export-delete-import flow | `CONTRACTS.md` 4, `llms.txt`, `FEATURES.md` "Account" (Your data), `COVERAGE.md`, `docs/fixtures/import/` |
+| `B7.1` | `homebrew.test.ts` (validators over the fixtures, `toRecord`, `snapshotOf` with cards, `withRecords`: own vs frozen, `upgradesTo`/`madeFrom`, `setMembers`, `rows.homebrew`), `data.test.ts` (the new map shapes), `cloudLists.test.ts` (the resolver), `fake-cloud.test.ts` (seed pins, the port, limits, `remove` takes references, `update` bumps, the projection), `supabase.test.ts`, `live.test.ts` (the `homebrew` event), `cloud.contract.ts` case L | none | `tests/db/homebrew.test.mjs`: grants and RLS for three tables, the validators over the fixtures, the snapshot formula with cards, the key and size CHECKs, per-owner uniqueness, the pin triggers, the three limits, the touch triggers (item, book, card), the before-delete trigger, the reference-exists trigger (a reference to a key the owner lacks is refused, an import path included), the `list_entries` CHECKs and the 32768 bound, `get_shared_list` and `clone_shared_list`, the broadcast event, the cascade, the reversal | the contract case on the test project after the approve; `admin.mjs` cleanup helpers | `COVERAGE.md` |
+| `B7.2` | `hash.test.ts`, `homebrewPage.test.ts` (sources, cards, rows, batch bar, empty, signed out), `homebrewEditor.test.ts` (every field, the folds, validation focus, save, refusal, the guard, delete counts), `itemPicker.test.ts`, `listPage.test.ts`, `sharedListPage.test.ts`, `listsPage.test.ts`, `requestsPanel.test.ts` (a frozen name), `recordPage.test.ts` («Изменить»), `accountMenu.test.ts`, `app.test.ts` (`index` derived, `homebrewShown`, load/clear/refresh), `a11y.test.ts` | states as `gm1`, `gm2`, signed out: `#/homebrew` (filled, empty, signed out), `#/homebrew/new`, `#/homebrew/<axe>` (with the hint), the picker open, the new-set fold open, the delete confirm, `#/i/<axe>`, `#/print/<axe>-<potion>` both layouts, the menu open; the moved goldens of lists 101 and 201 and `#/s/player-token-1` | none | `flows.mjs`: create a source, a card and an item, relate it, add it to a list as a reference, edit, the projection carries the new text and the cards, delete, the entry is gone | `FEATURES.md` "Homebrew" (new) and "Account", `ROUTES.md`, `CONTRACTS.md` 1 and 2, `STATE.md`, `META.md` 3, `I18N.md`, `COVERAGE.md`, `DEBT.md` (the print address, R9), `routes.json`, `tests/app/contracts.js`, the privacy pages if needed |
+| `B7.3` | `label.test.ts` (`srcLabel`, `whereFrom`, `tableOf`, `printSrc` for homebrew), `facets.test.ts` (dynamic `src`, the `homebrew` table's rows), `tables.test.ts`, `desc.test.ts` (`hasLabels`), `share.test.ts` (many targets), `recordCard.test.ts` (the fold, dashed marks, a homebrew rung), `rowMain.test.ts`, `searchPage.test.ts` (merged, the chip), `tablesPage.test.ts` (the group chip signed in only, the chip, sections), `filterBar.test.ts` | states: `#/tables/homebrew as gm1` (and signed out), `#/tables/eq_weapon as gm1` (the chip on and off, the `src` facet open), `#/search as gm1` («спальн»: official and homebrew rows), `#/i/ci1 as gm1` (the fold closed and open), `#/i/q1 as gm1` (the ladder with a dashed rung) | none | none | `FEATURES.md` "Tables and search" and "Records", `ROUTES.md` (the table and its groups), `CONTRACTS.md` 1, `routes.json`, `llms.txt` URL grammar line (the table), `COVERAGE.md` |
+| `B7b.1` | `bundle.test.ts` (v2 branch; v1 unchanged), `homebrewFile.test.ts` (the format's validator over fixtures, the drift guard against both schemas), `fake-cloud.test.ts` (import: skip, update, all or nothing, limits), the contract's import case | none | `tests/db/import-homebrew.test.mjs`: skip, update (references stay live, frozen copies do not move), all or nothing, the limits, another owner's keys | the import case on the test project | `COVERAGE.md`, `CONTRACTS.md` 4 (both schemas, the zip's new file), `llms.txt` (both sections), `tests/contracts.js` (completeness, canonical fixtures), `tests/derived.js` pins |
+| `B7b.2` | `importItemsPanel.test.ts`, `homebrewPage.test.ts` (download buttons, the batch bar's download), `accountPage.test.ts` (the hint), `zip.test.ts` (`homebrew.json` in the zip), `app.test.ts` (`exportHomebrew`, `exportData`) | states: the import panel (empty, preview, refused, done), the account page | none | export all, delete the source, import with update, the item is back with its key and its list entry is a reference | `FEATURES.md` "Homebrew" and "Account", `META.md` 3, `COVERAGE.md` (the blind round) |
 
-Terminology: Russian product text follows `EQ_*` in `lib/i18n.ts` (the
-site's own vocabulary: «Ранг», «Вплотную», «Характеристика
-Заклинателя»); the new captions reuse those words. The page and menu
-name «Мои предметы» renders the owner's "My items"; the source tag is
-«Хоумбрю» / "Homebrew" (owner, section 13, Q3), the word the GM note
-placeholder already uses.
+## 7. Releases and batches: gates, cost, review, split criterion
 
-## 7. Batches: gates, cost, review, split criterion
+Costs (`.claude/README.md`, "Batch size and the fixed cost of a run",
+this host, 2026-09-27): `npm run check` 7-10 min (may cross the 600 s
+cap in one call; gate credit by exit), `check:db` 9-10 min, `build:test`
+plus `check:built` 2 min, `app/states` 4-5 min, `app/contracts` 7 min,
+`app/print,app/typo,app/hues,stub` pooled with it 7 min, a golden shard
+3.2 min (13 min for four; twice when a compare precedes a re-seed),
+`sweep.js 360` 7-9 min, `npm run e2e` 2-3 min, a blind round 5-10 min.
 
-Costs from `.claude/README.md`, "Batch size and the fixed cost of a run",
-re-measured 2026-09-25: `check` 348 s, `check:built` 19 s, layer 2
-filter group ~290 s, `app/states` 197 s, goldens 4 shards ~600 s, layer 3
-`check:db` ~120 s (plus the first stack start), E2E ~50 s.
+### 7.1 R7 `persist-7-homebrew`
 
 | Batch | Goal and scope | Gates (cost) | Review | Split criterion |
 |---|---|---|---|---|
-| `B7.1` | Section 4.3 migration and reversal (the table, the five functions, the four triggers, the `list_entries` CHECKs, `get_shared_list` and `clone_shared_list` re-created), `tests/db/homebrew.test.mjs`, `lib/homebrew.ts`, `ports/types.ts`, the real adapter, the fake and its seed (the reference row in list 101, the frozen row in list 201), `cloud.contract.ts` case H, `admin.mjs` helpers, the fixtures | layer 1 `check` (~6 min), layer 3 `check:db` (~3 min + stack start), layer 4 `npm run e2e` (~1 min; the contract case against the test project) (~11 min) | required (schema rule) | new release (R7); SQL and ports judged apart from Svelte |
-| `B7.2` | Section 4.7: routes (a public-contract change), the account menu entry, `AppState.index` derived, `Homebrew` store with R3's owner-topic refresh, the page and the editor, the search group, reference and frozen resolution on the list, shared and index pages, `#/i/<key>`, print, the delete warning, dictionary, specs, fixtures, goldens, states, E2E F8, the DEBT entry | layer 1 `check` x2 (~12 min), `check:built`, layer 2 filter group (~5 min), goldens (~10 min), layer 4 E2E (~1 min) (~29 min) | required (public contract, new UI) | a commit boundary the harness cannot reach (needs `B7.1`'s port and seed) and a public-contract change with its own fixtures |
-| `B7.3` | Section 4.8: `schema/import-v2.json`, export with frozen entries and the items, `import_bundle` (a migration), `lib/bundle.ts` v2, the preview, contracts, `llms.txt` | layer 1 `check` x2 (~12 min), layer 3 `check:db` (~2 min), `check:built`, layer 2 `app/states,app/contracts` (~4 min), goldens (~10 min), layer 4 E2E (~1 min) (~30 min) | required (public contract) | a second public contract (the bundle schema) with its own fixtures and review, a migration `B7.2` has none of, and a dependency on R6's shipped code |
+| `B7.1` | Section 4.7 (all SQL of R7), 4.1-4.3 and 4.8 pure logic, 4.9 port, fake, store shell, the contract case, `live.ts` event, fixtures, `admin.mjs`, `usage-lib.mjs` table list | `check` 8, `check:db` 10; after the approve `db-push --project test` 1, `e2e` 3 (~22 min) | required (schema rule) | new release; SQL and ports judged apart from Svelte |
+| `B7.2` | Section 4.10: routes, the menu entry, `#/homebrew` with sources, cards and the batch bar, the editor with the pickers and folds, the guard, `AppState.index` derived, lists, shared, lists-index, requests-panel and print resolution, `#/i/<key>`, delete, dictionary, specs, fixtures, goldens, states, a flow | `check` x2 16, `check:built` 2, `app/states` 5, `app/contracts` 7, goldens 13, `sweep 360` 8, `e2e` 3 (~54 min) | required (public contract, new UI, stored data) | a commit the harness cannot reach without `B7.1`'s seed and port; a public-contract change (routes) with its own fixtures |
+| `B7.3` | Section 4.4-4.6: the merged derivations on cards and rows, the fold and the marks, `homebrew` in `TABLE_IDS`, the group, facets and sections, the equipment tables' `src` values, the chip, one merged search, `hasLabels`, `whereFrom`; specs, fixtures, goldens, states | `check` x2 16, `check:built` 2, `app/states` 5, filter group 7, goldens compare then re-seed 26 (every table and search golden without `as` must not move; the `as gm1` ones re-seed), `sweep 360` 8 (~64 min) | required (public contract: a table id; the catalog's own cards change for a signed-in reader) | a second public contract (the table) with its own fixtures, and a review that cannot be held in one pass with `B7.2`: the account's pages against the catalog's pages |
 
-Total, one green pass per batch, idle host: about 70 minutes.
+R7 total: about 140 minutes of gates, one green pass per batch.
 
-Roadmap order: R5, R3, R4 and R6 ship before R7 (section 9 of the
-roadmap), so `B7.2` finds the account menu and R3's port, and `B7.3`
-finds `import_lists`; they wait on the siblings only for this plan's
-refresh.
+### 7.2 R7b `persist-7b-homebrew-files`
 
-## 8. Batch `B7.1` - schema, port, fake, pure logic (implement-ready)
+| Batch | Goal and scope | Gates (cost) | Review | Split criterion |
+|---|---|---|---|---|
+| `B7b.1` | `import_homebrew` (4.7, 4.11), `lib/homebrewFile.ts` (validate, parse, write), `lib/bundle.ts` v2 branch, the two schemas and fixtures, `tests/contracts.js` and `tests/derived.js` pins, `llms.txt` both sections, `HomebrewRepository.import`, the fake, the contract case, the blind round | `check` 8, `check:db` 10, `check:built` 2 (`dist/index.html` names the schemas), the blind round 10; after the approve push 1, `e2e` 3 (~34 min) | required (schema rule, public contracts) | new release; the contract and SQL judged apart from the UI, and the schema batch rule (the test-project push waits for the approve) |
+| `B7b.2` | The UI: the import panel on `#/homebrew` with the skip/update `Seg`, the three download surfaces, the batch bar's download, `homebrew.json` in the zip, the account hint, `AppState.exportHomebrew`; states, a flow | `check` x2 16, `check:built` 2, `app/states` 5, `app/contracts` 7, goldens 13, `e2e` 3 (~46 min) | required (new UI) | a commit the harness cannot reach without `B7b.1`'s fake `import`, fixtures and migration |
 
-Objective: everything under the app that homebrew needs - the table, the
-reference and frozen-copy rule in the database, the projection, the
-port, the fake - proven by layers 1, 3 and 4, with no screen changed.
+R7b total: about 80 minutes. Both releases: about 220 minutes.
 
-In scope: sections 4.1, 4.2, 4.3, 4.5 (the pure half and the fake), 4.6.
-Out of scope: any Svelte file, any route, any dictionary key, the specs
-beyond `COVERAGE.md`.
+`Q6` (recommended): two releases. R7 ships items to production about
+two hours of gates earlier, the files release has its own review of the
+two contracts and the blind round, and each is deployable alone (R7
+without files is complete: the editor makes items; R7b without R7 has
+nothing to import). Trade-off accepted: one more closeout (about ten
+minutes: the directory audit, the push, the CI watch) and one more
+`Plan review:` line. Alternative: one R7 of five batches, the same gate
+cost, one closeout.
 
-Files to create: `supabase/migrations/<stamp>_homebrew.sql`,
-`supabase/reversals/<stamp>_homebrew.sql`, `tests/db/homebrew.test.mjs`,
-`app/src/lib/homebrew.ts`, `app/src/lib/homebrew.test.ts`,
-`docs/fixtures/homebrew/valid.json`, `invalid.json`, `snapshot.json`.
-Files to edit: `app/src/lib/data.ts` and `data.test.ts`,
-`app/src/ports/types.ts`, `app/src/ports/supabase.ts`,
-`app/src/ports/supabase.test.ts`, `app/src/ports/fake-cloud-seed.ts`,
-`app/src/ports/fake-cloud.ts`, `app/src/ports/fake-cloud.test.ts`,
-`app/src/ports/cloud.contract.ts`, `app/src/lib/cloudLists.ts`
-(`entryRowsOf`'s resolver, `CloudList.snapshots`, `toCloudList`),
-`app/src/lib/cloudLists.test.ts`, `app/src/state/cloudLists.svelte.ts`
-(the resolver in the constructor; behaviour unchanged for official ids),
-`app/src/state/cloudLists.test.ts`, `app/src/state/app.svelte.ts` (the
-resolver argument only), `tests/e2e/admin.mjs`, `tests/e2e/contract.mjs`
-(nothing if it already runs the whole contract), `tests/db/list-shares
-.test.mjs` (the projection cases), `docs/specs/COVERAGE.md`.
+Not split further: sources, cards and the editor share one route and one
+seed (`B7.2`); the tables, search and the card share one index change
+and one golden re-seed (`B7.3`). Commit policy: `B7.1` commits, the later
+batches amend, the closeout pushes; R7b starts a new commit after R7's
+push.
 
-Steps:
+### 7.3 How R8 and R9 change shape
 
-1. Fixtures. `valid.json`: an array of `HomebrewContent` objects - a loot
-   item both languages, a consumable Russian only with a `- ` list line,
-   a loot item English only with `tier: 3`, a primary weapon with every
-   field, a secondary weapon without `bu`, an armour with `as: 0` and
-   `th: [1, 1]`, a description of exactly 3000 code points of Cyrillic
-   (the size proof: its JSON is under 16384 bytes). `invalid.json`: an
-   array of `{ content, why }` - both names empty, a 121-character name,
-   a 3001-character description, `kind: 'weapon'`, `tier: 'A'`, `tier: 5`,
-   equip without `eq`, `eq` on a consumable, `eq.tier` missing, a weapon
-   without `cls`, `dmg: 'd7'`, `dmg: '2d8'`, `bu: 3`, armour with `dmg`,
-   `th: [5, 4]`, `as: 13`, an unknown key `img`, `content` as an array.
-   `snapshot.json`: `{ key, content, snapshot }` triples - both languages,
-   Russian only, English only.
-2. `lib/homebrew.ts`: the types of section 4.1, `KEY_RE`, `isHomebrewKey`,
-   `NAME_MAX` 120, `TEXT_MAX` 3000, `validateDraft(content): Problem[]`
-   (`Problem = { field: keyof HomebrewContent | 'eq.<field>'; code: string }`,
-   codes are dictionary keys `B7.2` maps to text), `toRecord(key,
-   content)`, `snapshotOf(record)`, `snapshotRecord(value: unknown):
-   Record_ | null` (a defensive reader for a row's `snapshot`),
-   `withRecords(index, records)` (returns `index` itself when `records`
-   is empty), `emptyDraft(kind)`. Pure: no port, no DOM. Doc comment
-   cites `FEATURES.md`, "Homebrew" (written by `B7.2`; the citation
-   resolves after it - acceptable inside one task commit).
-3. `lib/data.ts`: `Index.homebrew: readonly Record_[]`; `buildIndex`
-   sets `[]`. `data.test.ts`: one assertion.
-4. `ports/types.ts`: section 4.6. `CloudPort.homebrew`.
-5. `lib/cloudLists.ts`: `entryRowsOf(ids, meta, newId, from = 0, recordOf?:
-   (id: string) => Record_ | undefined)`; for an id where `recordOf(id)`
-   has `src === 'homebrew'` write `source: 'homebrew'` and `snapshot:
-   null` when the record is a live item, or `snapshotOf(rec)` when the
-   resolver marks it frozen (the resolver answers `{ record, frozen }`
-   for the shared page's carried rows - `B7.2` wires it; `B7.1` writes
-   the branch and its test). `CloudList.snapshots: Record<string,
-   Record_>` filled by `toCloudList` from frozen rows through
-   `snapshotRecord`; a row whose snapshot does not read is kept as an
-   entry with no record (the page draws its key, as it does for an
-   unknown official id today). `cloudLists.svelte.ts` takes `recordOf`
-   as a fourth constructor argument and passes it to every `entryRowsOf`
-   call. `app.svelte.ts` passes `(id) => this.index?.byId.get(id)`.
-6. The migration and the reversal (section 4.3), stamp per "Migration
-   names"; read the R2 CHECK's constraint name from `pg_constraint`
-   first. Comments on every object: the reason and the spec section. The
-   two re-created functions copy R2's bodies with the one change each.
-7. `tests/db/homebrew.test.mjs` (section 6 row `B7.1`), through
-   `roles.mjs` `asRole`; the fixtures are read from `docs/fixtures/
-   homebrew/` so layer 1 and layer 3 run the same cases; the projection
-   and clone cases in `list-shares.test.mjs` beside the existing ones.
-8. The seed and the fake (section 4.6); `fake-cloud.test.ts` pins.
-9. The real adapter and `supabase.test.ts`.
-10. `cloud.contract.ts` case H; `admin.mjs` `homebrewOf`, `deleteHomebrewOf`
-    (the sweep deletes homebrew before users, as lists).
-11. `COVERAGE.md`: the suite row and the fixtures.
-12. Gates: `rtk npm run check` (Bash, timeout 600000); `npm run check:db`
-    (PowerShell); `npm run e2e` (the contract case reaches the test
-    project; the migration reaches it through `migrate-test` on the push
-    of the branch, or the owner's `db:push --project test` in a local
-    release - the implementer states which).
+R8 `persist-8-media` (`B8.1`): `art_url` on `homebrew_items` (pass 1);
+`homebrew_snapshot_of` and the validator admit `img` (a function
+replacement); the uploader offers the picture of another own item or of
+the line's first rung («Использовать картинку линии») so an upgrade line
+shares one file as the catalog does (the owner's "potential art reuse");
+a file is deleted only when no own item names its URL; the editor's
+preview slot takes the control; a book has no cover in R8. Gate: the
+editor's states re-seed (~25 min, was ~20).
 
-Acceptance criteria:
+R9 `persist-9-item-share` (`B9.1`): `#/h/<token>` draws `toRecord()` of a
+projection that must now carry the snapshot's cards and book, and its
+relations to the author's other items as frozen names (or drop them -
+R9 decides; a catalog relation resolves for anyone); a clone makes a new
+key and either drops relations to the sharer's other items or offers to
+clone the chain (R9's question); the print routes resolve through
+`withRecords(index, none, snapshots)`; `add_shared_homebrew_to_list`
+writes the snapshot with cards. `homebrew_shares` stays one link per
+item; a link per book is item 13's release, not R9's.
 
-- `homebrew_content_valid` accepts every `valid.json` entry and refuses
-  every `invalid.json` entry (layer 3), and `validateDraft` agrees on
-  every one (layer 1).
-- `snapshotOf(toRecord(key, content))` equals `snapshot.json`'s snapshot
-  for each triple (layer 1) and `homebrew_snapshot_of(key, content)`
-  equals it too (layer 3, the same file).
-- The owner reads, inserts, updates and deletes only own rows; anon
-  nothing; another user nothing (layer 3 matrix).
-- The 51st item refuses with `limit: homebrew_items_per_owner`, DETAIL
-  `50`; an override of 2 refuses the 3rd.
-- An item update bumps the revision of every own list referencing it and
-  of no other list; an item delete removes its references from the
-  owner's lists and leaves another owner's frozen copy; the referencing
-  lists' revisions bump on the delete.
-- `list_entries` refuses a homebrew row with a malformed snapshot and an
-  official row with a snapshot; takes a homebrew reference and a frozen
-  row; an official row with a null snapshot is unchanged.
-- `get_shared_list` answers a reference with the item's frozen form in
-  `snapshot` and a frozen row as it is; `clone_shared_list` freezes for
-  another user and keeps the reference when the caller owns the list.
-- The reversal gate passes (up, down, up, schema equal); the R2 share
-  cases in `list-shares.test.mjs` stay green.
-- The fake's seed passes its pins; `cloud.contract.ts` case H passes over
-  the fake (vitest) and over the test project (`npm run e2e`).
-- No golden moves: no screen changes in this batch (the seed's new rows
-  change goldens only once `B7.2` draws them; until then the list page
-  resolves `hb_` ids through `index.byId`, which does not know them, and
-  draws the key - the implementer confirms `app/golden` shard 1 of 4 is
-  byte-identical or lists the moved files as `B7.2`'s).
+R11 (shipped): `usage-lib.mjs` gains the three tables in `B7.1`.
+`persist-review`: homebrew is in its scope; nothing changes. R10:
+nothing.
 
-Risks and do-nots: never `create or replace`; never edit a pushed
-migration; the `list_entries` CHECKs and the two functions change by
-`alter table` and drop-then-create in the new migration, never by
-editing `lists.sql` or `list_shares.sql`; the key regex is the one
-contract every later release reads - `KEY_RE` in TS, the CHECK in SQL
-and the `ROUTES.md` text of `B7.2` must be the same string; do not add
-a `kind` or `art_url` column; do not add a foreign key from `item_key`
-(a frozen copy names a key its owner does not hold); do not touch
-`data.js`.
+## 8. Mocks (`mocks/index.html`)
 
-## 9. Batch `B7.2` - the app (outline; the refresh expands it)
+One self-contained file per screen, each state at 960 px and 360 px,
+composed from the shipped components' rules (the `:root` block is
+`tokens.css`); dashed purple marks the proposal. `mocks/mock.css` is the
+shared sheet (extended from R2's copy: the warn and danger-text tokens,
+the badge variants, the chip, the segmented control). Checked in the
+browser pane at 360 px for horizontal overflow (section 12 records the
+result).
 
-Section 4.4, 4.5 (the pages), 4.7, section 6 row `B7.2`. Waits on: the
-R5b's account menu component; R3's port and
-`lib/live.ts`; `B2.3`'s final `SharedListPage`/`SharedView` (the frozen
-resolution goes into whichever component draws `#/s/`). Inherited
-acceptance lines: the `DEBT.md` entry for the print address (section
-4.5, last paragraph); the moved goldens of `B7.1`'s seed rows; the
-`Homebrew` store's refresh on R3's `owner:<uid>` messages (section 11).
+| Mock | Screen | Plan |
+|---|---|---|
+| `m01-account-menu.html` | the menu with «Мои предметы» | 4.10, `B7.2` |
+| `m02-homebrew-page.html` | `#/homebrew as gm1`: sources, cards folded, actions, rows by source, the batch bar | 4.10, `B7.2` |
+| `m03-homebrew-page-states.html` | empty (`gm2`), signed out, unconfigured | 4.10, `B7.2` |
+| `m04-editor-equipment.html` | the weapon editor with the relations fieldset and the folds, the preview beside | 4.10, 4.4, 4.5, `B7.2` |
+| `m05-editor-loot.html` | the loot editor: tier with «Артефакт» and «Проклятый», the new-set fold open, «Другой язык» open | 4.10, 4.1, `B7.2` |
+| `m06-item-picker.html` | the picker open with matches, chosen, empty, keyboard | 4.10, `B7.2` |
+| `m07-record-card-relations.html` | `#/i/ci1 as gm1`: fifteen homebrew upgrades folded and unfolded; a homebrew card made from `ci1`; `q1` with a dashed rung; a set line with a homebrew member | 4.4, `B7.3` |
+| `m08-rows.html` | a table or search row with «и ещё 14», the dashed source badge | 4.4, 4.2, `B7.3` |
+| `m09-tables-homebrew.html` | `#/tables/homebrew as gm1`: the group chip, sections by source, the facets; signed out | 4.6, `B7.3` |
+| `m10-tables-equipment.html` | `#/tables/eq_weapon as gm1`: homebrew rows in the tier sections, the `src` facet with the sources, the «Хоумбрю» chip on and off | 4.6, `B7.3` |
+| `m11-search.html` | `#/search as gm1`: one merged list, the chip | 4.6, `B7.3` |
+| `m12-record-page.html` | `#/i/hb_... as gm1`: the path line, the table link, «Изменить»; the print card's source line as text | 4.2, 4.10, `B7.2` |
+| `m13-dialogs.html` | the delete confirms (item with lists and relations, source), the unsaved-changes guard | 4.10, 4.12, `B7.2` |
+| `m14-lists.html` | an own list with a reference row; `gm2`'s list with a frozen row; the shared page | 4.8, `B7.2` |
+| `m15-import-items.html` | «Импорт предметов»: empty, preview with the skip/update `Seg`, refused, done | 4.11, `B7b.2` |
+| `m16-export.html` | the download surfaces on `#/homebrew` and the account page's hint | 4.11, `B7b.2` |
+| `m17-llms-and-file.html` | the `homebrew-v1` example file and the `llms.txt` section outline as text | 4.11, `B7b.1` |
 
-## 10. Batch `B7.3` - bundle v2 (outline; the refresh expands it)
+## 9. Owner questions (recommendation first)
 
-Section 4.8, section 6 row `B7.3`. Waits on R6's shipped `lib/bundle.ts`
-and `import_lists`.
+- `Q1` "Unique" (item 1). Recommended: a one-off outside any upgrade
+  line, the existing empty-`line` mechanism (the «Уникальное» badge, the
+  `line` facet); no new flag. Artifact stays `tier 'A'`. Alternative:
+  "unique" means artifact - then the editor offers no line control and
+  every homebrew equipment is a one-off, which loses the tier 1-4 ladders
+  the owner asked for.
+- `Q2` "A separate table" (item 10). Recommended: a table page of their
+  own, `#/tables/homebrew`, sectioned by source, beside the storage
+  tables (which exist either way). Alternative: no table page; homebrew
+  appears on the equipment tables and in search only, and `#/homebrew` is
+  the one listing - fewer contract changes, but a homebrew loot item then
+  has no table at all.
+- `Q3` The item limit (decision 31 amendment). Recommended: raise
+  `homebrew_items_per_owner` from 50 to 500 (books 20, cards 100). Reason:
+  a converted supplement is 29 to 346 records (Vault of Ages 144, The
+  Dragon's Vault 145); 50 holds none of them. Cost: 500 items of about
+  2 KB is one megabyte per account read once per session; the merged
+  index rebuilds in a millisecond. Alternative: 200 (holds Wondrous, not
+  Core-sized books) with the override command for the owner's own
+  account.
+- `Q4` The second language (item 2). Recommended: the bilingual stored
+  shape and a folded «Другой язык» in the editor (two fields). Alternative:
+  the bilingual shape with no second-language UI at all in R7 (the file
+  import is then the only way to fill both).
+- `Q5` The source label (item 9). Recommended: «Pistolheart» as the tag
+  with a dashed border and a title, «Хоумбрю · Pistolheart» as the path.
+  Alternative: «Pistolheart (HB)».
+- `Q6` Releases. Recommended: R7 (three batches) and R7b (two). Alternative:
+  one R7 of five batches.
+- `Q7` Import of held keys. Recommended: a skip-or-update `Seg` in the
+  preview, default skip; an update keeps references live and leaves frozen
+  copies. Reason: the owner converts a source and iterates on the file.
+  Alternative: skip only (delete the source's items first, then import),
+  the pure create-only rule R6 set for lists.
+- `Q8` Editing (item 7, the owner asked). Recommended: the save button
+  plus the unsaved-changes guard (4.10). Alternative: the write buffer
+  gated on a valid draft - still propagates a half-typed text to lists
+  and shared pages every two seconds.
 
-## 11. What the other releases need from this design
+Decided without a question (the human would reasonably not care; recorded
+here): dashed marks homebrew everywhere; the fold at three names on a
+card and one on a row; a source delete keeps the items; the memory-only
+chip; one merged search list; the snapshot embeds cards and the bound
+widens to 32768; the reference-exists trigger; `craft_from` as the one
+non-catalog field; the picker as a combobox; no `img` in `homebrew-v1`
+until R8; the `homebrew` event on the owner topic; `book` as the code
+word for «Источник».
 
-R3 (`persist-3-realtime`, ships before R7): nothing to build for R7. R7
-relies on R3's owner topic: an item edit bumps every referencing list's
-`revision` through `homebrew_items_touch`, so R3's `lists` trigger sends
-one `list` message per list to `owner:<uid>` and one `revision` message
-per active share topic - the owner's other devices and every open shared
-page refetch with no R7-specific message. For the owner's own items
-list, `B7.2` adds one trigger in its own migration if needed: `after
-insert or update or delete on homebrew_items` sending `{ "item":
-<catalog_key>, "revision": <bigint or null>, "by": <tab id> }` as event
-`item` to `'owner:' || owner_id`, read by `lib/live.ts`'s owner reader
-(R3's `readOwnerMessage` gains the `item` event, or R7 adds
-`readItemMessage` beside it); `Homebrew.refresh()` on it. The refresh
-before the build decides after reading R3's shipped reader.
+## 10. Decisions to record (`docs/decisions/`; the texts are in the report)
 
-R4 (`persist-4-requests`): a request line for a homebrew entry takes its
-`name_snapshot` from the projection's `snapshot` (filled for a reference
-too); the signed-in viewer's add-to-my-list writes a frozen copy (the
-`AddToList` carried rows resolve as `{ record, frozen: true }`, section
-4.5); `apply_purchase_request` removes an entry at zero stock as today -
-a reference row like any other.
+- D1 (amends 2026-09-25 "A homebrew item is stored as the catalog record
+  shape ..."): the content is the whole catalog shape plus `craft_from`;
+  sources and cards are rows; every homebrew object shares the `hb_` key.
+- D2: dashed marks homebrew; a homebrew relation draws on a catalog record
+  for its author only; many targets fold at three.
+- D3: homebrew is first-class in the catalog pages: `allEquip`, one
+  merged search, the `homebrew` table, dynamic `src` values, a memory-only
+  show/hide chip; the roll pages are excluded.
+- D4 (amends 2026-09-26 "Homebrew in the owner's lists is a live
+  reference ..."): the snapshot embeds its cards and source; the bound is
+  32768; a reference must exist when written.
+- D5 (amends 2026-09-25 "A homebrew save is a form submit ..."): the save
+  button stays, with an unsaved-changes guard; the write buffer rejected
+  for the reasons of 4.10.
+- D6: two file formats (`homebrew-v1`, `import-v2`), the items file in
+  the zip, import skips or updates held keys, no `import_bundle`.
+- D7 (written at closeout): the book direction of item 13 and what R7
+  left open for it (4.13).
 
-R5 (`persist-5-migration`): the account menu takes its entries as data
-so `B7.2` inserts «Мои предметы» between «Мои списки» and «Выйти»; local
-lists hold official ids only, so the migration writes no homebrew row.
+## 11. Roadmap changes (`issues/persistent-storage/plan.md`; applied by the orchestrator)
 
-R6 (`persist-6-import-export`): `import_lists(p_lists)` keeps its
-signature and its pass-through of `source` and `snapshot`; `B7.3` adds
-`import_bundle(p_items, p_lists)` beside it and the v2 branch in
-`lib/bundle.ts`; v1's validator refusing `version` 2 and `source:
-homebrew` stays as R6 wrote it; `schema/import-v<N>.json` and the
-`llms.txt` links per version. The export writers gain the frozen form of
-a reference and the `homebrew` array (section 4.8).
-
-R8 (`persist-8-media`):
-- an additive migration `alter table homebrew_items add column art_url
-  text` with a CHECK on the URL shape (the bucket's public URL prefix),
-  `homebrew_content_valid` untouched (the URL is a column, not content);
-- `toRecord` maps `art_url` to `Record_.img` as an absolute URL and
-  `artSrc` passes an absolute `img` through unchanged and derives the
-  160 px name by R8's own suffix rule; `homebrew_snapshot_of` and
-  `snapshotOf` copy `img`, and `homebrew_snapshot_valid` then allows an
-  `img` key (R8 replaces the three functions in a new migration; the
-  reversal restores these);
-- a replaced or deleted picture whose URL a frozen copy still carries is
-  answered by the existing broken-art fallback (`artBroken`), so R8 may
-  delete files freely; a reference always draws the current picture;
-- the editor's picture slot: the mock reserves the card preview's art
-  area; R8 adds the control beside it;
-- decision 40's `delete-account` Edge Function lands in R8 with the bucket.
-
-R9 (`persist-9-item-share`):
-- `homebrew_shares` on the `list_shares` pattern (`item_id`, one active
-  link per item, `token`, `topic_key`, `revoked_at`), `get_shared_homebrew
-  (token)` for anon returning `{ revision, updated_at, topic_key, item:
-  homebrew_snapshot_of(...) }`, `clone_shared_homebrew(token, new_id)`
-  making a new key server-side with a SQL twin of `newKey()` (the
-  cloner's own item, so a reference in the cloner's lists),
-  `add_shared_homebrew_to_list(token, list_id, entry_id)` writing a
-  frozen copy by `homebrew_snapshot_of`;
-- a frozen copy in a list may offer «Сделать своим» (clone from the row)
-  - R9's call;
-- `#/h/<token>` draws `RecordCard` over `toRecord()` of the projection
-  and subscribes to `share:<topic_key>` as `B3.1` does; an item edit
-  bumps `homebrew_items.revision` (the before-update trigger), which
-  R9's trigger sends;
-- `#/print/list/<id>` and `#/print/s/<token>` resolve entries through
-  `withRecords(index, snapshots)` (a reference from the owner's items, a
-  frozen row from itself) and retire the `DEBT.md` entry `B7.2` writes;
-- the `hb_` prefix and per-owner uniqueness: a cloned item is a new row
-  with a new key, never the sharer's key.
-
-R11 usage monitoring: count `homebrew_items`.
+- Section 5, R7 row: three tables, the widened bound, the reference
+  trigger, the broadcast event, `import_homebrew` moved to R7b; a new R7b
+  row.
+- Section 6: the `B7.2` row keeps the `#/homebrew` routes; a `B7.3` row
+  for the `homebrew` table (`ROUTES.md`, `CONTRACTS.md` 1, fixtures,
+  `llms.txt` URL grammar); a `B7b.1` row for `CONTRACTS.md` 4 and the two
+  `llms.txt` sections.
+- Section 9, releases table: R7 batches `B7.1`-`B7.3`; a new R7b row after
+  R7, before R8; the order line.
+- Section 12: `B7.1`-`B7.3` rows replaced; `B7b.1`, `B7b.2` added; the
+  total.
+- Section 14: the `B7.1`-`B7.3` outline replaced by section 4's summary;
+  `B8.1` gains the art-reuse line; `B9.1` gains the cards and relations
+  lines.
+- Section 16, decision 31: the item limit per `Q3`'s answer.
+- Section 17: "Deferred: homebrew import beyond v2's create-only" becomes
+  "import updates held keys (R7b)"; "homebrew sets" leaves "Not in v1".
 
 ## 12. Risks, assumptions, deferred
 
-- Assumption: a plpgsql `immutable` function is accepted in a table CHECK
-  (it is, when declared immutable); the layer 3 suite is the proof.
-- Assumption: the R2 CHECK's generated constraint name is
-  `list_entries_snapshot_check`; step 6 reads it before writing.
-- Risk: `AppState.index` as a `$derived` re-runs `withRecords` on every
-  homebrew edit; the function copies one `Map` of 1272 + 50 entries - a
-  millisecond. The tables and the rolls keep the base arrays by
-  reference, so nothing there redraws.
-- Risk: the `hayFor` cache by id serves a stale folded text after an
-  edit; section 4.4 derives `hay` from `index`.
-- Risk: the touch trigger bumps `lists.updated_at`, so "изменён N назад"
-  on the index moves on an item edit; accepted (the list's content did
-  change) and stated in `FEATURES.md`.
-- Risk: `ListPage.svelte` is 65 KB and `B2.3` is editing it and the shared
-  page now; `B7.2`'s change there is one derived `Index` and no other
-  line, and the refresh re-reads both files.
-- Risk: the goldens of lists 101 and 201 and `#/s/player-token-1` move
-  in `B7.2` because the seed gains rows in `B7.1`; the reviewer reads
-  the moved files against the seed.
-- Risk: R5b's menu component may take markup rather than data; the
-  refresh adapts the one entry to what shipped.
-- Deferred: an "update in lists" action is moot (references); a Trash;
-  «Сделать своим» from a frozen row (R9); homebrew in the roll tables;
-  sets, crafts and referenced cards on a homebrew record; a homebrew
-  filter on the search page (the group heading is the filter today).
+- Risk: `B7.3` changes what a signed-in reader's catalog card draws; the
+  signed-out goldens must not move (the compare before the re-seed is the
+  proof).
+- Risk: `Index.craftedFrom`'s type change touches four readers; a search
+  for its readers is phase B's first step.
+- Risk: `TABLE_IDS` is read by `isTableId`, `groupsFor`, `facetRows`,
+  `TABLE_GROUPS`, `SUB_LABEL`, the pin check and `routes.json`; the new
+  id must be handled in each (a table with no rows signed out).
+- Risk: the picker searches the merged index on every keystroke; the
+  `hayFor` cache makes it cheap, but the editor must not rebuild the
+  index on its own draft (the preview record is not in the index).
+- Risk: `ListPage.svelte` is large and R4 `B4.2` edits it now; `B7.2`'s
+  change there is one derived index and the resolver, and phase B
+  re-reads the file.
+- Assumption: a frozen snapshot of up to 32 KB is acceptable per entry
+  (100 entries per list is at most 3.2 MB, read once).
+- Assumption: R6 ships `BatchBar`, `ImportPanel`, `lib/zip.ts` and the
+  zip's "other files named in the preview" rule as planned; phase B reads
+  them.
+- Mocks check: recorded in `handoff.md`, "Notes" after the browser pass.
+- Deferred: item 13 (books, subscriptions, subcategories, roll tables);
+  a Trash; art (R8); links (R9); a set filter; `recall` on a homebrew
+  record; a per-source cover picture; bulk edit (move items between
+  sources) beyond delete and download.
 
-## 13. Owner questions - answered 2026-09-26
+## 13. Phase B (the next planning dispatch)
 
-Answered 2026-09-26 (roadmap `context.md`, "Owner answers for R5 and
-R7"): Q1 placement - the account menu, not a tab and not under the Lists
-tab (applied in section 4.7); Q2 editing - live references inside the
-account, frozen copies outside it, a delete warns with the count and
-removes the item from its lists (applied in sections 4.3, 4.5, 4.9).
-
-Q3 answered 2026-09-26 (roadmap `context.md`, "Owner answer for R7"):
-the source tag on a homebrew row, card and print card is «Хоумбрю» /
-"Homebrew", against the recommendation below; the page, the menu entry
-and the search group stay «Мои предметы» / "My items". The question as
-asked:
-
-Q3. The Russian words. The menu entry is the owner's "My items", so the
-    page head, the menu entry and the search group read «Мои предметы» /
-    "My items". What stays open is the source tag on rows, cards and the
-    print card's source line.
-   - (recommended) «Свой предмет» / "Homebrew" as the tag. Reason: a
-     tag names where a record comes from («Основные правила», a frame, a
-     community); «свой» says "yours, not a book's" in one word beside
-     «Мои предметы», and «Хоумбрю» stays in the GM note placeholder as it
-     is. The daggerheart.su convention for "homebrew" was not verified in
-     this pass (no fetch); the owner may know it.
-   - «Хоумбрю» / "Homebrew" as the tag: one word the community already
-     uses; reads as jargon to a new reader.
-
-No new question. Decided without one (sections 4 and 11): an item edit
-is an edit of every referencing list (their `revision` and `updated_at`
-move); the owner cloning their own link keeps references; a file never
-carries a bare reference; an import turns a held key into a reference;
-`#/homebrew` is the route's spelling (the label is the owner's); one
-jsonb column; per-owner keys with the `hb_` prefix; both languages
-optional with at least one name and a fallback at record build; tier
-typed by the owner, optional on loot; the 16384 bound kept; form-submit
-saves; `#/i/<key>` resolves in the app for the owner; no Trash (decision
-30); 50 items (decision 31).
+1. Delta check against `main`: R4 `B4.2` as shipped (the requests panel's
+   name resolver, `CloudPort.requests` in the fake, `live.ts` readers),
+   R6 as shipped (`bundle.ts`, `zip.ts`, `BatchBar`, `ImportPanel`, the
+   zip contract text, `llms.txt` structure, `import_lists`), the account
+   menu and `ListPage.svelte`.
+2. The owner's answers to `Q1`-`Q8` applied; the mocks amended.
+3. `B7.1` expanded to implement-ready steps: the migration text, the
+   fixtures (every validator case), the seed rows, the port signatures,
+   the contract case, the layer 3 case list, the acceptance lines and the
+   inherited lines (`DEBT.md` D64 if the owner assigns it to R7).
+4. `plan.md` Status keeps the `Plan review: required before B7.1` line;
+   `handoff.md` names `B7.1`.

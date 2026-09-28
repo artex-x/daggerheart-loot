@@ -1,0 +1,1878 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>#/homebrew as gm1 - sources, cards, actions, the items by source</title>
+    <style>
+      /* R7 mocks. :root copies app/src/styles/tokens.css (values, not a redesign).
+   Component rules are copied from the named .svelte files. One theme (dark).
+   Rules marked NEW are the proposal. */
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --gold-rgb: 216 171 94;
+        --hope: #e9b949;
+        --fear: #8a72d6;
+        --item: #7a8ee0;
+        --cons: #9ec96a;
+        --eq-weapon: #d48e6a;
+        --eq-secondary: #cf7fa6;
+        --eq-armor: #5ec9c4;
+        --danger: #e0685f;
+        --danger-text: #f0a49d;
+        --warn-bg: rgb(224 104 95 / 9%);
+        --warn-line: rgb(224 104 95 / 30%);
+        --warn-text: #e0b6b1;
+        --warn-strong: #f5c0ba;
+        --badge-bg: rgb(10 8 16 / 50%);
+        --r: 14px;
+        --r-sm: 9px;
+        --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
+        --ui:
+          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+          Arial, sans-serif;
+        --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        --step-0: 15.5px;
+        --h-page-size: 23px;
+        --h-page-weight: 680;
+        --h-page-spacing: -0.01em;
+        --gap-sm: 6px;
+        --ink-on-gold: #1a1206;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(1200px 700px at 12% -8%, #251c3d 0%, transparent 62%),
+          radial-gradient(900px 600px at 100% 0%, #1b2b3d 0%, transparent 55%), var(--bg);
+        background-attachment: fixed;
+        color: var(--txt);
+        font: var(--step-0) / 1.6 var(--ui);
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      a {
+        color: var(--gold-soft);
+      }
+      input::placeholder,
+      textarea::placeholder {
+        color: var(--muted2);
+        opacity: 0.7;
+      }
+
+      /* ---- mock chrome (not app UI) ---- */
+      .mockbar {
+        max-width: 1420px;
+        margin: 20px auto 10px;
+        padding: 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .mockbar h1 {
+        font-size: 18px;
+        color: var(--txt);
+        margin: 0 0 4px;
+      }
+      .mockbar p {
+        margin: 4px 0;
+        max-width: 120ch;
+      }
+      .crumb {
+        font: 12px/1.4 var(--mono);
+      }
+      .notetext {
+        color: #d9c8f5;
+      }
+      .pair {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 28px;
+        max-width: 1420px;
+        margin: 0 auto 40px;
+        padding: 0 16px;
+      }
+      .frame {
+        position: relative;
+        border: 1px dashed #5a5070;
+        border-radius: 6px;
+        padding: 0 0 18px;
+        background: transparent;
+      }
+      .frame.desk {
+        flex: 0 0 960px;
+        width: 960px;
+        max-width: 100%;
+        min-width: 0;
+      }
+      .frame.phone {
+        flex: 0 0 360px;
+        width: 360px;
+      }
+      .frame.textframe {
+        flex: 1 1 640px;
+        min-width: 0;
+      }
+      .frame > .cap {
+        display: block;
+        font: 600 12px/1.4 var(--mono);
+        color: #c8a0ff;
+        padding: 6px 10px;
+        border-bottom: 1px dashed #5a5070;
+      }
+      .frame .in {
+        padding: 0 16px;
+      }
+      .new {
+        outline: 2px dashed #c8a0ff;
+        outline-offset: 3px;
+      }
+      .note {
+        border: 1px dashed #c8a0ff;
+        background: rgb(200 160 255 / 8%);
+        color: #d9c8f5;
+        font-size: 12.5px;
+        padding: 6px 10px;
+        margin: 14px 0 0;
+        border-radius: 4px;
+        line-height: 1.5;
+      }
+      .note code,
+      .notetext code {
+        font: 12px/1.4 var(--mono);
+        color: #e6d7ff;
+      }
+      table.idx {
+        border-collapse: collapse;
+        margin-top: 14px;
+        font-size: 13.5px;
+        width: 100%;
+      }
+      table.idx th,
+      table.idx td {
+        text-align: left;
+        border-top: 1px solid var(--line);
+        padding: 7px 10px 7px 0;
+        vertical-align: top;
+      }
+      table.idx th {
+        color: var(--muted2);
+        font-size: 11.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      table.idx td:first-child {
+        font-family: var(--mono);
+        white-space: nowrap;
+      }
+      pre.llms {
+        margin: 0;
+        padding: 14px 16px;
+        font: 12.5px/1.55 var(--mono);
+        color: var(--txt);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      /* ---- Shell.svelte header, outline only ---- */
+      .chrome {
+        opacity: 0.6;
+        outline: 1px dashed #5a5070;
+        outline-offset: -1px;
+        margin-bottom: 4px;
+      }
+      .chrome.live {
+        opacity: 1;
+      }
+      .topbar {
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 16px;
+        gap: 16px;
+        position: relative;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand .star {
+        color: var(--gold);
+        font-size: 22px;
+        line-height: 1;
+      }
+      .brand b {
+        font-size: 16px;
+        display: block;
+        line-height: 1.1;
+      }
+      .brand i {
+        font-style: normal;
+        font-size: 10.5px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .hright {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .langsw {
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px;
+        background: var(--surface);
+      }
+      .langsw span {
+        padding: 4px 11px;
+        border-radius: 999px;
+        font: 650 12px/1.4 var(--ui);
+        letter-spacing: 0.05em;
+        color: var(--muted);
+      }
+      .langsw span.on {
+        background: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .acct {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        min-width: 38px;
+        padding: 0 14px 0 11px;
+        border-radius: 999px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12.5px;
+        font-weight: 650;
+        letter-spacing: 0.05em;
+      }
+      .acct.in {
+        padding: 0;
+        width: 38px;
+        background: var(--surface2);
+        border-color: rgb(216 171 94 / 45%);
+        color: var(--gold-soft);
+        font-size: 14px;
+      }
+      .acct.on {
+        border-color: var(--gold);
+      }
+      .tabs {
+        display: flex;
+        gap: 18px;
+        padding: 8px 16px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 13.5px;
+        color: var(--muted);
+        overflow: hidden;
+      }
+      .tabs span {
+        padding-bottom: 8px;
+        border-bottom: 2px solid transparent;
+        white-space: nowrap;
+      }
+      .tabs span.on {
+        color: var(--gold-soft);
+        border-bottom-color: var(--gold);
+      }
+      .tabs .sp {
+        margin-left: auto;
+      }
+      main {
+        padding-top: 22px;
+      }
+
+      /* ---- AccountMenu.svelte ---- */
+      .acctwrap {
+        position: relative;
+      }
+      .acctmenu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        min-width: 220px;
+        max-width: min(320px, 90vw);
+        z-index: 60;
+        border: 1px solid var(--line2);
+        border-radius: 11px;
+        background: var(--surface);
+        padding: 6px;
+        box-shadow: 0 16px 40px -14px rgb(0 0 0 / 85%);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .acctmenu a,
+      .acctmenu button {
+        display: block;
+        padding: 9px 12px;
+        border-radius: 8px;
+        color: var(--txt);
+        font: inherit;
+        font-size: 14px;
+        text-align: left;
+        text-decoration: none;
+        background: transparent;
+        border: 0;
+      }
+      .acctmenu .out {
+        border-top: 1px solid var(--line);
+        border-radius: 0 0 8px 8px;
+        margin-top: 4px;
+      }
+      .topbar.tall {
+        min-height: 230px;
+        align-items: flex-start;
+      }
+
+      /* ---- PageTitle / PageHead ---- */
+      .page-h {
+        margin: 0 0 4px;
+        font-size: var(--h-page-size);
+        font-weight: var(--h-page-weight);
+        letter-spacing: var(--h-page-spacing);
+        overflow-wrap: anywhere;
+      }
+      .page-sub {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 70ch;
+      }
+      .page-sub a.itemtable {
+        white-space: nowrap;
+        font-size: 13px;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        margin-left: 6px;
+      }
+      .count {
+        font: 600 12px/1 var(--mono);
+        color: var(--muted2);
+        margin: -8px 0 14px;
+      }
+
+      /* ---- Panel.svelte / Field.svelte ---- */
+      .panel {
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+      .panel + .panel,
+      .panel + .rows,
+      .rows + .panel {
+        margin-top: 16px;
+      }
+      .field {
+        margin-bottom: 16px;
+      }
+      .field:last-child {
+        margin-bottom: 0;
+      }
+      .lbl {
+        display: block;
+        font-size: 11.5px;
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted2);
+        margin: 0 0 8px;
+      }
+      .numrow {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        flex-wrap: wrap;
+      }
+      .grow {
+        flex: 1 1 170px;
+        min-width: 0;
+      }
+      .input {
+        width: 100%;
+        height: 46px;
+        padding: 0 14px;
+        border-radius: var(--r-sm);
+        background: var(--bg2);
+        border: 1px solid var(--line2);
+        color: var(--txt);
+        font: inherit;
+      }
+      textarea.input {
+        height: 92px;
+        padding: 10px 14px;
+        resize: vertical;
+        line-height: 1.45;
+        font-size: 14px;
+      }
+      select.input {
+        appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 18px) 20px,
+          calc(100% - 13px) 20px;
+        background-size: 5px 5px;
+        background-repeat: no-repeat;
+      }
+      .twocol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .frame.phone .twocol {
+        grid-template-columns: 1fr;
+      }
+      .hint {
+        margin: 10px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .hint.lead {
+        margin: 0 0 12px;
+      }
+      .err {
+        margin: 10px 0 0;
+        font-size: 13px;
+        color: var(--danger-text);
+      }
+
+      /* ---- Button.svelte ---- */
+      .btn {
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--txt);
+        padding: 0 18px;
+        height: 46px;
+        border-radius: var(--r-sm);
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .btn.sm {
+        height: 32px;
+        padding: 0 11px;
+        font-size: 12.5px;
+        border-radius: 8px;
+        gap: 6px;
+      }
+      .btn.on {
+        border-color: var(--gold);
+        color: var(--gold-soft);
+      }
+      .btn.primary {
+        background: linear-gradient(180deg, #e2b76c, var(--gold));
+        border-color: #e8c27c;
+        color: var(--ink-on-gold);
+        font-weight: 700;
+      }
+      .btn.ghost {
+        background: transparent;
+        border-color: var(--line);
+      }
+      .btn.danger {
+        border-color: rgb(224 104 95 / 40%);
+        color: var(--danger-text);
+      }
+      .btn[disabled] {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .caret {
+        width: 0;
+        height: 0;
+        margin-left: 2px;
+        border: 4px solid transparent;
+        border-top-color: currentcolor;
+        transform: translateY(2px);
+        display: inline-block;
+      }
+      .card-acts {
+        display: flex;
+        gap: var(--gap-sm);
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .ml {
+        margin-left: auto;
+      }
+      .frame.phone .card-acts .ml {
+        margin-left: 0;
+      }
+
+      /* ---- Chip.svelte / ChipRow ---- */
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        display: inline-block;
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--muted);
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 540;
+        text-align: left;
+      }
+      .chip.on {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--ink-on-gold);
+        font-weight: 650;
+      }
+      .chip.sm {
+        padding: 5px 11px;
+        font-size: 12.5px;
+      }
+
+      /* ---- Seg.svelte ---- */
+      .seg {
+        display: inline-flex;
+        flex-wrap: wrap;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px;
+      }
+      .seg span {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        padding: 5px 13px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        font-weight: 650;
+        letter-spacing: 0.05em;
+      }
+      .seg span.on {
+        background: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .seg.small span {
+        padding: 4px 12px;
+        font-size: 12px;
+      }
+      .frame.phone .seg span {
+        padding: 8px 14px;
+      }
+
+      /* ---- Badge.svelte ---- */
+      .badge {
+        font-size: 10.5px;
+        font-weight: 650;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        padding: 3px 7px;
+        border-radius: 6px;
+        background: var(--badge-bg);
+        border: 1px solid var(--line2);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .badge.item {
+        color: var(--item);
+        border-color: #7a8ee073;
+      }
+      .badge.cons {
+        color: var(--cons);
+        border-color: #9ec96a73;
+      }
+      .badge.eq-weapon {
+        color: var(--eq-weapon);
+        border-color: #d48e6a73;
+      }
+      .badge.eq-secondary {
+        color: var(--eq-secondary);
+        border-color: #cf7fa673;
+      }
+      .badge.eq-armor {
+        color: var(--eq-armor);
+        border-color: #5ec9c473;
+      }
+      .badge.uniq {
+        color: var(--gold-soft);
+        border-color: rgb(var(--gold-rgb) / 45%);
+        border-style: dashed;
+      }
+      .badge.tier {
+        color: var(--muted);
+        border-color: var(--line2);
+      }
+      .badge.src {
+        color: #9a9aa6;
+      }
+      .badge.num {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0;
+        color: var(--gold-soft);
+        border-color: rgb(var(--gold-rgb) / 50%);
+      }
+      /* NEW: the source badge of a homebrew record - the property style .uniq uses; a title names the source */
+      .badge.src.hb {
+        border-style: dashed;
+        border-color: #9a9aa6a6;
+      }
+
+      /* ---- TableRows.svelte / RowMain.svelte ---- */
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .row {
+        display: flex;
+        align-items: flex-start;
+        gap: 2px;
+        padding: 3px 5px 3px 3px;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+      }
+      .row.sel {
+        border-color: var(--gold);
+        background: linear-gradient(180deg, rgb(216 171 94 / 9%), var(--surface));
+      }
+      .rtick {
+        flex: none;
+        width: 42px;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .rtick i {
+        width: 17px;
+        height: 17px;
+        border-radius: 4px;
+        border: 1px solid var(--line2);
+        background: var(--bg2);
+        display: block;
+      }
+      .row.sel .rtick i {
+        background: var(--gold);
+        border-color: var(--gold);
+      }
+      .row-main {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        text-align: left;
+        flex: 1;
+        min-width: 0;
+        background: none;
+        border: 0;
+        padding: 8px;
+        color: inherit;
+        font: inherit;
+      }
+      .row-main img {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex: none;
+        background: #0a0810;
+      }
+      .row-main .rt {
+        flex: 1;
+        min-width: 0;
+      }
+      .row-main .rt b {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 620;
+        overflow-wrap: anywhere;
+      }
+      .row-main .rt .rnum {
+        font: 650 11px/1 var(--mono);
+        color: var(--gold-soft);
+        flex: none;
+        border: 1px solid rgb(216 171 94 / 40%);
+        border-radius: 5px;
+        padding: 3px 5px;
+      }
+      .row-main .rt .rtail {
+        font-style: normal;
+        font-weight: 600;
+        color: var(--gold-soft);
+        margin-left: 7px;
+        font-size: 12.5px;
+      }
+      .row-main .rt > span {
+        display: -webkit-box;
+        font-size: 12.5px;
+        color: var(--muted2);
+        margin-top: 3px;
+        line-height: 1.45;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .row-main .rt .rstats {
+        -webkit-line-clamp: none;
+        line-clamp: none;
+        display: block;
+        margin-top: 3px;
+        font: 600 11.5px/1.4 var(--mono);
+        color: var(--muted);
+      }
+      .row-main .rt .rcraft {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 2px 4px;
+        -webkit-line-clamp: none;
+        line-clamp: none;
+        color: var(--muted);
+        font-size: 11.5px;
+        margin-top: 4px;
+        overflow: visible;
+      }
+      .row-main .rt .rcraft .arr {
+        color: var(--muted2);
+      }
+      .row-main .rm {
+        flex: none;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .frame.phone .row-main {
+        flex-wrap: wrap;
+      }
+      .frame.phone .row-main .rm {
+        flex-basis: 100%;
+        padding-left: 72px;
+        margin-top: 2px;
+        flex-wrap: wrap;
+      }
+      /* NEW: a homebrew record's name inside a relation - dashed, titled */
+      .hbname {
+        border-bottom: 1px dashed currentcolor;
+      }
+
+      /* ---- section heads on a table page (SectionHead.svelte, simplified) ---- */
+      .shead {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 18px 0 8px;
+        font: 650 11.5px/1 var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .shead:first-child {
+        margin-top: 0;
+      }
+      .shead .cnt {
+        color: var(--muted2);
+        font-weight: 500;
+        letter-spacing: 0;
+      }
+      .shead .lnk {
+        margin-left: 4px;
+        color: var(--muted2);
+        font-size: 11px;
+      }
+
+      /* ---- TablesPage toolbar + FilterBar.svelte ---- */
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 0 0 12px;
+      }
+      .toolbar .grow {
+        flex: 1 1 200px;
+      }
+      .fbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin: 0 0 14px;
+      }
+      .fpill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 32px;
+        padding: 0 8px 0 11px;
+        border-radius: 8px;
+        background: rgb(216 171 94 / 12%);
+        border: 1px solid rgb(216 171 94 / 45%);
+        color: var(--gold-soft);
+        font-size: 12.5px;
+        font-weight: 600;
+      }
+      .fpill i {
+        font-style: normal;
+        color: var(--muted);
+      }
+      .fcount {
+        font: 600 12px/1 var(--mono);
+        color: var(--muted2);
+      }
+      .fpanel {
+        margin: 0 0 16px;
+      }
+      .frow {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .frow .lbl {
+        margin: 0;
+        flex: 0 0 96px;
+      }
+      .frame.phone .frow .lbl {
+        flex-basis: 100%;
+      }
+
+      /* ---- RecordCard.svelte ---- */
+      .card {
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        overflow: clip;
+        display: flex;
+        box-shadow: var(--shadow);
+      }
+      .card.full {
+        flex-direction: column;
+        max-width: 520px;
+      }
+      .card.compact {
+        flex-direction: row;
+        align-items: stretch;
+      }
+      .card-media {
+        position: relative;
+        background: #0a0810;
+        overflow: hidden;
+        flex: none;
+        border: 0;
+        padding: 0;
+        display: block;
+      }
+      .card.full .card-media {
+        width: 100%;
+        aspect-ratio: 1;
+        max-height: 420px;
+      }
+      .card.compact .card-media {
+        width: 132px;
+        aspect-ratio: 1;
+      }
+      .frame.phone .card.compact .card-media {
+        width: 96px;
+      }
+      .card-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .card-body {
+        padding: 13px 15px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+        min-width: 0;
+      }
+      .card-meta {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .card-name {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 680;
+        letter-spacing: -0.01em;
+        line-height: 1.28;
+        display: flex;
+        align-items: baseline;
+        gap: 7px;
+        overflow-wrap: anywhere;
+      }
+      .card.full .card-name {
+        font-size: 19px;
+      }
+      .eqstats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin: 2px 0 10px;
+      }
+      .eqstats span {
+        font: 600 11.5px/1 var(--mono);
+        color: var(--muted);
+        background: rgb(255 255 255 / 3.5%);
+        border: 1px solid var(--line2);
+        border-radius: 6px;
+        padding: 4px 7px;
+        white-space: nowrap;
+      }
+      .card-desc {
+        margin: 0;
+        color: #cfc8e0;
+        font-size: 13.5px;
+        line-height: 1.55;
+      }
+      .card.full .card-desc {
+        font-size: 14px;
+        line-height: 1.62;
+      }
+      .card-desc p {
+        margin: 0;
+      }
+      .card-desc ul {
+        margin: 4px 0 0;
+        padding-left: 18px;
+      }
+      .steps {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 10px 0 0;
+        flex-wrap: wrap;
+      }
+      .steps-l {
+        font: 650 10.5px/1 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .step {
+        min-width: 26px;
+        height: 26px;
+        padding: 0 6px;
+        border-radius: 7px;
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--muted);
+        font: 650 12.5px/1 var(--ui);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .step.on {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: #191320;
+      }
+      /* NEW: a homebrew rung */
+      .step.hb {
+        border-style: dashed;
+        border-color: rgb(var(--gold-rgb) / 55%);
+      }
+      .step.hb.on {
+        border-style: dashed;
+        border-color: #191320;
+      }
+      .craft {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin: -1px 0 1px;
+      }
+      .craft p {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 2px 5px;
+        margin: 0;
+        font-size: 12.5px;
+        line-height: 1.45;
+        min-width: 0;
+      }
+      .craft .arr {
+        color: var(--muted2);
+        align-self: center;
+      }
+      .craft-l {
+        color: var(--muted2);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 10.5px;
+        white-space: nowrap;
+      }
+      .craft a {
+        color: var(--gold-soft);
+        text-decoration: none;
+        border-bottom: 1px dotted rgb(240 208 145 / 45%);
+      }
+      .craft a.hbname {
+        border-bottom: 1px dashed rgb(240 208 145 / 70%);
+      }
+      /* NEW: the fold button on a relation with more than three names */
+      .more {
+        background: none;
+        border: 1px dashed var(--line2);
+        border-radius: 6px;
+        color: var(--muted);
+        font: 600 11px/1 var(--ui);
+        padding: 3px 7px;
+      }
+      .refs {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin: 1px 0 2px;
+      }
+      .refs details {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgb(255 255 255 / 2%);
+      }
+      .refs summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 8px;
+        cursor: pointer;
+        list-style: none;
+        font-size: 12px;
+        line-height: 1.35;
+        flex-wrap: wrap;
+      }
+      .refs summary::-webkit-details-marker {
+        display: none;
+      }
+      .ref-n {
+        font-weight: 650;
+        color: var(--txt);
+      }
+      .ref-s {
+        font-style: normal;
+        color: var(--muted2);
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .cardpick {
+        border-top: 1px solid var(--line);
+        margin-top: 12px;
+        padding-top: 12px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .itempage {
+        max-width: 520px;
+      }
+
+      /* ---- the editor (HomebrewEditor.svelte, NEW) ---- */
+      .editor {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 18px;
+        align-items: start;
+      }
+      .frame.phone .editor {
+        grid-template-columns: 1fr;
+      }
+      .fold {
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        background: rgb(255 255 255 / 2%);
+        margin-bottom: 16px;
+      }
+      .fold > .sum {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .fold > .sum .caret {
+        margin-left: auto;
+      }
+      .fold > .sum.open .caret {
+        transform: translateY(-1px) rotate(180deg);
+      }
+      .fold > .body {
+        padding: 4px 12px 12px;
+        border-top: 1px solid var(--line);
+      }
+      .fieldset {
+        border: 0;
+        padding: 0;
+        margin: 0 0 16px;
+      }
+      .fieldset > .lgd {
+        font-size: 13.5px;
+        font-weight: 650;
+        margin: 0 0 12px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+      /* NEW: ItemPicker.svelte - a combobox over the merged index */
+      .picker {
+        position: relative;
+      }
+      .picklist {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 6px);
+        z-index: 5;
+        border: 1px solid var(--line2);
+        border-radius: 11px;
+        background: var(--surface);
+        padding: 6px;
+        box-shadow: 0 16px 40px -14px rgb(0 0 0 / 85%);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .picklist.static {
+        position: static;
+        margin-top: 6px;
+      }
+      .pickrow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        min-width: 0;
+      }
+      .pickrow.on {
+        background: var(--surface2);
+      }
+      .pickrow img {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        object-fit: cover;
+        background: #0a0810;
+        flex: none;
+      }
+      .pickrow .nm {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .pickrow .nm small {
+        display: block;
+        font: 600 11px/1.3 var(--mono);
+        color: var(--muted2);
+      }
+      .picked {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 8px 6px 6px;
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        background: var(--bg2);
+      }
+      .picked img {
+        width: 34px;
+        height: 34px;
+        border-radius: 7px;
+        object-fit: cover;
+        background: #0a0810;
+        flex: none;
+      }
+      .picked .nm {
+        flex: 1;
+        min-width: 0;
+        font-size: 13.5px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+      }
+      .picked .nm small {
+        display: block;
+        font: 500 11.5px/1.3 var(--ui);
+        color: var(--muted2);
+      }
+      .picked .x {
+        background: none;
+        border: 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1;
+        padding: 4px 6px;
+      }
+      .pickempty {
+        padding: 8px;
+        font-size: 13px;
+        color: var(--muted2);
+      }
+
+      /* ---- ListPage.svelte .batch (R6's BatchBar.svelte) ---- */
+      .batch {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 0 0 14px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line2);
+        background: var(--surface);
+      }
+      .batch.on {
+        border-color: var(--gold);
+        background: rgb(216 171 94 / 7%);
+      }
+      .batch-all {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font: 650 11px/1 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .batch.on .batch-all {
+        color: var(--gold-soft);
+      }
+      .batch-all i {
+        width: 17px;
+        height: 17px;
+        border-radius: 4px;
+        border: 1px solid var(--line2);
+        background: var(--bg2);
+        display: inline-block;
+      }
+      .batch.on .batch-all i {
+        background: var(--gold);
+        border-color: var(--gold);
+      }
+      .batch-summ {
+        font: 400 13.5px/1.3 var(--ui);
+        color: var(--gold-soft);
+      }
+      .batch-acts {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-left: auto;
+      }
+      .frame.phone .batch-acts {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      /* ---- source rows on #/homebrew (NEW) ---- */
+      .srcrow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 0;
+        border-top: 1px solid var(--line);
+      }
+      .srcrow:first-of-type {
+        border-top: 0;
+        padding-top: 2px;
+      }
+      .srcrow .who {
+        flex: 1 1 200px;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .srcrow .who b {
+        font-size: 14px;
+        font-weight: 650;
+      }
+      .srcrow .who small {
+        font-size: 12.5px;
+        color: var(--muted2);
+      }
+      .srcrow .acts {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      /* ---- SignInPrompt.svelte ---- */
+      .signin {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .signin-lead {
+        margin: 0;
+        font-size: 13.5px;
+        color: var(--txt);
+        max-width: 62ch;
+        flex: 1 1 240px;
+      }
+
+      /* ---- StorageNotice-style warning box, the import report ---- */
+      .errs {
+        margin: 12px 0 0;
+        padding: 10px 12px;
+        border-radius: var(--r-sm);
+        background: var(--warn-bg);
+        border: 1px solid var(--warn-line);
+        color: var(--warn-text);
+        font-size: 13px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      .errs b {
+        color: var(--warn-strong);
+        font-weight: 650;
+        display: block;
+      }
+      .errs ul {
+        margin: 4px 0 0;
+        padding-left: 18px;
+      }
+      .errs code {
+        font: 12px/1.4 var(--mono);
+        color: var(--warn-strong);
+      }
+      .preview {
+        margin: 12px 0 0;
+        font-size: 13.5px;
+        line-height: 1.55;
+      }
+      .preview code {
+        font: 12.5px/1.4 var(--mono);
+        color: var(--gold-soft);
+      }
+      .fname {
+        font-size: 13px;
+        color: var(--muted);
+        overflow-wrap: anywhere;
+      }
+
+      /* ---- Toast.svelte, at the frame's bottom ---- */
+      .toast {
+        position: absolute;
+        left: 50%;
+        bottom: 26px;
+        transform: translateX(-50%);
+        max-width: calc(100% - 32px);
+        width: max-content;
+        background: var(--gold);
+        color: var(--ink-on-gold);
+        font-weight: 650;
+        font-size: 13.5px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        box-shadow: 0 12px 30px -10px rgb(0 0 0 / 70%);
+      }
+      .frame:has(.toast) {
+        padding-bottom: 96px;
+      }
+
+      /* ---- the browser's own confirm, a flat stand-in (not app UI) ---- */
+      .native {
+        max-width: 460px;
+        margin: 18px auto 0;
+        background: #2b2b2b;
+        color: #eee;
+        font:
+          13px/1.5 system-ui,
+          sans-serif;
+        border-radius: 8px;
+        padding: 18px 18px 14px;
+        border: 1px solid #444;
+      }
+      .native .origin {
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .native .acts {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .native .acts span {
+        padding: 6px 16px;
+        border-radius: 4px;
+        background: #3c3c3c;
+      }
+      .native .acts span.ok {
+        background: #8ab4f8;
+        color: #202124;
+      }
+
+      /* ---- AccountPage.svelte ---- */
+      .row-btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .group {
+        margin-top: 22px;
+      }
+      .frame.phone .page-sub .itemtable {
+        display: block;
+        margin: 4px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockbar">
+      <p class="crumb"><a href="index.html">R7 mocks</a> / m02-homebrew-page.html</p>
+      <h1>#/homebrew as gm1 - sources, cards, actions, the items by source</h1>
+      <p>
+        <b>Plan:</b> plan 4.10; B7.2 (the download buttons and the import are R7b, m15 and m16)
+      </p>
+      <p class="notetext">
+        The management page behind the account menu. Sources are a panel (add, rename, delete);
+        the cards panel is folded; the items are <code>TableRows</code> grouped under one
+        heading per source, each row opening the editor; a row's tick feeds the selection bar
+        and R6's <code>BatchBar</code>. No tab is current.
+      </p>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">#/homebrew as gm1 - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Мои предметы</h1>
+          <p class="page-sub">
+            Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и
+            добавляются в списки.
+          </p>
+          <p class="count">19 предметов из 500</p>
+          <div class="panel new">
+            <span class="lbl">Источники</span>
+            <div class="srcrow">
+              <span class="who"><b>Хоумбрю</b><small>4 предмета</small></span
+              ><span class="acts"></span>
+            </div>
+            <div class="srcrow">
+              <span class="who"><b>Pistolheart</b><small>15 предметов</small></span
+              ><span class="acts"
+                ><button class="btn sm ghost">Переименовать</button
+                ><button class="btn sm danger">Удалить</button></span
+              >
+            </div>
+            <div class="numrow" style="margin-top: 12px">
+              <div class="grow">
+                <input
+                  class="input"
+                  value=""
+                  placeholder="Название источника, например Pistolheart"
+                />
+              </div>
+              <button class="btn">Добавить</button>
+            </div>
+          </div>
+          <div class="fold new">
+            <div class="sum">
+              Карты
+              <span style="color: var(--muted2); font-weight: 500"
+                >· 1 комплект, 1 карта правил</span
+              ><span class="caret"></span>
+            </div>
+          </div>
+          <div class="card-acts" style="margin: 16px 0 14px">
+            <a class="btn primary new">+ Новый предмет</a
+            ><button class="btn ghost">Импорт предметов <span class="caret"></span></button>
+          </div>
+          <div class="batch">
+            <span class="batch-all"><i></i>Выбрать все</span><span class="batch-summ"></span>
+          </div>
+          <div class="shead">Pistolheart <span class="cnt">15</span></div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Кремнёвый пистоль</b
+                  ><span class="rstats"
+                    >Ранг 1 · Физическое · Искусность · Далеко · d6+1 физ · Одноручное</span
+                  ><span>Заряжается ход. При выстреле в упор: +2 к урону.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник"
+                    >Pistolheart</span
+                  ></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Улучшенный кремнёвый пистоль</b
+                  ><span class="rstats"
+                    >Ранг 2 · Физическое · Искусность · Далеко · d8+2 физ · Одноручное</span
+                  ><span
+                    >Заряжается ход. При выстреле в упор: +2 к урону. Надёжное: +1 к Броскам
+                    Атаки.</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник"
+                    >Pistolheart</span
+                  ></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Мушкет</b
+                  ><span class="rstats"
+                    >Ранг 1 · Физическое · Искусность · Очень далеко · d8 физ · Двуручное</span
+                  ><span
+                    >Заряжается ход. Громкий: слышен в пределах Очень далёкой дистанции.</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge uniq">Уникальное</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник"
+                    >Pistolheart</span
+                  ></span
+                >
+              </button>
+            </div>
+          </div>
+          <div class="shead">Хоумбрю <span class="cnt">4</span></div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Топор Тлеющих Углей</b
+                  ><span class="rstats"
+                    >Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг ·
+                    Двуручное</span
+                  ><span>Лезвие тлеет и не гаснет под дождём.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Спальный мешок странника</b
+                  ><span
+                    >Во время отдыха вы очищаете Стресс и один Рану, если спите под открытым
+                    небом.</span
+                  ><span class="rcraft"
+                    ><span class="arr">&#8592;</span>Сделан из: Первоклассный Спальный
+                    Мешок</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Настой кузнеца</b
+                  ><span
+                    >Выпейте перед работой у горна: до конца сцены вы не отмечаете Стресс от
+                    жара.</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge cons">Расходник</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Whispering Cap</b
+                  ><span>Once per rest, hear one sentence spoken within Far range.</span></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+          </div>
+          <div class="note">
+            Existing: <code>PageHead</code>, <code>Panel</code>, <code>Field</code>,
+            <code>Button</code>, <code>TableRows</code>/<code>RowMain</code>,
+            <code>BatchBar</code> (R6). New: the source rows, the cards fold, the dashed source
+            badge, the count line. The English-only item draws its English name in Russian (the
+            record-build fallback). A source with no items still lists (0 предметов). The
+            «Импорт предметов» button ships in R7b.
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">#/homebrew as gm1 - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Мои предметы</h1>
+          <p class="page-sub">
+            Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и
+            добавляются в списки.
+          </p>
+          <p class="count">19 предметов из 500</p>
+          <div class="panel new">
+            <span class="lbl">Источники</span>
+            <div class="srcrow">
+              <span class="who"><b>Хоумбрю</b><small>4 предмета</small></span
+              ><span class="acts"></span>
+            </div>
+            <div class="srcrow">
+              <span class="who"><b>Pistolheart</b><small>15 предметов</small></span
+              ><span class="acts"
+                ><button class="btn sm ghost">Переименовать</button
+                ><button class="btn sm danger">Удалить</button></span
+              >
+            </div>
+            <div class="numrow" style="margin-top: 12px">
+              <div class="grow">
+                <input
+                  class="input"
+                  value=""
+                  placeholder="Название источника, например Pistolheart"
+                />
+              </div>
+              <button class="btn">Добавить</button>
+            </div>
+          </div>
+          <div class="fold new">
+            <div class="sum">
+              Карты
+              <span style="color: var(--muted2); font-weight: 500"
+                >· 1 комплект, 1 карта правил</span
+              ><span class="caret"></span>
+            </div>
+          </div>
+          <div class="card-acts" style="margin: 16px 0 14px">
+            <a class="btn primary new">+ Новый предмет</a
+            ><button class="btn ghost">Импорт предметов <span class="caret"></span></button>
+          </div>
+          <div class="batch">
+            <span class="batch-all"><i></i>Выбрать все</span><span class="batch-summ"></span>
+          </div>
+          <div class="shead">Pistolheart <span class="cnt">15</span></div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Кремнёвый пистоль</b
+                  ><span class="rstats"
+                    >Ранг 1 · Физическое · Искусность · Далеко · d6+1 физ · Одноручное</span
+                  ><span>Заряжается ход. При выстреле в упор: +2 к урону.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник"
+                    >Pistolheart</span
+                  ></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Улучшенный кремнёвый пистоль</b
+                  ><span class="rstats"
+                    >Ранг 2 · Физическое · Искусность · Далеко · d8+2 физ · Одноручное</span
+                  ><span
+                    >Заряжается ход. При выстреле в упор: +2 к урону. Надёжное: +1 к Броскам
+                    Атаки.</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник"
+                    >Pistolheart</span
+                  ></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Мушкет</b
+                  ><span class="rstats"
+                    >Ранг 1 · Физическое · Искусность · Очень далеко · d8 физ · Двуручное</span
+                  ><span
+                    >Заряжается ход. Громкий: слышен в пределах Очень далёкой дистанции.</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge uniq">Уникальное</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник"
+                    >Pistolheart</span
+                  ></span
+                >
+              </button>
+            </div>
+          </div>
+          <div class="shead">Хоумбрю <span class="cnt">4</span></div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Топор Тлеющих Углей</b
+                  ><span class="rstats"
+                    >Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг ·
+                    Двуручное</span
+                  ><span>Лезвие тлеет и не гаснет под дождём.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Спальный мешок странника</b
+                  ><span
+                    >Во время отдыха вы очищаете Стресс и один Рану, если спите под открытым
+                    небом.</span
+                  ><span class="rcraft"
+                    ><span class="arr">&#8592;</span>Сделан из: Первоклассный Спальный
+                    Мешок</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Настой кузнеца</b
+                  ><span
+                    >Выпейте перед работой у горна: до конца сцены вы не отмечаете Стресс от
+                    жара.</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge cons">Расходник</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Whispering Cap</b
+                  ><span>Once per rest, hear one sentence spoken within Far range.</span></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+          </div>
+          <div class="note">
+            Existing: <code>PageHead</code>, <code>Panel</code>, <code>Field</code>,
+            <code>Button</code>, <code>TableRows</code>/<code>RowMain</code>,
+            <code>BatchBar</code> (R6). New: the source rows, the cards fold, the dashed source
+            badge, the count line. The English-only item draws its English name in Russian (the
+            record-build fallback). A source with no items still lists (0 предметов). The
+            «Импорт предметов» button ships in R7b.
+          </div>
+        </main>
+      </section>
+    </div>
+  </body>
+</html>
