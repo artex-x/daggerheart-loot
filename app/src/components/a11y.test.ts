@@ -12,7 +12,7 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cleanup, render, screen } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
@@ -117,6 +117,22 @@ const at = (hash: string, over: Partial<Env> = {}): Env =>
    all of that out rather than the one word that identifies it. */
 const press = (name: string | RegExp): Promise<void> =>
   userEvent.click(screen.getByRole('button', { name }));
+
+/* Opens «Импорт из файла» and gives the hidden input a file of
+   docs/fixtures/import/, as the browser's picker would. */
+async function chooseImport(name: string): Promise<void> {
+  await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
+  const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+  if (!input) throw new Error('no file input');
+  const bytes = readFileSync(
+    join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'import', name)
+  );
+  Object.defineProperty(input, 'files', {
+    value: [new File([new Uint8Array(bytes)], name)],
+    configurable: true
+  });
+  await fireEvent.change(input);
+}
 
 /**
  * The states axe is run on, beyond the first paints the other files cover.
@@ -393,6 +409,49 @@ const STATES: {
     }
   },
   {
+    what: 'the lists index with two account lists ticked',
+    route: '#/lists',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await userEvent.click(
+        await screen.findByRole('checkbox', { name: 'Выбрать: Пустой список' })
+      );
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать: Трофеи' }));
+      await screen.findByRole('button', { name: 'Удалить (2)' });
+    }
+  },
+  {
+    what: 'the import field with a preview and its report',
+    route: '#/lists',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await chooseImport('unknown-id.json');
+      await screen.findByText(/Пропущено позиций/);
+    }
+  },
+  {
+    what: 'the import field with an error report',
+    route: '#/lists',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await chooseImport('errors.json');
+      await screen.findByText(
+        'В файле ошибки - ничего не импортировано. Исправьте их и выберите файл снова.'
+      );
+    }
+  },
+  {
+    what: '«Ваши данные» on the account page, ready to download',
+    route: '#/account',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await screen.findByRole('heading', { level: 2, name: 'Ваши данные' });
+      await vi.waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Скачать мои данные (ZIP)' })).toBeEnabled();
+      });
+    }
+  },
+  {
     what: 'the account menu open over a section, signed in',
     route: '#/roll/std',
     cloud: () => fakeCloud(SEED, 'gm1'),
@@ -434,7 +493,7 @@ describe('states reached by pressing something', () => {
 const COVERED: Record<string, string> = {
   'AccountMenu.svelte': 'the account menu open, in the state above, and accountMenu.test.ts',
   'AccountPage.svelte':
-    'accountPage.test.ts in every state, and the delete confirmation open above',
+    'accountPage.test.ts in every state, the delete confirmation open and «Ваши данные» above',
   'Actions.svelte': 'the card actions on every record state above, and record.test.ts',
   'AddToList.svelte': 'the add-to-list menu, in the state above',
   'Toast.svelte':
@@ -453,6 +512,10 @@ const COVERED: Record<string, string> = {
   'Button.svelte': 'the roll button and the card actions, on every roll page',
   'Chip.svelte': 'the Vault of Ages and community pickers - sections.test.ts and above',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
+  'BatchBar.svelte':
+    'batchBar.test.ts idle, some and all ticked; the lists index with two ticked above; listPage.test.ts',
+  'ImportPanel.svelte':
+    'importPanel.test.ts empty, previewed, refused and with errors; the preview and error reports above',
   'Badge.svelte': 'badge.test.ts, record.test.ts, tables.test.ts, and the lists index above',
   'ChipRow.svelte': 'the same two pickers',
   'CommunityPanel.svelte': 'sections.test.ts, and in English above',

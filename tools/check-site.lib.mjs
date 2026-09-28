@@ -40,6 +40,18 @@ export function entryOf(html) {
   return found.length === 1 ? found[0] : null;
 }
 
+/** The lists file schema's published URL, which the file names as its `$id`. */
+export const SCHEMA_ID = 'https://artex-x.github.io/daggerheart-loot/schema/import-v1.json';
+
+/** The `$id` of a JSON body, or null when it is not JSON. */
+function schemaId(body) {
+  try {
+    return JSON.parse(body).$id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /* A path that is never on disk, so a page with no entry fails the entry's
    own status check with a readable message. */
 const NO_ENTRY = 'assets/no-entry-module.js';
@@ -100,6 +112,16 @@ export function checks() {
       path: f,
       ...status200(f)
     })),
+
+    /* The lists file schema is a public contract, named by its own `$id`
+     * (docs/specs/CONTRACTS.md section 4). */
+    { path: 'schema/import-v1.json', ...status200('schema/import-v1.json') },
+    {
+      path: 'schema/import-v1.json',
+      test: (body) => schemaId(body) === SCHEMA_ID,
+      message: (meta) =>
+        `schema/import-v1.json names another $id: ${String(schemaId(meta.body))}`
+    },
 
     /* The stub is what a messenger fetches for a link preview, one per
      * language (docs/specs/I18N.md). */

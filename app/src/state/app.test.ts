@@ -9,11 +9,13 @@
  * writes that screen. */
 
 import { describe, expect, it, vi } from 'vitest';
+import { bundleText, toBundle } from '../lib/bundle.js';
 import type { Loot } from '../lib/data.js';
 import { sharedListHash } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
 import { LOOT_KINDS } from '../lib/std.js';
+import { readDataZip } from '../lib/zip.js';
 import type { Prefs } from '../lib/prefs.js';
 import { KINDS } from '../lib/types.js';
 import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
@@ -21,6 +23,7 @@ import {
   brokenStorage,
   fakeEnv,
   fakePage,
+  fakeImage,
   fakePwa,
   fixedClock,
   memoryRouter,
@@ -2679,5 +2682,160 @@ describe('purchase requests', () => {
     const read = await cloud.prefs.load();
     expect(read.ok && read.prefs?.notifyGm).toBe('always');
     app.stop();
+  });
+});
+
+describe('the exports', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const loot: Loot = {
+    items: {
+      core_item: [
+        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 },
+        { id: 'q1', src: 'core', kind: 'item', en: 'B', ende: '', ru: 'Б', rud: '', roll: 2 }
+      ]
+    }
+  };
+  const SHOP = '00000000-0000-4000-8000-000000000101';
+  const EMPTY = '00000000-0000-4000-8000-000000000102';
+  /* 2026-10-01 12:00 UTC, the test build's clock. */
+  const NOW = Date.UTC(2026, 9, 1, 12);
+  const DAY = [
+    new Date(NOW).getFullYear(),
+    String(new Date(NOW).getMonth() + 1).padStart(2, '0'),
+    String(new Date(NOW).getDate()).padStart(2, '0')
+  ].join('-');
+
+  async function signedIn(
+    image = fakeImage(),
+    limits: { lists?: number; entries?: number } = {}
+  ) {
+    const app = new AppState(
+      fakeEnv({
+        router: memoryRouter('#/lists'),
+        storage: memoryStorage(),
+        cloud: fakeCloud(SEED, 'gm1', { limits }),
+        data: { load: () => loot },
+        clock: fixedClock(NOW),
+        image
+      })
+    );
+    app.start();
+    await flush();
+    return { app, image };
+  }
+
+  const expected = (app: AppState, ids?: string[]): string => {
+    const store = app.cloudLists!;
+    const lists = ids ? store.lists.filter((l) => ids.includes(l.id)) : store.lists;
+    const names: Record<string, string> =
+      app.lang === 'ru' ? { ci1: 'А', q1: 'Б' } : { ci1: 'A', q1: 'B' };
+    return bundleText(toBundle(lists, (id) => names[id], app.t.untitled, new Date(NOW)));
+  };
+
+  it('downloads every list as the dated file, in the index order', async () => {
+    const { app, image } = await signedIn();
+    await app.exportLists();
+    const [file] = image.downloaded;
+    expect(file?.filename).toBe(`daggerheart-loot-lists-${DAY}.json`);
+    expect(file?.blob.type).toBe('application/json');
+    const text = await file!.blob.text();
+    expect(text).toBe(expected(app));
+    expect(
+      (JSON.parse(text) as { lists: { name: string }[] }).lists.map((l) => l.name)
+    ).toEqual(['Пустой список', 'Лавка кузнеца', 'Трофеи']);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('keeps the index order whatever the order of the ids, and names one list its file', async () => {
+    const { app, image } = await signedIn();
+    await app.exportLists([SHOP, EMPTY]);
+    expect(await image.downloaded[0]?.blob.text()).toBe(expected(app, [SHOP, EMPTY]));
+    await app.exportLists([SHOP]);
+    expect(image.downloaded[1]?.filename).toBe('Лавка кузнеца.json');
+    app.stop();
+  });
+
+  it('names the entries in the language on screen, with both notes', async () => {
+    const { app, image } = await signedIn();
+    app.setLang('en');
+    await app.exportLists([SHOP]);
+    const text = await image.downloaded[0]!.blob.text();
+    expect(text).toBe(expected(app, [SHOP]));
+    const [shop] = (
+      JSON.parse(text) as {
+        lists: {
+          player_note?: string;
+          entries: { id: string; name?: string; gm_note?: string }[];
+        }[];
+      }
+    ).lists;
+    expect(shop?.player_note).toBe('Открыта с рассвета до заката.');
+    expect(shop?.entries.find((e) => e.id === 'ci1')?.name).toBe('A');
+    expect(shop?.entries.find((e) => e.id === 'voa2_a3')?.gm_note).toBe('Проклят.');
+    app.stop();
+  });
+
+  it('says a failed download, and nothing about the bounds', async () => {
+    const { app } = await signedIn(fakeImage({ failDownload: true }), { entries: 200 });
+    app.cloudLists!.create('Длинный', {
+      ids: Array.from({ length: 101 }, (_, i) => 'r' + String(i))
+    });
+    await app.exportLists();
+    expect(app.toast).toMatchObject({ msg: app.t.accountFailed, mode: 'err' });
+    await app.exportData();
+    expect(app.toast).toMatchObject({ msg: app.t.accountFailed, mode: 'err' });
+    app.stop();
+  });
+
+  it("downloads the account's data as a zip whose lists.json is the lists file", async () => {
+    const { app, image } = await signedIn();
+    await app.exportData();
+    const [file] = image.downloaded;
+    expect(file?.filename).toBe(`daggerheart-loot-data-${DAY}.zip`);
+    expect(file?.blob.type).toBe('application/zip');
+    const read = readDataZip(new Uint8Array(await file!.blob.arrayBuffer()));
+    expect(read).toEqual({ ok: true, lists: expected(app), other: [], more: 0 });
+    app.stop();
+  });
+
+  it('downloads a list past 100 entries whole and names it in one toast', async () => {
+    const { app, image } = await signedIn(fakeImage(), { entries: 200 });
+    const ids = Array.from({ length: 101 }, (_, i) => 'r' + String(i));
+    const long = app.cloudLists!.create('Склад', { ids });
+    await app.exportLists([long.id]);
+    const text = await image.downloaded[0]!.blob.text();
+    expect(
+      (JSON.parse(text) as { lists: { entries: unknown[] }[] }).lists[0]?.entries
+    ).toHaveLength(101);
+    expect(app.toast).toMatchObject({
+      msg: 'Этот файл нельзя импортировать целиком. В списках «Склад» позиций больше 100: разделите такие списки.',
+      mode: ''
+    });
+    app.stop();
+  });
+
+  it('says a file past 50 lists, and both bounds in one toast', async () => {
+    const { app } = await signedIn(fakeImage(), { lists: 60, entries: 200 });
+    const store = app.cloudLists!;
+    for (let i = 0; i < 48; i++) store.create('Список ' + String(i));
+    await app.exportLists();
+    expect(app.toast?.msg).toBe(
+      'Этот файл нельзя импортировать целиком. В нём больше 50 списков: экспортируйте их частями.'
+    );
+    store.create('Склад', { ids: Array.from({ length: 101 }, (_, i) => 'r' + String(i)) });
+    await app.exportData();
+    expect(app.toast?.msg).toBe(
+      'Этот файл нельзя импортировать целиком. В нём больше 50 списков: экспортируйте их частями. В списках «Склад» позиций больше 100: разделите такие списки.'
+    );
+    app.stop();
+  });
+
+  it('does nothing in a build with no sign-in', async () => {
+    const image = fakeImage();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/lists'), cloud: null, image }));
+    await app.exportLists();
+    await app.exportData();
+    expect(image.downloaded).toEqual([]);
   });
 });

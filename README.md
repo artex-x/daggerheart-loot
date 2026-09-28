@@ -26,7 +26,7 @@ you reaches a server.
 > selection, [`data.json`](https://artex-x.github.io/daggerheart-loot/data.json)
 > for full text, and
 > [`llms.txt`](https://artex-x.github.io/daggerheart-loot/llms.txt) for the URL
-> grammar, the list-link format, and guidance on which set to draw from.
+> grammar, the lists import file, and guidance on which set to draw from.
 
 ## Rolling
 
@@ -141,8 +141,8 @@ notes are stored; text and images come from `data.js` at render time, so fixing
 the data fixes every list and link that points at it. The payload starts with the
 entry count and four characters of hash (`3.k7f2~q1,cc21*5*50,q337`), which turns
 a link truncated by a messenger into a "broken link" page rather than a shorter
-list that looks complete. The format is documented in `llms.txt` and is backward
-compatible.
+list that looks complete. The format is frozen in `docs/specs/CONTRACTS.md`
+section 3 and is backward compatible.
 
 ### Where lists live
 
@@ -295,7 +295,8 @@ pages/*.html          the site pages, generated from pages/src/, not committed: 
                       and pages/en/ English
 data.json             the same data as plain JSON, for outside readers
 catalog.csv           one row per record, with stat lines
-llms.txt              what the site is, URL grammar, list-link format
+llms.txt              what the site is, URL grammar, the lists import file
+schema/import-v1.json the JSON Schema of the lists import file
 robots.txt            crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
 tools/build-share-pages.js  generates i/, i/en/ and en/ from data.js
@@ -368,11 +369,12 @@ chosen language leaks between suites.
 
 A fetcher sees an empty page and a list link looks like nonsense, so the data
 lives separately: `catalog.csv` for selection, `data.json` for full parsing,
-`llms.txt` for the URL grammar, the list-link format, the two kinds of note and
+`llms.txt` for the URL grammar, the lists import file, the two kinds of note and
 price guidance. Those files are in English - models read them, and it is cheaper
-that way. The list-link format is documented well enough to build a working
-address from without touching the site, and `tests/contracts.js` verifies it
-with an implementation of its own.
+that way. The import file is documented well enough to write one that imports
+clean without touching the site: `schema/import-v1.json` is its JSON Schema, and
+`tests/contracts.js` checks that `llms.txt` names every key, value and bound in
+it.
 
 The site is kept out of search results by a `noindex` tag on every page. Crawling
 itself is **not** blocked, deliberately: a crawler that is turned away never

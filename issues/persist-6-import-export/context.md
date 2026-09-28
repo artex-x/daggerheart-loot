@@ -186,3 +186,74 @@ Applied in planning pass 3: `plan.md` 4.6 and 4.10 (1), 4.11 (2), 4.12
   report names the list and the bound. Trade-off accepted: a moved list
   over 100 entries cannot move between accounts by file. Applied in
   `plan.md` 4.15 and section 11.
+
+## Delta check D1-D9 (2026-09-28, orchestrator, on `main` at `b0373a39` = R4 built, before its push)
+The plan's `git rebase --onto` step is moot: the R6 plan is on `main`
+(`287ba73b`). Every line holds; D2 as reworded in `reviews/plan-B6.1-2.md`.
+- D1: `ListRow.revision: number` (`lib/cloudLists.ts`); `LIST_SELECT`
+  reads `revision`; the fake's rows carry it.
+- D2: `timed(call)` in `ports/supabase.ts` wraps every write RPC and reads
+  `WRITE_TIMEOUT_MS = 20_000`; it has no bound parameter yet - step 4
+  adds the optional one.
+- D3: `keepaliveFetch(url, tab)` sets `x-dhloot-tab` on every `rest/v1/`
+  request, `rpc/` included.
+- D4: the fake's named helper is `announce(was, by)`; it sends one `list`
+  message per changed list on `owner:<uid>` and a `revision` message per
+  share.
+- D5, D9: contract letters J (events) and K (R4's requests; E runs last);
+  `states.js` ends at case 57 (`notify always`; R4 added 54-57); the last
+  flow is F12 (R4). R6's next: contract case L, states 58+, flow F13.
+- D6: `CloudLists.#pull` still drops a read that overlapped a write
+  (`#edits`, queue, flushing) and re-reads when idle.
+- D7: R4's migration is `20260928120000_purchase_requests.sql`;
+  `import_lists`' `<ts>` must sort after it.
+- D8: `CloudPort.requests: RequestRepository` and the fake's
+  `requests` member exist; `ListRepository` has no `import`, so no
+  conflict.
+- D9: `RequestsPanel` sits under the list page's `Actions` row, after
+  `SharePanel`; R4 left the `.batch` strip of `ListPage.svelte` as it
+  was. For the `B6.2` refresh (Risk 8): R4 changed `SelBar.svelte` (about
+  100 lines; read R4's pushed commit for `app/src/components/SelBar.svelte`) and `ListCard.svelte` (a `requests`
+  prop, a `.listcard-req` line under the edit time, and the aria label).
+
+## Settled in planning pass 5 (2026-09-28)
+- `plan.md` section 9 P1-P21 make `B6.2` implement-ready. No QA file is
+  used by a test (P13). `B6.1-N7` rides with R7's `B7.3` (P14). `m06`
+  draws the "name already in the account" note under list 1 only; the
+  rule and `m06`'s caption put it under list 2 too, so the golden shows
+  both (P15, a drawing slip, not a design change).
+- Measured 2026-09-28: jsdom 30.0.1 has `File.arrayBuffer` and `text`; a
+  page reload re-seeds the test build's fake.
+- `B6.1` is `c984aa9e`: the migration on the test project, `npm run e2e`
+  green, case L 2504 ms and 2446 ms (5 461 091 bytes).
+
+## Owner request: QA import files (2026-09-27, through the orchestrator)
+- Delivered 2026-09-28 (after `B6.1`'s approve), outside the repository:
+  the session scratchpad `qa-import/` and `qa-import-files.zip`. Every
+  file checked with `parseBundle`: `happy-30` ok (30 lists, 211 entries),
+  `fill-to-50` ok (17, 39), `unknown-item` ok with one skip (an unknown
+  id is a skip, not an error), `mixed` refused with 5 errors in lists 3,
+  5 and 6 (a refused file reports only errors, so its skips are not
+  shown), the other error files one refusal each. `bag` lists carry no
+  `money_mode` key, as the export writes them. The README's Russian UI
+  texts come from plan 4.4, marked "planned"; after `B6.2` ships, the
+  orchestrator checks them against `dict.ts` and re-sends the set if they
+  differ.
+- The orchestrator generates a QA set from the schema and `lib/bundle.ts`
+  that `B6.1` ships, after `B6.1`'s review approves. Each file is checked
+  against that parser. The set is kept outside the repository.
+- The set holds 12 files. The owner's account holds 3 lists.
+  - Two valid files, imported in order: `happy-30.json` (30 lists; search
+    at 8, «Показать ещё» after 24) and `fill-to-50.json` (17 lists; the
+    account reaches the cap of 50).
+  - Nine error files, one defect each: not JSON, wrong `format`, wrong
+    version, 101 entries, 51 lists, an unknown item, a malformed entry,
+    a mixed file (skips and errors in different lists), and one valid
+    list refused at the cap.
+  - A README with the expected result of each file.
+- Owner, verbatim in part: "you can use it for tests if you need, maybe
+  be useful to use to set up some data". A test may take a file from the
+  set as a fixture or as seed data only where it needs one. The planner
+  decides that in the `B6.2` refresh or a later plan. A file that a test
+  uses moves into the repository with that test. No file enters the
+  repository before a test uses it (`CLAUDE.md`, campsite).

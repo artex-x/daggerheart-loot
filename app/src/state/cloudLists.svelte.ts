@@ -16,6 +16,7 @@
  * one invoker RPC with a result per write", "A request the database fails
  * three times is halved; a lone write is dropped". */
 
+import { toImportRows, type ImportList } from '../lib/bundle.js';
 import {
   BATCH_OPS,
   batchSize,
@@ -29,6 +30,7 @@ import {
   toCloudList,
   type CloudList,
   type EntryPatch,
+  type ImportRow,
   type ListOp,
   type ListRow,
   type NewListRow
@@ -48,7 +50,7 @@ import {
 } from '../lib/lists.js';
 import { MONEY_DEFAULT } from '../lib/money.js';
 import type { Random } from '../lib/roll.js';
-import type { EventsPort, ListOpResult, ListRepository } from '../ports/index.js';
+import type { EventsPort, ListOpResult, ListRepository, ListWrite } from '../ports/index.js';
 import type { ListModel } from './lists.svelte.js';
 import { LiveFeed } from './liveFeed.svelte.js';
 
@@ -60,6 +62,7 @@ export const QUIET_MS = 2_000;
 export const FAULT_LIMIT = 3;
 
 const DROPPED: ListOpResult = { ok: false, error: 'refused' };
+const NETWORK_WRITE: ListWrite = { ok: false, error: 'network' };
 
 interface Op {
   /** A waiting op with the same key, not in flight, is replaced by a newer one. */
@@ -489,6 +492,30 @@ export class CloudLists implements ListModel {
     this.lists = [l, ...this.lists];
     this.#enqueue({ list: id, create: true, write: { op: 'create', list: row, entries } });
     return l;
+  }
+
+  /** The rows of an import, every id new: built once per chosen file, so a retry sends
+   *  the same ids. */
+  importRows(lists: readonly ImportList[]): ImportRow[] {
+    return toImportRows(lists, () => this.#repo.newId());
+  }
+
+  /** Imports lists in one call (`import_lists`) after the buffer is sent, then reads the
+   *  account again, without «Загружаем...». A lost answer whose lists are all in that
+   *  read is `ok`: the call committed, and a retry would bring back entries deleted
+   *  since. Not queued, not optimistic, no toast. */
+  async import(rows: ImportRow[]): Promise<ListWrite> {
+    const epoch = this.#epoch;
+    await this.flushNow();
+    if (epoch !== this.#epoch) return NETWORK_WRITE;
+    const answer = await this.#repo.import(rows);
+    if (epoch !== this.#epoch) return NETWORK_WRITE;
+    if (answer.ok || answer.error === 'network') {
+      await this.#pull();
+      if (epoch !== this.#epoch) return NETWORK_WRITE;
+      if (!answer.ok && rows.every((r) => this.get(r.list.id))) return { ok: true };
+    }
+    return answer;
   }
 
   /** Drops the list for good; there is no undo (the confirm says so). */

@@ -105,7 +105,8 @@ The app is served over HTTP only; running from `file://` was retired on
 
 - 1272 records, each with a name, a description, a stat line where it has one,
   and an illustration. 891 items and consumables, 381 pieces of equipment.
-- Published machine-readable artefacts: `catalog.csv`, `data.json`, `llms.txt`.
+- Published machine-readable artefacts: `catalog.csv`, `data.json`, `llms.txt`,
+  `schema/import-v1.json`.
 - Behaviour specifications in `docs/specs/`, decisions in `docs/DECISIONS.md`,
   artwork provenance in `docs/provenance/`.
 - Randomness is measured, not claimed: chi-square results and per-face skew are

@@ -11,6 +11,7 @@
   import { onDestroy, tick, untrack } from 'svelte';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
+  import BatchBar from './BatchBar.svelte';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import Die from './Die.svelte';
@@ -968,6 +969,11 @@
         <Button size="sm" onclick={() => void copyList()}
           ><Icon name="copy" />{t.copyText}</Button
         >
+        {#if isCloud}
+          <Button size="sm" onclick={() => void app.exportLists([own.id])}
+            >{t.exportJson}</Button
+          >
+        {/if}
         {#if items.length}
           <Button
             size="sm"
@@ -1089,92 +1095,85 @@
       {/if}
 
       {#if items.length}
-        <div class="batch" class:on={lsel.size > 0}>
-          <label class="batch-all"
-            ><input
-              type="checkbox"
-              aria-label={t.pickAll}
-              checked={lsel.size > 0 && lsel.size === own.ids.length}
-              indeterminate={lsel.size > 0 && lsel.size < own.ids.length}
-              onchange={(e) => {
-                pickAll(e.currentTarget.checked);
-              }}
-            />{#if !ticked.length}{t.pickAll}{/if}</label
-          >
-          <!-- Mounted while empty, so the first tick is announced too. -->
-          <span class="batch-summ" aria-live="polite"
-            >{#if ticked.length}<span class="batch-count"
-                >{selCountText(ticked.length, taken.pieces, app.lang, t)}</span
-              >&#32;{#if total}<span class="batch-total"
-                  >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
-                    <span class="np">{total.unpriced}</span>{/if}</span
-                >{/if}{/if}</span
-          >
-          {#if ticked.length}
-            <span class="batch-acts">
-              {#if !readOnly}
-                <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
-                  >{t.batchMoney}</Button
-                >
-              {/if}
-              <Button size="sm" onclick={() => void copyTicked()}
-                ><Icon name="copy" />{t.copySel}</Button
+        <BatchBar
+          total={own.ids.length}
+          picked={ticked.length}
+          label={t.pickAll}
+          count={selCountText(ticked.length, taken.pieces, app.lang, t)}
+          joined
+          onall={pickAll}
+        >
+          {#snippet summary()}{#if total}<span class="batch-total"
+                >{total.label} <b>{total.value}</b>&#32;{#if total.unpriced}
+                  <span class="np">{total.unpriced}</span>{/if}</span
+              >{/if}{/snippet}
+          {#snippet actions()}
+            {#if !readOnly}
+              <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
+                >{t.batchMoney}</Button
               >
-              {#if !readOnly}
-                <Button size="sm" variant="danger" onclick={batchDelete}
-                  >{t.del} ({String(ticked.length)})</Button
-                >
-              {/if}
-            </span>
-          {/if}
-          {#if ticked.length && guess && !readOnly}
-            <div class="guess">
-              {#if pricedCount}
-                <div class="money-act">
-                  <span class="batch-lbl">{t.repricePct}</span>
-                  <NumberField
-                    value={rp}
-                    min={-90}
-                    max={500}
-                    empty
-                    label={t.rollResult}
-                    stepDownLabel={t.stepDown}
-                    stepUpLabel={t.stepUp}
-                    onchange={(n: number) => {
-                      rp = n;
-                    }}
-                  />
-                  <Button size="sm" onclick={repriceTicked}
-                    >{rp < 0 ? t.repriceDown : t.repriceUp}</Button
-                  >
-                  <span class="money-hint">{t.repriceHint}</span>
-                </div>
-              {/if}
-              <p class="guess-note">{t.guessWhy}</p>
-              <div class="guess-rows">
-                {#each ticked as id (id)}
-                  {@const it = byId(id)}
-                  {#if it}
-                    {@const v = guessPrice(it, index.rarityOf)}
-                    <div class="guess-row">
-                      <span>{nameOf(it, app.lang)}</span>
-                      <span class="guess-band">{guessWhy(it, index.rarityOf, t)}</span>
-                      <b>{v ? priceText(v, mode, app.lang) : '—'}</b>
-                    </div>
-                  {/if}
-                {/each}
-              </div>
-              <div class="money-act">
-                <Button size="sm" variant="primary" onclick={applyGuess}>{t.guessApply}</Button>
+            {/if}
+            <Button size="sm" onclick={() => void copyTicked()}
+              ><Icon name="copy" />{t.copySel}</Button
+            >
+            {#if !readOnly}
+              <Button size="sm" variant="danger" onclick={batchDelete}
+                >{t.del} ({String(ticked.length)})</Button
+              >
+            {/if}
+          {/snippet}
+          {#snippet below()}
+            {#if ticked.length && guess && !readOnly}
+              <div class="guess">
                 {#if pricedCount}
-                  <Button size="sm" onclick={clearPrices}
-                    >{t.batchNoPrice} ({String(pricedCount)})</Button
-                  >
+                  <div class="money-act">
+                    <span class="batch-lbl">{t.repricePct}</span>
+                    <NumberField
+                      value={rp}
+                      min={-90}
+                      max={500}
+                      empty
+                      label={t.rollResult}
+                      stepDownLabel={t.stepDown}
+                      stepUpLabel={t.stepUp}
+                      onchange={(n: number) => {
+                        rp = n;
+                      }}
+                    />
+                    <Button size="sm" onclick={repriceTicked}
+                      >{rp < 0 ? t.repriceDown : t.repriceUp}</Button
+                    >
+                    <span class="money-hint">{t.repriceHint}</span>
+                  </div>
                 {/if}
+                <p class="guess-note">{t.guessWhy}</p>
+                <div class="guess-rows">
+                  {#each ticked as id (id)}
+                    {@const it = byId(id)}
+                    {#if it}
+                      {@const v = guessPrice(it, index.rarityOf)}
+                      <div class="guess-row">
+                        <span>{nameOf(it, app.lang)}</span>
+                        <span class="guess-band">{guessWhy(it, index.rarityOf, t)}</span>
+                        <b>{v ? priceText(v, mode, app.lang) : '—'}</b>
+                      </div>
+                    {/if}
+                  {/each}
+                </div>
+                <div class="money-act">
+                  <Button size="sm" variant="primary" onclick={applyGuess}
+                    >{t.guessApply}</Button
+                  >
+                  {#if pricedCount}
+                    <Button size="sm" onclick={clearPrices}
+                      >{t.batchNoPrice} ({String(pricedCount)})</Button
+                    >
+                  {/if}
+                </div>
               </div>
-            </div>
-          {/if}
-        </div>
+            {/if}
+          {/snippet}
+        </BatchBar>
         <div class="rows lrows" bind:this={rowsEl}>
           {#each items as it, i (it.id)}
             {@const m = metaOf(it.id)}
@@ -1658,97 +1657,12 @@
     color: var(--muted2);
   }
 
-  /* off `.batch`, `.batch.on`, `.batch-all`, `.batch.on .batch-all`
-     (style.css:1050-1058) */
-  .batch {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin: 16px 0 0;
-    padding: 8px 12px;
-    border-radius: 10px 10px 0 0;
-    border: 1px solid var(--line2);
-    border-bottom: none;
-    background: var(--surface);
-  }
-
-  .batch.on {
-    border-color: var(--gold);
-    background: rgb(216 171 94 / 7%);
-  }
-
-  .batch-all {
-    font: 650 11px/1 var(--mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted2);
-  }
-
-  .batch-all {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
-
-  .batch.on .batch-all {
-    color: var(--gold-soft);
-  }
-
-  /* The selection summary, in the shared bar's type (`SelBar.svelte`
-     `.selsumm`): the count and the total, one live region. */
-  .batch-summ {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: 12px;
-    row-gap: 6px;
-    font: 400 13.5px/1.3 var(--ui);
-    color: var(--gold-soft);
-  }
-
-  .batch-count,
   .batch-total b {
     font-weight: 650;
   }
 
-  .batch-count {
-    white-space: nowrap;
-  }
-
   .batch-total .np {
     color: var(--muted);
-  }
-
-  /* off `.batch-acts` (style.css:1059) */
-  .batch-acts {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-left: auto;
-  }
-
-  /* off `.batch .btn.sm` (style.css:1081) */
-  .batch :global(.btn.sm) {
-    height: 32px;
-    padding: 0 12px;
-    display: inline-flex;
-    align-items: center;
-  }
-
-  /* The summary keeps its line beside the box and wraps inside itself. */
-  @media (max-width: 640px) {
-    .batch-summ {
-      flex: 1 1 0;
-      min-width: 0;
-    }
-
-    .batch-acts {
-      margin-left: 0;
-      width: 100%;
-    }
   }
 
   /* off `.guess`, `.guess-note`, `.guess-rows`, `.guess-row` and its three

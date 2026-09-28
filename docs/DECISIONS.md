@@ -14,6 +14,8 @@ deleted.
 
 ## Index
 
+- 2026-09-28 - [Account lists are selected on the index and deleted together, with no undo](decisions/2026-09-28-account-lists-are-selected-on-the-index-and-deleted-together.md)
+- 2026-09-28 - [The account's data file is a store-only zip with one JSON file per kind](decisions/2026-09-28-the-accounts-data-file-is-a-store-only-zip.md)
 - 2026-09-27 - [A green check arms the commit gate by its own exit, not a host-wide lock](decisions/2026-09-27-a-green-check-arms-the-commit-gate-by.md)
 - 2026-09-27 - [A plan that changes schema, contracts, stored data or sync is reviewed first](decisions/2026-09-27-a-plan-that-changes-schema-contracts-stored-data.md)
 - 2026-09-27 - [A requester sees no request status; the send toast is the only answer](decisions/2026-09-27-a-requester-sees-no-request-status-the-send-toast.md)

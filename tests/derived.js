@@ -638,7 +638,6 @@ const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
   'catalog.csv',
   'data.json',
   '#/l/',
-  'stamp',
   '10 handfuls = 1 bag',
   'Player note',
   'GM note',
@@ -647,66 +646,13 @@ const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
   'Dread GM Toolbox',
   'Never name an item from memory',
   'daggerheart.com/srd',
-  'deflate-raw',
   /* #13: the sources section - an agent needs to know how they differ, not
-    just that they exist. #9: about link length rather than a compression
-    recipe. */
-  'Campaign Frames',
-  'Do not invent a compression scheme'
+    just that they exist. */
+  'Campaign Frames'
 ].forEach((s) => ok(llms.indexOf(s) > 0, 'llms.txt does not mention ' + s));
 /* The record count is named both in the site description and here - let a
    divergence be loud */
 ok(llms.indexOf(String(ALL.length)) > 0, 'llms.txt has the wrong record count');
-
-/* The worked example in llms.txt is what an agent will copy and repeat. Its
-   checksum has to match what the algorithm described right there produces,
-   and the ids have to exist. */
-const items = /\nitems\s+([a-z0-9*,]+)\n/.exec(llms);
-const st = /\nstamp\s+([0-9a-z]+\.[0-9a-z]{1,4})~/.exec(llms);
-const pay = /\npayload\s+([\s\S]*?)\n\s*```/.exec(llms);
-ok(!!items && !!st && !!pay, 'llms.txt: the worked list example was not found');
-if (items && st && pay) {
-  const body = items[1],
-    parts = body.split(',');
-  let h = 2166136261;
-  for (let i = 0; i < body.length; i++) {
-    h ^= body.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  const want = parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4);
-  ok(
-    want === st[1],
-    'the example checksum does not match: the text has ' + st[1] + ', but it should be ' + want
-  );
-  const byId = {};
-  ALL.forEach((x) => {
-    byId[x.id] = x;
-  });
-  parts.forEach((p) => ok(!!byId[p.split('*')[0]], 'the example has a nonexistent id: ' + p));
-
-  /* The worked example promises the agent: "got something different - you
-     made a mistake". The promise holds only while it really is assembled
-     from the description. */
-  const name = /\nname\s+(.+)/.exec(llms)[1].trim();
-  /* Notes are taken only from the worked example block itself: note examples
-     exist elsewhere in the file too, and they are unrelated to this one. */
-  const block = /\nnotes\s+([\s\S]*?)\n\s*\npayload/.exec(llms);
-  ok(!!block, 'no notes were found in the worked example block');
-  const notes = ((block ? block[1] : '').match(/\\x1e\+?[~a-z0-9]*\\x1f[^\n]+/g) || [])
-    .map((s) => s.replace(/\\x1e/g, '\x1e').replace(/\\x1f/g, '\x1f'))
-    .join('');
-  const raw = name + '\n' + want + '~' + body + '\n' + notes;
-  const mine = Buffer.from(raw, 'utf8')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-  const shown = pay[1].replace(/\s+/g, '');
-  ok(
-    mine === shown,
-    'the worked payload in llms.txt does not assemble from its own description'
-  );
-}
 
 console.log('Dread GM Toolbox');
 /* This section is built like Wondrous: its own list, its own roll, its own

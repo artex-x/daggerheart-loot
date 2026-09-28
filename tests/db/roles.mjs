@@ -117,6 +117,15 @@ export async function realtimePartition(sql, ms = 60000) {
   }
 }
 
+/** Returns the rows sent to `topic`, oldest first, as `{ event, payload }`
+ * without Realtime's message id. */
+export async function messagesTo(sql, topic) {
+  const rows = await sql`
+    select event, payload - 'id' as payload from realtime.messages
+    where topic = ${topic} order by inserted_at, id`;
+  return rows.map((r) => ({ event: r.event, payload: r.payload }));
+}
+
 /** Returns the schema-only dump of `schemas` from the local database, or
  * an empty string when none of them exists. */
 export function snapshot(schemas) {

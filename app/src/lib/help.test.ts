@@ -130,7 +130,7 @@ describe('the help for a section', () => {
         .map((b) => b.b);
     for (const lang of LANGS) {
       const lists = helpFor('lists', lang);
-      expect(lists?.paragraphs.length, lang).toBe(5);
+      expect(lists?.paragraphs.length, lang).toBe(6);
       expect(lists?.paragraphs[0]?.lead, lang).toBeUndefined();
       expect(lists?.paragraphs[1]?.parts.filter(isBold), lang).toHaveLength(0);
     }
@@ -140,6 +140,16 @@ describe('the help for a section', () => {
     expect(bold('en', 2)).toEqual(['For players', 'GM only']);
     expect(bold('en', 3)).toEqual(['Share']);
     expect(bold('en', 4)).toEqual(["Players' link", 'Your own link']);
+  });
+
+  it('says what ticked account lists and «Импорт из файла» do, and where the format is', () => {
+    expect(textOf(helpFor('lists', 'ru'), 5)).toBe(
+      'Списки аккаунта можно отметить и скачать файлом JSON или удалить разом, а «Импорт из файла» добавляет списки из такого файла - например, чтобы перенести их в другой аккаунт. Формат файла описан для ИИ-помощников в llms.txt.'
+    );
+    expect(textOf(helpFor('lists', 'en'), 5)).toContain('"Import from file" adds lists');
+    expect(textOf(helpFor('lists', 'en'), 5)).toContain(
+      'described for AI assistants in llms.txt'
+    );
   });
 
   it('names the date the old list links stop opening', () => {

@@ -186,6 +186,64 @@ Seven modes. Each keeps its own input in memory only.
   drawn count is session memory (`AppState.listsShown`): a return from a
   list page shows the same cards, a reload starts at 24. A new card goes
   first in its group and pushes the last drawn card under the button.
+- A card of the index names its list and, under the name, a meta line in the
+  edit time's type: the count of the entries the data still knows in words,
+  «9 позиций» / "9 items", and on an account list the edit time after it,
+  «9 позиций · изменён 3 дня назад». No gold badge: that look is a roll
+  number's. An account card's link name is the name, the count, the edit time
+  and any pending requests.
+- Signed in, with the account lists read, each account card carries a pick
+  box in its top right corner, outside the card's link: a 32 px box with a
+  44 px target, named «Выбрать: <name>» / "Select: <name>"; a ticked card
+  takes a gold border. Browser cards have none. Over the account cards sits
+  the selection strip the list page draws over its rows: «Выбрать все» /
+  "Select all" (mixed while some are ticked; its visible text dropped while
+  anything is ticked), the polite summary «Выбрано N», and while N > 0
+  «Скачать JSON (N)» and «Удалить (N)»; at 640 px or less the two actions take
+  their own line, half the width each. «Выбрать все» ticks the drawn cards
+  only, and the ticks are always a subset of the drawn cards: a search, a
+  fold back to 24, a delete or a re-read that removes a card, or a sign-out
+  drops the ticks that leave the view, and a card that comes back is not
+  ticked. The ticks are page memory and start empty on every visit.
+  «Скачать JSON (N)» downloads the ticked lists as one lists file ("Account
+  and browser lists", "Exports") and keeps the ticks. «Удалить (N)» asks the
+  browser's confirm «Удалить списки (2): «Пустой список», «Трофеи»? Ссылки для
+  игроков и мастера на них перестанут работать. Отменить удаление нельзя.»,
+  naming the first five lists, then «и ещё N»; «Отмена» changes nothing and
+  keeps the ticks. On yes the lists go at once through the write buffer, as
+  one delete does, the ticks clear, and the toast «Удалено списков: 2» has no
+  «Вернуть». A removal the server refuses draws that list again with one
+  «Изменение не сохранилось...» toast; the others stay deleted.
+- Signed in, with the account lists read, the «Новый список» panel has
+  «Импорт из файла» / "Import from file" under the name row, a toggle that
+  opens the field «Импорт из файла JSON» / "Import from a JSON file" in the
+  same panel: «Выбрать файл...», the chosen file's name, and a hint that links
+  the published schema (`schema/import-v1.json`) and `llms.txt`, relative, in
+  a new tab. The toggle and «Отмена» fold the field and forget the file, and
+  the focus returns to the toggle. A file of more than 5 MB is refused before
+  it is read; a file that starts with a zip's signature is read as the data
+  zip ("Account and browser lists", "Exports"), anything else as UTF-8 text.
+  A file the app refuses whole says why in one alert line: not JSON, not a
+  lists file, another version or none, no lists, not a data archive, a zip
+  with no `lists.json`, with two at one depth, or compressed by another
+  program. A file with field errors draws «В файле ошибки - ничего не
+  импортировано. Исправьте их и выберите файл снова.», the file's own errors
+  in the alert box, then one block per list with errors, headed «N. <name>»
+  (cut to 40 characters), each line naming the entry's position and record
+  where it has one, the field, the reason and the JSON path; at most ten lines
+  a list, then «...и ещё N в этом списке», and past 50 errors «...и ещё N
+  ошибок». A clean file draws the preview «Списков: 2, позиций: 3.» with
+  «Пропущено позиций: 2.» when entries were skipped, and a report grouped by
+  list when a list has a skip or a name the account holds: an unknown id and
+  a repeated id are skipped and named with their positions, and a name the
+  account holds is allowed and noted («...появится второй»). A zip's other
+  files are named under the preview (the first five, then «и ещё N»), and its
+  lists import. «Импортировать (N)» and «Отмена» are disabled while the import
+  runs; success folds the field, draws the new lists first and toasts
+  «Импортировано списков: N»; a limit toasts the limit text, a statement
+  timeout «Файл слишком большой для одного импорта: разделите его на
+  несколько.», anything else «Не получилось. Попробуйте ещё раз.», and the
+  preview stays for another press, which sends the same ids.
 - Optional quantity and price per entry; both travel into copied text. The
   price is the price of one unit: after a count over 1 the copied line reads
   "×2 — по 7 мешков 5 горстей" / "×2 — 7 bags 5 handfuls each", in the
@@ -329,8 +387,9 @@ browser lists writable after the date.
   `#/account` any other way forgets it, and so does a navigation or a
   sign-out before the action finishes.
 - **The index**: signed in, the create panel, then the group «Ваш аккаунт» /
-  "Your account" - the account lists, newest edit first, each card with
-  «изменён N назад» / "edited N ago" under its name (`I18N.md`) and one
+  "Your account" - the selection strip, then the account lists, newest edit
+  first, each card with its pick box, the meta line «N позиций · изменён N
+  назад» / "N items · edited N ago" under its name (`I18N.md`) and one
   «Удалить»; «Загружаем...» while the first read runs; «Не получилось
   загрузить списки аккаунта.» and «Повторить» when it fails; «В аккаунте пока
   нет списков - создайте первый выше.» when there are none. Then «Этот
@@ -340,7 +399,8 @@ browser lists writable after the date.
   configured it is always drawn.
 - **An account list's page** keeps its address `#/lists/<uuid>` (no `#/l/`
   rewrite), draws «Поделиться» / "Share" first in its actions in place of
-  "Ссылка игрокам"/"Ссылка себе", no storage notice, and says its save status
+  "Ссылка игрокам"/"Ссылка себе", «Скачать JSON» / "Download JSON" after
+  «Скопировать текст», no storage notice, and says its save status
   after the count: «Сохраняем...», «Сохранено», or
   «Не сохранено» in the danger colour and «Повторить». Only the failure and
   the save that ends it («Сохранено») are announced (a permanently mounted,
@@ -505,8 +565,32 @@ browser lists writable after the date.
   is shown again: a new request reads «только что» and «истечёт через 60
   минут» until the clock moves, and an expired one stays drawn until then. On the
   index an account card with pending requests says «2 запроса ждут ответа»
-  in gold under «изменён N назад», in its link's name too. An apply cannot
+  in gold under its meta line, in its link's name too. An apply cannot
   be undone.
+- **Exports**: an account's lists leave it only as the reader's own file.
+  «Скачать JSON (N)» on the index's strip and «Скачать JSON» on an account
+  list's page download a lists file, `import-v1`, of the ticked lists in the
+  index's order or of the one list, both notes of every list and entry
+  included: `<name>.json` for one list, else
+  `daggerheart-loot-lists-<YYYY-MM-DD>.json` (the local day). «Скачать мои
+  данные (ZIP)» on `#/account` downloads `daggerheart-loot-data-<YYYY-MM-DD>.zip`,
+  a store-only zip whose root holds `lists.json`, the same lists file of every
+  account list (`CONTRACTS.md` section 4). An export has no toast of its own,
+  and a failed download toasts «Не получилось. Попробуйте ещё раз.». A file
+  past the import's bounds - more than 50 lists, or more than 100 entries in
+  one list - still downloads whole, and one toast says «Этот файл нельзя
+  импортировать целиком.» with «В нём больше 50 списков: экспортируйте их
+  частями.» and «В списках «Склад» позиций больше 100: разделите такие
+  списки.» as they apply. So a list moved from this browser with more than a
+  hundred entries cannot move between accounts by file; split it first.
+- **Import**: «Импорт из файла» ("Lists") adds the file's lists to the
+  account as new lists, every list and entry with a new id, all or nothing in
+  one call: a refused call leaves the account as it was. The write buffer is
+  sent first, and the index is read again without «Загружаем...»; no card is
+  drawn before the call answers. A list name the account holds imports as a
+  second list, and the same file imported twice makes two copies. A lost
+  answer whose lists the next read finds counts as done. The import counts
+  against the account's limits, with no exemption.
 - **Limits**: the 51st list and the 101st entry of a list (the defaults;
   `limits:set` changes them per user) are refused with the error toast
   «Достигнут предел списков в аккаунте: 50. Нужно больше - напишите на
@@ -861,7 +945,14 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   a connected one shows its identity's email and, while two or more are
   connected, «Отключить»; a missing one says «не подключён» and offers
   «Подключить <provider>»; with exactly one connected, a hint says it cannot
-  be disconnected until another is connected; «Выход» - «Выйти» and «Выйти на
+  be disconnected until another is connected; «Ваши данные» / "Your data" -
+  the hint «Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём
+  файл lists.json с вашими списками. Архив можно импортировать в другой
+  аккаунт на странице «Списки». Импорт принимает до 50 списков, а в одном
+  списке позиций - не больше 100.» and «Скачать мои данные (ZIP)» ("Account
+  and browser lists", "Exports"), disabled until the account's lists are
+  read and while its zip is built, with «Не получилось загрузить списки
+  аккаунта.» and «Повторить» when the read failed; «Выход» - «Выйти» and «Выйти на
   всех устройствах», which also ends the session on the reader's other
   devices at their next token refresh; «Удаление аккаунта» - the hint
   «Аккаунт и все связанные с ним данные будут удалены навсегда.» and

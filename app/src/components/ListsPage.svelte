@@ -4,11 +4,15 @@
    * this browser's lists with the storage notice at their head. The browser
    * group is one block, so the release that retires local lists deletes it
    * whole (docs/specs/FEATURES.md, "Lists"). */
-  import { tick } from 'svelte';
+  import { tick, untrack } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
+  import Actions from './Actions.svelte';
+  import BatchBar from './BatchBar.svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import Icon from './Icon.svelte';
+  import ImportPanel from './ImportPanel.svelte';
   import ListCard from './ListCard.svelte';
   import MoveStatus from './MoveStatus.svelte';
   import NoData from './NoData.svelte';
@@ -23,6 +27,7 @@
   import type { CloudList } from '../lib/cloudLists.js';
   import { sharedListHash, storedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
+  import { fewNames } from '../lib/i18n.js';
   import { encodeList, encodeListRaw } from '../lib/listLink.js';
   import { LIST_PAGE, LIST_SEARCH_AT, matchLists, type StoredList } from '../lib/lists.js';
   import { plural } from '../lib/plural.js';
@@ -73,6 +78,57 @@
     account.length + local.length > 0 && foundAccount.length + foundLocal.length === 0
   );
 
+  /* The ticked account lists: page memory, always a subset of the drawn
+     cards, so «Удалить (N)» and «Скачать JSON (N)» never act on a list out of
+     sight (docs/specs/FEATURES.md, "Lists"). */
+  const sel = new SvelteSet<string>();
+  const ticked = $derived(drawnAccount.filter((l) => sel.has(l.id)));
+  $effect(() => {
+    const drawn = new Set(drawnAccount.map((l) => l.id));
+    untrack(() => {
+      for (const id of [...sel]) if (!drawn.has(id)) sel.delete(id);
+    });
+  });
+
+  /* «Импорт из файла»: the field under the name row, while the lists are read. */
+  let importing = $state(false);
+  let importRow = $state<HTMLDivElement | undefined>(undefined);
+  const canImport = $derived(signedIn && cloud?.status === 'ready');
+
+  function toggleImport(): void {
+    if (importing) void closeImport();
+    else importing = true;
+  }
+
+  /* Focus goes back to the toggle, which stays where the field was. */
+  async function closeImport(): Promise<void> {
+    importing = false;
+    await tick();
+    importRow?.querySelector('button')?.focus();
+  }
+
+  function pickAllCards(on: boolean): void {
+    sel.clear();
+    if (on) for (const l of drawnAccount) sel.add(l.id);
+  }
+
+  /* One confirm names the lists; they go through the write buffer, with no
+     undo, as one list does. */
+  function delPicked(): void {
+    const gone = ticked;
+    const names = fewNames(
+      gone.map((l) => t.quoted.replace('%s', l.name || t.untitled)),
+      t
+    );
+    const ask = t.deleteListsConfirm
+      .replace('%n', String(gone.length))
+      .replace('%s', () => names);
+    if (!app.env.dialog.confirm(ask)) return;
+    for (const l of gone) cloud?.remove(l.id);
+    sel.clear();
+    app.say(t.listsDeleted.replace('%n', String(gone.length)));
+  }
+
   /* An account list's pending, unexpired purchase requests, for its card. */
   function waiting(listId: string): string | undefined {
     const n = app.ownerRequests?.pendingCount(listId, app.now) ?? 0;
@@ -94,9 +150,9 @@
     groups?.querySelectorAll<HTMLElement>('.listcard-main')[from]?.focus();
   }
 
-  /* The ids the data still knows, in list order - what the badge counts and
-     the thumbs draw from, not `l.ids` itself: a deleted or renamed record
-     must not leave a gap the badge counts as though it were still there. */
+  /* The ids the data still knows, in list order - what the meta line counts
+     and the thumbs draw from, not `l.ids` itself: a deleted or renamed record
+     must not leave a gap the count holds as though it were still there. */
   function knownItems(l: StoredList): Record_[] {
     return l.ids
       .map((id) => index?.byId.get(id))
@@ -180,7 +236,24 @@
           </div>
           <Button variant="primary" onclick={create}>{t.create}</Button>
         </NumRow>
+        {#if canImport}
+          <div bind:this={importRow}>
+            <Actions style="margin-top:10px"
+              ><Button
+                size="sm"
+                variant="ghost"
+                caret
+                on={importing}
+                expanded={importing}
+                onclick={toggleImport}>{t.importOpen}</Button
+              ></Actions
+            >
+          </div>
+        {/if}
       </Field>
+      {#if importing && canImport}
+        <ImportPanel {app} onclose={() => void closeImport()} />
+      {/if}
     </Panel>
   {:else if target === 'prompt'}
     <Panel style="margin-top:16px">
@@ -206,6 +279,22 @@
           {:else if !account.length}
             <p class="grouptext">{t.noCloudLists}</p>
           {:else if drawnAccount.length}
+            <BatchBar
+              total={drawnAccount.length}
+              picked={ticked.length}
+              label={t.pickAll}
+              count={`${t.selected} ${String(ticked.length)}`}
+              onall={pickAllCards}
+            >
+              {#snippet actions()}
+                <Button size="sm" onclick={() => void app.exportLists(ticked.map((l) => l.id))}
+                  >{`${t.exportJson} (${String(ticked.length)})`}</Button
+                >
+                <Button size="sm" variant="danger" onclick={delPicked}
+                  >{`${t.del} (${String(ticked.length)})`}</Button
+                >
+              {/snippet}
+            </BatchBar>
             <div class="listgrid">
               {#each drawnAccount as l (l.id)}
                 <ListCard
@@ -215,6 +304,11 @@
                   items={knownItems(l)}
                   edited={agoText(l.updated, app.now, app.lang, t)}
                   requests={waiting(l.id)}
+                  picked={sel.has(l.id)}
+                  onpick={(on) => {
+                    if (on) sel.add(l.id);
+                    else sel.delete(l.id);
+                  }}
                 >
                   {#snippet actions()}
                     <Button

@@ -32,6 +32,8 @@
  * tests/app/golden.test.mjs pins the id convention both ways.
  */
 
+const path = require('path');
+
 /** Both notes on the list and both on one entry - the shared page's own
  *  noted state, and the payload `PACKED` below decompresses to. */
 const NOTES_BOTH_KINDS = require('../../docs/fixtures/lists/notes-both-kinds.json');
@@ -191,6 +193,22 @@ const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
 
 /** Two purchase requests on «Лавка кузнеца» from other readers, the players' link
  *  first: the fake seed holds none, so a state makes its own. */
+/** A file of docs/fixtures/import/, for the import field's states. */
+const IMPORT = (name) => path.join(__dirname, '../../docs/fixtures/import', name);
+
+/** Waits for gm1's account cards, then opens «Импорт из файла». */
+async function importOpen(d) {
+  for (let i = 0; i < 40 && !(await d.count('.listcard-pick')); i++) await d.settle();
+  await d.click('Импорт из файла');
+}
+
+/** Waits for gm1's account cards, then ticks «Пустой список» and «Трофеи». */
+async function tickTwo(d) {
+  for (let i = 0; i < 40 && !(await d.count('.listcard-pick')); i++) await d.settle();
+  await d.tick('Выбрать: Пустой список');
+  await d.tick('Выбрать: Трофеи');
+}
+
 async function twoRequests(d) {
   await d.fake('request', 'player-token-1', [
     { item: 'ci1', qty: 1 },
@@ -266,7 +284,7 @@ const thirty = {
   ])
 };
 
-/* The lists index's own seed: one card with six thumbnails and a badge of 7,
+/* The lists index's own seed: one card with six thumbnails and «7 позиций»,
    one empty card. */
 const seven = {
   'dhloot.lists.v2': JSON.stringify([
@@ -971,7 +989,7 @@ const STATES = [
     id: '#/lists as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: "the seed's two browser lists moved on sign-in: the notice under the header names both; «Ваш аккаунт» holds them first (uuid(5000), uuid(5001)) with «изменён только что», then gm1's three lists with «изменён N назад», one «Удалить» each; no browser group",
+    why: "the seed's two browser lists moved on sign-in: the notice under the header names both; «Импорт из файла» under the name row; «Ваш аккаунт» with the idle strip «Выбрать все», then the moved lists first (uuid(5000), uuid(5001)) with «0 позиций · изменён только что», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no browser group",
     storage: two,
     enter: async (d) => {
       await d.moveSettled();
@@ -1021,7 +1039,7 @@ const STATES = [
   {
     id: '#/lists ~ two lists',
     route: '#/lists',
-    why: 'signed out: the prompt panel, then a card with six thumbs and a badge of 7 and an empty card under the notice',
+    why: 'signed out: the prompt panel, then a card with six thumbs and «7 позиций» and an empty card with «0 позиций» under the notice',
     storage: seven
   },
   {
@@ -1045,7 +1063,7 @@ const STATES = [
   {
     id: '#/lists ~ help',
     route: '#/lists',
-    why: 'the five paragraphs, the third and fifth with two bold runs each and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth when #/l/ links stop opening',
+    why: 'the six paragraphs, the third and fifth with two bold runs each and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth when #/l/ links stop opening, the sixth what ticked account lists and «Импорт из файла» do',
     enter: async (d) => {
       await d.click('Как это работает');
     }
@@ -1054,7 +1072,7 @@ const STATES = [
     id: '#/lists ~ created as gm2',
     route: '#/lists',
     as: 'gm2',
-    why: 'the new account list first in «Ваш аккаунт», «изменён только что», the field cleared, the toast',
+    why: 'the new account list first in «Ваш аккаунт», «0 позиций · изменён только что», the field cleared, the toast',
     enter: async (d) => {
       await d.type('Например: клад дракона', 'Тайник');
       await d.click('Создать');
@@ -1108,11 +1126,75 @@ const STATES = [
     id: '#/lists ~ requests as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: 'two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its «изменён 3 дня назад», and in its link name; no line on the other cards',
+    why: 'two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «9 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards',
     enter: async (d) => {
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.count('.listcard-req')); i++) await d.settle();
     }
+  },
+  {
+    id: '#/lists ~ lists selected as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: '«Пустой список» and «Трофеи» ticked: the gold strip «Выбрано 2» with «Скачать JSON (2)» and «Удалить (2)», «Выбрать все» mixed, the two cards gold',
+    enter: tickTwo
+  },
+  {
+    id: '#/lists ~ import panel as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: '«Импорт из файла» pressed and expanded: the field «Импорт из файла JSON» with «Выбрать файл...» and the hint linking schema/import-v1.json and llms.txt',
+    enter: importOpen
+  },
+  {
+    id: '#/lists ~ import preview as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: 'unknown-id.json chosen: «Списков: 2, позиций: 3. Пропущено позиций: 2.», the report by list - «1. Лавка кузнеца» with zzz1 skipped, the repeated ci1 skipped and the name note, «2. Пустой список» «без позиций» with the name note - then «Импортировать (2)» and «Отмена»',
+    enter: async (d) => {
+      await importOpen(d);
+      await d.upload(IMPORT('unknown-id.json'));
+      for (let i = 0; i < 40 && !(await d.text()).includes('Пропущено позиций'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/lists ~ import refused as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: 'errors.json chosen: the alert «В файле ошибки - ничего не импортировано...», the block «1. <the name cut to 40>...» with four lines, each with its path, and «Отмена» only',
+    enter: async (d) => {
+      await importOpen(d);
+      await d.upload(IMPORT('errors.json'));
+      for (let i = 0; i < 40 && !(await d.count('.errs')); i++) await d.settle();
+    }
+  },
+  {
+    id: '#/lists ~ imported as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: 'example.json imported: the field folded, the new «Лавка кузнеца» first with «3 позиции · изменён только что», the toast «Импортировано списков: 1»',
+    enter: async (d) => {
+      await importOpen(d);
+      await d.upload(IMPORT('example.json'));
+      for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (1)'); i++)
+        await d.settle();
+      await d.click('Импортировать (1)');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/lists ~ lists deleted as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: '«Удалить (2)» over «Пустой список» and «Трофеи», the confirm accepted: «Лавка кузнеца» alone, the strip idle, the toast «Удалено списков: 2» with no «Вернуть»',
+    enter: async (d) => {
+      await tickTwo(d);
+      await d.click('Удалить (2)');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
 
   /* An account list's page: the address kept, no link buttons, no notice,
@@ -1121,7 +1203,7 @@ const STATES = [
     id: SHOP + ' as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Лавка кузнеца»: «9 позиций · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», no storage notice, coins, both list notes open'
+    why: '«Лавка кузнеца»: «9 позиций · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open'
   },
   {
     id: SHOP + ' ~ share as gm1',
@@ -1783,19 +1865,19 @@ const STATES = [
     id: '#/account as gm2',
     route: '#/account',
     as: 'gm2',
-    why: 'one identity: no Disconnect, the only-method hint and Connect Discord'
+    why: 'one identity: no Disconnect, the only-method hint and Connect Discord; «Ваши данные» with «Скачать мои данные (ZIP)»'
   },
   {
     id: '#/account as gm1',
     route: '#/account',
     as: 'gm1',
-    why: 'two identities: the five sections in order, the Display section first with its lead line, a Disconnect on each'
+    why: 'two identities: the six sections in order, the Display section first with its lead line, a Disconnect on each, «Ваши данные» between «Способы входа» and «Выход»'
   },
   {
     id: '#/account ~ delete confirmation as gm1',
     route: '#/account',
     as: 'gm1',
-    why: 'the typed confirmation open, the word typed and the final button enabled; the English half types the Russian word, so there its final button stays disabled',
+    why: 'the typed confirmation open, the word typed and the final button enabled; the English half types the Russian word, so there its final button stays disabled; «Ваши данные» above it',
     enter: async (d) => {
       await d.click('Удалить аккаунт...');
       /* The only text box on the page; it is named by its <label>, which the
@@ -1825,7 +1907,7 @@ const STATES = [
     route: '#/account',
     as: 'gm2',
     storage: { 'dhloot.home.v1': '#/tables/dread' },
-    why: "the Display section's starting section reads «Таблицы» for a pinned table"
+    why: "the Display section's starting section reads «Таблицы» for a pinned table; «Ваши данные» under «Способы входа»"
   },
   {
     id: '#/tables/dread as gm1',

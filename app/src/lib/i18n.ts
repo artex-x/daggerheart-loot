@@ -177,3 +177,11 @@ export function selCountText(entries: number, pieces: number, lang: Lang, t: Dic
   const head = plural(entries, t.selectedN, lang);
   return pieces === entries ? head : `${head} · ${t.pcsN.replace('%n', String(pieces))}`;
 }
+
+/** Returns the first five names joined with commas, then `andMore` with the count of the
+ *  rest and `more` names not given: «А», «Б», «В», «Г», «Д» и ещё 2. */
+export function fewNames(names: readonly string[], t: Pick<Dict, 'andMore'>, more = 0): string {
+  const rest = names.length - 5 + more;
+  const head = names.slice(0, 5).join(', ');
+  return rest > 0 ? head + ' ' + t.andMore.replace('%n', String(rest)) : head;
+}

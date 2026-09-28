@@ -696,6 +696,30 @@ function makeDriver(page, target, url = TARGETS[target]) {
       return dialog;
     },
 
+    /** The last file the page downloaded - its name, type and bytes as base64 - or
+     *  null; `prepare()` keeps it instead of letting the browser save it. */
+    download() {
+      return page.evaluate(async () => {
+        const got = window.__download;
+        if (!got || !got.blob) return null;
+        const bytes = new Uint8Array(await got.blob.arrayBuffer());
+        let bin = '';
+        for (let i = 0; i < bytes.length; i += 0x8000) {
+          bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+        }
+        return { filename: got.filename, type: got.blob.type, base64: btoa(bin) };
+      });
+    },
+
+    /** Gives the page's one file input the file at `path`, as the browser's picker
+     *  would (CDP ignores `hidden`), then settles. */
+    async upload(path) {
+      const input = await page.$('input[type="file"]');
+      if (!input) throw new Error(`${target}: no file input to upload ${path} to`);
+      await input.uploadFile(path);
+      await settle(page);
+    },
+
     /**
      * Writes storage entries before the page's first paint.
      *
@@ -1044,6 +1068,21 @@ async function prepare(page) {
         }
       }
     });
+    /* A download is kept, not saved: `ports/image.ts` clicks an `<a download>`
+       over an object URL, so the blob behind the URL is remembered. */
+    window.__download = null;
+    const blobs = new Map();
+    const makeUrl = URL.createObjectURL.bind(URL);
+    URL.createObjectURL = (b) => {
+      const url = makeUrl(b);
+      blobs.set(url, b);
+      return url;
+    };
+    const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      if (!this.download) return click.call(this);
+      window.__download = { filename: this.download, blob: blobs.get(this.href) ?? null };
+    };
     try {
       localStorage.clear();
     } catch (e) {

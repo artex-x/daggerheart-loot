@@ -17,7 +17,15 @@
  * what stops a component reaching past it. */
 
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-import { isCloudId, limitText } from '../lib/cloudLists.js';
+import {
+  bundleFileName,
+  bundleText,
+  dataFileName,
+  overBounds,
+  toBundle,
+  type Bundle
+} from '../lib/bundle.js';
+import { isCloudId, limitText, type CloudList } from '../lib/cloudLists.js';
 import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict } from '../lib/dict.js';
 import {
@@ -33,6 +41,7 @@ import {
   type Route,
   type Site
 } from '../lib/hash.js';
+import { fewNames, nameOf } from '../lib/i18n.js';
 import { legacyWritable } from '../lib/legacy.js';
 import { decodeList, encodeList, type DecodedList } from '../lib/listLink.js';
 import { copyInit, findListByPayload, LIST_PAGE, type StoredList } from '../lib/lists.js';
@@ -617,6 +626,88 @@ export class AppState {
   async retryLists(): Promise<void> {
     await this.cloudLists?.load();
     await this.#listsReady();
+  }
+
+  /** Downloads the account's lists as one lists file: every list, or the lists `ids` names,
+   *  in the index's order. A file past the schema's bounds still downloads whole, and a
+   *  toast says why it cannot be imported whole (docs/specs/FEATURES.md, "Account and
+   *  browser lists"). */
+  async exportLists(ids?: readonly string[]): Promise<void> {
+    const store = this.cloudLists;
+    if (!store) return;
+    const lists = ids ? store.lists.filter((l) => ids.includes(l.id)) : store.lists;
+    const now = this.#exportedAt();
+    const b = this.#bundle(lists, now);
+    try {
+      await this.env.image.download(
+        new Blob([bundleText(b)], { type: 'application/json' }),
+        bundleFileName(lists, now)
+      );
+    } catch {
+      this.say(this.t.accountFailed, { error: true });
+      return;
+    }
+    this.#warnBounds(b);
+  }
+
+  /** Downloads «Скачать мои данные»: a store-only zip holding `lists.json`, the lists file
+   *  of every account list (docs/specs/CONTRACTS.md section 4). */
+  async exportData(): Promise<void> {
+    const store = this.cloudLists;
+    if (!store) return;
+    const now = this.#exportedAt();
+    const b = this.#bundle(store.lists, now);
+    try {
+      const { zipStored } = await import('../lib/zip.js');
+      const bytes = zipStored(
+        [{ name: 'lists.json', bytes: new TextEncoder().encode(bundleText(b)) }],
+        now
+      );
+      await this.env.image.download(
+        new Blob([bytes], { type: 'application/zip' }),
+        dataFileName(now)
+      );
+    } catch {
+      this.say(this.t.accountFailed, { error: true });
+      return;
+    }
+    this.#warnBounds(b);
+  }
+
+  /* The export's moment: the test build's fixed clock names a known file. */
+  #exportedAt(): Date {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a moment read once, never state
+    return new Date(this.env.clock.now());
+  }
+
+  #bundle(lists: readonly CloudList[], now: Date): Bundle {
+    const byId = this.index?.byId;
+    return toBundle(
+      lists,
+      (id) => {
+        const it = byId?.get(id);
+        return it ? nameOf(it, this.lang) : undefined;
+      },
+      this.t.untitled,
+      now
+    );
+  }
+
+  /* Not an error: the file downloaded. */
+  #warnBounds(b: Bundle): void {
+    const { many, long } = overBounds(b);
+    if (!many && !long.length) return;
+    const t = this.t;
+    const named = long.map((n) => t.quoted.replace('%s', n));
+    this.say(
+      [
+        t.exportOverBounds,
+        many ? t.exportManyLists : '',
+        long.length ? t.exportLongLists.replace('%s', fewNames(named, t)) : ''
+      ]
+        .filter(Boolean)
+        .join(' ')
+    );
   }
 
   /**

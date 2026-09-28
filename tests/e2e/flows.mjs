@@ -7,7 +7,8 @@
  * sign-in, once, and not for another account, F10 two edits kept by a page
  * closed inside the write buffer's quiet window, F11 an edit drawn live on an
  * open share page and on the owner's second page, F12 a purchase request sent
- * signed out, drawn on the owner's page and applied. Each flow gets its own
+ * signed out, drawn on the owner's page and applied, F13 a lists file imported
+ * through «Импорт из файла» and two lists deleted together. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -16,6 +17,7 @@
  * docs/specs/COVERAGE.md, "Test layers". */
 
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import {
   createThrowaway,
   deleteListsOf,
@@ -797,4 +799,52 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteListsOf(admin, member.id);
   }
   console.log('e2e: F12 ok');
+
+  /* F13: import_lists on the hosted project through the page. example.json lands as
+     one list with its entries in file order; then that list and one made by hand
+     go together through «Удалить (2)» and one confirm. */
+  await deleteListsOf(admin, member.id);
+  try {
+    const mine = () => listsOf(admin, member.id);
+    const example = fileURLToPath(
+      new URL('../../docs/fixtures/import/example.json', import.meta.url)
+    );
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/lists');
+      await waitText(page, 'F13', 'Ваш аккаунт');
+      await waitControl(page, 'F13', 'Импорт из файла');
+      await d.press('Импорт из файла');
+      await d.upload(example);
+      await waitControl(page, 'F13', 'Импортировать (1)');
+      await d.press('Импортировать (1)');
+      await waitText(page, 'F13', 'Импортировано списков: 1');
+      await until('F13: the imported list did not reach the account', async () => {
+        const rows = await mine();
+        const entries = [...(rows[0]?.list_entries ?? [])].sort(
+          (a, b) => a.position - b.position
+        );
+        return (
+          rows.length === 1 &&
+          rows[0].name === 'Лавка кузнеца' &&
+          entries.map((e) => e.item_key).join(',') === 'ci1,q1,q313' &&
+          entries[0].quantity === 2 &&
+          entries[0].price_coins === 150
+        );
+      });
+      await d.type('Например: клад дракона', 'F13');
+      await d.press('Создать');
+      await until('F13: the second list did not reach the account', async () => {
+        return (await mine()).length === 2;
+      });
+      await d.tick('Выбрать: Лавка кузнеца');
+      await d.tick('Выбрать: F13');
+      await d.press('Удалить (2)');
+      await until('F13: the two lists were not deleted', async () => {
+        return (await mine()).length === 0;
+      });
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+  }
+  console.log('e2e: F13 ok');
 }

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v1.json",
+  "format": "daggerheart-loot/lists",
+  "version": 2,
+  "lists": [
+    {
+      "name": "Лавка кузнеца",
+      "money_mode": "coin",
+      "player_note": "Открыта с рассвета до заката.",
+      "gm_note": "Кузнец торгуется, если назвать имя его брата.",
+      "entries": [
+        {
+          "id": "ci1",
+          "name": "Первоклассный Спальный Мешок",
+          "quantity": 2,
+          "price_coins": 150
+        },
+        {
+          "id": "q1",
+          "player_note": "Последний в наличии."
+        },
+        {
+          "id": "q313",
+          "gm_note": "Проклят."
+        }
+      ]
+    }
+  ]
+}

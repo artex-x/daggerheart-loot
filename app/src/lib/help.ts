@@ -572,7 +572,10 @@ const LISTS: Record<Lang, Help> = {
           { b: 'Ссылка себе' },
           ' - снимок со всеми заметками. Такая ссылка хранит список в себе и перестанет открываться 26 октября 2026 года: откройте её, нажмите «Сохранить себе», и список останется в аккаунте.'
         ]
-      }
+      },
+      p(
+        'Списки аккаунта можно отметить и скачать файлом JSON или удалить разом, а «Импорт из файла» добавляет списки из такого файла - например, чтобы перенести их в другой аккаунт. Формат файла описан для ИИ-помощников в llms.txt.'
+      )
     ]
   },
   en: {
@@ -607,7 +610,10 @@ const LISTS: Record<Lang, Help> = {
           { b: 'Your own link' },
           ' is a snapshot with every note. Such a link carries the list inside it and stops opening on 26 October 2026: open it, press "Save to my lists", and the list stays in your account.'
         ]
-      }
+      },
+      p(
+        'Tick account lists to download them as a JSON file or delete them together; "Import from file" adds lists from such a file - to move them to another account, for example. The file format is described for AI assistants in llms.txt.'
+      )
     ]
   }
 };

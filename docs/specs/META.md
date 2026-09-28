@@ -94,6 +94,12 @@ table (`tests/db/harness.test.mjs`; `docs/DECISIONS.md`, 2026-09-26,
 "Purchase requests are written only by a bounded function any link holder
 calls").
 
+An account's lists leave it only as the reader's own file: the lists JSON
+or the data zip of `#/account` (`FEATURES.md`, "Account and browser
+lists", "Exports"), which is the per-user backup and the way between two
+accounts. The site keeps no copy of a file, and «Импорт из файла» imports
+only a file the reader chose, through the same Supabase backend.
+
 Add no server beside the Supabase backend: no upload endpoint and no paste
 service.
 
@@ -115,8 +121,10 @@ What stays:
   module runs (`CONTRACTS.md` section 4).
 - The `<noscript>` links resolve through the build: `vite.config.mts`'s
   `closeBundle` copies `catalog.csv`, `data.json` and `llms.txt` into
-  `dist/`, and `tools/smoke-http.mjs` asserts every `noscript a[href]`
-  resolves to a real file under `dist/`.
+  `dist/`, `schema/import-v1.json` resolves through the `schema` entry of
+  `vite.config.mts`' `ROOT_DIRS` (a junction in `dist/`, as `img/`), and
+  `tools/smoke-http.mjs` asserts every `noscript a[href]` resolves to a
+  real file under `dist/`.
 
 The main landmark's id moved from `view` to `main`, alongside the skip link,
 after checking `#view` appears in no spec, fixture, or route grammar

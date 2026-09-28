@@ -5,6 +5,7 @@
  * what changed. docs/specs/FEATURES.md, "Account and browser lists". */
 
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
+import type { ImportList } from '../lib/bundle.js';
 import { BATCH_BYTES, toCloudList, type CloudList, type ListOp } from '../lib/cloudLists.js';
 import { dict } from '../lib/dict.js';
 import type { StoredList } from '../lib/lists.js';
@@ -1312,5 +1313,137 @@ describe('the owner topic', () => {
       id: expect.any(String) as unknown
     });
     expect(list).not.toHaveBeenCalled();
+  });
+});
+
+describe('an import', () => {
+  const FILE: ImportList[] = [
+    {
+      name: 'Новая лавка',
+      money_mode: 'coin',
+      player_note: '',
+      gm_note: '',
+      entries: [
+        { item_key: 'ci1', quantity: 2, price_coins: 150, player_note: '', gm_note: '' }
+      ]
+    },
+    { name: 'Пустой', money_mode: 'bag', player_note: '', gm_note: '', entries: [] }
+  ];
+
+  it('sends the buffer first, keeps the index drawn, and reads the imported lists', async () => {
+    const { cloud, store, apply } = await loaded();
+    const imp = vi.spyOn(cloud.lists, 'import');
+    const made = store.create('Буфер');
+    const rows = store.importRows(FILE);
+    const statuses: string[] = [];
+    const realList = cloud.lists.list.bind(cloud.lists);
+    vi.spyOn(cloud.lists, 'list').mockImplementationOnce(() => {
+      statuses.push(store.status);
+      return realList();
+    });
+    expect(await store.import(rows)).toEqual({ ok: true });
+    expect(apply.mock.invocationCallOrder[0]).toBeLessThan(
+      imp.mock.invocationCallOrder[0] ?? 0
+    );
+    expect(statuses).toEqual(['ready']);
+    expect(store.status).toBe('ready');
+    expect(store.get(made.id)).toBeDefined();
+    expect(store.get(rows[0]?.list.id ?? '')?.meta?.['ci1']).toEqual({ qty: 2, gold: 150 });
+    expect(store.get(rows[1]?.list.id ?? '')?.ids).toEqual([]);
+    expect(said).toEqual([]);
+  });
+
+  it('answers network for a call that clear() overtook, and keeps nothing', async () => {
+    const { cloud, store } = await loaded();
+    let open: () => void = () => undefined;
+    const gate = new Promise<void>((r) => {
+      open = r;
+    });
+    const real = cloud.lists.import.bind(cloud.lists);
+    vi.spyOn(cloud.lists, 'import').mockImplementationOnce(async (rows) => {
+      await gate;
+      return real(rows);
+    });
+    const answer = store.import(store.importRows(FILE));
+    await settle();
+    store.clear();
+    open();
+    expect(await answer).toEqual({ ok: false, error: 'network' });
+    expect(store.lists).toEqual([]);
+  });
+
+  it('answers ok for a lost answer whose lists the read finds', async () => {
+    const { cloud, store } = await loaded();
+    const real = cloud.lists.import.bind(cloud.lists);
+    vi.spyOn(cloud.lists, 'import').mockImplementationOnce(async (rows) => {
+      await real(rows);
+      return { ok: false, error: 'network' };
+    });
+    const rows = store.importRows(FILE);
+    expect(await store.import(rows)).toEqual({ ok: true });
+    expect(store.get(rows[0]?.list.id ?? '')).toBeDefined();
+  });
+
+  it('answers network for a lost call that wrote nothing', async () => {
+    const { cloud, store } = await loaded();
+    vi.spyOn(cloud.lists, 'import').mockResolvedValueOnce({ ok: false, error: 'network' });
+    const rows = store.importRows(FILE);
+    expect(await store.import(rows)).toEqual({ ok: false, error: 'network' });
+    expect(store.get(rows[0]?.list.id ?? '')).toBeUndefined();
+  });
+
+  it('passes a refusal on without a read', async () => {
+    const { cloud, store } = await loaded({ limits: { lists: 3 } });
+    const list = vi.spyOn(cloud.lists, 'list');
+    expect(await store.import(store.importRows(FILE))).toMatchObject({
+      ok: false,
+      error: 'limit',
+      key: 'lists_per_owner'
+    });
+    expect(list).not.toHaveBeenCalled();
+    expect(store.lists).toHaveLength(3);
+  });
+
+  it('makes new ids on every call; the same rows sent twice carry the same ids', async () => {
+    const { cloud, store } = await loaded();
+    const a = store.importRows(FILE);
+    const b = store.importRows(FILE);
+    expect(a[0]?.list.id).not.toBe(b[0]?.list.id);
+    expect(a[0]?.entries[0]?.id).not.toBe(b[0]?.entries[0]?.id);
+    const imp = vi.spyOn(cloud.lists, 'import').mockResolvedValueOnce({
+      ok: false,
+      error: 'network'
+    });
+    await store.import(a);
+    await store.import(a);
+    expect(imp.mock.calls[1]?.[0]).toEqual(imp.mock.calls[0]?.[0]);
+    expect(store.lists.filter((l) => l.name === 'Новая лавка')).toHaveLength(1);
+  });
+});
+
+describe('a batch removal', () => {
+  it('sends two removals made in one tick as one request', async () => {
+    const { cloud, store, apply } = await loaded();
+    store.remove(EMPTY);
+    store.remove(TROPHIES);
+    await quiet();
+    expect(kinds(apply)).toEqual([['remove', 'remove']]);
+    const read = await cloud.lists.list();
+    expect(read.ok ? read.lists.map((l) => l.id) : null).toEqual([SHOP]);
+  });
+
+  it('draws a list the server kept again, with one toast, and keeps the other deleted', async () => {
+    const { store, apply, real } = await loaded();
+    /* The first removal lands; the server refuses the second. */
+    apply.mockImplementationOnce(async (ops) => {
+      await real(ops.slice(0, 1));
+      return { ok: true, results: [{ ok: true }, { ok: false, error: 'refused' }] };
+    });
+    store.remove(EMPTY);
+    store.remove(TROPHIES);
+    expect(store.lists.map((l) => l.id)).toEqual([SHOP]);
+    await quiet();
+    expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
+    expect(store.lists.map((l) => l.id)).toEqual([SHOP, TROPHIES]);
   });
 });

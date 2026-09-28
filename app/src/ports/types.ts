@@ -28,7 +28,14 @@
  * answer `null`, writes answer whether they succeeded. The app shows a warning
  * and keeps running; it does not pretend the lists are saved.
  */
-import type { ListOp, ListRow, ShareAudience, SharedRow, ShareRow } from '../lib/cloudLists.js';
+import type {
+  ImportRow,
+  ListOp,
+  ListRow,
+  ShareAudience,
+  SharedRow,
+  ShareRow
+} from '../lib/cloudLists.js';
 import type { Loot } from '../lib/data.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
@@ -331,8 +338,9 @@ export type ListWrite =
   | { ok: false; error: 'network' }
   /** A count limit (`limit: <key>`); `value` is the limit the database applied. */
   | { ok: false; error: 'limit'; key: string; value: number | null }
-  /** Any other refusal by the database. */
-  | { ok: false; error: 'refused' };
+  /** Any other refusal by the database; `tooSlow` (only `import` sets it) is a call the
+   *  database stopped at its statement timeout, which the same call would reach again. */
+  | { ok: false; error: 'refused'; reason?: 'tooSlow' };
 
 /** `{ ok: false }` is signed out or a read that failed, never an empty account. */
 export type ListsRead = { ok: true; lists: ListRow[] } | { ok: false };
@@ -377,6 +385,9 @@ export interface ListRepository {
    *  (`move_legacy_list`); idempotent per owner on the text. Exempt from the count
    *  limits (docs/specs/FEATURES.md, "Account and browser lists"). */
   move(id: string, canonical: string): Promise<MoveWrite>;
+  /** Inserts every list and entry in one transaction (`import_lists`), or nothing; a list
+   *  id already the caller's is a retry and adds only its missing entries. */
+  import(lists: ImportRow[]): Promise<ListWrite>;
 }
 
 /** The owner's shares of one list, stopped ones included; `{ ok: false }` is signed out

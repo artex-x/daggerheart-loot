@@ -2,9 +2,9 @@
    "ports against fake clients". The client itself meets the hosted test
    project in the E2E layer (docs/specs/COVERAGE.md, "Test layers"). */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ListOp } from '../lib/cloudLists.js';
+import type { ImportRow, ListOp } from '../lib/cloudLists.js';
 import { RETURN_KEY, type Redirect } from './redirect.js';
-import { createCloud, WRITE_TIMEOUT_MS } from './supabase.js';
+import { createCloud, IMPORT_TIMEOUT_MS, WRITE_TIMEOUT_MS } from './supabase.js';
 
 const { client, createClient, rows } = vi.hoisted(() => {
   /* `from('user_prefs')`'s builder: `select().eq().maybeSingle()` and
@@ -731,6 +731,122 @@ describe('the lists', () => {
     const id = lists.newId();
     expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/);
     expect(lists.newId()).not.toBe(id);
+  });
+});
+
+describe('the import', () => {
+  const ROWS: ImportRow[] = [
+    {
+      list: { id: 'l1', name: 'К', money_mode: 'coin', player_note: 'p', gm_note: 'g' },
+      entries: [
+        {
+          id: 'e1',
+          item_key: 'ci1',
+          source: 'official',
+          snapshot: null,
+          position: 0,
+          quantity: 2,
+          price_coins: 150,
+          player_note: '',
+          gm_note: ''
+        }
+      ]
+    },
+    {
+      list: { id: 'l2', name: 'П', money_mode: 'bag', player_note: '', gm_note: '' },
+      entries: []
+    }
+  ];
+
+  it('sends the rows as given in one import_lists call', async () => {
+    client.rpc.mockResolvedValueOnce({ data: 2, error: null, status: 200 });
+    expect(await make().lists.import(ROWS)).toEqual({ ok: true });
+    expect(client.rpc).toHaveBeenCalledWith('import_lists', { p_lists: ROWS });
+  });
+
+  it.each([
+    [
+      '400 a lists limit',
+      {
+        error: { code: 'P0001', message: 'limit: lists_per_owner', details: '50' },
+        status: 400
+      },
+      { ok: false, error: 'limit', key: 'lists_per_owner', value: 50 }
+    ],
+    [
+      '400 22023',
+      { error: { code: '22023', message: 'import_lists: invalid list' }, status: 400 },
+      { ok: false, error: 'refused' }
+    ],
+    [
+      '403 42501',
+      {
+        error: { code: '42501', message: 'import_lists: the id belongs to another list' },
+        status: 403
+      },
+      { ok: false, error: 'refused' }
+    ],
+    [
+      '403 28000',
+      { error: { code: '28000', message: 'import_lists: not signed in' }, status: 403 },
+      { ok: false, error: 'network' }
+    ],
+    [
+      'status 0',
+      { error: { code: '', message: 'TypeError: fetch failed' }, status: 0 },
+      { ok: false, error: 'network' }
+    ],
+    [
+      '503',
+      { error: { code: 'PGRST000', message: 'x' }, status: 503 },
+      { ok: false, error: 'network' }
+    ],
+    [
+      '500 57014, the statement timeout',
+      {
+        error: { code: '57014', message: 'canceling statement due to statement timeout' },
+        status: 500
+      },
+      { ok: false, error: 'refused', reason: 'tooSlow' }
+    ],
+    ['thrown', new Error('offline'), { ok: false, error: 'network' }]
+  ])('reads an import answered %s', async (_name, answer, want) => {
+    if (answer instanceof Error) client.rpc.mockRejectedValueOnce(answer);
+    else client.rpc.mockResolvedValueOnce({ data: null, ...answer });
+    expect(await make().lists.import(ROWS)).toEqual(want);
+  });
+
+  it('reads a statement timeout as tooSlow for an import only: another write sends it again', async () => {
+    const timeout = { data: null, error: { code: '57014', message: 'x' }, status: 500 };
+    client.rpc.mockResolvedValueOnce(timeout).mockResolvedValueOnce(timeout);
+    const { lists, shares } = make();
+    expect(await shares.revoke('s1')).toEqual({ ok: false, error: 'network' });
+    expect(await lists.move('l1', '{}')).toEqual({ ok: false, error: 'network' });
+  });
+
+  describe('with no answer', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('waits past WRITE_TIMEOUT_MS and answers network at IMPORT_TIMEOUT_MS', async () => {
+      client.rpc.mockImplementationOnce(() => new Promise<never>(() => undefined));
+      let answer: unknown = 'pending';
+      void make()
+        .lists.import(ROWS)
+        .then((a) => {
+          answer = a;
+        });
+      await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS);
+      expect(answer).toBe('pending');
+      await vi.advanceTimersByTimeAsync(IMPORT_TIMEOUT_MS - WRITE_TIMEOUT_MS - 1);
+      expect(answer).toBe('pending');
+      await vi.advanceTimersByTimeAsync(1);
+      expect(answer).toEqual({ ok: false, error: 'network' });
+    });
   });
 });
 

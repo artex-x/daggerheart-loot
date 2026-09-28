@@ -8,9 +8,9 @@
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
  * cases for the port member it adds: A-F the account, G the lists, H the
  * share links, I the move of a browser list, J the live topics, K the purchase
- * requests. */
+ * requests, L the import of a lists file. */
 
-import type { EntryRow, ListRow } from '../lib/cloudLists.js';
+import type { EntryRow, ImportRow, ListRow } from '../lib/cloudLists.js';
 import { readOwnerMessage, readRequestMessage, readShareMessage } from '../lib/live.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { CloudPort, ListWrites, LiveStatus, Session } from './types.js';
@@ -641,6 +641,144 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
   }
 }
 
+/* The most the maximal import and the notes-heavy one may take: the hosted
+   `authenticated` role's statement timeout is 8 s. */
+const IMPORT_MS = 6000;
+/* A note of 250 characters, mostly Cyrillic: 50 lists of 100 entries with two such notes
+   are about 5.5 MB of rows, the rows a file of 5 MiB (`FILE_MAX_BYTES`) makes. */
+const HEAVY_NOTE = 'Заметка мастера о предмете. '.repeat(9).slice(0, 250);
+
+const importRow = (
+  id: string,
+  name: string,
+  entries: EntryRow[] = [],
+  over: Partial<ImportRow['list']> = {}
+): ImportRow => ({
+  list: { id, name, money_mode: 'bag', player_note: '', gm_note: '', ...over },
+  entries
+});
+
+/** Returns 50 lists of 100 entries (the catalog-shaped ids `r0000`...), each entry's two
+ *  notes set to `note`. */
+function fullImport(port: CloudPort, note: string): ImportRow[] {
+  return Array.from({ length: 50 }, (_, i) =>
+    importRow(
+      port.lists.newId(),
+      'e2e ' + String(i),
+      Array.from({ length: 100 }, (_, j) =>
+        entryOf(port.lists.newId(), 'r' + String(j).padStart(4, '0'), j, {
+          player_note: note,
+          gm_note: note
+        })
+      )
+    )
+  );
+}
+
+async function removeAll(port: CloudPort, assert: Assert, when: string): Promise<void> {
+  const all = (await listsOf(port, assert, when)) ?? [];
+  if (!all.length) return;
+  const gone = await port.lists.apply(all.map((l) => ({ op: 'remove' as const, id: l.id })));
+  assert(
+    answered(gone) === all.map(() => 'ok').join(','),
+    'import: removing the lists ' + when + ' answered ' + answered(gone)
+  );
+}
+
+async function importCases(
+  port: CloudPort,
+  assert: Assert,
+  log: (msg: string) => void
+): Promise<void> {
+  const { lists } = port;
+  const before = (await listsOf(port, assert, 'before the import'))?.length ?? 0;
+  const [l1, l2] = [lists.newId(), lists.newId()];
+  const rows = [
+    importRow(
+      l1,
+      'Импорт',
+      [
+        entryOf(lists.newId(), 'ci1', 0, {
+          quantity: 2,
+          price_coins: 150,
+          player_note: 'a',
+          gm_note: 'b'
+        }),
+        entryOf(lists.newId(), 'q1', 1)
+      ],
+      { money_mode: 'coin', player_note: 'p', gm_note: 'g' }
+    ),
+    importRow(l2, 'Пустой')
+  ];
+  const first = await lists.import(rows);
+  assert(first.ok, 'import: two lists answered ' + JSON.stringify(first));
+  const got = await theList(port, l1, assert, 'after the import');
+  assert(
+    got?.name === 'Импорт' &&
+      got.money_mode === 'coin' &&
+      got.player_note === 'p' &&
+      got.gm_note === 'g',
+    'import: the list does not read back as imported'
+  );
+  assert(
+    got?.list_entries.map(view).join(';') === 'ci1|2|150|a|b;q1|1|||',
+    'import: the entries do not read back in order'
+  );
+  const empty = await theList(port, l2, assert, 'after the import');
+  assert(empty?.list_entries.length === 0, 'import: the empty list reads back with entries');
+  const again = await lists.import(rows);
+  assert(again.ok, 'import: the same rows again answered ' + JSON.stringify(again));
+  const count = (await listsOf(port, assert, 'after the retry'))?.length;
+  assert(count === before + 2, 'import: the same rows again changed the count of lists');
+
+  /* All or nothing: a refused second list leaves no first list. */
+  const [a, b] = [lists.newId(), lists.newId()];
+  const long = Array.from({ length: 101 }, (_, i) =>
+    entryOf(lists.newId(), 'r' + String(i).padStart(4, '0'), i)
+  );
+  const over = await lists.import([importRow(a, 'A'), importRow(b, 'B', long)]);
+  assert(
+    !over.ok && over.error === 'limit' && over.key === 'entries_per_list' && over.value === 100,
+    'import: a list of 101 entries answered ' + JSON.stringify(over)
+  );
+  const left = (await listsOf(port, assert, 'after the refused import')) ?? [];
+  assert(!left.some((l) => l.id === a || l.id === b), 'import: a refused import left a list');
+
+  /* The largest file the schema takes, timed against the hosted statement timeout. */
+  await removeAll(port, assert, 'before the maximal import');
+  let started = Date.now();
+  const full = await lists.import(fullImport(port, ''));
+  let ms = Date.now() - started;
+  log('import of 50 lists of 100 entries: ' + String(ms) + ' ms');
+  assert(full.ok, 'import: 50 lists of 100 entries answered ' + JSON.stringify(full));
+  assert(ms < IMPORT_MS, 'import: 50 lists of 100 entries took ' + String(ms) + ' ms');
+  const more = await lists.import([importRow(lists.newId(), 'Лишний')]);
+  assert(
+    !more.ok && more.error === 'limit' && more.key === 'lists_per_owner' && more.value === 50,
+    'import: a 51st list answered ' + JSON.stringify(more)
+  );
+  assert(
+    (await listsOf(port, assert, 'after the 51st list'))?.length === 50,
+    'import: a refused 51st list was inserted'
+  );
+  await removeAll(port, assert, 'after the maximal import');
+
+  /* The same with long notes: the request body a 5 MiB file makes. */
+  const heavy = fullImport(port, HEAVY_NOTE);
+  const bytes = new TextEncoder().encode(JSON.stringify(heavy)).length;
+  started = Date.now();
+  const sent = await lists.import(heavy);
+  ms = Date.now() - started;
+  log('import of a 5 MB file (' + String(bytes) + ' bytes of rows): ' + String(ms) + ' ms');
+  assert(
+    bytes > 5_000_000 && bytes < 6_000_000,
+    'import: the notes-heavy rows are ' + String(bytes) + ' bytes, not about 5.5 MB'
+  );
+  assert(sent.ok, 'import: the notes-heavy import answered ' + JSON.stringify(sent));
+  assert(ms < IMPORT_MS, 'import: the notes-heavy import took ' + String(ms) + ' ms');
+  await removeAll(port, assert, 'after the notes-heavy import');
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -761,6 +899,10 @@ export async function runCloudContract(
 
   /* K. the purchase requests, on the doomed user; the list it makes is removed. */
   await requestCases(doomedPort, assert);
+
+  /* L. lists imported from a file, all or nothing, on the doomed user; the account's
+     deletion takes the rows with it. */
+  await importCases(doomedPort, assert, log);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

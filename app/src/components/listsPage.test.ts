@@ -4,18 +4,19 @@
  * fake cloud. `shell.test.ts` used to cover the storage notice as the frame's
  * own invention; it lives here now, where the live app draws it. */
 
-import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import {
   brokenStorage,
   fakeClipboard,
   fakeData,
   fakeDialog,
   fakeEnv,
+  fakeImage,
   fakePage,
   fixedClock,
   memoryRouter,
@@ -52,7 +53,7 @@ const LOOT: Loot = {
   refs: {}
 };
 
-/** A list with one known id and one the data does not - the badge counts
+/** A list with one known id and one the data does not - the meta line counts
  *  known records, not `l.ids.length`. Carries a GM-only `hnote` so its two
  *  payload flavours (`encodeList(listA, true|false)`) are not byte-identical -
  *  see the card-link assertions below. */
@@ -87,7 +88,7 @@ describe('the head and the panel', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('opens the five help paragraphs, two of them with two bold runs', async () => {
+  it('opens the six help paragraphs, two of them with two bold runs', async () => {
     render(App, { env: at() });
     await userEvent.click(screen.getByRole('button', { name: 'Как это работает' }));
     expect(screen.getByText('Для игроков')).toBeInTheDocument();
@@ -143,7 +144,7 @@ describe('the head and the panel', () => {
 });
 
 describe('a card per list', () => {
-  it('draws two cards in store order, a known-record badge, thumbs or the empty line', async () => {
+  it('draws two cards in store order, a known-record count, thumbs or the empty line', async () => {
     const { container } = render(App, {
       env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
     });
@@ -171,9 +172,11 @@ describe('a card per list', () => {
     // store order, not alphabetical
     const cards = screen.getAllByRole('link', { name: /Клад дракона|Лавка в порту/ });
     expect(cards.map((c) => c.textContent)).toEqual([
-      'Клад дракона1',
-      'Лавка в порту0Список пуст'
+      'Клад дракона1 позиция',
+      'Лавка в порту0 позицийСписок пуст'
     ]);
+    /* The count is a line in words, not the roll number's badge. */
+    expect(container.querySelector('.listcard .badge')).toBeNull();
 
     await expectNoA11yViolations(container);
   });
@@ -616,9 +619,15 @@ describe('with sign-in configured', () => {
       'Клад дракона',
       'Лавка в порту'
     ]);
-    expect(
-      [...container.querySelectorAll('.listcard-edited')].map((p) => p.textContent)
-    ).toEqual(['изменён 1 час назад', 'изменён 3 дня назад', 'изменён в прошлом месяце']);
+    expect([...container.querySelectorAll('.listcard-meta')].map((p) => p.textContent)).toEqual(
+      [
+        '0 позиций · изменён 1 час назад',
+        '1 позиция · изменён 3 дня назад',
+        '1 позиция · изменён в прошлом месяце',
+        '1 позиция',
+        '0 позиций'
+      ]
+    );
     const shop = screen.getByRole('link', {
       name: 'Лавка кузнеца, 1 позиция, изменён 3 дня назад'
     });
@@ -643,12 +652,12 @@ describe('with sign-in configured', () => {
       const { container } = withCloud(cloud);
       await screen.findByText('Пустой список');
       const edited = (): (string | null)[] =>
-        [...container.querySelectorAll('.listcard-edited')].map((p) => p.textContent);
-      expect(edited()[0]).toBe('изменён 1 час назад');
+        [...container.querySelectorAll('.listcard-meta')].map((p) => p.textContent);
+      expect(edited()[0]).toBe('0 позиций · изменён 1 час назад');
       const read = vi.spyOn(cloud.lists, 'list');
       await vi.advanceTimersByTimeAsync(3_600_000);
       await waitFor(() => {
-        expect(edited()[0]).toBe('изменён 2 часа назад');
+        expect(edited()[0]).toBe('0 позиций · изменён 2 часа назад');
       });
       const answers = await Promise.all(read.mock.results.map((r) => r.value as unknown));
       expect(answers.every((a) => JSON.stringify(a) === JSON.stringify(answers[0]))).toBe(true);
@@ -941,5 +950,226 @@ describe('the move into the account and the cutoff', () => {
     render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }), ...AFTER }) });
     expect(actionsOf(/Клад дракона/)).toEqual(['Поделиться', 'Удалить']);
     expect(screen.getByText('Списки живут только в этом браузере.')).toBeInTheDocument();
+  });
+});
+
+describe('selecting account lists', () => {
+  const EMPTY = 'Пустой список';
+  const TROPHIES = 'Трофеи';
+  const signedIn = async (cloud = fakeCloud(SEED, 'gm1'), over: Partial<Env> = {}) => {
+    const dialog = fakeDialog();
+    const view = render(App, {
+      env: at({ router: memoryRouter('#/lists'), dialog, cloud, ...over })
+    });
+    await screen.findByText('Лавка кузнеца');
+    return { ...view, dialog };
+  };
+  const pick = (name: string): HTMLInputElement =>
+    screen.getByRole('checkbox', { name: 'Выбрать: ' + name });
+  const summary = (c: HTMLElement): string =>
+    c.querySelector('.batch-summ')?.textContent.trim() ?? '';
+  /* Account lists made on the server before the page opens. */
+  const withLists = async (names: string[]) => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.lists.apply(
+      names.map((name, i) => ({
+        op: 'create' as const,
+        list: {
+          id: uuid(7000 + i),
+          name,
+          money_mode: 'bag' as const,
+          player_note: '',
+          gm_note: ''
+        },
+        entries: []
+      }))
+    );
+    return cloud;
+  };
+  const ticked = (c: HTMLElement): number =>
+    c.querySelectorAll('.listcard-pick input:checked').length;
+
+  it('gives each account card a pick box and every card a count line, no badge', async () => {
+    const { container } = await signedIn(fakeCloud(SEED, 'gm1'), {
+      storage: memoryStorage({
+        'dhloot.lists.v2': TWO,
+        'dhloot.migrated.v1': JSON.stringify({ owner: 'another-account', lists: {} })
+      })
+    });
+    expect(
+      screen
+        .getAllByRole('checkbox', { name: /^Выбрать: / })
+        .map((b) => b.getAttribute('aria-label'))
+    ).toEqual(['Выбрать: Пустой список', 'Выбрать: Лавка кузнеца', 'Выбрать: Трофеи']);
+    expect(container.querySelectorAll('.listcard .badge')).toHaveLength(0);
+    expect(container.querySelectorAll('.listcard-meta')).toHaveLength(5);
+    /* The box is outside the card's link, which keeps its own name. */
+    expect(pick(EMPTY).closest('a')).toBeNull();
+    expect(screen.getByRole('link', { name: /^Пустой список, / })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).not.toBeChecked();
+    expect(summary(container)).toBe('');
+  });
+
+  it('draws the strip on for two ticked cards, and downloads the two in index order', async () => {
+    const image = fakeImage();
+    const { container } = await signedIn(fakeCloud(SEED, 'gm1'), { image });
+    await userEvent.click(pick(TROPHIES));
+    await userEvent.click(pick(EMPTY));
+    expect(summary(container)).toBe('Выбрано 2');
+    const all = screen.getByRole<HTMLInputElement>('checkbox', { name: 'Выбрать все' });
+    expect(all.indeterminate).toBe(true);
+    expect(pick(EMPTY).closest('.listcard')).toHaveClass('picked');
+    expect(pick('Лавка кузнеца').closest('.listcard')).not.toHaveClass('picked');
+    await userEvent.click(screen.getByRole('button', { name: 'Скачать JSON (2)' }));
+    await waitFor(() => {
+      expect(image.downloaded).toHaveLength(1);
+    });
+    const text = await image.downloaded[0]!.blob.text();
+    expect(
+      (JSON.parse(text) as { lists: { name: string }[] }).lists.map((l) => l.name)
+    ).toEqual([EMPTY, TROPHIES]);
+    expect(ticked(container)).toBe(2);
+    expect(screen.getByRole('button', { name: 'Удалить (2)' })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps everything when the confirm is refused', async () => {
+    const { container } = await signedIn(fakeCloud(SEED, 'gm1'), {
+      dialog: fakeDialog(false)
+    });
+    await userEvent.click(pick(EMPTY));
+    await userEvent.click(pick(TROPHIES));
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
+    expect(cardNames(container)).toEqual([EMPTY, 'Лавка кузнеца', TROPHIES]);
+    expect(ticked(container)).toBe(2);
+  });
+
+  it('deletes the ticked lists after one confirm that names them, with no undo', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const page = fakePage();
+    const dialog = fakeDialog();
+    const { container } = await signedIn(cloud, { page, dialog });
+    await userEvent.click(pick(EMPTY));
+    await userEvent.click(pick(TROPHIES));
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
+    expect(dialog.asked).toEqual([
+      'Удалить списки (2): «Пустой список», «Трофеи»? Ссылки для игроков и мастера на них перестанут работать. Отменить удаление нельзя.'
+    ]);
+    expect(cardNames(container)).toEqual(['Лавка кузнеца']);
+    expect(screen.getByText('Удалено списков: 2')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Вернуть' })).toBeNull();
+    expect(summary(container)).toBe('');
+    expect(ticked(container)).toBe(0);
+    page.fireHidden();
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      expect(read.ok && read.lists.map((l) => l.name)).toEqual(['Лавка кузнеца']);
+    });
+  });
+
+  it('names five lists in the confirm, then counts the rest', async () => {
+    const dialog = fakeDialog();
+    await signedIn(await withLists(['А', 'Б', 'В', 'Г']), { dialog });
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (7)' }));
+    expect(dialog.asked[0]).toMatch(
+      /^Удалить списки \(7\): «[^»]+», «[^»]+», «[^»]+», «[^»]+», «[^»]+» и ещё 2\? /
+    );
+  });
+
+  it('ticks the drawn cards only, and drops a tick the query hides for good', async () => {
+    const cloud = await withLists([
+      'Порт Ветров',
+      'Рынок',
+      'Лавка в порту',
+      'Сессия 1',
+      'Сессия 2',
+      'Сессия 3',
+      'Сессия 4',
+      'Сессия 5',
+      'Сессия 6'
+    ]);
+    const { container } = await signedIn(cloud);
+    await userEvent.click(pick('Порт Ветров'));
+    await userEvent.click(pick('Рынок'));
+    expect(summary(container)).toBe('Выбрано 2');
+    await userEvent.type(findBox(), 'порт');
+    expect(summary(container)).toBe('Выбрано 1');
+    expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeInTheDocument();
+    await userEvent.clear(findBox());
+    expect(pick('Рынок')).not.toBeChecked();
+    expect(summary(container)).toBe('Выбрано 1');
+    await userEvent.type(findBox(), 'порт');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    expect(summary(container)).toBe('Выбрано 2');
+    expect(ticked(container)).toBe(2);
+    expect(screen.getByRole('button', { name: 'Скачать JSON (2)' })).toBeInTheDocument();
+    await userEvent.clear(findBox());
+    expect(ticked(container)).toBe(2);
+    expect(summary(container)).toBe('Выбрано 2');
+  });
+
+  it('keeps the ticks when «Показать ещё» draws more', async () => {
+    const cloud = await withLists(Array.from({ length: 27 }, (_, i) => 'Ещё ' + String(i + 1)));
+    const { container } = render(App, { env: at({ router: memoryRouter('#/lists'), cloud }) });
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Выбрать: Ещё 27' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Показать ещё (6)' }));
+    expect(ticked(container)).toBe(1);
+    expect(summary(container)).toBe('Выбрано 1');
+  });
+
+  it('draws the import toggle only while the lists are read', async () => {
+    render(App, { env: at({ router: memoryRouter('#/lists'), cloud: fakeCloud(SEED) }) });
+    await screen.findByRole('button', { name: 'Войти' });
+    expect(screen.queryByRole('button', { name: 'Импорт из файла' })).toBeNull();
+    cleanup();
+
+    const slow = fakeCloud(SEED, 'gm1');
+    slow.lists.list = () => new Promise(() => undefined);
+    render(App, { env: at({ router: memoryRouter('#/lists'), cloud: slow }) });
+    await screen.findByText('Загружаем...');
+    expect(screen.queryByRole('button', { name: 'Импорт из файла' })).toBeNull();
+    cleanup();
+
+    const offline = fakeCloud(SEED, 'gm1', { offline: true });
+    render(App, { env: at({ router: memoryRouter('#/lists'), cloud: offline }) });
+    await screen.findByText('Не получилось загрузить списки аккаунта.');
+    expect(screen.queryByRole('button', { name: 'Импорт из файла' })).toBeNull();
+    cleanup();
+
+    await signedIn();
+    expect(screen.getByRole('button', { name: 'Импорт из файла' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+  });
+
+  it('names the pick box of a list with no name «Без названия»', async () => {
+    await signedIn(await withLists(['']));
+    expect(screen.getByRole('checkbox', { name: 'Выбрать: Без названия' })).toBeInTheDocument();
+  });
+
+  it('draws the missing-art thumb after a card picture fails', async () => {
+    const withArt: Loot = {
+      ...LOOT,
+      items: { core_item: [{ ...LOOT.items['core_item']![0]!, img: 'ci1.webp' }] }
+    };
+    const { container } = await signedIn(fakeCloud(SEED, 'gm1'), { data: fakeData(withArt) });
+    const img = container.querySelector<HTMLImageElement>('.listcard-thumbs img');
+    expect(img).toHaveAttribute('src', 'img/thumb/ci1.webp');
+    await fireEvent.error(img!);
+    await waitFor(() => {
+      expect(container.querySelector('.listcard-thumbs img')).toHaveAttribute(
+        'src',
+        'img/thumb/_none.webp'
+      );
+    });
+  });
+
+  it('passes axe with one card picked', async () => {
+    const { container } = await signedIn();
+    await userEvent.click(pick('Лавка кузнеца'));
+    expect(summary(container)).toBe('Выбрано 1');
+    await expectNoA11yViolations(container);
   });
 });

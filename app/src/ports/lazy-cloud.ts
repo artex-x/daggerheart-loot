@@ -78,7 +78,8 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     newId: () => crypto.randomUUID(),
     list: async () => (await port())?.lists.list() ?? UNLISTED,
     apply: async (ops) => (await port())?.lists.apply(ops) ?? UNSENT,
-    move: async (id, canonical) => (await port())?.lists.move(id, canonical) ?? UNSENT
+    move: async (id, canonical) => (await port())?.lists.move(id, canonical) ?? UNSENT,
+    import: async (rows) => (await port())?.lists.import(rows) ?? UNSENT
   };
   const shares: ShareRepository = {
     list: async (id) => (await port())?.shares.list(id) ?? NO_SHARES,

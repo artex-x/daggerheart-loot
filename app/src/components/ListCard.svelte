@@ -1,10 +1,11 @@
 <script lang="ts">
   /* One card of the lists index - off `listCardHTML` (`git show 23c00a6^:app.js`).
      Extracted on its second use: the account group and the browser group
-     draw the same card, the account one with its "edited N ago" line and its
-     own actions. */
+     draw the same card. The count is a meta line in words, «9 позиций», with
+     "edited N ago" after it on an account list; an account card also carries
+     a pick box in its corner, outside the link (docs/specs/FEATURES.md,
+     "Lists"). */
   import type { Snippet } from 'svelte';
-  import Badge from './Badge.svelte';
   import { artSrc } from '../lib/desc.js';
   import type { StoredList } from '../lib/lists.js';
   import { plural } from '../lib/plural.js';
@@ -15,18 +16,35 @@
     app: AppState;
     list: StoredList;
     href: string;
-    /** The entries the data still knows, in list order: what the badge counts. */
+    /** The entries the data still knows, in list order: what the meta line counts. */
     items: Record_[];
     /** "edited N ago", for an account list. */
     edited?: string | undefined;
     /** "N requests wait for an answer", for an account list with pending requests. */
     requests?: string | undefined;
+    /** Whether the pick box is ticked. */
+    picked?: boolean;
+    /** Draws the pick box; called with its new state. */
+    onpick?: ((on: boolean) => void) | undefined;
     actions: Snippet;
   }
 
-  const { app, list, href, items, edited, requests, actions }: Props = $props();
+  const {
+    app,
+    list,
+    href,
+    items,
+    edited,
+    requests,
+    picked = false,
+    onpick,
+    actions
+  }: Props = $props();
 
   const t = $derived(app.t);
+  const meta = $derived(
+    [plural(items.length, t.itemsN, app.lang), edited].filter(Boolean).join(' · ')
+  );
   const label = $derived(
     [list.name || t.untitled, plural(items.length, t.itemsN, app.lang), edited, requests]
       .filter(Boolean)
@@ -34,7 +52,19 @@
   );
 </script>
 
-<div class="listcard">
+<div class="listcard" class:pickable={!!onpick} class:picked>
+  {#if onpick}
+    <label class="listcard-pick"
+      ><input
+        type="checkbox"
+        checked={picked}
+        aria-label={t.pickList.replace('%s', list.name || t.untitled)}
+        onchange={(e) => {
+          onpick(e.currentTarget.checked);
+        }}
+      /></label
+    >
+  {/if}
   <!-- Whitespace below is content, covering the whole link - see
      docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
   <!-- prettier-ignore -->
@@ -42,10 +72,8 @@
     class="listcard-main"
     {href}
     aria-label={label}
-  ><div class="listcard-top"><b>{list.name}</b><Badge cls="num"
-      >{items.length}</Badge
-    ></div
-  >{#if edited}<p class="listcard-edited">{edited}</p>{/if}{#if requests}<p class="listcard-req">{requests}</p>{/if}{#if items.length}<div class="listcard-thumbs"
+  ><div class="listcard-top"><b>{list.name}</b></div
+  ><p class="listcard-meta">{meta}</p>{#if requests}<p class="listcard-req">{requests}</p>{/if}{#if items.length}<div class="listcard-thumbs"
       >{#each items.slice(0, 6) as it (it.id)}<img
           src={artSrc(it.img, app.artBroken(it.id), 'thumb')}
           alt=""
@@ -67,6 +95,7 @@
   /* off `.listgrid`..`.listcard-acts` in style.css. No `@media` override
      touches any of these. */
   .listcard {
+    position: relative;
     background: linear-gradient(180deg, var(--surface2), var(--surface));
     border: 1px solid var(--line);
     border-radius: var(--r);
@@ -78,6 +107,46 @@
 
   .listcard:hover {
     border-color: var(--line2);
+  }
+
+  .listcard.picked {
+    border-color: var(--gold);
+    background: linear-gradient(180deg, rgb(var(--gold-rgb) / 9%), var(--surface));
+  }
+
+  /* A 32 px box in the corner the count badge held; its target is 44 px. */
+  .listcard-pick {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .listcard-pick::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
+
+  .listcard-pick:hover {
+    background: var(--surface2);
+  }
+
+  .listcard-pick input {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--gold);
+  }
+
+  .listcard.pickable .listcard-top {
+    padding-right: 34px;
   }
 
   .listcard-main {
@@ -106,14 +175,14 @@
     color: var(--gold-soft);
   }
 
-  /* An account list's last edit, under the name. */
-  .listcard-edited {
+  /* The count, and an account list's last edit, under the name. */
+  .listcard-meta {
     margin: -6px 0 10px;
     font-size: 12.5px;
     color: var(--muted2);
   }
 
-  /* The account list's pending purchase requests, under the last edit. */
+  /* The account list's pending purchase requests, under the meta line. */
   .listcard-req {
     margin: -6px 0 10px;
     font-size: 12.5px;

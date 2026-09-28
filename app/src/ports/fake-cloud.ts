@@ -224,6 +224,9 @@ const limited = (key: string, value: number): Extract<ListWrite, { error: 'limit
   value
 });
 
+/* `import_lists` refuses a call of more lists (22023), whatever the account's limit. */
+const IMPORT_LISTS_MAX = 50;
+
 /* `create_purchase_request`'s bounds: its constants and the `limit_defaults` rows. */
 const HOUR_MS = 3_600_000;
 const RATE_MS = 60_000;
@@ -686,6 +689,27 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       const moved = moveList(mine, id, canonical);
       announce(was, TAB);
       return Promise.resolve(moved);
+    },
+    /* `import_lists`: each row as a create, on a copy of the owner's lists that replaces
+       them only when every row landed - one transaction, every list or none. */
+    import(rows) {
+      const mine = offline ? null : own();
+      if (!mine) return Promise.resolve(NETWORK);
+      if (rows.length > IMPORT_LISTS_MAX || rows.some((r) => r.entries.length > 5000)) {
+        return Promise.resolve(REFUSED);
+      }
+      const copy = mine.map((h) => ({
+        row: { ...h.row },
+        entries: h.entries.map((e) => ({ ...e }))
+      }));
+      for (const r of rows) {
+        const made = createList(copy, r.list, r.entries);
+        if (!made.ok) return Promise.resolve(made.error === 'gone' ? REFUSED : made);
+      }
+      const was = before();
+      mine.splice(0, mine.length, ...copy);
+      announce(was, TAB);
+      return Promise.resolve(OK);
     }
   };
 

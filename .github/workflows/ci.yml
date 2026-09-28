@@ -429,7 +429,7 @@ jobs:
           cp -r dist/index.html dist/assets dist/data.js dist/manifest.webmanifest \
                 dist/sw.js dist/icons _site/
           cp -r data.json catalog.csv llms.txt robots.txt .nojekyll LICENSE \
-                404.html img og i en card _site/
+                404.html img og i en card schema _site/
           # Only the generated site pages, one copy per language: pages/src/
           # is their authored source, not site content (docs/specs/META.md
           # section 9).
@@ -453,7 +453,7 @@ jobs:
                    llms.txt robots.txt LICENSE 404.html manifest.webmanifest \
                    sw.js icons/icon-192.png pages/install.html pages/en/install.html \
                    pages/privacy.html pages/en/privacy.html pages/terms.html \
-                   pages/en/terms.html; do
+                   pages/en/terms.html schema/import-v1.json; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
           # .nojekyll is empty by design - its presence here is the whole

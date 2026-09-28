@@ -113,6 +113,11 @@ describe('lazyCloud', () => {
       id: uuid(7002),
       inserted: true
     });
+    expect(
+      await lists.import([{ list: { ...row, id: uuid(7003), name: 'Импорт' }, entries: [] }])
+    ).toEqual({ ok: true });
+    const after = await lists.list();
+    expect(after.ok && after.lists.map((l) => l.name)).toContain('Импорт');
     expect(load).toHaveBeenCalledOnce();
   });
 
@@ -162,6 +167,7 @@ describe('lazyCloud', () => {
     const unsent = { ok: false, error: 'network' };
     expect(await lists.apply([{ op: 'remove', id: 'x' }])).toEqual(unsent);
     expect(await lists.move('x', '{}')).toEqual(unsent);
+    expect(await lists.import([])).toEqual(unsent);
     expect(await shares.list('x')).toEqual({ ok: false });
     expect(await shares.read('t')).toEqual({ ok: false });
     expect(await shares.create('x', 'player')).toEqual(unsent);

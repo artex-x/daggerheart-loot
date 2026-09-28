@@ -3,7 +3,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EntryRow, ListOp } from '../lib/cloudLists.js';
+import { bundleText, toBundle } from '../lib/bundle.js';
+import { toCloudList, type EntryRow, type ImportRow, type ListOp } from '../lib/cloudLists.js';
 import { buildIndex, type Loot } from '../lib/data.js';
 import { runCloudContract } from './cloud.contract.js';
 import { fakeCloud, installFakeCloud } from './fake-cloud.js';
@@ -750,6 +751,184 @@ describe('the cloud slot of Env', () => {
   it('starts empty in both environments', () => {
     expect(browserEnv().cloud).toBeNull();
     expect(fakeEnv().cloud).toBeNull();
+  });
+});
+
+describe("the fake's import", () => {
+  const entry = (
+    id: string,
+    key: string,
+    position: number,
+    over: Partial<EntryRow> = {}
+  ): EntryRow => ({
+    id,
+    item_key: key,
+    source: 'official',
+    snapshot: null,
+    position,
+    quantity: 1,
+    price_coins: null,
+    player_note: '',
+    gm_note: '',
+    ...over
+  });
+  const row = (id: string, name: string, entries: EntryRow[] = []): ImportRow => ({
+    list: { id, name, money_mode: 'bag', player_note: '', gm_note: '' },
+    entries
+  });
+  const TWO: ImportRow[] = [
+    {
+      list: {
+        id: uuid(8000),
+        name: 'Импорт',
+        money_mode: 'coin',
+        player_note: 'p',
+        gm_note: 'g'
+      },
+      entries: [
+        entry(uuid(8100), 'ci1', 0, { quantity: 2, price_coins: 150, player_note: 'a' }),
+        entry(uuid(8101), 'q1', 1, { gm_note: 'b' })
+      ]
+    },
+    row(uuid(8001), 'Пустой')
+  ];
+  const namesOf = async (cloud: CloudPort): Promise<string[]> => {
+    const read = await cloud.lists.list();
+    return read.ok ? read.lists.map((l) => l.name) : [];
+  };
+  const LIMITED = { ok: false, error: 'limit' };
+
+  it('adds every list with its entries, in the call order, after the lists there', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    expect(await cloud.lists.import(TWO)).toEqual({ ok: true });
+    const read = await cloud.lists.list();
+    const lists = read.ok ? read.lists : [];
+    expect(lists.map((l) => l.name)).toEqual(['Список второго ГМа', 'Импорт', 'Пустой']);
+    expect(lists[1]).toMatchObject({
+      money_mode: 'coin',
+      player_note: 'p',
+      gm_note: 'g',
+      legacy_fingerprint: null
+    });
+    expect(lists[1]?.list_entries).toEqual(TWO[0]?.entries);
+    expect(lists[2]?.list_entries).toEqual([]);
+  });
+
+  it('inserts nothing more for a retry of the same rows', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    await cloud.lists.import(TWO);
+    const once = await cloud.lists.list();
+    expect(await cloud.lists.import(TWO)).toEqual({ ok: true });
+    expect(await cloud.lists.list()).toEqual(once);
+  });
+
+  it('refuses past the lists limit, leaving the lists as they were', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { limits: { lists: 4 } });
+    const before = await cloud.lists.list();
+    expect(await cloud.lists.import(TWO)).toEqual({
+      ...LIMITED,
+      key: 'lists_per_owner',
+      value: 4
+    });
+    expect(await cloud.lists.list()).toEqual(before);
+  });
+
+  it('refuses a list past the entries limit, and the list before it is not there', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const long = Array.from({ length: 101 }, (_, i) =>
+      entry(uuid(9000 + i), 'r' + String(i), i)
+    );
+    expect(
+      await cloud.lists.import([row(uuid(8000), 'A'), row(uuid(8001), 'B', long)])
+    ).toEqual({
+      ...LIMITED,
+      key: 'entries_per_list',
+      value: 100
+    });
+    expect(await namesOf(cloud)).toEqual(['Список второго ГМа']);
+  });
+
+  it("refuses another user's list id, one record twice in a list, and a call the function refuses", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const REFUSED = { ok: false, error: 'refused' };
+    expect(await cloud.lists.import([row(uuid(8000), 'A'), row(uuid(201), 'B')])).toEqual(
+      REFUSED
+    );
+    expect(
+      await cloud.lists.import([
+        row(uuid(8000), 'A', [entry(uuid(8100), 'ci1', 0), entry(uuid(8101), 'ci1', 1)])
+      ])
+    ).toEqual(REFUSED);
+    const many = Array.from({ length: 51 }, (_, i) => row(uuid(8000 + i), 'L'));
+    expect(await cloud.lists.import(many)).toEqual(REFUSED);
+    const huge = Array.from({ length: 5001 }, (_, i) =>
+      entry(uuid(20000 + i), 'r' + String(i), i)
+    );
+    expect(await cloud.lists.import([row(uuid(8000), 'A', huge)])).toEqual(REFUSED);
+    expect(await namesOf(cloud)).toEqual(['Лавка кузнеца', 'Пустой список', 'Трофеи']);
+  });
+
+  it('answers network offline and signed out', async () => {
+    const offline = fakeCloud(SEED, 'gm1', { offline: true });
+    expect(await offline.lists.import(TWO)).toEqual({ ok: false, error: 'network' });
+    expect(await fakeCloud(SEED).lists.import(TWO)).toEqual({ ok: false, error: 'network' });
+  });
+
+  it('sends one owner message per list it inserted, and none when refused', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const seen: unknown[] = [];
+    cloud.events.subscribe('owner:' + SEED.users.gm2.id, {
+      message: (event, payload) => seen.push([event, payload]),
+      status: () => undefined
+    });
+    await Promise.resolve();
+    expect(await cloud.lists.import([...TWO, row(uuid(101), 'чужой')])).toEqual({
+      ok: false,
+      error: 'refused'
+    });
+    await cloud.lists.import(TWO);
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+    expect(seen).toEqual([
+      ['list', { list: uuid(8000), revision: 2, by: 'fake-tab', id: '1' }],
+      ['list', { list: uuid(8001), revision: 1, by: 'fake-tab', id: '2' }]
+    ]);
+  });
+
+  /* The fixture is the fake's export of gm1: the store's order (newest edit first), the
+     Russian names, a fixed date. Here, not in lib/bundle.test.ts: src/lib imports no port. */
+  it("is what docs/fixtures/import/export.json holds for gm1's lists", async () => {
+    const read = await fakeCloud(SEED, 'gm1').lists.list();
+    const lists = (read.ok ? read.lists : [])
+      .map(toCloudList)
+      .sort((a, b) => b.updated - a.updated || (a.id < b.id ? -1 : 1));
+    const index = buildIndex(
+      JSON.parse(
+        readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+      ) as Loot
+    );
+    const text = bundleText(
+      toBundle(
+        lists,
+        (id) => index.byId.get(id)?.ru,
+        'Без названия',
+        new Date('2026-09-25T12:00:00.000Z')
+      )
+    );
+    expect(text).toBe(
+      readFileSync(
+        join(
+          import.meta.dirname,
+          '..',
+          '..',
+          '..',
+          'docs',
+          'fixtures',
+          'import',
+          'export.json'
+        ),
+        'utf8'
+      )
+    );
   });
 });
 

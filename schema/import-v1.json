@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artex-x.github.io/daggerheart-loot/schema/import-v1.json",
+  "title": "Daggerheart Loot lists file, version 1",
+  "description": "Account lists as one JSON file: the site imports it as new lists and writes it on export. llms.txt, section \"Lists as a file (import-v1)\", describes it for AI assistants. Frozen: a later version is import-v2.json beside this one.",
+  "type": "object",
+  "required": ["format", "version", "lists"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "title": "Schema",
+      "description": "The URL of this schema, for editors. Ignored on import.",
+      "type": "string"
+    },
+    "format": {
+      "title": "Format",
+      "description": "Names the file as a lists file.",
+      "const": "daggerheart-loot/lists"
+    },
+    "version": {
+      "title": "Version",
+      "description": "The format version this schema describes.",
+      "const": 1
+    },
+    "exported_at": {
+      "title": "Exported at",
+      "description": "When the site wrote the file. Ignored on import.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "lists": {
+      "title": "Lists",
+      "description": "The lists, each imported as a new account list, in this order.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": { "$ref": "#/$defs/list" }
+    }
+  },
+  "$defs": {
+    "list": {
+      "title": "List",
+      "description": "One account list.",
+      "type": "object",
+      "required": ["name", "entries"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "description": "The list's name, in Unicode code points.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "money_mode": {
+          "title": "Money mode",
+          "description": "How the list shows prices: in bags or in coins. See \"Money\" in llms.txt.",
+          "enum": ["bag", "coin"],
+          "default": "bag"
+        },
+        "player_note": {
+          "title": "Player note",
+          "description": "The list's note that players may read through a share link.",
+          "type": "string",
+          "maxLength": 4000,
+          "default": ""
+        },
+        "gm_note": {
+          "title": "GM note",
+          "description": "The list's note that only the GM reads.",
+          "type": "string",
+          "maxLength": 4000,
+          "default": ""
+        },
+        "entries": {
+          "title": "Entries",
+          "description": "The list's entries in list order; an empty array for an empty list.",
+          "type": "array",
+          "maxItems": 100,
+          "items": { "$ref": "#/$defs/entry" }
+        }
+      }
+    },
+    "entry": {
+      "title": "Entry",
+      "description": "One record in a list.",
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Record id",
+          "description": "A record id from catalog.csv; an id the site does not know is skipped on import.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        },
+        "name": {
+          "title": "Record name",
+          "description": "The record's name, for a person reading the file. Ignored on import.",
+          "type": "string",
+          "maxLength": 200
+        },
+        "source": {
+          "title": "Source",
+          "description": "Where the record comes from; version 1 knows only the site's own data.",
+          "enum": ["official"],
+          "default": "official"
+        },
+        "quantity": {
+          "title": "Quantity",
+          "description": "How many of the record the list holds.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99,
+          "default": 1
+        },
+        "price_coins": {
+          "title": "Price in coins",
+          "description": "The price in whole coins, whatever the money mode; leave the key out for no price. See \"Money\" in llms.txt.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99999
+        },
+        "player_note": {
+          "title": "Player note",
+          "description": "The entry's note that players may read through a share link.",
+          "type": "string",
+          "maxLength": 4000,
+          "default": ""
+        },
+        "gm_note": {
+          "title": "GM note",
+          "description": "The entry's note that only the GM reads.",
+          "type": "string",
+          "maxLength": 4000,
+          "default": ""
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v1.json",
+      "format": "daggerheart-loot/lists",
+      "version": 1,
+      "lists": [
+        {
+          "name": "Лавка кузнеца",
+          "money_mode": "coin",
+          "player_note": "Открыта с рассвета до заката.",
+          "gm_note": "Кузнец торгуется, если назвать имя его брата.",
+          "entries": [
+            {
+              "id": "ci1",
+              "name": "Первоклассный Спальный Мешок",
+              "quantity": 2,
+              "price_coins": 150
+            },
+            {
+              "id": "q1",
+              "player_note": "Последний в наличии."
+            },
+            {
+              "id": "q313",
+              "gm_note": "Проклят."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

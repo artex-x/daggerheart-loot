@@ -15,8 +15,9 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 
 /* What the build adds to `dist/` from the repository root, beside the bundle:
-   the linked folders, and the files the `<noscript>` fallback links. */
-const ROOT_DIRS = ['img', 'og', 'card', 'pages'];
+   the linked folders (`schema/` holds the published lists file schema), and the
+   files the `<noscript>` fallback links. */
+const ROOT_DIRS = ['img', 'og', 'card', 'pages', 'schema'];
 const NOSCRIPT_FILES = ['catalog.csv', 'data.json', 'llms.txt'];
 
 /*

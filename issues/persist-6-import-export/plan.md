@@ -24,10 +24,18 @@
   section 4.14); the owner's statements of 2026-09-27 (`context.md`) are
   applied in sections 4.6 and 4.9-4.14.
 - Batches: `B6.1` (contract, `llms.txt`, pure module, port, RPC) -
-  implement-ready after the delta check (section 8); `B6.2` (UI) -
-  outline with the design settled (section 9); closeout.
-- Gate cost: `B6.1` about 35 minutes, `B6.2` about 80 minutes, closeout
-  about 5 minutes; about 120 minutes in total (section 7).
+  committed `7753e6f2`, batch review approve (`reviews/B6.1.md`); the
+  test-project push and `npm run e2e` run in its resumed step before `B6.2`;
+  `B6.2` (UI) - implemented 2026-09-28 and amended onto the task commit;
+  its batch review and the orchestrator's goldens (P12) come next; closeout.
+- Gate cost: `B6.1` about 35 minutes (paid), `B6.2` about 55 minutes (33
+  for the implementer, 22 for the orchestrator's goldens and sweep),
+  closeout about 5 minutes; about 95 minutes in total (section 7).
+- Planning pass 5 (the `B6.2` refresh), 2026-09-28, on `main` at
+  `7753e6f2`, against R4 as shipped (`88c9f8bc`: `SelBar.svelte`,
+  `ListCard.svelte`'s `requests` line, `RequestsPanel.svelte`,
+  `ListPage.svelte`) and `B6.1` as committed. What it changed: "What pass 5
+  changed" below.
 - Mocks (owner request, 2026-09-27): `mocks/index.html` lists 18
   self-contained files: `m01`-`m14` and `m16`-`m18` one screen state each
   at desktop width and at 360 px side by side, `m15` the `llms.txt`
@@ -38,6 +46,25 @@
   This file is R6's authority where the two differ (the roadmap still says
   `security definer` for `import_lists`, section 5 row R6; section 4.5
   here says invoker).
+
+### What pass 5 changed (the `B6.2` refresh, 2026-09-28)
+
+- Section 9 is implement-ready; its "Decided in this refresh" list (P1-P21)
+  settles Risks 7-9, review nits `plan-B6.1-2-N4`, `-N5`, `plan-B6.1-22`,
+  the error texts `B6.1` left open, the owner's QA-file offer and the
+  `B6.1` review items (`B6.1-R1`, `-N1` to `-N4`, `-N7`).
+- 4.3 gains `names` on the refused result, `item` on an error,
+  `overBounds` and `dataFileName`; 4.14 rule 7 answers `manyLists` for two
+  `lists.json` at one depth (review nit `plan-B6.1-2-N5`).
+- 4.6 "Texts" is one table with every new key, RU and EN (review nit
+  `plan-B6.1-2-N4`); `listMeta` and `exportSelected` are dropped.
+- 4.7: states 58-62, flow F13, the goldens seeded by one `--update` whose
+  diff is the proof; a reload does not keep the fake's rows (state (d)
+  reads the fake instead).
+- Section 7: `B6.2` costs about 55 minutes (one `npm run check`, the golden
+  compare folded into the update).
+- No mock changes. One mock line differs from the settled rule and the
+  rule wins (P15); the field's caption follows the mocks (P16).
 
 ### What pass 3 changed (owner review of the mocks, 2026-09-27)
 
@@ -371,6 +398,22 @@ No DOM, no port (`app/src/lib/` law). Exports:
   `{ list: NewListRow; entries: EntryRow[] }` - the `create` op's shape
   without `op`; ids from `newId()`, `position` = index, `source:
   'official'`, `snapshot: null`.
+- Added in `B6.2` (pass 5; the report of mock `m07` names a refused
+  file's lists and entries, which the error records alone cannot):
+  - the `errors` result gains `names: (string | null)[]` - per list index
+    of the file's `lists` array, the list's `name` when it is a string
+    (any length), else null; an empty array when `lists` is not an array;
+  - `BundleError` gains `item?: string` - for an error inside an entry,
+    that entry's `id` when it is a string matching `ID_PATTERN`, read before
+    the walk of the entry's keys (so an error on a key before `id` carries
+    it too); absent otherwise. `At` carries it to `fieldError` and
+    `notObject`;
+  - `overBounds(b: Bundle): { many: boolean; long: string[] }` - `many`
+    when `b.lists.length > LISTS_MAX`; `long` the names of the lists whose
+    `entries.length > ENTRIES_MAX`, in file order (4.15);
+  - `dataFileName(now: Date): string` -
+    `daggerheart-loot-data-<YYYY-MM-DD>.zip` in local time, the day part
+    shared with `bundleFileName`.
 
 `lib/bundle.test.ts`: every branch of `parseBundle` (each reason, each
 error kind with its path, the cap and `more`, code-point length, the
@@ -392,7 +435,7 @@ example parse (4.9), the drift guard, the file names.
 | File over 5 MiB (`File.size`) | the panel, before reading | «Файл больше 5 МБ.» |
 | Not JSON | `parseBundle` | «Это не файл JSON.» |
 | No `format` or another value | `parseBundle` | «Это не файл списков: нет поля format со значением daggerheart-loot/lists.» |
-| `version` not 1 | `parseBundle` | «Неизвестная версия формата: %n. Приложение читает версию 1.» |
+| `version` not 1 | `parseBundle` | «Неизвестная версия формата: %s. Приложение читает версию 1.» (`%s` the value as JSON; no `version` key: «В файле нет поля version. Приложение читает версию 1.», pass 5) |
 | Field errors | `parseBundle` | «В файле ошибки - ничего не импортировано. Исправьте их и выберите файл снова.», then a report grouped by list (mock `m07`): the file's own errors first, then one block per list with errors, headed «N. <name cut to 40>» («N. (без названия)» when the name is missing); each line names the field in words («Название», «money_mode», «Позиция 2, Палаш (`q1`): quantity 0»), the reason («обязательное поле отсутствует», «неверный тип», «длиннее %n символов», «значение вне диапазона %r», «допустимые значения - %r», «неизвестное поле %s», «больше %n элементов») and the JSON path in mono; at most ten lines per list, then «...и ещё %n в этом списке»; past `ERRORS_MAX` «...и ещё %n ошибок» |
 | More than 50 lists or 100 entries in one list | `parseBundle` (`many`) | a line in the file block («Списков больше 50») or in the list's block («Позиций больше 100») |
 | No lists | `parseBundle` | «В файле нет списков.» |
@@ -480,9 +523,11 @@ Partial import is never done (Q1).
   `plan-B6.1-5`). A statement timeout (`57014`, HTTP 500) is not a
   network failure for an import - the same call would fail again - so the
   adapter's `import` maps it to `{ ok: false, error: 'refused' }` with a
-  new `reason: 'tooBig'` on `ListWrite`'s refused branch (optional, only
+  new `reason: 'tooSlow'` on `ListWrite`'s refused branch (optional, only
   `import` sets it); the panel then shows «Файл слишком большой для одного
-  импорта: разделите его на несколько.» (`importTooSlow`). `writeOf`
+  импорта: разделите его на несколько.» (`importTooSlow`; one word,
+  `tooSlow`, because `importTooBig` already names the 5 MB file refusal -
+  review nit `plan-B6.1-2-N3`). `writeOf`
 stays as it is for every other write. Lazy (`lazy-cloud.ts`): forwards as `apply` does; a chunk that
   fails answers `network`. Fake (`fake-cloud.ts`): offline or signed out
   -> `NETWORK`; `rows.length` over 50 -> `REFUSED` (the function's 22023);
@@ -575,16 +620,20 @@ stays as it is for every other write. Lazy (`lazy-cloud.ts`): forwards as `apply
     and «Показать ещё» decide what is drawn), so nothing out of sight is
     deleted;
   - the selection lives in the page (`SvelteSet` of list ids, as the list
-    page's `lsel`), is cleared on leaving the route, and drops an id whose
-    list is gone after a re-read.
+    page's `lsel`), is cleared on leaving the route, and is kept a subset
+    of the drawn account cards at all times (pass 5, Risk 9): a search, a
+    fold back to 24, a re-read without the list, or a sign-out drops the
+    ticks that leave the view.
 - **Import** (`ImportPanel.svelte`, used once): «Импорт из файла» - a
   ghost `sm` button with a caret and `expanded` in the «Новый список»
   panel under the name row (an import makes new lists); it opens a second
-  `Field` «Импорт из файла» inside the same panel. «Выбрать файл...»
-  is a `Button`-styled `<label>` over a visually hidden `<input
-  type="file" accept=".json,.zip,application/json,application/zip">` (not
-  `display: none`); the file name beside it; the size check; the bytes
-  (`file.arrayBuffer()`, fallback `FileReader.readAsArrayBuffer`); a file
+  `Field` «Импорт из файла JSON» (the mocks' caption, pass 5) inside the
+  same panel. «Выбрать файл...» is a `Button` whose press clicks a
+  `hidden` `<input type="file" accept=".json,.zip,application/json,application/zip">`
+  (pass 5: `Button`'s look is scoped to `Button.svelte`, so a `<label>`
+  cannot take it; the drawing is the same); the file name beside it; the
+  size check; the bytes (`file.arrayBuffer()`; jsdom 30 has it, checked
+  2026-09-28, so there is no fallback); a file
   that starts with `PK\x03\x04` goes through `readDataZip` (4.14) to its
   `lists.json` text, anything else is decoded as UTF-8 text; then
   `parseBundle` with `index.byId.has`; on `ok`
@@ -599,7 +648,9 @@ stays as it is for every other write. Lazy (`lazy-cloud.ts`): forwards as `apply
   new file choice builds new rows. Hint with the two links of 4.12: «Файл
   JSON, сохранённый кнопкой «Скачать JSON» или собранный по [схеме
   import-v1] ([описание для ИИ-помощников]), или архив ZIP из «Скачать мои
-  данные». Списки добавятся как новые; существующие не изменятся.».
+  данные». Списки добавятся как новые; существующие не изменятся.» (keys
+  `importHintBefore`, `importSchema`, `importHintMid`, `importLlms`,
+  `importHintAfter`).
 - **`#/account`**, signed in: a panel «Ваши данные» between «Способы
   входа» and «Выход» (decision 14's order; R5b's Display section stays
   first): the hint «Всё, что хранится в аккаунте, одним архивом ZIP:
@@ -613,23 +664,84 @@ stays as it is for every other write. Lazy (`lazy-cloud.ts`): forwards as `apply
   текст», before «Печать» (`app.exportLists([id])`, file `<name>.json`).
   R4's `RequestsPanel` sits below the row `[R4]`. The entry strip is drawn
   by `BatchBar` with no visible change (4.10).
-- **Texts**: every string in `dict.ts`, RU and EN. New keys:
-  `exportSelected` («Скачать JSON (%n)»), `exportOne` («Скачать JSON»),
-  `yourData`, `yourDataHint`, `exportData` («Скачать мои данные (ZIP)»), `importZipNoLists` («В архиве нет файла lists.json.»), `importZipPacked` («Архив сжат другой программой: распакуйте его и выберите lists.json.»), `importZipOther` («В архиве есть файлы, которые эта версия не читает: %s.» - `%s` the first five names, then «и ещё %n»), `importNotZip` («Это не архив данных.»),
-  `pickList` («Выбрать: %s»), `deleteListsConfirm`, `listsDeleted`
-  («Удалено списков: %n»), `importOpen` («Импорт из файла»), `importPick`,
-  `importHint`, `importSchema` («схеме import-v1»), `importLlms`
-  («описание для ИИ-помощников»), `importPreview`, `importSkippedN`,
-  `importSkipUnknown`, `importSkipRepeat`, `importNameTaken`,
-  `importListEmpty`, `importNoName`, `importGo`, `importDone`,
-  `importTooBig`, `importNotJson`, `importNotBundle`, `importVersion`,
-  `importEmpty`, `importErrors`, `importErrMissing`, `importErrType`,
-  `importErrLong`, `importErrRange`, `importErrEnum`, `importErrExtra`,
-  `importErrMany`, `importErrMoreList`, `importErrMore`, `importPos`
-  («Позиция %n»), `listMeta` («%s · %t» for the card's count and edited
-  time). Reused: `pickAll`, `selected`, `cancel`, `retry`, `del`,
-  `accountFailed`, `cloudLoadFailed`, `limitLists`, `limitEntries`,
-  `itemsN`, `writeRefused`.
+- **Texts**: every string in `dict.ts`, RU and EN (pass 5: the complete
+  list, review nit `plan-B6.1-2-N4`). A `|` separates plural forms, as
+  `itemsN` does. Placeholders: `%n` a number, `%s` a text, `%l` the lists
+  count, `%f` a field name, `%v` a value (cut to 40 code points by
+  `lib/bundle.ts`). The count rule of 4.15 holds for every line: no number
+  of three or more digits directly before «позици», `entries` or
+  `records` (EN says "items").
+
+  | Key | RU | EN |
+  |---|---|---|
+  | `exportJson` | Скачать JSON | Download JSON |
+  | `exportOverBounds` | Этот файл нельзя импортировать целиком. | This file cannot be imported whole. |
+  | `exportManyLists` | В нём больше 50 списков: экспортируйте их частями. | It holds more than 50 lists: export them in parts. |
+  | `exportLongLists` | В списках %s позиций больше 100: разделите такие списки. | Lists with more than 100 items: %s. Split those lists. |
+  | `yourData` | Ваши данные | Your data |
+  | `yourDataHint` | Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём файл lists.json с вашими списками. Архив можно импортировать в другой аккаунт на странице «Списки». Импорт принимает до 50 списков, а в одном списке позиций - не больше 100. | Everything your account holds, in one ZIP archive: today it holds lists.json with your lists. You can import the archive into another account on the Lists page. An import takes up to 50 lists, and up to 100 items in one list. |
+  | `exportData` | Скачать мои данные (ZIP) | Download my data (ZIP) |
+  | `pickList` | Выбрать: %s | Select: %s |
+  | `deleteListsConfirm` | Удалить списки (%n): %s? Ссылки для игроков и мастера на них перестанут работать. Отменить удаление нельзя. | Delete %n lists: %s? Their player and GM links will stop working. This cannot be undone. |
+  | `listsDeleted` | Удалено списков: %n | Lists deleted: %n |
+  | `quoted` | «%s» | "%s" |
+  | `andMore` | и ещё %n | and %n more |
+  | `importOpen` | Импорт из файла | Import from file |
+  | `importHead` | Импорт из файла JSON | Import from a JSON file |
+  | `importPick` | Выбрать файл... | Choose a file... |
+  | `importHintBefore` | Файл JSON, сохранённый кнопкой «Скачать JSON» или собранный по&#32; | A JSON file saved with "Download JSON" or written to the&#32; |
+  | `importSchema` | схеме import-v1 | import-v1 schema |
+  | `importHintMid` | &#32;( | &#32;( |
+  | `importLlms` | описание для ИИ-помощников | a description for AI assistants |
+  | `importHintAfter` | ), или архив ZIP из «Скачать мои данные». Списки добавятся как новые; существующие не изменятся. | ), or the ZIP archive from "Download my data". The lists are added as new ones; the lists you have do not change. |
+  | `importPreview` | Списков: %l, позиций: %n. | Lists: %l, items: %n. |
+  | `importSkippedN` | Пропущено позиций: %n. | Items skipped: %n. |
+  | `importWillN` | %n позиция будет импортирована\|%n позиции будут импортированы\|%n позиций будут импортированы | %n item will be imported\|%n items will be imported |
+  | `importListEmpty` | без позиций | no items |
+  | `importNoName` | (без названия) | (no name) |
+  | `importPos` | Позиция %n | Item %n |
+  | `importSkipUnknown` | пропущена - такой записи нет в данных | skipped - the data has no such record |
+  | `importSkipRepeat` | пропущена - уже есть в позиции %n | skipped - already at item %n |
+  | `importNameTaken` | Список с таким названием уже есть в аккаунте - появится второй | Your account already has a list with this name - there will be two |
+  | `importZipOther` | В архиве есть файлы, которые эта версия не читает: %s. | The archive holds files this version does not read: %s. |
+  | `importGo` | Импортировать | Import |
+  | `importDone` | Импортировано списков: %n | Lists imported: %n |
+  | `importTooBig` | Файл больше 5 МБ. | The file is larger than 5 MB. |
+  | `importTooSlow` | Файл слишком большой для одного импорта: разделите его на несколько. | The file is too large for one import: split it into several. |
+  | `importNotJson` | Это не файл JSON. | This is not a JSON file. |
+  | `importNotBundle` | Это не файл списков: нет поля format со значением daggerheart-loot/lists. | This is not a lists file: it has no "format" field with the value daggerheart-loot/lists. |
+  | `importVersion` | Неизвестная версия формата: %s. Приложение читает версию 1. | Unknown format version: %s. The app reads version 1. |
+  | `importNoVersion` | В файле нет поля version. Приложение читает версию 1. | The file has no "version" field. The app reads version 1. |
+  | `importEmpty` | В файле нет списков. | The file holds no lists. |
+  | `importZipNoLists` | В архиве нет файла lists.json. | The archive has no lists.json. |
+  | `importZipManyLists` | В архиве несколько файлов lists.json: распакуйте его и выберите нужный. | The archive holds more than one lists.json: unzip it and choose the one you need. |
+  | `importZipPacked` | Архив сжат другой программой: распакуйте его и выберите lists.json. | Another program compressed this archive: unzip it and choose lists.json. |
+  | `importNotZip` | Это не архив данных. | This is not a data archive. |
+  | `importErrors` | В файле ошибки - ничего не импортировано. Исправьте их и выберите файл снова. | The file has errors - nothing was imported. Fix them and choose the file again. |
+  | `importFieldName` | Название | Name |
+  | `importErrMissing` | %f: обязательное поле отсутствует | %f: a required field is missing |
+  | `importErrName` | Название: пустое или отсутствует | Name: empty or missing |
+  | `importErrType` | %f «%v»: неверный тип - нужен %s | %f "%v": wrong type - expected %s |
+  | `importErrNotObject` | «%v»: неверный тип - нужен объект JSON | "%v": wrong type - expected a JSON object |
+  | `importErrId` | id «%v»: не id записи - только латинские буквы, цифры, _ и -, до 64 символов | id "%v": not a record id - Latin letters, digits, _ and - only, up to 64 characters |
+  | `importErrLong` | %f: длиннее %n символов | %f: longer than %n characters |
+  | `importErrRange` | %f %v - значение вне диапазона %s | %f %v - out of the range %s |
+  | `importErrEnum` | %f «%v»: допустимые значения - %s | %f "%v": allowed values - %s |
+  | `importErrExtra` | неизвестное поле %f | unknown field %f |
+  | `importErrManyLists` | Списков больше %n | More than %n lists |
+  | `importErrManyEntries` | Позиций больше %n | More than %n items |
+  | `importErrMoreList` | ...и ещё %n в этом списке | ...and %n more in this list |
+  | `importErrMore` | ...и ещё %n ошибка\|...и ещё %n ошибки\|...и ещё %n ошибок | ...and %n more error\|...and %n more errors |
+
+  `&#32;` in the table is one space at the end or the start of the text
+  (the consent line's `consentBefore`/`consentTerms` pattern: the hint's
+  two links sit between three texts). Reused: `pickAll`, `selected`,
+  `cancel`, `retry`, `del`, `untitled`, `accountFailed`,
+  `cloudLoadFailed`, `limitLists`, `limitEntries` (through `limitText`),
+  `itemsN`, `writeRefused`. Dropped in pass 5: `listMeta` (the card joins
+  count and edit time with `' · '` in code, as `i18n.ts` and the list
+  page's sub do), `exportSelected` and `importHint` (`exportJson` and
+  `importGo` take ` (N)` in code, as `t.del` does on the list page).
 - **Help** (`help.ts` `LISTS`): one paragraph appended, RU «Списки
   аккаунта можно отметить и скачать файлом JSON или удалить разом, а
   «Импорт из файла» добавляет списки из такого файла - например, чтобы
@@ -645,39 +757,32 @@ stays as it is for every other write. Lazy (`lazy-cloud.ts`): forwards as `apply
   and wraps `HTMLAnchorElement.prototype.click` - an anchor with a
   `download` name records `{ filename, blob }` (the blob kept from a
   wrapped `URL.createObjectURL`) and does not navigate; the verb
-  `download()` returns `{ filename, text }` or null. The verb
-  `upload(path)` sets the page's one `input[type=file]` through
-  `elementHandle.uploadFile(path)`. The existing confirm answer and
-  message verbs serve the batch delete.
+  `download()` returns `{ filename, type, base64 }` or null (pass 5: one
+  shape for the JSON and the zip; a case decodes with `Buffer.from(base64,
+  'base64')`). The verb `upload(path)` sets the page's one
+  `input[type=file]` through `elementHandle.uploadFile(path)` (CDP
+  `DOM.setFileInputFiles`, which ignores `hidden`) and settles. The
+  driver accepts every `confirm()` and keeps its message (`d.dialog()`), so
+  a browser case can press «Удалить (N)» and read the confirm; the
+  «Отмена» answer is a component test.
 - `tests/app/inventory.js`, all `as gm1` on `#/lists`: `~ lists
   selected` (two ticked, `m02`); `~ import panel` (`m04`); `~ import
   preview` (`unknown-id.json`, `m06`); `~ import refused` (`errors.json`,
   `m07`); `~ imported` (`example.json`, press, `m10`; `timed`); `~ lists
-  deleted` (two ticked, confirm answered yes, `m17`; `timed`). Re-seeded:
-  every `#/lists` state, signed in or out (the card's count moves, 4.11;
-  the pick boxes and the strip on the account group), `#/lists ~ help`,
-  `#/account as gm1`, `#/account as gm2`, `#/account ~ delete
-  confirmation as gm1`, and every `#/lists/<uuid(101)>` state as `gm1`
-  (the action row) - the implementer lists them from `inventory.js`.
-- `tests/app/states.js`, cases numbered after the last case on `main`
-  (`B3.2` adds 52-53; R4 adds more `[B3.2]` `[R4]`): (a) tick «Пустой
-  список» and «Лавка кузнеца», «Скачать JSON (2)»: `d.download()` parses
-  to `format` `daggerheart-loot/lists`, `version` 1, the two lists in the
-  index order, `ci1` at `quantity` 2 and `price_coins` 150, `q1` with the
-  player note, `money_mode` `coin`, no `id` on a list; (b) `#/account`
-  «Скачать мои данные (ZIP)» downloads `daggerheart-loot-data-<date>.zip`
-  (the driver's `download()` returns the bytes as base64 for a binary
-  blob); the case reads it with the test's own zip reader of 4.14: one
-  entry `lists.json`, stored, CRC right, its text equal to
-  `docs/fixtures/import/export.json` apart from `exported_at`; (b2)
-  importing `docs/fixtures/import/data.zip` previews «Списков: 3»; (c) the
-  imported list opens at `#/lists/<uuid of the new list>` with «3
-  позиции» and the rows in file order; (d) tick two, «Удалить (2)»: the
-  confirm names both, «Отмена» keeps both and the selection; yes removes
-  both, the toast, and a reload (the fake keeps its rows) shows them gone;
-  (e) «Выбрать все» with a search query ticks only the drawn cards.
-- E2E flow (`tests/e2e/flows.mjs`, the next free number after `B3.2`'s
-  F11 and R4's flows `[B3.2]` `[R4]`): the member on `#/lists` uploads
+  deleted` (two ticked, confirm answered yes, `m17`; `timed`). Each new id
+  ends in ` as gm1`. Re-seeded: the 26 ids of section 9, "Golden ids" (pass
+  5 listed them from `inventory.js`: every `#/lists` state that draws a
+  card or the account group ready, `#/lists ~ help`, every account list
+  page, the four signed-in `#/account` states).
+- `tests/app/states.js`, cases 58-62 (`states.js` ends at 57 on `main`,
+  delta line D5; pass 5 fixed the numbers and the shapes; section 9 step
+  12 has each case's exact steps): 58 export of two ticked lists; 59 the
+  account's zip, read back through the import field, and `data.zip`
+  previewed; 60 an import opened as a list; 61 batch deletion, read back
+  from the fake (`d.fake('lists.list')`, case 41's pattern - a reload
+  re-seeds the fake, so it cannot show the rows gone); 62 the selection
+  pruned by a search and «Выбрать все» over the drawn cards only.
+- E2E flow F13 (`tests/e2e/flows.mjs`; F12 is R4's, delta line D5): the member on `#/lists` uploads
   `example.json`, presses «Импортировать (1)», waits for the toast;
   `listsOf(admin, member)` shows one list «Лавка кузнеца» with `ci1`,
   `q1`, `q313` in that order, `ci1` at quantity 2 and 150 coins; then the
@@ -1042,12 +1147,14 @@ B - «Скачать мои данные» downloads a zip holding `lists.json` 
   6. **CRC.** A stored entry's CRC must match; else null.
   7. **Names.** Decoded as UTF-8 when bit 11 is set, else as CP437 for
      the ASCII range and replacement characters beyond it (names are
-     compared, never shown raw). `readDataZip` matches `lists.json` by the
+     compared, and shown only through text interpolation). `readDataZip` matches `lists.json` by the
      last path segment, case-sensitive: `lists.json` at the root wins; if
      none is at the root, the shallowest `<folder>/lists.json` is taken (a
      person unzipped and re-zipped the folder), so a re-zipped archive
      gives `packed` (usually deflated) or imports when stored - never a
-     wrong `noLists`. Two candidates at the same depth: `noLists`, never
+     wrong `noLists`. Two candidates at the same depth: `manyLists`
+     (`B6.2`, review nit `plan-B6.1-2-N5`; `B6.1` answered `noLists`,
+     whose text «В архиве нет файла lists.json.» is wrong for it), never
      a guess. Entries under `__MACOSX/`, names starting with `._`,
      `.DS_Store`, `Thumbs.db` and directory entries (a name ending in
      `/`) are ignored and never listed in `other`. `other` names the rest
@@ -1062,7 +1169,9 @@ B - «Скачать мои данные» downloads a zip holding `lists.json` 
   9. **Refusal mapping.** No end record, a bound or agreement breach,
      encryption, zip64, multi-disk, too many entries, a bad CRC:
      `notZip` («Это не архив данных.»). A chosen `lists.json` with method
-     other than 0: `packed`. None found: `noLists`.
+     other than 0: `packed`. None found: `noLists`. Two at the shallowest
+     depth: `manyLists` («В архиве несколько файлов lists.json:
+     распакуйте его и выберите нужный.»).
 - **What import accepts.** Plain JSON stays first-class (AI assistants
   hand over JSON), and the zip from «Скачать мои данные» too: the panel
   reads the file's bytes, and one that starts with `PK\x03\x04` goes
@@ -1157,7 +1266,7 @@ list).
 | Batch | Tests | Docs |
 |---|---|---|
 | `B6.1` | vitest: `lib/bundle.test.ts` (with the drift guard, P1, the fixtures), `lib/zip.test.ts` (4.14's pins, `data.zip` byte for byte), `lib/cloudLists.test.ts` (`PRICE_MAX` exported), `ports/fake-cloud.test.ts` (import: all or nothing, the limits, a retry, the owner sends `[B3.2]`), `ports/supabase.test.ts` (the `import_lists` call shape, the timeout, `writeOf` on its answers), `ports/lazy-cloud.test.ts`, the contract's import case over the fake; `tests/contracts.js` "import bundle" (4.2, P2, the zip walk); `tests/db/import-lists.test.mjs`; `tests/e2e/contract.mjs` runs the import case over the real adapter | `CONTRACTS.md` sections 3 and 4 and the opening sentence; `llms.txt` (4.9, the `#/l/` guidance removed); `tests/derived.js` (the pins of 4.9); `app/index.html` `<noscript>`; `COVERAGE.md` (the new suites, fixtures, the contract case and its timing, the blind round); the decision files (section 10) |
-| `B6.2` | vitest: `components/batchBar.test.ts` (new: mixed state, summary, actions snippet, axe), `importPanel.test.ts` (the grouped report, the name note, a retry sends equal ids), `listCard.test.ts` or `listsPage.test.ts` (the count line, the pick box, axe with a picked card), `listsPage.test.ts` (select, select-all over the drawn cards, export, batch delete with confirm yes and no, the selection pruned after a re-read), `listPage.test.ts` (unchanged behaviour through `BatchBar`), `accountPage.test.ts`, `a11y.test.ts` (the strip on, the import field open, the error report), `state/app.test.ts` (`exportLists`, `exportData` through `fakeImage`), `state/cloudLists.test.ts` (`import`: flush first, re-read, a dropped answer after `clear()`; batch `remove` of two in one request; a refused `remove` re-reads); `inventory.js` + goldens; `states.js` five cases; `flows.mjs` one flow; `driver.js` `download()` and `upload()` | `FEATURES.md` "Lists" (the card's count line, selection and batch deletion) and "Account and browser lists" (export and import) and "Account" (the panel); `docs/decisions/` (batch deletion, section 10); `META.md` section 3 (the file is the per-user backup and the way between accounts); `COVERAGE.md` (states, goldens, the driver verbs); `help.ts` `LISTS`; the privacy page needs no change |
+| `B6.2` | vitest (pass 5 adds): `lib/bundle.test.ts` (`names`, `item`, `overBounds`, `dataFileName`; review nit `B6.1-N1`'s title), `lib/zip.test.ts` (`manyLists`, `ZIP_ENTRIES_MAX`), `lib/i18n.test.ts` (`fewNames`; the labels `llms.txt` names equal `dict.ts`); `components/batchBar.test.ts` (new: mixed state, summary, actions snippet, axe), `importPanel.test.ts` (the grouped report, the name note, a retry sends equal ids), `listCard.test.ts` or `listsPage.test.ts` (the count line, the pick box, axe with a picked card), `listsPage.test.ts` (select, select-all over the drawn cards, export, batch delete with confirm yes and no, the selection pruned after a re-read), `listPage.test.ts` (unchanged behaviour through `BatchBar`), `accountPage.test.ts`, `a11y.test.ts` (the strip on, the import field open, the error report), `state/app.test.ts` (`exportLists`, `exportData` through `fakeImage`), `state/cloudLists.test.ts` (`import`: flush first, re-read, a dropped answer after `clear()`; batch `remove` of two in one request; a refused `remove` re-reads); `inventory.js` + goldens; `states.js` five cases; `flows.mjs` one flow; `driver.js` `download()` and `upload()` | `FEATURES.md` "Lists" (the card's count line, selection and batch deletion) and "Account and browser lists" (export and import) and "Account" (the panel); `docs/decisions/` (batch deletion, section 10; decision 5's Task line, review nit `B6.1-N4`); `META.md` section 3 (the file is the per-user backup and the way between accounts) and section 4 (`B6.1-N3`); `STATE.md` (the index selection and the import field are page memory); `COVERAGE.md` (states, goldens, the driver verbs, the new tests); `help.ts` `LISTS`; `README.md`, `README.ru.md` (`B6.1-R1`); `PRODUCT.md` (`B6.1-N3`); the privacy page needs no change |
 
 ## 7. Batches: gates, cost, review, split criterion
 
@@ -1166,15 +1275,18 @@ Costs: `context.md`, "Command costs" (this host, 2026-09-26/27).
 | Batch | Goal | Gates (cost) | Review | Split criterion |
 |---|---|---|---|---|
 | `B6.1` | the contract, `llms.txt` and the database: section 8 | before the review: `rtk npm run check` (7-10 min), `npm run check:db` (9-10 min, PowerShell tool), `npm run check:built` (2 min; `dist/index.html` changes); the blind round (5-10 min, P3); after the approve: `db-push.mjs --project test` (1 min), `npm run e2e` (2-3 min) - about 35 min | required: plan review before the batch (Status), batch review after it (a migration, a public contract) | a public contract and SQL judged apart from Svelte, and the schema-batch rule: the test-project push and the E2E wait for the review's approve, which the UI batch must not hold up |
-| `B6.2` | the UI: section 9 | `rtk npm run check` x2 (15-20 min), `npm run build:test` + `check:built` (2 min), `node tests/run-all.js app/contracts` (6 min) and `node tests/run-all.js app/print,app/states,app/typo,app/hues,stub` (6-8 min), goldens `--update` 4 shards (13 min; every `#/lists` state moves), goldens compare 4 shards (13 min; the list page must not move after the `BatchBar` extraction - compare before the re-seed), `node tests/app/sweep.js 360` (7-9 min, the strip and the pick boxes add controls to `#/lists`), `npm run e2e` (2-3 min) - about 80 min | required: new UI; batch deletion (stored data) | a commit the harness cannot reach otherwise: the states and the flow need `B6.1`'s fake `import`, fixtures and the migration on the test project |
+| `B6.2` | the UI: section 9 | implementer (pass 5): `rtk npm run check` once (7-10 min), `npm run check:built` (2-3 min; it builds `dist-test/` last), `node tests/run-all.js app/states` (5 min), `node tests/run-all.js app/print,app/contracts,app/typo,app/hues,stub` (7-8 min), `npm run e2e` (2-3 min) - about 33 min; orchestrator after the commit: `node tests/app/golden.js --update --shard=n/4` x4 (13 min; the diff of `tests/app/snapshots/` is the compare, section 9 "Golden ids"), `node tests/app/sweep.js 360` (7-9 min) - about 22 min; about 55 min in all. No `check:db`: `B6.2` edits nothing under `supabase/` or `tests/db/` (P14) | required: new UI; batch deletion (stored data) | a commit the harness cannot reach otherwise: the states and the flow need `B6.1`'s fake `import`, fixtures and the migration on the test project |
 
-Total gate cost, one green pass per batch: about 115 minutes, plus the
-closeout's push and CI watch (about 5 minutes). Not split further: the
+Total gate cost, one green pass per batch: about 90 minutes (`B6.1` 35,
+`B6.2` 55), plus the closeout's push and CI watch (about 5 minutes). Not split further: the
 selection, batch deletion, the count line, the three export surfaces and
 the import field share one route (`#/lists`), one component set, one
 seed (`gm1`) and one golden re-seed; the README's test says merge. The
 `BatchBar` extraction rides with them because its second use is on the
-same page; its no-change proof is the golden compare before the re-seed. Commit
+same page; its no-change proof is that the one `--update` leaves every
+local list page golden byte-identical (section 9, "Golden ids"). The
+`B6.1` review's items ride in the same amend: each is a local edit whose
+gates `B6.2` pays anyway (`B6.1-R1` must land before the push). Commit
 policy: `B6.1` commits, `B6.2` amends, the closeout amends and pushes.
 
 ## 8. Batch `B6.1` - the contract, `llms.txt` and the database (implement-ready)
@@ -1302,7 +1414,7 @@ planner pass.
    { p_lists })`; a P0001 `limit: lists_per_owner` with `details` `50`
    answers `limit`; status 0 answers `network`; with fake timers the call
    is still pending at 20 s and aborts at `IMPORT_TIMEOUT_MS` as `network`
-   `[B3.2]`; a 500 with code `57014` answers `refused` / `tooBig`, while
+   `[B3.2]`; a 500 with code `57014` answers `refused` / `tooSlow`, while
    `apply`'s `writeOf` path still reads a 500 as `network`); `fake-cloud.test.ts`
    (two lists in, read back in order; over `limits.lists` refuses and
    leaves the owner's lists as they were; a 101-entry list refuses and
@@ -1467,7 +1579,7 @@ planner pass.
   the round trip of such a list imports clean.
 - `import_lists` refuses an `entries` array over 5000 with 22023 before
   writing; the adapter's `import` uses `IMPORT_TIMEOUT_MS` and maps 57014
-  to `tooBig`; the contract's notes-heavy case is logged with its time.
+  to `tooSlow`; the contract's notes-heavy case is logged with its time.
 - `llms.txt` passes `tests/derived.js`' count check (no `100 entries`).
 - No component, dictionary or golden changes in this batch.
 
@@ -1493,7 +1605,7 @@ tests/run-all.js contracts`).
 ### Fallback
 
 - If the maximal or the notes-heavy import runs past `IMPORT_MS` on the
-  test project, answers `tooBig` (57014), or PostgREST refuses the body: record the measurement in
+  test project, answers `tooSlow` (57014), or PostgREST refuses the body: record the measurement in
   `.claude/README.md` ("Supabase configuration") and stop for a planner
   pass - the candidate is a lower `FILE_MAX_BYTES` and a client split of
   a file into calls of at most N lists with one confirmation, which
@@ -1502,68 +1614,947 @@ tests/run-all.js contracts`).
   `FILE_MAX_BYTES` to the largest body measured green, with the panel's
   «Файл больше N МБ.» following it (review item `plan-B6.1-5`).
 
-## 9. Batch `B6.2` - the UI (outline; the refresh after `B6.1` expands it)
+## 9. Batch `B6.2` - the UI (implement-ready; refreshed 2026-09-28, pass 5)
 
-Sections 4.6, 4.7, 4.10-4.14 and the `B6.2` row of section 6. Steps in
-order: `dict.ts` keys (RU, EN); `CloudLists.import` (4.5, "Store"),
-`AppState.exportLists` and `exportData`; `BatchBar.svelte` extracted from
-`ListPage.svelte`'s `.batch` (run the golden compare of the list page
-states before any other change lands, 4.10); `ListCard.svelte` (the count
-line, the pick box); `ImportPanel.svelte` with its tests and axe (a JSON file and `data.zip` both preview; the three zip refusals; the other-files line);
-`ListsPage.svelte` (the selection, the strip, export and batch delete,
-«Импорт из файла» in «Новый список»); `ListPage.svelte` (the button,
-`isCloud` only; R4's panel below the row `[R4]`); `AccountPage.svelte`
-(«Ваши данные»); `help.ts`; `driver.js` verbs and the `__download`
-hook; `inventory.js` states and the goldens re-seeded; `states.js` five
-cases; `flows.mjs` one flow; `FEATURES.md`, `META.md`, `COVERAGE.md`;
-the batch-deletion decision file (section 10). Mocks: `mocks/m01`-`m18`
-(section 4.6's table); the drawn result matches them.
+**Objective.** Draw R6 in the app: selection and batch deletion of account
+lists on `#/lists`, the count line on a card, «Импорт из файла», the
+three exports and «Ваши данные»; prove them in layers 1, 2 and 4; land the
+`B6.1` review's placed items in the same amend.
 
-Acceptance carries every line of 4.6, 4.7 and 4.10-4.14 as its own line,
-and these inherited lines each as its own:
+**Entry state.** `B6.1` committed (`7753e6f2`) and approved
+(`reviews/B6.1.md`); its resumed step pushed `import_lists` to the test
+project and ran `npm run e2e` green before `B6.2` starts (the handoff
+records it). If that step took section 8's Fallback, stop: this section
+assumes `FILE_MAX_BYTES` 5 MiB. `B6.2` amends the task's one commit.
 
-- the owner's answers Q1-Q4 as applied (all or nothing; both notes; the
-  export surfaces - now the account, the selection strip and the list
-  page; unknown ids skipped and named);
-- the owner's statements 1-7 of 2026-09-27 as applied (selection on the
-  index and batch deletion; the count line; the schema link; duplicates;
-  the grouped report; the generic account export per the Q5 answer;
-  `llms.txt` teaching files only - done in `B6.1`, checked again here
-  through the help text and the hint links);
-- `lib/zip.ts` is reached only through a dynamic `import()` (account export, zip import) and `node tools/bundle-budget.mjs` stays within the configured build's 200 kB; the handoff records the zip chunk's gzip size (estimated about 1 kB);
-- the list page's goldens compare equal after the `BatchBar` extraction,
-  before the re-seed;
-- a retry after `network` sends the same rows (an `importPanel.test.ts`
-  case: the port records two calls with equal ids);
-- `CloudLists.import` flushes the buffer first and re-reads without
-  «Загружаем...» (a `cloudLists.test.ts` case);
-- the `B6.1` review's deferred nits (none yet; the orchestrator places
-  them here as lines).
+**In scope.** Sections 4.6, 4.7, 4.10-4.15 as amended in pass 5; the `B6.2`
+row of section 6; P1-P21 below; the `B6.1` review items `B6.1-R1` and
+`B6.1-N1` to `B6.1-N4`.
 
-Settle in the `B6.2` refresh, each then its own acceptance line
-(review items `plan-B6.1-10` to `plan-B6.1-12`):
+**Out of scope.** Any edit under `supabase/` or `tests/db/` (`B6.1-N6`
+waits for the next edit of the migration; `B6.1-N7` is P14); the content
+of `llms.txt` and `schema/import-v1.json` (`B6.1`; read by a new test
+only); homebrew (R7); selection of browser lists; `SelBar.svelte` (R4's
+record bar stays as shipped: P2); `B6.1-N5` (the post-review handoff
+amend).
 
-- `BatchBar` CSS scoping: only the wrapper classes move to
-  `BatchBar.svelte` (`.batch`, `.batch.on`, `.batch-all`,
-  `.batch-summ`, `.batch-acts`, the 640 px rules, `.batch :global(.btn.sm)`);
-  the classes inside the caller's snippets keep their CSS in
-  `ListPage.svelte` (`.batch-count`, `.batch-total`, `.np`, `.batch-lbl`,
-  `.guess*`, `.money-act`, `.money-hint`), because snippet markup keeps the
-  caller's scope. 4.10's "the inline `.batch` CSS moves with the markup"
-  is read this way.
-- R4's `ListCard` changes: R4 adds a gold pending line inside the card's
-  link and changes its `aria-label`; compose it with 4.11's meta line and
-  the corner pick box (the pending line under the meta line, the label
-  carrying count, edited time and pending requests), and check it in
-  delta line D9 with a mock update of `m01`/`m02`.
-- A hidden ticked card: a filter change prunes the selection to the drawn
-  cards (a tick that leaves the view is dropped), so «Удалить (N)» never
-  counts a list out of sight; a `listsPage.test.ts` case.
-- Review nit `plan-B6.1-22` (`deferred-scope`, handoff Deferred): the
-  acceptance line for the owner's statements 1-7 above is split into
-  seven lines in the refresh.
+### Decided in this refresh (settled; do not reopen)
 
-Gates: section 7, `B6.2` row.
+- **P1 - `BatchBar` and its CSS scope (Risk 7, `plan-B6.1-10`).**
+  `components/BatchBar.svelte`:
+  ```ts
+  interface Props {
+    /** The rows or cards the strip can tick. */
+    total: number;
+    /** How many of them are ticked. */
+    picked: number;
+    /** The select-all box's name; also its visible text while nothing is ticked. */
+    label: string;
+    /** The ticked count as text, first in the live summary. */
+    count: string;
+    onall: (checked: boolean) => void;
+    /** Joined to the rows under it (the list page): no bottom border, square bottom corners. */
+    joined?: boolean;
+    /** More of the summary after the count (the list page's total). */
+    summary?: Snippet | undefined;
+    /** The buttons, drawn while `picked` > 0. */
+    actions: Snippet;
+    /** A full-width part inside the strip (the list page's price panel). */
+    below?: Snippet | undefined;
+  }
+  ```
+  Markup, byte for byte the list page's today with the counts swapped in:
+  `<div class="batch" class:on={picked > 0} class:joined>`, the
+  `<label class="batch-all">` with the checkbox (`aria-label={label}`,
+  `checked={picked > 0 && picked === total}`, `indeterminate={picked > 0
+  && picked < total}`, `onchange` -> `onall(e.currentTarget.checked)`)
+  and `{#if !picked}{label}{/if}`; the comment "Mounted while empty, so the
+  first tick is announced too."; `<span class="batch-summ"
+  aria-live="polite">{#if picked}<span class="batch-count">{count}</span>&#32;{@render summary?.()}{/if}</span>`;
+  `{#if picked}<span class="batch-acts">{@render actions()}</span>{/if}`;
+  `{@render below?.()}`. The list page passes `picked={ticked.length}`
+  (today `.on`, `checked` and `indeterminate` read `lsel.size`: a ticked
+  row removed by its own cross left the strip gold with nothing ticked -
+  a campsite fix, no golden reaches it), `total={own.ids.length}`,
+  `label={t.pickAll}`, `count={selCountText(...)}`, `joined`, `summary`
+  = the `.batch-total` span, `actions` = its three buttons, `below` = the
+  `{#if ticked.length && guess && !readOnly}` `.guess` block. CSS that
+  moves into `BatchBar.svelte`: `.batch` (with the index's look as the
+  base: `margin: 0 0 14px; border-radius: 10px;` and a full border),
+  `.batch.joined` (the list page's `margin: 16px 0 0; border-radius: 10px
+  10px 0 0; border-bottom: none;`), `.batch.on`, both `.batch-all` rules,
+  `.batch.on .batch-all`, `.batch-summ`, `.batch-count` (`font-weight:
+  650; white-space: nowrap`), `.batch-acts`, `.batch :global(.btn.sm)`,
+  and the 640 px rules; plus one rule the index needs (mock `m02` at 360
+  px): `@media (max-width: 640px) { .batch:not(.joined) .batch-acts
+  :global(.btn) { flex: 1 1 0; justify-content: center; } }`. CSS that
+  stays in `ListPage.svelte`, because snippet markup keeps its caller's
+  scope: `.batch-total b` (`font-weight: 650`, split off the shared
+  `.batch-count, .batch-total b` rule), `.batch-total .np`, `.guess*`,
+  `.money-act*`, `.money-hint`, `.batch-lbl`. Nothing else in
+  `ListPage.svelte`'s CSS changes.
+- **P2 - R4's pending line on a selectable card (Risk 8,
+  `plan-B6.1-11`).** An account card reads, top to bottom: the name
+  (the badge gone); the meta line «9 позиций · изменён 3 дня назад»; R4's
+  gold `.listcard-req` line «2 запроса ждут ответа», unchanged and still
+  directly under the line that carries the edit time, where R4 put it; the
+  thumbs or «Список пуст»; «Удалить». The pick box is absolute in the top
+  right corner and overlaps none of them (`.listcard-top` gains 34 px of
+  right padding on a pickable card). The link's `aria-label` stays R4's
+  `[name, count, edited, requests].join(', ')`; the pick box is outside
+  the link with its own name «Выбрать: <name>». No mock draws a pending
+  request, and nothing a mock draws changes: the outline's "mock update of
+  `m01`/`m02`" is dropped. The golden `#/lists ~ requests as gm1` shows
+  the composition (re-seeded). R4's `SelBar.svelte` is a different
+  selection (records, sticky at the window's bottom); `BatchBar` does not
+  share code with it (4.10).
+- **P3 - the selection is a subset of the drawn cards (Risk 9,
+  `plan-B6.1-12`).** `ListsPage.svelte` keeps `sel = new SvelteSet<string>()`,
+  derives `ticked = drawnAccount.filter((l) => sel.has(l.id))` for every
+  count, label and action, and prunes in an effect: `$effect(() => { const
+  drawn = new Set(drawnAccount.map((l) => l.id)); untrack(() => { for
+  (const id of [...sel]) if (!drawn.has(id)) sel.delete(id); }); });`. A
+  search, a fold back to 24, a delete elsewhere, a re-read or a sign-out
+  drops the ticks that leave the view; a card that comes back is not
+  ticked. «Удалить (N)» and «Скачать JSON (N)» therefore never act on a
+  list out of sight.
+- **P4 - `lib/bundle.ts` additions** (4.3, pass 5): `names` on the refused
+  result, `item` on an error, `overBounds`, `dataFileName`. Not a public
+  contract; `bundle.test.ts` pins each.
+- **P5 - two `lists.json` at one depth (`plan-B6.1-2-N5`).** A separate
+  reason and text, not `noLists`: `readDataZip` answers `{ ok: false,
+  reason: 'manyLists' }` (4.14 rules 7 and 9), text `importZipManyLists`.
+  `noLists` and its text stay for none. Rejected: rewording `noLists` to
+  cover both - its text is drawn in mock `m08`'s list.
+- **P6 - the error texts `B6.1` left open.** An `id` that is not a string
+  matching `ID_PATTERN` is kind `type` with `limit` `ID_PATTERN.source`:
+  the line uses `importErrId` (never «неверный тип» alone). A list's
+  `name` error of kind `missing` (absent or `""`; the two records are
+  identical) uses `importErrName` «Название: пустое или отсутствует». The
+  report's line grammar, per error `e`:
+  - prefix, when `e.entry !== null`: `importPos` with `e.entry + 1`, then
+    when `e.item` is set, `, <name> (<code>item</code>)` if
+    `index.byId` knows it, else `, <code>item</code>`; then `: `;
+  - field word `%f`: `importFieldName` for `field === 'name' && entry ===
+    null`; else the key as written;
+  - text by kind: `missing` -> `importErrName` for the list name, else
+    `importErrMissing`; `type` -> `importErrId` when `limit ===
+    ID_PATTERN.source`, `importErrNotObject` when `field === ''`, else
+    `importErrType` with `%s` the JSON type (`string`, `integer`,
+    `array`, `object`); `long` -> `importErrLong`; `range` ->
+    `importErrRange` (`%s` the `lo..hi` limit); `enum` -> `importErrEnum`
+    (`%s` the allowed values); `extra` -> `importErrExtra`; `many` ->
+    `importErrManyLists` for `field === 'lists'`, else
+    `importErrManyEntries`;
+  - then ` <code>{e.path}</code>` when the path is not empty.
+  Mock `m07`'s four lines come out exactly: «Название: длиннее 200
+  символов», «money_mode «gold»: допустимые значения - bag, coin»,
+  «Позиция 2, Палаш (`q1`): quantity 0 - значение вне диапазона 1..99»,
+  «Позиция 3, Стеганый Доспех (`q313`): неизвестное поле qty», each with
+  its path.
+- **P7 - «Выбрать файл...» and the bytes.** A `Button` (`size="sm"`)
+  whose press calls `input.click()` on `<input type="file" hidden
+  accept=".json,.zip,application/json,application/zip">`; after each
+  read, `input.value = ''` so the same file can be chosen again. Bytes
+  through `file.arrayBuffer()` only (jsdom 30 implements it, checked
+  2026-09-28). Section 12's two assumptions are closed by this.
+- **P8 - the export's clock.** `exportLists` and `exportData` read `new
+  Date(this.env.clock.now())`: `browserClock` in production, the test
+  build's fixed `TEST_NOW` (2026-10-01 12:00 UTC) in `dist-test/`, so a
+  browser case knows the file name and `exported_at`.
+- **P9 - keys.** 4.6's table is the whole list. No key for the meta line's
+  `' · '`; `exportJson` and `importGo` take ` (N)` in code.
+- **P10 - the account zip in the browser.** State 59 reads the download
+  back through the import field (a round trip through the app's own
+  `readDataZip`) and checks the file name and the `PK\x03\x04` start;
+  `state/app.test.ts` checks the bytes (`readDataZip` of the downloaded
+  blob gives `lists.json` equal to `bundleText(toBundle(...))`). No second
+  zip walk in `tests/app/`.
+- **P11 - the fake and a reload.** The test build's fake re-seeds on every
+  page load (only the session rides in the address), so a reload cannot
+  show deleted rows gone; state 61 reads `d.fake('lists.list')` after
+  `d.writesSettled()`, as case 41 does.
+- **P12 - goldens.** The orchestrator runs `node tests/app/golden.js
+  --update --shard=n/4` for n = 1..4 once and reads `git status --short
+  tests/app/snapshots/`: the changed files must be exactly the 26
+  re-seeded ids and the 6 new ids of "Golden ids" below. A changed file of
+  any other id, or an id of the list that did not change, stops for the
+  implementer. The goldens are deterministic (`.claude/README.md`, "Batch
+  size and the fixed cost of a run": 105/105 files byte-identical on an
+  unchanged build), so the diff is the compare; this replaces the
+  outline's compare-then-update (13 minutes saved) and is the `BatchBar`
+  no-change proof (every `#/lists/a*` golden unchanged).
+- **P13 - the owner's QA files.** No `B6.2` test uses one: every shape a
+  test needs is in the repository already (`docs/fixtures/import/` for
+  the import states and the flow; nine browser lists seeded in state 62
+  for the search; the fake's `limits` for the limit and over-bounds unit
+  cases). The set stays outside the repository for the owner's manual
+  QA; nothing is added (`CLAUDE.md`, campsite).
+- **P14 - `B6.1-N7`.** Left, not taken: the rename (`const before` ->
+  `sentBefore` in `tests/db/import-lists.test.mjs`) is a `tests/db/` edit,
+  and a `tests/db/` edit makes the commit gate require `npm run check:db`
+  (about 10 minutes, near the 600 s cap) that `B6.2` otherwise does not
+  pay; the shadowing breaks nothing today. It rides with R7's `B7.3`,
+  which edits the same file for `import_bundle` and pays `check:db`
+  anyway; the closeout names it to the human.
+- **P15 - one mock line against the rule.** Mock `m06` (the `~ import
+  preview as gm1` state, `unknown-id.json`) draws the name note under
+  list 1 «Лавка кузнеца» but not under list 2 «Пустой список», and `gm1`
+  holds both names. The rule (4.4, 4.13, and `m06`'s own caption: "A
+  list name the account already holds is allowed ... and noted") notes
+  both; the golden shows the note under both. The drawing's omission is
+  a mock error, not a design choice; no mock is edited.
+- **P16 - the field's caption.** Mocks `m04`-`m11` caption the import field
+  «Импорт из файла JSON» (`importHead`); the toggle button stays «Импорт
+  из файла» (`importOpen`), the label `llms.txt` names.
+- **P17 - the pick box.** A `<label class="listcard-pick">` 32 px square
+  (mock `m01`), `position: absolute; top: 10px; right: 10px`, its
+  target grown to 44 px by `::after { content: ''; position: absolute;
+  inset: -6px; }` (the note clear button's pattern, state 30); the
+  checkbox inside is 17 px with `accent-color: var(--gold)` and `margin:
+  0` (`TableRows.svelte` `.selbox input`). No `title` (the mock's
+  `title="Выбрать"` repeats the accessible name). A picked card:
+  `border-color: var(--gold); background: linear-gradient(180deg,
+  rgb(var(--gold-rgb) / 9%), var(--surface));` (mock `m02`).
+- **P18 - when the import toggle shows.** Signed in and `cloud.status ===
+  'ready'` only (the name note reads `cloud.lists`); `~ load failed`
+  therefore does not move.
+- **P19 - «Отмена» and the fold.** «Отмена» and the toggle both fold the
+  field and forget the file, the preview and the rows; an `ok` import
+  folds it too. After a fold the focus goes to «Импорт из файла»
+  (`ListsPage` wraps the toggle's `Actions` in `<div
+  bind:this={importRow}>` and calls `importRow?.querySelector('button')?.focus()`
+  after `await tick()`, the `showMore()` pattern).
+- **P20 - no icon on «Скачать JSON».** The mocks draw none, and
+  `lib/icons.ts` has no download icon to reuse.
+- **P21 - `fewNames`.** `lib/i18n.ts` gains `fewNames(names: readonly
+  string[], t: Pick<Dict, 'andMore'>, more = 0): string` - the first five
+  joined with `', '`, then `' ' + andMore` with `names.length - 5 + more`
+  when that is above 0. Three callers on its first use: the batch-delete
+  confirm (names wrapped in `quoted`), `exportLongLists` (wrapped), the zip's
+  other files (`fewNames(other, t, more)`, bare names).
+
+### Files
+
+| File | Change |
+|---|---|
+| `README.md`, `README.ru.md` | step 1 (`B6.1-R1`) |
+| `app/src/lib/bundle.test.ts` | step 1 (`B6.1-N1` title), step 2 |
+| `app/src/lib/zip.ts`, `zip.test.ts` | step 1 (`B6.1-N2`), step 2 (`manyLists`) |
+| `PRODUCT.md`, `docs/specs/META.md` | step 1 (`B6.1-N3`), step 13 |
+| `docs/decisions/2026-09-28-the-accounts-data-file-is-a-store-only-zip.md`, `docs/DECISIONS.md` | step 1 (`B6.1-N4`), step 13 |
+| `app/src/lib/bundle.ts` | step 2 (P4) |
+| `app/src/lib/i18n.ts`, `i18n.test.ts` | step 2 (`fewNames`, the `llms.txt` labels) |
+| `app/src/lib/dict.ts` | step 2 (4.6's table) |
+| `app/src/state/cloudLists.svelte.ts`, `cloudLists.test.ts` | step 3 |
+| `app/src/state/app.svelte.ts`, `app.test.ts` | step 3 |
+| `app/src/components/BatchBar.svelte`, `batchBar.test.ts` | new, step 4 |
+| `app/src/components/ListPage.svelte` | steps 4 and 8 |
+| `app/src/components/listPage.test.ts` | step 8 (imports untouched for `BatchBar`: the page's own test drives it) |
+| `app/src/components/ListCard.svelte` | step 5 |
+| `app/src/components/ImportPanel.svelte`, `importPanel.test.ts` | new, step 6 |
+| `app/src/components/ListsPage.svelte`, `listsPage.test.ts` | step 7 |
+| `app/src/components/AccountPage.svelte`, `accountPage.test.ts` | step 9 |
+| `app/src/lib/help.ts`, `help.test.ts` (if it pins the paragraph count) | step 10 |
+| `app/src/components/a11y.test.ts` | step 11 |
+| `tests/app/driver.js`, `tests/app/inventory.js`, `tests/app/states.js`, `tests/e2e/flows.mjs` | step 12 |
+| `docs/specs/FEATURES.md`, `STATE.md`, `COVERAGE.md`; `docs/decisions/<date>-account-lists-are-selected-on-the-index-and-deleted-together.md` | step 13 |
+| `tests/app/snapshots/*` | the orchestrator, after the commit (P12) |
+
+### Steps
+
+1. **The `B6.1` review items** (mechanical; each its own acceptance line):
+   - `B6.1-R1`, `README.md`: lines 28-29 read "[`llms.txt`](...) for the
+     URL grammar, the lists import file, and guidance on which set to draw
+     from."; line 144's last sentence reads "The format is frozen in
+     `docs/specs/CONTRACTS.md` section 3 and is backward compatible."; the
+     file tree's `llms.txt` row reads "what the site is, URL grammar, the
+     lists import file", followed by a new row `schema/import-v1.json the
+     JSON Schema of the lists import file` (the name column is 22
+     characters wide, as its neighbours); in "Machine readability and
+     search", "the list-link format" becomes "the lists import file", and
+     the sentence "The list-link format is documented well enough ... an
+     implementation of its own." becomes "The import file is documented
+     well enough to write one that imports clean without touching the
+     site: `schema/import-v1.json` is its JSON Schema, and
+     `tests/contracts.js` checks that `llms.txt` names every key, value
+     and bound in it." `README.ru.md` at the same four places: «с
+     грамматикой адресов, форматом файла импорта списков и советами, из
+     какого набора брать»; «Формат заморожен в `docs/specs/CONTRACTS.md`,
+     раздел 3, и обратно совместим.»; the tree row «что это за сайт,
+     грамматика адресов, файл импорта списков» and a new row
+     `schema/import-v1.json JSON Schema файла импорта списков`; «с
+     грамматикой адресов, форматом файла импорта списков, разбором двух
+     заметок и ориентирами по ценам» and «Файл импорта описан так, чтобы
+     по нему можно было собрать файл, который импортируется без ошибок,
+     не обращаясь к сайту: `schema/import-v1.json` - его JSON Schema, а
+     `tests/contracts.js` проверяет, что `llms.txt` называет каждый его
+     ключ, значение и границу.» Write no date and no number of three
+     digits before «позици» or `entries` (`tests/derived.js` reads both
+     READMEs). `git grep -n -e "list-link" -e "ссылки на список" --
+     README.md README.ru.md` then shows no line that sends a reader to
+     `llms.txt` for the link format.
+   - `B6.1-N1`: `bundle.test.ts`' title "writes the file of 4.1 sparse:
+     defaults and row keys left out" becomes "writes a sparse file: defaults
+     and row keys left out".
+   - `B6.1-N2`: `lib/zip.ts`' `ENTRIES_MAX` becomes `ZIP_ENTRIES_MAX` (the
+     constant, its doc comment's mention, `zip.test.ts`' import and three
+     uses).
+   - `B6.1-N3`: `PRODUCT.md` line 108 reads "Published machine-readable
+     artefacts: `catalog.csv`, `data.json`, `llms.txt`,
+     `schema/import-v1.json`."; `META.md` section 4's `<noscript>` bullet
+     gains ", `schema/import-v1.json` resolves through the `schema` entry
+     of `vite.config.mts`' `ROOT_DIRS` (a junction in `dist/`, as `img/`)"
+     before ", and `tools/smoke-http.mjs` asserts".
+   - `B6.1-N4`: the decision file's Task line reads "- Task:
+     `persist-6-import-export` (the owner answered Q5 with B on
+     2026-09-27)."; then `node tools/decisions.js`.
+2. **Pure modules.**
+   - `lib/bundle.ts` per P4 and 4.3: `At` gains `item?: string`;
+     `walkEntry` reads `const item = typeof v['id'] === 'string' &&
+     ID_PATTERN.test(v['id']) ? v['id'] : undefined` first and puts it on
+     every `At` it passes; `fieldError` and `notObject` copy `at.item` to
+     the error when set; `parseBundle` collects `names` (for each element of
+     an array `lists`: `isObj(x) && typeof x['name'] === 'string' ?
+     x['name'] : null`) and returns it on the `errors` result;
+     `overBounds` and `dataFileName` (the day helper of `bundleFileName`
+     extracted as a module-local `dayOf(now)`). Doc lines in the module's
+     style. `bundle.test.ts`: `errors.json` gives `names` `[<the
+     201-character name>]` and `item` `q1` on the `quantity` error, `q313`
+     on the `qty` error, none on the list's `name` and `money_mode` errors;
+     an entry `{ "qty": 2, "id": "ci1" }` carries `item` `ci1` on its
+     `extra` error (the key before `id`); `{ "id": "ci 1" }` carries no
+     `item`; `lists: 5` gives `names` `[]`; a list that is not an object
+     gives `null` in `names`; `overBounds` of 51 lists is `many`, of one
+     list with 101 entries names it in `long`, of `export.json`'s bundle is
+     neither; `dataFileName(new Date(2026, 9, 1, 23, 59))` is
+     `daggerheart-loot-data-2026-10-01.zip`.
+   - `lib/zip.ts` per P5: the `DataZip` reason union gains `'manyLists'`;
+     `if (!chosen) return noLists; if (at.length > 1) return manyLists;`;
+     the doc comment names it. `zip.test.ts`: the "two at one depth" case
+     expects `manyLists`; "none" keeps `noLists`.
+   - `lib/i18n.ts` `fewNames` per P21; `i18n.test.ts`: 3 names, 5 names,
+     7 names («..., «Е» и ещё 2»), `more` 4 with 5 names. And one case
+     "the labels llms.txt names are the interface's": it reads `llms.txt`
+     from the repository root (as `bundle.test.ts` does) and asserts it
+     contains `dict('ru')` and `dict('en')` of `importOpen`, `newList`,
+     `exportJson` and `exportData` (`«Импорт из файла»` with `("Import
+     from file")` and so on, the file's own form).
+   - `lib/dict.ts`: every key of 4.6's table, RU in the `ru` object and EN
+     in the `en` object, placed beside the related keys (the lists block
+     for the index and import keys, the account block for `yourData*` and
+     `exportData`).
+3. **State.**
+   - `CloudLists` (`state/cloudLists.svelte.ts`):
+     ```ts
+     /** The rows of an import, every id new: built once per chosen file, so a retry sends
+      *  the same ids. */
+     importRows(lists: readonly ImportList[]): ImportRow[] {
+       return toImportRows(lists, () => this.#repo.newId());
+     }
+
+     /** Imports lists in one call (`import_lists`) after the buffer is sent, then reads the
+      *  account again, without «Загружаем...». A lost answer whose lists are all in that
+      *  read is `ok`: the call committed, and a retry would bring back entries deleted
+      *  since. Not queued, not optimistic, no toast. */
+     async import(rows: ImportRow[]): Promise<ListWrite> {
+       const epoch = this.#epoch;
+       await this.flushNow();
+       if (epoch !== this.#epoch) return NETWORK_WRITE;
+       const answer = await this.#repo.import(rows);
+       if (epoch !== this.#epoch) return NETWORK_WRITE;
+       if (answer.ok || answer.error === 'network') {
+         await this.#pull();
+         if (epoch !== this.#epoch) return NETWORK_WRITE;
+         if (!answer.ok && rows.every((r) => this.get(r.list.id))) return { ok: true };
+       }
+       return answer;
+     }
+     ```
+     with a module-local `const NETWORK_WRITE: ListWrite = { ok: false,
+     error: 'network' };`. `cloudLists.test.ts`: a buffered `create`
+     reaches the fake before the import (the fake's write order); `status`
+     stays `ready` through the import and the imported lists are in
+     `lists` after it; `clear()` during the call answers `network` and
+     leaves `lists` empty; a repo whose `import` commits on the fake and
+     then answers `network` gives `ok`; one that answers `network` without
+     committing gives `network`; `importRows` makes new ids per call, equal
+     to what the panel sends twice; two `remove`s in one tick reach the fake
+     as one `apply` of two `remove` ops; a refused `remove` (the fake's
+     other-owner or refusal hook) toasts `writeRefused` once and the next
+     read draws that list again.
+   - `AppState` (`state/app.svelte.ts`), beside `retryLists`:
+     - `async exportLists(ids?: readonly string[]): Promise<void>` - no-op
+       without `cloudLists`; `lists = ids ? cloudLists.lists.filter((l) =>
+       ids.includes(l.id)) : cloudLists.lists` (the store's order);
+       `now = new Date(this.env.clock.now())`; `b = toBundle(lists, (id) =>
+       { const it = this.index?.byId.get(id); return it ? nameOf(it,
+       this.lang) : undefined; }, this.t.untitled, now)`; `await
+       this.env.image.download(new Blob([bundleText(b)], { type:
+       'application/json' }), bundleFileName(lists, now))`; a rejection
+       toasts `t.accountFailed` (error) and returns; then
+       `this.#warnBounds(b)`.
+     - `async exportData(): Promise<void>` - the same bundle of every
+       list; `const { zipStored } = await import('../lib/zip.js')` (the
+       only way `zip.ts` is reached from `AppState`); `bytes =
+       zipStored([{ name: 'lists.json', bytes: new
+       TextEncoder().encode(bundleText(b)) }], now)`; download `new
+       Blob([bytes], { type: 'application/zip' })` as `dataFileName(now)`;
+       a failed import of the chunk or a rejected download toasts
+       `t.accountFailed`; then `#warnBounds(b)`.
+     - `#warnBounds(b)`: `const { many, long } = overBounds(b)`; when
+       either, one toast (not an error: the download happened):
+       `[t.exportOverBounds, many ? t.exportManyLists : '', long.length ?
+       t.exportLongLists.replace('%s', fewNames(long.map((n) =>
+       t.quoted.replace('%s', n)), t)) : ''].filter(Boolean).join(' ')`.
+     - `app.test.ts` (through `fakeImage().downloaded` and a fixed clock):
+       all lists as `daggerheart-loot-lists-<day>.json` in the store's
+       order; two ids in the store's order whatever the argument's order;
+       one id as `<name>.json`; the text equals `bundleText(toBundle(...))`
+       and the entry names follow `lang`; a failed download toasts
+       `accountFailed` and no bounds toast; `exportData` downloads
+       `daggerheart-loot-data-<day>.zip` of type `application/zip` whose
+       `readDataZip` gives the same `lists.json` text; a list of 101 fake
+       entries downloads whole and toasts the over-bounds text naming it
+       (4.15's test); 51 lists (the fake's `maxLists` raised) toast the
+       many-lists sentence; both at once give one toast with both
+       sentences.
+4. **`BatchBar`** per P1. Create `components/BatchBar.svelte` (header
+   comment: what it is and that it was extracted on its second use from
+   the list page's strip; the snippet-scope reason for the CSS split in
+   one line). In `ListPage.svelte` replace the `.batch` block (from `<div
+   class="batch"` to its closing `</div>`, the `.guess` block included)
+   with `<BatchBar ...>` and the three snippets; delete the moved CSS
+   rules listed in P1 and split `.batch-count, .batch-total b`. Run
+   `npx vitest run listPage` (focused, without coverage: a filtered run
+   under `npm run test` fails the per-file thresholds): green with no test
+   edited. `batchBar.test.ts` (a small wrapper component in the test, as
+   the other snippet-taking components' tests do): idle - the box
+   unchecked, the label text shown, no actions, the live region present
+   and empty; one of three - `.on`, `indeterminate`, the label text gone,
+   the count and the summary snippet in the live region, the actions
+   drawn; three of three - `checked`; `onall` receives the box's state;
+   `joined` sets the class; `below` renders inside the strip; axe clean
+   idle and on.
+5. **`ListCard.svelte`** per 4.11, P2 and P17. Props gain `picked?:
+   boolean` and `onpick?: ((on: boolean) => void) | undefined`. Remove the
+   `Badge` import and element; the name stays in `.listcard-top`. Replace
+   `{#if edited}<p class="listcard-edited">{edited}</p>{/if}` with `<p
+   class="listcard-meta">{meta}</p>` where `meta = [plural(items.length,
+   t.itemsN, app.lang), edited].filter(Boolean).join(' · ')` (a browser
+   card reads «7 позиций»); the `.listcard-edited` rule is renamed
+   `.listcard-meta`. `.listcard-req` stays where it is, right after the
+   meta line. When `onpick` is set: `<div class="listcard"
+   class:pickable={!!onpick} class:picked>`, and before the `<a>` a
+   `<label class="listcard-pick"><input type="checkbox" checked={picked}
+   aria-label={t.pickList.replace('%s', list.name || t.untitled)}
+   onchange={(e) => onpick(e.currentTarget.checked)} /></label>`; CSS
+   `.listcard { position: relative; }`, `.listcard-pick` per P17 with
+   `:hover { background: var(--surface2); }` and `cursor: pointer`,
+   `.listcard.pickable .listcard-top { padding-right: 34px; }`,
+   `.listcard.picked` per P17. Keep the whitespace comment and the
+   `prettier-ignore` markup shape of the link. Update the header comment
+   (the count is a meta line; account cards can be ticked). Existing
+   `listsPage.test.ts` reads of `.listcard-edited` (two places) read
+   `.listcard-meta` and expect the joined text; the "badge counts known
+   records" test reads the count from the meta line.
+6. **`ImportPanel.svelte`** (new, used once, in `ListsPage`'s «Новый
+   список» panel). Props `{ app: AppState; onclose: () => void }`. It
+   renders one `<Field label={t.importHead}>`:
+   - `<Actions>` holding «Выбрать файл...» (P7) and, once chosen, `<span
+     class="fname">{name}</span>`;
+   - state `view`: `{ kind: 'empty' } | { kind: 'refused'; line: string }
+     | { kind: 'errors'; errors: BundleError[]; more: number; names:
+     (string | null)[] } | { kind: 'preview'; lists: ImportList[];
+     skipped: Skipped[]; rows: ImportRow[]; other: string[]; otherMore:
+     number }` and `sending = $state(false)`;
+   - on a file: `file.size > FILE_MAX_BYTES` -> refused `importTooBig`;
+     `bytes = new Uint8Array(await file.arrayBuffer())` (a throw -> refused
+     `t.accountFailed`); when `bytes` starts with `50 4B 03 04`: `const {
+     readDataZip } = await import('../lib/zip.js')` (a failed chunk ->
+     refused `t.accountFailed`), and `notZip` -> `importNotZip`, `noLists`
+     -> `importZipNoLists`, `manyLists` -> `importZipManyLists`, `packed`
+     -> `importZipPacked`, `notText` -> `importNotJson`, `ok` -> its text
+     with `other`/`more` kept; else `decodeText(bytes)`, null ->
+     `importNotJson`; then `parseBundle(text, (id) =>
+     app.index?.byId.has(id) ?? false)`: `notJson` -> `importNotJson`,
+     `notBundle` -> `importNotBundle`, `version` -> `importVersion` with
+     `%s` = `JSON.stringify(version)` (`importNoVersion` when it is
+     `undefined`), `empty` -> `importEmpty`, `errors` -> the errors view,
+     `ok` -> the preview with `rows = app.cloudLists.importRows(lists)`
+     built here, once (`app.cloudLists` is set: the panel renders only
+     signed in with the lists read);
+   - refused: `<div class="errs" role="alert"><b>{line}</b></div>` and
+     «Отмена» (ghost, sm) in an `Actions` with `margin-top:12px`;
+   - errors: the same box with `<b>{t.importErrors}</b>` and, when any
+     error has `list === null`, a `<ul>` of those lines inside the box
+     (the file's own errors, before any list, mock `m07`'s caption); then
+     `<div class="rep">` with one `<div class="rep-list bad">` per list
+     index that has errors, in file order: `<b>{i + 1}. {name}</b>` where
+     `name` is `names[i]` cut to 40 code points plus `...` when cut, or
+     `importNoName`; a `<ul>` of at most ten lines (P6's grammar), then
+     `importErrMoreList` with the rest of that list's kept errors; after
+     the blocks, when `more > 0`, `<p class="rep-more">` with
+     `importErrMore` (plural by `more`); «Отмена» only;
+   - preview: `<p class="preview">` with `importPreview` (`%l` the lists,
+     `%n` the entries after skips, each number in `<b>`, mock `m05`), then
+     ` ` and `importSkippedN` (number in `<b>`) when anything was skipped;
+     a second `<p class="preview">` with `importZipOther` and
+     `fewNames(other, t, otherMore)` when `other` is not empty; the report
+     `<div class="rep">` only when a list has a skip or a taken name (mock
+     `m05` has none, `m06` has both): one `<div class="rep-list">` per list
+     in file order, `<b>{i + 1}. {name cut to 40}</b><small>{entries ?
+     plural(n, t.importWillN, app.lang) : t.importListEmpty}</small>` and
+     a `<ul>` of at most ten `<li class="skip">` lines - each skip of the
+     list («Позиция 4, `zzz1`: пропущена - такой записи нет в данных»,
+     «Позиция 5, Первоклассный Спальный Мешок (`ci1`): пропущена - уже
+     есть в позиции 1», the prefix of P6 with `entry + 1` and the skip's
+     `id`, `first + 1` in `importSkipRepeat`), then `importNameTaken` when
+     `app.cloudLists.lists.some((l) => l.name.trim() === name.trim())` -
+     then `importErrMoreList` past ten; then an `Actions`
+     (`margin-top:12px`) with «Импортировать (N)» (primary, sm) and
+     «Отмена» (ghost, sm), both `disabled={sending}`;
+   - the press: `sending = true`; `const answer = await
+     app.cloudLists.import(view.rows)`; `sending = false`; `ok` ->
+     `app.say(t.importDone.replace('%n', String(rows.length)))` and
+     `onclose()`; `limit` -> `app.say(limitText(answer.key, answer.value,
+     t), { error: true })`; `refused` with `reason === 'tooSlow'` ->
+     `importTooSlow` (error); anything else -> `t.accountFailed` (error);
+     the preview and the same `rows` stay after every failure;
+   - «Отмена» calls `onclose()`;
+   - the hint `<p class="hint">`: `importHintBefore`, `<a
+     href="schema/import-v1.json" target="_blank"
+     rel="noopener">{t.importSchema}</a>`, `importHintMid`, `<a
+     href="llms.txt" target="_blank" rel="noopener">{t.importLlms}</a>`,
+     `importHintAfter` (relative, like `app.pagesDir`'s links: the app
+     document is at the site root);
+   - CSS copied from the mocks (`m01`'s `.rep`, `.rep-list`,
+     `.rep-list.bad`, `.rep-list > b`, `.rep-list.bad > b`, `.rep-list
+     small`, `.rep-list ul`, `.rep-list code`, `.rep-list.bad code`,
+     `.rep-list .skip`, `.fname`, `.preview`, `.preview code`, `.errs`,
+     `.errs b`, `.errs ul`, `.errs p`, `.errs code`; `m04`'s `.hint`),
+     tokens only as written there; `.rep-more` is `.errs p`'s margin with
+     `font-size: 13px; color: var(--warn-text)`.
+   - `importPanel.test.ts` (App at `#/lists` as the fake's `gm1`, files
+     from `docs/fixtures/import/` read with `fs` and uploaded with
+     `userEvent.upload` on the `hidden` input - if user-event refuses a
+     `hidden` input, `fireEvent.change` with `files` defined on it):
+     `example.json` previews «Списков: 1, позиций: 3.», no report,
+     «Импортировать (1)»; `unknown-id.json` previews «Списков: 2, позиций:
+     3. Пропущено позиций: 2.» and the two blocks of P15 (both name notes);
+     `errors.json` draws `importErrors` and m07's four lines of P6 with
+     their paths, «Отмена» only; `v2.json` «Неизвестная версия формата: 2.
+     ...»; a file without `version` `importNoVersion`; `{}` and `[]` and
+     `not json` the one-line texts; a 5 MiB + 1 byte file `importTooBig`
+     without reading it; `data.zip` previews «Списков: 3»; a zip with
+     another file names it (`importZipOther`); a hand-built zip with two
+     `a/lists.json` and `b/lists.json` `importZipManyLists`; a deflated
+     entry `importZipPacked`; garbage after `PK\x03\x04` `importNotZip`; an
+     `id` `"ci 1"` line uses `importErrId`; `"name": ""` uses
+     `importErrName`; eleven errors in one list draw ten lines and
+     «...и ещё 1 в этом списке»; 51 errors draw `importErrMore`; the press
+     sends the rows and toasts «Импортировано списков: 1», folds, and the
+     new card is first; the fake offline: `accountFailed`, the preview
+     stays, and a second press after going online sends rows whose ids
+     equal the first call's (a spy on the fake's `import`); the fake at
+     `maxLists` 3: the limit toast; a repo answer `refused`/`tooSlow`:
+     `importTooSlow`; «Отмена» folds and focuses «Импорт из файла»; the
+     hint's two links have the hrefs above; axe clean on the empty field,
+     the preview with its report, and the error report.
+7. **`ListsPage.svelte`** per 4.6 (index), 4.10, P3, P18, P19.
+   - Imports `untrack` from `svelte`, `SvelteSet` from `svelte/reactivity`,
+     `BatchBar`, `ImportPanel`, `Actions`, `fewNames`.
+   - «Новый список» panel (the `target === 'local' || target === 'cloud'`
+     branch): after `</NumRow>`, when `signedIn && cloud?.status ===
+     'ready'`: `<div bind:this={importRow}><Actions
+     style="margin-top:10px"><Button size="sm" variant="ghost" caret
+     on={importing} expanded={importing} onclick={toggleImport}>{t.importOpen}</Button></Actions></div>`;
+     after the first `</Field>`, `{#if importing && signedIn && cloud?.status
+     === 'ready'}<ImportPanel {app} onclose={closeImport} />{/if}`.
+     `closeImport`: `importing = false; await tick();
+     importRow?.querySelector('button')?.focus();`.
+   - The account group's `{:else if drawnAccount.length}` branch: before
+     `.listgrid`, `<BatchBar total={drawnAccount.length}
+     picked={ticked.length} label={t.pickAll} count={`${t.selected}
+     ${String(ticked.length)}`} onall={pickAllCards}>` with `actions`:
+     `<Button size="sm" onclick={() => void app.exportLists(ticked.map((l)
+     => l.id))}>{`${t.exportJson} (${String(ticked.length)})`}</Button>`
+     and `<Button size="sm" variant="danger"
+     onclick={delPicked}>{`${t.del} (${String(ticked.length)})`}</Button>`.
+     Each account `ListCard` gets `picked={sel.has(l.id)}` and `onpick={(on)
+     => { if (on) sel.add(l.id); else sel.delete(l.id); }}`; browser
+     cards get neither.
+   - `pickAllCards(on)`: `sel.clear(); if (on) for (const l of
+     drawnAccount) sel.add(l.id);`. The prune effect of P3.
+   - `delPicked()`: `const gone = ticked;` `names = fewNames(gone.map((l)
+     => t.quoted.replace('%s', l.name || t.untitled)), t)`; `if
+     (!app.env.dialog.confirm(t.deleteListsConfirm.replace('%n',
+     String(gone.length)).replace('%s', names))) return;` then `for (const
+     l of gone) cloud?.remove(l.id); sel.clear(); app.say(t.listsDeleted.replace('%n',
+     String(gone.length)));`. The single-card «Удалить» stays as it is.
+   - `listsPage.test.ts`: the count moves to the meta line on account and
+     browser cards (no `.badge.num` on the index); a pick box per account
+     card named «Выбрать: <name>», none on browser cards; ticking two draws
+     «Выбрано 2», «Скачать JSON (2)», «Удалить (2)», the mixed box, the
+     picked cards' class; «Скачать JSON (2)» downloads the two in index
+     order and keeps the ticks; «Удалить (2)» with the fake dialog
+     answering no changes nothing and keeps the ticks, answering yes
+     removes both cards, toasts «Удалено списков: 2», clears the ticks, and
+     the fake holds neither after the quiet window (fake timers); the
+     confirm names five lists then «и ещё 2» for seven; «Выбрать все» with
+     a query ticks only the drawn matches (a fake seed of nine account
+     lists, two matching «порт»); a ticked card hidden by a query is
+     unticked and not counted, and stays unticked when the query is
+     cleared (P3); «Показать ещё» keeps the ticks; the import toggle is
+     absent signed out, while loading and on a failed read; axe clean with
+     one card picked.
+8. **`ListPage.svelte`** - «Скачать JSON» in the `Actions` row after
+   «Скопировать текст», before «Печать», `{#if isCloud}` only: `<Button
+   size="sm" onclick={() => void app.exportLists([own.id])}>{t.exportJson}</Button>`
+   (P20: no icon). `listPage.test.ts`: the button on an account list
+   downloads `<name>.json`; no button on a browser list; every existing
+   case passes unchanged.
+9. **`AccountPage.svelte`** - a `Panel` between «Способы входа» and
+   «Выход» (mocks `m12`, `m13`): `<Field label={t.yourData} heading>`,
+   `<p class="hint lead">{t.yourDataHint}</p>`, `<div class="row-btns"><Button
+   disabled={exporting || app.cloudLists?.status !== 'ready'}
+   onclick={() => void exportData()}>{t.exportData}</Button></div>`; when
+   `app.cloudLists?.status === 'error'`: `<p class="err"
+   role="alert">{t.cloudLoadFailed}</p>` and `<div class="row-btns"
+   style="margin-top:8px"><Button size="sm" onclick={() => void
+   app.retryLists()}>{t.retry}</Button></div>`. `exporting` is a local
+   `$state(false)` set around `await app.exportData()`. `accountPage.test.ts`:
+   the panel's place (between the two headings), the download of
+   `daggerheart-loot-data-<day>.zip`, disabled while loading, the failed
+   line and «Повторить» re-reading, axe clean.
+10. **`help.ts` `LISTS`** - a sixth paragraph, RU: «Списки аккаунта можно
+    отметить и скачать файлом JSON или удалить разом, а «Импорт из файла»
+    добавляет списки из такого файла - например, чтобы перенести их в
+    другой аккаунт. Формат файла описан для ИИ-помощников в llms.txt.»;
+    EN: 'Tick account lists to download them as a JSON file or delete them
+    together; "Import from file" adds lists from such a file - to move them
+    to another account, for example. The file format is described for AI
+    assistants in llms.txt.' (`p(...)` form, as the first two paragraphs).
+11. **`a11y.test.ts`** - the index with the strip on (two ticked), the
+    import field open with the preview report, the error report, and
+    «Ваши данные»: no axe violation.
+12. **Harness.**
+    - `tests/app/driver.js`: the `prepare()` hook and the `download()` and
+      `upload(path)` verbs of 4.7; `upload` then waits as `click` does
+      (`settle`).
+    - `tests/app/inventory.js`: the six new states of 4.7 (ids and their
+      `why` in "Golden ids" below; paths through `path.join(__dirname,
+      '../../docs/fixtures/import/<file>')`); in the re-seeded states only,
+      a `why` that names the badge («a badge of 7») or «изменён» without the
+      count now names the meta line, `#/lists ~ help` says six paragraphs,
+      the `#/account` states name «Ваши данные», the account list page
+      states name «Скачать JSON» where they list the actions. Do not edit
+      the `why` of any state outside the 26 (its golden header would stop
+      matching).
+    - `tests/app/states.js`, cases 58-62, registered in the run list after
+      57:
+      - 58 "the ticked lists download as one lists file": as `gm1` on
+        `#/lists`, tick «Выбрать: Пустой список» and «Выбрать: Лавка
+        кузнеца», press «Скачать JSON (2)»; `d.download()` is
+        `daggerheart-loot-lists-2026-10-01.json`, type `application/json`;
+        its JSON has `format` `daggerheart-loot/lists`, `version` 1,
+        `exported_at` `2026-10-01T12:00:00.000Z`, the two lists in index
+        order, `ci1` at `quantity` 2 and `price_coins` 150, `q1` with its
+        player note, `money_mode` `coin` on «Лавка кузнеца», no `id` key on
+        a list; the two boxes are still ticked.
+      - 59 "the account's data zip reads back through the import field":
+        as `gm1` on `#/account`, press «Скачать мои данные (ZIP)»;
+        `d.download()` is `daggerheart-loot-data-2026-10-01.zip`, type
+        `application/zip`, starting `PK\x03\x04`; write its bytes to a
+        file under `os.tmpdir()`, `d.go('#/lists')`, press «Импорт из
+        файла», `d.upload(<that file>)`: the preview reads «Списков: 3»
+        and «Импортировать (3)»; then `d.upload(docs/fixtures/import/data.zip)`
+        previews «Списков: 3» too; delete the temporary file.
+      - 60 "an imported list opens with its rows in file order": as `gm1`,
+        upload `example.json`, press «Импортировать (1)», wait for
+        «Импортировано списков: 1»; the first card is «Лавка кузнеца» with
+        «изменён только что»; open it: the sub reads «3 позиции», the rows
+        are ci1, q1, q313 in that order, ci1 shows «×2» and 150.
+      - 61 "ticked lists are deleted together after one confirm": as
+        `gm1`, tick «Выбрать: Пустой список» and «Выбрать: Трофеи», press
+        «Удалить (2)»; `d.dialog()` names «Пустой список» and «Трофеи»; the
+        two cards are gone, the toast «Удалено списков: 2» has no
+        «Вернуть»; after `d.writesSettled()`, `d.fake('lists.list')` holds
+        «Лавка кузнеца» alone (P11).
+      - 62 "a search prunes the ticks and select-all ticks the drawn
+        cards only": seed nine browser lists («Порт Ветров», «Рынок»,
+        «Лавка в порту» and «Сессия 1»..«Сессия 6», no entries) with
+        `d.seed`, open `#/lists` as `gm1`, `d.moveSettled()` (twelve account
+        lists: the search box shows); tick «Выбрать: Порт Ветров» and
+        «Выбрать: Рынок»; type «порт» into «Найти список»: «Выбрано 1» and
+        «Удалить (1)»; clear the query: «Рынок» is drawn unticked,
+        «Выбрано 1»; type «порт» again and tick «Выбрать все»: «Выбрано 2»,
+        «Скачать JSON (2)»; the checkboxes of the twelve-list page are
+        never ticked out of sight (count the checked `.listcard-pick
+        input` equal to the summary's number at each step).
+    - `tests/e2e/flows.mjs` F13 (after F12, the same `deleteListsOf` /
+      `withPage` / `until` shape): the member's lists deleted; on
+      `#/lists`, wait for «Ваш аккаунт», press «Импорт из файла»,
+      `d.upload(<repo>/docs/fixtures/import/example.json)`, press
+      «Импортировать (1)», wait for «Импортировано списков: 1»; `until`
+      `listsOf(admin, member.id)` holds one list «Лавка кузнеца» whose
+      entries by position are ci1 (quantity 2, `price_coins` 150), q1,
+      q313; type «F13» into the name field and press «Создать»; `until`
+      the member holds two lists; tick «Выбрать: Лавка кузнеца» and
+      «Выбрать: F13», press «Удалить (2)» (the driver accepts the confirm);
+      `until` the member holds none; `deleteListsOf` in `finally`; log
+      `e2e: F13 ok`. The file's header list of flows gains F13.
+13. **Docs**, each in this commit:
+    - `FEATURES.md` "Lists": the card's meta line (count and edit time; a
+      browser card the count); the pick boxes on account cards, the strip
+      («Выбрать все» over the drawn cards; a search or a fold drops the
+      ticks that leave the view), «Скачать JSON (N)», «Удалить (N)» with
+      its confirm and no undo; «Импорт из файла» in «Новый список» with
+      the preview, the grouped skip and error reports, and the one-line
+      refusals. "Account and browser lists": the three exports, the file
+      and the zip, the import (create-only, all or nothing, new ids, a
+      repeated name allowed and noted), and 4.15's case (a moved list
+      over 100 entries cannot move by file; split it first) - spell 100
+      and the word apart as 4.15 says. "Account": «Ваши данные».
+    - `META.md` section 3: one paragraph - an account's lists leave it only
+      as the reader's own file (the JSON or the data zip), which is the
+      per-user backup and the way between two accounts; the site keeps no
+      copy and imports nothing it did not get from the reader.
+    - `STATE.md` "The in-memory state object", the Lists row: the index's
+      ticked account lists (page memory, pruned to the drawn cards) and the
+      import field's file, preview and rows (page memory, forgotten on the
+      fold).
+    - `COVERAGE.md`: the `app/states` row (sixty-two states; 58-62 in its
+      list), the flows list (F13), the golden count (+6), the new unit
+      tests in "The unit suite" (`batchBar.test.ts`, `importPanel.test.ts`,
+      the added cases of `bundle.test.ts`, `zip.test.ts` - `manyLists` in
+      its row, which says `noLists` for two today - `i18n.test.ts`,
+      `cloudLists.test.ts`, `app.test.ts`), the driver's `download()` and
+      `upload()`.
+    - Decision 4 of section 10 as a file from
+      `.claude/templates/decision.template.md`, then `node
+      tools/decisions.js`.
+14. **Gates**, in order (Verification below). Amend: `git commit --amend`
+    with the subject unchanged (`feat(persist): export and import account
+    lists as a published JSON bundle`) and a body that adds the UI. Stop
+    for the batch review; the orchestrator runs the goldens (P12) and
+    `node tests/app/sweep.js 360`, and amends the golden files.
+
+### Golden ids
+
+Re-seeded (26; each changes: the card's meta line, the pick boxes, the
+strip, the import toggle, «Скачать JSON» or «Ваши данные»):
+
+- `#/lists as gm1`, `#/lists ~ move notice dismissed as gm1`, `#/lists ~
+  another account as gm2`, `#/lists ~ read-only`, `#/lists ~ two lists`,
+  `#/lists ~ notice unfolded`, `#/lists ~ notice dismissed`, `#/lists ~
+  help`, `#/lists ~ created as gm2`, `#/lists ~ many lists`, `#/lists ~
+  shown more`, `#/lists ~ filtered`, `#/lists ~ requests as gm1`;
+- `#/lists/<uuid(101)>` (`SHOP`) `as gm1`, `~ share as gm1`, `~ share
+  deleted as gm1`, `~ requests as gm1`, `~ short as gm1`, `~ not saved as
+  gm1`; `#/lists/<uuid(103)>` (`TROPHIES`) `~ share as gm1`;
+- `#/l/ ~ shared, saved as gm2`, `#/s/gm-token-1 ~ saved as gm2` (both land
+  on an account list page);
+- `#/account as gm1`, `#/account as gm2`, `#/account ~ delete confirmation
+  as gm1`, `#/account ~ pinned table as gm2`.
+
+New (6), each `as gm1` on `#/lists`:
+
+| Id | Enter | Mock |
+|---|---|---|
+| `#/lists ~ lists selected as gm1` | tick «Выбрать: Пустой список» and «Выбрать: Трофеи» | `m02` |
+| `#/lists ~ import panel as gm1` | press «Импорт из файла» | `m04` |
+| `#/lists ~ import preview as gm1` | the panel, `d.upload(unknown-id.json)`, wait for «Пропущено позиций» | `m06` (P15) |
+| `#/lists ~ import refused as gm1` | the panel, `d.upload(errors.json)`, wait for the error box | `m07` |
+| `#/lists ~ imported as gm1` | the panel, `d.upload(example.json)`, press «Импортировать (1)»; `timed` | `m10` |
+| `#/lists ~ lists deleted as gm1` | tick «Выбрать: Пустой список» and «Выбрать: Трофеи», press «Удалить (2)» (the driver accepts the confirm); `timed` | `m17` |
+
+Unchanged (the `BatchBar` proof and the rest; P12): every `#/lists/a*`
+state, `#/lists/b`, `#/lists/nope`, `#/l/ ~ own list`, `#/lists`, `#/lists
+~ load failed`, `#/lists ~ unreadable storage`, `#/lists ~ nothing found`,
+`SHOP` signed out, `#/account` signed out, and every other id.
+
+### Acceptance
+
+Each line is its own outcome; the batch is not closed while one has none.
+
+Inherited - the owner's answers and statements:
+
+- Q1: an import is all or nothing - a refused call leaves the account as
+  it was and the preview up (`importPanel.test.ts`, the limit case).
+- Q2: every export carries both notes of the lists and entries (state 58,
+  `app.test.ts`).
+- Q3: three export surfaces - «Скачать мои данные (ZIP)» on `#/account`,
+  «Скачать JSON (N)» on the selection strip, «Скачать JSON» on an account
+  list page.
+- Q4: an unknown id is skipped and named with its list and position
+  before the press (the `~ import preview as gm1` golden).
+- Owner statement 1 (selection on the index, batch deletion): account
+  cards tick in place; «Удалить (N)» deletes the ticked lists after one
+  confirm that names them, with no undo, through the write buffer
+  (state 61, `listsPage.test.ts`).
+- Owner statement 2 (the count): no gold badge on a list card; the count
+  is in the meta line «N позиций · изменён ...» (every re-seeded
+  `#/lists` golden).
+- Owner statement 3 (the schema link): the import hint links
+  `schema/import-v1.json` and `llms.txt`, relative, in a new tab
+  (`importPanel.test.ts`).
+- Owner statement 4 (duplicates): a name the account holds imports as a
+  second list and is noted in the preview; a repeated id keeps the first
+  and names the second with both positions (`importPanel.test.ts`).
+- Owner statement 5 (a richer report): skips and errors are grouped by
+  list, each line naming the position, the record and the path
+  (`importPanel.test.ts`, the `~ import preview` and `~ import refused`
+  goldens).
+- Owner statement 6 (a generic account export): «Скачать мои данные
+  (ZIP)» downloads `daggerheart-loot-data-<date>.zip` holding
+  `lists.json` (state 59, `app.test.ts`).
+- Owner statement 7 (`llms.txt` teaches files only): done in `B6.1`;
+  here the help paragraph and the hint name `llms.txt`, and the labels
+  `llms.txt` names are the interface's (`i18n.test.ts`).
+
+Placed items:
+
+- Risk 7 (`plan-B6.1-10`): `BatchBar` holds only the strip's own CSS; the
+  snippet classes keep theirs in `ListPage.svelte` (P1); `npm run check`
+  reports no unused selector.
+- Risk 8 (`plan-B6.1-11`): an account card with pending requests draws
+  the meta line, then R4's gold line, then the thumbs, with the pick box in
+  its corner and R4's link label unchanged (P2; the `#/lists ~ requests as
+  gm1` golden); no mock changed.
+- Risk 9 (`plan-B6.1-12`): the selection never holds a list that is not
+  drawn (P3; `listsPage.test.ts`, state 62).
+- `plan-B6.1-22`: the owner's statements 1-7 are seven lines above.
+- `plan-B6.1-2-N4`: 4.6's key table holds every new key, `importTooSlow`
+  and `exportOverBounds` included, and `dict.ts` holds exactly those.
+- `plan-B6.1-2-N5`: two `lists.json` at one depth answer `manyLists` with
+  its own text (P5; `zip.test.ts`, `importPanel.test.ts`).
+- The error texts left by `B6.1`: an `id` failing `ID_PATTERN` reads
+  `importErrId`; an empty or absent list name reads `importErrName`;
+  a `tooSlow` refusal toasts `importTooSlow` (P6; `importPanel.test.ts`).
+- The owner's QA files: none enters the repository (P13).
+- `B6.1-R1`: both READMEs point at the import file, the schema and
+  `CONTRACTS.md` section 3, not at `llms.txt` for the `#/l/` format; this
+  lands before the push.
+- `B6.1-N1`: no test title in `bundle.test.ts` cites a plan section.
+- `B6.1-N2`: `lib/zip.ts` exports `ZIP_ENTRIES_MAX`; `ENTRIES_MAX` means
+  100 entries only.
+- `B6.1-N3`: `PRODUCT.md` and `META.md` section 4 name
+  `schema/import-v1.json` (and its `ROOT_DIRS` junction).
+- `B6.1-N4`: the zip decision file's Task line names who decided and
+  when, nothing else; `docs/DECISIONS.md` rebuilt.
+- `B6.1-N7`: left with its reason (P14) and named in the handoff's
+  Deferred for R7's `B7.3`.
+
+From the outline:
+
+- `lib/zip.ts` is reached only through `import('../lib/zip.js')`
+  (`AppState.exportData`, `ImportPanel`): `git grep -n "lib/zip" --
+  app/src ':!*.test.ts'` shows only those two dynamic imports; `npm run
+  check:built`'s budget passes; the handoff records the zip chunk's gzip
+  size from `node tools/bundle-budget.mjs` (estimated about 1.5 kB).
+- The list page draws exactly what it drew: after the orchestrator's
+  `--update`, no `#/lists/a*`, `#/lists/b` or `#/l/ ~ own list` golden
+  changed, and `listPage.test.ts` passes with no case edited.
+- A retry after `network` sends the same rows (`importPanel.test.ts`: two
+  calls with equal ids).
+- `CloudLists.import` sends the buffer first and re-reads without
+  «Загружаем...» (`cloudLists.test.ts`).
+
+Behaviour (4.6, 4.7, 4.10-4.15):
+
+- The pick box is a 32 px box with a 44 px target, outside the card's
+  link, named «Выбрать: <name>»; a ticked card has the gold border
+  (P17; the `~ lists selected` golden; sweep 360 green).
+- «Выбрать все» ticks the drawn cards only; the strip at 360 px puts
+  «Скачать JSON (N)» and «Удалить (N)» on their own line, each half the
+  width (mock `m02`).
+- «Скачать JSON (N)» keeps the selection; a file past 50 lists or with a
+  list past 100 entries still downloads whole and toasts the over-bounds
+  text (4.15; `app.test.ts`).
+- A refused `remove` in a batch draws that list again with one
+  `writeRefused` toast; the others stay deleted (`cloudLists.test.ts`,
+  mock `m18`).
+- The import field: `m04` empty, `m05` preview, `m06` skips, `m07`
+  errors, `m08` one-line refusals (each of the seven texts plus
+  `importZipManyLists` and `importNoVersion`), `m09` both buttons disabled
+  while sending, `m10` folded with the toast and the new card first,
+  `m11` the limit toast with the preview kept.
+- A file of more than 5 MiB is refused before it is read.
+- The zip's other files are named under the preview (first five, then
+  «и ещё N») and the lists import.
+- «Ваши данные» sits between «Способы входа» and «Выход», disabled until
+  the lists are read, with «Повторить» after a failed read (`m12`, `m13`).
+- «Скачать JSON» sits after «Скопировать текст» on an account list page
+  only (`m14`).
+- `help.ts` `LISTS` has the sixth paragraph in both languages.
+- Every new string is in `dict.ts` in both languages; `tests/derived.js`'
+  count check passes.
+- States 58-62 and flow F13 green; the six new goldens seeded.
+- `FEATURES.md`, `META.md`, `STATE.md`, `COVERAGE.md` and decision file 4
+  are in the commit.
+- Every new component test ends with `expectNoA11yViolations`; coverage
+  reaches `BatchBar.svelte` and `ImportPanel.svelte` through their own
+  tests.
+
+### Verification
+
+Implementer, in this order (each one foreground call):
+
+1. `npx vitest run <file>` while working (focused, no coverage), and
+   `rtk npm run test` once before the check (vitest with coverage, about
+   3-5 minutes).
+2. `rtk npm run check` (Bash, timeout 600000; about 7-10 minutes; it runs
+   `node tests/derived.js`, so the README and dictionary counts are
+   checked here).
+3. `npm run check:built` (about 2-3 minutes; the budget and the smoke;
+   it builds `dist-test/` last, after the check, so the stale-build guard
+   holds).
+4. `node tests/run-all.js app/states` (about 5 minutes; cases 58-62).
+5. `node tests/run-all.js app/print,app/contracts,app/typo,app/hues,stub`
+   (about 7-8 minutes).
+6. `npm run e2e` (about 3 minutes; F13 on the test project, where `B6.1`'s
+   resumed step pushed `import_lists`).
+
+Orchestrator, after the implementer's amend (P12): `node tests/app/golden.js
+--update --shard=1/4` through `--shard=4/4` (one call each, about 3
+minutes each), `git status --short tests/app/snapshots/` against "Golden
+ids", then `node tests/app/sweep.js 360` (about 7-9 minutes); amend the
+golden files.
+
+Total: about 33 minutes for the implementer, 22 for the orchestrator.
+
+### Risks / do-nots
+
+- Do not edit anything under `supabase/` or `tests/db/` (P14; it would
+  add `npm run check:db`).
+- Do not edit `llms.txt`, `schema/import-v1.json` or `docs/fixtures/`: the
+  contract shipped in `B6.1`. If a label `llms.txt` names must change,
+  stop: that is a contract change.
+- Do not edit any mock; P15 and P16 are the two recorded differences.
+- Do not import `lib/zip.ts` statically anywhere in `app/src`.
+- Do not give `BatchBar` a prop no caller needs, and do not merge it with
+  `SelBar`.
+- Do not change the `why` of a state whose golden is not re-seeded.
+- Do not add a toast to a successful export (the browser's download is
+  the feedback), and do not make the over-bounds toast an error.
+- Do not queue the import in the write buffer or draw an optimistic card.
+- The fake does not survive a reload: read it through `d.fake(...)`.
+- Do not push; the closeout pushes once (`B6.1-R1` is in this amend).
+
+### Fallback
+
+- If `userEvent.upload` refuses the `hidden` input in jsdom, the tests set
+  `files` with `Object.defineProperty` and fire `change` (P7 keeps the
+  `hidden` input).
+- If CDP's `uploadFile` does not fire `change` on the `hidden` input in
+  Chrome, the input becomes visually hidden (the app's `.vh` pattern if one
+  exists, else `position: absolute; width: 1px; height: 1px; overflow:
+  hidden; clip-path: inset(50%)`) with `tabindex="-1"`, and the sweep's
+  name check reads its `aria-label={t.importPick}`.
+- If the `--update` diff of P12 shows an unexpected golden, the
+  implementer is resumed with that id; no golden outside the list is
+  committed changed.
 
 ## 10. Decisions (`docs/decisions/`)
 
@@ -1636,10 +2627,12 @@ one deletion cannot.
 
 ## 12. Risks, assumptions, deferred
 
-- Assumption: jsdom implements `Blob.prototype.text`; if not,
-  `FileReader.readAsText` - the component test decides.
-- Assumption: Puppeteer's `uploadFile` on a visually hidden (not
-  `display: none`) input fires `change`; if not, a plain styled input.
+- Closed in pass 5: jsdom 30.0.1 implements `File.prototype.arrayBuffer`
+  and `text` (checked 2026-09-28), so the panel reads with
+  `file.arrayBuffer()` alone. Puppeteer's `uploadFile` is CDP
+  `DOM.setFileInputFiles`, which does not depend on visibility, so the
+  input is `hidden` (section 9, P7; its Fallback names the visually hidden
+  input if Chrome disagrees).
 - Risk: a 50-list import (or a 50-list batch delete) sends 50 owner
   messages in one commit; with two or more other devices subscribed that
   passes the free plan's 100 messages per second and Realtime may drop
@@ -1673,11 +2666,18 @@ one deletion cannot.
 - Risk: batch deletion removes data with no undo; the confirm names the
   lists and the count, «Выбрать все» ticks only drawn cards, and the
   plan review covers the path.
-- Risk: every `#/lists` golden, signed out included (the count line), the
-  `#/account` goldens and every `#/lists/<uuid(101)>` golden re-seed; the
-  reviewer reads the diff, and the list page's goldens are compared equal
-  before the re-seed.
-- Deferred: bundle v2 (R7); pictures in the data zip (R8, a `pictures/` folder) and deflate in `lib/zip.ts` if R8 needs it; a
+- Risk: 26 goldens re-seed and 6 are new (section 9, "Golden ids"); the
+  reviewer reads the diff, and the one `--update`'s diff must leave every
+  local list page golden unchanged (P12).
+- Size: this file passed the 150 KB warning line in pass 5 (about 180 KB).
+  Section 8 collapses to its outcome and commit once `B6.1`'s resumed step
+  (the push and `npm run e2e`) has run - its full text stays at
+  `7753e6f2` - in the `B6.2` amend or at the closeout
+  (`.claude/skills/handoff/SKILL.md`).
+- Deferred: `B6.1-N7` (the `before` shadow in
+  `tests/db/import-lists.test.mjs`) to R7's `B7.3`, and `B6.1-N6` (the
+  `or` chain in `import_lists`) to the next edit of that migration
+  (section 9, P14); bundle v2 (R7); pictures in the data zip (R8, a `pictures/` folder) and deflate in `lib/zip.ts` if R8 needs it; a
   JSON-Schema runtime validator (never, unless the hand-written one
   drifts twice); a CSV export; import of preferences; selection of
   browser lists (they end at the cutoff).

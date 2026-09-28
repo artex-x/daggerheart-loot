@@ -126,6 +126,9 @@ const FAULT: ListWrites = { ok: false, error: 'fault' };
 const UNSENT: ListWrites = { ok: false, error: 'network' };
 const REFUSED: ListWrites = { ok: false, error: 'refused' };
 const MOVE_REFUSED: MoveWrite = { ok: false, error: 'refused' };
+/* An import the database stopped at its statement timeout: sent again, it would stop
+   again, so it is not `network`. */
+const TOO_SLOW: ListWrite = { ok: false, error: 'refused', reason: 'tooSlow' };
 
 /** Returns an `apply` call's own failure: `fault`, `network`, or `refused`. */
 function callFailure(answer: Answer): ListWrites {
@@ -192,16 +195,22 @@ function keepaliveFetch(url: string, tab: string): Fetch {
 
 /** How long a write waits for its answer before it counts as `network`. */
 export const WRITE_TIMEOUT_MS = 20_000;
+/** How long an import waits: it never holds up the write buffer, and a 5 MiB file takes
+ *  about 40 s to send on a 1 Mbit/s uplink. */
+export const IMPORT_TIMEOUT_MS = 120_000;
 
 /* A call with no answer ends as `network` and is sent again; every write is
    idempotent on client-made ids (docs/specs/FEATURES.md, "Account and browser lists").
    The abort lives here, not in the store: a store timeout would leave the request
    running and send it a second time while the first may still land. */
-async function timed<T>(call: (signal: AbortSignal) => PromiseLike<T>): Promise<T> {
+async function timed<T>(
+  call: (signal: AbortSignal) => PromiseLike<T>,
+  ms = WRITE_TIMEOUT_MS
+): Promise<T> {
   const c = new AbortController();
   const timer = setTimeout(() => {
     c.abort();
-  }, WRITE_TIMEOUT_MS);
+  }, ms);
   try {
     return await call(c.signal);
   } finally {
@@ -524,6 +533,17 @@ export function createCloud(
           : MOVE_REFUSED;
       } catch {
         return { ok: false, error: 'network' };
+      }
+    },
+    async import(rows) {
+      try {
+        const answer = await timed(
+          (signal) => client.rpc('import_lists', { p_lists: rows }).abortSignal(signal),
+          IMPORT_TIMEOUT_MS
+        );
+        return answer.error?.code === '57014' ? TOO_SLOW : writeOf(answer);
+      } catch {
+        return NETWORK;
       }
     }
   };

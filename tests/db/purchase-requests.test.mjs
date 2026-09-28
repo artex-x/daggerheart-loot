@@ -14,7 +14,7 @@
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { asRole, commitAs, connect, realtimePartition } from './roles.mjs';
+import { asRole, commitAs, connect, messagesTo, realtimePartition } from './roles.mjs';
 
 const A = '00000000-0000-4000-8000-00000000000a';
 const B = '00000000-0000-4000-8000-00000000000b';
@@ -923,13 +923,7 @@ async function withWorld(fn) {
   }
 }
 
-/* The rows sent to `topic`, oldest first, without Realtime's message id. */
-async function rowsOf(topic) {
-  const rows = await sql`
-    select event, payload - 'id' as payload from realtime.messages
-    where topic = ${topic} order by inserted_at, id`;
-  return rows.map((r) => ({ event: r.event, payload: r.payload }));
-}
+const rowsOf = (topic) => messagesTo(sql, topic);
 const requestRows = async (topic) => (await rowsOf(topic)).filter((r) => r.event === 'request');
 const shareRequestRows = async () => {
   const [{ n }] = await sql`select count(*)::int as n from realtime.messages

@@ -1,9 +1,9 @@
 <script lang="ts">
   /* `#/account`: the display settings, who is signed in, the providers they
-     sign in with, signing out, and deleting the account - or, signed out,
-     the way in. Drawn only
-     in a build with sign-in configured; `App.svelte` shows the not-found
-     page otherwise (docs/specs/FEATURES.md, "Account"). */
+     sign in with, the account's data export, signing out, and deleting the
+     account - or, signed out, the way in. Drawn only in a build with sign-in
+     configured; `App.svelte` shows the not-found page otherwise
+     (docs/specs/FEATURES.md, "Account"). */
   import { tick } from 'svelte';
   import Button from './Button.svelte';
   import Field from './Field.svelte';
@@ -47,6 +47,14 @@
   let confirming = $state(false);
   let typed = $state('');
   let typedEl = $state<HTMLInputElement | undefined>(undefined);
+  /* «Скачать мои данные (ZIP)» while its zip is built. */
+  let exporting = $state(false);
+
+  async function exportData(): Promise<void> {
+    exporting = true;
+    await app.exportData();
+    exporting = false;
+  }
 
   const typedOk = $derived(typed.trim().toLowerCase() === t.deleteWord);
 
@@ -393,6 +401,24 @@
             {/if}
           {:else if idsFailed}
             <p class="err" role="alert">{t.accountFailed}</p>
+          {/if}
+        </Field>
+      </Panel>
+
+      <Panel style={PANEL}>
+        <Field label={t.yourData} heading>
+          <p class="hint lead">{t.yourDataHint}</p>
+          <div class="row-btns">
+            <Button
+              disabled={exporting || app.cloudLists?.status !== 'ready'}
+              onclick={() => void exportData()}>{t.exportData}</Button
+            >
+          </div>
+          {#if app.cloudLists?.status === 'error'}
+            <p class="err" role="alert" style="margin-top:10px">{t.cloudLoadFailed}</p>
+            <div class="row-btns" style="margin-top:8px">
+              <Button size="sm" onclick={() => void app.retryLists()}>{t.retry}</Button>
+            </div>
           {/if}
         </Field>
       </Panel>

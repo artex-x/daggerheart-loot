@@ -18,6 +18,7 @@ import {
   commitAs,
   connect,
   jwtFor,
+  messagesTo,
   realtimePartition,
   realtimePolicies
 } from './roles.mjs';
@@ -71,14 +72,7 @@ function bare(message) {
   return rest;
 }
 
-/** Returns the rows sent to `topic`, oldest first, as `{ event, payload }`
- * without Realtime's message id. */
-async function rowsOf(topic) {
-  const rows = await sql`
-    select event, payload - 'id' as payload from realtime.messages
-    where topic = ${topic} order by inserted_at, id`;
-  return rows.map((r) => ({ event: r.event, payload: r.payload }));
-}
+const rowsOf = (topic) => messagesTo(sql, topic);
 
 /** Commits a world for one case - A's list with five entries and three
  * shares (player and GM active, one revoked) - runs `fn`, then deletes it. */

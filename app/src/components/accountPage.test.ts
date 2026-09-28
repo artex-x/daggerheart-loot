@@ -8,7 +8,7 @@ import App from '../App.svelte';
 import AccountPage from './AccountPage.svelte';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
-import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import { fakeEnv, fakeImage, fixedClock, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { AuthResult, CloudPort } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -123,13 +123,14 @@ describe('signed out', () => {
 });
 
 describe('signed in as gm1', () => {
-  it('draws the five sections in order, with a Disconnect on each identity', async () => {
+  it('draws the six sections in order, with a Disconnect on each identity', async () => {
     const { container } = open(as('gm1'));
     await screen.findByRole('button', { name: 'Отключить Discord' });
     expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
       'Отображение',
       'Вы вошли как',
       'Способы входа',
+      'Ваши данные',
       'Выход',
       'Удаление аккаунта'
     ]);
@@ -218,6 +219,74 @@ describe('signed in as gm1', () => {
     await press('Выйти');
     expect(await screen.findByText('Не получилось. Попробуйте ещё раз.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Выход' })).toBeInTheDocument();
+  });
+});
+
+describe('your data', () => {
+  /* 2026-10-01 12:00 UTC, the test build's clock. */
+  const NOW = Date.UTC(2026, 9, 1, 12);
+  const day = (ms: number): string => {
+    const d = new Date(ms);
+    return [d.getFullYear(), d.getMonth() + 1, d.getDate()]
+      .map((n) => String(n).padStart(2, '0'))
+      .join('-');
+  };
+
+  it('downloads the account data zip from its panel', async () => {
+    const image = fakeImage();
+    const { container } = render(App, {
+      env: fakeEnv({
+        cloud: as('gm1'),
+        router: memoryRouter('#/account'),
+        clock: fixedClock(NOW),
+        image
+      })
+    });
+    const button = await screen.findByRole('button', { name: 'Скачать мои данные (ZIP)' });
+    await waitFor(() => {
+      expect(button).toBeEnabled();
+    });
+    expect(
+      screen.getByText(
+        'Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём файл lists.json с вашими списками. Архив можно импортировать в другой аккаунт на странице «Списки». Импорт принимает до 50 списков, а в одном списке позиций - не больше 100.'
+      )
+    ).toBeInTheDocument();
+    await userEvent.click(button);
+    await waitFor(() => {
+      expect(image.downloaded.map((d) => d.filename)).toEqual([
+        `daggerheart-loot-data-${day(NOW)}.zip`
+      ]);
+    });
+    expect(image.downloaded[0]?.blob.type).toBe('application/zip');
+    await expectNoA11yViolations(container);
+  });
+
+  it('is disabled while the lists load', async () => {
+    const cloud = as('gm1');
+    cloud.lists.list = () => new Promise(() => undefined);
+    const { container } = open(cloud);
+    expect(
+      await screen.findByRole('button', { name: 'Скачать мои данные (ZIP)' })
+    ).toBeDisabled();
+    expect(screen.queryByRole('alert')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('says a failed read, and «Повторить» reads again', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    const { container } = open(cloud);
+    expect(await screen.findByText('Не получилось загрузить списки аккаунта.')).toHaveAttribute(
+      'role',
+      'alert'
+    );
+    expect(screen.getByRole('button', { name: 'Скачать мои данные (ZIP)' })).toBeDisabled();
+    await expectNoA11yViolations(container);
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Скачать мои данные (ZIP)' })).toBeEnabled();
+    });
+    expect(screen.queryByText('Не получилось загрузить списки аккаунта.')).toBeNull();
   });
 });
 

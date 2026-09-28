@@ -6,12 +6,14 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Fifty-seven cases in
- * fifty-six runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Sixty-two cases in
+ * sixty-one runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { PNG } = require('pngjs');
 const { baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
@@ -3633,6 +3635,266 @@ async function moveBanner() {
   await narrow.ctx.close();
 }
 
+/** A file of docs/fixtures/import/. */
+const IMPORT_FILE = (name) => path.join(__dirname, '../../docs/fixtures/import', name);
+/** The account cards' pick boxes that are ticked, and the strip's summary. */
+const picks = () => ({
+  ticked: document.querySelectorAll('.listcard-pick input:checked').length,
+  summary: document.querySelector('.batch-summ')?.textContent.trim() ?? ''
+});
+
+/** 58. The ticked lists download as one lists file: two account cards ticked,
+ *  «Скачать JSON (2)» saves the dated file of the test build's clock with the
+ *  two lists in index order and both notes; the ticks stay. */
+async function ticksDownloadAsOneFile() {
+  const at = '58 (the ticked lists download as one lists file): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/lists', { as: 'gm1' });
+  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await d.tick('Выбрать: Пустой список');
+  await d.tick('Выбрать: Лавка кузнеца');
+  await d.press('Скачать JSON (2)');
+  await waitIn(page, () => !!window.__download);
+  const file = await d.download();
+  ok(
+    file?.filename === 'daggerheart-loot-lists-2026-10-01.json',
+    at + 'the file name - ' + JSON.stringify(file?.filename)
+  );
+  ok(file?.type === 'application/json', at + 'the type - ' + JSON.stringify(file?.type));
+  const doc = file ? JSON.parse(Buffer.from(file.base64, 'base64').toString('utf8')) : null;
+  ok(
+    doc?.format === 'daggerheart-loot/lists' &&
+      doc?.version === 1 &&
+      doc?.exported_at === '2026-10-01T12:00:00.000Z',
+    at + 'the head - ' + JSON.stringify(doc && { ...doc, lists: undefined })
+  );
+  const names = (doc?.lists ?? []).map((l) => l.name);
+  ok(
+    JSON.stringify(names) === JSON.stringify(['Пустой список', 'Лавка кузнеца']),
+    at + 'the lists, in index order - ' + JSON.stringify(names)
+  );
+  const shop = doc?.lists?.[1];
+  const ci1 = shop?.entries?.find((e) => e.id === 'ci1');
+  const q1 = shop?.entries?.find((e) => e.id === 'q1');
+  ok(
+    ci1?.quantity === 2 && ci1?.price_coins === 150 && !!q1?.player_note,
+    at + 'ci1 at 2 and 150, q1 with its player note - ' + JSON.stringify({ ci1, q1 })
+  );
+  ok(shop?.money_mode === 'coin', at + 'no coin money mode on «Лавка кузнеца»');
+  ok(
+    (doc?.lists ?? []).every((l) => !('id' in l)),
+    at + 'a list carries an id - ' + JSON.stringify(doc?.lists)
+  );
+  const after = await page.evaluate(picks);
+  ok(after.ticked === 2, at + 'the ticks went - ' + JSON.stringify(after));
+  await ctx.close();
+}
+
+/** 59. The account's data zip reads back through the import field: «Скачать
+ *  мои данные (ZIP)» saves the dated zip, and the app's own reader previews
+ *  its three lists; the fixture data.zip previews the same. */
+async function dataZipReadsBack() {
+  const at = "59 (the account's data zip reads back through the import field): ";
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/account', { as: 'gm1' });
+  ok(
+    await waitIn(page, () =>
+      [...document.querySelectorAll('button')].some(
+        (b) => b.textContent.trim() === 'Скачать мои данные (ZIP)' && !b.disabled
+      )
+    ),
+    at + 'the button is not enabled'
+  );
+  await d.press('Скачать мои данные (ZIP)');
+  await waitIn(page, () => !!window.__download);
+  const file = await d.download();
+  ok(
+    file?.filename === 'daggerheart-loot-data-2026-10-01.zip',
+    at + 'the file name - ' + JSON.stringify(file?.filename)
+  );
+  ok(file?.type === 'application/zip', at + 'the type - ' + JSON.stringify(file?.type));
+  const bytes = file ? Buffer.from(file.base64, 'base64') : Buffer.alloc(0);
+  ok(
+    bytes.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x03, 0x04])),
+    at + 'the file does not start PK\\x03\\x04'
+  );
+  const tmp = path.join(os.tmpdir(), 'dhloot-state-59-' + String(process.pid) + '.zip');
+  fs.writeFileSync(tmp, bytes);
+  try {
+    await d.go('#/lists');
+    await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+    await d.press('Импорт из файла');
+    await d.upload(tmp);
+    ok(
+      await waitIn(page, bodyHas, 'Импортировать (3)'),
+      at + 'the downloaded zip does not offer «Импортировать (3)»'
+    );
+    ok(
+      (await d.text()).includes('Списков: 3'),
+      at + 'the downloaded zip does not preview «Списков: 3»'
+    );
+    await d.upload(IMPORT_FILE('data.zip'));
+    ok(
+      await waitIn(page, bodyHas, 'Списков: 3'),
+      at + 'data.zip does not preview «Списков: 3»'
+    );
+  } finally {
+    fs.rmSync(tmp, { force: true });
+  }
+  await ctx.close();
+}
+
+/** 60. An imported list opens with its rows in file order: example.json
+ *  imports, its card comes first «изменён только что», and its page draws
+ *  ci1, q1, q313 with ci1 at quantity 2 and 150. */
+async function importedListOpens() {
+  const at = '60 (an imported list opens with its rows in file order): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/lists', { as: 'gm1' });
+  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await d.press('Импорт из файла');
+  await d.upload(IMPORT_FILE('example.json'));
+  await waitIn(page, bodyHas, 'Импортировать (1)');
+  await d.press('Импортировать (1)');
+  ok(
+    await waitIn(page, bodyHas, 'Импортировано списков: 1'),
+    at + 'no toast «Импортировано списков: 1»'
+  );
+  const first = await page.evaluate(() => {
+    const card = document.querySelector('.listcard');
+    return {
+      name: card?.querySelector('.listcard-top b')?.textContent,
+      meta: card?.querySelector('.listcard-meta')?.textContent,
+      href: card?.querySelector('a.listcard-main')?.getAttribute('href')
+    };
+  });
+  ok(
+    first.name === 'Лавка кузнеца' && (first.meta ?? '').includes('изменён только что'),
+    at + 'the first card - ' + JSON.stringify(first)
+  );
+  await d.go(first.href ?? '#/lists');
+  await waitIn(page, () => document.querySelectorAll('.lrow').length === 3);
+  const shown = await page.evaluate(() => ({
+    sub: document.querySelector('.page-sub')?.textContent ?? '',
+    rows: [...document.querySelectorAll('.lrow .lrow-pick input')].map((i) =>
+      i.getAttribute('aria-label')
+    ),
+    qty: document.querySelector('.lrow input[data-qty]')?.value ?? '',
+    gold: document.querySelector('.lrow input[data-gold]')?.value ?? ''
+  }));
+  ok(shown.sub.includes('3 позиции'), at + 'the sub - ' + JSON.stringify(shown.sub));
+  ok(
+    JSON.stringify(shown.rows) ===
+      JSON.stringify(['Первоклассный Спальный Мешок', 'Палаш', 'Стеганый Доспех']),
+    at + 'the rows - ' + JSON.stringify(shown.rows)
+  );
+  ok(
+    shown.qty === '2' && shown.gold === '150',
+    at + 'ci1 does not hold 2 at 150 - ' + JSON.stringify(shown)
+  );
+  await ctx.close();
+}
+
+/** 61. Ticked lists are deleted together after one confirm: the confirm names
+ *  both, both cards go, the toast has no «Вернуть», and the fake holds «Лавка
+ *  кузнеца» alone once the buffer is sent (a reload re-seeds the fake). */
+async function tickedListsDeletedTogether() {
+  const at = '61 (ticked lists are deleted together after one confirm): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/lists', { as: 'gm1' });
+  await waitIn(page, () => !!document.querySelector('.listcard-pick'));
+  await d.tick('Выбрать: Пустой список');
+  await d.tick('Выбрать: Трофеи');
+  await d.press('Удалить (2)');
+  const asked = d.dialog() ?? '';
+  ok(
+    asked.includes('«Пустой список»') && asked.includes('«Трофеи»'),
+    at + 'the confirm does not name both - ' + JSON.stringify(asked)
+  );
+  const after = await page.evaluate(() => ({
+    cards: [...document.querySelectorAll('.listcard-top b')].map((b) => b.textContent),
+    undo: [...document.querySelectorAll('button')].some((b) => b.textContent === 'Вернуть'),
+    toast: document.body.innerText.includes('Удалено списков: 2')
+  }));
+  ok(
+    JSON.stringify(after.cards) === JSON.stringify(['Лавка кузнеца']),
+    at + 'the cards - ' + JSON.stringify(after.cards)
+  );
+  ok(after.toast, at + 'no toast «Удалено списков: 2»');
+  ok(!after.undo, at + 'the toast offers «Вернуть»');
+  /* The buffer is sent at once on the hidden signal. */
+  await d.hidden();
+  let held = null;
+  for (let i = 0; i < 60; i++) {
+    const read = await d.fake('lists.list');
+    held = read?.ok ? read.lists.map((l) => l.name) : null;
+    if (held && held.length === 1) break;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  ok(
+    JSON.stringify(held) === JSON.stringify(['Лавка кузнеца']),
+    at + 'the fake holds - ' + JSON.stringify(held)
+  );
+  await ctx.close();
+}
+
+/** 62. A search prunes the ticks and «Выбрать все» ticks the drawn cards
+ *  only: twelve account lists; a tick the query hides is dropped for good,
+ *  and the checked boxes always equal the summary's number. */
+async function searchPrunesTicks() {
+  const at = '62 (a search prunes the ticks and select-all ticks the drawn cards only): ';
+  const names = [
+    'Порт Ветров',
+    'Рынок',
+    'Лавка в порту',
+    ...Array.from({ length: 6 }, (_, i) => 'Сессия ' + String(i + 1))
+  ];
+  const storage = {
+    'dhloot.lists.v2': JSON.stringify(
+      names.map((name, i) => ({ id: 'p' + String(i), name, ids: [], created: 100 - i }))
+    )
+  };
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage });
+  await d.open('#/lists', { as: 'gm1' });
+  await d.moveSettled('62');
+  ok(
+    (await d.count('.listcard-pick')) === 12,
+    at + 'twelve account cards are not drawn - ' + String(await d.count('.listcard-pick'))
+  );
+  const agree = async (step, summary) => {
+    const p = await page.evaluate(picks);
+    const n = Number(/\d+/.exec(p.summary)?.[0] ?? 0);
+    ok(p.summary === summary, at + step + ': the summary - ' + JSON.stringify(p));
+    ok(
+      p.ticked === n,
+      at + step + ': checked boxes and the summary differ - ' + JSON.stringify(p)
+    );
+  };
+  await d.tick('Выбрать: Порт Ветров');
+  await d.tick('Выбрать: Рынок');
+  await agree('two ticked', 'Выбрано 2');
+  await d.type('Найти список', 'порт');
+  await agree('the query', 'Выбрано 1');
+  ok((await d.text()).includes('Удалить (1)'), at + 'the query does not leave «Удалить (1)»');
+  await d.type('Найти список', '');
+  const rynok = await page.evaluate(
+    () =>
+      [...document.querySelectorAll('.listcard-pick input')].find(
+        (i) => i.getAttribute('aria-label') === 'Выбрать: Рынок'
+      )?.checked
+  );
+  ok(rynok === false, at + '«Рынок» came back ticked');
+  await agree('the query cleared', 'Выбрано 1');
+  await d.type('Найти список', 'порт');
+  await d.tick('Выбрать все');
+  await agree('select-all over the query', 'Выбрано 2');
+  ok(
+    (await d.text()).includes('Скачать JSON (2)'),
+    at + 'select-all does not offer «Скачать JSON (2)»'
+  );
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -3689,7 +3951,15 @@ const CASES = [
   ['54 (live requests)', liveRequests],
   ['55 (send a request)', sendARequest],
   ['56 (apply a request)', applyARequest],
-  ['57 (notify always)', notifyAlways]
+  ['57 (notify always)', notifyAlways],
+  ['58 (the ticked lists download as one lists file)', ticksDownloadAsOneFile],
+  ["59 (the account's data zip reads back through the import field)", dataZipReadsBack],
+  ['60 (an imported list opens with its rows in file order)', importedListOpens],
+  ['61 (ticked lists are deleted together after one confirm)', tickedListsDeletedTogether],
+  [
+    '62 (a search prunes the ticks and select-all ticks the drawn cards only)',
+    searchPrunesTicks
+  ]
 ];
 
 (async () => {

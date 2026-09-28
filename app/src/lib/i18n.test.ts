@@ -26,6 +26,7 @@ import {
   EQ_TRAIT,
   EQ_TYPE,
   eqWord,
+  fewNames,
   selCountText,
   nameOf,
   type StatLabels
@@ -281,6 +282,36 @@ describe('selCountText', () => {
     expect(selCountText(1, 3, 'en', en)).toBe('Selected 1 item · 3 pcs');
     expect(selCountText(4, 9, 'en', en)).toBe('Selected 4 items · 9 pcs');
     expect(selCountText(21, 21, 'en', en)).toBe('Selected 21 items');
+  });
+});
+
+describe('fewNames', () => {
+  const ru = dict('ru');
+  const names = ['«А»', '«Б»', '«В»', '«Г»', '«Д»', '«Е»', '«Ж»'];
+
+  it('joins up to five names', () => {
+    expect(fewNames(names.slice(0, 3), ru)).toBe('«А», «Б», «В»');
+    expect(fewNames(names.slice(0, 5), ru)).toBe('«А», «Б», «В», «Г», «Д»');
+  });
+
+  it('counts the names past five', () => {
+    expect(fewNames(names, ru)).toBe('«А», «Б», «В», «Г», «Д» и ещё 2');
+    expect(fewNames(names, dict('en'))).toBe('«А», «Б», «В», «Г», «Д» and 2 more');
+  });
+
+  it('counts the names not given', () => {
+    expect(fewNames(names.slice(0, 5), ru, 4)).toBe('«А», «Б», «В», «Г», «Д» и ещё 4');
+  });
+});
+
+describe('llms.txt', () => {
+  it("names the interface's own labels, Russian and English", () => {
+    const llms = readFileSync(join(ROOT, 'llms.txt'), 'utf8').replace(/\s+/g, ' ');
+    const ru = dict('ru');
+    const en = dict('en');
+    for (const key of ['importOpen', 'newList', 'exportJson', 'exportData'] as const) {
+      expect(llms).toContain(`«${ru[key]}» ("${en[key]}")`);
+    }
   });
 });
 

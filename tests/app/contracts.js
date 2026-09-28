@@ -101,12 +101,12 @@ function stampOf(parts) {
   );
   await c.ctx.close();
 
-  /* ---------- a link assembled purely from llms.txt's own description ----------
-   * Moved here from tests/lists2.js: the format is documented so
-   * an agent can build an address with no help from the app, and that promise
-   * is only as good as this - a link built by a second implementation, not by
-   * the app's own encoder, opening correctly. */
-  console.log("a link assembled from llms.txt's description");
+  /* ---------- a link assembled purely from the documented format ----------
+   * Moved here from tests/lists2.js: the format is frozen until the codec is
+   * removed (docs/specs/CONTRACTS.md section 3; llms.txt no longer teaches it),
+   * and that promise is only as good as this - a link built by a second
+   * implementation, not by the app's own encoder, opening correctly. */
+  console.log("a link assembled from CONTRACTS.md's description");
   {
     const parts = ['q26*1*30', 'q313*2', 'ci1'];
     const raw =

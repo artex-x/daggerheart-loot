@@ -1,0 +1,24 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v1.json",
+  "format": "daggerheart-loot/lists",
+  "version": 1,
+  "lists": [
+    {
+      "name": "Очень длинное название лавки. Очень длинное название лавки. Очень длинное название лавки. Очень длинное название лавки. Очень длинное название лавки. Очень длинное название лавки. Очень длинное названи",
+      "money_mode": "gold",
+      "entries": [
+        {
+          "id": "ci1"
+        },
+        {
+          "id": "q1",
+          "quantity": 0
+        },
+        {
+          "id": "q313",
+          "qty": 2
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import { QTY_MAX } from './listLink.js';
 import type { StoredList } from './lists.js';
 
 /** The most coins a price holds (`list_entries.price_coins`). */
-const PRICE_MAX = 99999;
+export const PRICE_MAX = 99999;
 /** The longest list name the schema takes, in characters. */
 export const NAME_MAX = 200;
 /** The longest note, of a list or an entry, the schema takes, in characters. */
@@ -73,6 +73,12 @@ export type ListOp =
   | { op: 'update_entry'; id: string; patch: EntryPatch }
   | { op: 'remove_entries'; ids: string[] }
   | { op: 'reorder'; list_id: string; ids: string[] };
+
+/** One list of an import: the `create` op's shape (`import_lists`). */
+export interface ImportRow {
+  list: NewListRow;
+  entries: EntryRow[];
+}
 
 /** The most bytes of writes one request carries: under the 64 KiB a `keepalive`
  *  request may hold, with room for its headers. */

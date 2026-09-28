@@ -22,6 +22,7 @@ import {
   fakeDialog,
   fakeDrag,
   fakeEnv,
+  fakeImage,
   fakePage,
   fixedClock,
   memoryRouter,
@@ -1407,6 +1408,26 @@ describe('an account list', () => {
     cleanup();
     render(App, { env: withA('#/lists/a') });
     expect(screen.queryByRole('button', { name: 'Поделиться' })).not.toBeInTheDocument();
+  });
+
+  it('downloads an account list as its own file from «Скачать JSON», after «Скопировать текст»; none on a browser list', async () => {
+    const image = fakeImage();
+    const { container } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { image });
+    const button = await screen.findByRole('button', { name: 'Скачать JSON' });
+    const row = [...(button.parentElement?.children ?? [])].map((b) => b.textContent.trim());
+    expect(row.indexOf('Скачать JSON')).toBe(row.indexOf('Скопировать текст') + 1);
+    await userEvent.click(button);
+    await waitFor(() => {
+      expect(image.downloaded.map((d) => d.filename)).toEqual(['Лавка кузнеца.json']);
+    });
+    const text = await image.downloaded[0]!.blob.text();
+    expect(
+      (JSON.parse(text) as { lists: { name: string }[] }).lists.map((l) => l.name)
+    ).toEqual(['Лавка кузнеца']);
+    await expectNoA11yViolations(container);
+    cleanup();
+    render(App, { env: withA('#/lists/a') });
+    expect(screen.queryByRole('button', { name: 'Скачать JSON' })).not.toBeInTheDocument();
   });
 
   it('draws the requests panel after the action row and an open share panel, before the money row; none on a browser list', async () => {
