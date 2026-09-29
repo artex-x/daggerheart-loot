@@ -6,7 +6,9 @@ in `CONTRACTS.md`.
 
 ## Rolling
 
-Seven modes. Each keeps its own input in memory only.
+Seven modes. Each keeps its own input in memory only. A mode starts at its
+first row on every visit: a switch between two modes carries no number
+across.
 
 | Mode | Input | Produces | State |
 |---|---|---|---|
@@ -266,9 +268,13 @@ Seven modes. Each keeps its own input in memory only.
 - A selection on a list page - the own list and the shared page - carries a
   taken count per ticked entry. Ticking takes the whole quantity. A ticked
   entry with a quantity over 1 draws a take line inside its row, under the
-  art: "Взять [2] из 5 = 1 мешок" / "Take [2] of 5 = 1 bag", the line sum
-  (price x taken count) only for a priced entry. The field narrows the count
-  to 1..quantity; an emptied field puts its value back on commit. The count lives in memory only and clears with its
+  art: "Взять [Мин|2|Макс] из 5 = 1 мешок" / "Take [Min|2|Max] of 5 = 1 bag",
+  the line sum (price x taken count) only for a priced entry. The count
+  field sits between «Мин» and «Макс» / "Min" and "Max" in one joined
+  control: «Мин» sets the count to 1, «Макс» to the whole quantity, and each
+  is disabled at its end. At 600 px or less the control is 36 px tall and
+  each end at least 44 px wide. The field narrows the count to
+  1..quantity; an emptied field puts its value back on commit. The count lives in memory only and clears with its
   tick, on "clear selection", and on a navigation. The total is the sum of
   price x taken count over the priced ticked entries, in coins, read once in
   the list's money mode: `Итого: 1 мешок 1 горсть`. Unpriced ticked entries
@@ -461,7 +467,8 @@ browser lists writable after the date.
   «Список от другого игрока · N позиций», «Обновлено N назад» / "Updated N
   ago" under them (`I18N.md`), «Сохранить себе», the notes the link shows (a
   GM link adds the «Только для мастера» notes) and the rows, with the
-  selection bar as on a `#/l/` page. While the share's Realtime topic is
+  selection bar as on a `#/l/` page. A ticked entry the list no longer holds
+  leaves the selection when the page draws the list again. While the share's Realtime topic is
   joined it draws an owner's edit within about a second; it also reads the
   list again when the tab is shown again, every 45 s while Realtime is not
   joined, and every 5 minutes while it is, signed in or not; a failed first
@@ -511,7 +518,11 @@ browser lists writable after the date.
   owner" last in the selection bar's actions, on its own line at 600 px or
   less. It sends the owner a request for the ticked entries with their taken
   counts; while it runs it reads «Отправляем...» and is disabled. Success
-  clears the selection and toasts «Запрос отправлен владельцу списка.».
+  keeps the selection and its counts, toasts «Запрос отправлен владельцу
+  списка.», and the button reads «Запрос отправлен» / "Request sent",
+  disabled while the ticked entries and counts are the ones sent; a changed
+  tick or count enables it again, and «Снять выделение» or leaving the page
+  ends it.
   Refusals toast an error and keep the selection: «Слишком много запросов по
   этой ссылке: подождите минуту.» (5 a minute per link), «У владельца уже 10
   запросов без ответа. Попробуйте позже.» (the pending cap, with its number),
@@ -534,6 +545,7 @@ browser lists writable after the date.
   included, and the toast becomes «Добавлено в «...». Владелец получил
   запрос.»; «Запомнить ответ» saves the answer as «Сообщать владельцу» or «Не
   сообщать». «Сообщать владельцу» sends with no question; «Не сообщать» sends
+  nothing. An add of a selection already sent asks nothing and sends
   nothing. Clearing the selection or leaving the page drops an unanswered
   question.
 - **Purchase requests: the owner**: an account list's page draws «Запросы
@@ -553,7 +565,11 @@ browser lists writable after the date.
   списано.» with «Принять доступное», which takes what is there («Запрос
   принят: списано N шт.»), or only «Отклонить» when nothing is there.
   «Отклонить» changes no entry («Запрос отклонён»). A folded «Решённые в этот
-  раз (N)» lists this page load's decisions. «Этот запрос уже решён на другом
+  раз (N)» lists this page load's decisions, each with the items it asked
+  for and the asked count («Зелье ×9»). «Скрыть» / "Hide" at the end of the
+  fold's row forgets them for the list until the next page load; the focus
+  moves to «Запросы (N)», or to the page's main when the panel goes because
+  nothing is pending. «Этот запрос уже решён на другом
   устройстве.» and «Этот запрос истёк: прошёл час без ответа.» are refusals;
   a decision this tab sent with no answer that comes back decided, and a
   request that is gone (its list deleted, or removed after a day), are read
@@ -599,7 +615,7 @@ browser lists writable after the date.
   lines, a list at most 10 pending requests (both defaults `limits:set`
   changes per owner), a link sends at most 5 a minute; a request expires
   after an hour and is deleted a day after its answer or expiry, when the
-  next request is sent.
+  next request is sent to any list.
 - **The move**: when a signed-in reader's page has read the account and this
   browser holds lists, each list moves into the account as it is - entries,
   quantities, prices, both notes, the list notes and the money mode, every

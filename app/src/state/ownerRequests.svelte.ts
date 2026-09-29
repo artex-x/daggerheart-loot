@@ -2,7 +2,7 @@
  * account's lists, read once the lists are, again on the owner topic's
  * `request` message, on the feed's join and safety re-read, on the poll while
  * the feed is not live and when the tab is shown again; apply and decline;
- * and what was decided on this page load.
+ * and what was decided on this page load, with its items, until it is hidden.
  *
  * Apply sends the account's write buffer first, so a buffered quantity edit
  * never lands after it, and re-reads the lists after it: the apply's own
@@ -37,6 +37,8 @@ export interface DecidedRequest {
   createdAt: string;
   verdict: 'applied' | 'taken' | 'declined';
   taken: number;
+  /** The items the request asked for, with the asked count. */
+  lines: { item: string; qty: number }[];
 }
 
 export class OwnerRequests {
@@ -81,6 +83,11 @@ export class OwnerRequests {
 
   decidedFor(listId: string): DecidedRequest[] {
     return this.decided.filter((d) => d.listId === listId);
+  }
+
+  /** Forgets the list's decided requests of this page load. */
+  forget(listId: string): void {
+    this.decided = this.decided.filter((d) => d.listId !== listId);
   }
 
   /** Reads the pending requests; a failed read keeps what is shown. */
@@ -240,7 +247,8 @@ export class OwnerRequests {
         audience: r.audience,
         createdAt: r.createdAt,
         verdict,
-        taken
+        taken,
+        lines: r.lines.map((l) => ({ item: l.item, qty: l.qty }))
       },
       ...this.decided
     ];

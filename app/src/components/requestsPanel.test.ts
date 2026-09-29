@@ -1,6 +1,7 @@
 /* The owner's requests panel on an account list page, through `App` over the
  * fake cloud: the lines against the stock now, apply, the short state and
- * «Принять доступное», decline, the decided fold and a live arrival.
+ * «Принять доступное», decline, the decided fold with its items and «Скрыть»,
+ * and a live arrival.
  * docs/specs/FEATURES.md, "Account and browser lists". */
 
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
@@ -200,6 +201,53 @@ describe('the requests panel', () => {
     expect(within(p).getByRole('heading', { level: 2 })).toHaveTextContent('Запросы (0)');
     await userEvent.click(within(p).getByRole('button', { name: 'Решённые в этот раз (1)' }));
     expect(p.querySelector('.decided li .st-no')).toHaveTextContent('отклонён');
+    await expectNoA11yViolations(container);
+  });
+
+  it('lists the items of each decided request in the fold', async () => {
+    const { container } = openShop(TWO);
+    const p = await panel();
+    const [gm, player] = requestsOf(p) as [HTMLElement, HTMLElement];
+    await userEvent.click(within(gm).getByRole('button', { name: 'Отклонить' }));
+    await screen.findByText('Запрос отклонён');
+    await userEvent.click(within(player).getByRole('button', { name: 'Принять' }));
+    const fold = await within(p).findByRole('button', { name: 'Решённые в этот раз (2)' });
+    await userEvent.click(fold);
+    const items = [...p.querySelectorAll('.decided li')].map((li) =>
+      [...li.querySelectorAll('table.dlines td')].map((td) => td.textContent.trim())
+    );
+    expect(items).toEqual([
+      ['Спальный мешок', '×1', 'Зелье', '×3'],
+      ['Зелье', '×9', 'Меч', '×1']
+    ]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('hides the decided requests: the panel goes with the focus on main, or stays with the focus on its heading', async () => {
+    const { container } = openShop(TWO);
+    const p = await panel();
+    await userEvent.click(
+      within(requestsOf(p)[0] as HTMLElement).getByRole('button', { name: 'Отклонить' })
+    );
+    const hide = await within(p).findByRole('button', { name: 'Скрыть решённые запросы' });
+    expect(hide).toHaveTextContent('Скрыть');
+    await userEvent.click(hide);
+    expect(within(p).queryByRole('button', { name: /^Решённые/ })).toBeNull();
+    const heading = within(p).getByRole('heading', { level: 2 });
+    expect(heading).toHaveTextContent('Запросы (1)');
+    expect(document.activeElement).toBe(heading);
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(
+      within(requestsOf(p)[0] as HTMLElement).getByRole('button', { name: 'Отклонить' })
+    );
+    await userEvent.click(
+      await within(p).findByRole('button', { name: 'Скрыть решённые запросы' })
+    );
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /^Запросы/ })).toBeNull();
+    });
+    expect(document.activeElement).toBe(document.getElementById('main'));
     await expectNoA11yViolations(container);
   });
 

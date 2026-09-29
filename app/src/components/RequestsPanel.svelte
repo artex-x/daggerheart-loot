@@ -2,8 +2,11 @@
   /* The owner's purchase requests on an account list page: each pending,
      unexpired request with its lines against the stock now, «Принять» and
      «Отклонить», the refused apply's short lines and «Принять доступное», and
-     the requests decided on this page load, folded. Drawn only while there is
-     one of either (docs/specs/FEATURES.md, "Account and browser lists"). */
+     the requests decided on this page load, folded, each with the items it
+     asked for, and «Скрыть», which forgets them until the next page load. Drawn
+     only while there is one of either (docs/specs/FEATURES.md, "Account and
+     browser lists"). */
+  import { tick } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import { nameOf } from '../lib/i18n.js';
@@ -26,6 +29,16 @@
   const mode = $derived(moneyMode(list));
 
   let open = $state(false);
+  let head = $state<HTMLHeadingElement | undefined>(undefined);
+
+  /* The focus stays in the panel while it stays, and goes to the page's main when it goes. */
+  async function hide(): Promise<void> {
+    owner?.forget(list.id);
+    open = false;
+    await tick();
+    if (head?.isConnected) head.focus();
+    else document.getElementById('main')?.focus({ preventScroll: true });
+  }
 
   const itemName = (item: string): string => {
     const it = app.index?.byId.get(item);
@@ -38,7 +51,9 @@
 
 {#if owner && (pending.length || decided.length)}
   <section class="reqpanel" aria-labelledby="reqpanel-h">
-    <h2 id="reqpanel-h">{t.requestsHead.replace('%n', String(pending.length))}</h2>
+    <h2 id="reqpanel-h" tabindex="-1" bind:this={head}>
+      {t.requestsHead.replace('%n', String(pending.length))}
+    </h2>
     {#each pending as r (r.id)}
       {@const short = owner.short[r.id]}
       {@const total = totalParts(requestTotal(r.lines), mode, app.lang, t)}
@@ -96,15 +111,25 @@
     {/each}
     {#if decided.length}
       <div class="decided">
-        <Button
-          size="sm"
-          variant="bare"
-          caret
-          expanded={open}
-          onclick={() => {
-            open = !open;
-          }}>{t.requestsDecided.replace('%n', String(decided.length))}</Button
-        >
+        <div class="dhead">
+          <Button
+            size="sm"
+            variant="bare"
+            caret
+            expanded={open}
+            onclick={() => {
+              open = !open;
+            }}>{t.requestsDecided.replace('%n', String(decided.length))}</Button
+          >
+          <span class="hide"
+            ><Button
+              size="sm"
+              variant="bare"
+              label={t.requestsHideName}
+              onclick={() => void hide()}>{t.requestsHide}</Button
+            ></span
+          >
+        </div>
         {#if open}
           <ul>
             {#each decided as d (d.id)}
@@ -114,6 +139,13 @@
                   >{:else if d.verdict === 'taken'}<span class="st-ok"
                     >{t.requestTakenLine.replace('%n', String(d.taken))}</span
                   >{:else}<span class="st-ok">{t.requestAppliedLine}</span>{/if}
+                <table class="dlines">
+                  <tbody>
+                    {#each d.lines as l (l.item)}
+                      <tr><td>{itemName(l.item)}</td><td class="n">×{l.qty}</td></tr>
+                    {/each}
+                  </tbody>
+                </table>
               </li>
             {/each}
           </ul>
@@ -214,7 +246,27 @@
   }
 
   li + li {
-    margin-top: 4px;
+    margin-top: 10px;
+  }
+
+  .dhead {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dhead .hide {
+    margin-left: auto;
+  }
+
+  table.dlines {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  table.dlines td:first-child {
+    color: var(--txt);
   }
 
   .st-ok {

@@ -436,7 +436,43 @@ describe('the taken count and the total', () => {
     await tick('cc21');
     await setCount('Эликсир ярости', '2');
     const line = container.querySelector('[data-row="cc21"] .pickrow');
-    expect(line).toHaveTextContent('Взять из 5 = 1 мешок');
+    /* The label, the two ends and the field sit side by side with no text between them. */
+    expect(line).toHaveTextContent('ВзятьМинМакс из 5 = 1 мешок');
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws «Мин», the count and «Макс» as one control', async () => {
+    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await tick('cc21');
+    const group = container.querySelector('[data-row="cc21"] .qgroup');
+    expect(group?.children).toHaveLength(3);
+    expect(group?.children[0]).toBe(
+      screen.getByRole('button', { name: 'Мин, взять 1: Эликсир ярости' })
+    );
+    expect(group?.children[1]).toBe(countOf('Эликсир ярости'));
+    expect(group?.children[2]).toBe(
+      screen.getByRole('button', { name: 'Макс, взять все: Эликсир ярости' })
+    );
+    await expectNoA11yViolations(container);
+  });
+
+  it('sets the count to one and to the stock with «Мин» and «Макс», each disabled at its end', async () => {
+    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await tick('cc21');
+    const min = screen.getByRole('button', { name: 'Мин, взять 1: Эликсир ярости' });
+    const max = screen.getByRole('button', { name: 'Макс, взять все: Эликсир ярости' });
+    expect(max).toBeDisabled();
+    expect(min).toBeEnabled();
+
+    await userEvent.click(min);
+    expect(countOf('Эликсир ярости')).toHaveValue(1);
+    expect(min).toBeDisabled();
+    expect(max).toBeEnabled();
+    expect(container.querySelector('.selcount')).toHaveTextContent(/^Выбрана 1 позиция$/);
+
+    await userEvent.click(max);
+    expect(countOf('Эликсир ярости')).toHaveValue(5);
+    expect(max).toBeDisabled();
     await expectNoA11yViolations(container);
   });
 
@@ -988,7 +1024,9 @@ describe('a purchase request', () => {
     await userEvent.click(notify() as HTMLElement);
     expect(send).toHaveBeenCalledWith(uuid(5000), 'player-token-1', [{ item: 'ci1', qty: 2 }]);
     expect(await screen.findByText('Запрос отправлен владельцу списка.')).toBeInTheDocument();
-    expect(ticked()).toBe(0);
+    expect(ticked()).toBe(1);
+    expect(notify()).not.toBeInTheDocument();
+    expect(within(bar()).getByRole('button', { name: 'Запрос отправлен' })).toBeDisabled();
     expect(cloud.decide(uuid(5000), 'declined')).toBe(true);
     await expectNoA11yViolations(container);
     cleanup();
@@ -997,6 +1035,40 @@ describe('a purchase request', () => {
     await tickFirst();
     expect(notify()).toBeInTheDocument();
     await expectNoA11yViolations(signed.container);
+  });
+
+  it('enables «Сообщить владельцу» again after a changed count', async () => {
+    const { cloud, container } = open('#/s/player-token-1');
+    const send = vi.spyOn(cloud.requests, 'send');
+    await tickFirst();
+    await userEvent.click(notify() as HTMLElement);
+    await screen.findByText('Запрос отправлен владельцу списка.');
+    await userEvent.click(screen.getByRole('button', { name: 'Мин, взять 1: Спальный мешок' }));
+    expect(notify()).toBeEnabled();
+    await userEvent.click(notify() as HTMLElement);
+    expect(send).toHaveBeenLastCalledWith(uuid(5001), 'player-token-1', [
+      { item: 'ci1', qty: 1 }
+    ]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('drops a ticked entry the list no longer holds after the owner applies the request', async () => {
+    const { cloud, container } = open('#/s/player-token-1');
+    await tickFirst();
+    await waitFor(() => {
+      expect(document.querySelector('.said[role="status"]')).toHaveAttribute(
+        'data-live',
+        'live'
+      );
+    });
+    await userEvent.click(notify() as HTMLElement);
+    await screen.findByText('Запрос отправлен владельцу списка.');
+    expect(cloud.decide(uuid(5000), 'applied')).toBe(true);
+    await waitFor(() => {
+      expect(ticked()).toBe(0);
+    });
+    expect(within(bar()).queryByRole('button', { name: 'Снять выделение' })).toBeNull();
+    await expectNoA11yViolations(container);
   });
 
   it("is not offered to the list's owner, nor on a #/l/ page", async () => {

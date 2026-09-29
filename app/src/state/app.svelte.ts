@@ -427,9 +427,6 @@ export class AppState {
           say,
           dict: () => this.t,
           lang: () => this.lang,
-          clearSel: () => {
-            this.clearSel();
-          },
           reread: () => {
             void this.sharedView?.refresh();
           },
@@ -1287,6 +1284,15 @@ export class AppState {
       this.sel.delete(id);
       this.picked.delete(id);
     } else this.sel.add(id);
+  }
+
+  /** Drops the ticks, and their taken counts, of entries not in ids - the shared page after its list changed. */
+  keepTicksIn(ids: readonly string[]): void {
+    for (const id of [...this.sel]) {
+      if (ids.includes(id)) continue;
+      this.sel.delete(id);
+      this.picked.delete(id);
+    }
   }
 
   /**

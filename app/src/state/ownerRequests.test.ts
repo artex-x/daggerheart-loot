@@ -163,6 +163,7 @@ describe('OwnerRequests apply and decline', () => {
     expect(said).toEqual([['Запрос принят', undefined]]);
     expect(o.forList(SHOP, Date.now())).toEqual([]);
     expect(o.decidedFor(SHOP)).toMatchObject([{ id, verdict: 'applied', taken: 4 }]);
+    expect(o.decidedFor(SHOP)[0]?.lines).toEqual(TWO);
     expect(o.decidedFor(TROPHIES)).toEqual([]);
     expect(o.busy).toBeNull();
   });
@@ -219,6 +220,21 @@ describe('OwnerRequests apply and decline', () => {
       [b, 'applied'],
       [a, 'declined']
     ]);
+    expect(o.decided[1]?.lines).toEqual(TWO);
+  });
+
+  it("forgets one list's decided requests and keeps the others", async () => {
+    const { cloud, o } = owner();
+    const made = await cloud.shares.create(TROPHIES, 'player');
+    const token = made.ok ? made.token : '';
+    const a = cloud.request('player-token-1', TWO) ?? '';
+    const b = cloud.request(token, [{ item: 'q1', qty: 1 }]) ?? '';
+    await o.read();
+    await o.decline(a);
+    await o.decline(b);
+    o.forget(SHOP);
+    expect(o.decidedFor(SHOP)).toEqual([]);
+    expect(o.decidedFor(TROPHIES).map((d) => d.id)).toEqual([b]);
   });
 
   it('reads quietly when a decision this tab sent with no answer comes back decided', async () => {

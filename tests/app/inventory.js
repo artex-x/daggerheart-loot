@@ -1251,6 +1251,23 @@ const STATES = [
     }
   },
   {
+    id: SHOP + ' ~ decided as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: "«Отклонить» on the GM link's request, the fold opened: «Запросы (1)» with the players' request, «Решённые в этот раз (1)» expanded with «По ссылке для мастера · только что · отклонён», «Зелье Быстрого Шага ×9» and «Палаш ×1», and «Скрыть» at the fold row's end",
+    enter: async (d) => {
+      await twoRequests(d);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (2)'); i++)
+        await d.settle();
+      await d.click('Отклонить');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Решённые в этот раз (1)'); i++)
+        await d.settle();
+      await d.click('Решённые в этот раз (1)');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
     id: TROPHIES + ' ~ share as gm1',
     route: TROPHIES,
     as: 'gm1',
@@ -1610,6 +1627,18 @@ const STATES = [
       await d.tick('Первоклассный Спальный Мешок');
       await d.tick('Зелье Быстрого Шага');
     }
+  },
+  {
+    id: '#/s/player-token-1 ~ sent',
+    route: '#/s/player-token-1',
+    why: 'signed out, ci1 and cc1 ticked and «Сообщить владельцу» pressed: both ticks and the cc1 take line kept, «Запрос отправлен» disabled last in the bar, the toast «Запрос отправлен владельцу списка.»',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Зелье Быстрого Шага');
+      await d.click('Сообщить владельцу');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: '#/s/player-token-1 ~ notify question as gm2',

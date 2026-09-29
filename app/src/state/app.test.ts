@@ -829,6 +829,18 @@ describe('the selection', () => {
     expect(app.picked.size).toBe(0);
   });
 
+  it('keepTicksIn drops the ticks and counts of entries not in the list', () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
+    app.toggleSel('ci1');
+    app.toggleSel('cc1');
+    app.toggleSel('q1');
+    app.pick('ci1', 2);
+    app.pick('cc1', 3);
+    app.keepTicksIn(['cc1', 'q1', 'q2']);
+    expect([...app.sel]).toEqual(['cc1', 'q1']);
+    expect([...app.picked]).toEqual([['cc1', 3]]);
+  });
+
   it('shared starts null', () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
     expect(app.shared).toBeNull();

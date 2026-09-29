@@ -1,6 +1,6 @@
-/* The reader's purchase request: each answer's toast and what happens to the
- * selection, the request id kept for a replay after `network` only, and flow
- * b's question and remembered answer. docs/specs/FEATURES.md, "Account and
+/* The reader's purchase request: each answer's toast, the sent mark a success
+ * leaves on its lines, the request id kept for a replay after `network` only,
+ * and flow b's question and remembered answer. docs/specs/FEATURES.md, "Account and
  * browser lists". */
 
 import { describe, expect, it, vi } from 'vitest';
@@ -33,7 +33,6 @@ function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask') {
     },
     dict: () => t,
     lang: () => 'ru' as const,
-    clearSel: vi.fn(),
     reread: vi.fn(),
     notifyGm: () => notify,
     setNotifyGm: vi.fn((v: NotifyGm) => {
@@ -46,12 +45,38 @@ function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask') {
 }
 
 describe('RequestSender.send', () => {
-  it('clears the selection and says the request was sent', async () => {
-    const { s, repo, hooks, said } = sender();
-    await s.send('tok', ONE);
-    expect(repo.send).toHaveBeenCalledWith('id-1', 'tok', ONE);
-    expect(hooks.clearSel).toHaveBeenCalledOnce();
+  it('keeps the selection, says the request was sent and marks the lines sent', async () => {
+    const { s, repo, said } = sender();
+    const two = [
+      { item: 'ci1', qty: 1 },
+      { item: 'cc1', qty: 3 }
+    ];
+    expect(s.isSent('tok', two)).toBe(false);
+    await s.send('tok', two);
+    expect(repo.send).toHaveBeenCalledWith('id-1', 'tok', two);
     expect(said).toEqual([['Запрос отправлен владельцу списка.', undefined]]);
+    expect(s.isSent('tok', [...two].reverse())).toBe(true);
+    expect(s.isSent('other', two)).toBe(false);
+    expect(
+      s.isSent('tok', [
+        { item: 'ci1', qty: 1 },
+        { item: 'cc1', qty: 2 }
+      ])
+    ).toBe(false);
+    s.dismiss();
+    expect(s.isSent('tok', two)).toBe(false);
+  });
+
+  it('sends nothing for lines already sent, and asks nothing after an add of them', async () => {
+    const { s, repo, said } = sender();
+    await s.send('tok', ONE);
+    await s.send('tok', ONE);
+    s.afterAdd('tok', ONE, 'Добавлено');
+    expect(s.asking).toBeNull();
+    expect(repo.send).toHaveBeenCalledOnce();
+    expect(said).toHaveLength(1);
+    s.afterAdd('tok', [{ item: 'ci1', qty: 2 }], 'Добавлено');
+    expect(s.asking).not.toBeNull();
   });
 
   it.each([
@@ -79,7 +104,7 @@ describe('RequestSender.send', () => {
       const { s, hooks, said } = sender([answer]);
       await s.send('tok', ONE);
       expect(said).toEqual([[text, true]]);
-      expect(hooks.clearSel).not.toHaveBeenCalled();
+      expect(s.isSent('tok', ONE)).toBe(false);
       expect(hooks.reread).not.toHaveBeenCalled();
     }
   );
@@ -93,7 +118,6 @@ describe('RequestSender.send', () => {
     await s.send('tok', ONE);
     expect(said).toEqual([['Список изменился. Проверьте выбор и отправьте снова.', true]]);
     expect(hooks.reread).toHaveBeenCalledTimes(2);
-    expect(hooks.clearSel).not.toHaveBeenCalled();
   });
 
   it('sends the same id after network, and a new one after success, a refusal or a changed selection', async () => {
@@ -105,9 +129,9 @@ describe('RequestSender.send', () => {
     ]);
     await s.send('tok', ONE);
     await s.send('tok', ONE);
-    await s.send('tok', ONE);
     await s.send('tok', [{ item: 'ci1', qty: 2 }]);
-    await s.send('tok', [{ item: 'ci1', qty: 2 }]);
+    await s.send('tok', [{ item: 'ci1', qty: 3 }]);
+    await s.send('tok', [{ item: 'ci1', qty: 3 }]);
     expect(ids()).toEqual(['id-1', 'id-1', 'id-2', 'id-3', 'id-4']);
   });
 
@@ -134,9 +158,9 @@ describe('RequestSender.send', () => {
   });
 
   it('keeps the selection after a flow b send and joins the add toast', async () => {
-    const { s, hooks, said } = sender();
+    const { s, said } = sender();
     await s.send('tok', ONE, 'Добавлено в «Список второго ГМа»');
-    expect(hooks.clearSel).not.toHaveBeenCalled();
+    expect(s.isSent('tok', ONE)).toBe(true);
     expect(said).toEqual([
       ['Добавлено в «Список второго ГМа». Владелец получил запрос.', undefined]
     ]);
@@ -202,7 +226,6 @@ describe('RequestSender storage', () => {
       say: () => undefined,
       dict: () => t,
       lang: () => 'ru',
-      clearSel: () => undefined,
       reread: () => undefined,
       notifyGm: () => 'always',
       setNotifyGm: () => undefined

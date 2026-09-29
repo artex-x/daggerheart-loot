@@ -1,5 +1,6 @@
 # 2026-09-27 - A requester sees no request status; the send toast is the only answer
 
+- Amended by "A sent purchase request keeps the ticks; the send waits until they change" (2026-09-29): the send button reads «Запрос отправлен» while the sent ticks stay.
 - Task: `persist-4-requests` (owner's feedback on the mocks, 2026-09-27: "as a player I would not care much, it is more relevant for DM to keep their list up-to-date"; planner, the removal).
 - Decision: a share page draws no status of the requests it sent. The
   send answers only success or a refusal, shown as a toast;

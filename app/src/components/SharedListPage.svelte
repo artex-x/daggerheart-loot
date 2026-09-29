@@ -100,6 +100,13 @@
      for the same reason. */
   $effect(() => {
     app.shared = shared;
+    /* An entry the list no longer holds leaves the selection, so the bar counts only drawn rows. */
+    if (shared) {
+      const ids = shared.ids;
+      untrack(() => {
+        app.keepTicksIn(ids);
+      });
+    }
   });
   onDestroy(() => {
     app.shared = null;
@@ -227,6 +234,10 @@
                 ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
                 sum={priceText((m.gold ?? 0) * taken, mode, app.lang)}
                 name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
+                minText={t.pickMin}
+                maxText={t.pickMax}
+                minName={t.pickMinOf.replace('%s', nameOf(it, app.lang))}
+                maxName={t.pickMaxOf.replace('%s', nameOf(it, app.lang))}
                 onchange={(n: number) => {
                   app.pick(it.id, n);
                 }}

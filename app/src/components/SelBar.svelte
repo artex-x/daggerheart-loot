@@ -67,6 +67,7 @@
   const token = $derived(app.requestToken);
   const sender = $derived(app.requestSender);
   const lines = $derived(ids.map((id) => ({ item: id, qty: takenOf(id) })));
+  const sent = $derived(token !== null && !!sender && sender.isSent(token, lines));
   const asking = $derived(
     sender?.asking && token !== null && sender.asking.token === token ? sender.asking : null
   );
@@ -147,9 +148,13 @@
               <span class="notify"
                 ><Button
                   size="sm"
-                  disabled={sender.sending}
+                  disabled={sender.sending || sent}
                   onclick={() => void sender.send(token, lines)}
-                  >{sender.sending ? t.requestSending : t.requestSend}</Button
+                  >{sent
+                    ? t.requestSentDone
+                    : sender.sending
+                      ? t.requestSending
+                      : t.requestSend}</Button
                 ></span
               >
             {/if}

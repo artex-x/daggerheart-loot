@@ -14,6 +14,10 @@ deleted.
 
 ## Index
 
+- 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md)
+- 2026-09-29 - [A roll mode starts at its first row on each visit; no number crosses tabs](decisions/2026-09-29-a-roll-mode-starts-at-its-first-row-on-each-visit.md)
+- 2026-09-29 - [A sent purchase request keeps the ticks; the send waits until they change](decisions/2026-09-29-a-sent-purchase-request-keeps-the-ticks.md)
+- 2026-09-29 - [Decided requests list their items and hide until the next page load](decisions/2026-09-29-decided-requests-list-their-items-and-hide-until-reload.md)
 - 2026-09-28 - [Account lists are selected on the index and deleted together, with no undo](decisions/2026-09-28-account-lists-are-selected-on-the-index-and-deleted-together.md)
 - 2026-09-28 - [The account's data file is a store-only zip with one JSON file per kind](decisions/2026-09-28-the-accounts-data-file-is-a-store-only-zip.md)
 - 2026-09-27 - [A green check arms the commit gate by its own exit, not a host-wide lock](decisions/2026-09-27-a-green-check-arms-the-commit-gate-by.md)

@@ -357,3 +357,23 @@ describe('accessibility', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+/* The three whole-table rolls share one branch of App.svelte; a number kept from one
+   table pointed past the end of a shorter one and drew nothing. */
+describe('switching between two tables', () => {
+  it('starts the next table at its first row after a switch from a longer one', async () => {
+    const router = memoryRouter('#/roll/dread');
+    render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
+    const field = (): HTMLInputElement =>
+      screen.getByRole<HTMLInputElement>('textbox', { name: 'Результат броска' });
+    await userEvent.clear(field());
+    await userEvent.type(field(), '25');
+    await userEvent.tab();
+    expect(screen.getByRole('heading', { level: 2, name: 'd вещь 25' })).toBeInTheDocument();
+    router.navigate('#/roll/wondrous');
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'w вещь 1' })
+    ).toBeInTheDocument();
+    expect(field().value).toBe('1');
+  });
+});

@@ -3063,8 +3063,9 @@ async function liveRequests() {
 }
 
 /** 55. A signed-out reader sends the ticked entry to the owner: the toast, the
- *  selection cleared, nothing written to either storage; the sixth send in a minute
- *  says the rate. */
+ *  selection kept, the button «Запрос отправлен» disabled until the selection is
+ *  cleared and ticked again, nothing written to either storage; the sixth send in a
+ *  minute says the rate. */
 async function sendARequest() {
   const at = '55 (send a request): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
@@ -3074,13 +3075,23 @@ async function sendARequest() {
     page.evaluate(() => [Object.keys(localStorage).sort(), Object.keys(sessionStorage).sort()]);
   const before = JSON.stringify(await keys());
   const ticked = () => document.querySelectorAll('.sel[data-row]').length;
+  const sentDisabled = () =>
+    [...document.querySelectorAll('.selbar button')].some(
+      (b) => b.textContent.trim() === 'Запрос отправлен' && b.disabled
+    );
+  await d.tick('Первоклассный Спальный Мешок');
   for (let n = 1; n <= 5; n++) {
-    await d.tick('Первоклассный Спальный Мешок');
+    if (n > 1) {
+      /* The sent lines keep the button disabled until the selection changes. */
+      await d.press('Снять выделение');
+      await d.tick('Первоклассный Спальный Мешок');
+    }
     await d.press('Сообщить владельцу');
     ok(
-      await waitIn(page, (c) => document.querySelectorAll('.sel[data-row]').length === c, 0),
-      at + 'send ' + String(n) + ' left the row ticked'
+      await waitIn(page, sentDisabled),
+      at + 'send ' + String(n) + ' did not leave «Запрос отправлен» disabled'
     );
+    ok((await page.evaluate(ticked)) === 1, at + 'send ' + String(n) + ' cleared the row');
     if (n === 1) {
       ok(
         await waitIn(page, bodyHas, 'Запрос отправлен владельцу списка.'),
@@ -3089,6 +3100,7 @@ async function sendARequest() {
     }
   }
   ok(JSON.stringify(await keys()) === before, at + 'a send wrote to browser storage');
+  await d.press('Снять выделение');
   await d.tick('Первоклассный Спальный Мешок');
   await d.press('Сообщить владельцу');
   ok(

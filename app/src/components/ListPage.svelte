@@ -1307,6 +1307,10 @@
                     ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
                     sum={priceText((m.gold ?? 0) * n, mode, app.lang)}
                     name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
+                    minText={t.pickMin}
+                    maxText={t.pickMax}
+                    minName={t.pickMinOf.replace('%s', nameOf(it, app.lang))}
+                    maxName={t.pickMaxOf.replace('%s', nameOf(it, app.lang))}
                     onchange={(n: number) => {
                       picked.set(it.id, n);
                     }}

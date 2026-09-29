@@ -725,9 +725,9 @@ describe('the taken count, the total and a partial removal', () => {
     expect(row).toHaveClass('sel');
     expect(container.querySelectorAll('.lrow')[0]).not.toHaveClass('sel');
     const take = row?.querySelector('.lrow-take');
-    expect(take).toHaveTextContent('Взять из 2 = 1 сундук 5 мешков');
+    expect(take).toHaveTextContent('ВзятьМинМакс из 2 = 1 сундук 5 мешков');
     await takeOne();
-    expect(take).toHaveTextContent('Взять из 2 = 7 мешков 5 горстей');
+    expect(take).toHaveTextContent('ВзятьМинМакс из 2 = 7 мешков 5 горстей');
     await expectNoA11yViolations(container);
   });
 
@@ -768,6 +768,20 @@ describe('the taken count, the total and a partial removal', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBe(2);
+  });
+
+  it('takes one piece of a ticked entry with «Мин»', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    await tickRow(1);
+    await userEvent.click(screen.getByRole('button', { name: 'Мин, взять 1: Зелье' }));
+    expect(container.querySelector('.batch-summ')).toHaveTextContent(
+      'Выбрана 1 позиция Итого: 7 мешков 5 горстей'
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
+    expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBeUndefined();
+    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'cc1', 'q1']);
+    await expectNoA11yViolations(container);
   });
 
   it('removes a whole row and lowers a partial one in one step, and undoes both into place', async () => {

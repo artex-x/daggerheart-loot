@@ -64,13 +64,17 @@
     {#if app.route.kind === 'section'}
       {@const cfg = ROLL_TABLE[app.route.section]}
       {#if cfg}
-        <RollPanel
-          {app}
-          section={cfg.table}
-          title={app.t[cfg.title]}
-          sub={app.t.subWondrous}
-          rows={app.index?.rows.get(cfg.table) ?? []}
-        />
+        <!-- The three whole-table rolls share this branch; a number kept from one table
+             points past the end of a shorter one (docs/specs/FEATURES.md, "Rolling"). -->
+        {#key app.route.section}
+          <RollPanel
+            {app}
+            section={cfg.table}
+            title={app.t[cfg.title]}
+            sub={app.t.subWondrous}
+            rows={app.index?.rows.get(cfg.table) ?? []}
+          />
+        {/key}
       {:else if app.route.section === 'roll/std'}
         <StdPanel {app} />
       {:else if app.route.section === 'roll/alt'}
