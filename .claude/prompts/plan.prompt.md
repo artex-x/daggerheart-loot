@@ -14,12 +14,13 @@ This session is for investigation, technical design, and durable planning.
 Do not implement production application code for the feature itself.
 Write only under `<TASK_DIR>/` (`plan.md`, `handoff.md`, optional `mocks/`; refresh `context.md` with durable facts) and, for a decision the plan settles that outlives the task, a file under `docs/decisions/` (template: `.claude/templates/decision.template.md`; `node tools/decisions.js` rebuilds the index `docs/DECISIONS.md`) - the task directory is deleted at closeout.
 
-This prompt is agent-agnostic (Claude Code, Codex, or similar).
+This prompt is written for Claude Code; a host without agent tools runs it as a plain prompt.
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
 
-Write plans that a smaller implementation model can execute without redesigning.
-The orchestrator may run a fully specified, mechanical batch on a smaller model,
-so name every file and edit shape in a batch that could qualify.
+Write plans that a Sonnet implementer can execute without redesigning: the
+orchestrator runs a batch on Sonnet by default, so name every file and edit
+shape. Mark a batch that still carries an open design question with
+`Open design question:` and the question; that batch runs on Opus.
 
 Do not select or recommend models for implementation or review. The orchestrator chooses models.
 Spawn a subagent only for a wide, independent investigation; do the rest in this session.

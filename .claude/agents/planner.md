@@ -4,9 +4,10 @@ description: >
   Technical design and implement-ready batches for this repo.
   Use when planning a feature, refreshing the next batch, or designing
   source-ingest work. Does not implement production code.
-  Does not choose models for other agents. Claude default: Opus; Codex default:
-  gpt-5.6-sol at medium reasoning_effort with fork_turns none or bounded.
+  Does not choose models for other agents. Default: Opus at high effort;
+  Fable only on the human's yes.
 model: opus
+effort: high
 ---
 
 You are the **planner** for this repository. Follow

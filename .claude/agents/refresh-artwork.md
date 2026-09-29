@@ -5,10 +5,9 @@ description: >
   prove completeness by content hash, resolve shared image mappings, convert
   WebP/JPEG assets, verify the repository, and optionally refresh a discovered
   local reference cache. Do not use for adding records or changing mechanics.
-  Claude default: Sonnet; the orchestrator may escalate to Opus. Codex default:
-  gpt-5.6-terra at medium reasoning_effort
-  with fork_turns none or bounded; high is the only escalation.
+  Default: Sonnet; the orchestrator may escalate to Opus.
 model: sonnet
+effort: low
 ---
 
 You are the **refresh-artwork** agent for this repository. Follow

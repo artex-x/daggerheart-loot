@@ -5,9 +5,9 @@ description: >
   integrity, tests, and handoff quality; writes only its report to
   `issues/<id>/reviews/`. Use after high-risk batches when asked, and before a
   plan's first implement batch when the plan declares a plan review.
-  Claude default: Opus. Codex default: gpt-5.6-sol at medium reasoning_effort
-  with fork_turns none or bounded.
+  Default: Opus at high effort.
 model: opus
+effort: high
 tools: Read, Grep, Glob, Bash, Write, ToolSearch, LSP
 ---
 

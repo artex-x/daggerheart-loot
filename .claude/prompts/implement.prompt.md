@@ -12,7 +12,7 @@ Use `<TASK_ID>` as a variable. Never treat a sample id as hard-coded.
 This session is for implementation of the approved technical design.
 You are implementing, not redesigning.
 
-This prompt is agent-agnostic (Claude Code, Codex, or similar).
+This prompt is written for Claude Code; a host without agent tools runs it as a plain prompt.
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
 
 Follow the plan tightly: it is written so that a smaller model can execute it.

@@ -11,7 +11,7 @@ Use `<TASK_ID>` as a variable. Never treat a sample id as hard-coded.
 
 Add a new item source (or extend an existing one) into daggerheart-loot end-to-end in this session when safe.
 
-This prompt is agent-agnostic (Claude Code, Codex, or similar).
+This prompt is written for Claude Code; a host without agent tools runs it as a plain prompt.
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
 Do not select models - the orchestrator chooses models.
 Only one writer should own this working tree at a time.

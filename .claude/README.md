@@ -1,29 +1,26 @@
-# Claude / Codex agent wiring
+# Claude agent wiring
 
-| Agent | Prompt | Default model frontmatter |
-|-------|--------|---------------------------|
-| planner | prompts/plan.prompt.md | opus |
-| implementer | prompts/implement.prompt.md | opus |
-| reviewer | prompts/review.prompt.md | opus |
-| add-source | prompts/add-source.prompt.md | opus |
-| refresh-artwork | prompts/refresh-artwork.prompt.md | sonnet |
+| Agent | Prompt | Default model frontmatter | Effort frontmatter |
+|-------|--------|---------------------------|--------------------|
+| planner | prompts/plan.prompt.md | opus | high |
+| implementer | prompts/implement.prompt.md | sonnet | medium |
+| reviewer | prompts/review.prompt.md | opus | high |
+| add-source | prompts/add-source.prompt.md | opus | medium |
+| refresh-artwork | prompts/refresh-artwork.prompt.md | sonnet | low |
 
 Orchestrator: prompts/orchestrate.prompt.md
 
-## Host-aware explicit routing policy
+## Model and effort routing policy
 
-Claude hosts use the frontmatter defaults above and human-controlled
-session-level effort. On Codex, the orchestrator explicitly passes `model` and
-`reasoning_effort` on every worker dispatch with `fork_turns: "none"` or a
-bounded positive count. The role defaults are Sol/medium for planner and
-reviewer, and Terra/medium for implementer, add-source, and refresh-artwork.
-The only Codex ladder is Sol -> Terra -> Luna; Luna is only for an explicit,
-bounded low-risk mechanical or read-only helper. `medium` is the default and
-`high` the only escalation. See prompts/orchestrate.prompt.md. The planner's
-tier can be escalated to `fable` for one dispatch under the named tests in
-prompts/orchestrate.prompt.md, "Planner tier"; the frontmatter stays `opus`,
-and a resume keeps its tier. An implementer batch runs on `sonnet` only when
-it passes every test in "Writer tier" in the same prompt.
+Workers use the frontmatter defaults above. Every role pins an effort from
+`low` to `high`, so the human's session effort does not reach a worker;
+`xhigh` and `max` are the human's exception for one task. The routing rules
+and their reasons are in
+prompts/orchestrate.prompt.md, "Model selection". The planner's
+tier goes to `fable` for one dispatch only under the tests in "Planner tier"
+and after the human's yes; the frontmatter stays `opus`, and a resume keeps
+its tier. An implementer batch goes to `opus` when it meets a test in
+"Writer tier" in the same prompt.
 
 The orchestrator owns final reconciliation and cleanup: wait for workers, align context/plan/handoff, preserve evidence and unrelated work, and remove only clearly disposable task-scoped scratch artifacts.
 
@@ -1018,18 +1015,24 @@ Facts settled during measurement (`agent-effort`, 2026-09-11):
 - **Propagation, measured**: three probes against three controls read
   `high` / `low` / `high` in lockstep with the session (W1=E0, W2=E1,
   W3=E0) - session effort propagates to a dispatched worker.
-- **Frontmatter `effort:` key, unverified**: one probe under a session at
-  `high` still read `high` while `implementer.md` carried a scratch
-  `effort: low` line. Agent definitions may be read once at session start,
-  so a mid-session edit could simply not have been seen; a fresh-session
-  repeat, not yet run, would settle it - the same standing as
-  `disallowedTools` at candidate row 36.
+- **Frontmatter `effort:` key, measured**: the sub-agents docs
+  (code.claude.com/docs/en/sub-agents) list `effort` (`low` to `max`) as
+  overriding the session level, with no `inherit` value - omit the key to
+  inherit. On 2026-09-29 (Claude Code 2.1.284, desktop host) a fresh session
+  at `medium` dispatched `planner` (`effort: high`) and its `$CLAUDE_EFFORT`
+  read `high`, so the key overrides the session and `$CLAUDE_EFFORT` is per
+  worker. Two probes in the session that added the key read the session's
+  `medium`, because the desktop host loads agent definitions once at
+  session start, despite the docs' hot-reload note. The headless
+  `claude.exe -p` cannot run a probe: it is not logged in on this host.
+- An edit to `.claude/agents/*.md` takes effect in the next session, not the
+  current one (the probe above).
 - Model default effort is `high` on every model that supports effort, which
   is why a single `high` reading under a `high` session proves nothing;
   contrast levels must be `low` vs `high`.
 - `set_session_effort` refuses the calling session and targets sessions, not
-  subagents - the orchestrator has no lever to set a worker's effort per
-  dispatch, only the human's own session control or `/effort`.
+  subagents. The Agent tool has no `effort` parameter (2.1.284), so the
+  orchestrator has no per-dispatch lever; the frontmatter key is per role.
 
 Facts settled during measurement (`rtk-coverage`, 2026-09-18): the measured
 boundary behind rule 2j (candidate row 43), pinned to `rtk 0.48.0`. Every row

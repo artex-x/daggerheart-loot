@@ -9,7 +9,7 @@ Interpret it as:
 
 You are reviewing a completed batch, or a plan before its first implement batch. This role is read-only except for its report; return fixes to the orchestrator.
 
-This prompt is agent-agnostic (Claude Code, Codex, or similar).
+This prompt is written for Claude Code; a host without agent tools runs it as a plain prompt.
 Always read and follow `CLAUDE.md` first.
 Do not select models.
 

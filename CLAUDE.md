@@ -188,12 +188,12 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 Feature work uses roles (see `.claude/`):
 - **planner** -> `issues/<id>/plan.md` + `handoff.md` (no production code);
   decisions to `docs/decisions/`
-- **implementer** -> next batch only; routing: `.claude/README.md`, "Host-aware explicit routing policy"
+- **implementer** -> next batch only; routing: `.claude/README.md`, "Model and effort routing policy"
 - **reviewer** -> required when a trigger in `.claude/prompts/orchestrate.prompt.md`, "When to run reviewer (do not skip these)" fires; one remediation cycle, which also carries the batch's local nits; nits alone defer mid-plan and clear on the terminal batch
 - **add-source** -> rare end-to-end content ingest
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 - a single-file visual bug pinned to a width skips planner and review: `/small-fix` (`.claude/skills/small-fix/SKILL.md`)
 
-Prompts: `.claude/prompts/`. Agents: `.claude/agents/`. Kickoff: `/orchestrate`. Pass `TASK: <id>` at runtime. Orchestrator selects models; effort is the session's, set by the human. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
+Prompts: `.claude/prompts/`. Agents: `.claude/agents/`. Kickoff: `/orchestrate`. Pass `TASK: <id>` at runtime. Orchestrator selects models: Sonnet implements, Opus plans and reviews, Fable only on the human's yes. Each role pins its effort from `low` to `high`; `xhigh` and `max` are the human's exception. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
 Hosts without agent tools run the prompt files sequentially with `issues/<id>/` as the handoff bus; closeout and cleanup are the orchestrate prompt's.
 <!-- setup-claude-agents:end -->

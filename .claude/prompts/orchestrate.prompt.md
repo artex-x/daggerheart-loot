@@ -239,80 +239,85 @@ the human and dropped.
 
 ## Model selection (orchestrator only)
 Agents must not choose models or effort.
-Claude frontmatter remains the default on Claude hosts: planner, reviewer,
-implementer and add-source use `opus`; refresh-artwork uses `sonnet`. Claude
-effort is session-level and human-controlled.
+The agent frontmatter is the default:
 
-### Writer tier: `opus` by default, `sonnet` for a mechanical batch
+| Role | Model | Effort | Why this tier |
+|---|---|---|---|
+| planner | `opus` | `high` | design is judgement-heavy and small next to the implementation it saves |
+| reviewer | `opus` | `high` | a missed contract or RLS defect costs more than the review |
+| implementer | `sonnet` | `medium` | Sonnet 5.5 is strongest on multistep coding in a real repository, at half the Opus price |
+| add-source | `opus` | `medium` | record and mechanic design is judgement, not transcription |
+| refresh-artwork | `sonnet` | `low` | hash-proven, mechanical conversion whose prompt names every check |
 
-A plan cannot name the complexity it failed to see, and a Sonnet implementer
-stopped early twice on one batch (`git show b2eec64:.claude/improvements.md`). Opus 5.5 costs
-less per solved task than the Opus the old split was priced against, so
-`opus` is the default and `sonnet` is the exception.
+Effort runs from `low` to `high`. `medium` is the official starting level for
+agentic coding on Sonnet 5.5 and Opus 5.5; at `low`, Sonnet 5.5 is more
+likely to report a change done without running its check, so `low` suits
+only a role whose prompt names each check. Every role pins its level, so a
+raised session effort does not reach the workers. The frontmatter key
+overrides the session, and the Agent tool takes no per-dispatch effort
+(`.claude/README.md`, "Facts settled during measurement (`agent-effort`)").
 
-One implementer dispatch may name `model: sonnet` only when every test holds:
+`xhigh` and `max` are exceptions. Propose one in chat only when a pass at
+`high` failed on reasoning, not on missing facts, and name the role and the
+task. The human decides and edits the frontmatter; the change takes effect in
+the next session and is reverted when the task closes.
 
-1. Each step names its file and the shape of its edit; no step asks the
-   implementer to choose between approaches.
-2. The batch touches no public contract, route, stored state, product law,
-   hook, or configuration.
-3. No acceptance line rests on visual judgement: the batch changes nothing
-   that a screen draws.
-4. The work is data-only, test- or doc-only, a rename, or a repeat of a
-   pattern that this plan already shipped.
+A search or lookup helper you dispatch (`Explore`, `general-purpose`) names
+`model: sonnet`; it never runs on `opus` or `fable`, and it runs at the
+session's effort.
 
-Unsure is `opus`. A batch that ran on `sonnet` and then stopped early,
-reported a deviation, or failed review gets its remediation as a fresh
-dispatch on `opus`, because a resume keeps the tier ("Resume, do not
-replace"). Dispatch refresh-artwork with `model: opus` when the delivery
-needs a crop, pad or regeneration exception, or changes an image mapping.
+### Writer tier: `sonnet` by default, `opus` for a batch that needs judgement
 
-### Planner tier: `opus` by default, `fable` by named escalation
+Sonnet 5.5 finishes agentic coding in fewer requests than Sonnet 5 and scores
+higher at `medium` than Sonnet 5 did at `high`; the early stops recorded at
+`git show b2eec64:.claude/improvements.md` were an older Sonnet. Opus stays
+the better choice for the hardest long-horizon work, so a batch that meets
+any test below is dispatched with `model: opus`:
 
-`planner.md`'s frontmatter is `opus` and stays so; a routine planning
-dispatch names no `model`. One dispatch may name `model: fable` when the
-GOAL meets at least one test below, and the dispatch message in chat says
-which:
+1. A step asks the implementer to choose between approaches, or the batch carries an
+   `Open design question:` line.
+2. The batch changes a public contract, a route, stored state, a product
+   law, a migration, an RLS policy, a SECURITY DEFINER function, a hook, or
+   configuration every later session runs under.
+3. An acceptance line rests on visual judgement: print fitting, a golden
+   re-seed, or visual parity with a design node.
+4. It is the remediation of a batch that ran on `sonnet` and then stopped
+   early, reported a deviation, or failed review. A resume keeps the tier
+   ("Resume, do not replace"), so this is a fresh dispatch.
 
-1. The plan will settle a public contract, a product law, a hook that
-   denies, or configuration every later session runs under - and a wrong
-   call is not caught by `npm run check` or a reviewer, only by the next
-   failure.
-2. The design must reconcile three or more sources that can conflict (issue
-   evidence, specs, live behaviour, an in-flight plan, a design held outside
-   the repo), and the human has said the call is the planner's to make.
-3. A previous planning pass on this task came back not implement-ready, or a
+Unsure is `opus`. Name the test in the dispatch message in chat. Dispatch
+add-source with `model: sonnet` when it extends an existing source with
+records only - no new mechanic, craft, table or filter. Dispatch
+refresh-artwork with `model: opus` when the delivery needs a crop, pad or
+regeneration exception, or changes an image mapping.
+
+### Planner tier: `opus` by default, `fable` only with the human's yes
+
+Fable costs 2.5 times Opus per token and runs longer turns, so it is the
+last resort, not the tier for hard work. `planner.md`'s frontmatter is
+`opus` and stays so; a routine planning dispatch names no `model`. Opus at
+`high` plans large features, next-batch refreshes and source-ingest design.
+
+Propose `model: fable` for one dispatch only when test 1 holds, or tests 2
+and 3 both hold:
+
+1. An `opus` planning pass on this task came back not implement-ready, or a
    batch of it failed review with `replan`.
+2. The feature is new ground: no shipped pattern in this repository covers
+   it, and two or more designs stay viable after the specs are read.
+3. The plan settles a public contract, a product law, a denying hook, or
+   configuration every later session runs under, and a wrong call is caught
+   only by the next failure - not by `npm run check` or a reviewer.
 
-Not a test: the task is large, the diff is wide, the human is in a hurry, or
-Fable is available. Feature planning, a next-batch refresh and source-ingest
-design stay on `opus`. If no test is named in the dispatch, the tier is
-`opus`. Escalation is per dispatch and never edits the frontmatter; a resume
-carries no `model` ("Resume, do not replace"), so a tier change is a fresh
-dispatch. Fable's availability moves (unavailable 2026-09-12, available
-2026-09-15): when it is not there, plan on `opus` and say so - never wait.
-Announce the routing in chat only; never write it into `plan.md`,
-`handoff.md` or `context.md`.
-
-On Codex, every worker dispatch must name `model` and `reasoning_effort`, and
-must use `fork_turns: "none"` or a bounded positive count. Do not use a
-full-history fork: it cannot accept those overrides. Use this mapping:
-
-| Role | Codex model | Effort |
-|---|---|---|
-| planner | `gpt-5.6-sol` | `medium` |
-| reviewer | `gpt-5.6-sol` | `medium` |
-| implementer | `gpt-5.6-terra` | `medium` |
-| add-source | `gpt-5.6-terra` | `medium` |
-| refresh-artwork | `gpt-5.6-terra` | `medium` |
-
-The only Codex ladder is `gpt-5.6-sol` -> `gpt-5.6-terra` ->
-`gpt-5.6-luna`. Use Luna only for an explicit, bounded, low-risk
-mechanical or read-only helper; it is never a named-role silent default or a
-choice for planning, ambiguous implementation, remediation, or risk-bearing
-review. `medium` is the default; `high` is the only escalation, justified by
-design complexity or implementation/review risk. Announce the chosen routing
-in chat only. Never write it into plan.md or handoff.md.
+Not a test: the task is large, the diff is wide, the sources conflict, the
+human is in a hurry, or Fable is available. Before the dispatch, name the
+tests in chat and ask the human; dispatch on `fable` only after a clear
+yes, and on `opus` otherwise. Escalation is per dispatch and never edits
+the frontmatter; a resume carries no `model`, so a tier change is a fresh
+dispatch. When Fable is not available, plan on `opus` and say so - never
+wait. Fable is never the tier of an implementer, reviewer, add-source or
+helper dispatch. Announce the routing in chat only; never write it into
+`plan.md`, `handoff.md` or `context.md`.
 
 ## When to run reviewer (do not skip these)
 Run reviewer after implement or add-source when ANY of:

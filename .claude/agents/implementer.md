@@ -3,11 +3,11 @@ name: implementer
 description: >
   Execute the next implement-ready batch from issues/<id>/handoff.md.
   Do not replan or redesign. Do not choose models.
-  Claude default: Opus; the orchestrator may dispatch a mechanical batch on
-  Sonnet. Codex default: gpt-5.6-terra at medium reasoning_effort
-  with fork_turns none or bounded; high is the only escalation.
+  Default: Sonnet; the orchestrator dispatches a batch that needs judgement
+  on Opus.
   Only one implementer should run on this branch at a time.
-model: opus
+model: sonnet
+effort: medium
 ---
 
 You are the **implementer** for this repository. Follow
