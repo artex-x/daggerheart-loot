@@ -1,6 +1,6 @@
 # #/account ~ delete confirmation as gm1
 # route: #/account
-# why: the typed confirmation open, the word typed and the final button enabled; the English half types the Russian word, so there its final button stays disabled
+# why: the typed confirmation open, the word typed and the final button enabled; the English half types the Russian word, so there its final button stays disabled; «Ваши данные» above it
 # as: gm1
 
 ## ru :: tree
@@ -29,7 +29,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     StaticText "Отображение, способы входа, выход и ваши данные."
     heading "ОТОБРАЖЕНИЕ" [level=2]
     StaticText "Эти настройки действуют на всех ваших устройствах. Вид таблиц и ..." [namelen=134 namehash=00161fc6]
-    ... StaticText x14 of 18 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
@@ -49,11 +49,11 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
       option "Сообщать владельцу" [selected=false]
       option "Не сообщать" [selected=false]
     heading "ВЫ ВОШЛИ КАК" [level=2]
-    heading "СПОСОБЫ ВХОДА" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
     button "Отключить Google"
     button "Отключить Discord"
+    ... button x3 of 7 same-shape siblings elided
     heading "ВЫХОД" [level=2]
-    ... button x2 of 6 same-shape siblings elided
     heading "УДАЛЕНИЕ АККАУНТА" [level=2]
     button "Удалить аккаунт..." [expanded=true]
     StaticText "Чтобы подтвердить, введите слово "
@@ -90,6 +90,7 @@ daggerheart.com
 Отмена
 Поиск
 Сеткой
+Скачать мои данные (ZIP)
 Сообщества
 Списки
 Списком
@@ -128,7 +129,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
     StaticText "Display, sign-in methods, signing out and your data."
     heading "DISPLAY" [level=2]
     StaticText "These settings apply on all your devices. A tables view or a pri..." [namelen=133 namehash=30d49185]
-    ... StaticText x14 of 18 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
@@ -148,11 +149,11 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
       option "Notify the owner" [selected=false]
       option "Don't notify" [selected=false]
     heading "SIGNED IN AS" [level=2]
-    heading "CONNECTED PROVIDERS" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
     button "Disconnect Google"
     button "Disconnect Discord"
+    ... button x2 of 6 same-shape siblings elided
     heading "SIGN OUT" [level=2]
-    button "Sign out"
     button "Sign out everywhere"
     heading "DELETE ACCOUNT" [level=2]
     button "Delete account..." [expanded=true]
@@ -180,6 +181,7 @@ Delete account...
 Delete for good
 Disconnect Discord
 Disconnect Google
+Download my data (ZIP)
 Dragon's Vault
 Dread
 EN

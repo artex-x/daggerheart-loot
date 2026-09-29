@@ -37,12 +37,12 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Войти"
     link "Клад дракона, 7 позиций" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
       StaticText "Клад дракона"
-      StaticText "7"
+      StaticText "7 позиций"
     button "Поделиться"
     button "Удалить"
     link "Лавка в порту, 0 позиций" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
-      StaticText "0"
+      StaticText "0 позиций"
       StaticText "Список пуст"
     button "Поделиться"
     button "Удалить"
@@ -117,12 +117,12 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "Sign in"
     link "Клад дракона, 7 items" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
       StaticText "Клад дракона"
-      StaticText "7"
+      StaticText "7 items"
     button "Share"
     button "Delete"
     link "Лавка в порту, 0 items" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
-      StaticText "0"
+      StaticText "0 items"
       StaticText "The list is empty"
     button "Share"
     button "Delete"

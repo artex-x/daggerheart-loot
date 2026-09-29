@@ -1,6 +1,6 @@
 # #/lists ~ two lists
 # route: #/lists
-# why: signed out: the prompt panel, then a card with six thumbs and a badge of 7 and an empty card under the notice
+# why: signed out: the prompt panel, then a card with six thumbs and «7 позиций» and an empty card with «0 позиций» under the notice
 
 ## ru :: tree
 RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]
@@ -39,12 +39,12 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Скрыть" [description=Скрыть]
     link "Клад дракона, 7 позиций" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
       StaticText "Клад дракона"
-      StaticText "7"
+      StaticText "7 позиций"
     button "Поделиться"
     button "Удалить"
     link "Лавка в порту, 0 позиций" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
-      StaticText "0"
+      StaticText "0 позиций"
       StaticText "Список пуст"
     button "Поделиться"
     button "Удалить"
@@ -122,12 +122,12 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "Dismiss" [description=Dismiss]
     link "Клад дракона, 7 items" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
       StaticText "Клад дракона"
-      StaticText "7"
+      StaticText "7 items"
     button "Share"
     button "Delete"
     link "Лавка в порту, 0 items" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
-      StaticText "0"
+      StaticText "0 items"
       StaticText "The list is empty"
     button "Share"
     button "Delete"

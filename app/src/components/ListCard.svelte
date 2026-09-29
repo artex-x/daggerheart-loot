@@ -114,7 +114,7 @@
     background: linear-gradient(180deg, rgb(var(--gold-rgb) / 9%), var(--surface));
   }
 
-  /* A 32 px box in the corner the count badge held; its target is 44 px. */
+  /* A 32 px box in the top right corner; its target is 44 px. */
   .listcard-pick {
     position: absolute;
     top: 10px;

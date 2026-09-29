@@ -92,6 +92,7 @@
 
   /* «Импорт из файла»: the field under the name row, while the lists are read. */
   let importing = $state(false);
+  let importSending = $state(false);
   let importRow = $state<HTMLDivElement | undefined>(undefined);
   const canImport = $derived(signedIn && cloud?.status === 'ready');
 
@@ -245,6 +246,7 @@
                 caret
                 on={importing}
                 expanded={importing}
+                disabled={importSending}
                 onclick={toggleImport}>{t.importOpen}</Button
               ></Actions
             >
@@ -252,7 +254,7 @@
         {/if}
       </Field>
       {#if importing && canImport}
-        <ImportPanel {app} onclose={() => void closeImport()} />
+        <ImportPanel {app} bind:sending={importSending} onclose={() => void closeImport()} />
       {/if}
     </Panel>
   {:else if target === 'prompt'}

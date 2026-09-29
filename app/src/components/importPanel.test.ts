@@ -372,6 +372,8 @@ describe('the press', () => {
     await userEvent.click(await importButton(1));
     expect(await importButton(1)).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Отмена' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Импорт из файла' })).toBeDisabled();
+    await expectNoA11yViolations(container);
     open();
     expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
   });

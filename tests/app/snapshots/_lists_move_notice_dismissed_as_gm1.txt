@@ -32,33 +32,36 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "НОВЫЙ СПИСОК"
     textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
+    button "Импорт из файла" [expanded=false]
     heading "ВАШ АККАУНТ" [level=2]
+    checkbox "Выбрать все" [checked=false]
+    StaticText "ВЫБРАТЬ ВСЕ"
+    generic ""
+    checkbox "Выбрать: Лавка в порту" [checked=false]
     link "Лавка в порту, 0 позиций, изменён только что" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005001]
       StaticText "Лавка в порту"
-      StaticText "0"
-      StaticText "изменён только что"
+      StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
     button "Удалить"
+    ... checkbox x2 of 6 same-shape siblings elided
     link "Клад дракона, 0 позиций, изменён только что" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005000]
       StaticText "Клад дракона"
-      StaticText "0"
-      StaticText "изменён только что"
+      StaticText "0 позиций · изменён только что"
       StaticText "Список пуст"
     ... button x2 of 6 same-shape siblings elided
     link "Пустой список, 0 позиций, изменён 1 час назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
-      StaticText "0"
-      StaticText "изменён 1 час назад"
+      StaticText "0 позиций · изменён 1 час назад"
       StaticText "Список пуст"
+    checkbox "Выбрать: Лавка кузнеца" [checked=false]
     link "Лавка кузнеца, 9 позиций, изменён 3 дня назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
-      StaticText "9"
-      StaticText "изменён 3 дня назад"
+      StaticText "9 позиций · изменён 3 дня назад"
     button "Удалить"
+    checkbox "Выбрать: Трофеи" [checked=false]
     link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
-      StaticText "2"
-      StaticText "изменён в прошлом месяце"
+      StaticText "2 позиции · изменён в прошлом месяце"
     button "Удалить"
   contentinfo ""
     navigation "Страницы сайта"
@@ -77,6 +80,13 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
+Выбрать все
+Выбрать: Клад дракона
+Выбрать: Лавка в порту
+Выбрать: Лавка кузнеца
+Выбрать: Пустой список
+Выбрать: Трофеи
+Импорт из файла
 К содержимому
 Как это работает
 Клад дракона, 0 позиций, изменён только что
@@ -127,33 +137,36 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
     StaticText "NEW LIST"
     textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
+    button "Import from file" [expanded=false]
     heading "YOUR ACCOUNT" [level=2]
+    checkbox "Select all" [checked=false]
+    StaticText "SELECT ALL"
+    generic ""
+    checkbox "Select: Лавка в порту" [checked=false]
     link "Лавка в порту, 0 items, edited just now" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005001]
       StaticText "Лавка в порту"
-      StaticText "0"
-      StaticText "edited just now"
+      StaticText "0 items · edited just now"
       StaticText "The list is empty"
     button "Delete"
+    ... checkbox x2 of 6 same-shape siblings elided
     link "Клад дракона, 0 items, edited just now" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005000]
       StaticText "Клад дракона"
-      StaticText "0"
-      StaticText "edited just now"
+      StaticText "0 items · edited just now"
       StaticText "The list is empty"
     ... button x2 of 6 same-shape siblings elided
     link "Пустой список, 0 items, edited 1 hour ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
-      StaticText "0"
-      StaticText "edited 1 hour ago"
+      StaticText "0 items · edited 1 hour ago"
       StaticText "The list is empty"
+    checkbox "Select: Лавка кузнеца" [checked=false]
     link "Лавка кузнеца, 9 items, edited 3 days ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
-      StaticText "9"
-      StaticText "edited 3 days ago"
+      StaticText "9 items · edited 3 days ago"
     button "Delete"
+    checkbox "Select: Трофеи" [checked=false]
     link "Трофеи, 2 items, edited last month" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
-      StaticText "2"
-      StaticText "edited last month"
+      StaticText "2 items · edited last month"
     button "Delete"
   contentinfo ""
     navigation "Site pages"
@@ -172,6 +185,7 @@ Dragon's Vault
 Dread
 EN
 How this works
+Import from file
 Install as an app
 Lists
 New list
@@ -179,6 +193,12 @@ Open this section on start
 Privacy
 RU
 Search
+Select all
+Select: Клад дракона
+Select: Лавка в порту
+Select: Лавка кузнеца
+Select: Пустой список
+Select: Трофеи
 Skip to content
 Standard rules
 Tables

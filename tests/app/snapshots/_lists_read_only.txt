@@ -35,11 +35,11 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "Войдите - они перенесутся в аккаунт, и их снова можно будет прав..." [namelen=112 namehash=45898194]
     link "Клад дракона, 7 позиций" [url=index.html?today=2026-10-26#/lists/a]
       StaticText "Клад дракона"
-      StaticText "7"
+      StaticText "7 позиций"
     button "Удалить"
     link "Лавка в порту, 0 позиций" [url=index.html?today=2026-10-26#/lists/b]
       StaticText "Лавка в порту"
-      StaticText "0"
+      StaticText "0 позиций"
       StaticText "Список пуст"
     button "Удалить"
   contentinfo ""
@@ -106,11 +106,11 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?today=2026-10
     StaticText "Sign in and they move to your account, where you can edit them a..." [namelen=111 namehash=8c0f0911]
     link "Клад дракона, 7 items" [url=index.html?today=2026-10-26#/lists/a]
       StaticText "Клад дракона"
-      StaticText "7"
+      StaticText "7 items"
     button "Delete"
     link "Лавка в порту, 0 items" [url=index.html?today=2026-10-26#/lists/b]
       StaticText "Лавка в порту"
-      StaticText "0"
+      StaticText "0 items"
       StaticText "The list is empty"
     button "Delete"
   contentinfo ""

@@ -1,6 +1,6 @@
 # #/account as gm1
 # route: #/account
-# why: two identities: the five sections in order, the Display section first with its lead line, a Disconnect on each
+# why: two identities: the six sections in order, the Display section first with its lead line, a Disconnect on each, «Ваши данные» between «Способы входа» and «Выход»
 # as: gm1
 
 ## ru :: tree
@@ -29,7 +29,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     StaticText "Отображение, способы входа, выход и ваши данные."
     heading "ОТОБРАЖЕНИЕ" [level=2]
     StaticText "Эти настройки действуют на всех ваших устройствах. Вид таблиц и ..." [namelen=134 namehash=00161fc6]
-    ... StaticText x12 of 16 same-shape siblings elided
+    ... StaticText x13 of 17 same-shape siblings elided
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     combobox "Раздел при запуске" [value=Обычные правила expanded=false haspopup=menu]
@@ -49,9 +49,10 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
       option "Сообщать владельцу" [selected=false]
       option "Не сообщать" [selected=false]
     heading "ВЫ ВОШЛИ КАК" [level=2]
-    heading "СПОСОБЫ ВХОДА" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
     button "Отключить Google"
     button "Отключить Discord"
+    button "Скачать мои данные (ZIP)"
     heading "ВЫХОД" [level=2]
     button "Выйти"
     button "Выйти на всех устройствах"
@@ -87,6 +88,7 @@ daggerheart.com
 Отключить Google
 Поиск
 Сеткой
+Скачать мои данные (ZIP)
 Сообщества
 Списки
 Списком
@@ -124,7 +126,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
     StaticText "Display, sign-in methods, signing out and your data."
     heading "DISPLAY" [level=2]
     StaticText "These settings apply on all your devices. A tables view or a pri..." [namelen=133 namehash=30d49185]
-    ... StaticText x12 of 16 same-shape siblings elided
+    ... StaticText x13 of 17 same-shape siblings elided
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     combobox "Section on start" [value=Standard rules expanded=false haspopup=menu]
@@ -144,9 +146,10 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
       option "Notify the owner" [selected=false]
       option "Don't notify" [selected=false]
     heading "SIGNED IN AS" [level=2]
-    heading "CONNECTED PROVIDERS" [level=2]
+    ... heading x2 of 6 same-shape siblings elided
     button "Disconnect Google"
     button "Disconnect Discord"
+    button "Download my data (ZIP)"
     heading "SIGN OUT" [level=2]
     button "Sign out"
     button "Sign out everywhere"
@@ -171,6 +174,7 @@ Communities
 Delete account...
 Disconnect Discord
 Disconnect Google
+Download my data (ZIP)
 Dragon's Vault
 Dread
 EN

@@ -32,23 +32,27 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "НОВЫЙ СПИСОК"
     textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
+    button "Импорт из файла" [expanded=false]
     heading "ВАШ АККАУНТ" [level=2]
+    checkbox "Выбрать все" [checked=false]
+    StaticText "ВЫБРАТЬ ВСЕ"
+    generic ""
+    checkbox "Выбрать: Список второго ГМа" [checked=false]
     link "Список второго ГМа, 1 позиция, изменён позавчера" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
       StaticText "Список второго ГМа"
-      StaticText "1"
-      StaticText "изменён позавчера"
+      StaticText "1 позиция · изменён позавчера"
     button "Удалить"
     heading "ЭТОТ БРАУЗЕР" [level=2]
     DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
     button "Скрыть" [description=Скрыть]
     link "Клад дракона, 0 позиций" [url=index.html?as=gm2#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMC5udGZwfg]
       StaticText "Клад дракона"
-      StaticText "0"
+      StaticText "0 позиций"
       StaticText "Список пуст"
     ... button x2 of 6 same-shape siblings elided
     link "Лавка в порту, 0 позиций" [url=index.html?as=gm2#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
-      StaticText "0"
+      StaticText "0 позиций"
       StaticText "Список пуст"
     button "Поделиться"
     button "Удалить"
@@ -69,6 +73,9 @@ Wondrous
 daggerheart.com
 Аккаунт: gm2@example.test
 Альт. таблицы
+Выбрать все
+Выбрать: Список второго ГМа
+Импорт из файла
 К содержимому
 Как это работает
 Клад дракона, 0 позиций
@@ -119,23 +126,27 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm2#/lists
     StaticText "NEW LIST"
     textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
+    button "Import from file" [expanded=false]
     heading "YOUR ACCOUNT" [level=2]
+    checkbox "Select all" [checked=false]
+    StaticText "SELECT ALL"
+    generic ""
+    checkbox "Select: Список второго ГМа" [checked=false]
     link "Список второго ГМа, 1 item, edited 2 days ago" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
       StaticText "Список второго ГМа"
-      StaticText "1"
-      StaticText "edited 2 days ago"
+      StaticText "1 item · edited 2 days ago"
     button "Delete"
     heading "THIS BROWSER" [level=2]
     DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
     button "Dismiss" [description=Dismiss]
     link "Клад дракона, 0 items" [url=index.html?as=gm2#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMC5udGZwfg]
       StaticText "Клад дракона"
-      StaticText "0"
+      StaticText "0 items"
       StaticText "The list is empty"
     ... button x2 of 6 same-shape siblings elided
     link "Лавка в порту, 0 items" [url=index.html?as=gm2#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
       StaticText "Лавка в порту"
-      StaticText "0"
+      StaticText "0 items"
       StaticText "The list is empty"
     button "Share"
     button "Delete"
@@ -157,6 +168,7 @@ Dragon's Vault
 Dread
 EN
 How this works
+Import from file
 Install as an app
 Lists
 New list
@@ -164,6 +176,8 @@ Open this section on start
 Privacy
 RU
 Search
+Select all
+Select: Список второго ГМа
 Share
 Skip to content
 Standard rules

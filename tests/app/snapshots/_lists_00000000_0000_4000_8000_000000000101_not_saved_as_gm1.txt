@@ -31,8 +31,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     button "Повторить"
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
+    ... button x9 of 13 same-shape siblings elided
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11]
-    ... button x8 of 12 same-shape siblings elided
     status ""
     ... StaticText x30 of 34 same-shape siblings elided
     button "Как в книге" [pressed=false]
@@ -150,6 +150,7 @@ daggerheart.com
 Последний в наличии.
 Проклят.
 Результат броска
+Скачать JSON
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать текст
@@ -193,8 +194,8 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     button "Retry"
     button "Share" [expanded=false]
     button "Copy text"
+    ... button x9 of 13 same-shape siblings elided
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11]
-    ... button x8 of 12 same-shape siblings elided
     status ""
     ... StaticText x30 of 34 same-shape siblings elided
     button "As in the book" [pressed=false]
@@ -280,6 +281,7 @@ Clear the note
 Communities
 Copy text
 Delete
+Download JSON
 Dragon's Vault
 Dread
 EN

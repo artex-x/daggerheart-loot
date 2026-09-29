@@ -1052,7 +1052,7 @@ const en: Dict = {
   exportLongLists: 'Lists with more than 100 items: %s. Split those lists.',
   pickList: 'Select: %s',
   deleteListsConfirm:
-    'Delete %n lists: %s? Their player and GM links will stop working. This cannot be undone.',
+    'Delete lists (%n): %s? Their player and GM links will stop working. This cannot be undone.',
   listsDeleted: 'Lists deleted: %n',
   andMore: 'and %n more',
   importOpen: 'Import from file',

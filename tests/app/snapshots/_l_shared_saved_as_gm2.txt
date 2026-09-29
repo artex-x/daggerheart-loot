@@ -30,8 +30,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     StaticText "Сохраняем..."
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
+    button "Скачать JSON"
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm2#/print/ci1*2-cc21*5-q337]
-    button "Удалить"
+    ... button x2 of 6 same-shape siblings elided
     status ""
     ... StaticText x8 of 12 same-shape siblings elided
     button "Как в книге" [pressed=true]
@@ -43,7 +44,6 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     generic ""
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=3]
-    button "Первоклассный Спальный Мешок Во время отдыха вы автоматически оч..." [namelen=91 namehash=0ad88f78]
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -107,6 +107,7 @@ daggerheart.com
 Позиция в списке
 Поиск
 Результат броска
+Скачать JSON
 Скопировать текст
 Случайно 1–3
 Собрать карточки для печати: девять на лист A4
@@ -147,8 +148,9 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     StaticText "Saving..."
     button "Share" [expanded=false]
     button "Copy text"
+    button "Download JSON"
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm2#/print/ci1*2-cc21*5-q337]
-    button "Delete"
+    ... button x2 of 6 same-shape siblings elided
     status ""
     ... StaticText x8 of 12 same-shape siblings elided
     button "As in the book" [pressed=true]
@@ -160,7 +162,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     generic ""
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=3]
-    button "Premium Bedroll During downtime, you automatically clear a Stres..." [namelen=76 namehash=b4b015ab]
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -203,6 +204,7 @@ As in the book
 Communities
 Copy text
 Delete
+Download JSON
 Dragon's Vault
 Dread
 EN

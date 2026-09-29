@@ -66,6 +66,21 @@ No release plan owns it; the owner decides which one takes it.
   «Скрыть напоминание» while `MoveNotice` exists. Cover it in
   `accountMenu.test.ts`.
 
+### D66 - focus falls to `body` after «Удалить (N)» deletes the ticked lists
+
+- **Where**: `app/src/components/ListsPage.svelte` (the batch strip's
+  «Удалить (N)» over the account cards; the strip leaves with the ticks).
+- **What**: the confirmed delete removes the pressed button and nothing
+  moves focus, so it falls to `body`; no mock or rule names a target. The
+  same defect as D64, on the lists index.
+- **Why deferred**: found in R6's closeout; the focus target is one
+  decision for every control that removes itself, so it belongs to the
+  task that owns D64.
+- **How to verify the fix**: tick two account lists, delete them with the
+  keyboard, and confirm that `document.activeElement` is a named control
+  (for example the «Новый список» field), not `body`. Cover it in
+  `listsPage.test.ts`.
+
 ## A live revoke on the shared page (no task filed yet; the owner names the release)
 
 Owns: what a screen reader hears when an open shared page stops drawing its

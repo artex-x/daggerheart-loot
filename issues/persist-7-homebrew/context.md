@@ -235,6 +235,9 @@ Read at `main` `b38bc5ab`; the design is `plan.md`, this is the evidence.
   `app/contracts` 7 min, `sweep 360` 7-9 min, `e2e` 2-3 min.
 - The mocks: `mocks/index.html`, m01-m17 (`plan.md` section 8).
 
+## Deferred from R6
+- `B7.3` renames `const before` in `tests/db/import-lists.test.mjs`, where it shadows `node:test`'s `before`; it edits that file and runs `check:db` anyway.
+
 ## Do not re-fetch unless
 - Human provides new info
 - context.md is missing a fact you need

@@ -25,9 +25,11 @@
   interface Props {
     app: AppState;
     onclose: () => void;
+    /* True while the import call runs; the page disables the fold toggle. */
+    sending?: boolean;
   }
 
-  const { app, onclose }: Props = $props();
+  let { app, onclose, sending = $bindable(false) }: Props = $props();
 
   type View =
     | { kind: 'empty' }
@@ -69,7 +71,6 @@
   const t = $derived(app.t);
   let view = $state<View>({ kind: 'empty' });
   let fileName = $state('');
-  let sending = $state(false);
   let input = $state<HTMLInputElement | undefined>(undefined);
   /* A file chosen while another is read wins: the older read is dropped. */
   let reading = 0;
@@ -402,7 +403,7 @@
 <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
 
 <style>
-  /* The import report grouped by list, off the mocks of plan 4.6. */
+  /* The import report grouped by list. */
   .rep {
     margin: 12px 0 0;
     display: grid;
