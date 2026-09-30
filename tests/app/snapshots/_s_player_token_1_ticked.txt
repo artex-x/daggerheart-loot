@@ -32,12 +32,14 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     checkbox "Выбрать все (9)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     button "1 Первоклассный Спальный Мешок ×2 · 150 зол. Во время отдыха вы ..." [namelen=107 namehash=a6fdba25]
+    ... button x8 of 12 same-shape siblings elided
     spinbutton "Взять: Первоклассный Спальный Мешок" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "Макс, взять все: Первоклассный Спальный Мешок" [disabled=true]
     checkbox "Палаш" [checked=false]
-    ... button x6 of 10 same-shape siblings elided
     ... checkbox x4 of 8 same-shape siblings elided
     checkbox "Зелье Быстрого Шага" [checked=true]
     spinbutton "Взять: Зелье Быстрого Шага" [value=5 valuetext=5 required=false valuemin=1 valuemax=5]
+    button "Макс, взять все: Зелье Быстрого Шага" [disabled=true]
     StaticText "из 5"
     StaticText "= 100 зол."
     checkbox "Колдующий Кинжал" [checked=false]
@@ -88,6 +90,10 @@ daggerheart.com
 Колода Сумерек
 Конфиденциальность
 ЛутDaggerheart
+Макс, взять все: Зелье Быстрого Шага
+Макс, взять все: Первоклассный Спальный Мешок
+Мин, взять 1: Зелье Быстрого Шага
+Мин, взять 1: Первоклассный Спальный Мешок
 Обычные правила
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
@@ -138,12 +144,14 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     checkbox "Select all (9)" [checked=false]
     checkbox "Premium Bedroll" [checked=true]
     button "1 Premium Bedroll ×2 · 150 gp During downtime, you automatically..." [namelen=90 namehash=a96c7377]
+    ... button x8 of 12 same-shape siblings elided
     spinbutton "Take: Premium Bedroll" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
+    button "Max, take all: Premium Bedroll" [disabled=true]
     checkbox "Broadsword" [checked=false]
-    ... button x6 of 10 same-shape siblings elided
     ... checkbox x4 of 8 same-shape siblings elided
     checkbox "Stride Potion" [checked=true]
     spinbutton "Take: Stride Potion" [value=5 valuetext=5 required=false valuemin=1 valuemax=5]
+    button "Max, take all: Stride Potion" [disabled=true]
     StaticText "of 5"
     StaticText "= 100 gp"
     checkbox "Casting Dagger" [checked=false]
@@ -192,6 +200,10 @@ Install as an app
 Lay these out for printing: nine to an A4 sheet
 Leviathan Harpoon
 Lists
+Max, take all: Premium Bedroll
+Max, take all: Stride Potion
+Min, take 1: Premium Bedroll
+Min, take 1: Stride Potion
 Notify the owner
 Premium Bedroll
 Privacy

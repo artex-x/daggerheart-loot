@@ -32,7 +32,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     StaticText "7 позиций"
     button "Ссылка игрокам"
     button "Ссылка себе"
-    ... button x9 of 13 same-shape siblings elided
+    ... button x10 of 14 same-shape siblings elided
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2*2-ci3-ci4-ci5-ci6-ci7]
     DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
     button "Скрыть" [description=Скрыть]
@@ -64,6 +64,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     spinbutton "ЗОЛОТО ?" [value=750 description=7 мешков 5 горстей valuetext=750 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
+    button "Мин, взять 1: Пронзительная Свирель" [disabled=true]
     spinbutton "Взять: Пронзительная Свирель" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Как предмет выглядит, что о нём знают" [value=Светится в темноте multiline=true readonly=false required=false]
@@ -127,6 +128,8 @@ daggerheart.com
 Конфиденциальность
 Лавка закрыта до утра
 ЛутDaggerheart
+Макс, взять все: Пронзительная Свирель
+Мин, взять 1: Пронзительная Свирель
 Мистический Плащ
 Мистический ПлащСущество с Характеристикой Заклинателя, носящее ... [namelen=147 namehash=0cc59311]
 Монетами
@@ -198,7 +201,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     StaticText "7 items"
     button "Players' link"
     button "Your own link"
-    ... button x9 of 13 same-shape siblings elided
+    ... button x10 of 14 same-shape siblings elided
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2*2-ci3-ci4-ci5-ci6-ci7]
     DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
     button "Dismiss" [description=Dismiss]
@@ -230,6 +233,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     spinbutton "GOLD ?" [value=750 description=7 bags 5 handfuls valuetext=750 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
+    button "Min, take 1: Piper Whistle" [disabled=true]
     spinbutton "Take: Piper Whistle" [value=1 valuetext=1 focused=true required=false valuemin=1 valuemax=2]
     button "Clear the note" [description=Clear the note]
     textbox "What it looks like, what is known about it" [value=Светится в темноте multiline=true readonly=false required=false]
@@ -299,6 +303,8 @@ List name
 Lists
 Manacles
 ManaclesThis pair of locking cuffs comes with a key.ItemCore
+Max, take all: Piper Whistle
+Min, take 1: Piper Whistle
 Note
 One higher
 One lower

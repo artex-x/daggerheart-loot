@@ -15,7 +15,8 @@
   and R11 `persist-usage-monitoring` closed 2026-09-27, R3
   `persist-3-realtime` closed 2026-09-27 and R4 `persist-4-requests` closed
   2026-09-28 and R6 `persist-6-import-export` closed 2026-09-30 (section 9,
-section 16 "R6 closeout record"). Next: R7.
+section 16 "R6 closeout record"). R4b `persist-4b-requests-polish` closed
+2026-09-30 (section 16, "R4b closeout record"). Next: R7.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -437,6 +438,7 @@ Releases, in the order the owner set (batch ids carry the release number):
 | - | `display-settings` (owner, 2026-09-27: answers Q1-Q3 A) | `B1` - **closed 2026-09-27**, live at the push of `main`. Shipped: page switches for the tables view and print layout last until a reload, `KeepNote.svelte` links `#/account`, the Display lead line; decision `docs/decisions/2026-09-27-display-defaults-are-set-in-the-account-a-page-switch-lasts-a-visit.md` | **After R11, before R3**: the Display section of `#/account` becomes the one source of defaults - a print layout or tables view picked on its page lasts until a reload, with a note linking `#/account`; the language and the starting-section pin stay saved settings; one page, no tabs |
 | R3 | `persist-3-realtime` | `B3.0`-`B3.2` - **closed 2026-09-27**, live at the push of `main` (commit "feat(persist): update shared pages and the owner's lists live"). The owner's steps: "Allow public access" off on both projects, read back each release; confirm a share page updates live on a phone | Live updates on shared pages and (owner's Q1) on the owner's own devices; Realtime is the primary path and the poll runs while it is down (owner, 2026-09-25) |
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` - **closed 2026-09-28**, live at the push of `main` (commit "feat(persist): send and answer purchase requests on share links"). The owner's steps: send a request from a phone on a player link and apply it on a desktop; read the privacy page and the reworded Display row in both languages | Purchase requests from a shared list to its owner: anonymous «Сообщить владельцу», the signed-in add that asks to notify (`notifyGm`, the Display row «Добавление из чужого списка» as a select), the owner's Requests panel with apply, «Принять доступное» and decline, the index card line (no requester status: owner's feedback, 2026-09-27) |
+| R4b | `persist-4b-requests-polish` | `B4b.1` - **closed 2026-09-30**, live at the push of `main` (commits "feat(persist): keep the selection after a purchase request and fix roll tabs", the budget, `npm audit fix` and closeout commits). The owner's steps: send a request on a phone and see the ticks stay; use «Мин»/«Макс» on a phone; «Скрыть» the decided requests | The owner's requests feedback: the selection kept after a send with «Запрос отправлен», «Мин»/«Макс» joined to the take count, the decided fold with its items and «Скрыть», request clean-up confirmed (no change); the roll-tab bug (owner, 2026-09-29) |
 | R6 | `persist-6-import-export` | `B6.1`, `B6.2` - **closed 2026-09-30**, live at the push of `main` (commits "feat(persist): export and import account lists as a published JSON bundle" and the closeout commit after it). The owner's steps: export a list and import it back on a phone; read `llms.txt` and the hint on the import field | JSON export (all, ticked, one list; the data zip) and create-only import of `schema/import-v1.json`; batch selection and deletion on the index; `llms.txt` lets an AI assistant write an import file and read an export alone (owner, 2026-09-27) |
 | R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-26; `issues/persist-7-homebrew/plan.md` is the authority) | Homebrew items as live references in the owner's lists, «Мои предметы» from the account menu and in search, the source tag «Хоумбрю» / "Homebrew" (owner, 2026-09-26), bundle schema v2 |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
@@ -571,6 +573,7 @@ carries "goldens".
 | `B11.1` | R11, closed 2026-09-27: the `usage_snapshots` migration, `tools/supabase/usage-lib.mjs` and `usage.mjs`, `.github/workflows/usage.yml`, the `tests/derived.js` pins (section 9's R11 row). The design as built is in `.claude/README.md` ("Usage monitoring"), `docs/specs/COVERAGE.md` and `docs/decisions/`; the batch brief is in R11's commit history | - | - | - | - |
 | `B3.0`-`B3.2` | R3, closed 2026-09-27: the contract's reorder case made tolerant (`B3.0`), the broadcast triggers and `realtime.messages` policies with `check:db` WebSocket cases (`B3.1`), `EventsPort`, the live feed with the poll only while down, the owner topic on every route, the 20 s write timeout and the share page's hidden status (`B3.2`). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R3's commit history | - | - | - | - |
 | `B4.1`-`B4.2` | R4, closed 2026-09-28: the purchase-request tables, functions, limit rows and owner-topic trigger with their layer 3 cases (`B4.1`); the port and the fake with contract case K, the send and flow b, the owner's panel and the index line, the Display row as a select, the privacy and terms text, states cases 54-57 and F12 (`B4.2`). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R4's commit history | - | - | - | - |
+| `B4b.1` | R4b, closed 2026-09-30: `RequestSender`'s sent mark and the kept selection, the shared page's prune of ticks, `PickQty`'s joined «Мин» - count - «Макс», the decided fold's items and «Скрыть», `RollPanel` keyed on its section; states case 55 rewritten and two new goldens. The design as built is in `docs/specs/` and `docs/decisions/`; the batch brief is in R4b's commit history | - | - | - | - |
 | `B5.1`-`B5.2d` | R5, closed 2026-09-26: the move RPC and its conflict path, the batching RPC `apply_list_writes`, the write buffer with the batching client, the automatic move with the cutoff and the retired `#/l/` page (section 9's R5 row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R5's commit history | - | - | - | - |
 | `B5b.1` | R5b, closed 2026-09-27: the account menu, the Display section of `#/account`, the Lists tab gone after the date, the signed-out move banner (section 9's R5b row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch brief is in R5b's commit history | - | - | - | - |
 | `B1`-`B2` | `process-guards`, closed 2026-09-27: host guards (gate credit, the local stack lock, the `.env` guards) and review gates (the plan review, the reviewer's report file, a migration push after an approving review). The design as built is in `.claude/README.md`, the prompts and `docs/decisions/`; the batch briefs are in the task's commit history | - | - | - | - |
@@ -1385,6 +1388,25 @@ R6 closeout record (2026-09-30; two local commits on `main`: the release commit 
   `.nvmrc` pins 24). `B6.1-N7` moved to R7's context.
 - Pending, owner, after the push: CI green; an export imported back on a
   phone; the file input on a phone browser.
+
+R4b closeout record (2026-09-30; four local commits on `main` after `a6503c49`: `ec573cd8` the release, `61e3a229` the configured budget raised to 210 kB, `ae3f812b` `npm audit fix` for undici, then the closeout commit; pushed once):
+- Shipped: section 9's R4b row, one batch. No route, contract or schema
+  change. Reviewed once (approve); nits N1-N4 fixed in the closeout commit.
+- Owner decisions during the release: the mock review waived (2026-09-29);
+  the ends joined to the count, then named «Мин»/«Макс» (2026-09-30); the
+  configured bundle budget 210 kB (2026-09-30, after CI run 36638258244
+  failed at 202.1 kB and a lazy `ImportPanel` measured 204.1 kB).
+- Gates: `npm run check` (2405 tests), `check:built`, `app/states`, goldens
+  re-seeded in four shards (6 changed, 2 new), `sweep.js 360` and `1180`
+  clean, `npm run e2e`, `npm run budget` 203.0 kB of 210 kB, `npm audit
+  --audit-level=high` clean.
+- Named to the owner: `B4b.1-N5` (every `timed` golden shows the Russian
+  toast in its EN section), fixed by `toast-follows-language` before the
+  push; the heading «Запросы (0)» while only decided requests remain (kept
+  as shipped; «Скрыть» removes it); `git stash@{0}` holds the rejected lazy
+  `ImportPanel` attempt, which the hook would not let an agent drop.
+- Pending, owner, after the push: CI green; the steps in section 9's R4b
+  row.
 
 ## 18. Cloud sessions (claude.ai/code)
 

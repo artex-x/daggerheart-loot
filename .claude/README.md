@@ -672,6 +672,12 @@ stale-build guard - rebuild after the check (`npm run build:test` before any
 `dist-test/`-driven suite or golden probe, `npm run build` before
 `tools/smoke-http.mjs`).
 
+A `timed` state in `tests/app/inventory.js` ends its `enter` at the press
+that raises the toast; `golden.js`'s `waitForToast` does the waiting. An
+`enter` that polls `d.text()` for the toast's words after the press can
+outlive the 1600 ms toast, and the capture then fails with "the toast never
+appeared" (measured 2026-09-30 on `#/s/player-token-1 ~ sent`).
+
 The full unsharded browser suite
 (`app/sweep,app/typo,app/hues,app/contracts,app/states`) runs ~648s in 8
 threads, past the Bash tool's 600000 ms cap: it auto-backgrounds even when

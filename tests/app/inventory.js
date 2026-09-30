@@ -1631,7 +1631,7 @@ const STATES = [
   {
     id: '#/s/player-token-1 ~ sent',
     route: '#/s/player-token-1',
-    why: 'signed out, ci1 and cc1 ticked and «Сообщить владельцу» pressed: both ticks and the cc1 take line kept, «Запрос отправлен» disabled last in the bar, the toast «Запрос отправлен владельцу списка.»',
+    why: 'signed out, ci1 and cc1 ticked and «Сообщить владельцу» pressed: both ticks and both take lines kept, «Запрос отправлен» disabled last in the bar, the toast «Запрос отправлен владельцу списка.»',
     enter: async (d) => {
       await d.tick('Первоклассный Спальный Мешок');
       await d.tick('Зелье Быстрого Шага');

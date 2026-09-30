@@ -531,9 +531,9 @@ browser lists writable after the date.
   Проверьте соединение.» (no answer in 20 s; a second press sends the same
   request again, which the server stores once), the line limit through the
   limit text, and «Сервер не принял запрос.»; a stopped or deleted link draws
-  «Список больше не доступен». The requester sees no status: the toast is the
-  only answer, and an applied request reaches an open page as a lowered or
-  removed entry, as any owner edit. Nothing of a request is kept in the
+  «Список больше не доступен». The requester sees no answer from the owner:
+  the toast is the only answer, and an applied request reaches an open page
+  as a lowered or removed entry, as any owner edit. Nothing of a request is kept in the
   browser.
 - **Purchase requests: flow b**: after an add from a `#/s/` page's selection
   bar (never a card's own menu), signed in and not the owner, `notifyGm`
