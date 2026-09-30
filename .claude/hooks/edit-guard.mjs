@@ -3,7 +3,8 @@
 // a bounded fetch - CI applies every pushed migration, so a pushed one is
 // history. Git is the record; no file lists applied migrations. The
 // reviewer writes only its report, issues/<id>/reviews/<name>.md (docs/decisions/,
-// 2026-09-27), a path outside the repository included. See
+// 2026-09-27) in the session's own checkout; a path in another checkout or
+// outside the repository is denied. See
 // .claude/README.md, "Hooks".
 
 import {
@@ -11,6 +12,7 @@ import {
   guard,
   deny,
   relPath,
+  checkoutRoot,
   pathKey,
   remoteRefsHoldingMigration,
   migrationLockedMessage,
@@ -77,13 +79,21 @@ guard(() => {
   const input = readInput();
   const event = input.hook_event_name || 'PreToolUse';
   const filePath = input.tool_input && input.tool_input.file_path;
-  const rel = relPath(filePath, input.cwd);
+  // Relative to the session's own checkout, so a worktree's report and its
+  // generated files match; a path in another checkout is outside it.
+  const sessionRel = relPath(filePath, input.cwd, checkoutRoot(input.cwd));
   if (
     input.agent_type === 'reviewer' &&
-    !(rel !== null && REVIEW_TOOLS.has(input.tool_name) && REVIEW_REPORT_RE.test(pathKey(rel)))
+    !(
+      sessionRel !== null &&
+      REVIEW_TOOLS.has(input.tool_name) &&
+      REVIEW_REPORT_RE.test(pathKey(sessionRel))
+    )
   ) {
     return deny(event, REVIEWER_MESSAGE);
   }
+  // A worktree session still may not write the main checkout's generated files.
+  const rel = sessionRel !== null ? sessionRel : relPath(filePath, input.cwd);
   if (rel === null) return undefined;
   const key = pathKey(rel);
 

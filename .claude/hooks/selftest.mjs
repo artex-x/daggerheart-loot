@@ -4472,6 +4472,65 @@ function testReviewerGuards() {
     );
   }
 
+  // #301 A worktree session runs the main checkout's hook copy, so
+  // LOOT_HOOK_ROOT stays scratchRoot while cwd is the worktree.
+  const wt = at('.claude', 'worktrees', 'w');
+  gitSh(['worktree', 'add', '-q', '--detach', wt]);
+  try {
+    const inWt = (...parts) => path.join(wt, ...parts);
+    for (const [label, file, cwd, want] of [
+      [
+        'its own report, from the worktree',
+        inWt('issues', 'x', 'reviews', 'B1.md'),
+        wt,
+        'allow'
+      ],
+      [
+        'its own report, from a subdirectory',
+        inWt('issues', 'x', 'reviews', 'B1.md'),
+        inWt('app'),
+        'allow'
+      ],
+      [
+        'the main checkout report, from the worktree',
+        at('issues', 'x', 'reviews', 'B1.md'),
+        wt,
+        'deny'
+      ],
+      [
+        'the worktree report, from the main checkout',
+        inWt('issues', 'x', 'reviews', 'B1.md'),
+        scratchRoot,
+        'deny'
+      ],
+      [
+        'a worktree source file, from the worktree',
+        inWt('app', 'src', 'lib', 'x.ts'),
+        wt,
+        'deny'
+      ]
+    ]) {
+      const result = runHook('edit-guard.mjs', asReviewer(editPayload(file, { cwd })));
+      const ok = want === 'allow' ? isSilent(result) : isDeny(result);
+      const verdict = want === 'allow' ? 'allowed' : 'denied';
+      check(`#301 reviewer in a worktree: ${label} is ${verdict}`, ok, result.stdout);
+    }
+    for (const [label, file] of [
+      ['its own data.json', inWt('data.json')],
+      ['the main checkout data.json', at('data.json')]
+    ]) {
+      const result = runHook('edit-guard.mjs', editPayload(file, { cwd: wt }));
+      check(`#301 worktree session: ${label} is denied`, isDeny(result), result.stdout);
+    }
+  } finally {
+    spawnSync('git', ['worktree', 'remove', '--force', wt], {
+      cwd: scratchRoot,
+      encoding: 'utf8'
+    });
+    fs.rmSync(at('.claude'), { recursive: true, force: true });
+    spawnSync('git', ['worktree', 'prune'], { cwd: scratchRoot, encoding: 'utf8' });
+  }
+
   // ----- 2s the reviewer's read-only Bash -----
   for (const [command, payload] of [
     ['git commit -m "x"', bashPayload],

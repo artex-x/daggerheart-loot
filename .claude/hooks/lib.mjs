@@ -77,6 +77,28 @@ export function repoRoot() {
   return path.resolve(path.dirname(here), '..', '..');
 }
 
+/** Returns the nearest ancestor of `cwd` with a `.git` entry when it is
+ * repoRoot() or inside it, else repoRoot(). Why a worktree session needs
+ * it: .claude/README.md, "Hooks", the edit-guard row. */
+export function checkoutRoot(cwd) {
+  const root = repoRoot();
+  if (!cwd) return root;
+  try {
+    const rootCmp = process.platform === 'win32' ? root.toLowerCase() : root;
+    let dir = path.resolve(cwd);
+    for (;;) {
+      const dirCmp = process.platform === 'win32' ? dir.toLowerCase() : dir;
+      const rel = path.relative(rootCmp, dirCmp);
+      if (rel.startsWith('..') || path.isAbsolute(rel)) return root;
+      if (existsSync(path.join(dir, '.git'))) return dir;
+      if (rel === '') return root;
+      dir = path.dirname(dir);
+    }
+  } catch {
+    return root;
+  }
+}
+
 export function stateDir() {
   if (process.env.LOOT_HOOK_STATE_DIR) return process.env.LOOT_HOOK_STATE_DIR;
   return path.join(repoRoot(), '.claude');
@@ -84,18 +106,17 @@ export function stateDir() {
 
 /** Resolve an absolute (or cwd-relative) path to a repo-relative, forward-
  * slashed form for matching against the deny/allow lists in edit-guard and
- * edit-followup. Returns null when the path is outside the repo - every
+ * edit-followup. Returns null when the path is outside `root` - every
  * caller treats null as "allow" - and '.' for the repository root itself,
  * which is very much inside it: `rm -rf .` is the most destructive form of
  * the command bash-guard's rm rule exists to stop, and an empty string read
- * as "outside" let it straight through. */
-export function relPath(filePath, cwd) {
+ * as "outside" let it straight through. `root` defaults to repoRoot(). */
+export function relPath(filePath, cwd, root = repoRoot()) {
   if (!filePath) return null;
   // A drive-letter path (a PowerShell command, normalised) names another
   // file system everywhere but win32, never a path inside this repository.
   if (process.platform !== 'win32' && /^[A-Za-z]:[\\/]/.test(filePath)) return null;
   try {
-    const root = repoRoot();
     const base = cwd || process.cwd();
     let resolved = path.isAbsolute(filePath)
       ? path.resolve(filePath)
