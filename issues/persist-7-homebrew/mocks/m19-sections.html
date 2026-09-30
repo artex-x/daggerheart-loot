@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ItemPicker - typing, chosen, nothing found</title>
+    <title>Sections inside a source: the source panel, the section select</title>
     <style>
       /* R7 mocks. :root copies app/src/styles/tokens.css (values, not a redesign).
    Component rules are copied from the named .svelte files. One theme (dark).
@@ -1616,22 +1616,24 @@
   </head>
   <body>
     <div class="mockbar">
-      <p class="crumb"><a href="index.html">R7 mocks</a> / m06-item-picker.html</p>
-      <h1>ItemPicker - typing, chosen, nothing found</h1>
+      <p class="crumb"><a href="index.html">R7 mocks</a> / m19-sections.html</p>
+      <h1>Sections inside a source: the source panel, the section select</h1>
       <p>
-        <b>Plan:</b> plan 4.10 (ItemPicker.svelte, four uses in the editor); B7.2;
-        <code>itemPicker.test.ts</code> with axe
+        <b>Plan:</b> plan 4.14 (F4, Q10); B7.2 (the table's sections and the
+        <code>sect</code> facet: B7.4, m09)
       </p>
       <p class="notetext">
-        A combobox over the merged index: the text field searches with
-        <code>matches</code> (both languages, the stat line), at most eight rows, homebrew names
-        dashed. Enter or a click chooses; the chosen record is a row with a remove button.
-        Escape closes the list.
+        A section groups items inside one named source, as the community table groups by
+        community. Sections are managed under their source on <code>#/homebrew</code> (add,
+        rename, delete) and chosen in the editor. They head the items on
+        <code>#/homebrew</code> and <code>#/tables/homebrew</code> (m02, m09) and join the path
+        line (m12). This is Q10's recommended option; the alternative is separate sources and no
+        section level in R7.
       </p>
     </div>
     <div class="pair">
       <section class="frame desk">
-        <span class="cap">the three states, in one panel - 960 px</span>
+        <span class="cap">#/homebrew as gm1 - «Разделы» open under a source - 960 px</span>
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1650,69 +1652,101 @@
           </div>
         </div>
         <main class="in">
+          <h1 class="page-h">Мои предметы</h1>
+          <p class="page-sub">
+            Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и
+            добавляются в списки.
+          </p>
+          <p class="count">21 предмет из 500</p>
           <div class="panel new">
-            <div class="field">
-              <span class="lbl">Сделан из - typing «спаль»</span>
-              <div class="picker">
-                <input class="input" value="спаль" role="combobox" aria-expanded="true" />
-              </div>
-              <div class="picklist static" role="listbox">
-                <div class="pickrow on">
-                  <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                    >Первоклассный Спальный Мешок<small
-                      >Предмет · Основные правила · Бросок 1</small
-                    ></span
-                  ><span class="badge item">Предмет</span>
+            <span class="lbl">Источники</span>
+            <div class="srcrow">
+              <span class="who"><b>Хоумбрю</b><small>6 предметов</small></span
+              ><span class="acts"></span>
+            </div>
+            <div class="srcrow">
+              <span class="who"
+                ><b>Мастерская Ольхи</b><small>15 предметов · 2 раздела</small></span
+              ><span class="acts"
+                ><button class="btn sm ghost on" aria-expanded="true">
+                  Разделы <span class="caret"></span></button
+                ><button class="btn sm ghost">Переименовать</button
+                ><button class="btn sm danger">Удалить</button></span
+              >
+              <div class="sectlist new">
+                <div class="sectrow">
+                  <span class="nm">Пистоли <small>9 предметов</small></span
+                  ><button class="btn sm ghost">Переименовать</button
+                  ><button class="btn sm danger">Удалить</button>
                 </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок странника · хоумбрю"
-                      >Спальный мешок странника</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
+                <div class="sectrow">
+                  <span class="nm">Холодное оружие <small>4 предмета</small></span
+                  ><button class="btn sm ghost">Переименовать</button
+                  ><button class="btn sm danger">Удалить</button>
                 </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок следопыта · хоумбрю"
-                      >Спальный мешок следопыта</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
+                <div class="sectrow">
+                  <span class="nm">Без раздела <small>2 предмета</small></span>
                 </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок тишины · хоумбрю"
-                      >Спальный мешок тишины</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
+                <div class="numrow">
+                  <div class="grow">
+                    <input
+                      class="input"
+                      value=""
+                      placeholder="Название раздела, например Мушкеты"
+                    />
+                  </div>
+                  <button class="btn sm">Добавить раздел</button>
                 </div>
-                <div class="pickempty">Ещё 12 - уточните запрос</div>
               </div>
             </div>
-            <div class="field">
-              <span class="lbl">Сделан из - chosen</span>
-              <div class="picked">
-                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                  >Первоклассный Спальный Мешок<small
-                    >Основные правила · Предмет · Бросок 1</small
+            <div class="numrow" style="margin-top: 12px">
+              <div class="grow">
+                <input
+                  class="input"
+                  value=""
+                  placeholder="Название источника, например Мастерская Ольхи"
+                />
+              </div>
+              <button class="btn">Добавить</button>
+            </div>
+          </div>
+          <div class="fold new">
+            <div class="sum">
+              Карты
+              <span style="color: var(--muted2); font-weight: 500"
+                >· 1 комплект, 1 карта правил</span
+              ><span class="caret"></span>
+            </div>
+          </div>
+          <div class="shead">Мастерская Ольхи · Пистоли <span class="cnt">9</span></div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Кремнёвый пистоль</b
+                  ><span class="rstats"
+                    >Ранг 1 · Физическое · Искусность · Далеко · d6+1 физ · Одноручное</span
+                  ><span>Заряжается ход. При выстреле в упор: +2 к урону.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник"
+                    >Мастерская Ольхи</span
                   ></span
-                ><button class="x" aria-label="Убрать">&times;</button>
-              </div>
-            </div>
-            <div class="field">
-              <span class="lbl">Улучшается в - nothing found</span>
-              <div class="picker"><input class="input" value="zzz" role="combobox" /></div>
-              <div class="picklist static"><div class="pickempty">Ничего не найдено</div></div>
+                >
+              </button>
             </div>
           </div>
           <div class="note">
-            Keyboard: ArrowDown/ArrowUp move the highlight (<code>aria-activedescendant</code>),
-            Enter picks, Escape closes, Backspace on a chosen row removes it. The item being
-            edited is never offered to itself.
+            «Разделы» is a toggle button with <code>aria-expanded</code>. «Без раздела» counts
+            the source's items with no section and has no actions. Section names are 1 to 80
+            characters, unique inside their source; a source holds up to 30. A section delete
+            keeps its items in the source (m13).
           </div>
         </main>
       </section>
       <section class="frame phone">
-        <span class="cap">the three states, in one panel - 360 px</span>
+        <span class="cap">#/homebrew as gm1 - «Разделы» open under a source - 360 px</span>
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1731,64 +1765,376 @@
           </div>
         </div>
         <main class="in">
+          <h1 class="page-h">Мои предметы</h1>
+          <p class="page-sub">
+            Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и
+            добавляются в списки.
+          </p>
+          <p class="count">21 предмет из 500</p>
           <div class="panel new">
-            <div class="field">
-              <span class="lbl">Сделан из - typing «спаль»</span>
-              <div class="picker">
-                <input class="input" value="спаль" role="combobox" aria-expanded="true" />
-              </div>
-              <div class="picklist static" role="listbox">
-                <div class="pickrow on">
-                  <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                    >Первоклассный Спальный Мешок<small
-                      >Предмет · Основные правила · Бросок 1</small
-                    ></span
-                  ><span class="badge item">Предмет</span>
+            <span class="lbl">Источники</span>
+            <div class="srcrow">
+              <span class="who"><b>Хоумбрю</b><small>6 предметов</small></span
+              ><span class="acts"></span>
+            </div>
+            <div class="srcrow">
+              <span class="who"
+                ><b>Мастерская Ольхи</b><small>15 предметов · 2 раздела</small></span
+              ><span class="acts"
+                ><button class="btn sm ghost on" aria-expanded="true">
+                  Разделы <span class="caret"></span></button
+                ><button class="btn sm ghost">Переименовать</button
+                ><button class="btn sm danger">Удалить</button></span
+              >
+              <div class="sectlist new">
+                <div class="sectrow">
+                  <span class="nm">Пистоли <small>9 предметов</small></span
+                  ><button class="btn sm ghost">Переименовать</button
+                  ><button class="btn sm danger">Удалить</button>
                 </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок странника · хоумбрю"
-                      >Спальный мешок странника</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
+                <div class="sectrow">
+                  <span class="nm">Холодное оружие <small>4 предмета</small></span
+                  ><button class="btn sm ghost">Переименовать</button
+                  ><button class="btn sm danger">Удалить</button>
                 </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок следопыта · хоумбрю"
-                      >Спальный мешок следопыта</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
+                <div class="sectrow">
+                  <span class="nm">Без раздела <small>2 предмета</small></span>
                 </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок тишины · хоумбрю"
-                      >Спальный мешок тишины</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
+                <div class="numrow">
+                  <div class="grow">
+                    <input
+                      class="input"
+                      value=""
+                      placeholder="Название раздела, например Мушкеты"
+                    />
+                  </div>
+                  <button class="btn sm">Добавить раздел</button>
                 </div>
-                <div class="pickempty">Ещё 12 - уточните запрос</div>
               </div>
             </div>
-            <div class="field">
-              <span class="lbl">Сделан из - chosen</span>
-              <div class="picked">
-                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                  >Первоклассный Спальный Мешок<small
-                    >Основные правила · Предмет · Бросок 1</small
+            <div class="numrow" style="margin-top: 12px">
+              <div class="grow">
+                <input
+                  class="input"
+                  value=""
+                  placeholder="Название источника, например Мастерская Ольхи"
+                />
+              </div>
+              <button class="btn">Добавить</button>
+            </div>
+          </div>
+          <div class="fold new">
+            <div class="sum">
+              Карты
+              <span style="color: var(--muted2); font-weight: 500"
+                >· 1 комплект, 1 карта правил</span
+              ><span class="caret"></span>
+            </div>
+          </div>
+          <div class="shead">Мастерская Ольхи · Пистоли <span class="cnt">9</span></div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Кремнёвый пистоль</b
+                  ><span class="rstats"
+                    >Ранг 1 · Физическое · Искусность · Далеко · d6+1 физ · Одноручное</span
+                  ><span>Заряжается ход. При выстреле в упор: +2 к урону.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник"
+                    >Мастерская Ольхи</span
                   ></span
-                ><button class="x" aria-label="Убрать">&times;</button>
-              </div>
-            </div>
-            <div class="field">
-              <span class="lbl">Улучшается в - nothing found</span>
-              <div class="picker"><input class="input" value="zzz" role="combobox" /></div>
-              <div class="picklist static"><div class="pickempty">Ничего не найдено</div></div>
+                >
+              </button>
             </div>
           </div>
           <div class="note">
-            Keyboard: ArrowDown/ArrowUp move the highlight (<code>aria-activedescendant</code>),
-            Enter picks, Escape closes, Backspace on a chosen row removes it. The item being
-            edited is never offered to itself.
+            «Разделы» is a toggle button with <code>aria-expanded</code>. «Без раздела» counts
+            the source's items with no section and has no actions. Section names are 1 to 80
+            characters, unique inside their source; a source holds up to 30. A section delete
+            keeps its items in the source (m13).
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">the editor: the section select open - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Кремнёвый пистоль</h1>
+          <p class="page-sub">Хоумбрю · Мастерская Ольхи · Пистоли · Ранг 1</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field twocol new">
+              <div>
+                <span class="lbl">Источник</span
+                ><select class="input">
+                  <option>Мастерская Ольхи</option>
+                </select>
+              </div>
+              <div>
+                <span class="lbl">Раздел</span
+                ><select class="input">
+                  <option>Пистоли</option>
+                </select>
+                <div class="selopen" role="listbox">
+                  <span>Без раздела</span><span class="on">Пистоли</span
+                  ><span>Холодное оружие</span><span class="sep">+ Новый раздел...</span>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="note">
+            Changing the source resets the section to «Без раздела» (a section belongs to one
+            source).
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">the editor: the section select open - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Кремнёвый пистоль</h1>
+          <p class="page-sub">Хоумбрю · Мастерская Ольхи · Пистоли · Ранг 1</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field twocol new">
+              <div>
+                <span class="lbl">Источник</span
+                ><select class="input">
+                  <option>Мастерская Ольхи</option>
+                </select>
+              </div>
+              <div>
+                <span class="lbl">Раздел</span
+                ><select class="input">
+                  <option>Пистоли</option>
+                </select>
+                <div class="selopen" role="listbox">
+                  <span>Без раздела</span><span class="on">Пистоли</span
+                  ><span>Холодное оружие</span><span class="sep">+ Новый раздел...</span>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="note">
+            Changing the source resets the section to «Без раздела» (a section belongs to one
+            source).
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">the editor: a new section - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Кремнёвый пистоль</h1>
+          <p class="page-sub">Хоумбрю · Мастерская Ольхи · Ранг 1</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field">
+              <span class="lbl">Источник</span
+              ><select class="input">
+                <option>Мастерская Ольхи</option>
+              </select>
+            </div>
+            <div class="field new">
+              <span class="lbl">Раздел</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input class="input" value="Мушкеты" placeholder="Название нового раздела" />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="fhint">Раздел создаётся в источнике «Мастерская Ольхи».</span>
+            </div>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="note">
+            The m18 pattern: «Создать» writes the source row with the new section at once and
+            selects it; the refusals are m18's (empty, duplicate inside the source, 30 per
+            source, network).
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">the editor: a new section - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Кремнёвый пистоль</h1>
+          <p class="page-sub">Хоумбрю · Мастерская Ольхи · Ранг 1</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field">
+              <span class="lbl">Источник</span
+              ><select class="input">
+                <option>Мастерская Ольхи</option>
+              </select>
+            </div>
+            <div class="field new">
+              <span class="lbl">Раздел</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input class="input" value="Мушкеты" placeholder="Название нового раздела" />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="fhint">Раздел создаётся в источнике «Мастерская Ольхи».</span>
+            </div>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="note">
+            The m18 pattern: «Создать» writes the source row with the new section at once and
+            selects it; the refusals are m18's (empty, duplicate inside the source, 30 per
+            source, network).
           </div>
         </main>
       </section>

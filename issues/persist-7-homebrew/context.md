@@ -125,9 +125,10 @@ without homebrew"
    where this meets R6's `schema/import-v1.json` and R7's bundle v2.
 9. The author's own sources: a homebrew item is tagged «Хоумбрю» /
    "Homebrew" (HB) by default; the author can add a named source (for
-   example "Pistolheart") and put items in it. The label then reads
-   "Pistolheart" or "Pistolheart (HB)" - the planner proposes which, the
-   owner picks.
+   example "Мастерская Ольхи" / "Alder Workshop", an invented name that
+   replaces the owner's trademarked example in pass 3) and put items in
+   it. The label then reads "Мастерская Ольхи" or "Мастерская Ольхи
+   (HB)" - the planner proposes which, the owner picks.
 10. First-class everywhere except the roll pages (the owner may
     reconsider the roll pages later): homebrew items appear wherever
     catalog items do - the source filters are built from the author's
@@ -235,8 +236,82 @@ Read at `main` `b38bc5ab`; the design is `plan.md`, this is the evidence.
   `app/contracts` 7 min, `sweep 360` 7-9 min, `e2e` 2-3 min.
 - The mocks: `mocks/index.html`, m01-m17 (`plan.md` section 8).
 
+## Owner feedback on the pass 2 mocks (2026-09-29, verbatim, typos kept)
+Answered by planning pass 3 (2026-09-30): `plan.md` section 4.14 (F1-F8),
+the mocks m02-m22, new owner questions `Q9`-`Q12`. `Q1`-`Q12` are open.
+
+> I am not sure if we can use pistolheart as an example since it's TM, so
+> we need to select something more abstract
+>
+> when selecting source, can we create new source from there?
+>
+> when importing, will sources be created automatically?
+>
+> I also don't see capability to group items to categories additionally
+> inside of source, e.g. as we do for community items, or is it advised to
+> use different sources for that?
+>
+> prototype fail scenarios - e.g. validation failed on edit, what is
+> required, what is not, etc
+>
+> support multiple upgrades to / upgrades from?
+>
+> Карты правил to change smth to references, can we have mocks how they
+> are being created?
+>
+> I also think it would be useful to have something like quick-draft
+> feature from the list - e.g. you are in your inveotry, need to add
+> something, then just click add name description, after game you can set
+> it to ocrrect category, add references etc
+
+The items, as the orchestrator reads them (not decided):
+1. Replace the trademarked example source name in every mock and doc with
+   a neutral invented name.
+2. Create a new source inline from the source picker in the item editor.
+3. Import: say whether a bundle's unknown sources are created
+   automatically, and mock it.
+4. Categories inside a source (as communities group community items), or
+   a stated recommendation to use separate sources.
+5. Mocks of the failure states: a validation error on save, required
+   versus optional fields.
+6. Several "upgrades to" and "upgrades from" links on one item.
+7. Mocks of creating a rules card («Карты правил») that items reference.
+8. A quick draft from a list page: name and description only, added to
+   the list at once, completed later (category, references).
+
 ## Deferred from R6
 - `B7.3` renames `const before` in `tests/db/import-lists.test.mjs`, where it shadows `node:test`'s `before`; it edits that file and runs `check:db` anyway.
+
+## Facts settled by planning pass 3 (2026-09-30, planner, `main` `14e6dcf9`)
+- `craft` in `data.js` is one id string on 17 records; no target has two
+  sources. `Index.craftedFrom` stays one-to-one for the catalog.
+- Every catalog weapon, secondary weapon and armour record carries all of
+  `t tier tr rg dmg dt bu as th line cls` (381, 123, 100 records); `alt`
+  on 20 carries all four of `tr rg dmg dt`. `dmg` shapes: `d4`-`d20` with
+  an optional `+N`, never `2d8`.
+- The two sets: `ember-spark` (`dve19`, `dve20`), `saints-ensemble`
+  (`voa4_t3d` Святой Щит, `voa4_t3e` Святой Клинок, `voa4_t3f` Святое
+  Облачение). `hi7` is «Поварские Гранулы»; `q23` is «Скипетр»; `q14` is
+  «Арбалет»; `dv34` is «Одеяло от Призраков»; `q38` shares `q1.webp`.
+  Pass 2's mocks named some of these wrongly; pass 3 fixed them.
+- The app has no required-field mark and no field-level error pattern:
+  errors are `<p class="err" role="alert">` (`AccountPage.svelte`) and the
+  `.errs` box (`ImportPanel.svelte`). `NoticeBox.svelte` (gold, `warn`) is
+  the banner.
+- `ListPage.svelte` has no add path of its own: the actions row is
+  «Поделиться» (a toggle with `SharePanel`), «Копировать», «Скачать JSON»
+  (cloud only), «Печать», «Удалить»; `listEmptyHint` sends the reader to
+  «Таблицы» and «Поиск».
+- Pass 2's example file keys broke the key grammar (`0`, `1`, 17
+  characters); pass 3's keys are 16 of `a-z2-7`.
+- The mock generator is `mocks/gen.mjs` (copied from the pass 3 session's
+  scratchpad): `node issues/persist-7-homebrew/mocks/gen.mjs
+  issues/persist-7-homebrew/mocks`, then `npx prettier --write`; it
+  rewrites every mock file in the directory.
+- The browser pane opens `mocks/index.html` from disk but refuses the other
+  mock paths; the 360 px check ran on pages copied to that path, each
+  under about 88 000 URL-encoded characters (the pane serves a `data:`
+  snapshot).
 
 ## Do not re-fetch unless
 - Human provides new info

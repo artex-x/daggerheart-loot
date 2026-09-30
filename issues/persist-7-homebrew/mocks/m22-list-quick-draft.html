@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ItemPicker - typing, chosen, nothing found</title>
+    <title>
+      A quick draft from a list page: name and description now, the rest after the game
+    </title>
     <style>
       /* R7 mocks. :root copies app/src/styles/tokens.css (values, not a redesign).
    Component rules are copied from the named .svelte files. One theme (dark).
@@ -1616,22 +1618,27 @@
   </head>
   <body>
     <div class="mockbar">
-      <p class="crumb"><a href="index.html">R7 mocks</a> / m06-item-picker.html</p>
-      <h1>ItemPicker - typing, chosen, nothing found</h1>
+      <p class="crumb"><a href="index.html">R7 mocks</a> / m22-list-quick-draft.html</p>
+      <h1>A quick draft from a list page: name and description now, the rest after the game</h1>
       <p>
-        <b>Plan:</b> plan 4.10 (ItemPicker.svelte, four uses in the editor); B7.2;
-        <code>itemPicker.test.ts</code> with axe
+        <b>Plan:</b> plan 4.14 (F8, Q12); B7.3; states
+        <code>#/lists/&lt;uuid(101)&gt; as gm1</code> with the panel open, after an add,
+        refused; <code>#/homebrew/&lt;draft&gt; as gm1</code>
       </p>
       <p class="notetext">
-        A combobox over the merged index: the text field searches with
-        <code>matches</code> (both languages, the stat line), at most eight rows, homebrew names
-        dashed. Enter or a click chooses; the chosen record is a row with a remove button.
-        Escape closes the list.
+        An own account list gains «+ Свой предмет», a toggle like «Поделиться». Its panel takes
+        a name (required) and a description; «Добавить в список» creates a homebrew item marked
+        as a draft (kind «Предмет», source «Хоумбрю») and adds it to this list as a live
+        reference, then clears the fields for the next one. After the game the author finds it
+        under «Черновики» on <code>#/homebrew</code> (m02) and completes it in the editor; the
+        first save there removes the mark.
       </p>
     </div>
     <div class="pair">
       <section class="frame desk">
-        <span class="cap">the three states, in one panel - 960 px</span>
+        <span class="cap"
+          >#/lists/&lt;uuid(101)&gt; as gm1 - «+ Свой предмет» open - 960 px</span
+        >
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1650,69 +1657,84 @@
           </div>
         </div>
         <main class="in">
-          <div class="panel new">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">10 позиций · Сохранено</p>
+          <div class="card-acts" style="margin-bottom: 14px">
+            <button class="btn sm">Поделиться <span class="caret"></span></button
+            ><button class="btn sm new on" aria-expanded="true">
+              + Свой предмет <span class="caret"></span></button
+            ><button class="btn sm">Копировать</button
+            ><button class="btn sm">Скачать JSON</button><button class="btn sm">Печать</button
+            ><button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="panel new" style="margin-bottom: 14px">
+            <span class="lbl">Свой предмет в этот список</span>
             <div class="field">
-              <span class="lbl">Сделан из - typing «спаль»</span>
-              <div class="picker">
-                <input class="input" value="спаль" role="combobox" aria-expanded="true" />
-              </div>
-              <div class="picklist static" role="listbox">
-                <div class="pickrow on">
-                  <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                    >Первоклассный Спальный Мешок<small
-                      >Предмет · Основные правила · Бросок 1</small
-                    ></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок странника · хоумбрю"
-                      >Спальный мешок странника</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок следопыта · хоумбрю"
-                      >Спальный мешок следопыта</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок тишины · хоумбрю"
-                      >Спальный мешок тишины</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickempty">Ещё 12 - уточните запрос</div>
-              </div>
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input
+                class="input"
+                value="Фляга контрабандиста"
+                placeholder="Например: Фляга контрабандиста"
+              />
             </div>
             <div class="field">
-              <span class="lbl">Сделан из - chosen</span>
-              <div class="picked">
-                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                  >Первоклассный Спальный Мешок<small
-                    >Основные правила · Предмет · Бросок 1</small
-                  ></span
-                ><button class="x" aria-label="Убрать">&times;</button>
-              </div>
+              <span class="lbl">Описание</span
+              ><textarea
+                class="input"
+                placeholder="Что делает предмет - можно дописать после игры"
+              >
+Двойное дно: во второй половине можно спрятать письмо.</textarea>
             </div>
-            <div class="field">
-              <span class="lbl">Улучшается в - nothing found</span>
-              <div class="picker"><input class="input" value="zzz" role="combobox" /></div>
-              <div class="picklist static"><div class="pickempty">Ничего не найдено</div></div>
+            <div class="card-acts">
+              <button class="btn sm primary">Добавить в список</button
+              ><button class="btn sm ghost">Закрыть</button>
+            </div>
+            <p class="hint">
+              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
+              и цену можно задать потом.
+            </p>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="rt"
+                  ><b>Первоклассный Спальный Мешок<i class="rtail">&times;2 · 150 монет</i></b
+                  ><span>Во время отдыха вы автоматически очищаете Стресс.</span></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src">Основные правила</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Топор Тлеющих Углей<i class="rtail">800 монет</i></b
+                  ><span class="rstats"
+                    >Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг ·
+                    Двуручное</span
+                  ><span>Лезвие тлеет и не гаснет под дождём.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
             </div>
           </div>
           <div class="note">
-            Keyboard: ArrowDown/ArrowUp move the highlight (<code>aria-activedescendant</code>),
-            Enter picks, Escape closes, Backspace on a chosen row removes it. The item being
-            edited is never offered to itself.
+            Only on a list of the signed-in account (<code>isCloud</code>) and not read-only: a
+            browser list never holds a homebrew entry (G36). Enter in the name field adds;
+            Escape closes the panel. The empty list's hint gains «...или добавьте свой предмет
+            кнопкой «+ Свой предмет».».
           </div>
         </main>
       </section>
       <section class="frame phone">
-        <span class="cap">the three states, in one panel - 360 px</span>
+        <span class="cap"
+          >#/lists/&lt;uuid(101)&gt; as gm1 - «+ Свой предмет» open - 360 px</span
+        >
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1731,64 +1753,653 @@
           </div>
         </div>
         <main class="in">
-          <div class="panel new">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">10 позиций · Сохранено</p>
+          <div class="card-acts" style="margin-bottom: 14px">
+            <button class="btn sm">Поделиться <span class="caret"></span></button
+            ><button class="btn sm new on" aria-expanded="true">
+              + Свой предмет <span class="caret"></span></button
+            ><button class="btn sm">Копировать</button
+            ><button class="btn sm">Скачать JSON</button><button class="btn sm">Печать</button
+            ><button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="panel new" style="margin-bottom: 14px">
+            <span class="lbl">Свой предмет в этот список</span>
             <div class="field">
-              <span class="lbl">Сделан из - typing «спаль»</span>
-              <div class="picker">
-                <input class="input" value="спаль" role="combobox" aria-expanded="true" />
-              </div>
-              <div class="picklist static" role="listbox">
-                <div class="pickrow on">
-                  <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                    >Первоклассный Спальный Мешок<small
-                      >Предмет · Основные правила · Бросок 1</small
-                    ></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок странника · хоумбрю"
-                      >Спальный мешок странника</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок следопыта · хоумбрю"
-                      >Спальный мешок следопыта</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок тишины · хоумбрю"
-                      >Спальный мешок тишины</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickempty">Ещё 12 - уточните запрос</div>
-              </div>
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input
+                class="input"
+                value="Фляга контрабандиста"
+                placeholder="Например: Фляга контрабандиста"
+              />
             </div>
             <div class="field">
-              <span class="lbl">Сделан из - chosen</span>
-              <div class="picked">
-                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                  >Первоклассный Спальный Мешок<small
-                    >Основные правила · Предмет · Бросок 1</small
-                  ></span
-                ><button class="x" aria-label="Убрать">&times;</button>
-              </div>
+              <span class="lbl">Описание</span
+              ><textarea
+                class="input"
+                placeholder="Что делает предмет - можно дописать после игры"
+              >
+Двойное дно: во второй половине можно спрятать письмо.</textarea>
             </div>
-            <div class="field">
-              <span class="lbl">Улучшается в - nothing found</span>
-              <div class="picker"><input class="input" value="zzz" role="combobox" /></div>
-              <div class="picklist static"><div class="pickempty">Ничего не найдено</div></div>
+            <div class="card-acts">
+              <button class="btn sm primary">Добавить в список</button
+              ><button class="btn sm ghost">Закрыть</button>
+            </div>
+            <p class="hint">
+              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
+              и цену можно задать потом.
+            </p>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="rt"
+                  ><b>Первоклассный Спальный Мешок<i class="rtail">&times;2 · 150 монет</i></b
+                  ><span>Во время отдыха вы автоматически очищаете Стресс.</span></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src">Основные правила</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Топор Тлеющих Углей<i class="rtail">800 монет</i></b
+                  ><span class="rstats"
+                    >Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг ·
+                    Двуручное</span
+                  ><span>Лезвие тлеет и не гаснет под дождём.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
             </div>
           </div>
           <div class="note">
-            Keyboard: ArrowDown/ArrowUp move the highlight (<code>aria-activedescendant</code>),
-            Enter picks, Escape closes, Backspace on a chosen row removes it. The item being
-            edited is never offered to itself.
+            Only on a list of the signed-in account (<code>isCloud</code>) and not read-only: a
+            browser list never holds a homebrew entry (G36). Enter in the name field adds;
+            Escape closes the panel. The empty list's hint gains «...или добавьте свой предмет
+            кнопкой «+ Свой предмет».».
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">added: the draft row at the end, the fields cleared - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">11 позиций · Сохранено</p>
+          <div class="card-acts" style="margin-bottom: 14px">
+            <button class="btn sm">Поделиться <span class="caret"></span></button
+            ><button class="btn sm new on" aria-expanded="true">
+              + Свой предмет <span class="caret"></span></button
+            ><button class="btn sm">Копировать</button
+            ><button class="btn sm">Скачать JSON</button><button class="btn sm">Печать</button
+            ><button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="panel new" style="margin-bottom: 14px">
+            <span class="lbl">Свой предмет в этот список</span>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="" placeholder="Например: Фляга контрабандиста" />
+            </div>
+            <div class="field">
+              <span class="lbl">Описание</span
+              ><textarea
+                class="input"
+                placeholder="Что делает предмет - можно дописать после игры"
+              ></textarea>
+            </div>
+            <div class="card-acts">
+              <button class="btn sm primary">Добавить в список</button
+              ><button class="btn sm ghost">Закрыть</button>
+            </div>
+            <p class="hint">
+              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
+              и цену можно задать потом.
+            </p>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="rt"
+                  ><b>Первоклассный Спальный Мешок<i class="rtail">&times;2 · 150 монет</i></b
+                  ><span>Во время отдыха вы автоматически очищаете Стресс.</span></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src">Основные правила</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Топор Тлеющих Углей<i class="rtail">800 монет</i></b
+                  ><span class="rstats"
+                    >Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг ·
+                    Двуручное</span
+                  ><span>Лезвие тлеет и не гаснет под дождём.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row new">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Фляга контрабандиста</b></span
+                ><span class="rm"
+                  ><span class="badge draft new">Черновик</span
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+          </div>
+          <div class="toast">«Фляга контрабандиста» добавлена в список</div>
+          <div class="note">
+            Two writes in order: the item (awaited, <code>draft = true</code>), then the entry
+            through the list's write buffer as <code>source: homebrew</code> - the
+            reference-exists trigger needs the item first. The badge «Черновик» draws only from
+            the owner's index: players on <code>#/s/...</code> see the item live without it, and
+            a frozen copy never carries it.
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">added: the draft row at the end, the fields cleared - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">11 позиций · Сохранено</p>
+          <div class="card-acts" style="margin-bottom: 14px">
+            <button class="btn sm">Поделиться <span class="caret"></span></button
+            ><button class="btn sm new on" aria-expanded="true">
+              + Свой предмет <span class="caret"></span></button
+            ><button class="btn sm">Копировать</button
+            ><button class="btn sm">Скачать JSON</button><button class="btn sm">Печать</button
+            ><button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="panel new" style="margin-bottom: 14px">
+            <span class="lbl">Свой предмет в этот список</span>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="" placeholder="Например: Фляга контрабандиста" />
+            </div>
+            <div class="field">
+              <span class="lbl">Описание</span
+              ><textarea
+                class="input"
+                placeholder="Что делает предмет - можно дописать после игры"
+              ></textarea>
+            </div>
+            <div class="card-acts">
+              <button class="btn sm primary">Добавить в список</button
+              ><button class="btn sm ghost">Закрыть</button>
+            </div>
+            <p class="hint">
+              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
+              и цену можно задать потом.
+            </p>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="rt"
+                  ><b>Первоклассный Спальный Мешок<i class="rtail">&times;2 · 150 монет</i></b
+                  ><span>Во время отдыха вы автоматически очищаете Стресс.</span></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src">Основные правила</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Топор Тлеющих Углей<i class="rtail">800 монет</i></b
+                  ><span class="rstats"
+                    >Ранг 2 · Магическое · Хар. Заклинателя · Вплотную · d10+2 маг ·
+                    Двуручное</span
+                  ><span>Лезвие тлеет и не гаснет под дождём.</span></span
+                ><span class="rm"
+                  ><span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row new">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Фляга контрабандиста</b></span
+                ><span class="rm"
+                  ><span class="badge draft new">Черновик</span
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+          </div>
+          <div class="toast">«Фляга контрабандиста» добавлена в список</div>
+          <div class="note">
+            Two writes in order: the item (awaited, <code>draft = true</code>), then the entry
+            through the list's write buffer as <code>source: homebrew</code> - the
+            reference-exists trigger needs the item first. The badge «Черновик» draws only from
+            the owner's index: players on <code>#/s/...</code> see the item live without it, and
+            a frozen copy never carries it.
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">refused: no name, or the item could not be created - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">10 позиций · Сохранено</p>
+          <div class="card-acts" style="margin-bottom: 14px">
+            <button class="btn sm">Поделиться <span class="caret"></span></button
+            ><button class="btn sm new on" aria-expanded="true">
+              + Свой предмет <span class="caret"></span></button
+            ><button class="btn sm">Копировать</button
+            ><button class="btn sm">Скачать JSON</button><button class="btn sm">Печать</button
+            ><button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="panel new" style="margin-bottom: 14px">
+            <span class="lbl">Свой предмет в этот список</span>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input
+                class="input bad"
+                aria-invalid="true"
+                value=""
+                placeholder="Например: Фляга контрабандиста"
+              /><span class="ferr" role="alert">Введите название.</span>
+            </div>
+            <div class="field">
+              <span class="lbl">Описание</span
+              ><textarea
+                class="input"
+                placeholder="Что делает предмет - можно дописать после игры"
+              >
+Двойное дно: во второй половине можно спрятать письмо.</textarea>
+            </div>
+            <div class="card-acts">
+              <button class="btn sm primary">Добавить в список</button
+              ><button class="btn sm ghost">Закрыть</button>
+            </div>
+            <p class="hint">
+              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
+              и цену можно задать потом.
+            </p>
+          </div>
+          <div class="panel new" style="margin-bottom: 14px">
+            <span class="lbl">Свой предмет в этот список</span>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input
+                class="input"
+                value="Фляга контрабандиста"
+                placeholder="Например: Фляга контрабандиста"
+              />
+            </div>
+            <div class="field">
+              <span class="lbl">Описание</span
+              ><textarea
+                class="input"
+                placeholder="Что делает предмет - можно дописать после игры"
+              ></textarea>
+            </div>
+            <div class="card-acts">
+              <button class="btn sm primary">Добавить в список</button
+              ><button class="btn sm ghost">Закрыть</button>
+            </div>
+            <p class="err" role="alert">
+              Не удалось создать предмет - проверьте соединение. Текст остался в форме.
+            </p>
+          </div>
+          <div class="note">
+            The limit refusal reads «Достигнут предел своих предметов: 500.». If the item was
+            created and the entry write fails, the item stays under «Черновики» and the list's
+            own «Не сохранено · Повторить» line takes over, as for any list write.
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">refused: no name, or the item could not be created - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">10 позиций · Сохранено</p>
+          <div class="card-acts" style="margin-bottom: 14px">
+            <button class="btn sm">Поделиться <span class="caret"></span></button
+            ><button class="btn sm new on" aria-expanded="true">
+              + Свой предмет <span class="caret"></span></button
+            ><button class="btn sm">Копировать</button
+            ><button class="btn sm">Скачать JSON</button><button class="btn sm">Печать</button
+            ><button class="btn sm danger">Удалить</button>
+          </div>
+          <div class="panel new" style="margin-bottom: 14px">
+            <span class="lbl">Свой предмет в этот список</span>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input
+                class="input bad"
+                aria-invalid="true"
+                value=""
+                placeholder="Например: Фляга контрабандиста"
+              /><span class="ferr" role="alert">Введите название.</span>
+            </div>
+            <div class="field">
+              <span class="lbl">Описание</span
+              ><textarea
+                class="input"
+                placeholder="Что делает предмет - можно дописать после игры"
+              >
+Двойное дно: во второй половине можно спрятать письмо.</textarea>
+            </div>
+            <div class="card-acts">
+              <button class="btn sm primary">Добавить в список</button
+              ><button class="btn sm ghost">Закрыть</button>
+            </div>
+            <p class="hint">
+              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
+              и цену можно задать потом.
+            </p>
+          </div>
+          <div class="panel new" style="margin-bottom: 14px">
+            <span class="lbl">Свой предмет в этот список</span>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input
+                class="input"
+                value="Фляга контрабандиста"
+                placeholder="Например: Фляга контрабандиста"
+              />
+            </div>
+            <div class="field">
+              <span class="lbl">Описание</span
+              ><textarea
+                class="input"
+                placeholder="Что делает предмет - можно дописать после игры"
+              ></textarea>
+            </div>
+            <div class="card-acts">
+              <button class="btn sm primary">Добавить в список</button
+              ><button class="btn sm ghost">Закрыть</button>
+            </div>
+            <p class="err" role="alert">
+              Не удалось создать предмет - проверьте соединение. Текст остался в форме.
+            </p>
+          </div>
+          <div class="note">
+            The limit refusal reads «Достигнут предел своих предметов: 500.». If the item was
+            created and the entry write fails, the item stays under «Черновики» and the list's
+            own «Не сохранено · Повторить» line takes over, as for any list write.
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap"
+          >#/homebrew/&lt;draft&gt; as gm1 - the draft opened in the editor - 960 px</span
+        >
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Фляга контрабандиста</h1>
+          <p class="page-sub">Хоумбрю</p>
+          <div class="nbox" role="status">
+            <span class="lead"
+              >Черновик: задайте вид, источник и связи и сохраните - метка «Черновик»
+              снимется.</span
+            >
+          </div>
+          <div class="editor">
+            <div class="panel">
+              <p class="legend">
+                <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное
+                можно заполнить позже.
+              </p>
+              <div class="field">
+                <span class="lbl">Вид</span
+                ><span class="seg"
+                  ><span class="on">Предмет</span><span>Расходник</span
+                  ><span>Снаряжение</span></span
+                >
+              </div>
+              <div class="field twocol new">
+                <div>
+                  <span class="lbl">Источник</span
+                  ><select class="input">
+                    <option>Хоумбрю</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+                ><input class="input" value="Фляга контрабандиста" placeholder="" />
+              </div>
+              <div class="field">
+                <span class="lbl">Описание</span
+                ><textarea class="input">
+Двойное дно: во второй половине можно спрятать письмо.</textarea>
+              </div>
+              <p class="hint">... the rest of the form as m05.</p>
+              <div class="card-acts" style="margin-top: 18px">
+                <button class="btn primary">Сохранить</button><a class="btn ghost">Отмена</a
+                ><button class="btn danger ml">Удалить</button>
+              </div>
+              <p class="hint">
+                Предмет есть в 1 списке: изменения появятся в нём сразу, в том числе у игроков
+                по ссылке.
+              </p>
+            </div>
+            <div class="card full">
+              <span class="card-media"><img src="../../../img/_none.webp" alt="" /></span>
+              <div class="card-body">
+                <div class="card-meta">
+                  <span class="badge draft new">Черновик</span
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span>
+                </div>
+                <h2 class="card-name">Фляга контрабандиста</h2>
+                <div class="card-desc">
+                  <p>Двойное дно: во второй половине можно спрятать письмо.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The banner shows while the item carries the mark. «Сохранить» writes
+            <code>draft = false</code> with the content, so the mark drops even with no other
+            change.
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap"
+          >#/homebrew/&lt;draft&gt; as gm1 - the draft opened in the editor - 360 px</span
+        >
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Фляга контрабандиста</h1>
+          <p class="page-sub">Хоумбрю</p>
+          <div class="nbox" role="status">
+            <span class="lead"
+              >Черновик: задайте вид, источник и связи и сохраните - метка «Черновик»
+              снимется.</span
+            >
+          </div>
+          <div class="editor">
+            <div class="panel">
+              <p class="legend">
+                <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное
+                можно заполнить позже.
+              </p>
+              <div class="field">
+                <span class="lbl">Вид</span
+                ><span class="seg"
+                  ><span class="on">Предмет</span><span>Расходник</span
+                  ><span>Снаряжение</span></span
+                >
+              </div>
+              <div class="field twocol new">
+                <div>
+                  <span class="lbl">Источник</span
+                  ><select class="input">
+                    <option>Хоумбрю</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+                ><input class="input" value="Фляга контрабандиста" placeholder="" />
+              </div>
+              <div class="field">
+                <span class="lbl">Описание</span
+                ><textarea class="input">
+Двойное дно: во второй половине можно спрятать письмо.</textarea>
+              </div>
+              <p class="hint">... the rest of the form as m05.</p>
+              <div class="card-acts" style="margin-top: 18px">
+                <button class="btn primary">Сохранить</button><a class="btn ghost">Отмена</a
+                ><button class="btn danger ml">Удалить</button>
+              </div>
+              <p class="hint">
+                Предмет есть в 1 списке: изменения появятся в нём сразу, в том числе у игроков
+                по ссылке.
+              </p>
+            </div>
+            <div class="card full">
+              <span class="card-media"><img src="../../../img/_none.webp" alt="" /></span>
+              <div class="card-body">
+                <div class="card-meta">
+                  <span class="badge draft new">Черновик</span
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span>
+                </div>
+                <h2 class="card-name">Фляга контрабандиста</h2>
+                <div class="card-desc">
+                  <p>Двойное дно: во второй половине можно спрятать письмо.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The banner shows while the item carries the mark. «Сохранить» writes
+            <code>draft = false</code> with the content, so the mark drops even with no other
+            change.
           </div>
         </main>
       </section>

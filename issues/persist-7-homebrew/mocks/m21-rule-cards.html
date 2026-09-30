@@ -3,7 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ItemPicker - typing, chosen, nothing found</title>
+    <title>
+      Rule cards and sets: the «Карты» panel, a new rule card, the inline form in the item
+      editor
+    </title>
     <style>
       /* R7 mocks. :root copies app/src/styles/tokens.css (values, not a redesign).
    Component rules are copied from the named .svelte files. One theme (dark).
@@ -1616,22 +1619,23 @@
   </head>
   <body>
     <div class="mockbar">
-      <p class="crumb"><a href="index.html">R7 mocks</a> / m06-item-picker.html</p>
-      <h1>ItemPicker - typing, chosen, nothing found</h1>
-      <p>
-        <b>Plan:</b> plan 4.10 (ItemPicker.svelte, four uses in the editor); B7.2;
-        <code>itemPicker.test.ts</code> with axe
-      </p>
+      <p class="crumb"><a href="index.html">R7 mocks</a> / m21-rule-cards.html</p>
+      <h1>
+        Rule cards and sets: the «Карты» panel, a new rule card, the inline form in the item
+        editor
+      </h1>
+      <p><b>Plan:</b> plan 4.3, 4.14 (F7); B7.2</p>
       <p class="notetext">
-        A combobox over the merged index: the text field searches with
-        <code>matches</code> (both languages, the stat line), at most eight rows, homebrew names
-        dashed. Enter or a click chooses; the chosen record is a row with a remove button.
-        Escape closes the list.
+        A rule card («Карта правил», the catalog's <code>refs</code>) is text an item points at,
+        drawn as a fold on the item's card; a set card holds a set's shared bonus. Both are rows
+        of <code>homebrew_cards</code>. They are made in two places: the «Карты» panel on
+        <code>#/homebrew</code> and the inline «+ новая карта» / «+ новый комплект» in the item
+        editor; each creates at once with its own button.
       </p>
     </div>
     <div class="pair">
       <section class="frame desk">
-        <span class="cap">the three states, in one panel - 960 px</span>
+        <span class="cap">#/homebrew as gm1 - the «Карты» panel open - 960 px</span>
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1650,69 +1654,132 @@
           </div>
         </div>
         <main class="in">
+          <h1 class="page-h">Мои предметы</h1>
+          <p class="page-sub">
+            Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и
+            добавляются в списки.
+          </p>
+          <p class="count">21 предмет из 500</p>
           <div class="panel new">
-            <div class="field">
-              <span class="lbl">Сделан из - typing «спаль»</span>
-              <div class="picker">
-                <input class="input" value="спаль" role="combobox" aria-expanded="true" />
+            <span class="lbl">Карты</span>
+            <div class="cardgrp">
+              <span class="lbl" style="margin-top: 4px">Комплекты</span>
+              <div class="srcrow">
+                <span class="who"
+                  ><b>Тлеющая пара</b><small>2 предмета · Мастерская Ольхи</small></span
+                ><span class="acts"
+                  ><button class="btn sm ghost">Изменить</button
+                  ><button class="btn sm danger">Удалить</button></span
+                >
               </div>
-              <div class="picklist static" role="listbox">
-                <div class="pickrow on">
-                  <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                    >Первоклассный Спальный Мешок<small
-                      >Предмет · Основные правила · Бросок 1</small
-                    ></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок странника · хоумбрю"
-                      >Спальный мешок странника</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок следопыта · хоумбрю"
-                      >Спальный мешок следопыта</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок тишины · хоумбрю"
-                      >Спальный мешок тишины</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickempty">Ещё 12 - уточните запрос</div>
+              <div class="card-acts" style="margin-top: 6px">
+                <button class="btn sm">+ Новый комплект</button>
               </div>
             </div>
-            <div class="field">
-              <span class="lbl">Сделан из - chosen</span>
-              <div class="picked">
-                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                  >Первоклассный Спальный Мешок<small
-                    >Основные правила · Предмет · Бросок 1</small
-                  ></span
-                ><button class="x" aria-label="Убрать">&times;</button>
+            <div class="cardgrp">
+              <span class="lbl">Карты правил</span>
+              <div class="srcrow">
+                <span class="who"
+                  ><b>Перезарядка</b><small>Правило Мастерской Ольхи · 3 предмета</small></span
+                ><span class="acts"
+                  ><button class="btn sm ghost">Изменить</button
+                  ><button class="btn sm danger">Удалить</button></span
+                >
               </div>
-            </div>
-            <div class="field">
-              <span class="lbl">Улучшается в - nothing found</span>
-              <div class="picker"><input class="input" value="zzz" role="combobox" /></div>
-              <div class="picklist static"><div class="pickempty">Ничего не найдено</div></div>
+              <div class="srcrow">
+                <span class="who"><b>Осечка</b><small>0 предметов</small></span
+                ><span class="acts"
+                  ><button class="btn sm ghost">Изменить</button
+                  ><button class="btn sm danger">Удалить</button></span
+                >
+              </div>
+              <div class="card-acts" style="margin-top: 6px">
+                <button class="btn sm">+ Новая карта правил</button>
+              </div>
             </div>
           </div>
           <div class="note">
-            Keyboard: ArrowDown/ArrowUp move the highlight (<code>aria-activedescendant</code>),
-            Enter picks, Escape closes, Backspace on a chosen row removes it. The item being
-            edited is never offered to itself.
+            Each card lists the items that name it; «Осечка» is named by none (made from the
+            editor and then not used). «Изменить» opens the card's form in place of its row; one
+            form is open at a time.
           </div>
         </main>
       </section>
       <section class="frame phone">
-        <span class="cap">the three states, in one panel - 360 px</span>
+        <span class="cap">#/homebrew as gm1 - the «Карты» panel open - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Мои предметы</h1>
+          <p class="page-sub">
+            Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и
+            добавляются в списки.
+          </p>
+          <p class="count">21 предмет из 500</p>
+          <div class="panel new">
+            <span class="lbl">Карты</span>
+            <div class="cardgrp">
+              <span class="lbl" style="margin-top: 4px">Комплекты</span>
+              <div class="srcrow">
+                <span class="who"
+                  ><b>Тлеющая пара</b><small>2 предмета · Мастерская Ольхи</small></span
+                ><span class="acts"
+                  ><button class="btn sm ghost">Изменить</button
+                  ><button class="btn sm danger">Удалить</button></span
+                >
+              </div>
+              <div class="card-acts" style="margin-top: 6px">
+                <button class="btn sm">+ Новый комплект</button>
+              </div>
+            </div>
+            <div class="cardgrp">
+              <span class="lbl">Карты правил</span>
+              <div class="srcrow">
+                <span class="who"
+                  ><b>Перезарядка</b><small>Правило Мастерской Ольхи · 3 предмета</small></span
+                ><span class="acts"
+                  ><button class="btn sm ghost">Изменить</button
+                  ><button class="btn sm danger">Удалить</button></span
+                >
+              </div>
+              <div class="srcrow">
+                <span class="who"><b>Осечка</b><small>0 предметов</small></span
+                ><span class="acts"
+                  ><button class="btn sm ghost">Изменить</button
+                  ><button class="btn sm danger">Удалить</button></span
+                >
+              </div>
+              <div class="card-acts" style="margin-top: 6px">
+                <button class="btn sm">+ Новая карта правил</button>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            Each card lists the items that name it; «Осечка» is named by none (made from the
+            editor and then not used). «Изменить» opens the card's form in place of its row; one
+            form is open at a time.
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">«+ Новая карта правил» in the panel, with how it draws - 960 px</span>
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1732,63 +1799,426 @@
         </div>
         <main class="in">
           <div class="panel new">
+            <span class="lbl">Новая карта правил</span>
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
             <div class="field">
-              <span class="lbl">Сделан из - typing «спаль»</span>
-              <div class="picker">
-                <input class="input" value="спаль" role="combobox" aria-expanded="true" />
-              </div>
-              <div class="picklist static" role="listbox">
-                <div class="pickrow on">
-                  <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                    >Первоклассный Спальный Мешок<small
-                      >Предмет · Основные правила · Бросок 1</small
-                    ></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок странника · хоумбрю"
-                      >Спальный мешок странника</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок следопыта · хоумбрю"
-                      >Спальный мешок следопыта</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок тишины · хоумбрю"
-                      >Спальный мешок тишины</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickempty">Ещё 12 - уточните запрос</div>
-              </div>
+              <span class="lbl"
+                >Название карты<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Перезарядка" placeholder="" />
             </div>
             <div class="field">
-              <span class="lbl">Сделан из - chosen</span>
-              <div class="picked">
-                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                  >Первоклассный Спальный Мешок<small
-                    >Основные правила · Предмет · Бросок 1</small
-                  ></span
-                ><button class="x" aria-label="Убрать">&times;</button>
-              </div>
+              <span class="lbl">Подзаголовок</span
+              ><input class="input" value="Правило Мастерской Ольхи" placeholder="" /><span
+                class="fhint"
+                >Необязательно. Например: Мудрость · Уровень 1 · Заклинание.</span
+              >
             </div>
             <div class="field">
-              <span class="lbl">Улучшается в - nothing found</span>
-              <div class="picker"><input class="input" value="zzz" role="combobox" /></div>
-              <div class="picklist static"><div class="pickempty">Ничего не найдено</div></div>
+              <span class="lbl">Текст карты<span class="req" aria-hidden="true">*</span></span
+              ><textarea class="input">
+После выстрела потратьте ход, чтобы перезарядить оружие. Пока оружие не перезаряжено, им нельзя атаковать.</textarea>
+            </div>
+            <div class="field">
+              <span class="lbl">Ссылка</span
+              ><input class="input" value="" placeholder="https://..." /><span class="fhint"
+                >Необязательно: страница с полным текстом правила.</span
+              >
+            </div>
+            <div class="field">
+              <span class="lbl">Источник</span
+              ><select class="input">
+                <option>Мастерская Ольхи</option>
+              </select>
+            </div>
+            <div class="fold">
+              <div class="sum">Другой язык (English) <span class="caret"></span></div>
+            </div>
+            <div class="card-acts" style="margin-top: 12px">
+              <button class="btn sm primary">Создать карту</button
+              ><button class="btn sm ghost">Отмена</button>
+            </div>
+            <div class="field" style="margin-top: 16px">
+              <span class="lbl">Так карта выглядит на предмете</span>
+              <div class="refs">
+                <details open>
+                  <summary>
+                    <span class="ref-n">Перезарядка</span
+                    ><i class="ref-s">Правило Мастерской Ольхи</i>
+                  </summary>
+                  <p class="ref-t">
+                    После выстрела потратьте ход, чтобы перезарядить оружие. Пока оружие не
+                    перезаряжено, им нельзя атаковать.
+                  </p>
+                </details>
+              </div>
             </div>
           </div>
           <div class="note">
-            Keyboard: ArrowDown/ArrowUp move the highlight (<code>aria-activedescendant</code>),
-            Enter picks, Escape closes, Backspace on a chosen row removes it. The item being
-            edited is never offered to itself.
+            The source is optional (none: «Хоумбрю») and only groups the card in the panel and
+            the file; any item may name any of the author's cards and any catalog card, up to
+            three.
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">«+ Новая карта правил» in the panel, with how it draws - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="panel new">
+            <span class="lbl">Новая карта правил</span>
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl"
+                >Название карты<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Перезарядка" placeholder="" />
+            </div>
+            <div class="field">
+              <span class="lbl">Подзаголовок</span
+              ><input class="input" value="Правило Мастерской Ольхи" placeholder="" /><span
+                class="fhint"
+                >Необязательно. Например: Мудрость · Уровень 1 · Заклинание.</span
+              >
+            </div>
+            <div class="field">
+              <span class="lbl">Текст карты<span class="req" aria-hidden="true">*</span></span
+              ><textarea class="input">
+После выстрела потратьте ход, чтобы перезарядить оружие. Пока оружие не перезаряжено, им нельзя атаковать.</textarea>
+            </div>
+            <div class="field">
+              <span class="lbl">Ссылка</span
+              ><input class="input" value="" placeholder="https://..." /><span class="fhint"
+                >Необязательно: страница с полным текстом правила.</span
+              >
+            </div>
+            <div class="field">
+              <span class="lbl">Источник</span
+              ><select class="input">
+                <option>Мастерская Ольхи</option>
+              </select>
+            </div>
+            <div class="fold">
+              <div class="sum">Другой язык (English) <span class="caret"></span></div>
+            </div>
+            <div class="card-acts" style="margin-top: 12px">
+              <button class="btn sm primary">Создать карту</button
+              ><button class="btn sm ghost">Отмена</button>
+            </div>
+            <div class="field" style="margin-top: 16px">
+              <span class="lbl">Так карта выглядит на предмете</span>
+              <div class="refs">
+                <details open>
+                  <summary>
+                    <span class="ref-n">Перезарядка</span
+                    ><i class="ref-s">Правило Мастерской Ольхи</i>
+                  </summary>
+                  <p class="ref-t">
+                    После выстрела потратьте ход, чтобы перезарядить оружие. Пока оружие не
+                    перезаряжено, им нельзя атаковать.
+                  </p>
+                </details>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            The source is optional (none: «Хоумбрю») and only groups the card in the panel and
+            the file; any item may name any of the author's cards and any catalog card, up to
+            three.
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap"
+          >the item editor: «+ новая карта» open beside a catalog card - 960 px</span
+        >
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="panel">
+            <fieldset class="fieldset">
+              <p class="lgd">Связи</p>
+              <div class="field">
+                <span class="lbl">Карты правил</span>
+                <div class="picked">
+                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
+                    >Неистовое опутывание<small
+                      >Мудрость · Уровень 1 · Заклинание · Основные правила</small
+                    ></span
+                  ><button class="x" aria-label="Убрать">&times;</button>
+                </div>
+                <div class="fold new" style="margin: 8px 0 0">
+                  <div class="sum open">+ новая карта <span class="caret"></span></div>
+                  <div class="body">
+                    <div class="field">
+                      <span class="lbl"
+                        >Название карты<span class="req" aria-hidden="true">*</span></span
+                      ><input class="input" value="Перезарядка" placeholder="" />
+                    </div>
+                    <div class="field">
+                      <span class="lbl">Подзаголовок</span
+                      ><input
+                        class="input"
+                        value="Правило Мастерской Ольхи"
+                        placeholder=""
+                      /><span class="fhint"
+                        >Необязательно. Например: Мудрость · Уровень 1 · Заклинание.</span
+                      >
+                    </div>
+                    <div class="field">
+                      <span class="lbl"
+                        >Текст карты<span class="req" aria-hidden="true">*</span></span
+                      ><textarea class="input">
+После выстрела потратьте ход, чтобы перезарядить оружие. Пока оружие не перезаряжено, им нельзя атаковать.</textarea>
+                    </div>
+                    <div class="field">
+                      <span class="lbl">Ссылка</span
+                      ><input class="input" value="" placeholder="https://..." /><span
+                        class="fhint"
+                        >Необязательно: страница с полным текстом правила.</span
+                      >
+                    </div>
+
+                    <div class="fold">
+                      <div class="sum">Другой язык (English) <span class="caret"></span></div>
+                    </div>
+                    <div class="card-acts">
+                      <button class="btn sm primary">Создать карту</button
+                      ><button class="btn sm ghost">Отмена</button>
+                    </div>
+                    <p class="hint">
+                      Карта создаётся сразу, в источнике этого предмета, и выбирается здесь. На
+                      предмете - до 3 карт.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div class="note">
+            The picker («+ ещё карта») searches the catalog's 13 cards and the author's own, by
+            name and subtitle. After «Создать карту» the fold closes and the new card is the
+            second chosen row.
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap"
+          >the item editor: «+ новая карта» open beside a catalog card - 360 px</span
+        >
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="panel">
+            <fieldset class="fieldset">
+              <p class="lgd">Связи</p>
+              <div class="field">
+                <span class="lbl">Карты правил</span>
+                <div class="picked">
+                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
+                    >Неистовое опутывание<small
+                      >Мудрость · Уровень 1 · Заклинание · Основные правила</small
+                    ></span
+                  ><button class="x" aria-label="Убрать">&times;</button>
+                </div>
+                <div class="fold new" style="margin: 8px 0 0">
+                  <div class="sum open">+ новая карта <span class="caret"></span></div>
+                  <div class="body">
+                    <div class="field">
+                      <span class="lbl"
+                        >Название карты<span class="req" aria-hidden="true">*</span></span
+                      ><input class="input" value="Перезарядка" placeholder="" />
+                    </div>
+                    <div class="field">
+                      <span class="lbl">Подзаголовок</span
+                      ><input
+                        class="input"
+                        value="Правило Мастерской Ольхи"
+                        placeholder=""
+                      /><span class="fhint"
+                        >Необязательно. Например: Мудрость · Уровень 1 · Заклинание.</span
+                      >
+                    </div>
+                    <div class="field">
+                      <span class="lbl"
+                        >Текст карты<span class="req" aria-hidden="true">*</span></span
+                      ><textarea class="input">
+После выстрела потратьте ход, чтобы перезарядить оружие. Пока оружие не перезаряжено, им нельзя атаковать.</textarea>
+                    </div>
+                    <div class="field">
+                      <span class="lbl">Ссылка</span
+                      ><input class="input" value="" placeholder="https://..." /><span
+                        class="fhint"
+                        >Необязательно: страница с полным текстом правила.</span
+                      >
+                    </div>
+
+                    <div class="fold">
+                      <div class="sum">Другой язык (English) <span class="caret"></span></div>
+                    </div>
+                    <div class="card-acts">
+                      <button class="btn sm primary">Создать карту</button
+                      ><button class="btn sm ghost">Отмена</button>
+                    </div>
+                    <p class="hint">
+                      Карта создаётся сразу, в источнике этого предмета, и выбирается здесь. На
+                      предмете - до 3 карт.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div class="note">
+            The picker («+ ещё карта») searches the catalog's 13 cards and the author's own, by
+            name and subtitle. After «Создать карту» the fold closes and the new card is the
+            second chosen row.
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">editing a set from the panel - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="panel new">
+            <span class="lbl">Комплект</span>
+            <div class="field">
+              <span class="lbl"
+                >Название комплекта<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Тлеющая пара" placeholder="" />
+            </div>
+            <div class="field">
+              <span class="lbl"
+                >Бонус комплекта<span class="req" aria-hidden="true">*</span></span
+              ><textarea class="input">
+Когда оба предмета в вашей Руке, ваши атаки наносят +1 магического урона.</textarea>
+            </div>
+            <div class="card-acts">
+              <button class="btn sm primary">Сохранить</button
+              ><button class="btn sm ghost">Отмена</button
+              ><button class="btn sm danger ml">Удалить</button>
+            </div>
+            <p class="hint">Изменения появятся на 2 предметах и в списках, где они лежат.</p>
+          </div>
+          <div class="note">
+            Members are not edited here: an item joins a set from its own editor (the set is a
+            property of the item, as in the catalog).
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">editing a set from the panel - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="panel new">
+            <span class="lbl">Комплект</span>
+            <div class="field">
+              <span class="lbl"
+                >Название комплекта<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Тлеющая пара" placeholder="" />
+            </div>
+            <div class="field">
+              <span class="lbl"
+                >Бонус комплекта<span class="req" aria-hidden="true">*</span></span
+              ><textarea class="input">
+Когда оба предмета в вашей Руке, ваши атаки наносят +1 магического урона.</textarea>
+            </div>
+            <div class="card-acts">
+              <button class="btn sm primary">Сохранить</button
+              ><button class="btn sm ghost">Отмена</button
+              ><button class="btn sm danger ml">Удалить</button>
+            </div>
+            <p class="hint">Изменения появятся на 2 предметах и в списках, где они лежат.</p>
+          </div>
+          <div class="note">
+            Members are not edited here: an item joins a set from its own editor (the set is a
+            property of the item, as in the catalog).
           </div>
         </main>
       </section>

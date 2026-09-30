@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ItemPicker - typing, chosen, nothing found</title>
+    <title>The editor: a new source from the source select</title>
     <style>
       /* R7 mocks. :root copies app/src/styles/tokens.css (values, not a redesign).
    Component rules are copied from the named .svelte files. One theme (dark).
@@ -1616,22 +1616,23 @@
   </head>
   <body>
     <div class="mockbar">
-      <p class="crumb"><a href="index.html">R7 mocks</a> / m06-item-picker.html</p>
-      <h1>ItemPicker - typing, chosen, nothing found</h1>
+      <p class="crumb"><a href="index.html">R7 mocks</a> / m18-editor-source-inline.html</p>
+      <h1>The editor: a new source from the source select</h1>
       <p>
-        <b>Plan:</b> plan 4.10 (ItemPicker.svelte, four uses in the editor); B7.2;
-        <code>itemPicker.test.ts</code> with axe
+        <b>Plan:</b> plan 4.14 (F2); B7.2; states <code>#/homebrew/new as gm1</code> with the
+        select on «+ Новый источник...»
       </p>
       <p class="notetext">
-        A combobox over the merged index: the text field searches with
-        <code>matches</code> (both languages, the stat line), at most eight rows, homebrew names
-        dashed. Enter or a click chooses; the chosen record is a row with a remove button.
-        Escape closes the list.
+        The source select ends with «+ Новый источник...». Choosing it swaps the select for a
+        name field with «Создать» and «Отмена»; «Создать» writes the source at once (one awaited
+        write, the same store call as the panel on <code>#/homebrew</code>) and selects it. The
+        item itself is written only by «Сохранить». The section select (m19) follows the same
+        pattern.
       </p>
     </div>
     <div class="pair">
       <section class="frame desk">
-        <span class="cap">the three states, in one panel - 960 px</span>
+        <span class="cap">the source select open - 960 px</span>
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1650,69 +1651,49 @@
           </div>
         </div>
         <main class="in">
-          <div class="panel new">
+          <h1 class="page-h">Новый предмет</h1>
+          <p class="page-sub">Хоумбрю</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
             <div class="field">
-              <span class="lbl">Сделан из - typing «спаль»</span>
-              <div class="picker">
-                <input class="input" value="спаль" role="combobox" aria-expanded="true" />
-              </div>
-              <div class="picklist static" role="listbox">
-                <div class="pickrow on">
-                  <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                    >Первоклассный Спальный Мешок<small
-                      >Предмет · Основные правила · Бросок 1</small
-                    ></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок странника · хоумбрю"
-                      >Спальный мешок странника</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок следопыта · хоумбрю"
-                      >Спальный мешок следопыта</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок тишины · хоумбрю"
-                      >Спальный мешок тишины</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickempty">Ещё 12 - уточните запрос</div>
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span
+              ><select class="input">
+                <option>Хоумбрю</option>
+              </select>
+              <div class="selopen" role="listbox">
+                <span class="on">Хоумбрю</span><span>Мастерская Ольхи</span
+                ><span class="sep on">+ Новый источник...</span>
               </div>
             </div>
             <div class="field">
-              <span class="lbl">Сделан из - chosen</span>
-              <div class="picked">
-                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                  >Первоклассный Спальный Мешок<small
-                    >Основные правила · Предмет · Бросок 1</small
-                  ></span
-                ><button class="x" aria-label="Убрать">&times;</button>
-              </div>
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
             </div>
-            <div class="field">
-              <span class="lbl">Улучшается в - nothing found</span>
-              <div class="picker"><input class="input" value="zzz" role="combobox" /></div>
-              <div class="picklist static"><div class="pickempty">Ничего не найдено</div></div>
-            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
           </div>
           <div class="note">
-            Keyboard: ArrowDown/ArrowUp move the highlight (<code>aria-activedescendant</code>),
-            Enter picks, Escape closes, Backspace on a chosen row removes it. The item being
-            edited is never offered to itself.
+            A native <code>&lt;select&gt;</code>, drawn here as the browser's list. The last
+            option is a command, not a source: choosing it never becomes the value.
           </div>
         </main>
       </section>
       <section class="frame phone">
-        <span class="cap">the three states, in one panel - 360 px</span>
+        <span class="cap">the source select open - 360 px</span>
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1731,64 +1712,538 @@
           </div>
         </div>
         <main class="in">
-          <div class="panel new">
+          <h1 class="page-h">Новый предмет</h1>
+          <p class="page-sub">Хоумбрю</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
             <div class="field">
-              <span class="lbl">Сделан из - typing «спаль»</span>
-              <div class="picker">
-                <input class="input" value="спаль" role="combobox" aria-expanded="true" />
-              </div>
-              <div class="picklist static" role="listbox">
-                <div class="pickrow on">
-                  <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                    >Первоклассный Спальный Мешок<small
-                      >Предмет · Основные правила · Бросок 1</small
-                    ></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок странника · хоумбрю"
-                      >Спальный мешок странника</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок следопыта · хоумбрю"
-                      >Спальный мешок следопыта</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickrow">
-                  <img src="../../../img/thumb/_none.webp" alt="" /><span class="nm"
-                    ><span class="hbname" title="Спальный мешок тишины · хоумбрю"
-                      >Спальный мешок тишины</span
-                    ><small>Предмет · Хоумбрю</small></span
-                  ><span class="badge item">Предмет</span>
-                </div>
-                <div class="pickempty">Ещё 12 - уточните запрос</div>
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span
+              ><select class="input">
+                <option>Хоумбрю</option>
+              </select>
+              <div class="selopen" role="listbox">
+                <span class="on">Хоумбрю</span><span>Мастерская Ольхи</span
+                ><span class="sep on">+ Новый источник...</span>
               </div>
             </div>
             <div class="field">
-              <span class="lbl">Сделан из - chosen</span>
-              <div class="picked">
-                <img src="../../../img/thumb/ci1.webp" alt="" /><span class="nm"
-                  >Первоклассный Спальный Мешок<small
-                    >Основные правила · Предмет · Бросок 1</small
-                  ></span
-                ><button class="x" aria-label="Убрать">&times;</button>
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="note">
+            A native <code>&lt;select&gt;</code>, drawn here as the browser's list. The last
+            option is a command, not a source: choosing it never becomes the value.
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">after «+ Новый источник...»: the name field - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Новый предмет</h1>
+          <p class="page-sub">Хоумбрю</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input"
+                    value="Туманный берег"
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="fhint"
+                >Источник создаётся сразу и выбирается здесь. Переименовать или удалить его
+                можно на странице «Мои предметы».</span
+              >
+            </div>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="note">
+            Focus moves into the name field. Enter creates, Escape or «Отмена» brings the select
+            back with its previous value. The name is 1 to 80 characters in the UI language (the
+            other language can be added on <code>#/homebrew</code>).
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">after «+ Новый источник...»: the name field - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Новый предмет</h1>
+          <p class="page-sub">Хоумбрю</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input"
+                    value="Туманный берег"
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="fhint"
+                >Источник создаётся сразу и выбирается здесь. Переименовать или удалить его
+                можно на странице «Мои предметы».</span
+              >
+            </div>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="note">
+            Focus moves into the name field. Enter creates, Escape or «Отмена» brings the select
+            back with its previous value. The name is 1 to 80 characters in the UI language (the
+            other language can be added on <code>#/homebrew</code>).
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap"
+          >created: the new source selected, the section select appears - 960 px</span
+        >
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Новый предмет</h1>
+          <p class="page-sub">Хоумбрю · Туманный берег</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field twocol new">
+              <div>
+                <span class="lbl">Источник</span
+                ><select class="input">
+                  <option>Туманный берег</option>
+                </select>
+              </div>
+              <div>
+                <span class="lbl">Раздел</span
+                ><select class="input">
+                  <option>Без раздела</option>
+                </select>
               </div>
             </div>
             <div class="field">
-              <span class="lbl">Улучшается в - nothing found</span>
-              <div class="picker"><input class="input" value="zzz" role="combobox" /></div>
-              <div class="picklist static"><div class="pickempty">Ничего не найдено</div></div>
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="toast">Источник «Туманный берег» создан</div>
+          <div class="note">
+            The section select appears once a named source is chosen: «Без раздела», the
+            source's sections, «+ Новый раздел...». The default «Хоумбрю» has no sections. If
+            the author then leaves with «Отмена», the new source stays, empty, on
+            <code>#/homebrew</code> (0 предметов) - one write per press, never a hidden second
+            write on «Сохранить».
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap"
+          >created: the new source selected, the section select appears - 360 px</span
+        >
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Новый предмет</h1>
+          <p class="page-sub">Хоумбрю · Туманный берег</p>
+          <div class="panel">
+            <p class="legend">
+              <span class="req" aria-hidden="true">*</span> - обязательное поле. Остальное можно
+              заполнить позже.
+            </p>
+            <div class="field">
+              <span class="lbl">Вид</span
+              ><span class="seg"
+                ><span>Предмет</span><span>Расходник</span
+                ><span class="on">Снаряжение</span></span
+              >
+              <span class="seg"
+                ><span class="on">Основное оружие</span><span>Вторичное оружие</span
+                ><span>Броня</span></span
+              >
+            </div>
+            <div class="field twocol new">
+              <div>
+                <span class="lbl">Источник</span
+                ><select class="input">
+                  <option>Туманный берег</option>
+                </select>
+              </div>
+              <div>
+                <span class="lbl">Раздел</span
+                ><select class="input">
+                  <option>Без раздела</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <span class="lbl">Название<span class="req" aria-hidden="true">*</span></span
+              ><input class="input" value="Кремнёвый пистоль" placeholder="" />
+            </div>
+
+            <p class="hint">... the rest of the form as m04.</p>
+          </div>
+          <div class="toast">Источник «Туманный берег» создан</div>
+          <div class="note">
+            The section select appears once a named source is chosen: «Без раздела», the
+            source's sections, «+ Новый раздел...». The default «Хоумбрю» has no sections. If
+            the author then leaves with «Отмена», the new source stays, empty, on
+            <code>#/homebrew</code> (0 предметов) - one write per press, never a hidden second
+            write on «Сохранить».
+          </div>
+        </main>
+      </section>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">refusals under the name field - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="panel">
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input bad"
+                    aria-invalid="true"
+                    value="Мастерская Ольхи"
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="ferr" role="alert"
+                >Источник «Мастерская Ольхи» уже есть - выберите его в списке.</span
+              >
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input bad"
+                    aria-invalid="true"
+                    value=""
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="ferr" role="alert">Введите название источника.</span>
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input bad"
+                    aria-invalid="true"
+                    value="Туманный берег"
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="ferr" role="alert"
+                >Достигнут предел источников: 20. Удалите ненужный на странице «Мои
+                предметы».</span
+              >
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input bad"
+                    aria-invalid="true"
+                    value="Туманный берег"
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="ferr" role="alert"
+                >Не удалось создать источник - проверьте соединение и нажмите «Создать» ещё
+                раз.</span
+              >
             </div>
           </div>
           <div class="note">
-            Keyboard: ArrowDown/ArrowUp move the highlight (<code>aria-activedescendant</code>),
-            Enter picks, Escape closes, Backspace on a chosen row removes it. The item being
-            edited is never offered to itself.
+            Four failures, one line each, under the field with <code>role="alert"</code>; the
+            typed name stays. The duplicate check compares names without case in the client (the
+            database does not index names); the limit is the
+            <code>homebrew_books_per_owner</code> trigger's refusal; the network line is the
+            store's failed write.
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">refusals under the name field - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+          <div class="tabs">
+            <span>Обычные правила</span><span>Альт. таблицы</span><span>Wondrous</span
+            ><span>Dread</span><span>Vault of Ages</span><span>Dragon's Vault</span
+            ><span>Сообщества</span><span class="sp"></span><span>Таблицы</span
+            ><span>Поиск</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="panel">
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input bad"
+                    aria-invalid="true"
+                    value="Мастерская Ольхи"
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="ferr" role="alert"
+                >Источник «Мастерская Ольхи» уже есть - выберите его в списке.</span
+              >
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input bad"
+                    aria-invalid="true"
+                    value=""
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="ferr" role="alert">Введите название источника.</span>
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input bad"
+                    aria-invalid="true"
+                    value="Туманный берег"
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="ferr" role="alert"
+                >Достигнут предел источников: 20. Удалите ненужный на странице «Мои
+                предметы».</span
+              >
+            </div>
+            <div class="field new">
+              <span class="lbl">Источник</span>
+              <div class="numrow">
+                <div class="grow">
+                  <input
+                    class="input bad"
+                    aria-invalid="true"
+                    value="Туманный берег"
+                    placeholder="Название нового источника"
+                  />
+                </div>
+                <button class="btn primary">Создать</button
+                ><button class="btn ghost">Отмена</button>
+              </div>
+              <span class="ferr" role="alert"
+                >Не удалось создать источник - проверьте соединение и нажмите «Создать» ещё
+                раз.</span
+              >
+            </div>
+          </div>
+          <div class="note">
+            Four failures, one line each, under the field with <code>role="alert"</code>; the
+            typed name stays. The duplicate check compares names without case in the client (the
+            database does not index names); the limit is the
+            <code>homebrew_books_per_owner</code> trigger's refusal; the network line is the
+            store's failed write.
           </div>
         </main>
       </section>

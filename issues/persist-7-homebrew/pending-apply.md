@@ -2,10 +2,12 @@
 
 Planning pass 2, phase A (2026-09-28) returned these texts to the
 orchestrator instead of writing them, because R4 and R6 were being built
-on the same tree. They wait for the owner's answers to `plan.md` section 9
-(Q1-Q8) and the mock review. Apply them in phase B, adjusted to the
-answers; each decision stays proposed until the owner approves. Then
-delete this file.
+on the same tree. Planning pass 3 (2026-09-30) amended them for the
+owner's first mock review (`plan.md` 4.14): the lines marked "pass 3".
+They wait for the owner's answers to `plan.md` section 9 (Q1-Q12) and
+the mock review. Apply them in phase B, adjusted to the answers (a
+declined Q10, Q11 or Q12 drops its "pass 3" lines and D8 or D9); each
+decision stays proposed until the owner approves. Then delete this file.
 
 ## Roadmap changes (`issues/persistent-storage/plan.md`)
 
@@ -26,29 +28,40 @@ delete this file.
    `clone_shared_list` re-created. Add an R7b row: `import_homebrew(p_books,
    p_cards, p_items, p_update) returns jsonb`, security invoker, one
    transaction, skip or update held keys. Remove `import_bundle` from the
-   R7 row.
+   R7 row. Pass 3: `homebrew_items.draft boolean not null default false`;
+   `homebrew_books.content.sections` (at most 30); `content.section`;
+   `craft` and `craft_from` as lists of 1-8; the required-field rules in
+   the validators; an update checks the loaded `revision`. R7b row:
+   `import_homebrew` writes a held book's sections in both modes; the
+   client maps sources before the call.
 2. Section 6: keep `B7.2` (`ROUTES.md`, `CONTRACTS.md` 1, fixtures,
-   `tests/contracts.js`, `llms.txt`: `#/homebrew`); add `B7.3` (the same
-   set for the `homebrew` table and the group chip); add `B7b.1`
+   `tests/contracts.js`, `llms.txt`: `#/homebrew`); add `B7.4` (pass 3;
+   was `B7.3`: the same set for the `homebrew` table with the groups
+   `kind`, `src`, `sect` and the group chip); add `B7b.1`
    (`CONTRACTS.md` 4: `schema/homebrew-v1.json`, `schema/import-v2.json`,
    the zip's `homebrew.json`; `llms.txt` two sections; `tests/derived.js`
-   pins).
-3. Section 9, releases table: R7 row -> `B7.1`-`B7.3` (planned 2026-09-28,
-   pass 2; `issues/persist-7-homebrew/plan.md` is the authority): homebrew
-   items as first-class catalog records (sources, cards, relations, the
-   `homebrew` table, one merged search, the show/hide chip), live
-   references in the owner's lists, «Мои предметы» from the account menu.
+   pins). `B7.3` (homebrew in lists) changes no public contract.
+3. Section 9, releases table: R7 row -> `B7.1`-`B7.4` (planned 2026-09-28,
+   pass 2, amended 2026-09-30, pass 3; `issues/persist-7-homebrew/plan.md`
+   is the authority): homebrew
+   items as first-class catalog records (sources with sections, cards,
+   relations, the `homebrew` table, one merged search, the show/hide
+   chip), live references in the owner's lists, a quick draft from a
+   list page, «Мои предметы» from the account menu.
    New row after R7: `R7b | persist-7b-homebrew-files | B7b.1, B7b.2 | the
    homebrew-v1 file, import-v2 for lists, llms.txt with a blind round,
    import (skip or update) and export on #/homebrew, homebrew.json in the
    account zip`. The order line: "... R6, R7, R7b, R8, R9, persist-review,
    R10".
-4. Section 12: replace the `B7.1`-`B7.3` rows with the five rows of
-   `plan.md` 7.1-7.2; the total gains about 80 minutes (R7 140 + R7b 80
-   against the old 70).
+4. Section 12: replace the `B7.1`-`B7.3` rows with the six rows of
+   `plan.md` 7.1-7.2; the total gains about 200 minutes (pass 3: R7 190 +
+   R7b 81 against the old 70).
 5. Section 14: replace the `B7.1`-`B7.3` outline with a pointer to
    `plan.md` section 4 and its one-paragraph summary (the record shape is
-   the whole catalog shape plus `craft_from`; sources and cards are rows;
+   the whole catalog shape plus `craft_from`, with `craft` and
+   `craft_from` as lists and a `section` (pass 3); sources with sections,
+   and cards, are rows; a quick draft from a list page carries a `draft`
+   mark (pass 3);
    own records join `byId`, `searchable`, `allEquip`, the relation
    derivations and a `homebrew` table, frozen copies `byId` alone; dashed
    marks homebrew; the snapshot embeds cards; the editor keeps its save
@@ -77,7 +90,12 @@ delete this file.
   `recall`, `img`): both languages optional with one name, `tier`
   (1-4, `A`, `C` on loot), `eq` with `line` and `alt`, `craft`, `set`,
   `refs` (at most 3), plus `craft_from` - the one field the catalog lacks,
-  because an official record is never written. A source («Источник»,
+  because an official record is never written. `craft` and `craft_from`
+  are lists of up to 8 (the catalog's `craft` is one id; a file may give a
+  string), and `section` names a section of the item's source. A draft
+  mark is a column beside the content, never in a snapshot or a file.
+  The required fields are the catalog's: one name; for a weapon the six
+  stat fields; for armour the score and thresholds. A source («Источник»,
   code word `book`) is a `homebrew_books` row named by `book_id`; a set
   bonus or a referenced card is a `homebrew_cards` row (`kind` set or
   ref). Every homebrew object's key is `hb_` plus 16 base32 characters,
@@ -164,7 +182,13 @@ delete this file.
 - Decision: the editor saves on «Сохранить» (one awaited write) and
   guards unsaved changes: an in-app navigation with a dirty form asks
   through `env.dialog.confirm`, a closing tab through `beforeunload`
-  behind `PagePort`, and Ctrl+S submits.
+  behind `PagePort`, and Ctrl+S submits. The form checks on submit only:
+  a focused error summary with links, a line under each field, a red
+  mark on required fields. The update names the revision the form
+  loaded; a newer revision or a deleted row draws a banner that lets the
+  author overwrite, reload, or save a new item. A source, a section, a
+  set or a rule card made from the editor is written at once by its own
+  «Создать» button, never by «Сохранить».
 - Rejected: R5's account write buffer for the item text - an own entry is
   a live reference, so a flush every 2 s would put a half-typed name on
   every referencing list, shared page and print sheet and send one owner
@@ -193,10 +217,50 @@ delete this file.
   with a required `snapshot`; v1 stays published and importable. A v2
   entry whose key the account holds is turned into a reference by the
   client before `import_lists`; the reference-exists trigger guards it.
+  The import creates the file's sources; the preview maps each onto a new
+  or an existing source (default: the held key, then the same name, then
+  new), and the client rewrites `book` before the call.
 - Rejected: a `homebrew` array inside the lists file (R6 moved it to the
   zip; a lists file stays lists); `import_bundle` (a second RPC for a
   conversion the client does); skip-only import (the GM iterates on a
   converted source).
+```
+
+### D8 - `2026-09-30-a-homebrew-source-may-hold-sections.md` (pass 3, with Q10)
+
+```
+# 2026-09-30 - A homebrew source may hold sections, as the community book holds communities
+
+- Task: `persist-7-homebrew` (owner's mock review of 2026-09-29; planner, pass 3).
+- Decision: a named source's row holds `sections [{ key, en?, ru? }]`
+  (at most 30, `hb_` keys, names unique in the source); an item names
+  one by `section`. Sections head the items on `#/homebrew` and
+  `#/tables/homebrew`, give that table a `sect` facet and section
+  anchors, and add a leaf to the path and the print source line; the
+  tag stays the source. A section delete keeps its items in the source.
+  Both file formats carry them from their first version.
+- Rejected: separate sources per category (the owner asked for the
+  community split); a text tag on each item (a rename rewrites every
+  item; item 13's books need ids); a table of sections (a section has
+  nothing but a name).
+```
+
+### D9 - `2026-09-30-a-quick-draft-from-a-list-page.md` (pass 3, with Q12)
+
+```
+# 2026-09-30 - A list page makes a homebrew draft in one press; the draft mark is the owner's
+
+- Task: `persist-7-homebrew` (owner's mock review of 2026-09-29; planner, pass 3).
+- Decision: an own account list offers «+ Свой предмет»: a name and a
+  description make a homebrew item (kind «Предмет», the default source,
+  `draft = true`), awaited, and then a reference entry through the
+  list's write buffer. `draft` is a column, not content: the badge draws
+  only from the owner's index, a projection, a snapshot and a file never
+  carry it, `#/homebrew` lists drafts first, and the editor's first
+  save clears it.
+- Rejected: no mark (the drafts get lost among the other items); the
+  mark in the content (it would reach frozen copies and files); one RPC
+  for both writes (the two existing write paths already order them).
 ```
 
 D7 (item 13's direction) is written at R7's closeout from `plan.md` 4.13.

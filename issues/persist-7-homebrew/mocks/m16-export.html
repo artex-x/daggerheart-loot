@@ -1466,6 +1466,152 @@
         display: block;
         margin: 4px 0 0;
       }
+
+      /* ---- NEW in pass 3: required marks, field errors, the form's error summary ---- */
+      .req {
+        color: var(--danger-text);
+        margin-left: 3px;
+        letter-spacing: 0;
+      }
+      .legend {
+        margin: 0 0 14px;
+        font-size: 12.5px;
+        color: var(--muted2);
+      }
+      .input.bad {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 1px rgb(224 104 95 / 35%);
+      }
+      .seg.bad {
+        border-color: var(--danger);
+      }
+      .ferr {
+        display: block;
+        margin: 6px 0 0;
+        font-size: 12.5px;
+        line-height: 1.45;
+        color: var(--danger-text);
+      }
+      .fhint {
+        display: block;
+        margin: 6px 0 0;
+        font-size: 12.5px;
+        line-height: 1.45;
+        color: var(--muted2);
+      }
+      .fhint.count {
+        text-align: right;
+        font-family: var(--mono);
+        font-size: 11.5px;
+      }
+      .errs a {
+        color: var(--warn-strong);
+      }
+      .errs .acts {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      /* NoticeBox.svelte (the move notice's box): gold for news, the warning tint for a problem */
+      .nbox {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 11px 14px;
+        margin: 0 0 14px;
+        border: 1px solid rgb(var(--gold-rgb) / 45%);
+        border-radius: var(--r-sm);
+        background: rgb(var(--gold-rgb) / 6%);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .nbox.warn {
+        border-color: var(--warn-line);
+        background: var(--warn-bg);
+        color: var(--warn-text);
+      }
+      .nbox .lead {
+        flex: 1 1 320px;
+        min-width: 0;
+      }
+      .nbox .acts {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      /* NEW: the draft marker - a property of the owner's item, drawn only from the owner's index */
+      .badge.draft {
+        color: var(--gold-soft);
+        border-color: rgb(var(--gold-rgb) / 55%);
+      }
+      /* the browser's own select list, a flat stand-in (not app UI) */
+      .selopen {
+        border: 1px solid #444;
+        border-radius: 6px;
+        background: #2b2b2b;
+        color: #eee;
+        font:
+          14px/1.4 system-ui,
+          sans-serif;
+        padding: 4px 0;
+        margin-top: 4px;
+        max-width: 360px;
+      }
+      .selopen span {
+        display: block;
+        padding: 5px 12px;
+      }
+      .selopen span.on {
+        background: #3d5a8a;
+      }
+      .selopen span.sep {
+        border-top: 1px solid #555;
+        margin-top: 4px;
+        padding-top: 7px;
+      }
+      /* NEW: sections inside a source on #/homebrew */
+      .sectlist {
+        flex-basis: 100%;
+        margin: 4px 0 2px;
+        padding: 8px 0 0 14px;
+        border-left: 2px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .sectrow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 13.5px;
+      }
+      .sectrow .nm {
+        flex: 1 1 160px;
+        min-width: 0;
+      }
+      .sectrow small {
+        color: var(--muted2);
+        font-size: 12.5px;
+      }
+      .refs details[open] summary {
+        border-bottom: 1px solid var(--line);
+      }
+      .ref-t {
+        margin: 0;
+        padding: 6px 8px 8px;
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: #cfc8e0;
+      }
+      .cardgrp {
+        margin: 0 0 14px;
+      }
+      .cardgrp:last-child {
+        margin-bottom: 0;
+      }
     </style>
   </head>
   <body>
@@ -1512,12 +1658,15 @@
           <div class="panel new">
             <span class="lbl">Источники</span>
             <div class="srcrow">
-              <span class="who"><b>Хоумбрю</b><small>4 предмета</small></span
+              <span class="who"><b>Хоумбрю</b><small>6 предметов</small></span
               ><span class="acts"><a class="btn sm">Скачать JSON</a></span>
             </div>
             <div class="srcrow">
-              <span class="who"><b>Pistolheart</b><small>15 предметов</small></span
+              <span class="who"
+                ><b>Мастерская Ольхи</b><small>15 предметов · 2 раздела</small></span
               ><span class="acts"
+                ><button class="btn sm ghost" aria-expanded="false">
+                  Разделы <span class="caret"></span></button
                 ><button class="btn sm ghost">Переименовать</button
                 ><a class="btn sm">Скачать JSON</a
                 ><button class="btn sm danger">Удалить</button></span
@@ -1528,7 +1677,7 @@
                 <input
                   class="input"
                   value=""
-                  placeholder="Название источника, например Pistolheart"
+                  placeholder="Название источника, например Мастерская Ольхи"
                 />
               </div>
               <button class="btn">Добавить</button>
@@ -1554,7 +1703,7 @@
               ><button class="btn sm danger">Удалить (3)</button></span
             >
           </div>
-          <div class="shead">Pistolheart <span class="cnt">15</span></div>
+          <div class="shead">Мастерская Ольхи <span class="cnt">15</span></div>
           <div class="rows">
             <div class="row sel">
               <span class="rtick"><i></i></span
@@ -1567,7 +1716,7 @@
                 ><span class="rm"
                   ><span class="badge eq-weapon">Основное оружие</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник"
-                    >Pistolheart</span
+                    >Мастерская Ольхи</span
                   ></span
                 >
               </button>
@@ -1586,7 +1735,7 @@
                 ><span class="rm"
                   ><span class="badge eq-weapon">Основное оружие</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник"
-                    >Pistolheart</span
+                    >Мастерская Ольхи</span
                   ></span
                 >
               </button>
@@ -1605,7 +1754,7 @@
                   ><span class="badge eq-weapon">Основное оружие</span
                   ><span class="badge uniq">Уникальное</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник"
-                    >Pistolheart</span
+                    >Мастерская Ольхи</span
                   ></span
                 >
               </button>
@@ -1613,7 +1762,7 @@
           </div>
           <div class="note">
             A selection's file carries the items, the sources and the cards they name. File
-            names: <code>pistolheart.json</code> for a source,
+            names: <code>alder-workshop.json</code> for a source,
             <code>daggerheart-loot-homebrew-&lt;date&gt;.json</code> for a selection. «Удалить
             (3)» is R7's (<code>B7.2</code>), the download R7b's.
           </div>
@@ -1648,12 +1797,15 @@
           <div class="panel new">
             <span class="lbl">Источники</span>
             <div class="srcrow">
-              <span class="who"><b>Хоумбрю</b><small>4 предмета</small></span
+              <span class="who"><b>Хоумбрю</b><small>6 предметов</small></span
               ><span class="acts"><a class="btn sm">Скачать JSON</a></span>
             </div>
             <div class="srcrow">
-              <span class="who"><b>Pistolheart</b><small>15 предметов</small></span
+              <span class="who"
+                ><b>Мастерская Ольхи</b><small>15 предметов · 2 раздела</small></span
               ><span class="acts"
+                ><button class="btn sm ghost" aria-expanded="false">
+                  Разделы <span class="caret"></span></button
                 ><button class="btn sm ghost">Переименовать</button
                 ><a class="btn sm">Скачать JSON</a
                 ><button class="btn sm danger">Удалить</button></span
@@ -1664,7 +1816,7 @@
                 <input
                   class="input"
                   value=""
-                  placeholder="Название источника, например Pistolheart"
+                  placeholder="Название источника, например Мастерская Ольхи"
                 />
               </div>
               <button class="btn">Добавить</button>
@@ -1690,7 +1842,7 @@
               ><button class="btn sm danger">Удалить (3)</button></span
             >
           </div>
-          <div class="shead">Pistolheart <span class="cnt">15</span></div>
+          <div class="shead">Мастерская Ольхи <span class="cnt">15</span></div>
           <div class="rows">
             <div class="row sel">
               <span class="rtick"><i></i></span
@@ -1703,7 +1855,7 @@
                 ><span class="rm"
                   ><span class="badge eq-weapon">Основное оружие</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник"
-                    >Pistolheart</span
+                    >Мастерская Ольхи</span
                   ></span
                 >
               </button>
@@ -1722,7 +1874,7 @@
                 ><span class="rm"
                   ><span class="badge eq-weapon">Основное оружие</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник"
-                    >Pistolheart</span
+                    >Мастерская Ольхи</span
                   ></span
                 >
               </button>
@@ -1741,7 +1893,7 @@
                   ><span class="badge eq-weapon">Основное оружие</span
                   ><span class="badge uniq">Уникальное</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник"
-                    >Pistolheart</span
+                    >Мастерская Ольхи</span
                   ></span
                 >
               </button>
@@ -1749,7 +1901,7 @@
           </div>
           <div class="note">
             A selection's file carries the items, the sources and the cards they name. File
-            names: <code>pistolheart.json</code> for a source,
+            names: <code>alder-workshop.json</code> for a source,
             <code>daggerheart-loot-homebrew-&lt;date&gt;.json</code> for a selection. «Удалить
             (3)» is R7's (<code>B7.2</code>), the download R7b's.
           </div>
