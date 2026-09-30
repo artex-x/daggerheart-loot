@@ -1541,11 +1541,6 @@
         gap: 8px;
         flex-wrap: wrap;
       }
-      /* NEW: the draft marker - a property of the owner's item, drawn only from the owner's index */
-      .badge.draft {
-        color: var(--gold-soft);
-        border-color: rgb(var(--gold-rgb) / 55%);
-      }
       /* the browser's own select list, a flat stand-in (not app UI) */
       .selopen {
         border: 1px solid #444;
@@ -1627,9 +1622,8 @@
         A table page of the author's items, the group chip «Хоумбрю» last and drawn only signed
         in. One section per source, or per source and section where the source has sections (the
         community table's rule); facets <code>kind</code>, <code>src</code> (the author's
-        sources) and <code>sect</code> (drawn when a section exists, Q10). Drafts sit in their
-        source like any item, with the badge. Signed out the address parses and the body is the
-        sign-in prompt.
+        sources) and <code>sect</code> (drawn when a section exists, Q10). Signed out the
+        address parses and the body is the sign-in prompt.
       </p>
     </div>
     <div class="pair">
@@ -1795,7 +1789,6 @@
                   ><b>Кольцо с гравировкой</b
                   ><span>Надпись на неизвестном языке. Тёплое на ощупь.</span></span
                 ><span class="rm"
-                  ><span class="badge draft new">Черновик</span
                   ><span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
                 >
@@ -2007,7 +2000,6 @@
                   ><b>Кольцо с гравировкой</b
                   ><span>Надпись на неизвестном языке. Тёплое на ощупь.</span></span
                 ><span class="rm"
-                  ><span class="badge draft new">Черновик</span
                   ><span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
                 >

@@ -1,5 +1,6 @@
 # 2026-09-25 - A homebrew save is a form submit, not the account lists' optimistic queue
 
+- Amended by "The homebrew editor keeps its save button, with a guard and a revision check" (2026-09-30): an unsaved-changes guard, the revision check and inline creations with their own writes.
 - Task: `persist-7-homebrew` (planner, 2026-09-25).
 - Decision: the homebrew editor saves on «Сохранить»: the store's
   `save(draft)` awaits the one write, the page navigates to `#/homebrew`

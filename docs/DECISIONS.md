@@ -14,9 +14,19 @@ deleted.
 
 ## Index
 
+- 2026-09-30 - [A frozen copy embeds its source and cards; a reference must exist when written](decisions/2026-09-30-a-frozen-copy-embeds-its-source-a-reference-must-exist.md)
+- 2026-09-30 - [A homebrew item carries the whole catalog shape; sources and cards are rows](decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md)
+- 2026-09-30 - [A homebrew source may hold sections, as the community book holds communities](decisions/2026-09-30-a-homebrew-source-may-hold-sections.md)
+- 2026-09-30 - [A list page makes a plain homebrew item in one press, with no draft mark](decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md)
 - 2026-09-30 - [A toast is built in the language on screen each time it is drawn](decisions/2026-09-30-a-toast-is-built-in-the-language-on.md)
+- 2026-09-30 - [(HB) marks homebrew, and a homebrew relation shows only to its author](decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md)
+- 2026-09-30 - [Homebrew is first-class in the catalog pages; the roll pages are excluded](decisions/2026-09-30-homebrew-is-first-class-in-the-catalog-pages.md)
+- 2026-09-30 - [Homebrew ships in four releases: items, catalog pages, relations, files](decisions/2026-09-30-homebrew-ships-in-four-releases.md)
+- 2026-09-30 - [Homebrew travels as its own file; a lists file v2 carries frozen entries](decisions/2026-09-30-homebrew-travels-as-its-own-file.md)
 - 2026-09-30 - [`import-v1` bounds are the import call's ceilings, not the default limits](decisions/2026-09-30-import-v1-bounds-are-the-import-calls-ceilings.md)
+- 2026-09-30 - [The account reads its own effective limit through `my_limit()`](decisions/2026-09-30-the-account-reads-its-own-effective-limit.md)
 - 2026-09-30 - [The configured bundle budget is 210 kB; the unconfigured stays 150 kB](decisions/2026-09-30-the-configured-bundle-budget-is-210-kb.md)
+- 2026-09-30 - [The homebrew editor keeps its save button, with a guard and a revision check](decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md)
 - 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md)
 - 2026-09-29 - [A roll mode starts at its first row on each visit; no number crosses tabs](decisions/2026-09-29-a-roll-mode-starts-at-its-first-row-on-each-visit.md)
 - 2026-09-29 - [A sent purchase request keeps the ticks; the send waits until they change](decisions/2026-09-29-a-sent-purchase-request-keeps-the-ticks.md)

@@ -1,5 +1,6 @@
 # 2026-09-26 - Import validation is the client's; the count limits are the database's
 
+- Amended by "The account reads its own effective limit through `my_limit()`" (2026-09-30): the account may read its own limit for display; the database alone enforces it.
 - Superseded in part by "`import-v1` bounds are the import call's ceilings, not the default limits" (2026-09-30): the bounds 50 and 100.
 - Task: `persist-6-import-export` (planner, 2026-09-26; the owner's answer to question Q4 of the R6 plan confirms the unknown-id rule).
 - Decision: `app/src/lib/bundle.ts` checks a file against the bounds `schema/import-v1.json` states

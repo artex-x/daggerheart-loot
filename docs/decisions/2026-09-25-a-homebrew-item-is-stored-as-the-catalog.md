@@ -1,5 +1,6 @@
 # 2026-09-25 - A homebrew item is stored as the catalog record shape in one jsonb column, under a per-owner `hb_` key
 
+- Amended by "A homebrew item carries the whole catalog shape; sources and cards are rows" (2026-09-30): the whole record shape, sources and cards as rows.
 - Task: `persist-7-homebrew` (planner, 2026-09-25).
 - Decision: `homebrew_items.content` holds the `Record_` fields a homebrew
   record may carry (`kind`, `en`, `ru`, `ende`, `rud`, `tier`, `eq`) and

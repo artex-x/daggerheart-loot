@@ -1543,11 +1543,6 @@
         gap: 8px;
         flex-wrap: wrap;
       }
-      /* NEW: the draft marker - a property of the owner's item, drawn only from the owner's index */
-      .badge.draft {
-        color: var(--gold-soft);
-        border-color: rgb(var(--gold-rgb) / 55%);
-      }
       /* the browser's own select list, a flat stand-in (not app UI) */
       .selopen {
         border: 1px solid #444;
@@ -1621,17 +1616,16 @@
       <p class="crumb"><a href="index.html">R7 mocks</a> / m22-list-quick-draft.html</p>
       <h1>A quick draft from a list page: name and description now, the rest after the game</h1>
       <p>
-        <b>Plan:</b> plan 4.14 (F8, Q12); B7.3; states
-        <code>#/lists/&lt;uuid(101)&gt; as gm1</code> with the panel open, after an add,
-        refused; <code>#/homebrew/&lt;draft&gt; as gm1</code>
+        <b>Plan:</b> plan 4.14 (F8; Q12 revised: no draft mark); R7 B7.3; states
+        <code>#/lists/&lt;uuid(101)&gt; as gm1</code> with the panel open, after an add, refused
       </p>
       <p class="notetext">
         An own account list gains «+ Свой предмет», a toggle like «Поделиться». Its panel takes
-        a name (required) and a description; «Добавить в список» creates a homebrew item marked
-        as a draft (kind «Предмет», source «Хоумбрю») and adds it to this list as a live
-        reference, then clears the fields for the next one. After the game the author finds it
-        under «Черновики» on <code>#/homebrew</code> (m02) and completes it in the editor; the
-        first save there removes the mark.
+        a name (required) and a description; «Добавить в список» creates an ordinary homebrew
+        item (kind «Предмет», source «Хоумбрю», no mark) and adds it to this list as a live
+        reference, then clears the fields for the next one. After the game the author may open
+        it from the list or from <code>#/homebrew</code> (m02) and complete it in the editor, or
+        keep it as it is.
       </p>
     </div>
     <div class="pair">
@@ -1690,8 +1684,8 @@
               ><button class="btn sm ghost">Закрыть</button>
             </div>
             <p class="hint">
-              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
-              и цену можно задать потом.
+              Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и остальное можно
+              задать потом в редакторе.
             </p>
           </div>
           <div class="rows">
@@ -1786,8 +1780,8 @@
               ><button class="btn sm ghost">Закрыть</button>
             </div>
             <p class="hint">
-              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
-              и цену можно задать потом.
+              Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и остальное можно
+              задать потом в редакторе.
             </p>
           </div>
           <div class="rows">
@@ -1830,7 +1824,7 @@
     </div>
     <div class="pair">
       <section class="frame desk">
-        <span class="cap">added: the draft row at the end, the fields cleared - 960 px</span>
+        <span class="cap">added: the new row at the end, the fields cleared - 960 px</span>
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1877,8 +1871,8 @@
               ><button class="btn sm ghost">Закрыть</button>
             </div>
             <p class="hint">
-              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
-              и цену можно задать потом.
+              Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и остальное можно
+              задать потом в редакторе.
             </p>
           </div>
           <div class="rows">
@@ -1915,7 +1909,6 @@
                 <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
                   ><b>Фляга контрабандиста</b></span
                 ><span class="rm"
-                  ><span class="badge draft new">Черновик</span
                   ><span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
                 >
@@ -1924,16 +1917,14 @@
           </div>
           <div class="toast">«Фляга контрабандиста» добавлена в список</div>
           <div class="note">
-            Two writes in order: the item (awaited, <code>draft = true</code>), then the entry
-            through the list's write buffer as <code>source: homebrew</code> - the
-            reference-exists trigger needs the item first. The badge «Черновик» draws only from
-            the owner's index: players on <code>#/s/...</code> see the item live without it, and
-            a frozen copy never carries it.
+            Two writes in order: the item (awaited), then the entry through the list's write
+            buffer as <code>source: homebrew</code> - the reference-exists trigger needs the
+            item first. Players on <code>#/s/...</code> see the item live, as any own item.
           </div>
         </main>
       </section>
       <section class="frame phone">
-        <span class="cap">added: the draft row at the end, the fields cleared - 360 px</span>
+        <span class="cap">added: the new row at the end, the fields cleared - 360 px</span>
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
             <span class="brand"
@@ -1980,8 +1971,8 @@
               ><button class="btn sm ghost">Закрыть</button>
             </div>
             <p class="hint">
-              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
-              и цену можно задать потом.
+              Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и остальное можно
+              задать потом в редакторе.
             </p>
           </div>
           <div class="rows">
@@ -2018,7 +2009,6 @@
                 <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
                   ><b>Фляга контрабандиста</b></span
                 ><span class="rm"
-                  ><span class="badge draft new">Черновик</span
                   ><span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
                 >
@@ -2027,11 +2017,9 @@
           </div>
           <div class="toast">«Фляга контрабандиста» добавлена в список</div>
           <div class="note">
-            Two writes in order: the item (awaited, <code>draft = true</code>), then the entry
-            through the list's write buffer as <code>source: homebrew</code> - the
-            reference-exists trigger needs the item first. The badge «Черновик» draws only from
-            the owner's index: players on <code>#/s/...</code> see the item live without it, and
-            a frozen copy never carries it.
+            Two writes in order: the item (awaited), then the entry through the list's write
+            buffer as <code>source: homebrew</code> - the reference-exists trigger needs the
+            item first. Players on <code>#/s/...</code> see the item live, as any own item.
           </div>
         </main>
       </section>
@@ -2091,8 +2079,8 @@
               ><button class="btn sm ghost">Закрыть</button>
             </div>
             <p class="hint">
-              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
-              и цену можно задать потом.
+              Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и остальное можно
+              задать потом в редакторе.
             </p>
           </div>
           <div class="panel new" style="margin-bottom: 14px">
@@ -2121,9 +2109,10 @@
             </p>
           </div>
           <div class="note">
-            The limit refusal reads «Достигнут предел своих предметов: 500.». If the item was
-            created and the entry write fails, the item stays under «Черновики» and the list's
-            own «Не сохранено · Повторить» line takes over, as for any list write.
+            The limit refusal reads «Достигнут предел своих предметов: 100.». If the item was
+            created and the entry write fails, the item stays in «Хоумбрю» on
+            <code>#/homebrew</code> and the list's own «Не сохранено · Повторить» line takes
+            over, as for any list write.
           </div>
         </main>
       </section>
@@ -2181,8 +2170,8 @@
               ><button class="btn sm ghost">Закрыть</button>
             </div>
             <p class="hint">
-              Предмет сохранится в «Мои предметы» как черновик в «Хоумбрю». Вид, источник, связи
-              и цену можно задать потом.
+              Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и остальное можно
+              задать потом в редакторе.
             </p>
           </div>
           <div class="panel new" style="margin-bottom: 14px">
@@ -2211,9 +2200,10 @@
             </p>
           </div>
           <div class="note">
-            The limit refusal reads «Достигнут предел своих предметов: 500.». If the item was
-            created and the entry write fails, the item stays under «Черновики» and the list's
-            own «Не сохранено · Повторить» line takes over, as for any list write.
+            The limit refusal reads «Достигнут предел своих предметов: 100.». If the item was
+            created and the entry write fails, the item stays in «Хоумбрю» on
+            <code>#/homebrew</code> and the list's own «Не сохранено · Повторить» line takes
+            over, as for any list write.
           </div>
         </main>
       </section>
@@ -2221,7 +2211,7 @@
     <div class="pair">
       <section class="frame desk">
         <span class="cap"
-          >#/homebrew/&lt;draft&gt; as gm1 - the draft opened in the editor - 960 px</span
+          >#/homebrew/&lt;key&gt; as gm1 - the quick item opened in the editor - 960 px</span
         >
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
@@ -2243,12 +2233,6 @@
         <main class="in">
           <h1 class="page-h">Фляга контрабандиста</h1>
           <p class="page-sub">Хоумбрю</p>
-          <div class="nbox" role="status">
-            <span class="lead"
-              >Черновик: задайте вид, источник и связи и сохраните - метка «Черновик»
-              снимется.</span
-            >
-          </div>
           <div class="editor">
             <div class="panel">
               <p class="legend">
@@ -2293,8 +2277,7 @@
               <span class="card-media"><img src="../../../img/_none.webp" alt="" /></span>
               <div class="card-body">
                 <div class="card-meta">
-                  <span class="badge draft new">Черновик</span
-                  ><span class="badge item">Предмет</span
+                  <span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span>
                 </div>
                 <h2 class="card-name">Фляга контрабандиста</h2>
@@ -2305,15 +2288,14 @@
             </div>
           </div>
           <div class="note">
-            The banner shows while the item carries the mark. «Сохранить» writes
-            <code>draft = false</code> with the content, so the mark drops even with no other
-            change.
+            A quick item opens as any other item: no banner and no mark. The author adds what
+            the table needs, or leaves it as it is.
           </div>
         </main>
       </section>
       <section class="frame phone">
         <span class="cap"
-          >#/homebrew/&lt;draft&gt; as gm1 - the draft opened in the editor - 360 px</span
+          >#/homebrew/&lt;key&gt; as gm1 - the quick item opened in the editor - 360 px</span
         >
         <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
           <div class="topbar">
@@ -2335,12 +2317,6 @@
         <main class="in">
           <h1 class="page-h">Фляга контрабандиста</h1>
           <p class="page-sub">Хоумбрю</p>
-          <div class="nbox" role="status">
-            <span class="lead"
-              >Черновик: задайте вид, источник и связи и сохраните - метка «Черновик»
-              снимется.</span
-            >
-          </div>
           <div class="editor">
             <div class="panel">
               <p class="legend">
@@ -2385,8 +2361,7 @@
               <span class="card-media"><img src="../../../img/_none.webp" alt="" /></span>
               <div class="card-body">
                 <div class="card-meta">
-                  <span class="badge draft new">Черновик</span
-                  ><span class="badge item">Предмет</span
+                  <span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span>
                 </div>
                 <h2 class="card-name">Фляга контрабандиста</h2>
@@ -2397,9 +2372,8 @@
             </div>
           </div>
           <div class="note">
-            The banner shows while the item carries the mark. «Сохранить» writes
-            <code>draft = false</code> with the content, so the mark drops even with no other
-            change.
+            A quick item opens as any other item: no banner and no mark. The author adds what
+            the table needs, or leaves it as it is.
           </div>
         </main>
       </section>

@@ -1541,11 +1541,6 @@
         gap: 8px;
         flex-wrap: wrap;
       }
-      /* NEW: the draft marker - a property of the owner's item, drawn only from the owner's index */
-      .badge.draft {
-        color: var(--gold-soft);
-        border-color: rgb(var(--gold-rgb) / 55%);
-      }
       /* the browser's own select list, a flat stand-in (not app UI) */
       .selopen {
         border: 1px solid #444;
@@ -1616,7 +1611,7 @@
   </head>
   <body>
     <div class="mockbar">
-      <h1>R7 and R7b - homebrew items: mocks (planning pass 3)</h1>
+      <h1>R7 homebrew items: mocks (planning pass 3, approved 2026-09-30; phase B)</h1>
       <p class="notetext">
         One file per screen, every state at 960 px and at 360 px side by side, in the app's
         tokens (app/src/styles/tokens.css) and the markup of the components each one extends
@@ -1632,6 +1627,16 @@
         mock review are section 4.14 (F1-F8); the gap audit is section 3. Pass 3 changed m02,
         m04, m05, m09, m12, m13, m15, m17 and added m18-m22. The example source is the invented
         «Мастерская Ольхи» / Alder Workshop.
+      </p>
+      <p class="notetext">
+        The owner approved these mocks on 2026-09-30. Phase B changed m02 and m22 (and the draft
+        rows m09 reuses) for Q12 revised: a quick item carries no draft mark. Four answers
+        override what the other mocks still draw; plan.md section 8 lists them: Q3 - the item
+        limit is 100, not 500; Q4 - no «Другой язык» fold in any form, the editor edits the
+        item's own language; Q5 - the source tag is plain text «Мастерская Ольхи (HB)», not a
+        dashed badge, and «(HB)» follows a homebrew name in a relation line; Q6 - R7 ships in
+        four releases, so a mock's batch name is the plan's release map (section 7), not the
+        name printed here.
       </p>
       <table class="idx">
         <thead>
@@ -1653,12 +1658,12 @@
           <tr>
             <td><a href="m02-homebrew-page.html">m02-homebrew-page.html</a></td>
             <td>
-              #/homebrew as gm1 - sources with sections, cards, drafts first, the items by
-              source and section
+              #/homebrew as gm1 - sources with sections, cards, the items by source and section
             </td>
             <td>
-              plan 4.10, 4.14 (F4 sections, F8 drafts; Q10, Q12); B7.2 (the download buttons and
-              the import are R7b, m15 and m16)
+              plan 4.10, 4.14 (F4 sections, Q10; Q3 limit 100; Q12 revised: no draft mark); R7
+              B7.2 (the cards panel is R7c; the download buttons and the import are R7d, m15 and
+              m16)
             </td>
           </tr>
           <tr>
@@ -1833,9 +1838,9 @@
               A quick draft from a list page: name and description now, the rest after the game
             </td>
             <td>
-              plan 4.14 (F8, Q12); B7.3; states
+              plan 4.14 (F8; Q12 revised: no draft mark); R7 B7.3; states
               <code>#/lists/&lt;uuid(101)&gt; as gm1</code> with the panel open, after an add,
-              refused; <code>#/homebrew/&lt;draft&gt; as gm1</code>
+              refused
             </td>
           </tr>
         </tbody>

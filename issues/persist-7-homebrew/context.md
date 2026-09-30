@@ -1,11 +1,12 @@
 # Shared task context - TASK persist-7-homebrew
 
 ## Goal
-Release R7: homebrew items (the same record shape as official items), a
-"Your homebrew" search group, add-to-list as an immutable snapshot, and
-bundle schema v2. Batches `B7.1`, `B7.2` in the roadmap; they may change.
-R8 (homebrew art) and R9 (`#/h/<token>` item links, add and clone, print
-routes for cloud lists) build on this design.
+Homebrew items as first-class catalog records, in four releases since
+phase B (`plan.md` section 7): R7 items, R7b catalog pages, R7c relations,
+R7d files. The original R7 goal (2026-09-25: a search group, an immutable
+snapshot, bundle v2) is superseded by `plan.md`. R8 (homebrew art) and R9
+(`#/h/<token>` item links, add and clone, print routes for cloud lists)
+build on this design.
 
 Planned ahead (2026-09-25) while R2's last batch is being built. Design
 level plus owner questions now; the implement-ready steps get a refresh
@@ -238,7 +239,8 @@ Read at `main` `b38bc5ab`; the design is `plan.md`, this is the evidence.
 
 ## Owner feedback on the pass 2 mocks (2026-09-29, verbatim, typos kept)
 Answered by planning pass 3 (2026-09-30): `plan.md` section 4.14 (F1-F8),
-the mocks m02-m22, new owner questions `Q9`-`Q12`. `Q1`-`Q12` are open.
+the mocks m02-m22, new owner questions `Q9`-`Q12`, all answered on
+2026-09-30 (below).
 
 > I am not sure if we can use pistolheart as an example since it's TM, so
 > we need to select something more abstract
@@ -318,3 +320,110 @@ The items, as the orchestrator reads them (not decided):
 ## Do not re-fetch unless
 - Human provides new info
 - context.md is missing a fact you need
+
+## Owner answers, 2026-09-30 (interactive Q&A, after the pass 3 mocks)
+- Q9: auto-create sources plus the per-source mapping in the preview (as
+  recommended).
+- Q10: sections in R7 (as recommended).
+- Q11, verbatim: "we can do up to 8, I am OK to update catalog as well to
+  make it compatible". Read: up to 8 links each way for homebrew, and the
+  catalog's `craft` (and its derived reverse) may change shape to match.
+  The catalog shape is in `data.js`, `data.json`, `catalog.csv` and
+  `CONTRACTS.md`: phase B decides whether that is a public-contract change
+  and where it goes (a batch of R7 or its own), and names the cost.
+- Q12: the quick draft in R7 with the draft mark (as recommended).
+- Q12 revised by the owner the same day (verbatim): "re Черновик tag I
+  don't sure we should add separate abstraciton for that. it's qucik way to
+  add items, if users want to extend with more details later - they can do
+  it, otherwise they can use it as is". Read: the quick draft stays in R7
+  with NO draft mark - no `draft` column, no badge, no «Черновики» group; a
+  quick-added item is a plain homebrew item (name and description), edited
+  later in the ordinary editor if the user wants. m22 and m02 drop the mark.
+- Q1-Q8: paused by the owner; ask again later in an interactive Q&A.
+- Mocks: owner, 2026-09-30: "other than that mocks look good" - the pass 3
+  set (m01-m22) is approved, with the Q12 revision (no draft mark) applied.
+- Q1: a one-off outside any upgrade line, the existing empty-`line`
+  mechanism (as recommended).
+- Q2: `#/tables/homebrew` (as recommended).
+- Q3, verbatim: "let's take smaller limit of 100-200 item, if people need -
+  they will request me. I am concerned if they will start uploading images
+  for all items, then it will have a lot of data". The exact number follows
+  below; the storage concern belongs to R8 (art) too.
+- Q4: the bilingual stored shape with no second-language UI in R7; only a
+  file import fills the second language.
+- Q3 settled: default `homebrew_items_per_owner` 100; more by the owner's
+  override on request.
+- Q5: «Мастерская Ольхи (HB)» as plain text (the alternative, not the
+  dashed tag). Phase B says what still marks homebrew elsewhere.
+- Q6, verbatim: "I am even OK with splitting to more granural
+  batches/releases, eg add items, only then add connections or split them
+  per sources as long as it makes sense". Read: phase B may split R7 into
+  smaller releases (for example items first, then relations; or by
+  source), each shippable, with the split criterion named.
+- Q7: skip-or-update in the preview, default skip (as recommended).
+- Q8: the save button plus the unsaved-changes guard (as recommended).
+- Counters (orchestrator's question): both - the search intro keeps the
+  catalog count (1272, pinned by `tests/derived.js`) and adds «И N ваших
+  предметов.» only when the signed-in user has items; `#/homebrew` shows
+  «Мои предметы: N из M» with M from the database (an override shows its
+  number).
+- «Карты правил» confirmed as the label.
+- Q13 (the `import-v1` bounds): decided in task `limits-follow-overrides`;
+  its planner found (2026-09-30) that the SQL already takes 5000 entries per
+  list, and it recommends widening v1 in place; `import-v2` inherits the
+  bound. Its `plan.md` section 8 holds three notes for R7: v2 inherits the
+  widened bound; R7's "3.2 MB per list" figure assumes 100 entries; the
+  32 KiB request bound drops to about 360 lines with 64-character homebrew
+  keys.
+- All owner questions of pass 3 are answered; phase B may start.
+
+## Facts settled by planning pass 4, phase B (2026-09-30, planner, `main` `7005abeb`)
+- `git diff 14e6dcf9 7005abeb -- supabase app/src/ports` is empty; R4b
+  changed `RequestsPanel` (names through `app.index?.byId`, decided lines
+  too) and `SharedListPage` (an `index` prop); the toast change makes
+  `AppState.say` take a `Msg` built in the language on screen.
+- R2's column check on `list_entries.snapshot` has no explicit name
+  (expected `list_entries_snapshot_check`; `B7.1` confirms).
+- A CHECK constraint calls its functions as the writing role: `authenticated`
+  needs EXECUTE on the validators; `harness.test.mjs`'s
+  `EXPECTED_ANON_FUNCTIONS` pins what `anon` may run.
+- The limit keys are pinned in `tests/db/limits.test.mjs` ("hold the four
+  defaults"), `tests/db/restore-drill.test.mjs` (the reset's list) and the
+  restore runbook's step 4 in `.claude/README.md`; `tests/db/usage.test.mjs`
+  pins `PUBLIC_TABLES`; `tools/supabase/usage.mjs` walks every `public`
+  table and counts near-limit owners for lists and entries only.
+- `apply_list_writes` and `import_lists` read entries with
+  `jsonb_to_recordset`, where a JSON `null` snapshot becomes SQL null;
+  `clone_shared_list` needs `nullif(e -> 'snapshot', 'null')`.
+- The contract has cases A-L; homebrew is case M. `ports/index.ts`
+  re-exports `types.ts` whole. The fake's seed uses no `uuid(500..599)`.
+- The bundle budget: 203.0 of 210 kB configured, 144.9 of 150 kB
+  unconfigured (2026-09-30); it counts lazy chunks (`Q14`).
+- `tools/decisions.js` validates a decision body at fifteen non-blank lines
+  from 2026-09-26 on, a status line ("Amended by", "Superseded ...") before
+  "- Task", and both directions of every pointer.
+- The mock generator in the scratchpad reproduced the committed mocks byte
+  for byte (generated into the repository, then `npx prettier --write`
+  there); `edit-q12.mjs` beside it applied the `Q12` revision.
+- Owner question `Q14` (the bundle budget) is open; see `plan.md` section 9.
+
+## Owner answers after pass 4 (2026-09-30, interactive)
+- Q14: step the bundle budgets up per batch (measured size plus about
+  5 kB, each with a decision) up to a ceiling approved now: 250 kB
+  configured, 190 kB unconfigured (as recommended).
+- Q11 follow-up: change the catalog's `craft` to a list too - one shape
+  everywhere. Planner pass 4 had proposed no change; the owner overrules.
+  It is a public contract change (the record shape in `data.json`,
+  `README.md`, `llms.txt`, `tests/derived.js`, tools): the batch the
+  planner named at the head of R7c, with its contract review.
+
+## Notes from `limits-follow-overrides` (closed 2026-09-30, commit `feat(persist): let the import file bounds follow a raised limit`)
+- `import-v2` is "v1 plus homebrew" and inherits 1000 lists and 5000
+  entries per list, and the rule that a bound widens in place, never
+  narrows (`CONTRACTS.md` section 4).
+- "100 entries per list is at most 3.2 MB" (32 KB frozen snapshots) holds
+  only at the default: an override of 1000 entries makes a shared list up
+  to 32 MB in `get_shared_list()`, and a file of frozen snapshots reaches
+  the 5 MiB file bound long before 1000 lists.
+- With homebrew keys of up to 64 characters, the 32 KiB request bound of
+  `create_purchase_request()` falls to about 360 lines.

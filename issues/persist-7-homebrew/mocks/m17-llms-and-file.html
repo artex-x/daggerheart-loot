@@ -1541,11 +1541,6 @@
         gap: 8px;
         flex-wrap: wrap;
       }
-      /* NEW: the draft marker - a property of the owner's item, drawn only from the owner's index */
-      .badge.draft {
-        color: var(--gold-soft);
-        border-color: rgb(var(--gold-rgb) / 55%);
-      }
       /* the browser's own select list, a flat stand-in (not app UI) */
       .selopen {
         border: 1px solid #444;
@@ -1707,8 +1702,7 @@ relations name a key of this file or a catalog id from catalog.csv; a
 section names a section of the item's own book; tiers come from the book,
 never from the stats; damage is d4-d20 with an optional +N; at most 3 refs;
 an account holds up to 20 sources (30 sections each), 100 cards and 500
-items; a file that would pass a limit imports nothing. A draft mark is not
-part of the file.
+items; a file that would pass a limit imports nothing.
 
 Lists as a file (import-v1): a list may now carry an entry with
 "source": "homebrew" and a "snapshot" (version 2, schema import-v2.json).

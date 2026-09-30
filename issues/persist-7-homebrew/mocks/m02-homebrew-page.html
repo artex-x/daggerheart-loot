@@ -4,8 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>
-      #/homebrew as gm1 - sources with sections, cards, drafts first, the items by source and
-      section
+      #/homebrew as gm1 - sources with sections, cards, the items by source and section
     </title>
     <style>
       /* R7 mocks. :root copies app/src/styles/tokens.css (values, not a redesign).
@@ -1544,11 +1543,6 @@
         gap: 8px;
         flex-wrap: wrap;
       }
-      /* NEW: the draft marker - a property of the owner's item, drawn only from the owner's index */
-      .badge.draft {
-        color: var(--gold-soft);
-        border-color: rgb(var(--gold-rgb) / 55%);
-      }
       /* the browser's own select list, a flat stand-in (not app UI) */
       .selopen {
         border: 1px solid #444;
@@ -1620,20 +1614,18 @@
   <body>
     <div class="mockbar">
       <p class="crumb"><a href="index.html">R7 mocks</a> / m02-homebrew-page.html</p>
-      <h1>
-        #/homebrew as gm1 - sources with sections, cards, drafts first, the items by source and
-        section
-      </h1>
+      <h1>#/homebrew as gm1 - sources with sections, cards, the items by source and section</h1>
       <p>
-        <b>Plan:</b> plan 4.10, 4.14 (F4 sections, F8 drafts; Q10, Q12); B7.2 (the download
-        buttons and the import are R7b, m15 and m16)
+        <b>Plan:</b> plan 4.10, 4.14 (F4 sections, Q10; Q3 limit 100; Q12 revised: no draft
+        mark); R7 B7.2 (the cards panel is R7c; the download buttons and the import are R7d, m15
+        and m16)
       </p>
       <p class="notetext">
         The management page behind the account menu. Sources are a panel (add, rename, delete,
-        and «Разделы» per source, m19); the cards panel is folded (m21); the drafts made from a
-        list page come first (m22); then the items as <code>TableRows</code> under one heading
-        per source and section, each row opening the editor; a row's tick feeds the selection
-        bar and R6's <code>BatchBar</code>. No tab is current.
+        and «Разделы» per source, m19); the cards panel is folded (m21, R7c); then the items as
+        <code>TableRows</code> under one heading per source and section, each row opening the
+        editor; a row's tick feeds the selection bar and R6's <code>BatchBar</code>. No tab is
+        current.
       </p>
     </div>
     <div class="pair">
@@ -1662,7 +1654,7 @@
             Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и
             добавляются в списки.
           </p>
-          <p class="count">21 предмет из 500</p>
+          <p class="count">Мои предметы: 21 из 100</p>
           <div class="panel new">
             <span class="lbl">Источники</span>
             <div class="srcrow">
@@ -1704,34 +1696,6 @@
           </div>
           <div class="batch">
             <span class="batch-all"><i></i>Выбрать все</span><span class="batch-summ"></span>
-          </div>
-          <div class="shead new">Черновики <span class="cnt">2</span></div>
-          <div class="rows">
-            <div class="row">
-              <span class="rtick"><i></i></span
-              ><button class="row-main">
-                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
-                  ><b>Кольцо с гравировкой</b
-                  ><span>Надпись на неизвестном языке. Тёплое на ощупь.</span></span
-                ><span class="rm"
-                  ><span class="badge draft new">Черновик</span
-                  ><span class="badge item">Предмет</span
-                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
-                >
-              </button>
-            </div>
-            <div class="row">
-              <span class="rtick"><i></i></span
-              ><button class="row-main">
-                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
-                  ><b>Фляга контрабандиста</b></span
-                ><span class="rm"
-                  ><span class="badge draft new">Черновик</span
-                  ><span class="badge item">Предмет</span
-                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
-                >
-              </button>
-            </div>
           </div>
           <div class="shead">Мастерская Ольхи · Пистоли <span class="cnt">9</span></div>
           <div class="rows">
@@ -1813,20 +1777,14 @@
               </button>
             </div>
           </div>
-          <div class="shead">Хоумбрю <span class="cnt">4</span></div>
+          <div class="shead">Хоумбрю <span class="cnt">6</span></div>
           <div class="rows">
             <div class="row">
               <span class="rtick"><i></i></span
               ><button class="row-main">
                 <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
-                  ><b>Спальный мешок странника</b
-                  ><span
-                    >Во время отдыха вы очищаете Стресс и один Рану, если спите под открытым
-                    небом.</span
-                  ><span class="rcraft"
-                    ><span class="arr">&#8592;</span>Сделан из: Первоклассный Спальный
-                    Мешок</span
-                  ></span
+                  ><b>Кольцо с гравировкой</b
+                  ><span>Надпись на неизвестном языке. Тёплое на ощупь.</span></span
                 ><span class="rm"
                   ><span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
@@ -1852,8 +1810,37 @@
               <span class="rtick"><i></i></span
               ><button class="row-main">
                 <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Спальный мешок странника</b
+                  ><span
+                    >Во время отдыха вы очищаете Стресс и один Рану, если спите под открытым
+                    небом.</span
+                  ><span class="rcraft"
+                    ><span class="arr">&#8592;</span>Сделан из: Первоклассный Спальный
+                    Мешок</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
                   ><b>Whispering Cap</b
                   ><span>Once per rest, hear one sentence spoken within Far range.</span></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Фляга контрабандиста</b></span
                 ><span class="rm"
                   ><span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
@@ -1865,12 +1852,13 @@
             Existing: <code>PageHead</code>, <code>Panel</code>, <code>Field</code>,
             <code>Button</code>, <code>TableRows</code>/<code>RowMain</code>,
             <code>BatchBar</code> (R6). New: the source rows, the «Разделы» button, the cards
-            fold, the drafts group and the «Черновик» badge, the dashed source badge, the count
-            line. Headings: drafts first, then each source by name with its sections in the
-            author's order and «без раздела» last as the source name alone, the default
-            «Хоумбрю» last. A draft is listed once, under «Черновики». The English-only item
-            draws its English name in Russian (the record-build fallback). A source with no
-            items still lists (0 предметов). The «Импорт предметов» button ships in R7b.
+            fold, the dashed source badge, the count line. Headings: each source by name with
+            its sections in the author's order and «без раздела» last as the source name alone,
+            the default «Хоумбрю» last. An item made with «+ Свой предмет» on a list page (m22)
+            is an ordinary item: it sits in «Хоумбрю» with no mark (the owner, Q12 revised). The
+            English-only item draws its English name in Russian (the record-build fallback). A
+            source with no items still lists (0 предметов). The «Импорт предметов» button ships
+            in R7b.
           </div>
         </main>
       </section>
@@ -1899,7 +1887,7 @@
             Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и
             добавляются в списки.
           </p>
-          <p class="count">21 предмет из 500</p>
+          <p class="count">Мои предметы: 21 из 100</p>
           <div class="panel new">
             <span class="lbl">Источники</span>
             <div class="srcrow">
@@ -1941,34 +1929,6 @@
           </div>
           <div class="batch">
             <span class="batch-all"><i></i>Выбрать все</span><span class="batch-summ"></span>
-          </div>
-          <div class="shead new">Черновики <span class="cnt">2</span></div>
-          <div class="rows">
-            <div class="row">
-              <span class="rtick"><i></i></span
-              ><button class="row-main">
-                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
-                  ><b>Кольцо с гравировкой</b
-                  ><span>Надпись на неизвестном языке. Тёплое на ощупь.</span></span
-                ><span class="rm"
-                  ><span class="badge draft new">Черновик</span
-                  ><span class="badge item">Предмет</span
-                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
-                >
-              </button>
-            </div>
-            <div class="row">
-              <span class="rtick"><i></i></span
-              ><button class="row-main">
-                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
-                  ><b>Фляга контрабандиста</b></span
-                ><span class="rm"
-                  ><span class="badge draft new">Черновик</span
-                  ><span class="badge item">Предмет</span
-                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
-                >
-              </button>
-            </div>
           </div>
           <div class="shead">Мастерская Ольхи · Пистоли <span class="cnt">9</span></div>
           <div class="rows">
@@ -2050,20 +2010,14 @@
               </button>
             </div>
           </div>
-          <div class="shead">Хоумбрю <span class="cnt">4</span></div>
+          <div class="shead">Хоумбрю <span class="cnt">6</span></div>
           <div class="rows">
             <div class="row">
               <span class="rtick"><i></i></span
               ><button class="row-main">
                 <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
-                  ><b>Спальный мешок странника</b
-                  ><span
-                    >Во время отдыха вы очищаете Стресс и один Рану, если спите под открытым
-                    небом.</span
-                  ><span class="rcraft"
-                    ><span class="arr">&#8592;</span>Сделан из: Первоклассный Спальный
-                    Мешок</span
-                  ></span
+                  ><b>Кольцо с гравировкой</b
+                  ><span>Надпись на неизвестном языке. Тёплое на ощупь.</span></span
                 ><span class="rm"
                   ><span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
@@ -2089,8 +2043,37 @@
               <span class="rtick"><i></i></span
               ><button class="row-main">
                 <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Спальный мешок странника</b
+                  ><span
+                    >Во время отдыха вы очищаете Стресс и один Рану, если спите под открытым
+                    небом.</span
+                  ><span class="rcraft"
+                    ><span class="arr">&#8592;</span>Сделан из: Первоклассный Спальный
+                    Мешок</span
+                  ></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
                   ><b>Whispering Cap</b
                   ><span>Once per rest, hear one sentence spoken within Far range.</span></span
+                ><span class="rm"
+                  ><span class="badge item">Предмет</span
+                  ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
+                >
+              </button>
+            </div>
+            <div class="row">
+              <span class="rtick"><i></i></span
+              ><button class="row-main">
+                <img src="../../../img/thumb/_none.webp" alt="" /><span class="rt"
+                  ><b>Фляга контрабандиста</b></span
                 ><span class="rm"
                   ><span class="badge item">Предмет</span
                   ><span class="badge src hb" title="Хоумбрю: ваш источник">Хоумбрю</span></span
@@ -2102,12 +2085,13 @@
             Existing: <code>PageHead</code>, <code>Panel</code>, <code>Field</code>,
             <code>Button</code>, <code>TableRows</code>/<code>RowMain</code>,
             <code>BatchBar</code> (R6). New: the source rows, the «Разделы» button, the cards
-            fold, the drafts group and the «Черновик» badge, the dashed source badge, the count
-            line. Headings: drafts first, then each source by name with its sections in the
-            author's order and «без раздела» last as the source name alone, the default
-            «Хоумбрю» last. A draft is listed once, under «Черновики». The English-only item
-            draws its English name in Russian (the record-build fallback). A source with no
-            items still lists (0 предметов). The «Импорт предметов» button ships in R7b.
+            fold, the dashed source badge, the count line. Headings: each source by name with
+            its sections in the author's order and «без раздела» last as the source name alone,
+            the default «Хоумбрю» last. An item made with «+ Свой предмет» on a list page (m22)
+            is an ordinary item: it sits in «Хоумбрю» with no mark (the owner, Q12 revised). The
+            English-only item draws its English name in Russian (the record-build fallback). A
+            source with no items still lists (0 предметов). The «Импорт предметов» button ships
+            in R7b.
           </div>
         </main>
       </section>

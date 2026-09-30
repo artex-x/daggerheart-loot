@@ -1,5 +1,6 @@
 # 2026-09-26 - Homebrew is reached from the account menu, not from a tab
 
+- Amended by "Homebrew is first-class in the catalog pages; the roll pages are excluded" (2026-09-30): search has no homebrew group; `#/tables/homebrew`'s group chip is an entry point.
 - Task: `persist-7-homebrew` (owner, 2026-09-26).
 - Decision: `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>` are
   routes with no tab current, reached from the account menu's «Мои
