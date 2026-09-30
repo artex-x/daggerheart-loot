@@ -304,10 +304,12 @@ The items, as the orchestrator reads them (not decided):
   «Таблицы» and «Поиск».
 - Pass 2's example file keys broke the key grammar (`0`, `1`, 17
   characters); pass 3's keys are 16 of `a-z2-7`.
-- The mock generator is `mocks/gen.mjs` (copied from the pass 3 session's
-  scratchpad): `node issues/persist-7-homebrew/mocks/gen.mjs
-  issues/persist-7-homebrew/mocks`, then `npx prettier --write`; it
-  rewrites every mock file in the directory.
+- The mock generator lives outside the repository (`eslint .` refuses a
+  script under `issues/`):
+  `C:/Users/Ignat/AppData/Local/Temp/claude/E--dev-daggerheart-loot/953c5d52-ce74-474b-8a4f-34f1cf7bd424/scratchpad/r7mocks/gen.mjs`
+  (`node gen.mjs issues/persist-7-homebrew/mocks`, then `npx prettier
+  --write`); it rewrites every `.html` file in that directory. The mocks
+  are plain HTML: a later pass may edit them by hand if the file is gone.
 - The browser pane opens `mocks/index.html` from disk but refuses the other
   mock paths; the 360 px check ran on pages copied to that path, each
   under about 88 000 URL-encoded characters (the pane serves a `data:`
