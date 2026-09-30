@@ -1910,6 +1910,109 @@ function testRtkReaders() {
   }
 }
 
+// ---------- bash-guard.mjs: rule 2w, an RTK command piped into head or tail (#302-#304) ----------
+
+function testRtkPipe() {
+  const denyCases = [
+    ['git log', 'git log --oneline | head -20', 'git log -<n>'],
+    ['git global flags', 'git -C docs --no-pager status | head', 'git.exe log -20'],
+    ['git branch', 'git branch -a | tail -5', 'git.exe'],
+    ['git worktree list', 'git worktree list | head', 'git.exe'],
+    ['ls', 'ls -la i | head', '`ls <dir>`'],
+    ['ls after cd', 'cd app && ls | tail -3', '`ls <dir>`'],
+    ['cat', 'cat f | head -50', 'rtk read <file> --max-lines'],
+    ['grep leading', 'grep -r x docs | head -20', 'rtk grep --max'],
+    ['grep middle', 'git grep x | grep -v y | head', 'rtk grep --max'],
+    ['rg', 'rg x app | head', 'rtk grep --max'],
+    [
+      'vitest recorded',
+      'npx vitest run app/src/lib/dice.test.ts 2>&1 | tail -5',
+      'npx vitest run <files>'
+    ],
+    [
+      'vitest pipefail and cd',
+      'set -o pipefail; cd app && npx vitest run 2>&1 | tail -n 30',
+      'npx vitest run <files>'
+    ],
+    ['vitest bare', 'vitest run | head', 'npx vitest run <files>'],
+    ['vitest env prefix', 'FORCE_COLOR=0 npx vitest run | tail', 'npx vitest run <files>'],
+    ['prettier', 'npx prettier --check . | tail', 'npx prettier --list-different <paths>'],
+    ['eslint', 'npx eslint .claude/hooks | tail -20', 'npx eslint <paths>']
+  ];
+  for (const [label, command, fragment] of denyCases) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`#302 ${label}: exit 0`, result.status === 0);
+    check(`#302 ${label}: denies`, isDeny(result), JSON.stringify(result.json));
+    check(
+      `#302 ${label}: reason mentions "${fragment}"`,
+      denyReason(result).includes(fragment),
+      denyReason(result)
+    );
+    check(`#302 ${label}: reason names 0.48.0`, denyReason(result).includes('0.48.0'));
+  }
+
+  const allowedCases = [
+    ['git show', 'git show HEAD | head -50'],
+    ['git diff', 'git diff | tail -20'],
+    ['git diff --stat', 'git diff --stat | head'],
+    ['git log -p', 'git log -p -3 | head -100'],
+    ['git log --patch', 'git log --patch | head'],
+    ['git push', 'git push -u origin x 2>&1 | tail -3'],
+    ['git.exe log', 'git.exe log --oneline | head -20'],
+    ['git.exe status', 'git.exe status | head'],
+    ['git grep', 'git grep -n x | head'],
+    ['final stage grep', 'git status | grep x'],
+    ['wc', 'ls | wc -l'],
+    ['cat into grep', 'cat f | grep x'],
+    ['rtk grep', 'rtk grep x docs | head'],
+    ['node', 'node tests/run-all.js contracts | tail -5'],
+    ['npm run test', 'npm run test 2>&1 | tail -n 20'],
+    ['svelte-check', 'npx svelte-check | tail'],
+    ['vitest coverage', 'npx vitest run --coverage 2>&1 | tail -40'],
+    ['vitest into grep', 'npx vitest run | grep FAIL'],
+    ['time wrapper', 'time npx vitest run | tail'],
+    ['substitution', 'echo $(git log | head -1)'],
+    ['quoted', 'echo "ls | head"'],
+    ['no pipe', 'git log --oneline -20'],
+    ['head on a file', 'head -50 f'],
+    ['grep -l', 'grep -rl x docs | head'],
+    ['grep -c', 'grep -c x f | head'],
+    ['grep --count', 'grep --count x f | head'],
+    ['rg --files', 'rg --files app | head'],
+    ['git log -3p', 'git log -3p | head'],
+    ['git log -U5', 'git log -U5 | head'],
+    ['git log --word-diff', 'git log --word-diff | head'],
+    ['cat heredoc', 'cat <<EOF | head\nx\nEOF']
+  ];
+  for (const [label, command] of allowedCases) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`#303 ${label}: exit 0`, result.status === 0);
+    check(`#303 ${label}: not denied`, !isDeny(result), JSON.stringify(result.json));
+  }
+
+  {
+    const ps = runHook('bash-guard.mjs', psPayload('git log --oneline | head -5'));
+    check('#303 PowerShell git log: denies', isDeny(ps), JSON.stringify(ps.json));
+    const exe = runHook('bash-guard.mjs', psPayload('git.exe log | head'));
+    check('#303 PowerShell git.exe log: not denied', !isDeny(exe), JSON.stringify(exe.json));
+  }
+
+  const precedenceCases = [
+    ['2j grep -n', 'grep -n x f | head', 'rtk grep -n <pattern>'],
+    ['2j tail -c', 'ls | tail -c 100', '--bytes'],
+    ['2k npm run check', 'npm run check 2>&1 | tail -n 5', 'rtk npm run check']
+  ];
+  for (const [label, command, fragment] of precedenceCases) {
+    const result = runHook('bash-guard.mjs', bashPayload(command));
+    check(`#304 ${label}: denies`, isDeny(result), JSON.stringify(result.json));
+    check(
+      `#304 ${label}: keeps its own message "${fragment}"`,
+      denyReason(result).includes(fragment),
+      denyReason(result)
+    );
+  }
+}
+
 // ---------- edit-guard.mjs (#31-39, #35a) ----------
 
 function testEditGuard() {
@@ -4858,6 +4961,7 @@ async function main() {
     testBackgroundCheckScope();
     testBlindCheck();
     testRtkReaders();
+    testRtkPipe();
     testEditGuard();
     testEditFollowup();
     await testReviewHead();

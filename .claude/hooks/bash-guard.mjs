@@ -7,7 +7,8 @@
 // so `echo npm run check` never matches and `nohup npm run check` does.
 // 2s (the reviewer's read-only Bash) runs right after the blocklist; 2r (a
 // migration write to the test project needs an approving review report)
-// runs right after 2n.
+// runs right after 2n. 2w (an RTK command piped into head or tail) runs right
+// after 2j.
 
 import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -117,7 +118,9 @@ const MSG = {
   grepLineNumber:
     'Blocked: this `grep -n` is in a shape `rtk` 0.48.0 is measured (`rtk hook check "<command>"`) never to rewrite - a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time` - so its output lands unfiltered in context. Restructure it into its own command, `rtk grep -n <pattern> <path>` (a `&&`/`;`/`cd` prefix is fine and does not need restructuring - only a pipe or substitution does). `git grep -n` is not affected.',
   tailBytes:
-    'Blocked: `tail -c`/`--bytes` has no `rtk` 0.48.0 rewrite in any position - it lacks a byte-offset mode (`rtk read` only exposes `--tail-lines`) - so its output lands unfiltered in context. Restructure it into its own command, `rtk read <file> --tail-lines <n>` if line-based tailing works, or accept the unfiltered read otherwise. `tail -n` is not affected.'
+    'Blocked: `tail -c`/`--bytes` has no `rtk` 0.48.0 rewrite in any position - it lacks a byte-offset mode (`rtk read` only exposes `--tail-lines`) - so its output lands unfiltered in context. Restructure it into its own command, `rtk read <file> --tail-lines <n>` if line-based tailing works, or accept the unfiltered read otherwise. `tail -n` is not affected.',
+  rtkPipe: (shape, fix) =>
+    `Blocked: \`${shape}\` sends the output of a command that \`rtk\` filters into \`head\`/\`tail\`. \`rtk\` 0.48.0 never rewrites a pipe stage that is not the last one, so this command runs unfiltered. ${fix} A \`cd\`, \`&&\` or \`;\` prefix is fine; only the pipe stops the rewrite.`
 };
 
 // ---------- sanitiser + segmenter (plan section 4, 2a) ----------
@@ -1902,6 +1905,108 @@ function evaluateRtkReaders(sanitized) {
   return null;
 }
 
+// ---------- 2w: an RTK command piped into head or tail (deny) ----------
+// Only commands whose RTK rewrite bounds its own output: .claude/README.md,
+// "Facts settled during measurement (rtk-pipe-deny, 2026-10-01)".
+
+const GIT_BOUNDED = new Set(['status', 'log', 'branch', 'worktree']);
+const GIT_PATCH_FLAG_RE =
+  /^(?:-[A-Za-z0-9]*[pu][A-Za-z0-9]*|-U\d*|-L.*|--patch.*|--unified.*|--word-diff.*|--cc)$/;
+
+function boundedGitShape(tokens) {
+  if (tokens[0] !== 'git') return null;
+  let i = 1;
+  while (i < tokens.length && tokens[i].startsWith('-')) {
+    i += tokens[i] === '-C' || tokens[i] === '-c' ? 2 : 1;
+  }
+  const sub = tokens[i];
+  if (!GIT_BOUNDED.has(sub)) return null;
+  if (sub === 'worktree') return tokens[i + 1] === 'list' ? 'git worktree list' : null;
+  // RTK passes a patch through whole (418 KB for `git log -p -3`).
+  if (sub === 'log' && tokens.some((t) => GIT_PATCH_FLAG_RE.test(t))) return null;
+  return `git ${sub}`;
+}
+
+function runnerShape(tokens, tools) {
+  if (tokens[0] === 'npx') return tools.includes(tokens[1]) ? `npx ${tokens[1]}` : null;
+  return tools.includes(tokens[0]) ? tokens[0] : null;
+}
+
+// `rtk grep --max` caps only the default line mode: `-l`, `-c` and `-o` print it all
+// (380 KB for `-rl function .`).
+const GREP_UNCAPPED_LONG_RE =
+  /^--(?:files-with-matches|files-without-match|count|only-matching|files)$/;
+
+function uncappedGrepMode(tokens) {
+  return tokens.some(
+    (t) => GREP_UNCAPPED_LONG_RE.test(t) || (/^-[A-Za-z]+$/.test(t) && /[lLco]/.test(t))
+  );
+}
+
+const RTK_BOUNDED = [
+  {
+    family: 'git',
+    shape: boundedGitShape,
+    fix: "Limit it with git's own flag instead: `git log -<n>`. RTK caps an unlimited `git log` and prints `git status`, `git branch` and `git worktree list` compactly. Where `rtk git` is refused (an isolated `agent-*` worktree), run `git.exe` with the same flag, for example `git.exe log -20`; a `git.exe` pipe is not judged."
+  },
+  {
+    family: 'ls',
+    shape: (t) => (t[0] === 'ls' ? 'ls' : null),
+    fix: 'Drop the pipe: `ls <dir>`. RTK prints about 50 entries of a large directory and keeps the `-t` order.'
+  },
+  {
+    family: 'cat',
+    shape: (t) => (t[0] === 'cat' ? 'cat' : null),
+    fix: 'Select the lines with `rtk read <file> --max-lines <n>` or `rtk read <file> --tail-lines <n>`; it is a selection, not always the first or last n lines.'
+  },
+  {
+    family: 'grep',
+    shape: (t) => ((t[0] === 'grep' || t[0] === 'rg') && !uncappedGrepMode(t) ? t[0] : null),
+    fix: 'Cap the matches instead: `rtk grep --max <n> <pattern> <path>`. When grep reads a pipe, make it the last stage: `<command> | rtk grep --max <n> <pattern>`.'
+  },
+  {
+    family: 'vitest',
+    // RTK drops the coverage table of a `--coverage` run, so the pipe stays.
+    shape: (t) =>
+      t.some((x) => x.startsWith('--coverage')) ? null : runnerShape(t, ['vitest']),
+    fix: 'Drop the pipe: `npx vitest run <files>`. RTK prints the failures only, and the path of the full log when the run fails. A `--coverage` run is not judged.'
+  },
+  {
+    family: 'format',
+    shape: (t) => runnerShape(t, ['prettier', 'eslint']),
+    fix: 'Drop the pipe: `npx prettier --list-different <paths>` or `npx eslint <paths>`. RTK prints only the unformatted files for `--list-different`; `--check` prints none of them. For eslint RTK prints only the rules that fail, and the line numbers are in the full-output log it names.'
+  }
+];
+
+function evaluateRtkPipe(sanitized, rawCommand) {
+  // sanitize() drops the heredoc marker, and `cat <<EOF | head` has no file for `rtk read`.
+  const heredoc = /<<-?\s*['"]?[A-Za-z_]/.test(rawCommand);
+  // `2>&1` goes before the split, as in 2k: LIST_SPLIT_RE reads its `&` as a list operator.
+  const outer = sanitized.replace(/\d?>&\d/g, ' ').replace(SUBSTITUTION_RE, ' ');
+  for (const listItem of splitListItems(outer)) {
+    const stages = splitPipeStages(listItem);
+    for (let i = 0; i < stages.length - 1; i++) {
+      const rawTokens = tokensOf(stages[i]);
+      const tokens = unwrap(rawTokens);
+      // RTK rewrites neither a wrapper nor a launcher suffix (`time x`, `git.exe`).
+      if (!tokens.length || dropAssignments(rawTokens)[0] !== tokens[0]) continue;
+      const next = unwrap(tokensOf(stages[i + 1]))[0];
+      if (next !== 'head' && next !== 'tail') continue;
+      for (const spec of RTK_BOUNDED) {
+        if (heredoc && spec.family === 'cat') continue;
+        const shape = spec.shape(tokens);
+        if (shape) {
+          return {
+            id: `rtk-pipe-${spec.family}`,
+            message: MSG.rtkPipe(`${shape} | ${next}`, spec.fix)
+          };
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // ---------- 2f: long-check reminder (allow, not block) ----------
 
 function evaluateLongCheck(segList, sessionId) {
@@ -2010,6 +2115,9 @@ guard(() => {
 
   const rtk = evaluateRtkReaders(sanitized);
   if (rtk) return deny(event, rtk.message);
+
+  const rtkPipe = evaluateRtkPipe(sanitized, rawCommand);
+  if (rtkPipe) return deny(event, rtkPipe.message);
 
   const longCheck = evaluateLongCheck(segList, input.session_id);
   if (longCheck) return say(longCheck.message);

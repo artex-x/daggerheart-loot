@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-01 - [An RTK command piped into head or tail is denied when RTK bounds it](decisions/2026-10-01-an-rtk-command-piped-into-head-or-tail.md)
 - 2026-09-30 - [A frozen copy embeds its source and cards; a reference must exist when written](decisions/2026-09-30-a-frozen-copy-embeds-its-source-a-reference-must-exist.md)
 - 2026-09-30 - [A homebrew item carries the whole catalog shape; sources and cards are rows](decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md)
 - 2026-09-30 - [A homebrew source may hold sections, as the community book holds communities](decisions/2026-09-30-a-homebrew-source-may-hold-sections.md)
