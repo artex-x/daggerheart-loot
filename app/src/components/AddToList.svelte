@@ -14,6 +14,7 @@
   import SignInPrompt from './SignInPrompt.svelte';
   import type { Msg } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
+  import { isHomebrewKey } from '../lib/homebrew.js';
   import type { ListEntryMeta } from '../lib/listLink.js';
   import {
     itemMeta,
@@ -122,12 +123,31 @@
      tick, which means the success message always wins there and a refusal
      is never actually seen - not reproduced here, since the acceptance this
      batch is held to is that a refusal is seen. */
-  const knows = (id: string): boolean => !!app.index?.byId.has(id);
+  const knows = (id: string): boolean => app.knows(id);
+
+  /* An add that wrote nothing because a homebrew key was refused says why, not
+     «Добавлено»: an account list waits for the account's items, a browser list never
+     holds one. */
+  function refusedText(cloud: boolean): Msg {
+    const status = app.homebrew?.status;
+    if (cloud && status === 'error') return (t) => t.hbLoadFailed;
+    if (cloud && status !== 'ready') return (t) => t.hbNotReady;
+    return (t) => t.hbNotAdded;
+  }
 
   /* After an add from the bar on a share link, signed in and not its owner: flow b
      asks whether to tell the owner, or sends, or not, by the remembered answer. A
      card's own menu never asks. */
-  function added(name: string, fresh: readonly string[]): void {
+  function added(
+    name: string,
+    fresh: readonly string[],
+    held: readonly string[],
+    cloud: boolean
+  ): void {
+    if (!fresh.length && ids.some((id) => isHomebrewKey(id) && !held.includes(id))) {
+      app.say(refusedText(cloud), { error: true });
+      return;
+    }
     const count = ids.length > 1 ? fresh.length : null;
     const text: Msg = (t) =>
       t.addedTo.replace('%s', name) + (count === null ? '' : ': ' + String(count));
@@ -162,7 +182,7 @@
       return;
     }
     const fresh = store.add(l.id, ids, knows, carried);
-    if (store.saved) added(l.name, fresh);
+    if (store.saved) added(l.name, fresh, l.ids, store === app.cloudLists);
   }
 
   /* The search already holds the name a person looked for and did not find. */
@@ -207,7 +227,7 @@
     const store = target === 'cloud' && app.cloudLists ? app.cloudLists : app.lists;
     const l = store.create(draft);
     const fresh = store.add(l.id, ids, knows, carried);
-    if (store.saved) added(l.name, fresh);
+    if (store.saved) added(l.name, fresh, [], store === app.cloudLists);
     newListFor = false;
     draft = '';
     pickQ = '';

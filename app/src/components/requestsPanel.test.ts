@@ -311,3 +311,36 @@ describe('the requests panel', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe('homebrew lines', () => {
+  const AXE = 'hb_emberaxeaaaaaaaa';
+
+  it('names an own item of the list', async () => {
+    openShop((cloud) => {
+      cloud.request('player-token-1', [{ item: AXE, qty: 1 }]);
+    });
+    const p = await panel();
+    expect(cells(requestsOf(p)[0] as HTMLElement)[0]).toBe('Топор Тлеющих Углей');
+  });
+
+  it('names a frozen copy of the list, in a decided request too', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const made = await cloud.shares.create(uuid(201), 'player');
+    if (!made.ok) throw new Error('no share');
+    cloud.request(made.token, [{ item: AXE, qty: 1 }]);
+    const hash = '#/lists/' + uuid(201);
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), cloud })
+    });
+    const p = await panel();
+    const [req] = requestsOf(p);
+    expect(cells(req as HTMLElement)[0]).toBe('Топор Тлеющих Углей');
+    await userEvent.click(
+      within(req as HTMLElement).getByRole('button', { name: 'Отклонить' })
+    );
+    const fold = await within(p).findByRole('button', { name: 'Решённые в этот раз (1)' });
+    await userEvent.click(fold);
+    expect(p.querySelector('.decided')).toHaveTextContent('Топор Тлеющих Углей');
+    await expectNoA11yViolations(container);
+  });
+});

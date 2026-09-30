@@ -1261,3 +1261,32 @@ describe('axe', () => {
     await expectNoA11yViolations(empty.container);
   });
 });
+
+describe('homebrew cards', () => {
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const POTION = 'hb_smithpotionaaaaa';
+  const filled = (): HTMLElement[] => [
+    ...document.querySelectorAll<HTMLElement>('.pcard:not(.blank)')
+  ];
+  const bottom = (card: HTMLElement | undefined): string =>
+    card?.querySelector('.pc-bottom')?.textContent ?? '';
+
+  it('prints own items with their path as the source line', async () => {
+    render(App, { env: at(`#/print/${AXE}-${POTION}`, { cloud: fakeCloud(SEED, 'gm1') }) });
+    await screen.findByText('Топор Тлеющих Углей');
+    expect(filled()).toHaveLength(2);
+    expect(bottom(filled()[0])).toContain('Мастерская Ольхи');
+    expect(bottom(filled()[1])).toContain('Хоумбрю');
+  });
+
+  it('prints a frozen copy of an own list, and nothing for a key the account does not hold', async () => {
+    render(App, { env: at('#/print/' + AXE, { cloud: fakeCloud(SEED, 'gm2') }) });
+    await screen.findByText('Топор Тлеющих Углей');
+    expect(filled()).toHaveLength(1);
+    expect(bottom(filled()[0])).toContain('Мастерская Ольхи');
+    cleanup();
+    render(App, { env: at('#/print/' + AXE, { cloud: fakeCloud(SEED) }) });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(filled()).toHaveLength(0);
+  });
+});

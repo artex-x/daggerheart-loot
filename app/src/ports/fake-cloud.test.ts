@@ -3,9 +3,16 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { bundleText, toBundle } from '../lib/bundle.js';
+import { bundleText, officialOnly, toBundle } from '../lib/bundle.js';
 import { toCloudList, type EntryRow, type ImportRow, type ListOp } from '../lib/cloudLists.js';
 import { buildIndex, type Loot } from '../lib/data.js';
+import {
+  bookProblems,
+  contentProblems,
+  HOMEBREW_KEY,
+  recordOf,
+  snapshotValid
+} from '../lib/homebrew.js';
 import { runCloudContract } from './cloud.contract.js';
 import { fakeCloud, installFakeCloud } from './fake-cloud.js';
 import { SEED, uuid } from './fake-cloud-seed.js';
@@ -162,8 +169,22 @@ describe('the seeded lists and shares', () => {
   const lists = Object.values(SEED.lists).flat();
   const entries = lists.flatMap((l) => l.entries);
 
-  it('names only records of the dataset', () => {
-    expect(entries.map((e) => e.itemKey).filter((k) => !index.byId.has(k))).toEqual([]);
+  it("names only records of the dataset, and gm1's axe in its homebrew entries", () => {
+    const official = entries.filter((e) => e.source !== 'homebrew');
+    expect(official.map((e) => e.itemKey).filter((k) => !index.byId.has(k))).toEqual([]);
+    const axe = SEED.homebrew.gm1.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa');
+    const own = SEED.lists.gm1.flatMap((l) => l.entries).filter((e) => e.source === 'homebrew');
+    expect(own.map((e) => [e.itemKey, e.snapshot])).toEqual([[axe?.key, undefined]]);
+    const frozen = SEED.lists.gm2
+      .flatMap((l) => l.entries)
+      .filter((e) => e.source === 'homebrew');
+    expect(frozen.map((e) => e.itemKey)).toEqual([axe?.key]);
+    expect(snapshotValid(frozen[0]?.snapshot)).toBe(true);
+    expect(frozen[0]?.snapshot).toMatchObject({
+      id: axe?.key,
+      ru: 'Топор Тлеющих Углей',
+      book: { key: 'hb_alderworkshopaaa', section: { key: 'hb_sectbladesaaaaaa' } }
+    });
   });
 
   it('gives every list, entry and share its own id', () => {
@@ -254,8 +275,14 @@ describe("the fake's lists", () => {
       'q23',
       'w51',
       'q35',
-      'di11'
+      'di11',
+      'hb_emberaxeaaaaaaaa'
     ]);
+    expect(shop?.list_entries[9]).toMatchObject({
+      source: 'homebrew',
+      snapshot: null,
+      price_coins: 800
+    });
     expect(shop?.list_entries[0]).toMatchObject({ quantity: 2, price_coins: 150 });
     expect(shop?.list_entries[4]).toMatchObject({ gm_note: 'Проклят.', player_note: '' });
   });
@@ -407,8 +434,9 @@ describe("the fake's lists", () => {
       ok: true,
       results: [{ ok: false, error: 'limit', key: 'lists_per_owner', value: 50 }]
     });
-    const hundred = Array.from({ length: 99 }, (_, i) =>
-      entry(lists.newId(), 'k' + String(i), i + 1)
+    /* List 201 holds two seeded entries. */
+    const hundred = Array.from({ length: 98 }, (_, i) =>
+      entry(lists.newId(), 'k' + String(i), i + 2)
     );
     expect(await lists.apply([{ op: 'add', list_id: uuid(201), entries: hundred }])).toEqual(
       OK1
@@ -634,7 +662,8 @@ describe("the fake's share links", () => {
       'q23',
       'w51',
       'q35',
-      'di11'
+      'di11',
+      'hb_emberaxeaaaaaaaa'
     ]);
     expect(keysOf(p)).not.toContain('gm_note');
     const gm = await shares.read('gm-token-1');
@@ -924,7 +953,7 @@ describe("the fake's import", () => {
     );
     const text = bundleText(
       toBundle(
-        lists,
+        officialOnly(lists).lists,
         (id) => index.byId.get(id)?.ru,
         'Без названия',
         new Date('2026-09-25T12:00:00.000Z')
@@ -1257,7 +1286,8 @@ describe("the fake's purchase requests", () => {
       'q23@3',
       'w51@4',
       'q35@5',
-      'di11@6'
+      'di11@6',
+      'hb_emberaxeaaaaaaaa@7'
     ]);
     expect(await pending(cloud)).toEqual([]);
     expect(await cloud.requests.apply(uuid(6100), false)).toEqual({
@@ -1340,5 +1370,460 @@ describe("the fake's purchase requests", () => {
     const id = other.request('gm-token-1', ONE);
     await other.auth.deleteAccount();
     expect(id && other.decide(id, 'declined')).toBe(false);
+  });
+});
+
+/* The seed's homebrew, pinned to the database's rules. */
+describe('the seeded homebrew', () => {
+  const all = Object.values(SEED.homebrew);
+
+  it('keys every source, section and item in the key shape, each key once per account', () => {
+    for (const h of all) {
+      const keys = [
+        ...h.books.map((b) => b.key),
+        ...h.books.flatMap((b) => b.content.sections ?? []).map((s) => s.key),
+        ...h.items.map((i) => i.key)
+      ];
+      expect(keys.filter((k) => !HOMEBREW_KEY.test(k))).toEqual([]);
+      expect(new Set(keys).size).toBe(keys.length);
+    }
+  });
+
+  it('holds only content the validators take, and the axe in a section of its source', () => {
+    for (const h of all) {
+      for (const b of h.books) expect(bookProblems(b.content)).toEqual([]);
+      for (const i of h.items) expect(contentProblems(i.content)).toEqual([]);
+    }
+    const axe = SEED.homebrew.gm1.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa');
+    const book = SEED.homebrew.gm1.books.find((b) => b.id === axe?.bookId);
+    expect(book?.content.sections?.map((s) => s.key)).toContain(axe?.content.section);
+  });
+
+  it('gives gm2 no homebrew, and every row an id of its own', () => {
+    expect(SEED.homebrew.gm2).toEqual({ books: [], items: [] });
+    const ids = [
+      ...all.flatMap((h) => [...h.books, ...h.items]).map((x) => x.id),
+      ...Object.values(SEED.lists)
+        .flat()
+        .map((l) => l.id)
+    ];
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe("the fake's homebrew", () => {
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const POTION = 'hb_smithpotionaaaaa';
+  const ALDER = uuid(501);
+  const EMPTY = uuid(102);
+  const OK = { ok: true };
+  const REFUSED = { ok: false, error: 'refused' };
+  const NETWORK = { ok: false, error: 'network' };
+  const hbEntry = (id: string, key: string, position: number, snapshot: unknown = null) => ({
+    id,
+    item_key: key,
+    source: 'homebrew' as const,
+    snapshot,
+    position,
+    quantity: 1,
+    price_coins: null,
+    player_note: '',
+    gm_note: ''
+  });
+  const read = async (cloud: CloudPort) => {
+    const r = await cloud.homebrew.load();
+    if (!r.ok) throw new Error('the read failed');
+    return r;
+  };
+  const revisions = async (cloud: CloudPort) => {
+    const r = await cloud.lists.list();
+    return r.ok ? Object.fromEntries(r.lists.map((l) => [l.id, l.revision])) : {};
+  };
+  const potionRecord = () => {
+    const p = SEED.homebrew.gm1.items.find((i) => i.key === POTION);
+    if (!p) throw new Error('no potion in the seed');
+    return recordOf(POTION, p.content, null);
+  };
+  /* gm1's empty list gets a reference to the axe and a frozen copy of the potion. */
+  const withEntries = async (cloud: CloudPort) => {
+    const r = await cloud.lists.apply([
+      {
+        op: 'add',
+        list_id: EMPTY,
+        entries: [hbEntry(uuid(7101), AXE, 0), hbEntry(uuid(7102), POTION, 1, potionRecord())]
+      }
+    ]);
+    expect(r).toEqual({ ok: true, results: [OK] });
+  };
+  const newBook = (id: string, key: string) => ({ id, key, content: { ru: 'Новый источник' } });
+  const newItem = (id: string, key: string, bookId: string | null = null) => ({
+    id,
+    key,
+    book_id: bookId,
+    content: { kind: 'item' as const, ru: 'Новый предмет' }
+  });
+
+  beforeEach(() => {
+    vi.useFakeTimers({ now: new Date('2026-09-25T12:00:00Z') });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("reads gm1's source and four items at revision 1, times back from boot, and the limit", async () => {
+    const r = await read(fakeCloud(SEED, 'gm1'));
+    expect(r.books.map((b) => [b.id, b.key, b.revision])).toEqual([
+      [ALDER, 'hb_alderworkshopaaa', 1]
+    ]);
+    expect(r.items.map((i) => [i.key, i.book_id, i.revision])).toEqual([
+      [AXE, ALDER, 1],
+      [POTION, null, 1],
+      ['hb_whispercapaaaaaa', null, 1],
+      ['hb_engravedringaaaa', null, 1]
+    ]);
+    expect(r.books[0]?.updated_at).toBe('2026-09-21T12:00:00.000Z');
+    expect(r.itemLimit).toBe(100);
+    expect(await read(fakeCloud(SEED, 'gm2'))).toEqual({
+      ok: true,
+      books: [],
+      items: [],
+      itemLimit: 100
+    });
+  });
+
+  it('makes fixed keys in the key shape, and ids from the list counter', () => {
+    const { homebrew } = fakeCloud(SEED, 'gm2');
+    expect([homebrew.newKey(), homebrew.newKey()]).toEqual([
+      'hb_newaaaaaaaaaaaaa',
+      'hb_newaaaaaaaaaaaab'
+    ]);
+    for (let i = 0; i < 40; i++) expect(homebrew.newKey()).toMatch(HOMEBREW_KEY);
+    expect(homebrew.newKey()).toBe('hb_newaaaaaaaaaaabk');
+    expect(homebrew.newId()).toBe(uuid(5000));
+  });
+
+  it('keeps the rows it answers apart from the rows it holds', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const first = await read(cloud);
+    const book = first.books[0];
+    if (book) book.content.ru = 'Изменено';
+    expect((await read(cloud)).books[0]?.content.ru).toBe('Мастерская Ольхи');
+  });
+
+  it('creates a source and an item, and answers ok to an id any account holds, changing nothing', async () => {
+    const gm2 = fakeCloud(SEED, 'gm2');
+    const { homebrew } = gm2;
+    expect(await homebrew.createBook(newBook(uuid(7001), 'hb_bookbbbbbbbbbbbb'))).toEqual(OK);
+    expect(
+      await homebrew.createItem(newItem(uuid(7002), 'hb_itemcccccccccccc', uuid(7001)))
+    ).toEqual(OK);
+    expect(await homebrew.createBook(newBook(ALDER, 'hb_bookdddddddddddd'))).toEqual(OK);
+    expect(await homebrew.createItem(newItem(uuid(511), 'hb_itemeeeeeeeeeeee'))).toEqual(OK);
+    const r = await read(gm2);
+    expect(r.books.map((b) => [b.key, b.revision])).toEqual([['hb_bookbbbbbbbbbbbb', 1]]);
+    expect(r.items.map((i) => [i.key, i.book_id])).toEqual([
+      ['hb_itemcccccccccccc', uuid(7001)]
+    ]);
+  });
+
+  it('refuses a bad key, a repeated key and content the validators refuse', async () => {
+    const { homebrew } = fakeCloud(SEED, 'gm1');
+    expect(await homebrew.createBook(newBook(uuid(7001), 'hb_x1'))).toEqual(REFUSED);
+    expect(await homebrew.createBook(newBook(uuid(7001), 'hb_alderworkshopaaa'))).toEqual(
+      REFUSED
+    );
+    expect(
+      await homebrew.createBook({ id: uuid(7001), key: 'hb_bookbbbbbbbbbbbb', content: {} })
+    ).toEqual(REFUSED);
+    expect(await homebrew.createItem(newItem(uuid(7002), 'x'))).toEqual(REFUSED);
+    expect(await homebrew.createItem(newItem(uuid(7002), AXE))).toEqual(REFUSED);
+    expect(
+      await homebrew.createItem({
+        ...newItem(uuid(7002), 'hb_itemcccccccccccc'),
+        content: { kind: 'equip', ru: 'Клинок' }
+      })
+    ).toEqual(REFUSED);
+  });
+
+  it("refuses an item in another account's source, on create and on update", async () => {
+    const { homebrew } = fakeCloud(SEED, 'gm2');
+    expect(
+      await homebrew.createItem(newItem(uuid(7002), 'hb_itemcccccccccccc', ALDER))
+    ).toEqual(REFUSED);
+    const gm1 = fakeCloud(SEED, 'gm1');
+    const r = await read(gm1);
+    const ring = r.items.find((i) => i.key === 'hb_engravedringaaaa');
+    expect(
+      await gm1.homebrew.updateItem(
+        uuid(514),
+        { content: ring?.content ?? { kind: 'item', ru: 'x' }, book_id: uuid(9) },
+        1
+      )
+    ).toEqual(REFUSED);
+  });
+
+  it('answers the limits by their options, with the key and the value', async () => {
+    const gm1 = fakeCloud(SEED, 'gm1', { limits: { books: 1, items: 4 } });
+    expect(await gm1.homebrew.createBook(newBook(uuid(7001), 'hb_bookbbbbbbbbbbbb'))).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'homebrew_books_per_owner',
+      value: 1
+    });
+    expect(await gm1.homebrew.createItem(newItem(uuid(7002), 'hb_itemcccccccccccc'))).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'homebrew_items_per_owner',
+      value: 4
+    });
+    expect((await read(gm1)).itemLimit).toBe(4);
+    const def = fakeCloud(SEED, 'gm2');
+    for (let i = 0; i < 20; i++) {
+      await def.homebrew.createBook(newBook(uuid(7100 + i), def.homebrew.newKey()));
+    }
+    expect(
+      await def.homebrew.createBook(newBook(uuid(7200), def.homebrew.newKey()))
+    ).toMatchObject({ error: 'limit', value: 20 });
+  });
+
+  it('updates with the revision, answers ok to the same update again, conflict to another, gone to none', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { homebrew } = cloud;
+    const before = (await read(cloud)).items.find((i) => i.key === POTION);
+    const content = { kind: 'consumable' as const, ru: 'Настой кузнеца II' };
+    const patch = { content, book_id: null };
+    vi.advanceTimersByTime(1000);
+    expect(await homebrew.updateItem(uuid(512), patch, 1)).toEqual({ ok: true, revision: 2 });
+    expect(await homebrew.updateItem(uuid(512), patch, 1)).toEqual({ ok: true, revision: 2 });
+    expect(
+      await homebrew.updateItem(uuid(512), { ...patch, content: { ...content, ru: 'III' } }, 1)
+    ).toEqual({ ok: false, error: 'conflict' });
+    expect(await homebrew.updateItem(uuid(512), patch, null)).toEqual({
+      ok: true,
+      revision: 3
+    });
+    const after = (await read(cloud)).items.find((i) => i.key === POTION);
+    expect(after?.updated_at).not.toBe(before?.updated_at);
+    expect([after?.id, after?.key, after?.created_at]).toEqual([
+      before?.id,
+      before?.key,
+      before?.created_at
+    ]);
+    expect(await homebrew.updateItem(uuid(9), patch, 1)).toEqual({ ok: false, error: 'gone' });
+    expect(
+      await homebrew.updateItem(uuid(512), { ...patch, content: { kind: 'item' } }, null)
+    ).toEqual(REFUSED);
+    const book = { ru: 'Мастерская Ольхи', en: 'Alder Workshop' };
+    expect(await homebrew.updateBook(ALDER, book, 1)).toEqual({ ok: true, revision: 2 });
+    expect(await homebrew.updateBook(ALDER, book, 1)).toEqual({ ok: true, revision: 2 });
+    expect(await homebrew.updateBook(ALDER, { ru: 'Другое' }, 1)).toEqual({
+      ok: false,
+      error: 'conflict'
+    });
+    expect(await homebrew.updateBook(ALDER, {}, null)).toEqual(REFUSED);
+    expect(await homebrew.updateBook(uuid(9), book, null)).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+  });
+
+  it('bumps each list holding a reference once, on an item edit and on a source rename', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withEntries(cloud);
+    const was = await revisions(cloud);
+    const axe = (await read(cloud)).items.find((i) => i.key === AXE);
+    if (!axe) throw new Error('no axe');
+    await cloud.homebrew.updateItem(uuid(511), { content: axe.content, book_id: ALDER }, null);
+    const edited = await revisions(cloud);
+    expect(edited[EMPTY]).toBe((was[EMPTY] ?? 0) + 1);
+    expect(edited[uuid(101)]).toBe((was[uuid(101)] ?? 0) + 1);
+    expect(edited[uuid(103)]).toBe(was[uuid(103)]);
+    await cloud.homebrew.updateBook(ALDER, { ru: 'Мастерская' }, null);
+    expect((await revisions(cloud))[EMPTY]).toBe((was[EMPTY] ?? 0) + 2);
+    /* The potion is only frozen in the list: its edit bumps nothing. */
+    await cloud.homebrew.updateItem(
+      uuid(512),
+      { content: { kind: 'consumable', ru: 'Настой' }, book_id: null },
+      null
+    );
+    expect((await revisions(cloud))[EMPTY]).toBe((was[EMPTY] ?? 0) + 2);
+  });
+
+  it("removes an item with the owner's references and keeps the frozen copies", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withEntries(cloud);
+    const gm2 = fakeCloud(SEED, 'gm2');
+    const was = await revisions(cloud);
+    expect(await cloud.homebrew.removeItem(uuid(511))).toEqual(OK);
+    expect(await cloud.homebrew.removeItem(uuid(512))).toEqual(OK);
+    expect(await cloud.homebrew.removeItem(uuid(9))).toEqual(OK);
+    const r = await cloud.lists.list();
+    const list = r.ok ? r.lists.find((l) => l.id === EMPTY) : undefined;
+    expect(list?.list_entries.map((e) => [e.item_key, e.snapshot !== null])).toEqual([
+      [POTION, true]
+    ]);
+    expect(list?.revision).toBe((was[EMPTY] ?? 0) + 1);
+    expect((await read(cloud)).items.map((i) => i.key)).toEqual([
+      'hb_whispercapaaaaaa',
+      'hb_engravedringaaaa'
+    ]);
+    expect(await gm2.homebrew.removeItem(uuid(513))).toEqual(OK);
+    expect((await read(fakeCloud(SEED, 'gm1'))).items).toHaveLength(4);
+  });
+
+  it('removes a source, moving its items to the default source one revision up', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withEntries(cloud);
+    const was = await revisions(cloud);
+    expect(await cloud.homebrew.removeBook(ALDER)).toEqual(OK);
+    expect(await cloud.homebrew.removeBook(ALDER)).toEqual(OK);
+    const r = await read(cloud);
+    expect(r.books).toEqual([]);
+    expect(r.items.find((i) => i.key === AXE)).toMatchObject({ book_id: null, revision: 2 });
+    expect((await revisions(cloud))[EMPTY]).toBe((was[EMPTY] ?? 0) + 1);
+  });
+
+  it('refuses a reference to a key the list owner lacks, and a snapshot the checks refuse', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const potion = potionRecord();
+    const results = await cloud.lists.apply(
+      [
+        [hbEntry(uuid(7201), 'hb_nosuchitemaaaaaa', 0)],
+        [hbEntry(uuid(7202), 'hb_itemcccccccccccc', 0, { ...potion, src: 'official' })],
+        [hbEntry(uuid(7203), 'hb_itemcccccccccccc', 0, potion)],
+        [{ ...hbEntry(uuid(7204), 'q9', 0, potion), source: 'official' as const }],
+        [
+          hbEntry(uuid(7205), POTION, 0, {
+            ...potion,
+            rud: 'x'.repeat(3000),
+            ende: 'y'.repeat(3000),
+            ru: 'z'.repeat(120)
+          })
+        ]
+      ].map((entries) => ({ op: 'add' as const, list_id: EMPTY, entries }))
+    );
+    expect(results).toEqual({
+      ok: true,
+      results: [REFUSED, REFUSED, REFUSED, REFUSED, OK]
+    });
+    const gm2 = fakeCloud(SEED, 'gm2');
+    expect(
+      await gm2.lists.apply([
+        { op: 'add', list_id: uuid(201), entries: [hbEntry(uuid(7301), AXE, 1)] }
+      ])
+    ).toEqual({ ok: true, results: [REFUSED] });
+    expect(
+      await gm2.lists.import([
+        {
+          list: { id: uuid(7400), name: 'И', money_mode: 'bag', player_note: '', gm_note: '' },
+          entries: [hbEntry(uuid(7401), AXE, 0)]
+        }
+      ])
+    ).toEqual(REFUSED);
+  });
+
+  it("projects a reference from the owner's live item and a frozen entry as written", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withEntries(cloud);
+    const made = await cloud.shares.create(EMPTY, 'player');
+    if (!made.ok) throw new Error('no share');
+    const snapshots = async () => {
+      const r = await cloud.shares.read(made.token);
+      return r.ok ? r.shared?.entries.map((e) => e.snapshot) : [];
+    };
+    const [axe, potion] = (await snapshots()) ?? [];
+    expect(axe).toMatchObject({
+      id: AXE,
+      src: 'homebrew',
+      book: { key: 'hb_alderworkshopaaa', section: { key: 'hb_sectbladesaaaaaa' } }
+    });
+    expect(potion).toEqual(potionRecord());
+    await cloud.homebrew.updateBook(ALDER, { ru: 'Мастерская II', en: 'Workshop II' }, null);
+    expect((await snapshots())?.[0]).toMatchObject({
+      book: { key: 'hb_alderworkshopaaa', ru: 'Мастерская II', en: 'Workshop II' }
+    });
+  });
+
+  it('keeps references for the owner, freezes them for another user, and keeps a frozen entry frozen', async () => {
+    const cloud = fakeCloud({ ...SEED, defaultUser: 'gm2' }, 'gm1');
+    await withEntries(cloud);
+    const made = await cloud.shares.create(EMPTY, 'player');
+    if (!made.ok) throw new Error('no share');
+    const entriesOf = async (port: CloudPort, id: string) => {
+      const r = await port.lists.list();
+      return (r.ok ? r.lists.find((l) => l.id === id)?.list_entries : undefined) ?? [];
+    };
+    /* The owner copies its own share holding a frozen entry: the frozen entry stays frozen
+       with its snapshot, the reference stays a reference. */
+    expect(await cloud.shares.clone(made.token, uuid(7500))).toEqual(OK);
+    expect((await entriesOf(cloud, uuid(7500))).map((e) => [e.item_key, e.snapshot])).toEqual([
+      [AXE, null],
+      [POTION, potionRecord()]
+    ]);
+    /* Another user of the same port: its default user is gm2. */
+    await cloud.auth.signOut();
+    await cloud.auth.signIn('google');
+    expect(await cloud.shares.clone(made.token, uuid(7600))).toEqual(OK);
+    const copied = await entriesOf(cloud, uuid(7600));
+    expect(copied.map((e) => [e.item_key, e.source])).toEqual([
+      [AXE, 'homebrew'],
+      [POTION, 'homebrew']
+    ]);
+    expect(copied[0]?.snapshot).toMatchObject({ id: AXE, src: 'homebrew' });
+    expect(copied[1]?.snapshot).toEqual(potionRecord());
+  });
+
+  it('sends one homebrew message per write with the tab, and none for a refused one', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const seen: unknown[] = [];
+    cloud.events.subscribe('owner:' + SEED.users.gm1.id, {
+      message: (event, payload) => seen.push([event, payload]),
+      status: () => undefined
+    });
+    await Promise.resolve();
+    await cloud.homebrew.createItem(newItem(uuid(7002), 'x'));
+    await cloud.homebrew.updateItem(
+      uuid(9),
+      { content: { kind: 'item', ru: 'a' }, book_id: null },
+      null
+    );
+    await cloud.homebrew.createBook(newBook(uuid(7001), 'hb_bookbbbbbbbbbbbb'));
+    await cloud.homebrew.removeItem(uuid(514));
+    await cloud.homebrew.removeItem(uuid(514));
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+    expect(seen).toEqual([
+      ['homebrew', { by: 'fake-tab', id: '1' }],
+      ['homebrew', { by: 'fake-tab', id: '2' }]
+    ]);
+  });
+
+  it('answers network offline and signed out, and drops the rows with the account', async () => {
+    const off = fakeCloud(SEED, 'gm1', { offline: true });
+    expect(await off.homebrew.load()).toEqual({ ok: false });
+    expect(await off.homebrew.createBook(newBook(uuid(7001), 'hb_bookbbbbbbbbbbbb'))).toEqual(
+      NETWORK
+    );
+    expect(await off.homebrew.updateBook(ALDER, { ru: 'a' }, null)).toEqual(NETWORK);
+    expect(await off.homebrew.removeBook(ALDER)).toEqual(NETWORK);
+    expect(await off.homebrew.createItem(newItem(uuid(7002), 'hb_itemcccccccccccc'))).toEqual(
+      NETWORK
+    );
+    expect(
+      await off.homebrew.updateItem(
+        uuid(511),
+        { content: { kind: 'item', ru: 'a' }, book_id: null },
+        null
+      )
+    ).toEqual(NETWORK);
+    expect(await off.homebrew.removeItem(uuid(511))).toEqual(NETWORK);
+    off.setOffline(false);
+    expect((await read(off)).items).toHaveLength(4);
+    const out = fakeCloud(SEED);
+    expect(await out.homebrew.load()).toEqual({ ok: false });
+    expect(await out.homebrew.removeItem(uuid(511))).toEqual(NETWORK);
+    const doomed = fakeCloud(SEED, 'gm1');
+    await doomed.auth.deleteAccount();
+    await doomed.auth.signIn('google');
+    expect(await read(doomed)).toEqual({ ok: true, books: [], items: [], itemLimit: 100 });
   });
 });

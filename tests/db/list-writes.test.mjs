@@ -24,6 +24,17 @@ const E3 = id(6103);
 const E4 = id(6104);
 const EB = id(6201);
 const OK = { ok: true };
+/* A frozen homebrew copy's snapshot, as homebrew_snapshot_of() writes it. */
+const FROZEN_KEY = 'hb_frozenaaaaaaaaaa';
+const FROZEN = {
+  id: FROZEN_KEY,
+  src: 'homebrew',
+  kind: 'item',
+  en: 'X',
+  ru: 'X',
+  ende: '',
+  rud: ''
+};
 
 let sql;
 before(() => {
@@ -191,9 +202,9 @@ describe('each write, as A', () => {
           op: 'create',
           list: newList(L, 'Клад', { money_mode: 'coin', player_note: 'p', gm_note: 'g' }),
           entries: [
-            entry(E2, 'hb_x1', 1, {
+            entry(E2, FROZEN_KEY, 1, {
               source: 'homebrew',
-              snapshot: { name: 'X', gold: 20 },
+              snapshot: FROZEN,
               quantity: 3,
               price_coins: 20,
               player_note: 'hp',
@@ -238,9 +249,9 @@ describe('each write, as A', () => {
       },
       {
         id: E2,
-        item_key: 'hb_x1',
+        item_key: FROZEN_KEY,
         source: 'homebrew',
-        snapshot: { name: 'X', gold: 20 },
+        snapshot: FROZEN,
         position: 1,
         quantity: 3,
         price_coins: 20,

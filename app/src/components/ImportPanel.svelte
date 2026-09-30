@@ -139,7 +139,8 @@
   }
 
   function read(text: string, other: string[], otherMore: number): void {
-    const p = parseBundle(text, (id) => app.index?.byId.has(id) ?? false);
+    /* A lists file holds catalog ids only: an own key never imports as an official entry. */
+    const p = parseBundle(text, (id) => app.catalog?.byId.has(id) ?? false);
     if (p.ok) {
       const rows = app.cloudLists?.importRows(p.lists) ?? [];
       view = { kind: 'preview', lists: p.lists, skipped: p.skipped, rows, other, otherMore };

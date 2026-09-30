@@ -166,6 +166,24 @@ query is read and removed before the app mounts, and the address is put
 back to the page the reader left (`#/account` when none was recorded), so
 the router never sees it (`STATE.md`, `dhloot.auth.return`).
 
+## Homebrew
+
+| Hash | Meaning |
+|---|---|
+| `#/homebrew` | «Мои предметы»: the signed-in author's own items, sources and sections |
+| `#/homebrew/new` | the editor of a new own item |
+| `#/homebrew/<key>` | the editor of one own item; `<key>` is `hb_` and 16 of `a-z2-7` |
+
+Exactly these three shapes; `#/homebrew/`, `#/homebrew/pistols` and any
+other key are unreadable addresses (`Fallback` below). The routes are read
+in every build, as `#/account` is: signed out they draw the sign-in prompt,
+and a build with no sign-in configured draws the not-found page and keeps
+the address. No tab reads current on them, and a pin may not hold them.
+
+An own item opens at `#/i/<key>` for its author only: any other reader,
+signed out included, gets «Предмет не найден». A key lives in one account,
+so an agent cannot build one (`FEATURES.md`, "Homebrew").
+
 ## Fallback
 
 An address that matches nothing readable - at boot or on navigation - is

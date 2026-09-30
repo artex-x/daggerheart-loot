@@ -301,7 +301,14 @@ describe('evaluate', () => {
       today: TODAY,
       rows,
       tables: [],
-      nearLimits: { owners_near: 0, owners_over: 0, lists_near: 0, lists_over: 0 },
+      nearLimits: {
+        owners_near: 0,
+        owners_over: 0,
+        lists_near: 0,
+        lists_over: 0,
+        items_near: 0,
+        items_over: 0
+      },
       points: 1
     });
     assert.match(
@@ -480,7 +487,14 @@ describe('keepAlive', () => {
       today: TODAY,
       rows,
       tables: [],
-      nearLimits: { owners_near: 0, owners_over: 0, lists_near: 0, lists_over: 0 },
+      nearLimits: {
+        owners_near: 0,
+        owners_over: 0,
+        lists_near: 0,
+        lists_over: 0,
+        items_near: 0,
+        items_over: 0
+      },
       points: 1
     });
     assert.ok(text.includes('- keep-alive: not reached (HTTP 401) - warn'), text);
@@ -525,7 +539,14 @@ describe('the summary and the exit code', () => {
         { name: 'list_entries', rows: 340, bytes: 163840 },
         { name: 'usage_snapshots', rows: 28, bytes: 49152 }
       ],
-      nearLimits: { owners_near: 1, owners_over: 0, lists_near: 2, lists_over: 1 },
+      nearLimits: {
+        owners_near: 1,
+        owners_over: 0,
+        lists_near: 2,
+        lists_over: 1,
+        items_near: 3,
+        items_over: 1
+      },
       points: 29
     });
     assert.ok(!text.includes('@'), text);
@@ -536,6 +557,24 @@ describe('the summary and the exit code', () => {
     assert.match(text, /- requests: last day: auth 1, rest 2, storage 3, realtime 4/);
     assert.match(text, /- keep-alive: reached - ok/);
     assert.match(text, /Snapshots behind the forecast: 29/);
+    assert.match(
+      text,
+      /- owners at 80 % or more of homebrew_items_per_owner: 3 \(above 100 %: 1\)/
+    );
+  });
+
+  it('readsMissingHomebrewItemsCountsOfAnOlderSnapshotAsZero', () => {
+    const text = renderSummary({
+      today: TODAY,
+      rows: evaluate(snapshot(), [], TODAY, {}),
+      tables: [],
+      nearLimits: { owners_near: 1, owners_over: 0, lists_near: 2, lists_over: 1 },
+      points: 1
+    });
+    assert.match(
+      text,
+      /- owners at 80 % or more of homebrew_items_per_owner: 0 \(above 100 %: 0\)/
+    );
   });
 
   it('exitCodeIsOneOnFailOrFatal', () => {

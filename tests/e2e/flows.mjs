@@ -8,7 +8,9 @@
  * closed inside the write buffer's quiet window, F11 an edit drawn live on an
  * open share page and on the owner's second page, F12 a purchase request sent
  * signed out, drawn on the owner's page and applied, F13 a lists file imported
- * through «Импорт из файла» and two lists deleted together. Each flow gets its own
+ * through «Импорт из файла» and two lists deleted together, F14 a homebrew source
+ * with a section, an item in them edited and deleted, F15 an own item in a list as a
+ * reference, its rename read through a players' link, and «Свой предмет». Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -20,7 +22,9 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import {
   createThrowaway,
+  deleteHomebrewOf,
   deleteListsOf,
+  homebrewOf,
   listsOf,
   mint,
   prefsOf,
@@ -847,4 +851,169 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteListsOf(admin, member.id);
   }
   console.log('e2e: F13 ok');
+
+  /* F14: the homebrew rows on the hosted project through the pages: a source with a
+     section on #/homebrew, a weapon in them on #/homebrew/new, its rename read back at
+     the next revision, and its delete. */
+  await deleteHomebrewOf(admin, member.id);
+  try {
+    const mine = () => homebrewOf(admin, member.id);
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/homebrew');
+      await waitText(page, 'F14', 'Мои предметы: 0');
+      await d.press('Добавить');
+      await page.type('#hb-new-source', 'F14');
+      await d.press('Создать');
+      await until('F14: the source did not reach the account', async () => {
+        return (await mine()).books.length === 1;
+      });
+      await d.press('Разделы');
+      await d.press('Добавить раздел');
+      const { books } = await mine();
+      const book = books[0];
+      await page.type('#hb-section-' + book.id, 'Клинки');
+      await d.press('Создать');
+      await until('F14: the section did not reach the account', async () => {
+        return ((await mine()).books[0]?.content.sections ?? []).length === 1;
+      });
+      const section = (await mine()).books[0].content.sections[0].key;
+
+      await d.open('#/homebrew/new');
+      await waitControl(page, 'F14', 'Сохранить');
+      const pick = async (group, text) => {
+        await page.evaluate(
+          (g, t) => {
+            const b = [...document.querySelectorAll('#' + g + ' button')].find(
+              (x) => x.textContent.trim() === t
+            );
+            if (!b) throw new Error('e2e F14: no «' + t + '» in ' + g);
+            b.click();
+          },
+          group,
+          text
+        );
+        await d.settle();
+      };
+      await pick('hb-kind', 'Снаряжение');
+      await d.choose('#hb-book', book.id);
+      await d.choose('#hb-section', section);
+      await page.type('#hb-name', 'Клинок F14');
+      await pick('hb-eqtier', '1');
+      await pick('hb-cls', 'Физическое');
+      await pick('hb-tr', 'Сила');
+      await pick('hb-rg', 'Вплотную');
+      await page.type('#hb-dmg', 'd8');
+      await pick('hb-dt', 'физ');
+      await pick('hb-bu', 'Одноручное');
+      await d.press('Сохранить');
+      await until('F14: the item did not reach the account', async () => {
+        const { items } = await mine();
+        return (
+          items.length === 1 &&
+          items[0].book_id === book.id &&
+          items[0].content.section === section &&
+          items[0].content.eq?.dmg === 'd8' &&
+          items[0].revision === 1
+        );
+      });
+
+      await page.evaluate(() => {
+        const name = document.getElementById('hb-name');
+        name.value = '';
+        name.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      await page.type('#hb-name', 'Клинок F14 II');
+      await d.press('Сохранить');
+      await until('F14: the rename did not reach the account at revision 2', async () => {
+        const { items } = await mine();
+        return items[0]?.content.ru === 'Клинок F14 II' && items[0].revision === 2;
+      });
+
+      await d.press('Удалить');
+      await until('F14: the item was not deleted', async () => {
+        return (await mine()).items.length === 0;
+      });
+    });
+  } finally {
+    await deleteHomebrewOf(admin, member.id);
+  }
+  console.log('e2e: F14 ok');
+
+  /* F15: homebrew in lists on the hosted project. An own item added from its page to a
+     new list is a reference; its rename reaches an anon read of a players' link through
+     the projection; «Свой предмет» on the list page makes one more item and its
+     reference. */
+  await deleteListsOf(admin, member.id);
+  await deleteHomebrewOf(admin, member.id);
+  try {
+    const entriesOf = async () => (await listsOf(admin, member.id))[0]?.list_entries ?? [];
+    const itemsOf = async () => (await homebrewOf(admin, member.id)).items;
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/homebrew/new');
+      await waitControl(page, 'F15', 'Сохранить');
+      await page.type('#hb-name', 'Фляга F15');
+      await d.press('Сохранить');
+      await until('F15: the item did not reach the account', async () => {
+        return (await itemsOf()).length === 1;
+      });
+      const [item] = await itemsOf();
+      const key = item.key;
+
+      await d.open('#/i/' + key);
+      await waitControl(page, 'F15', 'Добавить в список');
+      await d.press('Добавить в список');
+      await d.press('+ Новый список');
+      await d.type('Например: клад дракона', 'F15');
+      await d.press('Создать');
+      await until('F15: the entry is not a reference to the own item', async () => {
+        const [e] = await entriesOf();
+        return e?.item_key === key && e.source === 'homebrew' && e.snapshot === null;
+      });
+      const listId = (await listsOf(admin, member.id))[0].id;
+
+      await d.open('#/homebrew/' + key);
+      await waitControl(page, 'F15', 'Сохранить');
+      await page.evaluate(() => {
+        const name = document.getElementById('hb-name');
+        name.value = '';
+        name.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      await page.type('#hb-name', 'Фляга F15 II');
+      await d.press('Сохранить');
+      await until('F15: the rename did not reach the account', async () => {
+        return (await itemsOf())[0]?.content.ru === 'Фляга F15 II';
+      });
+
+      const port = portOf(env, await mint(env, admin, member.email));
+      const share = await port.shares.create(listId, 'player');
+      if (!share.ok) throw new Error('e2e F15: no players link made');
+      const anon = portOf(env, null);
+      await until('F15: an anon read of the link does not carry the new name', async () => {
+        const read = await anon.shares.read(share.token);
+        const e =
+          read.ok && read.shared ? read.shared.entries.find((x) => x.item_key === key) : null;
+        return e?.snapshot?.ru === 'Фляга F15 II';
+      });
+
+      await d.open('#/lists/' + listId);
+      await waitText(page, 'F15', 'Сохранено');
+      await d.press('Свой предмет');
+      await d.type('Название*', 'Свеча F15');
+      await d.press('Добавить в список');
+      await until(
+        'F15: the own item made on the list page, or its reference, is missing',
+        async () => {
+          const made = (await itemsOf()).find((i) => i.content.ru === 'Свеча F15');
+          if (!made) return false;
+          return (await entriesOf()).some(
+            (e) => e.item_key === made.key && e.source === 'homebrew' && e.snapshot === null
+          );
+        }
+      );
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+    await deleteHomebrewOf(admin, member.id);
+  }
+  console.log('e2e: F15 ok');
 }

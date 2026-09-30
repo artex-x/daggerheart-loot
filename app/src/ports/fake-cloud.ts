@@ -17,15 +17,36 @@ import {
   type SharedRow,
   type ShareRow
 } from '../lib/cloudLists.js';
+import {
+  bookProblems,
+  canonJson,
+  contentProblems,
+  isHomebrewKey,
+  recordOf,
+  SNAPSHOT_BYTES,
+  snapshotValid,
+  type BookRow,
+  type ItemRow
+} from '../lib/homebrew.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { RequestLine, ShortLine } from '../lib/requests.js';
-import { SEED, uuid, type Seed, type SeedList, type SeedUser } from './fake-cloud-seed.js';
+import {
+  SEED,
+  uuid,
+  type Seed,
+  type SeedBook,
+  type SeedItem,
+  type SeedList,
+  type SeedUser
+} from './fake-cloud-seed.js';
 import type {
   AuthError,
   AuthPort,
   AuthRedirect,
   CloudPort,
   EventsPort,
+  HomebrewRepository,
+  HomebrewSaved,
   Identity,
   ListOpResult,
   ListRepository,
@@ -50,8 +71,9 @@ export interface FakeCloudOptions {
   returned?: AuthRedirect;
   /** Starts with no network: every read fails and every write answers `network`. */
   offline?: boolean;
-  /** The count limits in place of the database defaults (50 lists, 100 entries). */
-  limits?: { lists?: number; entries?: number };
+  /** The count limits in place of the database defaults (50 lists, 100 entries, 20
+   *  homebrew sources, 100 homebrew items). */
+  limits?: { lists?: number; entries?: number; books?: number; items?: number };
   /** Whether a subscribe joins (default `true`); `false` keeps every feed on the poll. */
   live?: boolean;
 }
@@ -120,8 +142,8 @@ function seedLists(lists: readonly SeedList[], boot: number): Held[] {
     entries: l.entries.map((e) => ({
       id: e.id,
       item_key: e.itemKey,
-      source: 'official',
-      snapshot: null,
+      source: e.source ?? 'official',
+      snapshot: e.snapshot ? structuredClone(e.snapshot) : null,
       position: e.position,
       quantity: e.qty ?? 1,
       price_coins: e.gold ?? null,
@@ -130,6 +152,40 @@ function seedLists(lists: readonly SeedList[], boot: number): Held[] {
     }))
   }));
 }
+
+/** An account's homebrew as the fake holds it. */
+interface HeldHomebrew {
+  books: BookRow[];
+  items: ItemRow[];
+}
+
+function seedHomebrew(
+  h: { books: readonly SeedBook[]; items: readonly SeedItem[] },
+  boot: number
+): HeldHomebrew {
+  return {
+    books: h.books.map((b) => ({
+      id: b.id,
+      key: b.key,
+      content: structuredClone(b.content),
+      revision: 1,
+      created_at: iso(boot - b.createdAgoMs),
+      updated_at: iso(boot - b.editedAgoMs)
+    })),
+    items: h.items.map((i) => ({
+      id: i.id,
+      key: i.key,
+      book_id: i.bookId ?? null,
+      content: structuredClone(i.content),
+      revision: 1,
+      created_at: iso(boot - i.createdAgoMs),
+      updated_at: iso(boot - i.editedAgoMs)
+    }))
+  };
+}
+
+const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
+const utf8 = new TextEncoder();
 
 /** A moved list's text as `move_legacy_list` reads it. */
 interface Canonical {
@@ -284,6 +340,12 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   const lists = new Map<string, Held[]>(
     Object.entries(seed.lists).map(([k, l]): [string, Held[]] => [k, seedLists(l, boot)])
   );
+  const homebrewHeld = new Map<string, HeldHomebrew>(
+    Object.entries(seed.homebrew).map(([k, h]): [string, HeldHomebrew] => [
+      k,
+      seedHomebrew(h, boot)
+    ])
+  );
   let offline = options.offline ?? false;
   /* The purchase requests of every user's lists. */
   let purchases: HeldRequest[] = [];
@@ -293,6 +355,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   let lastStamp = 0;
   const maxLists = options.limits?.lists ?? 50;
   const maxEntries = options.limits?.entries ?? 100;
+  const maxBooks = options.limits?.books ?? 20;
+  const maxItems = options.limits?.items ?? 100;
   const listeners = new Set<(s: Session | null) => void>();
 
   const user = (): SeedUser | null => (current === null ? null : (users.get(current) ?? null));
@@ -344,6 +408,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       users.delete(current);
       rows.delete(current);
       lists.delete(current);
+      homebrewHeld.delete(current);
       current = null;
       notify();
       return Promise.resolve({ ok: true });
@@ -388,14 +453,31 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     h.row.updated_at = stamp();
     h.row.revision++;
   };
+  /* The checks and the trigger of `list_entries`: an official entry carries no snapshot;
+     a frozen copy's snapshot is valid, names the entry's key and fits the bound; a
+     reference names an item its list's owner (`owner`, a seed user) holds. */
+  const entryRefused = (e: EntryRow, owner: string | null): boolean => {
+    if (e.source === 'official') return e.snapshot !== null;
+    if (e.snapshot === null) {
+      const held = owner === null ? undefined : homebrewHeld.get(owner);
+      return !held?.items.some((i) => i.key === e.item_key);
+    }
+    const snap = e.snapshot as { id?: unknown };
+    return (
+      !snapshotValid(e.snapshot) ||
+      snap.id !== e.item_key ||
+      utf8.encode(JSON.stringify(e.snapshot)).length > SNAPSHOT_BYTES
+    );
+  };
   /* One list's new entries: an id already there is skipped; a record already
-     in the list or the entry limit refuses the whole call. */
+     in the list, an entry the checks refuse or the entry limit refuses the whole
+     call. Every caller writes the current user's own lists. */
   const insertEntries = (h: Held, entries: EntryRow[]): ListOpResult => {
     const fresh = entries.filter((e) => !h.entries.some((x) => x.id === e.id));
     if (!fresh.length) return OK;
     const keys = new Set(h.entries.map((e) => e.item_key));
     for (const e of fresh) {
-      if (keys.has(e.item_key)) return REFUSED;
+      if (keys.has(e.item_key) || entryRefused(e, current)) return REFUSED;
       keys.add(e.item_key);
     }
     if (h.entries.length + fresh.length > maxEntries) {
@@ -450,6 +532,20 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   const userIdOf = (h: Held): string | null => {
     for (const [k, all] of lists) if (all.includes(h)) return users.get(k)?.id ?? null;
     return null;
+  };
+  /* The seed user who owns the list. */
+  const ownerOf = (h: Held): string | null => {
+    for (const [k, all] of lists) if (all.includes(h)) return k;
+    return null;
+  };
+  /* An owner's item as `homebrew_snapshot_of` writes it; null for a key the owner
+     does not hold. */
+  const liveRecord = (owner: string | null, key: string): unknown => {
+    const held = owner === null ? undefined : homebrewHeld.get(owner);
+    const item = held?.items.find((i) => i.key === key);
+    if (!held || !item) return null;
+    const book = held.books.find((b) => b.id === item.book_id);
+    return recordOf(item.key, item.content, book ? { ...book.content, key: book.key } : null);
   };
   const activeShares = (listId: string): HeldShare[] =>
     shareRows.filter((sh) => sh.listId === listId && sh.revoked_at === null);
@@ -757,6 +853,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       },
       entries: [...h.entries].sort(entryOrder).map((e) => {
         const { gm_note, ...rest } = e;
+        if (e.source === 'homebrew' && e.snapshot === null) {
+          rest.snapshot = liveRecord(ownerOf(h), e.item_key);
+        }
         return gm ? { ...rest, gm_note } : rest;
       })
     };
@@ -817,6 +916,23 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         if (anyList(id)) return REFUSED;
         if (mine.length >= maxLists) return limited('lists_per_owner', maxLists);
         if (p.entries.length > maxEntries) return limited('entries_per_list', maxEntries);
+        /* Decided from the held entry, not from the projection, which fills a
+           reference's snapshot: a reference stays one only for the list's owner; a
+           frozen entry stays frozen for everyone. */
+        const sh = shareRows.find((x) => x.token === token && x.revoked_at === null);
+        const source = sh ? anyList(sh.listId) : undefined;
+        const ownsSource = source !== undefined && ownerOf(source) === current;
+        const copied: EntryRow[] = p.entries.map((e) => {
+          const held = source?.entries.find((x) => x.id === e.id);
+          const reference = held?.source === 'homebrew' && held.snapshot === null;
+          return {
+            ...e,
+            id: uuid(made++),
+            snapshot: reference && ownsSource ? null : (held?.snapshot ?? e.snapshot),
+            gm_note: e.gm_note ?? ''
+          };
+        });
+        if (copied.some((e) => entryRefused(e, current))) return REFUSED;
         const was = before();
         const at = stamp();
         mine.push({
@@ -831,7 +947,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
             revision: 1,
             legacy_fingerprint: null
           },
-          entries: p.entries.map((e) => ({ ...e, id: uuid(made++), gm_note: e.gm_note ?? '' }))
+          entries: copied
         });
         announce(was, TAB);
         return OK;
@@ -963,6 +1079,175 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     }
   };
 
+  /* The author's homebrew, with the database's rules
+     (supabase/migrations/20260930130000_homebrew.sql). `newKey()` counts from
+     `hb_newaaaaaaaaaaaaa`, so a golden's key is the same on every run. */
+  let keys = 0;
+  const ownHomebrew = (): HeldHomebrew | null => {
+    if (offline || current === null) return null;
+    let mine = homebrewHeld.get(current);
+    if (!mine) homebrewHeld.set(current, (mine = { books: [], items: [] }));
+    return mine;
+  };
+  const homebrewSaid = (): void => {
+    const id = user()?.id;
+    if (id) send('owner:' + id, 'homebrew', { by: TAB });
+  };
+  /* Every list of the current user that holds a reference to one of `itemKeys`, touched
+     once, with its list messages. */
+  const touchReferences = (itemKeys: readonly string[]): void => {
+    const was = before();
+    for (const h of (current === null ? undefined : lists.get(current)) ?? []) {
+      const holds = h.entries.some(
+        (e) => e.source === 'homebrew' && e.snapshot === null && itemKeys.includes(e.item_key)
+      );
+      if (holds) touch(h);
+    }
+    announce(was, TAB);
+  };
+  const anyHolds = (pick: (h: HeldHomebrew) => { id: string }[], id: string): boolean =>
+    [...homebrewHeld.values()].some((h) => pick(h).some((r) => r.id === id));
+  const homebrewRepo: HomebrewRepository = {
+    newId: () => uuid(made++),
+    newKey() {
+      let n = keys++;
+      let tail = '';
+      do {
+        tail = (BASE32[n % 32] as string) + tail;
+        n = Math.floor(n / 32);
+      } while (n > 0);
+      return 'hb_new' + tail.padStart(13, 'a');
+    },
+    load() {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve({ ok: false });
+      return Promise.resolve({
+        ok: true,
+        books: structuredClone(mine.books),
+        items: structuredClone(mine.items),
+        itemLimit: maxItems
+      });
+    },
+    createBook(row) {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      /* An id any account holds inserts nothing and answers ok, as the adapter's
+         upsert with ignoreDuplicates does. */
+      if (anyHolds((h) => h.books, row.id)) return Promise.resolve(OK);
+      if (!isHomebrewKey(row.key) || mine.books.some((b) => b.key === row.key)) {
+        return Promise.resolve(REFUSED);
+      }
+      if (bookProblems(row.content).length) return Promise.resolve(REFUSED);
+      if (mine.books.length >= maxBooks) {
+        return Promise.resolve(limited('homebrew_books_per_owner', maxBooks));
+      }
+      const at = stamp();
+      mine.books.push({ ...structuredClone(row), revision: 1, created_at: at, updated_at: at });
+      homebrewSaid();
+      return Promise.resolve(OK);
+    },
+    updateBook(id, content, revision): Promise<HomebrewSaved> {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      const b = mine.books.find((x) => x.id === id);
+      if (!b) return Promise.resolve({ ok: false, error: 'gone' });
+      if (revision !== null && revision !== b.revision) {
+        return Promise.resolve(
+          canonJson(b.content) === canonJson(content)
+            ? { ok: true, revision: b.revision }
+            : { ok: false, error: 'conflict' }
+        );
+      }
+      if (bookProblems(content).length) return Promise.resolve(REFUSED);
+      b.content = structuredClone(content);
+      b.revision++;
+      b.updated_at = stamp();
+      touchReferences(mine.items.filter((i) => i.book_id === id).map((i) => i.key));
+      homebrewSaid();
+      return Promise.resolve({ ok: true, revision: b.revision });
+    },
+    removeBook(id) {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      const at = mine.books.findIndex((x) => x.id === id);
+      if (at < 0) return Promise.resolve(OK);
+      const moved = mine.items.filter((i) => i.book_id === id);
+      for (const i of moved) {
+        i.book_id = null;
+        i.revision++;
+        i.updated_at = stamp();
+      }
+      touchReferences(moved.map((i) => i.key));
+      mine.books.splice(at, 1);
+      homebrewSaid();
+      return Promise.resolve(OK);
+    },
+    createItem(row) {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      if (anyHolds((h) => h.items, row.id)) return Promise.resolve(OK);
+      if (!isHomebrewKey(row.key) || mine.items.some((i) => i.key === row.key)) {
+        return Promise.resolve(REFUSED);
+      }
+      if (contentProblems(row.content).length) return Promise.resolve(REFUSED);
+      if (row.book_id !== null && !mine.books.some((b) => b.id === row.book_id)) {
+        return Promise.resolve(REFUSED);
+      }
+      if (mine.items.length >= maxItems) {
+        return Promise.resolve(limited('homebrew_items_per_owner', maxItems));
+      }
+      const at = stamp();
+      mine.items.push({ ...structuredClone(row), revision: 1, created_at: at, updated_at: at });
+      homebrewSaid();
+      return Promise.resolve(OK);
+    },
+    updateItem(id, patch, revision): Promise<HomebrewSaved> {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      const i = mine.items.find((x) => x.id === id);
+      if (!i) return Promise.resolve({ ok: false, error: 'gone' });
+      if (revision !== null && revision !== i.revision) {
+        const same =
+          canonJson({ content: i.content, book_id: i.book_id }) ===
+          canonJson({ content: patch.content, book_id: patch.book_id });
+        return Promise.resolve(
+          same ? { ok: true, revision: i.revision } : { ok: false, error: 'conflict' }
+        );
+      }
+      if (contentProblems(patch.content).length) return Promise.resolve(REFUSED);
+      if (patch.book_id !== null && !mine.books.some((b) => b.id === patch.book_id)) {
+        return Promise.resolve(REFUSED);
+      }
+      i.content = structuredClone(patch.content);
+      i.book_id = patch.book_id;
+      i.revision++;
+      i.updated_at = stamp();
+      touchReferences([i.key]);
+      homebrewSaid();
+      return Promise.resolve({ ok: true, revision: i.revision });
+    },
+    removeItem(id) {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      const at = mine.items.findIndex((x) => x.id === id);
+      const i = mine.items[at];
+      if (!i) return Promise.resolve(OK);
+      const was = before();
+      for (const h of (current === null ? undefined : lists.get(current)) ?? []) {
+        const kept = h.entries.filter(
+          (e) => !(e.source === 'homebrew' && e.snapshot === null && e.item_key === i.key)
+        );
+        if (kept.length === h.entries.length) continue;
+        h.entries = kept;
+        touch(h);
+      }
+      announce(was, TAB);
+      mine.items.splice(at, 1);
+      homebrewSaid();
+      return Promise.resolve(OK);
+    }
+  };
+
   return {
     auth,
     prefs,
@@ -970,6 +1255,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     shares: shareRepo,
     events,
     requests: requestRepo,
+    homebrew: homebrewRepo,
     setLive(on) {
       live = on;
       if (on) return;

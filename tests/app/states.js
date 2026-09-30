@@ -3460,7 +3460,7 @@ async function readOnlyAfterTheCutoff() {
 }
 
 /** 50. The signed-in header control's menu under real clicks and keys: its
- *  three items, Escape, «Мои списки», «Выйти» from an account list, and the
+ *  four items, Escape, «Мои списки», «Мои предметы», «Выйти» from an account list, and the
  *  open menu and `#/account` at 360 (docs/specs/FEATURES.md, "Chrome"). */
 async function accountMenu() {
   const at = '50 (the account menu): ';
@@ -3475,8 +3475,8 @@ async function accountMenu() {
   await d.press(CONTROL);
   const items = await menuItems(page);
   ok(
-    items.join('|') === 'Аккаунт|Мои списки|Выйти',
-    at + 'the menu does not hold the three items in order - ' + JSON.stringify(items)
+    items.join('|') === 'Аккаунт|Мои списки|Мои предметы|Выйти',
+    at + 'the menu does not hold the four items in order - ' + JSON.stringify(items)
   );
   ok(
     await waitIn(
@@ -3503,6 +3503,15 @@ async function accountMenu() {
       () => location.hash === '#/lists' && !document.querySelector('[role="menu"]')
     ),
     at + '«Мои списки» did not land on #/lists with the menu closed - ' + (await d.hash())
+  );
+  await d.press(CONTROL);
+  await d.press('Мои предметы');
+  ok(
+    await waitIn(
+      page,
+      () => location.hash === '#/homebrew' && !document.querySelector('[role="menu"]')
+    ),
+    at + '«Мои предметы» did not land on #/homebrew with the menu closed - ' + (await d.hash())
   );
 
   await d.open(SHOP, { as: 'gm1' });
@@ -3549,7 +3558,7 @@ async function accountMenu() {
       JSON.stringify(box)
   );
   ok(
-    box.heights.length === 3 && box.heights.every((h) => h >= 44),
+    box.heights.length === 4 && box.heights.every((h) => h >= 44),
     at + '360: a menu item is shorter than 44px - ' + JSON.stringify(box.heights)
   );
   await narrow.d.open('#/account', { as: 'gm1' });

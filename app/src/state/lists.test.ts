@@ -192,6 +192,15 @@ describe('adding and removing ids', () => {
     expect(store.get('a')?.ids).toEqual(['w1', 'w2']);
   });
 
+  it('never adds a homebrew key, by an add or a create', () => {
+    const store = new ListStore(at(), say, t);
+    const l = { id: 'a', name: 'Клад', ids: [], created: 1 };
+    store.lists = [l];
+    expect(store.add('a', ['hb_emberaxeaaaaaaaa', 'w1'], () => true)).toEqual(['w1']);
+    expect(store.get('a')?.ids).toEqual(['w1']);
+    expect(store.create('Новый', { ids: ['hb_emberaxeaaaaaaaa', 'w2'] }).ids).toEqual(['w2']);
+  });
+
   it('removes an id', () => {
     const store = new ListStore(at(), say, t);
     const l = { id: 'a', name: 'Клад', ids: ['w1', 'w2'], created: 1 };

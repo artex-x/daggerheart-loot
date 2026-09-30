@@ -134,3 +134,15 @@ export function readRequestMessage(
   if (by !== null && typeof by !== 'string') return null;
   return { list, by };
 }
+
+/** Returns an owner topic's homebrew message (an item or a source written), or null for any
+ *  other shape; a missing `by` reads as null, other keys are ignored. */
+export function readHomebrewMessage(
+  event: string,
+  payload: unknown
+): { by: string | null } | null {
+  if (event !== 'homebrew' || !isRecord(payload)) return null;
+  const by = payload['by'] ?? null;
+  if (by !== null && typeof by !== 'string') return null;
+  return { by };
+}

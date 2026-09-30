@@ -8,9 +8,16 @@
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
  * cases for the port member it adds: A-F the account, G the lists, H the
  * share links, I the move of a browser list, J the live topics, K the purchase
- * requests, L the import of a lists file. */
+ * requests, L the import of a lists file, M the homebrew rows. */
 
 import type { EntryRow, ImportRow, ListRow } from '../lib/cloudLists.js';
+import {
+  canonJson,
+  HOMEBREW_KEY,
+  recordOf,
+  type BookContent,
+  type HomebrewContent
+} from '../lib/homebrew.js';
 import { readOwnerMessage, readRequestMessage, readShareMessage } from '../lib/live.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { CloudPort, ListWrites, LiveStatus, Session } from './types.js';
@@ -780,6 +787,199 @@ async function importCases(
   await removeAll(port, assert, 'after the notes-heavy import');
 }
 
+/* M. A source and an item written, read back, updated with and without the revision,
+   referred to and frozen in a list, projected through a share, and removed, on the doomed
+   user; the account's deletion takes whatever is left. */
+async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
+  const { homebrew, lists, shares } = port;
+  const first = await homebrew.load();
+  assert(
+    first.ok && !first.books.length && !first.items.length && first.itemLimit === 100,
+    'homebrew: a new account does not read no rows and the limit 100: ' + JSON.stringify(first)
+  );
+  const [k1, k2] = [homebrew.newKey(), homebrew.newKey()];
+  assert(
+    HOMEBREW_KEY.test(k1) && HOMEBREW_KEY.test(k2) && k1 !== k2,
+    'homebrew: newKey() does not make two different keys of the key shape'
+  );
+
+  const bookId = homebrew.newId();
+  const section = homebrew.newKey();
+  const book: BookContent = {
+    ru: 'Мастерская Ольхи',
+    en: 'Alder Workshop',
+    sections: [{ key: section, ru: 'Холодное оружие', en: 'Blades' }]
+  };
+  const bookRow = { id: bookId, key: homebrew.newKey(), content: book };
+  assert((await homebrew.createBook(bookRow)).ok, 'homebrew: a source was refused');
+  assert(
+    (await homebrew.createBook(bookRow)).ok,
+    'homebrew: a second create of a source was refused'
+  );
+
+  const itemId = homebrew.newId();
+  const key = homebrew.newKey();
+  const axe: HomebrewContent = {
+    kind: 'equip',
+    ru: 'Топор Тлеющих Углей',
+    en: 'Ember Axe',
+    section,
+    eq: {
+      t: 'weapon',
+      tier: 2,
+      cls: 'mag',
+      tr: 'spellcast',
+      rg: 'melee',
+      dmg: 'd10+2',
+      dt: 'mag',
+      bu: 2
+    }
+  };
+  const itemRow = { id: itemId, key, book_id: bookId, content: axe };
+  assert((await homebrew.createItem(itemRow)).ok, 'homebrew: an item was refused');
+  const twice = await homebrew.createItem({ ...itemRow, id: homebrew.newId() });
+  assert(
+    !twice.ok && twice.error === 'refused',
+    'homebrew: a repeated key answered ' + JSON.stringify(twice)
+  );
+  const weapon = await homebrew.createItem({
+    id: homebrew.newId(),
+    key: homebrew.newKey(),
+    book_id: null,
+    content: { kind: 'weapon', ru: 'Клинок' } as unknown as HomebrewContent
+  });
+  assert(
+    !weapon.ok && weapon.error === 'refused',
+    'homebrew: the kind weapon answered ' + JSON.stringify(weapon)
+  );
+
+  const read = await homebrew.load();
+  const gotBook = read.ok ? read.books : [];
+  const gotItem = read.ok ? read.items : [];
+  assert(
+    gotBook.length === 1 &&
+      gotBook[0]?.revision === 1 &&
+      canonJson({ id: gotBook[0].id, key: gotBook[0].key, content: gotBook[0].content }) ===
+        canonJson(bookRow),
+    'homebrew: the source does not read back as created'
+  );
+  assert(
+    gotItem.length === 1 &&
+      gotItem[0]?.revision === 1 &&
+      canonJson({
+        id: gotItem[0].id,
+        key: gotItem[0].key,
+        book_id: gotItem[0].book_id,
+        content: gotItem[0].content
+      }) === canonJson(itemRow),
+    'homebrew: the item does not read back as created'
+  );
+
+  const edited: HomebrewContent = { ...axe, rud: 'Лезвие тлеет.' };
+  const patch = { content: edited, book_id: bookId };
+  const saved = await homebrew.updateItem(itemId, patch, 1);
+  assert(
+    canonJson(saved) === canonJson({ ok: true, revision: 2 }),
+    'homebrew: an update answered ' + JSON.stringify(saved)
+  );
+  const again = await homebrew.updateItem(itemId, patch, 1);
+  assert(
+    canonJson(again) === canonJson({ ok: true, revision: 2 }),
+    'homebrew: the same update sent again answered ' + JSON.stringify(again)
+  );
+  const stale = await homebrew.updateItem(
+    itemId,
+    { ...patch, content: { ...edited, rud: 'Другое.' } },
+    1
+  );
+  assert(
+    !stale.ok && stale.error === 'conflict',
+    'homebrew: a stale update answered ' + JSON.stringify(stale)
+  );
+  const forced = await homebrew.updateItem(itemId, patch, null);
+  assert(
+    canonJson(forced) === canonJson({ ok: true, revision: 3 }),
+    'homebrew: a forced update answered ' + JSON.stringify(forced)
+  );
+
+  const potionKey = homebrew.newKey();
+  const frozen = recordOf(
+    potionKey,
+    { kind: 'consumable', ru: 'Настой кузнеца', rud: 'Выпейте перед работой у горна.' },
+    null
+  );
+  const listId = lists.newId();
+  const made = await lists.apply([
+    {
+      op: 'create',
+      list: { id: listId, name: 'Хоумбрю', money_mode: 'bag', player_note: '', gm_note: '' },
+      entries: [
+        entryOf(lists.newId(), key, 0, { source: 'homebrew' }),
+        entryOf(lists.newId(), potionKey, 1, { source: 'homebrew', snapshot: frozen })
+      ]
+    },
+    {
+      op: 'add',
+      list_id: listId,
+      entries: [entryOf(lists.newId(), homebrew.newKey(), 2, { source: 'homebrew' })]
+    }
+  ]);
+  assert(
+    answered(made) === 'ok,refused',
+    'homebrew: the list writes answered ' + answered(made)
+  );
+
+  const share = await shares.create(listId, 'player');
+  assert(share.ok, 'homebrew: the share was not made');
+  if (!share.ok) return;
+  const projected = async (): Promise<unknown[]> => {
+    const r = await shares.read(share.token);
+    return r.ok && r.shared ? r.shared.entries.map((e) => e.snapshot) : [];
+  };
+  const withBook = { ...book, key: bookRow.key };
+  let snaps = await projected();
+  assert(
+    snaps.length === 2 &&
+      canonJson(snaps[0]) === canonJson(recordOf(key, edited, withBook)) &&
+      canonJson(snaps[1]) === canonJson(frozen),
+    'homebrew: the share does not project the live item and the frozen copy: ' +
+      canonJson(snaps)
+  );
+
+  const renamed: BookContent = { ...book, ru: 'Мастерская Ольхи II' };
+  const bookSaved = await homebrew.updateBook(bookId, renamed, 1);
+  assert(
+    canonJson(bookSaved) === canonJson({ ok: true, revision: 2 }),
+    'homebrew: a source update answered ' + JSON.stringify(bookSaved)
+  );
+  snaps = await projected();
+  const projectedBook = (snaps[0] as { book?: { ru?: string } } | null)?.book;
+  assert(
+    projectedBook?.ru === 'Мастерская Ольхи II',
+    'homebrew: the share does not show the renamed source'
+  );
+
+  assert((await homebrew.removeItem(itemId)).ok, 'homebrew: the item removal was refused');
+  const left = await theList(port, listId, assert, 'after the item removal');
+  assert(
+    left?.list_entries.map((e) => e.item_key).join(',') === potionKey,
+    'homebrew: the item removal did not leave only the frozen entry'
+  );
+  const gone = await homebrew.updateItem(itemId, patch, null);
+  assert(
+    !gone.ok && gone.error === 'gone',
+    'homebrew: an update of a removed item answered ' + JSON.stringify(gone)
+  );
+
+  assert((await homebrew.removeBook(bookId)).ok, 'homebrew: the source removal was refused');
+  const end = await homebrew.load();
+  assert(end.ok && !end.books.length, 'homebrew: the removed source is still read');
+  assert(
+    answered(await lists.apply([{ op: 'remove', id: listId }])) === 'ok',
+    'homebrew: the list removal was refused'
+  );
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -821,6 +1021,20 @@ export async function runCloudContract(
   assert(
     !outMove.ok && outMove.error === 'network',
     'move: signed out, move() does not answer network'
+  );
+  assert(
+    !(await signedOut.homebrew.load()).ok,
+    'homebrew: signed out, load() is not { ok: false }'
+  );
+  const outItem = await signedOut.homebrew.createItem({
+    id: signedOut.homebrew.newId(),
+    key: signedOut.homebrew.newKey(),
+    book_id: null,
+    content: { kind: 'item', ru: 'Кольцо' }
+  });
+  assert(
+    !outItem.ok && outItem.error === 'network',
+    'homebrew: signed out, createItem() does not answer network'
   );
 
   /* B. a port made as the member is signed in as the member */
@@ -904,6 +1118,10 @@ export async function runCloudContract(
   /* L. lists imported from a file, all or nothing, on the doomed user; the account's
      deletion takes the rows with it. */
   await importCases(doomedPort, assert, log);
+
+  /* M. the homebrew rows, on the doomed user; the account's deletion takes the rows with
+     it. */
+  await homebrewCases(doomedPort, assert);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

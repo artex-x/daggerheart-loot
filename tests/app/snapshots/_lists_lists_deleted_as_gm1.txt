@@ -38,9 +38,9 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
     checkbox "Выбрать: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 9 позиций, изменён 3 дня назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+    link "Лавка кузнеца, 10 позиций, изменён 3 дня назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
-      StaticText "9 позиций · изменён 3 дня назад"
+      StaticText "10 позиций · изменён 3 дня назад"
     button "Удалить"
   contentinfo ""
     navigation "Страницы сайта"
@@ -67,7 +67,7 @@ daggerheart.com
 К содержимому
 Как это работает
 Конфиденциальность
-Лавка кузнеца, 9 позиций, изменён 3 дня назад
+Лавка кузнеца, 10 позиций, изменён 3 дня назад
 ЛутDaggerheart
 Новый список
 Обычные правила
@@ -116,9 +116,9 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
     StaticText "SELECT ALL"
     generic ""
     checkbox "Select: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 9 items, edited 3 days ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+    link "Лавка кузнеца, 10 items, edited 3 days ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
-      StaticText "9 items · edited 3 days ago"
+      StaticText "10 items · edited 3 days ago"
     button "Delete"
   contentinfo ""
     navigation "Site pages"
@@ -156,5 +156,5 @@ Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com
-Лавка кузнеца, 9 items, edited 3 days ago
+Лавка кузнеца, 10 items, edited 3 days ago
 ЛутDaggerheart

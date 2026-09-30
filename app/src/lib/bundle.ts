@@ -13,6 +13,7 @@ import {
   type EntryRow,
   type ImportRow
 } from './cloudLists.js';
+import { isHomebrewKey } from './homebrew.js';
 import { QTY_MAX, type ListEntryMeta } from './listLink.js';
 import { MONEY_DEFAULT, MONEY_MODES, type MoneyMode } from './money.js';
 
@@ -84,6 +85,22 @@ export function toBundle(
       entries: l.ids.map((id) => entryOf(id, l.meta?.[id] ?? {}, nameOf(id)))
     }))
   };
+}
+
+/** Returns the lists with their homebrew entries left out, and how many were: a lists file
+ *  carries catalog ids only (docs/specs/CONTRACTS.md section 4). A list with none is the
+ *  same object. */
+export function officialOnly(lists: readonly CloudList[]): {
+  lists: CloudList[];
+  skipped: number;
+} {
+  let skipped = 0;
+  const out = lists.map((l) => {
+    const ids = l.ids.filter((k) => !isHomebrewKey(k));
+    skipped += l.ids.length - ids.length;
+    return ids.length === l.ids.length ? l : { ...l, ids };
+  });
+  return { lists: out, skipped };
 }
 
 function entryOf(id: string, m: ListEntryMeta, name: string | undefined): BundleEntry {

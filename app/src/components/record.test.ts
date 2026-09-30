@@ -15,6 +15,10 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import RecordModal from './RecordModal.svelte';
+import { fakeCloud } from '../ports/fake-cloud.js';
+import { SEED } from '../ports/fake-cloud-seed.js';
+import { AppState } from '../state/app.svelte.js';
 import {
   fakeClipboard,
   fakeData,
@@ -1133,5 +1137,116 @@ describe('accessibility', () => {
   it('has no axe violations when the link does not resolve', async () => {
     const { container } = render(App, { env: at('no-such-id') });
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('an own homebrew item', () => {
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const own = (over: Partial<Env> = {}, as: 'gm1' | 'gm2' | null = 'gm1'): Env =>
+    at(AXE, {
+      cloud: as === null ? fakeCloud(SEED) : fakeCloud(SEED, as),
+      storage: memoryStorage(),
+      ...over
+    });
+
+  it('draws the path, «Изменить» and no link action', async () => {
+    const { container } = render(App, { env: own() });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Топор Тлеющих Углей' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2/)
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Показать в таблице')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Изменить' })).toHaveAttribute(
+      'href',
+      '#/homebrew/' + AXE
+    );
+    expect(screen.queryByRole('button', { name: 'Скопировать ссылку' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Скопировать изображение' })).toBeNull();
+    expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('sends no address, and with no share sheet copies the text, not a dead link', async () => {
+    const share = fakeShare();
+    render(App, { env: own({ share }) });
+    await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
+    expect(share.last.url).toBeUndefined();
+    expect(share.last.text).toContain('Топор Тлеющих Углей');
+    cleanup();
+    const clip = fakeClipboard();
+    render(App, { env: own({ share: fakeShare({ available: false }), clipboard: clip }) });
+    await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
+    expect(clip.last.text).not.toContain('.html');
+    expect(clip.last.rich?.plain).toContain('Лезвие тлеет');
+    expect(clip.last.rich?.plain).not.toContain('.html');
+  });
+
+  it('draws «Загружаем...» until the session and the items are known', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let answer: (() => void) | null = null;
+    const session = cloud.auth.session.bind(cloud.auth);
+    cloud.auth.session = () =>
+      new Promise((resolve) => {
+        answer = () => {
+          void session().then(resolve);
+        };
+      });
+    cloud.auth.onChange = () => () => {};
+    render(App, { env: at(AXE, { cloud, storage: memoryStorage() }) });
+    expect(screen.getByText('Загружаем...')).toBeInTheDocument();
+    expect(screen.queryByText('Предмет не найден')).toBeNull();
+    (answer as unknown as () => void)();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Топор Тлеющих Углей' })
+    ).toBeInTheDocument();
+  });
+
+  it('draws a failed read of the own items, not «Предмет не найден», and reads again', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    render(App, { env: at(AXE, { cloud, storage: memoryStorage() }) });
+    expect(
+      await screen.findByText('Не получилось загрузить ваши предметы.')
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Предмет не найден')).toBeNull();
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Топор Тлеющих Углей' })
+    ).toBeInTheDocument();
+  });
+
+  it('reads «Предмет не найден» for another account and signed out', async () => {
+    render(App, { env: own({}, 'gm2') });
+    await flush();
+    expect(await screen.findByText('Предмет не найден')).toBeInTheDocument();
+    cleanup();
+    render(App, { env: own({}, null) });
+    expect(await screen.findByText('Предмет не найден')).toBeInTheDocument();
+    cleanup();
+    render(App, { env: at(AXE) });
+    expect(screen.getByText('Предмет не найден')).toBeInTheDocument();
+  });
+
+  it('offers «Изменить» in the record modal, and not on a catalog record', async () => {
+    const app = new AppState(own());
+    app.start();
+    await flush();
+    const index = app.index;
+    const axe = index?.byId.get(AXE);
+    if (!index || !axe) throw new Error('The seed has no axe. Restore the seed.');
+    render(RecordModal, { app, index, it: axe, onclose: () => {} });
+    expect(screen.getByRole('link', { name: 'Изменить' })).toHaveAttribute(
+      'href',
+      '#/homebrew/' + AXE
+    );
+    cleanup();
+    const ci1 = index.byId.get('ci1');
+    if (!ci1) throw new Error('The test data has no ci1.');
+    render(RecordModal, { app, index, it: ci1, onclose: () => {} });
+    expect(screen.queryByRole('link', { name: 'Изменить' })).toBeNull();
+    app.stop();
   });
 });

@@ -26,10 +26,10 @@ which brings the configured bundle back under its old 170 kB limit.
   functions-js (1.5 kB), which the app does not call; realtime-js is called
   since the Realtime release and stays. The account chunk is 55.7 kB and
   the configured build 184.5 kB (measured 2026-09-27), so every signed-in
-  reader downloads them after first paint. The budget is 210 kB (decision
-  "The configured bundle budget is 210 kB; the unconfigured stays 150 kB";
-  the configured build measured 203.0 kB on 2026-09-30), so it does not
-  force this fix.
+  reader downloads them after first paint. The budget is 226 kB (decision
+  "The bundle budget steps up per batch to 250 kB configured and 190
+  unconfigured"; the configured build measured 220.8 kB on 2026-09-30 with
+  the homebrew pages), so it does not force this fix.
 - **Why deferred**: the fix replaces `createClient` with `AuthClient` from
   `@supabase/auth-js`, `PostgrestClient` from `@supabase/postgrest-js` and
   `RealtimeClient` from `@supabase/realtime-js`, and changes who may import
@@ -138,6 +138,79 @@ list. No release plan owns it; the owner decides which one takes it.
   `shares.revoke` for its share, and confirm that a polite status region
   (or the focused heading) reads «Список больше не доступен» once. Cover it
   in `sharedListPage.test.ts`.
+
+## Homebrew files (`persist-7d-homebrew-files`)
+
+Owns: the homebrew file formats, their import, and the account's data zip.
+
+### D69 - the data zip and the privacy merge steps leave out homebrew
+
+- **Where**: `app/src/state/app.svelte.ts` (`exportData`, `#bundle`);
+  `app/src/lib/dict.ts` (`yourDataHint`); `pages/src/privacy.html` and
+  `pages/src/en/privacy.html` (the paragraph "Если Google или Discord уже
+  занят" and its English twin).
+- **What**: «Скачать мои данные (ZIP)» carries no homebrew item or source
+  and, from the lists release of R7 on, no homebrew list entry, while the
+  hint says the archive holds everything in the account. The privacy
+  pages' merge steps (export, delete the account, load the file into the
+  other one) therefore lose the homebrew for good.
+- **Why deferred**: the owner released R7 first (2026-09-30, "release
+  fast"); the homebrew file formats and their import are R7d's.
+- **How to verify the fix**: the zip of an account with a source, an item
+  and a list holding a reference and a frozen copy loads back into a new
+  account with all of them.
+
+### D72 - a source or section rename writes only the language on screen
+
+- **Where**: the source and section rename in `app/src/state/homebrew.svelte.ts` and
+  `app/src/components/HomebrewSources.svelte`; items avoid it with `editLang`.
+- **What**: a source named only in English and renamed in the Russian
+  interface keeps its old English name, so the English interface shows the
+  old name.
+- **Why deferred**: R7 draws one language per source name; the second
+  language is filled only by a file import (R7d).
+- **How to verify the fix**: rename an English-only source in the Russian
+  interface; the English interface shows the new name too, or the rename
+  asks which language it changes.
+
+### D73 - the database and the library differ on a name of only U+00A0
+
+- **Where**: the name checks in `supabase/migrations/20260930130000_homebrew.sql`
+  (SQL `\S`) and `app/src/lib/homebrew.ts` (`/\S/u`).
+- **What**: a name of only U+00A0, U+2007, U+202F or U+FEFF passes the
+  database and fails the library. Only a direct API write reaches the gap.
+- **Why deferred**: the client is the stricter side; a migration after the
+  test push needs its own review, and a file import (R7d) makes the gap
+  reachable.
+- **How to verify the fix**: one explicit space class on both sides and one
+  fixture case that holds such a name.
+
+## Item links (`persist-9-item-share`)
+
+Owns: `#/h/<token>`, the add and the clone from it, and print routes for
+cloud lists.
+
+### D70 - a homebrew entry of another account's list does not print from its address
+
+- **Where**: `app/src/state/app.svelte.ts` (`knows`, `recordFor`,
+  `frozenCopy`); `app/src/components/PrintPage.svelte`.
+- **What**: a reader who ticks such an entry on `#/s/<token>` and presses
+  «Печать», or opens its `#/print/` address later, gets no card for it.
+- **Why deferred**: the address holds only keys, and the share page closes
+  the list's projection when it is left; R9 owns print routes for cloud
+  lists.
+- **How to verify the fix**: on `#/s/player-token-1` signed out, tick the
+  axe and press «Печать»; the sheet holds its card, after a reload too.
+
+### D71 - the privacy pages say a share link to a homebrew item works
+
+- **Where**: `pages/src/privacy.html` and `pages/src/en/privacy.html`.
+- **What**: both pages say a share link to a homebrew item works as a
+  list's. Item links ship only in R9, so the text promises a link that does
+  not exist.
+- **Why deferred**: the text describes the R9 behaviour; R9 corrects it.
+- **How to verify the fix**: the pages name the item link only after
+  `#/h/<token>` ships, and match `FEATURES.md`.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 

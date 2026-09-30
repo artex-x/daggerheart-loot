@@ -36,7 +36,9 @@
   import MoveStatus from './MoveStatus.svelte';
   import SharedListPage from './SharedListPage.svelte';
   import StorageNotice from './StorageNotice.svelte';
-  import { isCloudId } from '../lib/cloudLists.js';
+  import QuickItem from './QuickItem.svelte';
+  import { frozenOf, isCloudId } from '../lib/cloudLists.js';
+  import { withRecords } from '../lib/homebrew.js';
   import type { Dict } from '../lib/dict.js';
   import { moneyHelpFor } from '../lib/help.js';
   import { printHash, sectionHash, sharedListHash } from '../lib/hash.js';
@@ -74,14 +76,14 @@
   const { app }: Props = $props();
 
   const t = $derived(app.t);
-  const index = $derived(app.index);
 
   const route = $derived(app.route);
   const cloud = $derived(app.cloudLists);
 
   /** Which id the data still knows, for `findListByPayload`'s own comparison
-   *  and for dropping an unknown entry silently, as the live app does. */
-  const knows = (id: string): boolean => index?.byId.has(id) ?? false;
+   *  and for dropping an unknown entry silently, as the live app does. A browser
+   *  list holds no homebrew key, so the app's index is enough. */
+  const knows = (id: string): boolean => app.index?.byId.has(id) ?? false;
 
   /**
    * The list this address shows, or `null` for an id nobody has, a shared
@@ -117,6 +119,12 @@
      no link buttons, no storage notice, and a save status in the sub. */
   const isCloud = $derived(own !== null && cloud?.get(own.id) === own);
   const store: ListModel = $derived(isCloud && cloud ? cloud : app.lists);
+  /* The list's frozen copies join this page's index: the store's edits keep the object,
+     so a note or a quantity typed keeps the index too. */
+  const frozenMap = $derived(own && isCloud ? frozenOf(own) : null);
+  const index = $derived(
+    app.index && frozenMap ? withRecords(app.index, [], Object.values(frozenMap)) : app.index
+  );
   /* A browser list after the cutoff, or while the move is due: every control
      that writes is gone or read-only (docs/specs/FEATURES.md, "Account and
      browser lists"). */
@@ -724,11 +732,14 @@
      storage merge mid-drag does not unbind a live drag; the drop moves the
      id captured at `dragstart`, not whatever row now sits at its index. */
   const ownId = $derived(own?.id);
-  /* The share panel folds when another list opens. */
+  /* The share and own-item panels fold when another list opens. */
   let sharing = $state(false);
+  let quick = $state(false);
+  let quickBtn = $state<HTMLElement | undefined>(undefined);
   $effect(() => {
     void ownId;
     sharing = false;
+    quick = false;
   });
   $effect(() => {
     const el = rowsEl;
@@ -968,6 +979,19 @@
               sharing = !sharing;
             }}><Icon name="link" />{t.share}</Button
           >
+          {#if app.homebrew}
+            <span class="qtoggle" bind:this={quickBtn}
+              ><Button
+                size="sm"
+                caret
+                on={quick}
+                expanded={quick}
+                onclick={() => {
+                  quick = !quick;
+                }}><Icon name="plus" />{t.quickOwn}</Button
+              ></span
+            >
+          {/if}
         {:else if !readOnly}
           <Button size="sm" onclick={() => void sharePlayers()}
             ><Icon name="link" />{t.sharePlayers}</Button
@@ -1002,6 +1026,18 @@
       </Actions>
       {#if isCloud && sharing}
         <SharePanel {app} listId={own.id} />
+      {/if}
+      {#if isCloud && quick && app.homebrew}
+        <QuickItem
+          {app}
+          listId={own.id}
+          onclose={() => {
+            quick = false;
+            void tick().then(() => {
+              quickBtn?.querySelector('button')?.focus();
+            });
+          }}
+        />
       {/if}
       {#if isCloud}
         <RequestsPanel {app} list={own} />
@@ -1333,7 +1369,9 @@
           {/each}
         </div>
       {:else}
-        <Empty>{t.listEmptyHint}</Empty>
+        <Empty
+          >{t.listEmptyHint}{#if isCloud && app.homebrew}{' ' + t.listEmptyHintOwn}{/if}</Empty
+        >
       {/if}
       <div class="lsaid" role="status" aria-live="polite">{said}</div>
       {#if isCloud}
@@ -1400,6 +1438,11 @@
   .titleinput.ro {
     border-bottom-color: transparent;
     cursor: default;
+  }
+
+  /* Holds the own-item toggle for the focus that comes back to it; draws no box. */
+  .qtoggle {
+    display: contents;
   }
 
   /* `.card-acts` moved to `Actions.svelte` - `margin-bottom:16px` is

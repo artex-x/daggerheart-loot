@@ -28,13 +28,19 @@ async function openMenu(): Promise<HTMLElement> {
 const items = (): HTMLElement[] => screen.getAllByRole('menuitem');
 
 describe('the account menu', () => {
-  it('holds «Аккаунт», «Мои списки» and «Выйти» in that order, the first focused', async () => {
+  it('holds «Аккаунт», «Мои списки», «Мои предметы» and «Выйти» in that order, the first focused', async () => {
     const { container } = signedIn();
     const menu = await openMenu();
-    expect(items().map((i) => i.textContent)).toEqual(['Аккаунт', 'Мои списки', 'Выйти']);
+    expect(items().map((i) => i.textContent)).toEqual([
+      'Аккаунт',
+      'Мои списки',
+      'Мои предметы',
+      'Выйти'
+    ]);
     expect(items()[0]).toHaveAttribute('href', '#/account');
     expect(items()[1]).toHaveAttribute('href', '#/lists');
-    expect(items()[2]?.tagName).toBe('BUTTON');
+    expect(items()[2]).toHaveAttribute('href', '#/homebrew');
+    expect(items()[3]?.tagName).toBe('BUTTON');
     expect(items().every((i) => i.getAttribute('tabindex') === '-1')).toBe(true);
     expect(menu).toHaveClass('acctmenu');
     expect(menu).not.toHaveClass('dropmenu');
@@ -52,14 +58,14 @@ describe('the account menu', () => {
     });
     await userEvent.keyboard('{ArrowDown}');
     expect(items()[1]).toHaveFocus();
-    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{ArrowDown}');
     expect(items()[0]).toHaveFocus();
     await userEvent.keyboard('{ArrowUp}');
-    expect(items()[2]).toHaveFocus();
+    expect(items()[3]).toHaveFocus();
     await userEvent.keyboard('{Home}');
     expect(items()[0]).toHaveFocus();
     await userEvent.keyboard('{End}');
-    expect(items()[2]).toHaveFocus();
+    expect(items()[3]).toHaveFocus();
   });
 
   it('closes on Escape and gives focus back to the control', async () => {
@@ -111,7 +117,12 @@ describe('the account menu', () => {
     });
     await userEvent.click(await screen.findByRole('button', { name: /^Account: / }));
     expect(screen.getByRole('menu', { name: 'Account menu' })).toBeInTheDocument();
-    expect(items().map((i) => i.textContent)).toEqual(['Account', 'My lists', 'Sign out']);
+    expect(items().map((i) => i.textContent)).toEqual([
+      'Account',
+      'My lists',
+      'My items',
+      'Sign out'
+    ]);
     await expectNoA11yViolations(container);
   });
 

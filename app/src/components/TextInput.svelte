@@ -13,6 +13,14 @@
     label?: string;
     id?: string;
     autocomplete?: HTMLInputAttributes['autocomplete'];
+    inputmode?: HTMLInputAttributes['inputmode'];
+    /** A form field that must be filled: `aria-required`. */
+    required?: boolean;
+    /** The field has a problem: `aria-invalid`. */
+    invalid?: boolean;
+    /** The id of the field's error line. */
+    describedby?: string | undefined;
+    oninput?: () => void;
   }
 
   let {
@@ -21,7 +29,12 @@
     placeholder,
     label,
     id,
-    autocomplete
+    autocomplete,
+    inputmode,
+    required = false,
+    invalid = false,
+    describedby,
+    oninput
   }: Props = $props();
 </script>
 
@@ -33,6 +46,11 @@
   aria-label={label}
   {id}
   {autocomplete}
+  {inputmode}
+  aria-required={required || undefined}
+  aria-invalid={invalid || undefined}
+  aria-describedby={describedby}
+  {oninput}
 />
 
 <style>

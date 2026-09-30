@@ -32,7 +32,7 @@
   const items = $derived(
     index
       ? ids.flatMap((id) => {
-          const it = index.byId.get(id);
+          const it = app.recordFor(id);
           return it ? [it] : [];
         })
       : []

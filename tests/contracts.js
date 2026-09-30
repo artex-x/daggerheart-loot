@@ -129,6 +129,16 @@ const N_REC = '\x1e',
   ].forEach(function ([name, text]) {
     ok(text.includes('#/s/<token>'), name + ' does not name the share link #/s/<token>');
   });
+  /* The homebrew pages and the reserved key prefix are public (CONTRACTS.md sections 1
+     and 2): an agent must not take `hb_` for a record id it can build. */
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText],
+    ['ROUTES.md', routesDoc]
+  ].forEach(function ([name, text]) {
+    ok(text.includes('#/homebrew'), name + ' does not name the homebrew page #/homebrew');
+    ok(text.includes('hb_'), name + ' does not name the reserved key prefix hb_');
+  });
   [
     ['llms.txt', machine],
     ['CONTRACTS.md', contractsText]
@@ -138,6 +148,13 @@ const N_REC = '\x1e',
       name + ' does not name the date #/l/ links stop, 2026-10-26'
     );
   });
+
+  const dataIds = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data.json'), 'utf8'));
+  const allIds = [...Object.values(dataIds.items).flat(), ...(dataIds.eq || [])].map(
+    (r) => r.id
+  );
+  const reserved = allIds.filter((id) => id.startsWith('hb'));
+  ok(!reserved.length, 'data.json holds ids with the reserved prefix hb: ' + reserved.join());
 
   /* ---------- data.json top-level keys ---------- */
   /* `CONTRACTS.md` section 4 publishes the key list; a key added to or dropped

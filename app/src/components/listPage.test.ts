@@ -1375,7 +1375,7 @@ describe('an account list', () => {
     const { container, router } = openAs(fakeCloud(SEED, 'gm1'));
     const input = await screen.findByRole('textbox', { name: 'Название списка' });
     expect(input).toHaveValue('Лавка кузнеца');
-    expect(sub(container)).toBe('3 позиции · Сохранено');
+    expect(sub(container)).toBe('4 позиции · Сохранено');
     expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ссылка себе' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
@@ -1474,7 +1474,7 @@ describe('an account list', () => {
     const { container, page } = openAs(cloud);
     const saving = () => container.querySelector('.sync')?.hasAttribute('data-saving');
     await userEvent.type(await screen.findByRole('textbox', { name: 'Название списка' }), '!');
-    expect(sub(container)).toBe('3 позиции · Сохраняем...');
+    expect(sub(container)).toBe('4 позиции · Сохраняем...');
     expect(saving()).toBe(true);
     expect(sent).not.toHaveBeenCalled();
     page.fireHidden();
@@ -1484,7 +1484,7 @@ describe('an account list', () => {
     expect(saving()).toBe(true);
     answer({ ok: true, results: [{ ok: true }] });
     await waitFor(() => {
-      expect(sub(container)).toBe('3 позиции · Сохранено');
+      expect(sub(container)).toBe('4 позиции · Сохранено');
     });
     expect(saving()).toBe(false);
     await expectNoA11yViolations(container);
@@ -1498,7 +1498,7 @@ describe('an account list', () => {
     await userEvent.type(input, '!');
     page.fireHidden();
     await waitFor(() => {
-      expect(sub(container)).toBe('3 позиции · Не сохраненоПовторить');
+      expect(sub(container)).toBe('4 позиции · Не сохраненоПовторить');
     });
     expect(input).toHaveValue('Лавка кузнеца!');
     const status = [...container.querySelectorAll('.lsaid')].map((s) => s.textContent);
@@ -1507,7 +1507,7 @@ describe('an account list', () => {
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
     await waitFor(() => {
-      expect(sub(container)).toBe('3 позиции · Сохранено');
+      expect(sub(container)).toBe('4 позиции · Сохранено');
     });
     const said = () => [...container.querySelectorAll('.lsaid')].map((s) => s.textContent);
     expect(said()).toContain('Сохранено');
@@ -1831,5 +1831,136 @@ describe('a toast and a language switch', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByText('"Potion" removed')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
+  });
+});
+
+describe('homebrew entries', () => {
+  /* jsdom does not implement scrollIntoView, which the record modal's add-to-list menu
+     calls once it opens. */
+  Element.prototype.scrollIntoView = vi.fn();
+  const SHOP_ID = '00000000-0000-4000-8000-000000000101';
+  const GM2_ID = '00000000-0000-4000-8000-000000000201';
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const open = (cloud: CloudPort, id: string) => {
+    const page = fakePage();
+    const storage = memoryStorage();
+    const view = render(App, {
+      env: at('#/lists/' + id, { router: memoryRouter('#/lists/' + id), cloud, page, storage })
+    });
+    return { ...view, page, storage };
+  };
+  /* The list's entries as the server holds them. */
+  async function entries(cloud: CloudPort, id: string) {
+    const read = await cloud.lists.list();
+    return (read.ok ? read.lists.find((l) => l.id === id) : undefined)?.list_entries ?? [];
+  }
+  const axeRow = (): HTMLElement =>
+    screen.getByRole('button', { name: /Топор Тлеющих Углей/ }).closest('.lrow') as HTMLElement;
+
+  it('draws an own item live: an edit of it redraws the row', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { storage } = open(cloud, SHOP_ID);
+    expect(
+      await screen.findByRole('button', { name: /Топор Тлеющих Углей/ })
+    ).toBeInTheDocument();
+    const axe = SEED.homebrew.gm1.items.find((i) => i.key === AXE);
+    await cloud.homebrew.updateItem(
+      '00000000-0000-4000-8000-000000000511',
+      { content: { ...axe!.content, ru: 'Топор Пепла' }, book_id: axe!.bookId ?? null },
+      null
+    );
+    /* The tab is shown again: the account's items are read again. */
+    storage.fireExternalChange(null);
+    expect(await screen.findByRole('button', { name: /Топор Пепла/ })).toBeInTheDocument();
+  });
+
+  it('offers «Изменить» in the modal for an own item, and not for a frozen copy', async () => {
+    open(fakeCloud(SEED, 'gm1'), SHOP_ID);
+    await userEvent.click(await screen.findByRole('button', { name: /Топор Тлеющих Углей/ }));
+    expect(
+      within(screen.getByRole('dialog')).getByRole('link', { name: 'Изменить' })
+    ).toHaveAttribute('href', '#/homebrew/' + AXE);
+    cleanup();
+    const { container } = open(fakeCloud(SEED, 'gm2'), GM2_ID);
+    await userEvent.click(await screen.findByRole('button', { name: /Топор Тлеющих Углей/ }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText(/Мастерская Ольхи/)).toBeInTheDocument();
+    expect(within(dialog).queryByRole('link', { name: 'Изменить' })).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('undoes a removed frozen copy from the row, the bar and the list menu with its snapshot', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { page } = open(cloud, GM2_ID);
+    await screen.findByRole('button', { name: /Топор Тлеющих Углей/ });
+    const before = (await entries(cloud, GM2_ID))[1]?.snapshot;
+    const same = async (): Promise<void> => {
+      page.fireHidden();
+      await waitFor(async () => {
+        const axe = (await entries(cloud, GM2_ID)).find((e) => e.item_key === AXE);
+        expect(axe).toMatchObject({ item_key: AXE, source: 'homebrew' });
+        expect(axe?.snapshot).toEqual(before);
+      });
+    };
+    await userEvent.click(within(axeRow()).getByRole('button', { name: 'Убрать из списка' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    await same();
+    await userEvent.click(within(axeRow()).getByRole('checkbox'));
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
+    expect(
+      screen.queryByRole('button', { name: /Топор Тлеющих Углей/ })
+    ).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    await same();
+    await userEvent.click(screen.getByRole('button', { name: /Топор Тлеющих Углей/ }));
+    const dialog = screen.getByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: '✓ Список второго ГМа' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Вернуть' }));
+    await same();
+  });
+
+  it('undoes a removed reference as a reference', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { page } = open(cloud, SHOP_ID);
+    await screen.findByRole('button', { name: /Топор Тлеющих Углей/ });
+    await userEvent.click(within(axeRow()).getByRole('button', { name: 'Убрать из списка' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    page.fireHidden();
+    await waitFor(async () => {
+      expect((await entries(cloud, SHOP_ID)).find((e) => e.item_key === AXE)).toMatchObject({
+        item_key: AXE,
+        source: 'homebrew',
+        snapshot: null,
+        price_coins: 800
+      });
+    });
+  });
+
+  it('draws «Свой предмет» on an account list only, and the empty hint names it', async () => {
+    open(fakeCloud(SEED, 'gm1'), '00000000-0000-4000-8000-000000000102');
+    expect(await screen.findByRole('button', { name: 'Свой предмет' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    expect(
+      screen.getByText(/Или добавьте свой предмет кнопкой «Свой предмет»\./)
+    ).toBeInTheDocument();
+    cleanup();
+    const empty: StoredList = { id: 'e', name: 'Пусто', ids: [], created: 1 };
+    render(App, {
+      env: at('#/lists/e', {
+        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([empty]) })
+      })
+    });
+    expect(await screen.findByText(/Пока пусто/)).toBeInTheDocument();
+    expect(screen.queryByText(/Или добавьте свой предмет/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Свой предмет' })).not.toBeInTheDocument();
+  });
+
+  it('draws no «Свой предмет» on a browser list, signed in or read-only', async () => {
+    render(App, { env: withA('#/lists/a', { cloud: fakeCloud(SEED, 'gm1') }) });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(screen.queryByRole('button', { name: 'Свой предмет' })).not.toBeInTheDocument();
   });
 });

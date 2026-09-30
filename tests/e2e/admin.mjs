@@ -133,7 +133,7 @@ export async function listsOf(admin, userId) {
   const { data, error } = await admin
     .from('lists')
     .select(
-      'id,name,player_note,gm_note,legacy_fingerprint,list_entries(item_key,position,quantity,price_coins,gm_note)'
+      'id,name,player_note,gm_note,legacy_fingerprint,list_entries(item_key,position,quantity,price_coins,gm_note,source,snapshot)'
     )
     .eq('owner_id', userId);
   if (error) throw fail('reading lists', error);
@@ -156,4 +156,28 @@ export async function deleteListsOf(admin, userId) {
   guard(admin);
   const { error } = await admin.from('lists').delete().eq('owner_id', userId);
   if (error) throw fail('deleting lists', error);
+}
+
+/** The user's homebrew sources and items, read by the service role. */
+export async function homebrewOf(admin, userId) {
+  guard(admin);
+  const [books, items] = await Promise.all([
+    admin.from('homebrew_books').select('id,key,content,revision').eq('owner_id', userId),
+    admin
+      .from('homebrew_items')
+      .select('id,key,book_id,content,revision')
+      .eq('owner_id', userId)
+  ]);
+  if (books.error) throw fail('reading homebrew sources', books.error);
+  if (items.error) throw fail('reading homebrew items', items.error);
+  return { books: books.data ?? [], items: items.data ?? [] };
+}
+
+/** Deletes the user's homebrew items, then the sources. */
+export async function deleteHomebrewOf(admin, userId) {
+  guard(admin);
+  const items = await admin.from('homebrew_items').delete().eq('owner_id', userId);
+  if (items.error) throw fail('deleting homebrew items', items.error);
+  const books = await admin.from('homebrew_books').delete().eq('owner_id', userId);
+  if (books.error) throw fail('deleting homebrew sources', books.error);
 }

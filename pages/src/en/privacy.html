@@ -26,7 +26,10 @@
 <h2>If you sign in</h2>
 <p>You can sign in with Google or Discord. The site then stores:</p>
 <ul>
-  <li>your lists, your homebrew items, their pictures and your settings;</li>
+  <li>
+    your lists, your homebrew items with their sources and sections, their pictures and your
+    settings;
+  </li>
   <li>
     the Google or Discord identity that the provider sends at sign-in, and your email address.
     Supabase Auth keeps them; the site shows your email to you only.
@@ -42,7 +45,10 @@
   player view or the GM view of that list until you replace the link with a new one or revoke
   it. The player view leaves out the GM notes. The link itself is kept with the list, and only
   you can read it there, so you can copy it again at any time. A share link to a homebrew item
-  works the same way. A share link never shows your name or your email.
+  works the same way. A share link never shows your name or your email. A share link shows a
+  homebrew item of yours in the list as it is now. If another user saves such a list for
+  themselves, or adds an item from it to their own list, their list keeps a copy of the item as
+  it was then, and that copy does not change.
 </p>
 <h3>Requests to a list's owner</h3>
 <p>
@@ -60,7 +66,9 @@
   deletion is immediate: your lists, homebrew items, pictures, settings and share links leave
   the live database at once, and every share link stops working. A backup made before the
   deletion is kept encrypted for at most 30 days; after that the deleted data is gone from it
-  too.
+  too. Copies of your homebrew items in other users' lists, whether they saved a list from a
+  share link or added an item from one, stay with them: they do not change, and they are not
+  deleted with the item or with your account.
 </p>
 <h3>If a Google or Discord account is already in use</h3>
 <p>
@@ -74,4 +82,4 @@
   For a privacy question, a deletion request or a report of an abused share link, write to
   <a href="mailto:daggerheart.loot@gmail.com">daggerheart.loot@gmail.com</a>.
 </p>
-<p>Last changed: 28 September 2026.</p>
+<p>Last changed: 30 September 2026.</p>

@@ -92,7 +92,7 @@
   async function copySel(): Promise<void> {
     const index = app.index;
     if (!index) return;
-    const items = ids.map((id) => index.byId.get(id)).filter((it): it is Record_ => !!it);
+    const items = ids.map((id) => app.recordFor(id)).filter((it): it is Record_ => !!it);
     if (!items.length) return;
     const priced = shared ? { metaOf, takenOf, mode: moneyMode(shared), t } : undefined;
     const { text, html } = shareSelection(items, index, app.lang, priced);

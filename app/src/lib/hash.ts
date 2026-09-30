@@ -19,6 +19,9 @@ export const PRINT_MAX = 180;
 
 export const ACCOUNT_HASH = '#/account';
 
+/** The signed-in author's own items (docs/specs/ROUTES.md, "Homebrew"). */
+export const HOMEBREW_HASH = '#/homebrew';
+
 export type Route =
   | { kind: 'section'; section: Section }
   | { kind: 'tables'; table: TableId | null; anchor: string; filter: FilterState }
@@ -40,6 +43,10 @@ export type Route =
   /** In every build: with no sign-in configured it draws the not-found page,
    *  so the address never falls home (docs/specs/ROUTES.md, "Account"). */
   | { kind: 'account' }
+  /** The author's own items; like `account`, in every build. */
+  | { kind: 'homebrew' }
+  /** The editor of one own item; `key` null is a new item. */
+  | { kind: 'homebrewItem'; key: string | null }
   /** Nothing could be read - the caller replaces it with the home section. */
   | { kind: 'unknown' };
 
@@ -128,6 +135,9 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
     return { kind: 'share', token: /^[A-Za-z0-9_-]*/.exec(h.slice(2))?.[0] ?? '' };
   }
   if (h === 'account') return { kind: 'account' };
+  if (h === 'homebrew') return { kind: 'homebrew' };
+  const hb = /^homebrew\/(new|hb_[a-z2-7]{16})$/.exec(h);
+  if (hb) return { kind: 'homebrewItem', key: hb[1] === 'new' ? null : (hb[1] ?? null) };
   /* Was `/^l\/[A-Za-z0-9_-]+$/`: a stray character after the payload - a chat
      client swallowing a trailing full stop is the reachable case (R5) - used
      to fail the character class and fall through to `unknown`, which sent the
@@ -192,6 +202,11 @@ export function printHash(
       })
       .join('-')
   );
+}
+
+/** The editor of an own item; null is a new item. */
+export function homebrewItemHash(key: string | null): string {
+  return HOMEBREW_HASH + '/' + (key ?? 'new');
 }
 
 export function sharedListHash(payload: string): string {

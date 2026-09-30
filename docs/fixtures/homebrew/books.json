@@ -1,0 +1,400 @@
+{
+  "valid": [
+    {
+      "name": "a Russian name",
+      "content": {
+        "ru": "Мастерская Ольхи"
+      }
+    },
+    {
+      "name": "an English name with two sections",
+      "content": {
+        "en": "Alder Workshop",
+        "sections": [
+          {
+            "key": "hb_sectpistolsaaaaa",
+            "en": "Pistols"
+          },
+          {
+            "key": "hb_sectbladesaaaaaa",
+            "ru": "Холодное оружие"
+          }
+        ]
+      }
+    },
+    {
+      "name": "thirty sections",
+      "content": {
+        "ru": "Большой источник",
+        "sections": [
+          {
+            "key": "hb_sectaaaaaaaaaaaa",
+            "en": "Section 1"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaab",
+            "en": "Section 2"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaac",
+            "en": "Section 3"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaad",
+            "en": "Section 4"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaae",
+            "en": "Section 5"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaf",
+            "en": "Section 6"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaag",
+            "en": "Section 7"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaah",
+            "en": "Section 8"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaai",
+            "en": "Section 9"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaj",
+            "en": "Section 10"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaak",
+            "en": "Section 11"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaal",
+            "en": "Section 12"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaam",
+            "en": "Section 13"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaan",
+            "en": "Section 14"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaao",
+            "en": "Section 15"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaap",
+            "en": "Section 16"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaq",
+            "en": "Section 17"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaar",
+            "en": "Section 18"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaas",
+            "en": "Section 19"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaat",
+            "en": "Section 20"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaau",
+            "en": "Section 21"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaav",
+            "en": "Section 22"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaw",
+            "en": "Section 23"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaax",
+            "en": "Section 24"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaay",
+            "en": "Section 25"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaz",
+            "en": "Section 26"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa2",
+            "en": "Section 27"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa3",
+            "en": "Section 28"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa4",
+            "en": "Section 29"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa5",
+            "en": "Section 30"
+          }
+        ]
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "no name",
+      "content": {
+        "sections": []
+      },
+      "problems": [
+        {
+          "path": "name",
+          "rule": "required"
+        }
+      ]
+    },
+    {
+      "name": "a name of 81 characters",
+      "content": {
+        "en": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "problems": [
+        {
+          "path": "en",
+          "rule": "long"
+        }
+      ]
+    },
+    {
+      "name": "thirty-one sections",
+      "content": {
+        "ru": "Большой источник",
+        "sections": [
+          {
+            "key": "hb_sectaaaaaaaaaaaa",
+            "en": "Section 1"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaab",
+            "en": "Section 2"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaac",
+            "en": "Section 3"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaad",
+            "en": "Section 4"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaae",
+            "en": "Section 5"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaf",
+            "en": "Section 6"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaag",
+            "en": "Section 7"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaah",
+            "en": "Section 8"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaai",
+            "en": "Section 9"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaj",
+            "en": "Section 10"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaak",
+            "en": "Section 11"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaal",
+            "en": "Section 12"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaam",
+            "en": "Section 13"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaan",
+            "en": "Section 14"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaao",
+            "en": "Section 15"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaap",
+            "en": "Section 16"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaq",
+            "en": "Section 17"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaar",
+            "en": "Section 18"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaas",
+            "en": "Section 19"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaat",
+            "en": "Section 20"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaau",
+            "en": "Section 21"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaav",
+            "en": "Section 22"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaw",
+            "en": "Section 23"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaax",
+            "en": "Section 24"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaay",
+            "en": "Section 25"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaaz",
+            "en": "Section 26"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa2",
+            "en": "Section 27"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa3",
+            "en": "Section 28"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa4",
+            "en": "Section 29"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa5",
+            "en": "Section 30"
+          },
+          {
+            "key": "hb_sectaaaaaaaaaaa6",
+            "en": "Section 31"
+          }
+        ]
+      },
+      "problems": [
+        {
+          "path": "sections",
+          "rule": "many"
+        }
+      ]
+    },
+    {
+      "name": "a repeated section key",
+      "content": {
+        "en": "Alder Workshop",
+        "sections": [
+          {
+            "key": "hb_sectpistolsaaaaa",
+            "en": "Pistols"
+          },
+          {
+            "key": "hb_sectpistolsaaaaa",
+            "en": "Guns"
+          }
+        ]
+      },
+      "problems": [
+        {
+          "path": "sections.1.key",
+          "rule": "duplicate"
+        }
+      ]
+    },
+    {
+      "name": "a section with no name",
+      "content": {
+        "en": "Alder Workshop",
+        "sections": [
+          {
+            "key": "hb_sectpistolsaaaaa"
+          }
+        ]
+      },
+      "problems": [
+        {
+          "path": "sections.0.name",
+          "rule": "required"
+        }
+      ]
+    },
+    {
+      "name": "the section key a",
+      "content": {
+        "en": "Alder Workshop",
+        "sections": [
+          {
+            "key": "a",
+            "en": "Pistols"
+          }
+        ]
+      },
+      "problems": [
+        {
+          "path": "sections.0.key",
+          "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "the key cover",
+      "content": {
+        "ru": "Мастерская Ольхи",
+        "cover": "cover.webp"
+      },
+      "problems": [
+        {
+          "path": "cover",
+          "rule": "extra"
+        }
+      ]
+    },
+    {
+      "name": "a name holding U+0001",
+      "content": {
+        "en": "Alder\u0001Workshop"
+      },
+      "problems": [
+        {
+          "path": "en",
+          "rule": "pattern"
+        }
+      ]
+    }
+  ]
+}

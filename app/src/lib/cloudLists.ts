@@ -5,9 +5,16 @@
  * Pure module: no port, no storage. docs/specs/FEATURES.md, "Account and browser lists". */
 
 import type { Dict } from './dict.js';
+import {
+  isHomebrewKey,
+  isHomebrewRecord,
+  snapshotValid,
+  type HomebrewRecord
+} from './homebrew.js';
 import type { DecodedList, ListEntryMeta, MoneyMode } from './listLink.js';
 import { QTY_MAX } from './listLink.js';
 import type { StoredList } from './lists.js';
+import type { Record_ } from './types.js';
 
 /** The most coins a price holds (`list_entries.price_coins`). */
 export const PRICE_MAX = 99999;
@@ -104,8 +111,67 @@ export function batchSize(ops: readonly ListOp[]): number {
 }
 
 /** An account list as the pages draw it: `ids` are the entries' record ids in list order,
- *  `entryIds` maps each to its row id, `updated` is the last edit in ms. */
-export type CloudList = StoredList & { updated: number; entryIds: Record<string, string> };
+ *  `entryIds` maps each to its row id, `updated` is the last edit in ms, `frozen` holds the
+ *  frozen copies by key (absent when the list holds none). */
+export type CloudList = StoredList & {
+  updated: number;
+  entryIds: Record<string, string>;
+  frozen?: Readonly<Record<string, HomebrewRecord>>;
+};
+
+/** What an entry is written as: a catalog record, a reference to an own item (`snapshot`
+ *  null), or a frozen copy of another account's item. */
+export interface EntrySource {
+  source: 'official' | 'homebrew';
+  snapshot: HomebrewRecord | null;
+}
+
+export const OFFICIAL: EntrySource = Object.freeze({ source: 'official', snapshot: null });
+
+/* A frozen copy the key names, as the database takes it. */
+function frozenValid(key: string, v: unknown): v is HomebrewRecord {
+  return snapshotValid(v) && (v as { id: string }).id === key;
+}
+
+/**
+ * Returns what an entry of `key` is written as (docs/specs/FEATURES.md, "Lists"): a catalog
+ * key is official; a homebrew key is a reference when the account holds the item, a frozen
+ * copy of `copy` when that is a valid copy of the key, and null (not written) otherwise or
+ * while the account's items are not read yet, so an own item is never frozen by mistake.
+ */
+export function entrySource(
+  key: string,
+  own: { ready: boolean; has: (key: string) => boolean },
+  copy: Record_ | undefined
+): EntrySource | null {
+  if (!isHomebrewKey(key)) return OFFICIAL;
+  if (!own.ready) return null;
+  if (own.has(key)) return { source: 'homebrew', snapshot: null };
+  if (copy && isHomebrewRecord(copy) && frozenValid(key, copy)) {
+    return { source: 'homebrew', snapshot: copy };
+  }
+  return null;
+}
+
+/* The rule before an account's items are known: a homebrew key is not written. */
+const catalogOnly = (key: string): EntrySource | null => (isHomebrewKey(key) ? null : OFFICIAL);
+
+const NO_FROZEN: Readonly<Record<string, HomebrewRecord>> = Object.freeze({});
+
+/** Returns a list's frozen copies by key: an account list's own object, else one empty
+ *  object, so the answer keeps its identity while the list's copies do not change. */
+export function frozenOf(l: StoredList): Readonly<Record<string, HomebrewRecord>> {
+  return (l as Partial<CloudList>).frozen ?? NO_FROZEN;
+}
+
+/** Returns the valid frozen copies a share's projection carries: every homebrew entry's
+ *  snapshot, a reference's included (the projection fills it from the live item). */
+export function snapshotRecords(row: SharedRow | null | undefined): HomebrewRecord[] {
+  if (!row) return [];
+  return row.entries.flatMap((e) =>
+    e.source === 'homebrew' && frozenValid(e.item_key, e.snapshot) ? [e.snapshot] : []
+  );
+}
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -141,10 +207,14 @@ export function toCloudList(row: ListRow): CloudList {
   const entries = [...row.list_entries].sort(entryOrder);
   const meta: Record<string, ListEntryMeta> = {};
   const entryIds: Record<string, string> = {};
+  const frozen: Record<string, HomebrewRecord> = {};
   for (const e of entries) {
     entryIds[e.item_key] = e.id;
     const m = entryMetaOf(e);
     if (Object.keys(m).length) meta[e.item_key] = m;
+    if (e.source === 'homebrew' && frozenValid(e.item_key, e.snapshot)) {
+      frozen[e.item_key] = e.snapshot;
+    }
   }
   const l: CloudList = {
     id: row.id,
@@ -158,6 +228,7 @@ export function toCloudList(row: ListRow): CloudList {
   if (row.player_note) l.note = row.player_note;
   if (row.gm_note) l.hnote = row.gm_note;
   if (Object.keys(meta).length) l.meta = meta;
+  if (Object.keys(frozen).length) l.frozen = frozen;
   return l;
 }
 
@@ -241,37 +312,45 @@ export function priceOf(gold: number | undefined): number | null {
 }
 
 /** Returns the rows of `ids` with their meta, positions counted from `from`, each id from
- *  `newId`. */
+ *  `newId`, each written as `sourceOf` answers; a key it answers null for is left out. The
+ *  default writes catalog keys only. */
 export function entryRowsOf(
   ids: readonly string[],
   meta: Readonly<Record<string, ListEntryMeta>> | undefined,
   newId: () => string,
-  from = 0
+  from = 0,
+  sourceOf: (key: string) => EntrySource | null = catalogOnly
 ): EntryRow[] {
-  return ids.map((key, i) => {
-    const m = meta?.[key] ?? {};
-    return {
-      id: newId(),
-      item_key: key,
-      source: 'official',
-      snapshot: null,
-      position: from + i,
-      quantity: quantityOf(m.qty),
-      price_coins: priceOf(m.gold),
-      player_note: clip(m.note ?? '', NOTE_MAX),
-      gm_note: clip(m.hnote ?? '', NOTE_MAX)
-    };
-  });
+  return ids
+    .flatMap((key) => {
+      const src = sourceOf(key);
+      return src ? [{ key, src }] : [];
+    })
+    .map(({ key, src }, i) => {
+      const m = meta?.[key] ?? {};
+      return {
+        id: newId(),
+        item_key: key,
+        source: src.source,
+        snapshot: src.snapshot,
+        position: from + i,
+        quantity: quantityOf(m.qty),
+        price_coins: priceOf(m.gold),
+        player_note: clip(m.note ?? '', NOTE_MAX),
+        gm_note: clip(m.hnote ?? '', NOTE_MAX)
+      };
+    });
 }
 
 /** Returns the toast for a refused write that hit a count limit (`limit: <key>`, the
  *  database's message), with the number the database gave. */
 export function limitText(key: string, value: number | null, t: Dict): string {
-  const text =
-    key === 'lists_per_owner'
-      ? t.limitLists
-      : key === 'entries_per_list'
-        ? t.limitEntries
-        : t.limitOther;
+  const named: Partial<Record<string, string>> = {
+    lists_per_owner: t.limitLists,
+    entries_per_list: t.limitEntries,
+    homebrew_items_per_owner: t.limitHbItems,
+    homebrew_books_per_owner: t.limitHbBooks
+  };
+  const text = named[key] ?? t.limitOther;
   return text.replace('%n', value === null ? '?' : String(value));
 }

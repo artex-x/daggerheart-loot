@@ -1,6 +1,6 @@
 # #/lists ~ requests as gm1
 # route: #/lists
-# why: two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «9 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards
+# why: two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «10 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards
 # as: gm1
 
 ## ru :: tree
@@ -44,9 +44,9 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       StaticText "Список пуст"
     button "Удалить"
     checkbox "Выбрать: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 9 позиций, изменён 3 дня назад, 2 запроса ждут от..." [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101 namelen=68 namehash=5f8fdca3]
+    link "Лавка кузнеца, 10 позиций, изменён 3 дня назад, 2 запроса ждут о..." [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101 namelen=69 namehash=cf9e017c]
       StaticText "Лавка кузнеца"
-      StaticText "9 позиций · изменён 3 дня назад"
+      StaticText "10 позиций · изменён 3 дня назад"
       StaticText "2 запроса ждут ответа"
     button "Удалить"
     checkbox "Выбрать: Трофеи" [checked=false]
@@ -79,7 +79,7 @@ daggerheart.com
 К содержимому
 Как это работает
 Конфиденциальность
-Лавка кузнеца, 9 позиций, изменён 3 дня назад, 2 запроса ждут от... [namelen=68 namehash=5f8fdca3]
+Лавка кузнеца, 10 позиций, изменён 3 дня назад, 2 запроса ждут о... [namelen=69 namehash=cf9e017c]
 ЛутDaggerheart
 Новый список
 Обычные правила
@@ -136,9 +136,9 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
       StaticText "The list is empty"
     button "Delete"
     checkbox "Select: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 9 items, edited 3 days ago, 2 requests wait for a..." [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101 namelen=72 namehash=30cf6dc7]
+    link "Лавка кузнеца, 10 items, edited 3 days ago, 2 requests wait for ..." [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101 namelen=73 namehash=f0d166c3]
       StaticText "Лавка кузнеца"
-      StaticText "9 items · edited 3 days ago"
+      StaticText "10 items · edited 3 days ago"
       StaticText "2 requests wait for an answer"
     button "Delete"
     checkbox "Select: Трофеи" [checked=false]
@@ -182,7 +182,7 @@ Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com
-Лавка кузнеца, 9 items, edited 3 days ago, 2 requests wait for a... [namelen=72 namehash=30cf6dc7]
+Лавка кузнеца, 10 items, edited 3 days ago, 2 requests wait for ... [namelen=73 namehash=f0d166c3]
 ЛутDaggerheart
 Пустой список, 0 items, edited 1 hour ago
 Трофеи, 2 items, edited last month

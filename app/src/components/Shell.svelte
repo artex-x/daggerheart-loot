@@ -84,11 +84,24 @@
         ? own.name
         : app.section
           ? app.t[SECTION_LABEL[app.section]]
-          : route.kind === 'account' && app.env.cloud
-            ? app.t.account
-            : undefined;
+          : !app.env.cloud
+            ? undefined
+            : route.kind === 'account'
+              ? app.t.account
+              : route.kind === 'homebrew'
+                ? app.t.myItems
+                : route.kind === 'homebrewItem'
+                  ? homebrewTitle(route.key)
+                  : undefined;
     document.title = name ? `${name} — ${app.t.docTitle}` : app.t.docTitle;
   });
+
+  /* The editor's tab: the item's stored name, or «Новый предмет». */
+  function homebrewTitle(key: string | null): string {
+    const row = key === null ? undefined : app.homebrew?.item(key);
+    const it = row ? app.index?.byId.get(row.key) : undefined;
+    return it ? nameOf(it, app.lang) : app.t.hbNewItem;
+  }
 
   /** The skip link's own activation, off `#skip` in the live stylesheet's
    *  overlay shape - `href="#main"` stays for a client with no script,
@@ -181,10 +194,16 @@
   <MoveNotice {app} />
 {/if}
 
-<!-- `data-move` is what the browser suites wait on before a capture
-     (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session is
-     unknown, the move's status once signed in, none signed out. -->
-<main id="main" tabindex="-1" data-move={moveState}>
+<!-- `data-move` and `data-homebrew` are what the browser suites wait on before a
+     capture (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session is
+     unknown, the move's status once signed in, none signed out; the homebrew
+     store's status signed in. -->
+<main
+  id="main"
+  tabindex="-1"
+  data-move={moveState}
+  data-homebrew={app.user ? app.homebrew?.status : undefined}
+>
   {@render children()}
 </main>
 

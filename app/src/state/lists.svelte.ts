@@ -23,6 +23,7 @@ import {
   type StoredList
 } from '../lib/lists.js';
 import type { Dict, Msg } from '../lib/dict.js';
+import { isHomebrewKey } from '../lib/homebrew.js';
 import { canonicalList } from '../lib/legacy.js';
 import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
 import type { Env } from '../ports/index.js';
@@ -327,9 +328,9 @@ export class ListStore implements ListModel {
     const l: StoredList = {
       id: 'l' + Date.now().toString(36) + random36(4, this.#env.random),
       name: trimmed || this.#dict().untitled,
-      ids: [],
       created: Date.now(),
-      ...init
+      ...init,
+      ids: (init.ids ?? []).filter((k) => !isHomebrewKey(k))
     };
     this.lists = [l, ...this.lists];
     this.save();
@@ -383,7 +384,8 @@ export class ListStore implements ListModel {
     knows: (id: string) => boolean,
     meta?: Readonly<Record<string, ListEntryMeta>>
   ): string[] {
-    const fresh = freshIds(list, ids, knows);
+    /* A homebrew key never goes into a browser list: it lives in one account. */
+    const fresh = freshIds(list, ids, (k) => !isHomebrewKey(k) && knows(k));
     if (fresh.length) {
       this.lists = this.lists.map((l) => (l.id === list.id ? withIds(l, fresh, meta) : l));
     }

@@ -706,6 +706,31 @@ describe('the account control', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('titles the homebrew pages and marks the homebrew store status', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container } = render(App, { env: at('#/homebrew', { cloud }) });
+    await screen.findByText('Мои предметы: 4 из 100');
+    expect(document.title).toBe('Мои предметы — Генератор лута — Daggerheart');
+    expect(container.querySelector('main')?.dataset['homebrew']).toBe('ready');
+    cleanup();
+    render(App, {
+      env: at('#/homebrew/hb_emberaxeaaaaaaaa', { cloud: fakeCloud(SEED, 'gm1') })
+    });
+    await screen.findByLabelText(/^Название/);
+    expect(document.title).toBe('Топор Тлеющих Углей — Генератор лута — Daggerheart');
+    cleanup();
+    render(App, { env: at('#/homebrew/new', { cloud: fakeCloud(SEED, 'gm1') }) });
+    await screen.findByLabelText(/^Название/);
+    expect(document.title).toBe('Новый предмет — Генератор лута — Daggerheart');
+    cleanup();
+    const out = render(App, { env: at('#/homebrew', { cloud: fakeCloud(SEED) }) });
+    await screen.findByText('Войдите, чтобы создавать свои предметы.');
+    expect(out.container.querySelector('main')?.hasAttribute('data-homebrew')).toBe(false);
+    cleanup();
+    render(App, { env: at('#/homebrew') });
+    expect(document.title).toBe('Генератор лута — Daggerheart');
+  });
+
   it('marks the signed-out control as current on #/account too', async () => {
     render(App, { env: at('#/account', { cloud: fakeCloud(SEED) }) });
     expect(await screen.findByRole('link', { name: 'Войти' })).toHaveAttribute(

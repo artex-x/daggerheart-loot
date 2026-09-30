@@ -21,6 +21,7 @@
 import { dict } from './dict.js';
 import { frameName } from './frames.js';
 import type { FrameId } from './frames.js';
+import { isHomebrewRecord } from './homebrew.js';
 import { EQ_TYPE, eqWord } from './i18n.js';
 import { SUB_LABEL, groupOf } from './tables.js';
 import type { Dict } from './dict.js';
@@ -128,7 +129,9 @@ export function srcName(key: string, lang: Lang): string {
  * does.
  */
 export function printSrc(it: Record_, lang: Lang): string {
-  return it.src === 'community' ? whereFrom(it, lang) : srcLabel(it, lang);
+  return it.src === 'community' || it.src === 'homebrew'
+    ? whereFrom(it, lang)
+    : srcLabel(it, lang);
 }
 
 export function srcLabel(it: Record_, lang: Lang): string {
@@ -150,6 +153,12 @@ export function srcLabel(it: Record_, lang: Lang): string {
       return t.srcFrame;
     case 'community':
       return (lang === 'ru' ? it.community_ru : it.community) ?? t.srcComm;
+    case 'homebrew':
+      /* A named source reads as its name with the Latin mark, the default source as its
+         own word (docs/specs/FEATURES.md, "Homebrew"). */
+      return isHomebrewRecord(it) && it.book
+        ? t.hbTag.replace('%s', it.book[lang])
+        : t.srcHomebrew;
     default:
       return it.src;
   }
@@ -170,6 +179,8 @@ const EQ_TABLE_OF = {
  * section their record is not in.
  */
 export function tableOf(it: Record_): TableId | null {
+  /* An own item has no table page until R7b. */
+  if (it.src === 'homebrew') return null;
   if (it.frame || it.src === 'frame') return 'other_frames';
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
@@ -199,6 +210,12 @@ export function tableOf(it: Record_): TableId | null {
  * `groupOf`/`SUB_LABEL`'s own shape already encodes.
  */
 export function whereFrom(it: Record_, lang: Lang): string {
+  if (isHomebrewRecord(it)) {
+    const t = dict(lang);
+    return [t.srcHomebrew, it.book?.[lang], it.book?.section?.[lang]]
+      .filter(Boolean)
+      .join(' · ');
+  }
   const table = tableOf(it);
   if (!table) return srcLabel(it, lang);
 

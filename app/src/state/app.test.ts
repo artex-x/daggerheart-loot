@@ -9,7 +9,7 @@
  * writes that screen. */
 
 import { describe, expect, it, vi } from 'vitest';
-import { bundleText, ENTRIES_MAX, LISTS_MAX, toBundle } from '../lib/bundle.js';
+import { bundleText, ENTRIES_MAX, LISTS_MAX, officialOnly, toBundle } from '../lib/bundle.js';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { sharedListHash } from '../lib/hash.js';
@@ -22,6 +22,7 @@ import { KINDS } from '../lib/types.js';
 import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import {
   brokenStorage,
+  fakeDialog,
   fakeEnv,
   fakePage,
   fakeImage,
@@ -977,6 +978,21 @@ describe('a packed address', () => {
 });
 
 describe('the toast', () => {
+  it('stays until the next one replaces it on a clock that holds toasts', () => {
+    vi.useFakeTimers();
+    const clock = { now: () => 0, holdsToasts: () => true };
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1'), clock }));
+    app.say(() => 'Раз');
+    vi.advanceTimersByTime(60_000);
+    expect(app.toast?.msg).toBe('Раз');
+    app.say(() => 'Два', { error: true });
+    vi.advanceTimersByTime(60_000);
+    expect(app.toast?.msg).toBe('Два');
+    app.hideToast();
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
   it('shows a plain notice for 1600ms', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
@@ -2770,10 +2786,12 @@ describe('the exports', () => {
     const lists = ids ? store.lists.filter((l) => ids.includes(l.id)) : store.lists;
     const names: Record<string, string> =
       app.lang === 'ru' ? { ci1: 'А', q1: 'Б' } : { ci1: 'A', q1: 'B' };
-    return bundleText(toBundle(lists, (id) => names[id], app.t.untitled, new Date(NOW)));
+    return bundleText(
+      toBundle(officialOnly(lists).lists, (id) => names[id], app.t.untitled, new Date(NOW))
+    );
   };
 
-  it('downloads every list as the dated file, in the index order', async () => {
+  it('downloads every list as the dated file, in the index order, and counts the own items left out', async () => {
     const { app, image } = await signedIn();
     await app.exportLists();
     const [file] = image.downloaded;
@@ -2781,9 +2799,16 @@ describe('the exports', () => {
     expect(file?.blob.type).toBe('application/json');
     const text = await file!.blob.text();
     expect(text).toBe(expected(app));
+    expect(text).not.toContain('hb_emberaxeaaaaaaaa');
     expect(
       (JSON.parse(text) as { lists: { name: string }[] }).lists.map((l) => l.name)
     ).toEqual(['Пустой список', 'Лавка кузнеца', 'Трофеи']);
+    expect(app.toast).toMatchObject({
+      msg: '1 свой предмет не попал в файл: файл списков пока переносит только предметы из книг.',
+      mode: ''
+    });
+    app.hideToast();
+    await app.exportLists([EMPTY]);
     expect(app.toast).toBeNull();
     app.stop();
   });
@@ -2867,14 +2892,14 @@ describe('the exports', () => {
     for (let i = 0; i < LISTS_MAX - 2; i++) store.create('Список ' + String(i));
     await app.exportLists();
     expect(app.toast?.msg).toBe(
-      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями.'
+      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями. 1 свой предмет не попал в файл: файл списков пока переносит только предметы из книг.'
     );
     store.create('Склад', {
       ids: Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => 'r' + String(i))
     });
     await app.exportData();
     expect(app.toast?.msg).toBe(
-      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями. В списках «Склад» позиций больше 5000: разделите такие списки.'
+      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями. В списках «Склад» позиций больше 5000: разделите такие списки. 1 свой предмет не попал в файл: файл списков пока переносит только предметы из книг.'
     );
     app.stop();
   });
@@ -2885,5 +2910,283 @@ describe('the exports', () => {
     await app.exportLists();
     await app.exportData();
     expect(image.downloaded).toEqual([]);
+  });
+});
+
+describe('homebrew', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const loot: Loot = {
+    items: {
+      core_item: [
+        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 }
+      ]
+    }
+  };
+  const AXE = 'hb_emberaxeaaaaaaaa';
+
+  function started(cloud: CloudPort | null, hash: string, over: Partial<Env> = {}) {
+    const router = memoryRouter(hash);
+    const storage = memoryStorage();
+    const app = new AppState(
+      fakeEnv({ router, storage, cloud, data: { load: () => loot }, ...over })
+    );
+    app.start();
+    return { app, router, storage };
+  }
+
+  it('keeps the catalog as the index signed out and with no own item', async () => {
+    const { app } = started(fakeCloud(SEED), '#/roll/std');
+    await flush();
+    expect(app.index).toBe(app.catalog);
+    const empty = started(fakeCloud(SEED, 'gm2'), '#/roll/std');
+    await flush();
+    expect(empty.app.homebrew?.status).toBe('ready');
+    expect(empty.app.index).toBe(empty.app.catalog);
+    expect(started(null, '#/roll/std').app.homebrew).toBeNull();
+    app.stop();
+    empty.app.stop();
+  });
+
+  it('adds own items to the index on sign-in and drops them on sign-out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app } = started(cloud, '#/roll/std');
+    await flush();
+    expect(app.homebrew?.status).toBe('ready');
+    expect(app.index?.byId.get(AXE)?.src).toBe('homebrew');
+    expect(app.catalog?.byId.has(AXE)).toBe(false);
+    expect(app.index?.byId.get('ci1')).toBe(app.catalog?.byId.get('ci1'));
+    const before = app.index;
+    await app.homebrew?.read();
+    expect(app.index).toBe(before);
+    await cloud.auth.signOut();
+    await flush();
+    expect(app.homebrew?.status).toBe('idle');
+    expect(app.index).toBe(app.catalog);
+    app.stop();
+  });
+
+  it('loads the next user homebrew after a sign-out, with nothing of the last one', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { app } = started(cloud, '#/homebrew');
+    await flush();
+    expect(app.homebrew?.items).toEqual([]);
+    const clear = vi.spyOn(app.homebrew!, 'clear');
+    await cloud.auth.signOut();
+    await cloud.auth.signIn('google');
+    await flush();
+    expect(clear).toHaveBeenCalledTimes(2);
+    expect(app.homebrew?.has(AXE)).toBe(true);
+    app.stop();
+  });
+
+  it('re-reads every 45 s on a homebrew page while Realtime is down, and after a failed load', async () => {
+    vi.useFakeTimers();
+    try {
+      const cloud = fakeCloud(SEED, 'gm1', { live: false });
+      const { app } = started(cloud, '#/homebrew');
+      await vi.advanceTimersByTimeAsync(0);
+      const load = vi.spyOn(cloud.homebrew, 'load');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(load).toHaveBeenCalledTimes(1);
+      app.go('#/i/' + AXE);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(load).toHaveBeenCalledTimes(2);
+      app.go('#/homebrew/new');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(load).toHaveBeenCalledTimes(3);
+      app.go('#/i/ci1');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(load).toHaveBeenCalledTimes(3);
+      cloud.setOffline(true);
+      app.homebrew?.clear();
+      await app.homebrew?.load();
+      expect(app.homebrew?.status).toBe('error');
+      cloud.setOffline(false);
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(app.homebrew?.status).toBe('ready');
+      app.stop();
+      expect(app.homebrew?.status).toBe('idle');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('re-reads the homebrew when the tab is shown again', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app, storage } = started(cloud, '#/homebrew');
+    await flush();
+    const load = vi.spyOn(cloud.homebrew, 'load');
+    storage.fireExternalChange(null);
+    await flush();
+    expect(load).toHaveBeenCalledOnce();
+    app.stop();
+  });
+
+  it('counts the account lists that hold a key', async () => {
+    const { app } = started(fakeCloud(SEED, 'gm1'), '#/lists');
+    await flush();
+    expect(app.listsHolding(['ci1'])).toBeGreaterThan(0);
+    expect(app.listsHolding([AXE])).toBe(1);
+    expect(app.listsHolding(['hb_smithpotionaaaaa'])).toBe(0);
+    expect(started(null, '#/lists').app.listsHolding(['ci1'])).toBe(0);
+    app.stop();
+  });
+
+  describe('in lists', () => {
+    const GM2_LIST = '00000000-0000-4000-8000-000000000201';
+    const EMPTY_LIST = '00000000-0000-4000-8000-000000000102';
+
+    /* The entries of a list as the server holds them. */
+    async function written(cloud: CloudPort, id: string) {
+      const read = await cloud.lists.list();
+      const l = read.ok ? read.lists.find((x) => x.id === id) : undefined;
+      return l?.list_entries.map((e) => ({
+        key: e.item_key,
+        source: e.source,
+        snapshot: e.snapshot
+      }));
+    }
+
+    it('finds a frozen copy in the open share first, then in a list, and knows it', async () => {
+      const cloud = fakeCloud(SEED, 'gm2');
+      const { app } = started(cloud, '#/lists');
+      await flush();
+      const kept = app.cloudLists?.get(GM2_LIST)?.frozen?.[AXE];
+      expect(kept?.src).toBe('homebrew');
+      expect(app.frozenCopy(AXE)).toBe(kept);
+      expect(app.recordFor(AXE)).toBe(kept);
+      expect(app.knows(AXE)).toBe(true);
+      expect(app.knows('hb_smithpotionaaaaa')).toBe(false);
+      expect(app.frozenCopy('ci1')).toBeUndefined();
+      expect(app.recordFor('ci1')).toBe(app.catalog?.byId.get('ci1'));
+      await app.sharedView?.open('player-token-1', '00000000-0000-4000-8000-000000000002');
+      const shown = app.sharedView?.shared?.entries.find((e) => e.item_key === AXE)?.snapshot;
+      expect(shown).toBeTruthy();
+      expect(app.frozenCopy(AXE)).toBe(shown);
+      app.sharedView?.close();
+      expect(app.frozenCopy(AXE)).toBe(kept);
+      app.stop();
+    });
+
+    it('prints a frozen copy of an own list, and not a key only a closed share carried', async () => {
+      const gm2 = started(fakeCloud(SEED, 'gm2'), '#/print/' + AXE);
+      await flush();
+      expect(gm2.app.route).toMatchObject({ kind: 'print', ids: [AXE] });
+      gm2.app.stop();
+      const reader = started(fakeCloud(SEED), '#/print/' + AXE);
+      await flush();
+      expect(reader.app.route).toMatchObject({ kind: 'print', ids: [] });
+      reader.app.stop();
+    });
+
+    it("writes the open share's snapshot on an add from #/s/, and a reference from the owner's own", async () => {
+      const cloud = fakeCloud(SEED, 'gm2');
+      const { app } = started(cloud, '#/s/player-token-1');
+      await flush();
+      await app.sharedView?.open('player-token-1', '00000000-0000-4000-8000-000000000002');
+      const store = app.cloudLists!;
+      const l = store.create('С полки');
+      expect(store.add(l.id, [AXE, 'ci1'], (id) => app.knows(id))).toEqual([AXE, 'ci1']);
+      await store.flushNow();
+      const shown = app.sharedView?.shared?.entries.find((e) => e.item_key === AXE)?.snapshot;
+      expect(await written(cloud, l.id)).toEqual([
+        { key: AXE, source: 'homebrew', snapshot: shown },
+        { key: 'ci1', source: 'official', snapshot: null }
+      ]);
+      app.stop();
+
+      const own = fakeCloud(SEED, 'gm1');
+      const gm1 = started(own, '#/s/player-token-1');
+      await flush();
+      await gm1.app.sharedView?.open('player-token-1', '00000000-0000-4000-8000-000000000001');
+      gm1.app.cloudLists?.add(EMPTY_LIST, [AXE], (id) => gm1.app.knows(id));
+      await gm1.app.cloudLists?.flushNow();
+      expect(await written(own, EMPTY_LIST)).toEqual([
+        { key: AXE, source: 'homebrew', snapshot: null }
+      ]);
+      gm1.app.stop();
+    });
+
+    it('writes no homebrew entry before the account items are read', async () => {
+      const cloud = fakeCloud(SEED, 'gm1');
+      vi.spyOn(cloud.homebrew, 'load').mockReturnValue(new Promise(() => undefined));
+      const { app } = started(cloud, '#/lists');
+      await flush();
+      expect(app.cloudLists?.status).toBe('ready');
+      expect(app.homebrew?.status).toBe('loading');
+      const apply = vi.spyOn(cloud.lists, 'apply');
+      expect(app.cloudLists?.add(EMPTY_LIST, [AXE], () => true)).toEqual([]);
+      await app.cloudLists?.flushNow();
+      expect(apply).not.toHaveBeenCalled();
+      app.stop();
+    });
+  });
+
+  describe('the leave guard', () => {
+    it('asks on go() and keeps the page on a refusal', () => {
+      const dialog = fakeDialog(false);
+      const { app } = started(null, '#/homebrew/new', { dialog });
+      let dirty = true;
+      const release = app.guardLeave(() => dirty);
+      app.go('#/lists');
+      expect(dialog.asked).toEqual([dict('ru').leaveUnsaved]);
+      expect(app.hash).toBe('#/homebrew/new');
+      app.go('#/homebrew/new');
+      expect(dialog.asked).toHaveLength(1);
+      dirty = false;
+      app.go('#/lists');
+      expect(app.hash).toBe('#/lists');
+      expect(dialog.asked).toHaveLength(1);
+      release();
+      app.stop();
+    });
+
+    it('puts the address back on a refused router change, and never asks on replace()', () => {
+      const dialog = fakeDialog(false);
+      const { app, router } = started(null, '#/homebrew/new', { dialog });
+      const release = app.guardLeave(() => true);
+      const navs = app.navigations;
+      router.navigate('#/lists');
+      expect(app.hash).toBe('#/homebrew/new');
+      expect(router.hash()).toBe('#/homebrew/new');
+      expect(app.navigations).toBe(navs);
+      app.replace('#/homebrew/' + AXE);
+      expect(app.hash).toBe('#/homebrew/' + AXE);
+      expect(dialog.asked).toHaveLength(1);
+      release();
+      router.navigate('#/lists');
+      expect(app.hash).toBe('#/lists');
+      app.stop();
+    });
+
+    it('leaves on a yes, and a released check asks nothing', () => {
+      const dialog = fakeDialog(true);
+      const { app } = started(null, '#/homebrew/new', { dialog });
+      const release = app.guardLeave(() => true);
+      app.go('#/lists');
+      expect(app.hash).toBe('#/lists');
+      const other = app.guardLeave(() => true);
+      release();
+      app.go('#/search');
+      expect(dialog.asked).toHaveLength(2);
+      other();
+      app.go('#/tables');
+      expect(dialog.asked).toHaveLength(2);
+      app.stop();
+    });
+  });
+
+  it('decodes a #/l/ link with catalog ids only, own keys dropped', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const payload = encodeList({ name: 'С топором', ids: ['ci1', AXE] }, true);
+    const { app } = started(cloud, sharedListHash(payload));
+    await flush();
+    expect(app.index?.byId.has(AXE)).toBe(true);
+    app.askSignIn({ hash: sharedListHash(payload), action: { do: 'saveList' } });
+    await app.signIn('google');
+    await flush();
+    const made = app.cloudLists?.lists.find((l) => l.name === 'С топором');
+    expect(made?.ids).toEqual(['ci1']);
+    app.stop();
   });
 });

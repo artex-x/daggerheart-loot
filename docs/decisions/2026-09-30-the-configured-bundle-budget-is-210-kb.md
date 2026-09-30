@@ -1,5 +1,6 @@
 # 2026-09-30 - The configured bundle budget is 210 kB; the unconfigured stays 150 kB
 
+- Amended by "The bundle budget steps up per batch to 250 kB configured and 190 unconfigured" (2026-09-30): the ceilings, and a raise per batch in the same commit.
 - Task: `persist-4b-requests-polish` (owner, 2026-09-30, after CI run 36638258244 measured the configured build at 202.1 kB).
 - Decision: `tools/bundle-budget.mjs` allows 210 kB gzip for the configured
   build (with the account client chunk) and keeps 150 kB for the

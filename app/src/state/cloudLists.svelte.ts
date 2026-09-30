@@ -25,17 +25,21 @@ import {
   limitText,
   NAME_MAX,
   NOTE_MAX,
+  OFFICIAL,
   priceOf,
   quantityOf,
   toCloudList,
   type CloudList,
   type EntryPatch,
+  type EntryRow,
+  type EntrySource,
   type ImportRow,
   type ListOp,
   type ListRow,
   type NewListRow
 } from '../lib/cloudLists.js';
 import type { Dict, Msg } from '../lib/dict.js';
+import { isHomebrewKey, type HomebrewRecord } from '../lib/homebrew.js';
 import { COALESCE_MS, readOwnerMessage } from '../lib/live.js';
 import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
 import {
@@ -122,6 +126,10 @@ export class CloudLists implements ListModel {
   readonly #events: EventsPort | null;
   readonly #feed: LiveFeed | null;
   #remoteTimer: ReturnType<typeof setTimeout> | null = null;
+  readonly #sourceOf: (key: string) => EntrySource | null;
+  /* What each removed entry was written as, by list and key: an undo writes it back
+     exactly, never resolved again (docs/specs/FEATURES.md, "Lists"). */
+  #removed: Record<string, EntrySource> = {};
 
   constructor(
     repo: ListRepository,
@@ -133,22 +141,32 @@ export class CloudLists implements ListModel {
       /** The owner's purchase requests: one feed per topic, so they read its messages too. */
       requests?:
         { message(event: string, payload: unknown): void; refetch(): void } | undefined;
-    }
+      /** The author's homebrew: the same feed carries its `homebrew` messages. */
+      homebrew?:
+        { message(event: string, payload: unknown): void; refetch(): void } | undefined;
+    },
+    /** What an added entry is written as; null leaves the key out. The default writes
+     *  catalog keys only. */
+    sourceOf?: (key: string) => EntrySource | null
   ) {
     this.#repo = repo;
     this.#say = say;
     this.#dict = dict;
+    this.#sourceOf = sourceOf ?? ((key) => (isHomebrewKey(key) ? null : OFFICIAL));
     this.#events = live?.events ?? null;
     const requests = live?.requests;
+    const homebrew = live?.homebrew;
     this.#feed = live
       ? new LiveFeed(live.events, live.random, {
           message: (event, payload) => {
             this.#message(event, payload);
             requests?.message(event, payload);
+            homebrew?.message(event, payload);
           },
           refetch: () => {
             this.#remote();
             requests?.refetch();
+            homebrew?.refetch();
           }
         })
       : null;
@@ -245,6 +263,7 @@ export class CloudLists implements ListModel {
     this.#stopRetry();
     this.#stopQuiet();
     this.#read = {};
+    this.#removed = {};
     this.lists = [];
     this.status = 'idle';
     this.sync = 'saved';
@@ -471,8 +490,10 @@ export class CloudLists implements ListModel {
   ): CloudList {
     const now = Date.now();
     const id = this.#repo.newId();
-    const ids = [...(init.ids ?? [])];
-    const entries = entryRowsOf(ids, init.meta, () => this.#repo.newId());
+    /* A key the resolver refuses is left out: the page would draw an entry with no row
+       behind it. */
+    const entries = this.#rowsOf(init.ids ?? [], init.meta, 0);
+    const ids = entries.map((e) => e.item_key);
     const l: CloudList = {
       id,
       name: clip(name.trim() || this.#dict().untitled, NAME_MAX),
@@ -482,6 +503,8 @@ export class CloudLists implements ListModel {
       updated: now,
       entryIds: Object.fromEntries(entries.map((e) => [e.item_key, e.id]))
     };
+    const frozen = frozenFrom(entries, {});
+    if (frozen) l.frozen = frozen;
     if (l.note) l.note = clip(l.note, NOTE_MAX);
     if (l.hnote) l.hnote = clip(l.hnote, NOTE_MAX);
     const row: NewListRow = {
@@ -603,27 +626,55 @@ export class CloudLists implements ListModel {
     const at = l.ids.indexOf(entryId);
     const entryIds = { ...l.entryIds };
     Reflect.deleteProperty(entryIds, entryId);
-    const next = this.#change(id, (x) => ({
-      ...x,
-      ids: x.ids.filter((k) => k !== entryId),
-      entryIds
-    }));
+    /* No list holds a homebrew key as an official row, so a homebrew key with no frozen
+       copy is a reference. */
+    const copy = l.frozen?.[entryId];
+    this.#removed[removedKey(id, entryId)] = copy
+      ? { source: 'homebrew', snapshot: copy }
+      : isHomebrewKey(entryId)
+        ? { source: 'homebrew', snapshot: null }
+        : OFFICIAL;
+    const next = this.#change(id, (x) => {
+      const out: CloudList = { ...x, ids: x.ids.filter((k) => k !== entryId), entryIds };
+      if (copy) {
+        const frozen = { ...x.frozen };
+        Reflect.deleteProperty(frozen, entryId);
+        if (Object.keys(frozen).length) out.frozen = frozen;
+        else delete out.frozen;
+      }
+      return out;
+    });
     this.#enqueue({ list: id, write: { op: 'remove_entries', ids: [rowId] } });
     /* Positions stay 0..n-1, so an entry added at the end never shares one. */
     if (next && at < next.ids.length) this.#reorder(next);
   }
 
+  /** Writes back what `removeEntry` removed: the same source and snapshot. */
   restoreEntry(id: string, entryId: string, at: number, meta: ListEntryMeta): void {
     const l = this.get(id);
     if (!l || l.ids.includes(entryId)) return;
+    const k = removedKey(id, entryId);
+    const src = this.#removed[k] ?? this.#sourceOf(entryId);
+    if (!src) return;
+    Reflect.deleteProperty(this.#removed, k);
     const rowId = this.#repo.newId();
-    const next = this.#change(id, (x) => ({
-      ...withEntryAt(x, entryId, at, meta),
-      entryIds: { ...x.entryIds, [entryId]: rowId }
-    }));
+    const next = this.#change(id, (x) => {
+      const out: Omit<CloudList, 'updated'> = {
+        ...withEntryAt(x, entryId, at, meta),
+        entryIds: { ...x.entryIds, [entryId]: rowId }
+      };
+      if (src.snapshot) out.frozen = { ...x.frozen, [entryId]: src.snapshot };
+      return out;
+    });
     if (!next) return;
     const place = next.ids.indexOf(entryId);
-    const rows = entryRowsOf([entryId], { [entryId]: meta }, () => rowId, place);
+    const rows = entryRowsOf(
+      [entryId],
+      { [entryId]: meta },
+      () => rowId,
+      place,
+      () => src
+    );
     this.#enqueue({ list: id, write: { op: 'add', list_id: id, entries: rows } });
     if (place < next.ids.length - 1) this.#reorder(next);
   }
@@ -636,15 +687,42 @@ export class CloudLists implements ListModel {
   ): string[] {
     const l = this.get(id);
     if (!l) return [];
-    const fresh = freshIds(l, ids, knows);
+    const fresh = freshIds(l, ids, knows).filter((k) => this.#sourceOf(k) !== null);
     if (!fresh.length) return [];
     const added = withIds(l, fresh, meta);
-    const rows = entryRowsOf(fresh, added.meta, () => this.#repo.newId(), l.ids.length);
-    this.#change(id, () => ({
-      ...added,
-      entryIds: { ...l.entryIds, ...Object.fromEntries(rows.map((r) => [r.item_key, r.id])) }
-    }));
+    const rows = this.#rowsOf(fresh, added.meta, l.ids.length);
+    const frozen = frozenFrom(rows, l.frozen ?? {});
+    this.#change(id, () => {
+      const out: Omit<CloudList, 'updated'> = {
+        ...added,
+        entryIds: { ...l.entryIds, ...Object.fromEntries(rows.map((r) => [r.item_key, r.id])) }
+      };
+      if (frozen) out.frozen = frozen;
+      return out;
+    });
     this.#enqueue({ list: id, write: { op: 'add', list_id: id, entries: rows } });
     return fresh;
   }
+
+  /* The rows of the keys the resolver writes, with their meta. */
+  #rowsOf(
+    ids: readonly string[],
+    meta: Readonly<Record<string, ListEntryMeta>> | undefined,
+    from: number
+  ): EntryRow[] {
+    return entryRowsOf(ids, meta, () => this.#repo.newId(), from, this.#sourceOf);
+  }
+}
+
+const removedKey = (list: string, key: string): string => list + ' ' + key;
+
+/* `frozen` with the rows' snapshots; null when no row carries one. */
+function frozenFrom(
+  rows: readonly EntryRow[],
+  frozen: Readonly<Record<string, HomebrewRecord>>
+): Record<string, HomebrewRecord> | null {
+  const copies = rows.flatMap((r) => (r.snapshot ? [[r.item_key, r.snapshot]] : []));
+  return copies.length
+    ? { ...frozen, ...(Object.fromEntries(copies) as Record<string, HomebrewRecord>) }
+    : null;
 }

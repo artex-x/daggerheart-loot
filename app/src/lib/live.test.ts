@@ -4,6 +4,7 @@ import {
   BACKOFF_MAX_MS,
   feedStep,
   readOwnerMessage,
+  readHomebrewMessage,
   readRequestMessage,
   readShareMessage,
   type FeedEvent,
@@ -220,5 +221,29 @@ describe('readRequestMessage', () => {
 
   it('is not read as a list message, so a client without it drops the event', () => {
     expect(readOwnerMessage('request', { list: LIST, by: null })).toBeNull();
+  });
+});
+
+describe('readHomebrewMessage', () => {
+  it('reads by or none, with Realtime id key ignored', () => {
+    expect(readHomebrewMessage('homebrew', { by: 'tab-1', id: 'm' })).toEqual({ by: 'tab-1' });
+    expect(readHomebrewMessage('homebrew', { by: null })).toEqual({ by: null });
+    expect(readHomebrewMessage('homebrew', {})).toEqual({ by: null });
+  });
+
+  it('drops any other event or shape', () => {
+    for (const [event, payload] of [
+      ['list', { by: null }],
+      ['homebrew', null],
+      ['homebrew', ['tab']],
+      ['homebrew', { by: 4 }]
+    ] as const) {
+      expect(readHomebrewMessage(event, payload)).toBeNull();
+    }
+  });
+
+  it('is not read as a list or a request message', () => {
+    expect(readOwnerMessage('homebrew', { by: null })).toBeNull();
+    expect(readRequestMessage('homebrew', { by: null })).toBeNull();
   });
 });

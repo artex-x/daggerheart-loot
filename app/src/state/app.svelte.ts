@@ -21,11 +21,18 @@ import {
   bundleFileName,
   bundleText,
   dataFileName,
+  officialOnly,
   overBounds,
   toBundle,
   type Bundle
 } from '../lib/bundle.js';
-import { isCloudId, limitText, type CloudList } from '../lib/cloudLists.js';
+import {
+  entrySource,
+  isCloudId,
+  limitText,
+  snapshotRecords,
+  type CloudList
+} from '../lib/cloudLists.js';
 import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict, type Msg } from '../lib/dict.js';
 import {
@@ -41,16 +48,19 @@ import {
   type Route,
   type Site
 } from '../lib/hash.js';
+import { isHomebrewKey, withRecords, type HomebrewRecord } from '../lib/homebrew.js';
 import { fewNames, nameOf } from '../lib/i18n.js';
+import { plural } from '../lib/plural.js';
 import { legacyWritable } from '../lib/legacy.js';
 import { decodeList, encodeList, type DecodedList } from '../lib/listLink.js';
 import { copyInit, findListByPayload, LIST_PAGE, type StoredList } from '../lib/lists.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import { readPrefs, type NotifyGm, type Prefs } from '../lib/prefs.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
-import type { Kind, Lang, Section } from '../lib/types.js';
+import type { Kind, Lang, Record_, Section } from '../lib/types.js';
 import type { AuthResult, Env, Provider, Session } from '../ports/index.js';
 import { CloudLists } from './cloudLists.svelte.js';
+import { Homebrew } from './homebrew.svelte.js';
 import { LegacyMove } from './legacyMove.svelte.js';
 import { ListStore, type ListModel, type MovedList } from './lists.svelte.js';
 import { OwnerRequests } from './ownerRequests.svelte.js';
@@ -158,9 +168,20 @@ export class AppState {
    *
    * Built once: it is a few thousand records and nothing about it changes while
    * the page is open. Null is a state the interface has to render, not a crash -
-   * see docs/specs/FEATURES.md, "Records".
+   * see docs/specs/FEATURES.md, "Records". A `#/l/` link and a lists file read it
+   * alone: they hold catalog ids only.
    */
-  readonly index: Index | null;
+  readonly catalog: Index | null;
+
+  /** The signed-in author's homebrew; null with no sign-in configured. */
+  readonly homebrew: Homebrew | null;
+
+  /** The catalogue with the signed-in author's own items: what every page that draws
+   *  records reads. The catalogue object itself while the account holds none. */
+  index: Index | null = $derived.by(() => {
+    const own = this.homebrew?.records ?? [];
+    return this.catalog && own.length ? withRecords(this.catalog, own, []) : this.catalog;
+  });
 
   lang = $state<Lang>('ru');
   /**
@@ -234,6 +255,8 @@ export class AppState {
      or for the next user. */
   #pending: PendingAction | null = null;
   #listPoll: ReturnType<typeof setInterval> | null = null;
+  /* The one page with unsaved edits asks before any navigation leaves it. */
+  #leaveCheck: (() => boolean) | null = null;
 
   /**
    * The list currently open on the list page, and the payload its address
@@ -410,7 +433,7 @@ export class AppState {
   constructor(env: Env) {
     this.env = env;
     const loot = env.data.load();
-    this.index = loot ? buildIndex(loot) : null;
+    this.catalog = loot ? buildIndex(loot) : null;
     this.lang = readLang(env);
     this.#home = homeOf(env.storage.get(HOME_KEY));
     this.#warnHidden = env.storage.get(WARN_KEY) === '1';
@@ -426,6 +449,12 @@ export class AppState {
     };
     this.lists = new ListStore(env, say, () => this.t);
     const cloud = env.cloud;
+    this.homebrew = cloud
+      ? new Homebrew(cloud.homebrew, {
+          tab: () => cloud.events.tab,
+          refreshLists: () => this.cloudLists?.refresh() ?? Promise.resolve()
+        })
+      : null;
     this.ownerRequests = cloud
       ? new OwnerRequests(cloud.requests, {
           flush: () => this.cloudLists?.flushNow() ?? Promise.resolve(true),
@@ -435,11 +464,26 @@ export class AppState {
         })
       : null;
     this.cloudLists = cloud
-      ? new CloudLists(cloud.lists, say, () => this.t, {
-          events: cloud.events,
-          random: env.random,
-          requests: this.ownerRequests ?? undefined
-        })
+      ? new CloudLists(
+          cloud.lists,
+          say,
+          () => this.t,
+          {
+            events: cloud.events,
+            random: env.random,
+            requests: this.ownerRequests ?? undefined,
+            homebrew: this.homebrew ?? undefined
+          },
+          (key) =>
+            entrySource(
+              key,
+              {
+                ready: this.homebrew?.status === 'ready',
+                has: (k) => this.homebrew?.has(k) ?? false
+              },
+              this.frozenCopy(key)
+            )
+        )
       : null;
     this.requestSender = cloud
       ? new RequestSender(cloud.requests, {
@@ -505,6 +549,11 @@ export class AppState {
         this.#expectHash = null;
         return;
       }
+      /* A refused leave puts the address back: the page with the edits stays. */
+      if (h !== this.hash && !this.#mayLeave()) {
+        this.env.router.replace(this.hash);
+        return;
+      }
       this.hash = this.#fallback(h);
       this.#forgetSignIn();
       this.#forgetPending();
@@ -557,6 +606,7 @@ export class AppState {
       else void this.#pull();
       void this.cloudLists?.refresh().then(() => this.#listsReady());
       void this.ownerRequests?.read();
+      void this.homebrew?.read();
     });
     this.#stopAuth = () => {
       live = false;
@@ -617,6 +667,8 @@ export class AppState {
     if (lists) {
       lists.clear();
       this.ownerRequests?.clear();
+      this.homebrew?.clear();
+      void this.homebrew?.load();
       void lists.load().then(() => {
         /* The owner's topic from the first read until sign-out, on every route. */
         if (this.#prefsFor === s.userId) {
@@ -652,7 +704,7 @@ export class AppState {
     if (!store) return;
     const lists = ids ? store.lists.filter((l) => ids.includes(l.id)) : store.lists;
     const now = this.#exportedAt();
-    const b = this.#bundle(lists, now);
+    const { b, skipped } = this.#bundle(lists, now);
     try {
       await this.env.image.download(
         new Blob([bundleText(b)], { type: 'application/json' }),
@@ -662,7 +714,7 @@ export class AppState {
       this.say((t) => t.accountFailed, { error: true });
       return;
     }
-    this.#warnBounds(b);
+    this.#warnBounds(b, skipped);
   }
 
   /** Downloads «Скачать мои данные»: a store-only zip holding `lists.json`, the lists file
@@ -671,7 +723,7 @@ export class AppState {
     const store = this.cloudLists;
     if (!store) return;
     const now = this.#exportedAt();
-    const b = this.#bundle(store.lists, now);
+    const { b, skipped } = this.#bundle(store.lists, now);
     try {
       const { zipStored } = await import('../lib/zip.js');
       const bytes = zipStored(
@@ -686,7 +738,7 @@ export class AppState {
       this.say((t) => t.accountFailed, { error: true });
       return;
     }
-    this.#warnBounds(b);
+    this.#warnBounds(b, skipped);
   }
 
   /* The export's moment: the test build's fixed clock names a known file. */
@@ -695,10 +747,13 @@ export class AppState {
     return new Date(this.env.clock.now());
   }
 
-  #bundle(lists: readonly CloudList[], now: Date): Bundle {
+  /* The lists file is official only (docs/specs/CONTRACTS.md section 4): a homebrew entry
+     is left out and counted. */
+  #bundle(lists: readonly CloudList[], now: Date): { b: Bundle; skipped: number } {
     const byId = this.index?.byId;
-    return toBundle(
-      lists,
+    const { lists: official, skipped } = officialOnly(lists);
+    const b = toBundle(
+      official,
       (id) => {
         const it = byId?.get(id);
         return it ? nameOf(it, this.lang) : undefined;
@@ -706,15 +761,17 @@ export class AppState {
       this.t.untitled,
       now
     );
+    return { b, skipped };
   }
 
   /* Not an error: the file downloaded. */
-  #warnBounds(b: Bundle): void {
+  #warnBounds(b: Bundle, skipped: number): void {
     const { many, long } = overBounds(b);
-    if (!many && !long.length) return;
-    this.say((t) =>
+    const over = many || long.length > 0;
+    if (!over && !skipped) return;
+    this.say((t, lang) =>
       [
-        t.exportOverBounds,
+        over ? t.exportOverBounds : '',
         many ? t.exportManyLists : '',
         long.length
           ? t.exportLongLists.replace(
@@ -724,7 +781,8 @@ export class AppState {
                 t
               )
             )
-          : ''
+          : '',
+        skipped ? plural(skipped, t.exportHomebrewSkippedN, lang) : ''
       ]
         .filter(Boolean)
         .join(' ')
@@ -759,7 +817,7 @@ export class AppState {
     let to = this.openList ? into(this.openList) : undefined;
     if (!to && r.kind === 'storedList') to = into(r.listId);
     if (!to && r.kind === 'sharedList' && !r.packed) {
-      const knows = (id: string): boolean => this.index?.byId.has(id) ?? false;
+      const knows = (id: string): boolean => this.catalog?.byId.has(id) ?? false;
       const mine = findListByPayload(
         removed.map((m) => m.list),
         r.payload,
@@ -775,6 +833,7 @@ export class AppState {
   #listsSignedOut(): void {
     this.cloudLists?.clear();
     this.ownerRequests?.clear();
+    this.homebrew?.clear();
     const r = this.route;
     if (r.kind === 'storedList' && isCloudId(r.listId)) this.replace(sectionHash('lists'));
   }
@@ -802,6 +861,70 @@ export class AppState {
     const retry = lists.status === 'error' || this.legacyMove?.status === 'failed';
     if ((shown && !lists.live) || retry) void lists.refresh().then(() => this.#listsReady());
     if (shown && !lists.live) void this.ownerRequests?.read();
+    const homebrew = this.homebrew;
+    if (homebrew && ((this.#homebrewShown() && !lists.live) || homebrew.status === 'error')) {
+      void homebrew.read();
+    }
+  }
+
+  /* A page that draws own items: the homebrew pages and an own record. */
+  #homebrewShown(): boolean {
+    const r = this.route;
+    return (
+      r.kind === 'homebrew' ||
+      r.kind === 'homebrewItem' ||
+      (r.kind === 'record' && isHomebrewKey(r.id))
+    );
+  }
+
+  /**
+   * Returns the frozen copy of another account's item that `key` names: the open share's
+   * first (the view holds a projection only while `#/s/` is on screen), then the first one an
+   * account list holds. A frozen copy is drawn only where a list carries it: never in search,
+   * tables or `#/i/` (docs/specs/FEATURES.md, "Lists"). Reads no route: `route` asks it.
+   */
+  frozenCopy(key: string): HomebrewRecord | undefined {
+    if (!isHomebrewKey(key)) return undefined;
+    const shown = snapshotRecords(this.sharedView?.shared).find((r) => r.id === key);
+    if (shown) return shown;
+    for (const l of this.cloudLists?.lists ?? []) {
+      const copy = l.frozen?.[key];
+      if (copy) return copy;
+    }
+    return undefined;
+  }
+
+  /** Returns the record `id` names: the catalogue's or an own item, else a frozen copy. */
+  recordFor(id: string): Record_ | undefined {
+    return this.index?.byId.get(id) ?? this.frozenCopy(id);
+  }
+
+  /** Whether `recordFor` finds a record for `id`. */
+  knows(id: string): boolean {
+    return this.recordFor(id) !== undefined;
+  }
+
+  /** How many account lists hold any of `keys`. */
+  listsHolding(keys: readonly string[]): number {
+    return (this.cloudLists?.lists ?? []).filter((l) => l.ids.some((id) => keys.includes(id)))
+      .length;
+  }
+
+  /**
+   * Makes every navigation ask `leaveUnsaved` while `dirty()` answers true: a link, `go()`,
+   * Back and Forward. `replace()` never asks. One check at a time; returns its release.
+   */
+  guardLeave(dirty: () => boolean): () => void {
+    this.#leaveCheck = dirty;
+    return () => {
+      if (this.#leaveCheck === dirty) this.#leaveCheck = null;
+    };
+  }
+
+  #mayLeave(): boolean {
+    const check = this.#leaveCheck;
+    if (!check?.()) return true;
+    return this.env.dialog.confirm(this.t.leaveUnsaved);
   }
 
   /**
@@ -918,7 +1041,7 @@ export class AppState {
     }
     /* After the cutoff a `#/l/` address draws the retired page: nothing to save. */
     if (r.kind !== 'sharedList' || !this.legacyWritable) return;
-    const d = decodeList(r.payload, (id) => this.index?.byId.has(id) ?? false);
+    const d = decodeList(r.payload, (id) => this.catalog?.byId.has(id) ?? false);
     if (d) this.saveCopyOf(d);
   }
 
@@ -1068,6 +1191,7 @@ export class AppState {
     this.#stopHidden = null;
     this.cloudLists?.unwatch();
     this.ownerRequests?.clear();
+    this.homebrew?.clear();
     /* A timer left running past the listeners it would otherwise update is a
        leak of the same kind `#stopRouter`/`#stopListWatch` already guard
        against. */
@@ -1088,6 +1212,9 @@ export class AppState {
     const ms = opts.action ? 7000 : opts.error ? 2600 : 1600;
     this.#said = { msg, mode, action: opts.action };
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
+    this.#toastTimer = null;
+    /* The golden harness's test build: a capture reads the toast however late it arrives. */
+    if (this.env.clock.holdsToasts?.()) return;
     this.#toastTimer = setTimeout(() => {
       this.hideToast();
     }, ms);
@@ -1166,9 +1293,7 @@ export class AppState {
    *  `$derived` rather than a getter: `Shell`, `App` and every page
    *  read this several times per render, and a getter re-parses the hash on
    *  each one. */
-  route: Route = $derived.by(() =>
-    parseHash(this.hash, (id) => this.index?.byId.has(id) ?? false)
-  );
+  route: Route = $derived.by(() => parseHash(this.hash, (id) => this.knows(id)));
 
   /** Which tab is lit. Nothing is lit on a record, a list page or a print
    *  sheet - the live `renderTabs` (app.js 3667-3673) compares against the
@@ -1268,6 +1393,7 @@ export class AppState {
   }
 
   go(hash: string): void {
+    if (hash !== this.hash && !this.#mayLeave()) return;
     /* Set before `navigate()`, which for a fake/in-memory router fires
        the change handler synchronously, inline in this same call - the
        handler reads it back before this method's own processing below runs,

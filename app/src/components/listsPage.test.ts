@@ -522,6 +522,18 @@ describe('with sign-in configured', () => {
   const groupNames = (container: HTMLElement): string[] =>
     [...container.querySelectorAll('h2')].map((h) => h.textContent);
 
+  it('counts a frozen copy and an own item on their cards, each with a thumb', async () => {
+    const gm2 = withCloud(fakeCloud(SEED, 'gm2'));
+    const frozen = await screen.findByRole('link', { name: /^Список второго ГМа, / });
+    expect(frozen.querySelector('.listcard-meta')?.textContent).toMatch(/^1 позиция · /);
+    const known = frozen.querySelectorAll('.listcard-thumbs img').length;
+    expect(known).toBeGreaterThan(0);
+    gm2.unmount();
+    withCloud(fakeCloud(SEED, 'gm1'));
+    const shop = await screen.findByRole('link', { name: /^Лавка кузнеца, / });
+    expect(shop.querySelectorAll('.listcard-thumbs img').length).toBeGreaterThan(1);
+  });
+
   it('draws the prompt as the panel signed out, and «Войти» opens the account page', async () => {
     const { container, router } = withCloud(fakeCloud(SEED));
     const button = await screen.findByRole('button', { name: 'Войти' });
@@ -622,14 +634,14 @@ describe('with sign-in configured', () => {
     expect([...container.querySelectorAll('.listcard-meta')].map((p) => p.textContent)).toEqual(
       [
         '0 позиций · изменён 1 час назад',
-        '1 позиция · изменён 3 дня назад',
+        '2 позиции · изменён 3 дня назад',
         '1 позиция · изменён в прошлом месяце',
         '1 позиция',
         '0 позиций'
       ]
     );
     const shop = screen.getByRole('link', {
-      name: 'Лавка кузнеца, 1 позиция, изменён 3 дня назад'
+      name: 'Лавка кузнеца, 2 позиции, изменён 3 дня назад'
     });
     expect(shop).toHaveAttribute('href', '#/lists/00000000-0000-4000-8000-000000000101');
     /* An account card has one action: delete. */

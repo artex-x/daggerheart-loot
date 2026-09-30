@@ -46,6 +46,34 @@ const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
  *  `tests/derived.js` keeps the two equal. */
 const LOOT = require('../../data.json');
 
+/* The fake cloud seed's homebrew (`app/src/ports/fake-cloud-seed.ts`): the axe's
+   row id, and its content renamed as another device would. */
+const HB_AXE = 'hb_emberaxeaaaaaaaa';
+const HB_RING = 'hb_engravedringaaaa';
+const HB_CAP = 'hb_whispercapaaaaaa';
+const HB_AXE_ID = '00000000-0000-4000-8000-000000000511';
+const HB_AXE_RENAMED = {
+  content: {
+    kind: 'equip',
+    ru: 'Топор Тлеющих Углей II',
+    en: 'Ember Axe II',
+    rud: 'Лезвие тлеет и не гаснет под дождём.',
+    ende: 'The blade smoulders and does not go out in the rain.',
+    section: 'hb_sectbladesaaaaaa',
+    eq: {
+      t: 'weapon',
+      tier: 2,
+      cls: 'mag',
+      tr: 'spellcast',
+      rg: 'melee',
+      dmg: 'd10+2',
+      dt: 'mag',
+      bu: 2
+    }
+  },
+  book_id: '00000000-0000-4000-8000-000000000501'
+};
+
 /* The print routes, built once and shared between the states below and the
  * specs that key off their ids by name - `tests/app/print.js`'s own
  * long-text set for LONG. */
@@ -192,6 +220,8 @@ const LANGS = ['ru', 'en'];
 const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
 /** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
 const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
+/** The fake seed's `gm2` list, `uuid(201)`, which holds a frozen copy of gm1's axe. */
+const GM2_LIST = '#/lists/00000000-0000-4000-8000-000000000201';
 
 /** Two purchase requests on «Лавка кузнеца» from other readers, the players' link
  *  first: the fake seed holds none, so a state makes its own. */
@@ -1128,7 +1158,7 @@ const STATES = [
     id: '#/lists ~ requests as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: 'two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «9 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards',
+    why: 'two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «10 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards',
     enter: async (d) => {
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.count('.listcard-req')); i++) await d.settle();
@@ -1205,7 +1235,46 @@ const STATES = [
     id: SHOP + ' as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Лавка кузнеца»: «9 позиций · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open'
+    why: '«Лавка кузнеца»: «10 позиций · Сохранено», «Поделиться» and «Свой предмет» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»'
+  },
+  {
+    id: SHOP + ' ~ own item as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: '«Свой предмет» pressed and expanded: the panel «Свой предмет в этот список» with «Название» *, «Описание», «Добавить в список», «Закрыть» and the note on «Мои предметы»',
+    enter: async (d) => {
+      await d.click('Свой предмет');
+    }
+  },
+  {
+    id: SHOP + ' ~ own item added as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: 'a name typed and «Добавить в список» pressed: «11 позиций», the new plain item last, the fields empty, the toast «Предмет «Фляга контрабандиста» добавлен в список»',
+    enter: async (d) => {
+      await d.click('Свой предмет');
+      await d.type('Название*', 'Фляга контрабандиста');
+      await d.press('Добавить в список');
+      for (let i = 0; i < 40 && !(await d.text()).includes('11 позиций'); i++) await d.settle();
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: SHOP + ' ~ own item refused as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: '«Добавить в список» with no name: «Введите название.» under «Название», the field aria-invalid, nothing made',
+    enter: async (d) => {
+      await d.click('Свой предмет');
+      await d.press('Добавить в список');
+    }
+  },
+  {
+    id: GM2_LIST + ' as gm2',
+    route: GM2_LIST,
+    as: 'gm2',
+    why: "gm2's list: «2 позиции», the Scepter, then the frozen copy of gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; «Свой предмет» after «Поделиться»"
   },
   {
     id: SHOP + ' ~ share as gm1',
@@ -1928,10 +1997,119 @@ const STATES = [
     id: '#/roll/std ~ account menu as gm1',
     route: '#/roll/std',
     as: 'gm1',
-    why: 'the account menu open: «Аккаунт», «Мои списки», «Выйти»',
+    why: 'the account menu open: «Аккаунт», «Мои списки», «Мои предметы», «Выйти»',
     enter: async (d) => {
       await d.press('Аккаунт: gm1@example.test');
     }
+  },
+
+  /* Homebrew (docs/specs/FEATURES.md, "Homebrew"): the seed's source «Мастерская
+     Ольхи» with two sections, and four items - the axe in «Холодное оружие», a
+     Russian-only potion, an English-only cap and a plain ring. */
+  {
+    id: '#/homebrew as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: '«Мои предметы: 4 из 100», the sources panel («Хоумбрю» 3 предмета, «Мастерская Ольхи» 1 предмет · 2 раздела), «Новый предмет», the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+  },
+  {
+    id: '#/homebrew ~ sections as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: '«Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Добавить раздел»',
+    enter: async (d) => {
+      await d.click('Разделы');
+    }
+  },
+  {
+    id: '#/homebrew as gm2',
+    route: '#/homebrew',
+    as: 'gm2',
+    why: 'an account with no homebrew: «Мои предметы: 0 из 100», the sources panel with «Хоумбрю» alone, «Своих предметов пока нет - создайте первый.»'
+  },
+  {
+    id: '#/homebrew',
+    route: '#/homebrew',
+    why: 'signed out: the heading and «Войдите, чтобы создавать свои предметы.» with «Войти»'
+  },
+  {
+    id: '#/homebrew/new as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'a new item: «Новый предмет», the legend, «Вид» on «Предмет», «Источник» on «Хоумбрю», «Название» *, «Описание», «Ранг» on «Нет», «Сохранить» and «Отмена», the preview card'
+  },
+  {
+    id: '#/homebrew/new ~ problems as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: '«Снаряжение», then «Сохранить» with nothing typed: the summary «Не сохранено: исправьте 8 полей.» with a link per field, each field with its line and aria-invalid on the text fields',
+    enter: async (d) => {
+      await d.click('Снаряжение');
+      await d.press('Сохранить');
+    }
+  },
+  {
+    id: '#/homebrew/new ~ new source as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: '«+ Новый источник...» chosen: the select swapped for «Новый источник» with «Создать» and «Отмена»',
+    enter: async (d) => {
+      await d.choose('#hb-book', '__new');
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: 'the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Второй набор характеристик» folded, «Удалить», the preview card'
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ conflict as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: 'the axe renamed on another device, then «Сохранить»: the banner «Этот предмет изменили на другом устройстве...» with «Сохранить мою версию» and «Показать новую версию», the form as it was',
+    enter: async (d) => {
+      await d.fake('homebrew.updateItem', HB_AXE_ID, HB_AXE_RENAMED, null);
+      await d.press('Сохранить');
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ not saved as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: 'the network lost, then «Сохранить»: «Не удалось сохранить - нет связи. Правки остались в форме...» under the buttons, the form kept',
+    enter: async (d) => {
+      await d.fake('setOffline', true);
+      await d.press('Сохранить');
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_RING + ' ~ deleted as gm1',
+    route: '#/homebrew/' + HB_RING,
+    as: 'gm1',
+    why: '«Удалить» with the confirm accepted: back on «Мои предметы: 3 из 100» with the toast «Предмет «Кольцо с гравировкой» удалён»',
+    enter: async (d) => {
+      await d.press('Удалить');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/homebrew/' + HB_CAP + ' as gm1',
+    route: '#/homebrew/' + HB_CAP,
+    as: 'gm1',
+    why: 'the English-only cap in the Russian interface: the labels in Russian, «Название» holding «Whispering Cap», «Ранг» on 2'
+  },
+  {
+    id: '#/i/' + HB_AXE + ' as gm1',
+    route: '#/i/' + HB_AXE,
+    as: 'gm1',
+    why: 'an own item on its page: the path line, the tag «Мастерская Ольхи (HB)», no «Скопировать ссылку», «Изменить» after the print link'
+  },
+  {
+    id: '#/i/' + HB_AXE,
+    route: '#/i/' + HB_AXE,
+    why: 'the same key signed out: «Предмет не найден», the address kept'
   },
   {
     id: '#/account ~ pinned table as gm2',
@@ -1960,6 +2138,27 @@ const STATES = [
     enter: async (d) => {
       await d.click('Цветная');
     }
+  },
+  {
+    id: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa as gm1',
+    route: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa',
+    as: 'gm1',
+    why: 'two own items on the black-and-white compact sheet: the axe with its stat block, the potion; each source line the path, «Мастерская Ольхи · Холодное оружие» and «Хоумбрю»'
+  },
+  {
+    id: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa ~ colour for this visit as gm1',
+    route: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa',
+    as: 'gm1',
+    why: 'the same two own items in colour on the compact sheet; the note under the bar',
+    enter: async (d) => {
+      await d.click('Цветная');
+    }
+  },
+  {
+    id: '#/print/' + HB_AXE + ' as gm2',
+    route: '#/print/' + HB_AXE,
+    as: 'gm2',
+    why: "gm2's frozen copy of the axe from its own list, on the standard colour sheet, its source line the path"
   }
 ];
 

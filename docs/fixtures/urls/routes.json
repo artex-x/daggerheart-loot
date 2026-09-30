@@ -479,5 +479,64 @@
       "printCards": 0,
       "picked": []
     }
+  },
+  {
+    "hash": "#/homebrew",
+    "why": "the signed-in author's own items; signed out the sign-in prompt, with no sign-in configured the not-found page, address kept",
+    "resolves": {
+      "hash": "#/homebrew",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/new",
+    "why": "the editor of a new own item; address kept in every build",
+    "resolves": {
+      "hash": "#/homebrew/new",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/hb_emberaxeaaaaaaaa",
+    "why": "the editor of one own item by its key; another account's key draws not found, address kept",
+    "resolves": {
+      "hash": "#/homebrew/hb_emberaxeaaaaaaaa",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/pistols",
+    "why": "anything else under homebrew is an unreadable address and is replaced by the home section",
+    "resolves": {
+      "hash": "#/roll/std",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
+    }
+  },
+  {
+    "hash": "#/i/hb_emberaxeaaaaaaaa",
+    "why": "an own item opens for its author only; any other reader gets not found, address kept",
+    "resolves": {
+      "hash": "#/i/hb_emberaxeaaaaaaaa",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
   }
 ]

@@ -24,7 +24,7 @@
   import StorageNotice from './StorageNotice.svelte';
   import TextInput from './TextInput.svelte';
   import { agoText } from '../lib/ago.js';
-  import type { CloudList } from '../lib/cloudLists.js';
+  import { frozenOf, type CloudList } from '../lib/cloudLists.js';
   import { sharedListHash, storedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import { fewNames } from '../lib/i18n.js';
@@ -156,8 +156,9 @@
      and the thumbs draw from, not `l.ids` itself: a deleted or renamed record
      must not leave a gap the count holds as though it were still there. */
   function knownItems(l: StoredList): Record_[] {
+    const frozen = frozenOf(l);
     return l.ids
-      .map((id) => index?.byId.get(id))
+      .map((id) => index?.byId.get(id) ?? frozen[id])
       .filter((it): it is Record_ => it !== undefined);
   }
 

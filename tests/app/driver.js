@@ -167,13 +167,15 @@ function makeDriver(page, target, url = TARGETS[target]) {
      *
      * `today` (`YYYY-MM-DD`) is the test build's clock: `?today=` sets the
      * day the app reads for the legacy write cutoff. Without it the build is
-     * pinned before the cutoff (`ports/clock.ts`).
+     * pinned before the cutoff (`ports/clock.ts`). `holdToasts` opens with
+     * `?toasts=held`: a toast stays until the next one replaces it.
      */
-    async open(route, { as, today } = {}) {
+    async open(route, { as, today, holdToasts } = {}) {
       await page.goto('about:blank');
       const query = new URLSearchParams();
       if (as) query.set('as', as);
       if (today) query.set('today', today);
+      if (holdToasts) query.set('toasts', 'held');
       const qs = query.toString();
       const search = qs ? '?' + qs : '';
       await page.goto(url + search + route, {
@@ -185,6 +187,15 @@ function makeDriver(page, target, url = TARGETS[target]) {
       );
       if (refused !== null) {
         throw new Error(route + ': the test build refused to boot - ' + refused);
+      }
+      /* The app read the parameter at boot; the address a capture records stays the one a
+         state without it has. */
+      if (holdToasts) {
+        await page.evaluate(() => {
+          const u = new URL(location.href);
+          u.searchParams.delete('toasts');
+          history.replaceState(history.state, '', u.href);
+        });
       }
     },
 
@@ -221,7 +232,9 @@ function makeDriver(page, target, url = TARGETS[target]) {
      * where it has none - a table's query lives in memory and never reaches
      * the address, so a placeholder is the only thing a spec has to grip
      * there, but the list page's title input and position field are named
-     * instead (`aria-label`), the way a person reads them.
+     * instead (`aria-label`), the way a person reads them. Last, by the text
+     * of the field's own `<label>`, for a field with neither: the quick item's
+     * name.
      *
      * `event` is `'change'` for the position field, whose live handler
      * (the legacy app.js) waits for the field to be committed rather than
@@ -239,8 +252,13 @@ function makeDriver(page, target, url = TARGETS[target]) {
               'input:not([type=checkbox]):not([type=radio]), textarea'
             )
           ];
+          /* Last, the text of a field's own <label>, for a field with neither. */
+          const labelled = (i) =>
+            [...(i.labels ?? [])].some((l) => l.textContent.replace(/\s+/g, ' ').trim() === ph);
           const el =
-            inputs.find((i) => i.placeholder === ph) ?? inputs.find((i) => nameOf(i) === ph);
+            inputs.find((i) => i.placeholder === ph) ??
+            inputs.find((i) => nameOf(i) === ph) ??
+            inputs.find(labelled);
           if (!el) return false;
           el.focus();
           el.value = val;
@@ -252,7 +270,10 @@ function makeDriver(page, target, url = TARGETS[target]) {
         event,
         NAME_FN
       );
-      if (!ok) throw new Error(`${target}: no field with placeholder "${placeholder}"`);
+      if (!ok)
+        throw new Error(
+          `${target}: no field named "${placeholder}" by placeholder, name or label`
+        );
       d.pressed.add(`type:${placeholder}`);
       await settle(page);
       return true;
@@ -426,6 +447,18 @@ function makeDriver(page, target, url = TARGETS[target]) {
       return settle(page);
     },
 
+    /** Chooses `value` in the `<select>` at `selector`, as a person picking an option
+     *  does, then settles. */
+    async choose(selector, value) {
+      const picked = await page.select(selector, value);
+      if (!picked.includes(value)) {
+        throw new Error(`${target}: no option "${value}" in ${selector}`);
+      }
+      d.pressed.add(`choose:${selector}`);
+      await settle(page);
+      return true;
+    },
+
     /** Navigates in the page, as a pasted link does, then settles. */
     async go(hash) {
       await page.evaluate((h) => {
@@ -465,7 +498,8 @@ function makeDriver(page, target, url = TARGETS[target]) {
      * Waits up to 6 s until the move of browser lists into the account has
      * settled: `<main>` has no `data-move` (signed out, or no cloud), or it
      * reads `done` or `failed`. `pending` (the session is unknown), `idle`
-     * and `moving` hold the wait. A page still waiting at 6 s throws with
+     * and `moving` hold the wait, and so does `data-homebrew` reading `idle` or
+     * `loading` (the author's items not read yet). A page still waiting at 6 s throws with
      * `name` (the state; the address when none is given) and the value: a
      * capture never waits the timeout out silently (docs/specs/COVERAGE.md,
      * "Test layers").
@@ -474,15 +508,22 @@ function makeDriver(page, target, url = TARGETS[target]) {
       try {
         await page.waitForFunction(
           () => {
-            const v = document.querySelector('main')?.getAttribute('data-move');
-            return v === null || v === undefined || v === 'done' || v === 'failed';
+            const main = document.querySelector('main');
+            const v = main?.getAttribute('data-move');
+            const hb = main?.getAttribute('data-homebrew');
+            return (
+              (v === null || v === undefined || v === 'done' || v === 'failed') &&
+              hb !== 'idle' &&
+              hb !== 'loading'
+            );
           },
           { timeout: 6000, polling: 50 }
         );
       } catch {
         const state = await page.evaluate(() => [
           location.hash,
-          document.querySelector('main')?.getAttribute('data-move') ?? 'no main'
+          document.querySelector('main')?.getAttribute('data-move') ?? 'no main',
+          document.querySelector('main')?.getAttribute('data-homebrew') ?? 'none'
         ]);
         throw new Error(
           target +
@@ -490,6 +531,8 @@ function makeDriver(page, target, url = TARGETS[target]) {
             (name ?? state[0]) +
             ': the move did not settle in 6 s (data-move="' +
             state[1] +
+            '", data-homebrew="' +
+            state[2] +
             '")'
         );
       }

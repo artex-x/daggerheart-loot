@@ -37,6 +37,14 @@ import type {
   ShareRow
 } from '../lib/cloudLists.js';
 import type { Loot } from '../lib/data.js';
+import type {
+  BookContent,
+  BookRow,
+  HomebrewContent,
+  ItemRow,
+  NewBookRow,
+  NewItemRow
+} from '../lib/homebrew.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { OwnerRequest, ShortLine } from '../lib/requests.js';
@@ -90,7 +98,8 @@ export interface ClipboardPort {
 export interface Shareable {
   title: string;
   text: string;
-  url: string;
+  /** Absent for a record that has no address another person can open (an own item). */
+  url?: string;
   /** Optional picture. Sharing must still work when it fails to load. */
   file?: () => Promise<File>;
 }
@@ -249,6 +258,9 @@ export interface MotionPort {
 export interface PagePort {
   /** Calls `fn` on `visibilitychange` to hidden and on `pagehide`. Returns an unsubscribe. */
   onHidden(fn: () => void): () => void;
+  /** Asks the browser's own prompt before the page closes while `dirty()` answers true.
+   *  Returns the removal. */
+  guardUnload(dirty: () => boolean): () => void;
 }
 
 /**
@@ -257,6 +269,9 @@ export interface PagePort {
  */
 export interface ClockPort {
   now(): number;
+  /** True only in a test build opened with `?toasts=held`: a toast then stays until the
+   *  next one replaces it, so a capture that arrives late still reads it. */
+  holdsToasts?(): boolean;
 }
 
 /* ---------- cloud ---------- */
@@ -465,8 +480,39 @@ export interface RequestRepository {
   decline(id: string): Promise<RequestDeclined>;
 }
 
+/** `{ ok: false }` is signed out or a read that failed; `itemLimit` is null for no limit
+ *  or a limit read that failed. */
+export type HomebrewRead =
+  { ok: true; books: BookRow[]; items: ItemRow[]; itemLimit: number | null } | { ok: false };
+/** An update's answer: the row's new revision, or why not. */
+export type HomebrewSaved =
+  | { ok: true; revision: number }
+  | { ok: false; error: 'conflict' | 'gone' }
+  | Exclude<ListWrite, { ok: true }>;
+
+/** The signed-in author's homebrew
+ *  (docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md). Row level
+ *  security keeps every row the author's; a create is idempotent on the client-made id. */
+export interface HomebrewRepository {
+  newId(): string;
+  /** A fresh `hb_` key for a source, a section or an item. */
+  newKey(): string;
+  load(): Promise<HomebrewRead>;
+  createBook(row: NewBookRow): Promise<ListWrite>;
+  /** `revision` null writes whatever the row's revision is. */
+  updateBook(id: string, content: BookContent, revision: number | null): Promise<HomebrewSaved>;
+  removeBook(id: string): Promise<ListWrite>;
+  createItem(row: NewItemRow): Promise<ListWrite>;
+  updateItem(
+    id: string,
+    patch: { content: HomebrewContent; book_id: string | null },
+    revision: number | null
+  ): Promise<HomebrewSaved>;
+  removeItem(id: string): Promise<ListWrite>;
+}
+
 /** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, R3 events, R4
- *  requests, ...). */
+ *  requests, R7 homebrew, ...). */
 export interface CloudPort {
   auth: AuthPort;
   prefs: PreferencesPort;
@@ -474,6 +520,7 @@ export interface CloudPort {
   shares: ShareRepository;
   events: EventsPort;
   requests: RequestRepository;
+  homebrew: HomebrewRepository;
 }
 
 /**

@@ -17,13 +17,37 @@
     label: string;
     /** `.seg.small` - the print bar's and the tables view switch's own size. */
     small?: boolean;
+    /** A form field's id: a problem's link focuses the group. */
+    id?: string;
+    /** The id of the error line under the group. `aria-invalid` is not allowed on a
+     *  group, so a choice with a problem draws its line only. */
+    describedby?: string | undefined;
     onchange: (value: T) => void;
   }
 
-  const { options, value, label, small = false, onchange }: Props<T> = $props();
+  const {
+    options,
+    value,
+    label,
+    small = false,
+    id,
+    describedby,
+    onchange
+  }: Props<T> = $props();
 </script>
 
-<div class="seg" class:small role="group" aria-label={label}>
+<!-- The value is -1 or absent: a problem's link focuses the group, Tab never stops on
+     it. The check cannot read the expression. -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div
+  class="seg"
+  class:small
+  role="group"
+  aria-label={label}
+  {id}
+  tabindex={id === undefined ? undefined : -1}
+  aria-describedby={describedby}
+>
   {#each options as o (o.value)}
     <button
       type="button"

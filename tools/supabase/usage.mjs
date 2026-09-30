@@ -122,12 +122,17 @@ export async function collect(db, now) {
       select count(*) as n, public.effective_limit(l.owner_id, 'entries_per_list') as lim
       from public.list_entries e join public.lists l on l.id = e.list_id
       group by l.id, l.owner_id
+    ), per_items as (
+      select count(*) as n, public.effective_limit(owner_id, 'homebrew_items_per_owner') as lim
+      from public.homebrew_items group by owner_id
     )
     select
       (select count(*) from per_owner where lim is not null and n >= 0.8 * lim)::int as owners_near,
       (select count(*) from per_owner where lim is not null and n > lim)::int as owners_over,
       (select count(*) from per_list where lim is not null and n >= 0.8 * lim)::int as lists_near,
-      (select count(*) from per_list where lim is not null and n > lim)::int as lists_over`;
+      (select count(*) from per_list where lim is not null and n > lim)::int as lists_over,
+      (select count(*) from per_items where lim is not null and n >= 0.8 * lim)::int as items_near,
+      (select count(*) from per_items where lim is not null and n > lim)::int as items_over`;
   return {
     db_bytes: num(bytes),
     ...(await readStorage(db)),

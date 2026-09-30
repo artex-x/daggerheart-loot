@@ -14,13 +14,10 @@
      with showModal() gets the focus trap, the inert background and Escape from
      the browser. An accessibility improvement, not a regression, and it
      changes nothing about how the thing looks. */
-  import AddToList from './AddToList.svelte';
-  import Button from './Button.svelte';
-  import Icon from './Icon.svelte';
+  import PickRow from './PickRow.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import Toast from './Toast.svelte';
-  import { printHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import type { ShareBlock } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -118,10 +115,7 @@
         <RecordActions {app} {index} {it} row="card" {extra} />
       {/snippet}
       {#snippet pick()}
-        <AddToList {app} key={it.id} ids={[it.id]} primary inModal />
-        <Button size="sm" href={printHash([it.id])} sameTab title={app.t.printHint}
-          ><Icon name="print" />{app.t.print}</Button
-        >
+        <PickRow {app} {it} inModal />
       {/snippet}
     </RecordCard>
   </div>

@@ -95,6 +95,10 @@ table (`tests/db/harness.test.mjs`; `docs/DECISIONS.md`, 2026-09-26,
 "Purchase requests are written only by a bounded function any link holder
 calls").
 
+Homebrew items, their sources and sections live in the account only: never
+in the browser's storage, and never in a `#/l/` link or a lists file
+(`FEATURES.md`, "Homebrew"). An own item opens for its author alone.
+
 An account's lists leave it only as the reader's own file: the lists JSON
 or the data zip of `#/account` (`FEATURES.md`, "Account and browser
 lists", "Exports"), which is the per-user backup and the way between two

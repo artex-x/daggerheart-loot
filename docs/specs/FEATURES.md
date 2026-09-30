@@ -441,6 +441,46 @@ browser lists writable after the date.
   server that does not answer or a database that is restarting is waited
   out, never split. An old `#/l/` link saved over the entry limit makes no
   list, and the toast names the limit.
+- **Own items in lists** (`docs/decisions/2026-09-26-a-homebrew-entry-in-the-owners-lists-is.md`):
+  an account list holds three kinds of entry, all drawn as any row. A
+  catalog record is written as before. An own item is a reference: it draws
+  the item as it is now, in the list, on its share links and in their
+  projection, with «Изменить» in its modal; an edit of the item moves the
+  `updated_at` of every list that holds it, so the index says «изменён
+  только что» and sorts that list first. An item of another account is a
+  frozen copy: the list keeps the item as it was when it was added, it never
+  changes and offers no «Изменить»; it joins the list page, the share page,
+  the index's count and thumbs, the requests panel and the print sheet, and
+  never search, tables or `#/i/`. The entry is decided by the key alone: an
+  own key is a reference, another homebrew key a frozen copy of the copy the
+  page holds (the open share's first, then the account's lists), and a key
+  with neither is not written. While the account's items are still read, no
+  homebrew entry is written, and «Добавить в список» says «Ваши предметы ещё
+  загружаются - повторите через секунду.», or «Не получилось загрузить ваши
+  предметы.» after a failed read. «Сохранить себе» on another user's link
+  turns its references into frozen copies and keeps its frozen copies. An
+  undo of a removed entry, from the row's cross, «Удалить (N)» or the
+  record's list menu, writes back the same kind and the same copy; a
+  reference whose item was deleted meanwhile is refused as any write.
+  `#/print/` prints an own item and a frozen copy of an account list, with
+  the item's path as its source line.
+- **«Свой предмет»** / "Own item"
+  (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`):
+  on an account list, a toggle after
+  «Поделиться» (pressed and expanded while open, folded on another list)
+  opens «Свой предмет в этот список» under the actions: «Название» *
+  (focused), «Описание», «Добавить в список», «Закрыть» and the note
+  «Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и
+  остальное можно задать потом в редакторе.». «Добавить в список» (or Enter
+  in the name) makes a plain item in «Хоумбрю», awaited, then adds it to the
+  list through the buffer as a reference, clears the fields, focuses the name
+  and toasts «Предмет «%s» добавлен в список». No name draws «Введите
+  название.» under the field; the item limit and a lost network («Не удалось
+  создать предмет - проверьте соединение. Текст остался в форме.») draw under
+  the buttons; each keeps the text. A press sent again after a lost answer
+  makes no second item. Escape closes the panel and focuses the toggle. An
+  empty account list's hint adds «Или добавьте свой предмет кнопкой «Свой
+  предмет».». A browser list has no toggle.
 - **Share links**: «Поделиться» reads pressed and expanded and opens a panel
   under the actions with two rows, «Ссылка для игроков» and «Ссылка для
   мастера», both ready on open: the panel reads the list's links (stopped
@@ -597,7 +637,10 @@ browser lists writable after the date.
   in one list - still downloads whole, and one toast says «Этот файл нельзя
   импортировать целиком.» with «В нём больше 1000 списков: экспортируйте их
   частями.» and «В списках «Склад» позиций больше 5000: разделите такие
-  списки.» as they apply. A list moved from this browser with more than a
+  списки.» as they apply. The lists file carries catalog records only: an
+  own item or a frozen copy is left out, and the toast counts them, «%n свой
+  предмет не попал в файл: файл списков пока переносит только предметы из
+  книг.» alone, or after the bounds text. A list moved from this browser with more than a
   hundred entries imports only into an account whose entry limit holds it:
   the account's limit refuses it, not the file.
 - **Import**: «Импорт из файла» ("Lists") adds the file's lists to the
@@ -628,7 +671,9 @@ browser lists writable after the date.
   lines, a list at most 10 pending requests (both defaults `limits:set`
   changes per owner), a link sends at most 5 a minute; a request expires
   after an hour and is deleted a day after its answer or expiry, when the
-  next request is sent to any list.
+  next request is sent to any list. Homebrew counts 100 own items and 20
+  sources per account (`homebrew_items_per_owner`,
+  `homebrew_books_per_owner`; "Homebrew").
 - **The move**: when a signed-in reader's page has read the account and this
   browser holds lists, each list moves into the account as it is - entries,
   quantities, prices, both notes, the list notes and the money mode, every
@@ -704,6 +749,17 @@ browser lists writable after the date.
 ## Records
 
 - Card in a modal from a table row, or a full page at `#/i/<id>`.
+- An own homebrew item opens at `#/i/<key>` for its author only; any other
+  reader, signed out included, gets «Предмет не найден», and «Загружаем...»
+  draws until the session and the author's items are known. Its path reads
+  «Хоумбрю · <source> · <section>», its tag «<source> (HB)» (the Latin mark
+  in both languages) or «Хоумбрю», and the pick row adds «Изменить» (to
+  `#/homebrew/<key>`) after the print link. It offers no link: no
+  «Скопировать ссылку», «Отправить» carries no address, and with no share
+  sheet it copies the text. Item links come with R9. While the author's
+  items fail to load, the page says «Не получилось загрузить ваши
+  предметы.» with «Повторить», not «Предмет не найден». The app's address is
+  the only one an own item has.
 - A tag and a table path are two different things, and a record draws each in
   its own place. The line under a record page's heading is the record's
   complete table path - the group, its sub-table, and, for the two tables
@@ -821,6 +877,136 @@ browser lists writable after the date.
 - A real navigation to a different address closes an open modal; a filter
   pick or a list mutation, which rewrite the address in place rather than
   navigating to it, do not.
+
+## Homebrew
+
+A signed-in GM makes items that are not in the books: «Мои предметы» /
+"My items". Homebrew items live in the account only
+(`docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md`).
+
+- **`#/homebrew`**: the heading «Мои предметы» with its lead line, then the
+  count «Мои предметы: N из M» / "My items: N of M" (M from the database,
+  an override's own number; «Мои предметы: N» when the limit read failed),
+  the «Источники» panel, «Новый предмет» (to `#/homebrew/new`) and the items
+  as table rows under one heading per source and section: each named source
+  by its creation, its sections in the author's order, then its items with
+  no section under the source name, «Хоумбрю» / "Homebrew" last, empty
+  headings left out, the items by name. A row opens the editor; its tick
+  feeds the selection bar (add to a list, print, copy) and the strip above
+  the rows, whose «Удалить (N)» asks «Удалить предметы (N)? Они пропадут и
+  из ваших списков. Отменить нельзя.». No items: «Своих предметов пока нет
+  - создайте первый.». Signed out: the heading and the sign-in prompt
+  «Войдите, чтобы создавать свои предметы.». A failed read: «Не получилось
+  загрузить ваши предметы.» and «Повторить». With no sign-in configured the
+  route draws the not-found page and keeps the address. The page cannot be
+  pinned.
+- **Sources and sections**: the default source «Хоумбрю» holds every item
+  with no named source; its row shows only the count. A named source shows
+  its name in the language on screen (the other language when it has
+  none), «N предметов · M разделов», «Разделы», «Переименовать» and
+  «Удалить». «Разделы» opens its sections, each with its count,
+  «Переименовать» and «Удалить», then «Без раздела» with its count, then
+  «Добавить раздел». «Добавить» at the end opens «Новый источник». A name
+  field sends on Enter or its button and cancels on Escape. It refuses an
+  empty name («Введите название источника.» / «Введите название
+  раздела.»), a name another source holds, or «Хоумбрю» / "Homebrew",
+  compared without case in both languages («Источник «%s» уже есть.»), a
+  section name the source holds («Раздел «%s» уже есть в этом
+  источнике.»), a 31st section («В источнике уже 30 разделов - это
+  предел.»), the source limit, a source changed on another device
+  («Источник изменили на другом устройстве. Данные обновлены - повторите.»)
+  and a lost network («Не удалось создать - ...» / «Не удалось сохранить -
+  ...»). A refusal draws under the field and keeps the typed name. A rename
+  writes the language on screen and keeps the other one. Deleting a source
+  asks «Удалить источник «%s»? Его N предметов останутся в «Хоумбрю».»,
+  and its items move to «Хоумбрю»; deleting a section asks «Удалить раздел
+  «%s»? Его N предметов останутся в источнике без раздела.», and its items
+  draw with no section. An empty source or section asks the short form.
+- **The editor** (`#/homebrew/new`, `#/homebrew/<key>`): the form beside a
+  live full card of the item from 800 px, the card under the form below; an
+  item with no name yet reads «Новый предмет» on it.
+  The heading is the item's name, or «Новый предмет»; the line under it is
+  the item's path, with the tier of chosen equipment. The legend «* -
+  обязательное поле. Остальное можно заполнить позже.» heads the form. The
+  fields: «Вид» (item, consumable, equipment), for equipment «Тип
+  снаряжения», «Источник» (with «+ Новый источник...», which makes the
+  source at once and selects it), for a named source «Раздел» (with «+
+  Новый раздел...»; a source change resets it), «Название» *, «Описание»
+  (a counter past 2500 of 3000 characters), for loot «Ранг» («Нет», 1-4,
+  «Артефакт», «Проклятый предмет»), for equipment «Ранг» * with no default
+  and the hint «Как в книге - по характеристикам ранг не определяется.»,
+  for weapons «Класс», «Характеристика», «Дистанция», «Урон», «Тип урона»,
+  «Хват», each *, and the fold «Второй набор характеристик», for armour
+  «Показатель брони» * and «Пороги урона» *. The card draws no stat block
+  until a tier is chosen: a tier is never shown that the author did not
+  choose. The type and the weapon values stay in the form while another
+  kind or type is chosen.
+- **Checks**: the form checks on «Сохранить» only, with the database's own
+  rules. A failed save sends nothing and focuses the summary «Не сохранено:
+  исправьте N полей.», which lists each field once with its problem; a
+  press on one focuses the field. Each field draws its line under it,
+  `aria-invalid` and `aria-describedby` on a text field; the line goes on
+  the field's next change. Damage is `d4`-`d20` with an optional `+1`..`+20`;
+  an armour score 0-12; thresholds two whole numbers 1-99, the second larger;
+  the second set all four fields or none. A source another tab deleted
+  reads «Этот источник удалили - выберите другой.».
+- **Saving**: «Сохранить», Ctrl+S or Cmd+S, or Enter in any one-line field
+  of the form saves. A new item's save replaces the address with
+  `#/homebrew/<key>` and keeps the form and the focus; an edit writes over
+  the revision the form loaded. Both toast «Сохранено: «%s»». The limit
+  draws «Не сохранено. Достигнут предел своих предметов: N. ...» under the
+  buttons, a lost network «Не удалось сохранить - нет связи. Правки
+  остались в форме: нажмите «Сохранить» ещё раз.»; both keep the form. An
+  item changed on another device draws «Этот предмет изменили на другом
+  устройстве, пока форма была открыта. Ваши правки не сохранены.» with
+  «Сохранить мою версию» (writes over it) and «Показать новую версию»
+  (asks «Ваши правки пропадут. Показать новую версию?» while the form is
+  dirty, then reloads; a read that fails keeps the form and says «Не
+  удалось сохранить - ...»). An item deleted on another device draws «Этот
+  предмет удалили на другом устройстве.» with «Сохранить как новый» (a new
+  key; the address moves) and «К моим предметам». A read that removes the
+  item under a dirty form keeps the typed text and draws that banner; a
+  clean form reloads when a read brings a newer row, and draws «Предмет не
+  найден» when the row is gone. A press sent again after a lost answer
+  never makes a second item or source.
+- **Language**: the name and the description edit the item's own language:
+  the language on screen for a new item or one named in both, else the one
+  language that names it. The other language is written back unchanged.
+  The labels follow the language on screen.
+- **The guard**: while the form differs from what it loaded, a link, Back,
+  Forward and every in-app navigation ask «Изменения не сохранены. Уйти со
+  страницы?» (a no keeps the page and its address), and closing the tab
+  gets the browser's own prompt. After a save or a delete nothing asks.
+  While a delete reads the lists again, the form stays as it was.
+- **Delete**: «Удалить» asks «Удалить предмет «%s»? Отменить нельзя.», or
+  «Предмет «%s» есть в N списках. Удалить его и убрать из списков? Отменить
+  нельзя.» while account lists hold it; the item leaves the account, its
+  references leave the lists, the page goes to `#/homebrew` and toasts
+  «Предмет «%s» удалён». A failed delete draws «Не удалось удалить -
+  проверьте соединение и попробуйте ещё раз.». The editor names how many
+  account lists hold the item.
+- **Where an item is used**: an own item goes into the account's lists as a
+  reference and draws live there, on their share links too; «Свой предмет»
+  on a list page makes one in one press ("Lists"). A browser list never holds
+  one: «Добавить в список» into it says «Свой предмет нельзя добавить в этот
+  список.», and a `#/l/` link and a lists file never carry an own key. A
+  list another user saved from a share link, or added the item to from one,
+  keeps a frozen copy of the item.
+- **What a delete removes**: the item and its references in the author's
+  own lists. A frozen copy in another user's list stays as it was; it is
+  not deleted with the item or with the author's account.
+- **Limits**: 100 own items and 20 sources per account (the defaults;
+  `limits:set` changes them per user, and «из M» shows the number the
+  database applies), 30 sections per source. The item limit refuses a save
+  with «Достигнут предел своих предметов: N. Нужно больше - напишите на
+  daggerheart.loot@gmail.com.», the source limit with «Достигнут предел
+  источников: N. ...».
+- Another tab's or device's homebrew write arrives as the owner topic's
+  `homebrew` message and reads the items again once; this tab's own is
+  ignored. While the topic is down a homebrew page reads again every 45 s,
+  and after a failed first read on every tick.
+- «Скачать мои данные (ZIP)» and the privacy pages' merge steps do not carry
+  homebrew items and sources yet (`DEBT.md` D69).
 
 ## Print
 
@@ -1112,8 +1298,9 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   sign-in draws no control at all.
 - The account menu «Меню аккаунта» / "Account menu" opens under the
   signed-in control, right-aligned, and holds, in this order, «Аккаунт» /
-  "Account" (`#/account`), «Мои списки» / "My lists" (`#/lists`) and,
-  after a rule, «Выйти» / "Sign out", which signs out as the account page's
+  "Account" (`#/account`), «Мои списки» / "My lists" (`#/lists`), «Мои
+  предметы» / "My items" (`#/homebrew`) and, after a rule, «Выйти» / "Sign
+  out", which signs out as the account page's
   «Выйти» does and says «Вы вышли из аккаунта.» (from an account list's
   page the address becomes `#/lists`). The first item takes the focus; Up
   and Down move with wrap-around, Home and End go to the ends. Escape

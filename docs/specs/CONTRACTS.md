@@ -13,7 +13,10 @@ Checked by `tests/contracts.js`. `docs/fixtures/share/records.json` is not a
 contract fixture in this sense - it is `share.test.ts`'s own golden,
 regenerated from `dist/` by `tools/capture-share-fixture.mjs` and last
 matched against the live app at `cf96e6f` (`docs/specs/COVERAGE.md`, "flows
-- the share fixture's own provenance").
+- the share fixture's own provenance"). `docs/fixtures/homebrew/` is not a
+contract fixture either until R7d's homebrew file: it holds the cases the
+homebrew validators of `app/src/lib/homebrew.ts` and of the database share
+(`docs/specs/COVERAGE.md`, "Suites").
 
 ## 1. Hash route grammar
 
@@ -27,6 +30,9 @@ Frozen as written in `ROUTES.md`. In particular:
   count), `#/lists/<listId>`, `#/l/<payload>`
 - `#/account`, the account page, read in every build (the not-found page,
   address kept, where no sign-in is configured)
+- `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`, the author's own
+  items and their editor, read in every build as `#/account` is; an own item
+  also opens at `#/i/<key>`, for its author only
 - `#/s/<token>`, an account share link: the token is opaque, made only by
   the list's owner, one active per audience (players, GM); it opens from
   `<site>#/s/<token>` and `<site>en/#/s/<token>` alike
@@ -47,6 +53,7 @@ shared list. Never renumber a record that has shipped.
 | `cm` | Community items |
 | `f` | Campaign frame equipment |
 | `q` | Core and Hope & Fear equipment |
+| `hb_` | reserved: a homebrew item's key, `hb_` and 16 of `a-z2-7`, per account; never a catalog id |
 
 ## 3. List link encoding
 

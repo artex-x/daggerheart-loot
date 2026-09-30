@@ -415,9 +415,9 @@ if (require.main === module) {
   /** One state, both languages. Ordinary states: one arrival, seed, open,
    *  enter, snapshot ru, press EN, snapshot en - a snapshot is a read and does
    *  not perturb the page, so nothing forces a second arrival. `timed` states
-   *  arrive fresh per language instead: their toast lives 1600ms and a
-   *  50-120ms snapshot ahead of the EN press would eat into that window for a
-   *  state that already has to press one control more to reach English. */
+   *  arrive fresh per language instead, each raising its own toast. That split
+   *  kept the capture inside the 1600ms toast lifetime; the toast hold has made
+   *  that window moot, and the split stays because the goldens are recorded so. */
   const captureState = async (state) => {
     if (!state.timed) {
       const { ctx, page, d } = await fresh({
@@ -449,7 +449,9 @@ if (require.main === module) {
         storage: state.storage
       });
       try {
-        await d.open(state.route, { as: state.as, today: state.today });
+        /* Held: a toast raised at mount lives 1600 ms, less than a slow host
+           takes to arrive (docs/decisions/2026-09-30-a-timed-golden-holds-its-toast-until-the.md). */
+        await d.open(state.route, { as: state.as, today: state.today, holdToasts: true });
         if (state.enter) await state.enter(d);
         await d.moveSettled(state.id);
         if (lang !== 'ru') await d.click('EN');
@@ -458,11 +460,9 @@ if (require.main === module) {
          * branch above), not gated on the route: the harness cannot know in
          * general which `enter` mutated a list, and a state with no pending
          * sync pays one quiet window (URL_DEBOUNCE_MS + 100ms, ~250ms - or up
-         * to ~430ms if a sync lands mid-window) and returns, against the
-         * shortest toast lifetime of 1600ms. It comes after `waitForToast`,
-         * not before: the toast is what this state exists to capture, so the
-         * address wait has to stay inside the toast's own window rather than
-         * push the capture past it. */
+         * to ~430ms if a sync lands mid-window) and returns. It comes after
+         * `waitForToast`, so the address the capture records is the one the
+         * press left; the held toast stays up through the wait. */
         await d.addressSettled();
         return await captureLang(page, d);
       } finally {

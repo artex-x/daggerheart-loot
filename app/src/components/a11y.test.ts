@@ -452,6 +452,38 @@ const STATES: {
     }
   },
   {
+    what: '#/homebrew with a source sections open and a new source field',
+    route: '#/homebrew',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await userEvent.click(await screen.findByRole('button', { name: 'Разделы' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Добавить' }));
+      await screen.findByLabelText('Новый источник');
+    }
+  },
+  {
+    what: 'the homebrew editor after a failed save',
+    route: '#/homebrew/hb_emberaxeaaaaaaaa',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      const dmg = await screen.findByLabelText(/^Урон\*/);
+      await userEvent.clear(dmg);
+      await userEvent.type(dmg, 'x');
+      await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }));
+      await screen.findByText('Не сохранено: исправьте 1 поле.');
+    }
+  },
+  {
+    what: 'an account list with its own item and a refused own-item panel open',
+    route: '#/lists/00000000-0000-4000-8000-000000000101',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+      await screen.findByText('Введите название.');
+    }
+  },
+  {
     what: 'the account menu open over a section, signed in',
     route: '#/roll/std',
     cloud: () => fakeCloud(SEED, 'gm1'),
@@ -501,6 +533,17 @@ const COVERED: Record<string, string> = {
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
   'FilterBar.svelte': 'tables.test.ts, and the filter panel state below',
   'HelpBox.svelte': "PageHead's help panel states above",
+  'HomebrewEditor.svelte':
+    'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
+  'HomebrewPage.svelte':
+    'homebrewPage.test.ts filled, empty and signed out; the sections open above',
+  'HomebrewSources.svelte': 'homebrewPage.test.ts, and the sections and new source open above',
+  'NameField.svelte':
+    'the new source field above, and homebrewEditor.test.ts with its inline source',
+  'PickRow.svelte': 'record.test.ts on a catalog and an own record, and inside the modal above',
+  'QuickItem.svelte': 'quickItem.test.ts, and the refused own-item panel above',
+  'FormField.svelte': 'the own-item panel above, and every field of homebrewEditor.test.ts',
+  'TextArea.svelte': 'the own-item panel above, and the description in homebrewEditor.test.ts',
   'HelpButton.svelte':
     "PageHead's help panel states above, and the list page's own priced entry below",
   'HitNote.svelte':

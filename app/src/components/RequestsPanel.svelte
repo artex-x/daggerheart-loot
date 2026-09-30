@@ -9,6 +9,7 @@
   import { tick } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import { frozenOf } from '../lib/cloudLists.js';
   import { nameOf } from '../lib/i18n.js';
   import type { StoredList } from '../lib/lists.js';
   import { moneyMode, priceText, totalParts } from '../lib/money.js';
@@ -41,7 +42,7 @@
   }
 
   const itemName = (item: string): string => {
-    const it = app.index?.byId.get(item);
+    const it = app.index?.byId.get(item) ?? frozenOf(list)[item];
     return it ? nameOf(it, app.lang) : item;
   };
   /* The stock now; null when the list no longer holds the item. */

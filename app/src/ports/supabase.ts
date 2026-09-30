@@ -15,6 +15,7 @@ import {
   type UserIdentity
 } from '@supabase/supabase-js';
 import { entryOrder, type ListRow, type SharedRow, type ShareRow } from '../lib/cloudLists.js';
+import { canonJson, keyFrom, type BookRow, type ItemRow } from '../lib/homebrew.js';
 import type { SignInAfter } from '../lib/pending.js';
 import { readPrefs } from '../lib/prefs.js';
 import { readApplied, readRequests, requestRefusal } from '../lib/requests.js';
@@ -26,6 +27,8 @@ import type {
   AuthResult,
   CloudPort,
   EventsPort,
+  HomebrewRepository,
+  HomebrewSaved,
   Identity,
   ListOpResult,
   ListRepository,
@@ -129,6 +132,7 @@ const MOVE_REFUSED: MoveWrite = { ok: false, error: 'refused' };
 /* An import the database stopped at its statement timeout: sent again, it would stop
    again, so it is not `network`. */
 const TOO_SLOW: ListWrite = { ok: false, error: 'refused', reason: 'tooSlow' };
+const UNSAVED: HomebrewSaved = { ok: false, error: 'network' };
 
 /** Returns an `apply` call's own failure: `fault`, `network`, or `refused`. */
 function callFailure(answer: Answer): ListWrites {
@@ -245,6 +249,11 @@ const LIST_SELECT =
 const REQUEST_SELECT =
   'id,list_id,audience,created_at,expires_at,' +
   'purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
+
+/* The author's homebrew rows; row level security keeps them to the author
+   (tests/db/homebrew.test.mjs). */
+const BOOK_SELECT = 'id,key,content,revision,created_at,updated_at';
+const ITEM_SELECT = 'id,key,book_id,content,revision,created_at,updated_at';
 
 type RequestFailure =
   | { ok: false; error: 'gone' | 'stale' | 'decided' | 'expired' }
@@ -690,5 +699,108 @@ export function createCloud(
       }
     }
   };
-  return { auth, prefs, lists, shares, events, requests };
+  /* An update names the revision the form loaded. When it matches no row, a read of the
+     row tells a newer row (`conflict`) from a deleted one (`gone`) and from the same
+     update sent again after its answer was lost: that row already holds the patch. */
+  async function homebrewUpdate(
+    table: 'homebrew_books' | 'homebrew_items',
+    id: string,
+    patch: Record<string, unknown>,
+    revision: number | null
+  ): Promise<HomebrewSaved> {
+    try {
+      const answer = await timed((signal) => {
+        const q = client.from(table).update(patch).eq('id', id);
+        return (revision === null ? q : q.eq('revision', revision))
+          .select('revision')
+          .abortSignal(signal);
+      });
+      const failed = writeOf(answer);
+      if (!failed.ok) return failed;
+      const found: unknown = answer.data;
+      const row = Array.isArray(found)
+        ? (found[0] as { revision?: unknown } | undefined)
+        : null;
+      if (typeof row?.revision === 'number') return { ok: true, revision: row.revision };
+      const held = await timed((signal) =>
+        client
+          .from(table)
+          .select(['revision', ...Object.keys(patch)].join(','))
+          .eq('id', id)
+          .abortSignal(signal)
+          .maybeSingle()
+      );
+      if (held.error) return UNSAVED;
+      const now = held.data as Record<string, unknown> | null;
+      if (!now) return { ok: false, error: 'gone' };
+      const same = Object.keys(patch).every((k) => canonJson(now[k]) === canonJson(patch[k]));
+      return same && typeof now['revision'] === 'number'
+        ? { ok: true, revision: now['revision'] }
+        : { ok: false, error: 'conflict' };
+    } catch {
+      return UNSAVED;
+    }
+  }
+  const homebrewCreate = (table: 'homebrew_books' | 'homebrew_items', row: object) =>
+    written(() =>
+      timed((signal) =>
+        client
+          .from(table)
+          .upsert(row, { onConflict: 'id', ignoreDuplicates: true })
+          .abortSignal(signal)
+      )
+    );
+  const homebrewRemove = (table: 'homebrew_books' | 'homebrew_items', id: string) =>
+    written(() =>
+      timed((signal) => client.from(table).delete().eq('id', id).abortSignal(signal))
+    );
+  const homebrew: HomebrewRepository = {
+    newId: () => crypto.randomUUID(),
+    newKey: () => keyFrom(crypto.getRandomValues(new Uint8Array(10))),
+    async load() {
+      if (!(await userId())) return { ok: false };
+      /* A limit read that fails leaves the count without its limit; it never fails the
+         read of the rows. */
+      const limit = Promise.resolve(
+        client.rpc('my_limit', { p_key: 'homebrew_items_per_owner' })
+      ).then(
+        (r): number | null => {
+          const data: unknown = r.error ? null : r.data;
+          return typeof data === 'number' ? data : null;
+        },
+        () => null
+      );
+      try {
+        const [books, items, itemLimit] = await Promise.all([
+          client.from('homebrew_books').select(BOOK_SELECT),
+          client.from('homebrew_items').select(ITEM_SELECT),
+          limit
+        ]);
+        if (books.error || items.error) return { ok: false };
+        if (!Array.isArray(books.data) || !Array.isArray(items.data)) return { ok: false };
+        return {
+          ok: true,
+          books: books.data as unknown as BookRow[],
+          items: items.data as unknown as ItemRow[],
+          itemLimit
+        };
+      } catch {
+        return { ok: false };
+      }
+    },
+    createBook: (row) => homebrewCreate('homebrew_books', row),
+    updateBook: (id, content, revision) =>
+      homebrewUpdate('homebrew_books', id, { content }, revision),
+    removeBook: (id) => homebrewRemove('homebrew_books', id),
+    createItem: (row) => homebrewCreate('homebrew_items', row),
+    updateItem: (id, patch, revision) =>
+      homebrewUpdate(
+        'homebrew_items',
+        id,
+        { content: patch.content, book_id: patch.book_id },
+        revision
+      ),
+    removeItem: (id) => homebrewRemove('homebrew_items', id)
+  };
+  return { auth, prefs, lists, shares, events, requests, homebrew };
 }

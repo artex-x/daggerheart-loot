@@ -1526,3 +1526,328 @@ describe('the purchase requests', () => {
     });
   });
 });
+
+describe('the homebrew rows', () => {
+  type Call = [string, unknown[]];
+  const NEVER = Symbol('never');
+
+  /* One PostgREST query: every builder method records itself; awaiting it answers
+     `answer` (or throws it); NEVER answers only when its abort signal fires, as
+     postgrest-js does, with `status: 0`. */
+  function query(answer: unknown) {
+    const calls: Call[] = [];
+    const q: Record<string, unknown> = {};
+    let signal: AbortSignal | null = null;
+    for (const m of ['select', 'upsert', 'update', 'delete', 'eq', 'maybeSingle']) {
+      q[m] = (...args: unknown[]) => {
+        calls.push([m, args]);
+        return q;
+      };
+    }
+    q['abortSignal'] = (s: AbortSignal) => {
+      calls.push(['abortSignal', []]);
+      signal = s;
+      return q;
+    };
+    q['then'] = (ok: (v: unknown) => unknown, fail: (e: unknown) => unknown) => {
+      const settled =
+        answer === NEVER
+          ? new Promise((resolve) => {
+              signal?.addEventListener('abort', () => {
+                resolve({ data: null, error: { code: '', message: 'AbortError' }, status: 0 });
+              });
+            })
+          : answer instanceof Error
+            ? Promise.reject(answer)
+            : Promise.resolve(answer);
+      return settled.then(ok, fail);
+    };
+    client.from.mockImplementationOnce(() => q as unknown as typeof rows);
+    return calls;
+  }
+  const answer = (data: unknown, status = 200) => ({ data, error: null, status });
+  const failed = (code: string, status: number, message = '', details?: string) => ({
+    data: null,
+    error: { code, message, ...(details === undefined ? {} : { details }) },
+    status
+  });
+  const BOOK = {
+    id: 'b1',
+    key: 'hb_alderworkshopaaa',
+    content: { ru: 'Мастерская Ольхи' },
+    revision: 1,
+    created_at: '2026-09-30T10:00:00+00:00',
+    updated_at: '2026-09-30T10:00:00+00:00'
+  };
+  const CONTENT = { kind: 'item' as const, ru: 'Кольцо' };
+  const ITEM = {
+    id: 'i1',
+    key: 'hb_engravedringaaaa',
+    book_id: 'b1',
+    content: CONTENT,
+    revision: 3,
+    created_at: '2026-09-30T10:00:00+00:00',
+    updated_at: '2026-09-30T11:00:00+00:00'
+  };
+
+  it('reads both tables and the item limit', async () => {
+    const books = query(answer([BOOK]));
+    const items = query(answer([ITEM]));
+    client.rpc.mockResolvedValueOnce(answer(100));
+    expect(await make().homebrew.load()).toEqual({
+      ok: true,
+      books: [BOOK],
+      items: [ITEM],
+      itemLimit: 100
+    });
+    expect(client.from.mock.calls.map((c) => c[0])).toEqual([
+      'homebrew_books',
+      'homebrew_items'
+    ]);
+    expect(books).toEqual([['select', ['id,key,content,revision,created_at,updated_at']]]);
+    expect(items).toEqual([
+      ['select', ['id,key,book_id,content,revision,created_at,updated_at']]
+    ]);
+    expect(client.rpc).toHaveBeenCalledWith('my_limit', { p_key: 'homebrew_items_per_owner' });
+  });
+
+  it('reads no limit as null, and a limit read that fails or throws as null too', async () => {
+    const cloud = make();
+    for (const limit of [
+      Promise.resolve(answer(null)),
+      Promise.resolve(failed('PGRST202', 404)),
+      Promise.reject(new Error('offline'))
+    ]) {
+      query(answer([]));
+      query(answer([]));
+      client.rpc.mockImplementationOnce(() => limit);
+      expect(await cloud.homebrew.load()).toEqual({
+        ok: true,
+        books: [],
+        items: [],
+        itemLimit: null
+      });
+    }
+  });
+
+  it('answers not ok signed out, to an error of a read, to no rows and to a throw', async () => {
+    const cloud = make();
+    client.auth.getSession.mockResolvedValueOnce({ data: { session: null }, error: null });
+    expect(await cloud.homebrew.load()).toEqual({ ok: false });
+    expect(client.from).not.toHaveBeenCalled();
+    for (const [b, i] of [
+      [failed('42501', 401), answer([])],
+      [answer([]), failed('PGRST000', 503)],
+      [answer(null), answer([])],
+      [new Error('offline'), answer([])]
+    ]) {
+      query(b);
+      query(i);
+      client.rpc.mockResolvedValueOnce(answer(100));
+      expect(await cloud.homebrew.load()).toEqual({ ok: false });
+    }
+  });
+
+  it('creates a row by upsert on its id, ignoring a duplicate, and reads each refusal', async () => {
+    const cloud = make();
+    const book = { id: 'b1', key: BOOK.key, content: BOOK.content };
+    const calls = query(answer(null, 201));
+    expect(await cloud.homebrew.createBook(book)).toEqual({ ok: true });
+    expect(client.from).toHaveBeenLastCalledWith('homebrew_books');
+    expect(calls).toEqual([
+      ['upsert', [book, { onConflict: 'id', ignoreDuplicates: true }]],
+      ['abortSignal', []]
+    ]);
+    const item = { id: 'i1', key: ITEM.key, book_id: null, content: CONTENT };
+    const cases: [unknown, unknown][] = [
+      [
+        failed('P0001', 400, 'limit: homebrew_items_per_owner', '100'),
+        { ok: false, error: 'limit', key: 'homebrew_items_per_owner', value: 100 }
+      ],
+      [failed('23505', 409), { ok: false, error: 'refused' }],
+      [failed('23514', 400), { ok: false, error: 'refused' }],
+      [failed('', 0), { ok: false, error: 'network' }],
+      [failed('PGRST000', 503), { ok: false, error: 'network' }]
+    ];
+    for (const [a, want] of cases) {
+      query(a);
+      expect(await cloud.homebrew.createItem(item)).toEqual(want);
+    }
+    expect(client.from).toHaveBeenLastCalledWith('homebrew_items');
+  });
+
+  it('updates by id and revision and answers the new revision', async () => {
+    const calls = query(answer([{ revision: 4 }]));
+    expect(
+      await make().homebrew.updateItem('i1', { content: CONTENT, book_id: 'b1' }, 3)
+    ).toEqual({ ok: true, revision: 4 });
+    expect(client.from).toHaveBeenCalledWith('homebrew_items');
+    expect(calls).toEqual([
+      ['update', [{ content: CONTENT, book_id: 'b1' }]],
+      ['eq', ['id', 'i1']],
+      ['eq', ['revision', 3]],
+      ['select', ['revision']],
+      ['abortSignal', []]
+    ]);
+  });
+
+  it('writes a forced update without the revision', async () => {
+    const calls = query(answer([{ revision: 2 }]));
+    expect(await make().homebrew.updateBook('b1', { ru: 'Новое' }, null)).toEqual({
+      ok: true,
+      revision: 2
+    });
+    expect(client.from).toHaveBeenCalledWith('homebrew_books');
+    expect(calls).toEqual([
+      ['update', [{ content: { ru: 'Новое' } }]],
+      ['eq', ['id', 'b1']],
+      ['select', ['revision']],
+      ['abortSignal', []]
+    ]);
+  });
+
+  it('reads the row when no row matched: the patch held is ok, another row a conflict, none gone', async () => {
+    const cloud = make();
+    const patch = { content: { ...CONTENT, ru: 'Кольцо II' }, book_id: 'b1' };
+    /* jsonb gives the keys back in its own order. */
+    const held = { revision: 5, content: { ru: 'Кольцо II', kind: 'item' }, book_id: 'b1' };
+    query(answer([]));
+    const read = query(answer(held));
+    expect(await cloud.homebrew.updateItem('i1', patch, 3)).toEqual({ ok: true, revision: 5 });
+    expect(read).toEqual([
+      ['select', ['revision,content,book_id']],
+      ['eq', ['id', 'i1']],
+      ['abortSignal', []],
+      ['maybeSingle', []]
+    ]);
+    query(answer([]));
+    query(answer({ ...held, book_id: null }));
+    expect(await cloud.homebrew.updateItem('i1', patch, 3)).toEqual({
+      ok: false,
+      error: 'conflict'
+    });
+    query(answer([]));
+    query(answer(null));
+    expect(await cloud.homebrew.updateItem('i1', patch, 3)).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+    query(answer([]));
+    query(failed('PGRST000', 503));
+    expect(await cloud.homebrew.updateItem('i1', patch, 3)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+    query(answer([]));
+    const bookRead = query(answer({ revision: 2, content: { ru: 'Новое' } }));
+    expect(await cloud.homebrew.updateBook('b1', { ru: 'Новое' }, 1)).toEqual({
+      ok: true,
+      revision: 2
+    });
+    expect(bookRead[0]).toEqual(['select', ['revision,content']]);
+  });
+
+  it('reads a refused update and a thrown one', async () => {
+    const cloud = make();
+    query(failed('23514', 400));
+    expect(
+      await cloud.homebrew.updateItem('i1', { content: CONTENT, book_id: null }, 1)
+    ).toEqual({
+      ok: false,
+      error: 'refused'
+    });
+    query(new Error('offline'));
+    expect(await cloud.homebrew.updateBook('b1', { ru: 'a' }, 1)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+  });
+
+  it('removes a row by id', async () => {
+    const cloud = make();
+    const book = query(answer(null, 204));
+    expect(await cloud.homebrew.removeBook('b1')).toEqual({ ok: true });
+    expect(book).toEqual([
+      ['delete', []],
+      ['eq', ['id', 'b1']],
+      ['abortSignal', []]
+    ]);
+    const item = query(answer(null, 204));
+    expect(await cloud.homebrew.removeItem('i1')).toEqual({ ok: true });
+    expect(item).toEqual([
+      ['delete', []],
+      ['eq', ['id', 'i1']],
+      ['abortSignal', []]
+    ]);
+    expect(client.from.mock.calls.map((c) => c[0])).toEqual([
+      'homebrew_books',
+      'homebrew_items'
+    ]);
+  });
+
+  it('makes a fresh id and a key of the key shape', () => {
+    const { homebrew } = make();
+    expect(homebrew.newId()).toMatch(/^[0-9a-f-]{36}$/);
+    const [a, b] = [homebrew.newKey(), homebrew.newKey()];
+    expect(a).toMatch(/^hb_[a-z2-7]{16}$/);
+    expect(a).not.toBe(b);
+  });
+
+  describe('with no answer', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it.each([
+      [
+        'createBook',
+        (c: ReturnType<typeof make>) =>
+          c.homebrew.createBook({ id: 'b', key: BOOK.key, content: BOOK.content })
+      ],
+      [
+        'updateBook',
+        (c: ReturnType<typeof make>) => c.homebrew.updateBook('b', BOOK.content, 1)
+      ],
+      ['removeBook', (c: ReturnType<typeof make>) => c.homebrew.removeBook('b')],
+      [
+        'createItem',
+        (c: ReturnType<typeof make>) =>
+          c.homebrew.createItem({ id: 'i', key: ITEM.key, book_id: null, content: CONTENT })
+      ],
+      [
+        'updateItem',
+        (c: ReturnType<typeof make>) =>
+          c.homebrew.updateItem('i', { content: CONTENT, book_id: null }, null)
+      ],
+      ['removeItem', (c: ReturnType<typeof make>) => c.homebrew.removeItem('i')]
+    ])('answers network for %s after WRITE_TIMEOUT_MS', async (_name, call) => {
+      query(NEVER);
+      let got: unknown = 'pending';
+      void call(make()).then((a) => {
+        got = a;
+      });
+      await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS - 1);
+      expect(got).toBe('pending');
+      await vi.advanceTimersByTimeAsync(1);
+      expect(got).toEqual({ ok: false, error: 'network' });
+    });
+
+    it('answers network when the read after a missed update gets no answer', async () => {
+      query(answer([]));
+      query(NEVER);
+      let got: unknown = 'pending';
+      void make()
+        .homebrew.updateItem('i', { content: CONTENT, book_id: null }, 1)
+        .then((a) => {
+          got = a;
+        });
+      await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS - 1);
+      expect(got).toBe('pending');
+      await vi.advanceTimersByTimeAsync(1);
+      expect(got).toEqual({ ok: false, error: 'network' });
+    });
+  });
+});

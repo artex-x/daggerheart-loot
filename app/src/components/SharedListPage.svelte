@@ -17,7 +17,8 @@
   import SignInPrompt from './SignInPrompt.svelte';
   import TableRows from './TableRows.svelte';
   import { agoText } from '../lib/ago.js';
-  import { sharedListOf } from '../lib/cloudLists.js';
+  import { sharedListOf, snapshotRecords } from '../lib/cloudLists.js';
+  import { withRecords } from '../lib/homebrew.js';
   import type { Index } from '../lib/data.js';
   import { sectionHash, storedListHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
@@ -36,12 +37,18 @@
     token?: string;
   }
 
-  const { app, index, payload, token }: Props = $props();
+  const { app, index: base, payload, token }: Props = $props();
 
   const t = $derived(app.t);
 
-  const knows = (id: string): boolean => index.byId.has(id);
   const view = $derived(token === undefined ? null : app.sharedView);
+  /* A share link's frozen copies, and its owner's items for a reader who is not the owner,
+     join this page's index; the reader's own items stay live (`withRecords`). A `#/l/` link
+     holds catalog ids only. */
+  const index = $derived(
+    token === undefined ? base : withRecords(base, [], snapshotRecords(view?.shared))
+  );
+  const knows = (id: string): boolean => index.byId.has(id);
   /* Keyed on the token and the session only: `open` reads and writes the
      view's own state, which must not re-run this. */
   $effect(() => {
@@ -57,7 +64,8 @@
   });
   const shared = $derived(
     token === undefined
-      ? decodeList(payload ?? '', knows)
+      ? /* A `#/l/` link holds catalog ids only: a crafted payload never decodes an own key. */
+        decodeList(payload ?? '', (id) => app.catalog?.byId.has(id) ?? false)
       : view?.status === 'ready' && view.shared
         ? sharedListOf(view.shared, knows)
         : null

@@ -25,21 +25,21 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
       link "Поиск" [url=#/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "Список от другого игрока · 9 позиций"
+    StaticText "Список от другого игрока · 10 позиций"
     StaticText "Обновлено 3 дня назад"
     button "Сохранить себе"
     ... StaticText x3 of 7 same-shape siblings elided
-    checkbox "Выбрать все (9)" [checked=false]
+    checkbox "Выбрать все (10)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     button "1 Первоклассный Спальный Мешок ×2 · 150 зол. Во время отдыха вы ..." [namelen=107 namehash=a6fdba25]
-    ... checkbox x6 of 10 same-shape siblings elided
-    ... button x6 of 10 same-shape siblings elided
+    ... checkbox x7 of 11 same-shape siblings elided
+    ... button x7 of 11 same-shape siblings elided
     StaticText "ДЛЯ ИГРОКОВ"
     StaticText "Последний в наличии."
-    checkbox "Колдующий Кинжал" [checked=false]
-    button "Колдующий Кинжал Ранг 1 · Магическое · Инстинкт · Средне · d6 ма..." [namelen=217 namehash=4560dddc]
     checkbox "Брошюра по Истории Искусства" [checked=false]
     button "11 Брошюра по Истории Искусства Это прекрасно иллюстрированная б..." [namelen=616 namehash=5c84c6ba]
+    checkbox "Топор Тлеющих Углей" [checked=false]
+    button "Топор Тлеющих Углей 800 зол. Ранг 2 · Магическое · Характеристик..." [namelen=198 namehash=83860c79]
     status ""
   generic ""
   contentinfo ""
@@ -86,6 +86,8 @@ daggerheart.com
 Стеганый Доспех
 Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
 Таблицы
+Топор Тлеющих Углей
+Топор Тлеющих Углей800 зол.Ранг 2 · Магическое · Характеристика ... [namelen=192 namehash=8354c34e]
 Условия использования
 Установить как приложение
 
@@ -112,21 +114,21 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
       link "Search" [url=#/search]
   main ""
     heading "Лавка кузнеца" [level=1]
-    StaticText "A list from another player · 9 items"
+    StaticText "A list from another player · 10 items"
     StaticText "Updated 3 days ago"
     button "Save to my lists"
     ... StaticText x3 of 7 same-shape siblings elided
-    checkbox "Select all (9)" [checked=false]
+    checkbox "Select all (10)" [checked=false]
     checkbox "Premium Bedroll" [checked=false]
     button "1 Premium Bedroll ×2 · 150 gp During downtime, you automatically..." [namelen=90 namehash=a96c7377]
-    ... checkbox x6 of 10 same-shape siblings elided
-    ... button x6 of 10 same-shape siblings elided
+    ... checkbox x7 of 11 same-shape siblings elided
+    ... button x7 of 11 same-shape siblings elided
     StaticText "FOR PLAYERS"
     StaticText "Последний в наличии."
-    checkbox "Casting Dagger" [checked=false]
-    button "Casting Dagger Tier 1 · Magic · Instinct · Close · d6 mag · One-..." [namelen=180 namehash=33c9b4cf]
     checkbox "Art History Booklet" [checked=false]
     button "11 Art History Booklet This is a finely illustrated booklet (don..." [namelen=538 namehash=326f6b17]
+    checkbox "Ember Axe" [checked=false]
+    button "Ember Axe 800 gp Tier 2 · Magic · Spellcast · Melee · d10+2 mag ..." [namelen=171 namehash=48f755cc]
     status ""
   generic ""
   contentinfo ""
@@ -152,6 +154,8 @@ Communities
 Dragon's Vault
 Dread
 EN
+Ember Axe
+Ember Axe800 gpTier 2 · Magic · Spellcast · Melee · d10+2 mag · ... [namelen=165 namehash=6299a52a]
 Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
 Install as an app

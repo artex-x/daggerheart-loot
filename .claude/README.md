@@ -645,11 +645,16 @@ stale-build guard - rebuild after the check (`npm run build:test` before any
 `dist-test/`-driven suite or golden probe, `npm run build` before
 `tools/smoke-http.mjs`).
 
-A `timed` state in `tests/app/inventory.js` ends its `enter` at the press
-that raises the toast; `golden.js`'s `waitForToast` does the waiting. An
-`enter` that polls `d.text()` for the toast's words after the press can
-outlive the 1600 ms toast, and the capture then fails with "the toast never
-appeared" (measured 2026-09-30 on `#/s/player-token-1 ~ sent`).
+Every `timed` state in `tests/app/inventory.js` opens with `?toasts=held`
+(`d.open(..., { holdToasts: true })`): the test build keeps each toast until
+the next one replaces it, and `golden.js`'s `waitForToast` finds it however
+late the capture arrives (decision "A timed golden holds its toast until the
+capture reads it"). So an `enter` may wait for the page after its press, as
+`~ own item added as gm1` polls the new count. The reason: before the hold, a
+1600 ms toast raised at mount or by an `enter` that polled after its press
+was gone before a slow capture read it ("the toast never appeared", measured
+2026-09-30 on `#/s/player-token-1 ~ sent` and `#/l/ ~ every entry gone`).
+The shipped build never reads the parameter.
 
 The full unsharded browser suite
 (`app/sweep,app/typo,app/hues,app/contracts,app/states`) runs ~648s in 8
@@ -1737,9 +1742,9 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-150 kB for the unconfigured build and 210 kB for the configured one, which
+167 kB for the unconfigured build and 226 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 150 kB limit. The 210 kB limit runs in
+unconfigured and so measures only the 167 kB limit. The 226 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -1751,11 +1756,16 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 210 kB budget (with the account client chunk)`; 203.0
-kB on 2026-09-30 after the import and export and the requests polish (184.5
-kB on 2026-09-27 with the Realtime client, 178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
-`check:built` rebuilds it. Decision: "The configured bundle budget is 210
-kB; the unconfigured stays 150 kB"; the slimmer client it no longer waits
+Expected: `within the 226 kB budget (with the account client chunk)`; 220.8
+kB on 2026-09-30 with the homebrew pages (203.0 kB before them, after the
+import and export and the requests polish; 184.5 kB on 2026-09-27 with the
+Realtime client, 178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
+`check:built` rebuilds it. During R7-R7d a batch whose build passes a limit
+raises it to the measured size plus about 5 kB in the same commit, never past
+250 kB configured and 190 kB unconfigured, and past a ceiling it stops and
+asks the owner. Decisions: "The configured bundle budget is 210 kB; the
+unconfigured stays 150 kB", amended by "The bundle budget steps up per batch
+to 250 kB configured and 190 unconfigured"; the slimmer client neither waits
 on is still `docs/specs/DEBT.md`, D60.
 
 Branch migrations on the test project: `migrate-test` runs on every
@@ -2010,14 +2020,18 @@ Steps:
 4. Check the limit keys in the production SQL editor. A backup older than
    a migration that seeds `limit_defaults` lacks that migration's keys
    (`20260928120000_purchase_requests.sql` adds `request_lines` and
-   `pending_requests_per_list`), and every call that reads a missing key
-   raises `unknown limit key`. Run
+   `pending_requests_per_list`; `20260930130000_homebrew.sql` adds
+   `homebrew_books_per_owner` 20 and `homebrew_items_per_owner` 100), and
+   every call that reads a missing key raises `unknown limit key`. Run
    `select key, value from public.limit_defaults order by key;`. Expected:
-   `entries_per_list`, `lists_per_owner`, `pending_requests_per_list` and
-   `request_lines`. For each missing key, insert it at its migration's
-   default, for example `insert into public.limit_defaults (key, value)
-   values ('request_lines', 100), ('pending_requests_per_list', 10) on
-   conflict (key) do nothing;`, and run the check again.
+   `entries_per_list`, `homebrew_books_per_owner`,
+   `homebrew_items_per_owner`, `lists_per_owner`,
+   `pending_requests_per_list` and `request_lines`. For each missing key,
+   insert it at its migration's default, for example `insert into
+   public.limit_defaults (key, value) values ('request_lines', 100),
+   ('pending_requests_per_list', 10), ('homebrew_books_per_owner', 20),
+   ('homebrew_items_per_owner', 100) on conflict (key) do nothing;`, and
+   run the check again.
 
 Before it asks for the ref, the command checks the receipt, reads
 production's migrations, tables, keys, foreign keys and sequences, and
@@ -2089,6 +2103,12 @@ narrow the function too, make two pushes, because `migrate-prod` runs
 before `deploy` in one push: first the app revert, then a new migration
 whose body is the reversal file.
 
+To undo R7 (`20260930130000_homebrew`), revert the app alone: the old
+frontend writes official list entries only, which the new `list_entries`
+checks take. Run the homebrew reversal only after a backup, and only when
+the tables must go: it deletes every homebrew source, every homebrew item
+and every homebrew list entry.
+
 ### Usage monitoring
 
 `.github/workflows/usage.yml` reports production's free-plan usage every
@@ -2113,7 +2133,8 @@ call, not the dump".
 
 The summary also lists every `public` table by bytes with its exact row
 count, and the owners and lists at 80 % or more of a count limit (and above
-100 %, which `move_legacy_list` allows, `docs/specs/DEBT.md` D62). It holds
+100 %, which `move_legacy_list` allows, `docs/specs/DEBT.md` D62): lists per
+owner, entries per list and homebrew items per owner. It holds
 totals only: no email, id or list name, because the repository and its run
 summaries are public. The public API has no endpoint for billed egress,
 billed MAU, database size, Storage size or Realtime (2026-09-25); billed

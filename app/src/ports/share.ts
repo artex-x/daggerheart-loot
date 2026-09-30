@@ -17,7 +17,11 @@ const dismissed = (err: unknown): boolean => err instanceof Error && err.name ==
 export function browserShare(nav: ShareNav = navigator): SharePort {
   const plain = async (what: Shareable): Promise<ShareResult> => {
     try {
-      await nav.share?.({ title: what.title, text: what.text, url: what.url });
+      await nav.share?.({
+        title: what.title,
+        text: what.text,
+        ...(what.url === undefined ? {} : { url: what.url })
+      });
       return 'shared';
     } catch (err) {
       return dismissed(err) ? 'dismissed' : 'failed';
@@ -53,7 +57,7 @@ export function browserShare(nav: ShareNav = navigator): SharePort {
 interface FakeShareLast {
   title?: string;
   text?: string;
-  url?: string;
+  url?: string | undefined;
   hasFile: boolean;
   /** The file callback itself, for a test that wants to invoke it and read
    *  back what it produces - `hasFile` alone only proves one was offered. */

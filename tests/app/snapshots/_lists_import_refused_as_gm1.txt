@@ -51,9 +51,9 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       StaticText "0 позиций · изменён 1 час назад"
       StaticText "Список пуст"
     checkbox "Выбрать: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 9 позиций, изменён 3 дня назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+    link "Лавка кузнеца, 10 позиций, изменён 3 дня назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
-      StaticText "9 позиций · изменён 3 дня назад"
+      StaticText "10 позиций · изменён 3 дня назад"
     button "Удалить"
     checkbox "Выбрать: Трофеи" [checked=false]
     link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
@@ -86,7 +86,7 @@ daggerheart.com
 К содержимому
 Как это работает
 Конфиденциальность
-Лавка кузнеца, 9 позиций, изменён 3 дня назад
+Лавка кузнеца, 10 позиций, изменён 3 дня назад
 ЛутDaggerheart
 Новый список
 Обычные правила
@@ -153,9 +153,9 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
       StaticText "0 items · edited 1 hour ago"
       StaticText "The list is empty"
     checkbox "Select: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 9 items, edited 3 days ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+    link "Лавка кузнеца, 10 items, edited 3 days ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
-      StaticText "9 items · edited 3 days ago"
+      StaticText "10 items · edited 3 days ago"
     button "Delete"
     checkbox "Select: Трофеи" [checked=false]
     link "Трофеи, 2 items, edited last month" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
@@ -202,7 +202,7 @@ Wondrous
 a description for AI assistants
 daggerheart.com
 import-v1 schema
-Лавка кузнеца, 9 items, edited 3 days ago
+Лавка кузнеца, 10 items, edited 3 days ago
 ЛутDaggerheart
 Пустой список, 0 items, edited 1 hour ago
 Трофеи, 2 items, edited last month

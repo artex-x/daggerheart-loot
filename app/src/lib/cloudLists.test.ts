@@ -4,13 +4,17 @@ import {
   batchSize,
   entryOrder,
   entryRowsOf,
+  entrySource,
+  frozenOf,
   isCloudId,
   limitText,
+  OFFICIAL,
   priceOf,
   quantityOf,
   sameProjection,
   sharedListOf,
   shareOf,
+  snapshotRecords,
   toCloudList,
   type EntryRow,
   type ListOp,
@@ -19,6 +23,7 @@ import {
   type ShareRow
 } from './cloudLists.js';
 import { dict } from './dict.js';
+import { recordOf } from './homebrew.js';
 
 const entry = (id: string, key: string, position: number, over: Partial<EntryRow> = {}) => ({
   id,
@@ -119,6 +124,11 @@ describe('entryRowsOf', () => {
     expect(entryRowsOf(['q1'], undefined, () => 'x')[0]?.position).toBe(0);
   });
 
+  it('leaves a homebrew key out and numbers the rest without a gap', () => {
+    const rows = entryRowsOf(['hb_emberaxeaaaaaaaa', 'q1'], undefined, () => 'x', 2);
+    expect(rows.map((r) => [r.item_key, r.position])).toEqual([['q1', 2]]);
+  });
+
   it('holds a quantity to 1..99 and a price to none or 1..99999', () => {
     expect([quantityOf(undefined), quantityOf(0), quantityOf(2.7), quantityOf(500)]).toEqual([
       1, 1, 2, 99
@@ -144,6 +154,16 @@ describe('limitText', () => {
     );
     expect(limitText('homebrew_items', null, t)).toBe(
       'A limit has been reached: ?. Need more? Write to daggerheart.loot@gmail.com.'
+    );
+  });
+
+  it('names the homebrew item and source limits', () => {
+    const t = dict('ru');
+    expect(limitText('homebrew_items_per_owner', 100, t)).toBe(
+      'Достигнут предел своих предметов: 100. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+    );
+    expect(limitText('homebrew_books_per_owner', 20, dict('en'))).toBe(
+      'You have reached the limit of 20 sources. Need more? Write to daggerheart.loot@gmail.com.'
     );
   });
 });
@@ -300,5 +320,91 @@ describe('sameProjection', () => {
         entries: [entry('e1', 'ci1', 0)]
       })
     ).toBe(false);
+  });
+});
+
+describe('homebrew entries', () => {
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const copy = recordOf(AXE, { kind: 'item', ru: 'Топор' }, null);
+  const ready = { ready: true, has: (k: string) => k === 'hb_mineaaaaaaaaaaaa' };
+
+  it('resolves a catalog key, an own item, a valid copy and nothing else', () => {
+    expect(entrySource('q1', { ready: false, has: () => false }, undefined)).toBe(OFFICIAL);
+    expect(entrySource('hb_mineaaaaaaaaaaaa', ready, undefined)).toEqual({
+      source: 'homebrew',
+      snapshot: null
+    });
+    expect(entrySource(AXE, ready, copy)).toEqual({ source: 'homebrew', snapshot: copy });
+    expect(entrySource(AXE, ready, undefined)).toBeNull();
+    /* A copy of another key, a catalog record or a broken copy is never written. */
+    expect(entrySource(AXE, ready, { ...copy, id: 'hb_otheraaaaaaaaaaa' })).toBeNull();
+    expect(entrySource(AXE, ready, { ...copy, src: 'core' })).toBeNull();
+    expect(entrySource(AXE, ready, { ...copy, kind: 'nope' } as never)).toBeNull();
+  });
+
+  it('answers null for every homebrew key while the account items are not read', () => {
+    const loading = { ready: false, has: () => true };
+    expect(entrySource('hb_mineaaaaaaaaaaaa', loading, undefined)).toBeNull();
+    expect(entrySource(AXE, loading, copy)).toBeNull();
+  });
+
+  it('writes each row as the resolver answers and leaves a refused key out', () => {
+    const rows = entryRowsOf(
+      ['q1', AXE, 'hb_mineaaaaaaaaaaaa', 'q2'],
+      undefined,
+      () => 'x',
+      0,
+      (k) => entrySource(k, ready, k === AXE ? copy : undefined)
+    );
+    expect(rows.map((r) => [r.item_key, r.source, r.snapshot, r.position])).toEqual([
+      ['q1', 'official', null, 0],
+      [AXE, 'homebrew', copy, 1],
+      ['hb_mineaaaaaaaaaaaa', 'homebrew', null, 2],
+      ['q2', 'official', null, 3]
+    ]);
+    expect(
+      entryRowsOf(
+        [AXE],
+        undefined,
+        () => 'x',
+        0,
+        () => null
+      )
+    ).toEqual([]);
+  });
+
+  it('reads a valid frozen copy into `frozen` and skips a broken one', () => {
+    const l = toCloudList(
+      row({
+        list_entries: [
+          entry('a', AXE, 0, { source: 'homebrew', snapshot: copy }),
+          entry('b', 'hb_brokenaaaaaaaaaa', 1, { source: 'homebrew', snapshot: { id: 1 } }),
+          entry('c', 'hb_mineaaaaaaaaaaaa', 2, { source: 'homebrew' })
+        ]
+      })
+    );
+    expect(l.ids).toEqual([AXE, 'hb_brokenaaaaaaaaaa', 'hb_mineaaaaaaaaaaaa']);
+    expect(l.frozen).toEqual({ [AXE]: copy });
+    expect(frozenOf(l)).toBe(l.frozen);
+    expect(toCloudList(row()).frozen).toBeUndefined();
+    expect(frozenOf(toCloudList(row()))).toBe(frozenOf({ id: 'x', name: '', ids: [] }));
+    expect(frozenOf({ id: 'x', name: '', ids: [] })).toEqual({});
+  });
+
+  it("returns a projection's valid snapshots, a reference's included", () => {
+    const shared: SharedRow = {
+      audience: 'player',
+      updated_at: '2026-09-22T10:00:00.000Z',
+      revision: 1,
+      topic_key: '00000000-0000-4000-8000-000000004000',
+      list: { name: 'Лавка', money_mode: 'bag', player_note: '' },
+      entries: [
+        sharedEntry('q1', 0),
+        sharedEntry(AXE, 1, { source: 'homebrew', snapshot: copy }),
+        sharedEntry('hb_brokenaaaaaaaaaa', 2, { source: 'homebrew', snapshot: copy })
+      ]
+    };
+    expect(snapshotRecords(shared)).toEqual([copy]);
+    expect(snapshotRecords(null)).toEqual([]);
   });
 });

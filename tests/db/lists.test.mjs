@@ -21,6 +21,18 @@ const E1 = id(1101);
 const E2 = id(1102);
 const E3 = id(1103);
 const EB = id(2101);
+/* A frozen homebrew copy's snapshot, as homebrew_snapshot_of() writes it
+   (docs/fixtures/homebrew/snapshots.json). */
+const FROZEN_KEY = 'hb_frozenaaaaaaaaaa';
+const FROZEN = {
+  id: FROZEN_KEY,
+  src: 'homebrew',
+  kind: 'item',
+  en: 'Stone',
+  ru: 'Stone',
+  ende: '',
+  rud: ''
+};
 const PRIVS = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'];
 
 let sql;
@@ -353,11 +365,25 @@ describe('list_entries checks', () => {
     ['a bad item_key', { item_key: 'no spaces' }, /item_key/],
     ['a negative position', { position: -1 }, /position/],
     ['a snapshot on an official entry', { snapshot: { n: 1 } }, /check/],
-    ['no snapshot on a homebrew entry', { source: 'homebrew' }, /check/],
+    [
+      'a homebrew reference to an item the owner lacks',
+      { source: 'homebrew' },
+      /no homebrew item q23/
+    ],
+    [
+      'a homebrew snapshot the validator refuses',
+      { source: 'homebrew', snapshot: { name: 'x' } },
+      /list_entries_snapshot_valid/
+    ],
+    [
+      'a homebrew snapshot of another key',
+      { source: 'homebrew', snapshot: FROZEN },
+      /list_entries_snapshot_valid/
+    ],
     ['a duplicate item_key in one list', { item_key: 'ci1' }, /duplicate key/],
     [
-      'a homebrew snapshot over 16384 bytes',
-      { source: 'homebrew', snapshot: { text: 'x'.repeat(16400) } },
+      'a homebrew snapshot over 32768 bytes',
+      { source: 'homebrew', snapshot: { text: 'x'.repeat(32800) } },
       /list_entries_snapshot_size/
     ]
   ]) {
@@ -366,13 +392,13 @@ describe('list_entries checks', () => {
     });
   }
 
-  it('accepts the bounds: quantity 1 and 99, price 1 and 99999, a homebrew snapshot', async () => {
+  it('accepts the bounds: quantity 1 and 99, price 1 and 99999, a frozen homebrew copy', async () => {
     const n = await asA(world, async (tx) => {
       await tx`insert into public.list_entries
         (id, list_id, item_key, position, quantity, price_coins) values
         (${id(1151)}, ${LA}, 'q23', 3, 1, 1), (${id(1152)}, ${LA}, 'w51', 4, 99, 99999)`;
       await tx`insert into public.list_entries (id, list_id, item_key, source, snapshot, position)
-        values (${id(1153)}, ${LA}, 'hb1', 'homebrew', ${tx.json({ name: 'x' })}, 5)`;
+        values (${id(1153)}, ${LA}, ${FROZEN_KEY}, 'homebrew', ${tx.json(FROZEN)}, 5)`;
       const [r] =
         await tx`select count(*)::int as n from public.list_entries where list_id = ${LA}`;
       return r.n;

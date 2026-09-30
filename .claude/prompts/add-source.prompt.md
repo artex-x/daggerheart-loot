@@ -106,6 +106,7 @@ How data is organized today (do not reinvent this)
 
 Id prefixes are frozen public contracts (`ci`/`cc`, `hi`/`hc`, `w`, `di`, `voa...`, `dv`/`dve`, `cm`, `f`, `q`, ...).
 Never renumber shipped ids. A new source may need a new prefix/scheme - justify it and keep it stable.
+`hb` is reserved for homebrew item keys (`hb_` and 16 of `a-z2-7`, `CONTRACTS.md` section 2): no catalog id starts with it.
 
 ----------------------------------------
 Contributor drafts and delivery notes

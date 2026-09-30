@@ -304,8 +304,20 @@ describe('an import, as A', () => {
       '23505'
     ],
     [
-      'a homebrew entry with no snapshot',
-      [list(L1, 'L', [entry(id(7101), 'hb_x1', 0, { source: 'homebrew' })])],
+      'the whole call for a homebrew reference whose key the caller does not hold',
+      [
+        list(L1),
+        list(L2, 'L', [entry(id(7101), 'hb_nosuchitemaaaaaa', 0, { source: 'homebrew' })])
+      ],
+      '23503'
+    ],
+    [
+      'a homebrew snapshot the validator refuses',
+      [
+        list(L1, 'L', [
+          entry(id(7101), 'hb_x1', 0, { source: 'homebrew', snapshot: { name: 'X' } })
+        ])
+      ],
       '23514'
     ]
   ];
@@ -320,10 +332,11 @@ describe('an import, as A', () => {
     });
   }
 
-  it('passes a homebrew entry and its snapshot through', async () => {
-    const hb = entry(id(7101), 'hb_x1', 0, {
+  it('imports a frozen homebrew entry', async () => {
+    const key = 'hb_frozenaaaaaaaaaa';
+    const hb = entry(id(7101), key, 0, {
       source: 'homebrew',
-      snapshot: { name: 'X', gold: 20 },
+      snapshot: { id: key, src: 'homebrew', kind: 'item', en: 'X', ru: 'X', ende: '', rud: '' },
       price_coins: 20
     });
     const out = await asA(users, async (tx) => ({
@@ -349,14 +362,14 @@ describe('the owner messages of an import', () => {
     await sql`insert into public.lists (id, owner_id) values (${theirs}, ${b})`;
     try {
       const topic = `owner:${a}`;
-      const before = (await messagesTo(sql, topic)).length;
+      const sentBefore = (await messagesTo(sql, topic)).length;
       await assert.rejects(
         commitAs(sql, { role: 'authenticated', sub: a }, (tx) =>
           importAs(tx, [list(mine[0]), list(theirs)])
         ),
         byCode('42501')
       );
-      assert.equal((await messagesTo(sql, topic)).length, before);
+      assert.equal((await messagesTo(sql, topic)).length, sentBefore);
       const n = await commitAs(sql, { role: 'authenticated', sub: a }, (tx) =>
         importAs(tx, [
           list(mine[0], 'A', [entry(crypto.randomUUID(), 'ci1', 0)]),
@@ -374,7 +387,7 @@ describe('the owner messages of an import', () => {
         event: 'list',
         payload: { list: l, revision: revisions.find((r) => r.id === l).revision, by: null }
       }));
-      const sent = (await messagesTo(sql, topic)).slice(before);
+      const sent = (await messagesTo(sql, topic)).slice(sentBefore);
       const key = (m) => m.payload.list;
       assert.deepEqual(
         [...sent].sort((x, y) => key(x).localeCompare(key(y))),

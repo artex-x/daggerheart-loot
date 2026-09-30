@@ -143,7 +143,7 @@ In v1 (releases R0-R10, section 12):
   print routes for cloud lists (`#/print/list/<id>`, `#/print/s/<token>`).
 
 Deferred (a later release, not v1): a homebrew Trash; homebrew in the
-import bundle beyond what R7 defines; an owner-scoped private Realtime
+import bundle beyond what R7d defines; an owner-scoped private Realtime
 topic (the owner's own devices refetch on focus).
 
 Dropped from the design, with the reason (confirmed by the owner
@@ -193,7 +193,10 @@ Raised, not settled: none beyond section 16.
 | R3 | As shipped (2026-09-27; migration `20260927120000_realtime.sql` is the record): a deferred constraint trigger on `lists` sends one message per list per transaction with the final revision, privately, to `share:<topic_key>` of every active share and `{ list, revision, by }` to `owner:<uid>` (`by` from the `x-dhloot-tab` header); a revoke or a deleted list sends `{ revision: null }` to the share topic; `select` policies on `realtime.messages` for `share:<uuid>` (`anon`, `authenticated`) and `owner:<uid>` (`authenticated`), no `insert` policy (no client can send); `reorder_list` keeps the given order and puts the other entries after it. Decisions: the 2026-09-25 and 2026-09-26 Realtime files under `docs/decisions/` |
 | R4 | As shipped (2026-09-28; migration `20260928120000_purchase_requests.sql` is the record): `purchase_requests` (a client-made id, the list and the share, the audience, `pending`, `applied` or `declined`, `created_at`, `expires_at` an hour on, `decided_at`; no name, no requester id; expired is read, never stored) and `purchase_request_lines` (item, quantity, the price when sent, the quantity applied); the owner selects both, no write grant; `limit_defaults` rows `request_lines` 100 and `pending_requests_per_list` 10; `create_purchase_request(id, token, lines)` for `anon` and `authenticated`, the only writer, with every bound inside it and a replay that inserts nothing; `apply_purchase_request(id, clamp)` and `decline_purchase_request(id)` for the owner; a trigger sends `request` with `{ list, by }` to `owner:<uid>` only. Decisions: the purchase-request files under `docs/decisions/` |
 | R6 | As shipped (2026-09-30; migration `20260928130000_import_lists.sql` is the record): `import_lists(p_lists jsonb) returns integer`, `security invoker` (decision file 2 amended) for `authenticated`, create-only with client-made ids (`on conflict (id) do nothing`, another owner's row is hidden by RLS and refused as a conflict), one transaction - the table checks and the limit triggers unwind the whole call; `entries` capped at 5000 per call (22023); `source` and `snapshot` pass through for R7's bundle v2. No table change. Decisions: the R6 files under `docs/decisions/` |
-| R7 | Revised by the R7 refresh (2026-09-25, `issues/persist-7-homebrew/plan.md` section 4.3): `homebrew_items(id uuid pk client-generated, owner_id, catalog_key text check '^hb_[a-z2-7]{16}$', content jsonb check homebrew_content_valid(content) and octet_length <= 16384, revision, created_at, updated_at, unique (owner_id, catalog_key))` - the record shape (`kind`, `en`, `ru`, `ende`, `rud`, `tier`, `eq`) in one column, validated by `public.homebrew_content_valid(jsonb)`; no `kind` or `art_url` column (R8 adds `art_url`); owner-only RLS, nothing for `anon`; `homebrew_items_before_update` (pins id, owner, key, created; revision + 1) and `homebrew_items_limit` on `effective_limit(owner, 'homebrew_items_per_owner')` = 50 (decision 31); `homebrew_items_touch` (an edit bumps every referencing list's `revision`) and `homebrew_items_before_delete` (removes the owner's references); `homebrew_snapshot_of(key, content)` = `jsonb_build_object('id', key, 'src', 'homebrew') \|\| content` after the language fallbacks - the frozen form; `list_entries`' R2 CHECK is replaced by `source = 'homebrew' or snapshot is null` and `snapshot is null or homebrew_snapshot_valid(snapshot)` (owner, 2026-09-26: an own entry is a reference with `snapshot` null, a copy that leaves the account is frozen); `get_shared_list` and `clone_shared_list` re-created (the projection fills a reference's `snapshot` from the item; a clone freezes unless the caller owns the list); `service_role` select and delete. `B7.3` adds `import_bundle(p_items, p_lists)` beside R6's `import_lists`. Shares and their RPCs are R9's |
+| R7 | As built (2026-10-01; migration `20260930130000_homebrew.sql` and its reversal are the record): two tables - `homebrew_books` {id, owner_id default `auth.uid()`, key `^hb_[a-z2-7]{16}$`, content {en?, ru?, sections?}, revision, timestamps, unique (owner_id, key)} and `homebrew_items` {..., book_id null fk on delete set null, content = the catalog shape's R7 subset, validated by `homebrew_content_valid`}; limits `homebrew_books_per_owner` 20, `homebrew_items_per_owner` 100; `my_limit(key)`; owner-only RLS, `service_role` select and delete; pin, limit, touch (item, book), before-delete and `homebrew` broadcast (`{ by }` on `owner:<uid>`, one per owner per transaction) triggers; `homebrew_snapshot_of(key, content, book)`; `list_entries`: R2's check replaced by two, the bound widened to 32768, a `list_entries_reference_exists` trigger; `get_shared_list` and `clone_shared_list` re-created. Decisions: the 2026-09-30 homebrew files under `docs/decisions/` |
+| R7b | No schema change |
+| R7c | `homebrew_cards` (sets and rule cards) with `homebrew_cards_per_owner` 100; `homebrew_content_valid`, `homebrew_snapshot_valid` and `homebrew_snapshot_of` replaced (relations, the snapshot's cards); the `list_entries` bound decided (planned in `issues/persist-7b-homebrew-catalog/plan.md` 4.7 until R7c's directory exists) |
+| R7d | `import_homebrew(p_books, p_cards, p_items, p_update)`, security invoker, per-call ceilings, skip or update, a held source's sections merged |
 | R8 | Storage bucket `homebrew-art` (`insert into storage.buckets`) and its policies, public read, insert/update/delete only under `<auth.uid()>/` - a SQL migration; `alter table homebrew_items add column art_url text` with a URL-shape CHECK, and a new `homebrew_snapshot_valid` that admits `img` (the R7 refresh, 2026-09-25); the `delete-account` Edge Function of decision 40 lands here, not in R7 |
 | R9 | `homebrew_shares` (as `list_shares`: `item_id`, `token`, `topic_key`, `revoked_at`, one active link per item); RPCs `get_shared_homebrew(token)` for `anon`, `clone_shared_homebrew(token, new_id)` with a new key made in SQL, `add_shared_homebrew_to_list(token, list_id, entry_id)` writing the R7 snapshot formula, share create and revoke (the R7 refresh, 2026-09-25) |
 
@@ -279,7 +282,11 @@ other key stays out of the repository, `VITE_*`, task documents and chat.
 | `FEATURES.md` "Account lists" (the Requests panel, "Notify the owner", no requester status, apply and decline, the index line, flow b, the limits), `STATE.md` (`prefs.notifyGm` and its Display settings row are R5b's, owner 2026-09-26; R4 rewords the row as a select, owner 2026-09-27), `META.md` section 3 (the first anonymous write), `I18N.md`, `pages/src/privacy.html` and `en/` (a request stores items, counts, link kind and time - no name, account or address; expires in 1 hour; deleted 24 hours after a decision or expiry, at the next send), `pages/src/terms.html` and `en/` (a request is not an order), `COVERAGE.md` | `B4.2` |
 | `STATE.md` cutoff and the two-tab merge section; `FEATURES.md` migration banner, `#/l/` retired-link page, local list controls after the cutoff; `META.md` section 3 final text and section 9 install guide; `llms.txt` and `CONTRACTS.md` section 3 gain the retirement date; `pages/src/install.html` and `en/` iOS paragraph | `B5.1` |
 | `CONTRACTS.md` section 4 (`schema/import-v1.json`), `llms.txt` import section | `B6.1` |
-| `ROUTES.md`, `CONTRACTS.md`, fixtures, `tests/contracts.js`, `llms.txt`: `#/homebrew` | `B7.2` |
+| `ROUTES.md`, `CONTRACTS.md` sections 1 and 2 (`#/homebrew`, `#/homebrew/new`, `#/homebrew/<key>`, the reserved `hb_` prefix), `routes.json`, `tests/contracts.js`, `llms.txt` | `B7.2` |
+| The same set for the `homebrew` table (`#/tables/homebrew`, groups `kind`, `src`, `sect`) | `B7b.1` |
+| The catalog `craft` as a list: `data.json`, `catalog.csv`'s `crafts_into`, `CONTRACTS.md` section 4, `README.md`, `llms.txt`, `tests/contracts.js` | `B7c.1` |
+| `CONTRACTS.md` section 4 (`schema/homebrew-v1.json`, `schema/import-v2.json`, the zip's `homebrew.json`), `llms.txt` two sections, `tests/derived.js` pins | `B7d.1` |
+| `B7.3` and `B7c.2`-`B7c.4` change no public contract | - |
 | Same set: `#/h/`, `#/print/list/`, `#/print/s/` | `B9.1` |
 | `CONTRACTS.md` section 3 deleted (a history line remains), `ROUTES.md` `#/l/` rows, `docs/fixtures/lists/*.json` deleted, `tests/contracts.js` list-encoding half, `docs/fixtures/urls/routes.json` (`#/l/` -> `legacyList`), `llms.txt` list-link section, `STATE.md`, `FEATURES.md`, `COVERAGE.md` rows | `B10.1` |
 
@@ -445,20 +452,24 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R6 | `persist-6-import-export` | `B6.1`, `B6.2` - **closed 2026-09-30**, live at the push of `main` (commits "feat(persist): export and import account lists as a published JSON bundle" and the closeout commit after it). The owner's steps: export a list and import it back on a phone; read `llms.txt` and the hint on the import field | JSON export (all, ticked, one list; the data zip) and create-only import of `schema/import-v1.json`; batch selection and deletion on the index; `llms.txt` lets an AI assistant write an import file and read an export alone (owner, 2026-09-27) |
 | - | `limits-follow-overrides` (owner, 2026-09-30: Q1 A, Q2 B, Q3 keep) | `B1` - **closed 2026-09-30** (commit "feat(persist): let the import file bounds follow a raised limit"). The owner's steps: none beyond CI green | An override lifts its limit on every path; `import_lists()` takes 1000 lists per call and `import-v1` widens in place to 1000 lists and 5000 entries per list; the ceilings of one call are in `FEATURES.md`, "Limits" |
 | - | `e2e-import-slowdown` (owner, 2026-09-30: Q1 A, Q2 A; case L's 5 MB import logged, not asserted) | `B1` - **closed 2026-09-30** (commit "fix(persist): run the list entry triggers once per statement"). The owner's steps: CI green; decide the compute size | The list entry touch and limit triggers run once per statement, so an import is linear in its rows; migration `20260930121000`; a list's revision grows by one per statement |
-| R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-26; `issues/persist-7-homebrew/plan.md` is the authority) | Homebrew items as live references in the owner's lists, «Мои предметы» from the account menu and in search, the source tag «Хоумбрю» / "Homebrew" (owner, 2026-09-26), bundle schema v2 |
+| R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-28, amended 2026-09-30 by planning passes 3-5; built and green 2026-10-01, closed at its closeout push) | Own homebrew items with sources and sections, the editor, `#/homebrew*` and `#/i/<key>` from the account menu's «Мои предметы», live references in the owner's lists, frozen copies on shared pages and in copies, print, the quick item «+ Свой предмет» |
+| R7b | `persist-7b-homebrew-catalog` | `B7b.1` (planned 2026-09-30; `issues/persist-7b-homebrew-catalog/plan.md` is the authority for R7b-R7d) | The homebrew table, own equipment in the equipment tables, one merged search, the chip |
+| R7c | `persist-7c-homebrew-relations` | `B7c.1`-`B7c.4` | The catalog craft as a list, cards, upgrade lines, craft links, sets, relations on catalog cards |
+| R7d | `persist-7d-homebrew-files` | `B7d.1`, `B7d.2` | homebrew-v1, import-v2, llms.txt with a blind round, import and export, homebrew.json in the zip |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
 | - | `persist-review` (owner, 2026-09-27; working id, no directory yet; scoped to persistence by the owner, 2026-09-27) | to plan | **After R9, before R10** (owner: "one of the latest releases before clean up"): a review of the persistence feature and its code only - the cloud lists, shares, Realtime, requests, import and export, homebrew, the database, its functions and policies, the ports and the account pages - for code, security, functionality, UX, accessibility and performance, and a brainstorm of what could be added or done differently there. Its output is findings and ideas for the owner to choose from; each chosen item becomes its own task or a `DEBT.md` entry. Its planner decides the review's shape and cost |
 | R10 | `persist-10-legacy-removal` | `B10.1` | The first release after the cutoff date (owner, 2026-09-27; `docs/DECISIONS.md`, "R10 removes browser lists and the move; an old `#/l/` link is not found"): browser lists and all move support go - the codec, its fixtures and contract text, the `#/l/` list page and the retired page (an old `#/l/` link draws the not-found page, the address kept: a contract change), `ListStore`'s browser lists, `LegacyMove`, `MoveNotice`, `MoveStatus`, `StorageNotice`, the move's RPC path; its plan decides whether a migration drops `move_legacy_list` and `lists.legacy_fingerprint` (`DEBT.md` D62, D63). The browser's data is not deleted |
 
 The order is R0, R1, R2, R5, R5b (closed 2026-09-27), the process task
-`process-guards`, R11, `display-settings`, R3, R4, R6-R9, `persist-review`,
+`process-guards`, R11, `display-settings`, R3, R4, R6, R7, R7b, R7c, R7d, R8, R9, `persist-review`,
 R10 (owner, 2026-09-25; `persist-review` placed before R10 by the owner, 2026-09-27;
 `docs/DECISIONS.md`, "`LEGACY_WRITE_UNTIL` is 2026-10-26"; R11 placed after
 R5 so R5's 2026-10-12 deadline keeps priority; R5b split from R5 by the
 owner, 2026-09-26; the process task placed after R5b by the owner,
-2026-09-26). R10 is the
-first release dispatched after the cutoff date; R3, R4, R5b, R6-R9 and R11 may
+2026-09-26; R7 split into R7-R7d by the owner's answer to the R7 plan's
+Q6, 2026-09-30, `docs/decisions/2026-09-30-homebrew-ships-in-four-releases.md`). R10 is the
+first release dispatched after the cutoff date; R3, R4, R5b, R6-R9 (R7b-R7d included) and R11 may
 ship before it. Each release is deployable alone.
 
 ## 10. Legacy write cutoff (owner decision D2)
@@ -583,15 +594,24 @@ carries "goldens".
 | `B5b.1` | R5b, closed 2026-09-27: the account menu, the Display section of `#/account`, the Lists tab gone after the date, the signed-out move banner (section 9's R5b row). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch brief is in R5b's commit history | - | - | - | - |
 | `B1`-`B2` | `process-guards`, closed 2026-09-27: host guards (gate credit, the local stack lock, the `.env` guards) and review gates (the plan review, the reviewer's report file, a migration push after an approving review). The design as built is in `.claude/README.md`, the prompts and `docs/decisions/`; the batch briefs are in the task's commit history | - | - | - | - |
 | `B6.1`-`B6.2` | R6, closed 2026-09-30: `schema/import-v1.json`, `docs/fixtures/import/`, the `llms.txt` section, `lib/bundle.ts`, `import_lists` and its layer 3 cases, contract case L (`B6.1`); `BatchBar`, the index's selection with «Скачать JSON (N)» and «Удалить (N)», `ImportPanel`, `lib/zip.ts` and the account's data zip, «Скачать JSON» on a list page, states 58-62 and F13 (`B6.2`). The design as built is in `docs/specs/`, `docs/decisions/` and `.claude/README.md`; the batch briefs are in R6's commit history | - | - | - | - |
-| `B7.1` | Refreshed 2026-09-25, revised 2026-09-26 (`issues/persist-7-homebrew/plan.md`, the release's authority): R7 schema (section 5, R7 row), the matrix in `tests/db/homebrew.test.mjs` and the projection cases in `list-shares.test.mjs`, the reversal, `lib/homebrew.ts` (`validateDraft`, `toRecord`, `snapshotOf`, `withRecords`), `HomebrewRepository` in `ports/types.ts`, the real adapter and the fake, the seed's three items, a reference row in list 101 and a frozen row in `gm2`'s list, `cloud.contract.ts` case H, the shared fixtures `docs/fixtures/homebrew/` | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db`, layer 4 E2E (~11 min) | required (schema rule) | new release (R7); SQL and ports judged apart from Svelte |
-| `B7.2` | `#/homebrew`, `#/homebrew/new`, `#/homebrew/<key>` reached from the account menu's «Мои предметы» (owner, 2026-09-26; no tab current), the editor with the live card preview and the "in N lists" line, the «Мои предметы» search group over `Index.homebrew`, `AppState.index` derived through `withRecords`, add to list as a reference, the list, shared and index pages drawing references and frozen copies, `#/i/<key>` for the owner, print of a homebrew card, delete with the count warning, the `Homebrew` store's refresh on R3's owner topic; layer 2 states as `gm1` and `gm2`; E2E F8; the `DEBT.md` entry for the print address (retired by R9) | section 6 row 20 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens, layer 4 E2E (~29 min) | required: public contract, new UI | a commit boundary the harness cannot reach (needs `B7.1` and R5's menu) and a public-contract change |
-| `B7.3` | Bundle schema v2 as an extension of R6's v1: `schema/import-v2.json`, top-level `homebrew`, entries with `source: homebrew` and a frozen `snapshot` (a file never carries a bare reference), export all with items, create-only import through `import_bundle(p_items, p_lists)` beside `import_lists` (one migration; a held key becomes a reference again); `llms.txt`, `CONTRACTS.md` section 4; layer 2 import preview as `gm1`; E2E export-delete-import | section 6 row 20 | layer 1 `check` x2, layer 3 `check:db`, `check:built`, layer 2 `app/states,app/contracts`, goldens, layer 4 E2E (~30 min) | required: public contract | a second public contract with its own fixtures and a migration `B7.2` has none of |
+| `B7.1` | R7 schema (section 5, R7 row), ports and pure logic: `lib/homebrew.ts`, `HomebrewRepository`, the real adapter and the fake with its seed, contract case M, `tests/db/homebrew.test.mjs`, the usage report's items lines | `COVERAGE.md`, `CONTRACTS.md` fixtures note | layer 1 `check`, layer 3 `check:db`; after the approve `db:push --project test`, layer 4 E2E (~22 min) | required (a migration with SECURITY DEFINER functions) | a commit boundary the harness cannot reach: `B7.2`'s states need this seed, fake port and migration |
+| `B7.2` | The store, the derived `AppState.index`, the leave guard, `#/homebrew` with sources and sections, the editor with its failure states, `#/i/<key>` with «Изменить», the labels, the routes contract, `DEBT.md` D69, F14 | section 6 (`B7.2` row); `FEATURES.md`, `STATE.md`, `I18N.md`, `META.md`, privacy | layer 1 `check` x2, `check:built`, `app/states`, `app/contracts`, goldens, `sweep 360`, E2E (~56 min) | required: public contract, new write protocol | a public-contract change (the routes and the `hb_` prefix) |
+| `B7.3` | Homebrew in lists: the entry resolver, an exact undo, frozen copies on list, share, index, requests and print pages, the quick item «+ Свой предмет», `DEBT.md` D70, F15 | `FEATURES.md`, `STATE.md`, `COVERAGE.md`, privacy | layer 1 `check` x2, goldens and re-seed, `check:built`, `app/print,app/states`, `app/contracts`, `sweep 360`, E2E (~62 min) | required: a new write path into `list_entries` | a different route and filter set from `B7.2`, and a review not held in one pass |
+| `B7b.1` | The `homebrew` table, its group chip, facets `kind`, `src`, `sect`, own equipment in the equipment tables, dynamic `src`, the «Хоумбрю» chip, one merged search with the intro counter (`issues/persist-7b-homebrew-catalog/plan.md` 7.2) | section 6 (`B7b.1` row); `FEATURES.md` | layer 1 `check` x2, `check:built`, `app/states`, `app/contracts`, goldens compare then re-seed, `sweep 360` (~65 min) | required: public contract (a table id) | new release (R7b), a different route and filter set |
+| `B7c.1` | The catalog `craft` as a list of ids (`issues/persist-7b-homebrew-catalog/plan.md` 7.3) | section 6 (`B7c.1` row) | layer 1 `check`, `check:built`, `contracts,dataint,craft,stub`, goldens of the craft records (~18 min) | required: public contract | new release (R7c); a public-contract change apart from the migration |
+| `B7c.2` | `homebrew_cards`, the replaced validators and snapshot formula, the bound decided, the port and the fake for cards, contract case N | `COVERAGE.md` | layer 1 `check`, layer 3 `check:db`; after the approve push, E2E (~22 min) | required (a migration) | a commit boundary the harness cannot reach |
+| `B7c.3` | The editor's «Связи», `ItemPicker.svelte`, the inline set and card forms, the «Карты» panel, the delete confirm's relation count | `FEATURES.md` | layer 1 `check` x2, `check:built`, `app/states`, goldens, E2E (~40 min) | required: new UI | a different route set from `B7c.4`, and a review not held in one pass |
+| `B7c.4` | Relations on catalog cards and rows: the fold, «(HB)» names, the «HB» label on a homebrew rung, set lines, rule cards, copied text | `FEATURES.md`, `I18N.md` | layer 1 `check` x2, `check:built`, `app/states`, goldens compare then re-seed, `sweep 360` (~41 min) | required: the catalog's cards change for a signed-in reader | a different route set (`#/i/<catalog id>`, `#/tables/*`, `#/search`) |
+| `B7d.1` | `import_homebrew`, `lib/homebrewFile.ts`, `lib/bundle.ts` v2, the two schemas and fixtures, `llms.txt` both sections with a blind round, the port and the fake | section 6 (`B7d.1` row) | layer 1 `check`, layer 3 `check:db`, `check:built`, the blind round; after the approve push, E2E (~34 min) | required: a migration, two public schemas | new release (R7d); the schema batch rule |
+| `B7d.2` | The import panel with the «Куда» mapping and skip or update, the download surfaces, `homebrew.json` in the zip, the account hint and the privacy merge steps (`DEBT.md` D69 closed) | `FEATURES.md`, `META.md`, `COVERAGE.md`, privacy | layer 1 `check` x2, `check:built`, `app/states`, `app/contracts`, goldens, E2E (~47 min) | required: new UI | a commit boundary the harness cannot reach without `B7d.1` |
 | `B8.1` | Art: decode, square crop, 640 and 160 WebP, upload to the owner folder, `art_url`, rows and cards draw it, replace and remove; layer 2 states: a homebrew row and card with seeded art | `FEATURES.md` | layer 1 `check`, `check:built`, layer 2 `app/states`, goldens, layer 4 E2E (~20 min) | required: UI | new release (R8) |
 | `B9.1` | `#/h/<token>` (subscribes to its topic as `B3.1` does), add to list and clone, print routes `#/print/list/<id>` and `#/print/s/<token>` with homebrew cards; layer 2 states: `#/h/` signed out and as `gm2`, both print routes | section 6 row 21 | layer 1 `check` x2, `check:built`, layer 2 filter group, `app/print`, goldens, layer 4 E2E (~27 min) | required: public contract | new release (R9); a public-contract change |
 | `B10.1` | After the cutoff date: remove the `#/l/` codec, its writers, fixtures, tests and contract text (section 10 (c)); `legacyList` route kind kept for the retired-link page | section 6 row 22 | layer 1 `check` x2, `check:built`, layer 2 filter group, goldens (~28 min) | required: public contract | new release (R10), gated on the date |
 
-Total gate cost, one green pass per batch, idle host: about 7.7 hours
-(R7's three batches are 70 minutes by the 2026-09-25 re-measured figures),
+Total gate cost, one green pass per batch, idle host: about 13 hours
+(R7-R7d's ten batches are about 410 minutes by the 2026-09-27 figures - R7
+140, R7b 65, R7c 121, R7d 81 - plus four closeouts, against the 70 minutes
+this table held for R7 before its refresh),
 plus about 15 minutes for R11's `B11.1`
 (`B0.1` alone is one hour because every browser suite re-runs over HTTP;
 the layer 2 goldens add ~10 minutes to every UI batch from `B1.1` on). A
@@ -696,34 +716,21 @@ database; export from `#/account` (all), the lists index (a checklist) and
 an account list's page (one) through `ImagePort.download`. Three decision
 files of 2026-09-26 in `docs/decisions/`. Owner questions (all-or-nothing,
 both notes, three surfaces, unknown ids skipped) in that plan's section
-11. Bundle v2 (R7) bumps `version`, widens `source` and adds the homebrew
-snapshot; the RPC's signature holds.
+11. Bundle v2 (R7d, `import-v2`) bumps `version`, widens `source` and adds the
+homebrew snapshot; the RPC's signature holds.
 
-`B7.1`-`B7.3` (refreshed 2026-09-25 in `issues/persist-7-homebrew/plan.md`,
-the release's authority): section 5 schema; homebrew content is the
-`Record_` shape narrowed to what the form fills (`kind`, names and
-descriptions in both languages with at least one name, `tier` 1-4 typed
-by the owner and never derived, `eq` for equipment), one jsonb column
-validated in SQL and in `lib/homebrew.ts` over shared fixtures; keys
-`hb_` + 16 base32 characters, per owner; `Index.homebrew` and
-`withRecords(index, records)` merge the owner's items into `byId` and a
-second search group without touching `data.js`, the tables or the rolls;
-an own item in a list is a live reference (`snapshot` null) drawn from
-the merged index, so an edit reaches every list and every open shared
-page (the item's touch trigger bumps the lists' `revision`; R3's topics
-carry it); a copy that leaves the account - "Save a copy", R4's
-add-to-my-list, R6's export, R9's add from a link - is frozen by
-`homebrew_snapshot_of`; a delete warns with the count and removes the
-references; the pages resolve frozen copies through the same
-`withRecords`; the page is reached from the account menu's «Мои
-предметы» (R5b builds the menu); saves are a form submit; bundle v2
-extends v1 with a `homebrew` array and frozen entries, imported through
-`import_bundle(p_items, p_lists)` beside R6's `import_lists` (a held key
-becomes a reference). Decisions: `docs/DECISIONS.md`, 2026-09-25, "A
-homebrew item is stored as the catalog record shape ...", "A homebrew
-save is a form submit ..."; 2026-09-26, "Homebrew in the owner's lists
-is a live reference; a copy that leaves is frozen", "Homebrew is reached
-from the account menu, not from a tab".
+`B7.1`-`B7.3` (R7, built 2026-10-01; the design as built is in `docs/specs/`
+and the 2026-09-30 homebrew decisions under `docs/decisions/`) and
+`B7b.1`-`B7d.2` (R7b-R7d; `issues/persist-7b-homebrew-catalog/plan.md`
+section 4 is the design until each release's own directory exists): the
+record is the whole catalog shape plus `craft_from`, with `craft` and
+`craft_from` as lists and a `section`; sources with sections and cards are
+rows; own records join `byId` (R7), `searchable`, `allEquip` and a
+`homebrew` table (R7b), the relation derivations (R7c); frozen copies join
+`byId` alone; «(HB)» marks homebrew, and a homebrew rung on a ladder carries
+an «HB» label; the snapshot embeds the source and, from R7c, the cards; the
+editor keeps its save button with a guard; a list page makes a plain item
+in one press; files in R7d.
 
 `B8.1`: `art_url` as an additive column with a URL-shape CHECK;
 `toRecord` maps it to `Record_.img` as an absolute URL, `artSrc` passes an
@@ -733,7 +740,9 @@ carry `img`; a replaced picture whose URL a frozen copy still names is
 answered by the broken-art fallback, so files may be deleted freely (a
 reference always draws the current picture); the editor's card
 preview reserves the picture slot; decision 40's `delete-account` Edge
-Function ships here with the bucket (nothing to delete before R8).
+Function ships here with the bucket (nothing to delete before R8). The
+uploader offers the line's picture or another own item's picture; a file is
+deleted only when no own item names it.
 Acceptance line placed by R11 on `B8.1`: the usage report's Storage row
 reads the `homebrew-art` bucket - after the E2E upload, the test project's
 report shows a non-zero `storage_bytes`.
@@ -744,10 +753,12 @@ report shows a non-zero `storage_bytes`.
 is the cloner's own item (a new row, a new key, a reference in the
 cloner's lists), and «Сделать своим» from a frozen list row is R9's
 call; `#/print/list/<id>` and `#/print/s/<token>` load entries, resolve
-them through `withRecords(index, snapshots)` (a reference from the
+them through `withRecords(index, none, snapshots)` (a reference from the
 owner's items, a frozen row from itself) and reuse `PrintPage`, retiring
-the `DEBT.md` entry `B7.2` writes for the `#/print/<ids>` address of a
-list with homebrew entries.
+`DEBT.md` D70 (a homebrew entry of another account's list does not print
+from its address). The projection carries the snapshot's book and cards;
+relations to the author's other items travel as frozen names or are
+dropped; a clone drops or clones the chain.
 
 `B10.1`: section 10 (c). Dispatched only after `LEGACY_WRITE_UNTIL` has
 passed in production; the planner refresh checks the date first.
@@ -1058,7 +1069,10 @@ named batch applies each one and writes the durable ones to
 31. **Lower default limits with per-user overrides** (`B2.1`, `B7.1`,
     `B5.1`). Defaults: 50 lists per owner, 100 entries per list, 50
     homebrew items per owner (was 200 / 500 / 500; the owner set this after
-    two intermediate values the same day). **Amended by the owner
+    two intermediate values the same day). **The homebrew item default is
+    100** (owner, the R7 plan's Q3, 2026-09-30), with two more keys:
+    `homebrew_books_per_owner` 20 (R7) and `homebrew_cards_per_owner` 100
+    (R7c). **Amended by the owner
     2026-09-25** (`docs/DECISIONS.md`, 2026-09-25, "Count limits are rows
     read by `effective_limit()`"): the escape hatch is two tables, not one
     wide row - `limit_defaults(key pk, value int null)` holds every count
@@ -1661,13 +1675,14 @@ Carried from R11 (`persist-usage-monitoring`, closed 2026-09-27):
 - Risk: applying account preferences after the session resolves can switch
   the language a moment after first paint on a new device; accepted, the
   local key is written back so it happens once per device.
-- Deferred: CSP meta policy; homebrew Trash; homebrew import beyond v2's
-  create-only; an owner-scoped Realtime topic; brand verification.
+- Deferred: CSP meta policy; homebrew Trash; an owner-scoped Realtime
+  topic; brand verification. Homebrew import updates held keys when the GM
+  chooses (R7d).
 - Not in v1 (owner, 2026-09-24, from the brainstorm): list templates; a
   restock note field; a preferences page (**superseded 2026-09-26**: the
   owner asked for «Настройки отображения» in the account menu - a section
   of `#/account`, `B5b.1`); a shop restock roll mode;
   homebrew import by pasting a stat block; a player wishlist on a shared
-  list (issue 50 with a server); a recent-activity view on `#/account`;
-  homebrew sets. Rejected outright: a duplicate-list button; a share-link
+  list (issue 50 with a server); a recent-activity view on `#/account`.
+  Homebrew sets are in R7c. Rejected outright: a duplicate-list button; a share-link
   open count.

@@ -3,15 +3,16 @@
      line saying where the record is from, and the card.
      Three states, and two of them happen - a link to a record that has been
      renumbered, and a deploy where data.js did not load. */
-  import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import NoData from './NoData.svelte';
   import PageTitle from './PageTitle.svelte';
+  import PickRow from './PickRow.svelte';
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
-  import { printHash, sectionHash, tablesHash } from '../lib/hash.js';
+  import { isHomebrewKey } from '../lib/homebrew.js';
+  import { sectionHash, tablesHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { tableOf, whereFrom } from '../lib/label.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -26,6 +27,16 @@
   const t = $derived(app.t);
   const index = $derived(app.index);
   const it = $derived(index?.byId.get(id));
+  /* An own item's key waits for the session and the author's items: neither «Предмет не
+     найден» nor the item flashes (docs/specs/FEATURES.md, "Records"). */
+  const waiting = $derived(
+    isHomebrewKey(id) &&
+      (app.user === undefined ||
+        (!!app.user && (app.homebrew?.status === 'idle' || app.homebrew?.status === 'loading')))
+  );
+  const failed = $derived(
+    isHomebrewKey(id) && !!app.user && app.homebrew?.status === 'error' && !it
+  );
 
   /* The line under the heading: where the record is from, and its number in the
      table it is printed in. The link goes to the row itself rather than to the
@@ -51,6 +62,12 @@
   {#snippet children(openRecord)}
     {#if !index}
       <NoData>{t.noData}</NoData>
+    {:else if waiting}
+      <p class="wait" role="status">{t.cloudLoading}</p>
+    {:else if failed}
+      <!-- The author's items did not load: the item may exist, so no «Предмет не найден». -->
+      <p class="wait err" role="alert">{t.hbLoadFailed}</p>
+      <Button onclick={() => void app.homebrew?.load()}>{t.retry}</Button>
     {:else if !it}
       <!-- A link to a record that is no longer in the data: an old share, or an id
            that was renumbered. Saying which is kinder than an empty page. -->
@@ -85,10 +102,7 @@
             <RecordActions {app} {index} {it} row="card" />
           {/snippet}
           {#snippet pick()}
-            <AddToList {app} key={it.id} ids={[it.id]} primary />
-            <Button size="sm" href={printHash([it.id])} sameTab title={t.printHint}
-              ><Icon name="print" />{t.print}</Button
-            >
+            <PickRow {app} {it} />
           {/snippet}
         </RecordCard>
       </div>
@@ -117,6 +131,16 @@
     fill: currentcolor;
     margin-left: 4px;
     vertical-align: -1px;
+  }
+
+  .wait {
+    margin: 0 0 14px;
+    font-size: 14px;
+    color: var(--muted2);
+  }
+
+  .wait.err {
+    color: var(--danger-text);
   }
 
   /* off `.itempage` */

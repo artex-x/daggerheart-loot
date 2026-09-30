@@ -6,7 +6,14 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import type { ImportList } from '../lib/bundle.js';
-import { BATCH_BYTES, toCloudList, type CloudList, type ListOp } from '../lib/cloudLists.js';
+import {
+  BATCH_BYTES,
+  entrySource,
+  toCloudList,
+  type CloudList,
+  type EntrySource,
+  type ListOp
+} from '../lib/cloudLists.js';
 import { dict, type Msg } from '../lib/dict.js';
 import type { StoredList } from '../lib/lists.js';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
@@ -44,6 +51,8 @@ const EMPTY = uuid(102);
 const TROPHIES = uuid(103);
 /* «Лавка кузнеца»'s first entry's row id. */
 const CI1_ROW = uuid(1101);
+/* gm1's own axe: «Лавка кузнеца» refers to it, gm2's list holds a frozen copy. */
+const AXE = 'hb_emberaxeaaaaaaaa';
 
 async function loaded(options: FakeCloudOptions = {}, as = 'gm1') {
   const cloud = fakeCloud(SEED, as, options);
@@ -384,6 +393,21 @@ describe('the writers', () => {
     await quiet();
     expect(apply).not.toHaveBeenCalled();
     expect(store.sync).toBe('saved');
+  });
+
+  it('leaves a homebrew key out of an add and a create by default, and out of the ids it answers', async () => {
+    const { store, apply } = await loaded();
+    const HB = 'hb_smithpotionaaaaa';
+    expect(store.add(SHOP, [HB], () => true)).toEqual([]);
+    expect(store.get(SHOP)?.ids).not.toContain(HB);
+    expect(store.add(SHOP, [HB, 'q2'], () => true)).toEqual(['q2']);
+    expect(store.get(SHOP)?.entryIds[HB]).toBeUndefined();
+    const l = store.create('С топором', { ids: [HB, 'ci1'] });
+    expect(l.ids).toEqual(['ci1']);
+    expect(Object.keys(l.entryIds)).toEqual(['ci1']);
+    await quiet();
+    const sent = JSON.stringify(apply.mock.calls);
+    expect(sent).not.toContain(HB);
   });
 
   it('puts the edited list first and keeps the other lists as they were', async () => {
@@ -772,7 +796,7 @@ describe('a refused write', () => {
             item_key: 'q2',
             source: 'official',
             snapshot: null,
-            position: 9,
+            position: 10,
             quantity: 1,
             price_coins: null,
             player_note: '',
@@ -794,6 +818,7 @@ describe('a refused write', () => {
       'q23',
       'w51',
       'q35',
+      'hb_emberaxeaaaaaaaa',
       'q2'
     ]);
   });
@@ -937,8 +962,9 @@ describe('a row deleted elsewhere', () => {
 
   it("keeps the list's rename when a replayed request answers a false gone", async () => {
     const { cloud, store, apply, real } = await loaded();
-    store.setMeta(SHOP, 'di11', 'qty', 5);
-    store.removeEntry(SHOP, 'di11');
+    /* The list's last entry: its removal sends no reorder. */
+    store.setMeta(SHOP, AXE, 'qty', 5);
+    store.removeEntry(SHOP, AXE);
     apply.mockResolvedValueOnce({ ok: false, error: 'network' });
     await quiet();
     expect(store.sync).toBe('failed');
@@ -1445,5 +1471,146 @@ describe('a batch removal', () => {
     await quiet();
     expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
     expect(store.lists.map((l) => l.id)).toEqual([SHOP, TROPHIES]);
+  });
+});
+
+describe('homebrew entries', () => {
+  const GM2_LIST = uuid(201);
+  const own = (keys: readonly string[]) => (key: string) =>
+    entrySource(key, { ready: true, has: (k) => keys.includes(k) }, undefined);
+
+  async function resolved(as: string, sourceOf: (key: string) => EntrySource | null) {
+    const cloud = fakeCloud(SEED, as);
+    const store = new CloudLists(cloud.lists, say, t, undefined, sourceOf);
+    await store.load();
+    const apply = vi.spyOn(cloud.lists, 'apply');
+    return { cloud, store, apply };
+  }
+
+  /* The entries as the server holds them: the key, the source and the snapshot's id. */
+  async function written(repo: ListRepository, id: string) {
+    const l = await serverList(repo, id);
+    return l?.list_entries.map((e) => [
+      e.item_key,
+      e.source,
+      (e.snapshot as { id?: string } | null)?.id ?? null
+    ]);
+  }
+
+  it('reads a frozen copy into the list and a reference as a plain key', async () => {
+    const gm2 = await resolved('gm2', own([]));
+    const frozen = gm2.store.get(GM2_LIST)?.frozen?.[AXE];
+    expect(frozen).toMatchObject({ id: AXE, src: 'homebrew', ru: 'Топор Тлеющих Углей' });
+    const gm1 = await resolved('gm1', own([AXE]));
+    expect(gm1.store.get(SHOP)?.ids).toContain(AXE);
+    expect(gm1.store.get(SHOP)?.frozen).toBeUndefined();
+  });
+
+  it('writes an own item as a reference, a catalog record as official, and leaves an unknown key out', async () => {
+    const { cloud, store } = await resolved('gm1', own([AXE]));
+    const other = 'hb_nobodysitemaaaaa';
+    expect(store.add(EMPTY, [AXE, 'q2', other], () => true)).toEqual([AXE, 'q2']);
+    expect(store.get(EMPTY)?.frozen).toBeUndefined();
+    await quiet();
+    expect(await written(cloud.lists, EMPTY)).toEqual([
+      [AXE, 'homebrew', null],
+      ['q2', 'official', null]
+    ]);
+  });
+
+  it('writes a frozen copy with its snapshot on a create, and keeps it in memory', async () => {
+    const gm2 = await resolved('gm2', own([]));
+    const copy = gm2.store.get(GM2_LIST)?.frozen?.[AXE];
+    const { cloud, store } = await resolved('gm2', (key) =>
+      entrySource(key, { ready: true, has: () => false }, key === AXE ? copy : undefined)
+    );
+    const l = store.create('Копия', { ids: [AXE, 'q1'] });
+    expect(l.ids).toEqual([AXE, 'q1']);
+    expect(l.frozen?.[AXE]).toBe(copy);
+    await quiet();
+    expect(await written(cloud.lists, l.id)).toEqual([
+      [AXE, 'homebrew', AXE],
+      ['q1', 'official', null]
+    ]);
+  });
+
+  it('writes nothing for a homebrew key while the account items are not read', async () => {
+    const { store, apply } = await resolved('gm1', (key) =>
+      entrySource(key, { ready: false, has: () => true }, undefined)
+    );
+    expect(store.add(EMPTY, [AXE], () => true)).toEqual([]);
+    await quiet();
+    expect(apply).not.toHaveBeenCalled();
+  });
+
+  it("an undo of a frozen entry from the record's list menu writes the same snapshot", async () => {
+    /* The resolver finds nothing now: the undo must not ask it. */
+    const { cloud, store } = await resolved('gm2', () => null);
+    const copy = store.get(GM2_LIST)?.frozen?.[AXE];
+    const before = (await serverList(cloud.lists, GM2_LIST))?.list_entries[1]?.snapshot;
+    store.removeEntry(GM2_LIST, AXE);
+    expect(store.get(GM2_LIST)?.frozen).toBeUndefined();
+    store.restoreEntry(GM2_LIST, AXE, 1, {});
+    expect(store.get(GM2_LIST)?.frozen?.[AXE]).toBe(copy);
+    await quiet();
+    const after = (await serverList(cloud.lists, GM2_LIST))?.list_entries;
+    expect(after?.map((e) => [e.item_key, e.source])).toEqual([
+      ['q23', 'official'],
+      [AXE, 'homebrew']
+    ]);
+    expect(after?.[1]?.snapshot).toEqual(before);
+  });
+
+  it('an undo of a reference and of a catalog row writes each as it was', async () => {
+    const { cloud, store } = await resolved('gm1', () => null);
+    store.removeEntry(SHOP, AXE);
+    store.removeEntry(SHOP, 'di11');
+    store.restoreEntry(SHOP, 'di11', 8, {});
+    store.restoreEntry(SHOP, AXE, 9, { gold: 800 });
+    await quiet();
+    expect((await written(cloud.lists, SHOP))?.slice(-2)).toEqual([
+      ['di11', 'official', null],
+      [AXE, 'homebrew', null]
+    ]);
+    expect(said).toEqual([]);
+  });
+
+  it('takes the refused path for a reference whose item was deleted meanwhile', async () => {
+    const { cloud, store } = await resolved('gm1', own([AXE]));
+    store.removeEntry(SHOP, AXE);
+    await quiet();
+    expect((await cloud.homebrew.removeItem(uuid(511))).ok).toBe(true);
+    store.restoreEntry(SHOP, AXE, 9, {});
+    await quiet();
+    expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
+    expect(store.get(SHOP)?.ids).not.toContain(AXE);
+  });
+
+  it('forgets what it removed on a sign-out', async () => {
+    const { store, apply } = await resolved('gm1', () => null);
+    store.removeEntry(SHOP, AXE);
+    await quiet();
+    store.clear();
+    await store.load();
+    apply.mockClear();
+    store.restoreEntry(SHOP, AXE, 9, {});
+    await quiet();
+    expect(apply).not.toHaveBeenCalled();
+    expect(store.get(SHOP)?.ids).not.toContain(AXE);
+  });
+});
+
+describe('the frozen copies in memory', () => {
+  it('keeps the frozen object through a note, a quantity and a rename, so a page keeps its index', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const store = new CloudLists(cloud.lists, say, t);
+    await store.load();
+    const list = uuid(201);
+    const frozen = store.get(list)?.frozen;
+    expect(frozen).toBeDefined();
+    store.setMeta(list, 'q23', 'note', 'Под прилавком');
+    store.setMeta(list, AXE, 'qty', 3);
+    store.rename(list, 'Другое имя');
+    expect(store.get(list)?.frozen).toBe(frozen);
   });
 });

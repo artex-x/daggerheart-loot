@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
+import { recordOf, type BookRef } from './homebrew.js';
 import { badgeKind, printSrc, srcLabel, srcName, tableOf, whereFrom } from './label.js';
 import type { Record_ } from './types.js';
 
@@ -250,5 +251,55 @@ describe('a tag and a path, pinned apart', () => {
     expect(whereFrom(byId('cm1'), 'ru')).toBe('Сообщества · Великородное');
     expect(whereFrom(byId('cm1'), 'en')).toBe('Communities · Highborne');
     expect(whereFrom(byId('voa2_a1'), 'en')).toBe('Vault of Ages');
+  });
+});
+
+describe('a homebrew item', () => {
+  const alder: BookRef = {
+    key: 'hb_alderworkshopaaa',
+    ru: 'Мастерская Ольхи',
+    en: 'Alder Workshop',
+    sections: [{ key: 'hb_sectbladesaaaaaa', ru: 'Холодное оружие', en: 'Blades' }]
+  };
+  const plain = recordOf('hb_engravedringaaaa', { kind: 'item', ru: 'Кольцо' }, null);
+  const inSource = recordOf('hb_capaaaaaaaaaaaaa', { kind: 'item', en: 'Cap' }, alder);
+  const inSection = recordOf(
+    'hb_emberaxeaaaaaaaa',
+    { kind: 'item', ru: 'Топор', section: 'hb_sectbladesaaaaaa' },
+    alder
+  );
+  const englishSource = recordOf(
+    'hb_whispercapaaaaaa',
+    { kind: 'item', en: 'Cap' },
+    { key: 'hb_englishbookaaaaa', en: 'Tinker Guild' }
+  );
+
+  it('tags the default source by its word and a named one with the Latin mark', () => {
+    expect(srcLabel(plain, 'ru')).toBe('Хоумбрю');
+    expect(srcLabel(plain, 'en')).toBe('Homebrew');
+    expect(srcLabel(inSource, 'ru')).toBe('Мастерская Ольхи (HB)');
+    expect(srcLabel(inSource, 'en')).toBe('Alder Workshop (HB)');
+    expect(srcLabel(englishSource, 'ru')).toBe('Tinker Guild (HB)');
+  });
+
+  it('walks the path from the group through the source to the section', () => {
+    expect(whereFrom(plain, 'ru')).toBe('Хоумбрю');
+    expect(whereFrom(inSource, 'en')).toBe('Homebrew · Alder Workshop');
+    expect(whereFrom(inSection, 'ru')).toBe('Хоумбрю · Мастерская Ольхи · Холодное оружие');
+    expect(whereFrom(englishSource, 'ru')).toBe('Хоумбрю · Tinker Guild');
+  });
+
+  it('prints the path on a card and has no table page', () => {
+    expect(printSrc(inSection, 'en')).toBe('Homebrew · Alder Workshop · Blades');
+    expect(tableOf(inSection)).toBe(null);
+    expect(
+      tableOf(
+        recordOf(
+          'hb_aaaaaaaaaaaaaaaa',
+          { kind: 'equip', ru: 'Щит', eq: { t: 'armor', tier: 1, as: 1, th: [1, 2] } },
+          null
+        )
+      )
+    ).toBe(null);
   });
 });

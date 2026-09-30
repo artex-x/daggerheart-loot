@@ -1,6 +1,6 @@
 # #/roll/std ~ account menu as gm1
 # route: #/roll/std
-# why: the account menu open: «Аккаунт», «Мои списки», «Выйти»
+# why: the account menu open: «Аккаунт», «Мои списки», «Мои предметы», «Выйти»
 # as: gm1
 
 ## ru :: tree
@@ -16,6 +16,7 @@ RootWebArea "Обычные правила — Генератор лута — D
     menu "Меню аккаунта" [orientation=vertical]
       menuitem "Аккаунт" [focused=true]
       menuitem "Мои списки"
+      menuitem "Мои предметы"
       menuitem "Выйти"
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
@@ -110,6 +111,7 @@ daggerheart.com
 Как это работает
 Конфиденциальность
 ЛутDaggerheart
+Мои предметы
 Мои списки
 На единицу больше
 На единицу меньше

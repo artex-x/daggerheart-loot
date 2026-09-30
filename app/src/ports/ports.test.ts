@@ -1351,6 +1351,49 @@ describe('the page going out of sight', () => {
     page.fireHidden();
     expect(fn).toHaveBeenCalledOnce();
   });
+
+  it('asks before an unload only while the check answers true, and stops on removal', () => {
+    /* A window that keeps its listeners: jsdom's own `returnValue` is the legacy boolean. */
+    const handlers: ((e: unknown) => void)[] = [];
+    const win = {
+      document: pageWin().doc,
+      addEventListener: (_type: string, h: (e: unknown) => void) => handlers.push(h),
+      removeEventListener: (_type: string, h: (e: unknown) => void) => {
+        handlers.splice(handlers.indexOf(h), 1);
+      }
+    };
+    let dirty = false;
+    const off = browserPage(win as unknown as Parameters<typeof browserPage>[0]).guardUnload(
+      () => dirty
+    );
+    const send = () => {
+      const e = { preventDefault: vi.fn(), returnValue: 'untouched' };
+      for (const h of handlers) h(e);
+      return e;
+    };
+    const clean = send();
+    expect(clean.preventDefault).not.toHaveBeenCalled();
+    expect(clean.returnValue).toBe('untouched');
+    dirty = true;
+    const asked = send();
+    expect(asked.preventDefault).toHaveBeenCalledOnce();
+    expect(asked.returnValue).toBe('');
+    off();
+    expect(handlers).toEqual([]);
+  });
+
+  it('has a fake that answers whether an unload would ask', () => {
+    const page = fakePage();
+    expect(page.unloadAsks()).toBe(false);
+    let dirty = true;
+    const off = page.guardUnload(() => dirty);
+    expect(page.unloadAsks()).toBe(true);
+    dirty = false;
+    expect(page.unloadAsks()).toBe(false);
+    dirty = true;
+    off();
+    expect(page.unloadAsks()).toBe(false);
+  });
 });
 
 describe('the clock', () => {
@@ -1374,5 +1417,14 @@ describe('the clock', () => {
     expect(queryClock('?today=', 1).now()).toBe(1);
     expect(queryClock('?as=gm1', 1).now()).toBe(1);
     expect(queryClock('', 2).now()).toBe(2);
+  });
+
+  it('holds the toasts only with ?toasts=held, beside any day', () => {
+    expect(queryClock('?toasts=held', 2).holdsToasts?.()).toBe(true);
+    expect(queryClock('?toasts=held', 2).now()).toBe(2);
+    expect(queryClock('?today=2026-10-26&toasts=held', 1).now()).toBe(Date.UTC(2026, 9, 26));
+    expect(queryClock('?toasts=held&today=2026-02-30', 1).now()).toBe(1);
+    expect(queryClock('?toasts=yes', 2).holdsToasts?.()).toBeUndefined();
+    expect('holdsToasts' in browserClock()).toBe(false);
   });
 });

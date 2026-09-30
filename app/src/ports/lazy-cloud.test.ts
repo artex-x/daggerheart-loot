@@ -1,6 +1,7 @@
 /* The lazy port: loads once, delegates everything, and answers like a
    signed-out, refusing port when the load fails. */
 import { describe, expect, it, vi } from 'vitest';
+import { HOMEBREW_KEY } from '../lib/homebrew.js';
 import { fakeCloud } from './fake-cloud.js';
 import { SEED, uuid } from './fake-cloud-seed.js';
 import { lazyCloud } from './lazy-cloud.js';
@@ -146,8 +147,39 @@ describe('lazyCloud', () => {
     expect(await requests.decline(id)).toEqual({ ok: false, error: 'decided' });
   });
 
+  it('forwards every homebrew call to the loaded port, and makes ids and keys before it loads', async () => {
+    const load = vi.fn(() => Promise.resolve(fakeCloud(SEED, 'gm1')));
+    const { homebrew } = lazyCloud(load);
+    expect(homebrew.newId()).toMatch(/^[0-9a-f-]{36}$/);
+    expect(homebrew.newKey()).toMatch(HOMEBREW_KEY);
+    expect(load).not.toHaveBeenCalled();
+    const read = await homebrew.load();
+    expect(read.ok && [read.books.length, read.items.length, read.itemLimit]).toEqual([
+      1, 4, 100
+    ]);
+    const book = { id: uuid(7010), key: 'hb_bookbbbbbbbbbbbb', content: { ru: 'Источник' } };
+    expect(await homebrew.createBook(book)).toEqual({ ok: true });
+    expect(await homebrew.updateBook(uuid(7010), { ru: 'Источник II' }, 1)).toEqual({
+      ok: true,
+      revision: 2
+    });
+    const item = {
+      id: uuid(7011),
+      key: 'hb_itemcccccccccccc',
+      book_id: uuid(7010),
+      content: { kind: 'item' as const, ru: 'Предмет' }
+    };
+    expect(await homebrew.createItem(item)).toEqual({ ok: true });
+    expect(
+      await homebrew.updateItem(uuid(7011), { content: item.content, book_id: null }, 1)
+    ).toEqual({ ok: true, revision: 2 });
+    expect(await homebrew.removeItem(uuid(7011))).toEqual({ ok: true });
+    expect(await homebrew.removeBook(uuid(7010))).toEqual({ ok: true });
+    expect(load).toHaveBeenCalledOnce();
+  });
+
   it('answers signed out and refuses every change when the load fails', async () => {
-    const { auth, prefs, lists, shares, requests } = lazyCloud(() =>
+    const { auth, prefs, lists, shares, requests, homebrew } = lazyCloud(() =>
       Promise.reject(new Error('offline'))
     );
     const fn = vi.fn();
@@ -178,6 +210,17 @@ describe('lazyCloud', () => {
     expect(await requests.send('x', 't', [{ item: 'ci1', qty: 1 }])).toEqual(unsent);
     expect(await requests.apply('x', false)).toEqual(unsent);
     expect(await requests.decline('x')).toEqual(unsent);
+    expect(await homebrew.load()).toEqual({ ok: false });
+    const book = { id: 'x', key: 'hb_bookbbbbbbbbbbbb', content: { ru: 'a' } };
+    expect(await homebrew.createBook(book)).toEqual(unsent);
+    expect(await homebrew.updateBook('x', { ru: 'a' }, null)).toEqual(unsent);
+    expect(await homebrew.removeBook('x')).toEqual(unsent);
+    const content = { kind: 'item' as const, ru: 'a' };
+    expect(
+      await homebrew.createItem({ id: 'x', key: 'hb_itemcccccccccccc', book_id: null, content })
+    ).toEqual(unsent);
+    expect(await homebrew.updateItem('x', { content, book_id: null }, 1)).toEqual(unsent);
+    expect(await homebrew.removeItem('x')).toEqual(unsent);
     off();
     expect(fn).not.toHaveBeenCalled();
   });

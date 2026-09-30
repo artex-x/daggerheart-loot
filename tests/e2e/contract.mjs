@@ -252,10 +252,17 @@ export async function runRealContract(env, admin, member) {
   if (!read.error) throw new Error('contract: user_prefs answered a caller with no session');
   const lists = await anon.from('lists').select('id').limit(1);
   if (!lists.error) throw new Error('contract: lists answered a caller with no session');
-  for (const table of ['purchase_requests', 'purchase_request_lines']) {
+  for (const table of [
+    'purchase_requests',
+    'purchase_request_lines',
+    'homebrew_books',
+    'homebrew_items'
+  ]) {
     const rows = await anon.from(table).select('*').limit(1);
     if (!rows.error) throw new Error(`contract: ${table} answered a caller with no session`);
   }
+  const limit = await anon.rpc('my_limit', { p_key: 'homebrew_items_per_owner' });
+  if (!limit.error) throw new Error('contract: my_limit() answered a caller with no session');
   /* The two functions anon may run: get_shared_list, and create_purchase_request, which
      case K and F12 send through. An unknown link reads as null, not an error. */
   const shared = await anon.rpc('get_shared_list', { p_token: 'nonsense' });

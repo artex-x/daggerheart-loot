@@ -181,7 +181,8 @@ state exists, by what it was for:
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `comm {c, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}`, the tables view a page switch picked for this visit (`AppState`) |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg` |
-| Lists | `lists`, `cloudLists` (the account lists, their read status, the write buffer and its save status), `sharedView` (the open share link's list, its read status and whether the reader owns it), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session); the index's ticked account lists (page memory, pruned to the drawn cards, empty on every visit) and the import field's file, preview and rows (page memory, forgotten when the field folds); the request sender's sent lines (memory, until the ticks change or clear); the owner's hidden decided requests (page load) |
+| Lists | `lists`, `cloudLists` (the account lists, their read status, the write buffer and its save status, each list's frozen copies as its entries hold them, and what each removed entry was written as, for its undo, forgotten on sign-out), `sharedView` (the open share link's list, its read status and whether the reader owns it), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session); the index's ticked account lists (page memory, pruned to the drawn cards, empty on every visit) and the import field's file, preview and rows (page memory, forgotten when the field folds); the request sender's sent lines (memory, until the ticks change or clear); the owner's hidden decided requests (page load) |
+| Homebrew | `homebrew` (the signed-in author's items and sources, their read status and item limit: memory only, read on sign-in and cleared on sign-out; another tab's or device's write arrives as the owner topic's `homebrew` event and reads them again), the editor's draft, the draft it loaded, its revision and its problems (page memory: a remount starts from the store), the one leave check a dirty editor registers (`AppState`) |
 | Prices | `rp`, `guess`, `moneyHelp` |
 | Print | `printIds`, the print layout a page switch picked for this visit (`AppState`) |
 | UI | `sel` (on a shared page, pruned to the drawn list), `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen`, `menuOpen` (the header's account menu, in `Shell`, closed on a navigation and a user change), `hidden` (the move banner's «Скрыть», in `MoveNotice`, which `Shell` never remounts: hidden until the next page load) |
@@ -193,6 +194,11 @@ this has the same problem to solve.
 
 `urlPayload` is the payload this tab wrote itself, so an edit can refresh the
 address rather than orphaning the page.
+
+Nothing of homebrew goes to `localStorage` or `sessionStorage`: the items live
+in the account, and the editor's draft lives as long as its page. A frozen copy
+of another account's item lives in its list entry, in the account, and in memory
+only as that list holds it; the «Свой предмет» panel's fields are page memory.
 
 `keepOpen` holds what the person folded or unfolded by hand, so a redraw does
 not undo it.

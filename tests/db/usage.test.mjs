@@ -18,6 +18,8 @@ const B = '00000000-0000-4000-8000-0000000000b2';
 const DAY_MS = 86_400_000;
 const PRIVS = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'];
 const PUBLIC_TABLES = [
+  'homebrew_books',
+  'homebrew_items',
   'limit_defaults',
   'list_entries',
   'list_shares',
@@ -174,6 +176,33 @@ describe('collect()', () => {
       plus(out.base, { owners_near: 1, owners_over: 1, lists_near: 1, lists_over: 1 })
     );
     assert.deepEqual(out.unlimited, out.above);
+  });
+
+  it('counts the owners near and over the homebrew items limit', async () => {
+    const out = await rolledBack(async (tx) => {
+      await tx`insert into auth.users (id, email) values
+        (${A}, 'usage-a@example.test'), (${B}, 'usage-b@example.test')`;
+      const near = async () => (await collect(tx, new Date())).near_limits;
+      const base = await near();
+      const items = (owner, n) => tx`
+        insert into public.homebrew_items (id, owner_id, key, content)
+        select gen_random_uuid(), ${owner},
+          'hb_' || lpad(translate(g::text, '0123456789', 'abcdefghij'), 16, 'a'),
+          jsonb_build_object('kind', 'item', 'ru', 'Предмет ' || g)
+        from generate_series(1, ${n}::int) as g`;
+      await items(A, 80);
+      await items(B, 79);
+      const at80 = await near();
+      // Set after the inserts: the limit trigger refuses them otherwise.
+      await tx`insert into public.user_limit_overrides (user_id, key, value)
+        values (${A}, 'homebrew_items_per_owner', 50)`;
+      const above = await near();
+      return { base, at80, above };
+    });
+    const plus = (a, b) =>
+      Object.fromEntries(Object.keys(a).map((k) => [k, a[k] + (b[k] ?? 0)]));
+    assert.deepEqual(out.at80, plus(out.base, { items_near: 1 }));
+    assert.deepEqual(out.above, plus(out.base, { items_near: 1, items_over: 1 }));
   });
 
   it('counts the realtime.messages rows of the last 24 hours over a baseline', async () => {

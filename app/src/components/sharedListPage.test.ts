@@ -25,7 +25,7 @@ import {
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
-import type { Env } from '../ports/index.js';
+import type { CloudPort, Env } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -673,7 +673,7 @@ describe('a share link', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' })
     ).toBeInTheDocument();
-    expect(screen.getByText('Список от другого игрока · 2 позиции')).toBeInTheDocument();
+    expect(screen.getByText('Список от другого игрока · 3 позиции')).toBeInTheDocument();
     expect(screen.getByText('Обновлено 3 дня назад')).toBeInTheDocument();
     expect(screen.getByText('Открыта с рассвета до заката.')).toBeInTheDocument();
     expect(screen.queryByText(/Кузнец торгуется/)).not.toBeInTheDocument();
@@ -1254,5 +1254,66 @@ describe('a purchase request', () => {
       expect(send).not.toHaveBeenCalled();
       await expectNoA11yViolations(container);
     });
+  });
+});
+
+describe('homebrew entries on a share link', () => {
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const open = (hash: string, cloud: CloudPort) => {
+    const router = memoryRouter(hash);
+    const page = fakePage();
+    const r = render(App, { env: at(hash, { router, cloud, page }) });
+    return { ...r, router, page };
+  };
+  async function saved(cloud: CloudPort, id: string) {
+    const read = await cloud.lists.list();
+    return (read.ok ? read.lists.find((l) => l.id === id) : undefined)?.list_entries.find(
+      (e) => e.item_key === AXE
+    );
+  }
+
+  it("draws the owner's own item from the projection, signed out", async () => {
+    const { container } = open('#/s/player-token-1', fakeCloud(SEED));
+    expect(
+      await screen.findByRole('button', { name: /Топор Тлеющих Углей/ })
+    ).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('turns a reference into a frozen copy for another reader who saves the list', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { router, page } = open('#/s/player-token-1', cloud);
+    await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
+    await screen.findByRole('button', { name: /Топор Тлеющих Углей/ });
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/lists/' + uuid(5000));
+    });
+    expect(
+      await screen.findByRole('button', { name: /Топор Тлеющих Углей/ })
+    ).toBeInTheDocument();
+    page.fireHidden();
+    const axe = await saved(cloud, uuid(5000));
+    expect(axe?.source).toBe('homebrew');
+    expect(axe?.snapshot).toMatchObject({ id: AXE, ru: 'Топор Тлеющих Углей' });
+  });
+
+  it('keeps a frozen copy frozen when its author saves the list', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const made = await cloud.shares.create(uuid(201), 'player');
+    if (!made.ok) throw new Error('no share');
+    await cloud.auth.signOut();
+    await cloud.auth.signIn('google');
+    const { router } = open('#/s/' + made.token, cloud);
+    await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
+    await screen.findByRole('button', { name: /Топор Тлеющих Углей/ });
+    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
+    await waitFor(() => {
+      expect(router.hash()).toMatch(/^#\/lists\//);
+    });
+    const id = router.hash().slice('#/lists/'.length);
+    const axe = await saved(cloud, id);
+    expect(axe?.source).toBe('homebrew');
+    expect(axe?.snapshot).toMatchObject({ id: AXE });
   });
 });

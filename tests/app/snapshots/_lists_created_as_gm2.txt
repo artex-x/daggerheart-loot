@@ -44,9 +44,9 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       StaticText "Список пуст"
     button "Удалить"
     checkbox "Выбрать: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 1 позиция, изменён позавчера" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+    link "Список второго ГМа, 2 позиции, изменён позавчера" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
       StaticText "Список второго ГМа"
-      StaticText "1 позиция · изменён позавчера"
+      StaticText "2 позиции · изменён позавчера"
     button "Удалить"
   contentinfo ""
     navigation "Страницы сайта"
@@ -82,7 +82,7 @@ daggerheart.com
 Создать
 Сообщества
 Списки
-Список второго ГМа, 1 позиция, изменён позавчера
+Список второго ГМа, 2 позиции, изменён позавчера
 Таблицы
 Тайник, 0 позиций, изменён только что
 Удалить
@@ -130,9 +130,9 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm2#/lists
       StaticText "The list is empty"
     button "Delete"
     checkbox "Select: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 1 item, edited 2 days ago" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+    link "Список второго ГМа, 2 items, edited 2 days ago" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
       StaticText "Список второго ГМа"
-      StaticText "1 item · edited 2 days ago"
+      StaticText "2 items · edited 2 days ago"
     button "Delete"
   contentinfo ""
     navigation "Site pages"
@@ -172,5 +172,5 @@ Vault of Ages
 Wondrous
 daggerheart.com
 ЛутDaggerheart
-Список второго ГМа, 1 item, edited 2 days ago
+Список второго ГМа, 2 items, edited 2 days ago
 Тайник, 0 items, edited just now

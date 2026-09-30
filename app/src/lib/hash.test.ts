@@ -8,6 +8,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   ACCOUNT_HASH,
+  HOMEBREW_HASH,
+  homebrewItemHash,
   legacySource,
   parseHash,
   printAsked,
@@ -66,6 +68,7 @@ describe('golden route fixtures', () => {
         expect(route.kind).toBe('print');
       }
       if (fx.resolves.hash === ACCOUNT_HASH) expect(route).toEqual({ kind: 'account' });
+      if (fx.resolves.hash.startsWith(HOMEBREW_HASH)) expect(route.kind).toMatch(/^homebrew/);
       if (fx.resolves.printQty) {
         expect(route.kind).toBe('print');
         if (route.kind === 'print') expect(route.qty).toEqual(fx.resolves.printQty);
@@ -327,6 +330,35 @@ describe('the account page', () => {
     for (const h of ['#/account/x', '#/accounts', '#/acc']) {
       expect(parseHash(h).kind).toBe('unknown');
     }
+  });
+});
+
+describe('the homebrew pages', () => {
+  it('reads `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`', () => {
+    expect(parseHash(HOMEBREW_HASH)).toEqual({ kind: 'homebrew' });
+    expect(parseHash('#/homebrew/new')).toEqual({ kind: 'homebrewItem', key: null });
+    expect(parseHash('#/homebrew/hb_emberaxeaaaaaaaa')).toEqual({
+      kind: 'homebrewItem',
+      key: 'hb_emberaxeaaaaaaaa'
+    });
+  });
+
+  it('reads any other homebrew address as unreadable', () => {
+    for (const h of [
+      '#/homebrew/',
+      '#/homebrew/pistols',
+      '#/homebrew/hb_x',
+      '#/homebrew/hb_emberaxeaaaaaaaa/x',
+      '#/homebrew/HB_EMBERAXEAAAAAAAA',
+      '#/homebrews'
+    ]) {
+      expect(parseHash(h).kind).toBe('unknown');
+    }
+  });
+
+  it('builds the editor addresses', () => {
+    expect(homebrewItemHash(null)).toBe('#/homebrew/new');
+    expect(homebrewItemHash('hb_emberaxeaaaaaaaa')).toBe('#/homebrew/hb_emberaxeaaaaaaaa');
   });
 });
 

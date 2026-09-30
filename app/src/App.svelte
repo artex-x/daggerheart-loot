@@ -22,6 +22,8 @@
   import AltPanel from './components/AltPanel.svelte';
   import Button from './components/Button.svelte';
   import CommunityPanel from './components/CommunityPanel.svelte';
+  import HomebrewEditor from './components/HomebrewEditor.svelte';
+  import HomebrewPage from './components/HomebrewPage.svelte';
   import ListPage from './components/ListPage.svelte';
   import ListsPage from './components/ListsPage.svelte';
   import NoData from './components/NoData.svelte';
@@ -104,6 +106,14 @@
       <PrintPage {app} ids={app.route.ids} dropped={app.route.dropped} qty={app.route.qty} />
     {:else if app.route.kind === 'account' && app.env.cloud}
       <AccountPage {app} />
+    {:else if app.route.kind === 'homebrew' && app.homebrew}
+      <HomebrewPage {app} store={app.homebrew} />
+    {:else if app.route.kind === 'homebrewItem' && app.homebrew}
+      <!-- A real navigation remounts the editor; `replace()` after a save keeps it
+           mounted, and the focus where it was. -->
+      {#key app.navigations}
+        <HomebrewEditor {app} store={app.homebrew} key={app.route.key} />
+      {/key}
     {:else}
       <!-- R7: `#fallback` keeps `app.hash` readable at boot and on every
            navigation, so a route kind with no branch above should not be

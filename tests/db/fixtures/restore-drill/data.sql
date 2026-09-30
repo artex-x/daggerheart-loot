@@ -60,7 +60,7 @@ on two lines', 3, '2026-09-22 10:00:00+00', '2026-09-22 10:00:00+00'),
 INSERT INTO "public"."list_entries" ("id", "list_id", "item_key", "source", "snapshot", "position", "quantity", "price_coins", "player_note", "gm_note") VALUES
 	('d2000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000001', 'w1', 'official', NULL, 0, 1, NULL, '', ''),
 	('d2000000-0000-4000-8000-000000000002', 'd1000000-0000-4000-8000-000000000001', 'a2', 'official', NULL, 1, 2, 150, '), (', ''),
-	('d2000000-0000-4000-8000-000000000003', 'd1000000-0000-4000-8000-000000000002', 'hb_drill', 'homebrew', '{"name": "Drill item"}', 0, 1, NULL, '', '');
+	('d2000000-0000-4000-8000-000000000003', 'd1000000-0000-4000-8000-000000000002', 'hb_drillitemaaaaaaa', 'homebrew', '{"id": "hb_drillitemaaaaaaa", "src": "homebrew", "kind": "item", "en": "Drill item", "ru": "Drill item", "ende": "", "rud": ""}', 0, 1, NULL, '', '');
 
 
 --

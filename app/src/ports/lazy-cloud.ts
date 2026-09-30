@@ -6,11 +6,14 @@
  * offline, a deploy that replaced it - answers like a signed-out port that
  * refuses every change, so the page says "failed" rather than hanging. */
 
+import { keyFrom } from '../lib/homebrew.js';
 import type {
   AuthPort,
   AuthResult,
   CloudPort,
   EventsPort,
+  HomebrewRead,
+  HomebrewRepository,
   ListRepository,
   ListsRead,
   ListWrite,
@@ -32,6 +35,7 @@ const UNSENT: Extract<ListWrite, { error: 'network' }> = { ok: false, error: 'ne
 const NO_SHARES: SharesRead = { ok: false };
 const UNSHARED: SharedRead = { ok: false };
 const UNREQUESTED: RequestsRead = { ok: false };
+const NO_HOMEBREW: HomebrewRead = { ok: false };
 
 export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
   let loading: Promise<CloudPort | null> | null = null;
@@ -115,5 +119,19 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     apply: async (id, clamp) => (await port())?.requests.apply(id, clamp) ?? UNSENT,
     decline: async (id) => (await port())?.requests.decline(id) ?? UNSENT
   };
-  return { auth, prefs, lists, shares, events, requests };
+  /* `newId()` and `newKey()` answer before the chunk loads, as `lists.newId()` does. */
+  const homebrew: HomebrewRepository = {
+    newId: () => crypto.randomUUID(),
+    newKey: () => keyFrom(crypto.getRandomValues(new Uint8Array(10))),
+    load: async () => (await port())?.homebrew.load() ?? NO_HOMEBREW,
+    createBook: async (row) => (await port())?.homebrew.createBook(row) ?? UNSENT,
+    updateBook: async (id, content, revision) =>
+      (await port())?.homebrew.updateBook(id, content, revision) ?? UNSENT,
+    removeBook: async (id) => (await port())?.homebrew.removeBook(id) ?? UNSENT,
+    createItem: async (row) => (await port())?.homebrew.createItem(row) ?? UNSENT,
+    updateItem: async (id, patch, revision) =>
+      (await port())?.homebrew.updateItem(id, patch, revision) ?? UNSENT,
+    removeItem: async (id) => (await port())?.homebrew.removeItem(id) ?? UNSENT
+  };
+  return { auth, prefs, lists, shares, events, requests, homebrew };
 }

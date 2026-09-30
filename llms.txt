@@ -204,6 +204,10 @@ of two or three usually plays better than assigning one each.
 - `#/lists` - the lists page; a signed-in GM imports a file here
 - `#/account` - the account page: sign in, connected providers, download
   my data as a file, sign out, delete the account
+- `#/homebrew` - a signed-in GM's own items («Мои предметы»), with
+  `#/homebrew/new` and `#/homebrew/<key>` to edit one; a key (`hb_` and 16
+  of `a-z2-7`) lives in one account, so you cannot build one, and
+  `#/i/<key>` opens only for its author
 
 The English interface is https://artex-x.github.io/daggerheart-loot/en/
 followed by the same `#/...` address.

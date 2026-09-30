@@ -18,6 +18,7 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import { artSrc } from '../lib/desc.js';
+  import { isHomebrewKey } from '../lib/homebrew.js';
   import { imageFileName, share, shareName, type ShareBlock } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Index } from '../lib/data.js';
@@ -39,6 +40,9 @@
 
   const t = $derived(app.t);
   const link = $derived(app.linkToRecord(it.id));
+  /* An own item opens for its author alone: a link would give a player «Предмет не
+     найден», so it offers none until item links (docs/specs/FEATURES.md, "Records"). */
+  const linked = $derived(!isHomebrewKey(it.id));
 
   async function copyName(): Promise<void> {
     await app.copied(
@@ -133,13 +137,14 @@
     const r = await app.env.share.share({
       title: name,
       text,
-      url: link,
+      ...(linked ? { url: link } : {}),
       ...(file ? { file } : {})
     });
     /* A dismissal is somebody changing their mind, not a failure, and saying
        anything about it would be nagging. Where there is no share sheet at all
-       the link goes to the clipboard instead, which is what they reached for. */
-    if (r === 'unsupported' || r === 'failed') await copyLink();
+       the link goes to the clipboard instead, which is what they reached for;
+       an item with no link sends its text there. */
+    if (r === 'unsupported' || r === 'failed') await (linked ? copyLink() : copyText());
   }
 </script>
 
@@ -152,14 +157,16 @@
   >
     <Icon name="copy" />
   </button>
-  <button
-    type="button"
-    title={t.copyLink}
-    aria-label={t.copyLink}
-    onclick={() => void copyLink()}
-  >
-    <Icon name="link" />
-  </button>
+  {#if linked}
+    <button
+      type="button"
+      title={t.copyLink}
+      aria-label={t.copyLink}
+      onclick={() => void copyLink()}
+    >
+      <Icon name="link" />
+    </button>
+  {/if}
 {:else}
   <Button
     variant="primary"

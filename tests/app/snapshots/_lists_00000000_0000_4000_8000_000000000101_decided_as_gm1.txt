@@ -26,13 +26,14 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "9 позиций · "
+    StaticText "10 позиций · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
+    button "Свой предмет" [expanded=false]
     button "Скопировать текст"
     button "Скачать JSON"
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11]
-    ... button x8 of 12 same-shape siblings elided
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11-hb_emberaxeaaaaaaaa]
+    ... button x9 of 13 same-shape siblings elided
     region "Запросы (1)"
       heading "Запросы (1)" [level=2]
       StaticText "По ссылке для игроков · только что · истечёт через 60 минут"
@@ -46,7 +47,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       StaticText "×1"
     status ""
       StaticText "Новый запрос"
-    ... StaticText x30 of 34 same-shape siblings elided
+    ... StaticText x32 of 36 same-shape siblings elided
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Как это работает" [description=Как это работает expanded=false]
@@ -59,13 +60,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     checkbox "Выбрать все" [checked=false]
     generic ""
     checkbox "Первоклассный Спальный Мешок" [checked=false]
-    spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=9]
+    spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=10]
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
-    ... checkbox x6 of 10 same-shape siblings elided
-    spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=9]
+    ... checkbox x7 of 11 same-shape siblings elided
+    spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=10]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -73,37 +74,39 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Как предмет выглядит, что о нём знают" [value=Последний в наличии. multiline=true readonly=false required=false]
     textbox "Хоумбрю, подвох, что знает только мастер" [multiline=true readonly=false required=false]
-    spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=9]
+    spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=10]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
-    ... button x5 of 9 same-shape siblings elided
-    ... button x5 of 9 same-shape siblings elided
-    spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=9]
+    ... button x6 of 10 same-shape siblings elided
+    ... button x6 of 10 same-shape siblings elided
+    spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=10]
     spinbutton "КОЛ-ВО" [value=5 valuetext=5 required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [value=20 valuetext=20 required=false valuemin=0 valuemax=99999]
-    spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=9]
-    ... spinbutton x3 of 7 same-shape siblings elided
+    spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=10]
+    ... spinbutton x4 of 8 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     textbox "Как предмет выглядит, что о нём знают" [multiline=true readonly=false required=false]
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Хоумбрю, подвох, что знает только мастер" [value=Проклят. multiline=true readonly=false required=false]
-    spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=9]
-    spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=9]
+    spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=10]
+    spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=10]
     spinbutton "ЗОЛОТО" [value=99999 valuetext=99999 required=false valuemin=0 valuemax=99999]
-    checkbox "Колдующий Кинжал" [checked=false]
-    spinbutton "Позиция в списке" [value=8 valuetext=8 required=false valuemin=1 valuemax=9]
-    button "Колдующий Кинжал Ранг 1 · Магическое · Инстинкт · Средне · d6 ма..." [namelen=217 namehash=4560dddc]
+    spinbutton "Позиция в списке" [value=8 valuetext=8 required=false valuemin=1 valuemax=10]
+    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    checkbox "Брошюра по Истории Искусства" [checked=false]
+    spinbutton "Позиция в списке" [value=9 valuetext=9 required=false valuemin=1 valuemax=10]
+    button "Брошюра по Истории Искусства Это прекрасно иллюстрированная брош..." [namelen=613 namehash=7f8d998e]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
-    checkbox "Брошюра по Истории Искусства" [checked=false]
-    spinbutton "Позиция в списке" [value=9 valuetext=9 required=false valuemin=1 valuemax=9]
-    button "Брошюра по Истории Искусства Это прекрасно иллюстрированная брош..." [namelen=613 namehash=7f8d998e]
+    checkbox "Топор Тлеющих Углей" [checked=false]
+    spinbutton "Позиция в списке" [value=10 valuetext=10 required=false valuemin=1 valuemax=10]
+    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЗОЛОТО"
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "ЗОЛОТО" [value=800 valuetext=800 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
     status ""
@@ -127,6 +130,7 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
+Бросить d10
 Брошюра по Истории Искусства
 Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная брошю... [namelen=610 namehash=514fcfb2]
 Выбрать все
@@ -165,18 +169,20 @@ daggerheart.com
 Проклят.
 Результат броска
 Решённые в этот раз (1)
+Свой предмет
 Скачать JSON
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать текст
 Скрыть решённые запросы
-Случайно 1–9
 Собрать карточки для печати: девять на лист A4
 Сообщества
 Списки
 Стеганый Доспех
 Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
 Таблицы
+Топор Тлеющих Углей
+Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
 Убрать из списка
 Удалить
 Условия использования
@@ -205,13 +211,14 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "9 items · "
+    StaticText "10 items · "
     StaticText "Saved"
     button "Share" [expanded=false]
+    button "Own item" [expanded=false]
     button "Copy text"
     button "Download JSON"
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11]
-    ... button x8 of 12 same-shape siblings elided
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11-hb_emberaxeaaaaaaaa]
+    ... button x9 of 13 same-shape siblings elided
     region "Requests (1)"
       heading "Requests (1)" [level=2]
       StaticText "Through the players' link · just now · expires in 60 minutes"
@@ -225,7 +232,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       StaticText "×1"
     status ""
       StaticText "New request"
-    ... StaticText x30 of 34 same-shape siblings elided
+    ... StaticText x32 of 36 same-shape siblings elided
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "How this works" [description=How this works expanded=false]
@@ -238,13 +245,13 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     checkbox "Select all" [checked=false]
     generic ""
     checkbox "Premium Bedroll" [checked=false]
-    spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=9]
+    spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=10]
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
-    ... checkbox x6 of 10 same-shape siblings elided
-    spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=9]
+    ... checkbox x7 of 11 same-shape siblings elided
+    spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=10]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -252,37 +259,39 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     button "Clear the note" [description=Clear the note]
     textbox "What it looks like, what is known about it" [value=Последний в наличии. multiline=true readonly=false required=false]
     textbox "Homebrew, the catch, what only the GM knows" [multiline=true readonly=false required=false]
-    spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=9]
+    spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=10]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
-    ... button x5 of 9 same-shape siblings elided
-    ... button x5 of 9 same-shape siblings elided
-    spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=9]
+    ... button x6 of 10 same-shape siblings elided
+    ... button x6 of 10 same-shape siblings elided
+    spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=10]
     spinbutton "QTY" [value=5 valuetext=5 required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [value=20 valuetext=20 required=false valuemin=0 valuemax=99999]
-    spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=9]
-    ... spinbutton x3 of 7 same-shape siblings elided
+    spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=10]
+    ... spinbutton x4 of 8 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
     textbox "What it looks like, what is known about it" [multiline=true readonly=false required=false]
     button "Clear the note" [description=Clear the note]
     textbox "Homebrew, the catch, what only the GM knows" [value=Проклят. multiline=true readonly=false required=false]
-    spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=9]
-    spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=9]
+    spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=10]
+    spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=10]
     spinbutton "GOLD" [value=99999 valuetext=99999 required=false valuemin=0 valuemax=99999]
-    checkbox "Casting Dagger" [checked=false]
-    spinbutton "Position in the list" [value=8 valuetext=8 required=false valuemin=1 valuemax=9]
-    button "Casting Dagger Tier 1 · Magic · Instinct · Close · d6 mag · One-..." [namelen=180 namehash=33c9b4cf]
+    spinbutton "Position in the list" [value=8 valuetext=8 required=false valuemin=1 valuemax=10]
+    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    checkbox "Art History Booklet" [checked=false]
+    spinbutton "Position in the list" [value=9 valuetext=9 required=false valuemin=1 valuemax=10]
+    button "Art History Booklet This is a finely illustrated booklet (donati..." [namelen=535 namehash=4a6f01f1]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
-    checkbox "Art History Booklet" [checked=false]
-    spinbutton "Position in the list" [value=9 valuetext=9 required=false valuemin=1 valuemax=9]
-    button "Art History Booklet This is a finely illustrated booklet (donati..." [namelen=535 namehash=4a6f01f1]
+    checkbox "Ember Axe" [checked=false]
+    spinbutton "Position in the list" [value=10 valuetext=10 required=false valuemin=1 valuemax=10]
+    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "GOLD"
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "GOLD" [value=800 valuetext=800 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
     status ""
@@ -317,6 +326,8 @@ Download JSON
 Dragon's Vault
 Dread
 EN
+Ember Axe
+Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
 Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
 Hide the decided requests
@@ -331,13 +342,14 @@ Lists
 Note
 One higher
 One lower
+Own item
 Position in the list
 Premium Bedroll
 Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
 Privacy
 RU
-Random 1–9
 Remove from the list
+Roll d10
 Roll result
 Scepter
 ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]

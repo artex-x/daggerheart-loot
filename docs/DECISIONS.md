@@ -15,10 +15,12 @@ deleted.
 ## Index
 
 - 2026-10-01 - [An RTK command piped into head or tail is denied when RTK bounds it](decisions/2026-10-01-an-rtk-command-piped-into-head-or-tail.md)
+- 2026-10-01 - [Homebrew keeps the way open to shared books without building them](decisions/2026-10-01-homebrew-keeps-the-way-open-to-shared-books.md)
 - 2026-09-30 - [A frozen copy embeds its source and cards; a reference must exist when written](decisions/2026-09-30-a-frozen-copy-embeds-its-source-a-reference-must-exist.md)
 - 2026-09-30 - [A homebrew item carries the whole catalog shape; sources and cards are rows](decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md)
 - 2026-09-30 - [A homebrew source may hold sections, as the community book holds communities](decisions/2026-09-30-a-homebrew-source-may-hold-sections.md)
 - 2026-09-30 - [A list page makes a plain homebrew item in one press, with no draft mark](decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md)
+- 2026-09-30 - [A timed golden holds its toast until the capture reads it](decisions/2026-09-30-a-timed-golden-holds-its-toast-until-the.md)
 - 2026-09-30 - [A toast is built in the language on screen each time it is drawn](decisions/2026-09-30-a-toast-is-built-in-the-language-on.md)
 - 2026-09-30 - [Agents search with grep; no language server and no ast-grep](decisions/2026-09-30-agents-search-with-grep-no-language-server-and-no.md)
 - 2026-09-30 - [(HB) marks homebrew, and a homebrew relation shows only to its author](decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md)
@@ -27,6 +29,7 @@ deleted.
 - 2026-09-30 - [Homebrew travels as its own file; a lists file v2 carries frozen entries](decisions/2026-09-30-homebrew-travels-as-its-own-file.md)
 - 2026-09-30 - [`import-v1` bounds are the import call's ceilings, not the default limits](decisions/2026-09-30-import-v1-bounds-are-the-import-calls-ceilings.md)
 - 2026-09-30 - [The account reads its own effective limit through `my_limit()`](decisions/2026-09-30-the-account-reads-its-own-effective-limit.md)
+- 2026-09-30 - [The bundle budget steps up per batch to 250 kB configured and 190 unconfigured](decisions/2026-09-30-the-bundle-budget-steps-up-per-batch-to.md)
 - 2026-09-30 - [The configured bundle budget is 210 kB; the unconfigured stays 150 kB](decisions/2026-09-30-the-configured-bundle-budget-is-210-kb.md)
 - 2026-09-30 - [The homebrew editor keeps its save button, with a guard and a revision check](decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md)
 - 2026-09-30 - [The list_entries touch and limit triggers run once per statement](decisions/2026-09-30-the-list-entries-triggers-run-once-per-statement.md)

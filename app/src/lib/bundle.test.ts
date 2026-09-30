@@ -21,6 +21,7 @@ import {
   LIST_KEYS,
   LIST_REQUIRED,
   LISTS_MAX,
+  officialOnly,
   overBounds,
   parseBundle,
   ROOT_KEYS,
@@ -896,5 +897,25 @@ describe('decodeText', () => {
 
   it('names a file limit of 5 MiB', () => {
     expect(FILE_MAX_BYTES).toBe(5 * 1024 * 1024);
+  });
+});
+
+describe('officialOnly', () => {
+  const list = (id: string, ids: string[]) => ({
+    id,
+    name: id,
+    ids,
+    updated: 0,
+    entryIds: {}
+  });
+
+  it('leaves the homebrew entries out, counts them and keeps a list with none as it is', () => {
+    const plain = list('a', ['q1']);
+    const mixed = list('b', ['hb_emberaxeaaaaaaaa', 'q2', 'hb_mineaaaaaaaaaaaa']);
+    const { lists, skipped } = officialOnly([plain, mixed]);
+    expect(lists[0]).toBe(plain);
+    expect(lists[1]?.ids).toEqual(['q2']);
+    expect(skipped).toBe(2);
+    expect(officialOnly([plain]).skipped).toBe(0);
   });
 });

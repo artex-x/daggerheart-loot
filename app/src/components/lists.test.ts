@@ -572,6 +572,73 @@ describe('with sign-in configured', () => {
     });
   });
 
+  it('adds an own item to an account list as a reference, and never to a browser list', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const HB = 'hb_ownitemaaaaaaaaa';
+    await cloud.homebrew.createItem({
+      id: '00000000-0000-4000-8000-000000000599',
+      key: HB,
+      book_id: null,
+      content: { kind: 'item', ru: 'Своя вещь' }
+    });
+    /* Another account's browser lists stay in the browser, and writable. */
+    const { page } = withCloud(cloud, '#/i/' + HB, TWO, {
+      'dhloot.migrated.v1': JSON.stringify({ owner: 'another-account', lists: {} })
+    });
+    await signedInAs('gm2');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Своя вещь' })
+    ).toBeInTheDocument();
+    await openMenu();
+    await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
+    expect(screen.getByText('Добавлено в «Список второго ГМа»')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Лавка в порту' }));
+    expect(screen.getByText('Свой предмет нельзя добавить в этот список.')).toBeInTheDocument();
+    page.fireHidden();
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      const l = read.ok ? read.lists.find((x) => x.name === 'Список второго ГМа') : undefined;
+      expect(l?.list_entries.at(-1)).toMatchObject({
+        item_key: HB,
+        source: 'homebrew',
+        snapshot: null
+      });
+    });
+  });
+
+  it("says the account's items still load, or failed to, and writes no frozen copy", async () => {
+    for (const [answer, text] of [
+      [
+        new Promise(() => undefined),
+        'Ваши предметы ещё загружаются - повторите через секунду.'
+      ],
+      [Promise.resolve({ ok: false }), 'Не получилось загрузить ваши предметы.']
+    ] as const) {
+      const cloud = fakeCloud(SEED, 'gm2');
+      vi.spyOn(cloud.homebrew, 'load').mockReturnValue(answer as never);
+      const apply = vi.spyOn(cloud.lists, 'apply');
+      const { page, unmount } = withCloud(
+        cloud,
+        '#/lists/00000000-0000-4000-8000-000000000201'
+      );
+      await signedInAs('gm2');
+      await userEvent.click(await screen.findByRole('button', { name: /Топор Тлеющих Углей/ }));
+      const dialog = screen.getByRole('dialog');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: '+ Новый список' }));
+      await userEvent.type(within(dialog).getByPlaceholderText('Например: клад дракона'), 'Т');
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Создать' }));
+      expect(within(dialog).getByText(text)).toBeInTheDocument();
+      page.fireHidden();
+      await waitFor(() => {
+        expect(apply).toHaveBeenCalled();
+      });
+      const sent = JSON.stringify(apply.mock.calls);
+      expect(sent).not.toContain('hb_emberaxeaaaaaaaa');
+      unmount();
+    }
+  });
+
   it('offers the account lists alone after the cutoff, and the prompt alone signed out', async () => {
     const after = { clock: fixedClock(LEGACY_WRITE_UNTIL) };
     const foreign = { 'dhloot.migrated.v1': JSON.stringify({ owner: 'x', lists: {} }) };
@@ -629,7 +696,11 @@ describe('with sign-in configured', () => {
     await waitFor(async () => {
       const read = await cloud.lists.list();
       const l = read.ok ? read.lists[0] : undefined;
-      expect(l?.list_entries.map((e) => e.item_key)).toEqual(['q23', 'ci1']);
+      expect(l?.list_entries.map((e) => e.item_key)).toEqual([
+        'q23',
+        'hb_emberaxeaaaaaaaa',
+        'ci1'
+      ]);
     });
   });
 });
