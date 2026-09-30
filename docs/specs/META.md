@@ -87,8 +87,9 @@ purchase request (`FEATURES.md`, "Account and browser lists"). It is the
 first write `anon` makes: through `create_purchase_request(uuid,text,jsonb)`
 alone, a security definer function that holds every bound itself - a valid
 active token, a client-made id whose replay inserts nothing, at most 100
-lines of items the list holds, 5 requests a minute per link, 10 pending per
-list - and stores no name, account or address of the sender. `anon`
+lines of items the list holds and 10 pending per list (the defaults of
+`request_lines` and `pending_requests_per_list`), 5 requests a minute per
+link - and stores no name, account or address of the sender. `anon`
 executes two functions, `get_shared_list(text)` and that one, and reads no
 table (`tests/db/harness.test.mjs`; `docs/DECISIONS.md`, 2026-09-26,
 "Purchase requests are written only by a bounded function any link holder

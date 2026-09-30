@@ -82,6 +82,39 @@ No release plan owns it; the owner decides which one takes it.
   (for example the «Новый список» field), not `body`. Cover it in
   `listsPage.test.ts`.
 
+## Limit texts and harness parity (no task filed yet; the owner names the release)
+
+Owns: what a reader is told at a count limit that is not theirs, and the
+fake's parity with the database's bounds of one write.
+
+### D67 - a requester at `request_lines` is told to write to the site's owner
+
+- **Where**: `app/src/lib/dict.ts` `limitOther` (RU, EN), shown for the
+  refusal `limit: request_lines` of `create_purchase_request()`.
+- **What**: a player whose request has more lines than the list owner's
+  limit reads «Достигнут предел: %n. Нужно больше - напишите на
+  daggerheart.loot@gmail.com.». The override of `request_lines` is the list
+  owner's, set by the site's owner, so the requester's email asks for a
+  limit on an account that is not theirs.
+- **Why deferred**: found in the limits audit (2026-09-30), which changed
+  no request text; a requester's own text is a small separate fix.
+- **How to verify the fix**: over the fake, send a request past the lines
+  limit through a share link as another reader and confirm the toast names
+  the list's limit without the email line. Cover it in `state/app.test.ts`.
+
+### D68 - the fake takes more than 5000 entries in one `create` or `add`
+
+- **Where**: `app/src/ports/fake-cloud.ts`, `lists.apply` (`create`, `add`).
+- **What**: `apply_list_writes()` refuses an op of more than 5000 entries
+  with `22023`; the fake applies it. A test over the fake can pass with a
+  write the database refuses (the export tests build lists of 5001 entries
+  this way, as a shortcut).
+- **Why deferred**: found in the limits audit (2026-09-30); no client path
+  sends more than 5000 entries in one op, and no test depends on the gap.
+- **How to verify the fix**: `fake-cloud.test.ts` expects a `create` of
+  5001 entries answered as the database answers it, and the export tests in
+  `state/app.test.ts` build their long lists another way.
+
 ## A live revoke on the shared page (no task filed yet; the owner names the release)
 
 Owns: what a screen reader hears when an open shared page stops drawing its

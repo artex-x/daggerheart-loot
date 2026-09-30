@@ -390,6 +390,40 @@ describe('the press', () => {
     expect(read.ok ? read.lists : null).toHaveLength(3);
   });
 
+  /* One list of 150 distinct catalog ids: past the default entry limit, inside the file's. */
+  const longList = (): Uint8Array =>
+    utf8(
+      doc([
+        {
+          name: 'Склад',
+          entries: [...Object.values(LOOT.items).flat(), ...(LOOT.eq ?? [])]
+            .map((r) => ({ id: r.id }))
+            .slice(0, 150)
+        }
+      ])
+    );
+
+  it("imports a list past the default entry limit when the account's limit allows it", async () => {
+    const { container, cloud } = await opened({ limits: { entries: 200 } });
+    choose(container, longList());
+    await userEvent.click(await importButton(1));
+    expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
+    const read = await cloud.lists.list();
+    const made = read.ok ? read.lists.find((l) => l.name === 'Склад') : undefined;
+    expect(made?.list_entries).toHaveLength(150);
+  });
+
+  it("says the account's entry limit for a list past it, the account unchanged", async () => {
+    const { container, cloud } = await opened();
+    choose(container, longList());
+    await userEvent.click(await importButton(1));
+    expect(await alertText()).toBe(
+      'Достигнут предел позиций в списке: 100. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+    );
+    const read = await cloud.lists.list();
+    expect(read.ok ? read.lists : null).toHaveLength(3);
+  });
+
   it('says a file too large for one import', async () => {
     const { container, cloud } = await opened();
     vi.spyOn(cloud.lists, 'import').mockResolvedValueOnce({

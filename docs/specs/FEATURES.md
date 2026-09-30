@@ -593,12 +593,13 @@ browser lists writable after the date.
   a store-only zip whose root holds `lists.json`, the same lists file of every
   account list (`CONTRACTS.md` section 4). An export has no toast of its own,
   and a failed download toasts «Не получилось. Попробуйте ещё раз.». A file
-  past the import's bounds - more than 50 lists, or more than 100 entries in
-  one list - still downloads whole, and one toast says «Этот файл нельзя
-  импортировать целиком.» with «В нём больше 50 списков: экспортируйте их
-  частями.» and «В списках «Склад» позиций больше 100: разделите такие
-  списки.» as they apply. So a list moved from this browser with more than a
-  hundred entries cannot move between accounts by file; split it first.
+  past the import's bounds - more than 1000 lists, or more than 5000 entries
+  in one list - still downloads whole, and one toast says «Этот файл нельзя
+  импортировать целиком.» with «В нём больше 1000 списков: экспортируйте их
+  частями.» and «В списках «Склад» позиций больше 5000: разделите такие
+  списки.» as they apply. A list moved from this browser with more than a
+  hundred entries imports only into an account whose entry limit holds it:
+  the account's limit refuses it, not the file.
 - **Import**: «Импорт из файла» ("Lists") adds the file's lists to the
   account as new lists, every list and entry with a new id, all or nothing in
   one call: a refused call leaves the account as it was. The write buffer is
@@ -611,7 +612,17 @@ browser lists writable after the date.
   `limits:set` changes them per user) are refused with the error toast
   «Достигнут предел списков в аккаунте: 50. Нужно больше - напишите на
   daggerheart.loot@gmail.com.» / «Достигнут предел позиций в списке: 100. ...»,
-  the number the database applied. A purchase request holds at most 100
+  the number the database applied. An override lifts its limit on every
+  path that counts it: an edit, a saved copy of a shared list, an import and
+  a purchase request. Ceilings of one call stay whatever the override: an
+  import takes at most 1000 lists and 5000 entries of one list, a write at
+  most 5000 entries of one list, and a purchase request's lines at most 32
+  KiB of JSON (about 900 lines of catalog ids). One import is also bounded
+  by the hosted statement timeout of 8 s: 50 lists of 100 entries (5050
+  rows) took 2504 ms, and 1000 lists of 5 entries (6000 rows) are estimated
+  at up to about 5120 ms, so a file of more than about 9000 rows can answer «Файл
+  слишком большой для одного импорта: разделите его на несколько.», and the
+  export does not warn before it. A purchase request holds at most 100
   lines, a list at most 10 pending requests (both defaults `limits:set`
   changes per owner), a link sends at most 5 a minute; a request expires
   after an hour and is deleted a day after its answer or expiry, when the
@@ -964,8 +975,8 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   be disconnected until another is connected; «Ваши данные» / "Your data" -
   the hint «Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём
   файл lists.json с вашими списками. Архив можно импортировать в другой
-  аккаунт на странице «Списки». Импорт принимает до 50 списков, а в одном
-  списке позиций - не больше 100.» and «Скачать мои данные (ZIP)» ("Account
+  аккаунт на странице «Списки»: за один раз - до 1000 списков.» and «Скачать
+  мои данные (ZIP)» ("Account
   and browser lists", "Exports"), disabled until the account's lists are
   read and while its zip is built, with «Не получилось загрузить списки
   аккаунта.» and «Повторить» when the read failed; «Выход» - «Выйти» and «Выйти на

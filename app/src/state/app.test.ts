@@ -9,7 +9,7 @@
  * writes that screen. */
 
 import { describe, expect, it, vi } from 'vitest';
-import { bundleText, toBundle } from '../lib/bundle.js';
+import { bundleText, ENTRIES_MAX, LISTS_MAX, toBundle } from '../lib/bundle.js';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { sharedListHash } from '../lib/hash.js';
@@ -2818,9 +2818,11 @@ describe('the exports', () => {
   });
 
   it('says a failed download, and nothing about the bounds', async () => {
-    const { app } = await signedIn(fakeImage({ failDownload: true }), { entries: 200 });
+    const { app } = await signedIn(fakeImage({ failDownload: true }), {
+      entries: ENTRIES_MAX + 100
+    });
     app.cloudLists!.create('Длинный', {
-      ids: Array.from({ length: 101 }, (_, i) => 'r' + String(i))
+      ids: Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => 'r' + String(i))
     });
     await app.exportLists();
     expect(app.toast).toMatchObject({ msg: app.t.accountFailed, mode: 'err' });
@@ -2840,34 +2842,39 @@ describe('the exports', () => {
     app.stop();
   });
 
-  it('downloads a list past 100 entries whole and names it in one toast', async () => {
-    const { app, image } = await signedIn(fakeImage(), { entries: 200 });
-    const ids = Array.from({ length: 101 }, (_, i) => 'r' + String(i));
+  it("downloads a list past the file's entry bound whole and names it in one toast", async () => {
+    const { app, image } = await signedIn(fakeImage(), { entries: ENTRIES_MAX + 100 });
+    const ids = Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => 'r' + String(i));
     const long = app.cloudLists!.create('Склад', { ids });
     await app.exportLists([long.id]);
     const text = await image.downloaded[0]!.blob.text();
     expect(
       (JSON.parse(text) as { lists: { entries: unknown[] }[] }).lists[0]?.entries
-    ).toHaveLength(101);
+    ).toHaveLength(ENTRIES_MAX + 1);
     expect(app.toast).toMatchObject({
-      msg: 'Этот файл нельзя импортировать целиком. В списках «Склад» позиций больше 100: разделите такие списки.',
+      msg: 'Этот файл нельзя импортировать целиком. В списках «Склад» позиций больше 5000: разделите такие списки.',
       mode: ''
     });
     app.stop();
   });
 
-  it('says a file past 50 lists, and both bounds in one toast', async () => {
-    const { app } = await signedIn(fakeImage(), { lists: 60, entries: 200 });
+  it("says a file past the file's list bound, and both bounds in one toast", async () => {
+    const { app } = await signedIn(fakeImage(), {
+      lists: LISTS_MAX + 100,
+      entries: ENTRIES_MAX + 100
+    });
     const store = app.cloudLists!;
-    for (let i = 0; i < 48; i++) store.create('Список ' + String(i));
+    for (let i = 0; i < LISTS_MAX - 2; i++) store.create('Список ' + String(i));
     await app.exportLists();
     expect(app.toast?.msg).toBe(
-      'Этот файл нельзя импортировать целиком. В нём больше 50 списков: экспортируйте их частями.'
+      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями.'
     );
-    store.create('Склад', { ids: Array.from({ length: 101 }, (_, i) => 'r' + String(i)) });
+    store.create('Склад', {
+      ids: Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => 'r' + String(i))
+    });
     await app.exportData();
     expect(app.toast?.msg).toBe(
-      'Этот файл нельзя импортировать целиком. В нём больше 50 списков: экспортируйте их частями. В списках «Склад» позиций больше 100: разделите такие списки.'
+      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями. В списках «Склад» позиций больше 5000: разделите такие списки.'
     );
     app.stop();
   });

@@ -1536,7 +1536,7 @@ CLI facts (2.117.0, measured 2026-09-24):
 | `npm run config:push -- --project test\|prod [--env-file <path>]` | the owner, in an interactive terminal | refuses without a TTY; for `prod` refuses while an `env(...)` name is unset; diffs, asks for a typed `yes`, then runs `config push` with the CLI's own prompt |
 | `npm run db:push -- --project test [--yes]` | the owner; an agent only after an approving report under `issues/*/reviews/` whose `Reviewed:` commit has `HEAD`'s `supabase/migrations` tree (rule 2r; `docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review"); `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing. It keeps `db push`, so it refuses while another branch's migration sits on the test project; CI's `migrate-test` is the path then |
 | `npm run db:push -- --project prod` | the owner, in an interactive terminal | the fallback while CI's `migrate-prod` is broken; refuses without a TTY, and refuses `--yes`; dry run, typed `yes`, `db push`; records nothing |
-| `npm run limits:set -- --project test\|prod --user <email\|uuid> --key <key> --value <n>\|--default\|--clear\|--unlimited` | an agent only against `test` (rule 2n); `prod` the owner, in an interactive terminal | sets or removes one user's override of one count limit over `SUPABASE_DB_URL` from the environment; refuses a string that is not the named project's, a key not in `limit_defaults`, and a user that is not exactly one row; prints `before:` and `after:` (`200`, `unlimited`, `default 50`). `--clear` is `--default`: it deletes the override |
+| `npm run limits:set -- --project test\|prod --user <email\|uuid> --key <key> --value <n>\|--default\|--clear\|--unlimited` | an agent only against `test` (rule 2n); `prod` the owner, in an interactive terminal | sets or removes one user's override of one count limit over `SUPABASE_DB_URL` from the environment; refuses a string that is not the named project's, a key not in `limit_defaults`, and a user that is not exactly one row; prints `before:` and `after:` (`200`, `unlimited`, `default 50`). `--clear` is `--default`: it deletes the override; an override does not lift the ceilings of one call (`FEATURES.md`, "Limits") |
 | `npm run check:db` | anyone (Docker; PowerShell on Windows) | layer 3 against the local stack |
 | `npm run restore:drill [-- --backup <YYYY-MM-DD\|run id> \| --safety <stamp>]` | anyone, an agent included (Docker, `gh`, the key; PowerShell on Windows) | loads a backup (the newest by default) or a safety backup into the local stack, compares the rows and resets; a PASS writes the receipt that `restore:prod` needs ("Run the agent drill") |
 | `npm run restore:prod -- --backup <YYYY-MM-DD\|run id> \| --safety <stamp>` | the owner, in an interactive terminal (rule 2n denies it for agents) | refuses without a TTY and without a receipt of the same source; takes an encrypted safety backup, wants the typed production ref, restores production in one transaction and verifies ("Restore production (owner)") |
@@ -2048,6 +2048,14 @@ add a new migration whose body is the reversal file
 `db push` refuses a remote history that holds a version absent locally, so
 `migrate-prod` would then block every later deploy. `ci.yml`'s "HOW TO UNDO
 A BAD DEPLOY" comment carries the same rule.
+
+The reversal of `20260930120000_import_lists_ceiling` narrows
+`import_lists()` from 1000 lists per call back to 50: a v1 file of more
+than 50 lists written since then stops importing. Reverting the app alone
+is enough: the widened function takes every call of the old frontend. To
+narrow the function too, make two pushes, because `migrate-prod` runs
+before `deploy` in one push: first the app revert, then a new migration
+whose body is the reversal file.
 
 ### Usage monitoring
 

@@ -157,9 +157,9 @@ const N_REC = '\x1e',
 
   /* ---------- the lists file import-v1 ---------- */
   /* `schema/import-v1.json` is frozen (CONTRACTS.md section 4): a file written
-     today imports for good. Its bounds are the database's, written here as
-     literals; the fixtures and llms.txt are checked against it by a walk of
-     their own, not by the app's validator. */
+     today imports for good; a bound may widen in place, never narrow. Its bounds
+     are the import call's, written here as literals; the fixtures and llms.txt
+     are checked against it by a walk of their own, not by the app's validator. */
   console.log('import bundle');
   const ROOT = path.join(__dirname, '..');
   const IMPORT = path.join(FIX, 'import');
@@ -183,9 +183,9 @@ const N_REC = '\x1e',
     ok(s.additionalProperties === false, 'schema: ' + what + ' takes keys it does not name');
   });
   [
-    ['lists.maxItems', schema.properties.lists.maxItems, 50],
+    ['lists.maxItems', schema.properties.lists.maxItems, 1000],
     ['lists.minItems', schema.properties.lists.minItems, 1],
-    ['entries.maxItems', listSchema.properties.entries.maxItems, 100],
+    ['entries.maxItems', listSchema.properties.entries.maxItems, 5000],
     ['name.maxLength', listSchema.properties.name.maxLength, 200],
     ['name.minLength', listSchema.properties.name.minLength, 1],
     ['entry name.maxLength', entrySchema.properties.name.maxLength, 200],
@@ -250,7 +250,7 @@ const N_REC = '\x1e',
   ['daggerheart-loot/lists', 'bag', 'coin', 'official'].forEach((v) =>
     ok(section.includes('`' + v + '`'), 'llms.txt does not name the value `' + v + '`')
   );
-  [50, 100, 200, 4000, 99, 99999].forEach((n) =>
+  [1000, 5000, 200, 4000, 99, 99999].forEach((n) =>
     ok(
       new RegExp('(^|\\D)' + n + '(\\D|$)').test(section),
       'llms.txt does not name the bound ' + n

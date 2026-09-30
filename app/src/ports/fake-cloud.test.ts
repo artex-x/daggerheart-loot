@@ -712,6 +712,22 @@ describe("the fake's share links", () => {
     });
   });
 
+  it("counts a copy's entries against the entry limit", async () => {
+    const port = fakeCloud(SEED, 'gm2', { limits: { entries: 1 } });
+    const count = async () => {
+      const read = await port.lists.list();
+      return read.ok ? read.lists.length : -1;
+    };
+    const was = await count();
+    expect(await port.shares.clone('gm-token-1', port.lists.newId())).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'entries_per_list',
+      value: 1
+    });
+    expect(await count()).toBe(was);
+  });
+
   it('answers not ok, network and null offline, and network to a write signed out', async () => {
     const port = fakeCloud(SEED, 'gm1', { offline: true });
     const network = { ok: false, error: 'network' };
@@ -859,7 +875,7 @@ describe("the fake's import", () => {
         row(uuid(8000), 'A', [entry(uuid(8100), 'ci1', 0), entry(uuid(8101), 'ci1', 1)])
       ])
     ).toEqual(REFUSED);
-    const many = Array.from({ length: 51 }, (_, i) => row(uuid(8000 + i), 'L'));
+    const many = Array.from({ length: 1001 }, (_, i) => row(uuid(8000 + i), 'L'));
     expect(await cloud.lists.import(many)).toEqual(REFUSED);
     const huge = Array.from({ length: 5001 }, (_, i) =>
       entry(uuid(20000 + i), 'r' + String(i), i)

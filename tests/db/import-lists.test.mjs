@@ -152,12 +152,12 @@ describe('import_lists grants and shape', () => {
   });
 
   const malformed = [
-    ['SQL null', null, /^import_lists: not a list of at most 50 lists$/],
-    ['the object {}', {}, /^import_lists: not a list of at most 50 lists$/],
+    ['SQL null', null, /^import_lists: not a list of at most 1000 lists$/],
+    ['the object {}', {}, /^import_lists: not a list of at most 1000 lists$/],
     [
-      '51 lists',
-      Array.from({ length: 51 }, (_, i) => list(id(8000 + i))),
-      /^import_lists: not a list of at most 50 lists$/
+      '1001 lists',
+      Array.from({ length: 1001 }, (_, i) => list(id(8000 + i))),
+      /^import_lists: not a list of at most 1000 lists$/
     ],
     ['a list that is not an object', [1], /^import_lists: invalid list$/],
     ['a list with no list object', [{ entries: [] }], /^import_lists: invalid list$/],
@@ -278,6 +278,20 @@ describe('an import, as A', () => {
     assert.deepEqual(out.rows, { lists: [], entries: [] });
   });
 
+  it("applies the owner's raised entries override: a list of 150 entries imports under 200", async () => {
+    const raised = async (tx) => {
+      await users(tx);
+      await tx`insert into public.user_limit_overrides (user_id, key, value)
+        values (${A}, 'entries_per_list', 200)`;
+    };
+    const out = await asA(raised, async (tx) => ({
+      n: await importAs(tx, [list(L1, 'L', entries(150))]),
+      rows: await unbound(tx, rows)
+    }));
+    assert.equal(out.n, 1);
+    assert.equal(out.rows.entries.length, 150);
+  });
+
   const tableRefusals = [
     [
       'quantity 0',
@@ -368,6 +382,56 @@ describe('the owner messages of an import', () => {
       );
     } finally {
       await sql`delete from auth.users where id in (${a}, ${b})`;
+    }
+  });
+
+  /* The hosted suite timed 50 lists of 100 entries at 2504 ms (COVERAGE.md); this local
+     ratio scales it. No raw local time is asserted: CI's db job gates the deploy. The
+     deferred broadcasts run only at commit, hence commitAs. */
+  it('imports 1000 lists in one committed call at a lists limit of 1000, within the hosted budget by its ratio to 50 lists of 100 entries', async () => {
+    const a = crypto.randomUUID();
+    await sql`insert into auth.users (id) values (${a})`;
+    await sql`insert into public.user_limit_overrides (user_id, key, value)
+      values (${a}, 'lists_per_owner', 1000)`;
+    const rowsOf = (lists, per) =>
+      Array.from({ length: lists }, (_, i) =>
+        list(
+          crypto.randomUUID(),
+          'L' + i,
+          Array.from({ length: per }, (_, j) => entry(crypto.randomUUID(), 'k' + j, j))
+        )
+      );
+    const timed = async (lists) => {
+      const start = performance.now();
+      const n = await commitAs(sql, { role: 'authenticated', sub: a }, (tx) =>
+        importAs(tx, lists)
+      );
+      return { n, ms: performance.now() - start };
+    };
+    const clear = () => sql`delete from public.lists where owner_id = ${a}`;
+    try {
+      /* An untimed first run, so a cold stack does not inflate the 50-list time. */
+      assert.equal((await timed(rowsOf(50, 100))).n, 50);
+      await clear();
+      const fifty = await timed(rowsOf(50, 100));
+      assert.equal(fifty.n, 50);
+      await clear();
+      const thousand = await timed(rowsOf(1000, 5));
+      assert.equal(thousand.n, 1000);
+      const [held] = await sql`select count(distinct l.id)::int as lists,
+          count(e.id)::int as entries
+        from public.lists l left join public.list_entries e on e.list_id = l.id
+        where l.owner_id = ${a}`;
+      assert.deepEqual({ ...held }, { lists: 1000, entries: 5000 });
+      const ratio = thousand.ms / fifty.ms;
+      console.log(`import of 50 lists of 100 entries: ${Math.round(fifty.ms)} ms`);
+      console.log(`import of 1000 lists of 5 entries: ${Math.round(thousand.ms)} ms`);
+      console.log(
+        `ratio: ${ratio.toFixed(2)}, hosted estimate: ${Math.round(ratio * 2504)} ms`
+      );
+      assert.ok(ratio < 3.2, `ratio ${ratio.toFixed(2)} is 3.2 or more`);
+    } finally {
+      await sql`delete from auth.users where id = ${a}`;
     }
   });
 });

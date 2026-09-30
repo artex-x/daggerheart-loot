@@ -24,11 +24,13 @@ after(async () => {
 });
 
 const userA = (tx) => tx`insert into auth.users (id, email) values (${A}, ${A_EMAIL})`;
-const override = (value) => async (tx) => {
-  await userA(tx);
-  await tx`insert into public.user_limit_overrides (user_id, key, value)
-    values (${A}, 'lists_per_owner', ${value})`;
-};
+const override =
+  (value, key = 'lists_per_owner') =>
+  async (tx) => {
+    await userA(tx);
+    await tx`insert into public.user_limit_overrides (user_id, key, value)
+    values (${A}, ${key}, ${value})`;
+  };
 /* Inserts `n` lists for A as A, returning the count A then holds. */
 const makeLists = (n) => async (tx) => {
   await tx`insert into public.lists (id, owner_id)
@@ -144,6 +146,18 @@ describe('an override in the limit trigger', () => {
 
   it('lifts the limit when null: a 51st list passes', async () => {
     assert.equal(await asA(override(null), makeLists(51)), 51);
+  });
+
+  it('raises the entry limit: a 101st entry passes under 200', async () => {
+    const entries = async (tx) => {
+      const [l] = await tx`insert into public.lists (id, owner_id)
+        values (gen_random_uuid(), ${A}) returning id`;
+      await tx`insert into public.list_entries (id, list_id, item_key, position, quantity)
+        select gen_random_uuid(), ${l.id}, 'k' || n, n, 1 from generate_series(0, 100) as n`;
+      const [r] = await tx`select count(*)::int as n from public.list_entries`;
+      return r.n;
+    };
+    assert.equal(await asA(override(200, 'entries_per_list'), entries), 101);
   });
 
   it('reads the default again once deleted', async () => {

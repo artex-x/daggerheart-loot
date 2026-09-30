@@ -270,11 +270,11 @@ name is an error, not ignored: write `quantity`, never `qty`.
 | `format` | yes | Exactly `daggerheart-loot/lists`. |
 | `version` | yes | Exactly `1`. |
 | `exported_at` | no | When the site wrote the file (ISO 8601). Ignored on import. |
-| `lists` | yes | 1 to 50 lists, imported in this order. |
+| `lists` | yes | 1 to 1000 lists, imported in this order. |
 | `name` | yes | The list's name, 1 to 200 characters. |
 | `money_mode` | no | `bag` (the default) or `coin`: how the list shows prices. See "Money". |
 | `player_note`, `gm_note` | no | The list's two notes, up to 4000 characters each. See "The two notes". |
-| `entries` | yes | The list's entries in list order: 0 to 100 of them; `[]` for an empty list. |
+| `entries` | yes | The list's entries in list order: 0 to 5000 of them; `[]` for an empty list. |
 | entry `id` | yes | A record id from `catalog.csv`, e.g. `ci1`. |
 | entry `name` | no | The record's name, for a person reading the file. Ignored on import. |
 | entry `source` | no | `official` - the only value in version 1. |
@@ -295,11 +295,11 @@ name is an error, not ignored: write `quantity`, never `qty`.
 - Any other mistake refuses the whole file. The GM sees each error with its
   list, its position and its path, e.g. `lists[0].entries[2].quantity`, and
   nothing is imported.
-- An account holds at most 50 lists, and at most 100 per list. A file that
-  would take the account past that imports nothing. The same bounds hold
-  for one file: an export of a bigger account or of a longer list (a list
-  moved from an old browser can be longer) is refused on import until it is
-  split.
+- An account holds at most 50 lists, and at most 100 per list, by default;
+  the site's owner can raise both for one account. A file that would take
+  the account past its limits imports nothing. One file holds at most 1000
+  lists, and at most 5000 per list, the bounds of one import: a bigger export
+  imports in parts.
 - A file is at most 5 MB.
 - Importing the same file twice makes two copies. A file never carries list
   ids, so nothing already in the account is matched or overwritten.

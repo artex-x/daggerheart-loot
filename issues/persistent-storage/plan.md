@@ -16,7 +16,9 @@
   `persist-3-realtime` closed 2026-09-27 and R4 `persist-4-requests` closed
   2026-09-28 and R6 `persist-6-import-export` closed 2026-09-30 (section 9,
 section 16 "R6 closeout record"). R4b `persist-4b-requests-polish` closed
-2026-09-30 (section 16, "R4b closeout record"). Next: R7.
+2026-09-30 (section 16, "R4b closeout record"). `limits-follow-overrides`
+closed 2026-09-30 (section 16, "`limits-follow-overrides` closeout
+record"). Next: R7.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -440,6 +442,7 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R4 | `persist-4-requests` | `B4.1`, `B4.2` - **closed 2026-09-28**, live at the push of `main` (commit "feat(persist): send and answer purchase requests on share links"). The owner's steps: send a request from a phone on a player link and apply it on a desktop; read the privacy page and the reworded Display row in both languages | Purchase requests from a shared list to its owner: anonymous «Сообщить владельцу», the signed-in add that asks to notify (`notifyGm`, the Display row «Добавление из чужого списка» as a select), the owner's Requests panel with apply, «Принять доступное» and decline, the index card line (no requester status: owner's feedback, 2026-09-27) |
 | R4b | `persist-4b-requests-polish` | `B4b.1` - **closed 2026-09-30**, live at the push of `main` (commits "feat(persist): keep the selection after a purchase request and fix roll tabs", the budget, `npm audit fix` and closeout commits). The owner's steps: send a request on a phone and see the ticks stay; use «Мин»/«Макс» on a phone; «Скрыть» the decided requests | The owner's requests feedback: the selection kept after a send with «Запрос отправлен», «Мин»/«Макс» joined to the take count, the decided fold with its items and «Скрыть», request clean-up confirmed (no change); the roll-tab bug (owner, 2026-09-29) |
 | R6 | `persist-6-import-export` | `B6.1`, `B6.2` - **closed 2026-09-30**, live at the push of `main` (commits "feat(persist): export and import account lists as a published JSON bundle" and the closeout commit after it). The owner's steps: export a list and import it back on a phone; read `llms.txt` and the hint on the import field | JSON export (all, ticked, one list; the data zip) and create-only import of `schema/import-v1.json`; batch selection and deletion on the index; `llms.txt` lets an AI assistant write an import file and read an export alone (owner, 2026-09-27) |
+| - | `limits-follow-overrides` (owner, 2026-09-30: Q1 A, Q2 B, Q3 keep) | `B1` - **closed 2026-09-30** (commit "feat(persist): let the import file bounds follow a raised limit"). The owner's steps: none beyond CI green | An override lifts its limit on every path; `import_lists()` takes 1000 lists per call and `import-v1` widens in place to 1000 lists and 5000 entries per list; the ceilings of one call are in `FEATURES.md`, "Limits" |
 | R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-26; `issues/persist-7-homebrew/plan.md` is the authority) | Homebrew items as live references in the owner's lists, «Мои предметы» from the account menu and in search, the source tag «Хоумбрю» / "Homebrew" (owner, 2026-09-26), bundle schema v2 |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
@@ -1407,6 +1410,26 @@ R4b closeout record (2026-09-30; four local commits on `main` after `a6503c49`: 
   `ImportPanel` attempt, which the hook would not let an agent drop.
 - Pending, owner, after the push: CI green; the steps in section 9's R4b
   row.
+
+`limits-follow-overrides` closeout record (2026-09-30; one local commit on `main` after `7005abeb`; pushed once):
+- Shipped: the audit of every fixed number that caps a limit key; migration
+  `20260930120000_import_lists_ceiling` (50 to 1000 lists per call);
+  `import-v1` widened in place; the ceilings named in `FEATURES.md`,
+  "Limits"; decision "`import-v1` bounds are the import call's ceilings,
+  not the default limits". Plan reviewed twice, batch reviewed once
+  (approve); nits fixed in the one commit.
+- Evidence: the local ratio of 1000x5 to 50x100, 1.88 and 2.04, gives a
+  hosted estimate of 4701 and 5118 ms, under the 6000 ms rule.
+- Gates: `npm run check`, `check:db` (twice), `check:built`, the
+  `#/account` goldens (unchanged), `db:push --project test`, `npm run e2e`
+  (import of 50 lists of 100 entries: 3131 ms).
+- Kept defects written at closeout: `DEBT.md` D67 (`limitOther` to a
+  requester), D68 (the fake takes more than 5000 entries in one op).
+- Named, dropped: a hosted timing of 1000 lists; an export warning on the
+  total rows and the 5 MiB file; the Realtime quota of 1000 messages in one
+  commit; a `limits:set` warning past a ceiling of one call.
+- Pending, owner, after the push: CI green (the `db` job asserts the ratio
+  under 3.2; rerun once and keep the bound if a shared runner fails it).
 
 ## 18. Cloud sessions (claude.ai/code)
 

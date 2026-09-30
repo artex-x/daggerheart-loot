@@ -225,7 +225,7 @@ const limited = (key: string, value: number): Extract<ListWrite, { error: 'limit
 });
 
 /* `import_lists` refuses a call of more lists (22023), whatever the account's limit. */
-const IMPORT_LISTS_MAX = 50;
+const IMPORT_LISTS_MAX = 1000;
 
 /* `create_purchase_request`'s bounds: its constants and the `limit_defaults` rows. */
 const HOUR_MS = 3_600_000;
@@ -816,6 +816,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         if (find(mine, id)) return OK;
         if (anyList(id)) return REFUSED;
         if (mine.length >= maxLists) return limited('lists_per_owner', maxLists);
+        if (p.entries.length > maxEntries) return limited('entries_per_list', maxEntries);
         const was = before();
         const at = stamp();
         mine.push({

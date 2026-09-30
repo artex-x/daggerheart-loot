@@ -15,6 +15,7 @@ deleted.
 ## Index
 
 - 2026-09-30 - [A toast is built in the language on screen each time it is drawn](decisions/2026-09-30-a-toast-is-built-in-the-language-on.md)
+- 2026-09-30 - [`import-v1` bounds are the import call's ceilings, not the default limits](decisions/2026-09-30-import-v1-bounds-are-the-import-calls-ceilings.md)
 - 2026-09-30 - [The configured bundle budget is 210 kB; the unconfigured stays 150 kB](decisions/2026-09-30-the-configured-bundle-budget-is-210-kb.md)
 - 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md)
 - 2026-09-29 - [A roll mode starts at its first row on each visit; no number crosses tabs](decisions/2026-09-29-a-roll-mode-starts-at-its-first-row-on-each-visit.md)
@@ -46,7 +47,7 @@ deleted.
 - 2026-09-26 - [An over-stock request is refused whole; Apply available clamps; zero removes](decisions/2026-09-26-an-over-stock-request-is-refused-whole-apply.md)
 - 2026-09-26 - [Browser lists are read-only while the move is due](decisions/2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md)
 - 2026-09-26 - [Homebrew is reached from the account menu, not from a tab](decisions/2026-09-26-homebrew-is-reached-from-the-account-menu.md)
-- 2026-09-26 - [Import validation is the client's; the count limits are the database's](decisions/2026-09-26-import-validation-is-the-clients-count-limits-the-databases.md)
+- 2026-09-26 - [Import validation is the client's; the count limits are the database's](decisions/2026-09-26-import-validation-is-the-clients-count-limits-the-databases.md) - superseded in part
 - 2026-09-26 - [Production restore is an owner-run command gated by a same-backup drill](decisions/2026-09-26-production-restore-is-an-owner-run-command-gated.md)
 - 2026-09-26 - [Purchase requests are written only by a bounded function any link holder calls](decisions/2026-09-26-purchase-requests-are-written-only-by-a-bounded.md)
 - 2026-09-26 - [Realtime public access is off; the owner sets it in the dashboard](decisions/2026-09-26-realtime-allow-public-access-is-off-set-by-the.md)

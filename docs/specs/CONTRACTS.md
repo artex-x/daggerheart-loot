@@ -140,9 +140,12 @@ All of them except `schema/import-v1.json` are generated from `data.js` by
   file and the import reads it (`docs/specs/FEATURES.md`, "Account and
   browser lists"); `llms.txt`, "Lists as a file (import-v1)", describes it
   for an AI assistant. Frozen: a v1 file written today imports for good. A
-  change is `import-v2.json` beside it, `version` tells the two apart, and
-  both stay published. `format` is `daggerheart-loot/lists`; the bounds
-  are the database's default limits (50 lists, 100 entries per list).
+  bound may widen in place, up to the import call's own ceiling, and never
+  narrows; any other change is `import-v2.json` beside it, `version` tells
+  the two apart, and both stay published. `format` is
+  `daggerheart-loot/lists`; the bounds are one import call's
+  (`import_lists`: 1000 lists, 5000 entries per list); the account's limits
+  are the database's (`FEATURES.md`, "Limits").
   Fixtures: `docs/fixtures/import/`, each JSON file exactly
   `JSON.stringify(v, null, 2) + '\n'`; `tests/contracts.js` checks the
   schema, the fixtures and the `llms.txt` section, and `lib/bundle.test.ts`

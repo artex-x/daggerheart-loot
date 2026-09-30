@@ -467,7 +467,7 @@ const ru = {
   /* The account's data export (docs/specs/FEATURES.md, "Account"). */
   yourData: 'Ваши данные',
   yourDataHint:
-    'Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём файл lists.json с вашими списками. Архив можно импортировать в другой аккаунт на странице «Списки». Импорт принимает до 50 списков, а в одном списке позиций - не больше 100.',
+    'Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём файл lists.json с вашими списками. Архив можно импортировать в другой аккаунт на странице «Списки»: за один раз - до 1000 списков.',
   exportData: 'Скачать мои данные (ZIP)',
 
   /* Account lists: the index groups, the save status, the sign-in prompts,
@@ -501,8 +501,8 @@ const ru = {
      (docs/specs/FEATURES.md, "Lists"). */
   exportJson: 'Скачать JSON',
   exportOverBounds: 'Этот файл нельзя импортировать целиком.',
-  exportManyLists: 'В нём больше 50 списков: экспортируйте их частями.',
-  exportLongLists: 'В списках %s позиций больше 100: разделите такие списки.',
+  exportManyLists: 'В нём больше 1000 списков: экспортируйте их частями.',
+  exportLongLists: 'В списках %s позиций больше 5000: разделите такие списки.',
   pickList: 'Выбрать: %s',
   deleteListsConfirm:
     'Удалить списки (%n): %s? Ссылки для игроков и мастера на них перестанут работать. Отменить удаление нельзя.',
@@ -1033,7 +1033,7 @@ const en: Dict = {
   accountFailed: 'That did not work. Try again.',
   yourData: 'Your data',
   yourDataHint:
-    'Everything your account holds, in one ZIP archive: today it holds lists.json with your lists. You can import the archive into another account on the Lists page. An import takes up to 50 lists, and up to 100 items in one list.',
+    'Everything your account holds, in one ZIP archive: today it holds lists.json with your lists. You can import the archive into another account on the Lists page, up to 1000 lists at a time.',
   exportData: 'Download my data (ZIP)',
 
   groupAccount: 'Your account',
@@ -1064,8 +1064,8 @@ const en: Dict = {
 
   exportJson: 'Download JSON',
   exportOverBounds: 'This file cannot be imported whole.',
-  exportManyLists: 'It holds more than 50 lists: export them in parts.',
-  exportLongLists: 'Lists with more than 100 items: %s. Split those lists.',
+  exportManyLists: 'It holds more than 1000 lists: export them in parts.',
+  exportLongLists: 'Lists with more than 5000 items: %s. Split those lists.',
   pickList: 'Select: %s',
   deleteListsConfirm:
     'Delete lists (%n): %s? Their player and GM links will stop working. This cannot be undone.',

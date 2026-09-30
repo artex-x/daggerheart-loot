@@ -20,10 +20,12 @@ export const BUNDLE_FORMAT = 'daggerheart-loot/lists';
 export const BUNDLE_VERSION = 1;
 /** The schema's `$id`; an export names it as its `$schema`. */
 export const BUNDLE_SCHEMA = 'https://artex-x.github.io/daggerheart-loot/schema/import-v1.json';
-/** The most lists one file holds: the account's default limit. */
-export const LISTS_MAX = 50;
-/** The most entries one list of a file holds: the account's default limit. */
-export const ENTRIES_MAX = 100;
+/** The most lists one file holds: `import_lists`' bound per call; the account's limit is the
+ *  database's. */
+export const LISTS_MAX = 1000;
+/** The most entries one list of a file holds: `import_lists`' bound per list; the account's
+ *  limit is the database's. */
+export const ENTRIES_MAX = 5000;
 /** The largest file the import reads. */
 export const FILE_MAX_BYTES = 5 * 1024 * 1024;
 /** A record id: `catalog.csv`'s `id` column. */

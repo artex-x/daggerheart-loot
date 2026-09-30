@@ -867,7 +867,9 @@ describe('overBounds', () => {
 
   it('names the lists past the entry bound, in file order', () => {
     expect(
-      overBounds(file([list('A', ENTRIES_MAX + 1), list('B', ENTRIES_MAX), list('C', 101)]))
+      overBounds(
+        file([list('A', ENTRIES_MAX + 1), list('B', ENTRIES_MAX), list('C', ENTRIES_MAX + 2)])
+      )
     ).toEqual({ many: false, long: ['A', 'C'] });
   });
 

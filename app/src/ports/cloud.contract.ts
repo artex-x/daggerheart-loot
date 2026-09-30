@@ -744,7 +744,8 @@ async function importCases(
   const left = (await listsOf(port, assert, 'after the refused import')) ?? [];
   assert(!left.some((l) => l.id === a || l.id === b), 'import: a refused import left a list');
 
-  /* The largest file the schema takes, timed against the hosted statement timeout. */
+  /* The largest import an account at the default limits holds, timed against the hosted
+     statement timeout. */
   await removeAll(port, assert, 'before the maximal import');
   let started = Date.now();
   const full = await lists.import(fullImport(port, ''));
