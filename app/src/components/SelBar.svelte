@@ -96,7 +96,10 @@
     if (!items.length) return;
     const priced = shared ? { metaOf, takenOf, mode: moneyMode(shared), t } : undefined;
     const { text, html } = shareSelection(items, index, app.lang, priced);
-    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.selCopied);
+    await app.copied(
+      () => app.env.clipboard.writeRich({ html, plain: text }),
+      (t) => t.selCopied
+    );
   }
 </script>
 

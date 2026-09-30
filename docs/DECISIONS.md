@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-09-30 - [A toast is built in the language on screen each time it is drawn](decisions/2026-09-30-a-toast-is-built-in-the-language-on.md)
 - 2026-09-30 - [The configured bundle budget is 210 kB; the unconfigured stays 150 kB](decisions/2026-09-30-the-configured-bundle-budget-is-210-kb.md)
 - 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md)
 - 2026-09-29 - [A roll mode starts at its first row on each visit; no number crosses tabs](decisions/2026-09-29-a-roll-mode-starts-at-its-first-row-on-each-visit.md)

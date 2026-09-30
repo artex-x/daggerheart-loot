@@ -176,7 +176,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/s/player-token-
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Добавлено в «Список второго ГМа»: 2"
+    StaticText "Added to "Список второго ГМа": 2"
 
 ## en :: controls
 11Art History BookletThis is a finely illustrated booklet (donat... [namelen=534 namehash=84c3b132]

@@ -60,7 +60,7 @@
   function signOut(): void {
     onclose();
     void app.signOut('local').then((r) => {
-      app.say(r.ok ? app.t.signedOut : app.t.accountFailed, { error: !r.ok });
+      app.say(r.ok ? (t) => t.signedOut : (t) => t.accountFailed, { error: !r.ok });
     });
   }
 </script>

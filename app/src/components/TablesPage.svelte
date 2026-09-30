@@ -163,7 +163,7 @@
   async function copyFilterLink(): Promise<void> {
     await app.copied(
       () => app.env.clipboard.writeText(app.linkTo(tablesHash(table, { filter: filterState }))),
-      t.filterLinkCopied
+      (t) => t.filterLinkCopied
     );
   }
 
@@ -198,14 +198,14 @@
   async function copyTableLink(): Promise<void> {
     await app.copied(
       () => app.env.clipboard.writeText(app.linkTo(tablesHash(table))),
-      t.tableLinkCopied
+      (t) => t.tableLinkCopied
     );
   }
 
   async function copySectionLink(key: string): Promise<void> {
     await app.copied(
       () => app.env.clipboard.writeText(app.linkTo(tablesHash(table, { anchor: key }))),
-      t.sectionLinkCopied
+      (t) => t.sectionLinkCopied
     );
   }
 

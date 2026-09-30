@@ -657,6 +657,10 @@ const ru = {
 /** Every key the interface has. Derived, so the two sides cannot drift. */
 export type Dict = Record<keyof typeof ru, string>;
 
+/** A toast's text, built from the dictionary and the language on screen
+ *  each time the toast is drawn (docs/specs/I18N.md, "Rules"). */
+export type Msg = (t: Dict, lang: Lang) => string;
+
 const en: Dict = {
   docTitle: 'Daggerheart Loot Generator',
   skipToContent: 'Skip to content',

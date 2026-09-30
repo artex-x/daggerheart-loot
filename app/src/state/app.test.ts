@@ -11,6 +11,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { bundleText, toBundle } from '../lib/bundle.js';
 import type { Loot } from '../lib/data.js';
+import { dict } from '../lib/dict.js';
 import { sharedListHash } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
@@ -611,7 +612,7 @@ describe('navigation', () => {
     vi.useFakeTimers();
     const app = new AppState(at('#/roll/std'));
     app.start();
-    app.say('one');
+    app.say(() => 'one');
     expect(app.toast).not.toBeNull();
     app.stop();
     expect(app.toast).toBeNull();
@@ -979,7 +980,7 @@ describe('the toast', () => {
   it('shows a plain notice for 1600ms', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
-    app.say('Добавлено в «Клад дракона»');
+    app.say(() => 'Добавлено в «Клад дракона»');
     expect(app.toast).toEqual({
       msg: 'Добавлено в «Клад дракона»',
       mode: '',
@@ -996,7 +997,7 @@ describe('the toast', () => {
   it('shows an error for 2600ms', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
-    app.say('Сначала назовите список', { error: true });
+    app.say(() => 'Сначала назовите список', { error: true });
     expect(app.toast?.mode).toBe('err');
 
     vi.advanceTimersByTime(2599);
@@ -1010,7 +1011,7 @@ describe('the toast', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     const run = vi.fn();
-    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run } });
+    app.say(() => 'Убрано из списка: «Клад»', { action: { label: () => 'Вернуть', run } });
     expect(app.toast?.mode).toBe('act');
     expect(app.toast?.action?.label).toBe('Вернуть');
 
@@ -1025,9 +1026,9 @@ describe('the toast', () => {
   it('replaces the first toast and restarts the clock', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
-    app.say('one');
+    app.say(() => 'one');
     vi.advanceTimersByTime(1000);
-    app.say('two');
+    app.say(() => 'two');
     vi.advanceTimersByTime(1000);
     // the first timer would have fired by now had it not been cleared
     expect(app.toast?.msg).toBe('two');
@@ -1039,11 +1040,39 @@ describe('the toast', () => {
   it('hides immediately and clears the timer', () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
-    app.say('one');
+    app.say(() => 'one');
     app.hideToast();
     expect(app.toast).toBeNull();
     vi.advanceTimersByTime(5000);
     expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('redraws a toast in the language switched to and keeps its deadline', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say((t) => t.homeSet);
+    expect(app.toast?.msg).toBe(dict('ru').homeSet);
+    vi.advanceTimersByTime(1000);
+    app.setLang('en');
+    expect(app.toast?.msg).toBe(dict('en').homeSet);
+    vi.advanceTimersByTime(599);
+    expect(app.toast).not.toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it("redraws an action's label and keeps its run", () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const run = vi.fn();
+    app.say((t) => t.noteCleared, { action: { label: (t) => t.undo, run } });
+    expect(app.toast?.action?.label).toBe('Вернуть');
+    app.setLang('en');
+    expect(app.toast?.msg).toBe(dict('en').noteCleared);
+    expect(app.toast?.action?.label).toBe('Undo');
+    expect(app.toast?.action?.run).toBe(run);
     vi.useRealTimers();
   });
 });
@@ -2668,11 +2697,11 @@ describe('purchase requests', () => {
     const { app } = started(fakeCloud(SEED, 'gm2'), '#/s/player-token-1');
     await flush();
     const sender = app.requestSender!;
-    sender.afterAdd('player-token-1', ONE, 'Добавлено');
+    sender.afterAdd('player-token-1', ONE, () => 'Добавлено');
     expect(sender.asking).not.toBeNull();
     app.clearSel();
     expect(sender.asking).toBeNull();
-    sender.afterAdd('player-token-1', ONE, 'Добавлено');
+    sender.afterAdd('player-token-1', ONE, () => 'Добавлено');
     app.go('#/lists');
     expect(sender.asking).toBeNull();
     app.stop();
@@ -2684,7 +2713,7 @@ describe('purchase requests', () => {
     const { app } = started(cloud, '#/s/player-token-1');
     await flush();
     const sender = app.requestSender!;
-    sender.afterAdd('player-token-1', ONE, 'Добавлено');
+    sender.afterAdd('player-token-1', ONE, () => 'Добавлено');
     sender.answer(true, true);
     await flush();
     expect(send).toHaveBeenCalledWith(expect.any(String), 'player-token-1', ONE);

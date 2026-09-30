@@ -7,7 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import type { ImportList } from '../lib/bundle.js';
 import { BATCH_BYTES, toCloudList, type CloudList, type ListOp } from '../lib/cloudLists.js';
-import { dict } from '../lib/dict.js';
+import { dict, type Msg } from '../lib/dict.js';
 import type { StoredList } from '../lib/lists.js';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
@@ -19,8 +19,8 @@ import { ListStore } from './lists.svelte.js';
 
 const t = () => dict('ru');
 const said: { msg: string; error?: boolean | undefined }[] = [];
-const say = (msg: string, error?: boolean): void => {
-  said.push({ msg, error });
+const say = (msg: Msg, error?: boolean): void => {
+  said.push({ msg: msg(t(), 'ru'), error });
 };
 const REFUSED_TEXT =
   'Изменение не сохранилось: сервер его не принял. Показан список из аккаунта.';

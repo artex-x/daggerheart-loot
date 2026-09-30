@@ -274,7 +274,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Ссылка удалена: по ней список больше не откроется."
+    StaticText "Link deleted: it no longer opens the list."
 
 ## en :: controls
 #/s/player-token-1

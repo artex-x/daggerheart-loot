@@ -12,6 +12,7 @@
   import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
+  import type { Msg } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
   import type { ListEntryMeta } from '../lib/listLink.js';
   import {
@@ -127,8 +128,9 @@
      asks whether to tell the owner, or sends, or not, by the remembered answer. A
      card's own menu never asks. */
   function added(name: string, fresh: readonly string[]): void {
-    const text =
-      t.addedTo.replace('%s', name) + (ids.length > 1 ? ': ' + String(fresh.length) : '');
+    const count = ids.length > 1 ? fresh.length : null;
+    const text: Msg = (t) =>
+      t.addedTo.replace('%s', name) + (count === null ? '' : ': ' + String(count));
     app.say(text);
     const token = app.requestToken;
     if (key !== 'sel' || !fresh.length || !app.user || token === null) return;
@@ -147,9 +149,10 @@
         /* Every other destructive action here offers an undo -
            `restoreEntry` is the same one the list page's own row-remove
            cross already uses. */
-        app.say(t.removedFrom.replace('%s', l.name), {
+        const name = l.name;
+        app.say((t) => t.removedFrom.replace('%s', name), {
           action: {
-            label: t.undo,
+            label: (t) => t.undo,
             run: () => {
               store.restoreEntry(l.id, entryId, at, meta);
             }
@@ -197,7 +200,7 @@
   function createNew(): void {
     const name = draft.trim();
     if (!name) {
-      app.say(t.nameFirst, { error: true });
+      app.say((t) => t.nameFirst, { error: true });
       newInput?.focus();
       return;
     }

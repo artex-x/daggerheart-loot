@@ -10,6 +10,7 @@
   import Button from './Button.svelte';
   import Panel from './Panel.svelte';
   import { shareOf, type ShareAudience } from '../lib/cloudLists.js';
+  import type { Msg } from '../lib/dict.js';
   import { shareHash } from '../lib/hash.js';
   import type { ShareRepository } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -74,7 +75,7 @@
     run: (
       repo: ShareRepository
     ) => Promise<{ ok: true; row: Row } | { ok: false; refused: boolean }>,
-    done: string
+    done: Msg
   ): Promise<void> {
     const repo = shares();
     if (!repo || busy[audience]) return;
@@ -90,7 +91,7 @@
       if (!at || at === document.body) rowEls[audience]?.querySelector('button')?.focus();
       return;
     }
-    app.say(t.shareFailed, { error: true });
+    app.say((t) => t.shareFailed, { error: true });
     if (r.refused) void load();
   }
 
@@ -101,7 +102,7 @@
         const r = await repo.revoke(id);
         return r.ok ? { ok: true, row: null } : { ok: false, refused: r.error === 'refused' };
       },
-      t.shareDeleted
+      (t) => t.shareDeleted
     );
   }
 
@@ -114,14 +115,14 @@
           ? { ok: true, row: { id: r.id, token: r.token } }
           : { ok: false, refused: r.error === 'refused' };
       },
-      t.shareCreated
+      (t) => t.shareCreated
     );
   }
 
   function copy(audience: ShareAudience, token: string): void {
     void app.copied(
       () => app.env.clipboard.writeText(app.linkTo(shareHash(token))),
-      audience === 'player' ? t.playersLinkCopied : t.gmShareCopied
+      audience === 'player' ? (t) => t.playersLinkCopied : (t) => t.gmShareCopied
     );
   }
 </script>

@@ -35,7 +35,7 @@ import {
   type ListRow,
   type NewListRow
 } from '../lib/cloudLists.js';
-import type { Dict } from '../lib/dict.js';
+import type { Dict, Msg } from '../lib/dict.js';
 import { COALESCE_MS, readOwnerMessage } from '../lib/live.js';
 import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
 import {
@@ -90,7 +90,7 @@ export class CloudLists implements ListModel {
   sync = $state<'saved' | 'saving' | 'failed'>('saved');
 
   readonly #repo: ListRepository;
-  readonly #say: (msg: string, error?: boolean) => void;
+  readonly #say: (msg: Msg, error?: boolean) => void;
   readonly #dict: () => Dict;
 
   #queue: Op[] = [];
@@ -125,7 +125,7 @@ export class CloudLists implements ListModel {
 
   constructor(
     repo: ListRepository,
-    say: (msg: string, error?: boolean) => void,
+    say: (msg: Msg, error?: boolean) => void,
     dict: () => Dict,
     live?: {
       events: EventsPort;
@@ -405,8 +405,10 @@ export class CloudLists implements ListModel {
         }
         if (o.create) this.#queue = this.#queue.filter((q) => q.list !== o.list);
         if (!told) {
-          const t = this.#dict();
-          this.#say(r.error === 'limit' ? limitText(r.key, r.value, t) : t.writeRefused, true);
+          if (r.error === 'limit') {
+            const { key, value } = r;
+            this.#say((t) => limitText(key, value, t), true);
+          } else this.#say((t) => t.writeRefused, true);
         }
         told = true;
       });

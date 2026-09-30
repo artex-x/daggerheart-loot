@@ -139,7 +139,7 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Приложение будет открываться на этом разделе"
+    StaticText "The app will open on this section"
 
 ## en :: controls
 Alt. tables

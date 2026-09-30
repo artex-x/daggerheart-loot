@@ -213,8 +213,8 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     button "Add to list" [expanded=false]
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci28]
     status ""
-      StaticText "Убрано из «Клад дракона»"
-      button "Вернуть" [focused=true]
+      StaticText "Removed from "Клад дракона""
+      button "Undo" [focused=true]
 
 ## en :: controls
 10Suspended RodThis flat rod is inscribed with runes. When you a... [namelen=232 namehash=4f5a3fd9]
@@ -372,6 +372,7 @@ Stride Relic
 Suspended Rod
 Tables
 Terms of use
+Undo
 Valorstone
 Vault of Ages
 Vial of Darksmoke Recipe
@@ -379,5 +380,4 @@ Wondrous
 Wondrous Loot
 Woven Net
 daggerheart.com
-Вернуть
 ЛутDaggerheart

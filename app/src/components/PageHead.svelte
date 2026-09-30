@@ -55,8 +55,8 @@
     aria-pressed={on}
     onclick={() => {
       const wasHome = on;
-      if (!app.toggleHome(home)) app.say(t.saveFailed, { error: true });
-      else app.say(wasHome ? t.homeReset : t.homeSet);
+      if (!app.toggleHome(home)) app.say((t) => t.saveFailed, { error: true });
+      else app.say(wasHome ? (t) => t.homeReset : (t) => t.homeSet);
     }}
   >
     <Icon name="home" />

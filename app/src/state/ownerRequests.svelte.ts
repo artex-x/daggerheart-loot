@@ -13,7 +13,7 @@
  * Apply available clamps; zero removes"). */
 
 import type { ShareAudience } from '../lib/cloudLists.js';
-import type { Dict } from '../lib/dict.js';
+import type { Msg } from '../lib/dict.js';
 import { COALESCE_MS, readRequestMessage } from '../lib/live.js';
 import { pendingFor, type OwnerRequest, type ShortLine } from '../lib/requests.js';
 import type { RequestRepository } from '../ports/index.js';
@@ -23,8 +23,7 @@ export interface OwnerHooks {
   flush: () => Promise<boolean>;
   /** Re-reads the account's lists. */
   refreshLists: () => Promise<void>;
-  say: (msg: string, error?: boolean) => void;
-  dict: () => Dict;
+  say: (msg: Msg, error?: boolean) => void;
   /** This page load's tab id: a message with it is this tab's own. */
   tab: () => string;
 }
@@ -130,9 +129,8 @@ export class OwnerRequests {
     const epoch = this.#epoch;
     this.busy = id;
     try {
-      const t = this.#hooks.dict();
       if (!(await this.#hooks.flush())) {
-        if (epoch === this.#epoch) this.#hooks.say(t.requestActFailed, true);
+        if (epoch === this.#epoch) this.#hooks.say((t) => t.requestActFailed, true);
         return;
       }
       if (epoch !== this.#epoch) return;
@@ -140,8 +138,9 @@ export class OwnerRequests {
       if (epoch !== this.#epoch) return;
       if (r.ok) {
         this.#decided(id, clamp ? 'taken' : 'applied', r.taken);
+        const taken = r.taken;
         this.#hooks.say(
-          clamp ? t.requestTaken.replace('%n', String(r.taken)) : t.requestApplied
+          clamp ? (t) => t.requestTaken.replace('%n', String(taken)) : (t) => t.requestApplied
         );
         await this.#hooks.refreshLists();
         await this.read();
@@ -167,7 +166,7 @@ export class OwnerRequests {
       if (epoch !== this.#epoch) return;
       if (r.ok) {
         this.#decided(id, 'declined', 0);
-        this.#hooks.say(this.#hooks.dict().requestDeclined);
+        this.#hooks.say((t) => t.requestDeclined);
         await this.read();
         return;
       }
@@ -197,16 +196,15 @@ export class OwnerRequests {
     id: string,
     error: 'decided' | 'expired' | 'gone' | 'network' | 'refused'
   ): Promise<void> {
-    const t = this.#hooks.dict();
     const say = this.#hooks.say;
     switch (error) {
       case 'network':
         this.#unsure[id] = true;
-        say(t.requestActFailed, true);
+        say((t) => t.requestActFailed, true);
         return;
       case 'decided':
         /* This tab's own decision, sent twice by the transport: the data is right. */
-        if (!this.#unsure[id]) say(t.requestDecidedElsewhere, true);
+        if (!this.#unsure[id]) say((t) => t.requestDecidedElsewhere, true);
         await this.#quiet(id);
         return;
       case 'gone':
@@ -214,11 +212,11 @@ export class OwnerRequests {
         await this.#quiet(id);
         return;
       case 'expired':
-        say(t.requestExpired, true);
+        say((t) => t.requestExpired, true);
         await this.read();
         return;
       case 'refused':
-        say(t.writeRefused, true);
+        say((t) => t.writeRefused, true);
         await this.read();
         return;
     }

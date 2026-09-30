@@ -19,6 +19,8 @@
  * as opposed to the viewport alone) but golden.js's accessibility-tree
  * capture reads the same either way, so it currently marks nothing golden.js
  * itself branches on.
+ * The EN half of a `timed` state reads its toast in English: the toast
+ * follows the switch (docs/specs/I18N.md, "Rules").
  *
  * A state with `as: '<user>'` opens signed in as that fake-cloud seed user
  * (`?as=<user>`, the test build only - docs/specs/COVERAGE.md, "Test

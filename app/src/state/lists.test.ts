@@ -6,7 +6,7 @@
  * overwriting it, and a refused write keeps the session working. */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { dict } from '../lib/dict.js';
+import { dict, type Msg } from '../lib/dict.js';
 import { canonicalList } from '../lib/legacy.js';
 import type { StoredList } from '../lib/lists.js';
 import { brokenStorage, fakeEnv, memoryStorage } from '../ports/index.js';
@@ -18,8 +18,8 @@ const t = () => dict('ru');
 const at = (over: Partial<Env> = {}): Env => fakeEnv(over);
 
 const said: { msg: string; error?: boolean | undefined }[] = [];
-const say = (msg: string, error?: boolean): void => {
-  said.push({ msg, error });
+const say = (msg: Msg, error?: boolean): void => {
+  said.push({ msg: msg(t(), 'ru'), error });
 };
 
 beforeEach(() => {

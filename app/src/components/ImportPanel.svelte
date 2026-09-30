@@ -287,14 +287,16 @@
     const answer = await store.import(rows);
     sending = false;
     if (answer.ok) {
-      app.say(t.importDone.replace('%n', String(rows.length)));
+      const n = rows.length;
+      app.say((t) => t.importDone.replace('%n', String(n)));
       onclose();
     } else if (answer.error === 'limit') {
-      app.say(limitText(answer.key, answer.value, t), { error: true });
+      const { key, value } = answer;
+      app.say((t) => limitText(key, value, t), { error: true });
     } else if (answer.error === 'refused' && answer.reason === 'tooSlow') {
-      app.say(t.importTooSlow, { error: true });
+      app.say((t) => t.importTooSlow, { error: true });
     } else {
-      app.say(t.accountFailed, { error: true });
+      app.say((t) => t.accountFailed, { error: true });
     }
   }
 </script>

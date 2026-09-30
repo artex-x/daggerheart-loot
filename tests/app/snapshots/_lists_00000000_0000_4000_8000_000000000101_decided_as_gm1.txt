@@ -294,7 +294,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Запрос отклонён"
+    StaticText "Request declined"
 
 ## en :: controls
 Account: gm1@example.test

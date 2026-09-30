@@ -132,7 +132,8 @@
     if (target === 'wait') return;
     const l = app.lists.create(s.name, copyInit(s));
     /* `ListStore.save()` has already toasted `saveFailed` on a refusal. */
-    if (app.lists.saved) app.say(t.listCreated.replace('%s', l.name));
+    const name = l.name;
+    if (app.lists.saved) app.say((t) => t.listCreated.replace('%s', name));
     app.openNewList(l);
   }
 
@@ -144,7 +145,8 @@
     const s = shared;
     if (s && s.dropped > 0 && toldFor !== shownFor) {
       toldFor = shownFor;
-      app.say(plural(s.dropped, t.droppedItems, app.lang));
+      const n = s.dropped;
+      app.say((t, lang) => plural(n, t.droppedItems, lang));
     }
   });
 </script>

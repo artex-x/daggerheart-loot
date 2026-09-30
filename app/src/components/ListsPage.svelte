@@ -127,7 +127,8 @@
     if (!app.env.dialog.confirm(ask)) return;
     for (const l of gone) cloud?.remove(l.id);
     sel.clear();
-    app.say(t.listsDeleted.replace('%n', String(gone.length)));
+    const n = gone.length;
+    app.say((t) => t.listsDeleted.replace('%n', String(n)));
   }
 
   /* An account list's pending, unexpired purchase requests, for its card. */
@@ -162,7 +163,7 @@
 
   function create(): void {
     if (!draft.trim()) {
-      app.say(t.nameFirst, { error: true });
+      app.say((t) => t.nameFirst, { error: true });
       nameInput?.focus();
       return;
     }
@@ -172,34 +173,36 @@
     if (findQ) setQuery('');
     /* `ListStore.save()` has already toasted `saveFailed` on a refusal - a
        "created" on top of it would bury the one message that matters. */
-    if (store.saved) app.say(t.listCreated.replace('%s', l.name));
+    const name = l.name;
+    if (store.saved) app.say((t) => t.listCreated.replace('%s', name));
   }
 
   async function share(l: StoredList): Promise<void> {
     if (!l.ids.length) {
-      app.say(t.listEmpty);
+      app.say((t) => t.listEmpty);
       return;
     }
     const payload = await app.env.compress.pack(encodeListRaw(l, true));
     await app.copied(
       () => app.env.clipboard.writeText(app.linkTo(sharedListHash(payload))),
-      t.playersLinkCopied
+      (t) => t.playersLinkCopied
     );
   }
 
   function del(l: StoredList): void {
+    const name = l.name;
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
     /* After the cutoff the only browser writes are removals: no undo. */
     if (!app.legacyWritable) {
-      if (app.lists.removeMany([l.id])) app.say(t.listDeleted.replace('%s', l.name));
+      if (app.lists.removeMany([l.id])) app.say((t) => t.listDeleted.replace('%s', name));
       return;
     }
     const removed = app.lists.remove(l.id);
     /* Delete gets an undo, like every other destructive action here. */
     if (removed) {
-      app.say(t.listDeleted.replace('%s', l.name), {
+      app.say((t) => t.listDeleted.replace('%s', name), {
         action: {
-          label: t.undo,
+          label: (t) => t.undo,
           run: () => {
             app.lists.restoreList(removed.list, removed.index);
           }
@@ -212,8 +215,9 @@
      there is no undo. */
   function delAccount(l: CloudList): void {
     if (!app.env.dialog.confirm(t.deleteCloudConfirm.replace('%s', l.name))) return;
+    const name = l.name;
     cloud?.remove(l.id);
-    app.say(t.listDeleted.replace('%s', l.name));
+    app.say((t) => t.listDeleted.replace('%s', name));
   }
 </script>
 

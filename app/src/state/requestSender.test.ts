@@ -4,7 +4,7 @@
  * browser lists". */
 
 import { describe, expect, it, vi } from 'vitest';
-import { dict } from '../lib/dict.js';
+import { dict, type Msg } from '../lib/dict.js';
 import type { NotifyGm } from '../lib/prefs.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
@@ -13,6 +13,7 @@ import { RequestSender } from './requestSender.svelte.js';
 
 const ONE = [{ item: 'ci1', qty: 1 }];
 const t = dict('ru');
+const ADDED: Msg = () => 'Добавлено';
 
 function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask') {
   const said: [string, boolean | undefined][] = [];
@@ -28,11 +29,9 @@ function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask') {
   };
   const hooks = {
     newId: () => 'id-' + String(++n),
-    say: (msg: string, error?: boolean) => {
-      said.push([msg, error]);
+    say: (msg: Msg, error?: boolean) => {
+      said.push([msg(t, 'ru'), error]);
     },
-    dict: () => t,
-    lang: () => 'ru' as const,
     reread: vi.fn(),
     notifyGm: () => notify,
     setNotifyGm: vi.fn((v: NotifyGm) => {
@@ -71,11 +70,11 @@ describe('RequestSender.send', () => {
     const { s, repo, said } = sender();
     await s.send('tok', ONE);
     await s.send('tok', ONE);
-    s.afterAdd('tok', ONE, 'Добавлено');
+    s.afterAdd('tok', ONE, ADDED);
     expect(s.asking).toBeNull();
     expect(repo.send).toHaveBeenCalledOnce();
     expect(said).toHaveLength(1);
-    s.afterAdd('tok', [{ item: 'ci1', qty: 2 }], 'Добавлено');
+    s.afterAdd('tok', [{ item: 'ci1', qty: 2 }], ADDED);
     expect(s.asking).not.toBeNull();
   });
 
@@ -159,7 +158,7 @@ describe('RequestSender.send', () => {
 
   it('keeps the selection after a flow b send and joins the add toast', async () => {
     const { s, said } = sender();
-    await s.send('tok', ONE, 'Добавлено в «Список второго ГМа»');
+    await s.send('tok', ONE, () => 'Добавлено в «Список второго ГМа»');
     expect(s.isSent('tok', ONE)).toBe(true);
     expect(said).toEqual([
       ['Добавлено в «Список второго ГМа». Владелец получил запрос.', undefined]
@@ -170,26 +169,26 @@ describe('RequestSender.send', () => {
 describe('RequestSender flow b', () => {
   it('does nothing on never, sends on always, and asks on ask', async () => {
     const never = sender([], 'never');
-    never.s.afterAdd('tok', ONE, 'Добавлено');
+    never.s.afterAdd('tok', ONE, ADDED);
     expect(never.repo.send).not.toHaveBeenCalled();
     expect(never.s.asking).toBeNull();
 
     const always = sender([], 'always');
-    always.s.afterAdd('tok', ONE, 'Добавлено');
+    always.s.afterAdd('tok', ONE, ADDED);
     await vi.waitFor(() => {
       expect(always.said).toEqual([['Добавлено. Владелец получил запрос.', undefined]]);
     });
     expect(always.s.asking).toBeNull();
 
     const ask = sender([], 'ask');
-    ask.s.afterAdd('tok', ONE, 'Добавлено');
-    expect(ask.s.asking).toEqual({ token: 'tok', lines: ONE, after: 'Добавлено' });
+    ask.s.afterAdd('tok', ONE, ADDED);
+    expect(ask.s.asking).toEqual({ token: 'tok', lines: ONE, after: ADDED });
     expect(ask.repo.send).not.toHaveBeenCalled();
   });
 
   it('sends on «Сообщить» and remembers always, or remembers never and sends nothing', async () => {
     const yes = sender();
-    yes.s.afterAdd('tok', ONE, 'Добавлено');
+    yes.s.afterAdd('tok', ONE, ADDED);
     yes.s.answer(true, true);
     expect(yes.s.asking).toBeNull();
     expect(yes.hooks.setNotifyGm).toHaveBeenCalledWith('always');
@@ -198,7 +197,7 @@ describe('RequestSender flow b', () => {
     });
 
     const no = sender();
-    no.s.afterAdd('tok', ONE, 'Добавлено');
+    no.s.afterAdd('tok', ONE, ADDED);
     no.s.answer(false, true);
     expect(no.hooks.setNotifyGm).toHaveBeenCalledWith('never');
     no.s.answer(true, false);
@@ -207,10 +206,10 @@ describe('RequestSender flow b', () => {
 
   it('answers once without remembering, and drops the question on dismiss', () => {
     const { s, hooks, repo } = sender();
-    s.afterAdd('tok', ONE, 'Добавлено');
+    s.afterAdd('tok', ONE, ADDED);
     s.answer(false, false);
     expect(hooks.setNotifyGm).not.toHaveBeenCalled();
-    s.afterAdd('tok', ONE, 'Добавлено');
+    s.afterAdd('tok', ONE, ADDED);
     s.dismiss();
     expect(s.asking).toBeNull();
     expect(repo.send).not.toHaveBeenCalled();
@@ -224,14 +223,12 @@ describe('RequestSender storage', () => {
     const s = new RequestSender(cloud.requests, {
       newId: () => cloud.lists.newId(),
       say: () => undefined,
-      dict: () => t,
-      lang: () => 'ru',
       reread: () => undefined,
       notifyGm: () => 'always',
       setNotifyGm: () => undefined
     });
     await s.send('player-token-1', ONE);
-    s.afterAdd('player-token-1', [{ item: 'cc1', qty: 1 }], 'Добавлено');
+    s.afterAdd('player-token-1', [{ item: 'cc1', qty: 1 }], ADDED);
     await vi.waitFor(async () => {
       const read = await cloud.shares.read('player-token-1');
       expect(read.ok).toBe(true);

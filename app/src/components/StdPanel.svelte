@@ -60,7 +60,10 @@
   async function copyRoll(one: { index: Index; pool: Record_[] }): Promise<void> {
     /* Its own toast, distinct from a plain text copy. */
     const { text, html } = shareRoll(one.pool, one.index, app.lang, t.or);
-    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.rollCopied);
+    await app.copied(
+      () => app.env.clipboard.writeRich({ html, plain: text }),
+      (t) => t.rollCopied
+    );
   }
 
   function setN(v: number): void {
@@ -74,7 +77,7 @@
   /** Refuses to turn the last one off, and says why rather than doing nothing. */
   function toggleSource(src: Source): void {
     if (isLastOn(app.source, SOURCES, src)) {
-      app.say(t.keepOneSource, { error: true });
+      app.say((t) => t.keepOneSource, { error: true });
       return;
     }
     app.source = { ...app.source, [src]: !app.source[src] };

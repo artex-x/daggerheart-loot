@@ -37,6 +37,7 @@
   import SharedListPage from './SharedListPage.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import { isCloudId } from '../lib/cloudLists.js';
+  import type { Dict } from '../lib/dict.js';
   import { moneyHelpFor } from '../lib/help.js';
   import { printHash, sectionHash, sharedListHash } from '../lib/hash.js';
   import { nameOf, selCountText } from '../lib/i18n.js';
@@ -353,13 +354,13 @@
     const l = own;
     if (!l) return;
     if (!l.ids.length) {
-      app.say(t.listEmpty);
+      app.say((t) => t.listEmpty);
       return;
     }
     const payload = await app.env.compress.pack(encodeListRaw(l, forPlayers));
     await app.copied(
       () => app.env.clipboard.writeText(app.linkTo(sharedListHash(payload))),
-      forPlayers ? t.playersLinkCopied : t.gmLinkCopied
+      forPlayers ? (t) => t.playersLinkCopied : (t) => t.gmLinkCopied
     );
   }
   async function sharePlayers(): Promise<void> {
@@ -373,18 +374,22 @@
     const l = own;
     if (!l || !index) return;
     const { text, html } = shareList(l, index, app.lang, t);
-    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.listCopied);
+    await app.copied(
+      () => app.env.clipboard.writeRich({ html, plain: text }),
+      (t) => t.listCopied
+    );
   }
 
   function del(): void {
     const l = own;
     if (!l) return;
+    const name = l.name;
     if (isCloud) {
       /* For good: the confirm names the share links, and there is no undo. */
       if (!app.env.dialog.confirm(t.deleteCloudConfirm.replace('%s', l.name))) return;
       cloud?.remove(l.id);
       app.go('#/lists');
-      app.say(t.listDeleted.replace('%s', l.name));
+      app.say((t) => t.listDeleted.replace('%s', name));
       return;
     }
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
@@ -396,16 +401,16 @@
     if (!app.legacyWritable) {
       const gone = app.lists.removeMany([l.id]);
       app.go('#/lists');
-      if (gone) app.say(t.listDeleted.replace('%s', l.name));
+      if (gone) app.say((t) => t.listDeleted.replace('%s', name));
       return;
     }
     const removed = app.lists.remove(l.id);
     app.go('#/lists');
     /* Delete gets an undo, like every other destructive action here. */
     if (removed) {
-      app.say(t.listDeleted.replace('%s', l.name), {
+      app.say((t) => t.listDeleted.replace('%s', name), {
         action: {
-          label: t.undo,
+          label: (t) => t.undo,
           run: () => {
             app.lists.restoreList(removed.list, removed.index);
           }
@@ -460,9 +465,9 @@
       ta.dispatchEvent(new Event('input', { bubbles: true }));
     };
     put('');
-    app.say(t.noteCleared, {
+    app.say((t) => t.noteCleared, {
       action: {
-        label: t.undo,
+        label: (t) => t.undo,
         run: () => {
           put(was);
         }
@@ -497,9 +502,9 @@
        kind; it acts on the store that held this list. */
     const into = store;
     into.removeEntry(listId, it.id);
-    app.say(t.removedItem.replace('%s', nameOf(it, app.lang)), {
+    app.say((t, lang) => t.removedItem.replace('%s', nameOf(it, lang)), {
       action: {
-        label: t.undo,
+        label: (t) => t.undo,
         run: () => {
           into.restoreEntry(listId, it.id, i, meta);
         }
@@ -582,7 +587,10 @@
     const recs = ticked.map(byId).filter((it): it is Record_ => it != null);
     if (!recs.length) return;
     const { text, html } = shareSelection(recs, index, app.lang, { metaOf, takenOf, mode, t });
-    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.selCopied);
+    await app.copied(
+      () => app.env.clipboard.writeRich({ html, plain: text }),
+      (t) => t.selCopied
+    );
   }
 
   /* ---------- the actions under a ticked selection (app.js 3986-4083) ---------- */
@@ -595,14 +603,14 @@
    * The shape all three batch price actions below repeated: for every
    * ticked row, ask `next(id)` for a new gold value - `undefined` skips the
    * row (no eligible price, or nothing to change) - remember what it was,
-   * write it, and if anything actually changed, toast `msg(n)` with an undo
+   * write it, and if anything actually changed, toast `msg(n, t)` with an undo
    * that puts every touched row's old value back. Returns how many rows
    * changed, since `applyGuess` alone has a further thing to do only on
    * success (fold its own panel).
    */
   function goldEdit(
     next: (id: string) => number | undefined,
-    msg: (n: number) => string
+    msg: (n: number, t: Dict) => string
   ): number {
     const l = own;
     if (!l) return 0;
@@ -617,9 +625,9 @@
       n++;
     }
     if (n) {
-      app.say(msg(n), {
+      app.say((t) => msg(n, t), {
         action: {
-          label: t.repriceUndo,
+          label: (t) => t.repriceUndo,
           run: () => {
             for (const [id, gold] of Object.entries(before))
               into.setMeta(l.id, id, 'gold', gold);
@@ -641,7 +649,7 @@
         const v = it ? guessPrice(it, idx.rarityOf) : 0;
         return v || undefined;
       },
-      (count) => `${t.guessDone} (${String(count)})`
+      (count, t) => `${t.guessDone} (${String(count)})`
     );
     if (n) guess = false;
   }
@@ -650,12 +658,13 @@
    *  shifts by `rp` percent. */
   function repriceTicked(): void {
     if (!rp) return;
+    const pct = rp;
     goldEdit(
       (id) => {
         const gold = metaOf(id).gold ?? 0;
-        return gold > 0 ? reprice(gold, rp) : undefined;
+        return gold > 0 ? reprice(gold, pct) : undefined;
       },
-      (n) => `${t.repriceDone} (${rp > 0 ? '+' : ''}${String(rp)}%, ${String(n)})`
+      (n, t) => `${t.repriceDone} (${pct > 0 ? '+' : ''}${String(pct)}%, ${String(n)})`
     );
   }
 
@@ -667,7 +676,7 @@
         const gold = metaOf(id).gold ?? 0;
         return gold > 0 ? 0 : undefined;
       },
-      () => t.batchNoPrice
+      (_, t) => t.batchNoPrice
     );
   }
 
@@ -693,9 +702,10 @@
     }
     lsel.clear();
     picked.clear();
-    app.say(`${t.batchDeleted} (${String(gone.length)})`, {
+    const n = gone.length;
+    app.say((t) => `${t.batchDeleted} (${String(n)})`, {
       action: {
-        label: t.undo,
+        label: (t) => t.undo,
         run: () => {
           for (const g of gone) {
             if (g.left > 0) into.setMeta(l.id, g.id, 'qty', g.meta.qty ?? 0);

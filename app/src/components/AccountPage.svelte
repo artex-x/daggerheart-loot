@@ -94,7 +94,7 @@
     const select = e.currentTarget;
     if (app.setHome(select.value)) return;
     select.value = homeValue;
-    app.say(t.saveFailed, { error: true });
+    app.say((t) => t.saveFailed, { error: true });
   }
 
   function setNotify(e: Event & { currentTarget: HTMLSelectElement }): void {
@@ -136,7 +136,7 @@
     try {
       const r = await run();
       if (done) done(r);
-      else if (!r.ok) app.say(t.accountFailed, { error: true });
+      else if (!r.ok) app.say((t) => t.accountFailed, { error: true });
     } finally {
       busy = false;
       going = null;
@@ -151,7 +151,7 @@
     void act(run, (r) => {
       if (r.ok) reread++;
       else if (r.error === 'alreadyLinked') app.alreadyLinked = p;
-      else app.say(t.accountFailed, { error: true });
+      else app.say((t) => t.accountFailed, { error: true });
     });
   }
 
@@ -160,7 +160,7 @@
       () => cloud?.auth.unlink(id) ?? Promise.resolve({ ok: false, error: 'failed' }),
       (r) => {
         if (r.ok) reread++;
-        else app.say(t.accountFailed, { error: true });
+        else app.say((t) => t.accountFailed, { error: true });
       }
     );
   }
@@ -169,7 +169,7 @@
     void act(
       () => app.signOut(scope),
       (r) => {
-        app.say(r.ok ? t.signedOut : t.accountFailed, { error: !r.ok });
+        app.say(r.ok ? (t) => t.signedOut : (t) => t.accountFailed, { error: !r.ok });
       }
     );
   }
@@ -179,7 +179,7 @@
       () => cloud?.auth.deleteAccount() ?? Promise.resolve({ ok: false, error: 'failed' }),
       (r) => {
         if (r.ok) closeConfirm();
-        app.say(r.ok ? t.accountDeleted : t.accountFailed, { error: !r.ok });
+        app.say(r.ok ? (t) => t.accountDeleted : (t) => t.accountFailed, { error: !r.ok });
       }
     );
   }

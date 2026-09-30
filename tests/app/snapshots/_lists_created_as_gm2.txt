@@ -141,7 +141,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm2#/lists
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Список «Тайник» создан"
+    StaticText "List "Тайник" created"
 
 ## en :: controls
 Account: gm2@example.test

@@ -251,8 +251,8 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Цены проставлены (1)"
-    button "Вернуть" [focused=true]
+    StaticText "Prices set (1)"
+    button "Undo" [focused=true]
 
 ## en :: controls
 1 bag
@@ -307,9 +307,9 @@ Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124
 Standard rules
 Tables
 Terms of use
+Undo
 Vault of Ages
 Wondrous
 Your own link
 daggerheart.com
-Вернуть
 ЛутDaggerheart

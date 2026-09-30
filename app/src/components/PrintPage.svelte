@@ -91,7 +91,7 @@
   async function copyLink(): Promise<void> {
     await app.copied(
       () => app.env.clipboard.writeText(app.linkTo(printHash(ids, qty))),
-      t.linkCopied
+      (t) => t.linkCopied
     );
   }
 </script>

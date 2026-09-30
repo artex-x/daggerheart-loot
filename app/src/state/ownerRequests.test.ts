@@ -4,7 +4,7 @@
  * that is gone. docs/specs/FEATURES.md, "Account and browser lists". */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { dict } from '../lib/dict.js';
+import { dict, type Msg } from '../lib/dict.js';
 import { COALESCE_MS } from '../lib/live.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
@@ -43,10 +43,9 @@ function owner(flushed = true) {
       order.push('lists');
       return Promise.resolve();
     }),
-    say: (msg: string, error?: boolean) => {
-      said.push([msg, error]);
+    say: (msg: Msg, error?: boolean) => {
+      said.push([msg(t, 'ru'), error]);
     },
-    dict: () => t,
     tab: () => cloud.events.tab
   };
   const real = cloud.requests.apply.bind(cloud.requests);

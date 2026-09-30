@@ -60,8 +60,12 @@
      dialog's close button inside `RecordModal`, where `#main` is inert. */
   let back: HTMLElement | null = null;
 
+  /* Keyed on `run`, not on the toast: a language switch draws a new toast
+     object and must not take focus again. */
+  const run = $derived(toast?.action?.run);
+
   $effect.pre(() => {
-    const action = toast?.action;
+    const action = run;
     const box = el;
     if (!box) return;
     const focused = document.activeElement;

@@ -22,7 +22,7 @@ import {
   type LegacyList,
   type StoredList
 } from '../lib/lists.js';
-import type { Dict } from '../lib/dict.js';
+import type { Dict, Msg } from '../lib/dict.js';
 import { canonicalList } from '../lib/legacy.js';
 import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
 import type { Env } from '../ports/index.js';
@@ -178,7 +178,7 @@ export class ListStore implements ListModel {
      the first read. */
   #migratedRaw: string | null | undefined = undefined;
   /** What the app's own `say` needs, without this module knowing `AppState`. */
-  readonly #say: (msg: string, error?: boolean) => void;
+  readonly #say: (msg: Msg, error?: boolean) => void;
   readonly #dict: () => Dict;
 
   /* Remembered for this tab's lifetime only, so a merge cannot resurrect a
@@ -195,7 +195,7 @@ export class ListStore implements ListModel {
      signal that finds it in storage keeps this tab's unsaved edit on screen. */
   #shownRaw: string | null = null;
 
-  constructor(env: Env, say: (msg: string, error?: boolean) => void, dict: () => Dict) {
+  constructor(env: Env, say: (msg: Msg, error?: boolean) => void, dict: () => Dict) {
     this.#env = env;
     this.#say = say;
     this.#dict = dict;
@@ -297,7 +297,7 @@ export class ListStore implements ListModel {
     const ok = this.#env.storage.set(LISTS_KEY, json);
     this.saved = ok;
     if (!ok) {
-      this.#say(this.#dict().saveFailed, true);
+      this.#say((t) => t.saveFailed, true);
       return false;
     }
     this.#lastRaw = json;
@@ -528,7 +528,7 @@ export class ListStore implements ListModel {
     const ok = this.#env.storage.set(LISTS_KEY, json);
     this.saved = ok;
     if (!ok) {
-      this.#say(this.#dict().saveFailed, true);
+      this.#say((t) => t.saveFailed, true);
       return false;
     }
     this.#lastRaw = json;

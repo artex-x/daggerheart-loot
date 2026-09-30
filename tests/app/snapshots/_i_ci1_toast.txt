@@ -122,7 +122,7 @@ RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Название скопировано"
+    StaticText "Name copied"
 
 ## en :: controls
 Add to list

@@ -12,10 +12,9 @@
  * waits until they change"). */
 
 import { limitText } from '../lib/cloudLists.js';
-import type { Dict } from '../lib/dict.js';
+import type { Msg } from '../lib/dict.js';
 import { plural } from '../lib/plural.js';
 import type { NotifyGm } from '../lib/prefs.js';
-import type { Lang } from '../lib/types.js';
 import type { RequestRepository } from '../ports/index.js';
 
 /** The ticked entries with their taken counts. */
@@ -23,9 +22,7 @@ export type RequestLines = { item: string; qty: number }[];
 
 export interface SenderHooks {
   newId: () => string;
-  say: (msg: string, error?: boolean) => void;
-  dict: () => Dict;
-  lang: () => Lang;
+  say: (msg: Msg, error?: boolean) => void;
   /** Reads the open link again: its list changed, or it is gone. */
   reread: () => void;
   notifyGm: () => NotifyGm;
@@ -41,7 +38,7 @@ export class RequestSender {
   /** A send runs. */
   sending = $state(false);
   /** Flow b's open question: the link, the lines the add carried and the add's toast. */
-  asking = $state.raw<{ token: string; lines: RequestLines; after: string } | null>(null);
+  asking = $state.raw<{ token: string; lines: RequestLines; after: Msg } | null>(null);
 
   readonly #repo: RequestRepository;
   readonly #hooks: SenderHooks;
@@ -63,7 +60,7 @@ export class RequestSender {
 
   /** Sends the lines to the link's owner. A success keeps the selection and marks the
    *  lines sent; with `after` (flow b) the add's toast gains the owner's line. */
-  async send(token: string, lines: RequestLines, after?: string): Promise<void> {
+  async send(token: string, lines: RequestLines, after?: Msg): Promise<void> {
     if (this.sending || !lines.length || this.isSent(token, lines)) return;
     const key = keyOf(token, lines);
     if (key !== this.#key || this.#id === null) {
@@ -73,32 +70,39 @@ export class RequestSender {
     this.sending = true;
     const r = await this.#repo.send(this.#id, token, lines);
     this.sending = false;
-    const t = this.#hooks.dict();
     const say = this.#hooks.say;
     if (r.ok) {
       this.#drop();
       this.#sent = key;
-      say(after === undefined ? t.requestSent : `${after}. ${t.requestSentOwner}`);
+      say(
+        after === undefined
+          ? (t) => t.requestSent
+          : (t, lang) => `${after(t, lang)}. ${t.requestSentOwner}`
+      );
       return;
     }
     /* The same id again: the database inserts nothing for a replay. */
     if (r.error === 'network') {
-      say(t.requestNetwork, true);
+      say((t) => t.requestNetwork, true);
       return;
     }
     this.#drop();
     switch (r.error) {
       case 'limit':
-        if (r.key === 'request_rate') say(t.requestRate, true);
+        if (r.key === 'request_rate') say((t) => t.requestRate, true);
         else if (r.key === 'pending_requests_per_list' && r.value !== null) {
+          const value = r.value;
           say(
-            t.requestPending.replace('%s', plural(r.value, t.requestsN, this.#hooks.lang())),
+            (t, lang) => t.requestPending.replace('%s', plural(value, t.requestsN, lang)),
             true
           );
-        } else say(limitText(r.key, r.value, t), true);
+        } else {
+          const { key, value } = r;
+          say((t) => limitText(key, value, t), true);
+        }
         return;
       case 'stale':
-        say(t.requestStale, true);
+        say((t) => t.requestStale, true);
         this.#hooks.reread();
         return;
       case 'gone':
@@ -106,13 +110,13 @@ export class RequestSender {
         this.#hooks.reread();
         return;
       case 'refused':
-        say(t.requestRefused, true);
+        say((t) => t.requestRefused, true);
         return;
     }
   }
 
   /** Flow b after an add from the bar: nothing, a send, or the question, by `notifyGm`. */
-  afterAdd(token: string, lines: RequestLines, after: string): void {
+  afterAdd(token: string, lines: RequestLines, after: Msg): void {
     if (this.isSent(token, lines)) return;
     const answer = this.#hooks.notifyGm();
     if (answer === 'never') return;

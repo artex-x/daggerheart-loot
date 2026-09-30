@@ -164,7 +164,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Импортировано списков: 1"
+    StaticText "Lists imported: 1"
 
 ## en :: controls
 Account: gm1@example.test

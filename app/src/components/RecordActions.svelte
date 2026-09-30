@@ -41,12 +41,18 @@
   const link = $derived(app.linkToRecord(it.id));
 
   async function copyName(): Promise<void> {
-    await app.copied(() => app.env.clipboard.writeText(shareName(it, app.lang)), t.nameCopied);
+    await app.copied(
+      () => app.env.clipboard.writeText(shareName(it, app.lang)),
+      (t) => t.nameCopied
+    );
   }
 
   async function copyText(): Promise<void> {
     const { text, html } = share(it, index, app.lang, { extra });
-    await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.textCopied);
+    await app.copied(
+      () => app.env.clipboard.writeRich({ html, plain: text }),
+      (t) => t.textCopied
+    );
   }
 
   /**
@@ -72,7 +78,7 @@
     const png = app.env.image.pngOf(src);
     const copied = await app.env.clipboard.writeImage(() => png);
     if (copied) {
-      app.say(t.imgCopied);
+      app.say((t) => t.imgCopied);
       return;
     }
     let blob: Blob;
@@ -87,19 +93,25 @@
          of this firing. */
       console.warn('copyImage: pngOf rejected, falling back to text', err);
       const { text, html } = share(it, index, app.lang, { extra });
-      await app.copied(() => app.env.clipboard.writeRich({ html, plain: text }), t.imgTainted);
+      await app.copied(
+        () => app.env.clipboard.writeRich({ html, plain: text }),
+        (t) => t.imgTainted
+      );
       return;
     }
     try {
       await app.env.image.download(blob, imageFileName(it, app.lang));
-      app.say(t.imgSaved);
+      app.say((t) => t.imgSaved);
     } catch {
-      app.say(t.imgFailed, { error: true });
+      app.say((t) => t.imgFailed, { error: true });
     }
   }
 
   async function copyLink(): Promise<void> {
-    await app.copied(() => app.env.clipboard.writeText(link), t.linkCopied);
+    await app.copied(
+      () => app.env.clipboard.writeText(link),
+      (t) => t.linkCopied
+    );
   }
 
   /**

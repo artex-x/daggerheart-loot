@@ -94,7 +94,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ej
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Пропущено позиций, которых больше нет в данных: 2"
+    StaticText "Skipped 2 items - no longer in the data"
 
 ## en :: controls
 Alt. tables

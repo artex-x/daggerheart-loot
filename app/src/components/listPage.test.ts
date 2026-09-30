@@ -1819,3 +1819,17 @@ describe('a browser list after the cutoff, and while the move is due', () => {
     expect(screen.queryByText('Списки живут только в этом браузере.')).toBeNull();
   });
 });
+
+describe('a toast and a language switch', () => {
+  it('redraws the removed row toast in the language switched to, with the record name in it', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    render(App, { env: at('#/lists/a', { storage }) });
+    const removes = screen.getAllByRole('button', { name: 'Убрать из списка' });
+    await userEvent.click(removes[1] as HTMLElement);
+    expect(screen.getByText('Убрано из списка: «Зелье»')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByText('"Potion" removed')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
+  });
+});

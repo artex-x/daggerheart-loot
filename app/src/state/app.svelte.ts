@@ -27,7 +27,7 @@ import {
 } from '../lib/bundle.js';
 import { isCloudId, limitText, type CloudList } from '../lib/cloudLists.js';
 import { buildIndex, type Index } from '../lib/data.js';
-import { dict, type Dict } from '../lib/dict.js';
+import { dict, type Dict, type Msg } from '../lib/dict.js';
 import {
   appUrl,
   legacySource,
@@ -98,9 +98,10 @@ function readLocalPrefs(env: Env): LocalPrefs {
   };
 }
 
-/** What one action can undo, carried on a toast for the 7000ms it lasts. */
+/** What one action can undo, carried on a toast for the 7000ms it lasts.
+ *  The label is built in the language on screen each time it is drawn. */
 export interface ToastAction {
-  label: string;
+  label: Msg;
   run: () => void;
 }
 
@@ -109,6 +110,13 @@ export interface ToastAction {
 export interface Toast {
   msg: string;
   mode: '' | 'err' | 'act';
+  action?: { label: string; run: () => void } | undefined;
+}
+
+/* What `say` was given: the toast before it is drawn in a language. */
+interface Said {
+  msg: Msg;
+  mode: Toast['mode'];
   action?: ToastAction | undefined;
 }
 
@@ -306,8 +314,21 @@ export class AppState {
    */
   shared = $state<DecodedList | null>(null);
 
-  /** What the toast is showing, or nothing. `Shell.svelte` renders it. */
-  toast = $state<Toast | null>(null);
+  #said = $state.raw<Said | null>(null);
+  /** What the toast is showing, or nothing, in the language on screen: a
+   *  language switch redraws it and leaves its clock alone. `Shell.svelte`
+   *  renders it. */
+  toast: Toast | null = $derived.by(() => {
+    const s = this.#said;
+    if (!s) return null;
+    const t = this.t;
+    const lang = this.lang;
+    return {
+      msg: s.msg(t, lang),
+      mode: s.mode,
+      action: s.action && { label: s.action.label(t, lang), run: s.action.run }
+    };
+  });
   /** True while `RecordModal`'s modal dialog is open, set after its
    *  `showModal()`; the toast is drawn inside the dialog then
    *  (`Toast.svelte`). `RecordModal` is the only writer. */
@@ -400,7 +421,7 @@ export class AppState {
     this.storageWorks = env.storage.works();
     if (!env.cloud) this.user = null;
     this.showInstall = !env.pwa.standalone();
-    const say = (msg: string, error?: boolean): void => {
+    const say = (msg: Msg, error?: boolean): void => {
       this.say(msg, { error });
     };
     this.lists = new ListStore(env, say, () => this.t);
@@ -410,7 +431,6 @@ export class AppState {
           flush: () => this.cloudLists?.flushNow() ?? Promise.resolve(true),
           refreshLists: () => this.cloudLists?.refresh() ?? Promise.resolve(),
           say,
-          dict: () => this.t,
           tab: () => cloud.events.tab
         })
       : null;
@@ -425,8 +445,6 @@ export class AppState {
       ? new RequestSender(cloud.requests, {
           newId: () => cloud.lists.newId(),
           say,
-          dict: () => this.t,
-          lang: () => this.lang,
           reread: () => {
             void this.sharedView?.refresh();
           },
@@ -567,7 +585,7 @@ export class AppState {
       if (r.kind === 'link' && r.result.error === 'alreadyLinked' && r.provider) {
         this.alreadyLinked = r.provider;
       } else {
-        this.say(this.t.accountFailed, { error: true });
+        this.say((t) => t.accountFailed, { error: true });
       }
     });
   }
@@ -641,7 +659,7 @@ export class AppState {
         bundleFileName(lists, now)
       );
     } catch {
-      this.say(this.t.accountFailed, { error: true });
+      this.say((t) => t.accountFailed, { error: true });
       return;
     }
     this.#warnBounds(b);
@@ -665,7 +683,7 @@ export class AppState {
         dataFileName(now)
       );
     } catch {
-      this.say(this.t.accountFailed, { error: true });
+      this.say((t) => t.accountFailed, { error: true });
       return;
     }
     this.#warnBounds(b);
@@ -694,13 +712,19 @@ export class AppState {
   #warnBounds(b: Bundle): void {
     const { many, long } = overBounds(b);
     if (!many && !long.length) return;
-    const t = this.t;
-    const named = long.map((n) => t.quoted.replace('%s', n));
-    this.say(
+    this.say((t) =>
       [
         t.exportOverBounds,
         many ? t.exportManyLists : '',
-        long.length ? t.exportLongLists.replace('%s', fewNames(named, t)) : ''
+        long.length
+          ? t.exportLongLists.replace(
+              '%s',
+              fewNames(
+                long.map((n) => t.quoted.replace('%s', n)),
+                t
+              )
+            )
+          : ''
       ]
         .filter(Boolean)
         .join(' ')
@@ -903,7 +927,8 @@ export class AppState {
     const lists = this.cloudLists;
     if (!lists) return;
     const l = lists.create(d.name, copyInit(d));
-    this.say(this.t.listCreated.replace('%s', l.name));
+    const name = l.name;
+    this.say((t) => t.listCreated.replace('%s', name));
     this.go(storedListHash(l.id));
   }
 
@@ -919,14 +944,15 @@ export class AppState {
       /* The account must hold every buffered write first: the read-back
          below waits while a write is buffered. */
       if (!(await lists.flushNow())) {
-        this.say(this.t.cloneFailed, { error: true });
+        this.say((t) => t.cloneFailed, { error: true });
         return;
       }
       const r = await cloud.shares.clone(token, id);
       if (!r.ok) {
-        const t = this.t;
-        if (r.error === 'limit') this.say(limitText(r.key, r.value, t), { error: true });
-        else this.say(t.cloneFailed, { error: true });
+        if (r.error === 'limit') {
+          const { key, value } = r;
+          this.say((t) => limitText(key, value, t), { error: true });
+        } else this.say((t) => t.cloneFailed, { error: true });
         if (r.error === 'refused') void this.sharedView?.refresh();
         return;
       }
@@ -936,9 +962,8 @@ export class AppState {
       /* A move skipped for the copy runs now. */
       void this.#listsReady();
     }
-    const t = this.t;
     const name = lists.get(id)?.name ?? this.sharedView?.shared?.list.name ?? '';
-    this.say(t.listCreated.replace('%s', name || t.untitled));
+    this.say((t) => t.listCreated.replace('%s', name || t.untitled));
     const here = this.route;
     if (here.kind === 'share' && here.token === token) this.go(storedListHash(id));
   }
@@ -1056,12 +1081,12 @@ export class AppState {
    * restarts the clock, the same as the live app's single timer.
    */
   say(
-    msg: string,
+    msg: Msg,
     opts: { error?: boolean | undefined; action?: ToastAction | undefined } = {}
   ): void {
     const mode: Toast['mode'] = opts.action ? 'act' : opts.error ? 'err' : '';
     const ms = opts.action ? 7000 : opts.error ? 2600 : 1600;
-    this.toast = { msg, mode, action: opts.action };
+    this.#said = { msg, mode, action: opts.action };
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
     this.#toastTimer = setTimeout(() => {
       this.hideToast();
@@ -1075,13 +1100,13 @@ export class AppState {
    * on failure. One method instead of fourteen call sites each writing the
    * same three lines.
    */
-  async copied(run: () => Promise<boolean>, ok: string): Promise<void> {
+  async copied(run: () => Promise<boolean>, ok: Msg): Promise<void> {
     const success = await run();
-    this.say(success ? ok : this.t.copyFailed, { error: !success });
+    this.say(success ? ok : (t) => t.copyFailed, { error: !success });
   }
 
   hideToast(): void {
-    this.toast = null;
+    this.#said = null;
     if (this.#toastTimer) {
       clearTimeout(this.#toastTimer);
       this.#toastTimer = null;
@@ -1305,7 +1330,7 @@ export class AppState {
    */
   toggleKind(kind: Kind, among: readonly Kind[]): void {
     if (isLastOn(this.kinds, among, kind)) {
-      this.say(this.t.keepOneKind, { error: true });
+      this.say((t) => t.keepOneKind, { error: true });
       return;
     }
     this.kinds = { ...this.kinds, [kind]: !this.kinds[kind] };

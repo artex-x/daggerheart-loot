@@ -447,7 +447,7 @@ describe('the toast component, directly', () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     const run = vi.fn();
     render(Toast, { app });
-    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run } });
+    app.say(() => 'Убрано из списка: «Клад»', { action: { label: () => 'Вернуть', run } });
 
     const btn = await screen.findByRole('button', { name: 'Вернуть' });
     await userEvent.click(btn);
@@ -461,7 +461,9 @@ describe('the toast component, directly', () => {
     const from = add(document.createElement('button'), 'Убрать');
     from.focus();
 
-    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    app.say(() => 'Убрано из списка: «Клад»', {
+      action: { label: () => 'Вернуть', run: vi.fn() }
+    });
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Вернуть' })).toHaveFocus();
     });
@@ -482,7 +484,9 @@ describe('the toast component, directly', () => {
     const from = add(document.createElement('button'), 'Убрать');
     from.focus();
 
-    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    app.say(() => 'Убрано из списка: «Клад»', {
+      action: { label: () => 'Вернуть', run: vi.fn() }
+    });
     const btn = await screen.findByRole('button', { name: 'Вернуть' });
     await waitFor(() => {
       expect(btn).toHaveFocus();
@@ -504,7 +508,9 @@ describe('the toast component, directly', () => {
     from.focus();
 
     from.remove();
-    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    app.say(() => 'Убрано из списка: «Клад»', {
+      action: { label: () => 'Вернуть', run: vi.fn() }
+    });
     const btn = await screen.findByRole('button', { name: 'Вернуть' });
     await waitFor(() => {
       expect(btn).toHaveFocus();
@@ -519,7 +525,9 @@ describe('the toast component, directly', () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     const { container } = render(Toast, { app });
     app.dialogOpen = true;
-    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    app.say(() => 'Убрано из списка: «Клад»', {
+      action: { label: () => 'Вернуть', run: vi.fn() }
+    });
     await tick();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Вернуть' })).not.toBeInTheDocument();
@@ -538,11 +546,13 @@ describe('the toast component, directly', () => {
     const elsewhere = add(document.createElement('button'), 'Печать');
     from.focus();
 
-    app.say('Добавлено в «Клад»');
+    app.say(() => 'Добавлено в «Клад»');
     await tick();
     expect(from).toHaveFocus();
 
-    app.say('Убрано из списка: «Клад»', { action: { label: 'Вернуть', run: vi.fn() } });
+    app.say(() => 'Убрано из списка: «Клад»', {
+      action: { label: () => 'Вернуть', run: vi.fn() }
+    });
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Вернуть' })).toHaveFocus();
     });
@@ -573,7 +583,7 @@ describe('the toast component, directly', () => {
       matches: (sel: string) => (sel === ':popover-open' ? open : false)
     });
 
-    app.say('привет');
+    app.say(() => 'привет');
     await tick();
     expect(show).toHaveBeenCalledOnce();
     expect(hide).not.toHaveBeenCalled();
@@ -581,6 +591,25 @@ describe('the toast component, directly', () => {
     app.hideToast();
     await tick();
     expect(hide).toHaveBeenCalledOnce();
+  });
+
+  it('redraws its text and its button in the language switched to, and leaves focus where it is', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    app.say((t) => t.noteCleared, { action: { label: (t) => t.undo, run: vi.fn() } });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Вернуть' })).toHaveFocus();
+    });
+    const elsewhere = add(document.createElement('button'), 'Печать');
+    elsewhere.focus();
+
+    app.setLang('en');
+    await tick();
+    await tick();
+    expect(screen.getByRole('status')).toHaveTextContent('Note cleared');
+    expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
+    expect(elsewhere).toHaveFocus();
+    await expectNoA11yViolations(container);
   });
 });
 

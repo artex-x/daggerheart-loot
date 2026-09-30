@@ -1063,6 +1063,8 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   takes focus and answers a click there; with the element focus came from
   gone, focus returns to the dialog's close button. Closing the dialog while
   an undo is on offer leaves the toast on the page for the rest of its time.
+  A language switch while a toast is up redraws its text and its button in
+  the new language, keeps its time left and moves no focus.
 - The footer carries the full DPCGL licence notice (`dict.ts`'s
   `footBefore`, `footLink`, `footAfter`, the text `tests/derived.js` pins)
   on every page, folded in a native `<details>`: its `<summary>` is one line,
