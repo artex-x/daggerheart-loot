@@ -26,9 +26,10 @@ which brings the configured bundle back under its old 170 kB limit.
   functions-js (1.5 kB), which the app does not call; realtime-js is called
   since the Realtime release and stays. The account chunk is 55.7 kB and
   the configured build 184.5 kB (measured 2026-09-27), so every signed-in
-  reader downloads them after first paint. The budget is 200 kB (decision
-  "The bundle budget is 150 kB unconfigured and 200 kB configured"), so it
-  does not force this fix.
+  reader downloads them after first paint. The budget is 210 kB (decision
+  "The configured bundle budget is 210 kB; the unconfigured stays 150 kB";
+  the configured build measured 203.0 kB on 2026-09-30), so it does not
+  force this fix.
 - **Why deferred**: the fix replaces `createClient` with `AuthClient` from
   `@supabase/auth-js`, `PostgrestClient` from `@supabase/postgrest-js` and
   `RealtimeClient` from `@supabase/realtime-js`, and changes who may import

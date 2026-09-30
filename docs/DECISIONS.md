@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-09-30 - [The configured bundle budget is 210 kB; the unconfigured stays 150 kB](decisions/2026-09-30-the-configured-bundle-budget-is-210-kb.md)
 - 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md)
 - 2026-09-29 - [A roll mode starts at its first row on each visit; no number crosses tabs](decisions/2026-09-29-a-roll-mode-starts-at-its-first-row-on-each-visit.md)
 - 2026-09-29 - [A sent purchase request keeps the ticks; the send waits until they change](decisions/2026-09-29-a-sent-purchase-request-keeps-the-ticks.md)
@@ -51,7 +52,7 @@ deleted.
 - 2026-09-26 - [Request events nudge the owner and share topics; each page refetches](decisions/2026-09-26-request-events-nudge-the-owner-and-share-topics.md)
 - 2026-09-26 - [The account control opens a menu; display settings live on `#/account`](decisions/2026-09-26-the-account-control-opens-a-menu-display-settings.md)
 - 2026-09-26 - [The backup key lives in .env.restore.local so an agent runs the restore drill](decisions/2026-09-26-the-backup-key-lives-in-env-restore-local.md)
-- 2026-09-26 - [The bundle budget is 150 kB unconfigured and 200 kB configured](decisions/2026-09-26-the-bundle-budget-is-150-kb-unconfigured-and.md)
+- 2026-09-26 - [The bundle budget is 150 kB unconfigured and 200 kB configured](decisions/2026-09-26-the-bundle-budget-is-150-kb-unconfigured-and.md) - superseded
 - 2026-09-26 - [The configured bundle budget is 180 kB until a slimmer account client](decisions/2026-09-26-the-configured-bundle-budget-is-180-kb-until-a-slimmer.md) - superseded
 - 2026-09-26 - [The list file `import-v1` is a strict JSON Schema; import makes new ids](decisions/2026-09-26-the-list-file-import-v1-is-a-strict-json-schema.md)
 - 2026-09-26 - [The owner's devices subscribe to a private owner topic](decisions/2026-09-26-the-owners-devices-subscribe-to-a-private-owner-topic.md)

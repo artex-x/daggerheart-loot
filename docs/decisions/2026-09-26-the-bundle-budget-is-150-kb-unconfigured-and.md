@@ -1,5 +1,6 @@
 # 2026-09-26 - The bundle budget is 150 kB unconfigured and 200 kB configured
 
+- Superseded by "The configured bundle budget is 210 kB; the unconfigured stays 150 kB" (2026-09-30).
 - Task: `persist-5-migration` (owner, 2026-09-26, after the move of browser lists measured the unconfigured build at 121.0 kB).
 - Decision: `tools/bundle-budget.mjs` allows 150 kB gzip for the unconfigured
   build and 200 kB for the configured one (with the account client chunk).

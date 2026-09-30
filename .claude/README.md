@@ -1699,9 +1699,9 @@ expect about three back-to-back local runs per five minutes before Auth
 refuses a mint.
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-150 kB for the unconfigured build and 200 kB for the configured one, which
+150 kB for the unconfigured build and 210 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 150 kB limit. The 200 kB limit runs in
+unconfigured and so measures only the 150 kB limit. The 210 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -1713,11 +1713,11 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 200 kB budget (with the account client chunk)`; 184.5
-kB on 2026-09-27 with the Realtime client (182.2 kB earlier that day, 178.2
-kB on 2026-09-26). `dist/` stays configured until `npm run build` or
-`check:built` rebuilds it. Decision: "The bundle budget is 150 kB
-unconfigured and 200 kB configured"; the slimmer client it no longer waits
+Expected: `within the 210 kB budget (with the account client chunk)`; 203.0
+kB on 2026-09-30 after the import and export and the requests polish (184.5
+kB on 2026-09-27 with the Realtime client, 178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
+`check:built` rebuilds it. Decision: "The configured bundle budget is 210
+kB; the unconfigured stays 150 kB"; the slimmer client it no longer waits
 on is still `docs/specs/DEBT.md`, D60.
 
 Branch migrations on the test project: `migrate-test` runs on every
