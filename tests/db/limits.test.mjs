@@ -160,6 +160,55 @@ describe('an override in the limit trigger', () => {
     assert.equal(await asA(override(200, 'entries_per_list'), entries), 101);
   });
 
+  const entryLimitError = (detail) => (err) => {
+    assert.equal(err.code, 'P0001', err.message);
+    assert.equal(err.message, 'limit: entries_per_list');
+    assert.equal(err.detail, detail);
+    return true;
+  };
+  /* Makes a list of A's with `n` entries keyed `<prefix><i>`, returning its id. */
+  const listOf = async (tx, n, prefix) => {
+    const [l] = await tx`insert into public.lists (id, owner_id)
+      values (gen_random_uuid(), ${A}) returning id`;
+    await tx`insert into public.list_entries (id, list_id, item_key, position)
+      select gen_random_uuid(), ${l.id}, ${prefix} || i, i from generate_series(1, ${n}::int) as i`;
+    return l.id;
+  };
+
+  it('refuses one insert statement that takes a list past its entry limit, with the limit as detail', async () => {
+    await assert.rejects(
+      asA(userA, (tx) => listOf(tx, 101, 'k')),
+      entryLimitError('100')
+    );
+  });
+
+  it('refuses one update statement that moves two entries into a list of 99', async () => {
+    await assert.rejects(
+      asA(userA, async (tx) => {
+        const full = await listOf(tx, 99, 'k');
+        const other = await listOf(tx, 2, 'm');
+        await tx`update public.list_entries set list_id = ${full} where list_id = ${other}`;
+      }),
+      entryLimitError('100')
+    );
+  });
+
+  it('lets a note edit through on a list above a lowered entry limit', async () => {
+    const setup = async (tx) => {
+      await userA(tx);
+      await listOf(tx, 5, 'k');
+      await tx`insert into public.user_limit_overrides (user_id, key, value)
+        values (${A}, 'entries_per_list', 2)`;
+    };
+    const notes = await asA(setup, async (tx) => {
+      await tx`update public.list_entries set player_note = 'n' where item_key = 'k1'`;
+      return (await tx`select player_note from public.list_entries where item_key = 'k1'`).map(
+        (r) => r.player_note
+      );
+    });
+    assert.deepEqual(notes, ['n']);
+  });
+
   it('reads the default again once deleted', async () => {
     const setup = async (tx) => {
       await override(200)(tx);

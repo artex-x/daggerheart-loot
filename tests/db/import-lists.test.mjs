@@ -385,10 +385,13 @@ describe('the owner messages of an import', () => {
     }
   });
 
-  /* The hosted suite timed 50 lists of 100 entries at 2504 ms (COVERAGE.md); this local
-     ratio scales it. No raw local time is asserted: CI's db job gates the deploy. The
-     deferred broadcasts run only at commit, hence commitAs. */
-  it('imports 1000 lists in one committed call at a lists limit of 1000, within the hosted budget by its ratio to 50 lists of 100 entries', async () => {
+  /* The server time of 50 lists of 100 entries on the test project with statement
+     triggers, the deferred broadcasts at commit included, 2026-09-30 (COVERAGE.md, the import-lists.test.mjs paragraph). */
+  const HOSTED_50X100_SERVER_MS = 366;
+
+  /* This local ratio scales the hosted anchor. No raw local time is asserted: CI's db job
+     gates the deploy. The deferred broadcasts run only at commit, hence commitAs. */
+  it('imports 1000 lists in one committed call at a lists limit of 1000, within half the hosted statement timeout by its ratio to 50 lists of 100 entries', async () => {
     const a = crypto.randomUUID();
     await sql`insert into auth.users (id) values (${a})`;
     await sql`insert into public.user_limit_overrides (user_id, key, value)
@@ -426,10 +429,12 @@ describe('the owner messages of an import', () => {
       const ratio = thousand.ms / fifty.ms;
       console.log(`import of 50 lists of 100 entries: ${Math.round(fifty.ms)} ms`);
       console.log(`import of 1000 lists of 5 entries: ${Math.round(thousand.ms)} ms`);
-      console.log(
-        `ratio: ${ratio.toFixed(2)}, hosted estimate: ${Math.round(ratio * 2504)} ms`
+      const estimate = Math.round(ratio * HOSTED_50X100_SERVER_MS);
+      console.log(`ratio: ${ratio.toFixed(2)}, hosted estimate: ${estimate} ms`);
+      assert.ok(
+        ratio * HOSTED_50X100_SERVER_MS < 4000,
+        `hosted estimate ${estimate} ms is 4000 or more`
       );
-      assert.ok(ratio < 3.2, `ratio ${ratio.toFixed(2)} is 3.2 or more`);
     } finally {
       await sql`delete from auth.users where id = ${a}`;
     }

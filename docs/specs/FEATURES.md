@@ -618,11 +618,13 @@ browser lists writable after the date.
   import takes at most 1000 lists and 5000 entries of one list, a write at
   most 5000 entries of one list, and a purchase request's lines at most 32
   KiB of JSON (about 900 lines of catalog ids). One import is also bounded
-  by the hosted statement timeout of 8 s: 50 lists of 100 entries (5050
-  rows) took 2504 ms, and 1000 lists of 5 entries (6000 rows) are estimated
-  at up to about 5120 ms, so a file of more than about 9000 rows can answer «Файл
-  слишком большой для одного импорта: разделите его на несколько.», and the
-  export does not warn before it. A purchase request holds at most 100
+  by the hosted statement timeout of 8 s, which counts only the database's
+  work: on the test project 50 lists of 100 entries take about 320-450 ms
+  of it, 100 lists of 100 entries about 810 ms, and 1000 lists of 5
+  entries about 1660 ms plus 380 ms at commit (2026-09-30); a host minute
+  that swaps can multiply that several times. A call that still reaches
+  the timeout answers «Файл слишком большой для одного импорта: разделите
+  его на несколько.», and the export does not warn before it. A purchase request holds at most 100
   lines, a list at most 10 pending requests (both defaults `limits:set`
   changes per owner), a link sends at most 5 a minute; a request expires
   after an hour and is deleted a day after its answer or expiry, when the

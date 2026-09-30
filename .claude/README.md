@@ -825,6 +825,17 @@ timeouts (`searchPage.test.ts` "the cap" at 32-44 s against 30 s, once
 the process before a gated batch; a restart cleared it and the next check
 was green.
 
+A runaway editor language server is the usual daytime cause of a check
+that runs 2-10 times slower: `svelte-language-server` (`node ...
+svelte-language-server\bin\server.js --stdio`) or `tsserver`. Measured
+2026-09-23 (a check of about 40 min, about 5 min after the kill) and
+2026-09-30 (a svelte server at 3868 CPU-s in about one hour, two
+`tsserver`s at 1443 and 687 CPU-s). The owner allows any agent to stop
+such a server above about 500 CPU-s without asking: `Stop-Process -Id <pid>
+-Force`. The editor plugin starts it again on demand. Then run the check
+once more. The other cause is Windows idle maintenance at night (about
+00:20-02:00), which a daytime kill does not fix.
+
 **A check reporting zero coverage everywhere ran no test at all.** Vitest's
 fork-pool worker start timeout is 60s and hardcoded (`START_TIMEOUT` in
 `vitest/dist/chunks/cli-api.*.js` - no config knob), and `isolate` defaults to
@@ -1703,6 +1714,24 @@ a re-run recovers. Every run mints its sessions through `verifyOtp`, which
 Auth limits (`token_verifications = 30` per five minutes, `config.toml`), so
 expect about three back-to-back local runs per five minutes before Auth
 refuses a mint.
+
+**Measure the test project.** The test project is a small host in
+eu-west-1: 2 CPUs (aarch64), 426 MB of RAM and swap in use. A timing on it
+varies about 1.5-2 times at the same state (measured 2026-09-30), so a bound
+needs that margin. The host counters come from the metrics endpoint,
+`GET https://<ref>.supabase.co/customer/v1/privileged/metrics`, with basic
+auth `service_role` and `E2E_SUPABASE_SECRET_KEY` from `.env.test.local`; it
+refreshes about once a minute. Print only the lines you need, and never the
+key. To get the server time of an RPC without the upload, run
+`EXPLAIN (ANALYZE, BUFFERS) select public.<rpc>(...)` over
+`SUPABASE_DB_URL_TEST` as `authenticated`, with `request.jwt.claims` set,
+in a transaction that always rolls back; run `set constraints all
+immediate` before the rollback to time the deferred triggers too.
+`pg_stat_statements` holds each RPC's mean and maximum time since its last
+reset. A client time in the e2e log includes the upload from the runner and
+PostgREST's parse; the 8 s statement timeout of `authenticated` bounds only
+the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
+touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
 150 kB for the unconfigured build and 210 kB for the configured one, which

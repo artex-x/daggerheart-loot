@@ -185,7 +185,7 @@ describe('the share topics', () => {
         (tx) => tx`select public.reorder_list(${list}, ${[...entries].reverse()}::uuid[])`
       );
       const revision = await revisionOf(list);
-      assert.equal(revision, was + 5);
+      assert.equal(revision, was + 1);
       await received(player.got);
       await pause(QUIET_MS);
       assert.deepEqual(

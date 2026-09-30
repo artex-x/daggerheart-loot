@@ -18,7 +18,8 @@
 section 16 "R6 closeout record"). R4b `persist-4b-requests-polish` closed
 2026-09-30 (section 16, "R4b closeout record"). `limits-follow-overrides`
 closed 2026-09-30 (section 16, "`limits-follow-overrides` closeout
-record"). Next: R7.
+record"). `e2e-import-slowdown` closed 2026-09-30 (section 16,
+"`e2e-import-slowdown` closeout record"). Next: R7, rebased onto it.
 - This file is the programme roadmap. One TASK id per release (section 9,
   settled); each release's planner refresh writes its batches into
   `issues/persist-<n>-<name>/`; this directory keeps sections 1-12 and
@@ -443,6 +444,7 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R4b | `persist-4b-requests-polish` | `B4b.1` - **closed 2026-09-30**, live at the push of `main` (commits "feat(persist): keep the selection after a purchase request and fix roll tabs", the budget, `npm audit fix` and closeout commits). The owner's steps: send a request on a phone and see the ticks stay; use «Мин»/«Макс» on a phone; «Скрыть» the decided requests | The owner's requests feedback: the selection kept after a send with «Запрос отправлен», «Мин»/«Макс» joined to the take count, the decided fold with its items and «Скрыть», request clean-up confirmed (no change); the roll-tab bug (owner, 2026-09-29) |
 | R6 | `persist-6-import-export` | `B6.1`, `B6.2` - **closed 2026-09-30**, live at the push of `main` (commits "feat(persist): export and import account lists as a published JSON bundle" and the closeout commit after it). The owner's steps: export a list and import it back on a phone; read `llms.txt` and the hint on the import field | JSON export (all, ticked, one list; the data zip) and create-only import of `schema/import-v1.json`; batch selection and deletion on the index; `llms.txt` lets an AI assistant write an import file and read an export alone (owner, 2026-09-27) |
 | - | `limits-follow-overrides` (owner, 2026-09-30: Q1 A, Q2 B, Q3 keep) | `B1` - **closed 2026-09-30** (commit "feat(persist): let the import file bounds follow a raised limit"). The owner's steps: none beyond CI green | An override lifts its limit on every path; `import_lists()` takes 1000 lists per call and `import-v1` widens in place to 1000 lists and 5000 entries per list; the ceilings of one call are in `FEATURES.md`, "Limits" |
+| - | `e2e-import-slowdown` (owner, 2026-09-30: Q1 A, Q2 A; case L's 5 MB import logged, not asserted) | `B1` - **closed 2026-09-30** (commit "fix(persist): run the list entry triggers once per statement"). The owner's steps: CI green; decide the compute size | The list entry touch and limit triggers run once per statement, so an import is linear in its rows; migration `20260930121000`; a list's revision grows by one per statement |
 | R7 | `persist-7-homebrew` | `B7.1`-`B7.3` (planned 2026-09-26; `issues/persist-7-homebrew/plan.md` is the authority) | Homebrew items as live references in the owner's lists, «Мои предметы» from the account menu and in search, the source tag «Хоумбрю» / "Homebrew" (owner, 2026-09-26), bundle schema v2 |
 | R8 | `persist-8-media` | `B8.1` | Homebrew art |
 | R9 | `persist-9-item-share` | `B9.1` | `#/h/<token>`, add and clone, print routes for cloud lists |
@@ -1430,6 +1432,32 @@ R4b closeout record (2026-09-30; four local commits on `main` after `a6503c49`: 
   commit; a `limits:set` warning past a ceiling of one call.
 - Pending, owner, after the push: CI green (the `db` job asserts the ratio
   under 3.2; rerun once and keep the bound if a shared runner fails it).
+
+`e2e-import-slowdown` closeout record (2026-09-30; one commit built in a worktree from `86aaa41c`, pushed once as a fast-forward):
+- Cause: the row triggers made an import quadratic in the entries per list
+  (50x100: 2.3-3.5 s of server time); the test project is a swapping Nano
+  host. Nothing accumulates across e2e runs; the timeout is 8 s.
+- Shipped: migration `20260930121000_list_entries_statement_triggers` (five
+  statement triggers with transition tables); decision "The list_entries
+  touch and limit triggers run once per statement" (amends the
+  import-bounds decision); `FEATURES.md` "Limits", `COVERAGE.md` case L and
+  layer 3, `.claude/README.md` "Measure the test project". Plan reviewed
+  twice, batch reviewed once (approve); nits fixed in the one commit.
+- Evidence: applied probe 50x100 323-446 ms, 1000x5 1659 ms plus 377 ms,
+  100x100 813 ms; e2e case L 50x100 1001-2039 ms over five runs; the 5 MB
+  file 2313-8748 ms (two runs over 6000 ms), 363 ms against 5061 ms of
+  server time a minute apart while the host swapped.
+- Owner decision after step 10: case L logs the 5 MB import's time and
+  asserts only its success; the 50x100 case keeps `IMPORT_MS` 6000.
+- Gates: `npm run check` and `check:db` (twice each), `db:push --project
+  test`, the probe, five e2e runs (the last green).
+- Named, dropped: case J's missed owner message (2026-09-30, run
+  36721185871, attempt 1); the transition tables' temp-file spill (seen on
+  the notes-heavy insert, 692 blocks); the Nano host swapping; about 3.5 MB
+  of empty `list_entries` index pages on the test project; the dashboard's
+  disk IO budget (Q3).
+- Pending, owner: CI green; the compute size of the test and production
+  projects (a larger add-on would steady the 5 MB case; not bought).
 
 ## 18. Cloud sessions (claude.ai/code)
 

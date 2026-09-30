@@ -1,12 +1,12 @@
 /*
   lists and list_entries: a signed-in owner's cloud lists. The owner reads
   and writes only its own lists and their entries; anon and a caller with
-  no user id get nothing; every update and every entry change bumps the
-  list's revision and updated_at; the checks bound each field; the limits
-  refuse the 51st list and the 101st entry; reorder_list() rewrites the
-  order of one list and puts the entries it was not given after the given
-  ones; the rows go with their user. docs/specs/FEATURES.md,
-  "Lists".
+  no user id get nothing; every update, and every statement that changes
+  entries, bumps each list it touched once in revision and updated_at; the
+  checks bound each field; the limits refuse the 51st list and the 101st
+  entry; reorder_list() rewrites the order of one list and puts the entries
+  it was not given after the given ones; the rows go with their user.
+  docs/specs/FEATURES.md, "Lists".
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -105,6 +105,25 @@ describe('lists grants', () => {
           'list_entries_limit', 'lists_broadcast', 'list_shares_gone')
         and has_function_privilege(r.role, p.oid, 'EXECUTE')`;
     assert.deepEqual([...rows], []);
+  });
+
+  it('runs the entry touch and limit triggers once per statement', async () => {
+    const rows = await sql`
+      select tgname, (tgtype & 1) = 0 as per_statement
+      from pg_trigger
+      where tgrelid = 'public.list_entries'::regclass and not tgisinternal
+        and (starts_with(tgname, 'list_entries_touch') or starts_with(tgname, 'list_entries_limit'))
+      order by tgname`;
+    assert.deepEqual(
+      rows.map((r) => [r.tgname, r.per_statement]),
+      [
+        ['list_entries_limit_insert', true],
+        ['list_entries_limit_update', true],
+        ['list_entries_touch_delete', true],
+        ['list_entries_touch_insert', true],
+        ['list_entries_touch_update', true]
+      ]
+    );
   });
 });
 
@@ -256,6 +275,65 @@ describe('lists revision and updated_at', () => {
       return seen;
     });
     for (let i = 1; i < revisions.length; i++) assert.equal(revisions[i], revisions[i - 1] + 1);
+  });
+
+  const revisionOf = async (tx, list) =>
+    (await tx`select revision::int as r from public.lists where id = ${list}`)[0].r;
+  /* Runs `write(tx)` as A on the world and returns the steps of LA's revision. */
+  const stepOf = (write) =>
+    asA(world, async (tx) => {
+      const was = await revisionOf(tx, LA);
+      await write(tx);
+      return (await revisionOf(tx, LA)) - was;
+    });
+
+  it('bumps a list once for a statement that inserts three of its entries', async () => {
+    const step = await stepOf(
+      (tx) => tx`insert into public.list_entries (id, list_id, item_key, position) values
+        (${id(1104)}, ${LA}, 'q313', 3), (${id(1105)}, ${LA}, 'q23', 4), (${id(1106)}, ${LA}, 'w51', 5)`
+    );
+    assert.equal(step, 1);
+  });
+
+  it('bumps a list once for a statement that edits all its entries', async () => {
+    const step = await stepOf(
+      (tx) => tx`update public.list_entries set player_note = 'n' where list_id = ${LA}`
+    );
+    assert.equal(step, 1);
+  });
+
+  it('bumps both lists once when one statement moves two entries between them', async () => {
+    const L2 = id(1002);
+    const out = await asA(world, async (tx) => {
+      await tx`insert into public.lists (id, owner_id) values (${L2}, ${A})`;
+      const was = [await revisionOf(tx, LA), await revisionOf(tx, L2)];
+      await tx`update public.list_entries set list_id = ${L2} where id in (${E1}, ${E2})`;
+      return [(await revisionOf(tx, LA)) - was[0], (await revisionOf(tx, L2)) - was[1]];
+    });
+    assert.deepEqual(out, [1, 1]);
+  });
+
+  it('bumps a list once for a statement that deletes two of its entries', async () => {
+    const step = await stepOf(
+      (tx) => tx`delete from public.list_entries where id in (${E1}, ${E2})`
+    );
+    assert.equal(step, 1);
+  });
+
+  it('leaves the revision when an update statement matches no entry', async () => {
+    const step = await stepOf(
+      (tx) => tx`update public.list_entries set player_note = 'n' where id = ${id(1199)}`
+    );
+    assert.equal(step, 0);
+  });
+
+  it('leaves the revision when an insert statement inserts no entry', async () => {
+    const step = await stepOf(
+      (tx) => tx`insert into public.list_entries (id, list_id, item_key, position) values
+        (${E1}, ${LA}, 'ci1', 0), (${E2}, ${LA}, 'q1', 1), (${E3}, ${LA}, 'cc1', 2)
+        on conflict (id) do nothing`
+    );
+    assert.equal(step, 0);
   });
 });
 

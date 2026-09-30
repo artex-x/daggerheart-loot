@@ -27,6 +27,7 @@ deleted.
 - 2026-09-30 - [The account reads its own effective limit through `my_limit()`](decisions/2026-09-30-the-account-reads-its-own-effective-limit.md)
 - 2026-09-30 - [The configured bundle budget is 210 kB; the unconfigured stays 150 kB](decisions/2026-09-30-the-configured-bundle-budget-is-210-kb.md)
 - 2026-09-30 - [The homebrew editor keeps its save button, with a guard and a revision check](decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md)
+- 2026-09-30 - [The list_entries touch and limit triggers run once per statement](decisions/2026-09-30-the-list-entries-triggers-run-once-per-statement.md)
 - 2026-09-30 - [The take count sits between Min and Max in one control; no stepper](decisions/2026-09-30-the-take-count-sits-between-min-and-max-in-one-control.md)
 - 2026-09-29 - [A roll mode starts at its first row on each visit; no number crosses tabs](decisions/2026-09-29-a-roll-mode-starts-at-its-first-row-on-each-visit.md)
 - 2026-09-29 - [A sent purchase request keeps the ticks; the send waits until they change](decisions/2026-09-29-a-sent-purchase-request-keeps-the-ticks.md)

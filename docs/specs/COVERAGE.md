@@ -145,16 +145,25 @@ value of those variables; CI's `e2e` job uploads nothing. In order:
   canonical text and moved again as the same row, with the 1300-entry move
   timed and logged as `contract: move of 1300 entries: <ms> ms` (304 to
   354 ms over four runs on the test project, 2026-09-26, against the
-  case's 6000 ms bound and the 8 s statement timeout), on a
+  case's 6000 ms bound, client wall clock with the upload; the 8 s
+  statement timeout bounds only the database's part), on a
   throwaway that case E then deletes with its rows, and J, the live topics
   on the member, which proves that PostgREST passes `x-dhloot-tab` to the
   trigger, K the purchase requests and L the import on the same throwaway,
   with the maximal import timed and logged as `contract: import of 50 lists
   of 100 entries: <ms> ms` and the notes-heavy one, about 5.5 MB of rows, as
-  `contract: import of a 5 MB file (<bytes> bytes of rows): <ms> ms` (2504
-  ms, and 2446 ms for 5 461 091 bytes, on the test project, one run,
-  2026-09-28), each against the case's 6000 ms bound and the 8 s statement
-  timeout), the
+  `contract: import of a 5 MB file (<bytes> bytes of rows): <ms> ms`
+  (1001-2039 ms, and 2313-8748 ms for 5 461 091 bytes, on the test
+  project, five runs from this host with the statement triggers,
+  2026-09-30). The maximal import is asserted under the case's 6000 ms
+  bound, which is client wall clock with the upload and PostgREST; the 8 s
+  statement timeout bounds only the database's part. The notes-heavy
+  import must succeed, and its time is logged, not asserted: the same call
+  took 363 ms and then 5061 ms of server time a minute apart while the
+  host swapped, so the e2e no longer catches a slow large import - the
+  rolled-back `EXPLAIN` and `pg_stat_statements` measure it
+  (`.claude/README.md`, "Measure the test project"; the owner's decision,
+  2026-09-30)), the
   real-only share checks on two more throwaways
   (signed out, both projections - no `gm_note` key on the player one;
   another user reads the GM link, owns nothing behind it, cannot share the
@@ -276,7 +285,8 @@ entries in order, the same rows again a no-op; a second list of 101 entries
 refused as `entries_per_list` 100 with the first list absent; every list
 removed, then 50 lists of 100 entries in under 6000 ms, a 51st refused as
 `lists_per_owner` 50, and the same 50 lists with two notes of 250
-characters per entry, 5.0 to 6.0 MB of rows, in under 6000 ms); E delete
+characters per entry, 5.0 to 6.0 MB of rows, imported with its time logged
+and not asserted); E delete
 leaves nothing signed in. A also requires `prefs` and `lists.list()` refused signed out,
 `move` answering `network` signed out, B an `ok` read for the member. The seed's own behaviour stays in
 `fake-cloud.test.ts`: a sign-in as the default user notifying once, the
@@ -397,11 +407,18 @@ not run. CI's `browser` matrix runs the rows as five shards
   or on `effective_limit()`, an unknown key refused by name, an override
   that raises, lowers or (null) lifts the limit in the trigger and the
   default again once it is deleted, a 101st entry passing under an
-  `entries_per_list` override of 200, and `limits:set`'s database half
+  `entries_per_list` override of 200, one insert statement past the entry
+  limit and one update statement that moves two entries into a list of 99
+  refused with the limit as detail, a note edit passing on a list above a
+  lowered entry limit, and `limits:set`'s database half
   (`setLimit`) in its four modes. `lists.test.mjs` is the lists matrix:
   the grants per role, a user's full access to its own lists and entries
-  and none to another's, no user id and `anon` refused, the revision and
-  `updated_at` on every update and entry change, the field checks, the
+  and none to another's, no user id and `anon` refused, the entry touch
+  and limit triggers as five statement triggers, the revision and
+  `updated_at` one step on every update and on every statement that
+  changes entries (three inserted, all edited, two deleted, a move of two
+  entries stepping both lists once; an update that matches nothing and a retried insert
+  that inserts nothing stepping none), the field checks, the
   51st list and the 101st entry refused (one multi-row statement and a
   move between lists included), `reorder_list()`'s tolerant rule (another
   list's id, a repeated id and a null ignored, an entry not given kept
@@ -410,7 +427,8 @@ not run. CI's `browser` matrix runs the rows as five shards
   Broadcast from the database with real WebSocket clients through the
   local gateway (`commitAs` commits, because the broadcast trigger is
   deferred to commit, and each case deletes its rows): a list update, a
-  reorder of five entries and one `apply_list_writes` call of three writes
+  reorder of five entries (one revision step, one statement) and one
+  `apply_list_writes` call of three writes
   each send one message per topic with the final revision, a share topic's
   payload holds only `revision` (plus Realtime's message `id`), a revoked
   share's topic gets nothing; a refused write and a rolled-back
@@ -504,8 +522,10 @@ not run. CI's `browser` matrix runs the rows as five shards
   `lists_per_owner` override of 1000, 50 lists of 100 entries (after one
   untimed run) and then 1000 lists of 5 entries imported through `commitAs`,
   the account then holding 1000 lists and 5000 entries, both times, their
-  ratio and the hosted estimate (ratio x 2504 ms) logged, and only
-  `ratio < 3.2` asserted.
+  ratio and the hosted estimate (ratio x 366 ms, the hosted server time of
+  50 lists of 100 entries with statement triggers and the commit, 2026-09-30)
+  logged, and only `ratio x 366 < 4000` (half the statement timeout)
+  asserted.
   `usage.test.mjs` holds the
   usage report's database half (`tools/supabase/usage.mjs`): `collect` on
   seeded rows against a baseline taken in the same transaction (the sizes,
