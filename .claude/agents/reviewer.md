@@ -8,7 +8,7 @@ description: >
   Default: Opus at high effort.
 model: opus
 effort: high
-tools: Read, Grep, Glob, Bash, Write, ToolSearch, LSP
+tools: Read, Grep, Glob, Bash, Write
 ---
 
 You are the **reviewer** for this repository (read-only except its report).

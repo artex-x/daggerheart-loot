@@ -527,53 +527,22 @@ them mid-batch:
 
 ### Code navigation
 
-Measured across this project's 65 session transcripts (2026-09-18): the
-`Grep` tool 109 calls, `rtk grep` 90, `git grep` 55, **LSP 16** - all of
-them in the three sessions that installed it, and only `hover` and
-`documentSymbol` - and **`ast-grep` 1**, which was `ast-grep --version`.
-Nothing under `.claude/`, `CLAUDE.md` or `docs/` named either tool except
-`agents/reviewer.md`'s `tools:` list, which grants LSP without saying what
-it is for. An agent told to follow a prompt file exactly had no reason to
-reach for either. Hence this section, and the pointers in the prompts.
+No language server and no ast-grep run on this host since 2026-09-30
+(`docs/decisions/`, 2026-09-30, "Agents search with grep; no language server
+and no ast-grep"). The `svelte-lsp` and `typescript-lsp` plugins held up to
+800 MB each in long multi-agent sessions, and across 665 session transcripts
+agents made 18 LSP calls and no ast-grep search (`ast-grep --version` only).
 
-Use the most semantic tool that answers the question:
-
-1. **LSP** for symbol questions on `.ts`, `.js` and `.svelte`. It is a
-   *deferred* tool: load it once per session with `ToolSearch("select:LSP")`
-   before the first call, or it is not callable.
-   - `findReferences` **before renaming a symbol or changing a signature**.
-     It answers in one call, exactly, what a grep sweep answers in several
-     and approximately - probed here, 11 references to `foldQuery` across
-     two files, instantly.
-   - `goToDefinition`, `goToImplementation`, `hover` for one symbol;
-     `incomingCalls` / `outgoingCalls` for a call chain.
-   - **Not `workspaceSymbol`.** It returns `No symbols found in workspace`
-     on this host whatever the query (probed 2026-09-18). Locate the file
-     with grep first, then ask LSP a positional question about it.
-   - **Not `documentSymbol` on a large file.** It returns every symbol in
-     the file and can cost more than reading the file.
-   - There is no diagnostics operation. Type errors come from the project's
-     own gate, `npm run check`.
-2. **ast-grep** for structural searches LSP cannot express. Invoke it as
-   `ast-grep`, never `sg` - the deprecated alias prints a banner into
-   context on every call. Know its failure mode before trusting it: a
-   pattern that does not match the tree exits 1 with **no output at all**,
-   which reads exactly like "this code does not exist". `function $N($$$A)
-   { $$$B }` matches nothing in `app/src/lib/search.ts`, not because there
-   are no functions but because those carry return type annotations.
-   Confirm a pattern against one file you know matches before concluding
-   anything from an empty result. Rule syntax: the `ast-grep` and
-   `ast-grep-outline` skills. RTK does not wrap `ast-grep` (`rtk --help`,
-   0.45.3), so its output lands unfiltered - prefer `ast-grep`'s own compact
-   output modes and never post-filter it with a pipe, which also defeats the
-   RTK hook for the whole line.
-3. **`rtk grep`** for plain text - comments, strings, config values,
-   documentation, filenames, exact strings. It needs `-E` for alternation:
-   `rtk grep "a|b"` matches nothing and exits 1, which reads as "absent"
-   and produced one wrong conclusion on 2026-09-18 before it was caught.
-   `git grep` takes alternation without a flag and is faster than a
-   recursive `rtk grep` over a tracked tree; a recursive `rtk grep` over
-   `.claude`/`docs` outlived a 120s Bash timeout in the same session.
+- **`rtk grep`** for plain text - code, comments, strings, config values,
+  documentation, filenames. It needs `-E` for alternation: `rtk grep "a|b"`
+  matches nothing and exits 1, which reads as "absent" and produced one
+  wrong conclusion on 2026-09-18 before it was caught.
+- **`git grep`** takes alternation without a flag and is faster than a
+  recursive `rtk grep` over a tracked tree; a recursive `rtk grep` over
+  `.claude`/`docs` outlived a 120s Bash timeout on 2026-09-18.
+- Before a rename or a signature change, search for every use of the name,
+  imports and re-exports included. Type errors come from the project's own
+  gate, `npm run check`.
 
 Do not use raw `grep -n`; `bash-guard.mjs` rule 2j blocks the shapes RTK
 cannot rewrite.
@@ -821,9 +790,8 @@ Measured 2026-09-23: one such process, alive for ~8 CPU-hours since the night
 before, held ~1.35 cores without a break. Symptom: `npm run check`'s vitest
 step took 566-612 s, past the 600 s cap, and five runs failed only on
 timeouts (`searchPage.test.ts` "the cap" at 32-44 s against 30 s, once
-`sharedListPage.test.ts`); both files passed alone. Check Task Manager for
-the process before a gated batch; a restart cleared it and the next check
-was green.
+`sharedListPage.test.ts`); both files passed alone. A restart cleared it and
+the next check was green.
 
 A runaway editor language server is the usual daytime cause of a check
 that runs 2-10 times slower: `svelte-language-server` (`node ...
@@ -833,8 +801,10 @@ svelte-language-server\bin\server.js --stdio`) or `tsserver`. Measured
 `tsserver`s at 1443 and 687 CPU-s). The owner allows any agent to stop
 such a server above about 500 CPU-s without asking: `Stop-Process -Id <pid>
 -Force`. The editor plugin starts it again on demand. Then run the check
-once more. The other cause is Windows idle maintenance at night (about
-00:20-02:00), which a daytime kill does not fix.
+once more. The plugins were removed on 2026-09-30 ("Code navigation"), so
+this cause applies only if a server appears again. The other cause is
+Windows idle maintenance at night (about 00:20-02:00), which a daytime kill
+does not fix.
 
 **A check reporting zero coverage everywhere ran no test at all.** Vitest's
 fork-pool worker start timeout is 60s and hardcoded (`START_TIMEOUT` in
@@ -2526,7 +2496,7 @@ not built. |
 | 44 | Warn when a task document is past its size budget | `Stop` | **adopt** (`config-audit` B3) | Measured 2026-09-15: issue 47's `plan.md` 1,031 KB (57.7% shipped-batch briefs), `handoff.md` 523 KB (96% of Status superseded snapshots), `context.md` 227 KB, growing 350-1,400 lines per working day, read by every worker at dispatch. Warn, never block: a Stop hook that blocks session-end is worse than a large file. Scoped to the session that wrote into the directory, deduped per state. The procedure and the never-drop / always-drop lists live in `.claude/skills/handoff/SKILL.md`. Rejected: a `PreToolUse(Write)` size deny (blocks the closeout write that fixes it); a `SessionStart` notice (the writer is who needs it). |
 | 45 | Accept a leading `rtk ` in the commit gate's check-invocation regex, `check-observer.mjs`'s normalizer, and the two `LONG_CHECKS` regexes for `check`/`check:built`; retire the piped canonical form in favour of `rtk npm run check` | `PreToolUse(Bash)` (gate + reminder), `PostToolUse(Bash)` (observer) | **adopt** (`rtk-coverage` B1) | Live probe (this task): a `PostToolUse` hook receives RTK's already-rewritten command, not what the model typed - `cat package.json` logged as `rtk read package.json`. Since RTK silently rewrites a bare `npm run check` to `rtk npm run check`, and `CHECK_INVOCATION_RE` was anchored at `^npm`, the gate could never arm on a bare invocation; only the piped form (`set -o pipefail; npm run check 2>&1 | tail -n 120`, which RTK cannot rewrite) ever worked, in all 200 recorded check invocations sampled. A live latent bug, not a defect kept on purpose. Cannot weaken the gate: `rtk npm ...` propagates the child's exit code directly (verified: a script exiting 3 came back `exit=3`) and shows both stdout and stderr, so the non-zero test still refuses to arm on a real failure. **Fixed on remediation:** `check-observer.mjs`'s normalizer originally stripped a leading `rtk ` inside the same 3-iteration loop as `cd`/`pipefail`, so `rtk rtk npm run check` armed the observer while `CHECK_INVOCATION_RE` used directly (the gate, `LONG_CHECKS` - neither pre-strips) refused that exact string, since its own optional group can only ever consume one `rtk `. Not a live vector - RTK never doubles its own prefix - but a real mismatch between what arms the observer and what the guard recognises. Fixed by deleting the explicit strip rather than reducing it to one pass: one pass still leaves a second, independent `rtk `-tolerance layered on top of `CHECK_INVOCATION_RE`'s own, which still arms on the doubled string (verified directly: stripping one leaves one behind, and the regex's own optional group then consumes that leftover too). With no explicit strip at all, the observer's `first`-segment test and the guard's own regex agree by construction, because they are now the same test. Deleting the strip loop also moved `rtk cd /r && npm run check` (`rtk` wrapping `cd`, a shape RTK itself never produces) from armed to no-arm; nothing depends on it. |
 | 46 | Deny a `npm run check`/`check:built` inside a pipe or redirected to a file, and have `check-observer.mjs` state the verdict | `PreToolUse(Bash)` (rule 2k), `PostToolUse(Bash)` (observer) | **adopt** (owner decision, 2026-09-18) | Measured over this project's 65 session transcripts: of 71 real check invocations, **61 were piped** into `tail`/`grep`, 9 redirected to a file, and exactly **one** was the canonical `rtk npm run check` that candidate 45 established. A pipe hands the Bash tool the last stage's exit status - `tail` always exits 0 - so a failed check is indistinguishable from a passing one; the recorded recovery is a second ~165s run, or an `echo $?` on a later line that reports the echo's own status. A redirect keeps the status but hides the stdout the observer needs, so the gate never arms and the file has to be read back. Candidate 10's reminder has said "no pipe needed" since 45 and fires once per session; those 61 runs are what a reminder is worth against a habit the docs themselves taught for months. The deny forbids nothing that works, and the paired verdict line removes the remaining inference: the observer already knows the failure markers and whether it armed, so it says `PASS` / `FAIL` / passed-but-unattributable in one line, and speaks only for a real foreground check invocation. Arming is unchanged and just as strict - the line states, it does not gate. **Two host facts, probed live rather than assumed, bound what that line can carry**, both on this Windows desktop build: no exit-code field reaches a `PostToolUse` hook at all here (a successful Bash call arrives as `{stdout, stderr, interrupted, isImage, noOutputExpected}`, whatever the hooks reference lists), so the pass/fail split rests on the stdout markers and the ` (exit n)` suffix stays empty; and on a *failed* Bash call the hook does not speak at all - the result comes back as a plain string, `"Exit code 1\n..."`, rather than that object, verified with a check deliberately failed at its prettier stage. Neither weakens the fix: unpiped, a failure opens with `Exit code 1` on the result's first line and a pass ends with the observer's own. The FAIL branch is kept for a host that does deliver the call, and for the case that genuinely reaches here - a run that exits 0 while printing failure markers. Covers `check:built` too (same family, same blindness) though only `check` feeds the gate; `check:fast` is out of scope, as it is everywhere else. Boundary caught while implementing: the `2>&1` strip has to run **before** the list split, because `LIST_SPLIT_RE` treats that `&` as a list operator and a later strip reads the leftover `2>` as a file redirect - `check-observer.mjs` had the order right already. Selftest #154-#171; #119 retargeted, since it asserted the now-denied shape. |
-| 47 | Name LSP and ast-grep where agents actually read | `.claude/README.md`, the three code-facing worker prompts | **adopt** (owner decision, 2026-09-18) | Measured over the same 65 transcripts: `Grep` 109 calls, `rtk grep` 90, `git grep` 55, **LSP 16** - all in the three sessions that installed it, and only `hover`/`documentSymbol` - and **`ast-grep` 1**, that one being `--version`. `git grep` over `.claude`, `CLAUDE.md` and `docs/` found exactly one mention of either tool, `agents/reviewer.md`'s `tools:` list, which grants LSP without saying what it is for. The guidance existed only in the human's global `~/.claude/CLAUDE.md`, while every worker is told to follow a prompt file exactly - so the prompts, not a doc line, are the lever. Two live traps found while probing and written down rather than left to be rediscovered: `workspaceSymbol` returns `No symbols found in workspace` on this host for any query, so the operation the old guidance led with is the one that fails first; and an `ast-grep` pattern that does not match exits 1 with no output, which reads as "no such code" (`function $N($$$A) { $$$B }` finds nothing in `app/src/lib/search.ts` only because those functions carry return type annotations). `findReferences` works and is the reason to bother - 11 references to `foldQuery` across two files in one call. No hook: a nudge toward a tool is not a deterministic property, and candidate 43's history is what happens when a guard denies a shape that already worked. |
+| 47 | Name LSP and ast-grep where agents actually read | `.claude/README.md`, the three code-facing worker prompts | **adopt** (owner decision, 2026-09-18); **withdrawn** 2026-09-30, both tools removed ("Code navigation") | Measured over the same 65 transcripts: `Grep` 109 calls, `rtk grep` 90, `git grep` 55, **LSP 16** - all in the three sessions that installed it, and only `hover`/`documentSymbol` - and **`ast-grep` 1**, that one being `--version`. `git grep` over `.claude`, `CLAUDE.md` and `docs/` found exactly one mention of either tool, `agents/reviewer.md`'s `tools:` list, which grants LSP without saying what it is for. The guidance existed only in the human's global `~/.claude/CLAUDE.md`, while every worker is told to follow a prompt file exactly - so the prompts, not a doc line, are the lever. Two live traps found while probing and written down rather than left to be rediscovered: `workspaceSymbol` returns `No symbols found in workspace` on this host for any query, so the operation the old guidance led with is the one that fails first; and an `ast-grep` pattern that does not match exits 1 with no output, which reads as "no such code" (`function $N($$$A) { $$$B }` finds nothing in `app/src/lib/search.ts` only because those functions carry return type annotations). `findReferences` works and is the reason to bother - 11 references to `foldQuery` across two files in one call. No hook: a nudge toward a tool is not a deterministic property, and candidate 43's history is what happens when a guard denies a shape that already worked. |
 | 48 | Deny or fail on a comment citing a batch id, a review finding id or an `issues/<id>/` path | `tests/` grep or `PreToolUse(Edit)` | **reject for now** | The rule is new (`CLAUDE.md`, "Comments", 2026-09-18) and the sweep that applied it found ~95 files, all written before the rule existed - no recorded failure of the written rule yet (row 29's bar). Rule 2i already denies the one that does damage (an `issues/<id>/` citation, at retirement). Cheapest form if it recurs: a `tests/derived.js`-style check that greps comments in `app/src`, `tools`, `tests`, `.claude/hooks` for `issues/[^<]` without a sha prefix and for `\bB\d+(\.\d+)?[a-z]?-[NR]\d+\b`. |
 | 49 | A wrap-up nudge off the five-hour usage window | `Stop` / `PreToolUse` | **withdrawn, do not rebuild** | Built, measured and withdrawn at `79e26c9`: the five-hour window is not readable on this host. The hook input's `effort` is an object `{ level }`, and the same level reaches a worker's Bash tool as `$CLAUDE_EFFORT`. Full finding: `git show b2eec64:.claude/improvements.md`, Finding 4. |
 | 50 | Re-measure the configuration audit baseline | none (a manual pass) | **dated: 2026-10-15** | Same commands, same Windows host as the 2026-09-15 baseline (`rtk gain`, `rtk discover`, `wc -c` of the always-loaded markdown, the skill-listing sum); `grep -n` and `tail -c` should be near zero in `rtk discover`, and `CLAUDE.md` under 181 lines. A regression is a new row here. Baseline table and method: `git show b2eec64:.claude/improvements.md`, Finding 7. |

@@ -35,14 +35,9 @@ Before doing anything else:
 7. Read any referenced mocks under `<TASK_DIR>/`
 8. Read the relevant files under `docs/specs/`
 9. Inspect the source code, tests, fixtures, and public contracts for the next batch.
-   Navigate with the most semantic tool that answers the question, not with grep by
-   reflex - see `.claude/README.md`, "Code navigation". In short: load LSP once with
-   `ToolSearch("select:LSP")` and use `findReferences` before you rename a symbol or
-   change a signature, and `goToDefinition`/`hover` for one symbol; `ast-grep` for a
-   structural shape, confirming the pattern against a file you know matches, because a
-   pattern that matches nothing exits 1 with no output; `rtk grep`/`git grep` for plain
-   text, with `-E` for alternation. Do not use `workspaceSymbol` - it returns nothing
-   on this host.
+   Search with `rtk grep` (`-E` for alternation) or `git grep` - see
+   `.claude/README.md`, "Code navigation". Before you rename a symbol or change a
+   signature, search for every use of the name, imports and re-exports included.
 10. Preflight working tree:
    - Inspect `git status` and `git diff`
    - If the tree has conflicting or unclear unrelated changes that make the batch unsafe, or another implementation batch appears mid-flight on the same files, stop and report

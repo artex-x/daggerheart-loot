@@ -19,6 +19,7 @@ deleted.
 - 2026-09-30 - [A homebrew source may hold sections, as the community book holds communities](decisions/2026-09-30-a-homebrew-source-may-hold-sections.md)
 - 2026-09-30 - [A list page makes a plain homebrew item in one press, with no draft mark](decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md)
 - 2026-09-30 - [A toast is built in the language on screen each time it is drawn](decisions/2026-09-30-a-toast-is-built-in-the-language-on.md)
+- 2026-09-30 - [Agents search with grep; no language server and no ast-grep](decisions/2026-09-30-agents-search-with-grep-no-language-server-and-no.md)
 - 2026-09-30 - [(HB) marks homebrew, and a homebrew relation shows only to its author](decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md)
 - 2026-09-30 - [Homebrew is first-class in the catalog pages; the roll pages are excluded](decisions/2026-09-30-homebrew-is-first-class-in-the-catalog-pages.md)
 - 2026-09-30 - [Homebrew ships in four releases: items, catalog pages, relations, files](decisions/2026-09-30-homebrew-ships-in-four-releases.md)

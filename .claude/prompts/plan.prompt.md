@@ -45,14 +45,9 @@ Before doing anything else:
 7. If this is a new task, inspect nearby issue directories only to learn expected document structure
 8. Review the relevant files under `docs/specs/`
 9. Inspect the source code, tests, fixtures, styles, and public contracts relevant to the task.
-   Navigate with the most semantic tool that answers the question, not with grep by
-   reflex - see `.claude/README.md`, "Code navigation". In short: load LSP once with
-   `ToolSearch("select:LSP")` and use `findReferences` to size the blast radius of a
-   rename or a signature change before you plan one, and `goToDefinition`/`hover` for a
-   single symbol; `ast-grep` for a structural shape, confirming the pattern against a
-   file you know matches, because a pattern that matches nothing exits 1 with no output;
-   `rtk grep`/`git grep` for plain text, with `-E` for alternation. Do not use
-   `workspaceSymbol` - it returns nothing on this host.
+   Search with `rtk grep` (`-E` for alternation) or `git grep` - see
+   `.claude/README.md`, "Code navigation". Before you plan a rename or a signature
+   change, search for every use of the name to size it.
 10. Inspect the current live UI where relevant (root app and/or running rewrite) so design stays grounded in what exists today
 
 Precedence: follow standing source-precedence rules in `CLAUDE.md`.
