@@ -17,6 +17,13 @@ format". -->
 
 ## Deviations
 
+## Standing checks
+
+1. Scale: checked - <what you read> | not applicable - <reason>
+2. Error scenarios: checked - <what you read> | not applicable - <reason>
+3. Consistency: checked - <what you read> | not applicable - <reason>
+4. RU/EN parity: checked - <what you read> | not applicable - <reason>
+
 ## Suggested next action
 
 ## Checks still needed

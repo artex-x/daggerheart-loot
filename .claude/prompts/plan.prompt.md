@@ -107,6 +107,7 @@ Each implement-ready batch must include:
 - In scope / out of scope
 - Expected files to create or edit
 - Behaviour/UI constraints from issue, screenshots, specs, and any approved mocks
+- Standing checks (below): each of the four answered, or `not applicable - <reason>`
 - Ordered implementation steps explicit enough for a smaller model
 - Acceptance criteria that are observable or testable
 - Verification commands (see gate matrix below)
@@ -121,6 +122,55 @@ line - not only as a cross-reference to where it was mentioned. A table that
 records an intention is not a mechanism, because nothing reads it at the
 moment a batch closes; a plan has already lost inherited items this way by
 recording them only as prose.
+
+Standing checks - run them on every pass, without being asked
+(`docs/decisions/`, 2026-10-01, "Plans and reviews run four standing
+checks without the owner asking"). Answer each check per batch, or write
+`not applicable - <reason>`. A batch that changes no screen, no write
+path and no stored shape answers all four in one line.
+
+1. Scale. For a batch that changes what a screen draws, write a States
+   table: one row per state, what the screen shows, and its proof (a unit
+   test, a golden state, a sweep width) or `unchanged`. The rows:
+   - empty, one, many;
+   - at the limit, past it (the refusal), and at an override value, for
+     each collection and each per-record cap that the screen draws. The
+     limit is the `limit_defaults` row or the validator constant. The
+     override value is the per-call ceiling that `docs/specs/FEATURES.md`
+     names (1000 lists, 5000 entries of one list); where it names none,
+     name the value you assume;
+   - the longest allowed name or text;
+   - each row at 360 px and at 1180 px (the outer widths of
+     `tests/app/sweep.js`).
+   At many and at the limit, also state the row order, the place of the
+   primary action, the height of each fold and each popup at 360 px with
+   the on-screen keyboard open, and each sticky region that can grow
+   taller than the viewport.
+2. Error scenarios. For a batch that changes a screen, a write path or a
+   stored shape: loading, a failed read, a failed write, offline, a
+   conflict (another tab or device wrote first), a record that it names
+   was deleted, a stale tab (a tab that loaded the previous bundle), and
+   a revert (the previous frontend, or the down migration, meets what
+   this batch stores). For each, state what the screen shows and what
+   happens to the stored data: kept, dropped on the next save, or
+   hidden, and the recovery path. For a retry, name where each written
+   field comes from: the row read again, never a copy held from before
+   the failure. A path that can lose stored data is a plan-review
+   trigger (Status, below).
+3. Consistency. Name the rules of `docs/specs/FEATURES.md`, "Consistency
+   rules", that the batch follows, and each departure with its reason.
+   Compare the batch with its sibling pages on these axes: one name for
+   one thing in the menu, the heading and the tab; counters and limits;
+   page heads in every state; load, empty and error states and their
+   wording; toasts; confirms and undo; button verbs and close labels;
+   selection bars and batch actions; the place of the primary action.
+   Where `FEATURES.md` has no rule for an axis, the sibling pages are the
+   reference: name each difference.
+4. RU/EN parity. Every new or changed string has both languages, the
+   same facts, both plural sets and ASCII punctuation.
+
+A state or a scenario that the batch adds or changes is its own
+acceptance line.
 
 Verification gate matrix (pick what applies per batch):
 - Data-only (`data.js`, art mapping): data/image/stub checks + `node tools/build.js` + relevant tests
@@ -149,6 +199,7 @@ Planning is complete only when:
 - `handoff.md` uses `.claude/templates/handoff.template.md` headings and names that exact next batch
 - Open product/architecture questions are decided or listed as blockers
 - Nothing critical is left for the implementer to invent
+- Every implement-ready batch answers the four standing checks
 - `plan.md` Status carries one `- Plan review: required before <batch> (trigger: <which>)` or `- Plan review: not required (no trigger fired)` line. The triggers: a migration or a SECURITY DEFINER function, a public contract change, possible loss of stored data or `localStorage` keys, a new write or sync protocol. A refresh that adds a triggering batch writes a new `required` line. After a plan review's `fix-then-continue`, apply every finding once and add `- Plan review findings applied: reviews/plan-<batch>.md` (the report's file name, on one line) to Status, with one sub-bullet per finding: its id, the section, the change. No second look follows. After a `replan`, revise; the reviewer takes a second look. `agent-guard.mjs` denies the implementer dispatch without the declaration, or while the newest required plan review is neither an approve nor an applied `fix-then-continue`
 
 After investigation:

@@ -338,6 +338,12 @@ owner's say-so - each routed finding then proves itself in the failing
 direction as an acceptance line - and the handoff says `Review: not run
 (owner's decision)`, never `not required`.
 
+When a plan or batch review lands, read its "Standing checks" section
+(`review.prompt.md`, section I). A line that is missing, or that says
+neither `checked` nor `not applicable` with a reason, goes back to the
+same reviewer once, by a resume, before you act on the verdict. A
+second incomplete report goes to the human.
+
 ## Plan review
 A plan is reviewed before its first implement batch when it adds a schema
 change (a file under `supabase/migrations/`) or a SECURITY DEFINER function;

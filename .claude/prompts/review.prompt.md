@@ -52,7 +52,7 @@ If plan/handoff is missing, stop and say review cannot proceed.
 
 ### D. Product / UI
 - Roll/table/filter behaviour matches plan
-- i18n where required
+- RU/EN parity: section I, check 4
 - Visual parity rules respected unless plan changes look
 - No unrelated chrome redesign
 
@@ -130,6 +130,36 @@ look, so write each finding so the planner can apply it without design
 work: the section, the defect, the change. A finding that needs a redesign
 makes the verdict `replan`.
 
+### I. Standing checks (every plan review and batch review, unasked)
+Answer each check in the report's "Standing checks" section:
+`checked - <what you read>` or `not applicable - <reason>`. A defect
+found here is a blocker, a risk or a nit like any other finding. The
+items of each check are in `plan.prompt.md`, "Standing checks"; this
+list says what to look for.
+
+1. Scale: the States table against every collection and per-record cap
+   that the scope draws, at the limit, past it and at an override value,
+   at 360 px and 1180 px. Look for a list or a fold that pushes the
+   primary action off the screen, rows or options with no defined order,
+   a popup that the on-screen keyboard hides at 360 px, and a sticky
+   region taller than the viewport. A missing state is a finding.
+2. Error scenarios: for each write path and stored shape in scope, what
+   a failed write, offline, a conflict, a deleted record that it names, a
+   stale tab and a revert do to the stored data, and the recovery path.
+   A retry that writes a field from a copy held from before the conflict
+   is a loss. A loss that the plan does not name is a blocker.
+3. Consistency: the rules of `docs/specs/FEATURES.md`, "Consistency
+   rules", and the sibling pages, on the axes that `plan.prompt.md`,
+   "Standing checks" names. A departure that the plan does not name with
+   its reason is a finding.
+4. RU/EN parity: each new or changed string in both languages, with the
+   same facts, both plural sets and ASCII punctuation.
+
+A plan review checks that the plan answers each check, and challenges
+the answers. A batch review checks the code, the golden snapshots and
+the sweep results that the handoff records against them. A run that a
+read-only reviewer cannot make goes to "Checks still needed".
+
 ## Output format
 First write the full report to `<TASK_DIR>/reviews/<batch>.md` (a plan
 review: `plan-<batch>.md`; a second look: `<name>-2.md`) from
@@ -150,8 +180,10 @@ each, no markup.
    nothing - so it is always a nit, scoped `local` or `deferred-scope` the
    same way.
 5. **Deviations** - each deviation the handoff records, accepted or not
-6. **Suggested next action**
-7. **Checks still needed**
+6. **Standing checks** - section I: four numbered lines, each
+   `checked - <what you read>` or `not applicable - <reason>`
+7. **Suggested next action**
+8. **Checks still needed**
 
 Do not implement fixes. Return findings to the orchestrator for a separate implementer or add-source fix-pass.
 Do not message the implementer or any other agent: the orchestrator filters blockers from nits, counts the one remediation cycle, and is the only role that resumes a writer.

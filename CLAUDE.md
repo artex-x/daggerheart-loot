@@ -123,9 +123,9 @@ If a change alters what a screen draws, also run `npm run check:built`; a change
 Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`; the built app in a real browser (after `npm run build:test`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
 `app/sweep` and `app/golden` are each too slow for one foreground call; run them per width/shard - `.claude/README.md`, "Batch size and the fixed cost of a run".
 
-Definition of done: checks pass, fixed defects and changed behaviour have
-meaningful coverage, specs and fixtures match, and the handoff records exact
-commands/results. If a required check cannot run, report why before committing.
+Definition of done: checks pass, fixed defects and changed behaviour have meaningful coverage, specs and fixtures match,
+and the handoff records exact commands/results. If a required check cannot run, report why before committing.
+Answer four standing checks in every plan and review, unasked - scale, error scenarios, consistency, RU/EN parity (`.claude/prompts/plan.prompt.md`, `review.prompt.md`).
 
 Coverage is enforced per file and directory (a new file must be reached by a
 test, not by a matching filename). End component tests with
