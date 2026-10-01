@@ -138,11 +138,13 @@ items of each check are in `plan.prompt.md`, "Standing checks"; this
 list says what to look for.
 
 1. Scale: the States table against every collection and per-record cap
-   that the scope draws, at the limit, past it and at an override value,
-   at 360 px and 1180 px. Look for a list or a fold that pushes the
-   primary action off the screen, rows or options with no defined order,
-   a popup that the on-screen keyboard hides at 360 px, and a sticky
-   region taller than the viewport. A missing state is a finding.
+   that the scope draws, at the limit, one past it (the refusal) and at 3x
+   the default, at 360 px and 1180 px; nothing past 3x (`docs/decisions/`,
+   2026-10-01, "Scale is designed for three times the default limits;
+   nothing past that"). Look for a list or a fold that pushes the primary
+   action off the screen, rows or options with no defined order, a popup
+   that the on-screen keyboard hides at 360 px, and a sticky region
+   taller than the viewport. A missing state is a finding.
 2. Error scenarios: for each write path and stored shape in scope, what
    a failed write, offline, a conflict, a deleted record that it names, a
    stale tab and a revert do to the stored data, and the recovery path.

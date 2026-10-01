@@ -707,6 +707,9 @@ browser lists writable after the date.
   next request is sent to any list. Homebrew counts 100 own items, 100 cards
   and 20 sources per account (`homebrew_items_per_owner`,
   `homebrew_cards_per_owner`, `homebrew_books_per_owner`; "Homebrew").
+  Every surface is designed for up to 3x every default in this bullet and
+  nothing past that (`docs/decisions/`, 2026-10-01, "Scale is designed for
+  three times the default limits; nothing past that").
 - **The move**: when a signed-in reader's page has read the account and this
   browser holds lists, each list moves into the account as it is - entries,
   quantities, prices, both notes, the list notes and the money mode, every

@@ -133,12 +133,12 @@ path and no stored shape answers all four in one line.
    table: one row per state, what the screen shows, and its proof (a unit
    test, a golden state, a sweep width) or `unchanged`. The rows:
    - empty, one, many;
-   - at the limit, past it (the refusal), and at an override value, for
-     each collection and each per-record cap that the screen draws. The
-     limit is the `limit_defaults` row or the validator constant. The
-     override value is the per-call ceiling that `docs/specs/FEATURES.md`
-     names (1000 lists, 5000 entries of one list); where it names none,
-     name the value you assume;
+   - at the limit, one past it (the refusal), and at 3x the default, for
+     each collection and each per-record cap that the screen draws;
+     nothing past 3x. The limit is the `limit_defaults` row or the
+     validator constant; a validator constant has no 3x row, because no
+     override lifts it (`docs/decisions/`, 2026-10-01, "Scale is designed
+     for three times the default limits; nothing past that");
    - the longest allowed name or text;
    - each row at 360 px and at 1180 px (the outer widths of
      `tests/app/sweep.js`).
