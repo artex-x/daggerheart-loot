@@ -2,16 +2,15 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: blocked (planned; not dispatchable before 2026-10-26, and
-  Q1 is open)
+- Task status: blocked (planned; not dispatchable before 2026-10-26)
 - Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: yes - Q1 (plan.md section 4: what the
-  migration drops; recommended A: the function and the guard, the column
-  stays for now)
+- NEEDS_HUMAN_CONFIRMATION: no (Q1 answered by the owner 2026-10-01: B -
+  `B10.4` drops `move_legacy_list`, the `dhloot.move` guard,
+  `lists.legacy_fingerprint` and its index; plan.md section 4)
 - Branch: main (the release branch is chosen at dispatch)
 - Base / starting commit: to be set at dispatch (planned against
-  `930dc986`)
-- Pushed: no
+  `930dc986`; the plan itself is in `46cf7c04`)
+- Pushed: the plan only, in `46cf7c04`; no R10 code
 
 ## Completed
 - Batch name/id: none (planning pass 1, 2026-10-01).
@@ -25,7 +24,8 @@
   "states cases 13, 17, 22" are list page cases today, so `B10.2` ports
   them to account lists instead of deleting them.
 - Review: plan review required before B10.1 (trigger: public contract
-  change; a migration that drops a SECURITY DEFINER function), report
+  change; a migration that drops a SECURITY DEFINER function and a
+  column), report
   `issues/persist-10-legacy-removal/reviews/plan-B10.1.md`
 
 ## Verification
@@ -67,17 +67,14 @@
 ## Blockers
 - Date: R10 is dispatched only on or after 2026-10-26, after R7c, R7d, R8,
   R9, `debt-cleanup` and `persist-review`.
-- Q1 (blocks `B10.4`; answer before the plan review): A (recommended) drop
-  `move_legacy_list` and the `dhloot.move` guard, keep
-  `lists.legacy_fingerprint` and its index until a later schema release;
-  B also drop the column and the index (an R9 tab open across the deploy
-  fails its list reads until reload); C revoke EXECUTE only.
+- Order constraint for `B10.4` (Q1 B): it starts only after `B10.3` left no
+  client file that names `legacy_fingerprint`, and R10 reaches production
+  as one push holding both (plan.md section 12, "Order").
 
 ## Deferred
 - D64's «Выйти» half, D66 and D61: `debt-cleanup` (owner, 2026-10-01).
-- Dropping `lists.legacy_fingerprint` (Q1 A): the first schema release
-  dispatched two weeks or more after R10 is live; R10's closeout writes it
-  into the roadmap's section 17 carry list.
+- The Q1 decision file: `B10.4` writes it from plan.md section 4,
+  "Decision for `B10.4` to write".
 
 ## Notes
 - Mocks path: none (no new UI; the not-found page exists).

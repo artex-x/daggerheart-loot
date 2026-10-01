@@ -30,7 +30,11 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
     entry still open then. R10 removes only what it deletes anyway:
     `MoveNotice`'s half of D64, D24, D63, and D62 through the migration.
   - `STATE.md`: `dhloot.lists.v1` is never deleted; R10 deletes no key.
-- Open questions: plan.md, "Owner questions" (Q1, the migration scope).
+  - Owner, 2026-10-01, Q1 B: the migration drops `move_legacy_list`, the
+    `dhloot.move` guard in both limit triggers, `lists.legacy_fingerprint`
+    and its index; a tab still on the old build fails its list reads until
+    it reloads (accepted).
+- Open questions: none.
 
 ## Screenshot / attachment findings
 - None. R10 adds no UI: it removes controls and draws the existing

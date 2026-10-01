@@ -9,14 +9,14 @@
   `debt-cleanup`, `persist-review`, R10.
 - Batches: `B10.1` (implement-ready), `B10.2`, `B10.3`, `B10.4` (outlines).
   None started.
-- NEEDS_HUMAN_CONFIRMATION: yes - Q1 (the migration scope, section 4).
-  Q1 blocks `B10.4` only; it should be answered before the plan review so
-  the reviewer reads one migration shape.
+- NEEDS_HUMAN_CONFIRMATION: no. Q1 answered by the owner 2026-10-01:
+  option B - `B10.4` drops `move_legacy_list`, the `dhloot.move` guard in
+  both limit triggers, `lists.legacy_fingerprint` and its index (section 4).
 - Plan review: required before B10.1 (trigger: a public contract change -
   the `#/l/` route, `docs/fixtures/lists/`, `tests/contracts.js`,
   `CONTRACTS.md` section 3 and `llms.txt` in `B10.1`, `routes.json` in
-  `B10.3`; and a migration that drops a SECURITY DEFINER function in
-  `B10.4`)
+  `B10.3`; and a migration in `B10.4` that drops a SECURITY DEFINER
+  function and drops a column with its stored values)
 - Dispatch refresh (mandatory, section 6): the planner re-reads this plan
   against the tree at dispatch, because R7c-R9, `debt-cleanup` and
   `persist-review` land first.
@@ -76,8 +76,9 @@ In scope (owner decision 2026-09-27 and roadmap section 10 (c)):
   `MoveNotice` (with R5b's signed-out banner), `MoveStatus`, `LegacyMove`,
   `lib/legacy.ts`, the move's client path (`ListRepository.move`, its fake,
   contract case I, e2e F9), the date gates, `?today=`, the Lists tab.
-- The database: `move_legacy_list` and the `dhloot.move` guard in the two
-  limit triggers; the column per Q1.
+- The database (Q1 B): `move_legacy_list`, the `dhloot.move` guard in the
+  two limit triggers, `lists.legacy_fingerprint` and its unique index
+  `lists_legacy_fingerprint`.
 - `DEBT.md`: D24, D63 closed (their code is deleted); D62 closed by
   `B10.4`; D64 edited (its `MoveNotice` half goes with the component).
 - Every spec, README and help text that describes the removed behaviour.
@@ -148,33 +149,48 @@ implementer does not reopen them.
    pin). `routes.json`'s `#/lists` row gets `"tab": null`.
 10. **No decision file is written by this pass.** `B10.3` writes one for
     settled items 3, 4 and 6 and adds "Superseded in part by" lines to
-    `2026-09-26-the-test-builds-clock-is-pinned-before-the-cutoff.md`,
-    `2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md`
-    and `2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md`;
-    `B10.4` writes the Q1 decision. Each runs `node tools/decisions.js`.
+    `2026-09-26-the-test-builds-clock-is-pinned-before-the-cutoff.md`
+    and `2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md`
+    (`B10.4`'s decision adds the line to
+    `2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md`);
+    `B10.4` writes the Q1 decision (section 4, "Decision for `B10.4` to
+    write"). Each runs `node tools/decisions.js`.
 
 ## 4. Owner questions
 
-**Q1 (blocks `B10.4`). What does the migration drop?** `DEBT.md` D62 lets
-the plan choose.
+**Q1 - answered 2026-10-01 (owner): B.** `B10.4`'s migration drops
+`move_legacy_list`, the `dhloot.move` guard in `lists_limit` and
+`list_entries_limit`, the column `lists.legacy_fingerprint` and its unique
+index `lists_legacy_fingerprint`. The owner accepts that a tab still on the
+R9 build fails its account list reads until it reloads: its select names
+the column (`ports/supabase.ts`), and PostgREST refuses a select of a
+column that does not exist.
 
-- **A (recommended): drop `move_legacy_list` and the `dhloot.move` guard;
-  keep `lists.legacy_fingerprint` and its index for now.** Reason: a tab
-  that still runs the R9 build after R10's `migrate-prod` selects the
-  column in every account list read (`ports/supabase.ts` names it), so a
-  dropped column fails those reads until the tab reloads; a dropped
-  function fails only that tab's move, which keeps the browser lists and
-  says «нет связи». Trade-off accepted: one unused nullable column and a
-  partial index stay; the first release with a migration that is
-  dispatched at least two weeks after R10 is live drops them (written into
-  the roadmap's section 17 carry list by R10's closeout).
-- **B: drop the function, the guard, the column and the index.** All dead
-  schema goes now. Cost: the failure above for every old tab until reload,
-  and the fingerprints are gone (no reader needs them).
-- **C: revoke EXECUTE from `authenticated`, keep the function and the
-  column.** Smallest migration; D62 closes by its second test. Cost: dead
-  SECURITY DEFINER code stays, and the Security Advisor keeps its warning
-  row.
+Rejected, for the decision file: A (keep the column and the index until a
+later schema release - dead schema with no owner, and a second migration
+to remember); C (revoke EXECUTE only - dead SECURITY DEFINER code and its
+Security Advisor row stay).
+
+**Decision for `B10.4` to write** (`docs/decisions/<date of B10.4>-r10-drops-the-move-function-and-the-fingerprint-column.md`,
+template `.claude/templates/decision.template.md`, then `node
+tools/decisions.js`):
+
+- Task: `persist-10-legacy-removal` (owner, 2026-10-01, Q1 B).
+- Decision: R10's migration drops `move_legacy_list(uuid, text)`, the
+  `dhloot.move` guard in `lists_limit()` and `list_entries_limit()`,
+  `lists.legacy_fingerprint` and the index `lists_legacy_fingerprint`. The
+  R10 build stops selecting the column before the migration reaches
+  production (`B10.3` precedes `B10.4` in the one release commit, and CI's
+  `deploy` follows `migrate-prod` in the same run). A tab still on a
+  pre-R10 build fails its account list reads until it reloads; the owner
+  accepts that. No list or entry row is deleted; only the fingerprint
+  values go, which nothing reads after the move.
+- Rejected: keeping the column and the index until a later schema release
+  (dead schema with no owning release); revoking EXECUTE only (dead
+  SECURITY DEFINER code and its Security Advisor row stay).
+- Closes `DEBT.md` D62. Supersedes in part "A browser list moves through
+  one RPC that hashes its canonical text" (2026-09-26): the RPC and the
+  fingerprint are gone.
 
 No other owner question: settled items 3 and 4 follow from the owner's
 "the app never reads, draws or moves them"; they are named here so the
@@ -199,8 +215,9 @@ owner can object before the plan review.
   `dhloot.prefs.v1`, `sb-<ref>-auth-token*`. `dhloot.probe` and
   `StoragePort.works()` go with the storage warning (their only readers
   were `StorageNotice` and `LegacyMove`).
-- The database (Q1 A): `lists_limit` and `list_entries_limit` count every
-  insert; no function inserts past a limit.
+- The database (Q1 B): `lists_limit` and `list_entries_limit` count every
+  insert; no function inserts past a limit; `public.lists` has no
+  `legacy_fingerprint` column and no `lists_legacy_fingerprint` index.
 
 ## 6. What an earlier release may move (the dispatch refresh)
 
@@ -244,7 +261,7 @@ Costs: context.md, "Command costs" (one green pass, idle host). "check" is
 | `B10.1` | Retire `#/l/`: the codec, the compress port, the `#/l/` pages, buttons and rewriting, the contract fixtures and tests, the specs; `#/l/` draws the not-found page | check x2 (14), `contracts,dataint` (1), `build:test` (1), `app/contracts,app/states` (10), goldens compare then update (26), `sweep.js 360` (8), `check:built` (1) - about 61 min | required: public contract | - (first batch) |
 | `B10.2` | Port every test that uses a browser list only as a fixture onto an account list of the fake cloud; no production change | check x2 (14), `build:test` (1), `app/states` (5) - about 20 min | required: harness changes that later batches rely on (reviewer judges against `COVERAGE.md`) | a commit boundary the harness cannot reach: `B10.3` deletes browser lists, so its states and unit cases need account-list fixtures first; and a review not held in one pass (harness against `COVERAGE.md` vs production removal against the architecture boundaries, the `B12b`/`B12c` precedent) |
 | `B10.3` | Remove browser lists and the move: `ListStore`, `LegacyMove`, the three notices, `legacy.ts`, the date gates, `?today=`, the Lists tab, the move's client path, the unconfigured build's lists | check x2 (14), `check:built` and the configured budget (2), `build:test` (1), filter group `app/print,app/contracts,app/states,app/typo,app/hues,stub` (8), goldens compare then update (26), `sweep.js 360` (8), `npm run e2e` (2) - about 61 min | required: UI changes on every page (tab bar, banner), a public contract fixture (`routes.json`) | a different route and filter set from `B10.1` (`#/lists*`, the header on every route, versus `#/l/*` and the contract suites), and a review not held in one pass |
-| `B10.4` | The migration (Q1): drop `move_legacy_list` and the `dhloot.move` guard (and per Q1 the column), its reversal, `tests/db/`, D62 | check (7), `check:db` (9); after the approve `db:push --project test` (1) and `npm run e2e` (2) - about 19 min | required: a migration that drops a SECURITY DEFINER function | a commit boundary the harness cannot reach: layer 4 (contract case I, e2e F9) calls `move_legacy_list` until `B10.3` removes the client path; and the schema batch rule (`orchestrate.prompt.md`, "Schema batches") |
+| `B10.4` | The migration (Q1 B): drop `move_legacy_list`, the `dhloot.move` guard, `lists.legacy_fingerprint` and its index; its reversal, `tests/db/`, D62 | check (7), `check:db` (9); after the approve `db:push --project test` (1) and `npm run e2e` (2) - about 19 min | required: a migration that drops a SECURITY DEFINER function and a column | a commit boundary the harness cannot reach: layer 4 (contract case I, e2e F9) calls `move_legacy_list`, and the client selects `legacy_fingerprint`, until `B10.3` removes both; and the schema batch rule (`orchestrate.prompt.md`, "Schema batches") |
 
 Total gate cost: about 161 minutes for one green pass of the four batches,
 plus the closeout's check (~7 min) - about 2 h 50 min, before review and
@@ -620,8 +637,10 @@ Objective: settled items 3-9; the app holds account lists only.
   `hideWarn`, `WARN_KEY`; `newListTarget` answers `'cloud' | 'prompt' |
   'wait'` and the list surfaces are not drawn with no cloud.
 - Ports: `StoragePort.works` and `dhloot.probe`; `ListRepository.move`
-  (`types.ts`, `supabase.ts`, `fake-cloud.ts`, their tests); `ListRow`
-  and the `supabase.ts` select string lose `legacy_fingerprint`;
+  (`types.ts`, `supabase.ts`, `fake-cloud.ts`, their tests); `ListRow`,
+  the `supabase.ts` select string and every fake row lose
+  `legacy_fingerprint` - a precondition of `B10.4`'s column drop (Q1 B):
+  after `B10.3` no client file names the column;
   `cloud.contract.ts` loses `moveCases` (case I is retired, its letter not
   reused) and the signed-out move assert; `tests/e2e/flows.mjs` loses F9
   (header renumbered in prose only: "F9 retired at R10") and its
@@ -669,57 +688,127 @@ Objective: settled items 3-9; the app holds account lists only.
   `B10.4`.
 - One decision file (section 3, item 10), `node tools/decisions.js`.
 - Acceptance: the section 6 grep prints only `tests/db/legacy-move.test.mjs`,
-  the two migrations, `usage.mjs`'s comment and `.claude/README.md` rows
-  (all `B10.4`'s); nine tabs in every golden; no golden or states case sets
+  the applied migrations and reversals, `usage.mjs`'s comment and
+  `.claude/README.md` rows (all `B10.4`'s, the applied files locked);
+  `git grep -n legacy_fingerprint -- app/src tests/e2e tests/app tools`
+  prints nothing; nine tabs in every golden; no golden or states case sets
   `today` or seeds a `dhloot.*` list key; `npm run e2e` passes without F9
   and case I; `check:built` reports the unconfigured and configured sizes
   (recorded in the handoff).
 
-## 12. Batch B10.4 - the migration (outline; shape per Q1)
+## 12. Batch B10.4 - the migration (outline; Q1 B)
 
-Objective: no database function inserts past a count limit, and nothing of
-the move is left that a client could call.
+Objective: no database function inserts past a count limit, nothing of the
+move is left that a client could call, and the move's fingerprint column is
+gone.
+
+**Order (the precondition of the column drop).** A client that selects
+`legacy_fingerprint` fails every account list read once the column is
+gone. So:
+
+1. `B10.3` lands first: after it, `git grep -n legacy_fingerprint --
+   app/src tests/app tests/e2e tools` prints nothing (`B10.3`'s
+   acceptance). `B10.4` starts only on that tree; its first step re-runs
+   the grep and stops if anything is printed.
+2. The test project: `B10.4`'s `db:push --project test` runs after the
+   review approves, with `B10.3`'s client in the same tree, so the `npm
+   run e2e` that follows exercises the R10 client against the dropped
+   column. An e2e run of an older commit against the test project fails
+   from then on; that is expected and is not re-run.
+3. Production: R10 ships as one commit and one push (`CLAUDE.md`, "one
+   commit per task"), so the bundle `deploy` publishes is the R10 build,
+   which never reads the column. CI runs `migrate-prod` before `deploy`
+   in the same workflow run; between the two, and in every tab still on
+   the R9 build until it reloads, account list reads fail. The owner
+   accepted this (Q1 B). A cloud release pushes branch commits only to its
+   branch; nothing reaches production before the squash-merge onto `main`.
+4. Never push `B10.4`'s migration to production without `B10.3`'s client
+   in the same deploy: a split push of the release is refused here.
+
+**Steps.**
 
 - `supabase/migrations/<ts>_drop_legacy_move.sql` (a timestamp after every
-  applied one): `drop function public.move_legacy_list(uuid, text);`
-  `create or replace function public.lists_limit()` and
-  `public.list_entries_limit()` with their current bodies (the first from
-  `20260925130400_legacy_move.sql`, the second from
-  `20260930121000_list_entries_statement_triggers.sql`) less the
-  `dhloot.move` guard, the `revoke execute` lines kept. Q1 B adds `drop
-  index public.lists_legacy_fingerprint; alter table public.lists drop
-  column legacy_fingerprint;`. Q1 C is instead `revoke execute on function
-  public.move_legacy_list(uuid, text) from authenticated;` alone.
-- `supabase/reversals/<same name>`: re-creates the function as
-  `20260925130500_legacy_move_conflict.sql` made it (body, grants), and the
-  two limit functions with the guard (Q1 B: the column with its check and
-  the index first). The reversibility gate compares the schema dumps.
-- `tests/db/legacy-move.test.mjs` is replaced by a smaller file
-  `tests/db/legacy-move-dropped.test.mjs`: a signed-in call of
-  `move_legacy_list` is refused as an unknown function (Q1 C: refused for
-  lack of EXECUTE), and with `dhloot.move` set on in the transaction a
-  list past `lists_per_owner` and an entry past `entries_per_list` are
-  still refused (`P0001`, `limit: ...`). `tests/db/harness.test.mjs`'s
-  pinned EXECUTE list loses the function (if it names it).
-- `tools/supabase/usage.mjs` line 115 comment; `.claude/README.md`
-  ("Expected Security Advisor warnings": the row and the counts become
-  "8 warnings" after R10's `migrate-prod`, to be read back by the owner;
-  "Usage monitoring": the "above 100 %" clause names the lists that moved
-  before R10); `COVERAGE.md` layer 3 rows; `DEBT.md` deletes D62 and the
-  "Legacy removal" section if it is empty; the Q1 decision file and `node
-  tools/decisions.js`.
-- Flow: `orchestrate.prompt.md`, "Schema batches" - the implementer stops
-  after `rtk npm run check`, `npm run check:db` (PowerShell tool) and the
-  amend; after the review approves, `node --env-file=.env.test.local
-  tools/supabase/db-push.mjs --project test --yes`, `npm run e2e`, the
-  handoff amend.
+  applied one):
+  `drop function public.move_legacy_list(uuid, text);`;
+  `create or replace function public.lists_limit()` with the body of
+  `20260925130400_legacy_move.sql` less the `dhloot.move` guard, and
+  `create or replace function public.list_entries_limit()` with the body
+  of `20260930121000_list_entries_statement_triggers.sql` less the guard
+  (the triggers stay; the `revoke execute ... from public, anon,
+  authenticated` lines repeated); `drop index
+  public.lists_legacy_fingerprint;`; `alter table public.lists drop column
+  legacy_fingerprint;` (drops its check with it). A two-line header
+  comment cites `docs/decisions/` (the Q1 decision file).
+- `supabase/reversals/<same name>`: in reverse order - `alter table
+  public.lists add column legacy_fingerprint text check
+  (legacy_fingerprint ~ '^[0-9a-f]{64}$');`, the unique partial index
+  `lists_legacy_fingerprint on public.lists (owner_id, legacy_fingerprint)
+  where legacy_fingerprint is not null`, the two limit functions with the
+  guard, and the function as `20260925130500_legacy_move_conflict.sql`
+  made it (body, `revoke` from `public, anon`, `grant` to
+  `authenticated`). Copy each text from the applied files, never retype
+  it. The values are not restored (the reversal brings back the shape;
+  the reversibility gate compares `pg_dump --schema-only`).
+- `tests/db/legacy-move.test.mjs` is replaced by
+  `tests/db/legacy-move-dropped.test.mjs` (`node:test`, the roles helper
+  the other files use): a signed-in call of `move_legacy_list` is refused
+  as an unknown function (`42883`); `public.lists` has no column
+  `legacy_fingerprint` (`pg_attribute`) and no index
+  `lists_legacy_fingerprint` (`pg_class`); with `set_config('dhloot.move',
+  'on', true)` in the transaction, a list past `lists_per_owner` and an
+  entry past `entries_per_list` are still refused (`P0001`, `limit:
+  lists_per_owner`, `limit: entries_per_list`). `tests/db/harness.test.mjs`
+  and any other file that pins EXECUTE grants or the `lists` columns lose
+  the function and the column (`git grep -n -E
+  "move_legacy_list|legacy_fingerprint" -- tests/db`).
+- `tools/supabase/usage.mjs` line 115 comment (no function passes a limit
+  since R10; lists above 100 % are those moved before it).
+- `.claude/README.md`: "Expected Security Advisor warnings" - the
+  `move_legacy_list` row goes, and the paragraph's counts are re-counted
+  from the table that remains (expected after R10's `migrate-prod`: 0
+  errors, 8 warnings); the owner reads them back (section 14);
+  "Usage monitoring" - the "above 100 %, which `move_legacy_list` allows"
+  clause becomes "above 100 %, for lists moved in before R10".
+- `COVERAGE.md`: the layer 3 row of `legacy-move.test.mjs` becomes the new
+  file's; layer 4's contract and flow rows already lost case I and F9 in
+  `B10.3`.
+- `DEBT.md`: delete D62, and the "Legacy removal" section with it when it
+  is empty (D61 belongs to `debt-cleanup`; if it is still there, name it to
+  the owner and leave it).
+- The Q1 decision file (section 4, "Decision for `B10.4` to write"); add
+  "Superseded in part by" that file to
+  `docs/decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md`;
+  `node tools/decisions.js`.
+
+**Acceptance.**
+
+- `git grep -n -E "move_legacy_list|legacy_fingerprint|dhloot\.move" -- app/src tests tools .claude/README.md docs/specs`
+  prints only the new migration, its reversal, the new test file, and the
+  applied migrations and reversals (locked history).
+- `npm run check:db` passes, including the reversibility walk (all up, all
+  down in reverse, all up, schema dumps equal).
+- After the approve: `db:push --project test` applies the file and `npm
+  run e2e` passes (contract cases without I, flows without F9).
+- `DEBT.md` holds no D62.
+
+**Flow.** `orchestrate.prompt.md`, "Schema batches": the implementer stops
+after `rtk npm run check`, `npm run check:db` (PowerShell tool) and the
+amend; after the review approves, `node --env-file=.env.test.local
+tools/supabase/db-push.mjs --project test --yes`, `npm run e2e`, the
+handoff amend.
 
 ## 13. Risks, assumptions, deferred
 
 - Risk: an earlier release moves code this plan names (section 6). The
   dispatch refresh is mandatory, not optional.
-- Risk: a tab of the R9 build open across R10's deploy. Q1 A limits the
-  harm to a failed move status in that tab; the browser lists stay.
+- Risk (accepted by the owner, Q1 B): a tab of the R9 build open across
+  R10's `migrate-prod` fails its account list reads («Не получилось
+  загрузить списки аккаунта.» and «Повторить») until it reloads, and its move fails
+  too; no row is lost. The window for a fresh page load is the time from
+  `migrate-prod` to `deploy` in one CI run. Mitigation: section 12, "Order".
+- Risk: the fingerprint values are lost for good (a column drop). Nothing
+  reads them after the move; the nightly backups of the last 30 days keep
+  them (`.claude/README.md`, "Backups and restore").
 - Risk: `B10.2`'s port loses coverage silently. The per-file coverage
   thresholds of `npm run check` catch a file that drops below its line;
   the reviewer compares the deleted and ported case lists.
@@ -729,15 +818,18 @@ the move is left that a client could call.
   move did not carry; the owner accepted this (decision 2026-09-27).
 - Assumption: `debt-cleanup` runs before R10 and takes D61, D64's «Выйти»
   half, D65-D73 as they stand then.
-- Deferred, named to the owner at closeout, not built: dropping
-  `lists.legacy_fingerprint` (Q1 A); a clean-up of `StoragePort`'s keyed
-  `onExternalChange` signal, which only `debt-cleanup`'s D61 fix may use.
+- Deferred, named to the owner at closeout, not built: a clean-up of
+  `StoragePort`'s keyed `onExternalChange` signal, which only
+  `debt-cleanup`'s D61 fix may use.
 
 ## 14. Owner steps at R10's closeout
 
-1. Before the push: Q1 answered and its decision file written.
-2. After `migrate-prod` and `deploy`: open an old `#/l/` link on a phone and
-   a desktop - the not-found page, the address kept; the tab bar has nine
-   sections; a signed-in account's lists, share links and requests work.
+1. Before the push: the Q1 decision file is in the commit, and the release
+   commit holds `B10.3` and `B10.4` together (section 12, "Order").
+2. After `migrate-prod` and `deploy`: reload every open tab of the site
+   (an R9 tab fails its list reads until then); open an old `#/l/` link on
+   a phone and a desktop - the not-found page, the address kept; the tab
+   bar has nine sections; a signed-in account's lists, share links and
+   requests work.
 3. Re-run the Security Advisor on both projects and confirm the warning
    count `B10.4` wrote into `.claude/README.md`.
