@@ -1,5 +1,6 @@
 # 2026-09-27 - A plan that changes schema, contracts, stored data or sync is reviewed first
 
+- Amended by "A plan review's fix-then-continue is applied once, with no second look" (2026-10-01): a fix-then-continue report counts once the plan names it as applied.
 - Task: `process-guards` (owner's rule, 2026-09-26; mechanism by the planner, 2026-09-27).
 - Decision: a plan that adds a migration or a SECURITY DEFINER function,
   changes a public contract, can lose stored data, or adds a write or sync

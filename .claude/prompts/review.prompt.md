@@ -124,6 +124,12 @@ The plan, not a diff: `plan.md` Status reads `Plan review: required before
 - Batch sizing against the gates (`.claude/README.md`, "Batch size and the
   fixed cost of a run")
 
+A plan review gets one remediation cycle. On `fix-then-continue` the
+planner applies the findings and the implementer follows with no second
+look, so write each finding so the planner can apply it without design
+work: the section, the defect, the change. A finding that needs a redesign
+makes the verdict `replan`.
+
 ## Output format
 First write the full report to `<TASK_DIR>/reviews/<batch>.md` (a plan
 review: `plan-<batch>.md`; a second look: `<name>-2.md`) from

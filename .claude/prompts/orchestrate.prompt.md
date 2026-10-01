@@ -228,7 +228,8 @@ its full report to `issues/<id>/reviews/<batch>.md` (a plan review:
 `.claude/templates/review.template.md`; `edit-guard.mjs` allows it that one
 path. You keep the register `issues/<id>/reviews.md`, one row per finding:
 the id `<batch>-<n>`, the severity, `local` or `deferred-scope`, and the
-status (`open`, `fixed <batch>`, `deferred`, `DEBT D<n>` or `named`). When
+status (`open`, `fixed <batch>`, `fixed plan` for a finding applied to the
+plan, `deferred`, `DEBT D<n>` or `named`). When
 the report file is missing after a review (the reviewer could not write),
 write the returned text there word for word before anything else. A finding
 that lives only in your context dies with the session - 2026-09-17: four
@@ -351,18 +352,38 @@ feed, an import).
   not required (no trigger fired)`.
 - A `required` line: dispatch the reviewer with `Scope: plan before
   <batch>`; it writes `issues/<id>/reviews/plan-<batch>.md`.
-- approve -> the implementer. fix-then-continue or replan -> resume the
-  planner once, then the same reviewer for a second look
-  (`plan-<batch>-2.md`). Still blocked -> ask the human.
-- `agent-guard.mjs` denies the implementer dispatch while the line is
-  missing, or while no `plan-<batch>*.md` reads `Verdict: approve`; the
-  deny names the file (`docs/decisions/`, 2026-09-27, "A plan that changes
-  schema, contracts, stored data or sync is reviewed first").
+- approve -> the implementer.
+- fix-then-continue -> resume the planner ONCE with the report. It applies
+  every finding and writes `- Plan review findings applied:
+  reviews/plan-<batch>.md` (the report's own name; in `plan.md` the line
+  stays on one line) in `plan.md` Status, with one sub-bullet per finding:
+  its id, the section, the change. Check that change against the report -
+  every finding has its change and nothing else moved (`git diff <Reviewed
+  sha> -- issues/<id>/plan.md issues/<id>/handoff.md` when the plan was
+  tracked at that commit) - then dispatch the implementer. No second look: a
+  bad fix surfaces as an implementer deviation, and the batch review judges
+  it. A finding left unapplied goes back to the planner in the same cycle.
+- replan -> resume the planner ONCE, then the same reviewer for a second
+  look (`plan-<batch>-<n>.md`). Its approve -> the implementer; its
+  fix-then-continue -> the step above, with no third look; its replan ->
+  ask the human.
+- A second look after fix-then-continue runs only on request: the
+  human's, or yours when the applied change does more than the findings
+  name (a new trigger, a redesigned batch, a changed gate set). The newest
+  report then decides.
+- `agent-guard.mjs` denies the implementer dispatch while the `- Plan
+  review:` line is missing. Otherwise it reads the newest `plan-<batch>*.md`
+  with a verdict: approve, or a fix-then-continue that an applied line
+  names, lets the implementer through; anything else is denied, and the
+  deny names what is missing (`docs/decisions/`, 2026-09-27, "A plan that
+  changes schema, contracts, stored data or sync is reviewed first";
+  2026-10-01, "A plan review's fix-then-continue is applied once, with no
+  second look").
 
 ## Procedure (feature path)
 1. Ensure context.md exists/refreshed for TASK
 2. If no usable plan/handoff for TASK -> run planner
-2b. If `plan.md` Status reads `Plan review: required before <batch>` and no `reviews/plan-<batch>*.md` approves -> run reviewer with that scope first (**Plan review**, above)
+2b. If `plan.md` Status reads `Plan review: required before <batch>` and the newest `reviews/plan-<batch>*.md` neither approves nor is a fix-then-continue that a `Plan review findings applied:` line names -> run the reviewer with that scope (after the planner for a replan), or the planner alone for an unapplied fix-then-continue, first (**Plan review**, above)
 3. HARD STOP: if planner reports NEEDS_HUMAN_CONFIRMATION: yes, stop and ask the human. Do NOT dispatch implementer until answered and planner/handoff updated
 4. Run implementer for the next batch only (after tree preflight)
 5. Run reviewer when required by the risk rules above

@@ -4287,7 +4287,7 @@ async function testReviewHead() {
   }
 }
 
-// ---------- agent-guard.mjs: the plan review before an implementer (#288-#292) ----------
+// ---------- agent-guard.mjs: the plan review before an implementer (#288-#292, #305-#307) ----------
 
 function agentPayload(subagentType, prompt) {
   return {
@@ -4372,12 +4372,19 @@ function testAgentGuard() {
 
     // #290 deny, required and not approved
     const required = '- Plan review: required before B1 (trigger: a migration)\n';
-    for (const [label, write, seen] of [
+    const unappliedFragments = [
+      'reviews/plan-B1.md',
+      'plan-B1.md: fix-then-continue',
+      'Plan review findings applied: reviews/plan-B1.md',
+      'dispatch tool: Agent'
+    ];
+    for (const [label, write, seen, fragments] of [
       ['no reviews/ directory', () => {}, 'seen: none'],
       [
         'plan-B1.md reads fix-then-continue',
         () => review('plan-B1.md', 'Verdict: fix-then-continue\n'),
-        'plan-B1.md: fix-then-continue'
+        'plan-B1.md: fix-then-continue',
+        unappliedFragments
       ],
       [
         'plan-B1.md has the heading form',
@@ -4394,11 +4401,10 @@ function testAgentGuard() {
       write();
       const result = implementer();
       check(`#290 agent-guard denies: ${label}`, isDeny(result), result.stdout);
+      const expected = fragments || ['reviews/plan-B1.md', seen, '(dispatch tool: Agent)'];
       check(
         `#290 reason names the file, the seen list and the tool: ${label}`,
-        denyReason(result).includes('reviews/plan-B1.md') &&
-          denyReason(result).includes(seen) &&
-          denyReason(result).includes('(dispatch tool: Agent)'),
+        expected.every((fragment) => denyReason(result).includes(fragment)),
         denyReason(result)
       );
     }
@@ -4443,6 +4449,154 @@ function testAgentGuard() {
       check('#292 the unapproved second line denies', isDeny(result), result.stdout);
       check(
         '#292 the reason names plan-B3.md',
+        denyReason(result).includes('reviews/plan-B3.md') &&
+          !denyReason(result).includes('reviews/plan-B1.md'),
+        denyReason(result)
+      );
+    }
+
+    const applied = (name) => `- Plan review findings applied: reviews/${name}\n`;
+
+    // #305 silent, the newest report approves or is an applied fix-then-continue
+    for (const [label, status, write] of [
+      [
+        'an applied fix-then-continue',
+        required + applied('plan-B1.md'),
+        () => review('plan-B1.md', 'Verdict: fix-then-continue\n')
+      ],
+      [
+        'an applied line with an issues/ prefix, backticks and trailing text',
+        `${required}- Plan review findings applied: \`issues/x/reviews/plan-B1.md\` (2026-10-01, findings 1-3)\n`,
+        () => review('plan-B1.md', 'Verdict: fix-then-continue\n')
+      ],
+      [
+        "a replan's second look reads fix-then-continue and is applied",
+        required + applied('plan-B1-2.md'),
+        () => {
+          review('plan-B1.md', 'Verdict: replan\n');
+          review('plan-B1-2.md', 'Verdict: fix-then-continue\n');
+        }
+      ],
+      [
+        'the numerically newest report approves (-10 after -9)',
+        required,
+        () => {
+          review('plan-B1-9.md', 'Verdict: replan\n');
+          review('plan-B1-10.md', 'Verdict: approve\n');
+        }
+      ],
+      [
+        'a newer report without a Verdict: line is skipped',
+        required + applied('plan-B1.md'),
+        () => {
+          review('plan-B1.md', 'Verdict: fix-then-continue\n');
+          review('plan-B1-2.md', 'Draft.\n');
+        }
+      ],
+      [
+        'an applied fix-then-continue under a batch id with a dot',
+        '- Plan review: required before B11.1 (trigger: a migration)\n' +
+          applied('plan-B11.1.md'),
+        () => review('plan-B11.1.md', 'Verdict: fix-then-continue\n')
+      ]
+    ]) {
+      plan(status);
+      write();
+      const result = implementer();
+      check(`#305 agent-guard silent: ${label}`, isSilent(result), result.stdout);
+    }
+
+    // #306 deny, the newest report is a replan or an unapplied fix-then-continue
+    for (const [label, status, write, fragments] of [
+      [
+        'a replan with an applied line naming it',
+        required + applied('plan-B1.md'),
+        () => review('plan-B1.md', 'Verdict: replan\n'),
+        ['reads "Verdict: replan"', 'second look', 'reviews/plan-B1.md', 'dispatch tool: Agent']
+      ],
+      [
+        'an older approve does not pass a newer replan',
+        required,
+        () => {
+          review('plan-B1.md', 'Verdict: approve\n');
+          review('plan-B1-2.md', 'Verdict: replan\n');
+        },
+        ['reviews/plan-B1-2.md', 'replan']
+      ],
+      [
+        'an applied line naming an older report',
+        required + applied('plan-B1.md'),
+        () => {
+          review('plan-B1.md', 'Verdict: fix-then-continue\n');
+          review('plan-B1-2.md', 'Verdict: fix-then-continue\n');
+        },
+        ['Plan review findings applied: reviews/plan-B1-2.md']
+      ],
+      [
+        'an applied line outside Status does not count',
+        required,
+        () => {
+          review('plan-B1.md', 'Verdict: fix-then-continue\n');
+          appendFile('issues/x/plan.md', `\n${applied('plan-B1.md')}`);
+        },
+        ['findings applied']
+      ],
+      [
+        'an applied line naming another batch',
+        required + applied('plan-B3.md'),
+        () => review('plan-B1.md', 'Verdict: fix-then-continue\n'),
+        ['Plan review findings applied: reviews/plan-B1.md']
+      ],
+      [
+        'an applied line with no report',
+        required + applied('plan-B1.md'),
+        () => {},
+        ['reviews/plan-B1.md', 'Verdict: approve', 'seen: none']
+      ],
+      [
+        'the numerically newest report is a replan (-10 after -9)',
+        required,
+        () => {
+          review('plan-B1-9.md', 'Verdict: approve\n');
+          review('plan-B1-10.md', 'Verdict: replan\n');
+        },
+        ['reviews/plan-B1-10.md', 'replan']
+      ]
+    ]) {
+      plan(status);
+      write();
+      const result = implementer();
+      check(`#306 agent-guard denies: ${label}`, isDeny(result), result.stdout);
+      check(
+        `#306 reason names the report and what is missing: ${label}`,
+        fragments.every((fragment) => denyReason(result).includes(fragment)),
+        denyReason(result)
+      );
+    }
+
+    // #307 two required lines, the first an applied fix-then-continue
+    const twoRequired =
+      `${required}- Plan review: required before B3 (trigger: a sync protocol)\n` +
+      applied('plan-B1.md');
+    plan(twoRequired);
+    review('plan-B1.md', 'Verdict: fix-then-continue\n');
+    review('plan-B3.md', 'Verdict: approve\n');
+    {
+      const result = implementer();
+      check(
+        '#307 agent-guard silent: an applied fix-then-continue and an approve',
+        isSilent(result),
+        result.stdout
+      );
+    }
+    plan(twoRequired);
+    review('plan-B1.md', 'Verdict: fix-then-continue\n');
+    review('plan-B3.md', 'Verdict: fix-then-continue\n');
+    {
+      const result = implementer();
+      check('#307 the unapplied second line denies', isDeny(result), result.stdout);
+      check(
+        '#307 the reason names plan-B3.md only',
         denyReason(result).includes('reviews/plan-B3.md') &&
           !denyReason(result).includes('reviews/plan-B1.md'),
         denyReason(result)

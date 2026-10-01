@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-01 - [A plan review's fix-then-continue is applied once, with no second look](decisions/2026-10-01-a-plan-reviews-fix-then-continue-is-applied-once.md)
 - 2026-10-01 - [An RTK command piped into head or tail is denied when RTK bounds it](decisions/2026-10-01-an-rtk-command-piped-into-head-or-tail.md)
 - 2026-10-01 - [Homebrew keeps the way open to shared books without building them](decisions/2026-10-01-homebrew-keeps-the-way-open-to-shared-books.md)
 - 2026-10-01 - [Homebrew sections stay in the source row: no sections table, no parent books](decisions/2026-10-01-homebrew-sections-stay-in-the-source-row.md)
