@@ -70,7 +70,7 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
   and «Добавить раздел», which this release renames), `tests/app/inventory.js`.
 
 ## Command costs
-As in `issues/persist-7c-homebrew-relations/context.md`, "Command costs";
+As in `issues/persist-7d-homebrew-files/context.md`, "Command costs";
 a golden shard about 3.2 min, four shards 13 min, compare then re-seed
 26 min.
 
@@ -93,3 +93,30 @@ a golden shard about 3.2 min, four shards 13 min, compare then re-seed
 - F2: keep both labels and write the rule - «Отмена» discards what was
   typed; «Закрыть» folds a panel and keeps it. A control that breaks the
   rule is fixed in `B7f.1`.
+
+## Note from the `quality-checklists` task (2026-10-01)
+- The planner and review prompts cite `FEATURES.md` "Consistency rules" by
+  that exact name (under "Chrome"). `B7f.1` writes the subsection with this
+  name; the refresh before dispatch keeps it.
+
+## Design target for scale (owner, 2026-10-01)
+- Plans size for up to 2x-3x the default limits (target 3x: 150 lists, 300
+  entries per list, 30 pending requests per list, 60 sources, 300 items,
+  300 cards); anything only reachable past that is out of scope. The
+  `scale-challenge` findings F3, F4, F7, F8, F9 are judged against it.
+
+## Notes from R7c's closeout (2026-10-01)
+- "+ Новый комплект" and "+ Новая карта правил" (the editor's «Комплект»
+  select option, the «Карты» create buttons) carry a "+": rule 9 and step 9
+  decide. `hbSourcesN` exists with the exact text of this plan.
+- The card delete confirms end with «Отменить нельзя.» (the rule 3 grep).
+- Finding 1's source counter («N источников из M») goes on the «Источники»
+  summary. The «Карты» summary counts without «из M»: no store field reads
+  `homebrew_cards_per_owner`, so R7f decides the counter and a `cardLimit`.
+- A card edit saves with no toast. `hbCreateFailed` says «нажмите «Создать»
+  ещё раз», but the card form's button reads «Создать комплект» / «Создать
+  карту».
+- The relation fold's label turns to «свернуть» when open, where the
+  requests panel's fold keeps its label: the fold rule decides between them.
+- The new Russian tables-help sentence about the «Хоумбрю» group uses an ASCII
+  hyphen beside the paragraph's em dashes.

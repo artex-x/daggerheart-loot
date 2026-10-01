@@ -94,7 +94,7 @@ Moved here from R7c's `context.md`.
   later rewords `quickAdded` (audit #5); R7e keeps today's text.
 
 ## Command costs
-As in `issues/persist-7c-homebrew-relations/context.md`, "Command costs"
+As in `issues/persist-7d-homebrew-files/context.md`, "Command costs"
 (`.claude/README.md`, "Batch size and the fixed cost of a run").
 
 ## Constraints
@@ -130,3 +130,43 @@ As in `issues/persist-7c-homebrew-relations/context.md`, "Command costs"
   on «Мои предметы» (no move).
 - #10: keep batch-only delete for homebrew rows, as the spec says.
 - #13 (share naming): left to R10, which deletes browser lists and the «Ссылка себе» / «Ссылка игрокам» labels; R10 checks that only «для игроков» / «для мастера» remain.
+
+## Scale challenge placement (owner, 2026-10-01)
+- F5 joins R7e: a list row renders its note box only when it is open or the
+  entry has a note, and no effect re-walks every textarea per keystroke
+  (`ListPage.svelte`). Report: `issues/persist-7f-consistency/scale-challenge.md`.
+- F5's paging half is not placed; F9 (orphan item, counters) is R7f's.
+
+## F5 facts (planner, 2026-10-01, at `bb37a572`)
+- `ListPage.svelte` (no R7c edit): `boxHidden(id, meta)` = the person's
+  `noteOpen` choice, else "no note"; `.rnote` with `hidden=` about line
+  1367; the `items` effect over `.lnote textarea, .rnote textarea` about
+  766-777; `items` is rebuilt on every edit, so every keystroke re-walks.
+- `toggleNote` queries `.rnote` before `tick()`; `clearNote`'s undo
+  dispatches `input` on the held textarea. With an unmounted box both
+  break: Svelte delegates `input` to the root, so a detached textarea's
+  event reaches nothing. The existing clear test uses `cc1`, which also
+  has a GM note, so its box never goes.
+- The hand-resize flag `data-manual` lives on the textarea node; a hidden
+  box kept it across a fold.
+- Goldens are accessibility-tree text at 1100 px, and hidden nodes are not
+  in the tree, so F5 moves no golden. 29 inventory states start `#/lists/`
+  (14 account ones under `4000-8000`), 13 start `#/l/`.
+- `tests/app/sweep.js` `PAGES` holds no account list page (its signed-in
+  pages are tables, search and the editor) and runs no `enter`.
+- `SelBar` is `position: sticky` after `main` (`Shell.svelte`), so at the
+  maximum scroll it rests below `main`'s last content.
+- `cloudLists.add` has no entry-limit pre-check: at a full list the
+  optimistic entry shows, the buffer's refusal toasts `limitText` about 2
+  s later (replacing the success toast) and the re-read removes it.
+- Owner, 2026-10-01: limits raised that far are not a concern. F5's paging
+  half («Показать ещё» past about 1400 rows) is dropped - no release, no
+  `DEBT.md` entry.
+- Owner refinement, 2026-10-01: plans size for up to 2x-3x the default
+  limits (design target 3x: 150 lists, 300 entries per list, 30 pending
+  requests per list, 300 items, 300 cards); nothing past that.
+- Before R7e's dispatch (owner, 2026-10-01): the process task `scale-target`
+  runs right after R7c's push - a decision (the 3x design target), one
+  sentence in `FEATURES.md` "Limits", and the standing-checks wording in
+  `plan.prompt.md` and `review.prompt.md` ("at the limit and at 3x the
+  default; nothing past that").
