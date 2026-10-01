@@ -382,8 +382,8 @@ describe('list_entries checks', () => {
     ],
     ['a duplicate item_key in one list', { item_key: 'ci1' }, /duplicate key/],
     [
-      'a homebrew snapshot over 32768 bytes',
-      { source: 'homebrew', snapshot: { text: 'x'.repeat(32800) } },
+      'a homebrew snapshot over 131072 bytes',
+      { source: 'homebrew', snapshot: { text: 'x'.repeat(131100) } },
       /list_entries_snapshot_size/
     ]
   ]) {

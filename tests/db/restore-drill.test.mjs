@@ -153,6 +153,7 @@ describe('restoreDump', () => {
     assert.deepEqual(await limitDefaults(), [
       'entries_per_list=100',
       'homebrew_books_per_owner=20',
+      'homebrew_cards_per_owner=100',
       'homebrew_items_per_owner=100',
       'lists_per_owner=50',
       'pending_requests_per_list=10',

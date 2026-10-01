@@ -277,12 +277,15 @@ function subtitle(it, lang) {
    forward, the "made from" direction is derived so the halves cannot drift. */
 const ALL = [].concat(...Object.values(DATA));
 const BY_ID = {};
-ALL.forEach((it) => {
+EQ.concat(ALL).forEach((it) => {
   BY_ID[it.id] = it;
 });
+// A target id -> the records whose `craft` names it, in the app's order.
 const CRAFTED_FROM = {};
-ALL.forEach((it) => {
-  if (it.craft && BY_ID[it.craft]) CRAFTED_FROM[it.craft] = it.id;
+EQ.concat(ALL).forEach((it) => {
+  new Set(it.craft || []).forEach((id) => {
+    if (BY_ID[id]) (CRAFTED_FROM[id] = CRAFTED_FROM[id] || []).push(it);
+  });
 });
 
 const SET_MEMBERS = {};
@@ -303,10 +306,11 @@ function setLines(it, lang) {
 function craftLines(it, lang) {
   const t = TEXT[lang];
   const out = [];
-  const from = BY_ID[CRAFTED_FROM[it.id]];
-  if (from) out.push(t.craftFrom + nameOf(from, lang));
-  const into = BY_ID[it.craft];
-  if (into) out.push(t.craftInto + nameOf(into, lang));
+  const names = (list) => list.map((r) => nameOf(r, lang)).join(', ');
+  const from = CRAFTED_FROM[it.id] || [];
+  if (from.length) out.push(t.craftFrom + names(from));
+  const into = [...new Set(it.craft || [])].map((id) => BY_ID[id]).filter(Boolean);
+  if (into.length) out.push(t.craftInto + names(into));
   return out;
 }
 

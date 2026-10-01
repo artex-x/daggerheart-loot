@@ -74,7 +74,7 @@ const LOOT: Loot = {
 
 function page(
   hash: string,
-  opts: { as?: 'gm1' | 'gm2' | null; cloud?: FakeCloud | null } = {}
+  opts: { as?: 'gm1' | 'gm2' | 'gm3' | null; cloud?: FakeCloud | null } = {}
 ) {
   const as = opts.as === undefined ? 'gm1' : opts.as;
   const cloud =
@@ -364,5 +364,34 @@ describe('search with own items', () => {
       'title',
       'Show your own items'
     );
+  });
+});
+
+describe("the author's own relations on catalog rows and cards", () => {
+  const relation = (id: string): string | null | undefined =>
+    document.querySelector(`[data-row="${id}"] .rcraft`)?.textContent;
+
+  it("keeps a catalog row's own relations while the chip hides the own items", async () => {
+    const { container } = page('#/search', { as: 'gm3' });
+    await screen.findByText(t.subSearch + ' И 34 ваших предмета.');
+    await userEvent.type(screen.getByPlaceholderText(t.searchPh), 'кольцо');
+    expect(relation('ci1')).toBe('Улучшается до: Мешок спокойных снов (HB) и ещё 14');
+    await userEvent.click(toolbarChip());
+    expect(toolbarChip()).toHaveAttribute('aria-pressed', 'false');
+    expect(rowIds()).toEqual(['ci1']);
+    expect(relation('ci1')).toBe('Улучшается до: Мешок спокойных снов (HB) и ещё 14');
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws a catalog record at once and with no own relation when the own items fail to load', async () => {
+    const cloud = fakeCloud(SEED, 'gm3', { offline: true });
+    const { container } = page('#/i/ci1', { cloud });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Кольцо Тишины' })
+    ).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(screen.queryByText(t.craftInto)).toBeNull();
+    expect(screen.queryByText(t.hbLoadFailed)).toBeNull();
+    await expectNoA11yViolations(container);
   });
 });

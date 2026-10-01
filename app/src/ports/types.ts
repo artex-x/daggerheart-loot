@@ -40,9 +40,12 @@ import type { Loot } from '../lib/data.js';
 import type {
   BookContent,
   BookRow,
+  CardContent,
+  CardRow,
   HomebrewContent,
   ItemRow,
   NewBookRow,
+  NewCardRow,
   NewItemRow
 } from '../lib/homebrew.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
@@ -483,7 +486,8 @@ export interface RequestRepository {
 /** `{ ok: false }` is signed out or a read that failed; `itemLimit` is null for no limit
  *  or a limit read that failed. */
 export type HomebrewRead =
-  { ok: true; books: BookRow[]; items: ItemRow[]; itemLimit: number | null } | { ok: false };
+  | { ok: true; books: BookRow[]; items: ItemRow[]; cards: CardRow[]; itemLimit: number | null }
+  | { ok: false };
 /** An update's answer: the row's new revision, or why not. */
 export type HomebrewSaved =
   | { ok: true; revision: number }
@@ -509,6 +513,14 @@ export interface HomebrewRepository {
     revision: number | null
   ): Promise<HomebrewSaved>;
   removeItem(id: string): Promise<ListWrite>;
+  /** A set card or a rule card; its kind never changes after the create. */
+  createCard(row: NewCardRow): Promise<ListWrite>;
+  updateCard(
+    id: string,
+    patch: { content: CardContent; book_id: string | null },
+    revision: number | null
+  ): Promise<HomebrewSaved>;
+  removeCard(id: string): Promise<ListWrite>;
 }
 
 /** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, R3 events, R4

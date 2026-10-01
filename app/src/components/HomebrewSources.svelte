@@ -1,14 +1,13 @@
 <script lang="ts">
-  /* «Источники» on `#/homebrew` (m02, m19, m13 in the homebrew mocks): the default
-     source with its count, then each named source with its count, «Разделы»,
-     «Переименовать» and «Удалить», and «Добавить» for a new one. A source's sections
-     open under it with the same actions. Every write goes through the store
-     (docs/specs/FEATURES.md, "Homebrew"). */
+  /* The fold «Источники» on `#/homebrew` (m02, m19, m13 in the homebrew mocks), closed
+     on each visit with the count of named sources: the default source with its count,
+     then each named source with its count, «Разделы», «Переименовать» and «Удалить»,
+     and «Добавить» for a new one. A source's sections open under it with the same
+     actions. Every write goes through the store (docs/specs/FEATURES.md, "Homebrew"). */
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
-  import Field from './Field.svelte';
   import NameField from './NameField.svelte';
-  import Panel from './Panel.svelte';
+  import PanelFold from './PanelFold.svelte';
   import { limitText } from '../lib/cloudLists.js';
   import { nameTaken, SECTIONS_MAX, type BookRow } from '../lib/homebrew.js';
   import { plural } from '../lib/plural.js';
@@ -144,154 +143,155 @@
   }
 </script>
 
-<Panel>
-  <Field label={t.hbSources} heading>
-    <ul class="books">
+<PanelFold
+  label={t.hbSources}
+  count={books.length ? plural(books.length, t.hbSourcesN, lang) : undefined}
+>
+  <ul class="books">
+    <li class="book">
+      <div class="head">
+        <span class="name">{t.srcHomebrew}</span>
+        <span class="count">{itemsN(defaultCount)}</span>
+      </div>
+    </li>
+    {#each books as book (book.id)}
+      {@const sections = book.content.sections ?? []}
+      {@const mine = held(book)}
       <li class="book">
-        <div class="head">
-          <span class="name">{t.srcHomebrew}</span>
-          <span class="count">{itemsN(defaultCount)}</span>
-        </div>
-      </li>
-      {#each books as book (book.id)}
-        {@const sections = book.content.sections ?? []}
-        {@const mine = held(book)}
-        <li class="book">
-          {#if editing === 'book:' + book.id}
-            <NameField
-              id={'hb-rename-' + book.id}
-              label={t.hbRename}
-              value={named(book.content)}
-              submit={t.save}
-              cancel={t.cancel}
-              onsubmit={(name: string) => renameSource(book, name)}
-              oncancel={close}
-            />
-          {:else}
-            <div class="head">
-              <span class="name">{named(book.content)}</span>
-              <span class="count"
-                >{itemsN(mine.length)}{#if sections.length}{' · ' +
-                    plural(sections.length, t.hbSectionsN, lang)}{/if}</span
+        {#if editing === 'book:' + book.id}
+          <NameField
+            id={'hb-rename-' + book.id}
+            label={t.hbRename}
+            value={named(book.content)}
+            submit={t.save}
+            cancel={t.cancel}
+            onsubmit={(name: string) => renameSource(book, name)}
+            oncancel={close}
+          />
+        {:else}
+          <div class="head">
+            <span class="name">{named(book.content)}</span>
+            <span class="count"
+              >{itemsN(mine.length)}{#if sections.length}{' · ' +
+                  plural(sections.length, t.hbSectionsN, lang)}{/if}</span
+            >
+            <span class="acts">
+              <Button
+                size="sm"
+                caret
+                expanded={open.has(book.id)}
+                onclick={() => {
+                  toggle(book.id);
+                }}>{t.hbSectionsBtn}</Button
               >
-              <span class="acts">
-                <Button
-                  size="sm"
-                  caret
-                  expanded={open.has(book.id)}
-                  onclick={() => {
-                    toggle(book.id);
-                  }}>{t.hbSectionsBtn}</Button
-                >
-                <Button
-                  size="sm"
-                  onclick={() => {
-                    start('book:' + book.id);
-                  }}>{t.hbRename}</Button
-                >
-                <Button size="sm" variant="danger" onclick={() => void removeSource(book)}
-                  >{t.del}</Button
-                >
-              </span>
-            </div>
-          {/if}
-          {#if open.has(book.id)}
-            <ul class="sections">
-              {#each sections as s (s.key)}
-                {@const label = named(s)}
-                <li>
-                  {#if editing === 'sect:' + book.id + ':' + s.key}
-                    <NameField
-                      id={'hb-rename-' + s.key}
-                      label={t.hbRename}
-                      value={label}
-                      submit={t.save}
-                      cancel={t.cancel}
-                      onsubmit={(name: string) => renameSection(book, s.key, name)}
-                      oncancel={close}
-                    />
-                  {:else}
-                    <div class="head">
-                      <span class="name">{label}</span>
-                      <span class="count"
-                        >{itemsN(mine.filter((i) => i.content.section === s.key).length)}</span
-                      >
-                      <span class="acts">
-                        <Button
-                          size="sm"
-                          onclick={() => {
-                            start('sect:' + book.id + ':' + s.key);
-                          }}>{t.hbRename}</Button
-                        >
-                        <Button
-                          size="sm"
-                          variant="danger"
-                          onclick={() => void removeSection(book, s.key, label)}>{t.del}</Button
-                        >
-                      </span>
-                    </div>
-                  {/if}
-                </li>
-              {/each}
+              <Button
+                size="sm"
+                onclick={() => {
+                  start('book:' + book.id);
+                }}>{t.hbRename}</Button
+              >
+              <Button size="sm" variant="danger" onclick={() => void removeSource(book)}
+                >{t.del}</Button
+              >
+            </span>
+          </div>
+        {/if}
+        {#if open.has(book.id)}
+          <ul class="sections">
+            {#each sections as s (s.key)}
+              {@const label = named(s)}
               <li>
-                <div class="head">
-                  <span class="name">{t.hbNoSection}</span>
-                  <span class="count"
-                    >{itemsN(
-                      mine.filter(
-                        (i) =>
-                          i.content.section === undefined ||
-                          !sections.some((s) => s.key === i.content.section)
-                      ).length
-                    )}</span
-                  >
-                </div>
-              </li>
-              <li>
-                {#if editing === 'add:' + book.id}
+                {#if editing === 'sect:' + book.id + ':' + s.key}
                   <NameField
-                    id={'hb-section-' + book.id}
-                    label={t.hbNewSection}
-                    submit={t.create}
+                    id={'hb-rename-' + s.key}
+                    label={t.hbRename}
+                    value={label}
+                    submit={t.save}
                     cancel={t.cancel}
-                    onsubmit={(name: string) => addSection(book, name)}
+                    onsubmit={(name: string) => renameSection(book, s.key, name)}
                     oncancel={close}
                   />
                 {:else}
-                  <Button
-                    size="sm"
-                    onclick={() => {
-                      start('add:' + book.id, true);
-                    }}>{t.hbAddSection}</Button
-                  >
+                  <div class="head">
+                    <span class="name">{label}</span>
+                    <span class="count"
+                      >{itemsN(mine.filter((i) => i.content.section === s.key).length)}</span
+                    >
+                    <span class="acts">
+                      <Button
+                        size="sm"
+                        onclick={() => {
+                          start('sect:' + book.id + ':' + s.key);
+                        }}>{t.hbRename}</Button
+                      >
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onclick={() => void removeSection(book, s.key, label)}>{t.del}</Button
+                      >
+                    </span>
+                  </div>
                 {/if}
               </li>
-            </ul>
-          {/if}
-        </li>
-      {/each}
-    </ul>
-    <div class="add">
-      {#if editing === 'new'}
-        <NameField
-          id="hb-new-source"
-          label={t.hbNewSource}
-          submit={t.create}
-          cancel={t.cancel}
-          onsubmit={createSource}
-          oncancel={close}
-        />
-      {:else}
-        <Button
-          size="sm"
-          onclick={() => {
-            start('new', true);
-          }}>{t.hbAdd}</Button
-        >
-      {/if}
-    </div>
-  </Field>
-</Panel>
+            {/each}
+            <li>
+              <div class="head">
+                <span class="name">{t.hbNoSection}</span>
+                <span class="count"
+                  >{itemsN(
+                    mine.filter(
+                      (i) =>
+                        i.content.section === undefined ||
+                        !sections.some((s) => s.key === i.content.section)
+                    ).length
+                  )}</span
+                >
+              </div>
+            </li>
+            <li>
+              {#if editing === 'add:' + book.id}
+                <NameField
+                  id={'hb-section-' + book.id}
+                  label={t.hbNewSection}
+                  submit={t.create}
+                  cancel={t.cancel}
+                  onsubmit={(name: string) => addSection(book, name)}
+                  oncancel={close}
+                />
+              {:else}
+                <Button
+                  size="sm"
+                  onclick={() => {
+                    start('add:' + book.id, true);
+                  }}>{t.hbAddSection}</Button
+                >
+              {/if}
+            </li>
+          </ul>
+        {/if}
+      </li>
+    {/each}
+  </ul>
+  <div class="add">
+    {#if editing === 'new'}
+      <NameField
+        id="hb-new-source"
+        label={t.hbNewSource}
+        submit={t.create}
+        cancel={t.cancel}
+        onsubmit={createSource}
+        oncancel={close}
+      />
+    {:else}
+      <Button
+        size="sm"
+        onclick={() => {
+          start('new', true);
+        }}>{t.hbAdd}</Button
+      >
+    {/if}
+  </div>
+</PanelFold>
 
 <style>
   .books,

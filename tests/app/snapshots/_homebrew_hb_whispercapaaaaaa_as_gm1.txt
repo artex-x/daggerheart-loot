@@ -50,6 +50,7 @@ RootWebArea "Whispering Cap — Генератор лута — Daggerheart" [ur
         ... button x2 of 6 same-shape siblings elided
         button "Артефакт" [pressed=false]
         button "Проклятый предмет" [pressed=false]
+      DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
       button "Удалить"
@@ -67,6 +68,7 @@ RootWebArea "Whispering Cap — Генератор лута — Daggerheart" [ur
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
++ Новая карта правил
 1
 2
 3
@@ -83,12 +85,15 @@ daggerheart.com
 Артефакт
 Добавить в список
 К содержимому
+Карты правил
 Конфиденциальность
 ЛутDaggerheart
 Нет
+НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Обычные правила
 Отмена
 Поиск
+Получается из
 Предмет
 Проклятый предмет
 Расходник
@@ -99,6 +104,7 @@ daggerheart.com
 Страница
 Таблицы
 Удалить
+Улучшается до
 Условия использования
 Установить как приложение
 ХоумбрюМастерская Ольхи+ Новый источник...
@@ -150,6 +156,7 @@ RootWebArea "Whispering Cap — Daggerheart Loot Generator" [url=index.html?as=g
         ... button x2 of 6 same-shape siblings elided
         button "Artifact" [pressed=false]
         button "Cursed object" [pressed=false]
+      DisclosureTriangle "Relations" [expanded=false]
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
       button "Delete"
@@ -167,6 +174,7 @@ RootWebArea "Whispering Cap — Daggerheart Loot Generator" [url=index.html?as=g
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
++ New rule card
 1
 2
 3
@@ -188,16 +196,20 @@ HomebrewAlder Workshop+ New source...
 Install as an app
 Item
 Lists
+Made from
 None
+NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Page
 Privacy
 RU
+Rule cards
 Save
 Search
 Skip to content
 Standard rules
 Tables
 Terms of use
+Upgrades to
 Vault of Ages
 Wondrous
 daggerheart.com

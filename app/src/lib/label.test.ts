@@ -10,7 +10,19 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
 import { recordOf, type BookRef } from './homebrew.js';
-import { badgeKind, printSrc, srcLabel, srcName, tableOf, whereFrom } from './label.js';
+import {
+  FOLD_OWN,
+  badgeKind,
+  foldOwn,
+  printSrc,
+  relName,
+  relOrder,
+  relText,
+  srcLabel,
+  srcName,
+  tableOf,
+  whereFrom
+} from './label.js';
 import type { Record_ } from './types.js';
 
 const LOOT = JSON.parse(
@@ -301,5 +313,70 @@ describe('a homebrew item', () => {
         )
       )
     ).toBe('homebrew');
+  });
+});
+
+describe('a relation of a catalog record to homebrew records', () => {
+  const own = (id: string, ru: string, en: string): Record_ =>
+    rec({ id, src: 'homebrew', ru, en });
+  const ownN = (n: number): Record_[] =>
+    Array.from({ length: n }, (_, i) =>
+      own(`hb_${String(i)}`, `Свой ${String(i)}`, `Own ${String(i)}`)
+    );
+  const cat = (id: string): Record_ => {
+    const r = index.byId.get(id);
+    if (!r) throw new Error(`The catalog lacks ${id}. Pick an id that data.json holds`);
+    return r;
+  };
+
+  it('marks a homebrew name with (HB) in both languages and leaves a catalog name as it is', () => {
+    const hb = own('hb_a', 'Мешок', 'Sack');
+    expect(relName(hb, 'ru')).toBe('Мешок (HB)');
+    expect(relName(hb, 'en')).toBe('Sack (HB)');
+    expect(relName(cat('ci1'), 'ru')).toBe(cat('ci1').ru);
+    expect(relName(cat('ci1'), 'en')).toBe(cat('ci1').en);
+  });
+
+  it('keeps a name that holds a replacement pattern', () => {
+    expect(relName(own('hb_a', 'Мешок $& и $1', 'Sack $&'), 'ru')).toBe('Мешок $& и $1 (HB)');
+    expect(relName(own('hb_a', 'Мешок', "Sack $'"), 'en')).toBe("Sack $' (HB)");
+  });
+
+  it('puts the catalog records first in their order, then the homebrew ones by name in the language on screen', () => {
+    const b = own('hb_b', 'Альфа', 'Zulu');
+    const a = own('hb_a', 'Яшма', 'Alpha');
+    const list = [b, cat('q2'), a, cat('q1')];
+    expect(relOrder(list, 'ru').map((r) => r.id)).toEqual(['q2', 'q1', 'hb_b', 'hb_a']);
+    expect(relOrder(list, 'en').map((r) => r.id)).toEqual(['q2', 'q1', 'hb_a', 'hb_b']);
+  });
+
+  it('keeps every catalog record, the record itself and three homebrew records, and counts the rest', () => {
+    for (const n of [0, 3, 15, 100, 1000]) {
+      const list = [cat('q1'), ...ownN(n), cat('q2')];
+      const { shown, more } = foldOwn(list, FOLD_OWN);
+      expect(shown.map((r) => r.id)).toEqual([
+        'q1',
+        ...ownN(Math.min(n, 3)).map((r) => r.id),
+        'q2'
+      ]);
+      expect(more).toBe(Math.max(0, n - 3));
+    }
+    const list = [cat('q1'), ...ownN(15)];
+    const { shown, more } = foldOwn(list, FOLD_OWN, 'hb_4');
+    expect(shown.map((r) => r.id)).toEqual(['q1', 'hb_0', 'hb_1', 'hb_2', 'hb_4']);
+    expect(more).toBe(11);
+  });
+
+  it('writes a folded relation as text with «и ещё N» and "and N more"', () => {
+    const list = [
+      own('hb_b', 'Б', 'B'),
+      cat('ci1'),
+      own('hb_a', 'А', 'A'),
+      own('hb_c', 'В', 'C')
+    ];
+    expect(relText(list, 'ru', 1)).toBe(`${cat('ci1').ru}, А (HB) и ещё 2`);
+    expect(relText(list, 'en', 1)).toBe(`${cat('ci1').en}, A (HB) and 2 more`);
+    expect(relText(list, 'en', FOLD_OWN)).toBe(`${cat('ci1').en}, A (HB), B (HB), C (HB)`);
+    expect(relText([cat('ci1')], 'ru', 1)).toBe(cat('ci1').ru);
   });
 });

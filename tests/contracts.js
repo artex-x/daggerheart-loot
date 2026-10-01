@@ -169,6 +169,20 @@ const N_REC = '\x1e',
   );
   const reserved = allIds.filter((id) => id.startsWith('hb'));
   ok(!reserved.length, 'data.json holds ids with the reserved prefix hb: ' + reserved.join());
+  /* A record's `craft` is a list of record ids (CONTRACTS.md section 4); a reader
+     outside the site takes that shape, so a string slipping back breaks it. */
+  const knownIds = new Set(allIds);
+  [...Object.values(dataIds.items).flat(), ...(dataIds.eq || [])]
+    .filter((r) => r.craft !== undefined)
+    .forEach((r) => {
+      ok(
+        Array.isArray(r.craft) && r.craft.length > 0 && r.craft.every((id) => knownIds.has(id)),
+        'data.json ' +
+          r.id +
+          ': craft is not a non-empty list of known ids: ' +
+          JSON.stringify(r.craft)
+      );
+    });
 
   /* ---------- data.json top-level keys ---------- */
   /* `CONTRACTS.md` section 4 publishes the key list; a key added to or dropped

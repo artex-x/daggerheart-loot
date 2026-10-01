@@ -1,0 +1,438 @@
+# #/homebrew/hb_emberaxeaaaaaaaa ~ relations as gm1
+# route: #/homebrew/hb_emberaxeaaaaaaaa
+# why: the fold «Связи · 6» filled: «В линии» with «Палаш» and «линия из 4 рангов», «Улучшается до» «Длинный Меч», «Получается из» «Первоклассный Спальный Мешок», «Комплект» on «Пылающие близнецы», «Карты правил» «Клеймо Ольхи» and «Медленный»; the preview with four other rungs of the ladder, both craft lines, the two linked members of the set line and its bonus, two rule card folds; the tree holds neither the current rung of the axe «2 HB» nor its inert set entry «Топор Тлеющих Углей (HB)» (both spans, which the golden drops); homebrewEditor.test.ts pins «2 HB», record.test.ts an own inert «(HB)» entry
+# as: gm1
+
+## ru :: tree
+RootWebArea "Топор Тлеющих Углей — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Топор Тлеющих Углей" [level=1]
+    StaticText "Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2"
+    form ""
+      StaticText "* - обязательное поле. Остальное можно заполнить позже."
+      group "Вид"
+        button "Предмет" [pressed=false]
+        button "Расходник" [pressed=false]
+        button "Снаряжение" [pressed=true]
+      group "Тип снаряжения"
+        button "Основное оружие" [pressed=true]
+        button "Вторичное оружие" [pressed=false]
+        button "Броня" [pressed=false]
+      StaticText "Источник"
+      combobox "Источник" [value=Мастерская Ольхи expanded=false haspopup=menu]
+        option "Хоумбрю" [selected=false]
+        option "Мастерская Ольхи" [selected=true]
+        option "+ Новый источник..." [selected=false]
+      ... StaticText x23 of 27 same-shape siblings elided
+      combobox "Раздел" [value=Холодное оружие expanded=false haspopup=menu]
+        option "Без раздела" [selected=false]
+        option "Пистоли" [selected=false]
+        option "Холодное оружие" [selected=true]
+        option "+ Новый раздел..." [selected=false]
+      textbox "Название*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
+      textbox "Описание" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
+      group "Ранг" [description=Как в книге - по характеристикам ранг не определяется.]
+        button "1" [pressed=false]
+        button "2" [pressed=true]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
+        button "Артефакт" [pressed=false]
+      group "Класс"
+        button "Физическое" [pressed=false]
+        button "Магическое" [pressed=true]
+      group "Характеристика"
+        button "Проворность" [pressed=false]
+        button "Сила" [pressed=false]
+        ... button x2 of 6 same-shape siblings elided
+        button "Влияние" [pressed=false]
+        button "Знание" [pressed=false]
+        button "Характеристика Заклинателя" [pressed=true]
+      group "Дистанция"
+        button "Вплотную" [pressed=true]
+        button "Близко" [pressed=false]
+        button "Средне" [pressed=false]
+        button "Далеко" [pressed=false]
+        button "Очень далеко" [pressed=false]
+      combobox "Урон*" [value=d10 expanded=false haspopup=menu]
+        option "Кость" [selected=false]
+        option "d4" [selected=false]
+        ... option x2 of 6 same-shape siblings elided
+        option "d10" [selected=true]
+        option "d12" [selected=false]
+        option "d20" [selected=false]
+      textbox "Бонус к урону" [value=2 multiline=false readonly=false required=false]
+      group "Тип урона"
+        button "физ" [pressed=false]
+        button "маг" [pressed=true]
+        button "физ/маг" [pressed=false]
+      group "Хват"
+        button "Одноручное" [pressed=false]
+        button "Двуручное" [pressed=true]
+        button "Одноручное/двуручное" [pressed=false]
+      DisclosureTriangle "Второй набор характеристик" [expanded=false]
+      DisclosureTriangle "Связи · 6" [expanded=true]
+      group "Линия улучшений"
+        button "Уникальный" [pressed=false]
+        button "В линии" [pressed=true]
+        button "Новая линия" [pressed=false]
+      button "Убрать: Палаш"
+      button "Убрать: Длинный Меч"
+      combobox "Улучшается до" [expanded=false required=false autocomplete=list haspopup=listbox]
+      ... button x4 of 8 same-shape siblings elided
+      combobox "Получается из" [expanded=false required=false autocomplete=list haspopup=listbox]
+      combobox "Комплект" [value=Пылающие близнецы expanded=false haspopup=menu]
+        option "Нет" [selected=false]
+        option "Пылающие близнецы" [selected=true]
+        option "Убранство Святого" [selected=false]
+        option "Комплект Ольхи (HB)" [selected=false]
+        option "+ Новый комплект..." [selected=false]
+      combobox "Карты правил" [expanded=false focused=true required=false autocomplete=list haspopup=listbox]
+      status ""
+      StaticText "До 3 карт."
+      button "Сохранить"
+      link "Отмена" [url=index.html?as=gm1#/homebrew]
+      button "Удалить"
+      StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
+    button "Страница"
+    StaticText "ОСНОВНОЕ ОРУЖИЕ"
+    ... StaticText x16 of 20 same-shape siblings elided
+    heading "Топор Тлеющих Углей" [level=2]
+    button "Палаш" [description=Палаш]
+    button "Улучшенный Палаш" [description=Улучшенный Палаш]
+    button "Продвинутый Палаш" [description=Продвинутый Палаш]
+    button "Легендарный Палаш" [description=Легендарный Палаш]
+    link "Первоклассный Спальный Мешок" [url=index.html?as=gm1#/i/ci1]
+    link "Длинный Меч" [url=index.html?as=gm1#/i/q2]
+    link "Уголёк" [url=index.html?as=gm1#/i/dve19]
+    link "Искра" [url=index.html?as=gm1#/i/dve20]
+    StaticText "Пылающие близнецы:"
+    StaticText " При критическом успехе на Броске Атаки цель временно начинает П..." [namelen=140 namehash=1b4b3cf5]
+    DisclosureTriangle "Клеймо Ольхи СВОЙСТВО ОРУЖИЯ" [expanded=false]
+    DisclosureTriangle "Медленный ОГРОМНАЯ ЗЕЛЁНАЯ СЛИЗЬ · СВОЙСТВО ПРОТИВНИКА · ПАССИВН..." [expanded=false namelen=66 namehash=48799063]
+    button "Добавить в список" [expanded=false]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
++ Новая карта правил
+1
+2
+3
+4
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Артефакт
+Без разделаПистолиХолодное оружие+ Новый раздел...
+Близко
+Бонус к урону
+Броня
+В линии
+Влияние
+Вплотную
+Вторичное оружие
+Второй набор характеристик: Бонус к урону
+Второй набор характеристик: Урон
+Далеко
+Двуручное
+Длинный Меч
+Добавить в список
+Знание
+Инстинкт
+Искра
+Искусность
+К содержимому
+Карты правил
+Конфиденциальность
+Костьd4d6d8d10d12d20
+Легендарный Палаш
+ЛутDaggerheart
+Магическое
+НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая линия
+Обычные правила
+Одноручное
+Одноручное/двуручное
+Основное оружие
+Отмена
+Очень далеко
+Палаш
+Первоклассный Спальный Мешок
+Поиск
+Получается из
+Предмет
+Проворность
+Продвинутый Палаш
+Расходник
+Сила
+Снаряжение
+Сообщества
+Сохранить
+Списки
+Средне
+Страница
+Таблицы
+Убрать: Длинный Меч
+Убрать: Клеймо Ольхи
+Убрать: Медленный
+Убрать: Палаш
+Убрать: Первоклассный Спальный Мешок
+Уголёк
+Удалить
+Улучшается до
+Улучшенный Палаш
+Уникальный
+Условия использования
+Установить как приложение
+Физическое
+Характеристика Заклинателя
+ХоумбрюМастерская Ольхи+ Новый источник...
+маг
+физ
+физ/маг
+
+## en :: tree
+RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Ember Axe" [level=1]
+    StaticText "Homebrew · Alder Workshop · Blades · Tier 2"
+    form ""
+      StaticText "* - required field. The rest can be filled in later."
+      group "Kind"
+        button "Item" [pressed=false]
+        button "Consumable" [pressed=false]
+        button "Equipment" [pressed=true]
+      group "Equipment type"
+        button "Primary weapon" [pressed=true]
+        button "Secondary weapon" [pressed=false]
+        button "Armor" [pressed=false]
+      StaticText "Source"
+      combobox "Source" [value=Alder Workshop expanded=false haspopup=menu]
+        option "Homebrew" [selected=false]
+        option "Alder Workshop" [selected=true]
+        option "+ New source..." [selected=false]
+      ... StaticText x23 of 27 same-shape siblings elided
+      combobox "Section" [value=Blades expanded=false haspopup=menu]
+        option "No section" [selected=false]
+        option "Pistols" [selected=false]
+        option "Blades" [selected=true]
+        option "+ New section..." [selected=false]
+      textbox "Name*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
+      textbox "Description" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
+      group "Tier" [description=As in the book - the tier is never worked out from the stats.]
+        button "1" [pressed=false]
+        button "2" [pressed=true]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
+        button "Artifact" [pressed=false]
+      group "Class"
+        button "Physical" [pressed=false]
+        button "Magic" [pressed=true]
+      group "Trait"
+        button "Agility" [pressed=false]
+        button "Strength" [pressed=false]
+        ... button x2 of 6 same-shape siblings elided
+        button "Presence" [pressed=false]
+        button "Knowledge" [pressed=false]
+        button "Spellcast" [pressed=true]
+      group "Range"
+        button "Melee" [pressed=true]
+        button "Very Close" [pressed=false]
+        button "Close" [pressed=false]
+        button "Far" [pressed=false]
+        button "Very Far" [pressed=false]
+      combobox "Damage*" [value=d10 expanded=false haspopup=menu]
+        option "Die" [selected=false]
+        option "d4" [selected=false]
+        ... option x2 of 6 same-shape siblings elided
+        option "d10" [selected=true]
+        option "d12" [selected=false]
+        option "d20" [selected=false]
+      textbox "Damage bonus" [value=2 multiline=false readonly=false required=false]
+      group "Damage type"
+        button "phy" [pressed=false]
+        button "mag" [pressed=true]
+        button "phy/mag" [pressed=false]
+      group "Burden"
+        button "One-Handed" [pressed=false]
+        button "Two-Handed" [pressed=true]
+        button "One/Two-Handed" [pressed=false]
+      DisclosureTriangle "Second stat set" [expanded=false]
+      DisclosureTriangle "Relations · 6" [expanded=true]
+      group "Upgrade line"
+        button "Unique" [pressed=false]
+        button "In a line" [pressed=true]
+        button "New line" [pressed=false]
+      button "Remove: Broadsword"
+      button "Remove: Longsword"
+      combobox "Upgrades to" [expanded=false required=false autocomplete=list haspopup=listbox]
+      ... button x4 of 8 same-shape siblings elided
+      combobox "Made from" [expanded=false required=false autocomplete=list haspopup=listbox]
+      combobox "Set" [value=Blazing Twins expanded=false haspopup=menu]
+        option "None" [selected=false]
+        option "Blazing Twins" [selected=true]
+        option "Saint's Ensemble" [selected=false]
+        option "Alder Set (HB)" [selected=false]
+        option "+ New set..." [selected=false]
+      combobox "Rule cards" [expanded=false focused=true required=false autocomplete=list haspopup=listbox]
+      status ""
+      StaticText "Up to 3 cards."
+      button "Save"
+      link "Cancel" [url=index.html?as=gm1#/homebrew]
+      button "Delete"
+      StaticText "The item is in 1 list: changes appear there at once, for players..." [namelen=81 namehash=cd6f853a]
+    button "Page"
+    StaticText "PRIMARY WEAPON"
+    ... StaticText x16 of 20 same-shape siblings elided
+    heading "Ember Axe" [level=2]
+    button "Broadsword" [description=Broadsword]
+    button "Improved Broadsword" [description=Improved Broadsword]
+    button "Advanced Broadsword" [description=Advanced Broadsword]
+    button "Legendary Broadsword" [description=Legendary Broadsword]
+    link "Premium Bedroll" [url=index.html?as=gm1#/i/ci1]
+    link "Longsword" [url=index.html?as=gm1#/i/q2]
+    link "Ember" [url=index.html?as=gm1#/i/dve19]
+    link "Spark" [url=index.html?as=gm1#/i/dve20]
+    StaticText "Blazing Twins:"
+    StaticText " When you critically succeed on an attack roll, set the target t..." [namelen=134 namehash=2159c57c]
+    DisclosureTriangle "Alder Brand WEAPON FEATURE" [expanded=false]
+    DisclosureTriangle "Slow HUGE GREEN OOZE · ADVERSARY FEATURE · PASSIVE" [expanded=false]
+    button "Add to list" [expanded=false]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
++ New rule card
+1
+2
+3
+4
+Account: gm1@example.test
+Add to list
+Advanced Broadsword
+Agility
+Alt. tables
+Armor
+Artifact
+Broadsword
+Cancel
+Close
+Communities
+Consumable
+Damage bonus
+Delete
+Died4d6d8d10d12d20
+Dragon's Vault
+Dread
+EN
+Ember
+Equipment
+Far
+Finesse
+HomebrewAlder Workshop+ New source...
+Improved Broadsword
+In a line
+Install as an app
+Instinct
+Item
+Knowledge
+Legendary Broadsword
+Lists
+Longsword
+Made from
+Magic
+Melee
+New line
+No sectionPistolsBlades+ New section...
+NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
+One-Handed
+One/Two-Handed
+Page
+Physical
+Premium Bedroll
+Presence
+Primary weapon
+Privacy
+RU
+Remove: Alder Brand
+Remove: Broadsword
+Remove: Longsword
+Remove: Premium Bedroll
+Remove: Slow
+Rule cards
+Save
+Search
+Second stat set: Damage
+Second stat set: Damage bonus
+Secondary weapon
+Skip to content
+Spark
+Spellcast
+Standard rules
+Strength
+Tables
+Terms of use
+Two-Handed
+Unique
+Upgrades to
+Vault of Ages
+Very Close
+Very Far
+Wondrous
+daggerheart.com
+mag
+phy
+phy/mag
+ЛутDaggerheart

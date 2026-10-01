@@ -796,7 +796,7 @@ const STATES = [
   {
     id: '#/tables ~ help',
     route: '#/tables',
-    why: 'the help panel, which uses a bold word mid-sentence twice over',
+    why: 'the help panel, which uses a bold word mid-sentence twice over, and the «Хоумбрю» group with its three filters',
     enter: async (d) => {
       await d.click('Как это работает');
     }
@@ -2010,22 +2010,42 @@ const STATES = [
     id: '#/homebrew as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«Мои предметы: 4 из 100», the sources panel («Хоумбрю» 3 предмета, «Мастерская Ольхи» 1 предмет · 2 раздела), «Новый предмет», the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+    why: '«Мои предметы: 4 из 100», the closed folds «Источники · 1 источник» and «Карты · 1 комплект, 1 карта правил», «Новый предмет», the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
   },
   {
     id: '#/homebrew ~ sections as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Добавить раздел»',
+    why: 'the fold «Источники» open («Хоумбрю» 3 предмета, «Мастерская Ольхи» 1 предмет · 2 раздела), then «Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Добавить раздел»',
     enter: async (d) => {
+      await d.click('Источники');
       await d.click('Разделы');
+    }
+  },
+  {
+    id: '#/homebrew ~ cards as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: 'the fold «Карты · 1 комплект, 1 карта правил» open: «Комплекты» with «+ Новый комплект» and «Комплект Ольхи» «0 предметов · Мастерская Ольхи», «Карты правил» with «+ Новая карта правил» and «Клеймо Ольхи» «0 предметов», each card with «Изменить» and «Удалить»',
+    enter: async (d) => {
+      await d.click('Карты');
+    }
+  },
+  {
+    id: '#/homebrew ~ card edit as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: '«Изменить» of the rule card: its form in place of its row, «Название карты» *, «Подзаголовок», «Текст карты» *, «Ссылка», «Источник» on «Хоумбрю», «Сохранить» and «Отмена»',
+    enter: async (d) => {
+      await d.click('Карты');
+      await d.click('Изменить', 1);
     }
   },
   {
     id: '#/homebrew as gm2',
     route: '#/homebrew',
     as: 'gm2',
-    why: 'an account with no homebrew: «Мои предметы: 0 из 100», the sources panel with «Хоумбрю» alone, «Своих предметов пока нет - создайте первый.»'
+    why: 'an account with no homebrew: «Мои предметы: 0 из 100», the closed folds «Источники» and «Карты» with no count, «Своих предметов пока нет - создайте первый.»'
   },
   {
     id: '#/homebrew',
@@ -2055,6 +2075,36 @@ const STATES = [
     why: '«+ Новый источник...» chosen: the select swapped for «Новый источник» with «Создать» and «Отмена»',
     enter: async (d) => {
       await d.choose('#hb-book', '__new');
+    }
+  },
+  {
+    id: '#/homebrew/new ~ picker open as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'the fold «Связи» open and «зель» typed in «Получается из»: the field expanded and focused, the named list under it, and «Ещё N - уточните запрос» for the matches past eight; the tree holds no option rows (itemPicker.test.ts pins them and the active one)',
+    enter: async (d) => {
+      await d.click('Связи');
+      await d.type('Получается из', 'зель');
+    }
+  },
+  {
+    id: '#/homebrew/new ~ new set as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'the fold «Связи» open and «+ Новый комплект...» chosen: the select swapped for the set form, «Название комплекта» * focused, «Бонус комплекта» *, «Создать комплект» and «Отмена», the hint',
+    enter: async (d) => {
+      await d.click('Связи');
+      await d.choose('#hb-set', '__new');
+    }
+  },
+  {
+    id: '#/homebrew/new ~ new card as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'the fold «Связи» open and «+ Новая карта правил» pressed: the rule card form under «Карты правил», «Название карты» * focused, «Подзаголовок», «Текст карты» *, «Ссылка», «Создать карту» and «Отмена», the hint',
+    enter: async (d) => {
+      await d.click('Связи');
+      await d.press('+ Новая карта правил');
     }
   },
   {
@@ -2143,6 +2193,27 @@ const STATES = [
     }
   },
   {
+    id: '#/homebrew/' + HB_AXE + ' ~ relations as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: 'the fold «Связи · 6» filled: «В линии» with «Палаш» and «линия из 4 рангов», «Улучшается до» «Длинный Меч», «Получается из» «Первоклассный Спальный Мешок», «Комплект» on «Пылающие близнецы», «Карты правил» «Клеймо Ольхи» and «Медленный»; the preview with four other rungs of the ladder, both craft lines, the two linked members of the set line and its bonus, two rule card folds; the tree holds neither the current rung of the axe «2 HB» nor its inert set entry «Топор Тлеющих Углей (HB)» (both spans, which the golden drops); homebrewEditor.test.ts pins «2 HB», record.test.ts an own inert «(HB)» entry',
+    enter: async (d) => {
+      await d.click('Связи');
+      await d.click('В линии');
+      await d.type('Линия, в которую встаёт предмет', 'Палаш');
+      await d.click('Палаш');
+      await d.type('Улучшается до', 'Длинный Меч');
+      await d.click('Длинный Меч');
+      await d.type('Получается из', 'Первоклассный Спальный');
+      await d.click('Первоклассный Спальный Мешок');
+      await d.choose('#hb-set', 'ember-spark');
+      await d.type('Карты правил', 'Клеймо');
+      await d.click('Клеймо Ольхи');
+      await d.type('Карты правил', 'Медленный');
+      await d.click('Медленный');
+    }
+  },
+  {
     id: '#/i/' + HB_AXE + ' as gm1',
     route: '#/i/' + HB_AXE,
     as: 'gm1',
@@ -2214,6 +2285,54 @@ const STATES = [
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'топор');
       await d.click('Показывать свои предметы');
+    }
+  },
+  /* gm3 holds 34 items that name catalog records: 15 made from ci1, 15 in q1's line,
+     4 in saints-ensemble - the own relations a catalog card marks and folds
+     (docs/specs/FEATURES.md, "Records"). */
+  {
+    id: '#/i/ci1 as gm3',
+    route: '#/i/ci1',
+    as: 'gm3',
+    why: '«Улучшается до» «Мешок спокойных снов (HB)», «Спальный мешок дозорного (HB)», the 120-code-point name with «(HB)», then «и ещё 12» unpressed'
+  },
+  {
+    id: '#/i/ci1 ~ more as gm3',
+    route: '#/i/ci1',
+    as: 'gm3',
+    why: 'the same, «и ещё 12» pressed: all 15 names by name, each with «(HB)», then «свернуть» expanded',
+    enter: async (d) => {
+      await d.click('и ещё 12');
+    }
+  },
+  {
+    id: '#/i/q1 as gm3',
+    route: '#/i/q1',
+    as: 'gm3',
+    why: '«Ранг» 1 (current), three «1 HB» rungs named «Учебный палаш 1 (HB)» to «Учебный палаш 3 (HB)», 2, 3, 4, then «и ещё 12»'
+  },
+  {
+    id: '#/i/q1 ~ more as gm3',
+    route: '#/i/q1',
+    as: 'gm3',
+    why: 'the same, «и ещё 12» pressed: the 19 rungs in tier order, the catalog rung first in each tier, then «свернуть» expanded',
+    enter: async (d) => {
+      await d.click('и ещё 12');
+    }
+  },
+  {
+    id: '#/i/voa4_t3d as gm3',
+    route: '#/i/voa4_t3d',
+    as: 'gm3',
+    why: '«Комплект» «Святой Щит» (current), «Святой Клинок», «Святое Облачение», «Святой Венец (HB)», «Святой Пояс (HB)», «Святые Перчатки (HB)», «и ещё 1»; the bonus «Убранство Святого: ...»'
+  },
+  {
+    id: '#/search ~ relations as gm3',
+    route: '#/search',
+    as: 'gm3',
+    why: "«спальный мешок» typed: the catalog matches, then the own bedrolls; ci1's row «Улучшается до: Мешок спокойных снов (HB) и ещё 14»; each own row «Получается из: Первоклассный Спальный Мешок»",
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'спальный мешок');
     }
   },
   {

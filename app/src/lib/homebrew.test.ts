@@ -9,12 +9,15 @@ import {
   bookProblems,
   browseIndex,
   canonJson,
+  cardProblems,
+  cardUses,
   contentProblems,
   editLang,
   groupsOf,
   HOMEBREW_KEY,
   isHomebrewKey,
   isHomebrewRecord,
+  itemUses,
   keyFrom,
   nameTaken,
   recordOf,
@@ -23,10 +26,13 @@ import {
   withRecords,
   type BookRef,
   type BookRow,
+  type CardRef,
   type HomebrewContent,
+  type ItemRow,
   type Problem
 } from './homebrew.js';
-import { buildIndex } from './data.js';
+import { buildIndex, madeFrom, setOf, upgradesTo } from './data.js';
+import type { Record_ } from './types.js';
 
 const DIR = join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'homebrew');
 const read = (name: string): unknown => JSON.parse(readFileSync(join(DIR, name), 'utf8'));
@@ -41,12 +47,19 @@ interface Snapshots {
     key: string;
     content: HomebrewContent;
     book: BookRef | null;
+    cards?: CardRef[];
     snapshot: unknown;
   }[];
   invalid: { name: string; snapshot: unknown }[];
 }
 
+interface CardCases {
+  valid: { name: string; kind: unknown; content: unknown }[];
+  invalid: { name: string; kind: unknown; content: unknown; problems: Problem[] }[];
+}
+
 const items = read('items.json') as Cases;
+const cards = read('cards.json') as CardCases;
 const books = read('books.json') as Cases;
 const snapshots = read('snapshots.json') as Snapshots;
 
@@ -70,6 +83,44 @@ describe('contentProblems over docs/fixtures/homebrew/items.json', () => {
   });
   it('reads a kind that is not a string as the wrong type', () => {
     expect(contentProblems({ kind: 3, ru: 'a' })).toEqual([{ path: 'kind', rule: 'type' }]);
+  });
+  it('refuses an item that names its own key in craft or craft_from, and only with the key', () => {
+    const key = 'hb_buckleaaaaaaaaaa';
+    const content = { kind: 'item', ru: 'Пряжка', craft: [key], craft_from: ['q1', key] };
+    expect(contentProblems(content, key)).toEqual([
+      { path: 'craft.0', rule: 'self' },
+      { path: 'craft_from.1', rule: 'self' }
+    ]);
+    expect(contentProblems(content)).toEqual([]);
+    expect(contentProblems({ kind: 'item', ru: 'Пряжка', refs: [key] }, key)).toEqual([]);
+  });
+  it('takes an upgrade line that is the item own key', () => {
+    const key = 'hb_aldermailaaaaaaa';
+    const eq = { t: 'armor', tier: 1, as: 3, th: [6, 12], line: key };
+    expect(contentProblems({ kind: 'equip', en: 'Mail', eq }, key)).toEqual([]);
+    expect(contentProblems({ kind: 'equip', en: 'Mail', eq: { ...eq, line: 'a b' } })).toEqual([
+      { path: 'eq.line', rule: 'pattern' }
+    ]);
+  });
+});
+
+describe('cardProblems over docs/fixtures/homebrew/cards.json', () => {
+  it.each(cards.valid.map((c) => [c.name, c.kind, c.content] as const))(
+    'accepts %s',
+    (_n, kind, content) => {
+      expect(cardProblems(kind, content)).toEqual([]);
+    }
+  );
+  it.each(cards.invalid.map((c) => [c.name, c.kind, c.content, c.problems] as const))(
+    'refuses %s with exactly its problems',
+    (_n, kind, content, problems) => {
+      expect(cardProblems(kind, content)).toEqual(problems);
+    }
+  );
+  it('refuses a link holding a control by its pattern of controls, once', () => {
+    expect(cardProblems('ref', { en: 'Brand', url: 'https://a\u0007' })).toEqual([
+      { path: 'url', rule: 'pattern' }
+    ]);
   });
 });
 
@@ -98,7 +149,7 @@ describe('recordOf and snapshotValid over docs/fixtures/homebrew/snapshots.json'
   it.each(snapshots.valid.map((c) => [c.name, c] as const))(
     'writes %s as its snapshot, which is valid',
     (_n, c) => {
-      const record = recordOf(c.key, c.content, c.book);
+      const record = recordOf(c.key, c.content, c.book, c.cards ?? []);
       expect(record).toEqual(c.snapshot);
       expect(snapshotValid(record)).toBe(true);
     }
@@ -115,6 +166,32 @@ describe('recordOf and snapshotValid over docs/fixtures/homebrew/snapshots.json'
     const bytes = new TextEncoder().encode(JSON.stringify(max?.snapshot)).length;
     expect(bytes).toBeGreaterThan(25_000);
     expect(bytes).toBeLessThan(SNAPSHOT_BYTES);
+  });
+  it('keeps the maximal snapshot with three rule cards and a set card under the bound', () => {
+    const max = snapshots.valid.find((c) => c.key === 'hb_maximalcardsaaaa');
+    expect(max).toBeDefined();
+    const bytes = new TextEncoder().encode(JSON.stringify(max?.snapshot)).length;
+    expect(bytes).toBeGreaterThan(75_000);
+    expect(bytes).toBeLessThan(SNAPSHOT_BYTES);
+    expect(SNAPSHOT_BYTES).toBe(131072);
+  });
+  it('writes no cards key when the item names no given card', () => {
+    const r = recordOf(
+      'hb_aaaaaaaaaaaaaaaa',
+      { kind: 'item', ru: 'Камень', set: 'ember-spark' },
+      null,
+      [{ key: 'hb_aldersetaaaaaaaa', kind: 'set', ru: 'Комплект' }]
+    );
+    expect('cards' in r).toBe(false);
+  });
+  it('refuses cards that are not an object and a group that is not one', () => {
+    const c = snapshots.valid.find((x) => x.key === 'hb_relateditemaaaaa')?.snapshot as Record<
+      string,
+      unknown
+    >;
+    expect(snapshotValid(c)).toBe(true);
+    expect(snapshotValid({ ...c, cards: [] })).toBe(false);
+    expect(snapshotValid({ ...c, cards: { sets: [] } })).toBe(false);
   });
   it('fills a missing language and an empty one from the other', () => {
     const r = recordOf('hb_aaaaaaaaaaaaaaaa', { kind: 'item', en: '', ru: 'Камень' }, null);
@@ -281,6 +358,134 @@ describe('withRecords', () => {
     expect(ix.searchable).toBe(base.searchable);
     expect(ix.allEquip).toBe(base.allEquip);
     expect(ix.rows).toBe(base.rows);
+    expect(ix.craftedFrom).toBe(base.craftedFrom);
+  });
+});
+
+describe('the relations of withRecords', () => {
+  const rec = (id: string, extra: Partial<Record_> = {}): Record_ => ({
+    id,
+    src: 'core',
+    kind: 'item',
+    en: id,
+    ru: id,
+    ende: '',
+    rud: '',
+    ...extra
+  });
+  const base = buildIndex({
+    items: {
+      t: [
+        rec('ci1', { craft: ['ci2'] }),
+        rec('ci2'),
+        rec('s1', { set: 'saints-ensemble' }),
+        rec('s2', { set: 'saints-ensemble' }),
+        rec('x1', { craft: ['ci3'] }),
+        rec('ci3')
+      ]
+    },
+    refs: {
+      slow: { en: 'Slow', ru: 'Медленно', ensub: '', rusub: '', ende: '', rud: '', url: '' }
+    },
+    sets: { 'saints-ensemble': { en: 'Saints', ru: 'Святые', ende: '', rud: '' } }
+  });
+  const SET = 'hb_aldersetaaaaaaaa';
+  const RULE = 'hb_alderrulecardaaa';
+  const owned: CardRef[] = [
+    { key: SET, kind: 'set', ru: 'Комплект Ольхи', rud: 'Бонус.' },
+    { key: RULE, kind: 'ref', en: 'Alder Brand', ende: 'Reroll.' },
+    { key: 'slow', kind: 'ref', en: 'Not the catalog one' }
+  ];
+  const up = recordOf(
+    'hb_upaaaaaaaaaaaaaa',
+    { kind: 'item', ru: 'Выше', craft_from: ['ci2'] },
+    null
+  );
+  const also = recordOf(
+    'hb_alsoaaaaaaaaaaaa',
+    { kind: 'item', ru: 'Тоже', craft_from: ['ci2', 'ci2'], craft: ['ci1'] },
+    null
+  );
+  const member = recordOf(
+    'hb_memberaaaaaaaaaa',
+    { kind: 'item', ru: 'Член', set: 'saints-ensemble', refs: [RULE, 'slow'] },
+    null,
+    owned
+  );
+
+  it("makes an own record's craft_from an upgrade of the catalog record", () => {
+    const ix = withRecords(base, [up], []);
+    const ci2 = ix.byId.get('ci2') as Record_;
+    expect(upgradesTo(ix, ci2).map((r) => r.id)).toEqual([up.id]);
+    expect(madeFrom(ix, up).map((r) => r.id)).toEqual(['ci2']);
+    expect(base.craftedInto.size).toBe(0);
+  });
+
+  it('puts the catalog records first and names each record once', () => {
+    const ix = withRecords(base, [up, also], []);
+    const ci2 = ix.byId.get('ci2') as Record_;
+    const ci1 = ix.byId.get('ci1') as Record_;
+    expect(upgradesTo(ix, ci2).map((r) => r.id)).toEqual([up.id, also.id]);
+    expect(madeFrom(ix, ci2).map((r) => r.id)).toEqual(['ci1']);
+    expect(madeFrom(ix, ci1).map((r) => r.id)).toEqual([also.id]);
+    expect(madeFrom(ix, also).map((r) => r.id)).toEqual(['ci2']);
+    const both = recordOf(
+      'hb_bothaaaaaaaaaaaa',
+      { kind: 'item', ru: 'Оба', craft: ['hb_upaaaaaaaaaaaaaa', 'ci3'] },
+      null
+    );
+    const ix2 = withRecords(base, [up, both], []);
+    expect(upgradesTo(ix2, both).map((r) => r.id)).toEqual(['ci3', up.id]);
+    expect(madeFrom(ix2, ix2.byId.get('ci3') as Record_).map((r) => r.id)).toEqual([
+      'x1',
+      both.id
+    ]);
+  });
+
+  it('joins no relation for a frozen copy', () => {
+    const ix = withRecords(base, [], [up]);
+    expect(upgradesTo(ix, ix.byId.get('ci2') as Record_)).toEqual([]);
+    expect(ix.craftedInto).toBe(base.craftedInto);
+    const mixed = withRecords(base, [also], [up]);
+    expect(upgradesTo(mixed, mixed.byId.get('ci2') as Record_).map((r) => r.id)).toEqual([
+      also.id
+    ]);
+  });
+
+  it("joins an own record to its catalog set after the catalog's members", () => {
+    const ix = withRecords(base, [member], []);
+    expect(setOf(ix, member).map((r) => r.id)).toEqual(['s1', 's2', member.id]);
+    expect(base.setMembers.get('saints-ensemble')).toHaveLength(2);
+  });
+
+  it('holds the cards the own records embed, a frozen card only for a new key, never over the catalog', () => {
+    const ownSet = recordOf(
+      'hb_ownsetaaaaaaaaaa',
+      { kind: 'item', ru: 'Своё', set: SET },
+      null,
+      owned
+    );
+    const frozenSet = recordOf(
+      'hb_frozensetaaaaaaa',
+      { kind: 'item', ru: 'Чужое', set: SET },
+      null,
+      [{ key: SET, kind: 'set', ru: 'Чужой комплект' }]
+    );
+    const frozenRule = recordOf(
+      'hb_frozenruleaaaaaa',
+      { kind: 'item', ru: 'Чужое', refs: ['hb_otherrulecardaaa'] },
+      null,
+      [{ key: 'hb_otherrulecardaaa', kind: 'ref', en: 'Other' }]
+    );
+    const ix = withRecords(base, [member, ownSet], [frozenSet, frozenRule]);
+    expect(ix.refs['slow']).toBe(base.refs['slow']);
+    expect(ix.refs[RULE]?.en).toBe('Alder Brand');
+    expect(ix.sets[SET]?.ru).toBe('Комплект Ольхи');
+    expect(ix.sets['saints-ensemble']).toBe(base.sets['saints-ensemble']);
+    expect(ix.refs['hb_otherrulecardaaa']?.en).toBe('Other');
+    expect(Object.keys(base.refs)).toEqual(['slow']);
+    const frozenOnly = withRecords(base, [], [frozenSet]);
+    expect(frozenOnly.sets[SET]?.ru).toBe('Чужой комплект');
   });
 });
 
@@ -318,6 +523,8 @@ describe('editLang', () => {
   it('answers the one language that names the item', () => {
     expect(editLang({ kind: 'item', en: 'Cap' }, 'ru')).toBe('en');
     expect(editLang({ kind: 'item', ru: 'Кольцо', en: '  ' }, 'en')).toBe('ru');
+    expect(editLang({ ru: 'Клеймо', rud: 'Текст.' }, 'en')).toBe('ru');
+    expect(editLang({ en: 'Brand', ru: 'Клеймо' }, 'en')).toBe('en');
   });
 });
 
@@ -381,5 +588,49 @@ describe('groupsOf', () => {
 
   it('puts an item whose source is not held under the default source', () => {
     expect(groupsOf([], [late], 'ru', 'Хоумбрю').map((g) => g.id)).toEqual(['hb']);
+  });
+});
+
+const used = (key: string, content: ItemRow['content']): ItemRow => ({
+  id: 'id-' + key,
+  key,
+  book_id: null,
+  content,
+  revision: 1,
+  created_at: '2026-10-01T10:00:00Z',
+  updated_at: '2026-10-01T10:00:00Z'
+});
+
+describe('itemUses and cardUses', () => {
+  const RING = 'hb_engravedringaaaa';
+  const items = [
+    used(RING, {
+      kind: 'item',
+      ru: 'Кольцо',
+      craft: [RING, 'ci1'],
+      set: 'hb_setaaaaaaaaaaaaa'
+    }),
+    used('hb_aaaaaaaaaaaaaaaa', { kind: 'item', ru: 'А', craft: [RING] }),
+    used('hb_bbbbbbbbbbbbbbbb', { kind: 'item', ru: 'Б', craft_from: [RING], refs: ['slow'] }),
+    used('hb_cccccccccccccccc', {
+      kind: 'equip',
+      ru: 'В',
+      eq: { t: 'armor', tier: 1, as: 1, th: [1, 2], line: RING },
+      refs: ['slow', 'hb_cardaaaaaaaaaaaa']
+    }),
+    used('hb_dddddddddddddddd', { kind: 'item', ru: 'Г', set: 'hb_setaaaaaaaaaaaaa' })
+  ];
+
+  it('counts the other items that name an item in a craft link or a line', () => {
+    expect(itemUses(items, RING)).toBe(3);
+    expect(itemUses(items, 'ci1')).toBe(1);
+    expect(itemUses(items, 'hb_zzzzzzzzzzzzzzzz')).toBe(0);
+  });
+
+  it('counts the items that name a set card or a rule card', () => {
+    expect(cardUses(items, 'set', 'hb_setaaaaaaaaaaaaa')).toBe(2);
+    expect(cardUses(items, 'ref', 'slow')).toBe(2);
+    expect(cardUses(items, 'ref', 'hb_cardaaaaaaaaaaaa')).toBe(1);
+    expect(cardUses(items, 'set', 'slow')).toBe(0);
   });
 });

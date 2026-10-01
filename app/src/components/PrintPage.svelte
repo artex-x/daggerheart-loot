@@ -13,7 +13,7 @@
   import Seg from './Seg.svelte';
   import { setBonusOf, setOf } from '../lib/data.js';
   import { PRINT_MAX, printHash, sectionHash } from '../lib/hash.js';
-  import { namesOf } from '../lib/i18n.js';
+  import { FOLD_OWN, relText } from '../lib/label.js';
   import { COMPACT_PER_SHEET, pages } from '../lib/print.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -45,13 +45,18 @@
   const blankKeys = $derived(Array.from({ length: sheet.blanks }, (_, k) => k));
 
   /** The set's shared bonus as a card's last text line. The label names the
-   *  members, so a card read alone still says the bonus needs the others. */
+   *  members, folded as the card folds them, so a card read alone still says the
+   *  bonus needs the others; a frozen copy with no other member names none. */
   function setLine(it: Record_): { label: string; body: string } | undefined {
     const bonus = index ? setBonusOf(index, it) : undefined;
     if (!index || !bonus) return undefined;
     const ru = app.lang === 'ru';
+    const name = ru ? bonus.ru : bonus.en;
+    const members = setOf(index, it);
     return {
-      label: `${ru ? bonus.ru : bonus.en} (${t.setLabel}: ${namesOf(setOf(index, it), app.lang)})`,
+      label: members.length
+        ? `${name} (${t.setLabel}: ${relText(members, app.lang, FOLD_OWN, it.id)})`
+        : name,
       body: ru ? bonus.rud : bonus.ende
     };
   }

@@ -229,6 +229,113 @@
           }
         }
       }
+    },
+    {
+      "name": "loot that upgrades into a catalog and an own record and is made from one",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка Ольхи",
+        "craft": [
+          "ci1",
+          "hb_emberaxeaaaaaaaa"
+        ],
+        "craft_from": [
+          "q1"
+        ]
+      }
+    },
+    {
+      "name": "eight craft ids and eight craft_from ids",
+      "content": {
+        "kind": "item",
+        "en": "Buckle",
+        "craft": [
+          "ci1",
+          "ci2",
+          "ci3",
+          "ci4",
+          "ci5",
+          "ci6",
+          "ci7",
+          "ci8"
+        ],
+        "craft_from": [
+          "q1",
+          "q2",
+          "q3",
+          "q4",
+          "q5",
+          "q6",
+          "q7",
+          "q8"
+        ]
+      }
+    },
+    {
+      "name": "an id of 64 characters",
+      "content": {
+        "kind": "item",
+        "en": "Buckle",
+        "craft": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1"
+        ]
+      }
+    },
+    {
+      "name": "a catalog set and three rule cards, catalog and own",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка Ольхи",
+        "set": "saints-ensemble",
+        "refs": [
+          "slow",
+          "hb_alderrulecardaaa",
+          "vampire"
+        ]
+      }
+    },
+    {
+      "name": "an own set",
+      "content": {
+        "kind": "consumable",
+        "ru": "Пряжка Ольхи",
+        "set": "hb_aldersetaaaaaaaa"
+      }
+    },
+    {
+      "name": "a weapon in a catalog line",
+      "content": {
+        "kind": "equip",
+        "en": "Alder Blade",
+        "eq": {
+          "t": "weapon",
+          "tier": 2,
+          "cls": "phy",
+          "tr": "strength",
+          "rg": "melee",
+          "dmg": "d8+1",
+          "dt": "phy",
+          "bu": 1,
+          "line": "f37"
+        }
+      }
+    },
+    {
+      "name": "armour that starts its own line",
+      "content": {
+        "kind": "equip",
+        "en": "Alder Mail",
+        "eq": {
+          "t": "armor",
+          "tier": 1,
+          "as": 3,
+          "th": [
+            6,
+            12
+          ],
+          "line": "hb_aldermailaaaaaaa"
+        }
+      }
     }
   ],
   "invalid": [
@@ -243,7 +350,7 @@
       ]
     },
     {
-      "name": "the keys img, roll and craft",
+      "name": "the keys img and roll, and craft as one id",
       "content": {
         "kind": "item",
         "ru": "Кольцо",
@@ -253,15 +360,15 @@
       },
       "problems": [
         {
+          "path": "craft",
+          "rule": "type"
+        },
+        {
           "path": "img",
           "rule": "extra"
         },
         {
           "path": "roll",
-          "rule": "extra"
-        },
-        {
-          "path": "craft",
           "rule": "extra"
         }
       ]
@@ -942,6 +1049,196 @@
         {
           "path": "rud",
           "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "craft null",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "craft": null
+      },
+      "problems": [
+        {
+          "path": "craft",
+          "rule": "type"
+        }
+      ]
+    },
+    {
+      "name": "an empty craft list",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "craft": []
+      },
+      "problems": [
+        {
+          "path": "craft",
+          "rule": "required"
+        }
+      ]
+    },
+    {
+      "name": "nine craft_from ids",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "craft_from": [
+          "q1",
+          "q2",
+          "q3",
+          "q4",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9"
+        ]
+      },
+      "problems": [
+        {
+          "path": "craft_from",
+          "rule": "many"
+        }
+      ]
+    },
+    {
+      "name": "a repeated craft id",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "craft": [
+          "ci1",
+          "ci1"
+        ]
+      },
+      "problems": [
+        {
+          "path": "craft.1",
+          "rule": "duplicate"
+        }
+      ]
+    },
+    {
+      "name": "a craft id with a space",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "craft": [
+          "ci 1"
+        ]
+      },
+      "problems": [
+        {
+          "path": "craft.0",
+          "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "a craft id of 65 characters",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "craft": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        ]
+      },
+      "problems": [
+        {
+          "path": "craft.0",
+          "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "a craft id that is a number",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "craft": [
+          1
+        ]
+      },
+      "problems": [
+        {
+          "path": "craft.0",
+          "rule": "type"
+        }
+      ]
+    },
+    {
+      "name": "four rule cards",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "refs": [
+          "slow",
+          "vampire",
+          "hb_alderrulecardaaa",
+          "hb_emberrulecardaaa"
+        ]
+      },
+      "problems": [
+        {
+          "path": "refs",
+          "rule": "many"
+        }
+      ]
+    },
+    {
+      "name": "a set that is a list",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "set": [
+          "saints-ensemble"
+        ]
+      },
+      "problems": [
+        {
+          "path": "set",
+          "rule": "type"
+        }
+      ]
+    },
+    {
+      "name": "a set with a space",
+      "content": {
+        "kind": "item",
+        "ru": "Пряжка",
+        "set": "saints ensemble"
+      },
+      "problems": [
+        {
+          "path": "set",
+          "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "a line that is a number",
+      "content": {
+        "kind": "equip",
+        "en": "Alder Blade",
+        "eq": {
+          "t": "weapon",
+          "tier": 2,
+          "cls": "phy",
+          "tr": "strength",
+          "rg": "melee",
+          "dmg": "d8+1",
+          "dt": "phy",
+          "bu": 1,
+          "line": 37
+        }
+      },
+      "problems": [
+        {
+          "path": "eq.line",
+          "rule": "type"
         }
       ]
     }

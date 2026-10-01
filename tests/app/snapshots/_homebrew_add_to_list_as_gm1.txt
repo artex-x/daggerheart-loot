@@ -28,22 +28,19 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     heading "Мои предметы" [level=1]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "Мои предметы: 4 из 100"
-    heading "ИСТОЧНИКИ" [level=2]
-    ... StaticText x3 of 7 same-shape siblings elided
-    StaticText "1 предмет"
-    StaticText " · 2 раздела"
-    button "Разделы" [expanded=false]
-    button "Переименовать"
-    button "Удалить"
-    ... button x4 of 8 same-shape siblings elided
+    DisclosureTriangle "ИСТОЧНИКИ · 1 источник" [expanded=false]
+    DisclosureTriangle "КАРТЫ · 1 комплект, 1 карта правил" [expanded=false]
     link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
     checkbox "Выбрать все" [checked=mixed]
     generic ""
       StaticText "Выбрано 1"
+    button "Удалить (1)"
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
     checkbox "Топор Тлеющих Углей" [checked=true]
+    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
     heading "Хоумбрю 3" [level=2]
     checkbox "Кольцо с гравировкой" [checked=false]
+    button "Кольцо с гравировкой Надпись на неизвестном языке. Тёплое на ощу..." [namelen=83 namehash=c133104c]
     checkbox "Настой кузнеца" [checked=false]
     button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=110 namehash=fe1ee452]
     checkbox "Whispering Cap" [checked=false]
@@ -66,6 +63,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
++ Новая карта правил
++ Новый комплект
 + Новый список
 Dragon's Vault
 Dread
@@ -81,6 +80,7 @@ daggerheart.com
 Выбрать все
 Добавить
 Добавить в список
+Изменить
 К содержимому
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
@@ -134,22 +134,19 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     heading "My items" [level=1]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "My items: 4 of 100"
-    heading "SOURCES" [level=2]
-    ... StaticText x3 of 7 same-shape siblings elided
-    StaticText "1 item"
-    StaticText " · 2 sections"
-    button "Sections" [expanded=false]
-    button "Rename"
-    button "Delete"
-    ... button x4 of 8 same-shape siblings elided
+    DisclosureTriangle "SOURCES · 1 source" [expanded=false]
+    DisclosureTriangle "CARDS · 1 set, 1 rule card" [expanded=false]
     link "New item" [url=index.html?as=gm1#/homebrew/new]
     checkbox "Select all" [checked=mixed]
     generic ""
       StaticText "Selected 1"
+    button "Delete (1)"
     heading "Alder Workshop · Blades 1" [level=2]
     checkbox "Ember Axe" [checked=true]
+    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
     heading "Homebrew 3" [level=2]
     checkbox "Whispering Cap" [checked=false]
+    button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=86 namehash=49ff78d8]
     checkbox "Кольцо с гравировкой" [checked=false]
     button "Кольцо с гравировкой Надпись на неизвестном языке. Тёплое на ощу..." [namelen=81 namehash=01a2fff3]
     checkbox "Настой кузнеца" [checked=false]
@@ -167,6 +164,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
++ New rule card
++ New set
 Account: gm1@example.test
 Add
 Add to list
@@ -179,6 +178,7 @@ Delete (1)
 Dragon's Vault
 Dread
 EN
+Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
 Install as an app

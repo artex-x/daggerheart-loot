@@ -1612,7 +1612,9 @@ ok(
 ok(!dvEq.some((x) => x.eq.line), "a Dragon's Vault record carries an upgrade line");
 const dvById = Object.fromEntries(dv.map((x) => [x.id, x]));
 ok(
-  dvById.dve24.craft === 'dve25' && dvById.dve25.craft === 'dve26' && !dvById.dve26.craft,
+  JSON.stringify(dvById.dve24.craft) === '["dve25"]' &&
+    JSON.stringify(dvById.dve25.craft) === '["dve26"]' &&
+    !dvById.dve26.craft,
   'Frostwyrd is not the craft chain dve24 -> dve25 -> dve26'
 );
 ok(

@@ -526,6 +526,11 @@ them mid-batch:
 - `docker run --rm` with no redirect loses everything once the container
   exits (`docker logs` has nothing after `--rm` removes it) - always
   redirect a container run's stdout to a host file.
+- The Browser pane opens a design mock only from `mocks/index.html` and from
+  a page copied to the one path `m23-editor-feedback.html` of that
+  directory (measured 2026-10-01); it refuses every other mock path. A page
+  copied there stays under about 88 000 URL-encoded characters. A 360 px
+  check of a mock runs on such a copy.
 
 ### Code navigation
 
@@ -1746,9 +1751,9 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-171 kB for the unconfigured build and 230 kB for the configured one, which
+183 kB for the unconfigured build and 242 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 171 kB limit. The 230 kB limit runs in
+unconfigured and so measures only the 183 kB limit. The 242 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -1760,9 +1765,10 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 230 kB budget (with the account client chunk)`; 224.8
-kB on 2026-10-01 with homebrew in the catalog pages, 165.9 kB unconfigured
-(220.8 kB on 2026-09-30 with the homebrew pages, 203.0 kB before them, after the
+Expected: `within the 242 kB budget (with the account client chunk)`; 236.6
+kB on 2026-10-01 with the homebrew relations, 177.6 kB unconfigured (224.8 kB
+on 2026-10-01 with homebrew in the catalog pages, 165.9 kB unconfigured;
+220.8 kB on 2026-09-30 with the homebrew pages, 203.0 kB before them, after the
 import and export and the requests polish; 184.5 kB on 2026-09-27 with the
 Realtime client, 178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
 `check:built` rebuilds it. During R7-R7d a batch whose build passes a limit
@@ -2026,16 +2032,18 @@ Steps:
    a migration that seeds `limit_defaults` lacks that migration's keys
    (`20260928120000_purchase_requests.sql` adds `request_lines` and
    `pending_requests_per_list`; `20260930130000_homebrew.sql` adds
-   `homebrew_books_per_owner` 20 and `homebrew_items_per_owner` 100), and
-   every call that reads a missing key raises `unknown limit key`. Run
-   `select key, value from public.limit_defaults order by key;`. Expected:
-   `entries_per_list`, `homebrew_books_per_owner`,
-   `homebrew_items_per_owner`, `lists_per_owner`,
+   `homebrew_books_per_owner` 20 and `homebrew_items_per_owner` 100;
+   `20261001130000_homebrew_relations.sql` adds `homebrew_cards_per_owner`
+   100), and every call that reads a missing key raises `unknown limit
+   key`. Run `select key, value from public.limit_defaults order by key;`.
+   Expected: `entries_per_list`, `homebrew_books_per_owner`,
+   `homebrew_cards_per_owner`, `homebrew_items_per_owner`, `lists_per_owner`,
    `pending_requests_per_list` and `request_lines`. For each missing key,
    insert it at its migration's default, for example `insert into
    public.limit_defaults (key, value) values ('request_lines', 100),
    ('pending_requests_per_list', 10), ('homebrew_books_per_owner', 20),
-   ('homebrew_items_per_owner', 100) on conflict (key) do nothing;`, and
+   ('homebrew_cards_per_owner', 100), ('homebrew_items_per_owner', 100) on
+   conflict (key) do nothing;`, and
    run the check again.
 
 Before it asks for the ref, the command checks the receipt, reads
@@ -2124,6 +2132,25 @@ a `list_entries` row whose frozen snapshot holds such a bonus refuses every
 write (in any user's list; an `apply_list_writes` batch that touches it
 fails whole), and a backup restore into the narrowed database refuses those
 rows.
+
+To undo `20261001130000_homebrew_relations`, revert the app alone: the old
+frontend writes items with no relation key and never reads
+`homebrew_cards`, and the widened validators take its writes; a projection
+then still embeds the cards the items name. Narrow the database too only as
+a second push, a new migration whose body is the reversal file, and only
+after a read finds no item that holds `craft`, `craft_from`, `set`, `refs`
+or `eq.line`, no list entry whose snapshot holds `cards`, and no card the
+owner wants to keep. The reversal deletes every card and fails while a
+frozen snapshot is larger than 32768 bytes; after it, an item with a
+relation key refuses every save, a list entry whose snapshot holds cards
+refuses every write (an `apply_list_writes` batch that touches it fails
+whole), and a backup restore into the narrowed database refuses those rows.
+An app-only revert is not clean either: the old editor drops every relation
+key (`craft`, `craft_from`, `set`, `refs`, `eq.line`) of an item it saves,
+and only a backup restores them; the old list pages hide a frozen copy or a
+shared reference whose snapshot holds any relation key (`craft`,
+`craft_from`, `set`, `refs`, `eq.line`) or `cards` (the rows stay in the
+database).
 
 ### Usage monitoring
 

@@ -74,7 +74,7 @@ How data is organized today (do not reinvent this)
    - `en` / `ru` - names
    - `ende` / `rud` - descriptions
    - `img` - image filename
-   - optional `craft` - id of what this recipe/item produces
+   - optional `craft` - the list of ids this recipe or item produces
    - optional other source-specific fields already used by similar sets (tier/rarity/community/etc.)
 
 2) `eq` - equipment with no roll (weapons, secondary, armor).
@@ -95,7 +95,7 @@ How data is organized today (do not reinvent this)
    - inspect real `refs` entries and the render path in `app/src/components/RecordCard.svelte` before adding new ones
 
 5) `craft` relationships:
-   - on a record, `craft: "<id>"` means "this thing crafts into / upgrades to that id"; the card reads "Upgrades to" and the target reads "Made from"
+   - on a record, `craft: ["<id>"]` means "this thing crafts into / upgrades to that id" (several ids for several targets); the card reads "Upgrades to" and the target reads "Made from"
    - reverse links (`crafted from`) are computed at load - do not hand-maintain a second reverse index unless the codebase already requires it
    - a chain of named items (Frostwyrd Dormant -> Awakened -> Exalted) is a craft chain; the four-tier ladder is `eq.line`, and nothing else is
 

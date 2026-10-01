@@ -413,7 +413,7 @@ stop working entirely. Training scrapers are excluded separately in `robots.txt`
 | `roll` | number in its own table |
 | `kind` | `item`, `consumable` or `equip` |
 | `img` | file name in `img/`, same as `id`; may be empty |
-| `craft` | optional: `id` of what this upgrades into |
+| `craft` | optional: a list of the `id`s this upgrades into, for example `["cc8"]` |
 | `refs` | optional: keys into `window.LOOT.refs` |
 | `set` | optional: the key of the set the record belongs to; its bonus is `window.LOOT.sets[key]` |
 | `tier` | Vault of Ages only: `1`-`4`, `A` for artifacts, `C` for cursed |
@@ -424,10 +424,10 @@ and renumber `roll` on the rest. Where `img` is empty the app falls back to
 `img/_none.webp` and hides the **Image** button, so a record can be added before
 its illustration exists; the same happens when a listed file fails to load.
 
-Seventeen records carry `craft`, the `id` of what they turn into - ingredients
+Seventeen records carry `craft`, the list of `id`s they turn into - ingredients
 that become potions, the Core recipes, and the two Frostwyrd upgrades. Only one
 direction is stored; the reverse ("Made from") is built at load, so the two
-halves cannot drift apart. Twelve descriptions point at rulebook cards and
+halves cannot drift apart. Thirteen descriptions point at rulebook cards and
 adversaries through `refs`; that text travels with the item into copies and
 shares, so a player gets everything in one message.
 

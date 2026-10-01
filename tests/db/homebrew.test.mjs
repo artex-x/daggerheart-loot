@@ -2,7 +2,8 @@
   The author's homebrew: homebrew_books (sources with sections) and
   homebrew_items, each row its owner's. The validators accept and refuse
   every case of docs/fixtures/homebrew/ as app/src/lib/homebrew.ts does, and
-  homebrew_snapshot_of() writes each snapshot case as recordOf() does. A key
+  homebrew_snapshot_of() writes each snapshot case, with its cards, as
+  recordOf() does. The cards themselves are homebrew-cards.test.mjs's. A key
   is pinned after insert; the count limits refuse the 21st source and the
   101st item; my_limit() reads the caller's own limit. A list entry is an
   official record, a reference to an item the list's owner holds, or a
@@ -118,7 +119,7 @@ const world = async (tx) => {
 };
 const snapshotOf = async (tx, key, content, book) => {
   const [{ v }] = await tx`select public.homebrew_snapshot_of(${key}, ${tx.json(content)},
-    ${book === null ? null : tx.json(book)}::jsonb) as v`;
+    ${book === null ? null : tx.json(book)}::jsonb, null) as v`;
   return v;
 };
 const asA = (setup, fn) => asRole(sql, { role: 'authenticated', sub: A, setup }, fn);
@@ -151,7 +152,7 @@ const revisions = async (tx) =>
   );
 
 describe('homebrew grants and functions', () => {
-  for (const table of ['homebrew_books', 'homebrew_items']) {
+  for (const table of ['homebrew_books', 'homebrew_cards', 'homebrew_items']) {
     it(`grants ${table} to authenticated in full, to service_role select and delete, anon nothing, with row level security on`, async () => {
       const rows = await sql`
         select r.role, p.priv
@@ -208,14 +209,19 @@ describe('homebrew grants and functions', () => {
       'homebrew_books_limit()': pin(true, false, false),
       'homebrew_books_touch()': pin(true, false, false),
       'homebrew_broadcast()': pin(true, false, false),
+      'homebrew_card_valid(text,jsonb)': validator,
+      'homebrew_cards_before_update()': pin(false, false, false),
+      'homebrew_cards_limit()': pin(true, false, false),
+      'homebrew_cards_touch()': pin(true, false, false),
       'homebrew_content_valid(jsonb)': validator,
+      'homebrew_ids_ok(jsonb,text,integer)': validator,
       'homebrew_items_before_delete()': pin(true, false, false),
       'homebrew_items_before_update()': pin(false, false, false),
       'homebrew_items_limit()': pin(true, false, false),
       'homebrew_items_touch()': pin(true, false, false),
       'homebrew_key_ok(text)': validator,
       'homebrew_names_ok(jsonb,integer)': validator,
-      'homebrew_snapshot_of(text,jsonb,jsonb)': validator,
+      'homebrew_snapshot_of(text,jsonb,jsonb,jsonb)': validator,
       'homebrew_snapshot_valid(jsonb)': validator,
       'homebrew_text_ok(jsonb,text,integer)': validator,
       'list_entries_reference_exists()': pin(true, false, false),
@@ -223,9 +229,10 @@ describe('homebrew grants and functions', () => {
     });
   });
 
-  it('refuses anon a read of either table and my_limit()', async () => {
+  it('refuses anon a read of the three tables and my_limit()', async () => {
     for (const call of [
       (tx) => tx`select id from public.homebrew_books`,
+      (tx) => tx`select id from public.homebrew_cards`,
       (tx) => tx`select id from public.homebrew_items`,
       (tx) => tx`select public.my_limit('homebrew_items_per_owner')`
     ]) {
@@ -264,14 +271,15 @@ describe('the validators over docs/fixtures/homebrew/', () => {
     const wrong = [];
     for (const c of SNAPSHOTS.valid) {
       const [{ same, ok }] = await sql.unsafe(
-        `select public.homebrew_snapshot_of($1, $2::text::jsonb, $3::text::jsonb) = $4::text::jsonb
-             as same,
+        `select public.homebrew_snapshot_of($1, $2::text::jsonb, $3::text::jsonb,
+             $5::text::jsonb) = $4::text::jsonb as same,
            public.homebrew_snapshot_valid($4::text::jsonb) as ok`,
         [
           c.key,
           JSON.stringify(c.content),
           c.book === null ? null : JSON.stringify(c.book),
-          JSON.stringify(c.snapshot)
+          JSON.stringify(c.snapshot),
+          c.cards === undefined ? null : JSON.stringify(c.cards)
         ]
       );
       if (!same || !ok) wrong.push(c.name);
@@ -282,7 +290,7 @@ describe('the validators over docs/fixtures/homebrew/', () => {
     assert.deepEqual(wrong, []);
   });
 
-  it('keeps the maximal snapshot under 32768 bytes and takes it as a frozen entry', async () => {
+  it('keeps the R7 maximal snapshot under 32768 bytes and takes it as a frozen entry', async () => {
     const max = SNAPSHOTS.valid.find((c) => c.key === 'hb_maximalitemaaaaa');
     const out = await asA(world, async (tx) => {
       const [{ n }] = await tx`select octet_length(${tx.json(max.snapshot)}::jsonb::text) as n`;

@@ -11,12 +11,14 @@
      lib/desc.ts - so a label is an <i> element and a list is a real <ul>. */
   import Actions from './Actions.svelte';
   import Badge from './Badge.svelte';
+  import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
-  import { cardBadges, srcLabel } from '../lib/label.js';
-  import { setBonusOf, setOf, upgradeLine } from '../lib/data.js';
+  import { FOLD_OWN, cardBadges, foldOwn, relName, relOrder, srcLabel } from '../lib/label.js';
+  import { madeFrom, setBonusOf, setOf, upgradeLine, upgradesTo } from '../lib/data.js';
+  import { isHomebrewKey, isHomebrewRecord } from '../lib/homebrew.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { AltCol, Index } from '../lib/data.js';
   import type { Lang, Record_ } from '../lib/types.js';
@@ -92,7 +94,8 @@
   const art = $derived(artSrc(it.img, artBroken));
   const badges = $derived(cardBadges(it, lang, t));
 
-  const upgrade = $derived(it.craft ? index.byId.get(it.craft) : undefined);
+  const into = $derived(relOrder(upgradesTo(index, it), lang));
+  const from = $derived(relOrder(madeFrom(index, it), lang));
 
   /* The tier ladder: every rung of this upgrade line, in tier order. A line of
      one is not a ladder, and the live app leaves it out. */
@@ -100,21 +103,68 @@
     const line = it.eq?.line ? upgradeLine(index, it) : [];
     return line.length > 1 ? line : [];
   });
-  const madeFrom = $derived.by(() => {
-    const from = index.craftedFrom.get(it.id);
-    return from ? index.byId.get(from) : undefined;
-  });
-  const setMembers = $derived(setOf(index, it));
+  const setMembers = $derived(relOrder(setOf(index, it), lang));
+
+  /* Each relation line and the ladder fold their homebrew records past the third
+     (docs/specs/FEATURES.md, "Records"). The open lines live in this card only, keyed by
+     record, so another record drawn in the same card starts closed. */
+  type Line = 'from' | 'into' | 'set' | 'ladder';
+  let opened = $state<string[]>([]);
+  const isOpen = (line: Line): boolean => opened.includes(`${it.id}:${line}`);
+  function toggle(line: Line): void {
+    const key = `${it.id}:${line}`;
+    opened = isOpen(line) ? opened.filter((k) => k !== key) : [...opened, key];
+  }
+  function fold(
+    list: readonly Record_[],
+    line: Line
+  ): { shown: readonly Record_[]; more: number } {
+    const folded = foldOwn(list, FOLD_OWN, it.id);
+    return isOpen(line) ? { shown: list, more: folded.more } : folded;
+  }
+  const fromFold = $derived(fold(from, 'from'));
+  const intoFold = $derived(fold(into, 'into'));
+  const setFold = $derived(fold(setMembers, 'set'));
+  const ladderFold = $derived(fold(ladder, 'ladder'));
   const setBonus = $derived.by(() => {
     const b = setBonusOf(index, it);
     if (!b) return undefined;
     return lang === 'ru' ? { name: b.ru, text: b.rud } : { name: b.en, text: b.ende };
   });
   const refs = $derived(
-    (it.refs ?? []).map((k) => index.refs[k]).filter((r) => r !== undefined)
+    (it.refs ?? []).flatMap((key) => {
+      const card = index.refs[key];
+      return card ? [{ key, card }] : [];
+    })
   );
+  /* An own rule card links to its address as written, with the host as the text; a
+     catalog card links to daggerheart.su in the language on screen. */
+  const hostOf = (url: string): string => {
+    try {
+      return new URL(url).host;
+    } catch {
+      return url;
+    }
+  };
 </script>
 
+<!-- The fold of a relation line or the ladder: «и ещё N» closed, «свернуть» open; the same
+     button both ways, so the focus stays on it. -->
+{#snippet moreButton(line: Line, more: number)}
+  <Button
+    variant="bare"
+    size="sm"
+    caret
+    expanded={isOpen(line)}
+    onclick={() => {
+      toggle(line);
+    }}>{isOpen(line) ? t.relLess : t.andMore.replace('%n', String(more))}</Button
+  >
+{/snippet}
+
+<!-- eslint-disable @typescript-eslint/no-confusing-void-expression, svelte/no-useless-mustaches --
+     a `{@render}` tag reads as a void expression to the first rule; `{' '}` keeps the space
+     before a fold button, which a block's edge would trim. -->
 <article class="card {variant}" data-id={it.id}>
   <!-- A button rather than a figure: on a table row it opens the record, and
        the full card keeps the element so the two stay one component. -->
@@ -189,9 +239,11 @@
            rather than a button: it goes nowhere. -->
       <div class="steps">
         <span class="steps-l">{t.tier}</span>
-        {#each ladder as rung (rung.id)}
+        {#each ladderFold.shown as rung (rung.id)}
           {#if rung.id === it.id}
-            <span class="step on" aria-current="true">{rung.eq?.tier}</span>
+            <span class="step on" aria-current="true"
+              >{rung.eq?.tier}{isHomebrewRecord(rung) ? ' ' + t.hbMark : ''}</span
+            >
           {:else}
             <!-- Named as well as titled. The live app gives the rung a title
                  and a digit for its content, and content wins the accessible
@@ -202,37 +254,53 @@
             <button
               type="button"
               class="step"
-              title={nameOf(rung, lang)}
-              aria-label={nameOf(rung, lang)}
-              onclick={() => onopen?.(rung)}>{rung.eq?.tier}</button
+              title={relName(rung, lang)}
+              aria-label={relName(rung, lang)}
+              onclick={() => onopen?.(rung)}
+              >{rung.eq?.tier}{isHomebrewRecord(rung) ? ' ' + t.hbMark : ''}</button
             >
           {/if}
         {/each}
+        {#if ladderFold.more}{@render moreButton('ladder', ladderFold.more)}{/if}
       </div>
     {/if}
 
-    {#if upgrade || madeFrom || setMembers.length}
+    {#if into.length || from.length || setMembers.length || setBonus}
       <!-- Both directions in chain order: where a thing came from, then where
            it goes, each with its own arrow. Only the forward one travels into
            a copied message. -->
       <div class="craft">
-        {#if madeFrom}
+        {#if from.length}
           <p>
             <Icon name="craftFrom" />
             <span class="craft-l">{t.craftFrom}</span>
-            <a href={recordHash(madeFrom.id)}>{nameOf(madeFrom, lang)}</a>
+            <span
+              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
+                  href={recordHash(r.id)}>{relName(r, lang)}</a
+                >{/each}{#if fromFold.more}{' '}{@render moreButton(
+                  'from',
+                  fromFold.more
+                )}{/if}</span
+            >
           </p>
         {/if}
-        {#if upgrade}
+        {#if into.length}
           <p>
             <Icon name="craft" />
             <span class="craft-l">{t.craftInto}</span>
-            <a href={recordHash(upgrade.id)}>{nameOf(upgrade, lang)}</a>
+            <span
+              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
+                  href={recordHash(r.id)}>{relName(r, lang)}</a
+                >{/each}{#if intoFold.more}{' '}{@render moreButton(
+                  'into',
+                  intoFold.more
+                )}{/if}</span
+            >
           </p>
         {/if}
         {#if setMembers.length}
-          <!-- Every member in catalogue order, the record itself inert:
-               the tier ladder's own rule for the rung you are on
+          <!-- Every catalogue member in its order, then the own ones by name,
+               the record itself inert: the tier ladder's own rule for the rung you are on
                (`.step.on[aria-current]` above), reused here for the piece
                of the set you are looking at. One flex item holding the
                whole comma-joined run, so the punctuation flows as prose
@@ -241,30 +309,35 @@
             <Icon name="craft" />
             <span class="craft-l">{t.setLabel}</span>
             <span
-              >{#each setMembers as member, i (member.id)}{i > 0
+              >{#each setFold.shown as member, i (member.id)}{i > 0
                   ? ', '
                   : ''}{#if member.id === it.id}<span aria-current="true"
-                    >{nameOf(member, lang)}</span
-                  >{:else}<a href={recordHash(member.id)}>{nameOf(member, lang)}</a
-                  >{/if}{/each}</span
+                    >{relName(member, lang)}</span
+                  >{:else}<a href={recordHash(member.id)}>{relName(member, lang)}</a
+                  >{/if}{/each}{#if setFold.more}{' '}{@render moreButton(
+                  'set',
+                  setFold.more
+                )}{/if}</span
             >
           </p>
-          {#if setBonus}
-            <!-- One span, so the row's flex gap does not split the label from
-                 the text. -->
-            <p>
-              <span><i>{setBonus.name}:</i> {setBonus.text}</span>
-            </p>
-          {/if}
+        {/if}
+        {#if setBonus}
+          <!-- One span, so the row's flex gap does not split the label from
+               the text. A frozen copy alone in its set draws the bonus with no
+               set line. -->
+          <p>
+            <span><i>{setBonus.name}:</i> {setBonus.text}</span>
+          </p>
         {/if}
       </div>
     {/if}
+    <!-- eslint-enable svelte/no-useless-mustaches -->
 
     {#if refs.length}
       <!-- Folded by default, so a card that quotes a spell is no taller than
            one that does not. -->
       <div class="refs">
-        {#each refs as r, i (i)}
+        {#each refs as { key, card: r }, i (i)}
           <details>
             <summary>
               <Icon name="ref" />
@@ -275,11 +348,15 @@
               {#each (lang === 'ru' ? r.rud : r.ende).split('\n') as line, j (j)}{#if j > 0}<br
                   />{/if}{line}{/each}
             </p>
-            <a
-              href={lang === 'ru' ? r.url : r.url.replace('//ru.', '//en.')}
-              target="_blank"
-              rel="noopener">daggerheart.su</a
-            >
+            {#if !isHomebrewKey(key)}
+              <a
+                href={lang === 'ru' ? r.url : r.url.replace('//ru.', '//en.')}
+                target="_blank"
+                rel="noopener">daggerheart.su</a
+              >
+            {:else if r.url}
+              <a href={r.url} target="_blank" rel="noopener">{hostOf(r.url)}</a>
+            {/if}
           </details>
         {/each}
       </div>
@@ -588,6 +665,12 @@
 
   .craft a:hover {
     border-bottom-style: solid;
+  }
+
+  /* The fold button reads at the line's own size; this outranks Button's `.btn.bare`. */
+  .craft p :global(.btn.bare),
+  .steps :global(.btn.bare) {
+    font-size: 12.5px;
   }
 
   /* `.card-acts` moved to `Actions.svelte`; its two 600px descendant

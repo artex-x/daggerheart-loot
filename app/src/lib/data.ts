@@ -53,8 +53,12 @@ export interface Index {
   searchable: readonly Record_[];
   /** Everything with a stat block, wherever it lives. */
   allEquip: readonly Record_[];
-  /** `id of the upgrade` -> `id it is made from`. The reverse of `craft`. */
-  craftedFrom: ReadonlyMap<string, string>;
+  /** `id of an upgrade` -> the records made into it, in `[...eq, ...all]`
+   *  order. The reverse of `craft`. */
+  craftedFrom: ReadonlyMap<string, readonly Record_[]>;
+  /** `id of a record` -> the records whose `craft_from` names it, in the order they
+   *  joined. The reverse of `craft_from`, which only a homebrew item writes. */
+  craftedInto: ReadonlyMap<string, readonly Record_[]>;
   /**
    * A set's key -> its members, in `[...eq, ...all]` order - the same source
    * list `allEquip` is built from, so a set's members read in the order the
@@ -119,22 +123,16 @@ export function buildIndex(loot: Loot): Index {
 
   /* Only one direction is stored. Deriving the other means the two halves
      cannot disagree, and a link to a record that does not exist is simply not
-     made. */
-  const craftedFrom = new Map<string, string>();
-  for (const it of all) {
-    if (it.craft && byId.has(it.craft)) craftedFrom.set(it.craft, it.id);
-  }
+     made.
 
-  /* Grouped from the same concatenation `allEquip` filters down from, before
-     that filter runs - a set is not only ever equipment, even though every
-     member today happens to be. */
-  const setMembers = new Map<string, Record_[]>();
-  for (const it of [...eq, ...all]) {
-    if (!it.set) continue;
-    const members = setMembers.get(it.set) ?? [];
-    members.push(it);
-    setMembers.set(it.set, members);
-  }
+     Sets are grouped from the same concatenation `allEquip` filters down from,
+     before that filter runs - a set is not only ever equipment, even though
+     every member today happens to be. */
+  const { craftedFrom, craftedInto, setMembers } = relate(
+    { craftedFrom: new Map(), craftedInto: new Map(), setMembers: new Map() },
+    [...eq, ...all],
+    byId
+  );
 
   /* The alternate tables are the only place a loot record's rarity is written
      down, so the index is those tables read backwards. Records outside them -
@@ -169,6 +167,7 @@ export function buildIndex(loot: Loot): Index {
     searchable: [...all, ...eq],
     allEquip,
     craftedFrom,
+    craftedInto,
     setMembers,
     rarityOf: (id) => rarity.get(id),
     altRow: (kind, r, col, n) => altCols.get(`${kind}/${r}/${col}`)?.[n - 1],
@@ -244,29 +243,123 @@ export function plainFacets(it: Record_): Record<string, string> {
   };
 }
 
-/** Every piece in one upgrade line, in tier order; an artifact sorts last. */
-export function upgradeLine(index: Index, it: Record_): Record_[] {
-  const line = it.eq?.line;
-  if (!line) return [];
+/* Tier order; an artifact sorts last. */
+const byTier = (a: Record_, b: Record_): number => {
   const rank = (x: Record_): number => {
     const tier = x.eq?.tier ?? 0;
     return tier === 'A' ? 5 : tier;
   };
-  return index.allEquip.filter((x) => x.eq?.line === line).sort((a, b) => rank(a) - rank(b));
+  return rank(a) - rank(b);
+};
+
+/** Every piece in one upgrade line, in tier order, the record itself included when the
+ *  index lacks it (a frozen copy); an artifact sorts last. */
+export function upgradeLine(index: Index, it: Record_): Record_[] {
+  const line = it.eq?.line;
+  if (!line) return [];
+  const members = lineMembers(index, line);
+  return members.some((r) => r.id === it.id) ? members : [...members, it].sort(byTier);
+}
+
+/** Every piece of the upgrade line `line`, in tier order; an artifact sorts last. */
+export function lineMembers(index: Index, line: string): Record_[] {
+  return index.allEquip.filter((x) => x.eq?.line === line).sort(byTier);
 }
 
 export function equipOfKind(index: Index, kind: EquipKind): Record_[] {
   return index.allEquip.filter((it) => it.eq?.t === kind);
 }
 
-/** Every member of the set a record belongs to, itself included - empty
- *  where the record belongs to no set or to a set of one. */
-export function setOf(index: Index, it: Record_): readonly Record_[] {
-  const members = it.set ? (index.setMembers.get(it.set) ?? []) : [];
-  return members.length > 1 ? members : [];
+/* A `data.js` cached from before `craft` became a list still holds one id
+   string (docs/specs/CONTRACTS.md, section 4), so the reader takes both. */
+function craftIds(it: Record_): readonly string[] {
+  const craft: unknown = it.craft;
+  if (Array.isArray(craft)) return craft as readonly string[];
+  return typeof craft === 'string' ? [craft] : [];
 }
 
-/** The shared bonus of the set a record belongs to, where the set has one. */
+/* Only a homebrew item writes `craft_from`. */
+function craftFromIds(it: Record_): readonly string[] {
+  return isHomebrewRecord(it) ? (it.craft_from ?? []) : [];
+}
+
+/* Each record once, the catalog's before the homebrew ones, each part in its order. */
+function officialFirst(list: readonly Record_[]): Record_[] {
+  const once = [...new Set(list)];
+  return [
+    ...once.filter((r) => !isHomebrewRecord(r)),
+    ...once.filter((r) => isHomebrewRecord(r))
+  ];
+}
+
+const resolved = (index: Index, ids: readonly string[]): Record_[] =>
+  [...new Set(ids)].flatMap((id) => {
+    const r = index.byId.get(id);
+    return r ? [r] : [];
+  });
+
+export type Relations = Pick<Index, 'craftedFrom' | 'craftedInto' | 'setMembers'>;
+
+/** Returns `base`'s relation maps with `records` added after its own; a craft link counts
+ *  only to an id `byId` holds. `base` does not change. */
+export function relate(
+  base: Relations,
+  records: readonly Record_[],
+  byId: ReadonlyMap<string, Record_>
+): Relations {
+  const copy = (m: ReadonlyMap<string, readonly Record_[]>): Map<string, Record_[]> =>
+    new Map([...m].map(([k, v]) => [k, [...v]]));
+  const craftedFrom = copy(base.craftedFrom);
+  const craftedInto = copy(base.craftedInto);
+  const setMembers = copy(base.setMembers);
+  const push = (m: Map<string, Record_[]>, id: string, it: Record_): void => {
+    const list = m.get(id) ?? [];
+    list.push(it);
+    m.set(id, list);
+  };
+  for (const it of records) {
+    for (const id of new Set(craftIds(it))) if (byId.has(id)) push(craftedFrom, id, it);
+    for (const id of new Set(craftFromIds(it))) if (byId.has(id)) push(craftedInto, id, it);
+    if (it.set) push(setMembers, it.set, it);
+  }
+  return { craftedFrom, craftedInto, setMembers };
+}
+
+/** Returns the records this one upgrades into: those its `craft` names, then those whose
+ *  `craft_from` names it; each once, the catalog's records before the homebrew ones. */
+export function upgradesTo(index: Index, it: Record_): Record_[] {
+  return officialFirst([
+    ...resolved(index, craftIds(it)),
+    ...(index.craftedInto.get(it.id) ?? [])
+  ]);
+}
+
+/** Returns the records made into this one: those whose `craft` names it, in the order the
+ *  tables hold them, then those its `craft_from` names; each once, the catalog's records
+ *  before the homebrew ones. */
+export function madeFrom(index: Index, it: Record_): Record_[] {
+  return officialFirst([
+    ...(index.craftedFrom.get(it.id) ?? []),
+    ...resolved(index, craftFromIds(it))
+  ]);
+}
+
+/** Every member of the set a record belongs to, itself included also when the index
+ *  lacks it (a frozen copy) - empty where the record belongs to no set or to a set of one. */
+export function setOf(index: Index, it: Record_): readonly Record_[] {
+  if (!it.set) return [];
+  const members = index.setMembers.get(it.set) ?? [];
+  const all = members.some((r) => r.id === it.id) ? members : [...members, it];
+  return all.length > 1 ? all : [];
+}
+
+/** The shared bonus of the set a record belongs to, where the set has one: the index's
+ *  card, else the one the record carries. A frozen copy with no other member of its set
+ *  still gets the card it carries; an own item alone in its set gets none. */
 export function setBonusOf(index: Index, it: Record_): SetCard | undefined {
-  return it.set && setOf(index, it).length ? index.sets[it.set] : undefined;
+  if (!it.set) return undefined;
+  const carried = isHomebrewRecord(it) ? it.cards?.sets?.[it.set] : undefined;
+  if (setOf(index, it).length) return index.sets[it.set] ?? carried;
+  const listed = (index.setMembers.get(it.set) ?? []).some((r) => r.id === it.id);
+  return listed ? undefined : carried;
 }

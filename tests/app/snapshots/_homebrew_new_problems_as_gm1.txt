@@ -92,6 +92,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         button "Одноручное/двуручное" [pressed=false]
       StaticText "Выберите значение."
       DisclosureTriangle "Второй набор характеристик" [expanded=false]
+      DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
     button "Страница"
@@ -106,6 +107,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
++ Новая карта правил
 1
 2
 3
@@ -123,6 +125,7 @@ daggerheart.com
 Близко
 Бонус к урону
 Броня
+В линии
 Влияние
 Вплотную
 Вторичное оружие
@@ -135,12 +138,15 @@ daggerheart.com
 Инстинкт
 Искусность
 К содержимому
+Карты правил
 Класс - выберите значение.
 Конфиденциальность
 Костьd4d6d8d10d12d20
 ЛутDaggerheart
 Магическое
 Название - введите название.
+НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая линия
 Обычные правила
 Одноручное
 Одноручное/двуручное
@@ -148,6 +154,7 @@ daggerheart.com
 Отмена
 Очень далеко
 Поиск
+Получается из
 Предмет
 Проворность
 Ранг - выберите ранг, как в книге. По характеристикам ранг не оп... [namelen=75 namehash=2a9c684b]
@@ -161,6 +168,8 @@ daggerheart.com
 Страница
 Таблицы
 Тип урона - выберите значение.
+Улучшается до
+Уникальный
 Урон - выберите кость d4-d20; бонус, если нужен, - целое число о... [namelen=74 namehash=0ee85a8e]
 Условия использования
 Установить как приложение
@@ -262,6 +271,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         button "One/Two-Handed" [pressed=false]
       StaticText "Choose a value."
       DisclosureTriangle "Second stat set" [expanded=false]
+      DisclosureTriangle "Relations" [expanded=false]
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
     button "Page"
@@ -276,6 +286,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
++ New rule card
 1
 2
 3
@@ -302,14 +313,18 @@ Equipment
 Far
 Finesse
 HomebrewAlder Workshop+ New source...
+In a line
 Install as an app
 Instinct
 Item
 Knowledge
 Lists
+Made from
 Magic
 Melee
 Name - enter a name.
+New line
+NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 One-Handed
 One/Two-Handed
 Page
@@ -319,6 +334,7 @@ Primary weapon
 Privacy
 RU
 Range - choose a value.
+Rule cards
 Save
 Search
 Second stat set: Damage
@@ -333,6 +349,8 @@ Terms of use
 Tier - choose the tier as in the book. The tier is never worked ... [namelen=83 namehash=9f7544b3]
 Trait - choose a value.
 Two-Handed
+Unique
+Upgrades to
 Vault of Ages
 Very Close
 Very Far

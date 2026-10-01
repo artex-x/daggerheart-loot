@@ -121,7 +121,7 @@ function catalogCsv(L) {
       e && e.bu ? BURDEN[e.bu] : '',
       e && e.as != null ? e.as : '',
       e && e.th ? e.th.join('/') : '',
-      x.craft || '',
+      (x.craft || []).join(';'),
       x.community || '',
       SITE + 'i/' + x.id + '.html',
       (x.rud || '') + set.ru,

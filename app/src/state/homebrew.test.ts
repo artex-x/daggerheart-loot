@@ -51,6 +51,39 @@ describe('reading', () => {
     const axe = store.records.find((r) => r.id === AXE);
     expect(axe?.book?.section?.ru).toBe('Холодное оружие');
     expect(store.records.find((r) => r.id === RING)?.book).toBeUndefined();
+    expect(store.cards.map((c) => c.key)).toEqual([
+      'hb_aldersetaaaaaaaa',
+      'hb_alderrulecardaaa'
+    ]);
+  });
+
+  it('keeps the cards array when a read finds the same cards', async () => {
+    const { store } = await loaded();
+    const { cards } = store;
+    expect(await store.read()).toBe(true);
+    expect(store.cards).toBe(cards);
+  });
+
+  it('embeds in a record the own cards its item names and no other', async () => {
+    const { cloud, store } = await loaded();
+    const ring = store.item(RING)!;
+    await cloud.homebrew.updateItem(
+      ring.id,
+      { content: { ...ring.content, set: 'hb_aldersetaaaaaaaa' }, book_id: null },
+      null
+    );
+    await store.read();
+    const record = store.records.find((r) => r.id === RING);
+    expect(Object.keys(record?.cards?.sets ?? {})).toEqual(['hb_aldersetaaaaaaaa']);
+    expect(record?.cards?.refs).toBeUndefined();
+    expect(store.records.find((r) => r.id === AXE)?.cards).toBeUndefined();
+  });
+
+  it('empties the cards on a clear', async () => {
+    const { store } = await loaded();
+    expect(store.cards).toHaveLength(2);
+    store.clear();
+    expect(store.cards).toEqual([]);
   });
 
   it('draws the error on a failed first read and reads again with no loading state', async () => {
@@ -119,7 +152,7 @@ describe('reading', () => {
       }
     }));
     const reading = store.load();
-    const stale: HomebrewRead = { ok: true, books: [], items: [], itemLimit: 100 };
+    const stale: HomebrewRead = { ok: true, books: [], items: [], cards: [], itemLimit: 100 };
     const made = await store.createItem(store.newIds(), null, { kind: 'item', ru: 'Новое' });
     expect(made).toEqual({ ok: true });
     (hold as unknown as (r: HomebrewRead) => void)(stale);
@@ -345,6 +378,118 @@ describe('items', () => {
   });
 });
 
+describe('cards', () => {
+  const SET = { ru: 'Кузнечный', rud: '+1 к Броне.' };
+
+  it('creates a card, updates it over its revision, and cardRefs follows the cards', async () => {
+    const { store } = await loaded('gm2');
+    const ids = store.newIds();
+    expect(await store.createCard(ids, 'set', null, SET)).toEqual({ ok: true });
+    const row = store.cards.find((c) => c.id === ids.id)!;
+    expect(row).toMatchObject({ key: ids.key, kind: 'set', book_id: null, revision: 1 });
+    expect(store.cardRefs).toEqual([{ ...SET, key: ids.key, kind: 'set' }]);
+    const patch = { content: { ...SET, ru: 'Кузнечный II' }, book_id: null };
+    expect(await store.updateCard(row, patch, 1)).toEqual({ ok: true, revision: 2 });
+    expect(store.cards[0]?.content.ru).toBe('Кузнечный II');
+    expect(store.cardRefs[0]?.ru).toBe('Кузнечный II');
+  });
+
+  it('reads again after a conflict and after a gone card', async () => {
+    const { cloud, store } = await loaded();
+    const rule = store.cards.find((c) => c.key === 'hb_alderrulecardaaa')!;
+    await cloud.homebrew.updateCard(rule.id, { content: { ru: 'Чужое' }, book_id: null }, null);
+    const patch = { content: { ru: 'Моё' }, book_id: null };
+    expect(await store.updateCard(rule, patch, rule.revision)).toEqual({
+      ok: false,
+      error: 'conflict'
+    });
+    expect(store.cards.find((c) => c.id === rule.id)?.content.ru).toBe('Чужое');
+    const set = store.cards.find((c) => c.key === 'hb_aldersetaaaaaaaa')!;
+    await cloud.homebrew.removeCard(set.id);
+    expect(await store.updateCard(set, patch, set.revision)).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+    expect(store.cards.some((c) => c.id === set.id)).toBe(false);
+  });
+
+  it('removes a card and leaves the items, which keep its key', async () => {
+    const { cloud, store, refreshLists } = await loaded();
+    const ring = store.item(RING)!;
+    await cloud.homebrew.updateItem(
+      ring.id,
+      { content: { ...ring.content, set: 'hb_aldersetaaaaaaaa' }, book_id: null },
+      null
+    );
+    await store.read();
+    const items = store.items;
+    const set = store.cards.find((c) => c.key === 'hb_aldersetaaaaaaaa')!;
+    expect(await store.removeCard(set)).toEqual({ ok: true });
+    expect(store.cards.map((c) => c.key)).toEqual(['hb_alderrulecardaaa']);
+    expect(store.items).toBe(items);
+    expect(store.item(RING)?.content.set).toBe('hb_aldersetaaaaaaaa');
+    expect(store.records.find((r) => r.id === RING)?.cards).toBeUndefined();
+    expect(refreshLists).not.toHaveBeenCalled();
+  });
+
+  it('a card create whose answer was lost and that is sent again makes one row', async () => {
+    let lose = true;
+    const { cloud, store } = make('gm2', (c) => ({
+      ...c.homebrew,
+      createCard: async (row) => {
+        const r = await c.homebrew.createCard(row);
+        if (!lose) return r;
+        lose = false;
+        return { ok: false, error: 'network' };
+      }
+    }));
+    await store.load();
+    const ids = store.newIds();
+    expect(await store.createCard(ids, 'ref', null, SET)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+    const edited = { ...SET, ru: 'Клеймо' };
+    expect(await store.createCard(ids, 'ref', null, edited)).toEqual({ ok: true });
+    const read = await cloud.homebrew.load();
+    expect(read.ok && read.cards.map((c) => c.content.ru)).toEqual(['Клеймо']);
+    expect(store.cards).toHaveLength(1);
+  });
+
+  it('a card create sent again after a lost answer and a failed read writes nothing', async () => {
+    let offlineRead = false;
+    const create = vi.fn();
+    const { store } = make('gm2', (c) => ({
+      ...c.homebrew,
+      load: () => (offlineRead ? Promise.resolve({ ok: false }) : c.homebrew.load()),
+      createCard: (row) => {
+        create(row);
+        return Promise.resolve({ ok: false, error: 'network' });
+      }
+    }));
+    await store.load();
+    const ids = store.newIds();
+    await store.createCard(ids, 'set', null, SET);
+    offlineRead = true;
+    expect(await store.createCard(ids, 'set', null, SET)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+    expect(create).toHaveBeenCalledOnce();
+  });
+
+  it('answers a refused remove and keeps the card', async () => {
+    const { store } = make('gm1', (c) => ({
+      ...c.homebrew,
+      removeCard: () => Promise.resolve({ ok: false, error: 'network' })
+    }));
+    await store.load();
+    const set = store.cards[0]!;
+    expect(await store.removeCard(set)).toEqual({ ok: false, error: 'network' });
+    expect(store.cards).toHaveLength(2);
+  });
+});
+
 describe('the edges', () => {
   const ROW = {
     revision: 1,
@@ -375,6 +520,7 @@ describe('the edges', () => {
               content: { kind: 'item', ru: 'А' }
             }
           ],
+          cards: [],
           itemLimit: null
         })
     }));

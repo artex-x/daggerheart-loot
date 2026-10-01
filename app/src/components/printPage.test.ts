@@ -26,7 +26,8 @@ import {
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
+import { recordOf } from '../lib/homebrew.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -1288,5 +1289,106 @@ describe('homebrew cards', () => {
     render(App, { env: at('#/print/' + AXE, { cloud: fakeCloud(SEED) }) });
     await new Promise((r) => setTimeout(r, 0));
     expect(filled()).toHaveLength(0);
+  });
+});
+
+describe("the author's own set members", () => {
+  const label = (id: string): string | null | undefined => {
+    const labels = document.querySelectorAll(`.pcard[data-pid="${id}"] .pc-text i`);
+    return labels[labels.length - 1]?.textContent;
+  };
+
+  it('names the homebrew set members with (HB) and folds them past the third', async () => {
+    const pieces = ['Г', 'В', 'Б', 'А'].map((ru, i) => ({
+      id: uuid(701 + i),
+      key: 'hb_piece' + String.fromCharCode(97 + i) + 'aaaaaaaaaa',
+      content: { kind: 'item' as const, ru, set: 'pair' },
+      createdAgoMs: 3_600_000,
+      editedAgoMs: 3_600_000
+    }));
+    const seed: Seed = {
+      ...SEED,
+      homebrew: { ...SEED.homebrew, gm3: { books: [], cards: [], items: pieces } }
+    };
+    const { container } = render(App, {
+      env: at('#/print/st1', { cloud: fakeCloud(seed, 'gm3') })
+    });
+    await screen.findByText('Угольный Клинок');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(label('st1')).toBe(
+      'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок, А (HB), Б (HB), В (HB) и ещё 1):'
+    );
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps the printed own member in its set label when it is past the third own name', async () => {
+    const pieces = ['Д', 'Г', 'В', 'Б', 'А'].map((ru, i) => ({
+      id: uuid(711 + i),
+      key: 'hb_piece' + String.fromCharCode(97 + i) + 'aaaaaaaaaa',
+      content: { kind: 'item' as const, ru, set: 'pair' },
+      createdAgoMs: 3_600_000,
+      editedAgoMs: 3_600_000
+    }));
+    const last = pieces[0]?.key ?? '';
+    const seed: Seed = {
+      ...SEED,
+      homebrew: { ...SEED.homebrew, gm3: { books: [], cards: [], items: pieces } }
+    };
+    const { container } = render(App, {
+      env: at('#/print/' + last, { cloud: fakeCloud(seed, 'gm3') })
+    });
+    await screen.findByText('Д');
+    await new Promise((r) => setTimeout(r, 0));
+    expect(label(last)).toBe(
+      'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок, А (HB), Б (HB), В (HB), Д (HB) и ещё 1):'
+    );
+    await expectNoA11yViolations(container);
+  });
+
+  it("prints a frozen copy's set bonus under its name alone when no other member is the reader's", async () => {
+    const KEY = 'hb_frozensetpieceaa';
+    const snapshot = recordOf(
+      KEY,
+      { kind: 'item', ru: 'Чужой браслет', set: 'hb_ownsetaaaaaaaaaa' },
+      null,
+      [
+        {
+          key: 'hb_ownsetaaaaaaaaaa',
+          kind: 'set',
+          ru: 'Чужой комплект',
+          en: 'Borrowed Set',
+          rud: 'Бонус комплекта.',
+          ende: 'The set bonus.'
+        }
+      ]
+    );
+    const seed: Seed = {
+      ...SEED,
+      lists: {
+        ...SEED.lists,
+        gm2: [
+          {
+            id: uuid(291),
+            name: 'Чужое',
+            entries: [
+              { id: uuid(2911), itemKey: KEY, position: 0, source: 'homebrew', snapshot }
+            ],
+            createdAgoMs: 3_600_000,
+            editedAgoMs: 3_600_000
+          }
+        ]
+      }
+    };
+    const { container } = render(App, {
+      env: at('#/print/' + KEY, { cloud: fakeCloud(seed, 'gm2') })
+    });
+    await screen.findByText('Чужой браслет');
+    expect(label(KEY)).toBe('Чужой комплект:');
+    expect(
+      document
+        .querySelector(`.pcard[data-pid="${KEY}"] .pc-text`)
+        ?.textContent.endsWith(': Бонус комплекта.')
+    ).toBe(true);
+    await expectNoA11yViolations(container);
   });
 });

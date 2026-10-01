@@ -147,13 +147,17 @@ console.log('alternate tables');
 
 console.log('cross-references between records');
 ALL.forEach((x) => {
-  if (x.craft) ok(!!byId[x.craft], x.id + ': upgrades into a nonexistent ' + x.craft);
+  if (x.craft) {
+    ok(
+      Array.isArray(x.craft) && x.craft.length > 0,
+      x.id + ': craft should be a non-empty list of ids'
+    );
+    const ids = [].concat(x.craft);
+    ok(new Set(ids).size === ids.length, x.id + ': craft names one id twice');
+    ok(ids.indexOf(x.id) < 0, x.id + ': upgrades into itself');
+    ids.forEach((id) => ok(!!byId[id], x.id + ': upgrades into a nonexistent ' + id));
+  }
   (x.refs || []).forEach((r) => ok(!!REFS[r], x.id + ': reference to an unknown card ' + r));
-});
-const craftTargets = {};
-ALL.filter((x) => x.craft).forEach((x) => {
-  ok(!craftTargets[x.craft], 'more than one record upgrades into ' + x.craft);
-  craftTargets[x.craft] = x.id;
 });
 Object.keys(REFS).forEach((k) => {
   ok(

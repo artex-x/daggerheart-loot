@@ -90,6 +90,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Двуручное" [pressed=true]
         button "Одноручное/двуручное" [pressed=false]
       DisclosureTriangle "Второй набор характеристик" [expanded=false]
+      DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
       button "Удалить"
@@ -109,6 +110,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
++ Новая карта правил
 1
 2
 3
@@ -127,6 +129,7 @@ daggerheart.com
 Близко
 Бонус к урону
 Броня
+В линии
 Влияние
 Вплотную
 Вторичное оружие
@@ -139,10 +142,13 @@ daggerheart.com
 Инстинкт
 Искусность
 К содержимому
+Карты правил
 Конфиденциальность
 Костьd4d6d8d10d12d20
 ЛутDaggerheart
 Магическое
+НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая линия
 Обычные правила
 Одноручное
 Одноручное/двуручное
@@ -150,6 +156,7 @@ daggerheart.com
 Отмена
 Очень далеко
 Поиск
+Получается из
 Предмет
 Проворность
 Расходник
@@ -162,6 +169,8 @@ daggerheart.com
 Страница
 Таблицы
 Удалить
+Улучшается до
+Уникальный
 Условия использования
 Установить как приложение
 Физическое
@@ -258,6 +267,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Two-Handed" [pressed=true]
         button "One/Two-Handed" [pressed=false]
       DisclosureTriangle "Second stat set" [expanded=false]
+      DisclosureTriangle "Relations" [expanded=false]
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
       button "Delete"
@@ -277,6 +287,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
++ New rule card
 1
 2
 3
@@ -301,14 +312,18 @@ Equipment
 Far
 Finesse
 HomebrewAlder Workshop+ New source...
+In a line
 Install as an app
 Instinct
 Item
 Knowledge
 Lists
+Made from
 Magic
 Melee
+New line
 No sectionPistolsBlades+ New section...
+NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 One-Handed
 One/Two-Handed
 Page
@@ -317,6 +332,7 @@ Presence
 Primary weapon
 Privacy
 RU
+Rule cards
 Save
 Search
 Second stat set: Damage
@@ -329,6 +345,8 @@ Strength
 Tables
 Terms of use
 Two-Handed
+Unique
+Upgrades to
 Vault of Ages
 Very Close
 Very Far

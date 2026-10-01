@@ -10,7 +10,8 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { descOf, eqLine, nameOf } from '../lib/i18n.js';
-  import { cardBadges, srcLabel } from '../lib/label.js';
+  import { cardBadges, relText, srcLabel } from '../lib/label.js';
+  import { madeFrom, upgradesTo } from '../lib/data.js';
   import type { Index } from '../lib/data.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
@@ -35,15 +36,8 @@
 
   const eqClass = (eq: Equip): string => `eq-${eq.t}`;
 
-  const upgradeOf = (rec: Record_): Record_ | undefined =>
-    rec.craft ? index.byId.get(rec.craft) : undefined;
-  const madeFromOf = (rec: Record_): Record_ | undefined => {
-    const from = index.craftedFrom.get(rec.id);
-    return from ? index.byId.get(from) : undefined;
-  };
-
-  const upgrade = $derived(upgradeOf(it));
-  const madeFrom = $derived(madeFromOf(it));
+  const into = $derived(upgradesTo(index, it));
+  const from = $derived(madeFrom(index, it));
 </script>
 
 <!-- No aria-label: the live app left this button's name to its content, so
@@ -84,13 +78,17 @@
                 />{/if}• {#if line.label}<i>{line.label}:</i
                 >{/if}{line.body}{/each}{:else}{#if part.label}<i>{part.label}:</i
               >{/if}{part.body}{/if}{/each}</span
-      >{/if}{#if upgrade || madeFrom}<span class="rcraft"
-        >{#if madeFrom}<Icon name="craftFrom" />{t.craftFrom}: {nameOf(
-            madeFrom,
-            lang
-          )}{/if}{#if upgrade && madeFrom}<span class="rsep">·</span>{/if}{#if upgrade}<Icon
-            name="craft"
-          />{t.craftInto}: {nameOf(upgrade, lang)}{/if}</span
+      >{/if}{#if into.length || from.length}<span class="rcraft"
+        >{#if from.length}<Icon name="craftFrom" />{t.craftFrom}: {relText(
+            from,
+            lang,
+            1
+          )}{/if}{#if into.length && from.length}<span class="rsep">·</span
+          >{/if}{#if into.length}<Icon name="craft" />{t.craftInto}: {relText(
+            into,
+            lang,
+            1
+          )}{/if}</span
       >{/if}</span
   ><span class="rm"
     >{#each cardBadges(it, lang, t) as b, i (i)}<Badge cls={b.cls} title={b.title}

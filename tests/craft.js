@@ -27,18 +27,19 @@ const withCraft = ALL.filter((x) => x.craft);
 console.log('data (' + withCraft.length + ' chains)');
 ok(withCraft.length === 17, 'expected 17 chains, got ' + withCraft.length);
 
-const targets = {};
 withCraft.forEach((x) => {
   const c = x.craft;
-  // the field is a bare id: a chain that points nowhere is not represented at all
+  // the field is a list of ids: a chain that points nowhere is not represented at all
   ok(
-    typeof c === 'string',
-    x.id + ': craft should be a plain id string, got ' + JSON.stringify(c)
+    Array.isArray(c) && c.length > 0,
+    x.id + ': craft should be a list of ids, got ' + JSON.stringify(c)
   );
-  ok(!!BY_ID[c], x.id + ': craft target "' + c + '" does not exist');
-  ok(c !== x.id, x.id + ': crafts into itself');
-  ok(!targets[c], c + ': two different sources claim it');
-  targets[c] = x.id;
+  const ids = [].concat(c);
+  ok(new Set(ids).size === ids.length, x.id + ': craft names one id twice');
+  ids.forEach((id) => {
+    ok(!!BY_ID[id], x.id + ': craft target "' + id + '" does not exist');
+    ok(id !== x.id, x.id + ': crafts into itself');
+  });
 });
 
 // Chrono-Quill is a typo in the source book: indexed, but never described
@@ -48,17 +49,15 @@ ok(
 );
 
 // a chain must terminate: following craft can never come back around
+const walk = (cur, path) => {
+  if (path.has(cur.id)) return false;
+  path.add(cur.id);
+  const clean = [].concat(cur.craft || []).every((id) => !BY_ID[id] || walk(BY_ID[id], path));
+  path.delete(cur.id);
+  return clean;
+};
 withCraft.forEach((x) => {
-  const seen = {};
-  let cur = x;
-  while (cur && cur.craft) {
-    if (seen[cur.id]) {
-      ok(false, x.id + ': cycle in the craft chain');
-      break;
-    }
-    seen[cur.id] = 1;
-    cur = BY_ID[cur.craft];
-  }
+  ok(walk(x, new Set()), x.id + ': cycle in the craft chain');
 });
 
 // the prose the metadata replaced must be gone from every description

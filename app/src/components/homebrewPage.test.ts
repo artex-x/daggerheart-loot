@@ -1,6 +1,7 @@
-/* `#/homebrew` over the fake cloud: the count, the groups, the sources and sections
-   with every refusal and confirm, the empty, signed-out, unconfigured and failed
-   states, the batch delete and a row opening the editor.
+/* `#/homebrew` over the fake cloud: the count, the groups, the folds «Источники» and
+   «Карты», the sources and sections and the set and rule cards with every refusal and
+   confirm, the empty, signed-out, unconfigured and failed states, the batch delete and a
+   row opening the editor.
    docs/specs/FEATURES.md, "Homebrew". */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -42,10 +43,15 @@ function page(
   return { ...view, cloud, router, dialog, pagePort };
 }
 
-const sources = async (): Promise<HTMLElement> => {
-  const h = await screen.findByRole('heading', { name: t.hbSources });
-  return h.closest('.panel') as HTMLElement;
-};
+/* Opens a fold of the page by its summary and returns its panel. */
+async function fold(label: RegExp): Promise<HTMLElement> {
+  const summary = await screen.findByText(label, { selector: 'summary' });
+  await userEvent.click(summary);
+  return summary.closest('.panel') as HTMLElement;
+}
+
+const sources = (): Promise<HTMLElement> => fold(/^Источники/);
+const cards = (): Promise<HTMLElement> => fold(/^Карты/);
 
 async function typeInto(label: string, text: string): Promise<void> {
   const box = screen.getByLabelText(label);
@@ -64,8 +70,21 @@ describe('#/homebrew', () => {
       )
     ).toBeInTheDocument();
     const heads = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
-    expect(heads).toEqual([t.hbSources, 'Мастерская Ольхи · Холодное оружие 1', 'Хоумбрю 3']);
+    expect(heads).toEqual([
+      t.hbSets,
+      t.hbRefs,
+      'Мастерская Ольхи · Холодное оружие 1',
+      'Хоумбрю 3'
+    ]);
+    const folds = [...container.querySelectorAll<HTMLDetailsElement>('.stack details')];
+    expect(folds.map((d) => d.open)).toEqual([false, false]);
+    expect(folds.map((d) => d.querySelector('summary')?.textContent)).toEqual([
+      'Источники · 1 источник',
+      'Карты · 1 комплект, 1 карта правил'
+    ]);
+    await expectNoA11yViolations(container);
     const panel = await sources();
+    expect(folds[0]?.open).toBe(true);
     expect(within(panel).getByText('Мастерская Ольхи')).toBeInTheDocument();
     expect(within(panel).getByText('1 предмет · 2 раздела')).toBeInTheDocument();
     expect(within(panel).getByText('3 предмета')).toBeInTheDocument();
@@ -269,6 +288,11 @@ describe('#/homebrew', () => {
     const { container } = page('gm2');
     expect(await screen.findByText(t.hbEmpty)).toBeInTheDocument();
     expect(screen.getByText('Мои предметы: 0 из 100')).toBeInTheDocument();
+    expect(screen.getByText(t.hbSources, { selector: 'summary' })).toBeInTheDocument();
+    expect(screen.getByText(t.hbCards, { selector: 'summary' })).toBeInTheDocument();
+    const panel = await cards();
+    expect(within(panel).getByText(t.hbNoSets)).toBeInTheDocument();
+    expect(within(panel).getByText(t.hbNoRefs)).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -356,5 +380,255 @@ describe('#/homebrew', () => {
     };
     page('gm1', { cloud });
     expect(await screen.findByText('Мои предметы: 4')).toBeInTheDocument();
+  });
+});
+
+async function fill(label: RegExp, text: string): Promise<void> {
+  const box = screen.getByLabelText(label);
+  await userEvent.clear(box);
+  if (text) await userEvent.type(box, text);
+}
+
+describe('#/homebrew «Карты»', () => {
+  it('opens on the sets and rule cards, each group with its create button first', async () => {
+    const { container } = page();
+    const panel = await cards();
+    const heads = within(panel).getAllByRole('heading', { level: 2 });
+    expect(heads.map((h) => h.textContent)).toEqual([t.hbSets, t.hbRefs]);
+    const order = [...panel.querySelectorAll('h2, button, .name')].map((e) =>
+      e.textContent.trim()
+    );
+    expect(order).toEqual([
+      t.hbSets,
+      t.hbAddSet,
+      'Комплект Ольхи',
+      t.edit,
+      t.del,
+      t.hbRefs,
+      t.hbCardNew,
+      'Клеймо Ольхи',
+      t.edit,
+      t.del
+    ]);
+    expect(within(panel).getByText('0 предметов · Мастерская Ольхи')).toBeInTheDocument();
+    expect(within(panel).getByText('0 предметов')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('sorts the cards of a group by name', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.homebrew.createCard({
+      id: uuid(7031),
+      key: 'hb_cardaaaaaaaaaaaa',
+      kind: 'set',
+      book_id: null,
+      content: { ru: 'Альфа' }
+    });
+    page('gm1', { cloud });
+    const panel = await cards();
+    const names = [...panel.querySelectorAll('.name')].map((e) => e.textContent);
+    expect(names).toEqual(['Альфа', 'Комплект Ольхи', 'Клеймо Ольхи']);
+    expect(panel.querySelector('summary')?.textContent).toBe(
+      'Карты · 2 комплекта, 1 карта правил'
+    );
+  });
+
+  it('makes, edits and deletes a set', async () => {
+    const { cloud, container, dialog } = page();
+    const panel = await cards();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbAddSet }));
+    const form = screen.getByRole('group', { name: t.hbNewSet });
+    await waitFor(() => {
+      expect(within(form).getByLabelText(/^Название комплекта/)).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+    await fill(/^Название комплекта/, 'Кузнечный');
+    await fill(/^Бонус комплекта/, 'Два предмета: +1 к Броне.');
+    await userEvent.selectOptions(within(form).getByLabelText(t.hbSource), ALDER);
+    await userEvent.click(within(form).getByRole('button', { name: t.hbCreateSet }));
+    expect(await screen.findByText('Комплект «Кузнечный» создан')).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: t.hbNewSet })).not.toBeInTheDocument();
+    let read = await cloud?.homebrew.load();
+    const made = read?.ok ? read.cards.find((c) => c.content.ru === 'Кузнечный') : undefined;
+    expect(made).toMatchObject({
+      kind: 'set',
+      book_id: ALDER,
+      content: { ru: 'Кузнечный', rud: 'Два предмета: +1 к Броне.' }
+    });
+
+    const edits = within(panel).getAllByRole('button', { name: t.edit });
+    await userEvent.click(edits[0] as HTMLElement);
+    const edit = screen.getByRole('group', { name: 'Комплект Ольхи' });
+    expect(within(edit).getByLabelText(/^Название комплекта/)).toHaveValue('Комплект Ольхи');
+    await fill(/^Название комплекта/, 'Комплект Ивы');
+    await userEvent.keyboard('{Enter}');
+    expect(await within(panel).findByText('Комплект Ивы')).toBeInTheDocument();
+    read = await cloud?.homebrew.load();
+    expect(read?.ok && read.cards.find((c) => c.id === uuid(521))).toMatchObject({
+      revision: 2,
+      content: {
+        ru: 'Комплект Ивы',
+        en: 'Alder Set',
+        rud: 'Два предмета комплекта: +1 к Уклонению.',
+        ende: 'Two pieces of the set: +1 to Evasion.'
+      }
+    });
+
+    const dels = within(panel).getAllByRole('button', { name: t.del });
+    await userEvent.click(dels[0] as HTMLElement);
+    expect(dialog.asked.at(-1)).toBe('Удалить комплект «Комплект Ивы»? Отменить нельзя.');
+    expect(await screen.findByText('Комплект «Комплект Ивы» удалён')).toBeInTheDocument();
+    expect(within(panel).queryByText('Комплект Ивы')).not.toBeInTheDocument();
+  });
+
+  it('refuses an empty name and bonus, a taken name, the card limit and an http link', async () => {
+    const { container } = page('gm1', { fake: { limits: { cards: 2 } } });
+    const panel = await cards();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbAddSet }));
+    await userEvent.click(screen.getByRole('button', { name: t.hbCreateSet }));
+    expect(await screen.findByText(t.hbErrName)).toBeInTheDocument();
+    expect(screen.getByText(t.hbErrSetBonus)).toBeInTheDocument();
+    const name = screen.getByLabelText(/^Название комплекта/);
+    expect(name).toHaveFocus();
+    expect(name).toHaveAttribute('aria-invalid', 'true');
+    await expectNoA11yViolations(container);
+    await fill(/^Название комплекта/, 'комплект ольхи');
+    expect(screen.queryByText(t.hbErrName)).not.toBeInTheDocument();
+    await fill(/^Бонус комплекта/, 'Бонус');
+    await userEvent.click(screen.getByRole('button', { name: t.hbCreateSet }));
+    expect(await screen.findByText('Комплект «комплект ольхи» уже есть.')).toBeInTheDocument();
+    await fill(/^Название комплекта/, 'Кузнечный');
+    await userEvent.click(screen.getByRole('button', { name: t.hbCreateSet }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Достигнут предел карт (комплектов и карт правил): 2.'
+    );
+    expect(screen.getByLabelText(/^Название комплекта/)).toHaveValue('Кузнечный');
+
+    await userEvent.click(screen.getByRole('button', { name: t.hbCardNew }));
+    expect(screen.queryByRole('group', { name: t.hbNewSet })).not.toBeInTheDocument();
+    const form = screen.getByRole('group', { name: t.hbNewCard });
+    await fill(/^Название карты/, 'Огненный след');
+    await fill(/^Текст карты/, 'Цель горит.');
+    await fill(/^Ссылка/, 'http://example.test');
+    await userEvent.click(within(form).getByRole('button', { name: t.hbCreateCard }));
+    expect(await screen.findByText(t.hbErrUrl)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Ссылка/)).toHaveFocus();
+    await fill(/^Текст карты/, '');
+    await userEvent.click(within(form).getByRole('button', { name: t.hbCreateCard }));
+    expect(await screen.findByText(t.hbErrCardText)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('group', { name: t.hbNewCard })).not.toBeInTheDocument();
+  });
+
+  it('says a card changed on another device and a lost network', async () => {
+    const { cloud } = page();
+    const panel = await cards();
+    const edits = within(panel).getAllByRole('button', { name: t.edit });
+    await userEvent.click(edits[1] as HTMLElement);
+    const form = screen.getByRole('group', { name: 'Клеймо Ольхи' });
+    expect(within(form).getByLabelText(/^Ссылка/)).toHaveValue(
+      'https://example.test/alder-brand'
+    );
+    /* The owner feed's join asks for one coalesced read; it lands before the change. */
+    await new Promise((r) => setTimeout(r, COALESCE_MS + 50));
+    const held = await cloud?.homebrew.load();
+    const row = held?.ok ? held.cards.find((c) => c.id === uuid(522)) : undefined;
+    if (!row) throw new Error('The seed has no rule card. Restore it in fake-cloud-seed.ts.');
+    const ende = 'Twice per rest: reroll one damage die.';
+    await cloud?.homebrew.updateCard(
+      uuid(522),
+      { content: { ...row.content, ende }, book_id: row.book_id },
+      null
+    );
+    await fill(/^Подзаголовок/, 'Черта');
+    await userEvent.click(within(form).getByRole('button', { name: t.save }));
+    expect(await within(form).findByText(t.hbCardChanged)).toBeInTheDocument();
+    const fake = cloud as ReturnType<typeof fakeCloud>;
+    fake.setOffline(true);
+    await userEvent.click(within(form).getByRole('button', { name: t.save }));
+    expect(await within(form).findByText(t.hbWriteFailed)).toBeInTheDocument();
+    expect(within(form).getByLabelText(/^Подзаголовок/)).toHaveValue('Черта');
+    fake.setOffline(false);
+    await userEvent.click(within(form).getByRole('button', { name: t.save }));
+    await waitFor(() => {
+      expect(screen.queryByRole('group', { name: 'Клеймо Ольхи' })).not.toBeInTheDocument();
+    });
+    const read = await cloud?.homebrew.load();
+    expect(read?.ok && read.cards.find((c) => c.id === uuid(522))).toMatchObject({
+      revision: row.revision + 2,
+      content: { rusub: 'Черта', en: 'Alder Brand', ende }
+    });
+  });
+
+  it('toasts a card another device deleted while its edit form is open', async () => {
+    const { cloud } = page();
+    const panel = await cards();
+    const edits = within(panel).getAllByRole('button', { name: t.edit });
+    await userEvent.click(edits[1] as HTMLElement);
+    const form = screen.getByRole('group', { name: 'Клеймо Ольхи' });
+    await new Promise((r) => setTimeout(r, COALESCE_MS + 50));
+    await cloud?.homebrew.removeCard(uuid(522));
+    await userEvent.click(within(form).getByRole('button', { name: t.save }));
+    expect(await screen.findByText(t.hbCardGone)).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Клеймо Ольхи' })).not.toBeInTheDocument();
+  });
+
+  it('says a lost network on a new card', async () => {
+    const { cloud } = page();
+    const panel = await cards();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbCardNew }));
+    await fill(/^Название карты/, 'Огненный след');
+    await fill(/^Текст карты/, 'Цель горит.');
+    (cloud as ReturnType<typeof fakeCloud>).setOffline(true);
+    await userEvent.click(screen.getByRole('button', { name: t.hbCreateCard }));
+    expect(await screen.findByText(t.hbCreateFailed)).toBeInTheDocument();
+  });
+
+  it('asks the used form for a card an item names, and toasts a failed delete', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const held = await cloud.homebrew.load();
+    const axe = held.ok ? held.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa') : undefined;
+    if (!axe) throw new Error('The seed has no axe. Restore it in fake-cloud-seed.ts.');
+    const content = {
+      ...axe.content,
+      set: 'hb_aldersetaaaaaaaa',
+      refs: ['hb_alderrulecardaaa']
+    };
+    await cloud.homebrew.updateItem(axe.id, { content, book_id: axe.book_id }, null);
+    const { dialog } = page('gm1', { cloud, answer: false });
+    const panel = await cards();
+    expect(within(panel).getByText('1 предмет · Мастерская Ольхи')).toBeInTheDocument();
+    const dels = within(panel).getAllByRole('button', { name: t.del });
+    await userEvent.click(dels[0] as HTMLElement);
+    await userEvent.click(dels[1] as HTMLElement);
+    expect(dialog.asked).toEqual([
+      'Удалить комплект «Комплект Ольхи»? Он указан в 1 предмете - там пропадут его название и бонус. Отменить нельзя.',
+      'Удалить карту правил «Клеймо Ольхи»? Она указана в 1 предмете - там она пропадёт. Отменить нельзя.'
+    ]);
+    const edits = within(panel).getAllByRole('button', { name: t.edit });
+    await userEvent.click(edits[1] as HTMLElement);
+    expect(
+      screen.getByText('Изменения появятся на 1 предмете и в списках, где он лежит.')
+    ).toBeInTheDocument();
+    cleanup();
+    const off = page('gm1');
+    const again = await cards();
+    (off.cloud as ReturnType<typeof fakeCloud>).setOffline(true);
+    const offDels = within(again).getAllByRole('button', { name: t.del });
+    await userEvent.click(offDels[1] as HTMLElement);
+    expect(off.dialog.asked).toEqual(['Удалить карту правил «Клеймо Ольхи»? Отменить нельзя.']);
+    expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
+    expect(within(again).getByText('Клеймо Ольхи')).toBeInTheDocument();
+  });
+
+  it('deletes a rule card with its toast, the items keeping its key', async () => {
+    const { cloud } = page();
+    const panel = await cards();
+    const dels = within(panel).getAllByRole('button', { name: t.del });
+    await userEvent.click(dels[1] as HTMLElement);
+    expect(await screen.findByText('Карта правил «Клеймо Ольхи» удалена')).toBeInTheDocument();
+    const read = await cloud?.homebrew.load();
+    expect(read?.ok && read.cards.map((c) => c.key)).toEqual(['hb_aldersetaaaaaaaa']);
   });
 });

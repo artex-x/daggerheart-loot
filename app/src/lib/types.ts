@@ -146,8 +146,8 @@ export interface Record_ {
   img?: string;
   /** Number in its own table. */
   roll?: number;
-  /** `id` of what this upgrades into. Only one direction is stored. */
-  craft?: string;
+  /** The ids of what this upgrades into, in drawing order. Only one direction is stored. */
+  craft?: readonly string[];
   /** Keys into `refs`: the Core cards a description points at. */
   refs?: string[];
   eq?: Equip;

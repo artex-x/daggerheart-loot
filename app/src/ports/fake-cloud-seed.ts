@@ -1,16 +1,22 @@
-/* The fake cloud's fixed world: two users with fixed ids, so a golden that
+/* The fake cloud's fixed world: three users with fixed ids, so a golden that
  * signs in holds the same text on every run. `gm1` has two identities (the
  * unlink guard has something to allow), `gm2` has one (it has something to
  * refuse). `gm1` keeps a preferences row, `gm2` none (a first sign-in
  * seeds it). Both own cloud lists; `gm1`'s first list has a player and a
  * GM share link. `gm1` holds one homebrew source with two sections and four
  * homebrew items; its first list refers to the axe, and `gm2`'s list holds a
- * frozen copy of it. `gm2` holds no homebrew.
+ * frozen copy of it. `gm1` also holds a set card in its source and a rule card
+ * with no source, which no item names, so no screen draws them. `gm2` holds no
+ * homebrew. `gm3` holds no list and 34 items in the default source that name
+ * catalog records: 15 loot items made from `ci1`, 15 weapons in `q1`'s line,
+ * 4 loot items in the set `saints-ensemble` - the relation folds on a catalog card.
  * docs/specs/COVERAGE.md, "Test layers". */
 
 import {
   recordOf,
   type BookContent,
+  type CardContent,
+  type CardKind,
   type HomebrewContent,
   type HomebrewRecord
 } from '../lib/homebrew.js';
@@ -52,6 +58,11 @@ const USERS = {
     id: uuid(2),
     email: 'gm2@example.test',
     identities: [{ id: uuid(21), provider: 'google', email: 'gm2@example.test' }]
+  },
+  gm3: {
+    id: uuid(3),
+    email: 'gm3@example.test',
+    identities: [{ id: uuid(31), provider: 'google', email: 'gm3@example.test' }]
   }
 } satisfies Record<string, SeedUser>;
 
@@ -189,7 +200,8 @@ const LISTS = {
       createdAgoMs: 5 * DAY,
       editedAgoMs: 2 * DAY
     }
-  ]
+  ],
+  gm3: []
 } satisfies Record<SeedUserId, SeedList[]>;
 
 const SHARES: SeedShare[] = [
@@ -221,6 +233,108 @@ export interface SeedItem {
   createdAgoMs: number;
   editedAgoMs: number;
 }
+
+/** A seeded set card or rule card; `bookId` absent is no source. */
+export interface SeedCard {
+  id: string;
+  key: string;
+  kind: CardKind;
+  bookId?: string;
+  content: CardContent;
+  createdAgoMs: number;
+  editedAgoMs: number;
+}
+
+interface SeedHomebrew {
+  books: SeedBook[];
+  items: SeedItem[];
+  cards: SeedCard[];
+}
+
+/* gm3's items, keyed by a letter in their order. The long bedroll's names are 120 code
+   points, the editor's bound. */
+const letter = (i: number): string => String.fromCharCode(97 + i);
+const BEDROLLS: readonly (readonly [string, string])[] = [
+  ['Спальный мешок странника', "Wanderer's Bedroll"],
+  ['Спальный мешок следопыта', "Tracker's Bedroll"],
+  ['Спальный мешок тишины', 'Bedroll of Silence'],
+  ['Спальный мешок из пепла', 'Ash Bedroll'],
+  ['Тёплый спальный мешок', 'Warm Bedroll'],
+  ['Спальный мешок дозорного', "Sentry's Bedroll"],
+  ['Спальный мешок лекаря', "Healer's Bedroll"],
+  ['Спальный мешок пилигрима', "Pilgrim's Bedroll"],
+  ['Мешок спокойных снов', 'Sack of Quiet Dreams'],
+  ['Спальный мешок кочевника', "Nomad's Bedroll"],
+  ['Спальный мешок у костра', 'Campfire Bedroll'],
+  ['Спальный мешок отшельника', "Hermit's Bedroll"],
+  ['Спальный мешок стража', "Warden's Bedroll"],
+  ['Спальный мешок ловца снов', "Dreamcatcher's Bedroll"],
+  [
+    'Спальный мешок долгой дороги через перевал, болота, пустоши и старый лес, где ночуют лишь те, кто не боится шорохов ночи',
+    'Bedroll of the long road over the pass, through the marshes, the wastes and the old wood, where only the brave can sleep'
+  ]
+];
+const SWORD_TIERS = [1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4] as const;
+const SAINT_PIECES: readonly (readonly [string, string])[] = [
+  ['Святые Сапоги', 'Saintly Boots'],
+  ['Святой Пояс', 'Saintly Belt'],
+  ['Святой Венец', 'Saintly Circlet'],
+  ['Святые Перчатки', 'Saintly Gloves']
+];
+const GM3_ITEMS: SeedItem[] = [
+  ...BEDROLLS.map(([ru, en], i) => ({
+    id: uuid(601 + i),
+    key: 'hb_bedroll' + letter(i) + 'aaaaaaaa',
+    content: {
+      kind: 'item' as const,
+      ru,
+      en,
+      rud: 'Спальный мешок для долгой дороги.',
+      ende: 'A bedroll for a long road.',
+      craft_from: ['ci1']
+    },
+    createdAgoMs: (60 - i) * HOUR,
+    editedAgoMs: (60 - i) * HOUR
+  })),
+  ...SWORD_TIERS.map((tier, i) => ({
+    id: uuid(621 + i),
+    key: 'hb_broadsword' + letter(i) + 'aaaaa',
+    content: {
+      kind: 'equip' as const,
+      ru: 'Учебный палаш ' + String(i + 1),
+      en: 'Practice Broadsword ' + String(i + 1),
+      rud: 'Деревянный клинок для тренировок.',
+      ende: 'A wooden blade for practice.',
+      eq: {
+        t: 'weapon' as const,
+        tier,
+        cls: 'phy' as const,
+        tr: 'agility' as const,
+        rg: 'melee' as const,
+        dmg: 'd8',
+        dt: 'phy' as const,
+        bu: 1 as const,
+        line: 'q1'
+      }
+    },
+    createdAgoMs: (40 - i) * HOUR,
+    editedAgoMs: (40 - i) * HOUR
+  })),
+  ...SAINT_PIECES.map(([ru, en], i) => ({
+    id: uuid(641 + i),
+    key: 'hb_saintpiece' + letter(i) + 'aaaaa',
+    content: {
+      kind: 'item' as const,
+      ru,
+      en,
+      rud: 'Часть убранства святого.',
+      ende: "A piece of a saint's ensemble.",
+      set: 'saints-ensemble'
+    },
+    createdAgoMs: (20 - i) * HOUR,
+    editedAgoMs: (20 - i) * HOUR
+  }))
+];
 
 const HOMEBREW = {
   gm1: {
@@ -276,17 +390,50 @@ const HOMEBREW = {
         createdAgoMs: 2 * DAY,
         editedAgoMs: 2 * DAY
       }
+    ],
+    cards: [
+      {
+        id: uuid(521),
+        key: 'hb_aldersetaaaaaaaa',
+        kind: 'set',
+        bookId: uuid(501),
+        content: {
+          ru: 'Комплект Ольхи',
+          en: 'Alder Set',
+          rud: 'Два предмета комплекта: +1 к Уклонению.',
+          ende: 'Two pieces of the set: +1 to Evasion.'
+        },
+        createdAgoMs: 6 * DAY,
+        editedAgoMs: 6 * DAY
+      },
+      {
+        id: uuid(522),
+        key: 'hb_alderrulecardaaa',
+        kind: 'ref',
+        content: {
+          ru: 'Клеймо Ольхи',
+          en: 'Alder Brand',
+          rusub: 'Свойство оружия',
+          ensub: 'Weapon feature',
+          rud: 'Раз за отдых: перебросьте одну кость урона.',
+          ende: 'Once per rest: reroll one damage die.',
+          url: 'https://example.test/alder-brand'
+        },
+        createdAgoMs: 5 * DAY,
+        editedAgoMs: 5 * DAY
+      }
     ]
   },
-  gm2: { books: [], items: [] }
-} satisfies Record<SeedUserId, { books: SeedBook[]; items: SeedItem[] }>;
+  gm2: { books: [], items: [], cards: [] },
+  gm3: { books: [], items: GM3_ITEMS, cards: [] }
+} satisfies Record<SeedUserId, SeedHomebrew>;
 
 export interface Seed {
   users: Record<SeedUserId, SeedUser>;
   defaultUser: SeedUserId;
   lists: Record<SeedUserId, SeedList[]>;
   shares: SeedShare[];
-  homebrew: Record<SeedUserId, { books: SeedBook[]; items: SeedItem[] }>;
+  homebrew: Record<SeedUserId, SeedHomebrew>;
 }
 
 export const SEED: Seed = {

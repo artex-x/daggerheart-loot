@@ -1,6 +1,6 @@
 # #/tables ~ help
 # route: #/tables
-# why: the help panel, which uses a bold word mid-sentence twice over
+# why: the help panel, which uses a bold word mid-sentence twice over, and the «Хоумбрю» group with its three filters
 
 ## ru :: tree
 RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
@@ -28,7 +28,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=true]
     StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
-    StaticText "Здесь лежат все таблицы целиком. Сверху выбирается книга — корни..." [namelen=318 namehash=d4e324ac]
+    StaticText "Здесь лежат все таблицы целиком. Сверху выбирается книга — корни..." [namelen=499 namehash=ef26ffdf]
     ... StaticText x15 of 19 same-shape siblings elided
     link "daggerheart.su" [url=https://ru.daggerheart.su/]
     StaticText ", для Hope & Fear — таблица сообщества. Значения даны с учётом э..." [namelen=70 namehash=19ea6f7e]
@@ -246,7 +246,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=true]
     StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
-    StaticText "Every table in full. The top row picks a book — the core set, Ho..." [namelen=427 namehash=f7f65854]
+    StaticText "Every table in full. The top row picks a book — the core set, Ho..." [namelen=585 namehash=6c0c85d8]
     ... StaticText x14 of 18 same-shape siblings elided
     StaticText "Sources: the Daggerheart Core Set and Hope & Fear, with the erra..." [namelen=75 namehash=35eaebfd]
     link "Core" [url=#/tables/core_item]

@@ -20,12 +20,14 @@ import {
 import {
   bookProblems,
   canonJson,
+  cardProblems,
   contentProblems,
   isHomebrewKey,
   recordOf,
   SNAPSHOT_BYTES,
   snapshotValid,
   type BookRow,
+  type CardRow,
   type ItemRow
 } from '../lib/homebrew.js';
 import type { Prefs } from '../lib/prefs.js';
@@ -35,6 +37,7 @@ import {
   uuid,
   type Seed,
   type SeedBook,
+  type SeedCard,
   type SeedItem,
   type SeedList,
   type SeedUser
@@ -72,8 +75,8 @@ export interface FakeCloudOptions {
   /** Starts with no network: every read fails and every write answers `network`. */
   offline?: boolean;
   /** The count limits in place of the database defaults (50 lists, 100 entries, 20
-   *  homebrew sources, 100 homebrew items). */
-  limits?: { lists?: number; entries?: number; books?: number; items?: number };
+   *  homebrew sources, 100 homebrew items, 100 homebrew cards). */
+  limits?: { lists?: number; entries?: number; books?: number; items?: number; cards?: number };
   /** Whether a subscribe joins (default `true`); `false` keeps every feed on the poll. */
   live?: boolean;
 }
@@ -157,10 +160,11 @@ function seedLists(lists: readonly SeedList[], boot: number): Held[] {
 interface HeldHomebrew {
   books: BookRow[];
   items: ItemRow[];
+  cards: CardRow[];
 }
 
 function seedHomebrew(
-  h: { books: readonly SeedBook[]; items: readonly SeedItem[] },
+  h: { books: readonly SeedBook[]; items: readonly SeedItem[]; cards: readonly SeedCard[] },
   boot: number
 ): HeldHomebrew {
   return {
@@ -180,6 +184,16 @@ function seedHomebrew(
       revision: 1,
       created_at: iso(boot - i.createdAgoMs),
       updated_at: iso(boot - i.editedAgoMs)
+    })),
+    cards: h.cards.map((c) => ({
+      id: c.id,
+      key: c.key,
+      kind: c.kind,
+      book_id: c.bookId ?? null,
+      content: structuredClone(c.content),
+      revision: 1,
+      created_at: iso(boot - c.createdAgoMs),
+      updated_at: iso(boot - c.editedAgoMs)
     }))
   };
 }
@@ -357,6 +371,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   const maxEntries = options.limits?.entries ?? 100;
   const maxBooks = options.limits?.books ?? 20;
   const maxItems = options.limits?.items ?? 100;
+  const maxCards = options.limits?.cards ?? 100;
   const listeners = new Set<(s: Session | null) => void>();
 
   const user = (): SeedUser | null => (current === null ? null : (users.get(current) ?? null));
@@ -545,7 +560,12 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     const item = held?.items.find((i) => i.key === key);
     if (!held || !item) return null;
     const book = held.books.find((b) => b.id === item.book_id);
-    return recordOf(item.key, item.content, book ? { ...book.content, key: book.key } : null);
+    return recordOf(
+      item.key,
+      item.content,
+      book ? { ...book.content, key: book.key } : null,
+      held.cards.map((c) => ({ ...c.content, key: c.key, kind: c.kind }))
+    );
   };
   const activeShares = (listId: string): HeldShare[] =>
     shareRows.filter((sh) => sh.listId === listId && sh.revoked_at === null);
@@ -1080,13 +1100,14 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   };
 
   /* The author's homebrew, with the database's rules
-     (supabase/migrations/20260930130000_homebrew.sql). `newKey()` counts from
+     (supabase/migrations/20260930130000_homebrew.sql and
+     20261001130000_homebrew_relations.sql). `newKey()` counts from
      `hb_newaaaaaaaaaaaaa`, so a golden's key is the same on every run. */
   let keys = 0;
   const ownHomebrew = (): HeldHomebrew | null => {
     if (offline || current === null) return null;
     let mine = homebrewHeld.get(current);
-    if (!mine) homebrewHeld.set(current, (mine = { books: [], items: [] }));
+    if (!mine) homebrewHeld.set(current, (mine = { books: [], items: [], cards: [] }));
     return mine;
   };
   const homebrewSaid = (): void => {
@@ -1105,6 +1126,11 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     }
     announce(was, TAB);
   };
+  /* The keys of the current user's items that name the card `key` in `set` or `refs`. */
+  const naming = (mine: HeldHomebrew, key: string): string[] =>
+    mine.items
+      .filter((i) => i.content.set === key || (i.content.refs ?? []).includes(key))
+      .map((i) => i.key);
   const anyHolds = (pick: (h: HeldHomebrew) => { id: string }[], id: string): boolean =>
     [...homebrewHeld.values()].some((h) => pick(h).some((r) => r.id === id));
   const homebrewRepo: HomebrewRepository = {
@@ -1125,6 +1151,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         ok: true,
         books: structuredClone(mine.books),
         items: structuredClone(mine.items),
+        cards: structuredClone(mine.cards),
         itemLimit: maxItems
       });
     },
@@ -1177,7 +1204,16 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         i.revision++;
         i.updated_at = stamp();
       }
-      touchReferences(moved.map((i) => i.key));
+      const movedCards = mine.cards.filter((c) => c.book_id === id);
+      for (const c of movedCards) {
+        c.book_id = null;
+        c.revision++;
+        c.updated_at = stamp();
+      }
+      touchReferences([
+        ...moved.map((i) => i.key),
+        ...movedCards.flatMap((c) => naming(mine, c.key))
+      ]);
       mine.books.splice(at, 1);
       homebrewSaid();
       return Promise.resolve(OK);
@@ -1189,7 +1225,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       if (!isHomebrewKey(row.key) || mine.items.some((i) => i.key === row.key)) {
         return Promise.resolve(REFUSED);
       }
-      if (contentProblems(row.content).length) return Promise.resolve(REFUSED);
+      if (contentProblems(row.content, row.key).length) return Promise.resolve(REFUSED);
       if (row.book_id !== null && !mine.books.some((b) => b.id === row.book_id)) {
         return Promise.resolve(REFUSED);
       }
@@ -1214,7 +1250,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
           same ? { ok: true, revision: i.revision } : { ok: false, error: 'conflict' }
         );
       }
-      if (contentProblems(patch.content).length) return Promise.resolve(REFUSED);
+      if (contentProblems(patch.content, i.key).length) return Promise.resolve(REFUSED);
       if (patch.book_id !== null && !mine.books.some((b) => b.id === patch.book_id)) {
         return Promise.resolve(REFUSED);
       }
@@ -1243,6 +1279,62 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       }
       announce(was, TAB);
       mine.items.splice(at, 1);
+      homebrewSaid();
+      return Promise.resolve(OK);
+    },
+    createCard(row) {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      if (anyHolds((h) => h.cards, row.id)) return Promise.resolve(OK);
+      if (!isHomebrewKey(row.key) || mine.cards.some((c) => c.key === row.key)) {
+        return Promise.resolve(REFUSED);
+      }
+      if (cardProblems(row.kind, row.content).length) return Promise.resolve(REFUSED);
+      if (row.book_id !== null && !mine.books.some((b) => b.id === row.book_id)) {
+        return Promise.resolve(REFUSED);
+      }
+      if (mine.cards.length >= maxCards) {
+        return Promise.resolve(limited('homebrew_cards_per_owner', maxCards));
+      }
+      const at = stamp();
+      mine.cards.push({ ...structuredClone(row), revision: 1, created_at: at, updated_at: at });
+      touchReferences(naming(mine, row.key));
+      homebrewSaid();
+      return Promise.resolve(OK);
+    },
+    updateCard(id, patch, revision): Promise<HomebrewSaved> {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      const c = mine.cards.find((x) => x.id === id);
+      if (!c) return Promise.resolve({ ok: false, error: 'gone' });
+      if (revision !== null && revision !== c.revision) {
+        const same =
+          canonJson({ content: c.content, book_id: c.book_id }) ===
+          canonJson({ content: patch.content, book_id: patch.book_id });
+        return Promise.resolve(
+          same ? { ok: true, revision: c.revision } : { ok: false, error: 'conflict' }
+        );
+      }
+      if (cardProblems(c.kind, patch.content).length) return Promise.resolve(REFUSED);
+      if (patch.book_id !== null && !mine.books.some((b) => b.id === patch.book_id)) {
+        return Promise.resolve(REFUSED);
+      }
+      c.content = structuredClone(patch.content);
+      c.book_id = patch.book_id;
+      c.revision++;
+      c.updated_at = stamp();
+      touchReferences(naming(mine, c.key));
+      homebrewSaid();
+      return Promise.resolve({ ok: true, revision: c.revision });
+    },
+    removeCard(id) {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      const at = mine.cards.findIndex((x) => x.id === id);
+      const c = mine.cards[at];
+      if (!c) return Promise.resolve(OK);
+      mine.cards.splice(at, 1);
+      touchReferences(naming(mine, c.key));
       homebrewSaid();
       return Promise.resolve(OK);
     }

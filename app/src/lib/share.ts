@@ -15,9 +15,11 @@
  * clipboard; that is `ClipboardPort`'s job. */
 
 import { dict, type Dict } from './dict.js';
-import { setBonusOf, setOf, type Index } from './data.js';
+import { setBonusOf, setOf, upgradesTo, type Index } from './data.js';
 import { descHtml, esc } from './desc.js';
-import { descOf, eqLine, nameOf, namesOf } from './i18n.js';
+import { isHomebrewRecord } from './homebrew.js';
+import { descOf, eqLine, nameOf } from './i18n.js';
+import { FOLD_OWN, foldOwn, relName, relOrder } from './label.js';
 import type { ListEntryMeta, ListShape } from './listLink.js';
 import { takenTotal } from './lists.js';
 import { moneyMode, priceText, totalText, type MoneyMode } from './money.js';
@@ -47,6 +49,9 @@ export interface ShareBlock {
  *
  * `skip` holds ids already present elsewhere in the same message, which is how a
  * copied roll of several records avoids repeating a shared upgrade target.
+ *
+ * The upgrade targets fold as the card folds them (`foldOwn`), so a target that
+ * many homebrew records name still writes a message of bounded size.
  */
 export function shareBlocks(
   it: Record_,
@@ -57,20 +62,24 @@ export function shareBlocks(
   const t = dict(lang);
   const out: ShareBlock[] = [];
 
-  const into = it.craft ? index.byId.get(it.craft) : undefined;
-  if (into && !skip.has(into.id)) {
-    const own = new Set(descOf(it, lang).split('\n'));
+  const own = new Set(descOf(it, lang).split('\n'));
+  const targets = relOrder(upgradesTo(index, it), lang).filter((r) => !skip.has(r.id));
+  const { shown, more } = foldOwn(targets, FOLD_OWN, it.id);
+  for (const into of shown) {
     out.push({
-      head: `${t.craftInto}: ${nameOf(into, lang)}`,
+      head: `${t.craftInto}: ${relName(into, lang)}`,
       body: descOf(into, lang)
         .split('\n')
         .filter((line) => line && !own.has(line))
         .join('\n')
     });
   }
+  if (more > 0) {
+    out.push({ head: `${t.craftInto}: ${t.andMore.replace('%n', String(more))}`, body: '' });
+  }
 
   for (const key of it.refs ?? []) {
-    const r = index.refs[key];
+    const r = index.refs[key] ?? (isHomebrewRecord(it) ? it.cards?.refs?.[key] : undefined);
     if (!r) continue;
     out.push(
       lang === 'ru'
@@ -80,10 +89,14 @@ export function shareBlocks(
   }
 
   const members = setOf(index, it);
-  if (members.length) {
-    const bonus = setBonusOf(index, it);
+  const bonus = setBonusOf(index, it);
+  if (members.length || bonus) {
     out.push({
-      head: `${t.setLabel}: ${namesOf(members, lang)}`,
+      head: members.length
+        ? `${t.setLabel}: ${relOrder(members, lang)
+            .map((r) => relName(r, lang))
+            .join(', ')}`
+        : t.setLabel,
       body: !bonus
         ? ''
         : lang === 'ru'

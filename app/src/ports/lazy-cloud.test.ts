@@ -154,9 +154,9 @@ describe('lazyCloud', () => {
     expect(homebrew.newKey()).toMatch(HOMEBREW_KEY);
     expect(load).not.toHaveBeenCalled();
     const read = await homebrew.load();
-    expect(read.ok && [read.books.length, read.items.length, read.itemLimit]).toEqual([
-      1, 4, 100
-    ]);
+    expect(
+      read.ok && [read.books.length, read.items.length, read.cards.length, read.itemLimit]
+    ).toEqual([1, 4, 2, 100]);
     const book = { id: uuid(7010), key: 'hb_bookbbbbbbbbbbbb', content: { ru: 'Источник' } };
     expect(await homebrew.createBook(book)).toEqual({ ok: true });
     expect(await homebrew.updateBook(uuid(7010), { ru: 'Источник II' }, 1)).toEqual({
@@ -174,6 +174,22 @@ describe('lazyCloud', () => {
       await homebrew.updateItem(uuid(7011), { content: item.content, book_id: null }, 1)
     ).toEqual({ ok: true, revision: 2 });
     expect(await homebrew.removeItem(uuid(7011))).toEqual({ ok: true });
+    const card = {
+      id: uuid(7012),
+      key: 'hb_carddddddddddddd',
+      kind: 'set' as const,
+      book_id: uuid(7010),
+      content: { ru: 'Комплект' }
+    };
+    expect(await homebrew.createCard(card)).toEqual({ ok: true });
+    expect(
+      await homebrew.updateCard(
+        uuid(7012),
+        { content: { ru: 'Комплект II' }, book_id: null },
+        1
+      )
+    ).toEqual({ ok: true, revision: 2 });
+    expect(await homebrew.removeCard(uuid(7012))).toEqual({ ok: true });
     expect(await homebrew.removeBook(uuid(7010))).toEqual({ ok: true });
     expect(load).toHaveBeenCalledOnce();
   });
@@ -221,6 +237,14 @@ describe('lazyCloud', () => {
     ).toEqual(unsent);
     expect(await homebrew.updateItem('x', { content, book_id: null }, 1)).toEqual(unsent);
     expect(await homebrew.removeItem('x')).toEqual(unsent);
+    const card = { id: 'x', key: 'hb_carddddddddddddd', kind: 'ref' as const };
+    expect(await homebrew.createCard({ ...card, book_id: null, content: { en: 'a' } })).toEqual(
+      unsent
+    );
+    expect(await homebrew.updateCard('x', { content: { en: 'a' }, book_id: null }, 1)).toEqual(
+      unsent
+    );
+    expect(await homebrew.removeCard('x')).toEqual(unsent);
     off();
     expect(fn).not.toHaveBeenCalled();
   });

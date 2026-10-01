@@ -452,10 +452,11 @@ const STATES: {
     }
   },
   {
-    what: '#/homebrew with a source sections open and a new source field',
+    what: '#/homebrew with the sources fold, a source sections open and a new source field',
     route: '#/homebrew',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
+      await userEvent.click(await screen.findByText(/^Источники/, { selector: 'summary' }));
       await userEvent.click(await screen.findByRole('button', { name: 'Разделы' }));
       await userEvent.click(screen.getByRole('button', { name: 'Добавить' }));
       await screen.findByLabelText('Новый источник');
@@ -539,7 +540,17 @@ const COVERED: Record<string, string> = {
     'homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',
   'HomebrewPage.svelte':
     'homebrewPage.test.ts filled, empty and signed out; the sections open above',
-  'HomebrewSources.svelte': 'homebrewPage.test.ts, and the sections and new source open above',
+  'HomebrewSources.svelte':
+    'homebrewPage.test.ts, and the fold, the sections and new source open above',
+  'PanelFold.svelte':
+    'the sources fold open above, and both folds closed and open in homebrewPage.test.ts',
+  'HomebrewCards.svelte':
+    'homebrewPage.test.ts closed, open, with each card form open and every refusal',
+  'CardForm.svelte':
+    'homebrewPage.test.ts in the fold, and homebrewEditor.test.ts with its inline set and rule card forms',
+  'HomebrewRelations.svelte':
+    'homebrewEditor.test.ts with the fold «Связи» open for each kind, its problems and its forms',
+  'ItemPicker.svelte': 'itemPicker.test.ts closed, open and full, and homebrewEditor.test.ts',
   'NameField.svelte':
     'the new source field above, and homebrewEditor.test.ts with its inline source',
   'PickRow.svelte': 'record.test.ts on a catalog and an own record, and inside the modal above',

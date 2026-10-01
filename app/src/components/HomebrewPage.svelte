@@ -1,12 +1,13 @@
 <script lang="ts">
-  /* `#/homebrew`, «Мои предметы» (m02, m03 in the homebrew mocks): the count, the
-     sources, «Новый предмет», and the own items under one heading per source and
-     section. A row opens the editor; its tick feeds the frame's selection bar, and the
-     strip above the rows deletes the ticked items (docs/specs/FEATURES.md, "Homebrew").
-     `PageTitle`, not `PageHead`: the page may not be pinned. */
+  /* `#/homebrew`, «Мои предметы» (m02, m03 in the homebrew mocks): the count, the folds
+     «Источники» and «Карты», «Новый предмет», and the own items under one heading per
+     source and section. A row opens the editor; its tick feeds the frame's selection
+     bar, and the strip above the rows deletes the ticked items (docs/specs/FEATURES.md,
+     "Homebrew"). `PageTitle`, not `PageHead`: the page may not be pinned. */
   import BatchBar from './BatchBar.svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
+  import HomebrewCards from './HomebrewCards.svelte';
   import HomebrewLoad from './HomebrewLoad.svelte';
   import HomebrewSources from './HomebrewSources.svelte';
   import Icon from './Icon.svelte';
@@ -63,6 +64,7 @@
     <p class="note">{count}</p>
     <div class="stack">
       <HomebrewSources {app} {store} />
+      <HomebrewCards {app} {store} />
       <div>
         <Button variant="primary" href={homebrewItemHash(null)} sameTab
           ><Icon name="plus" />{t.hbNewItem}</Button

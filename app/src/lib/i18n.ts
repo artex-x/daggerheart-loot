@@ -97,11 +97,6 @@ export function descOf(it: Record_, lang: Lang): string {
   return lang === 'ru' ? it.rud || it.ende : it.ende;
 }
 
-/** The names of several records, comma-separated, in the given order. */
-export function namesOf(list: readonly Record_[], lang: Lang): string {
-  return list.map((it) => nameOf(it, lang)).join(', ');
-}
-
 /* ---------- the stat line ---------- */
 
 /** The words the stat line needs that are not in the vocabulary maps. */

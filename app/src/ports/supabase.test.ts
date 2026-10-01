@@ -1589,24 +1589,40 @@ describe('the homebrew rows', () => {
     created_at: '2026-09-30T10:00:00+00:00',
     updated_at: '2026-09-30T11:00:00+00:00'
   };
+  const CARD = {
+    id: 'c1',
+    key: 'hb_aldersetaaaaaaaa',
+    kind: 'set' as const,
+    book_id: null,
+    content: { ru: 'Комплект Ольхи' },
+    revision: 2,
+    created_at: '2026-09-30T10:00:00+00:00',
+    updated_at: '2026-09-30T11:00:00+00:00'
+  };
 
-  it('reads both tables and the item limit', async () => {
+  it('reads the three tables and the item limit', async () => {
     const books = query(answer([BOOK]));
     const items = query(answer([ITEM]));
+    const cards = query(answer([CARD]));
     client.rpc.mockResolvedValueOnce(answer(100));
     expect(await make().homebrew.load()).toEqual({
       ok: true,
       books: [BOOK],
       items: [ITEM],
+      cards: [CARD],
       itemLimit: 100
     });
     expect(client.from.mock.calls.map((c) => c[0])).toEqual([
       'homebrew_books',
-      'homebrew_items'
+      'homebrew_items',
+      'homebrew_cards'
     ]);
     expect(books).toEqual([['select', ['id,key,content,revision,created_at,updated_at']]]);
     expect(items).toEqual([
       ['select', ['id,key,book_id,content,revision,created_at,updated_at']]
+    ]);
+    expect(cards).toEqual([
+      ['select', ['id,key,kind,book_id,content,revision,created_at,updated_at']]
     ]);
     expect(client.rpc).toHaveBeenCalledWith('my_limit', { p_key: 'homebrew_items_per_owner' });
   });
@@ -1620,11 +1636,13 @@ describe('the homebrew rows', () => {
     ]) {
       query(answer([]));
       query(answer([]));
+      query(answer([]));
       client.rpc.mockImplementationOnce(() => limit);
       expect(await cloud.homebrew.load()).toEqual({
         ok: true,
         books: [],
         items: [],
+        cards: [],
         itemLimit: null
       });
     }
@@ -1635,14 +1653,17 @@ describe('the homebrew rows', () => {
     client.auth.getSession.mockResolvedValueOnce({ data: { session: null }, error: null });
     expect(await cloud.homebrew.load()).toEqual({ ok: false });
     expect(client.from).not.toHaveBeenCalled();
-    for (const [b, i] of [
-      [failed('42501', 401), answer([])],
-      [answer([]), failed('PGRST000', 503)],
-      [answer(null), answer([])],
-      [new Error('offline'), answer([])]
+    for (const [b, i, c] of [
+      [failed('42501', 401), answer([]), answer([])],
+      [answer([]), failed('PGRST000', 503), answer([])],
+      [answer([]), answer([]), failed('PGRST000', 503)],
+      [answer(null), answer([]), answer([])],
+      [answer([]), answer([]), answer(null)],
+      [new Error('offline'), answer([]), answer([])]
     ]) {
       query(b);
       query(i);
+      query(c);
       client.rpc.mockResolvedValueOnce(answer(100));
       expect(await cloud.homebrew.load()).toEqual({ ok: false });
     }
@@ -1783,6 +1804,57 @@ describe('the homebrew rows', () => {
       'homebrew_books',
       'homebrew_items'
     ]);
+  });
+
+  it('creates, updates and removes a card on homebrew_cards', async () => {
+    const cloud = make();
+    const row = {
+      id: 'c1',
+      key: CARD.key,
+      kind: 'set' as const,
+      book_id: null,
+      content: CARD.content
+    };
+    const created = query(answer(null, 201));
+    expect(await cloud.homebrew.createCard(row)).toEqual({ ok: true });
+    expect(created).toEqual([
+      ['upsert', [row, { onConflict: 'id', ignoreDuplicates: true }]],
+      ['abortSignal', []]
+    ]);
+    const updated = query(answer([{ revision: 3 }]));
+    const patch = { content: { ru: 'Комплект Ольхи II' }, book_id: 'b1' };
+    expect(await cloud.homebrew.updateCard('c1', patch, 2)).toEqual({ ok: true, revision: 3 });
+    expect(updated).toEqual([
+      ['update', [patch]],
+      ['eq', ['id', 'c1']],
+      ['eq', ['revision', 2]],
+      ['select', ['revision']],
+      ['abortSignal', []]
+    ]);
+    query(answer([]));
+    const held = query(answer(null));
+    expect(await cloud.homebrew.updateCard('c1', patch, 2)).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+    expect(held[0]).toEqual(['select', ['revision,content,book_id']]);
+    query(failed('P0001', 400, 'limit: homebrew_cards_per_owner', '100'));
+    expect(await cloud.homebrew.createCard(row)).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'homebrew_cards_per_owner',
+      value: 100
+    });
+    const removed = query(answer(null, 204));
+    expect(await cloud.homebrew.removeCard('c1')).toEqual({ ok: true });
+    expect(removed).toEqual([
+      ['delete', []],
+      ['eq', ['id', 'c1']],
+      ['abortSignal', []]
+    ]);
+    expect(new Set(client.from.mock.calls.map((c) => c[0]))).toEqual(
+      new Set(['homebrew_cards'])
+    );
   });
 
   it('makes a fresh id and a key of the key shape', () => {

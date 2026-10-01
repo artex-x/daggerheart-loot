@@ -6,7 +6,9 @@
      keeps the form, the draft and the guard. The name and the description edit the
      item's own language; the other language is written back untouched. A dirty form
      asks before any navigation and before the tab closes. The editor keeps its own key:
-     a save that creates replaces the address and keeps this form mounted
+     a save that creates replaces the address and keeps this form mounted. The fold
+     «Связи» holds the relations; the preview reads its own index, with the draft in place
+     of the stored row, so it draws the draft's ladder, set and reverse links
      (docs/specs/FEATURES.md, "Homebrew";
      docs/decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md). */
   import { tick, untrack } from 'svelte';
@@ -14,6 +16,7 @@
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
   import HomebrewLoad from './HomebrewLoad.svelte';
+  import HomebrewRelations from './HomebrewRelations.svelte';
   import NameField from './NameField.svelte';
   import NoticeBox from './NoticeBox.svelte';
   import PageTitle from './PageTitle.svelte';
@@ -24,13 +27,17 @@
   import TextArea from './TextArea.svelte';
   import TextInput from './TextInput.svelte';
   import { limitText } from '../lib/cloudLists.js';
+  import { lineMembers } from '../lib/data.js';
   import { HOMEBREW_HASH, homebrewItemHash } from '../lib/hash.js';
   import {
     DESC_MAX,
     editLang,
+    itemUses,
     nameTaken,
     SECTIONS_MAX,
+    withRecords,
     type BookRef,
+    type CardKind,
     type HomebrewContent,
     type ItemRow,
     type Problem
@@ -99,6 +106,11 @@
   let deleting = $state(false);
   /* The inline name field under «Источник» or «Раздел». */
   let adding = $state<'book' | 'section' | null>(null);
+  /* The inline set or rule card form inside «Связи». */
+  let cardForm = $state<CardKind | null>(null);
+  /* The fold «Связи»: open for an item with relations, a save problem inside it, or the
+     author's press; it never closes by itself. */
+  let relOpen = $state(false);
   let addIds = $state<NewIds | null>(null);
   let summary = $state<HTMLDivElement | undefined>(undefined);
   let formEl = $state<HTMLFormElement | undefined>(undefined);
@@ -112,6 +124,8 @@
     revision = r?.revision ?? null;
     loadedId = r?.id ?? null;
     draft = draftOf(r, editIn);
+    const c = r?.content;
+    relOpen = !!(c && (c.eq?.line || c.craft || c.craft_from || c.set || c.refs));
     loaded = JSON.stringify(draft);
     problems = [];
     banner = null;
@@ -161,7 +175,30 @@
   const bookRef = $derived<BookRef | null>(book ? { ...book.content, key: book.key } : null);
   const named = (v: { en?: string; ru?: string }): string =>
     (lang === 'ru' ? v.ru || v.en : v.en || v.ru) ?? '';
-  const preview = $derived(previewOf(rowKey ?? ids.key, draft, editIn, base, bookRef));
+  const selfKey = $derived(rowKey ?? ids.key);
+  const preview = $derived(previewOf(selfKey, draft, editIn, base, bookRef, store.cardRefs));
+  /* The other rungs of the line «В линии» joins: `formProblems` refuses another type. */
+  const rungs = $derived(
+    draft.line && app.index
+      ? lineMembers(app.index, draft.line).filter((r) => r.id !== selfKey)
+      : []
+  );
+  /* The catalog and the own records with the draft in place of the stored row. */
+  const previewIndex = $derived.by(() => {
+    if (!app.catalog) return app.index;
+    const own = store.records.filter((r) => r.id !== selfKey);
+    return withRecords(app.catalog, [...own, preview], []);
+  });
+  const relCount = $derived(
+    (draft.kind === 'equip' &&
+    (draft.lineMode === 'new' || (draft.lineMode === 'in' && draft.line !== ''))
+      ? 1
+      : 0) +
+      draft.craft.length +
+      draft.craftFrom.length +
+      (draft.set ? 1 : 0) +
+      draft.refs.length
+  );
   const title = $derived(nameOf(preview, lang) || t.hbNewItem);
   /* The card's name is a heading: an item with no name yet draws «Новый предмет». */
   const card = $derived(
@@ -225,14 +262,35 @@
     'hb-alt-tr': t.hbAlt + ': ' + t.hbTrait,
     'hb-alt-rg': t.hbAlt + ': ' + t.hbRange,
     'hb-alt-dmg': t.hbAlt + ': ' + t.hbDmg,
-    'hb-alt-dt': t.hbAlt + ': ' + t.hbDt
+    'hb-alt-dt': t.hbAlt + ': ' + t.hbDt,
+    'hb-line': t.hbLine,
+    'hb-craft': t.craftInto,
+    'hb-craft-from': t.craftFrom,
+    'hb-set': t.setLabel,
+    'hb-refs': t.hbRefs
   });
+
+  const REL_FIELDS: readonly FieldId[] = [
+    'hb-line',
+    'hb-craft',
+    'hb-craft-from',
+    'hb-set',
+    'hb-refs'
+  ];
 
   const lowerFirst = (s: string): string => s.charAt(0).toLocaleLowerCase() + s.slice(1);
 
   function focusField(field: FieldId): void {
-    const id = field === 'hb-th' ? 'hb-th0' : field;
+    const id =
+      field === 'hb-th'
+        ? 'hb-th0'
+        : field === 'hb-set' && cardForm === 'set'
+          ? 'hb-set-new-name'
+          : field === 'hb-refs' && cardForm === 'ref'
+            ? 'hb-ref-new-name'
+            : field;
     if (field.startsWith('hb-alt')) altOpen = true;
+    if (REL_FIELDS.includes(field)) relOpen = true;
     void tick().then(() => {
       document.getElementById(id)?.focus();
     });
@@ -298,13 +356,12 @@
     app.replace(homebrewItemHash(pair.key));
   }
 
-  async function write(forced: boolean): Promise<void> {
+  async function write(content: HomebrewContent, forced: boolean): Promise<void> {
     const r0 = row;
     if (!r0) {
       banner = 'gone';
       return;
     }
-    const content = contentOf(draft, editIn, base) as HomebrewContent;
     const r = await store.updateItem(
       r0,
       { content, book_id: draft.bookId },
@@ -315,13 +372,22 @@
     else refused = refusedLine(r);
   }
 
-  /* Checks first: nothing is sent while a problem remains. */
-  async function run(send: (content: HomebrewContent) => Promise<void>): Promise<void> {
+  /* Checks first: nothing is sent while a problem remains. `key` is the key the write
+     uses: «Новая линия» stores it as the line. */
+  async function run(
+    key: string,
+    send: (content: HomebrewContent) => Promise<void>
+  ): Promise<void> {
     if (busy) return;
     refused = null;
-    const found = formProblems(draft, editIn, base, store.books);
+    const found = formProblems(draft, editIn, base, store.books, {
+      key,
+      rungs,
+      open: cardForm
+    });
     if (found.length) {
       problems = found;
+      if (found.some((p) => REL_FIELDS.includes(fieldOf(p)))) relOpen = true;
       await tick();
       summary?.focus();
       return;
@@ -329,14 +395,16 @@
     problems = [];
     busy = true;
     try {
-      await send(contentOf(draft, editIn, base) as HomebrewContent);
+      await send(contentOf(draft, editIn, base, key) as HomebrewContent);
     } finally {
       busy = false;
     }
   }
 
   function save(): Promise<void> {
-    return run(rowKey === null ? (c) => create(ids, c) : () => write(false));
+    return rowKey === null
+      ? run(ids.key, (c) => create(ids, c))
+      : run(rowKey, (c) => write(c, false));
   }
 
   async function showNew(): Promise<void> {
@@ -355,11 +423,17 @@
     const r0 = row;
     if (!r0) return;
     const name = nameOf(preview, lang);
-    const ask = inLists
-      ? t.hbDeleteItemInLists
-          .replace('%s', name)
-          .replace('%l', plural(inLists, t.hbListsIn, lang))
-      : t.hbDeleteItem.replace('%s', name);
+    const uses = itemUses(store.items, r0.key);
+    const lists = plural(inLists, t.hbListsIn, lang);
+    const items = plural(uses, t.hbItemsIn, lang);
+    const ask =
+      inLists && uses
+        ? t.hbDeleteItemInListsRel.replace('%s', name).replace('%l', lists).replace('%r', items)
+        : inLists
+          ? t.hbDeleteItemInLists.replace('%s', name).replace('%l', lists)
+          : uses
+            ? t.hbDeleteItemRel.replace('%s', name).replace('%r', items)
+            : t.hbDeleteItem.replace('%s', name);
     if (!app.env.dialog.confirm(ask)) return;
     refused = null;
     deleting = true;
@@ -620,8 +694,12 @@
           <NoticeBox warn>
             {t.hbConflict}
             {#snippet actions()}
-              <Button size="sm" variant="primary" onclick={() => void run(() => write(true))}
-                >{t.hbSaveMine}</Button
+              <Button
+                size="sm"
+                variant="primary"
+                onclick={() => {
+                  if (rowKey !== null) void run(rowKey, (c) => write(c, true));
+                }}>{t.hbSaveMine}</Button
               >
               <Button size="sm" onclick={() => void showNew()}>{t.hbShowNew}</Button>
             {/snippet}
@@ -633,7 +711,7 @@
               <Button
                 size="sm"
                 variant="primary"
-                onclick={() => void run((c) => create(ids, c))}>{t.hbSaveAsNew}</Button
+                onclick={() => void run(ids.key, (c) => create(ids, c))}>{t.hbSaveAsNew}</Button
               >
               <Button size="sm" href={HOMEBREW_HASH} sameTab>{t.hbToMyItems}</Button>
             {/snippet}
@@ -982,6 +1060,23 @@
           {/if}
         {/if}
 
+        <details class="rel" bind:open={relOpen}>
+          <summary
+            >{t.hbRelations}{#if relCount > 0}<span class="n">{' · ' + String(relCount)}</span
+              >{/if}</summary
+          >
+          <HomebrewRelations
+            {app}
+            {store}
+            {draft}
+            {selfKey}
+            {errText}
+            {errId}
+            {set}
+            bind:adding={cardForm}
+          />
+        </details>
+
         <div class="buttons">
           <Button variant="primary" disabled={busy} onclick={() => void save()}>{t.save}</Button
           >
@@ -1002,7 +1097,7 @@
       {#if app.index}
         <RecordCard
           it={card}
-          index={app.index}
+          index={previewIndex ?? app.index}
           lang={app.lang}
           artBroken={false}
           onartfail={() => {}}
@@ -1025,9 +1120,13 @@
       grid-template-columns: minmax(0, 1fr) 340px;
     }
 
+    /* A full card with its relations is taller than the viewport: the sticky preview
+       scrolls inside, or its bottom stays out of reach. */
     .preview {
       position: sticky;
       top: 130px;
+      max-height: calc(100vh - 146px);
+      overflow-y: auto;
     }
   }
 
@@ -1102,7 +1201,8 @@
     color: var(--muted);
   }
 
-  .alt {
+  .alt,
+  .rel {
     display: grid;
     gap: 16px;
   }
@@ -1111,14 +1211,21 @@
     justify-self: start;
   }
 
-  .alt summary {
+  .alt summary,
+  .rel summary {
     cursor: pointer;
     font-size: 13.5px;
     color: var(--gold-soft);
     width: fit-content;
   }
 
-  .alt[open] summary {
+  .rel summary .n {
+    color: var(--muted2);
+    font-weight: 500;
+  }
+
+  .alt[open] summary,
+  .rel[open] summary {
     margin-bottom: 12px;
   }
 

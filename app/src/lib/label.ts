@@ -22,7 +22,7 @@ import { dict } from './dict.js';
 import { frameName } from './frames.js';
 import type { FrameId } from './frames.js';
 import { isHomebrewRecord } from './homebrew.js';
-import { EQ_TYPE, eqWord } from './i18n.js';
+import { EQ_TYPE, eqWord, nameOf } from './i18n.js';
 import { SUB_LABEL, groupOf } from './tables.js';
 import type { Dict } from './dict.js';
 import type { Lang, Record_, TableId } from './types.js';
@@ -224,4 +224,53 @@ export function whereFrom(it: Record_, lang: Lang): string {
   const base = subKey ? `${head} · ${t[subKey]}` : head;
 
   return it.frame || it.community ? `${base} · ${srcLabel(it, lang)}` : base;
+}
+
+/** The most homebrew records a folded relation draws besides the record itself. */
+export const FOLD_OWN = 3;
+
+/** Returns a record's name in a relation: a homebrew record's with the Latin mark «(HB)». */
+export function relName(it: Record_, lang: Lang): string {
+  const name = nameOf(it, lang);
+  /* A replacer function, so a name holding `$&` keeps its characters. */
+  return isHomebrewRecord(it) ? dict(lang).hbTag.replace('%s', () => name) : name;
+}
+
+/** Returns the catalog records in their order, then the homebrew ones by name in `lang`. */
+export function relOrder(list: readonly Record_[], lang: Lang): Record_[] {
+  return [
+    ...list.filter((r) => !isHomebrewRecord(r)),
+    ...list
+      .filter((r) => isHomebrewRecord(r))
+      .sort((a, b) => nameOf(a, lang).localeCompare(nameOf(b, lang), lang))
+  ];
+}
+
+/** Returns what a folded relation draws: every catalog record, the record `self` and the
+ *  first `keep` other homebrew records, in `list`'s order; `more` counts the rest. */
+export function foldOwn(
+  list: readonly Record_[],
+  keep: number,
+  self?: string
+): { shown: Record_[]; more: number } {
+  let own = 0;
+  const shown = list.filter((r) => {
+    if (!isHomebrewRecord(r) || r.id === self) return true;
+    own += 1;
+    return own <= keep;
+  });
+  return { shown, more: list.length - shown.length };
+}
+
+/** Returns a relation as text: `relOrder`, `foldOwn` (which keeps `self`), the `relName`s
+ *  comma-joined, then `andMore` for the rest. */
+export function relText(
+  list: readonly Record_[],
+  lang: Lang,
+  keep: number,
+  self?: string
+): string {
+  const { shown, more } = foldOwn(relOrder(list, lang), keep, self);
+  const head = shown.map((r) => relName(r, lang)).join(', ');
+  return more > 0 ? head + ' ' + dict(lang).andMore.replace('%n', String(more)) : head;
 }

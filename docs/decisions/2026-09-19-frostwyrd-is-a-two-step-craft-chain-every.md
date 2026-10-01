@@ -1,5 +1,6 @@
 # 2026-09-19 - Frostwyrd is a two-step craft chain; every upgrade line stays at four tiers
 
+- Amended by "A homebrew item carries the whole catalog shape; sources and cards are rows" (2026-09-30): `craft` is a list of ids, so the chain reads `craft: ['dve25']` and `craft: ['dve26']`.
 - Task: `dragons-vault` (was a three-rung `eq.line` until 2026-09-22).
 - Decision: `craft: 'dve25'` on Dormant and `craft: 'dve26'` on Awakened,
   no `line`; the card reads "Upgrades to" / "Made from" and keeps the

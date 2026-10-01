@@ -143,8 +143,9 @@ across.
   equipment tables' toolbar (after the view switch), drawn only while the
   account holds an item, titled «Показывать свои предметы». It is on by
   default; off, it removes the own records and their `src` values from those
-  pages for the visit. A record dialog, a list, `#/i/<key>` and
-  `#/tables/homebrew` still draw them. It is memory only (`STATE.md`).
+  pages for the visit. A record dialog, a list, `#/i/<key>`,
+  `#/tables/homebrew` and the relation lines of a catalog card or row still
+  draw them. It is memory only (`STATE.md`).
 - The filter panel is one component across all tables; where a table has nothing
   to filter by, there is no panel. Nothing is selected by default and an empty
   row means "any". Chosen values show as pills outside the panel, with a reset
@@ -703,9 +704,9 @@ browser lists writable after the date.
   lines, a list at most 10 pending requests (both defaults `limits:set`
   changes per owner), a link sends at most 5 a minute; a request expires
   after an hour and is deleted a day after its answer or expiry, when the
-  next request is sent to any list. Homebrew counts 100 own items and 20
-  sources per account (`homebrew_items_per_owner`,
-  `homebrew_books_per_owner`; "Homebrew").
+  next request is sent to any list. Homebrew counts 100 own items, 100 cards
+  and 20 sources per account (`homebrew_items_per_owner`,
+  `homebrew_cards_per_owner`, `homebrew_books_per_owner`; "Homebrew").
 - **The move**: when a signed-in reader's page has read the account and this
   browser holds lists, each list moves into the account as it is - entries,
   quantities, prices, both notes, the list notes and the money mode, every
@@ -851,9 +852,13 @@ browser lists writable after the date.
 - A compact card's art zooms slightly on hover, guarded by `@media
   (hover:hover)` so no touch device triggers it on tap; a full-page record's
   art never zooms.
-- Upgrade chains render both directions; the reverse is computed at load. That
-  is `craft` - one thing made from another - and it is not the tier ladder
-  below. A chain may run through a record, which then draws both lines:
+- Upgrade chains render both directions; the reverse is computed at load.
+  That is `craft` - one thing made from another - and it is not the tier
+  ladder below. `craft` is a list: a record that upgrades into several draws
+  them comma-joined in one "Upgrades to" line, in the list's order, and a
+  record made from several draws them in one "Made from" line; the copied
+  text carries one "Upgrades to" block per target. A chain may run through a
+  record, which then draws both lines:
   Frostwyrd (Awakened) is made from Dormant and upgrades to Exalted. The card
   and the table row draw "Made from" first, then "Upgrades to", so the lines
   follow the chain; "Made from" has a left arrow and "Upgrades to" a right
@@ -890,6 +895,26 @@ browser lists writable after the date.
   line after it. The set is derived by grouping at load, never stored as a
   sibling list, and a set of one is not a set. No set filter and no set page
   exist yet (`docs/DECISIONS.md`, 2026-09-23, "The second set").
+- **Own relations on a card**
+  (`docs/decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md`):
+  signed in, a card's «Получается из», «Улучшается до», set line and tier
+  ladder also draw the author's own items that name the record, and an own
+  item's card draws its own relations; nobody else sees them, a frozen copy
+  in a list adds nothing to a catalog card, and the «Хоумбрю» chip does not
+  hide them. A homebrew name reads «<name> (HB)» and a homebrew rung «<tier>
+  HB», titled and named «<name> (HB)», with the ordinary border. Each line
+  and the ladder draw every catalog record, the record itself and three
+  homebrew records - catalog records in their order, then homebrew ones by
+  name, the ladder in tier order - then «и ещё N» (`aria-expanded`), which
+  opens the rest and reads «свернуть»; a card opens closed. A row draws its
+  catalog names, the first homebrew name and «и ещё N» as text. Copied text
+  writes one «Улучшается до» block per catalog target and per homebrew
+  target up to three, each homebrew name with «(HB)», then one bodiless
+  «Улучшается до: и ещё N» / "Upgrades to: and N more" line for the rest, so
+  a copy has a bound; the print card's set label folds as the card does and
+  keeps the printed record. A frozen copy draws its own rung on its
+  line's ladder and the bonus of the set card it carries, also when no
+  other member of the set is the reader's.
 - A row - in a table, a search, a shared list or a list page - and the lists
   index strip draw the 160 px thumbnail `img/thumb/<asset>`; tiles, cards,
   the record page, print and copy-image draw the 640 px file.
@@ -921,11 +946,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   the items with the catalog, they appear in the tables and go into lists), then the
   count «Мои предметы: N из M» / "My items: N of M" (M from the database,
   an override's own number; «Мои предметы: N» when the limit read failed),
-  the «Источники» panel, «Новый предмет» (to `#/homebrew/new`) and the items
-  as table rows under one heading per source and section: each named source
-  by its creation, its sections in the author's order, then its items with
-  no section under the source name, «Хоумбрю» / "Homebrew" last, empty
-  headings left out, the items by name. A row opens the editor; its tick
+  the «Источники» and «Карты» folds, «Новый предмет» (to `#/homebrew/new`)
+  and the items as table rows under one heading per source and section:
+  each named source by its creation, its sections in the author's order,
+  then its items with no section under the source name, «Хоумбрю» /
+  "Homebrew" last, empty headings left out, the items by name. A row opens
+  the editor; its tick
   feeds the selection bar (add to a list, print, copy) and the strip above
   the rows, whose «Удалить (N)» asks «Удалить предметы (N)? Они пропадут и
   из ваших списков. Отменить нельзя.». No items: «Своих предметов пока нет
@@ -934,7 +960,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   загрузить ваши предметы.» and «Повторить». With no sign-in configured the
   route draws the not-found page and keeps the address. The page cannot be
   pinned.
-- **Sources and sections**: the default source «Хоумбрю» holds every item
+- **Sources and sections**: the fold «Источники» / "Sources", closed on each
+  visit («Источники · N источников» while the account holds a named source),
+  lists them. The default source «Хоумбрю» holds every item
   with no named source; its row shows only the count. A named source shows
   its name in the language on screen (the other language when it has
   none), «N предметов · M разделов», «Разделы», «Переименовать» and
@@ -956,6 +984,38 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   and its items move to «Хоумбрю»; deleting a section asks «Удалить раздел
   «%s»? Его N предметов останутся в источнике без раздела.», and its items
   draw with no section. An empty source or section asks the short form.
+- **Cards**: the fold «Карты» / "Cards", closed on each visit, names the
+  account's set and rule card counts («Карты · 1 комплект, 1 карта правил»)
+  and opens «Комплекты» and «Карты правил». Each card shows its name in the
+  language on screen, «N предметов» (the own items that name it) with its
+  source, «Изменить» and «Удалить»; an empty group reads «Комплектов пока
+  нет.» / «Карт правил пока нет.». «+ Новый комплект» and «+ Новая карта
+  правил» open the card form, and «Изменить» opens it in place of the card's
+  row; one form is open at a time. In each group the create button comes
+  first, under the heading, and the cards follow by name. A card delete
+  toasts «Комплект «%s» удалён» / «Карта правил «%s» удалена». The set form
+  holds «Название комплекта» * and «Бонус комплекта» *; the rule card form
+  «Название карты» *, «Подзаголовок», «Текст карты» * and «Ссылка» (empty,
+  or `https://` in Latin characters with no spaces); in the fold both hold
+  «Источник». A form sends on its button or Enter in a one-line field and
+  cancels on Escape or «Отмена». It refuses an empty name («Введите
+  название.»), an empty bonus or text («Введите бонус комплекта.» /
+  «Введите текст карты.»), a name another own card of the kind holds,
+  compared without case («Комплект «%s» уже есть.» / «Карта правил «%s» уже
+  есть.»), another link («Ссылка должна начинаться с https:// и состоять из
+  латиницы без пробелов.»), the card limit, a card changed on another
+  device («Карту изменили на другом устройстве. Данные обновлены -
+  повторите.») and a lost network; a refusal draws under its field or the
+  buttons and keeps the typed text. A card another device deleted closes
+  its edit form and toasts «Эту карту удалили на другом устройстве.». An
+  edit writes the language on screen, keeps the other one as the account
+  holds it at the press and names how many items show the change. Deleting a
+  card asks «Удалить карту правил «%s»? Она указана в N предметах - там она
+  пропадёт. Отменить нельзя.» or «Удалить комплект «%s»? Он указан в N
+  предметах - там пропадут его название и бонус. Отменить нельзя.», the
+  short form («Удалить карту правил «%s»? Отменить нельзя.») for a card no
+  item names; the items keep its key and draw nothing for it, and an editor
+  save keeps that key.
 - **The editor** (`#/homebrew/new`, `#/homebrew/<key>`): the form beside a
   live full card of the item from 800 px, the card under the form below; an
   item with no name yet reads «Новый предмет» on it.
@@ -987,6 +1047,33 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   edits reach the list with «Сохранить»; a new item has none before its
   first save. The type and the weapon values stay in the form while another
   kind or type is chosen.
+- **Relations**: the fold «Связи» / "Relations" closes the form, its summary
+  «Связи · N» for the N relations the item names. It is closed for an item
+  with no relation and open for one with any; a save problem inside it or an
+  open card form opens it. For equipment, «Линия улучшений» («Уникальный» by
+  default, «В линии», «Новая линия»): «В линии» picks equipment of the same
+  type in an upgrade line, catalog or own, and draws the line's lowest rung
+  with «линия из N рангов»; «Новая линия» starts a line at this item, which
+  other own items of the type can join. «Улучшается до» and «Получается из»
+  hold up to 8 items each, catalog or own; the item itself is never offered.
+  «Комплект» is a select of the catalog's sets and the own ones («<name>
+  (HB)»), with «+ Новый комплект...», which opens the set form in its place
+  and selects the set it makes. «Карты правил» holds up to 3 cards, the
+  catalog's and the own ones, with «+ Новая карта правил», which opens the
+  rule card form and adds the card it makes. A card made here goes into the
+  item's source and is written at once («Комплект «%s» создан» / «Карта
+  правил «%s» создана»). A picker finds items by name, description or stat
+  line, and cards by name or subtitle, in both languages; it lists at most 8
+  matches, then «Ещё N - уточните запрос», or «Ничего не найдено». ArrowDown
+  and ArrowUp move, Enter or a click picks, Escape closes, Backspace in an
+  empty field removes the last chosen one, and a full list reads «Уже 8 -
+  больше нельзя». A chosen item or card the account no longer holds reads
+  «Предмета больше нет» / «Карты больше нет» and is kept until removed. The
+  card draws the draft's relations: its rung on the line's ladder, both
+  craft lines, its set with the bonus and its rule cards; an own rule card
+  links to its address as written, with the host as the text, and an empty
+  address draws no link. The card marks and folds the relations as
+  "Records" says.
 - **Checks**: the form checks on «Сохранить» only, with the database's own
   rules. A failed save sends nothing and focuses the summary «Не сохранено:
   исправьте N полей.», which lists each field once with its problem; a
@@ -995,8 +1082,14 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   the field's next change. Damage is `d4`-`d20` with an optional `+1`..`+99`;
   an armour score 0-12; thresholds two whole numbers 1-99, the second larger;
   the second set all four fields or none, and its lines name «Очистить второй
-  набор»; a set emptied by any path takes its lines along. A source another tab deleted
-  reads «Этот источник удалили - выберите другой.».
+  набор»; a set emptied by any path takes its lines along. «В линии» with no
+  line reads «Выберите предмет из линии или нажмите «Уникальный».», a line of
+  another equipment type «В этой линии снаряжение другого типа: выберите
+  другую линию или нажмите «Уникальный».», and a save while the set or rule
+  card form is open «Создайте комплект кнопкой «Создать комплект» или
+  нажмите «Отмена».» / «Создайте карту кнопкой «Создать карту» или нажмите
+  «Отмена».». A source another tab deleted reads «Этот источник удалили -
+  выберите другой.».
 - **Saving**: «Сохранить», Ctrl+S or Cmd+S, or Enter in any one-line field
   of the form saves. A new item's save replaces the address with
   `#/homebrew/<key>` and keeps the form and the focus; an edit writes over
@@ -1027,29 +1120,39 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   While a delete reads the lists again, the form stays as it was.
 - **Delete**: «Удалить» asks «Удалить предмет «%s»? Отменить нельзя.», or
   «Предмет «%s» есть в N списках. Удалить его и убрать из списков? Отменить
-  нельзя.» while account lists hold it; the item leaves the account, its
-  references leave the lists, the page goes to `#/homebrew` and toasts
-  «Предмет «%s» удалён». A failed delete draws «Не удалось удалить -
-  проверьте соединение и попробуйте ещё раз.». The editor names how many
-  account lists hold the item.
+  нельзя.» while account lists hold it; «Предмет «%s» указан в N предметах.
+  Удалить его? Отменить нельзя.» while other own items name it in a craft
+  link or a line, and «Предмет «%s» есть в N списках и указан в M
+  предметах. Удалить его и убрать из списков? Отменить нельзя.» for both;
+  the other items keep its key and draw nothing for it; the item leaves the
+  account, its references leave the lists, the page goes to `#/homebrew`
+  and toasts «Предмет «%s» удалён». A failed delete draws «Не удалось
+  удалить - проверьте соединение и попробуйте ещё раз.». The editor names
+  how many account lists hold the item.
 - **Where an item is used**: an own item goes into the account's lists as a
   reference and draws live there, on their share links too; «Свой предмет»
   on a list page makes one in one press ("Lists"). A browser list never holds
   one: «Добавить в список» into it says «Свой предмет нельзя добавить в этот
   список.», and a `#/l/` link and a lists file never carry an own key. A
   list another user saved from a share link, or added the item to from one,
-  keeps a frozen copy of the item. Search lists own items after the catalog's,
-  and the tables draw them on `#/tables/homebrew` and, for equipment, in the
-  equipment table of its type ("Tables and search").
+  keeps a frozen copy of the item, with its source and the own set and rule
+  cards it names. Search lists own items after the catalog's, and the tables
+  draw them on `#/tables/homebrew` and, for equipment, in the equipment table
+  of its type ("Tables and search").
 - **What a delete removes**: the item and its references in the author's
   own lists. A frozen copy in another user's list stays as it was; it is
-  not deleted with the item or with the author's account.
-- **Limits**: 100 own items and 20 sources per account (the defaults;
+  not deleted with the item or with the author's account. A card delete
+  removes the card. The items keep its key and draw nothing for it, and the
+  author's lists and their share links show those items without it. A
+  frozen copy in another user's list keeps the card it embedded.
+- **Limits**: 100 own items, 100 cards (sets and rule cards) and 20 sources
+  per account (the defaults;
   `limits:set` changes them per user, and «из M» shows the number the
   database applies), 30 sections per source. The item limit refuses a save
   with «Достигнут предел своих предметов: N. Нужно больше - напишите на
   daggerheart.loot@gmail.com.», the source limit with «Достигнут предел
-  источников: N. ...».
+  источников: N. ...», the card limit with «Достигнут предел карт
+  (комплектов и карт правил): N. ...».
 - Another tab's or device's homebrew write arrives as the owner topic's
   `homebrew` message and reads the items again once; this tab's own is
   ignored. While the topic is down a homebrew page (`#/homebrew`, the editor,

@@ -180,7 +180,7 @@ for (const id of ids) {
     why: [
       rec.kind,
       rec.eq ? 'equipment/' + rec.eq.t : null,
-      rec.craft ? 'upgrades into ' + rec.craft : null,
+      rec.craft?.length ? 'upgrades into ' + rec.craft.join(', ') : null,
       rec.refs?.length ? 'references ' + rec.refs.length + ' card(s)' : null,
       'src ' + rec.src
     ]

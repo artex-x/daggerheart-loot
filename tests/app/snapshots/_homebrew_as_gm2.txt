@@ -1,6 +1,6 @@
 # #/homebrew as gm2
 # route: #/homebrew
-# why: an account with no homebrew: «Мои предметы: 0 из 100», the sources panel with «Хоумбрю» alone, «Своих предметов пока нет - создайте первый.»
+# why: an account with no homebrew: «Мои предметы: 0 из 100», the closed folds «Источники» and «Карты» with no count, «Своих предметов пока нет - создайте первый.»
 # as: gm2
 
 ## ru :: tree
@@ -28,10 +28,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     heading "Мои предметы" [level=1]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "Мои предметы: 0 из 100"
-    heading "ИСТОЧНИКИ" [level=2]
-    StaticText "Хоумбрю"
-    StaticText "0 предметов"
-    button "Добавить"
+    DisclosureTriangle "ИСТОЧНИКИ" [expanded=false]
+    DisclosureTriangle "КАРТЫ" [expanded=false]
     link "Новый предмет" [url=index.html?as=gm2#/homebrew/new]
     StaticText "Своих предметов пока нет - создайте первый."
   contentinfo ""
@@ -42,6 +40,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
++ Новая карта правил
++ Новый комплект
 Dragon's Vault
 Dread
 EN
@@ -89,10 +89,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm2#/ho
     heading "My items" [level=1]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "My items: 0 of 100"
-    heading "SOURCES" [level=2]
-    StaticText "Homebrew"
-    StaticText "0 items"
-    button "Add"
+    DisclosureTriangle "SOURCES" [expanded=false]
+    DisclosureTriangle "CARDS" [expanded=false]
     link "New item" [url=index.html?as=gm2#/homebrew/new]
     StaticText "No items of your own yet - create the first one."
   contentinfo ""
@@ -103,6 +101,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm2#/ho
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
++ New rule card
++ New set
 Account: gm2@example.test
 Add
 Alt. tables

@@ -1,0 +1,216 @@
+# #/i/ci1 ~ more as gm3
+# route: #/i/ci1
+# why: the same, «и ещё 12» pressed: all 15 names by name, each with «(HB)», then «свернуть» expanded
+# as: gm3
+
+## ru :: tree
+RootWebArea "Первоклассный Спальный Мешок — Генератор лута — Daggerheart" [url=index.html?as=gm3#/i/ci1]
+  link "К содержимому" [url=index.html?as=gm3#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm3#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm3@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm3#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm3#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm3#/roll/community]
+      link "Таблицы" [url=index.html?as=gm3#/tables]
+      link "Списки" [url=index.html?as=gm3#/lists]
+      link "Поиск" [url=index.html?as=gm3#/search]
+  main ""
+    heading "Первоклассный Спальный Мешок" [level=1]
+    StaticText "Core · Предметы · номер 1 "
+    link "показать в таблице" [url=index.html?as=gm3#/tables/core_item/ci1]
+    button "Страница"
+    StaticText "1"
+    ... StaticText x17 of 21 same-shape siblings elided
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    link "Мешок спокойных снов (HB)" [url=index.html?as=gm3#/i/hb_bedrolliaaaaaaaa]
+    link "Спальный мешок дозорного (HB)" [url=index.html?as=gm3#/i/hb_bedrollfaaaaaaaa]
+    link "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [url=index.html?as=gm3#/i/hb_bedrolloaaaaaaaa namelen=125 namehash=a16051fb]
+    link "Спальный мешок из пепла (HB)" [url=index.html?as=gm3#/i/hb_bedrolldaaaaaaaa]
+    link "Спальный мешок кочевника (HB)" [url=index.html?as=gm3#/i/hb_bedrolljaaaaaaaa]
+    link "Спальный мешок лекаря (HB)" [url=index.html?as=gm3#/i/hb_bedrollgaaaaaaaa]
+    link "Спальный мешок ловца снов (HB)" [url=index.html?as=gm3#/i/hb_bedrollnaaaaaaaa]
+    link "Спальный мешок отшельника (HB)" [url=index.html?as=gm3#/i/hb_bedrolllaaaaaaaa]
+    link "Спальный мешок пилигрима (HB)" [url=index.html?as=gm3#/i/hb_bedrollhaaaaaaaa]
+    link "Спальный мешок следопыта (HB)" [url=index.html?as=gm3#/i/hb_bedrollbaaaaaaaa]
+    link "Спальный мешок стража (HB)" [url=index.html?as=gm3#/i/hb_bedrollmaaaaaaaa]
+    link "Спальный мешок странника (HB)" [url=index.html?as=gm3#/i/hb_bedrollaaaaaaaaa]
+    link "Спальный мешок тишины (HB)" [url=index.html?as=gm3#/i/hb_bedrollcaaaaaaaa]
+    StaticText ", "
+    link "Спальный мешок у костра (HB)" [url=index.html?as=gm3#/i/hb_bedrollkaaaaaaaa]
+    StaticText ", "
+    link "Тёплый спальный мешок (HB)" [url=index.html?as=gm3#/i/hb_bedrolleaaaaaaaa]
+    button "свернуть" [expanded=true]
+    button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
+    button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm3#/print/ci1]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm3@example.test
+Альт. таблицы
+Добавить в список
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Мешок спокойных снов (HB)
+Обычные правила
+Отправить
+Поиск
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Собрать карточки для печати: девять на лист A4
+Сообщества
+Спальный мешок дозорного (HB)
+Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=125 namehash=a16051fb]
+Спальный мешок из пепла (HB)
+Спальный мешок кочевника (HB)
+Спальный мешок лекаря (HB)
+Спальный мешок ловца снов (HB)
+Спальный мешок отшельника (HB)
+Спальный мешок пилигрима (HB)
+Спальный мешок следопыта (HB)
+Спальный мешок стража (HB)
+Спальный мешок странника (HB)
+Спальный мешок тишины (HB)
+Спальный мешок у костра (HB)
+Списки
+Страница
+Таблицы
+Тёплый спальный мешок (HB)
+Условия использования
+Установить как приложение
+показать в таблице
+свернуть
+
+## en :: tree
+RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=index.html?as=gm3#/i/ci1]
+  link "Skip to content" [url=index.html?as=gm3#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm3#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm3@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm3#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm3#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
+      link "Communities" [url=index.html?as=gm3#/roll/community]
+      link "Tables" [url=index.html?as=gm3#/tables]
+      link "Lists" [url=index.html?as=gm3#/lists]
+      link "Search" [url=index.html?as=gm3#/search]
+  main ""
+    heading "Premium Bedroll" [level=1]
+    StaticText "Core · Items · roll 1 "
+    link "show in the table" [url=index.html?as=gm3#/tables/core_item/ci1]
+    button "Page"
+    StaticText "1"
+    ... StaticText x17 of 21 same-shape siblings elided
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    link "Ash Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrolldaaaaaaaa]
+    link "Bedroll of Silence (HB)" [url=index.html?as=gm3#/i/hb_bedrollcaaaaaaaa]
+    link "Bedroll of the long road over the pass, through the marshes, the..." [url=index.html?as=gm3#/i/hb_bedrolloaaaaaaaa namelen=125 namehash=8e210070]
+    link "Campfire Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrollkaaaaaaaa]
+    link "Dreamcatcher's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrollnaaaaaaaa]
+    link "Healer's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrollgaaaaaaaa]
+    link "Hermit's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrolllaaaaaaaa]
+    link "Nomad's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrolljaaaaaaaa]
+    link "Pilgrim's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrollhaaaaaaaa]
+    link "Sack of Quiet Dreams (HB)" [url=index.html?as=gm3#/i/hb_bedrolliaaaaaaaa]
+    link "Sentry's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrollfaaaaaaaa]
+    link "Tracker's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrollbaaaaaaaa]
+    link "Wanderer's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrollaaaaaaaaa]
+    StaticText ", "
+    link "Warden's Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrollmaaaaaaaa]
+    StaticText ", "
+    link "Warm Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrolleaaaaaaaa]
+    button "show less" [expanded=true]
+    button "Share"
+    button "Copy image" [description=Copy image]
+    button "Copy text" [description=Copy text]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm3#/print/ci1]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Account: gm3@example.test
+Add to list
+Alt. tables
+Ash Bedroll (HB)
+Bedroll of Silence (HB)
+Bedroll of the long road over the pass, through the marshes, the... [namelen=125 namehash=8e210070]
+Campfire Bedroll (HB)
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dragon's Vault
+Dread
+Dreamcatcher's Bedroll (HB)
+EN
+Healer's Bedroll (HB)
+Hermit's Bedroll (HB)
+Install as an app
+Lay these out for printing: nine to an A4 sheet
+Lists
+Nomad's Bedroll (HB)
+Page
+Pilgrim's Bedroll (HB)
+Privacy
+RU
+Sack of Quiet Dreams (HB)
+Search
+Sentry's Bedroll (HB)
+Share
+Skip to content
+Standard rules
+Tables
+Terms of use
+Tracker's Bedroll (HB)
+Vault of Ages
+Wanderer's Bedroll (HB)
+Warden's Bedroll (HB)
+Warm Bedroll (HB)
+Wondrous
+daggerheart.com
+show in the table
+show less
+ЛутDaggerheart

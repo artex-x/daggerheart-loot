@@ -165,6 +165,12 @@ describe('limitText', () => {
     expect(limitText('homebrew_books_per_owner', 20, dict('en'))).toBe(
       'You have reached the limit of 20 sources. Need more? Write to daggerheart.loot@gmail.com.'
     );
+    expect(limitText('homebrew_cards_per_owner', 100, t)).toBe(
+      'Достигнут предел карт (комплектов и карт правил): 100. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+    );
+    expect(limitText('homebrew_cards_per_owner', 100, dict('en'))).toBe(
+      'You have reached the limit of 100 cards (sets and rule cards). Need more? Write to daggerheart.loot@gmail.com.'
+    );
   });
 });
 

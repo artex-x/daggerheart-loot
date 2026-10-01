@@ -9,15 +9,18 @@ import {
   equipFacets,
   equipOfKind,
   kindOf,
+  lineMembers,
+  madeFrom,
   otherTableRows,
   plainFacets,
   setBonusOf,
   setOf,
   srcOf,
   upgradeLine,
+  upgradesTo,
   type Loot
 } from './data.js';
-import { recordOf } from './homebrew.js';
+import { recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
 import { CHARACTER_TRAITS, type Record_ } from './types.js';
 
 const LOOT = JSON.parse(
@@ -193,14 +196,51 @@ describe('upgrade chains', () => {
   it('points back at something that exists, every time', () => {
     for (const [into, from] of index.craftedFrom) {
       expect(index.byId.has(into)).toBe(true);
-      expect(index.byId.has(from)).toBe(true);
+      expect(from.length).toBeGreaterThan(0);
+      for (const r of from) expect(index.byId.get(r.id)).toBe(r);
     }
   });
 
   it('agrees with the forward direction', () => {
     for (const [into, from] of index.craftedFrom) {
-      expect(index.byId.get(from)?.craft).toBe(into);
+      const target = index.byId.get(into) as Record_;
+      expect(madeFrom(index, target)).toEqual(from);
+      for (const r of from) expect(upgradesTo(index, r).map((x) => x.id)).toContain(into);
     }
+  });
+
+  const rec = (id: string, craft?: readonly string[]): Record_ => ({
+    id,
+    src: 'core',
+    kind: 'item',
+    en: id,
+    ende: '',
+    ru: id,
+    rud: '',
+    ...(craft ? { craft } : {})
+  });
+
+  it('reads a craft written as one id, the shape of a data.js cached from before the list', () => {
+    const old = { ...rec('a'), craft: 'b' as unknown as readonly string[] };
+    const small = buildIndex({ items: { t: [old, rec('b')] } });
+    expect(upgradesTo(small, old).map((x) => x.id)).toEqual(['b']);
+    expect(madeFrom(small, rec('b')).map((x) => x.id)).toEqual(['a']);
+  });
+
+  it('draws several targets in order, each once, and leaves out an id nothing answers to', () => {
+    const a = rec('a', ['c', 'b', 'c', 'nope']);
+    const small = buildIndex({ items: { t: [a, rec('b'), rec('c')] } });
+    expect(upgradesTo(small, a).map((x) => x.id)).toEqual(['c', 'b']);
+    expect(madeFrom(small, rec('c')).map((x) => x.id)).toEqual(['a']);
+    expect(small.craftedFrom.has('nope')).toBe(false);
+  });
+
+  it('collects every record made into one target, in the order the tables hold them', () => {
+    const small = buildIndex({
+      items: { t: [rec('a', ['x']), rec('x')], u: [rec('b', ['x'])] },
+      eq: [rec('e', ['x'])]
+    });
+    expect(madeFrom(small, rec('x')).map((x) => x.id)).toEqual(['e', 'a', 'b']);
   });
 
   it('walks an equipment line in tier order', () => {
@@ -224,6 +264,8 @@ describe('upgrade chains', () => {
     });
     const mixed = { ...index, allEquip: [step('xA', 'A'), step('x2', 2), step('x1', 1)] };
     expect(upgradeLine(mixed, step('x1', 1)).map((x) => x.id)).toEqual(['x1', 'x2', 'xA']);
+    expect(lineMembers(mixed, 'x1').map((x) => x.id)).toEqual(['x1', 'x2', 'xA']);
+    expect(lineMembers(mixed, 'none')).toEqual([]);
   });
 
   it('gives a one-off record no line at all', () => {
@@ -464,5 +506,90 @@ describe('records with fields missing', () => {
     const { refs, ...noRefs } = LOOT;
     void refs;
     expect(buildIndex(noRefs as Loot).refs).toEqual({});
+  });
+});
+
+describe("a frozen copy's ladder and set", () => {
+  const SET_CARD = { ru: 'Свой комплект', en: 'Own Set', rud: 'Бонус.', ende: 'A bonus.' };
+  const hb = (id: string, over: Partial<HomebrewRecord>): HomebrewRecord => ({
+    id,
+    src: 'homebrew',
+    kind: 'item',
+    en: id,
+    ende: '',
+    ru: id,
+    rud: '',
+    ...over
+  });
+  const blade = (id: string, tier: 1 | 2 | 3 | 4, line: string): HomebrewRecord =>
+    hb(id, {
+      kind: 'equip',
+      eq: {
+        t: 'weapon',
+        tier,
+        cls: 'phy',
+        tr: 'agility',
+        rg: 'melee',
+        dmg: 'd8',
+        dt: 'phy',
+        bu: 1,
+        line
+      }
+    });
+  const frozenIndex = (frozen: HomebrewRecord[], own: HomebrewRecord[] = []) =>
+    withRecords(index, own, frozen);
+
+  it("stands a frozen copy on its own line's ladder in tier order", () => {
+    const copy = blade('hb_copyaaaaaaaaaaaa', 2, 'q1');
+    const ix = frozenIndex([copy]);
+    const tiers = upgradeLine(ix, copy).map((r) => `${r.id}:${String(r.eq?.tier)}`);
+    expect(tiers).toEqual(['q1:1', 'q38:2', 'hb_copyaaaaaaaaaaaa:2', 'q105:3', 'q173:4']);
+  });
+
+  it('draws no ladder for a frozen copy alone on its line', () => {
+    const copy = blade('hb_copyaaaaaaaaaaaa', 2, 'hb_copyaaaaaaaaaaaa');
+    expect(upgradeLine(frozenIndex([copy]), copy).map((r) => r.id)).toEqual([
+      'hb_copyaaaaaaaaaaaa'
+    ]);
+  });
+
+  it("lists a frozen copy among its set's members and gives it the set's bonus", () => {
+    const copy = hb('hb_copyaaaaaaaaaaaa', { set: 'ember-spark' });
+    const ix = frozenIndex([copy]);
+    expect(setOf(ix, copy).map((r) => r.id)).toEqual(['dve19', 'dve20', 'hb_copyaaaaaaaaaaaa']);
+    expect(setBonusOf(ix, copy)).toBe(LOOT.sets?.['ember-spark']);
+  });
+
+  it('gives a frozen copy alone in its set the bonus of the set card it carries', () => {
+    const copy = hb('hb_copyaaaaaaaaaaaa', {
+      set: 'hb_ownsetaaaaaaaaaa',
+      cards: { sets: { hb_ownsetaaaaaaaaaa: SET_CARD } }
+    });
+    const ix = frozenIndex([copy]);
+    expect(setOf(ix, copy)).toEqual([]);
+    expect(setBonusOf(ix, copy)).toEqual(SET_CARD);
+    /* Read by the record alone too, where the index holds no card of it. */
+    expect(setBonusOf(index, copy)).toEqual(SET_CARD);
+  });
+
+  it('gives no bonus to an own item alone in its set', () => {
+    const own = hb('hb_ownaaaaaaaaaaaaa', {
+      set: 'hb_ownsetaaaaaaaaaa',
+      cards: { sets: { hb_ownsetaaaaaaaaaa: SET_CARD } }
+    });
+    const ix = frozenIndex([], [own]);
+    expect(setOf(ix, own)).toEqual([]);
+    expect(setBonusOf(ix, own)).toBeUndefined();
+  });
+
+  it("keeps a frozen copy out of a catalog record's ladder and set", () => {
+    const ix = frozenIndex([
+      blade('hb_copyaaaaaaaaaaaa', 2, 'q1'),
+      hb('hb_copybaaaaaaaaaaa', { set: 'ember-spark' })
+    ]);
+    const q1 = ix.byId.get('q1') as Record_;
+    const dve19 = ix.byId.get('dve19') as Record_;
+    expect(upgradeLine(ix, q1).map((r) => r.id)).toEqual(['q1', 'q38', 'q105', 'q173']);
+    expect(setOf(ix, dve19).map((r) => r.id)).toEqual(['dve19', 'dve20']);
   });
 });

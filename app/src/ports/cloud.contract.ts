@@ -8,7 +8,7 @@
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
  * cases for the port member it adds: A-F the account, G the lists, H the
  * share links, I the move of a browser list, J the live topics, K the purchase
- * requests, L the import of a lists file, M the homebrew rows. */
+ * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards. */
 
 import type { EntryRow, ImportRow, ListRow } from '../lib/cloudLists.js';
 import {
@@ -16,6 +16,9 @@ import {
   HOMEBREW_KEY,
   recordOf,
   type BookContent,
+  type CardContent,
+  type CardKind,
+  type CardRef,
   type HomebrewContent
 } from '../lib/homebrew.js';
 import { readOwnerMessage, readRequestMessage, readShareMessage } from '../lib/live.js';
@@ -795,7 +798,7 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
   const first = await homebrew.load();
   assert(
     first.ok && !first.books.length && !first.items.length && first.itemLimit === 100,
-    'homebrew: a new account does not read no rows and the limit 100: ' + JSON.stringify(first)
+    'homebrew: a new account reads rows, or a limit other than 100: ' + JSON.stringify(first)
   );
   const [k1, k2] = [homebrew.newKey(), homebrew.newKey()];
   assert(
@@ -980,6 +983,198 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
   );
 }
 
+/* N. A set card and a rule card written, refused, read back and updated; an item naming
+   them and catalog records; its share's projection embedding the own cards; a card removed
+   and gone from the next projection, its key kept on the item; on the doomed user. */
+async function cardCases(port: CloudPort, assert: Assert): Promise<void> {
+  const { homebrew, lists, shares } = port;
+  const first = await homebrew.load();
+  assert(
+    first.ok && !first.cards.length,
+    'cards: a new account reads a card: ' + JSON.stringify(first)
+  );
+
+  const setRow = {
+    id: homebrew.newId(),
+    key: homebrew.newKey(),
+    kind: 'set' as const,
+    book_id: null,
+    content: { ru: 'Комплект Ольхи', rud: 'Два предмета: +1 к Уклонению.' }
+  };
+  assert((await homebrew.createCard(setRow)).ok, 'cards: a set card was refused');
+  assert(
+    (await homebrew.createCard(setRow)).ok,
+    'cards: a second create of a set card was refused'
+  );
+  const ruleRow = {
+    id: homebrew.newId(),
+    key: homebrew.newKey(),
+    kind: 'ref' as const,
+    book_id: null,
+    content: {
+      en: 'Alder Brand',
+      ende: 'Once per rest: reroll one damage die.',
+      url: 'https://example.test/alder-brand'
+    } as CardContent
+  };
+  assert((await homebrew.createCard(ruleRow)).ok, 'cards: a rule card was refused');
+
+  for (const [what, row] of [
+    ['a repeated key', { ...ruleRow, id: homebrew.newId() }],
+    [
+      'an http link',
+      {
+        ...ruleRow,
+        id: homebrew.newId(),
+        key: homebrew.newKey(),
+        content: { ...ruleRow.content, url: 'http://example.test' }
+      }
+    ],
+    [
+      'the kind deck',
+      {
+        ...ruleRow,
+        id: homebrew.newId(),
+        key: homebrew.newKey(),
+        kind: 'deck' as unknown as CardKind
+      }
+    ]
+  ] as const) {
+    const answer = await homebrew.createCard(row);
+    assert(
+      !answer.ok && answer.error === 'refused',
+      'cards: ' + what + ' answered ' + JSON.stringify(answer)
+    );
+  }
+
+  const read = await homebrew.load();
+  const got = read.ok ? read.cards : [];
+  const backOf = (id: string): string => {
+    const c = got.find((x) => x.id === id);
+    return c && c.revision === 1
+      ? canonJson({
+          id: c.id,
+          key: c.key,
+          kind: c.kind,
+          book_id: c.book_id,
+          content: c.content
+        })
+      : '';
+  };
+  assert(
+    got.length === 2 &&
+      backOf(setRow.id) === canonJson(setRow) &&
+      backOf(ruleRow.id) === canonJson(ruleRow),
+    'cards: the cards do not read back as created: ' + JSON.stringify(got)
+  );
+
+  const edited: CardContent = { ...ruleRow.content, rusub: 'Свойство оружия' };
+  const patch = { content: edited, book_id: null };
+  const saved = await homebrew.updateCard(ruleRow.id, patch, 1);
+  assert(
+    canonJson(saved) === canonJson({ ok: true, revision: 2 }),
+    'cards: an update answered ' + JSON.stringify(saved)
+  );
+  const again = await homebrew.updateCard(ruleRow.id, patch, 1);
+  assert(
+    canonJson(again) === canonJson({ ok: true, revision: 2 }),
+    'cards: the same update sent again answered ' + JSON.stringify(again)
+  );
+  const stale = await homebrew.updateCard(
+    ruleRow.id,
+    { ...patch, content: { ...edited, rusub: 'Другое' } },
+    1
+  );
+  assert(
+    !stale.ok && stale.error === 'conflict',
+    'cards: a stale update answered ' + JSON.stringify(stale)
+  );
+  const forced = await homebrew.updateCard(ruleRow.id, patch, null);
+  assert(
+    canonJson(forced) === canonJson({ ok: true, revision: 3 }),
+    'cards: a forced update answered ' + JSON.stringify(forced)
+  );
+
+  const itemId = homebrew.newId();
+  const itemKey = homebrew.newKey();
+  const content: HomebrewContent = {
+    kind: 'item',
+    ru: 'Пряжка Ольхи',
+    set: setRow.key,
+    refs: [ruleRow.key, 'slow'],
+    craft: ['ci1'],
+    craft_from: ['q1']
+  };
+  assert(
+    (await homebrew.createItem({ id: itemId, key: itemKey, book_id: null, content })).ok,
+    'cards: an item naming the cards was refused'
+  );
+  const selfKey = homebrew.newKey();
+  const self = await homebrew.createItem({
+    id: homebrew.newId(),
+    key: selfKey,
+    book_id: null,
+    content: { kind: 'item', ru: 'Сама', craft: [selfKey] }
+  });
+  assert(
+    !self.ok && self.error === 'refused',
+    'cards: an item that upgrades into itself answered ' + JSON.stringify(self)
+  );
+
+  const listId = lists.newId();
+  const made = await lists.apply([
+    {
+      op: 'create',
+      list: { id: listId, name: 'Карты', money_mode: 'bag', player_note: '', gm_note: '' },
+      entries: [entryOf(lists.newId(), itemKey, 0, { source: 'homebrew' })]
+    }
+  ]);
+  assert(answered(made) === 'ok', 'cards: the list write answered ' + answered(made));
+  const share = await shares.create(listId, 'player');
+  assert(share.ok, 'cards: the share was not made');
+  if (!share.ok) return;
+  const projected = async (): Promise<string> => {
+    const r = await shares.read(share.token);
+    return r.ok && r.shared ? canonJson(r.shared.entries[0]?.snapshot ?? null) : '';
+  };
+  const setRef: CardRef = { ...setRow.content, key: setRow.key, kind: 'set' };
+  const ruleRef: CardRef = { ...edited, key: ruleRow.key, kind: 'ref' };
+  const both = await projected();
+  assert(
+    both === canonJson(recordOf(itemKey, content, null, [setRef, ruleRef])),
+    'cards: the share does not embed the set card and the rule card: ' + both
+  );
+
+  assert(
+    (await homebrew.removeCard(ruleRow.id)).ok,
+    'cards: the rule card removal was refused'
+  );
+  const one = await projected();
+  assert(
+    one === canonJson(recordOf(itemKey, content, null, [setRef])),
+    'cards: the share still embeds the removed rule card: ' + one
+  );
+  const kept = await homebrew.load();
+  assert(
+    kept.ok &&
+      !kept.cards.some((c) => c.id === ruleRow.id) &&
+      kept.items.some((i) => i.key === itemKey && (i.content.refs ?? []).includes(ruleRow.key)),
+    'cards: the removed card is still read, or its key left the item'
+  );
+  const gone = await homebrew.updateCard(ruleRow.id, patch, null);
+  assert(
+    !gone.ok && gone.error === 'gone',
+    'cards: an update of a removed card answered ' + JSON.stringify(gone)
+  );
+
+  assert((await homebrew.removeItem(itemId)).ok, 'cards: the item removal was refused');
+  assert((await homebrew.removeCard(setRow.id)).ok, 'cards: the set card removal was refused');
+  assert(
+    answered(await lists.apply([{ op: 'remove', id: listId }])) === 'ok',
+    'cards: the list removal was refused'
+  );
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -1122,6 +1317,10 @@ export async function runCloudContract(
   /* M. the homebrew rows, on the doomed user; the account's deletion takes the rows with
      it. */
   await homebrewCases(doomedPort, assert);
+
+  /* N. the homebrew cards and the relation keys, on the doomed user; the account's
+     deletion takes the rows with it. */
+  await cardCases(doomedPort, assert);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

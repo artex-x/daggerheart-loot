@@ -99,7 +99,10 @@ const PAGES = [
     ['#/tables/homebrew', 'таблица своих предметов', 'gm1'],
     ['#/tables/eq_weapon', 'таблица снаряжения со своими предметами', 'gm1'],
     ['#/search', 'поиск со своими предметами', 'gm1'],
-    ['#/homebrew/hb_emberaxeaaaaaaaa', 'редактор своего предмета', 'gm1']
+    ['#/homebrew/hb_emberaxeaaaaaaaa', 'редактор своего предмета', 'gm1'],
+    ['#/i/ci1', 'карточка со своими улучшениями', 'gm3'],
+    ['#/i/q1', 'лестница рангов со своими ступенями', 'gm3'],
+    ['#/i/voa4_t3d', 'комплект со своими предметами', 'gm3']
   ]);
 
 /* An A4 sheet legitimately scrolls sideways in a 360px window - the overflow

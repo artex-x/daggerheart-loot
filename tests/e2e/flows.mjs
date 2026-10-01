@@ -10,7 +10,8 @@
  * signed out, drawn on the owner's page and applied, F13 a lists file imported
  * through «Импорт из файла» and two lists deleted together, F14 a homebrew source
  * with a section, an item in them edited and deleted, F15 an own item in a list as a
- * reference, its rename read through a players' link, and «Свой предмет». Each flow gets its own
+ * reference, its rename read through a players' link, and «Свой предмет», F16 an own
+ * item's relations picked by name with a rule card made inline. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -861,6 +862,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/homebrew');
       await waitText(page, 'F14', 'Мои предметы: 0');
+      await d.press('Источники');
       await d.press('Добавить');
       await page.type('#hb-new-source', 'F14');
       await d.press('Создать');
@@ -1017,4 +1019,47 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteHomebrewOf(admin, member.id);
   }
   console.log('e2e: F15 ok');
+
+  /* F16: an own item's relations on the hosted project: a loot item that upgrades into
+     ci1 and is made from ci2, both picked by name in «Связи», with a rule card made by
+     «+ Новая карта правил»; the card row and the item's relation keys read back. */
+  await deleteHomebrewOf(admin, member.id);
+  try {
+    const mine = () => homebrewOf(admin, member.id);
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/homebrew/new');
+      await waitControl(page, 'F16', 'Сохранить');
+      await d.type('Название*', 'Плащ F16');
+      await d.press('Связи');
+      await d.type('Улучшается до', 'Первоклассный Спальный');
+      await d.click('Первоклассный Спальный Мешок');
+      await d.type('Получается из', 'Пронзительная Свирель');
+      await d.click('Пронзительная Свирель');
+      await d.press('+ Новая карта правил');
+      await d.type('Название карты*', 'Клеймо F16');
+      await d.type('Текст карты*', 'Раз за отдых: перебросьте одну кость урона.');
+      await d.press('Создать карту');
+      await until('F16: the rule card did not reach the account', async () => {
+        const { cards } = await mine();
+        return (
+          cards.length === 1 && cards[0].kind === 'ref' && cards[0].content.ru === 'Клеймо F16'
+        );
+      });
+      const card = (await mine()).cards[0].key;
+      await d.press('Сохранить');
+      await until('F16: the item relations did not reach the account', async () => {
+        const { items } = await mine();
+        const c = items[0]?.content;
+        return (
+          items.length === 1 &&
+          JSON.stringify(c?.craft) === JSON.stringify(['ci1']) &&
+          JSON.stringify(c?.craft_from) === JSON.stringify(['ci2']) &&
+          JSON.stringify(c?.refs) === JSON.stringify([card])
+        );
+      });
+    });
+  } finally {
+    await deleteHomebrewOf(admin, member.id);
+  }
+  console.log('e2e: F16 ok');
 }

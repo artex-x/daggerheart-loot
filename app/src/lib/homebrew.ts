@@ -7,9 +7,18 @@
  * writes. Pure module: no port, no storage.
  * docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md. */
 
-import type { Index } from './data.js';
+import { relate, type Index } from './data.js';
 import { nameOf } from './i18n.js';
-import type { DamageType, EquipClass, Lang, Range, Record_, Trait } from './types.js';
+import type {
+  DamageType,
+  EquipClass,
+  Lang,
+  Range,
+  Record_,
+  RefCard,
+  SetCard,
+  Trait
+} from './types.js';
 
 /** A source's, a section's or an item's key: `hb_` and 16 base32 characters. */
 export const HOMEBREW_KEY = /^hb_[a-z2-7]{16}$/;
@@ -51,7 +60,7 @@ export const BOOK_NAME_MAX = 80;
 /** The most sections a source holds. */
 export const SECTIONS_MAX = 30;
 /** The most bytes of a frozen copy's snapshot (`list_entries_snapshot_size`). */
-export const SNAPSHOT_BYTES = 32768;
+export const SNAPSHOT_BYTES = 131072;
 
 export type HomebrewKind = 'item' | 'consumable' | 'equip';
 export type HomebrewTier = 1 | 2 | 3 | 4 | 'A' | 'C';
@@ -76,6 +85,8 @@ export interface HomebrewEquip {
   as?: number;
   th?: [number, number];
   alt?: HomebrewStats;
+  /** The upgrade line: a catalog line's id or an own item's key. */
+  line?: string;
 }
 
 /** An item's stored part: the catalog's field names, both languages optional, one name
@@ -92,6 +103,49 @@ export interface HomebrewContent {
   eq?: HomebrewEquip;
   /** A section key of the item's source. */
   section?: string;
+  /** The ids this upgrades into, 1-8, never its own key. */
+  craft?: string[];
+  /** The ids this is made from, 1-8, never its own key; only a homebrew item writes it. */
+  craft_from?: string[];
+  /** A catalog set's key or an own set card's. */
+  set?: string;
+  /** 1-3 keys of catalog or own rule cards. */
+  refs?: string[];
+}
+
+export type CardKind = 'set' | 'ref';
+
+/** A card's stored part. A set card holds only the names and `ende`/`rud`, its bonus; a
+ *  rule card adds the subtitles and the link. */
+export interface CardContent {
+  en?: string;
+  ru?: string;
+  ensub?: string;
+  rusub?: string;
+  ende?: string;
+  rud?: string;
+  url?: string;
+}
+
+export type CardRef = CardContent & { key: string; kind: CardKind };
+
+export interface CardRow {
+  id: string;
+  key: string;
+  kind: CardKind;
+  book_id: string | null;
+  content: CardContent;
+  revision: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type NewCardRow = Pick<CardRow, 'id' | 'key' | 'kind' | 'book_id' | 'content'>;
+
+/** The own cards a record embeds, in the catalog's card shape, by key. */
+export interface RecordCards {
+  sets?: Record<string, SetCard>;
+  refs?: Record<string, RefCard>;
 }
 
 export interface SectionRow {
@@ -137,7 +191,11 @@ export interface NamedKey {
 }
 
 /** A homebrew item as the app draws it, and as a frozen copy carries it. */
-export type HomebrewRecord = Record_ & { book?: NamedKey & { section?: NamedKey } };
+export type HomebrewRecord = Record_ & {
+  book?: NamedKey & { section?: NamedKey };
+  craft_from?: readonly string[];
+  cards?: RecordCards;
+};
 
 export interface Problem {
   /** The field, dot-separated (`eq.alt.dmg`, `sections.1.key`); `name` is "no language
@@ -154,8 +212,12 @@ export interface Problem {
     | 'order'
     | 'many'
     | 'duplicate'
+    /** An item names itself in `craft` or `craft_from`. */
+    | 'self'
     /** The form's own rule: the chosen source was deleted meanwhile. */
-    | 'gone';
+    | 'gone'
+    /** The form's own rule: the inline set or rule card form is still open. */
+    | 'open';
 }
 
 type Obj = Record<string, unknown>;
@@ -173,8 +235,38 @@ const hasControl = (s: string): boolean =>
 const NON_SPACE = /\S/u;
 const DMG = /^d(4|6|8|10|12|20)(\+[1-9][0-9]?)?$/;
 
-const CONTENT_KEYS = ['kind', 'en', 'ru', 'ende', 'rud', 'tier', 'eq', 'section'];
-const EQ_KEYS = ['t', 'tier', 'cls', 'tr', 'rg', 'dmg', 'dt', 'bu', 'as', 'th', 'alt'];
+const RELATION_ID = /^[A-Za-z0-9_-]{1,64}$/;
+/** The most ids of an item's `craft` or `craft_from`. */
+export const CRAFT_MAX = 8;
+/** The most rule cards an item names in `refs`. */
+export const REFS_MAX = 3;
+/** The most code points of a card's name, per language. */
+export const CARD_NAME_MAX = 80;
+/** The most code points of a rule card's subtitle, per language. */
+export const CARD_SUB_MAX = 60;
+/** The most code points of a card's text (a set's bonus), per language. */
+export const CARD_TEXT_MAX = 1500;
+/** The most characters of a rule card's link. */
+export const CARD_URL_MAX = 300;
+const CARD_URL = /^(https:\/\/[\x21-\x7e]+)?$/;
+const SET_KEYS = ['en', 'ru', 'ende', 'rud'];
+const REF_KEYS = ['en', 'ru', 'ensub', 'rusub', 'ende', 'rud', 'url'];
+
+const CONTENT_KEYS = [
+  'kind',
+  'en',
+  'ru',
+  'ende',
+  'rud',
+  'tier',
+  'eq',
+  'section',
+  'craft',
+  'craft_from',
+  'set',
+  'refs'
+];
+const EQ_KEYS = ['t', 'tier', 'cls', 'tr', 'rg', 'dmg', 'dt', 'bu', 'as', 'th', 'alt', 'line'];
 const WEAPON_ONLY = ['cls', 'tr', 'rg', 'dmg', 'dt', 'bu', 'alt'];
 const STATS = ['tr', 'rg', 'dmg', 'dt'];
 const KINDS: readonly unknown[] = ['item', 'consumable', 'equip'];
@@ -284,12 +376,50 @@ function equipProblems(eq: unknown, out: Problem[]): void {
         out.push({ path: 'eq.th', rule: 'order' });
     }
   }
+  oneIdProblems(eq, 'line', 'eq', out);
   extraProblems(eq, EQ_KEYS, 'eq', out);
 }
 
+/* A list of record ids: absent, or 1..max unique ids of a list entry key's shape, none
+   equal to `self`. Past `max` no id is checked. */
+function idsProblems(
+  o: Obj,
+  key: string,
+  max: number,
+  self: string | undefined,
+  out: Problem[]
+): void {
+  if (!(key in o)) return;
+  const v = o[key];
+  if (!Array.isArray(v)) out.push({ path: key, rule: 'type' });
+  else if (!v.length) out.push({ path: key, rule: 'required' });
+  else if (v.length > max) out.push({ path: key, rule: 'many' });
+  else {
+    const seen = new Set<string>();
+    v.forEach((id: unknown, i) => {
+      const path = key + '.' + String(i);
+      if (typeof id !== 'string') out.push({ path, rule: 'type' });
+      else if (!RELATION_ID.test(id)) out.push({ path, rule: 'pattern' });
+      else if (seen.has(id)) out.push({ path, rule: 'duplicate' });
+      else if (id === self) out.push({ path, rule: 'self' });
+      if (typeof id === 'string') seen.add(id);
+    });
+  }
+}
+
+/* One record id: absent, or a string of a list entry key's shape. */
+function oneIdProblems(o: Obj, key: string, base: string, out: Problem[]): void {
+  if (!(key in o)) return;
+  const v = o[key];
+  const path = at(base, key);
+  if (typeof v !== 'string') out.push({ path, rule: 'type' });
+  else if (!RELATION_ID.test(v)) out.push({ path, rule: 'pattern' });
+}
+
 /** Returns every problem of an item's stored part, in the order kind, name, en, ru, ende,
- *  rud, tier, section, eq, then the unknown keys; none for a valid one. */
-export function contentProblems(v: unknown): Problem[] {
+ *  rud, tier, section, craft, craft_from, set, refs, eq, then the unknown keys; none for a
+ *  valid one. With `key`, an id of `craft` or `craft_from` equal to it is the rule `self`. */
+export function contentProblems(v: unknown, key?: string): Problem[] {
   if (!isObj(v)) return [{ path: '', rule: 'type' }];
   const out: Problem[] = [];
   const kind = v['kind'];
@@ -308,6 +438,10 @@ export function contentProblems(v: unknown): Problem[] {
     if (typeof s !== 'string') out.push({ path: 'section', rule: 'type' });
     else if (!HOMEBREW_KEY.test(s)) out.push({ path: 'section', rule: 'pattern' });
   }
+  idsProblems(v, 'craft', CRAFT_MAX, key, out);
+  idsProblems(v, 'craft_from', CRAFT_MAX, key, out);
+  oneIdProblems(v, 'set', '', out);
+  idsProblems(v, 'refs', REFS_MAX, undefined, out);
   if (kind === 'equip') {
     if (!('eq' in v)) out.push({ path: 'eq', rule: 'required' });
     else equipProblems(v['eq'], out);
@@ -351,6 +485,53 @@ export function bookProblems(v: unknown): Problem[] {
   return out;
 }
 
+/** Returns every problem of a card's stored part for its kind, in the order kind, name, en,
+ *  ru, ensub, rusub, ende, rud, url, then the unknown keys; none for a valid one. */
+export function cardProblems(kind: unknown, v: unknown): Problem[] {
+  const out: Problem[] = [];
+  if (kind !== 'set' && kind !== 'ref') out.push({ path: 'kind', rule: 'enum' });
+  if (!isObj(v)) return [...out, { path: '', rule: 'type' }];
+  const set = kind === 'set';
+  namesProblems(v, CARD_NAME_MAX, '', out);
+  if (!set) {
+    textProblems(v, 'ensub', CARD_SUB_MAX, '', out);
+    textProblems(v, 'rusub', CARD_SUB_MAX, '', out);
+  }
+  textProblems(v, 'ende', CARD_TEXT_MAX, '', out);
+  textProblems(v, 'rud', CARD_TEXT_MAX, '', out);
+  if (!set && 'url' in v) {
+    const url = v['url'];
+    const before = out.length;
+    textProblems(v, 'url', CARD_URL_MAX, '', out);
+    if (out.length === before && typeof url === 'string' && !CARD_URL.test(url))
+      out.push({ path: 'url', rule: 'pattern' });
+  }
+  extraProblems(v, set ? SET_KEYS : REF_KEYS, '', out);
+  return out;
+}
+
+/* A snapshot's `cards`: only `sets` and `refs`, each an object; a set card under the
+   record's `set`, a rule card under a key of its `refs`; every key an `hb_` key and every
+   card valid for its group's kind (homebrew_snapshot_valid). */
+function cardsValid(v: unknown, set: unknown, refs: unknown): boolean {
+  if (!isObj(v) || Object.keys(v).some((k) => k !== 'sets' && k !== 'refs')) return false;
+  const named = (key: string, kind: CardKind): boolean =>
+    kind === 'set' ? key === set : Array.isArray(refs) && refs.includes(key);
+  for (const [group, kind] of [
+    ['sets', 'set'],
+    ['refs', 'ref']
+  ] as const) {
+    if (!(group in v)) continue;
+    const cards = v[group];
+    if (!isObj(cards)) return false;
+    for (const [key, card] of Object.entries(cards)) {
+      if (!named(key, kind) || !HOMEBREW_KEY.test(key)) return false;
+      if (cardProblems(kind, card).length) return false;
+    }
+  }
+  return true;
+}
+
 /* A `{ key, en, ru }` part of a snapshot: a valid key and a name. */
 function namedKeyValid(v: unknown, allowed: readonly string[]): boolean {
   if (!isObj(v) || Object.keys(v).some((k) => !allowed.includes(k))) return false;
@@ -378,8 +559,11 @@ export function snapshotValid(v: unknown): boolean {
       return false;
     }
   }
+  if ('cards' in v && !cardsValid(v['cards'], v['set'], v['refs'])) return false;
   const rest = Object.fromEntries(
-    Object.entries(v).filter(([k]) => k !== 'id' && k !== 'src' && k !== 'book')
+    Object.entries(v).filter(
+      ([k]) => k !== 'id' && k !== 'src' && k !== 'book' && k !== 'cards'
+    )
   );
   if (rest['kind'] === 'equip' && 'tier' in rest) {
     const eq = rest['eq'];
@@ -413,11 +597,13 @@ function namedOf(key: string, v: { en?: string; ru?: string }): NamedKey {
 /** Returns the record an item draws as: its content without `section`, the key as `id`,
  *  each missing or empty language filled from the other, the record's `tier` `'A'` for an
  *  artifact, and its source with the section the source holds. `book` null is the default
- *  source. */
+ *  source. Of `cards`, the set card under the item's `set` and the rule cards its `refs`
+ *  names are embedded in `cards`, in the catalog's card shape; absent when none is. */
 export function recordOf(
   key: string,
   c: HomebrewContent,
-  book: BookRef | null
+  book: BookRef | null,
+  cards: readonly CardRef[] = []
 ): HomebrewRecord {
   const { section, ...rest } = c;
   const out: HomebrewRecord = {
@@ -430,6 +616,32 @@ export function recordOf(
     rud: filled(c.rud, c.ende)
   };
   if (c.eq?.tier === 'A') out.tier = 'A';
+  const sets: Record<string, SetCard> = {};
+  const refs: Record<string, RefCard> = {};
+  for (const card of cards) {
+    if (card.kind === 'set' && card.key === c.set) {
+      sets[card.key] = {
+        en: filled(card.en, card.ru),
+        ru: filled(card.ru, card.en),
+        ende: filled(card.ende, card.rud),
+        rud: filled(card.rud, card.ende)
+      };
+    } else if (card.kind === 'ref' && c.refs?.includes(card.key)) {
+      refs[card.key] = {
+        en: filled(card.en, card.ru),
+        ru: filled(card.ru, card.en),
+        ensub: filled(card.ensub, card.rusub),
+        rusub: filled(card.rusub, card.ensub),
+        ende: filled(card.ende, card.rud),
+        rud: filled(card.rud, card.ende),
+        url: card.url ?? ''
+      };
+    }
+  }
+  const embedded: RecordCards = {};
+  if (Object.keys(sets).length) embedded.sets = sets;
+  if (Object.keys(refs).length) embedded.refs = refs;
+  if (embedded.sets || embedded.refs) out.cards = embedded;
   if (book) {
     const s = section === undefined ? undefined : book.sections?.find((x) => x.key === section);
     out.book = s
@@ -447,8 +659,11 @@ export function isHomebrewRecord(it: Record_): it is HomebrewRecord {
 /** Returns `base` with the own records and the frozen copies in `byId`: an own record
  *  replaces nothing of `base`'s, and a frozen copy only takes a key that neither holds, so
  *  an own item stays live. The own records also follow the catalog's in `searchable` and,
- *  with a stat block, in `allEquip`, and make the `homebrew` rows; a frozen copy joins
- *  `byId` alone. `base` itself when both are empty. */
+ *  with a stat block, in `allEquip`, make the `homebrew` rows and join the relation maps
+ *  (`relate`) over the catalog and the own records. `refs` and `sets` add the cards the
+ *  own records embed, then those of the frozen copies that joined, a key kept by its first
+ *  holder and the catalog's first of all. A frozen copy joins no relation. `base` itself
+ *  when both are empty. */
 export function withRecords(
   base: Index,
   own: readonly HomebrewRecord[],
@@ -457,16 +672,31 @@ export function withRecords(
   if (!own.length && !frozen.length) return base;
   const byId = new Map<string, Record_>(base.byId);
   for (const it of own) byId.set(it.id, it);
-  for (const it of frozen) if (!byId.has(it.id)) byId.set(it.id, it);
-  if (!own.length) return { ...base, byId };
+  const relations = own.length ? relate(base, own, byId) : null;
+  const joined: HomebrewRecord[] = [];
+  for (const it of frozen) {
+    if (byId.has(it.id)) continue;
+    byId.set(it.id, it);
+    joined.push(it);
+  }
+  const refs: Record<string, RefCard> = { ...base.refs };
+  const sets: Record<string, SetCard> = { ...base.sets };
+  for (const it of [...own, ...joined]) {
+    for (const [k, card] of Object.entries(it.cards?.refs ?? {})) refs[k] ??= card;
+    for (const [k, card] of Object.entries(it.cards?.sets ?? {})) sets[k] ??= card;
+  }
+  if (!relations) return { ...base, byId, refs, sets };
   const rows = new Map(base.rows);
   rows.set('homebrew', own);
   return {
     ...base,
+    ...relations,
     byId,
     rows,
     searchable: [...base.searchable, ...own],
-    allEquip: [...base.allEquip, ...own.filter((it) => it.eq)]
+    allEquip: [...base.allEquip, ...own.filter((it) => it.eq)],
+    refs,
+    sets
   };
 }
 
@@ -479,12 +709,32 @@ export function browseIndex(index: Index, base: Index, shown: boolean): Index {
 
 /** Returns the language the editor writes an item's name and description in: the UI
  *  language for a new item or one named in both, else the one language that names it. */
-export function editLang(content: HomebrewContent | null, ui: Lang): Lang {
+export function editLang(content: HomebrewContent | CardContent | null, ui: Lang): Lang {
   if (!content) return ui;
   const en = NON_SPACE.test(content.en ?? '');
   const ru = NON_SPACE.test(content.ru ?? '');
   if (en === ru) return ui;
   return en ? 'en' : 'ru';
+}
+
+/** Returns how many of `items`, the item `key` itself left out, name `key` in `craft`,
+ *  `craft_from` or `eq.line`. */
+export function itemUses(items: readonly ItemRow[], key: string): number {
+  return items.filter(
+    (it) =>
+      it.key !== key &&
+      (it.content.craft?.includes(key) ||
+        it.content.craft_from?.includes(key) ||
+        it.content.eq?.line === key)
+  ).length;
+}
+
+/** Returns how many of `items` name the card: `set` equal to `key` for a set card, `refs`
+ *  holding it for a rule card. */
+export function cardUses(items: readonly ItemRow[], kind: CardKind, key: string): number {
+  return items.filter((it) =>
+    kind === 'set' ? it.content.set === key : !!it.content.refs?.includes(key)
+  ).length;
 }
 
 const folded = (s: string): string => s.trim().toLocaleLowerCase();

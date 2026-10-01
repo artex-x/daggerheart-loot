@@ -19,6 +19,7 @@ const DAY_MS = 86_400_000;
 const PRIVS = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'];
 const PUBLIC_TABLES = [
   'homebrew_books',
+  'homebrew_cards',
   'homebrew_items',
   'limit_defaults',
   'list_entries',

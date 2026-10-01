@@ -349,7 +349,8 @@ export function limitText(key: string, value: number | null, t: Dict): string {
     lists_per_owner: t.limitLists,
     entries_per_list: t.limitEntries,
     homebrew_items_per_owner: t.limitHbItems,
-    homebrew_books_per_owner: t.limitHbBooks
+    homebrew_books_per_owner: t.limitHbBooks,
+    homebrew_cards_per_owner: t.limitHbCards
   };
   const text = named[key] ?? t.limitOther;
   return text.replace('%n', value === null ? '?' : String(value));

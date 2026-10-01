@@ -28,19 +28,15 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     heading "Мои предметы" [level=1]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "Мои предметы: 3 из 100"
-    heading "ИСТОЧНИКИ" [level=2]
-    ... StaticText x4 of 8 same-shape siblings elided
-    StaticText " · 2 раздела"
-    button "Разделы" [expanded=false]
-    button "Переименовать"
-    button "Удалить"
-    ... button x2 of 6 same-shape siblings elided
+    DisclosureTriangle "ИСТОЧНИКИ · 1 источник" [expanded=false]
+    DisclosureTriangle "КАРТЫ · 1 комплект, 1 карта правил" [expanded=false]
     link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
     checkbox "Топор Тлеющих Углей" [checked=false]
+    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
     heading "Хоумбрю 2" [level=2]
     checkbox "Настой кузнеца" [checked=false]
     button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=110 namehash=fe1ee452]
@@ -56,6 +52,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     StaticText "Предмет «Кольцо с гравировкой» удалён"
 
 ## ru :: controls
++ Новая карта правил
++ Новый комплект
 Dragon's Vault
 Dread
 EN
@@ -69,6 +67,7 @@ daggerheart.com
 Альт. таблицы
 Выбрать все
 Добавить
+Изменить
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -113,19 +112,15 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     heading "My items" [level=1]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "My items: 3 of 100"
-    heading "SOURCES" [level=2]
-    ... StaticText x4 of 8 same-shape siblings elided
-    StaticText " · 2 sections"
-    button "Sections" [expanded=false]
-    button "Rename"
-    button "Delete"
-    ... button x2 of 6 same-shape siblings elided
+    DisclosureTriangle "SOURCES · 1 source" [expanded=false]
+    DisclosureTriangle "CARDS · 1 set, 1 rule card" [expanded=false]
     link "New item" [url=index.html?as=gm1#/homebrew/new]
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""
     heading "Alder Workshop · Blades 1" [level=2]
     checkbox "Ember Axe" [checked=false]
+    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
     heading "Homebrew 2" [level=2]
     checkbox "Whispering Cap" [checked=false]
     button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=86 namehash=49ff78d8]
@@ -141,6 +136,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     StaticText "Item "Кольцо с гравировкой" deleted"
 
 ## en :: controls
++ New rule card
++ New set
 Account: gm1@example.test
 Add
 Alt. tables
@@ -149,6 +146,7 @@ Delete
 Dragon's Vault
 Dread
 EN
+Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
 Install as an app

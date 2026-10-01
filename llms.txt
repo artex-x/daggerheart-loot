@@ -53,10 +53,12 @@ text, not the rules those items refer to.
   crafts_into, community, url, text_ru, text_en`. A set member's `text_ru`
   and `text_en` end with the set's shared bonus: `<bonus name> (Set:
   <members>): <text>`, with `Комплект` for `Set` in Russian.
+  `crafts_into` holds the ids a record upgrades into, joined with `;`.
 - [data.json](https://artex-x.github.io/daggerheart-loot/data.json) — the same
-  records in full, plus the rarity tables (`alt`), the text of the twelve
+  records in full (a record's `craft` is a list of the ids it upgrades
+  into), plus the rarity tables (`alt`), the text of the thirteen
   rulebook cards some records refer to (`refs`: domain cards, two beastforms,
-  an ancestry feature, an adversary feature, a transformation and two
+  an ancestry feature, an adversary feature, a transformation and three
   adversary stat blocks), and
   the shared bonus of an item set (`sets`).
 - `i/<id>.html` — one record as a readable page in Russian, e.g.

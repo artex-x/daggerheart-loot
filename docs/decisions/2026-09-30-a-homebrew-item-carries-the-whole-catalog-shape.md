@@ -14,3 +14,4 @@
   one field; the owner chose one shape on 2026-09-30); one language and a `lang` field (a later
   second language rewrites every frozen copy); `recall` (drawn nowhere).
 - Amends "A homebrew item is stored as the catalog record shape in one jsonb column, under a per-owner `hb_` key" (2026-09-25): the whole shape, not seven fields.
+- Amends "Frostwyrd is a two-step craft chain; every upgrade line stays at four tiers" (2026-09-19): the chain is written as one-id lists.

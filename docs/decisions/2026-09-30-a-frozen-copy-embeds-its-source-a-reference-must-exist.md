@@ -1,5 +1,6 @@
 # 2026-09-30 - A frozen copy embeds its source and cards; a reference must exist when written
 
+- Amended by "A frozen copy holds up to 131072 bytes; a card text holds 1500 code points" (2026-10-01): the snapshot bound is 131072 bytes.
 - Task: `persist-7-homebrew` (planner, passes 2-4; the owner's answers of 2026-09-30).
 - Decision: `homebrew_snapshot_of(key, content, book)` writes the record with each missing language
   filled from the other, `src: 'homebrew'` and `book { key, en, ru, section? }`, and from R7c the

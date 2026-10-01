@@ -158,26 +158,33 @@ export async function deleteListsOf(admin, userId) {
   if (error) throw fail('deleting lists', error);
 }
 
-/** The user's homebrew sources and items, read by the service role. */
+/** The user's homebrew sources, set and rule cards and items, read by the service role. */
 export async function homebrewOf(admin, userId) {
   guard(admin);
-  const [books, items] = await Promise.all([
+  const [books, cards, items] = await Promise.all([
     admin.from('homebrew_books').select('id,key,content,revision').eq('owner_id', userId),
+    admin
+      .from('homebrew_cards')
+      .select('id,key,kind,book_id,content,revision')
+      .eq('owner_id', userId),
     admin
       .from('homebrew_items')
       .select('id,key,book_id,content,revision')
       .eq('owner_id', userId)
   ]);
   if (books.error) throw fail('reading homebrew sources', books.error);
+  if (cards.error) throw fail('reading homebrew cards', cards.error);
   if (items.error) throw fail('reading homebrew items', items.error);
-  return { books: books.data ?? [], items: items.data ?? [] };
+  return { books: books.data ?? [], cards: cards.data ?? [], items: items.data ?? [] };
 }
 
-/** Deletes the user's homebrew items, then the sources. */
+/** Deletes the user's homebrew items, then the cards, then the sources. */
 export async function deleteHomebrewOf(admin, userId) {
   guard(admin);
   const items = await admin.from('homebrew_items').delete().eq('owner_id', userId);
   if (items.error) throw fail('deleting homebrew items', items.error);
+  const cards = await admin.from('homebrew_cards').delete().eq('owner_id', userId);
+  if (cards.error) throw fail('deleting homebrew cards', cards.error);
   const books = await admin.from('homebrew_books').delete().eq('owner_id', userId);
   if (books.error) throw fail('deleting homebrew sources', books.error);
 }

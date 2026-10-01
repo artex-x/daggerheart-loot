@@ -1,5 +1,7 @@
-/* The signed-in author's homebrew items and sources, held in memory and written through
- * `HomebrewRepository`. The store is the one writer: a component never calls the port.
+/* The signed-in author's homebrew items, sources and set and rule cards, held in memory and
+ * written through `HomebrewRepository`. The store is the one writer: a component never calls
+ * the port. Each record embeds the own cards its item names, as a frozen copy does. A card
+ * is created, updated and deleted as an item is; a deleted card's key stays on the items.
  *
  * A write is sent at once and applied on its answer with the revision the port gave. A read
  * keeps the arrays and each row object when it finds the same rows, so `records` and the
@@ -14,6 +16,10 @@ import {
   type BookContent,
   type BookRef,
   type BookRow,
+  type CardContent,
+  type CardKind,
+  type CardRef,
+  type CardRow,
   type HomebrewContent,
   type HomebrewRecord,
   type ItemRow
@@ -64,16 +70,32 @@ export class Homebrew {
   /* Raw: a read or a write replaces the arrays and the row it changes, never mutates. */
   books = $state.raw<BookRow[]>([]);
   items = $state.raw<ItemRow[]>([]);
+  cards = $state.raw<CardRow[]>([]);
   /** The account's item limit; null for none, or when the limit read failed. */
   itemLimit = $state<number | null>(null);
 
-  /** Every own item as the app draws it, with its source. */
+  /** Every own card as a record embeds it. */
+  cardRefs: CardRef[] = $derived(
+    this.cards.map((c) => ({
+      ...c.content,
+      key: c.key,
+      kind: c.kind
+    }))
+  );
+
+  /** Every own item as the app draws it, with its source and the own cards it names. */
   records: HomebrewRecord[] = $derived.by(() => {
     const refs: Record<string, BookRef> = Object.fromEntries(
       this.books.map((b) => [b.id, { ...b.content, key: b.key }])
     );
+    const cards = this.cardRefs;
     return this.items.map((row) =>
-      recordOf(row.key, row.content, row.book_id === null ? null : (refs[row.book_id] ?? null))
+      recordOf(
+        row.key,
+        row.content,
+        row.book_id === null ? null : (refs[row.book_id] ?? null),
+        cards
+      )
     );
   });
 
@@ -134,6 +156,7 @@ export class Homebrew {
       }
       this.books = kept(this.books, r.books);
       this.items = kept(this.items, r.items);
+      this.cards = kept(this.cards, r.cards);
       this.itemLimit = r.itemLimit;
       this.status = 'ready';
       return true;
@@ -160,6 +183,7 @@ export class Homebrew {
     this.#timer = null;
     this.books = [];
     this.items = [];
+    this.cards = [];
     this.itemLimit = null;
     this.status = 'idle';
   }
@@ -290,6 +314,60 @@ export class Homebrew {
       await this.#hooks.refreshLists();
     }
     return answer;
+  }
+
+  /** Makes a set or rule card in the source `bookId` (null: the default source). */
+  async createCard(
+    ids: NewIds,
+    kind: CardKind,
+    bookId: string | null,
+    content: CardContent
+  ): Promise<ListWrite> {
+    if (this.#unsure[ids.id]) {
+      if (!(await this.read())) return NETWORK;
+      const held = this.cards.find((r) => r.id === ids.id);
+      if (held) {
+        const r = await this.updateCard(held, { content, book_id: bookId }, held.revision);
+        return this.#settled(ids.id, r);
+      }
+    }
+    const r = await this.#send(() =>
+      this.#repo.createCard({ ...ids, kind, book_id: bookId, content })
+    );
+    if (r.ok) {
+      const at = nowIso();
+      this.cards = [
+        ...this.cards,
+        { ...ids, kind, book_id: bookId, content, revision: 1, created_at: at, updated_at: at }
+      ];
+    }
+    return this.#created(ids.id, r);
+  }
+
+  /** Writes the card over `revision` (null: whatever the row holds); a conflict or a gone
+   *  row reads the account again. */
+  async updateCard(
+    row: CardRow,
+    patch: { content: CardContent; book_id: string | null },
+    revision: number | null
+  ): Promise<HomebrewSaved> {
+    const r = await this.#send(() => this.#repo.updateCard(row.id, patch, revision));
+    if (r.ok) {
+      const at = nowIso();
+      this.cards = this.cards.map((x) =>
+        x.id === row.id ? { ...x, ...patch, revision: r.revision, updated_at: at } : x
+      );
+    } else if (r.error === 'conflict' || r.error === 'gone') {
+      await this.read();
+    }
+    return r;
+  }
+
+  /** Deletes the card; the items keep its key, and the lists' entries do not change. */
+  async removeCard(row: CardRow): Promise<ListWrite> {
+    const r = await this.#send(() => this.#repo.removeCard(row.id));
+    if (r.ok) this.cards = this.cards.filter((x) => x.id !== row.id);
+    return r;
   }
 
   /* A book write names the revision read; a conflict or a gone row reads the account again,

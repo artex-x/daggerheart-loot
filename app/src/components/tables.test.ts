@@ -5,11 +5,14 @@
  * here is the shape (search narrows, the empty state has no button of its
  * own, a hash change drops the selection) rather than any particular record. */
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import RowMain from './RowMain.svelte';
 import SelBar from './SelBar.svelte';
 import TablesPage from './TablesPage.svelte';
 import {
@@ -26,7 +29,8 @@ import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
-import type { Loot } from '../lib/data.js';
+import { buildIndex, type Loot } from '../lib/data.js';
+import { recordOf, withRecords } from '../lib/homebrew.js';
 import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
@@ -54,7 +58,7 @@ const LOOT: Loot = {
     ],
     core_item: [
       row({ id: 'ci1', roll: 1, ru: 'Кольцо Тишины', rud: '- Тихо. \n- Очень тихо.' }),
-      row({ id: 'ci2', roll: 2, ru: 'Плащ Теней', craft: 'ci3' }),
+      row({ id: 'ci2', roll: 2, ru: 'Плащ Теней', craft: ['ci3'] }),
       row({ id: 'ci3', roll: 3, ru: 'Плащ Бездны' }),
       /* No roll: it is equipment, so it carries a stat line instead - and its
          description is two parts, a labelled line then a labelled list item,
@@ -212,7 +216,7 @@ describe('the index', () => {
       items: {
         ...LOOT.items,
         core_item: (LOOT.items['core_item'] ?? []).map((r) =>
-          r.id === 'ci1' ? { ...r, craft: 'ci2' } : r
+          r.id === 'ci1' ? { ...r, craft: ['ci2'] } : r
         )
       }
     };
@@ -224,6 +228,22 @@ describe('the index', () => {
     const paths = [...craft.querySelectorAll('svg path')].map((p) => p.getAttribute('d'));
     expect(paths).toHaveLength(2);
     expect(paths[0]).not.toBe(paths[1]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws a row with two targets as one comma-joined upgrade line', async () => {
+    const TWO: Loot = {
+      ...LOOT,
+      items: {
+        ...LOOT.items,
+        core_item: (LOOT.items['core_item'] ?? []).map((r) =>
+          r.id === 'ci2' ? { ...r, craft: ['ci3', 'ci1'] } : r
+        )
+      }
+    };
+    const { container } = render(App, { env: at({ data: fakeData(TWO) }) });
+    const craft = container.querySelector('[data-row="ci2"] .rcraft');
+    expect(craft?.textContent).toBe('Улучшается до: Плащ Бездны, Кольцо Тишины');
     await expectNoA11yViolations(container);
   });
 
@@ -1340,6 +1360,42 @@ describe('accessibility', () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/voa'), data: fakeData(LOOT) })
     });
+    await expectNoA11yViolations(container);
+  });
+});
+
+describe("a row with the author's own relations", () => {
+  it("draws a row's catalog names, the first homebrew name with (HB) and «и ещё 14»", async () => {
+    const REAL = JSON.parse(
+      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+    ) as Loot;
+    const names = Array.from(
+      { length: 15 },
+      (_, i) => `Зелье ${String.fromCharCode(1103 - i)}`
+    );
+    const own = names.map((ru, i) =>
+      recordOf(
+        'hb_potion' + String.fromCharCode(97 + i) + 'aaaaaaaaa',
+        { kind: 'item', ru, craft_from: ['ci18'] },
+        null
+      )
+    );
+    const index = withRecords(buildIndex(REAL), own, []);
+    const it = index.byId.get('ci18');
+    if (!it) throw new Error('The catalog lacks ci18');
+    const { container } = render(RowMain, {
+      props: {
+        it,
+        index,
+        lang: 'ru',
+        artBroken: () => false,
+        onartfail: () => {},
+        onopen: () => {}
+      }
+    });
+    expect(container.querySelector('.rcraft')?.textContent).toBe(
+      `Улучшается до: Малое Зелье Выносливости, ${[...names].sort((a, b) => a.localeCompare(b, 'ru'))[0] ?? ''} (HB) и ещё 14`
+    );
     await expectNoA11yViolations(container);
   });
 });

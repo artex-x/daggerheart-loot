@@ -1,0 +1,236 @@
+# #/homebrew/new ~ new card as gm1
+# route: #/homebrew/new
+# why: the fold «Связи» open and «+ Новая карта правил» pressed: the rule card form under «Карты правил», «Название карты» * focused, «Подзаголовок», «Текст карты» *, «Ссылка», «Создать карту» and «Отмена», the hint
+# as: gm1
+
+## ru :: tree
+RootWebArea "Новый предмет — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/new]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Новый предмет" [level=1]
+    StaticText "Хоумбрю"
+    form ""
+      StaticText "* - обязательное поле. Остальное можно заполнить позже."
+      group "Вид"
+        button "Предмет" [pressed=true]
+        button "Расходник" [pressed=false]
+        button "Снаряжение" [pressed=false]
+      StaticText "Источник"
+      combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
+        option "Хоумбрю" [selected=true]
+        option "Мастерская Ольхи" [selected=false]
+        option "+ Новый источник..." [selected=false]
+      ... StaticText x17 of 21 same-shape siblings elided
+      textbox "Название*" [multiline=false readonly=false required=true]
+      textbox "Описание" [multiline=true readonly=false required=false]
+      group "Ранг"
+        button "Нет" [pressed=true]
+        button "1" [pressed=false]
+        button "2" [pressed=false]
+        ... button x2 of 6 same-shape siblings elided
+        button "Артефакт" [pressed=false]
+        button "Проклятый предмет" [pressed=false]
+      DisclosureTriangle "Связи" [expanded=true]
+      combobox "Улучшается до" [expanded=false required=false autocomplete=list haspopup=listbox]
+      combobox "Получается из" [expanded=false required=false autocomplete=list haspopup=listbox]
+      combobox "Комплект" [value=Нет expanded=false haspopup=menu]
+        option "Нет" [selected=true]
+        option "Пылающие близнецы" [selected=false]
+        option "Убранство Святого" [selected=false]
+        option "Комплект Ольхи (HB)" [selected=false]
+        option "+ Новый комплект..." [selected=false]
+      combobox "Карты правил" [expanded=false required=false autocomplete=list haspopup=listbox]
+      textbox "Название карты*" [focused=true multiline=false readonly=false required=true]
+      textbox "Подзаголовок" [description=Необязательно. Например: Мудрость · Уровень 1 · Заклинание. multiline=false readonly=false required=false]
+      textbox "Текст карты*" [multiline=true readonly=false required=false]
+      textbox "Ссылка" [description=Необязательно: страница с полным текстом правила. multiline=false readonly=false required=false]
+      button "Создать карту"
+      button "Отмена"
+      StaticText "Карта создаётся сразу, в источнике этого предмета, и выбирается ..." [namelen=95 namehash=592442a3]
+      StaticText "До 3 карт."
+      button "Сохранить"
+      link "Отмена" [url=index.html?as=gm1#/homebrew]
+    button "Страница"
+    StaticText "ПРЕДМЕТ"
+    StaticText "ХОУМБРЮ"
+    heading "Новый предмет" [level=2]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+1
+2
+3
+4
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Артефакт
+К содержимому
+Карты правил
+Конфиденциальность
+ЛутDaggerheart
+Нет
+НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Обычные правила
+Отмена
+Поиск
+Получается из
+Предмет
+Проклятый предмет
+Расходник
+Снаряжение
+Создать карту
+Сообщества
+Сохранить
+Списки
+Страница
+Таблицы
+Улучшается до
+Условия использования
+Установить как приложение
+ХоумбрюМастерская Ольхи+ Новый источник...
+
+## en :: tree
+RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "New item" [level=1]
+    StaticText "Homebrew"
+    form ""
+      StaticText "* - required field. The rest can be filled in later."
+      group "Kind"
+        button "Item" [pressed=true]
+        button "Consumable" [pressed=false]
+        button "Equipment" [pressed=false]
+      StaticText "Source"
+      combobox "Source" [value=Homebrew expanded=false haspopup=menu]
+        option "Homebrew" [selected=true]
+        option "Alder Workshop" [selected=false]
+        option "+ New source..." [selected=false]
+      ... StaticText x17 of 21 same-shape siblings elided
+      textbox "Name*" [multiline=false readonly=false required=true]
+      textbox "Description" [multiline=true readonly=false required=false]
+      group "Tier"
+        button "None" [pressed=true]
+        button "1" [pressed=false]
+        button "2" [pressed=false]
+        ... button x2 of 6 same-shape siblings elided
+        button "Artifact" [pressed=false]
+        button "Cursed object" [pressed=false]
+      DisclosureTriangle "Relations" [expanded=true]
+      combobox "Upgrades to" [expanded=false required=false autocomplete=list haspopup=listbox]
+      combobox "Made from" [expanded=false required=false autocomplete=list haspopup=listbox]
+      combobox "Set" [value=None expanded=false haspopup=menu]
+        option "None" [selected=true]
+        option "Blazing Twins" [selected=false]
+        option "Saint's Ensemble" [selected=false]
+        option "Alder Set (HB)" [selected=false]
+        option "+ New set..." [selected=false]
+      combobox "Rule cards" [expanded=false required=false autocomplete=list haspopup=listbox]
+      textbox "Card name*" [focused=true multiline=false readonly=false required=true]
+      textbox "Subtitle" [description=Optional. For example: Sage · Level 1 · Spell. multiline=false readonly=false required=false]
+      textbox "Card text*" [multiline=true readonly=false required=false]
+      textbox "Link" [description=Optional: a page with the full text of the rule. multiline=false readonly=false required=false]
+      button "Create card"
+      button "Cancel"
+      StaticText "The card is created at once, in this item's source, and chosen h..." [namelen=97 namehash=2001d8c5]
+      StaticText "Up to 3 cards."
+      button "Save"
+      link "Cancel" [url=index.html?as=gm1#/homebrew]
+    button "Page"
+    StaticText "ITEM"
+    StaticText "HOMEBREW"
+    heading "New item" [level=2]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+1
+2
+3
+4
+Account: gm1@example.test
+Alt. tables
+Artifact
+Cancel
+Communities
+Consumable
+Create card
+Cursed object
+Dragon's Vault
+Dread
+EN
+Equipment
+HomebrewAlder Workshop+ New source...
+Install as an app
+Item
+Lists
+Made from
+None
+NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
+Page
+Privacy
+RU
+Rule cards
+Save
+Search
+Skip to content
+Standard rules
+Tables
+Terms of use
+Upgrades to
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

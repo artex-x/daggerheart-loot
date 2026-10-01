@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Sixty-two cases in
- * sixty-one runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Sixty-three cases in
+ * sixty-two runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -15,7 +15,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { PNG } = require('pngjs');
-const { baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
+const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
 /** The shared page's «Лавка»: three rows with a quantity and a price. */
 const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
@@ -3916,6 +3916,190 @@ async function searchPrunesTicks() {
   await ctx.close();
 }
 
+/** 63. The relation folds, the fold summary and the preview menu: as `gm3`, q1's
+ *  ladder of 19 rungs folds to 7 and opens on a click with the focus kept, every
+ *  rung inside the card; ci1's 15 upgrades open inside the window; voa4_t3d's set
+ *  line folds after three own members. Each `#/homebrew` fold summary is a 24 px
+ *  target; the editor preview's add-to-list menu stays inside the capped preview. */
+async function relationFolds() {
+  const at = '63 (relation folds, the fold summary and the preview menu): ';
+  /* The fold button of the line or the ladder, by its text. */
+  const foldIn = (scope, text) =>
+    [...document.querySelectorAll(scope + ' .btn.bare')].find(
+      (b) => b.textContent.trim() === text
+    );
+  const box = (el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.x, y: r.y, w: r.width, h: r.height };
+  };
+  for (const [width, height] of [
+    [360, 800],
+    [1180, 900]
+  ]) {
+    const w = String(width) + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    await d.open('#/i/q1', { as: 'gm3' });
+    ok(
+      await waitIn(page, () => document.querySelectorAll('.steps .step').length === 7),
+      at + w + 'q1 does not draw 7 rungs closed - ' + String(await d.count('.steps .step'))
+    );
+    const closed = await page.evaluate(() => document.querySelector('.steps')?.offsetHeight);
+    await d.press('и ещё 12');
+    const open = await page.evaluate(
+      (foldSrc, boxSrc) => {
+        const fold = eval(foldSrc);
+        const boxOf = eval(boxSrc);
+        const btn = fold('.steps', 'свернуть');
+        const card = document.querySelector('.card');
+        return {
+          rungs: [...document.querySelectorAll('.steps .step')].map(boxOf),
+          card: card ? boxOf(card) : null,
+          expanded: btn?.getAttribute('aria-expanded') ?? null,
+          focused: !!btn && document.activeElement === btn,
+          height: document.querySelector('.steps')?.offsetHeight,
+          sideways: document.documentElement.scrollWidth > innerWidth
+        };
+      },
+      foldIn.toString(),
+      box.toString()
+    );
+    ok(
+      open.rungs.length === 19,
+      at + w + 'q1 does not open 19 rungs - ' + String(open.rungs.length)
+    );
+    ok(
+      open.expanded === 'true',
+      at + w + '«свернуть» is not expanded - ' + String(open.expanded)
+    );
+    ok(open.focused, at + w + 'the focus left the fold button');
+    ok(
+      open.rungs.every((r) => r.h >= 26 && !!open.card && inside(r, open.card)),
+      at + w + 'a rung is under 26 px or outside the card - ' + JSON.stringify(open.rungs)
+    );
+    ok(!open.sideways, at + w + 'the open ladder scrolls the page sideways');
+    console.log(
+      '  63 ladder heights at ' +
+        String(width) +
+        ': closed ' +
+        String(closed) +
+        ', open ' +
+        String(open.height)
+    );
+
+    await d.open('#/i/ci1', { as: 'gm3' });
+    ok(
+      await waitIn(page, () => document.body.innerText.includes('и ещё 12')),
+      at + w + 'ci1 does not draw «и ещё 12»'
+    );
+    await d.press('и ещё 12');
+    const into = await page.evaluate(() => {
+      const p = [...document.querySelectorAll('.craft p')].find(
+        (e) => e.querySelector('.craft-l')?.textContent === 'Улучшается до'
+      );
+      const links = [...(p?.querySelectorAll('a') ?? [])];
+      const long = links.find((a) => a.textContent.startsWith('Спальный мешок долгой'));
+      const r = long?.getBoundingClientRect();
+      return {
+        links: links.length,
+        long: !!r && r.left >= 0 && r.right <= innerWidth,
+        sideways: document.documentElement.scrollWidth > innerWidth
+      };
+    });
+    ok(into.links === 15, at + w + 'ci1 does not open 15 links - ' + String(into.links));
+    ok(into.long, at + w + 'the 120-code-point name lies outside the window');
+    ok(!into.sideways, at + w + 'the open line scrolls the page sideways');
+
+    await d.open('#/i/voa4_t3d', { as: 'gm3' });
+    ok(
+      await waitIn(page, () => document.body.innerText.includes('и ещё 1')),
+      at + w + 'voa4_t3d does not draw «и ещё 1»'
+    );
+    const set = await page.evaluate(() => {
+      const p = [...document.querySelectorAll('.craft p')].find(
+        (e) => e.querySelector('.craft-l')?.textContent === 'Комплект'
+      );
+      return [...(p?.querySelectorAll('a, span[aria-current]') ?? [])].length;
+    });
+    ok(set === 6, at + w + 'the set line does not draw 6 names - ' + String(set));
+    await d.press('и ещё 1');
+    const found = await axe(page);
+    ok(
+      found.length === 0,
+      at + w + 'axe with the set fold open - ' + JSON.stringify(found.map((v) => v.id))
+    );
+    await ctx.close();
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 800 });
+    await d.open('#/homebrew', { as: 'gm1' });
+    ok(
+      await waitIn(page, () => document.querySelectorAll('details.fold > summary').length >= 2),
+      at + 'the #/homebrew folds did not draw'
+    );
+    const heights = await page.evaluate(() =>
+      [...document.querySelectorAll('details.fold > summary')].map(
+        (s) => s.getBoundingClientRect().height
+      )
+    );
+    ok(
+      heights.every((h) => h >= 24),
+      at + 'a fold summary is under 24 px - ' + JSON.stringify(heights)
+    );
+    await ctx.close();
+  }
+
+  {
+    const { ctx, page, d } = await fresh({ width: 960, height: 720 });
+    await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+    ok(
+      await waitIn(page, () =>
+        [...document.querySelectorAll('.preview button')].some(
+          (b) => b.textContent.trim() === 'Добавить в список'
+        )
+      ),
+      at + 'the preview does not draw «Добавить в список»'
+    );
+    const add = await page.evaluateHandle(() =>
+      [...document.querySelectorAll('.preview button')].find(
+        (b) => b.textContent.trim() === 'Добавить в список'
+      )
+    );
+    await add.asElement()?.click();
+    await add.dispose();
+    await d.settle();
+    const m = await page.evaluate(() => {
+      const preview = document.querySelector('.preview');
+      const menu = preview?.querySelector('.dropmenu');
+      const items = [...(menu?.querySelectorAll('button, a[href], input') ?? [])];
+      const last = items[items.length - 1];
+      last?.scrollIntoView({ block: 'nearest' });
+      const boxOf = (el) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.x, y: r.y, w: r.width, h: r.height };
+      };
+      return {
+        menu: !!menu,
+        overflow: preview ? getComputedStyle(preview).overflowY : null,
+        last: last ? boxOf(last) : null,
+        preview: preview ? boxOf(preview) : null
+      };
+    });
+    ok(m.menu, at + 'the menu does not open inside .preview');
+    ok(m.overflow === 'auto', at + '.preview overflow-y is ' + String(m.overflow));
+    ok(
+      !!m.last && !!m.preview && inside(m.last, m.preview),
+      at + "the menu's last item lies outside the preview - " + JSON.stringify(m)
+    );
+    const found = await axe(page);
+    ok(
+      found.length === 0,
+      at + 'axe with the preview menu open - ' + JSON.stringify(found.map((v) => v.id))
+    );
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -3980,7 +4164,8 @@ const CASES = [
   [
     '62 (a search prunes the ticks and select-all ticks the drawn cards only)',
     searchPrunesTicks
-  ]
+  ],
+  ['63 (relation folds, the fold summary and the preview menu)', relationFolds]
 ];
 
 (async () => {

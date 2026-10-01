@@ -316,7 +316,9 @@ function makeDriver(page, target, url = TARGETS[target]) {
         (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);
           const els = [
-            ...document.querySelectorAll('button, a[href], [role="button"], input, summary')
+            ...document.querySelectorAll(
+              'button, a[href], [role="button"], [role="option"], input, summary'
+            )
           ];
           const isBox = (e) => e.tagName === 'INPUT' && e.type === 'checkbox';
           const nonBox = els.filter((e) => !isBox(e));
@@ -401,7 +403,9 @@ function makeDriver(page, target, url = TARGETS[target]) {
         (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);
           const els = [
-            ...document.querySelectorAll('button, a[href], [role="button"], input, summary')
+            ...document.querySelectorAll(
+              'button, a[href], [role="button"], [role="option"], input, summary'
+            )
           ];
           /* Same three-tier ranking as `click()` - see its own comment. */
           const isBox = (e) => e.tagName === 'INPUT' && e.type === 'checkbox';

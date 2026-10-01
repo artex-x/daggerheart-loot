@@ -4,15 +4,25 @@
    docs/specs/FEATURES.md, "Homebrew". */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import HomebrewEditor from './HomebrewEditor.svelte';
 import { dict } from '../lib/dict.js';
-import type { HomebrewContent } from '../lib/homebrew.js';
+import { canonJson, type HomebrewContent } from '../lib/homebrew.js';
+import type { Loot } from '../lib/data.js';
 import { COALESCE_MS } from '../lib/live.js';
 import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import { fakeDialog, fakeEnv, fakePage, memoryRouter, memoryStorage } from '../ports/index.js';
+import {
+  fakeData,
+  fakeDialog,
+  fakeEnv,
+  fakePage,
+  memoryRouter,
+  memoryStorage
+} from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
@@ -31,6 +41,10 @@ const ALDER = uuid(501);
 
 const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
+const REAL = JSON.parse(
+  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+) as Loot;
+
 async function editor(
   key: string | null,
   opts: {
@@ -39,6 +53,8 @@ async function editor(
     answer?: boolean;
     fake?: FakeCloudOptions;
     cloud?: FakeCloud;
+    /* The real catalogue, for the relations to catalog records. */
+    real?: boolean;
   } = {}
 ) {
   const as = opts.as === undefined ? 'gm1' : opts.as;
@@ -50,7 +66,8 @@ async function editor(
   const dialog = fakeDialog(opts.answer ?? true);
   const page = fakePage();
   const storage = memoryStorage(opts.lang ? { 'dhloot.lang.v1': opts.lang } : {});
-  const app = new AppState(fakeEnv({ cloud, router, dialog, page, storage }));
+  const data = opts.real ? { data: fakeData(REAL) } : {};
+  const app = new AppState(fakeEnv({ cloud, router, dialog, page, storage, ...data }));
   app.start();
   await flush();
   /* The owner feed's join asks for one coalesced read; it lands before a test acts as
@@ -787,5 +804,365 @@ describe('«Добавить в список» in the preview', () => {
         expect.objectContaining({ item_key: AXE, source: 'homebrew', snapshot: null })
       ]);
     });
+  });
+});
+
+/* A fake cloud whose item `key` holds `patch` over its seeded content. */
+async function seeded(patches: Record<string, Partial<HomebrewContent>>): Promise<FakeCloud> {
+  const cloud = fakeCloud(SEED, 'gm1');
+  const r = await cloud.homebrew.load();
+  for (const [key, patch] of Object.entries(patches)) {
+    const row = r.ok ? r.items.find((i) => i.key === key) : undefined;
+    if (!row) throw new Error(`The seed has no item ${key}. Restore it in fake-cloud-seed.ts.`);
+    const content: HomebrewContent = { ...row.content, ...patch };
+    const w = await cloud.homebrew.updateItem(row.id, { content, book_id: row.book_id }, null);
+    if (!w.ok) throw new Error(`The fake refused ${key}: ${w.error}. Fix the test patch.`);
+  }
+  return cloud;
+}
+
+const relSummary = (): HTMLElement => screen.getByText(/^Связи/, { selector: 'summary' });
+const relFold = (): HTMLDetailsElement => relSummary().closest('details') as HTMLDetailsElement;
+const openRel = async (): Promise<void> => {
+  if (!relFold().open) await userEvent.click(relSummary());
+};
+const picker = (name: string): HTMLElement => screen.getByRole('combobox', { name });
+const preview = (c: HTMLElement): HTMLElement => c.querySelector('.preview') as HTMLElement;
+const setOptions = (): string[] =>
+  [...screen.getByLabelText<HTMLSelectElement>(t.setLabel).options].map((o) => o.text);
+
+const ALL_FIVE: Partial<HomebrewContent> = {
+  craft: ['ci1'],
+  craft_from: ['ci2'],
+  set: 'ember-spark',
+  refs: ['slow', 'hb_alderrulecardaaa'],
+  eq: {
+    t: 'weapon',
+    tier: 2,
+    cls: 'mag',
+    tr: 'spellcast',
+    rg: 'melee',
+    dmg: 'd10+2',
+    dt: 'mag',
+    bu: 2,
+    line: 'q1'
+  }
+};
+
+describe('the fold «Связи»', () => {
+  it('is closed for an item with no relation, for every kind, and draws the line for equipment only', async () => {
+    const { container } = await editor(null, { real: true });
+    expect(relFold().open).toBe(false);
+    expect(relSummary().textContent).toBe(t.hbRelations);
+    await openRel();
+    expect(picker(t.craftInto)).toBeInTheDocument();
+    expect(picker(t.craftFrom)).toBeInTheDocument();
+    expect(picker(t.hbRefs)).toBeInTheDocument();
+    expect(screen.getByLabelText(t.setLabel)).toHaveValue('');
+    expect(screen.queryByRole('group', { name: t.hbLine })).toBeNull();
+    await expectNoA11yViolations(container);
+    await press(t.hbKind, t.cons);
+    expect(screen.queryByRole('group', { name: t.hbLine })).toBeNull();
+    await press(t.hbKind, t.fEquip);
+    expect(
+      within(group(t.hbLine)).getByRole('button', { name: t.hbLineUnique })
+    ).toHaveAttribute('aria-pressed', 'true');
+    await press(t.hbLine, t.hbLineIn);
+    expect(picker(t.hbLinePick)).toBeInTheDocument();
+    await press(t.hbLine, t.hbLineNew);
+    expect(screen.getByText(t.hbLineNewHint)).toBeInTheDocument();
+    expect(relSummary().textContent).toBe('Связи · 1');
+    await expectNoA11yViolations(container);
+  });
+
+  it('opens for an item with relations, counts them, saves them unchanged and draws them in the preview', async () => {
+    const cloud = await seeded({ [AXE]: ALL_FIVE });
+    const before = await stored(cloud, AXE);
+    const { container } = await editor(AXE, { cloud, real: true });
+    expect(relFold().open).toBe(true);
+    expect(relSummary().textContent).toBe('Связи · 6');
+    expect(within(group(t.hbLine)).getByRole('button', { name: t.hbLineIn })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByRole('button', { name: 'Убрать: Палаш' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Убрать: Первоклассный Спальный Мешок' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Убрать: Медленный' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Убрать: Клеймо Ольхи' })).toBeInTheDocument();
+    expect(screen.getByText('Свойство оружия · Хоумбрю')).toBeInTheDocument();
+    expect(screen.getByLabelText(t.setLabel)).toHaveValue('ember-spark');
+
+    const card = preview(container);
+    const rungs = [...card.querySelectorAll('.step')].map((e) => e.textContent.trim());
+    expect(rungs).toEqual(['1', '2', '2 HB', '3', '4']);
+    expect(within(card).getByRole('button', { name: 'Палаш' })).toBeInTheDocument();
+    expect(within(card).getByText(/Пылающие близнецы:/)).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: 'Уголёк' })).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: 'Искра' })).toBeInTheDocument();
+    expect(
+      within(card).getByRole('link', { name: 'Первоклассный Спальный Мешок' })
+    ).toBeInTheDocument();
+    expect(
+      within(card).getByRole('link', { name: 'Пронзительная Свирель' })
+    ).toBeInTheDocument();
+    expect(within(card).getByRole('link', { name: 'example.test' })).toHaveAttribute(
+      'href',
+      'https://example.test/alder-brand'
+    );
+    expect(within(card).getByRole('link', { name: 'daggerheart.su' })).toHaveAttribute(
+      'href',
+      'https://ru.daggerheart.su/adversary/huge-green-ooze'
+    );
+    await expectNoA11yViolations(container);
+
+    await save();
+    await toastSays(/^Сохранено/);
+    expect(canonJson(await stored(cloud, AXE))).toBe(canonJson(before));
+  });
+
+  it('refuses «В линии» with no line or a line of another type, and opens the fold for it', async () => {
+    const { cloud } = await editor(AXE, { real: true });
+    await openRel();
+    await press(t.hbLine, t.hbLineIn);
+    await userEvent.click(relSummary());
+    expect(relFold().open).toBe(false);
+    await save();
+    expect(relFold().open).toBe(true);
+    expect(screen.getByText(t.hbErrLine)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: 'Линия улучшений - выберите предмет из линии или нажмите «Уникальный».'
+      })
+    ).toBeInTheDocument();
+    await userEvent.type(picker(t.hbLinePick), 'Палаш');
+    await userEvent.keyboard('{Enter}');
+    expect(screen.queryByText(t.hbErrLine)).toBeNull();
+    expect(screen.getByText(/линия из 4 рангов/)).toBeInTheDocument();
+    await press(t.hbType, 'Броня');
+    await save();
+    expect(screen.getByText(t.hbErrLineType)).toBeInTheDocument();
+    expect((await stored(cloud, AXE))?.eq?.line).toBeUndefined();
+  });
+
+  it('stores the item key as «Новая линия», for a saved and a new item', async () => {
+    const { cloud } = await editor(AXE, { real: true });
+    await openRel();
+    await press(t.hbLine, t.hbLineNew);
+    await save();
+    await toastSays(/^Сохранено/);
+    expect((await stored(cloud, AXE))?.eq?.line).toBe(AXE);
+    cleanup();
+    const fresh = await editor(null, { real: true });
+    await userEvent.type(screen.getByLabelText(/^Название\*$/), 'Латы');
+    await press(t.hbKind, t.fEquip);
+    await press(t.hbType, 'Броня');
+    await press(t.tier, '1');
+    await userEvent.type(screen.getByLabelText(/^Показатель брони/), '3');
+    await userEvent.type(screen.getByLabelText(/^Пороги урона\*$/), '5');
+    await userEvent.type(screen.getByLabelText(t.hbTh + ' 2'), '10');
+    await openRel();
+    await press(t.hbLine, t.hbLineNew);
+    await save();
+    await toastSays('Сохранено: «Латы»');
+    const key = fresh.router.hash().replace('#/homebrew/', '');
+    expect((await stored(fresh.cloud, key))?.eq?.line).toBe(key);
+  });
+
+  it('picks a craft target by keyboard, never offers the item itself, and saves it', async () => {
+    const { cloud } = await editor(AXE, { real: true });
+    await openRel();
+    await userEvent.type(picker(t.craftInto), 'Тлеющих');
+    expect(screen.queryByRole('option', { name: /Топор Тлеющих Углей/ })).toBeNull();
+    await userEvent.clear(picker(t.craftInto));
+    await userEvent.type(picker(t.craftInto), 'Первоклассный Спальный');
+    await userEvent.keyboard('{ArrowDown}{ArrowUp}{Enter}');
+    expect(
+      screen.getByRole('button', { name: 'Убрать: Первоклассный Спальный Мешок' })
+    ).toBeInTheDocument();
+    expect(relSummary().textContent).toBe('Связи · 1');
+    await save();
+    await toastSays(/^Сохранено/);
+    expect((await stored(cloud, AXE))?.craft).toEqual(['ci1']);
+  });
+
+  it('disables a picker with eight chosen', async () => {
+    const craft = ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7', 'ci8'];
+    const { container } = await editor(AXE, {
+      cloud: await seeded({ [AXE]: { craft } }),
+      real: true
+    });
+    const full = screen.getByRole('textbox', { name: t.craftInto });
+    expect(full).toBeDisabled();
+    expect(full).toHaveAttribute('placeholder', 'Уже 8 - больше нельзя');
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps a chosen item and a rule card that resolve to nothing through a save', async () => {
+    const gone = { craft: ['hb_goneitemaaaaaaaa'], refs: ['hb_goneruleaaaaaaaa'] };
+    const cloud = await seeded({ [RING]: gone });
+    await editor(RING, { cloud, real: true });
+    expect(screen.getByRole('button', { name: 'Убрать: ' + t.hbGoneItem })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Убрать: ' + t.hbGoneCard })).toBeInTheDocument();
+    await save();
+    await toastSays(/^Сохранено/);
+    expect(await stored(cloud, RING)).toMatchObject(gone);
+  });
+
+  it('lists the catalog sets, then the own ones, each by name, and «?» for a deleted set card', async () => {
+    const cloud = await seeded({ [RING]: { set: 'hb_gonesetaaaaaaaaa' } });
+    await editor(RING, { cloud, real: true });
+    expect(setOptions()).toEqual([
+      t.hbNone,
+      'Пылающие близнецы',
+      'Убранство Святого',
+      'Комплект Ольхи (HB)',
+      '?',
+      t.hbSetNew
+    ]);
+    expect(screen.getByLabelText(t.setLabel)).toHaveValue('hb_gonesetaaaaaaaaa');
+    await userEvent.type(screen.getByLabelText(/^Название\*$/), '!');
+    await save();
+    await toastSays(/^Сохранено/);
+    expect((await stored(cloud, RING))?.set).toBe('hb_gonesetaaaaaaaaa');
+  });
+
+  it('makes a set at once in the item source, selects it and toasts', async () => {
+    const { cloud, container } = await editor(AXE, { real: true });
+    await openRel();
+    await userEvent.selectOptions(screen.getByLabelText(t.setLabel), '__new');
+    const form = screen.getByRole('group', { name: t.hbNewSet });
+    await waitFor(() => {
+      expect(within(form).getByLabelText(/^Название комплекта/)).toHaveFocus();
+    });
+    expect(within(form).getByText(t.hbSetInlineHint)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.type(within(form).getByLabelText(/^Название комплекта/), 'Кузня');
+    await userEvent.type(within(form).getByLabelText(/^Бонус комплекта/), '+1 к Броне.');
+    await userEvent.click(within(form).getByRole('button', { name: t.hbCreateSet }));
+    await toastSays('Комплект «Кузня» создан');
+    const read = await cloud.homebrew.load();
+    const made = read.ok ? read.cards.find((c) => c.content.ru === 'Кузня') : undefined;
+    expect(made).toMatchObject({ kind: 'set', book_id: ALDER });
+    const select = screen.getByLabelText(t.setLabel);
+    expect(select).toHaveValue(made?.key);
+    await waitFor(() => {
+      expect(select).toHaveFocus();
+    });
+  });
+
+  it('makes a rule card and adds it, with its own refusals under its fields', async () => {
+    const { cloud, container } = await editor(RING, { real: true });
+    await openRel();
+    await userEvent.click(screen.getByRole('button', { name: t.hbCardNew }));
+    const form = screen.getByRole('group', { name: t.hbNewCard });
+    await userEvent.click(within(form).getByRole('button', { name: t.hbCreateCard }));
+    expect(within(form).getByText(t.hbErrName)).toBeInTheDocument();
+    expect(within(form).getByText(t.hbErrCardText)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.type(within(form).getByLabelText(/^Название карты/), 'Огонь');
+    await userEvent.type(within(form).getByLabelText(/^Текст карты/), 'Жжёт.');
+    await userEvent.click(within(form).getByRole('button', { name: t.hbCreateCard }));
+    await toastSays('Карта правил «Огонь» создана');
+    expect(screen.getByRole('button', { name: 'Убрать: Огонь' })).toBeInTheDocument();
+    await save();
+    await toastSays(/^Сохранено/);
+    const read = await cloud.homebrew.load();
+    const made = read.ok ? read.cards.find((c) => c.content.ru === 'Огонь') : undefined;
+    expect(made).toMatchObject({ kind: 'ref', book_id: null });
+    expect((await stored(cloud, RING))?.refs).toEqual([made?.key]);
+  });
+
+  it('refuses a save while a card form is open, and reopens a closed fold on its name field', async () => {
+    const { cloud } = await editor(RING, { real: true });
+    await openRel();
+    await userEvent.click(screen.getByRole('button', { name: t.hbCardNew }));
+    await userEvent.click(relSummary());
+    expect(relFold().open).toBe(false);
+    await userEvent.type(screen.getByLabelText(/^Название\*$/), '!');
+    await save();
+    expect(relFold().open).toBe(true);
+    const link = screen.getByRole('button', {
+      name: 'Карты правил - создайте карту кнопкой «Создать карту» или нажмите «Отмена».'
+    });
+    await userEvent.click(relSummary());
+    await userEvent.click(link);
+    expect(relFold().open).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Название карты/)).toHaveFocus();
+    });
+    expect((await stored(cloud, RING))?.ru).toBe('Кольцо с гравировкой');
+  });
+
+  it('picks and removes in every picker, picks a set, and cancels the inline forms', async () => {
+    const cloud = await seeded({});
+    await cloud.homebrew.createCard({
+      id: uuid(7050),
+      key: 'hb_forgerulecardaaa',
+      kind: 'ref',
+      book_id: ALDER,
+      content: { ru: 'Клеймо кузни', rusub: 'Черта' }
+    });
+    const { container } = await editor(AXE, { cloud, real: true });
+    await openRel();
+    await press(t.hbLine, t.hbLineIn);
+    await userEvent.type(picker(t.hbLinePick), 'Палаш');
+    await userEvent.keyboard('{Enter}');
+    await userEvent.click(screen.getByRole('button', { name: 'Убрать: Палаш' }));
+    expect(picker(t.hbLinePick)).toHaveFocus();
+    await press(t.hbLine, t.hbLineUnique);
+    for (const [label, query, name] of [
+      [t.craftInto, 'Первоклассный Спальный', 'Первоклассный Спальный Мешок'],
+      [t.craftFrom, 'Пронзительная', 'Пронзительная Свирель']
+    ] as const) {
+      await userEvent.type(picker(label), query);
+      await userEvent.click(screen.getByRole('option', { name: new RegExp('^' + name) }));
+      await userEvent.click(screen.getByRole('button', { name: 'Убрать: ' + name }));
+    }
+    await userEvent.type(picker(t.hbRefs), 'клеймо');
+    expect(screen.getByRole('option', { name: /^Клеймо кузни/ })).toBeInTheDocument();
+    expect(screen.getByText('Черта · Мастерская Ольхи (HB)')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('option', { name: /^Клеймо Ольхи/ }));
+    await userEvent.type(picker(t.hbRefs), 'медл');
+    await userEvent.keyboard('{Enter}');
+    await userEvent.click(screen.getByRole('button', { name: 'Убрать: Медленный' }));
+    await userEvent.selectOptions(screen.getByLabelText(t.setLabel), 'ember-spark');
+    await userEvent.selectOptions(screen.getByLabelText(t.setLabel), '__new');
+    await userEvent.click(
+      within(screen.getByRole('group', { name: t.hbNewSet })).getByRole('button', {
+        name: t.cancel
+      })
+    );
+    await waitFor(() => {
+      expect(screen.getByLabelText(t.setLabel)).toHaveFocus();
+    });
+    expect(screen.getByLabelText(t.setLabel)).toHaveValue('ember-spark');
+    await userEvent.click(screen.getByRole('button', { name: t.hbCardNew }));
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('group', { name: t.hbNewCard })).toBeNull();
+    await expectNoA11yViolations(container);
+    await save();
+    await toastSays(/^Сохранено/);
+    const c = await stored(cloud, AXE);
+    expect([c?.craft, c?.craft_from, c?.eq?.line]).toEqual([undefined, undefined, undefined]);
+    expect([c?.set, c?.refs]).toEqual(['ember-spark', ['hb_alderrulecardaaa']]);
+  });
+
+  it('asks the delete confirm with the items that name the item', async () => {
+    const cloud = await seeded({ [CAP]: { craft: [RING] }, [POTION]: { craft_from: [RING] } });
+    const { app, dialog } = await editor(RING, { cloud, answer: false, real: true });
+    await userEvent.click(screen.getByRole('button', { name: t.del }));
+    expect(dialog.asked.at(-1)).toBe(
+      'Предмет «Кольцо с гравировкой» указан в 2 предметах. Удалить его? Отменить нельзя.'
+    );
+    app.listsHolding = () => 1;
+    cleanup();
+    render(HomebrewEditor, { app, store: app.homebrew!, key: RING });
+    await flush();
+    await userEvent.click(screen.getByRole('button', { name: t.del }));
+    expect(dialog.asked.at(-1)).toBe(
+      'Предмет «Кольцо с гравировкой» есть в 1 списке и указан в 2 предметах. Удалить его и убрать из списков? Отменить нельзя.'
+    );
   });
 });

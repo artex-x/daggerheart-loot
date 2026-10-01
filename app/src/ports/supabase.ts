@@ -15,7 +15,13 @@ import {
   type UserIdentity
 } from '@supabase/supabase-js';
 import { entryOrder, type ListRow, type SharedRow, type ShareRow } from '../lib/cloudLists.js';
-import { canonJson, keyFrom, type BookRow, type ItemRow } from '../lib/homebrew.js';
+import {
+  canonJson,
+  keyFrom,
+  type BookRow,
+  type CardRow,
+  type ItemRow
+} from '../lib/homebrew.js';
 import type { SignInAfter } from '../lib/pending.js';
 import { readPrefs } from '../lib/prefs.js';
 import { readApplied, readRequests, requestRefusal } from '../lib/requests.js';
@@ -254,6 +260,8 @@ const REQUEST_SELECT =
    (tests/db/homebrew.test.mjs). */
 const BOOK_SELECT = 'id,key,content,revision,created_at,updated_at';
 const ITEM_SELECT = 'id,key,book_id,content,revision,created_at,updated_at';
+const CARD_SELECT = 'id,key,kind,book_id,content,revision,created_at,updated_at';
+type HomebrewTable = 'homebrew_books' | 'homebrew_items' | 'homebrew_cards';
 
 type RequestFailure =
   | { ok: false; error: 'gone' | 'stale' | 'decided' | 'expired' }
@@ -703,7 +711,7 @@ export function createCloud(
      row tells a newer row (`conflict`) from a deleted one (`gone`) and from the same
      update sent again after its answer was lost: that row already holds the patch. */
   async function homebrewUpdate(
-    table: 'homebrew_books' | 'homebrew_items',
+    table: HomebrewTable,
     id: string,
     patch: Record<string, unknown>,
     revision: number | null
@@ -741,7 +749,7 @@ export function createCloud(
       return UNSAVED;
     }
   }
-  const homebrewCreate = (table: 'homebrew_books' | 'homebrew_items', row: object) =>
+  const homebrewCreate = (table: HomebrewTable, row: object) =>
     written(() =>
       timed((signal) =>
         client
@@ -750,7 +758,7 @@ export function createCloud(
           .abortSignal(signal)
       )
     );
-  const homebrewRemove = (table: 'homebrew_books' | 'homebrew_items', id: string) =>
+  const homebrewRemove = (table: HomebrewTable, id: string) =>
     written(() =>
       timed((signal) => client.from(table).delete().eq('id', id).abortSignal(signal))
     );
@@ -771,17 +779,24 @@ export function createCloud(
         () => null
       );
       try {
-        const [books, items, itemLimit] = await Promise.all([
+        const [books, items, cards, itemLimit] = await Promise.all([
           client.from('homebrew_books').select(BOOK_SELECT),
           client.from('homebrew_items').select(ITEM_SELECT),
+          client.from('homebrew_cards').select(CARD_SELECT),
           limit
         ]);
-        if (books.error || items.error) return { ok: false };
-        if (!Array.isArray(books.data) || !Array.isArray(items.data)) return { ok: false };
+        if (books.error || items.error || cards.error) return { ok: false };
+        if (
+          !Array.isArray(books.data) ||
+          !Array.isArray(items.data) ||
+          !Array.isArray(cards.data)
+        )
+          return { ok: false };
         return {
           ok: true,
           books: books.data as unknown as BookRow[],
           items: items.data as unknown as ItemRow[],
+          cards: cards.data as unknown as CardRow[],
           itemLimit
         };
       } catch {
@@ -800,7 +815,16 @@ export function createCloud(
         { content: patch.content, book_id: patch.book_id },
         revision
       ),
-    removeItem: (id) => homebrewRemove('homebrew_items', id)
+    removeItem: (id) => homebrewRemove('homebrew_items', id),
+    createCard: (row) => homebrewCreate('homebrew_cards', row),
+    updateCard: (id, patch, revision) =>
+      homebrewUpdate(
+        'homebrew_cards',
+        id,
+        { content: patch.content, book_id: patch.book_id },
+        revision
+      ),
+    removeCard: (id) => homebrewRemove('homebrew_cards', id)
   };
   return { auth, prefs, lists, shares, events, requests, homebrew };
 }

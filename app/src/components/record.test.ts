@@ -15,6 +15,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import RecordCard from './RecordCard.svelte';
 import RecordModal from './RecordModal.svelte';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
@@ -32,7 +33,8 @@ import {
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
-import type { Loot } from '../lib/data.js';
+import { buildIndex, type Index, type Loot } from '../lib/data.js';
+import { recordOf, withRecords } from '../lib/homebrew.js';
 
 afterEach(cleanup);
 
@@ -54,7 +56,7 @@ const LOOT: Loot = {
         ru: 'Спальный мешок',
         rud: 'Очистите Стресс.',
         img: 'ci1.webp',
-        craft: 'cc1'
+        craft: ['cc1']
       },
       {
         id: 'odd',
@@ -994,6 +996,31 @@ describe('a craft chain that runs through the record', () => {
     expect(container.querySelector('.step')).toBeNull();
     await expectNoA11yViolations(container);
   });
+
+  it('draws two targets comma-joined in one line, in the order craft lists them', async () => {
+    const two: Loot = {
+      ...LOOT,
+      items: {
+        ...LOOT.items,
+        core_item: (LOOT.items['core_item'] ?? []).map((r) =>
+          r.id === 'ci1' ? { ...r, craft: ['ci2', 'cc1'] } : r
+        )
+      }
+    };
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/i/ci1'), data: fakeData(two) })
+    });
+    const into = screen.getByText('Улучшается до').parentElement;
+    expect(into).not.toBeNull();
+    if (!into) return;
+    expect(
+      within(into)
+        .getAllByRole('link')
+        .map((a) => a.getAttribute('href'))
+    ).toEqual(['#/i/ci2', '#/i/cc1']);
+    expect(into).toHaveTextContent('Улучшается до Мел, Зелье выносливости');
+    await expectNoA11yViolations(container);
+  });
 });
 
 describe('a feature an item grants an adversary', () => {
@@ -1270,5 +1297,204 @@ describe('an own homebrew item', () => {
     render(RecordModal, { app, index, it: ci1, onclose: () => {} });
     expect(screen.queryByRole('link', { name: 'Изменить' })).toBeNull();
     app.stop();
+  });
+
+  it('links an own rule card to its address as written, with the host as the text, and draws no link for an empty one', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const bare = 'hb_nourlcardaaaaaaa';
+    await cloud.homebrew.createCard({
+      id: uuid(7040),
+      key: bare,
+      kind: 'ref',
+      book_id: null,
+      content: { ru: 'Без ссылки', rud: 'Текст без адреса.' }
+    });
+    const held = await cloud.homebrew.load();
+    const axe = held.ok ? held.items.find((i) => i.key === AXE) : undefined;
+    if (!axe) throw new Error('The seed has no axe. Restore the seed.');
+    const content = { ...axe.content, refs: ['hb_alderrulecardaaa', bare] };
+    await cloud.homebrew.updateItem(axe.id, { content, book_id: axe.book_id }, null);
+    const { container } = render(App, { env: own({ cloud }) });
+    const linked = (await screen.findByText('Клеймо Ольхи')).closest('details') as HTMLElement;
+    expect(within(linked).getByRole('link', { name: 'example.test' })).toHaveAttribute(
+      'href',
+      'https://example.test/alder-brand'
+    );
+    expect(within(linked).queryByRole('link', { name: 'daggerheart.su' })).toBeNull();
+    const plain = screen.getByText('Без ссылки').closest('details') as HTMLElement;
+    expect(within(plain).getByText('Текст без адреса.')).toBeInTheDocument();
+    expect(within(plain).queryByRole('link')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+});
+
+describe("the author's own relations on a catalog card", () => {
+  /* The real catalog with gm3's 34 seeded items: 15 made from ci1, 15 in q1's line and
+     4 in saints-ensemble (docs/specs/FEATURES.md, "Records"). */
+  const REAL = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const catalog = buildIndex(REAL);
+  const gm3 = SEED.homebrew.gm3.items.map((i) => recordOf(i.key, i.content, null));
+  const index = withRecords(catalog, gm3, []);
+  const LONG =
+    'Спальный мешок долгой дороги через перевал, болота, пустоши и старый лес, где ночуют лишь те, кто не боится шорохов ночи';
+
+  const card = (id: string, ix: Index = index, lang: 'ru' | 'en' = 'ru') => {
+    const it = ix.byId.get(id);
+    if (!it) throw new Error(`The index lacks ${id}. Seed or name a record it holds`);
+    return render(RecordCard, {
+      props: { it, index: ix, lang, artBroken: false, onartfail: () => {}, onopen: () => {} }
+    });
+  };
+  const lineOf = (container: HTMLElement, label: string): HTMLElement => {
+    const p = [...container.querySelectorAll('.craft p')].find(
+      (e) => e.querySelector('.craft-l')?.textContent === label
+    );
+    if (!(p instanceof HTMLElement)) throw new Error(`The card draws no «${label}» line`);
+    return p;
+  };
+  const linkNames = (el: HTMLElement): string[] =>
+    within(el)
+      .queryAllByRole('link')
+      .map((a) => a.textContent);
+  const rungs = (container: HTMLElement): string[] =>
+    [...container.querySelectorAll('.steps .step')].map((e) => e.textContent);
+
+  it('marks each homebrew upgrade with (HB) and folds those past the third behind «и ещё 12»', async () => {
+    const { container } = card('ci1');
+    const into = lineOf(container, 'Улучшается до');
+    expect(linkNames(into)).toEqual([
+      'Мешок спокойных снов (HB)',
+      'Спальный мешок дозорного (HB)',
+      LONG + ' (HB)'
+    ]);
+    const more = within(into).getByRole('button', { name: 'и ещё 12' });
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    await expectNoA11yViolations(container);
+  });
+
+  it('opens the fold to every name and «свернуть», keeps the focus on the button, and closes it again', async () => {
+    const { container } = card('ci1');
+    const into = lineOf(container, 'Улучшается до');
+    await userEvent.click(within(into).getByRole('button', { name: 'и ещё 12' }));
+    const less = within(into).getByRole('button', { name: 'свернуть' });
+    expect(less).toHaveAttribute('aria-expanded', 'true');
+    expect(document.activeElement).toBe(less);
+    const names = linkNames(into);
+    expect(names).toHaveLength(15);
+    expect(names.every((n) => n.endsWith(' (HB)'))).toBe(true);
+    await expectNoA11yViolations(container);
+    await userEvent.click(less);
+    expect(linkNames(into)).toHaveLength(3);
+    expect(within(into).getByRole('button', { name: 'и ещё 12' })).toBe(document.activeElement);
+  });
+
+  it('draws a homebrew rung as «2 HB», titled and named «<name> (HB)», with the ordinary rung class', async () => {
+    const { container } = card('q1');
+    await userEvent.click(screen.getByRole('button', { name: 'и ещё 12' }));
+    const rung = screen.getByRole('button', { name: 'Учебный палаш 4 (HB)' });
+    expect(rung).toHaveTextContent(/^2 HB$/);
+    expect(rung).toHaveAttribute('title', 'Учебный палаш 4 (HB)');
+    expect([...rung.classList].filter((c) => !c.startsWith('svelte-'))).toEqual(['step']);
+    expect(rung.getAttribute('style')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('folds a ladder of nineteen rungs to the catalog rungs, the current one and three homebrew rungs', async () => {
+    const { container } = card('q1');
+    expect(rungs(container)).toEqual(['1', '1 HB', '1 HB', '1 HB', '2', '3', '4']);
+    await userEvent.click(screen.getByRole('button', { name: 'и ещё 12' }));
+    expect(rungs(container)).toHaveLength(19);
+    cleanup();
+    /* An own rung's card keeps itself among the first three own rungs. */
+    const own = card('hb_broadswordiaaaaa').container;
+    expect(rungs(own)).toEqual(['1', '1 HB', '1 HB', '1 HB', '2', '3', '3 HB', '4']);
+    expect(own.querySelector('.step.on')).toHaveTextContent(/^3 HB$/);
+    await expectNoA11yViolations(own);
+  });
+
+  it('folds the set line after three homebrew members and keeps the bonus', async () => {
+    const { container } = card('voa4_t3d');
+    const set = lineOf(container, 'Комплект');
+    expect(set.textContent.replace(/\s+/g, ' ').trim()).toBe(
+      'Комплект Святой Щит, Святой Клинок, Святое Облачение, Святой Венец (HB), Святой Пояс (HB), Святые Перчатки (HB) и ещё 1'
+    );
+    expect(within(set).getByText('Святой Щит')).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByText('Убранство Святого:')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    cleanup();
+    const own = lineOf(card('hb_saintpiececaaaaa').container, 'Комплект');
+    expect(own.querySelector('[aria-current="true"]')).toHaveTextContent(
+      /^Святой Венец \(HB\)$/
+    );
+  });
+
+  it('starts closed for another record drawn in the same card', async () => {
+    const q38 = index.byId.get('q38');
+    if (!q38) throw new Error('The catalog lacks q38');
+    const { container, rerender } = card('q1');
+    await userEvent.click(screen.getByRole('button', { name: 'и ещё 12' }));
+    expect(rungs(container)).toHaveLength(19);
+    await rerender({ it: q38 });
+    expect(rungs(container)).toHaveLength(7);
+    expect(screen.getByRole('button', { name: 'и ещё 12' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    await expectNoA11yViolations(container);
+  });
+
+  it("draws a frozen copy's own rung and the bonus of the set card it carries, with no set line", async () => {
+    const copy = recordOf(
+      'hb_frozencopyaaaaa',
+      {
+        kind: 'equip',
+        ru: 'Чужой палаш',
+        en: 'Borrowed Broadsword',
+        set: 'hb_ownsetaaaaaaaaaa',
+        eq: {
+          t: 'weapon',
+          tier: 2,
+          cls: 'phy',
+          tr: 'agility',
+          rg: 'melee',
+          dmg: 'd8',
+          dt: 'phy',
+          bu: 1,
+          line: 'q1'
+        }
+      },
+      null,
+      [
+        {
+          key: 'hb_ownsetaaaaaaaaaa',
+          kind: 'set',
+          ru: 'Чужой комплект',
+          en: 'Borrowed Set',
+          rud: 'Бонус.',
+          ende: 'A bonus.'
+        }
+      ]
+    );
+    const ix = withRecords(catalog, [], [copy]);
+    const { container } = card(copy.id, ix);
+    expect(rungs(container)).toEqual(['1', '2', '2 HB', '3', '4']);
+    expect(container.querySelector('.step.on')).toHaveTextContent(/^2 HB$/);
+    expect(screen.getByText('Чужой комплект:')).toBeInTheDocument();
+    expect(container.querySelector('.craft-l')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws no mark and no fold for a reader with no own items', async () => {
+    const { container } = card('q1', catalog);
+    expect(rungs(container)).toEqual(['1', '2', '3', '4']);
+    expect(container.textContent).not.toContain('HB');
+    expect(container.querySelector('.btn.bare')).toBeNull();
+    cleanup();
+    const bedroll = card('ci1', catalog).container;
+    expect(bedroll.textContent).not.toContain('(HB)');
+    expect(bedroll.textContent).not.toContain('и ещё');
+    await expectNoA11yViolations(bedroll);
   });
 });

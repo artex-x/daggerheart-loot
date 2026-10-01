@@ -132,8 +132,11 @@ plain form, so everything downstream sees one format.
   `data.json` to that output byte for byte inside `npm run check`. An empty
   description is `rud: ""`/`ende: ""` in both files alike (112 such literals
   in `data.json`, verified). `sets` maps a set key to its shared bonus
-  (`en`, `ru`, `ende`, `rud`); a record names its set in `set`. Field
-  meanings are in `README.md`.
+  (`en`, `ru`, `ende`, `rud`); a record names its set in `set`. A record's
+  `craft` is a list of one or more record ids, the records it upgrades into,
+  in drawing order, never its own id; before R7c it was one id string.
+  `catalog.csv`'s `crafts_into` joins the ids with `;`. Field meanings are in
+  `README.md`.
 - `catalog.csv` - one row per record, with the stat line.
 - `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
   `i/en/<id>.html` - the same page in English.

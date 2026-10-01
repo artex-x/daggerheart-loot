@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
 import { dict } from './dict.js';
+import { withRecords, type HomebrewRecord } from './homebrew.js';
 import type { ListShape } from './listLink.js';
 import {
   entryNoteBlock,
@@ -136,19 +137,19 @@ describe('what travels with a record', () => {
   it('carries the upgrade forward and not backward', () => {
     /* "Made from" belongs on the card, where it shows where a thing comes from.
        In a message to players it is the recipe for what they already hold. */
-    const from = index.searchable.find((r) => r.craft && index.byId.has(r.craft));
+    const from = index.searchable.find((r) => r.craft?.some((id) => index.byId.has(id)));
     expect(from).toBeDefined();
     if (!from?.craft) return;
 
-    const into = rec(from.craft);
+    const into = rec(from.craft[0] ?? '');
     expect(shareBlocks(from, index, 'ru').some((b) => b.head.includes(into.ru))).toBe(true);
     expect(shareBlocks(into, index, 'ru').some((b) => b.head.includes(from.ru))).toBe(false);
   });
 
   it('drops an upgrade already present elsewhere in the same message', () => {
-    const from = index.searchable.find((r) => r.craft && index.byId.has(r.craft));
+    const from = index.searchable.find((r) => r.craft?.some((id) => index.byId.has(id)));
     if (!from?.craft) return;
-    expect(shareBlocks(from, index, 'ru', new Set([from.craft]))).toEqual([]);
+    expect(shareBlocks(from, index, 'ru', new Set([from.craft[0] ?? '']))).toEqual([]);
   });
 
   it('carries the full text of a referenced card, not a link to it', () => {
@@ -379,7 +380,7 @@ describe('a ticked selection, off selAsText/selAsHtml in app.js', () => {
       ende: '',
       ru: 'А',
       rud: '',
-      craft: target.id
+      craft: [target.id]
     };
     const b: Record_ = {
       id: 'x2',
@@ -389,12 +390,36 @@ describe('a ticked selection, off selAsText/selAsHtml in app.js', () => {
       ende: '',
       ru: 'Б',
       rud: '',
-      craft: target.id
+      craft: [target.id]
     };
     const marker = `${dict('ru').craftInto}: ${target.ru}`;
     const { text } = shareSelection([a, b], index, 'ru');
     const occurrences = text.split(marker).length - 1;
     expect(occurrences).toBe(2);
+  });
+
+  it("carries one block per target, in the list's order", () => {
+    const [first, second] = index.searchable.filter((r) => r.kind === 'item');
+    expect(first && second).toBeTruthy();
+    if (!first || !second) return;
+    const a: Record_ = {
+      id: 'x1',
+      src: 'core',
+      kind: 'item',
+      en: 'A',
+      ende: '',
+      ru: 'А',
+      rud: '',
+      craft: [second.id, first.id]
+    };
+    const t = dict('ru');
+    const heads = shareBlocks(a, index, 'ru')
+      .map((b) => b.head)
+      .filter((h) => h.startsWith(t.craftInto));
+    expect(heads).toEqual([`${t.craftInto}: ${second.ru}`, `${t.craftInto}: ${first.ru}`]);
+    expect(shareBlocks(a, index, 'ru', new Set([second.id])).map((b) => b.head)).toEqual([
+      `${t.craftInto}: ${first.ru}`
+    ]);
   });
 });
 
@@ -536,5 +561,97 @@ describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
     expect(text).toBe(
       [l.name, share(rec('ci1'), index, 'ru', { skip: new Set(l.ids) }).text].join('\n\n')
     );
+  });
+});
+
+describe('homebrew records in copied text', () => {
+  const hb = (id: string, over: Partial<HomebrewRecord>): HomebrewRecord => ({
+    id,
+    src: 'homebrew',
+    kind: 'item',
+    en: id,
+    ende: '',
+    ru: id,
+    rud: '',
+    ...over
+  });
+
+  it('writes one upgrade block per homebrew target, catalog first and homebrew by name, each with (HB)', () => {
+    const own = [
+      hb('hb_baaaaaaaaaaaaaaa', { ru: 'Яшмовый вирд', en: 'Ash Wyrd', craft_from: ['dve24'] }),
+      hb('hb_aaaaaaaaaaaaaaaa', { ru: 'Альфа', en: 'Zulu Wyrd', craft_from: ['dve24'] })
+    ];
+    const ix = withRecords(index, own, []);
+    expect(shareBlocks(rec('dve24'), ix, 'ru').map((b) => b.head)).toEqual([
+      `Улучшается до: ${rec('dve25').ru}`,
+      'Улучшается до: Альфа (HB)',
+      'Улучшается до: Яшмовый вирд (HB)'
+    ]);
+    expect(shareBlocks(rec('dve24'), ix, 'en').map((b) => b.head)).toEqual([
+      `Upgrades to: ${rec('dve25').en}`,
+      'Upgrades to: Ash Wyrd (HB)',
+      'Upgrades to: Zulu Wyrd (HB)'
+    ]);
+  });
+
+  it('folds the homebrew upgrade blocks past the third into one «и ещё N» line', () => {
+    const own = Array.from({ length: 15 }, (_, i) => {
+      const n = String(i + 10);
+      return hb(`hb_fold${n}aaaaaaaaaa`, {
+        ru: `Мешок ${n}`,
+        en: `Sack ${n}`,
+        rud: `Строка ${n}.`,
+        ende: `Line ${n}.`,
+        craft_from: ['ci1']
+      });
+    });
+    const ix = withRecords(index, own, []);
+    expect(shareBlocks(rec('ci1'), ix, 'ru')).toEqual([
+      { head: 'Улучшается до: Мешок 10 (HB)', body: 'Строка 10.' },
+      { head: 'Улучшается до: Мешок 11 (HB)', body: 'Строка 11.' },
+      { head: 'Улучшается до: Мешок 12 (HB)', body: 'Строка 12.' },
+      { head: 'Улучшается до: и ещё 12', body: '' }
+    ]);
+    expect(shareBlocks(rec('ci1'), ix, 'en').map((b) => b.head)).toEqual([
+      'Upgrades to: Sack 10 (HB)',
+      'Upgrades to: Sack 11 (HB)',
+      'Upgrades to: Sack 12 (HB)',
+      'Upgrades to: and 12 more'
+    ]);
+    expect(share(rec('ci1'), ix, 'en').text).toMatch(/Upgrades to: and 12 more$/);
+  });
+
+  it("writes a frozen copy's set bonus under «Комплект» when no other member is the reader's", () => {
+    const copy = hb('hb_copyaaaaaaaaaaaa', {
+      set: 'hb_ownsetaaaaaaaaaa',
+      cards: {
+        sets: {
+          hb_ownsetaaaaaaaaaa: { ru: 'Свой', en: 'Own', rud: 'Бонус.', ende: 'A bonus.' }
+        }
+      }
+    });
+    expect(shareBlocks(copy, index, 'ru')).toEqual([
+      { head: 'Комплект', body: 'Свой: Бонус.' }
+    ]);
+    expect(shareBlocks(copy, index, 'en').at(-1)?.body).toBe('Own: A bonus.');
+  });
+
+  it("reads a frozen copy's rule card from the card it carries", () => {
+    const card = {
+      ru: 'Клеймо',
+      en: 'Brand',
+      rusub: 'Свойство',
+      ensub: 'Feature',
+      rud: 'Перебросьте кость.',
+      ende: 'Reroll a die.',
+      url: ''
+    };
+    const copy = hb('hb_copyaaaaaaaaaaaa', {
+      refs: ['hb_cardaaaaaaaaaaaa'],
+      cards: { refs: { hb_cardaaaaaaaaaaaa: card } }
+    });
+    expect(shareBlocks(copy, index, 'ru')).toEqual([
+      { head: 'Клеймо · Свойство', body: 'Перебросьте кость.' }
+    ]);
   });
 });
