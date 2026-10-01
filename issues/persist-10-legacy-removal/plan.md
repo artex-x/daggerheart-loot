@@ -544,6 +544,15 @@ until `B10.3`.
   найден» (`app/contracts`, the two goldens).
 - A browser list's page and card draw no link button, and its address stays
   `#/lists/<id>` (goldens, `listPage.test.ts`).
+- After R10 the only share labels left are «Ссылка для игроков» / «Ссылка
+  для мастера» ("Players' link" / "GM's link", `shareLinkPlayers` and
+  `shareLinkGm` in `SharePanel`): the keys `sharePlayers` («Ссылка
+  игрокам») and `shareGm` («Ссылка себе», "Your own link") are gone from
+  `dict.ts` in both languages, and `git grep -n -E "Ссылка себе|Ссылка
+  игрокам|Your own link" -- app/src docs/specs` finds nothing outside
+  `B10.3`'s browser-list sentences, which that batch removes (audit #13 of
+  `issues/persist-7e-list-quick-item/consistency-audit.md`; owner,
+  2026-10-01).
 - `#/s/` behaviour is unchanged: states 43-46, 52, 55, 56 and the `#/s/`
   goldens pass without an update.
 - `CONTRACTS.md` section 3 is the one history paragraph; `ROUTES.md` has
