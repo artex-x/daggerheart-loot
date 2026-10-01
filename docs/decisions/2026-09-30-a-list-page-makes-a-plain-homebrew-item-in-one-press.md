@@ -1,5 +1,6 @@
 # 2026-09-30 - A list page makes a plain homebrew item in one press, with no draft mark
 
+- Amended by "The quick item opens under a list's entries; its toast links the editor" (2026-10-01): the toggle becomes a row after the entries, and the success toast links the editor.
 - Task: `persist-7-homebrew` (owner's mock review of 2026-09-29; Q12 answered, then revised by the owner on 2026-09-30).
 - Decision: an own account list offers «+ Свой предмет»: a name and an optional description make an
   ordinary homebrew item (kind «Предмет», the default source, the UI language's fields), awaited,

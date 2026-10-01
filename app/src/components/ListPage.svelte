@@ -461,40 +461,45 @@
   /** The live `data-note-clear` handler (app.js 4096-4111): empty the sibling
    *  textarea through a synthetic `input` event, so the same handler above
    *  updates the model, the storage and the address - no second copy of that
-   *  logic here. */
-  function clearNote(e: MouseEvent): void {
+   *  logic here. The undo writes through the store instead: clearing a row's
+   *  only note unmounts its box, and an event on a detached textarea reaches
+   *  no handler (Svelte delegates `input` to the root). */
+  function clearNote(key: string, kind: 'note' | 'hnote', e: MouseEvent): void {
     const btn = e.currentTarget as HTMLElement;
     const ta = btn.closest('.nfield')?.querySelector('textarea');
-    if (!ta) return;
+    const l = own;
+    if (!ta || !l) return;
     const was = ta.value;
     if (!was) return;
-    const put = (v: string): void => {
-      ta.value = v;
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
-    };
-    put('');
+    const at = store;
+    const listId = l.id;
+    ta.value = '';
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
     app.say((t) => t.noteCleared, {
       action: {
         label: (t) => t.undo,
         run: () => {
-          put(was);
+          if (key === 'list') {
+            at.setNote(listId, kind, was);
+            return;
+          }
+          /* An entry another tab removed meanwhile gets no meta back. */
+          if (at.get(listId)?.ids.includes(key)) at.setMeta(listId, key, kind, was.trim());
         }
       }
     });
   }
 
   /** The live `data-note-toggle` handler (app.js 4113-4123): flip the box,
-   *  remember the person's own choice, and - only on the way open - auto-size
-   *  and focus its first textarea once Svelte has un-hidden it. */
+   *  remember the person's own choice, and - only on the way open - focus its
+   *  first textarea once Svelte has mounted it (the box sizes itself). */
   function toggleNote(id: string, e: MouseEvent): void {
-    const btn = e.currentTarget as HTMLElement;
-    const box = btn.closest('.lrow')?.querySelector<HTMLElement>('.rnote');
+    const row = (e.currentTarget as HTMLElement).closest('.lrow');
     const wasHidden = boxHidden(id, metaOf(id));
     noteOpen.set(id, wasHidden);
-    if (wasHidden && box) {
+    if (wasHidden && row) {
       void tick().then(() => {
-        for (const ta of box.querySelectorAll<HTMLTextAreaElement>('textarea')) autoSize(ta);
-        box.querySelector('textarea')?.focus();
+        row.querySelector<HTMLTextAreaElement>('.rnote textarea')?.focus();
       });
     }
   }
@@ -732,7 +737,12 @@
      storage merge mid-drag does not unbind a live drag; the drop moves the
      id captured at `dragstart`, not whatever row now sits at its index. */
   const ownId = $derived(own?.id);
-  /* The share and own-item panels fold when another list opens. */
+  /* A hand-resized note box's height by its `data-note` (`<key>:<kind>`), so a
+     row's box that unmounts on a fold keeps the height when it comes back. */
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity -- read at a box's mount, never drawn
+  const handHeight = new Map<string, string>();
+  /* The share and own-item panels fold when another list opens, and the hand
+     heights, keyed by record id, belong to the list that set them. */
   let sharing = $state(false);
   let quick = $state(false);
   let quickBtn = $state<HTMLElement | undefined>(undefined);
@@ -740,6 +750,7 @@
     void ownId;
     sharing = false;
     quick = false;
+    handHeight.clear();
   });
   $effect(() => {
     const el = rowsEl;
@@ -763,19 +774,6 @@
     });
   });
 
-  /* The live `autoSizeNotes()` on render: every note box sizes to its text
-     once the page (or a fresh entry) is on screen. */
-  $effect(() => {
-    void items;
-    untrack(() => {
-      for (const ta of document.querySelectorAll<HTMLTextAreaElement>(
-        '.lnote textarea, .rnote textarea'
-      )) {
-        autoSize(ta);
-      }
-    });
-  });
-
   /* The live `pointerdown`/`pointerup` pair (app.js 4562-4571): a box whose
      height actually changed between the two is the person's own resize, and
      auto-sizing must not undo it on the next keystroke. */
@@ -791,6 +789,8 @@
       dragging = null;
       if (!d || !d.ta.isConnected || d.ta.offsetHeight === d.h) return;
       d.ta.dataset['manual'] = '1';
+      const at = d.ta.dataset['note'];
+      if (at) handHeight.set(at, d.ta.style.height);
     };
     document.addEventListener('pointerdown', onDown);
     document.addEventListener('pointerup', onUp);
@@ -822,10 +822,22 @@
    */
   function seedText(node: HTMLTextAreaElement, value: string): { update(v: string): void } {
     node.textContent = value;
+    /* Each box sizes itself at mount and on a write: a walk over every box on
+       each edit of the list cost every keystroke a layout read per box. */
+    void tick().then(() => {
+      const h = handHeight.get(node.dataset['note'] ?? '');
+      if (h) {
+        node.style.height = h;
+        node.dataset['manual'] = '1';
+      } else autoSize(node);
+    });
     return {
       update(v: string) {
         if (document.activeElement === node) return;
-        if (node.value !== v) node.value = v;
+        if (node.value !== v) {
+          node.value = v;
+          autoSize(node);
+        }
       }
     };
   }
@@ -840,11 +852,14 @@
             class="note-x"
             title={t.noteClear}
             aria-label={t.noteClear}
-            onclick={clearNote}>&times;</button
+            onclick={(e) => {
+              clearNote(key, 'note', e);
+            }}>&times;</button
           >{/if}</span
       >
       <textarea
         rows="3"
+        data-note="{key}:note"
         placeholder={key === 'list' ? t.listNotePhPub : t.notePhPub}
         readonly={readOnly}
         use:seedText={o.note ?? ''}
@@ -861,11 +876,14 @@
             class="note-x"
             title={t.noteClear}
             aria-label={t.noteClear}
-            onclick={clearNote}>&times;</button
+            onclick={(e) => {
+              clearNote(key, 'hnote', e);
+            }}>&times;</button
           >{/if}</span
       >
       <textarea
         rows="3"
+        data-note="{key}:hnote"
         placeholder={key === 'list' ? t.listNotePhHid : t.notePhHid}
         readonly={readOnly}
         use:seedText={o.hnote ?? ''}
@@ -979,19 +997,6 @@
               sharing = !sharing;
             }}><Icon name="link" />{t.share}</Button
           >
-          {#if app.homebrew}
-            <span class="qtoggle" bind:this={quickBtn}
-              ><Button
-                size="sm"
-                caret
-                on={quick}
-                expanded={quick}
-                onclick={() => {
-                  quick = !quick;
-                }}><Icon name="plus" />{t.quickOwn}</Button
-              ></span
-            >
-          {/if}
         {:else if !readOnly}
           <Button size="sm" onclick={() => void sharePlayers()}
             ><Icon name="link" />{t.sharePlayers}</Button
@@ -1027,18 +1032,6 @@
       {#if isCloud && sharing}
         <SharePanel {app} listId={own.id} />
       {/if}
-      {#if isCloud && quick && app.homebrew}
-        <QuickItem
-          {app}
-          listId={own.id}
-          onclose={() => {
-            quick = false;
-            void tick().then(() => {
-              quickBtn?.querySelector('button')?.focus();
-            });
-          }}
-        />
-      {/if}
       {#if isCloud}
         <RequestsPanel {app} list={own} />
       {/if}
@@ -1072,7 +1065,16 @@
         </div>
       {/if}
 
-      <details class="lnote" open={untrack(() => !!(own.note || own.hnote))}>
+      <details
+        class="lnote"
+        open={untrack(() => !!(own.note || own.hnote))}
+        ontoggle={(e) => {
+          const box = e.currentTarget;
+          if (!box.open) return;
+          autoSize(box.querySelector<HTMLTextAreaElement>('[data-note="list:note"]'));
+          autoSize(box.querySelector<HTMLTextAreaElement>('[data-note="list:hnote"]'));
+        }}
+      >
         <summary><Icon name="note" /><span>{t.listNote}</span></summary>
         <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
         {@render notePair(own, 'list')}
@@ -1363,8 +1365,10 @@
                   />
                 </div>
               {/if}
-              <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-              <div class="rnote" hidden={boxHidden(it.id, m)}>{@render notePair(m, it.id)}</div>
+              {#if !boxHidden(it.id, m)}
+                <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+                <div class="rnote">{@render notePair(m, it.id)}</div>
+              {/if}
             </div>
           {/each}
         </div>
@@ -1372,6 +1376,40 @@
         <Empty
           >{t.listEmptyHint}{#if isCloud && app.homebrew}{' ' + t.listEmptyHintOwn}{/if}</Empty
         >
+      {/if}
+      {#if isCloud && app.homebrew}
+        <!-- After the last entry, so a new item's entry lands right above it. -->
+        <div class="addwrap">
+          <!-- `aria-label` repeats the computed name: the browser suites' driver names a
+               control by `textContent`, which holds the hint («press('Свой предмет')»). -->
+          <button
+            type="button"
+            class="addrow"
+            class:on={quick}
+            aria-expanded={quick}
+            aria-label={t.quickOwn}
+            bind:this={quickBtn}
+            onclick={() => {
+              quick = !quick;
+            }}
+            ><span class="plus"><Icon name="plus" /></span><span>{t.quickOwn}</span><span
+              class="addhint"
+              aria-hidden="true">{t.quickRowHint}</span
+            ><i class="caret" class:up={quick}></i></button
+          >
+          {#if quick}
+            <QuickItem
+              {app}
+              listId={own.id}
+              onclose={() => {
+                quick = false;
+                void tick().then(() => {
+                  quickBtn?.focus();
+                });
+              }}
+            />
+          {/if}
+        </div>
       {/if}
       <div class="lsaid" role="status" aria-live="polite">{said}</div>
       {#if isCloud}
@@ -1440,9 +1478,84 @@
     cursor: default;
   }
 
-  /* Holds the own-item toggle for the focus that comes back to it; draws no box. */
-  .qtoggle {
-    display: contents;
+  /* The «Свой предмет» row after the entries: a list row's box; the dashed
+     border marks "add", not a homebrew item (that mark has no dashes). */
+  .addwrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .addrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 14px 0 13px;
+    border: 1px dashed var(--line2);
+    border-radius: 11px;
+    background: transparent;
+    color: var(--gold-soft);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 620;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  @media (hover: hover) {
+    .addrow:hover {
+      border-color: var(--gold);
+    }
+  }
+
+  .addrow.on {
+    border-style: solid;
+    border-color: var(--gold);
+  }
+
+  .addrow .plus {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgb(216 171 94 / 40%);
+    border-radius: 8px;
+  }
+
+  .addhint {
+    font-weight: 400;
+    font-size: 12.5px;
+    color: var(--muted2);
+  }
+
+  @media (width < 600px) {
+    .addhint {
+      display: none;
+    }
+  }
+
+  /* off `.caret` in `Button.svelte`, whose rule is scoped there */
+  .caret {
+    width: 0;
+    height: 0;
+    margin-left: auto;
+    border: 4px solid transparent;
+    border-top-color: currentcolor;
+    transform: translateY(2px);
+    display: inline-block;
+    flex: none;
+  }
+
+  .caret.up {
+    border-top-color: transparent;
+    border-bottom-color: currentcolor;
+    transform: translateY(-2px);
   }
 
   /* `.card-acts` moved to `Actions.svelte` - `margin-bottom:16px` is

@@ -3,7 +3,7 @@
  * Every one of these would need a browser, a real localStorage and a real
  * address bar without them. With them it is a function of an Env, which is the
  * whole argument for Phase 3 in one file. */
-import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -591,6 +591,124 @@ describe('the toast component, directly', () => {
     app.hideToast();
     await tick();
     expect(hide).toHaveBeenCalledOnce();
+  });
+
+  it('draws a link action as a link to its page in a new tab', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    app.say(() => 'Предмет «Фляга» добавлен в список', {
+      action: { label: (t) => t.edit, href: '#/homebrew/hb_flask' }
+    });
+    const link = await screen.findByRole('link', { name: 'Изменить' });
+    expect(link).toHaveAttribute('href', '#/homebrew/hb_flask');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener');
+    expect(link).toHaveClass('toast-act');
+    await expectNoA11yViolations(container);
+  });
+
+  it('leaves focus where it is for a link action', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    render(Toast, { app });
+    const from = add(document.createElement('input'));
+    from.focus();
+    app.say(() => 'Предмет «Фляга» добавлен в список', {
+      action: { label: (t) => t.edit, href: '#/homebrew/hb_flask' }
+    });
+    await screen.findByRole('link', { name: 'Изменить' });
+    await tick();
+    await tick();
+    expect(from).toHaveFocus();
+  });
+
+  it('hides the toast when its link is pressed', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    render(Toast, { app });
+    app.say(() => 'Предмет «Фляга» добавлен в список', {
+      action: { label: (t) => t.edit, href: '#/homebrew/hb_flask' }
+    });
+    const link = await screen.findByRole('link', { name: 'Изменить' });
+    /* jsdom does not navigate; the press only has to hide the toast. */
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+    });
+    await userEvent.click(link);
+    expect(app.toast).toBeNull();
+  });
+
+  it('pauses while the pointer is over it', async () => {
+    vi.useFakeTimers();
+    try {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      const { container } = render(Toast, { app });
+      app.say(() => 'Предмет «Фляга» добавлен в список', {
+        action: { label: (t) => t.edit, href: '#/homebrew/hb_flask' }
+      });
+      await tick();
+      const box = container.querySelector('.toast') as HTMLElement;
+      vi.advanceTimersByTime(5000);
+      await fireEvent.pointerEnter(box);
+      vi.advanceTimersByTime(60_000);
+      expect(app.toast).not.toBeNull();
+      await fireEvent.pointerLeave(box);
+      vi.advanceTimersByTime(1999);
+      expect(app.toast).not.toBeNull();
+      vi.advanceTimersByTime(1);
+      expect(app.toast).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('runs an undo toast out at 7000ms despite its own focus, and returns focus to its origin', async () => {
+    vi.useFakeTimers();
+    try {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      render(Toast, { app });
+      const from = add(document.createElement('button'), 'Убрать');
+      from.focus();
+      app.say(() => 'Убрано из списка: «Клад»', {
+        action: { label: () => 'Вернуть', run: vi.fn() }
+      });
+      await tick();
+      await tick();
+      expect(screen.getByRole('button', { name: 'Вернуть' })).toHaveFocus();
+      vi.advanceTimersByTime(6999);
+      expect(app.toast).not.toBeNull();
+      vi.advanceTimersByTime(1);
+      expect(app.toast).toBeNull();
+      await tick();
+      await tick();
+      expect(from).toHaveFocus();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('holds a toast while the person has moved focus into it', async () => {
+    vi.useFakeTimers();
+    try {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      render(Toast, { app });
+      app.say(() => 'Предмет «Фляга» добавлен в список', {
+        action: { label: (t) => t.edit, href: '#/homebrew/hb_flask' }
+      });
+      await tick();
+      const link = screen.getByRole('link', { name: 'Изменить' });
+      vi.advanceTimersByTime(1000);
+      link.focus();
+      await tick();
+      vi.advanceTimersByTime(60_000);
+      expect(app.toast).not.toBeNull();
+      link.blur();
+      await tick();
+      vi.advanceTimersByTime(5999);
+      expect(app.toast).not.toBeNull();
+      vi.advanceTimersByTime(1);
+      expect(app.toast).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('redraws its text and its button in the language switched to, and leaves focus where it is', async () => {

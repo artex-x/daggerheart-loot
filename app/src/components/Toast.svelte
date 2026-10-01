@@ -1,7 +1,10 @@
 <script lang="ts">
   /* The one notice the app raises, off `showToast`/`toast`/`toastAction` in
      app.js (969-1006) and `.toast`/`.toast.err`/`.toast.act`/`.toast-act`/
-     `toastIn` in style.css.
+     `toastIn` in style.css. An action is an undo button, which takes focus, or a
+     link opened in a new tab, which never does; an action toast pauses while
+     hovered or while the person has moved focus into it (docs/specs/FEATURES.md,
+     the accessibility toast rule).
 
      A modal dialog makes everything outside it inert, the top layer
      included, so while `RecordModal` is open it draws its own copy
@@ -73,7 +76,11 @@
     if (action) {
       if (!inside)
         back = focused instanceof HTMLElement && focused !== document.body ? focused : null;
-      void tick().then(() => box.querySelector<HTMLButtonElement>('.toast-act')?.focus());
+      void tick().then(() => {
+        selfFocus = true;
+        box.querySelector<HTMLButtonElement>('.toast-act')?.focus();
+        selfFocus = false;
+      });
     } else if (inside) {
       const home = inDialog
         ? box.closest('dialog')?.querySelector<HTMLElement>('button')
@@ -87,8 +94,27 @@
   function runAction(): void {
     const action = toast?.action;
     app.hideToast();
-    action?.run();
+    action?.run?.();
   }
+
+  /* An action toast holds its clock while hovered or while the person moved focus
+     into it (`app.holdToast`). The undo's own `.focus()` above does not count
+     (`selfFocus`), so it still runs out at 7000 ms and returns focus. */
+  let hover = $state(false);
+  let focused = $state(false);
+  let selfFocus = false;
+
+  /* A hidden toast fires no `pointerleave`, so the next one starts unheld. */
+  $effect(() => {
+    if (toast) return;
+    hover = false;
+    focused = false;
+  });
+
+  $effect(() => {
+    const on = hover || focused;
+    if (toast?.mode === 'act') app.holdToast(on);
+  });
 </script>
 
 <div
@@ -99,10 +125,26 @@
   class:act={toast?.mode === 'act'}
   role={toast ? (toast.mode === 'err' ? 'alert' : 'status') : undefined}
   aria-live={toast ? (toast.mode === 'err' ? 'assertive' : 'polite') : undefined}
+  onpointerenter={() => (hover = true)}
+  onpointerleave={() => (hover = false)}
+  onfocusin={() => {
+    if (!selfFocus) focused = true;
+  }}
+  onfocusout={() => (focused = false)}
 >
   {#if toast}
     {toast.msg}
-    {#if toast.action}
+    {#if toast.action?.href}
+      <a
+        class="toast-act"
+        href={toast.action.href}
+        target="_blank"
+        rel="noopener"
+        onclick={() => {
+          app.hideToast();
+        }}>{toast.action.label}</a
+      >
+    {:else if toast.action}
       <button type="button" class="toast-act" onclick={runAction}>{toast.action.label}</button>
     {/if}
   {/if}
@@ -154,6 +196,8 @@
     font-size: 12.5px;
     background: rgb(26 18 6 / 16%);
     color: inherit;
+    text-decoration: none;
+    white-space: nowrap;
     transition: 0.14s;
   }
 

@@ -497,22 +497,25 @@ browser lists writable after the date.
   `#/print/` prints an own item and a frozen copy of an account list, with
   the item's path as its source line.
 - **«Свой предмет»** / "Own item"
-  (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`):
-  on an account list, a toggle after
-  «Поделиться» (pressed and expanded while open, folded on another list)
-  opens «Свой предмет в этот список» under the actions: «Название» *
+  (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`,
+  `docs/decisions/2026-10-01-the-quick-item-opens-under-a-lists-entries.md`):
+  on an account list, a row «Свой предмет» after the last entry (pressed
+  and expanded while open, folded on another list; on a window of 600 px
+  and more it adds the grey hint «название и описание, остальное потом в
+  редакторе») opens «Свой предмет в этот список» under it: «Название» *
   (focused), «Описание», «Добавить в список», «Закрыть» and the note
   «Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и
   остальное можно задать потом в редакторе.». «Добавить в список» (or Enter
   in the name) makes a plain item in «Хоумбрю», awaited, then adds it to the
-  list through the buffer as a reference, clears the fields, focuses the name
-  and toasts «Предмет «%s» добавлен в список». No name draws «Введите
+  list through the buffer as a reference (last, right above the row), clears
+  the fields, focuses the name and toasts «Предмет «%s» добавлен в список»
+  with «Изменить», which opens the item's editor in a new tab. No name draws «Введите
   название.» under the field; the item limit and a lost network («Не удалось
   создать предмет - проверьте соединение. Текст остался в форме.») draw under
   the buttons; each keeps the text. A press sent again after a lost answer
-  makes no second item. Escape closes the panel and focuses the toggle. An
-  empty account list's hint adds «Или добавьте свой предмет кнопкой «Свой
-  предмет».». A browser list has no toggle.
+  makes no second item. Escape and «Закрыть» close the panel and focus the
+  row. An empty account list draws the row under its hint, which adds «Свой
+  предмет можно создать здесь же, кнопкой ниже.». A browser list has no row.
 - **Share links**: «Поделиться» reads pressed and expanded and opens a panel
   under the actions with two rows, «Ссылка для игроков» and «Ссылка для
   мастера», both ready on open: the panel reads the list's links (stopped
@@ -1419,7 +1422,12 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   gone, focus returns to the dialog's close button. Closing the dialog while
   an undo is on offer leaves the toast on the page for the rest of its time.
   A language switch while a toast is up redraws its text and its button in
-  the new language, keeps its time left and moves no focus.
+  the new language, keeps its time left and moves no focus. A toast whose
+  action is a link («Изменить» after «Свой предмет») lasts 7000 ms too,
+  never takes focus and opens its page in a new tab; a toast with an action
+  pauses its clock while the pointer is over it or the person has moved
+  focus into it, and runs on with the time it had left; the focus an undo
+  toast takes itself does not pause it. A toast with no action never pauses.
 - The footer carries the full DPCGL licence notice (`dict.ts`'s
   `footBefore`, `footLink`, `footAfter`, the text `tests/derived.js` pins)
   on every page, folded in a native `<details>`: its `<summary>` is one line,

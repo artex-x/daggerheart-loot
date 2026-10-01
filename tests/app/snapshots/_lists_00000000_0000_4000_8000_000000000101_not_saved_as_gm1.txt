@@ -30,7 +30,6 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     StaticText "Не сохранено"
     button "Повторить"
     button "Поделиться" [expanded=false]
-    button "Свой предмет" [expanded=false]
     button "Скопировать текст"
     ... button x10 of 14 same-shape siblings elided
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11-hb_emberaxeaaaaaaaa]
@@ -97,6 +96,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "ЗОЛОТО" [value=800 valuetext=800 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
+    button "Свой предмет" [expanded=false]
     status ""
     status ""
       StaticText "Не сохранено"
@@ -199,7 +199,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     StaticText "Not saved"
     button "Retry"
     button "Share" [expanded=false]
-    button "Own item" [expanded=false]
     button "Copy text"
     ... button x10 of 14 same-shape siblings elided
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11-hb_emberaxeaaaaaaaa]
@@ -266,6 +265,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "GOLD" [value=800 valuetext=800 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
+    button "Own item" [expanded=false]
     status ""
     status ""
       StaticText "Not saved"

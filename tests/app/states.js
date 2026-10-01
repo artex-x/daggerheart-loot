@@ -4100,6 +4100,118 @@ async function relationFolds() {
   }
 }
 
+/** 64. The «Свой предмет» row after the entries at 360x640 as `gm1`: the open
+ *  panel's «Название» in view, nothing sideways, «Добавить в список» not
+ *  covered at the maximum scroll with a row ticked (the list page's batch bar
+ *  is in flow, not sticky), and a 120-character name keeping
+ *  the toast's «Изменить» on screen; then at 1180 a hand-resized row note box
+ *  keeps its height across a fold and an unfold. */
+async function ownItemRowAndNoteBox() {
+  const at = '64 (the own-item row and a row note box): ';
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    await d.open(SHOP, { as: 'gm1' });
+    ok(
+      await waitIn(page, () => !!document.querySelector('button.addrow')),
+      at + 'the row «Свой предмет» did not draw'
+    );
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await d.press('Свой предмет');
+    const opened = await page.evaluate(() => {
+      const name = document.getElementById('qi-name');
+      const r = name?.getBoundingClientRect();
+      return {
+        expanded: document.querySelector('button.addrow')?.getAttribute('aria-expanded'),
+        nameInView: !!r && r.top >= 0 && r.bottom <= innerHeight,
+        sideways: document.documentElement.scrollWidth > innerWidth
+      };
+    });
+    ok(opened.expanded === 'true', at + 'the row is not expanded - ' + opened.expanded);
+    ok(opened.nameInView, at + '«Название» is out of view after the press');
+    ok(!opened.sideways, at + 'the open panel scrolls the page sideways');
+
+    const first = await page.evaluate(() =>
+      document.querySelector('.lrow input[type="checkbox"]')?.getAttribute('aria-label')
+    );
+    await d.tick(first ?? '');
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await d.settle();
+    const add = await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('.quick button')].find(
+        (b) => b.textContent.trim() === 'Добавить в список'
+      );
+      const r = btn?.getBoundingClientRect();
+      if (!btn || !r) return null;
+      const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return { hit: !!hit && btn.contains(hit), bar: !!document.querySelector('.batch.on') };
+    });
+    ok(!!add?.bar, at + 'the ticked row raised no batch bar');
+    ok(
+      !!add?.hit,
+      at + '«Добавить в список» is covered at the maximum scroll - ' + JSON.stringify(add)
+    );
+
+    const long = Array.from({ length: 20 }, () => 'Фляга')
+      .join(' ')
+      .slice(0, 120);
+    await page.evaluate((v) => {
+      const name = document.getElementById('qi-name');
+      name.focus();
+      name.value = v;
+      name.dispatchEvent(new Event('input', { bubbles: true }));
+    }, long);
+    const press = await page.evaluateHandle(() =>
+      [...document.querySelectorAll('.quick button')].find(
+        (b) => b.textContent.trim() === 'Добавить в список'
+      )
+    );
+    await press.asElement()?.click();
+    await press.dispose();
+    ok(
+      await waitIn(page, () => !!document.querySelector('.toast a.toast-act')),
+      at + 'the toast has no «Изменить» link'
+    );
+    const edit = await page.evaluate(() => {
+      const r = document.querySelector('.toast a.toast-act').getBoundingClientRect();
+      return { left: r.left, right: r.right, focused: document.activeElement?.id };
+    });
+    ok(
+      edit.left >= 0 && edit.right <= 360,
+      at + '«Изменить» lies outside 0..360 - ' + JSON.stringify(edit)
+    );
+    ok(edit.focused === 'qi-name', at + 'focus left «Название» - ' + String(edit.focused));
+    await ctx.close();
+  }
+  {
+    const { ctx, page, d } = await fresh({
+      width: 1180,
+      height: 900,
+      storage: {
+        'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
+      }
+    });
+    await d.open('#/lists/a');
+    await d.press('Заметка');
+    const marked = await page.evaluate(() => {
+      const ta = document.querySelector('.rnote textarea');
+      if (!ta) return false;
+      ta.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+      ta.style.height = '200px';
+      ta.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+      return ta.dataset.manual === '1';
+    });
+    ok(marked, at + 'the box was not marked hand-sized');
+    await d.press('Заметка');
+    ok((await d.count('.rnote')) === 0, at + 'a folded empty box is still in the document');
+    await d.press('Заметка');
+    const height = await page.evaluate(
+      () => document.querySelector('.rnote textarea')?.style.height ?? null
+    );
+    ok(height === '200px', at + 'the hand height did not survive the fold - ' + String(height));
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -4165,7 +4277,8 @@ const CASES = [
     '62 (a search prunes the ticks and select-all ticks the drawn cards only)',
     searchPrunesTicks
   ],
-  ['63 (relation folds, the fold summary and the preview menu)', relationFolds]
+  ['63 (relation folds, the fold summary and the preview menu)', relationFolds],
+  ['64 (the own-item row and a row note box)', ownItemRowAndNoteBox]
 ];
 
 (async () => {

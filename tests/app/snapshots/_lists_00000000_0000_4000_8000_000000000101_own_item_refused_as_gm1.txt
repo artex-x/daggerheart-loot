@@ -29,22 +29,10 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     StaticText "10 позиций · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
-    button "Свой предмет" [expanded=true]
     button "Скопировать текст"
     button "Скачать JSON"
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11-hb_emberaxeaaaaaaaa]
     ... button x9 of 13 same-shape siblings elided
-    region "Свой предмет в этот список"
-      heading "Свой предмет в этот список" [level=2]
-      StaticText "Название"
-      StaticText "*"
-      textbox "Название*" [description=Введите название. focused=true multiline=false readonly=false required=true invalid=true]
-      StaticText "Введите название."
-      StaticText "Описание"
-      textbox "Описание" [multiline=true readonly=false required=false]
-      button "Добавить в список"
-      button "Закрыть"
-      StaticText "Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник ..." [namelen=107 namehash=7d14b241]
     status ""
     ... StaticText x32 of 36 same-shape siblings elided
     button "Как в книге" [pressed=false]
@@ -108,6 +96,18 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "ЗОЛОТО" [value=800 valuetext=800 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
+    button "Свой предмет" [expanded=true]
+    region "Свой предмет в этот список"
+      heading "Свой предмет в этот список" [level=2]
+      StaticText "Название"
+      StaticText "*"
+      textbox "Название*" [description=Введите название. focused=true multiline=false readonly=false required=true invalid=true]
+      StaticText "Введите название."
+      StaticText "Описание"
+      textbox "Описание" [multiline=true readonly=false required=false]
+      button "Добавить в список"
+      button "Закрыть"
+      StaticText "Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник ..." [namelen=107 namehash=7d14b241]
     status ""
     status ""
   contentinfo ""
@@ -209,22 +209,10 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     StaticText "10 items · "
     StaticText "Saved"
     button "Share" [expanded=false]
-    button "Own item" [expanded=true]
     button "Copy text"
     button "Download JSON"
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11-hb_emberaxeaaaaaaaa]
     ... button x9 of 13 same-shape siblings elided
-    region "An own item for this list"
-      heading "An own item for this list" [level=2]
-      StaticText "Name"
-      StaticText "*"
-      textbox "Name*" [description=Enter a name. focused=true multiline=false readonly=false required=true invalid=true]
-      StaticText "Enter a name."
-      StaticText "Description"
-      textbox "Description" [multiline=true readonly=false required=false]
-      button "Add to list"
-      button "Close"
-      StaticText "The item is saved in "My items", under "Homebrew". Its kind, sou..." [namelen=112 namehash=c2f9bbe6]
     status ""
     ... StaticText x32 of 36 same-shape siblings elided
     button "As in the book" [pressed=false]
@@ -288,6 +276,18 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "GOLD" [value=800 valuetext=800 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
+    button "Own item" [expanded=true]
+    region "An own item for this list"
+      heading "An own item for this list" [level=2]
+      StaticText "Name"
+      StaticText "*"
+      textbox "Name*" [description=Enter a name. focused=true multiline=false readonly=false required=true invalid=true]
+      StaticText "Enter a name."
+      StaticText "Description"
+      textbox "Description" [multiline=true readonly=false required=false]
+      button "Add to list"
+      button "Close"
+      StaticText "The item is saved in "My items", under "Homebrew". Its kind, sou..." [namelen=112 namehash=c2f9bbe6]
     status ""
     status ""
   contentinfo ""

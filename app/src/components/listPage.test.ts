@@ -38,7 +38,7 @@ import { expectNoA11yViolations } from '../test/a11y.js';
 afterEach(cleanup);
 
 /* jsdom does not implement scrollIntoView or the layout getters autoSize
-   reads; the note boxes' own effect skips them (offsetParent is always
+   reads; a note box's own sizing skips them (offsetParent is always
    null), which is fine - the branch is covered, not measured. */
 
 const LOOT: Loot = {
@@ -975,6 +975,74 @@ describe('a row’s note', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     expect(screen.getByDisplayValue('Светится в темноте')).toBeInTheDocument();
+  });
+
+  it('draws a note box only on a row that has a note or was opened', async () => {
+    const { container } = render(App, { env: withA() });
+    expect(container.querySelectorAll('.rnote')).toHaveLength(1);
+    const bedroll = screen.getByRole('button', { name: /Спальный мешок/ }).closest('.lrow');
+    const toggle = within(bedroll as HTMLElement).getByRole('button', { name: 'Заметка' });
+    await userEvent.click(toggle);
+    expect(container.querySelectorAll('.rnote')).toHaveLength(2);
+    await userEvent.click(toggle);
+    expect(container.querySelectorAll('.rnote')).toHaveLength(1);
+  });
+
+  it('puts a cleared note back on undo when its box went with it', async () => {
+    const pub: StoredList = {
+      id: 'p',
+      name: 'Одна заметка',
+      ids: ['ci1'],
+      created: 1,
+      meta: { ci1: { note: 'Под половицей' } }
+    };
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([pub]) });
+    const { container } = render(App, { env: at('#/lists/p', { storage }) });
+    const row = container.querySelector('.lrow') as HTMLElement;
+    const pubField = row.querySelector('.n-pub') as HTMLElement;
+    await userEvent.click(within(pubField).getByRole('button', { name: 'Очистить заметку' }));
+    expect(row.querySelector('.rnote')).toBeNull();
+    expect(readLists(storage)[0]?.meta?.['ci1']?.note).toBeUndefined();
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(within(row).getByDisplayValue('Под половицей')).toBeInTheDocument();
+    expect(readLists(storage)[0]?.meta?.['ci1']?.note).toBe('Под половицей');
+  });
+
+  it('writes no note back on undo when another tab removed the entry', async () => {
+    const two: StoredList = {
+      id: 'p',
+      name: 'Две позиции',
+      ids: ['ci1', 'cc1'],
+      created: 1,
+      meta: { ci1: { note: 'Под половицей' } }
+    };
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([two]) });
+    const { container } = render(App, { env: at('#/lists/p', { storage }) });
+    const row = container.querySelector('.lrow') as HTMLElement;
+    const pubField = row.querySelector('.n-pub') as HTMLElement;
+    await userEvent.click(within(pubField).getByRole('button', { name: 'Очистить заметку' }));
+    storage.set('dhloot.lists.v2', JSON.stringify([{ ...two, ids: ['cc1'], meta: {} }]));
+    storage.fireExternalChange('dhloot.lists.v2');
+    await waitFor(() => {
+      expect(container.querySelectorAll('.lrow')).toHaveLength(1);
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(readLists(storage)[0]?.meta?.['ci1']).toBeUndefined();
+  });
+
+  it('sizes no note box on a keystroke in another field', async () => {
+    const { container } = render(App, { env: withA() });
+    /* Past the boxes' own sizing at mount and the open fold's first `toggle` event. */
+    await new Promise((r) => setTimeout(r, 0));
+    const read = vi.spyOn(HTMLElement.prototype, 'offsetParent', 'get');
+    try {
+      const gold = container.querySelector<HTMLElement>('input[data-gold]') as HTMLElement;
+      await userEvent.type(gold, '12');
+      const textareas = read.mock.contexts.filter((el) => el instanceof HTMLTextAreaElement);
+      expect(textareas.map((el) => (el as HTMLElement).dataset['note'])).toEqual([]);
+    } finally {
+      read.mockRestore();
+    }
   });
 });
 
@@ -1937,15 +2005,13 @@ describe('homebrew entries', () => {
     });
   });
 
-  it('draws «Свой предмет» on an account list only, and the empty hint names it', async () => {
-    open(fakeCloud(SEED, 'gm1'), '00000000-0000-4000-8000-000000000102');
-    expect(await screen.findByRole('button', { name: 'Свой предмет' })).toHaveAttribute(
-      'aria-expanded',
-      'false'
-    );
-    expect(
-      screen.getByText(/Или добавьте свой предмет кнопкой «Свой предмет»\./)
-    ).toBeInTheDocument();
+  it('draws «Свой предмет» on an account list only, and the empty hint points at it', async () => {
+    const { container } = open(fakeCloud(SEED, 'gm1'), '00000000-0000-4000-8000-000000000102');
+    const row = await screen.findByRole('button', { name: 'Свой предмет' });
+    expect(row).toHaveAttribute('aria-expanded', 'false');
+    const hint = screen.getByText(/Свой предмет можно создать здесь же, кнопкой ниже\./);
+    expect(hint.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await expectNoA11yViolations(container);
     cleanup();
     const empty: StoredList = { id: 'e', name: 'Пусто', ids: [], created: 1 };
     render(App, {
@@ -1954,8 +2020,34 @@ describe('homebrew entries', () => {
       })
     });
     expect(await screen.findByText(/Пока пусто/)).toBeInTheDocument();
-    expect(screen.queryByText(/Или добавьте свой предмет/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Свой предмет можно создать/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Свой предмет' })).not.toBeInTheDocument();
+  });
+
+  it('draws «Свой предмет» as a row after the last entry, not among the actions', async () => {
+    const { container } = open(fakeCloud(SEED, 'gm1'), SHOP_ID);
+    const row = await screen.findByRole('button', { name: 'Свой предмет' });
+    const share = screen.getByRole('button', { name: 'Поделиться' });
+    expect(share.parentElement?.contains(row)).toBe(false);
+    const rows = container.querySelectorAll('.lrow');
+    const last = rows[rows.length - 1] as HTMLElement;
+    expect(last.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(last.closest('.lrows')?.contains(row)).toBe(false);
+    expect(row).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(row);
+    expect(row).toHaveAttribute('aria-expanded', 'true');
+    const panel = screen.getByRole('region', { name: 'Свой предмет в этот список' });
+    expect(row.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    /* A new item's entry lands last, right above the row. */
+    await userEvent.type(
+      within(panel).getByRole('textbox', { name: 'Название*' }),
+      'Фляга{Enter}'
+    );
+    const made = await screen.findByRole('button', { name: /Фляга/ });
+    const after = container.querySelectorAll('.lrow');
+    expect(after.length).toBe(rows.length + 1);
+    expect(after[after.length - 1]?.contains(made)).toBe(true);
+    await expectNoA11yViolations(container);
   });
 
   it('draws no «Свой предмет» on a browser list, signed in or read-only', async () => {

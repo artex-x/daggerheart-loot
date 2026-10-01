@@ -113,19 +113,17 @@ function readLocalPrefs(env: Env): LocalPrefs {
   };
 }
 
-/** What one action can undo, carried on a toast for the 7000ms it lasts.
- *  The label is built in the language on screen each time it is drawn. */
-export interface ToastAction {
-  label: Msg;
-  run: () => void;
-}
+/** What a toast offers for the 7000ms it lasts: an undo (`run`) or a link to
+ *  a page opened in a new tab (`href`). The label is built in the language on
+ *  screen each time it is drawn. */
+export type ToastAction = { label: Msg; run: () => void } | { label: Msg; href: string };
 
 /** Off `showToast` in app.js: a plain notice, an error (`role=alert`), or one
- *  with an undo action - each its own duration, decided by `say` below. */
+ *  with an action - each its own duration, decided by `say` below. */
 export interface Toast {
   msg: string;
   mode: '' | 'err' | 'act';
-  action?: { label: string; run: () => void } | undefined;
+  action?: { label: string; run?: () => void; href?: string } | undefined;
 }
 
 /* What `say` was given: the toast before it is drawn in a language. */
@@ -369,7 +367,11 @@ export class AppState {
     return {
       msg: s.msg(t, lang),
       mode: s.mode,
-      action: s.action && { label: s.action.label(t, lang), run: s.action.run }
+      action:
+        s.action &&
+        ('run' in s.action
+          ? { label: s.action.label(t, lang), run: s.action.run }
+          : { label: s.action.label(t, lang), href: s.action.href })
     };
   });
   /** True while `RecordModal`'s modal dialog is open, set after its
@@ -377,6 +379,9 @@ export class AppState {
    *  (`Toast.svelte`). `RecordModal` is the only writer. */
   dialogOpen = $state(false);
   #toastTimer: ReturnType<typeof setTimeout> | null = null;
+  /* An action toast's deadline while it runs, and its time left while held. */
+  #toastDue = 0;
+  #toastLeft: number | null = null;
 
   #home = $state(DEFAULT_HOME);
   /** Whether the "lists live in this browser only" notice has been dismissed
@@ -1239,11 +1244,37 @@ export class AppState {
     this.#said = { msg, mode, action: opts.action };
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
     this.#toastTimer = null;
+    this.#toastLeft = null;
     /* The golden harness's test build: a capture reads the toast however late it arrives. */
     if (this.env.clock.holdsToasts?.()) return;
+    this.#runToast(ms);
+  }
+
+  #runToast(ms: number): void {
+    /* `Date.now`, not the clock port: the test build's clock is a fixed day. */
+    this.#toastDue = Date.now() + ms;
     this.#toastTimer = setTimeout(() => {
       this.hideToast();
     }, ms);
+  }
+
+  /**
+   * Holds an action toast's clock while the pointer is over it or focus is
+   * inside it (`on`), and runs it on with the time it had left when both end.
+   * A plain notice and an error never hold: a resting pointer must not keep them.
+   */
+  holdToast(on: boolean): void {
+    if (this.#said?.mode !== 'act' || this.env.clock.holdsToasts?.()) return;
+    if (on) {
+      if (this.#toastLeft !== null || !this.#toastTimer) return;
+      clearTimeout(this.#toastTimer);
+      this.#toastTimer = null;
+      this.#toastLeft = Math.max(0, this.#toastDue - Date.now());
+    } else if (this.#toastLeft !== null) {
+      const left = this.#toastLeft;
+      this.#toastLeft = null;
+      this.#runToast(left);
+    }
   }
 
   /**
@@ -1260,6 +1291,7 @@ export class AppState {
 
   hideToast(): void {
     this.#said = null;
+    this.#toastLeft = null;
     if (this.#toastTimer) {
       clearTimeout(this.#toastTimer);
       this.#toastTimer = null;

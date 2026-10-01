@@ -485,6 +485,32 @@ const STATES: {
     }
   },
   {
+    what: 'an account list with the own-item row folded after its entries',
+    route: '#/lists/00000000-0000-4000-8000-000000000101',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await screen.findByRole('button', { name: 'Свой предмет', expanded: false });
+    }
+  },
+  {
+    what: 'an empty account list with its hint and the own-item row',
+    route: '#/lists/00000000-0000-4000-8000-000000000102',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await screen.findByText(/Свой предмет можно создать здесь же/);
+    }
+  },
+  {
+    what: 'the own-item toast with its «Изменить» link',
+    route: '#/lists/00000000-0000-4000-8000-000000000101',
+    cloud: () => fakeCloud(SEED, 'gm1'),
+    enter: async () => {
+      await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
+      await userEvent.type(screen.getByRole('textbox', { name: 'Название*' }), 'Фляга{Enter}');
+      await screen.findByRole('link', { name: 'Изменить' });
+    }
+  },
+  {
     what: 'the account menu open over a section, signed in',
     route: '#/roll/std',
     cloud: () => fakeCloud(SEED, 'gm1'),

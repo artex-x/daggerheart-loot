@@ -12,6 +12,7 @@
   import TextArea from './TextArea.svelte';
   import TextInput from './TextInput.svelte';
   import { limitText } from '../lib/cloudLists.js';
+  import { homebrewItemHash } from '../lib/hash.js';
   import type { HomebrewContent, Problem } from '../lib/homebrew.js';
   import {
     contentOf,
@@ -84,7 +85,9 @@
       const shown = name.trim();
       name = '';
       desc = '';
-      app.say((t) => t.quickAdded.replace('%s', shown));
+      app.say((t) => t.quickAdded.replace('%s', shown), {
+        action: { label: (t) => t.edit, href: homebrewItemHash(pair.key) }
+      });
     } finally {
       busy = false;
     }

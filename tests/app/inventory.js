@@ -220,6 +220,8 @@ const LANGS = ['ru', 'en'];
 const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
 /** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
 const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
+/** The fake seed's `gm1` list «Пустой список», `uuid(102)`, with no entries. */
+const EMPTY_LIST = '#/lists/00000000-0000-4000-8000-000000000102';
 /** The fake seed's `gm2` list, `uuid(201)`, which holds a frozen copy of gm1's axe. */
 const GM2_LIST = '#/lists/00000000-0000-4000-8000-000000000201';
 
@@ -1235,13 +1237,13 @@ const STATES = [
     id: SHOP + ' as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Лавка кузнеца»: «10 позиций · Сохранено», «Поделиться» and «Свой предмет» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»'
+    why: '«Лавка кузнеца»: «10 позиций · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»; the row «Свой предмет» folded after it'
   },
   {
     id: SHOP + ' ~ own item as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Свой предмет» pressed and expanded: the panel «Свой предмет в этот список» with «Название» *, «Описание», «Добавить в список», «Закрыть» and the note on «Мои предметы»',
+    why: 'the row «Свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «Добавить в список», «Закрыть» and the note on «Мои предметы»',
     enter: async (d) => {
       await d.click('Свой предмет');
     }
@@ -1250,14 +1252,14 @@ const STATES = [
     id: SHOP + ' ~ own item added as gm1',
     route: SHOP,
     as: 'gm1',
-    why: 'a name typed and «Добавить в список» pressed: «11 позиций», the new plain item last, the fields empty, the toast «Предмет «Фляга контрабандиста» добавлен в список»',
+    why: 'a name typed and «Добавить в список» pressed: «11 позиций», the new plain item last, right above the row, the fields empty, the toast «Предмет «Фляга контрабандиста» добавлен в список» with the link «Изменить»',
     enter: async (d) => {
       await d.click('Свой предмет');
       await d.type('Название*', 'Фляга контрабандиста');
       await d.press('Добавить в список');
       for (let i = 0; i < 40 && !(await d.text()).includes('11 позиций'); i++) await d.settle();
     },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
@@ -1271,10 +1273,16 @@ const STATES = [
     }
   },
   {
+    id: EMPTY_LIST + ' as gm1',
+    route: EMPTY_LIST,
+    as: 'gm1',
+    why: '«Пустой список»: «0 позиций · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Свой предмет» folded'
+  },
+  {
     id: GM2_LIST + ' as gm2',
     route: GM2_LIST,
     as: 'gm2',
-    why: "gm2's list: «2 позиции», the Scepter, then the frozen copy of gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; «Свой предмет» after «Поделиться»"
+    why: "gm2's list: «2 позиции», the Scepter, then the frozen copy of gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries"
   },
   {
     id: SHOP + ' ~ share as gm1',

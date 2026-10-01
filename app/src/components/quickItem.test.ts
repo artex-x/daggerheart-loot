@@ -2,7 +2,7 @@
  * refusals keep the text; a lost answer and a second press make one item; Enter adds and
  * Escape closes. docs/specs/FEATURES.md, "Lists". */
 
-import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
@@ -53,7 +53,7 @@ async function itemsNamed(cloud: CloudPort, name: string): Promise<number> {
 }
 
 describe('the own-item panel', () => {
-  it('opens under the toggle with the name focused, and Escape closes it back to the toggle', async () => {
+  it('opens under the row with the name focused, and Escape closes it back to the row', async () => {
     const { container } = openShop();
     const toggle = await screen.findByRole('button', { name: 'Свой предмет' });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -70,6 +70,13 @@ describe('the own-item panel', () => {
     expect(screen.queryByRole('textbox', { name: 'Название*' })).not.toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Свой предмет' })).toHaveFocus();
+    });
+    await openPanel();
+    const panel = screen.getByRole('region', { name: 'Свой предмет в этот список' });
+    await userEvent.click(within(panel).getByRole('button', { name: 'Закрыть' }));
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => {
+      expect(toggle).toHaveFocus();
     });
   });
 
@@ -92,6 +99,13 @@ describe('the own-item panel', () => {
     expect(name).toHaveFocus();
     expect(create).toHaveBeenCalledOnce();
     const made = create.mock.calls[0]?.[0];
+    /* The toast links the new item's editor in a new tab and leaves focus in the name. */
+    const edit = screen.getByRole('link', { name: 'Изменить' });
+    expect(edit).toHaveAttribute('href', '#/homebrew/' + (made?.key ?? ''));
+    expect(edit).toHaveAttribute('target', '_blank');
+    expect(edit).toHaveAttribute('rel', 'noopener');
+    expect(edit.closest('.toast')).not.toBeNull();
+    expect(name).toHaveFocus();
     expect(made).toMatchObject({
       book_id: null,
       content: {

@@ -1079,6 +1079,70 @@ describe('the toast', () => {
     vi.useRealTimers();
   });
 
+  it('holds an action toast while it is hovered or focused and runs on with the time it had left', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say(() => 'Убрано', { action: { label: () => 'Вернуть', run: vi.fn() } });
+    vi.advanceTimersByTime(4000);
+    app.holdToast(true);
+    vi.advanceTimersByTime(60_000);
+    expect(app.toast).not.toBeNull();
+    /* A second hold while held keeps the time it had left. */
+    app.holdToast(true);
+    app.holdToast(false);
+    vi.advanceTimersByTime(2999);
+    expect(app.toast).not.toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(app.toast).toBeNull();
+    /* A release with no hold, and a hold with no toast, do nothing. */
+    app.holdToast(false);
+    app.holdToast(true);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('never holds a plain notice', () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say(() => 'Добавлено');
+    app.holdToast(true);
+    vi.advanceTimersByTime(1600);
+    expect(app.toast).toBeNull();
+    app.say(() => 'Ошибка', { error: true });
+    app.holdToast(true);
+    vi.advanceTimersByTime(2600);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it('never holds or runs a toast on a clock that holds toasts', () => {
+    vi.useFakeTimers();
+    const clock = { now: () => 0, holdsToasts: () => true };
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1'), clock }));
+    app.say(() => 'Убрано', { action: { label: () => 'Вернуть', run: vi.fn() } });
+    app.holdToast(true);
+    app.holdToast(false);
+    vi.advanceTimersByTime(60_000);
+    expect(app.toast?.msg).toBe('Убрано');
+    vi.useRealTimers();
+  });
+
+  it("carries a link action's href", () => {
+    vi.useFakeTimers();
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    app.say(() => 'Предмет добавлен', {
+      action: { label: (t) => t.edit, href: '#/homebrew/hb_flask' }
+    });
+    expect(app.toast).toEqual({
+      msg: 'Предмет добавлен',
+      mode: 'act',
+      action: { label: 'Изменить', href: '#/homebrew/hb_flask' }
+    });
+    vi.advanceTimersByTime(7000);
+    expect(app.toast).toBeNull();
+    vi.useRealTimers();
+  });
+
   it("redraws an action's label and keeps its run", () => {
     vi.useFakeTimers();
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));

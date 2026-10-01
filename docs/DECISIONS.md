@@ -22,6 +22,7 @@ deleted.
 - 2026-10-01 - [Plans and reviews run four standing checks without the owner asking](decisions/2026-10-01-plans-and-reviews-run-four-standing-checks-without.md)
 - 2026-10-01 - [Scale is designed for three times the default limits; nothing past that](decisions/2026-10-01-scale-is-designed-for-three-times-the-default-limits.md)
 - 2026-10-01 - [Search is one mode: words in any order, Snowball word forms, quotes for a phrase](decisions/2026-10-01-search-is-one-mode-words-in-any-order-snowball-forms.md)
+- 2026-10-01 - [The quick item opens under a list's entries; its toast links the editor](decisions/2026-10-01-the-quick-item-opens-under-a-lists-entries.md)
 - 2026-09-30 - [A frozen copy embeds its source and cards; a reference must exist when written](decisions/2026-09-30-a-frozen-copy-embeds-its-source-a-reference-must-exist.md)
 - 2026-09-30 - [A homebrew item carries the whole catalog shape; sources and cards are rows](decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md)
 - 2026-09-30 - [A homebrew source may hold sections, as the community book holds communities](decisions/2026-09-30-a-homebrew-source-may-hold-sections.md)

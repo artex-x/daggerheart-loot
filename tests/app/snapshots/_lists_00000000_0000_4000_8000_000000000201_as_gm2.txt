@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000201 as gm2
 # route: #/lists/00000000-0000-4000-8000-000000000201
-# why: gm2's list: «2 позиции», the Scepter, then the frozen copy of gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; «Свой предмет» after «Поделиться»
+# why: gm2's list: «2 позиции», the Scepter, then the frozen copy of gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries
 # as: gm2
 
 ## ru :: tree
@@ -29,7 +29,6 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     StaticText "2 позиции · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
-    button "Свой предмет" [expanded=false]
     button "Скопировать текст"
     button "Скачать JSON"
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm2#/print/q23-hb_emberaxeaaaaaaaa]
@@ -56,6 +55,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
+    button "Свой предмет" [expanded=false]
     status ""
     status ""
   contentinfo ""
@@ -131,7 +131,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     StaticText "2 items · "
     StaticText "Saved"
     button "Share" [expanded=false]
-    button "Own item" [expanded=false]
     button "Copy text"
     button "Download JSON"
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm2#/print/q23-hb_emberaxeaaaaaaaa]
@@ -158,6 +157,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
+    button "Own item" [expanded=false]
     status ""
     status ""
   contentinfo ""
