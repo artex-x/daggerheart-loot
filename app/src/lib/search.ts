@@ -90,14 +90,14 @@ const has = (text: string | undefined, needle: string): boolean =>
 type Hay = (it: Record_) => readonly string[];
 
 /**
- * Builds a per-record folded haystack, memoised by id.
+ * Builds a per-record folded haystack, memoised by record.
  *
  * Folding is the expensive part - measured at 2.74ms refolding the
  * catalogue on every keystroke against 0.33ms warm. That 0.33ms reflects a
  * proposed design: one lowercased string per record, built into
  * `data.ts`'s `Index` at load time. This file builds a
  * different design instead - an array of per-field folded strings, cached
- * per id here rather than baked into the `Index` - for the field-boundary
+ * per record here rather than baked into the `Index` - for the field-boundary
  * correctness reason `Hay`'s own comment records, so the two numbers are
  * not directly comparable measurements of the same code; only the warm/cold
  * shape (fold once, reuse, instead of refolding every keystroke) carries
@@ -106,14 +106,16 @@ type Hay = (it: Record_) => readonly string[];
  * catalogue on every query and can afford to build it once per language.
  */
 export function hayFor(statLine: StatLine): Hay {
-  const cache = new Map<string, readonly string[]>();
+  /* Keyed by the record object, not its id: an edited own item is a new object under
+     the same key, and its old folding must not answer for it. */
+  const cache = new WeakMap<Record_, readonly string[]>();
   return (it: Record_): readonly string[] => {
-    let parts = cache.get(it.id);
+    let parts = cache.get(it);
     if (!parts) {
       const raw = [it.ru, it.en, it.rud, it.ende];
       if (it.eq) raw.push(statLine(it));
       parts = raw.filter((s): s is string => !!s).map(foldQuery);
-      cache.set(it.id, parts);
+      cache.set(it, parts);
     }
     return parts;
   };

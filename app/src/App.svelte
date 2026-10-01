@@ -92,7 +92,8 @@
       {/if}
     {:else if app.route.kind === 'record'}
       <RecordPage {app} id={app.route.id} />
-    {:else if app.route.kind === 'tables'}
+    {:else if app.route.kind === 'tables' && (app.route.table !== 'homebrew' || app.homebrew)}
+      <!-- With no sign-in configured `#/tables/homebrew` is not found, address kept. -->
       <TablesPage {app} />
     {:else if app.route.kind === 'storedList' || app.route.kind === 'sharedList'}
       <ListPage {app} />

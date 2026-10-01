@@ -2994,9 +2994,15 @@ describe('homebrew', () => {
       app.go('#/homebrew/new');
       await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
       expect(load).toHaveBeenCalledTimes(3);
+      app.go('#/tables/homebrew');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(load).toHaveBeenCalledTimes(4);
       app.go('#/i/ci1');
       await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
-      expect(load).toHaveBeenCalledTimes(3);
+      expect(load).toHaveBeenCalledTimes(4);
+      app.go('#/tables/eq_weapon');
+      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
+      expect(load).toHaveBeenCalledTimes(4);
       cloud.setOffline(true);
       app.homebrew?.clear();
       await app.homebrew?.load();
@@ -3009,6 +3015,36 @@ describe('homebrew', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('starts with the own items shown, hides them from browse on a toggle, and keeps it across pages', async () => {
+    const { app } = started(fakeCloud(SEED, 'gm1'), '#/search');
+    await flush();
+    expect(app.homebrewShown).toBe(true);
+    expect(app.browse).toBe(app.index);
+    expect(app.browse?.searchable.some((it) => it.id === AXE)).toBe(true);
+    app.toggleHomebrew();
+    expect(app.homebrewShown).toBe(false);
+    expect(app.browse?.searchable).toBe(app.catalog?.searchable);
+    expect(app.browse?.allEquip).toBe(app.catalog?.allEquip);
+    expect(app.browse?.byId.get(AXE)).toBeDefined();
+    app.go('#/tables/eq_weapon');
+    expect(app.homebrewShown).toBe(false);
+    app.toggleHomebrew();
+    expect(app.browse).toBe(app.index);
+    app.stop();
+  });
+
+  it('shows the own items again when another user signs in on the same tab', async () => {
+    const cloud = fakeCloud({ ...SEED, defaultUser: 'gm2' }, 'gm1');
+    const { app } = started(cloud, '#/search');
+    await flush();
+    app.toggleHomebrew();
+    await cloud.auth.signOut();
+    await cloud.auth.signIn('google');
+    await flush();
+    expect(app.homebrewShown).toBe(true);
+    app.stop();
   });
 
   it('re-reads the homebrew when the tab is shown again', async () => {

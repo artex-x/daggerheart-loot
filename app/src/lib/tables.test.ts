@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SUB_LABEL, TABLE_GROUPS, groupOf, subLabelOf } from './tables.js';
 import { TABLE_IDS, type TableId } from './types.js';
 
-describe('the ten groups', () => {
+describe('the eleven groups', () => {
   it('together cover every table id exactly once', () => {
     const all = TABLE_GROUPS.flatMap((g) => g.subs);
     expect([...all].sort()).toEqual([...TABLE_IDS].sort());
@@ -12,6 +12,7 @@ describe('the ten groups', () => {
     expect(groupOf('core_consumable').id).toBe('core');
     expect(groupOf('eq_armor').id).toBe('eq');
     expect(groupOf('other_frames').id).toBe('other');
+    expect(groupOf('homebrew').id).toBe('hb');
   });
 
   it('shows a second row only where a book has more than one table', () => {
@@ -20,7 +21,8 @@ describe('the ten groups', () => {
       'dread',
       'voa',
       'dv',
-      'comm'
+      'comm',
+      'hb'
     ]);
   });
 

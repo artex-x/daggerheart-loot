@@ -7,6 +7,7 @@
   import BatchBar from './BatchBar.svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
+  import HomebrewLoad from './HomebrewLoad.svelte';
   import HomebrewSources from './HomebrewSources.svelte';
   import Icon from './Icon.svelte';
   import PageTitle from './PageTitle.svelte';
@@ -55,10 +56,9 @@
   <SignInPrompt {app} lead={t.hbSignIn} after={{ hash: HOMEBREW_HASH }} />
 {:else if app.user}
   {#if store.status === 'error'}
-    <p class="note err" role="alert">{t.hbLoadFailed}</p>
-    <Button onclick={() => void store.load()}>{t.retry}</Button>
+    <HomebrewLoad {app} failed />
   {:else if store.status !== 'ready'}
-    <p class="note" role="status">{t.cloudLoading}</p>
+    <HomebrewLoad {app} failed={false} />
   {:else}
     <p class="note">{count}</p>
     <div class="stack">
@@ -120,10 +120,6 @@
     margin: 0 0 14px;
     font-size: 14px;
     color: var(--muted);
-  }
-
-  .note.err {
-    color: var(--danger-text);
   }
 
   .stack {

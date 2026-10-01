@@ -120,7 +120,7 @@
       }
     },
     {
-      "name": "damage d20+20, either burden",
+      "name": "damage d20+99, either burden",
       "content": {
         "kind": "equip",
         "en": "Storm Maul",
@@ -130,7 +130,7 @@
           "cls": "phy",
           "tr": "strength",
           "rg": "veryfar",
-          "dmg": "d20+20",
+          "dmg": "d20+99",
           "dt": "any",
           "bu": "any"
         }
@@ -188,6 +188,46 @@
         "kind": "item",
         "ru": "Свиток",
         "rud": "Строка 1\n\tСтрока 2\n"
+      }
+    },
+    {
+      "name": "damage d8+21, past the old bound",
+      "content": {
+        "kind": "equip",
+        "ru": "Клинок",
+        "eq": {
+          "t": "weapon",
+          "tier": 2,
+          "cls": "mag",
+          "tr": "spellcast",
+          "rg": "melee",
+          "dmg": "d8+21",
+          "dt": "mag",
+          "bu": 2
+        }
+      }
+    },
+    {
+      "name": "an alt damage d6+99, past the old bound",
+      "content": {
+        "kind": "equip",
+        "en": "Twin Buckler",
+        "eq": {
+          "t": "secondary",
+          "tier": 1,
+          "cls": "phy",
+          "tr": "agility",
+          "rg": "melee",
+          "dmg": "d4",
+          "dt": "phy",
+          "bu": 1,
+          "alt": {
+            "tr": "finesse",
+            "rg": "veryclose",
+            "dmg": "d6+99",
+            "dt": "any"
+          }
+        }
       }
     }
   ],
@@ -511,29 +551,6 @@
       ]
     },
     {
-      "name": "the damage d8+21",
-      "content": {
-        "kind": "equip",
-        "ru": "Клинок",
-        "eq": {
-          "t": "weapon",
-          "tier": 2,
-          "cls": "mag",
-          "tr": "spellcast",
-          "rg": "melee",
-          "dmg": "d8+21",
-          "dt": "mag",
-          "bu": 2
-        }
-      },
-      "problems": [
-        {
-          "path": "eq.dmg",
-          "rule": "pattern"
-        }
-      ]
-    },
-    {
       "name": "the damage d8+0",
       "content": {
         "kind": "equip",
@@ -552,6 +569,81 @@
       "problems": [
         {
           "path": "eq.dmg",
+          "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "the damage d8+100",
+      "content": {
+        "kind": "equip",
+        "ru": "Клинок",
+        "eq": {
+          "t": "weapon",
+          "tier": 2,
+          "cls": "mag",
+          "tr": "spellcast",
+          "rg": "melee",
+          "dmg": "d8+100",
+          "dt": "mag",
+          "bu": 2
+        }
+      },
+      "problems": [
+        {
+          "path": "eq.dmg",
+          "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "the damage d8+05",
+      "content": {
+        "kind": "equip",
+        "ru": "Клинок",
+        "eq": {
+          "t": "weapon",
+          "tier": 2,
+          "cls": "mag",
+          "tr": "spellcast",
+          "rg": "melee",
+          "dmg": "d8+05",
+          "dt": "mag",
+          "bu": 2
+        }
+      },
+      "problems": [
+        {
+          "path": "eq.dmg",
+          "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "an alt damage d6+100",
+      "content": {
+        "kind": "equip",
+        "en": "Twin Buckler",
+        "eq": {
+          "t": "secondary",
+          "tier": 1,
+          "cls": "phy",
+          "tr": "agility",
+          "rg": "melee",
+          "dmg": "d4",
+          "dt": "phy",
+          "bu": 1,
+          "alt": {
+            "tr": "finesse",
+            "rg": "veryclose",
+            "dmg": "d6+100",
+            "dt": "any"
+          }
+        }
+      },
+      "problems": [
+        {
+          "path": "eq.alt.dmg",
           "rule": "pattern"
         }
       ]

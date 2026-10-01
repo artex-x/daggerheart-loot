@@ -259,3 +259,30 @@ describe('the stat line the pages search with', () => {
     ).toContain(frame.id);
   });
 });
+
+describe('the folded haystack cache', () => {
+  const thing = (ru: string): Record_ => ({
+    id: 'hb_sameidaaaaaaaaaa',
+    src: 'homebrew',
+    kind: 'item',
+    en: '',
+    ende: '',
+    ru,
+    rud: ''
+  });
+
+  it('refolds a new object under the same id: an edited own item is found by its new name', () => {
+    const hay = hayFor(() => '');
+    const before = thing('Старое имя');
+    expect(matches(before, foldQuery('старое'), () => '', hay)).toBe(true);
+    const after = thing('Новое имя');
+    expect(matches(after, foldQuery('новое'), () => '', hay)).toBe(true);
+    expect(matches(after, foldQuery('старое'), () => '', hay)).toBe(false);
+  });
+
+  it('keeps one object folding once', () => {
+    const hay = hayFor(() => '');
+    const it = thing('Имя');
+    expect(hay(it)).toBe(hay(it));
+  });
+});

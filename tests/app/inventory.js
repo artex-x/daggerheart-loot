@@ -2101,6 +2101,48 @@ const STATES = [
     why: 'the English-only cap in the Russian interface: the labels in Russian, «Название» holding «Whispering Cap», «Ранг» on 2'
   },
   {
+    id: '#/homebrew ~ add to list as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: "the axe ticked: the selection bar «Выбрано 1» with its «Добавить в список» menu open on gm1's lists",
+    enter: async (d) => {
+      await d.tick('Топор Тлеющих Углей');
+      await d.click('Добавить в список');
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ add to list as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: "the preview card's «Добавить в список» pressed: its menu open on gm1's lists, the form unchanged",
+    enter: async (d) => {
+      await d.click('Добавить в список');
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ second set as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: 'the fold «Второй набор характеристик» open on its hint, «Проворность» pressed in it, then «Сохранить»: «Не сохранено: исправьте 3 поля.», three lines that name «Очистить второй набор», and that button',
+    enter: async (d) => {
+      await d.click('Второй набор характеристик');
+      await d.click('Проворность', 1);
+      await d.press('Сохранить');
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ second set cleared as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: 'the same, then «Очистить второй набор»: the fold open on its hint with nothing pressed and the die on «Кость», no summary, no error line, no clear button',
+    enter: async (d) => {
+      await d.click('Второй набор характеристик');
+      await d.click('Проворность', 1);
+      await d.press('Сохранить');
+      await d.click('Очистить второй набор');
+    }
+  },
+  {
     id: '#/i/' + HB_AXE + ' as gm1',
     route: '#/i/' + HB_AXE,
     as: 'gm1',
@@ -2110,6 +2152,69 @@ const STATES = [
     id: '#/i/' + HB_AXE,
     route: '#/i/' + HB_AXE,
     why: 'the same key signed out: «Предмет не найден», the address kept'
+  },
+  {
+    id: '#/tables/homebrew as gm1',
+    route: '#/tables/homebrew',
+    as: 'gm1',
+    why: 'the own items as a table: the group chip «Хоумбрю» last and on, the sections «Мастерская Ольхи · Холодное оружие» (the axe) and «Хоумбрю» (three items), the grid of the account view'
+  },
+  {
+    id: '#/tables/homebrew/f_sect-hb_sectbladesaaaaaa as gm1',
+    route: '#/tables/homebrew/f_sect-hb_sectbladesaaaaaa',
+    as: 'gm1',
+    why: 'a section filter by link: the panel open with «Тип», «Источник» and «Раздел», the pill «Мастерская Ольхи · Холодное оружие», one row of four'
+  },
+  {
+    id: '#/tables/homebrew as gm2',
+    route: '#/tables/homebrew',
+    as: 'gm2',
+    why: 'an account with no own item: «Своих предметов пока нет - создайте первый.» and «Новый предмет»'
+  },
+  {
+    id: '#/tables/homebrew',
+    route: '#/tables/homebrew',
+    why: 'signed out: no «Хоумбрю» group chip, the prompt «Войдите, чтобы видеть свои предметы в таблицах.» with «Войти», no toolbar'
+  },
+  {
+    id: '#/tables/eq_weapon as gm1',
+    route: '#/tables/eq_weapon',
+    as: 'gm1',
+    why: 'own equipment in the weapons table: the axe in «Ранг 2» after the catalog weapons, the toolbar chip «Хоумбрю» pressed after the view switch'
+  },
+  {
+    id: '#/tables/eq_weapon ~ own items hidden as gm1',
+    route: '#/tables/eq_weapon',
+    as: 'gm1',
+    why: 'the toolbar chip pressed off, found by its title «Показывать свои предметы» (the group chip link has the same word and no title): the chip unpressed, the axe gone from «Ранг 2»',
+    enter: async (d) => {
+      await d.click('Показывать свои предметы');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon/f_src-hb_alderworkshopaaa as gm1',
+    route: '#/tables/eq_weapon/f_src-hb_alderworkshopaaa',
+    as: 'gm1',
+    why: 'an own source in the weapons filter by link: the panel open, «Мастерская Ольхи» last in «Источник», the pill «Мастерская Ольхи», the axe alone'
+  },
+  {
+    id: '#/search ~ own items as gm1',
+    route: '#/search',
+    as: 'gm1',
+    why: '«топор» typed: the 13 catalog matches, then the axe; the intro ends «И 4 ваших предмета.»; the chip «Хоумбрю» last in the kind row, pressed',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'топор');
+    }
+  },
+  {
+    id: '#/search ~ own items hidden as gm1',
+    route: '#/search',
+    as: 'gm1',
+    why: 'the same, then the chip «Хоумбрю» pressed off: the 13 catalog matches alone, the intro sentence kept',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'топор');
+      await d.click('Показывать свои предметы');
+    }
   },
   {
     id: '#/account ~ pinned table as gm2',

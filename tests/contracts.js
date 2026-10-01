@@ -97,11 +97,21 @@ const N_REC = '\x1e',
     fs.readFileSync(path.join(__dirname, '..', 'llms.txt'), 'utf8') +
     fs.readFileSync(path.join(FIX, '..', 'specs', 'CONTRACTS.md'), 'utf8') +
     fs.readFileSync(path.join(FIX, '..', 'specs', 'ROUTES.md'), 'utf8');
-  ['tier', 'src', 'cls', 'trait', 'range', 'burden', 'line', 'kind', 'frame', 'comm'].forEach(
-    function (g) {
-      ok(new RegExp('`' + g + '`').test(docs), 'group `' + g + '` is documented nowhere');
-    }
-  );
+  [
+    'tier',
+    'src',
+    'cls',
+    'trait',
+    'range',
+    'burden',
+    'line',
+    'kind',
+    'frame',
+    'comm',
+    'sect'
+  ].forEach(function (g) {
+    ok(new RegExp('`' + g + '`').test(docs), 'group `' + g + '` is documented nowhere');
+  });
   /* Absence is checked only in llms.txt: that is what an agent builds an address
      from, while the specs name these two on purpose - as what the groups are not. */
   const machine = fs.readFileSync(path.join(__dirname, '..', 'llms.txt'), 'utf8');
@@ -137,6 +147,10 @@ const N_REC = '\x1e',
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
     ok(text.includes('#/homebrew'), name + ' does not name the homebrew page #/homebrew');
+    ok(
+      text.includes('#/tables/homebrew'),
+      name + ' does not name the homebrew table #/tables/homebrew'
+    );
     ok(text.includes('hb_'), name + ' does not name the reserved key prefix hb_');
   });
   [

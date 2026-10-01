@@ -289,9 +289,9 @@ describe('a homebrew item', () => {
     expect(whereFrom(englishSource, 'ru')).toBe('Хоумбрю · Tinker Guild');
   });
 
-  it('prints the path on a card and has no table page', () => {
+  it('prints the path on a card and has the homebrew table', () => {
     expect(printSrc(inSection, 'en')).toBe('Homebrew · Alder Workshop · Blades');
-    expect(tableOf(inSection)).toBe(null);
+    expect(tableOf(inSection)).toBe('homebrew');
     expect(
       tableOf(
         recordOf(
@@ -300,6 +300,6 @@ describe('a homebrew item', () => {
           null
         )
       )
-    ).toBe(null);
+    ).toBe('homebrew');
   });
 });

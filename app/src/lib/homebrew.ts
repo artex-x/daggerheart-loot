@@ -2,7 +2,7 @@
  * validators and the record a homebrew item draws as.
  *
  * The validators accept and refuse what the database's do
- * (`supabase/migrations/20260930130000_homebrew.sql`), over one fixture set
+ * (the `homebrew_*` functions in `supabase/migrations/`), over one fixture set
  * (`docs/fixtures/homebrew/`); `recordOf` writes what `homebrew_snapshot_of`
  * writes. Pure module: no port, no storage.
  * docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md. */
@@ -171,7 +171,7 @@ const hasControl = (s: string): boolean =>
     return c <= 0x1f && c !== 0x09 && c !== 0x0a;
   });
 const NON_SPACE = /\S/u;
-const DMG = /^d(4|6|8|10|12|20)(\+([1-9]|1[0-9]|20))?$/;
+const DMG = /^d(4|6|8|10|12|20)(\+[1-9][0-9]?)?$/;
 
 const CONTENT_KEYS = ['kind', 'en', 'ru', 'ende', 'rud', 'tier', 'eq', 'section'];
 const EQ_KEYS = ['t', 'tier', 'cls', 'tr', 'rg', 'dmg', 'dt', 'bu', 'as', 'th', 'alt'];
@@ -446,7 +446,9 @@ export function isHomebrewRecord(it: Record_): it is HomebrewRecord {
 
 /** Returns `base` with the own records and the frozen copies in `byId`: an own record
  *  replaces nothing of `base`'s, and a frozen copy only takes a key that neither holds, so
- *  an own item stays live. `base` itself when both are empty. */
+ *  an own item stays live. The own records also follow the catalog's in `searchable` and,
+ *  with a stat block, in `allEquip`, and make the `homebrew` rows; a frozen copy joins
+ *  `byId` alone. `base` itself when both are empty. */
 export function withRecords(
   base: Index,
   own: readonly HomebrewRecord[],
@@ -456,7 +458,23 @@ export function withRecords(
   const byId = new Map<string, Record_>(base.byId);
   for (const it of own) byId.set(it.id, it);
   for (const it of frozen) if (!byId.has(it.id)) byId.set(it.id, it);
-  return { ...base, byId };
+  if (!own.length) return { ...base, byId };
+  const rows = new Map(base.rows);
+  rows.set('homebrew', own);
+  return {
+    ...base,
+    byId,
+    rows,
+    searchable: [...base.searchable, ...own],
+    allEquip: [...base.allEquip, ...own.filter((it) => it.eq)]
+  };
+}
+
+/** Returns the index search and the equipment tables read: `index` itself while the
+ *  «Хоумбрю» chip is on, else its `searchable` and `allEquip` taken from `base`. */
+export function browseIndex(index: Index, base: Index, shown: boolean): Index {
+  if (shown || index === base) return index;
+  return { ...index, searchable: base.searchable, allEquip: base.allEquip };
 }
 
 /** Returns the language the editor writes an item's name and description in: the UI

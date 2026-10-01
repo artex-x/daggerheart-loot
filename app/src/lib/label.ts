@@ -179,8 +179,7 @@ const EQ_TABLE_OF = {
  * section their record is not in.
  */
 export function tableOf(it: Record_): TableId | null {
-  /* An own item has no table page until R7b. */
-  if (it.src === 'homebrew') return null;
+  if (it.src === 'homebrew') return 'homebrew';
   if (it.frame || it.src === 'frame') return 'other_frames';
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';

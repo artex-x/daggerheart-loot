@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>R7 mocks</title>
+    <title>
+      #/homebrew/hb_... as gm1 - B7b.2: damage die and bonus, the second set, add to a list
+    </title>
     <style>
       /* R7 mocks. :root copies app/src/styles/tokens.css (values, not a redesign).
    Component rules are copied from the named .svelte files. One theme (dark).
@@ -1607,244 +1609,430 @@
       .cardgrp:last-child {
         margin-bottom: 0;
       }
+
+      /* ---- B7b.2 (NEW) ---- */
+      .dmgrow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        max-width: 220px;
+      }
+      .dmgrow select.input {
+        width: auto;
+        flex: none;
+      }
+      .dmgrow .plus {
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .dmgrow input.input {
+        width: 76px;
+        flex: none;
+      }
+      .altfold {
+        display: grid;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+      .altfold > .altsum {
+        font-size: 13.5px;
+        color: var(--gold-soft);
+        width: fit-content;
+      }
+      .altfold .fhint {
+        margin: 0;
+      }
+      .tag {
+        font: 600 10.5px/1.4 var(--mono);
+        color: #c8a0ff;
+        margin-left: 6px;
+      }
+      .addbtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
     </style>
   </head>
   <body>
     <div class="mockbar">
-      <h1>R7 homebrew items: mocks (planning pass 3, approved 2026-09-30; phase B)</h1>
-      <p class="notetext">
-        One file per screen, every state at 960 px and at 360 px side by side, in the app's
-        tokens (app/src/styles/tokens.css) and the markup of the components each one extends
-        (PageHead, Panel, Field, Seg, Chip, Badge, TableRows/RowMain, RecordCard, AccountMenu,
-        FilterBar, R6's BatchBar and import panel). Dashed purple outline: proposed. Everything
-        else exists. Russian text as it would ship. The header chrome is drawn in outline only.
-        Open from disk; the pictures load from the repository's img/ folder.
+      <p class="crumb"><a href="index.html">R7 mocks</a> / m23-editor-feedback.html</p>
+      <h1>
+        #/homebrew/hb_... as gm1 - B7b.2: the damage die and bonus, the second set, «Добавить в
+        список»
+      </h1>
+      <p>
+        <b>Plan:</b> plan 7.2 <code>B7b.2</code> (the owner's manual feedback of 2026-10-01,
+        items 1, 2 and 4); states <code>#/homebrew/&lt;axe&gt; ~ second set as gm1</code> and
+        <code>~ add to list as gm1</code>
       </p>
       <p class="notetext">
-        One visual rule this release adds: dashed means homebrew - the source badge, a homebrew
-        name inside a relation, a homebrew rung on a ladder. The owner's questions are in
-        plan.md section 9 (Q1-Q12; Q9-Q12 are new in pass 3); the answers to the owner's first
-        mock review are section 4.14 (F1-F8); the gap audit is section 3. Pass 3 changed m02,
-        m04, m05, m09, m12, m13, m15, m17 and added m18-m22. The example source is the invented
-        «Мастерская Ольхи» / Alder Workshop.
+        Grounded in m04 and the shipped editor (HomebrewEditor.svelte). The fold is drawn as the
+        shipped one: a gold summary line, not m04's box. Only the parts with a dashed outline
+        change.
       </p>
-      <p class="notetext">
-        The owner approved these mocks on 2026-09-30. Phase B changed m02 and m22 (and the draft
-        rows m09 reuses) for Q12 revised: a quick item carries no draft mark. Four answers
-        override what the other mocks still draw; plan.md section 8 lists them: Q3 - the item
-        limit is 100, not 500; Q4 - no «Другой язык» fold in any form, the editor edits the
-        item's own language; Q5 - the source tag is plain text «Мастерская Ольхи (HB)», not a
-        dashed badge, and «(HB)» follows a homebrew name in a relation line; Q6 - R7 ships in
-        four releases, so a mock's batch name is the plan's release map (section 7), not the
-        name printed here.
-      </p>
-      <table class="idx">
-        <thead>
-          <tr>
-            <th>Mock</th>
-            <th>What it shows</th>
-            <th>Plan</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><a href="m01-account-menu.html">m01-account-menu.html</a></td>
-            <td>The account menu with «Мои предметы»</td>
-            <td>
-              plan 4.10, G27; B7.2; the <code>AccountMenu.svelte</code> menu-open golden as gm1
-              re-seeds
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m02-homebrew-page.html">m02-homebrew-page.html</a></td>
-            <td>
-              #/homebrew as gm1 - sources with sections, cards, the items by source and section
-            </td>
-            <td>
-              plan 4.10, 4.14 (F4 sections, Q10; Q3 limit 100; Q12 revised: no draft mark); R7
-              B7.2 (the cards panel is R7c; the download buttons and the import are R7d, m15 and
-              m16)
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m03-homebrew-page-states.html">m03-homebrew-page-states.html</a></td>
-            <td>#/homebrew - empty (gm2), signed out, unconfigured</td>
-            <td>
-              plan 4.10, G30; B7.2; states <code>#/homebrew as gm2</code>,
-              <code>#/homebrew</code>
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m04-editor-equipment.html">m04-editor-equipment.html</a></td>
-            <td>
-              #/homebrew/hb_... as gm1 - the weapon editor: required marks, source and section,
-              two upgrade targets
-            </td>
-            <td>
-              plan 4.10, 4.4, 4.5, 4.1, 4.14 (F2, F4, F5, F6; Q10, Q11); B7.2; the
-              <code>#/homebrew/&lt;axe&gt; as gm1</code> golden
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m05-editor-loot.html">m05-editor-loot.html</a></td>
-            <td>
-              #/homebrew/new as gm1 - a loot item: tier, the other language, made from two
-              items, a new set
-            </td>
-            <td>plan 4.10, 4.1, 4.3, 4.14 (F6; Q11); B7.2</td>
-          </tr>
-          <tr>
-            <td><a href="m06-item-picker.html">m06-item-picker.html</a></td>
-            <td>ItemPicker - typing, chosen, nothing found</td>
-            <td>
-              plan 4.10 (ItemPicker.svelte, four uses in the editor); B7.2;
-              <code>itemPicker.test.ts</code> with axe
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m07-record-card-relations.html">m07-record-card-relations.html</a></td>
-            <td>
-              A catalog card with homebrew relations: the fold, the dashed names, a dashed rung
-            </td>
-            <td>
-              plan 4.4, 4.5 (items 3-6); B7.4; goldens <code>#/i/ci1 as gm1</code>,
-              <code>#/i/q1 as gm1</code>, <code>#/i/voa4_t3d as gm1</code>
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m08-rows.html">m08-rows.html</a></td>
-            <td>Table and search rows: the relation count, the dashed source badge</td>
-            <td>plan 4.4, 4.2 (G12); B7.4</td>
-          </tr>
-          <tr>
-            <td><a href="m09-tables-homebrew.html">m09-tables-homebrew.html</a></td>
-            <td>#/tables/homebrew as gm1 - the homebrew table with sections; signed out</td>
-            <td>
-              plan 4.6, 4.14 (G4, G5, Q2, F4, Q10); B7.4; a contract change
-              (<code>TABLE_IDS</code>); states <code>#/tables/homebrew as gm1</code>,
-              <code>#/tables/homebrew</code>
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m10-tables-equipment.html">m10-tables-equipment.html</a></td>
-            <td>
-              #/tables/eq_weapon as gm1 - homebrew equipment in the tier sections, the source
-              facet, the «Хоумбрю» chip
-            </td>
-            <td>
-              plan 4.6 (G2, G5, G6, item 11); B7.4; goldens
-              <code>#/tables/eq_weapon as gm1</code> on and off
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m11-search.html">m11-search.html</a></td>
-            <td>#/search as gm1 - one merged result list, the «Хоумбрю» chip</td>
-            <td>plan 4.6 (G8, item 11); B7.4; goldens <code>#/search ~ спальн as gm1</code></td>
-          </tr>
-          <tr>
-            <td><a href="m12-record-page.html">m12-record-page.html</a></td>
-            <td>
-              #/i/hb_... as gm1 - an own item's page: the path line, two upgrade targets, the
-              table link, «Изменить»
-            </td>
-            <td>
-              plan 4.2, 4.10, 4.14 (G9, G13, G14, F4, F6); B7.2 (print: B7.3); golden
-              <code>#/i/hb_seed... as gm1</code>
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m13-dialogs.html">m13-dialogs.html</a></td>
-            <td>
-              The confirms: delete an item, a source, a section, a card, a set; leave with
-              unsaved changes
-            </td>
-            <td>
-              plan 4.10, 4.12, 4.14 (Q8, F4, F7); B7.2; states with the driver answering the
-              confirm
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m14-lists.html">m14-lists.html</a></td>
-            <td>An own list with a reference; another account's list with a frozen copy</td>
-            <td>
-              plan 4.8 (G15-G18, G20); B7.3; goldens
-              <code>#/lists/&lt;uuid(101)&gt; as gm1</code>,
-              <code>#/lists/&lt;uuid(201)&gt; as gm2</code>,
-              <code>#/s/player-token-1</code> move
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m15-import-items.html">m15-import-items.html</a></td>
-            <td>
-              #/homebrew as gm1 - «Импорт предметов»: empty, first import, the same file again,
-              a same-name source, refused, done
-            </td>
-            <td>
-              plan 4.11, 4.14 (item 8, F3; Q7, Q9); B7b.2; R6's import panel pattern
-              (<code>ImportPanel</code>)
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m16-export.html">m16-export.html</a></td>
-            <td>The download surfaces on #/homebrew and the account page's hint</td>
-            <td>
-              plan 4.11 (G22, G26); B7b.2; R6's zip (<code>lib/zip.ts</code>) gains
-              <code>homebrew.json</code>
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m17-llms-and-file.html">m17-llms-and-file.html</a></td>
-            <td>The homebrew-v1 file and the llms.txt section, as text</td>
-            <td>plan 4.11, 4.14 (G24, F4, F5, F6); B7b.1; the blind round is the proof</td>
-          </tr>
-          <tr>
-            <td><a href="m18-editor-source-inline.html">m18-editor-source-inline.html</a></td>
-            <td>The editor: a new source from the source select</td>
-            <td>
-              plan 4.14 (F2); B7.2; states <code>#/homebrew/new as gm1</code> with the select on
-              «+ Новый источник...»
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m19-sections.html">m19-sections.html</a></td>
-            <td>Sections inside a source: the source panel, the section select</td>
-            <td>
-              plan 4.14 (F4, Q10); B7.2 (the table's sections and the <code>sect</code> facet:
-              B7.4, m09)
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m20-editor-validation.html">m20-editor-validation.html</a></td>
-            <td>
-              The editor's failure states: required fields, rule errors, a refused save, a
-              conflict
-            </td>
-            <td>
-              plan 4.14 (F5); B7.2; states <code>#/homebrew/new as gm1</code> submitted empty,
-              the armour form, the refused save, the conflict banner
-            </td>
-          </tr>
-          <tr>
-            <td><a href="m21-rule-cards.html">m21-rule-cards.html</a></td>
-            <td>
-              Rule cards and sets: the «Карты» panel, a new rule card, the inline form in the
-              item editor
-            </td>
-            <td>plan 4.3, 4.14 (F7); B7.2</td>
-          </tr>
-          <tr>
-            <td><a href="m22-list-quick-draft.html">m22-list-quick-draft.html</a></td>
-            <td>
-              A quick draft from a list page: name and description now, the rest after the game
-            </td>
-            <td>
-              plan 4.14 (F8; Q12 revised: no draft mark); R7 B7.3; states
-              <code>#/lists/&lt;uuid(101)&gt; as gm1</code> with the panel open, after an add,
-              refused
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    </div>
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">#/homebrew/hb_emberaxeaaaaaaaa as gm1 - 960 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Топор Тлеющих Углей</h1>
+          <p class="page-sub">Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2</p>
+          <div class="editor">
+            <div class="panel">
+              <div class="errs" role="alert">
+                <b>Не сохранено: исправьте 3 поля.</b>
+                <ul>
+                  <li>
+                    <a href="#"
+                      >Второй набор характеристик: Дистанция - заполните все четыре поля второго
+                      набора или нажмите «Очистить второй набор».</a
+                    >
+                  </li>
+                  <li>
+                    <a href="#"
+                      >Второй набор характеристик: Урон - заполните все четыре поля второго
+                      набора или нажмите «Очистить второй набор».</a
+                    >
+                  </li>
+                  <li>
+                    <a href="#"
+                      >Второй набор характеристик: Тип урона - заполните все четыре поля второго
+                      набора или нажмите «Очистить второй набор».</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <p class="note" style="margin: 0 0 14px">
+                The fields above «Ранг» (kind, type, source, section, name, description) are
+                R7's and unchanged; this mock starts at the weapon stats.
+              </p>
+              <div class="field">
+                <span class="lbl">Дистанция<span class="req" aria-hidden="true">*</span></span
+                ><span class="seg"
+                  ><span class="on">Вплотную</span><span>Близко</span><span>Средне</span
+                  ><span>Далеко</span><span>Очень далеко</span></span
+                >
+              </div>
+              <div class="field new">
+                <span class="lbl"
+                  >Урон<span class="req" aria-hidden="true">*</span
+                  ><span class="tag">NEW: die select + bonus</span></span
+                >
+                <div class="dmgrow">
+                  <select class="input">
+                    <option>d10</option></select
+                  ><span class="plus" aria-hidden="true">+</span
+                  ><input
+                    class="input"
+                    value="2"
+                    aria-label="Бонус к урону"
+                    inputmode="numeric"
+                  />
+                </div>
+              </div>
+              <div class="field">
+                <span class="lbl">Тип урона<span class="req" aria-hidden="true">*</span></span
+                ><span class="seg"
+                  ><span>физ</span><span class="on">маг</span><span>физ/маг</span></span
+                >
+              </div>
+              <div class="field">
+                <span class="lbl">Хват<span class="req" aria-hidden="true">*</span></span
+                ><span class="seg"
+                  ><span>Одноручное</span><span class="on">Двуручное</span
+                  ><span>Одноручное/двуручное</span></span
+                >
+              </div>
+              <div class="altfold">
+                <span class="altsum">&#9662; Второй набор характеристик</span>
+                <p class="fhint new">
+                  Для оружия, которое по своему свойству переходит на другие характеристики -
+                  например, «Универсальное». Заполните все четыре поля или оставьте набор
+                  пустым. Когда набор действует, напишите в описании; на печатной карте он идёт
+                  второй полосой урона.
+                </p>
+                <div class="field">
+                  <span class="lbl"
+                    >Характеристика<span class="tag"
+                      >NEW: a second press on the pressed chip unpresses it</span
+                    ></span
+                  ><span class="chips"
+                    ><span class="chip on">Проворность</span><span class="chip">Сила</span
+                    ><span class="chip">Искусность</span><span class="chip">Инстинкт</span
+                    ><span class="chip">Влияние</span><span class="chip">Знание</span
+                    ><span class="chip">Характеристика Заклинателя</span></span
+                  >
+                </div>
+                <div class="field">
+                  <span class="lbl">Дистанция</span
+                  ><span class="seg"
+                    ><span>Вплотную</span><span>Близко</span><span>Средне</span
+                    ><span>Далеко</span><span>Очень далеко</span></span
+                  >
+                  <p class="ferr">
+                    Заполните все четыре поля второго набора или нажмите «Очистить второй
+                    набор».
+                  </p>
+                </div>
+                <div class="field new">
+                  <span class="lbl">Урон</span>
+                  <div class="dmgrow">
+                    <select class="input">
+                      <option>Кость</option></select
+                    ><span class="plus" aria-hidden="true">+</span
+                    ><input
+                      class="input bad"
+                      value=""
+                      aria-label="Второй набор характеристик: Бонус к урону"
+                    />
+                  </div>
+                  <p class="ferr">
+                    Заполните все четыре поля второго набора или нажмите «Очистить второй
+                    набор».
+                  </p>
+                </div>
+                <div class="field">
+                  <span class="lbl">Тип урона</span
+                  ><span class="seg"><span>физ</span><span>маг</span><span>физ/маг</span></span>
+                  <p class="ferr">
+                    Заполните все четыре поля второго набора или нажмите «Очистить второй
+                    набор».
+                  </p>
+                </div>
+                <div class="new" style="width: fit-content">
+                  <button class="btn sm">Очистить второй набор</button>
+                </div>
+              </div>
+              <div class="card-acts" style="margin-top: 18px">
+                <button class="btn primary">Сохранить</button><a class="btn ghost">Отмена</a
+                ><button class="btn danger ml">Удалить</button>
+              </div>
+              <p class="hint">Предмет есть в 1 списке.</p>
+            </div>
+            <div class="card full">
+              <span class="card-media"><img src="../../../img/_none.webp" alt="" /></span>
+              <div class="card-body">
+                <div class="card-meta">
+                  <span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src">Мастерская Ольхи (HB)</span>
+                </div>
+                <h2 class="card-name">Топор Тлеющих Углей</h2>
+                <div class="eqstats">
+                  <span>Ранг 2</span><span>Магическое</span
+                  ><span>Характеристика Заклинателя</span><span>Вплотную</span
+                  ><span>d10+2 маг</span><span>Двуручное</span>
+                </div>
+                <div class="card-desc"><p>Лезвие тлеет и не гаснет под дождём.</p></div>
+                <div class="cardpick new">
+                  <button class="btn sm primary addbtn">
+                    + Добавить в список <span class="caret"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            NEW (dashed outline): the damage die select (Кость, d4, d6, d8, d10, d12, d20) and
+            the bonus field (1-99, empty for none) for «Урон» and the second set; the hint at
+            the top of the open fold; a second press on a pressed chip of the second set
+            unpresses it; «Очистить второй набор» (drawn while any of the four fields holds a
+            value; it empties all four, drops their error lines and moves the focus to the
+            fold's summary); «Добавить в список» on the preview card once the item is saved
+            (after the first save of a new item, and on every edit page). The state drawn: the
+            fold opened, «Проворность» pressed, «Сохранить». Existing, not drawn: #/homebrew
+            already ticks rows into the frame's selection bar, and #/i/hb_... already has
+            «Добавить в список» (R7); B7b.2 adds tests and goldens for both.
+          </div>
+        </main>
+      </section>
+      <section class="frame phone">
+        <span class="cap">#/homebrew/hb_emberaxeaaaaaaaa as gm1 - 360 px</span>
+        <div class="chrome" title="Header chrome (Shell.svelte, TabBar)">
+          <div class="topbar">
+            <span class="brand"
+              ><span class="star">&#10022;</span><span><b>Лут</b><i>Daggerheart</i></span></span
+            >
+            <span class="hright"
+              ><span class="langsw"><span class="on">RU</span><span>EN</span></span
+              ><span class="acctwrap"><span class="acct in">g</span></span></span
+            >
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Топор Тлеющих Углей</h1>
+          <p class="page-sub">Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2</p>
+          <div class="editor">
+            <div class="panel">
+              <div class="errs" role="alert">
+                <b>Не сохранено: исправьте 3 поля.</b>
+                <ul>
+                  <li>
+                    <a href="#"
+                      >Второй набор характеристик: Дистанция - заполните все четыре поля второго
+                      набора или нажмите «Очистить второй набор».</a
+                    >
+                  </li>
+                  <li>
+                    <a href="#"
+                      >Второй набор характеристик: Урон - заполните все четыре поля второго
+                      набора или нажмите «Очистить второй набор».</a
+                    >
+                  </li>
+                  <li>
+                    <a href="#"
+                      >Второй набор характеристик: Тип урона - заполните все четыре поля второго
+                      набора или нажмите «Очистить второй набор».</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <p class="note" style="margin: 0 0 14px">
+                The fields above «Ранг» (kind, type, source, section, name, description) are
+                R7's and unchanged; this mock starts at the weapon stats.
+              </p>
+              <div class="field">
+                <span class="lbl">Дистанция<span class="req" aria-hidden="true">*</span></span
+                ><span class="seg"
+                  ><span class="on">Вплотную</span><span>Близко</span><span>Средне</span
+                  ><span>Далеко</span><span>Очень далеко</span></span
+                >
+              </div>
+              <div class="field new">
+                <span class="lbl"
+                  >Урон<span class="req" aria-hidden="true">*</span
+                  ><span class="tag">NEW: die select + bonus</span></span
+                >
+                <div class="dmgrow">
+                  <select class="input">
+                    <option>d10</option></select
+                  ><span class="plus" aria-hidden="true">+</span
+                  ><input
+                    class="input"
+                    value="2"
+                    aria-label="Бонус к урону"
+                    inputmode="numeric"
+                  />
+                </div>
+              </div>
+              <div class="field">
+                <span class="lbl">Тип урона<span class="req" aria-hidden="true">*</span></span
+                ><span class="seg"
+                  ><span>физ</span><span class="on">маг</span><span>физ/маг</span></span
+                >
+              </div>
+              <div class="field">
+                <span class="lbl">Хват<span class="req" aria-hidden="true">*</span></span
+                ><span class="seg"
+                  ><span>Одноручное</span><span class="on">Двуручное</span
+                  ><span>Одноручное/двуручное</span></span
+                >
+              </div>
+              <div class="altfold">
+                <span class="altsum">&#9662; Второй набор характеристик</span>
+                <p class="fhint new">
+                  Для оружия, которое по своему свойству переходит на другие характеристики -
+                  например, «Универсальное». Заполните все четыре поля или оставьте набор
+                  пустым. Когда набор действует, напишите в описании; на печатной карте он идёт
+                  второй полосой урона.
+                </p>
+                <div class="field">
+                  <span class="lbl"
+                    >Характеристика<span class="tag"
+                      >NEW: a second press on the pressed chip unpresses it</span
+                    ></span
+                  ><span class="chips"
+                    ><span class="chip on">Проворность</span><span class="chip">Сила</span
+                    ><span class="chip">Искусность</span><span class="chip">Инстинкт</span
+                    ><span class="chip">Влияние</span><span class="chip">Знание</span
+                    ><span class="chip">Характеристика Заклинателя</span></span
+                  >
+                </div>
+                <div class="field">
+                  <span class="lbl">Дистанция</span
+                  ><span class="seg"
+                    ><span>Вплотную</span><span>Близко</span><span>Средне</span
+                    ><span>Далеко</span><span>Очень далеко</span></span
+                  >
+                  <p class="ferr">
+                    Заполните все четыре поля второго набора или нажмите «Очистить второй
+                    набор».
+                  </p>
+                </div>
+                <div class="field new">
+                  <span class="lbl">Урон</span>
+                  <div class="dmgrow">
+                    <select class="input">
+                      <option>Кость</option></select
+                    ><span class="plus" aria-hidden="true">+</span
+                    ><input
+                      class="input bad"
+                      value=""
+                      aria-label="Второй набор характеристик: Бонус к урону"
+                    />
+                  </div>
+                  <p class="ferr">
+                    Заполните все четыре поля второго набора или нажмите «Очистить второй
+                    набор».
+                  </p>
+                </div>
+                <div class="field">
+                  <span class="lbl">Тип урона</span
+                  ><span class="seg"><span>физ</span><span>маг</span><span>физ/маг</span></span>
+                  <p class="ferr">
+                    Заполните все четыре поля второго набора или нажмите «Очистить второй
+                    набор».
+                  </p>
+                </div>
+                <div class="new" style="width: fit-content">
+                  <button class="btn sm">Очистить второй набор</button>
+                </div>
+              </div>
+              <div class="card-acts" style="margin-top: 18px">
+                <button class="btn primary">Сохранить</button><a class="btn ghost">Отмена</a
+                ><button class="btn danger ml">Удалить</button>
+              </div>
+              <p class="hint">Предмет есть в 1 списке.</p>
+            </div>
+            <div class="card full">
+              <span class="card-media"><img src="../../../img/_none.webp" alt="" /></span>
+              <div class="card-body">
+                <div class="card-meta">
+                  <span class="badge eq-weapon">Основное оружие</span
+                  ><span class="badge src">Мастерская Ольхи (HB)</span>
+                </div>
+                <h2 class="card-name">Топор Тлеющих Углей</h2>
+                <div class="eqstats">
+                  <span>Ранг 2</span><span>Магическое</span
+                  ><span>Характеристика Заклинателя</span><span>Вплотную</span
+                  ><span>d10+2 маг</span><span>Двуручное</span>
+                </div>
+                <div class="card-desc"><p>Лезвие тлеет и не гаснет под дождём.</p></div>
+                <div class="cardpick new">
+                  <button class="btn sm primary addbtn">
+                    + Добавить в список <span class="caret"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="note">
+            At 360 px the card sits under the form, as R7 ships it; the die select and the bonus
+            field stay on one line (max 220 px).
+          </div>
+        </main>
+      </section>
     </div>
   </body>
 </html>

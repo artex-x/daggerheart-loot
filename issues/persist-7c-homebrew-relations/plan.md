@@ -1,39 +1,43 @@
-# Plan - TASK persist-7b-homebrew-catalog (homebrew releases R7b, R7c, R7d)
+# Plan - TASK persist-7c-homebrew-relations (homebrew releases R7c, R7d)
 
 ## Status
 
-- Moved from task `persist-7-homebrew`'s plan at R7's closeout (2026-10-01,
-  planner). R7 (`B7.1`-`B7.3`) is built, reviewed and green in its one
-  commit, "feat(persist): add homebrew items, their pages, editor and list
-  entries"; R7's closeout pushes it. This file holds the R7b-R7d parts of
-  that plan (its sections 3, 4, 6-9, 11-13 and 7.2-7.4), with the owner's
-  marker answer applied (4.2, 7.3 `B7c.4`, section 6, section 8, D2) and
-  every item R7 leaves for R7b-R7d written as an acceptance line of its
-  batch (section 7). R7's batch briefs are in R7's commit history.
-- Task status: planned, not started. R7b is next; R7c and R7d follow. Each
-  of them gets its own directory at the closeout of the release before it
-  (7.5); until then this directory holds all three.
-- NEEDS_HUMAN_CONFIRMATION: no - every owner question is answered
-  (section 9).
-- Plan review: required before B7b.1 (trigger: a public contract change - the `homebrew` table id and the `#/tables/homebrew` route, and the new values `hb` and `hb_<16>` of the `src` filter)
-- The lines for the later releases, which each writes in its own
-  directory: R7c `required before B7c.1 (trigger: a public contract change
-  - the catalog craft as a list; a migration in B7c.2)`; R7d `required
-  before B7d.1 (trigger: a migration and two public schemas)`.
-- Before `B7b.1` goes to an implementer, a planner refresh (mode B) expands
-  it to implement-ready steps against the `main` that holds R7, then the
-  plan review runs. Every batch below is an outline.
+- Moved from task `persist-7b-homebrew-catalog`'s plan at R7b's closeout
+  (2026-10-01). R7b shipped (batches `B7b.1` and `B7b.2`, one task commit,
+  pushed by the orchestrator at that closeout); its behaviour lives in
+  `FEATURES.md` ("Tables and search", "Records", "Homebrew", "Rolling"),
+  `ROUTES.md`, `CONTRACTS.md` 1, `STATE.md`, `COVERAGE.md` and decisions D3
+  and D12. This file holds R7c and R7d. R7d gets its own directory
+  `issues/persist-7d-homebrew-files/` at R7c's closeout (7.5).
+- Task status: planned, not started. Every batch is an outline; the R7c
+  planner refresh expands `B7c.1` (7.3) and writes its plan-review line.
+- NEEDS_HUMAN_CONFIRMATION: no.
+- Plan review: required before B7c.1 (trigger: a public contract change - the catalog craft as a list; a migration in B7c.2)
+- Plan review: required before B7d.1 (trigger: a migration and two public schemas) - written when R7d's directory is created
+- R7b closeout gates (orchestrator, 2026-10-01): `node tests/app/sweep.js
+  1180` clean (ru, en); `node tests/app/golden.js --shard=n/4`, n = 1-4:
+  232 states compared, unchanged.
 - Batches:
 
 | Release | Task id | Batch | Status |
 |---|---|---|---|
-| R7b | `persist-7b-homebrew-catalog` | `B7b.1` tables, search, filters, chip | outline (7.2); next, after a planner refresh |
 | R7c | `persist-7c-homebrew-relations` | `B7c.1` the catalog `craft` as a list (public contract) | outline (7.3) |
 | R7c | | `B7c.2` cards, relations schema and logic | outline (7.3) |
 | R7c | | `B7c.3` the editor's relations, the cards panel | outline (7.3) |
 | R7c | | `B7c.4` relations on catalog cards and rows | outline (7.3) |
 | R7d | `persist-7d-homebrew-files` | `B7d.1` import RPC, two schemas, `llms.txt` | outline (7.4) |
-| R7d | | `B7d.2` import and export UI, the zip | outline (7.4) |
+| R7d | | `B7d.2` import and export UI, the zip, bulk move | outline (7.4) |
+
+## Owner decisions of 2026-10-01 (placed, do not re-ask)
+
+| Decision | Placed in |
+|---|---|
+| The tables help text (`lib/help.ts`) names the «Хоумбрю» group (and its facets); it moves the signed-out `#/tables ~ help` golden, so the batch re-seeds it | `B7c.4`, an acceptance line (7.3) |
+| Bulk moves between sources and sections: a selection on `#/homebrew` with «Переместить...» in the selection bar, reusing the import's «Куда» source and section picker | `B7d.2`, an acceptance line (7.4) |
+| G37, a set filter or a set page: deferred, placed in no release; revisit once homebrew sets exist | Deferred (section 12) |
+| Price and quantity in the quick item panel («Свой предмет»): deferred, no release | Deferred (section 12) |
+| A Trash for homebrew: deferred, no release (roadmap decision 30) | Deferred (section 12) |
+| `DEBT.md`: a separate generic debt clean-up release between R9 and `persist-review` takes D64, D66 and every other `DEBT.md` entry still open then; not R10, not a task now | Deferred (section 12) |
 
 ## 1. Objective and the state after R7
 
@@ -45,7 +49,7 @@ show/hide chip). R7c relates them to catalog records and to each other
 catalog cards. R7d moves them by file (two public schemas, `llms.txt`,
 import and export, the account zip).
 
-What R7 built, and what R7b-R7d build on (read the code before a refresh):
+What R7 built, and what R7c and R7d build on (read the code before a refresh):
 
 - Schema, migration `20260930130000_homebrew.sql` and its reversal:
   `homebrew_books` (content `{ en?, ru?, sections? }`, sections at most 30)
@@ -64,8 +68,8 @@ What R7 built, and what R7b-R7d build on (read the code before a refresh):
   4.6: `byId` only), `editLang`, `nameTaken`, `groupsOf`.
   `lib/homebrewForm.ts` holds the form rules (4.14 F5). `lib/label.ts`:
   `srcLabel` reads «<source> (HB)» or «Хоумбрю»; `whereFrom` and `printSrc`
-  give the path; `tableOf` answers null for a homebrew record (R7b answers
-  `homebrew`). `lib/desc.ts` `hasLabels` is true for `src === 'homebrew'`.
+  give the path; `tableOf` answers null for a homebrew record (R7b made it
+  answer `homebrew`). `lib/desc.ts` `hasLabels` is true for `src === 'homebrew'`.
   `lib/cloudLists.ts`: `entrySource`, `frozenOf`, `snapshotRecords`.
   `lib/bundle.ts`: `officialOnly` (a lists export leaves homebrew entries
   out until R7d).
@@ -91,8 +95,8 @@ What R7 built, and what R7b-R7d build on (read the code before a refresh):
 - Specs: `FEATURES.md` "Homebrew", `ROUTES.md`, `CONTRACTS.md` sections 1
   and 2 (the routes, the reserved `hb_` prefix), `STATE.md`, `I18N.md`,
   `META.md`, `COVERAGE.md`; `DEBT.md` D69 (R7d) and D70 (R9).
-- The bundle budget (`tools/bundle-budget.mjs`, measured 2026-10-01): 223.8
-  of 226 kB configured, 164.8 of 167 kB unconfigured.
+- The bundle budget (`tools/bundle-budget.mjs`): after R7b, 225.7 of 230 kB
+  configured and 166.8 of 171 kB unconfigured (2026-10-01).
 
 The catalog (`data.js`, 1272 records): `craft` on 17 (one id each, no
 target with two sources), `refs` on 13, `eq` on 604 (288 in 72 upgrade
@@ -100,11 +104,26 @@ lines, every line one picture; `alt` on 20), `community` on 90, `frame` on
 95, `tier` `A` 9 and `C` 5, `recall` on 102 (drawn nowhere), `set` on 5
 (two sets), `starting` 30. No id starts with `hb`.
 
+What R7b built (read the code before a refresh): `homebrew` in `TABLE_IDS`
+and its group chip (signed in only); the equipment tables with own rows and
+dynamic `src` values (`hb`, `hb_<16>`) and the `sect` facet; `srcOf` and
+`tableOf` for homebrew records; `withRecords` returns `searchable`,
+`allEquip` and a `homebrew` key of `rows` for own records, and
+`browseIndex(index, base, shown)` applies the «Хоумбрю» chip
+(`AppState.homebrewShown`, memory only); one merged search with the intro
+counter; the record page's table link to `#/tables/homebrew/<item key>`;
+`HomebrewLoad.svelte` (the shared load and failed-read state); in the
+editor, the damage die select and bonus field, the second set's hint,
+unpress and «Очистить второй набор», «Добавить в список» on a saved item's
+preview. The migration `20261001120000_homebrew_damage_bonus.sql` widened
+the damage bonus to `+1`..`+99` (`DMG`, `homebrew_content_valid`); the
+bundle budget after R7b is 225.7 of 230 kB configured and 166.8 of 171 kB
+unconfigured (2026-10-01; the configured figure is measured with the
+README's `.env.test.local` line).
+
 ## 2. Scope and non-goals
 
-- R7b (catalog pages): the `homebrew` table, own equipment in the equipment
-  tables, dynamic `src` values and the `sect` facet, one merged search with
-  the intro counter, the «Хоумбрю» chip.
+- R7b (catalog pages): shipped.
 - R7c (relations): the catalog's `craft` as a list of ids (`B7c.1`, a
   public contract change); `homebrew_cards` (sets and rule cards),
   `eq.line`, `craft`, `craft_from` (lists of up to 8), `set`, `refs`; the
@@ -115,28 +134,21 @@ lines, every line one picture; `alt` on 20), `community` on 90, `frame` on
   mapping and skip or update, the downloads, `homebrew.json` in the zip.
 - Non-goals: art (R8); `#/h/<token>`, clone and add from an item link,
   print routes for cloud lists (R9); books shared with other users (item
-  13, D7); a second-language UI (`Q4`); moving items between sources in
-  bulk; a Trash (roadmap decision 30); homebrew in the roll pages (owner);
+  13, D7); a second-language UI (`Q4`); a Trash (roadmap decision 30); homebrew in the roll pages (owner);
   `roll`, `frame`, `starting`, `recall`, `community` on a homebrew record; a
   per-field write buffer in the editor; `img` in the file format before R8.
 
-## 3. The gap audit (item 12), the rows R7b-R7d own
+## 3. The gap audit (item 12), the rows R7c and R7d own
 
 Every surface that touches a catalog record, what differs for a homebrew
-record, and where the plan puts it. "-" is out by design. Rows G9, G10,
-G13-G21, G26 (the cascade), G27-G33, G39 and G42, and the R7 parts of G12,
-G34 and G40, shipped in R7.
+record, and where the plan puts it. "-" is out by design. Rows shipped in
+R7 and R7b are not repeated (G2, G4-G10, G13-G21, G27-G33, G39, G40, G42,
+and the R7 parts of G12, G34).
 
 | # | Surface | What differs | Decision | Where |
 |---|---|---|---|---|
 | G1 | The seven roll pages | Pools read `index.rows` and `LOOT.alt` | Excluded by the owner; the shape keeps a later `roll` open (4.13, D7) | - |
-| G2 | `#/tables/eq_*` | `equipOfKind` reads `allEquip`; `src` lists `EQ_SRC` | Own equipment joins `allEquip`; `src` gains `hb` and each source key | R7b |
 | G3 | The book tables | A book's own rows | Not drawn there; the `homebrew` table instead | - |
-| G4 | A table for homebrew | None | `homebrew` in `TABLE_IDS` (a contract change), group chip signed in only, sections by source and section, facets `kind`, `src`, `sect` | R7b |
-| G5 | Filter grammar | Fixed `src` keys | Dynamic values `hb`, `hb_<16>`; an unknown value empties the table (today's rule) | R7b |
-| G6 | With / without homebrew | None | Memory-only chip «Хоумбрю» on `#/search` and the equipment tables | R7b |
-| G7 | A table's own search box, section links, tiles | Work over rows | Nothing to change; no number badge | R7b |
-| G8 | `#/search` | Official only | One merged list, official first, the 300 cap over all; the intro adds «И N ваших предметов.» | R7b |
 | G11 | The card's ladder, craft lines, set line, refs | Unknown keys | Derived over the merged index; «(HB)» names, an «HB» label on a rung, the fold | `B7c.4` |
 | G12 | `RowMain` | Same in one line | The source tag shipped in R7; the first relation name plus «и ещё N» | `B7c.4` |
 | G22 | Export | v1 refuses `source: homebrew` | `import-v2`, `homebrew.json` in the zip, the account hint | R7d |
@@ -144,13 +156,11 @@ G34 and G40, shipped in R7.
 | G24 | `llms.txt`, `schema/` | Nothing | Two sections, two schemas, a blind round | R7d |
 | G25 | `catalog.csv`, `data.json`, `i/`, `og/` | Generated from `data.js` | Never carry a homebrew record; `llms.txt` says so | R7d |
 | G26 | `#/account` | The zip hint | The hint names homebrew (D69) | R7d |
-| G30 | Signed out, unconfigured | - | `#/tables/homebrew` signed out: the sign-in prompt; unconfigured: not found, address kept | R7b |
 | G34 | Keyboard, screen readers | New controls | axe on every open state; the fold a button with `aria-expanded`; the picker a combobox | R7b, R7c |
 | G35 | Roll "copy every option" | Roll pages excluded | - | - |
 | G36 | The `#/l/` codec | Official ids only | Nothing: a browser list never holds a homebrew entry | - |
 | G37 | A set filter or page | None for official records | Deferred with them | - |
 | G38 | The art slot | `_none.webp` | R8 | R8 |
-| G40 | Sections inside a source | Headings and the path leaf shipped in R7 | The `sect` facet and anchors | R7b |
 | G41 | Several craft links | One `craft` id | The catalog's `craft` becomes a list (`B7c.1`); up to 8 each way for homebrew | `B7c.1`-`B7c.4` |
 
 ## 4. Design
@@ -184,6 +194,10 @@ export interface HomebrewEquip {
 
 - Field names are the catalog's (`data.json`). Absent means "not
   applicable" (the catalog writes `null`); the validators refuse `null`.
+- `dmg` (and `alt.dmg`) is `d4`-`d20` with an optional flat bonus
+  `+1`..`+99` (`DMG`; the owner widened it from `+20` on 2026-10-01,
+  `B7b.2`'s migration). The editor writes it from a die select and a bonus
+  field; the stored shape does not change.
 - A book's own fields never appear: `roll`, `frame`, `starting`,
   `community`, `recall`, and `img` until R8.
 - `Q11` (answered: up to 8 each way; follow-up: one shape everywhere):
@@ -291,18 +305,13 @@ ladder (4.2). R8 reuses the line for art (the line's picture).
 
 It returns `base` itself when `own` and `frozen` are empty, so a
 signed-out build keeps today's index object. The index never holds the
-editor's own draft.
+editor's own draft. R7b adds `browseIndex(index, base, shown)` beside it:
+with the «Хоумбрю» chip off, search and the equipment tables read the
+catalog's `searchable` and `allEquip`, while `byId` and the `homebrew` rows
+keep the own records (`FEATURES.md`, "Tables and search"; D3).
 
-R7b's table, facets, chip and search (`Q2` answered: a table page of its
-own; D3): `TABLE_IDS` gains `homebrew`; `TABLE_GROUPS` gains `{ id: 'hb',
-label: 'srcHomebrew', top: 'homebrew', subs: ['homebrew'] }` last, its
-chip drawn only signed in; `PLAIN_GROUPS.homebrew = ['kind', 'src',
-'sect']`; the equipment tables' `src` facet appends `hb` and each source
-key after `EQ_SRC`; the chip `app.homebrewShown` (memory only, default
-true) sits beside the kind chips on `#/search` and in the equipment
-tables' toolbar while the account holds an item. The search intro keeps
-the catalog count (1272, pinned by `tests/derived.js`) and adds «И N ваших
-предметов.» / "And N of your items." when N > 0 (the owner's answer).
+R7b built the table, facets, chip and search (the R7b column above;
+`withRecords`, `browseIndex`).
 
 ### 4.7 Schema
 
@@ -347,24 +356,26 @@ owner, a frozen entry stays frozen.
 - The `Homebrew` store: R7c adds `cards` and the relation counts a delete
   confirm needs; R7d adds the import call and a reload after it.
 
-### 4.10 Routes, pages and the editor (item 7; `Q3`, `Q4`, `Q8`; the parts for R7b-R7d)
+### 4.10 Routes, pages and the editor (item 7; `Q3`, `Q4`, `Q8`; the parts for R7c and R7d)
 
-- Entry points R7b adds: the path line's table link (to
-  `#/tables/homebrew`, the source's anchor) and the table's group chip.
-- `#/homebrew` (m02): R7b rewrites the lead under «Мои предметы» to name
-  search and tables (R7's lead names only what R7 does); R7c adds the
-  «Карты» fold (m21); R7d adds the import and download buttons and the
-  empty text's «...или импортируйте файл».
+- `#/homebrew` (m02): R7c adds the «Карты» fold (m21); R7d adds the import
+  and download buttons, the empty text's «...или импортируйте файл» and
+  «Переместить...» in the selection bar (7.4).
 - The editor: R7c adds the «Связи» fieldset of m04 and m05 (the line `Seg`,
   «Улучшается в», «Сделан из», «Комплект», «Карты правил»). The «Другой
   язык» fold is never drawn (`Q4`).
 - `Q14` (answered: A) and the owner's answer to `B7.2-4`: a batch whose
-  `check:built` passes a budget raises that budget in
-  `tools/bundle-budget.mjs` to its measured size plus about 5 kB, in the
-  same commit, with a decision file; the ceilings are 250 kB configured and
-  190 kB unconfigured, and they may rise when a batch needs room, as long
-  as the rise is reasonable, each rise with a decision. A batch that raises
-  a ceiling names the rise and its reason in its handoff for the owner.
+  build passes a budget raises that budget in `tools/bundle-budget.mjs` to
+  its measured size plus about 5 kB, rounded up, in the same commit. Such a
+  step applies the existing decision
+  (`2026-09-30-the-bundle-budget-steps-up-per-batch-to.md`) and writes no
+  new decision file: the batch records the measured figures in the
+  budget file's comment and in `.claude/README.md`'s budget paragraph. The
+  ceilings are 250 kB configured and 190 kB unconfigured; they may rise
+  when a batch needs room, as long as the rise is reasonable, and each
+  ceiling rise writes a new decision file. A batch that raises a ceiling
+  names the rise and its reason in its handoff for the owner.
+
 
 ### 4.11 Files, `llms.txt`, import and export (item 8; R7d; D6)
 
@@ -417,7 +428,7 @@ Each batch keeps these shapes:
 | Converting a catalog source into a book | the file format is the catalog's field names | a tool, no schema |
 | Unsubscribing keeps list entries valid | an entry stores a key | the projection embeds a subscriber's snapshot, or the entry freezes on unsubscribe |
 
-### 4.14 Answers to the owner's first mock review (F1-F8), the parts for R7b-R7d
+### 4.14 Answers to the owner's first mock review (F1-F8), the parts for R7c and R7d
 
 - F1 - the example source name: the invented «Мастерская Ольхи» / "Alder
   Workshop" everywhere; code, fixtures, seeds, goldens and `llms.txt` use
@@ -433,8 +444,6 @@ Each batch keeps these shapes:
   source, then a new one; «Без источника» for items with no `book`; the
   client rewrites `book` before the call; sections join by key, then by
   name, else are added.
-- F4 - sections (D8): R7b adds the `sect` facet and the anchors on
-  `#/tables/homebrew`, headings «Мастерская Ольхи · Пистоли».
 - F5 - failure states (shipped in R7; `lib/homebrewForm.ts` and the SQL
   validators over one fixture set): R7c adds the relation rows under the
   same rules - `eq.line`, `craft`, `craft_from`, `set`, `refs` optional;
@@ -471,7 +480,6 @@ contract allows); the R7 routes `#/homebrew*` and `#/i/<key>`.
 
 | Batch | Layer 1 | Layer 2 (browser) | Layer 3 | Layer 4 | Docs |
 |---|---|---|---|---|---|
-| `B7b.1` | `label.test.ts` (`tableOf`, `srcOf`), `facets.test.ts`, `tables.test.ts`, `searchPage.test.ts` (merged, the chip, the intro counter), `tablesPage.test.ts`, `filterBar.test.ts`, `homebrew.test.ts` (`withRecords` R7b columns), `homebrewPage.test.ts` (the new lead) | `#/tables/homebrew as gm1` (the `sect` facet open), `#/tables/homebrew` signed out, `#/tables/eq_weapon as gm1` (chip on and off), `#/search as gm1`; goldens compared, then re-seeded for `as gm1` and the `#/homebrew` lead only | none | none | `FEATURES.md` "Tables and search", "Homebrew"; `ROUTES.md`; `CONTRACTS.md` 1; `routes.json`; `tests/contracts.js`; `llms.txt` URL line; `COVERAGE.md` |
 | `B7c.1` | `data.test.ts` (`upgradesTo`/`madeFrom` over the catalog, a string read as a list of one), `share.test.ts`, `record.test.ts`, `tables.test.ts` | the goldens of the records with craft lines compared, none may move | none | none | `CONTRACTS.md` 4, `README.md` field meanings, `llms.txt` data lines, `tests/contracts.js`, `tests/derived.js`, `tests/dataint.js`, `tests/craft.js`, `.claude/prompts/add-source.prompt.md` |
 | `B7c.2` | `homebrew.test.ts` (the R7c validators, snapshots with cards, the derivations over own records with deduplication), `data.test.ts`, fake and contract case N (cards) | none | `tests/db/homebrew-cards.test.mjs` (grants, RLS, validators, limit, touch, the widened snapshot validator, a snapshot frozen under R7 still valid) | case N after the approve | `COVERAGE.md` |
 | `B7c.3` | `itemPicker.test.ts`, `homebrewEditor.test.ts` (relations, lists of 8, the line `Seg`, inline set and card forms), `homebrewPage.test.ts` (the «Карты» panel) | the picker open, the new-set and new-card forms, the «Карты» panel; goldens | none | `flows.mjs`: a rule card and two relations | `FEATURES.md` "Homebrew" |
@@ -481,7 +489,8 @@ contract allows); the R7 routes `#/homebrew*` and `#/i/<key>`.
 
 ## 7. Releases and batches: gates, cost, review, split criterion
 
-Subsections 7.2-7.5 keep the numbers of R7's plan; its 7.1 was R7.
+Subsections 7.3-7.5 keep the numbers of the plan they came from; 7.1 was R7
+and 7.2 was R7b.
 
 Costs (`.claude/README.md`, "Batch size and the fixed cost of a run", this
 host): `npm run check` 7-10 min, `check:db` 9-10 min, `build:test` plus
@@ -490,13 +499,12 @@ shard about 3.2 min (four shards 13 min; a compare then a re-seed 26 min),
 `sweep.js 360` 7-9 min, `npm run e2e` 2-3 min, a blind round 5-10 min, a
 closeout about 10 min.
 
-`Q6` (answered: finer releases where a criterion supports it; D10) gives
-four releases, each deployable alone. R7 shipped. The criterion of each
-remaining cut:
+`Q6` (answered: finer releases where a criterion supports it; D10) gave
+four releases, each deployable alone. R7 and R7b shipped. The criterion of
+each remaining cut:
 
 | Cut | Criterion |
 |---|---|
-| R7 \| R7b | R7 is complete alone; R7b is a public-contract change (a table id) with its own review, on a different route and filter set (`#/tables/*`, `#/search`) |
 | R7b \| R7c | a public contract change (the catalog `craft` shape) and a migration of its own (cards, the validator and snapshot replacements), with their own plan review; the catalog's own cards change for a signed-in reader |
 | R7c \| R7d | two public schemas and `llms.txt` with a blind round; the file format goes last so v1 carries every field |
 
@@ -504,35 +512,15 @@ Rejected: a split per source (a source is the author's data, not code);
 two releases (about two hours of gates fewer, but the first production use
 waits for relations).
 
-Total gate cost of R7b-R7d: about 267 minutes (R7b 65, R7c 121, R7d 81)
-plus three closeouts, and the contract review of `B7c.1`.
+Total gate cost of R7c and R7d: about 202 minutes (R7c 121; R7d 81) plus
+two closeouts, and the contract review of `B7c.1`.
 
 Inherited by every batch that runs `check:built` (`Q14`, `B7.2-4`): each
-build within its budget, or the budget raised to the measured size plus
-about 5 kB in the same commit with a decision file (4.10). The start
-figures: 223.8 of 226 kB configured, 164.8 of 167 kB unconfigured
-(2026-10-01).
-
-### 7.2 R7b `persist-7b-homebrew-catalog`
-
-| Batch | Goal and scope | Gates (cost) | Review | Split criterion |
-|---|---|---|---|---|
-| `B7b.1` | 4.6's R7b column and table: `homebrew` in `TABLE_IDS`, the group and its chip, facets `kind`, `src`, `sect`, source and section headings and anchors, own equipment in the equipment tables with dynamic `src`, the chip, one merged search with the intro counter; the contract (`ROUTES.md`, `CONTRACTS.md` 1, `routes.json`, `tests/contracts.js`, `llms.txt`); specs, states, goldens | `check` x2 16, `check:built` 2, `app/states` 6, `app/contracts` 7, goldens compare then re-seed 26, `sweep 360` 8 (~65 min) | required (a public contract: a table id) | one batch: one index change, one filter set, one golden re-seed |
-
-Acceptance lines inherited from R7, each its own line in `B7b.1` when the
-refresh expands it:
-
-- `tableOf` answers `homebrew` for a homebrew record (R7 answers null,
-  `lib/label.ts`), and `srcOf` answers `it.book?.key ?? 'hb'`.
-- The lead under «Мои предметы» on `#/homebrew` names search and tables
-  (m02's line); R7's lead names only what R7 does.
-- The path line's table link: the record page's path opens
-  `#/tables/homebrew` at the source's anchor.
-- `#/tables/homebrew` signed out draws the sign-in prompt; unconfigured it
-  draws not found with the address kept (G30).
-- Every catalog id and name the batch takes from a mock (m09, m10, m11) is
-  checked against `data.js` (section 12).
-- The bundle budget line above.
+build measured, configured and unconfigured, and each passed budget raised
+to the measured size plus about 5 kB, rounded up, in the same commit; a
+step under the ceilings writes no decision file, a ceiling rise does
+(4.10). The figures after R7b (2026-10-01): 225.7 of 230 kB configured,
+166.8 of 171 kB unconfigured.
 
 ### 7.3 R7c `persist-7c-homebrew-relations`
 
@@ -593,6 +581,9 @@ R7c refresh expands it:
 - `B7c.2`: the `list_entries` bound is decided (65536, or capped card
   texts) and recorded in a decision file; a snapshot frozen under R7
   passes the widened `homebrew_snapshot_valid` (a layer 3 case).
+- `B7c.2` (`B7b.2`): the replaced `homebrew_content_valid` starts from the
+  body of `20261001120000_homebrew_damage_bonus.sql` (the `+1`..`+99`
+  damage patterns), not from R7's; the fixture case `d20+99` still passes.
 - `B7c.3`: the delete confirm counts the relations that name the item
   (4.12).
 - `B7c.4` (owner's marker answer, 2026-09-30): a homebrew rung shows the
@@ -603,6 +594,11 @@ R7c refresh expands it:
 - `B7c.4`: m07 draws a dashed rung and dashed names (section 8's
   overrides); the R7c refresh redraws m07's rung with the «HB» label before
   `B7c.4` is dispatched (a hand edit if the mock generator is gone).
+- `B7c.4` (owner, 2026-10-01): the tables help text (`lib/help.ts`) names
+  the «Хоумбрю» group and its facets (`kind`, `src`, `sect`) in both
+  languages; it moves the signed-out `#/tables ~ help` golden, so the batch
+  compares first and re-seeds that golden on purpose, with the reason in the
+  handoff.
 - `B7c.3` and `B7c.4`: the bundle budget line above.
 
 ### 7.4 R7d `persist-7d-homebrew-files`
@@ -630,6 +626,8 @@ R7d refresh expands it:
   `docs/fixtures/homebrew/`. The R7 migration does not change.
 - `B7d.1` (F1): `git grep -i -E "pistolheart"` outside `issues/` finds
   nothing.
+- `B7d.1` (`B7b.2`): `schema/homebrew-v1.json`'s `dmg` pattern is `DMG`'s
+  (`+1`..`+99`), and `llms.txt` names that bound.
 - `B7d.1` (task `limits-follow-overrides`): `import-v2` takes v1's widened
   bounds (5000 entries per list, 1000 lists per call); the schema's bounds
   are the call's ceilings.
@@ -646,15 +644,23 @@ R7d refresh expands it:
   `yourDataHint` and the privacy pages' merge paragraph ("Если Google или
   Discord уже занят" and its English twin) say so.
 - `B7d.2`: the `#/homebrew` empty text gains «...или импортируйте файл».
+- `B7d.2` (owner, 2026-10-01): bulk moves between sources and sections. A
+  selection on `#/homebrew` offers «Переместить...» in the selection bar;
+  it opens the import's «Куда» source and section picker (one component for
+  both, extracted on its second use), moves the ticked items in one write
+  per source or section pair, keeps every item key, and refuses a move that
+  breaks a rule of 4.14 F5 (a section outside the target source) with the
+  form's own text. The R7d refresh designs the write (a batch update on the
+  repository port, one revision check per item) and the mock.
 - `B7d.1` and `B7d.2`: the bundle budget line above.
+
 
 ### 7.5 Where each release's plan lives, and R8, R9
 
-- At R7b's closeout its planner moves this plan's R7c and R7d parts into
-  `issues/persist-7c-homebrew-relations/plan.md` with a `context.md` naming
-  R7d as the next release, and this directory is deleted in R7b's commit;
-  at R7c's closeout R7d moves to `issues/persist-7d-homebrew-files/` in the
-  same way. Each directory writes its own `Plan review:` line.
+- At R7c's closeout its planner moves this plan's R7d parts into
+  `issues/persist-7d-homebrew-files/plan.md` with a `context.md`, and this
+  directory is deleted in R7c's commit. Each directory writes its own
+  `Plan review:` line.
 - R8 `persist-8-media` (`B8.1`): `art_url` on `homebrew_items`; the
   validator and `homebrew_snapshot_of` admit `img` (a function
   replacement); the uploader offers the line's picture or another own
@@ -668,11 +674,13 @@ R7d refresh expands it:
 
 ## 8. Mocks (`mocks/index.html`)
 
-The owner approved m01-m22 on 2026-09-30. They moved here from R7's
-directory at R7's closeout; m01, m03, m14, m18, m19 and m22 draw R7's
-screens and stay for the index's links. The generator lived outside the
-repository and may be gone: the mocks are plain HTML and a later pass may
-edit them by hand.
+The owner approved m01-m22 on 2026-09-30. They moved here from R7b's
+directory at R7b's closeout; m01, m02, m03, m09-m11, m14, m18, m19, m22 and
+m23 draw shipped screens and stay for the index's links. The generator
+lived outside the repository and is gone: edit a mock by hand. The browser
+pane opens `mocks/index.html` from disk but refuses the other mock paths
+except `m23-editor-feedback.html` (2026-10-01); a 360 px check ran on pages
+copied to that path, each under about 88 000 URL-encoded characters.
 
 Answers that override what the mocks still draw - each an implementer
 constraint:
@@ -683,32 +691,23 @@ constraint:
 | `Q4` no second-language UI | m04, m05, m20, m21 («Другой язык» fold) | no fold; the fields edit the item's own language (4.10) |
 | `Q5` plain text tag, and the owner's marker answer (2026-09-30) | every mock with a dashed source badge; m07 and m08's dashed relation names; m07's dashed rung | «<source> (HB)» in the ordinary badge; «<name> (HB)» in relation lines; an «HB» label on a homebrew rung; no dashed border anywhere (4.2) |
 | `Q6` four releases | the batch names printed in each mock's "Plan" line | section 7's release map |
-| `plan-B7.2-12` no link on an own item until R9 | m12 ("Copy link and share carry the app address `#/i/hb_...`") | no «Скопировать ссылку»; «Отправить» carries no address and, with no share sheet, copies the text |
+| The seed, not the mock data (refresh 2026-10-01) | m09, m10, m11 draw pistols, a musket and bedrolls the gm1 seed does not hold, and m11 R7c's relation lines | the states draw gm1's four items; the relation lines come with R7c |
 
 | Mock | Screen | Release, batch |
 |---|---|---|
-| m01 | the menu with «Мои предметы» | R7 (shipped) |
 | m02 | `#/homebrew as gm1`: sources with sections, the rows | R7 (shipped); the lead line R7b `B7b.1`; the «Карты» fold R7c `B7c.3` |
-| m03 | empty, signed out, unconfigured | R7 (shipped) |
 | m04 | the weapon editor | its «Связи»: R7c `B7c.3` |
 | m05 | the loot editor | the made-from list and the new-set fold: R7c `B7c.3` |
 | m06 | the item picker | R7c `B7c.3` |
 | m07 | relations on `#/i/ci1`, `#/i/q1` | R7c `B7c.4` |
 | m08 | a row with «и ещё 14» and the tag | R7c `B7c.4` (the tag shipped in R7) |
-| m09 | `#/tables/homebrew` | R7b `B7b.1` |
-| m10 | `#/tables/eq_weapon` with homebrew rows and the chip | R7b `B7b.1` |
-| m11 | `#/search` merged | R7b `B7b.1` |
 | m12 | `#/i/hb_... as gm1`: the path, «Изменить» | the relations and the own rule card: R7c |
 | m13 | the delete confirms, the guard | the card and set confirms: R7c `B7c.3` |
-| m14 | lists with a reference and a frozen row; the shared page | R7 (shipped) |
 | m15 | «Импорт предметов» | R7d `B7d.2` |
 | m16 | the download surfaces | R7d `B7d.2` |
 | m17 | the `homebrew-v1` file and the `llms.txt` outline | R7d `B7d.1` |
-| m18 | a new source from the editor | R7 (shipped) |
-| m19 | sections | R7 (shipped) |
 | m20 | validation and the failure states | the relation rows: R7c |
 | m21 | the «Карты» panel and rule cards | R7c `B7c.3` |
-| m22 | «+ Свой предмет» on a list | R7 (shipped) |
 
 ## 9. Owner answers
 
@@ -716,22 +715,19 @@ constraint:
 |---|---|---|
 | `Q1` "unique" | a one-off outside any line, the existing empty `line` | 4.5; R7c |
 | `Q2` "a separate table" | `#/tables/homebrew` | 4.6; R7b; D3 |
-| `Q3` item limit | 100; more by the owner's override on request | shipped in R7 |
 | `Q4` second language | the bilingual stored shape, no second-language UI; only a file import fills both | 4.1; R7d |
 | `Q5` the label | «Мастерская Ольхи (HB)» as plain text | 4.2; D2 |
-| The marker (during `B7.3`) | one marker everywhere, the Latin HB; an «HB» label on a homebrew rung instead of a dashed rung; «ХБ» rejected (it reads as х/б) | 4.2; `B7c.4`; D2 |
+| The marker (during R7's `B7.3`) | one marker everywhere, the Latin HB; an «HB» label on a homebrew rung instead of a dashed rung; «ХБ» rejected (it reads as х/б) | 4.2; `B7c.4`; D2 |
 | `Q6` releases | finer releases where a criterion supports it | section 7; D10 |
 | `Q7` held keys on import | skip or update, default skip | 4.11; R7d; D6 |
-| `Q8` editing | the save button with the unsaved-changes guard | shipped in R7; D5 |
 | `Q9` sources on import | automatic, with the per-source mapping | 4.14 F3; R7d; D6 |
-| `Q10` categories | sections | shipped in R7; the facet R7b; D8 |
 | `Q11` several links | up to 8 each way; follow-up: the catalog's `craft` becomes a list too | 4.1, 4.4; R7c `B7c.1`-`B7c.4`; D1 |
-| `Q12` quick item | shipped in R7 with no draft mark | D9 |
 | `Q13` `import-v1` bounds | decided in `limits-follow-overrides` | 4.11; R7d |
 | `Q14` bundle budget | A: step up per batch to 250 kB configured, 190 kB unconfigured; the ceilings may rise when reasonable, each with a decision (`B7.2-4`) | 4.10, section 7 |
 | Counters | the search intro adds «И N ваших предметов.»; `#/homebrew` shows «Мои предметы: N из M» | 4.6 (R7b); D11 |
 | «Карты правил» | confirmed | 4.3; R7c |
 | Mocks | approved, with the `Q12` revision | section 8 |
+| Help text, bulk move, G37, quick-panel price, Trash, debt release (2026-10-01) | see "Owner decisions of 2026-10-01" | `B7c.4`, `B7d.2`, section 12 |
 
 Open: none.
 
@@ -751,21 +747,19 @@ Open: none.
 | `2026-09-30-homebrew-ships-in-four-releases.md` | D10: the release split |
 | `2026-09-30-the-account-reads-its-own-effective-limit.md` | D11: `my_limit()` |
 | `2026-09-30-the-bundle-budget-steps-up-per-batch-to.md` | `Q14`: the budget steps |
+| `2026-10-01-homebrew-sections-stay-in-the-source-row.md` | D12: sections stay a list in the source row; a sections table and parent books rejected (owner, 2026-10-01); amends D8 |
 
-Decisions R7b-R7d still write: `B7c.1` the Frostwyrd mirror pair with D1;
-`B7c.2` the `list_entries` bound; each budget raise (4.10).
+Decisions R7c and R7d still write: `B7c.1` the Frostwyrd mirror pair with
+D1; `B7c.2` the `list_entries` bound; each budget raise (4.10).
 
 ## 11. Roadmap (`issues/persistent-storage/plan.md`)
 
-R7's closeout applied R7's planned roadmap changes (sections 5, 6, 9, 12,
-14, 16 decision 31 and 17 of the roadmap). Each release's closeout here
-marks its row closed in the roadmap's section 9, collapses its section 12
-rows to one closed row, and writes its closeout record in section 16.
+Each release's closeout here marks its row closed in the roadmap's section
+9, collapses its section 12 rows to one closed row, and writes its closeout
+record in section 16.
 
 ## 12. Risks, assumptions, deferred
 
-- Risk: the bundle budget. R7 left about 2 kB in each build; `B7b.1`
-  measures with `check:built` and steps the budget (4.10).
 - Risk: `B7c.1` changes `data.json`'s record shape; a reader outside the
   site that expects a string breaks. `llms.txt` and `README.md` say it in
   the same commit; the app reads both shapes while an old `data.js` may be
@@ -797,16 +791,22 @@ rows to one closed row, and writes its closeout record in section 16.
   the bound (4.7).
 - Assumption: a purchase request's 32 KiB lines bound holds about 700
   lines of homebrew keys (19 characters each).
-- Deferred (ideas, not placed in R7b-R7d): books shared with other users
-  (item 13, D7); a Trash; art (R8); item links (R9); a set filter or page
-  (G37); `recall` on a homebrew record; a source cover; bulk moves between
-  sources; price and quantity in the quick item panel. `DEBT.md` D64 and
-  D66 stay with the owner.
+- Deferred (ideas, not placed in R7c or R7d; the owner's lines of
+  2026-10-01 first): a set filter or page (G37); price and quantity in the
+  quick item panel («Свой предмет»); a Trash for homebrew; books shared with
+  other users (item 13, D7); art (R8); item links (R9); `recall` on a
+  homebrew record; a source cover. `DEBT.md` D64, D66 and every entry still
+  open then go to the generic debt clean-up release between R9 and
+  `persist-review` (owner, 2026-10-01); neither is R10 nor a task now.
 
-## 13. The review register carried from R7
+## 13. The review register carried from R7 and R7b
 
-R7's review register was scratch and was deleted with R7's directory. The
-rows it left for R7b-R7d, each placed as an acceptance line in section 7:
+R7's and R7b's review registers were scratch and went with their
+directories. Every R7b row is closed, placed in `B7b.2` and shipped, or a
+closeout gate that ran (`sweep.js 1180`, the golden compare). One row is
+dropped on purpose: `B7b.2-2`, the signed-in strip cap holding 2 px of room
+(298 of 300 px at 360 px), named to the owner. The rows that stay open, each
+placed as an acceptance line in section 7:
 
 | Id | Finding | Placed in |
 |---|---|---|

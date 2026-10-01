@@ -39,6 +39,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Сообщества" [url=index.html?as=gm1#/tables/community]
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
+    link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=false]
@@ -148,6 +149,7 @@ daggerheart.com
 Условия использования
 Установить как приложение
 Фильтры
+Хоумбрю
 Цилиндр для Мозга Ми-Го
 Щит Солнца
 Эспайрская Шестерёнка
@@ -189,6 +191,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     link "Communities" [url=index.html?as=gm1#/tables/community]
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
+    link "Homebrew" [url=index.html?as=gm1#/tables/homebrew]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=false]
@@ -268,6 +271,7 @@ Frost Oil
 Glass from Leng
 Green Ooze Oil
 Grid
+Homebrew
 Hope & Fear
 How this works
 Install as an app

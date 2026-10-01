@@ -21,6 +21,10 @@ import {
 } from './homebrew.js';
 import type { DamageType, EquipClass, EquipKind, Lang, Range, Trait } from './types.js';
 
+/** A damage die, in the order the select offers them. */
+export type Die = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20';
+export const DICE: readonly Die[] = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20'];
+
 /** What the form holds: every value as the field shows it, `''` until chosen. */
 export interface ItemDraft {
   kind: HomebrewKind;
@@ -38,13 +42,16 @@ export interface ItemDraft {
   rg: '' | Range;
   dt: '' | DamageType;
   bu: '' | '1' | '2' | 'any';
-  dmg: string;
+  dmgDie: '' | Die;
+  /** The flat bonus as typed; empty for none. */
+  dmgBonus: string;
   as: string;
   th0: string;
   th1: string;
   altTr: '' | Trait;
   altRg: '' | Range;
-  altDmg: string;
+  altDmgDie: '' | Die;
+  altDmgBonus: string;
   altDt: '' | DamageType;
 }
 
@@ -85,17 +92,26 @@ const EMPTY: ItemDraft = {
   rg: '',
   dt: '',
   bu: '',
-  dmg: '',
+  dmgDie: '',
+  dmgBonus: '',
   as: '',
   th0: '',
   th1: '',
   altTr: '',
   altRg: '',
-  altDmg: '',
+  altDmgDie: '',
+  altDmgBonus: '',
   altDt: ''
 };
 
 const text = (v: string | number | undefined): string => (v === undefined ? '' : String(v));
+
+const DMG_PARTS = /^(d(?:4|6|8|10|12|20))(?:\+(\d+))?$/;
+/* A stored damage that does not match (the CHECK refuses one) leaves both parts empty. */
+const dmgParts = (dmg: string | undefined): { die: '' | Die; bonus: string } => {
+  const m = DMG_PARTS.exec(dmg ?? '');
+  return m ? { die: m[1] as Die, bonus: m[2] ?? '' } : { die: '', bonus: '' };
+};
 
 /** Returns the draft of an item, its name and description in `lang`; a new item's draft
  *  (`row` null) is a plain item in the default source. */
@@ -103,6 +119,8 @@ export function draftOf(row: ItemRow | null, lang: Lang): ItemDraft {
   if (!row) return { ...EMPTY };
   const c = row.content;
   const eq = c.eq;
+  const dmg = dmgParts(eq?.dmg);
+  const altDmg = dmgParts(eq?.alt?.dmg);
   return {
     ...EMPTY,
     kind: c.kind,
@@ -118,13 +136,15 @@ export function draftOf(row: ItemRow | null, lang: Lang): ItemDraft {
     rg: eq?.rg ?? '',
     dt: eq?.dt ?? '',
     bu: eq?.bu === undefined ? '' : (String(eq.bu) as ItemDraft['bu']),
-    dmg: eq?.dmg ?? '',
+    dmgDie: dmg.die,
+    dmgBonus: dmg.bonus,
     as: text(eq?.as),
     th0: text(eq?.th?.[0]),
     th1: text(eq?.th?.[1]),
     altTr: eq?.alt?.tr ?? '',
     altRg: eq?.alt?.rg ?? '',
-    altDmg: eq?.alt?.dmg ?? '',
+    altDmgDie: altDmg.die,
+    altDmgBonus: altDmg.bonus,
     altDt: eq?.alt?.dt ?? ''
   };
 }
@@ -133,6 +153,15 @@ const WHOLE = /^\d+$/;
 /* A number the field reads as one; else the typed text, which the validator refuses. */
 const numberOr = (s: string): number | string => (WHOLE.test(s.trim()) ? Number(s) : s);
 const tierOf = (s: string): number | string => (/^[1-4]$/.test(s) ? Number(s) : s);
+
+/** Returns the stored damage of a die and a bonus field, '' for neither. A bonus with no
+ *  die, or of 0, writes a value `contentProblems` refuses, so the form names «Урон». */
+export function dmgOf(die: '' | Die, bonus: string): string {
+  const typed = bonus.trim().replace(/^\+/, '');
+  const b = WHOLE.test(typed) ? String(Number(typed)) : typed;
+  if (!die && !b) return '';
+  return die + (b ? '+' + b : '');
+}
 
 /** Returns the stored part a draft writes: the name and description in `lang`, the other
  *  language copied from `base` untouched, and only the fields of the chosen kind and type.
@@ -161,11 +190,11 @@ export function contentOf(draft: ItemDraft, lang: Lang, base: HomebrewContent | 
     if (draft.cls) eq['cls'] = draft.cls;
     if (draft.tr) eq['tr'] = draft.tr;
     if (draft.rg) eq['rg'] = draft.rg;
-    const dmg = draft.dmg.toLowerCase().replace(/\s+/g, '');
+    const dmg = dmgOf(draft.dmgDie, draft.dmgBonus);
     if (dmg) eq['dmg'] = dmg;
     if (draft.dt) eq['dt'] = draft.dt;
     if (draft.bu) eq['bu'] = draft.bu === 'any' ? 'any' : Number(draft.bu);
-    const altDmg = draft.altDmg.toLowerCase().replace(/\s+/g, '');
+    const altDmg = dmgOf(draft.altDmgDie, draft.altDmgBonus);
     if (draft.altTr || draft.altRg || altDmg || draft.altDt) {
       const alt: Record<string, unknown> = {};
       if (draft.altTr) alt['tr'] = draft.altTr;

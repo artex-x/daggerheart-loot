@@ -2,8 +2,9 @@
   /* The plain table: chip nav, a toolbar, rows or tiles, selection, and a row
      opening the record modal. Reproduced from `renderTables()` in app.js.
 
-     One component holds every table - the fourteen `TableId`s in `data.js`
-     all draw a real body now. Building separate page components for one route
+     One component holds every table - each `TableId` draws a real body, and
+     `homebrew` (the signed-in author's own items, body `hb`) is sectioned by
+     source and section the way `#/homebrew` is. Building separate page components for one route
      would fight the second use this component is heading for - search reuses
      the row wholesale.
 
@@ -24,6 +25,7 @@
   import ChipRow from './ChipRow.svelte';
   import Empty from './Empty.svelte';
   import FilterBar from './FilterBar.svelte';
+  import HomebrewLoad from './HomebrewLoad.svelte';
   import Icon from './Icon.svelte';
   import KeepNote from './KeepNote.svelte';
   import NoData from './NoData.svelte';
@@ -32,6 +34,7 @@
   import SearchBox from './SearchBox.svelte';
   import SectionHead from './SectionHead.svelte';
   import Seg from './Seg.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
   import { RARITIES, rarityLabel } from '../lib/alt.js';
@@ -52,8 +55,9 @@
     type FilterState
   } from '../lib/filters.js';
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
-  import { tablesHash } from '../lib/hash.js';
+  import { homebrewItemHash, tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
+  import { groupsOf, isHomebrewKey, isHomebrewRecord } from '../lib/homebrew.js';
   import { foldQuery, hayFor, matches, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
   import { TABLE_GROUPS, groupOf, subLabelOf } from '../lib/tables.js';
@@ -68,6 +72,9 @@
 
   const t = $derived(app.t);
   const index = $derived(app.index);
+  /* The row pool and the facets only: `RecordHost` and `TableRows` keep `index`, so the
+     «Хоумбрю» chip never hides an own record inside a dialog or a row. */
+  const browse = $derived(app.browse);
 
   /* `S.tables.t`'s default off app.js: the name in the address may be missing
      or unknown, and the live app keeps whichever table was on screen rather
@@ -118,7 +125,7 @@
   const filterState = $derived<FilterState>(
     app.route.kind === 'tables' ? app.route.filter : {}
   );
-  const facRows = $derived(index ? facetRows(index, table, t, app.lang) : []);
+  const facRows = $derived(browse ? facetRows(browse, table, t, app.lang) : []);
 
   let filterOpen = $state(false);
   let seenSeg = $state('');
@@ -160,6 +167,17 @@
     applyFilter({});
   }
 
+  /* Hiding the own items also drops their `src` values: a hidden value would empty the
+     table. */
+  function toggleOwn(): void {
+    const hiding = app.homebrewShown;
+    app.toggleHomebrew();
+    if (!hiding) return;
+    const src = filterState['src'] ?? [];
+    const rest = src.filter((v) => v !== 'hb' && !isHomebrewKey(v));
+    if (rest.length !== src.length) applyFilter({ ...filterState, src: rest });
+  }
+
   async function copyFilterLink(): Promise<void> {
     await app.copied(
       () => app.env.clipboard.writeText(app.linkTo(tablesHash(table, { filter: filterState }))),
@@ -169,12 +187,12 @@
 
   const rows = $derived(
     eqKind
-      ? index
-        ? equipOfKind(index, eqKind)
+      ? browse
+        ? equipOfKind(browse, eqKind)
         : []
-      : (table === 'other_starting' || table === 'other_frames') && index
-        ? otherTableRows(index, table)
-        : (index?.rows.get(table) ?? [])
+      : (table === 'other_starting' || table === 'other_frames') && browse
+        ? otherTableRows(browse, table)
+        : (browse?.rows.get(table) ?? [])
   );
   const facPassed = $derived.by(() => {
     if (!facetGroups.length) return rows;
@@ -213,19 +231,21 @@
      a plain list, or one split by tier, frame, community, the equipment
      tables' own tier sections, or the alternate tables' rarity/hope-fear
      columns. */
-  type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'eq' | 'alt';
+  type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'eq' | 'alt' | 'hb';
   const bodyKind = $derived<BodyKind>(
     eqKind
       ? 'eq'
-      : table === 'voa'
-        ? 'tier'
-        : table === 'other_frames'
-          ? 'other'
-          : table === 'community'
-            ? 'comm'
-            : table === 'alt_item' || table === 'alt_consumable'
-              ? 'alt'
-              : 'plain'
+      : table === 'homebrew'
+        ? 'hb'
+        : table === 'voa'
+          ? 'tier'
+          : table === 'other_frames'
+            ? 'other'
+            : table === 'community'
+              ? 'comm'
+              : table === 'alt_item' || table === 'alt_consumable'
+                ? 'alt'
+                : 'plain'
   );
 
   interface Section {
@@ -280,9 +300,26 @@
         })).filter((s) => s.entries.length > 0)
   );
 
-  /* One list, whichever of the four above is actually populated - `bodyKind`
+  /* The own items' sections, as `#/homebrew` heads them: a section's key, a source's key
+     (its items outside its sections) or `hb` (no source) is the anchor. */
+  const hbSections = $derived.by<Section[]>(() =>
+    bodyKind !== 'hb' || !app.homebrew
+      ? []
+      : groupsOf(
+          app.homebrew.books,
+          filtered.filter(isHomebrewRecord),
+          app.lang,
+          t.srcHomebrew
+        ).map((g) => ({
+          key: g.id,
+          label: g.label,
+          entries: g.items.map((it) => ({ it }))
+        }))
+  );
+
+  /* One list, whichever of the five above is actually populated - `bodyKind`
      gates them so only one ever is, and the template draws them through a
-     single branch rather than four copies of the same markup. */
+     single branch rather than five copies of the same markup. */
   const activeSections = $derived<Section[]>(
     bodyKind === 'tier'
       ? tierSections
@@ -292,7 +329,9 @@
           ? commSections
           : bodyKind === 'eq'
             ? eqSections
-            : []
+            : bodyKind === 'hb'
+              ? hbSections
+              : []
   );
 
   interface AltCol {
@@ -384,7 +423,8 @@
     const anchor = route.kind === 'tables' ? route.anchor : '';
     const nav = app.navigations;
     const lang = app.lang;
-    const ready = !!index;
+    /* The own items' rows exist only once the store has read them. */
+    const ready = !!index && (table !== 'homebrew' || app.homebrew?.status === 'ready');
     if (!anchor || !ready) {
       /* A route change that drops the anchor - to the same table with none,
          or to a different one entirely - has to clear a flash already in
@@ -447,7 +487,7 @@
          would have to be `:global()` here - kept inline. -->
     <div class="panel tablenav">
       <ChipRow>
-        {#each TABLE_GROUPS as g (g.id)}
+        {#each TABLE_GROUPS.filter((g) => g.id !== 'hb' || !!app.user) as g (g.id)}
           <Chip label={t[g.label]} on={g.id === group.id} href={tablesHash(g.top)} />
         {/each}
       </ChipRow>
@@ -467,6 +507,19 @@
 
     {#if !index}
       <NoData>{t.noData}</NoData>
+    {:else if table === 'homebrew' && app.user === null}
+      <div class="hbstate">
+        <SignInPrompt {app} lead={t.hbTablesSignIn} after={{ hash: tablesHash('homebrew') }} />
+      </div>
+    {:else if table === 'homebrew' && app.homebrew?.status === 'error'}
+      <div class="hbstate"><HomebrewLoad {app} failed /></div>
+    {:else if table === 'homebrew' && (app.user === undefined || app.homebrew?.status !== 'ready')}
+      <div class="hbstate"><HomebrewLoad {app} failed={false} /></div>
+    {:else if table === 'homebrew' && !rows.length}
+      <Empty>
+        {t.hbEmpty}
+        <Button href={homebrewItemHash(null)} sameTab>{t.hbNewItem}</Button>
+      </Empty>
     {:else}
       <div class="toolbar">
         <div class="grow">
@@ -490,6 +543,15 @@
             app.showTablesView(v);
           }}
         />
+        {#if eqKind && (app.homebrew?.records.length ?? 0) > 0}
+          <!-- The `title` tells this toggle apart from the group chip link of the same word. -->
+          <Chip
+            label={t.srcHomebrew}
+            title={t.hbChipHint}
+            on={app.homebrewShown}
+            onclick={toggleOwn}
+          />
+        {/if}
       </div>
       {#if app.tablesViewChanged}<KeepNote {app} />{/if}
 
@@ -556,7 +618,7 @@
             <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
           {/if}
         </Empty>
-      {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'eq'}
+      {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'eq' || bodyKind === 'hb'}
         {#each activeSections as s (s.key)}
           <div
             class="tsection"
@@ -629,6 +691,11 @@
     border-radius: var(--r);
     padding: 18px;
     box-shadow: var(--shadow);
+  }
+
+  /* The homebrew table's states before its rows: the toolbar's top margin. */
+  .hbstate {
+    margin-top: 16px;
   }
 
   /* off `.toolbar` */

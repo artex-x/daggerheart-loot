@@ -48,7 +48,12 @@ import {
   type Route,
   type Site
 } from '../lib/hash.js';
-import { isHomebrewKey, withRecords, type HomebrewRecord } from '../lib/homebrew.js';
+import {
+  browseIndex,
+  isHomebrewKey,
+  withRecords,
+  type HomebrewRecord
+} from '../lib/homebrew.js';
 import { fewNames, nameOf } from '../lib/i18n.js';
 import { plural } from '../lib/plural.js';
 import { legacyWritable } from '../lib/legacy.js';
@@ -182,6 +187,21 @@ export class AppState {
     const own = this.homebrew?.records ?? [];
     return this.catalog && own.length ? withRecords(this.catalog, own, []) : this.catalog;
   });
+
+  /**
+   * The «Хоумбрю» chip on search and the equipment tables: whether their row pools hold
+   * the own items. Memory only, kept across pages like `kinds`, on again at each sign-in
+   * (docs/specs/STATE.md).
+   */
+  homebrewShown = $state(true);
+
+  /** The index search and the equipment tables read their rows and facets from: `index`
+   *  without the own items in `searchable` and `allEquip` while the chip is off. */
+  browse: Index | null = $derived.by(() =>
+    this.index && this.catalog
+      ? browseIndex(this.index, this.catalog, this.homebrewShown)
+      : this.index
+  );
 
   lang = $state<Lang>('ru');
   /**
@@ -660,6 +680,8 @@ export class AppState {
     this.#stale = false;
     /* One user's answer never seeds another's row. */
     this.#notifyGm = 'ask';
+    /* One user's choice never hides another user's items. */
+    this.homebrewShown = true;
     void this.#pull();
     /* Another user's move said nothing about this one's. */
     this.legacyMove?.reset();
@@ -862,18 +884,22 @@ export class AppState {
     if ((shown && !lists.live) || retry) void lists.refresh().then(() => this.#listsReady());
     if (shown && !lists.live) void this.ownerRequests?.read();
     const homebrew = this.homebrew;
-    if (homebrew && ((this.#homebrewShown() && !lists.live) || homebrew.status === 'error')) {
+    if (
+      homebrew &&
+      ((this.#ownItemsOnScreen() && !lists.live) || homebrew.status === 'error')
+    ) {
       void homebrew.read();
     }
   }
 
-  /* A page that draws own items: the homebrew pages and an own record. */
-  #homebrewShown(): boolean {
+  /* A page that draws own items: the homebrew pages, an own record and their table. */
+  #ownItemsOnScreen(): boolean {
     const r = this.route;
     return (
       r.kind === 'homebrew' ||
       r.kind === 'homebrewItem' ||
-      (r.kind === 'record' && isHomebrewKey(r.id))
+      (r.kind === 'record' && isHomebrewKey(r.id)) ||
+      (r.kind === 'tables' && r.table === 'homebrew')
     );
   }
 
@@ -1460,6 +1486,11 @@ export class AppState {
       return;
     }
     this.kinds = { ...this.kinds, [kind]: !this.kinds[kind] };
+  }
+
+  /** Switches the «Хоумбрю» chip: the own items in search and the equipment tables. */
+  toggleHomebrew(): void {
+    this.homebrewShown = !this.homebrewShown;
   }
 
   /**

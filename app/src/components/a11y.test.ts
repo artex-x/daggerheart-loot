@@ -466,9 +466,9 @@ const STATES: {
     route: '#/homebrew/hb_emberaxeaaaaaaaa',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      const dmg = await screen.findByLabelText(/^Урон\*/);
-      await userEvent.clear(dmg);
-      await userEvent.type(dmg, 'x');
+      const bonus = await screen.findByLabelText('Бонус к урону');
+      await userEvent.clear(bonus);
+      await userEvent.type(bonus, 'x');
       await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }));
       await screen.findByText('Не сохранено: исправьте 1 поле.');
     }
@@ -535,6 +535,8 @@ const COVERED: Record<string, string> = {
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
+  'HomebrewLoad.svelte':
+    'homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',
   'HomebrewPage.svelte':
     'homebrewPage.test.ts filled, empty and signed out; the sections open above',
   'HomebrewSources.svelte': 'homebrewPage.test.ts, and the sections and new source open above',

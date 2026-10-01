@@ -10,8 +10,10 @@
      (docs/specs/FEATURES.md, "Homebrew";
      docs/decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md). */
   import { tick, untrack } from 'svelte';
+  import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
+  import HomebrewLoad from './HomebrewLoad.svelte';
   import NameField from './NameField.svelte';
   import NoticeBox from './NoticeBox.svelte';
   import PageTitle from './PageTitle.svelte';
@@ -35,6 +37,8 @@
   } from '../lib/homebrew.js';
   import {
     contentOf,
+    DICE,
+    dmgOf,
     draftOf,
     fieldOf,
     formProblems,
@@ -235,13 +239,36 @@
   }
 
   let altOpen = $state(false);
-  $effect(() => {
-    if (draft.altTr || draft.altRg || draft.altDmg || draft.altDt) {
-      untrack(() => {
-        altOpen = true;
-      });
+  let altSummary = $state<HTMLElement | undefined>(undefined);
+  /* The second set is written when any of its four fields holds a value. */
+  const altFilled = $derived(
+    !!(draft.altTr || draft.altRg || dmgOf(draft.altDmgDie, draft.altDmgBonus) || draft.altDt)
+  );
+  const dropAltProblems = (): void => {
+    if (problems.some((p) => fieldOf(p).startsWith('hb-alt'))) {
+      problems = problems.filter((p) => !fieldOf(p).startsWith('hb-alt'));
     }
+  };
+  /* An emptied set by any path takes its lines along: they would name a button that has
+     left the tree. */
+  $effect(() => {
+    const filled = altFilled;
+    untrack(() => {
+      if (filled) altOpen = true;
+      else dropAltProblems();
+    });
   });
+
+  async function clearAlt(): Promise<void> {
+    draft.altTr = '';
+    draft.altRg = '';
+    draft.altDmgDie = '';
+    draft.altDmgBonus = '';
+    draft.altDt = '';
+    dropAltProblems();
+    await tick();
+    altSummary?.focus();
+  }
 
   function refusedLine(r: ListWrite | HomebrewSaved): string {
     if (!r.ok && r.error === 'limit') return t.hbNotSaved + ' ' + limitText(r.key, r.value, t);
@@ -480,7 +507,8 @@
   options: readonly { value: T; label: string }[],
   value: T,
   onchange: (v: T) => void,
-  required: boolean
+  required: boolean,
+  none: T | undefined
 )}
   <FormField {label} {required} error={errText(field)} errorId={errId(field)}>
     <Seg
@@ -489,9 +517,57 @@
       {options}
       {value}
       describedby={errId(field)}
+      {none}
       {onchange}
     />
   </FormField>
+{/snippet}
+
+<!-- «Урон»: a die select and a flat bonus field, one problem for the pair. -->
+{#snippet damage(
+  field: 'hb-dmg' | 'hb-alt-dmg',
+  dieKey: 'dmgDie' | 'altDmgDie',
+  bonusKey: 'dmgBonus' | 'altDmgBonus',
+  main: boolean
+)}
+  <div class="dmg">
+    <select
+      id={field}
+      value={draft[dieKey]}
+      aria-label={main ? undefined : LABELS[field]}
+      aria-required={main ? true : undefined}
+      aria-invalid={problemOf(field) ? true : undefined}
+      aria-describedby={errId(field)}
+      onchange={(e) => {
+        set(dieKey, e.currentTarget.value as ItemDraft['dmgDie'], field);
+      }}
+    >
+      <option value="">{t.hbDie}</option>
+      {#each DICE as d (d)}
+        <option value={d}>{d}</option>
+      {/each}
+    </select>
+    <span class="plus" aria-hidden="true">+</span>
+    <TextInput
+      id={field + '-bonus'}
+      label={main ? t.hbDmgBonus : t.hbAlt + ': ' + t.hbDmgBonus}
+      bind:value={draft[bonusKey]}
+      inputmode="numeric"
+      invalid={!!problemOf(field)}
+      describedby={errId(field)}
+      autocomplete="off"
+      oninput={() => {
+        clear(field);
+      }}
+    />
+  </div>
+{/snippet}
+
+<!-- A saved item goes into a list as a reference: unsaved edits reach it with «Сохранить». -->
+{#snippet addPick()}
+  {#if rowKey !== null}
+    <AddToList {app} key={rowKey} ids={[rowKey]} primary />
+  {/if}
 {/snippet}
 
 <svelte:window {onkeydown} />
@@ -503,10 +579,9 @@
   <!-- The session is not known yet. -->
 {:else if store.status === 'error' && !formLoaded}
   <PageTitle title={t.myItems} sub={t.subHomebrew} />
-  <p class="note err" role="alert">{t.hbLoadFailed}</p>
-  <Button onclick={() => void store.load()}>{t.retry}</Button>
+  <HomebrewLoad {app} failed />
 {:else if !formLoaded && !missing}
-  <p class="note" role="status">{t.cloudLoading}</p>
+  <HomebrewLoad {app} failed={false} />
 {:else if missing}
   <PageTitle title={t.notFound} sub={t.notFoundSub} />
   <Button variant="primary" href={HOMEBREW_HASH} sameTab>{t.hbToMyItems}</Button>
@@ -574,7 +649,8 @@
           (v) => {
             set('kind', v, 'hb-kind');
           },
-          false
+          false,
+          undefined
         )}
         {#if draft.kind === 'equip'}
           {@render choice(
@@ -585,7 +661,8 @@
             (v) => {
               set('t', v, 'hb-type');
             },
-            false
+            false,
+            undefined
           )}
         {/if}
 
@@ -709,7 +786,8 @@
             (v) => {
               set('tier', v, 'hb-tier');
             },
-            false
+            false,
+            undefined
           )}
         {:else}
           <FormField
@@ -741,7 +819,8 @@
               (v) => {
                 set('cls', v, 'hb-cls');
               },
-              true
+              true,
+              undefined
             )}
             {@render choice(
               'hb-tr',
@@ -751,7 +830,8 @@
               (v) => {
                 set('tr', v, 'hb-tr');
               },
-              true
+              true,
+              undefined
             )}
             {@render choice(
               'hb-rg',
@@ -761,7 +841,8 @@
               (v) => {
                 set('rg', v, 'hb-rg');
               },
-              true
+              true,
+              undefined
             )}
             <FormField
               label={t.hbDmg}
@@ -770,17 +851,7 @@
               error={errText('hb-dmg')}
               errorId={errId('hb-dmg')}
             >
-              <TextInput
-                id="hb-dmg"
-                bind:value={draft.dmg}
-                required
-                invalid={!!problemOf('hb-dmg')}
-                describedby={errId('hb-dmg')}
-                autocomplete="off"
-                oninput={() => {
-                  clear('hb-dmg');
-                }}
-              />
+              {@render damage('hb-dmg', 'dmgDie', 'dmgBonus', true)}
             </FormField>
             {@render choice(
               'hb-dt',
@@ -790,7 +861,8 @@
               (v) => {
                 set('dt', v, 'hb-dt');
               },
-              true
+              true,
+              undefined
             )}
             {@render choice(
               'hb-bu',
@@ -800,10 +872,12 @@
               (v) => {
                 set('bu', v, 'hb-bu');
               },
-              true
+              true,
+              undefined
             )}
             <details class="alt" bind:open={altOpen}>
-              <summary>{t.hbAlt}</summary>
+              <summary bind:this={altSummary}>{t.hbAlt}</summary>
+              <p class="hint" id="hb-alt-hint">{t.hbAltHint}</p>
               {@render choice(
                 'hb-alt-tr',
                 t.hbTrait,
@@ -812,7 +886,8 @@
                 (v) => {
                   set('altTr', v, 'hb-alt-tr');
                 },
-                false
+                false,
+                ''
               )}
               {@render choice(
                 'hb-alt-rg',
@@ -822,7 +897,8 @@
                 (v) => {
                   set('altRg', v, 'hb-alt-rg');
                 },
-                false
+                false,
+                ''
               )}
               <FormField
                 label={t.hbDmg}
@@ -830,17 +906,7 @@
                 error={errText('hb-alt-dmg')}
                 errorId={errId('hb-alt-dmg')}
               >
-                <TextInput
-                  id="hb-alt-dmg"
-                  label={LABELS['hb-alt-dmg']}
-                  bind:value={draft.altDmg}
-                  invalid={!!problemOf('hb-alt-dmg')}
-                  describedby={errId('hb-alt-dmg')}
-                  autocomplete="off"
-                  oninput={() => {
-                    clear('hb-alt-dmg');
-                  }}
-                />
+                {@render damage('hb-alt-dmg', 'altDmgDie', 'altDmgBonus', false)}
               </FormField>
               {@render choice(
                 'hb-alt-dt',
@@ -850,8 +916,12 @@
                 (v) => {
                   set('altDt', v, 'hb-alt-dt');
                 },
-                false
+                false,
+                ''
               )}
+              {#if altFilled}
+                <Button size="sm" onclick={() => void clearAlt()}>{t.hbAltClear}</Button>
+              {/if}
             </details>
           {:else}
             <FormField
@@ -936,6 +1006,7 @@
           lang={app.lang}
           artBroken={false}
           onartfail={() => {}}
+          pick={rowKey !== null && row ? addPick : undefined}
         />
       {/if}
     </div>
@@ -943,16 +1014,6 @@
 {/if}
 
 <style>
-  .note {
-    margin: 0 0 14px;
-    font-size: 14px;
-    color: var(--muted);
-  }
-
-  .note.err {
-    color: var(--danger-text);
-  }
-
   .hbedit {
     display: grid;
     gap: 18px;
@@ -1026,9 +1087,28 @@
     max-width: 240px;
   }
 
+  .dmg {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-sm);
+    max-width: 240px;
+  }
+
+  .dmg select {
+    flex: none;
+  }
+
+  .plus {
+    color: var(--muted);
+  }
+
   .alt {
     display: grid;
     gap: 16px;
+  }
+
+  .alt > :global(.btn) {
+    justify-self: start;
   }
 
   .alt summary {

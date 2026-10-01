@@ -73,7 +73,14 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         button "Средне" [pressed=false]
         button "Далеко" [pressed=false]
         button "Очень далеко" [pressed=false]
-      textbox "Урон*" [description=Запишите как d8 или d10+2: кость d4-d20 и, если нужно, +1..+20. multiline=false readonly=false required=true invalid=true]
+      combobox "Урон*" [value=Кость description=Выберите кость d4-d20; бонус, если нужен, - целое число от 1 до 99. expanded=false haspopup=menu invalid=true]
+        option "Кость" [selected=true]
+        option "d4" [selected=false]
+        option "d6" [selected=false]
+        ... option x2 of 6 same-shape siblings elided
+        option "d12" [selected=false]
+        option "d20" [selected=false]
+      textbox "Бонус к урону" [description=Выберите кость d4-d20; бонус, если нужен, - целое число от 1 до 99. multiline=false readonly=false required=false invalid=true]
       group "Тип урона" [description=Выберите значение.]
         button "физ" [pressed=false]
         button "маг" [pressed=false]
@@ -114,10 +121,12 @@ daggerheart.com
 Альт. таблицы
 Артефакт
 Близко
+Бонус к урону
 Броня
 Влияние
 Вплотную
 Вторичное оружие
+Второй набор характеристик: Бонус к урону
 Второй набор характеристик: Урон
 Далеко
 Двуручное
@@ -128,6 +137,7 @@ daggerheart.com
 К содержимому
 Класс - выберите значение.
 Конфиденциальность
+Костьd4d6d8d10d12d20
 ЛутDaggerheart
 Магическое
 Название - введите название.
@@ -151,7 +161,7 @@ daggerheart.com
 Страница
 Таблицы
 Тип урона - выберите значение.
-Урон - запишите как d8 или d10+2: кость d4-d20 и, если нужно, +1... [namelen=70 namehash=e4cf9abb]
+Урон - выберите кость d4-d20; бонус, если нужен, - целое число о... [namelen=74 namehash=0ee85a8e]
 Условия использования
 Установить как приложение
 Физическое
@@ -233,7 +243,14 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         button "Close" [pressed=false]
         button "Far" [pressed=false]
         button "Very Far" [pressed=false]
-      textbox "Damage*" [description=Write it as d8 or d10+2: a die d4-d20 and, if needed, +1..+20. multiline=false readonly=false required=true invalid=true]
+      combobox "Damage*" [value=Die description=Choose a die d4-d20; a bonus, if any, is a whole number from 1 to 99. expanded=false haspopup=menu invalid=true]
+        option "Die" [selected=true]
+        option "d4" [selected=false]
+        option "d6" [selected=false]
+        ... option x2 of 6 same-shape siblings elided
+        option "d12" [selected=false]
+        option "d20" [selected=false]
+      textbox "Damage bonus" [description=Choose a die d4-d20; a bonus, if any, is a whole number from 1 to 99. multiline=false readonly=false required=false invalid=true]
       group "Damage type" [description=Choose a value.]
         button "phy" [pressed=false]
         button "mag" [pressed=false]
@@ -274,8 +291,10 @@ Class - choose a value.
 Close
 Communities
 Consumable
-Damage - write it as d8 or d10+2: a die d4-d20 and, if needed, +... [namelen=71 namehash=0f2547f1]
+Damage - choose a die d4-d20; a bonus, if any, is a whole number... [namelen=78 namehash=28c28ee8]
+Damage bonus
 Damage type - choose a value.
+Died4d6d8d10d12d20
 Dragon's Vault
 Dread
 EN
@@ -303,6 +322,7 @@ Range - choose a value.
 Save
 Search
 Second stat set: Damage
+Second stat set: Damage bonus
 Secondary weapon
 Skip to content
 Spellcast

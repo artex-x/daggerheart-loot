@@ -10,6 +10,9 @@
  * pair of "book + section". This is a pure grouping of the same ids, nothing
  * about routing.
  *
+ * The last group, `hb`, is the signed-in author's own items: `TablesPage` draws its
+ * chip only signed in.
+ *
  * Pure module: no DOM, no data. */
 
 import type { TableId } from './types.js';
@@ -63,7 +66,8 @@ export const TABLE_GROUPS: readonly TableGroup[] = [
     label: 'grpOther',
     top: 'other_starting',
     subs: ['other_starting', 'other_frames']
-  }
+  },
+  { id: 'hb', label: 'srcHomebrew', top: 'homebrew', subs: ['homebrew'] }
 ];
 
 /**

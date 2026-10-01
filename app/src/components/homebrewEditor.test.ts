@@ -18,6 +18,10 @@ import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
 
+/* jsdom does not implement scrollIntoView - the preview's add-to-list menu places
+   itself with it once open. */
+Element.prototype.scrollIntoView = vi.fn();
+
 const t = dict('ru');
 const AXE = 'hb_emberaxeaaaaaaaa';
 const RING = 'hb_engravedringaaaa';
@@ -137,7 +141,8 @@ describe('the form', () => {
     expect(screen.getByLabelText(/^Пороги урона\*/)).toBeInTheDocument();
     expect(screen.queryByRole('group', { name: t.hbCls })).toBeNull();
     await press(t.hbType, 'Основное оружие');
-    expect(screen.getByLabelText(/^Урон\*/)).toHaveValue('d10+2');
+    expect(screen.getByLabelText(/^Урон\*/)).toHaveValue('d10');
+    expect(screen.getByLabelText(t.hbDmgBonus)).toHaveValue('2');
     await expectNoA11yViolations(container);
   });
 
@@ -168,7 +173,7 @@ describe('the checks on «Сохранить»', () => {
     expect(name).toHaveAttribute('aria-describedby', 'hb-name-err');
     expect(screen.getByText(t.hbErrName)).toHaveAttribute('id', 'hb-name-err');
     expect(group(t.tier)).toHaveAttribute('aria-describedby', 'hb-eqtier-err');
-    await userEvent.click(within(box).getByRole('button', { name: /^Урон - запишите/ }));
+    await userEvent.click(within(box).getByRole('button', { name: /^Урон - выберите кость/ }));
     await waitFor(() => {
       expect(screen.getByLabelText(/^Урон\*/)).toHaveFocus();
     });
@@ -187,9 +192,9 @@ describe('the checks on «Сохранить»', () => {
 
   it('draws each rule of a weapon and an armour', async () => {
     await editor(AXE);
-    const dmg = screen.getByLabelText(/^Урон\*/);
-    await userEvent.clear(dmg);
-    await userEvent.type(dmg, '2d8');
+    const bonus = screen.getByLabelText(t.hbDmgBonus);
+    await userEvent.clear(bonus);
+    await userEvent.type(bonus, 'x');
     await userEvent.click(screen.getByText(t.hbAlt));
     await press(t.hbAlt + ': ' + t.hbTrait, 'Сила');
     await save();
@@ -635,9 +640,10 @@ describe('a retry, a delete in flight, Enter and the preview', () => {
 
   it('saves on Enter in a one-line field of a weapon', async () => {
     const { cloud } = await editor(AXE);
-    const dmg = screen.getByLabelText(/^Урон\*/);
-    await userEvent.clear(dmg);
-    await userEvent.type(dmg, 'd12{Enter}');
+    await userEvent.selectOptions(screen.getByLabelText(/^Урон\*/), 'd12');
+    const bonus = screen.getByLabelText(t.hbDmgBonus);
+    await userEvent.clear(bonus);
+    await userEvent.type(bonus, '{Enter}');
     await waitFor(async () => {
       expect((await stored(cloud, AXE))?.eq?.dmg).toBe('d12');
     });
@@ -647,5 +653,139 @@ describe('a retry, a delete in flight, Enter and the preview', () => {
     const { container } = await editor(null);
     await userEvent.type(screen.getByLabelText(/Название/), 'Рог');
     expect(container.querySelector('a[href^="#/i/"]')).toBeNull();
+  });
+});
+
+describe('the damage pair', () => {
+  it('offers «Кость» and the six dice, and saves d12 with 25 as d12+25', async () => {
+    const { cloud, container } = await editor(AXE);
+    const die = screen.getByLabelText(/^Урон\*/);
+    expect(
+      within(die)
+        .getAllByRole('option')
+        .map((o) => o.textContent)
+    ).toEqual([t.hbDie, 'd4', 'd6', 'd8', 'd10', 'd12', 'd20']);
+    expect(die).toHaveAttribute('aria-required', 'true');
+    await userEvent.selectOptions(die, 'd12');
+    const bonus = screen.getByLabelText(t.hbDmgBonus);
+    await userEvent.clear(bonus);
+    await userEvent.type(bonus, '25');
+    await save();
+    await waitFor(async () => {
+      expect((await stored(cloud, AXE))?.eq?.dmg).toBe('d12+25');
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the damage problem under «Урон» for a bonus of 100 and sends nothing', async () => {
+    const { cloud, container } = await editor(AXE);
+    const update = vi.spyOn(cloud.homebrew, 'updateItem');
+    const bonus = screen.getByLabelText(t.hbDmgBonus);
+    await userEvent.clear(bonus);
+    await userEvent.type(bonus, '100');
+    await save();
+    expect(screen.getByText(t.hbErrDmg)).toHaveAttribute('id', 'hb-dmg-err');
+    expect(screen.getByLabelText(/^Урон\*/)).toHaveAttribute('aria-invalid', 'true');
+    expect(bonus).toHaveAttribute('aria-invalid', 'true');
+    expect(bonus).toHaveAttribute('aria-describedby', 'hb-dmg-err');
+    expect(update).not.toHaveBeenCalled();
+    await expectNoA11yViolations(container);
+  });
+});
+
+describe('the second set', () => {
+  const ALT_TRAIT = t.hbAlt + ': ' + t.hbTrait;
+  const pressedIn = (name: string): HTMLElement =>
+    within(group(name)).getByRole('button', { pressed: true });
+
+  it('opens on its hint; a second press unpresses a choice of the set, never a main one', async () => {
+    const { container } = await editor(null);
+    await press(t.hbKind, t.fEquip);
+    await userEvent.click(screen.getByText(t.hbAlt));
+    expect(screen.getByText(t.hbAltHint)).toHaveAttribute('id', 'hb-alt-hint');
+    expect(screen.queryByRole('button', { name: t.hbAltClear })).toBeNull();
+    await press(ALT_TRAIT, 'Сила');
+    expect(pressedIn(ALT_TRAIT)).toHaveTextContent('Сила');
+    expect(screen.getByRole('button', { name: t.hbAltClear })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await press(ALT_TRAIT, 'Сила');
+    expect(within(group(ALT_TRAIT)).queryByRole('button', { pressed: true })).toBeNull();
+    expect(screen.queryByRole('button', { name: t.hbAltClear })).toBeNull();
+    const first = within(group(t.hbCls)).getAllByRole('button')[0];
+    if (!first) throw new Error('The class group has no option.');
+    await userEvent.click(first);
+    await userEvent.click(first);
+    expect(first).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  /* The axe has no second set: one chip of it leaves three fields empty. */
+  async function oneChipLeft(): Promise<void> {
+    await userEvent.click(screen.getByText(t.hbAlt));
+    await press(ALT_TRAIT, 'Сила');
+  }
+
+  it('«Очистить второй набор» empties the set and its lines, keeps the name and focuses the fold', async () => {
+    const { cloud, container } = await editor(AXE);
+    const name = screen.getByLabelText(/Название/);
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Топор II');
+    await oneChipLeft();
+    await save();
+    expect(screen.getByRole('alert')).toHaveTextContent('Не сохранено: исправьте 3 поля.');
+    expect(screen.getAllByText(t.hbErrAlt)).toHaveLength(3);
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: t.hbAltClear }));
+    expect(screen.queryByText(t.hbErrAlt)).toBeNull();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(within(group(ALT_TRAIT)).queryByRole('button', { pressed: true })).toBeNull();
+    expect(screen.queryByRole('button', { name: t.hbAltClear })).toBeNull();
+    const fold = screen.getByText(t.hbAlt);
+    expect((fold.closest('details') as HTMLDetailsElement).open).toBe(true);
+    await waitFor(() => {
+      expect(fold).toHaveFocus();
+    });
+    expect(name).toHaveValue('Топор II');
+    await save();
+    await waitFor(async () => {
+      expect((await stored(cloud, AXE))?.ru).toBe('Топор II');
+    });
+    expect((await stored(cloud, AXE))?.eq?.alt).toBeUndefined();
+  });
+
+  it('drops the lines of the set and their summary when an unpress empties the set', async () => {
+    await editor(AXE);
+    await oneChipLeft();
+    await save();
+    expect(screen.getAllByText(t.hbErrAlt)).toHaveLength(3);
+    await userEvent.click(pressedIn(ALT_TRAIT));
+    expect(screen.queryByText(t.hbErrAlt)).toBeNull();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+});
+
+describe('«Добавить в список» in the preview', () => {
+  it('is absent on a new item before its first save and drawn after it', async () => {
+    await editor(null);
+    await userEvent.type(screen.getByLabelText(/Название/), 'Рог');
+    expect(screen.queryByRole('button', { name: t.addToList })).toBeNull();
+    await save();
+    await toastSays('Сохранено: «Рог»');
+    expect(await screen.findByRole('button', { name: t.addToList })).toBeInTheDocument();
+  });
+
+  it('puts the saved item into a list as a reference', async () => {
+    const { cloud, page, container } = await editor(AXE);
+    await userEvent.click(screen.getByRole('button', { name: t.addToList }));
+    await expectNoA11yViolations(container);
+    await userEvent.click(await screen.findByRole('button', { name: 'Пустой список' }));
+    await toastSays(t.addedTo.replace('%s', 'Пустой список'));
+    page.fireHidden();
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      const empty = read.ok ? read.lists.find((l) => l.id === uuid(102)) : undefined;
+      expect(empty?.list_entries).toEqual([
+        expect.objectContaining({ item_key: AXE, source: 'homebrew', snapshot: null })
+      ]);
+    });
   });
 });

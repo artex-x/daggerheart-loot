@@ -73,7 +73,14 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Далеко" [pressed=false]
         button "Очень далеко" [pressed=false]
       StaticText "*"
-      textbox "Урон*" [value=d10+2 multiline=false readonly=false required=true]
+      combobox "Урон*" [value=d10 expanded=false haspopup=menu]
+        option "Кость" [selected=false]
+        option "d4" [selected=false]
+        ... option x2 of 6 same-shape siblings elided
+        option "d10" [selected=true]
+        option "d12" [selected=false]
+        option "d20" [selected=false]
+      textbox "Бонус к урону" [value=2 multiline=false readonly=false required=false]
       group "Тип урона"
         button "физ" [pressed=false]
         button "маг" [pressed=true]
@@ -93,6 +100,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
     heading "Топор Тлеющих Углей" [level=2]
     StaticText "Двуручное"
     StaticText "Лезвие тлеет и не гаснет под дождём."
+    button "Добавить в список" [expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -117,18 +125,22 @@ daggerheart.com
 Артефакт
 Без разделаПистолиХолодное оружие+ Новый раздел...
 Близко
+Бонус к урону
 Броня
 Влияние
 Вплотную
 Вторичное оружие
+Второй набор характеристик: Бонус к урону
 Второй набор характеристик: Урон
 Далеко
 Двуручное
+Добавить в список
 Знание
 Инстинкт
 Искусность
 К содержимому
 Конфиденциальность
+Костьd4d6d8d10d12d20
 ЛутDaggerheart
 Магическое
 Обычные правила
@@ -229,7 +241,14 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Far" [pressed=false]
         button "Very Far" [pressed=false]
       StaticText "*"
-      textbox "Damage*" [value=d10+2 multiline=false readonly=false required=true]
+      combobox "Damage*" [value=d10 expanded=false haspopup=menu]
+        option "Die" [selected=false]
+        option "d4" [selected=false]
+        ... option x2 of 6 same-shape siblings elided
+        option "d10" [selected=true]
+        option "d12" [selected=false]
+        option "d20" [selected=false]
+      textbox "Damage bonus" [value=2 multiline=false readonly=false required=false]
       group "Damage type"
         button "phy" [pressed=false]
         button "mag" [pressed=true]
@@ -249,6 +268,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
     heading "Ember Axe" [level=2]
     StaticText "Two-Handed"
     StaticText "The blade smoulders and does not go out in the rain."
+    button "Add to list" [expanded=false]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -262,6 +282,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
 3
 4
 Account: gm1@example.test
+Add to list
 Agility
 Alt. tables
 Armor
@@ -270,7 +291,9 @@ Cancel
 Close
 Communities
 Consumable
+Damage bonus
 Delete
+Died4d6d8d10d12d20
 Dragon's Vault
 Dread
 EN
@@ -297,6 +320,7 @@ RU
 Save
 Search
 Second stat set: Damage
+Second stat set: Damage bonus
 Secondary weapon
 Skip to content
 Spellcast

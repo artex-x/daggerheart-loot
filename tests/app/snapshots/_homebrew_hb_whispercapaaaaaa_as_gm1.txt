@@ -58,6 +58,7 @@ RootWebArea "Whispering Cap — Генератор лута — Daggerheart" [ur
     StaticText "ХОУМБРЮ"
     heading "Whispering Cap" [level=2]
     StaticText "Once per rest, hear one sentence spoken within Far range."
+    button "Добавить в список" [expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -80,6 +81,7 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Артефакт
+Добавить в список
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -156,6 +158,7 @@ RootWebArea "Whispering Cap — Daggerheart Loot Generator" [url=index.html?as=g
     StaticText "HOMEBREW"
     heading "Whispering Cap" [level=2]
     StaticText "Once per rest, hear one sentence spoken within Far range."
+    button "Add to list" [expanded=false]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -169,6 +172,7 @@ RootWebArea "Whispering Cap — Daggerheart Loot Generator" [url=index.html?as=g
 3
 4
 Account: gm1@example.test
+Add to list
 Alt. tables
 Artifact
 Cancel

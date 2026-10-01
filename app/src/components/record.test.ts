@@ -10,20 +10,21 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import RecordModal from './RecordModal.svelte';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { AppState } from '../state/app.svelte.js';
 import {
   fakeClipboard,
   fakeData,
   fakeEnv,
   fakeImage,
+  fakePage,
   fakeShare,
   memoryRouter,
   memoryStorage,
@@ -1150,7 +1151,7 @@ describe('an own homebrew item', () => {
       ...over
     });
 
-  it('draws the path, «Изменить» and no link action', async () => {
+  it('draws the path, the link to its table row, «Изменить» and no link action', async () => {
     const { container } = render(App, { env: own() });
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Топор Тлеющих Углей' })
@@ -1158,7 +1159,10 @@ describe('an own homebrew item', () => {
     expect(
       screen.getByText(/Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2/)
     ).toBeInTheDocument();
-    expect(screen.queryByText('Показать в таблице')).toBeNull();
+    expect(screen.getByRole('link', { name: 'показать в таблице' })).toHaveAttribute(
+      'href',
+      '#/tables/homebrew/' + AXE
+    );
     expect(screen.getByRole('link', { name: 'Изменить' })).toHaveAttribute(
       'href',
       '#/homebrew/' + AXE
@@ -1228,6 +1232,24 @@ describe('an own homebrew item', () => {
     cleanup();
     render(App, { env: at(AXE) });
     expect(screen.getByText('Предмет не найден')).toBeInTheDocument();
+  });
+
+  it('puts the item into a list as a reference from «Добавить в список»', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const page = fakePage();
+    const { container } = render(App, { env: own({ cloud, page }) });
+    await userEvent.click(await screen.findByRole('button', { name: 'Добавить в список' }));
+    await expectNoA11yViolations(container);
+    await userEvent.click(await screen.findByRole('button', { name: 'Пустой список' }));
+    expect(await screen.findByText('Добавлено в «Пустой список»')).toBeInTheDocument();
+    page.fireHidden();
+    await waitFor(async () => {
+      const read = await cloud.lists.list();
+      const empty = read.ok ? read.lists.find((l) => l.id === uuid(102)) : undefined;
+      expect(empty?.list_entries).toEqual([
+        expect.objectContaining({ item_key: AXE, source: 'homebrew', snapshot: null })
+      ]);
+    });
   });
 
   it('offers «Изменить» in the record modal, and not on a catalog record', async () => {

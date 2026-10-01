@@ -902,7 +902,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await pick('hb-cls', 'Физическое');
       await pick('hb-tr', 'Сила');
       await pick('hb-rg', 'Вплотную');
-      await page.type('#hb-dmg', 'd8');
+      await d.choose('#hb-dmg', 'd8');
+      await page.type('#hb-dmg-bonus', '25');
       await pick('hb-dt', 'физ');
       await pick('hb-bu', 'Одноручное');
       await d.press('Сохранить');
@@ -912,7 +913,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
           items.length === 1 &&
           items[0].book_id === book.id &&
           items[0].content.section === section &&
-          items[0].content.eq?.dmg === 'd8' &&
+          items[0].content.eq?.dmg === 'd8+25' &&
           items[0].revision === 1
         );
       });

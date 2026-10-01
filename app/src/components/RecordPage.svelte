@@ -4,6 +4,7 @@
      Three states, and two of them happen - a link to a record that has been
      renumbered, and a deploy where data.js did not load. */
   import Button from './Button.svelte';
+  import HomebrewLoad from './HomebrewLoad.svelte';
   import Icon from './Icon.svelte';
   import NoData from './NoData.svelte';
   import PageTitle from './PageTitle.svelte';
@@ -63,11 +64,10 @@
     {#if !index}
       <NoData>{t.noData}</NoData>
     {:else if waiting}
-      <p class="wait" role="status">{t.cloudLoading}</p>
+      <HomebrewLoad {app} failed={false} />
     {:else if failed}
       <!-- The author's items did not load: the item may exist, so no «Предмет не найден». -->
-      <p class="wait err" role="alert">{t.hbLoadFailed}</p>
-      <Button onclick={() => void app.homebrew?.load()}>{t.retry}</Button>
+      <HomebrewLoad {app} failed />
     {:else if !it}
       <!-- A link to a record that is no longer in the data: an old share, or an id
            that was renumbered. Saying which is kinder than an empty page. -->
@@ -131,16 +131,6 @@
     fill: currentcolor;
     margin-left: 4px;
     vertical-align: -1px;
-  }
-
-  .wait {
-    margin: 0 0 14px;
-    font-size: 14px;
-    color: var(--muted2);
-  }
-
-  .wait.err {
-    color: var(--danger-text);
   }
 
   /* off `.itempage` */

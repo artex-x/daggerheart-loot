@@ -1,0 +1,206 @@
+# #/search ~ own items hidden as gm1
+# route: #/search
+# why: the same, then the chip «Хоумбрю» pressed off: the 13 catalog matches alone, the intro sentence kept
+# as: gm1
+
+## ru :: tree
+RootWebArea "Поиск — Генератор лута — Daggerheart" [url=index.html?as=gm1#/search]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Поиск" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    StaticText "Поиск сразу по 1272 позициям — добыча, расходники и снаряжение, ..." [namelen=111 namehash=86559513]
+    searchbox "Поиск по названию или описанию…" [value=топор focused=true]
+    StaticText "ТИП"
+    button "Предметы" [pressed=true]
+    button "Расходники" [pressed=true]
+    button "Снаряжение" [pressed=true]
+    button "Хоумбрю" [description=Показывать свои предметы pressed=false]
+    checkbox "Выбрать все (13)" [checked=false]
+    StaticText "Выбрать все (13)"
+    checkbox "Стопорный Ключ" [checked=false]
+    button "49 Стопорный Ключ При успешном Броске Искусности вставьте этот и..." [namelen=359 namehash=bb980761]
+    ... checkbox x10 of 14 same-shape siblings elided
+    button "10 Топор-Пила Лесоруба Этот массивный гибридный инструмент рубит..." [namelen=231 namehash=8a95748b]
+    ... button x9 of 13 same-shape siblings elided
+    checkbox "Легендарный Священный Топор" [checked=false]
+    button "Легендарный Священный Топор Ранг 4 · Магическое · Сила · Вплотну..." [namelen=111 namehash=4167aae9]
+    checkbox "Возвращающийся Топор" [checked=false]
+    button "Возвращающийся Топор Ранг 2 · Физическое · Проворность · Средне ..." [namelen=230 namehash=575ed869]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+10Топор-Пила ЛесорубаЭтот массивный гибридный инструмент рубит д... [namelen=227 namehash=501f18ee]
+116Неугомонное ВозмездиеРанг 3 · Физическое · Сила · Вплотную · ... [namelen=454 namehash=414955ac]
+49Стопорный КлючПри успешном Броске Искусности вставьте этот инс... [namelen=355 namehash=691d5d78]
+4Топор Лесного СтражаЭтот внешне обычный топор несёт в себе благ... [namelen=228 namehash=932d8976]
+84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Возвращающийся Топор
+Возвращающийся ТопорРанг 2 · Физическое · Проворность · Средне ·... [namelen=225 namehash=200c9c41]
+К содержимому
+Конфиденциальность
+Легендарный Священный Топор
+Легендарный Священный ТопорРанг 4 · Магическое · Сила · Вплотную... [namelen=108 namehash=27367bd9]
+ЛутDaggerheart
+Мясницкий Топор
+Мясницкий ТопорРанг 1 · Физическое · Сила · Вплотную · d12+3 физ... [namelen=134 namehash=9c5c02de]
+Неугомонное Возмездие
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Показывать свои предметы
+Предметы
+Продвинутый Священный Топор
+Продвинутый Священный ТопорРанг 3 · Магическое · Сила · Вплотную... [namelen=107 namehash=6323de8c]
+Расходники
+Священный Топор
+Священный ТопорРанг 1 · Магическое · Сила · Вплотную · d8+1 маг ... [namelen=95 namehash=7f7c9d94]
+Снаряжение
+Сообщества
+Списки
+Стопорный Ключ
+Таблицы
+Топор Лабрис
+Топор ЛабрисРанг 3 · Физическое · Сила · Вплотную · d10+7 физ · ... [namelen=133 namehash=b72600d1]
+Топор Лесного Стража
+Топор Чёрной Порчи
+Топор-Пила Лесоруба
+Топоры Рикошета
+Топоры РикошетаРанг 4 · Физическое · Проворность · Далеко · d6+1... [namelen=210 namehash=c3af308c]
+Улучшенный Священный Топор
+Улучшенный Священный ТопорРанг 2 · Магическое · Сила · Вплотную ... [namelen=106 namehash=d7da7282]
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/search]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Search" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    StaticText "Search all 1272 entries at once — loot, consumables and equipmen..." [namelen=115 namehash=ae3cbcb7]
+    searchbox "Search by name or description…" [value=топор focused=true]
+    StaticText "TYPE"
+    button "Items" [pressed=true]
+    button "Consumables" [pressed=true]
+    button "Equipment" [pressed=true]
+    button "Homebrew" [description=Show your own items pressed=false]
+    checkbox "Select all (13)" [checked=false]
+    StaticText "Select all (13)"
+    checkbox "Jamming Spanner" [checked=false]
+    button "49 Jamming Spanner Make a successful Finesse Roll to place this ..." [namelen=339 namehash=005e0aec]
+    ... checkbox x10 of 14 same-shape siblings elided
+    button "10 Felling Axe-Saw This massive hybrid tool cuts through wood, r..." [namelen=234 namehash=b9fd3bb4]
+    ... button x9 of 13 same-shape siblings elided
+    checkbox "Legendary Hallowed Axe" [checked=false]
+    button "Legendary Hallowed Axe Tier 4 · Magic · Strength · Melee · d8+10..." [namelen=101 namehash=9b8eb9ce]
+    checkbox "Returning Axe" [checked=false]
+    button "Returning Axe Tier 2 · Physical · Agility · Close · d6+4 phy · O..." [namelen=212 namehash=67b099ee]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+10Felling Axe-SawThis massive hybrid tool cuts through wood, roo... [namelen=230 namehash=a621d03c]
+116Restless VengeanceTier 3 · Physical · Strength · Melee · d10+... [namelen=462 namehash=3dedac99]
+49Jamming SpannerMake a successful Finesse Roll to place this to... [namelen=335 namehash=b33f324c]
+4Forestwarden's AxeThis seemingly ordinary axe carries the bless... [namelen=196 namehash=5664cde5]
+84Black Corruption AxeTier 4 · Physical · Presence · Very Close ... [namelen=452 namehash=18cf1bda]
+Account: gm1@example.test
+Advanced Hallowed Axe
+Advanced Hallowed AxeTier 3 · Magic · Strength · Melee · d8+7 ma... [namelen=96 namehash=6fa84112]
+Alt. tables
+Black Corruption Axe
+Butcher's Axe
+Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy · ... [namelen=125 namehash=f9a3c4ef]
+Communities
+Consumables
+Dragon's Vault
+Dread
+EN
+Equipment
+Felling Axe-Saw
+Forestwarden's Axe
+Hallowed Axe
+Hallowed AxeTier 1 · Magic · Strength · Melee · d8+1 mag · One-H... [namelen=87 namehash=67e93e55]
+Improved Hallowed Axe
+Improved Hallowed AxeTier 2 · Magic · Strength · Melee · d8+4 ma... [namelen=96 namehash=13f8cd98]
+Install as an app
+Items
+Jamming Spanner
+Labrys Axe
+Labrys AxeTier 3 · Physical · Strength · Melee · d10+7 phy · Two... [namelen=124 namehash=aaa3069c]
+Legendary Hallowed Axe
+Legendary Hallowed AxeTier 4 · Magic · Strength · Melee · d8+10 ... [namelen=98 namehash=82afb9d3]
+Lists
+Open this section on start
+Privacy
+RU
+Restless Vengeance
+Returning Axe
+Returning AxeTier 2 · Physical · Agility · Close · d6+4 phy · On... [namelen=207 namehash=cadf0742]
+Ricochet Axes
+Ricochet AxesTier 4 · Physical · Agility · Far · d6+11 phy · Two... [namelen=175 namehash=538d14ab]
+Search
+Show your own items
+Skip to content
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

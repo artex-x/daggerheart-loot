@@ -4,6 +4,7 @@ import { dict } from './dict.js';
 import { facetRows, type FacetValue } from './facets.js';
 import { FRAME_ORDER } from './frames.js';
 import { decodeFilter, groupsFor, passes } from './filters.js';
+import { browseIndex, recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
 import { CHARACTER_TRAITS, type EquipKind, type Record_, type TableId } from './types.js';
 
 const row = (over: Partial<Record_>): Record_ => ({
@@ -307,5 +308,105 @@ describe('the comm row', () => {
         { value: 'Highborne', label: 'Великородное' }
       ]
     });
+  });
+});
+
+describe('the own items', () => {
+  const base = buildIndex({
+    items: { core_item: [row({ id: 'ci1', src: 'core' })] },
+    eq: [
+      row({
+        id: 'w1',
+        src: 'core',
+        eq: { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'melee', bu: 1 }
+      })
+    ]
+  });
+  const workshop = {
+    key: 'hb_workshopaaaaaaaa',
+    ru: 'Мастерская Ольхи',
+    en: 'Alder Workshop',
+    sections: [{ key: 'hb_bladesaaaaaaaaaa', ru: 'Клинки', en: 'Blades' }]
+  };
+  const guild = {
+    key: 'hb_guildaaaaaaaaaaa',
+    ru: 'Гильдия',
+    sections: [{ key: 'hb_guildbladesaaaaa', ru: 'Клинки' }]
+  };
+  const sword = (key: string, book: typeof workshop | typeof guild | null, section?: string) =>
+    recordOf(
+      key,
+      {
+        kind: 'equip',
+        ru: 'Меч ' + key,
+        ...(section ? { section } : {}),
+        eq: {
+          t: 'weapon',
+          tier: 2,
+          cls: 'phy',
+          tr: 'agility',
+          rg: 'melee',
+          dmg: 'd8',
+          dt: 'phy',
+          bu: 1
+        }
+      },
+      book
+    );
+  const own = [
+    sword('hb_wsaaaaaaaaaaaaaa', workshop, 'hb_bladesaaaaaaaaaa'),
+    recordOf('hb_potionaaaaaaaaaa', { kind: 'consumable', ru: 'Зелье' }, null),
+    sword('hb_gsaaaaaaaaaaaaaa', guild, 'hb_guildbladesaaaaa')
+  ];
+  const index = withRecords(base, own, []);
+  const values = (ix: typeof index, table: TableId, group: string): string[] =>
+    facetRows(ix, table, t, 'ru')
+      .find((r) => r.group === group)
+      ?.values.map((v) => v.label) ?? [];
+
+  it('appends the own sources after the books on the table of their kind only', () => {
+    expect(values(index, 'eq_weapon', 'src')).toEqual(['Core', 'Гильдия', 'Мастерская Ольхи']);
+    expect(values(index, 'eq_armor', 'src')).toEqual([]);
+    const [, src] = facetRows(index, 'eq_weapon', t, 'ru');
+    expect(src?.values.map((v) => v.value)).toEqual([
+      'core',
+      'hb_guildaaaaaaaaaaa',
+      'hb_workshopaaaaaaaa'
+    ]);
+  });
+
+  it('offers kind, source with hb first, and section on the homebrew table', () => {
+    const rows = facetRows(index, 'homebrew', t, 'ru');
+    expect(rows.map((r) => r.group)).toEqual(['kind', 'src', 'sect']);
+    expect(values(index, 'homebrew', 'src')).toEqual([
+      'Хоумбрю',
+      'Гильдия',
+      'Мастерская Ольхи'
+    ]);
+    expect(rows[1]?.values[0]?.value).toBe('hb');
+  });
+
+  it('names a section with its source, so two equal section names differ', () => {
+    expect(values(index, 'homebrew', 'sect')).toEqual([
+      'Гильдия · Клинки',
+      'Мастерская Ольхи · Клинки'
+    ]);
+    expect(values(index, 'homebrew', 'sect').length).toBe(
+      new Set(values(index, 'homebrew', 'sect')).size
+    );
+  });
+
+  it('draws no section row when no own item sits in a section', () => {
+    const plain = withRecords(base, [own[1] as HomebrewRecord], []);
+    expect(facetRows(plain, 'homebrew', t, 'ru').map((r) => r.group)).toEqual(['src']);
+  });
+
+  it('draws no row at all with no own item', () => {
+    expect(facetRows(base, 'homebrew', t, 'ru')).toEqual([]);
+  });
+
+  it('drops the own values with the chip off', () => {
+    expect(values(browseIndex(index, base, false), 'eq_weapon', 'src')).toEqual(['Core']);
+    expect(values(browseIndex(index, base, true), 'eq_weapon', 'src')).toHaveLength(3);
   });
 });

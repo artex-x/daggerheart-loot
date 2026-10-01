@@ -360,6 +360,35 @@ describe('the homebrew pages', () => {
     expect(homebrewItemHash(null)).toBe('#/homebrew/new');
     expect(homebrewItemHash('hb_emberaxeaaaaaaaa')).toBe('#/homebrew/hb_emberaxeaaaaaaaa');
   });
+
+  it('reads the homebrew table, its anchors and its filter', () => {
+    expect(parseHash('#/tables/homebrew')).toEqual({
+      kind: 'tables',
+      table: 'homebrew',
+      anchor: '',
+      filter: {}
+    });
+    expect(parseHash('#/tables/homebrew/hb_emberaxeaaaaaaaa')).toEqual({
+      kind: 'tables',
+      table: 'homebrew',
+      anchor: 'hb_emberaxeaaaaaaaa',
+      filter: {}
+    });
+    expect(parseHash('#/tables/homebrew/f_kind-equip.sect-hb_sectbladesaaaaaa')).toEqual({
+      kind: 'tables',
+      table: 'homebrew',
+      anchor: '',
+      filter: { kind: ['equip'], sect: ['hb_sectbladesaaaaaa'] }
+    });
+  });
+
+  it('writes a homebrew table filter that reads back as the same filter', () => {
+    const filter = { src: ['hb', 'hb_alderworkshopaaa'], sect: ['hb_sectbladesaaaaaa'] };
+    const h = tablesHash('homebrew', { filter });
+    expect(h).toBe('#/tables/homebrew/f_src-hb-hb_alderworkshopaaa.sect-hb_sectbladesaaaaaa');
+    const r = parseHash(h);
+    expect(r.kind === 'tables' && r.filter).toEqual(filter);
+  });
 });
 
 describe('a shared-list payload with a stray trailing character (R5)', () => {

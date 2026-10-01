@@ -33,6 +33,10 @@ Frozen as written in `ROUTES.md`. In particular:
 - `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`, the author's own
   items and their editor, read in every build as `#/account` is; an own item
   also opens at `#/i/<key>`, for its author only
+- `#/tables/homebrew`, the author's own items as a table, read in every build
+  as `#/account` is; its filter group `sect`, and the `src` values `hb` and
+  `hb_<16>` on it and on the equipment tables (values that live in one
+  account)
 - `#/s/<token>`, an account share link: the token is opaque, made only by
   the list's owner, one active per audience (players, GM); it opens from
   `<site>#/s/<token>` and `<site>en/#/s/<token>` alike

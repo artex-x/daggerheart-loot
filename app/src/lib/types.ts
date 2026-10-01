@@ -54,7 +54,8 @@ export const TABLE_IDS = [
   'alt_consumable',
   'eq_weapon',
   'eq_secondary',
-  'eq_armor'
+  'eq_armor',
+  'homebrew'
 ] as const;
 
 export type TableId = (typeof TABLE_IDS)[number];

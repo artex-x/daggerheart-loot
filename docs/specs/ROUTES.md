@@ -53,7 +53,7 @@ working and keeps its own text.
 
 Table names (`TABLE_IDS`): `core_item`, `core_consumable`, `hnf_item`,
 `hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `dv`, `other_starting`, `other_frames`, `alt_item`,
-`alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`.
+`alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`, `homebrew`.
 
 `frames` is an alias for `other_frames` (`TABLE_ALIASES`, `hash.ts:39`):
 `#/tables/frames` resolves the same as `#/tables/other_frames`, not to being
@@ -96,6 +96,7 @@ Group keys, by table:
 | `other_starting` | none |
 | `other_frames` | `kind`, `frame` |
 | `community` | `comm` |
+| `homebrew` | `kind`, `src`, `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
 
 Values: `tier` `1`-`4` (and `A`, `C` on `voa`; `A` on an equipment table
@@ -104,7 +105,10 @@ whose kind has an artifact record); `cls` `phy`/`mag`; `trait`
 `melee`, `veryclose`, `close`, `far`, `veryfar`; `burden` `1`/`2`; `line`
 `line`/`uniq`; `kind` `item`/`consumable`/`equip`; `src` one of the source keys;
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
-community name.
+community name. On `homebrew` and the equipment tables `src` also takes `hb`
+(own items with no source) and an own source's key; `sect` takes an own
+section's key. Such a value lives in one account: another account's key
+narrows to nothing, as any unknown value does.
 
 `other_frames` has four setting anchors, in order: `beast_feast`, `colossus`,
 `dark_heart`, and `motherboard`. Each canonical frame record and any framed
@@ -179,6 +183,14 @@ other key are unreadable addresses (`Fallback` below). The routes are read
 in every build, as `#/account` is: signed out they draw the sign-in prompt,
 and a build with no sign-in configured draws the not-found page and keeps
 the address. No tab reads current on them, and a pin may not hold them.
+
+`#/tables/homebrew` is the signed-in author's own items as a table. It is read
+in every build: signed out it draws the sign-in prompt, and a build with no
+sign-in configured draws the not-found page and keeps the address. Its group
+chip is drawn signed in only. Its anchors are a section's key (that
+section's items), a source's key (the source's items outside its sections;
+none when every item sits in a section), `hb` (the items with no source) or
+an item's key. A pin may hold it.
 
 An own item opens at `#/i/<key>` for its author only: any other reader,
 signed out included, gets «Предмет не найден». A key lives in one account,

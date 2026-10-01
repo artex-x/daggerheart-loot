@@ -4,17 +4,21 @@
    docs/specs/FEATURES.md, "Homebrew". */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { dict } from '../lib/dict.js';
 import { COALESCE_MS } from '../lib/live.js';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import { fakeDialog, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import { fakeDialog, fakeEnv, fakePage, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { CloudPort } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
+
+/* jsdom does not implement scrollIntoView - the selection bar's add-to-list menu places
+   itself with it once open. */
+Element.prototype.scrollIntoView = vi.fn();
 
 const t = dict('ru');
 const ALDER = uuid(501);
@@ -31,10 +35,11 @@ function page(
       : opts.cloud;
   const router = memoryRouter('#/homebrew');
   const dialog = fakeDialog(opts.answer ?? true);
+  const pagePort = fakePage();
   const view = render(App, {
-    env: fakeEnv({ cloud, router, dialog, storage: memoryStorage() })
+    env: fakeEnv({ cloud, router, dialog, page: pagePort, storage: memoryStorage() })
   });
-  return { ...view, cloud, router, dialog };
+  return { ...view, cloud, router, dialog, pagePort };
 }
 
 const sources = async (): Promise<HTMLElement> => {
@@ -53,6 +58,11 @@ describe('#/homebrew', () => {
     const { container } = page();
     expect(await screen.findByText('Мои предметы: 4 из 100')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: t.myItems })).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и добавляются в списки.'
+      )
+    ).toBeInTheDocument();
     const heads = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
     expect(heads).toEqual([t.hbSources, 'Мастерская Ольхи · Холодное оружие 1', 'Хоумбрю 3']);
     const panel = await sources();
@@ -294,6 +304,30 @@ describe('#/homebrew', () => {
     expect(await screen.findByText('Удалено предметов: 2')).toBeInTheDocument();
     expect(screen.getByText('Мои предметы: 2 из 100')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: 'Кольцо с гравировкой' })).toBeNull();
+  });
+
+  it('puts a ticked item into a list as a reference from the selection bar', async () => {
+    const { cloud, pagePort, container } = page();
+    await screen.findByText('Мои предметы: 4 из 100');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Топор Тлеющих Углей' }));
+    await userEvent.click(screen.getByRole('button', { name: t.addToList }));
+    await expectNoA11yViolations(container);
+    await userEvent.click(await screen.findByRole('button', { name: 'Пустой список' }));
+    expect(
+      await screen.findByText(t.addedTo.replace('%s', 'Пустой список'))
+    ).toBeInTheDocument();
+    pagePort.fireHidden();
+    await waitFor(async () => {
+      const read = await cloud?.lists.list();
+      const empty = read?.ok ? read.lists.find((l) => l.id === uuid(102)) : undefined;
+      expect(empty?.list_entries).toEqual([
+        expect.objectContaining({
+          item_key: 'hb_emberaxeaaaaaaaa',
+          source: 'homebrew',
+          snapshot: null
+        })
+      ]);
+    });
   });
 
   it('ticks every item from the strip', async () => {

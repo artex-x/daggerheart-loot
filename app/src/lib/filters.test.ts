@@ -47,6 +47,10 @@ describe('which groups a table offers', () => {
     expect(groupsFor('eq_weapon')).toContain('burden');
   });
 
+  it('gives the homebrew table kind, source and section', () => {
+    expect(groupsFor('homebrew')).toEqual(['kind', 'src', 'sect']);
+  });
+
   it('gives a table with nothing to sort by an empty list, not a default', () => {
     expect(groupsFor('core_item')).toEqual([]);
     expect(groupsFor('alt_consumable')).toEqual([]);
@@ -115,6 +119,16 @@ describe('reading the address', () => {
        `groups` and fall through to the dot reading: one group, two values. */
     expect(decodeFilter('f_frame-beast_feast-colossus', groupsFor('other_frames'))).toEqual({
       frame: ['beast_feast', 'colossus']
+    });
+  });
+
+  it('reads homebrew keys, whose underscore is never the old separator', () => {
+    const groups = groupsFor('homebrew');
+    expect(
+      decodeFilter('f_src-hb-hb_alderworkshopaaa.sect-hb_sectbladesaaaaaa', groups)
+    ).toEqual({ src: ['hb', 'hb_alderworkshopaaa'], sect: ['hb_sectbladesaaaaaa'] });
+    expect(decodeFilter('f_src-hb_alderworkshopaaa', groups)).toEqual({
+      src: ['hb_alderworkshopaaa']
     });
   });
 

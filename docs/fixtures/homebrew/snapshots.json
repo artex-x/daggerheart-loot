@@ -232,6 +232,74 @@
           }
         }
       }
+    },
+    {
+      "name": "the weapon with a damage bonus past the old bound",
+      "key": "hb_emberaxeaaaaaaaa",
+      "content": {
+        "kind": "equip",
+        "ru": "Топор Тлеющих Углей",
+        "en": "Ember Axe",
+        "rud": "Лезвие тлеет и не гаснет под дождём.",
+        "ende": "The blade smoulders and does not go out in the rain.",
+        "section": "hb_sectbladesaaaaaa",
+        "eq": {
+          "t": "weapon",
+          "tier": 2,
+          "cls": "mag",
+          "tr": "spellcast",
+          "rg": "melee",
+          "dmg": "d10+50",
+          "dt": "mag",
+          "bu": 2
+        }
+      },
+      "book": {
+        "key": "hb_alderworkshopaaa",
+        "ru": "Мастерская Ольхи",
+        "en": "Alder Workshop",
+        "sections": [
+          {
+            "key": "hb_sectpistolsaaaaa",
+            "ru": "Пистоли",
+            "en": "Pistols"
+          },
+          {
+            "key": "hb_sectbladesaaaaaa",
+            "ru": "Холодное оружие",
+            "en": "Blades"
+          }
+        ]
+      },
+      "snapshot": {
+        "kind": "equip",
+        "ru": "Топор Тлеющих Углей",
+        "en": "Ember Axe",
+        "rud": "Лезвие тлеет и не гаснет под дождём.",
+        "ende": "The blade smoulders and does not go out in the rain.",
+        "eq": {
+          "t": "weapon",
+          "tier": 2,
+          "cls": "mag",
+          "tr": "spellcast",
+          "rg": "melee",
+          "dmg": "d10+50",
+          "dt": "mag",
+          "bu": 2
+        },
+        "id": "hb_emberaxeaaaaaaaa",
+        "src": "homebrew",
+        "book": {
+          "key": "hb_alderworkshopaaa",
+          "en": "Alder Workshop",
+          "ru": "Мастерская Ольхи",
+          "section": {
+            "key": "hb_sectbladesaaaaaa",
+            "en": "Blades",
+            "ru": "Холодное оружие"
+          }
+        }
+      }
     }
   ],
   "invalid": [

@@ -1742,9 +1742,9 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-167 kB for the unconfigured build and 226 kB for the configured one, which
+171 kB for the unconfigured build and 230 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 167 kB limit. The 226 kB limit runs in
+unconfigured and so measures only the 171 kB limit. The 230 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -1756,8 +1756,9 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 226 kB budget (with the account client chunk)`; 220.8
-kB on 2026-09-30 with the homebrew pages (203.0 kB before them, after the
+Expected: `within the 230 kB budget (with the account client chunk)`; 224.8
+kB on 2026-10-01 with homebrew in the catalog pages, 165.9 kB unconfigured
+(220.8 kB on 2026-09-30 with the homebrew pages, 203.0 kB before them, after the
 import and export and the requests polish; 184.5 kB on 2026-09-27 with the
 Realtime client, 178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
 `check:built` rebuilds it. During R7-R7d a batch whose build passes a limit
@@ -2108,6 +2109,17 @@ frontend writes official list entries only, which the new `list_entries`
 checks take. Run the homebrew reversal only after a backup, and only when
 the tables must go: it deletes every homebrew source, every homebrew item
 and every homebrew list entry.
+
+To undo `20261001120000_homebrew_damage_bonus`, revert the app alone: the
+old frontend writes a damage bonus of +1..+20, which the widened
+`homebrew_content_valid()` takes. Narrow the database too only as a second
+push, a new migration whose body is the reversal file, and only after a
+read finds no item and no frozen list entry with a bonus past +20. A CHECK
+runs on every UPDATE: after the narrowing, such an item refuses every save,
+a `list_entries` row whose frozen snapshot holds such a bonus refuses every
+write (in any user's list; an `apply_list_writes` batch that touches it
+fails whole), and a backup restore into the narrowed database refuses those
+rows.
 
 ### Usage monitoring
 

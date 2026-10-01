@@ -41,7 +41,8 @@ const PLAIN_GROUPS: Partial<Record<TableId, readonly string[]>> = {
   dv: ['kind'],
   voa: ['kind', 'tier'],
   other_frames: ['kind', 'frame'],
-  community: ['comm']
+  community: ['comm'],
+  homebrew: ['kind', 'src', 'sect']
 };
 
 /** The groups a table offers, in the order they are written to the address. */

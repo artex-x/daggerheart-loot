@@ -10,6 +10,7 @@
  * global, and that adapter lives outside this module (docs/specs/CONTRACTS.md,
  * section 4). */
 
+import { isHomebrewRecord } from './homebrew.js';
 import type { Rarity } from './money.js';
 import { CHARACTER_TRAITS } from './types.js';
 import type { EquipKind, Record_, RefCard, SetCard } from './types.js';
@@ -44,7 +45,8 @@ export interface Index {
    *
    * `all` flattens them, which is right for search and wrong for a roll: a roll
    * is a number within one roll pool. Campaign frames are source tables, not
-   * roll pools.
+   * roll pools. The key `homebrew` holds the signed-in author's own items
+   * (`withRecords`), never a catalog record.
    */
   rows: ReadonlyMap<string, readonly Record_[]>;
   /** Loot and equipment - what search covers. */
@@ -208,6 +210,7 @@ export function kindOf(it: Record_): 'item' | 'consumable' | 'equip' {
  * value cannot say that - it would be all ninety-odd or none.
  */
 export function srcOf(it: Record_): string {
+  if (isHomebrewRecord(it)) return it.book?.key ?? 'hb';
   return it.src === 'frame' ? (it.frame ?? it.src) : it.src;
 }
 
@@ -235,7 +238,9 @@ export function plainFacets(it: Record_): Record<string, string> {
     kind: kindOf(it),
     tier: it.tier == null ? '' : String(it.tier),
     frame: it.frame ?? '',
-    comm: it.community ?? ''
+    comm: it.community ?? '',
+    src: srcOf(it),
+    sect: isHomebrewRecord(it) ? (it.book?.section?.key ?? '') : ''
   };
 }
 

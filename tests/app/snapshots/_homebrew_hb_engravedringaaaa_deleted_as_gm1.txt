@@ -26,7 +26,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Мои предметы" [level=1]
-    StaticText "Предметы, которых нет в книгах: их можно добавлять в списки, печ..." [namelen=91 namehash=174ba079]
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "Мои предметы: 3 из 100"
     heading "ИСТОЧНИКИ" [level=2]
     ... StaticText x4 of 8 same-shape siblings elided
@@ -111,7 +111,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "My items" [level=1]
-    StaticText "Items that are not in the books: add them to lists, print them a..." [namelen=93 namehash=d34d5e94]
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "My items: 3 of 100"
     heading "SOURCES" [level=2]
     ... StaticText x4 of 8 same-shape siblings elided

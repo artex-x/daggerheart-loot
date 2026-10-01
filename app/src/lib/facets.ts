@@ -16,16 +16,21 @@
  * rather than `PLAIN_GROUPS`. `facetRows` dispatches to `eqFacetRows` for
  * those three and keeps the plain branches below for everything else.
  *
+ * The signed-in author's own items add values at run time: the equipment `src` row
+ * appends `hb` and each own source after the books, and the `homebrew` table offers
+ * `kind`, `src` and `sect` over its own rows (docs/specs/ROUTES.md, "Values").
+ *
  * Pure module: no DOM, no data beyond what is handed in. */
 
 import { equipFacets, kindOf, srcOf, type Index } from './data.js';
 import { EQ_GROUPS, EQ_TABLE, groupsFor } from './filters.js';
 import { FRAME_ORDER, frameName } from './frames.js';
+import { isHomebrewRecord } from './homebrew.js';
 import { srcName } from './label.js';
 import { communities, communityName, voaSectionName, VOA_SECTIONS } from './sections.js';
 import { EQ_BURDEN, EQ_CLS, EQ_LINE, EQ_RANGE, EQ_TRAIT, eqWord } from './i18n.js';
 import type { Dict } from './dict.js';
-import type { EquipKind, Kind, Lang, TableId } from './types.js';
+import type { EquipKind, Kind, Lang, Record_, TableId } from './types.js';
 
 export interface FacetValue {
   value: string;
@@ -79,6 +84,33 @@ const EQ_SRC: readonly string[] = [
   ...FRAME_ORDER
 ];
 
+const byLabel =
+  (lang: Lang) =>
+  (a: FacetValue, b: FacetValue): number =>
+    a.label.localeCompare(b.label, lang);
+
+/* The `src` values of own items: `hb` (no source) first, then each source by its name. */
+function homebrewSrcValues(records: readonly Record_[], t: Dict, lang: Lang): FacetValue[] {
+  const own = records.filter(isHomebrewRecord);
+  const named = new Map<string, string>();
+  for (const it of own) if (it.book) named.set(it.book.key, it.book[lang]);
+  return [
+    ...(own.some((it) => !it.book) ? [{ value: 'hb', label: t.srcHomebrew }] : []),
+    ...[...named].map(([value, label]) => ({ value, label })).sort(byLabel(lang))
+  ];
+}
+
+/* The `sect` values of own items, each labelled «<source> · <section>» as its heading is,
+   so two sources' sections of one name never draw two equal chips. */
+function homebrewSectValues(records: readonly Record_[], lang: Lang): FacetValue[] {
+  const named = new Map<string, string>();
+  for (const it of records.filter(isHomebrewRecord)) {
+    const s = it.book?.section;
+    if (it.book && s) named.set(s.key, it.book[lang] + ' · ' + s[lang]);
+  }
+  return [...named].map(([value, label]) => ({ value, label })).sort(byLabel(lang));
+}
+
 /**
  * The equipment tables' facet rows, off `eqFacets` in app.js. Walks
  * `EQ_GROUPS[kind]` rather than restating its order, which is what keeps the
@@ -100,9 +132,16 @@ export function eqFacetRows(index: Index, kind: EquipKind, t: Dict, lang: Lang):
     src: () => ({
       group: 'src',
       label: t.source,
-      values: EQ_SRC.filter((k) =>
-        index.allEquip.some((it) => it.eq?.t === kind && srcOf(it) === k)
-      ).map((k) => ({ value: k, label: srcName(k, lang) }))
+      values: [
+        ...EQ_SRC.filter((k) =>
+          index.allEquip.some((it) => it.eq?.t === kind && srcOf(it) === k)
+        ).map((k) => ({ value: k, label: srcName(k, lang) })),
+        ...homebrewSrcValues(
+          index.allEquip.filter((it) => it.eq?.t === kind),
+          t,
+          lang
+        )
+      ]
     }),
     /* The row filters the class on every weapon kind, secondary included. */
     cls: () => ({
@@ -193,6 +232,12 @@ export function facetRows(index: Index, table: TableId, t: Dict, lang: Lang): Fa
       label: t.commF,
       values: communities(index).map((c) => ({ value: c.id, label: communityName(c, lang) }))
     });
+  } else if (table === 'homebrew') {
+    const own = index.rows.get('homebrew') ?? [];
+    const src = homebrewSrcValues(own, t, lang);
+    if (src.length) rows.push({ group: 'src', label: t.source, values: src });
+    const sect = homebrewSectValues(own, lang);
+    if (sect.length) rows.push({ group: 'sect', label: t.hbSection, values: sect });
   }
 
   return rows;

@@ -1,5 +1,6 @@
 # 2026-09-30 - A homebrew source may hold sections, as the community book holds communities
 
+- Amended by "Homebrew sections stay in the source row: no sections table, no parent books" (2026-10-01): the owner confirms the shape and rejects parent books.
 - Task: `persist-7-homebrew` (owner's mock review of 2026-09-29 and answer to Q10, 2026-09-30; planner, pass 3).
 - Decision: a source's row holds `sections [{ key, en?, ru? }]` (at most 30; `hb_` keys unique
   in the source by the database; names unique in the source by the client, without case); an item

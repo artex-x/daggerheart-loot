@@ -492,6 +492,28 @@
     }
   },
   {
+    "hash": "#/tables/homebrew",
+    "why": "the signed-in author's own items as a table; signed out the sign-in prompt, with no sign-in configured the not-found page, address kept",
+    "resolves": {
+      "hash": "#/tables/homebrew",
+      "tab": "#/tables",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/tables/homebrew/hb_alderworkshopaaa",
+    "why": "an own source's anchor: the source's items outside its sections; a source with none, or another account's key, scrolls to nothing, address kept",
+    "resolves": {
+      "hash": "#/tables/homebrew/hb_alderworkshopaaa",
+      "tab": "#/tables",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/homebrew/new",
     "why": "the editor of a new own item; address kept in every build",
     "resolves": {

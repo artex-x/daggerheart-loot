@@ -17,6 +17,7 @@ import {
   upgradeLine,
   type Loot
 } from './data.js';
+import { recordOf } from './homebrew.js';
 import { CHARACTER_TRAITS, type Record_ } from './types.js';
 
 const LOOT = JSON.parse(
@@ -416,6 +417,30 @@ describe('records with fields missing', () => {
     expect(f['frame']).toBe('');
     expect(f['comm']).toBe('');
     expect(Object.values(f)).not.toContain(undefined);
+  });
+
+  it('files a homebrew record under its source key, or hb with no source', () => {
+    const own = recordOf('hb_aaaaaaaaaaaaaaaa', { kind: 'item', ru: 'Своя' }, null);
+    const book = {
+      key: 'hb_bbbbbbbbbbbbbbbb',
+      ru: 'Мастерская',
+      sections: [{ key: 'hb_cccccccccccccccc', ru: 'Клинки' }]
+    };
+    const inBook = recordOf('hb_dddddddddddddddd', { kind: 'item', ru: 'В книге' }, book);
+    const inSection = recordOf(
+      'hb_eeeeeeeeeeeeeeee',
+      { kind: 'item', ru: 'В разделе', section: 'hb_cccccccccccccccc' },
+      book
+    );
+    expect(srcOf(own)).toBe('hb');
+    expect(srcOf(inBook)).toBe('hb_bbbbbbbbbbbbbbbb');
+    expect(plainFacets(own)['src']).toBe('hb');
+    expect(plainFacets(own)['sect']).toBe('');
+    expect(plainFacets(inBook)['sect']).toBe('');
+    expect(plainFacets(inSection)['src']).toBe('hb_bbbbbbbbbbbbbbbb');
+    expect(plainFacets(inSection)['sect']).toBe('hb_cccccccccccccccc');
+    expect(plainFacets(bare())['sect']).toBe('');
+    expect(plainFacets(bare())['src']).toBe('core');
   });
 
   it('writes a tier of zero as a value, not as absent', () => {

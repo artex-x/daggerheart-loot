@@ -1,32 +1,32 @@
-# Shared task context - TASK persist-7b-homebrew-catalog
+# Shared task context - TASK persist-7c-homebrew-relations
 
 Orchestrator (or first worker) maintains this file so later steps do not re-fetch the same sources.
 
 ## Goal
-- R7b: homebrew items in the catalog pages - the `homebrew` table
-  (`#/tables/homebrew`), own equipment in the equipment tables with dynamic
-  `src` values and the `sect` facet, one merged search with the intro
-  counter, the «Хоумбрю» show/hide chip (`plan.md` 7.2, D3).
-- The next releases after R7b, planned in the same `plan.md` until each
-  gets its own directory (7.5): R7c `persist-7c-homebrew-relations`
-  (the catalog `craft` as a list, cards, upgrade lines, craft links, sets,
-  relations on catalog cards) and R7d `persist-7d-homebrew-files` (two
-  public schemas, `llms.txt`, import and export, `homebrew.json` in the
-  zip).
-- R7 `persist-7-homebrew` shipped the items themselves (commit "feat(persist):
-  add homebrew items, their pages, editor and list entries"); its directory
-  was deleted at its closeout and this one took its R7b-R7d plan. R8
-  (homebrew art) and R9 (`#/h/<token>` item links, add and clone, print
-  routes for cloud lists) build on this design.
+- R7c: homebrew items relate to catalog records and to each other - the
+  catalog `craft` as a list (`B7c.1`), cards, upgrade lines, craft links,
+  sets, rule cards (`B7c.2`, `B7c.3`), and those relations drawn on catalog
+  cards and rows (`B7c.4`). `plan.md` 7.3.
+- R7d `persist-7d-homebrew-files` follows (its plan sits in this
+  directory's `plan.md` until R7c's closeout): two public schemas,
+  `llms.txt`, import and export, `homebrew.json` in the zip, the bulk move
+  (`plan.md` 7.4).
+- R7 `persist-7-homebrew` (`057405ee`) shipped the items themselves; R7b
+  `persist-7b-homebrew-catalog` shipped the catalog pages (the `homebrew`
+  table, own equipment in the equipment tables, one merged search, the
+  «Хоумбрю» chip) and the editor feedback; its directory was deleted at its
+  closeout and this one took the R7c-R7d plan. R8 (homebrew art) and R9
+  (`#/h/<token>` item links, add and clone, print routes for cloud lists)
+  build on this design.
 
 ## GitHub issue (if any)
 - URL: none (a local task id; the owner's requests came through the
-  orchestrator, 2026-09-27 to 2026-09-30).
-- Captured or last verified: 2026-10-01, at R7's closeout.
+  orchestrator, 2026-09-27 to 2026-10-01).
+- Captured or last verified: 2026-10-01, at R7b's closeout.
 - Title: -
 - Summary (facts only): the owner's items 1-13 below.
 - Decisions already settled: `plan.md` sections 9 and 10; the decision
-  files D1-D11 under `docs/decisions/` (`plan.md` section 10).
+  files D1-D12 under `docs/decisions/`.
 - Open questions: none.
 
 ## The owner's requests (2026-09-27/28, the parts R7b-R7d still deliver)
@@ -90,26 +90,51 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
 - «Карты правил» confirmed as the label.
 - Mocks m01-m22 approved, with the Q12 revision (no draft mark).
 
-## Screenshot / attachment findings
-- No issue screenshots. The approved mocks are `mocks/index.html`
-  (m01-m22), moved here from R7's directory; `plan.md` section 8 lists
-  each mock's release and the answers that override what a mock still
-  draws (the dashed marks of m07 and m08 among them).
+## Owner decisions of 2026-10-01 (R7b's closeout)
+- Homebrew sections stay inside the source row
+  (`homebrew_books.content.sections`, items name a section key); no
+  sections table, no parent books. D12,
+  `docs/decisions/2026-10-01-homebrew-sections-stay-in-the-source-row.md`
+  (amends D8).
+- The tables help text (`lib/help.ts`) names the «Хоумбрю» group: placed in
+  `B7c.4` (an acceptance line).
+- Bulk moves between sources and sections: placed in R7d `B7d.2` (an
+  acceptance line): a selection on `#/homebrew` with «Переместить...» in
+  the selection bar, reusing the import's «Куда» source and section picker.
+- G37, a set filter or a set page: deferred, placed in no release; revisit
+  once homebrew sets exist.
+- Price and quantity in the quick item panel («Свой предмет»): deferred, no
+  release. A Trash for homebrew: deferred, no release.
+- `DEBT.md`: a separate generic debt clean-up release between R9 and
+  `persist-review` takes D64, D66 and every other `DEBT.md` entry still
+  open then; not R10, not a task now.
+- The damage bonus bound is `+1`..`+99` (migration
+  `20261001120000_homebrew_damage_bonus.sql`); `B7c.2`'s validator
+  replacement starts from that body.
+- Named to the owner and dropped: the signed-in strip cap at 360 px holds
+  2 px of room (298 of 300 px).
 
 ## Key paths
 - Specs: `docs/specs/FEATURES.md` ("Homebrew", "Tables and search",
   "Records"), `ROUTES.md`, `CONTRACTS.md` (sections 1, 2, 4), `STATE.md`,
   `I18N.md`, `META.md`, `COVERAGE.md`, `DEBT.md` (D69 owned by R7d).
-- Code hot paths: `app/src/lib/homebrew.ts` (`withRecords`, `recordOf`),
-  `lib/data.ts` (`Index`: `byId`, `all`, `rows`, `searchable`, `allEquip`,
-  `craftedFrom`, `setMembers`, `refs`, `sets`), `lib/facets.ts` (`EQ_SRC`,
-  `srcName`), `lib/types.ts` (`TABLE_IDS`, `Record_`), `lib/label.ts` (`tableOf`,
-  `srcLabel`, `whereFrom`), `components/SearchPage.svelte`,
-  `TablesPage.svelte`, `RecordCard.svelte`, `RowMain.svelte`,
-  `HomebrewPage.svelte`, `HomebrewEditor.svelte`,
-  `state/homebrew.svelte.ts`, `state/app.svelte.ts`;
-  `supabase/migrations/20260930130000_homebrew.sql`.
-- Mocks: `issues/persist-7b-homebrew-catalog/mocks/index.html`.
+- Code hot paths: `app/src/lib/homebrew.ts` (`withRecords`, `browseIndex`,
+  `recordOf`), `lib/homebrewForm.ts`, `lib/data.ts` (`Index`: `byId`,
+  `all`, `rows`, `searchable`, `allEquip`, `craftedFrom`, `setMembers`,
+  `refs`, `sets`), `lib/types.ts` (`Record_`), `lib/label.ts`,
+  `components/RecordCard.svelte`, `RowMain.svelte`,
+  `HomebrewPage.svelte`, `HomebrewEditor.svelte`, `Seg.svelte`,
+  `HomebrewLoad.svelte`, `state/homebrew.svelte.ts`,
+  `state/app.svelte.ts`; `supabase/migrations/20260930130000_homebrew.sql`
+  and `20261001120000_homebrew_damage_bonus.sql`.
+- Tests: `lib/{data,homebrew,homebrewForm,share}.test.ts`,
+  `components/{recordCard,rowMain,homebrewEditor,homebrewPage,homebrewCatalog,record}.test.ts`
+  (check each name before use), `tests/db/homebrew.test.mjs`,
+  `ports/cloud.contract.ts` (cases A-M).
+- Browser harness: `tests/app/inventory.js` (states), `tests/app/golden.js`,
+  `tests/app/contracts.js`, `tests/app/sweep.js`, `tests/app/driver.js`
+  (`choose(selector, value)` sets a `<select>`).
+- Mocks: `issues/persist-7c-homebrew-relations/mocks/index.html`.
 
 ## Command costs
 
@@ -140,7 +165,7 @@ e2e` 2-3 min; a blind round 5-10 min.
   1167-2838 ms). The toast hold fixed it (decision 2026-09-30, "A timed
   golden holds its toast until the capture reads it").
 
-## Facts measured or settled (still true at R7's closeout)
+## Facts measured or settled
 - Catalog (`data.js`): 1272 records, 891 in `items` tables plus 381 in
   `eq`; `eq` on 604, 288 of them in 72 upgrade lines (`eq.line`), and every
   line shares one `img`; `craft` on 17 (one id string each, no target with
@@ -160,14 +185,6 @@ e2e` 2-3 min; a blind round 5-10 min.
   feeds `equipOfKind`, `upgradeLine` and the facets' presence filters.
   `searchable` feeds `SearchPage` only. `rows` feeds the roll panels,
   `TablesPage`, `facets.ts`, `sections.ts`, `std.ts`.
-- `TABLE_IDS` (16) is read by `isTableId`, `groupsFor`, `PLAIN_GROUPS`,
-  `TABLE_GROUPS`, `SUB_LABEL`, `pinOf` and `routes.json`; `TABLES_RE`
-  admits `[a-z_]+` names and `[A-Za-z0-9_.-]+` tails, so `homebrew` and an
-  anchor `hb_<16>` fit the grammar.
-- `EQ_SRC` (`facets.ts`) is a fixed list filtered by presence in
-  `allEquip`; `srcName(key, lang)` names the five books and falls back to
-  `frameName`. `hayFor` caches by id; `SearchPage` derives it from
-  `statLine`.
 - `RowMain` draws one craft line (`craftFrom`, `craftInto`), badges and the
   `src` badge; `RecordCard` draws the ladder (`upgradeLine`; each rung a
   fixed 26 px square with its tier, titled with the item name), both craft
@@ -187,23 +204,45 @@ e2e` 2-3 min; a blind round 5-10 min.
   lines from 2026-09-26 on, a status line before "- Task", and both
   directions of every pointer.
 - The golden format reads the accessibility tree: a `data-` attribute on
-  `<main>` moves no golden. `driver.js` has no `<select>` verb (`states.js`
-  calls `page.select`); `golden.js --only=` takes one substring. Inventory
+  `<main>` moves no golden. `driver.js` sets a `<select>` with
+  `choose(selector, value)` (`inventory.js` and e2e F14 call it; write no
+  second verb); `golden.js --only=` takes one substring. Inventory
   states are named `<route>[ ~ variant][ as gm1|gm2]`.
 - `PageHead` draws the pin button; the homebrew pages use `PageTitle`.
-- The bundle budget, 2026-10-01: 223.8 of 226 kB configured, 164.8 of
-  167 kB unconfigured; it counts lazy chunks.
 - The mock generator lived outside the repository, in an R7 session
   scratchpad (`r7mocks/gen.mjs`); it rewrote every `.html` file of the
   mocks directory. Treat it as gone: edit a mock by hand.
-- The browser pane opens `mocks/index.html` from disk but refuses the other
-  mock paths; a 360 px check ran on pages copied to that path, each under
-  about 88 000 URL-encoded characters.
+- The browser pane opens `mocks/index.html` and `mocks/m23-editor-feedback.html`
+  from disk but refuses the other mock paths; a 360 px check ran on pages
+  copied to that path, each under about 88 000 URL-encoded characters.
 - With homebrew keys of 19 characters a purchase request's 32 KiB lines
   bound holds about 700 lines (about 360 with 64-character keys).
 - "100 entries per list is at most 3.2 MB" (32 KB frozen snapshots) holds
   only at the default; an override of 1000 entries makes a shared list up
   to 32 MB in `get_shared_list()`.
+- A migration reversal must restore the previous function body exactly:
+  `tests/db/reversibility.test.mjs` compares the schema dump up-down-up.
+  `.claude/README.md`, "Undo a deploy that carried a migration", holds one
+  paragraph per migration that narrows or deletes.
+- From the plan review of `B7b.2` (2026-10-01): a Postgres CHECK runs on
+  every UPDATE of its row, so a narrowed `homebrew_content_valid` locks
+  every row (item, `list_entries` frozen copy) that holds a value it
+  refuses; `.check-db-cache.json` is keyed by the whole tree
+  (`.claude/hooks/tree-key.mjs`; `issues/` and `.md` files other than the
+  READMEs exempt), so `check:db` runs after the last tracked edit;
+  `tsconfig.json` sets `exactOptionalPropertyTypes`.
+- The fake broadcasts a homebrew write on `owner:<uid>` with `{ by: TAB }`.
+- The bundle budget after R7b (2026-10-01): 225.7 of 230 kB configured
+  (measured with the README's `.env.test.local` line), 166.8 of 171 kB
+  unconfigured; it counts lazy chunks. A step under the 250/190 ceilings
+  applies the existing decision and writes no new file; a ceiling rise
+  writes one (`plan.md` 4.10).
+- R7b's closeout gates (orchestrator, 2026-10-01): `node tests/app/sweep.js
+  1180` clean in ru and en; the four golden shards compared 232 states,
+  unchanged.
+- A pointer to behaviour R7b shipped: `FEATURES.md` "Tables and search",
+  "Records", "Homebrew", "Rolling"; `withRecords(base, own, frozen)` returns
+  `base` itself when `own` and `frozen` are empty.
 
 ## Constraints
 - Contracts / parity / i18n notes: «(HB)» and the rung's «HB» are the same

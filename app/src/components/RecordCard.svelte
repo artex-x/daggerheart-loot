@@ -58,7 +58,7 @@
     actions?: Snippet;
     /** The add-to-list control and the print link, off `listPicker` in app.js -
      *  only the full card draws it, the same as `actions`. */
-    pick?: Snippet;
+    pick?: Snippet | undefined;
   }
 
   const {

@@ -2,7 +2,8 @@
   /* Search, `#/search` - reproduced from `renderSearch` (app.js 2841-2859).
      Both languages at once, over loot and gear together: the head, one panel
      holding the box (focused on arrival) and the three kind chips, then the
-     hint, up to 300 rows, or "nothing found". */
+     hint, up to 300 rows, or "nothing found". A signed-in author's own items
+     follow the catalog's, and the «Хоумбрю» chip hides them for the visit. */
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import ChipRow from './ChipRow.svelte';
@@ -15,6 +16,7 @@
   import TableRows from './TableRows.svelte';
   import { kindOf } from '../lib/data.js';
   import { foldQuery, hayFor, matches, statLineFor } from '../lib/search.js';
+  import { plural } from '../lib/plural.js';
   import { isLastOn } from '../lib/std.js';
   import { KINDS } from '../lib/types.js';
   import type { Dict } from '../lib/dict.js';
@@ -29,6 +31,13 @@
 
   const t = $derived(app.t);
   const index = $derived(app.index);
+  /* The row pool only: `RecordHost` and `TableRows` keep `index`. */
+  const browse = $derived(app.browse);
+  const own = $derived(app.homebrew?.records.length ?? 0);
+  /* The catalog count stays; the own items add a sentence, whatever the chip. */
+  const intro = $derived(
+    own > 0 ? t.subSearch + ' ' + plural(own, t.subSearchOwn, app.lang) : t.subSearch
+  );
 
   /* Page memory only, the same as `TablesPage`'s own `q` - `docs/specs/
      STATE.md` is explicit that what was asked on a page is not remembered,
@@ -44,9 +53,9 @@
      line the table filter strip already prints (`FilterBar.svelte`'s
      `.fcount`, `t.outOf`). */
   const matched = $derived.by(() =>
-    !index || !query
+    !browse || !query
       ? []
-      : index.searchable.filter(
+      : browse.searchable.filter(
           (it) => app.kinds[kindOf(it)] && matches(it, query, statLine, hay)
         )
   );
@@ -59,7 +68,7 @@
   };
 </script>
 
-<PageHead {app} title={t.search} sub={t.subSearch} help={null} />
+<PageHead {app} title={t.search} sub={intro} help={null} />
 
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}
@@ -89,6 +98,16 @@
                 }}
               />
             {/each}
+            {#if own > 0}
+              <Chip
+                label={t.srcHomebrew}
+                title={t.hbChipHint}
+                on={app.homebrewShown}
+                onclick={() => {
+                  app.toggleHomebrew();
+                }}
+              />
+            {/if}
           </ChipRow>
         </Field>
       </Panel>

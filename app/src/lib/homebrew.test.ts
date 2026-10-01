@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   bookProblems,
+  browseIndex,
   canonJson,
   contentProblems,
   editLang,
@@ -244,6 +245,65 @@ describe('withRecords', () => {
   it('never lets a frozen copy replace a catalog record', () => {
     const fake = { ...frozen, id: 'ci1' };
     expect(withRecords(base, [], [fake]).byId.get('ci1')).toBe(base.byId.get('ci1'));
+  });
+
+  const axe = recordOf(
+    'hb_ownaxeaaaaaaaaaa',
+    {
+      kind: 'equip',
+      ru: 'Топор',
+      eq: {
+        t: 'weapon',
+        tier: 2,
+        cls: 'phy',
+        tr: 'strength',
+        rg: 'melee',
+        dmg: 'd8',
+        dt: 'phy',
+        bu: 1
+      }
+    },
+    null
+  );
+
+  it('puts own records after the catalog in search, own equipment after it, and makes the homebrew rows', () => {
+    const ix = withRecords(base, [own, axe], []);
+    expect(ix.searchable).toEqual([...base.searchable, own, axe]);
+    expect(ix.allEquip).toEqual([...base.allEquip, axe]);
+    expect(ix.rows.get('homebrew')).toEqual([own, axe]);
+    expect(ix.rows.get('core_item')).toBe(base.rows.get('core_item'));
+    expect(base.rows.has('homebrew')).toBe(false);
+    expect(ix.all).toBe(base.all);
+  });
+
+  it('changes only byId with frozen copies alone', () => {
+    const ix = withRecords(base, [], [frozen]);
+    expect(ix.searchable).toBe(base.searchable);
+    expect(ix.allEquip).toBe(base.allEquip);
+    expect(ix.rows).toBe(base.rows);
+  });
+});
+
+describe('browseIndex', () => {
+  const base = buildIndex({
+    items: {
+      core_item: [{ id: 'ci1', src: 'core', kind: 'item', en: 'A', ru: 'А', ende: '', rud: '' }]
+    }
+  });
+  const own = recordOf('hb_owneditemaaaaaa', { kind: 'item', ru: 'Своё' }, null);
+  const index = withRecords(base, [own], []);
+
+  it('answers the index itself while the chip is on, or when it holds no own item', () => {
+    expect(browseIndex(index, base, true)).toBe(index);
+    expect(browseIndex(base, base, false)).toBe(base);
+  });
+
+  it('takes search and equipment from the catalog with the chip off, and keeps byId and rows', () => {
+    const hidden = browseIndex(index, base, false);
+    expect(hidden.searchable).toBe(base.searchable);
+    expect(hidden.allEquip).toBe(base.allEquip);
+    expect(hidden.byId.get(own.id)).toBe(own);
+    expect(hidden.rows.get('homebrew')).toEqual([own]);
   });
 });
 

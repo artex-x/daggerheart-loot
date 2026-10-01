@@ -153,7 +153,7 @@ function stampOf(parts) {
    * navigation (driver.js's own) and `prepare()`'s per-navigation
    * localStorage.clear() (lib.js/driver.js) already give every fixture the
    * same clean slate a fresh context would, without paying puppeteer's
-   * ~1.8s-per-context floor (tests/app/golden.js's measured cost) 31 times. */
+   * ~1.8s-per-context floor (tests/app/golden.js's measured cost) once per fixture. */
   const { ctx: rCtx, page: rPage, d: rD } = await fresh({ width: 1280, height: 900 });
   for (const fx of routes) {
     await rD.open(fx.hash);
@@ -332,6 +332,40 @@ function stampOf(parts) {
     );
   }
   await pCtx.close();
+
+  /* The own items' values exist in one account only: gm1's seed. gm1's tables view is the
+     grid, so a row is any `[data-row]`. */
+  const OWN_PROBE = [
+    ['homebrew', 'kind-equip'],
+    ['homebrew', 'src-hb'],
+    ['homebrew', 'sect-hb_sectbladesaaaaaa'],
+    ['eq_weapon', 'src-hb_alderworkshopaaa']
+  ];
+  const { ctx: oCtx, page: oPage, d: oD } = await fresh({ width: 1280, height: 900 });
+  const ownRowsAt = async (hash) => {
+    await oD.open(hash, { as: 'gm1' });
+    await oD.moveSettled();
+    return oPage.evaluate(() => document.querySelectorAll('[data-row]').length);
+  };
+  const ownWhole = {};
+  for (const [tid] of OWN_PROBE) {
+    if (!(tid in ownWhole)) ownWhole[tid] = await ownRowsAt('#/tables/' + tid);
+  }
+  for (const [tid, seg] of OWN_PROBE) {
+    const n = await ownRowsAt('#/tables/' + tid + '/f_' + seg);
+    ok(
+      n > 0 && n < ownWhole[tid],
+      tid +
+        '/f_' +
+        seg +
+        ' as gm1: the group selects nothing (' +
+        n +
+        ' of ' +
+        ownWhole[tid] +
+        ')'
+    );
+  }
+  await oCtx.close();
 
   await closeBrowser();
   console.log(

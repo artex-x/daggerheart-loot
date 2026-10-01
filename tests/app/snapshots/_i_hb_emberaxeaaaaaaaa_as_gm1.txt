@@ -26,7 +26,8 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Топор Тлеющих Углей" [level=1]
-    StaticText "Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2"
+    StaticText "Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2 "
+    link "показать в таблице" [url=index.html?as=gm1#/tables/homebrew/hb_emberaxeaaaaaaaa]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     ... StaticText x8 of 12 same-shape siblings elided
@@ -72,6 +73,7 @@ daggerheart.com
 Таблицы
 Условия использования
 Установить как приложение
+показать в таблице
 
 ## en :: tree
 RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/i/hb_emberaxeaaaaaaaa]
@@ -96,7 +98,8 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/i
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Ember Axe" [level=1]
-    StaticText "Homebrew · Alder Workshop · Blades · Tier 2"
+    StaticText "Homebrew · Alder Workshop · Blades · Tier 2 "
+    link "show in the table" [url=index.html?as=gm1#/tables/homebrew/hb_emberaxeaaaaaaaa]
     button "Page"
     StaticText "PRIMARY WEAPON"
     ... StaticText x8 of 12 same-shape siblings elided
@@ -141,4 +144,5 @@ Terms of use
 Vault of Ages
 Wondrous
 daggerheart.com
+show in the table
 ЛутDaggerheart

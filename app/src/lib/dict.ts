@@ -231,6 +231,7 @@ const ru = {
      sentence leaves it out and reads for any count. */
   subSearch:
     'Поиск сразу по 1272 позициям — добыча, расходники и снаряжение, на русском и на английском.',
+  subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию…',
   tableLink: 'Ссылка на таблицу',
@@ -502,7 +503,7 @@ const ru = {
      languages. */
   myItems: 'Мои предметы',
   subHomebrew:
-    'Предметы, которых нет в книгах: их можно добавлять в списки, печатать и отправлять игрокам.',
+    'Предметы, которых нет в книгах: они ищутся вместе с каталогом, попадают в таблицы и добавляются в списки.',
   hbCount: 'Мои предметы: %n из %m',
   hbCountBare: 'Мои предметы: %n',
   srcHomebrew: 'Хоумбрю',
@@ -521,6 +522,8 @@ const ru = {
   hbNewItem: 'Новый предмет',
   hbEmpty: 'Своих предметов пока нет - создайте первый.',
   hbSignIn: 'Войдите, чтобы создавать свои предметы.',
+  hbTablesSignIn: 'Войдите, чтобы видеть свои предметы в таблицах.',
+  hbChipHint: 'Показывать свои предметы',
   hbLoadFailed: 'Не получилось загрузить ваши предметы.',
   edit: 'Изменить',
   hbNotAdded: 'Свой предмет нельзя добавить в этот список.',
@@ -548,9 +551,14 @@ const ru = {
   hbTrait: 'Характеристика',
   hbRange: 'Дистанция',
   hbDmg: 'Урон',
+  hbDie: 'Кость',
+  hbDmgBonus: 'Бонус к урону',
   hbDt: 'Тип урона',
   hbBurden: 'Хват',
   hbAlt: 'Второй набор характеристик',
+  hbAltHint:
+    'Для оружия, которое по своему свойству переходит на другие характеристики - например, «Универсальное». Заполните все четыре поля или оставьте набор пустым. Когда набор действует, напишите в описании; на печатной карте он идёт второй полосой урона.',
+  hbAltClear: 'Очистить второй набор',
   hbAs: 'Показатель брони',
   hbTh: 'Пороги урона',
   hbFixN:
@@ -560,11 +568,11 @@ const ru = {
   hbErrControl: 'Уберите служебные символы.',
   hbErrTier: 'Выберите ранг, как в книге. По характеристикам ранг не определяется.',
   hbErrPick: 'Выберите значение.',
-  hbErrDmg: 'Запишите как d8 или d10+2: кость d4-d20 и, если нужно, +1..+20.',
+  hbErrDmg: 'Выберите кость d4-d20; бонус, если нужен, - целое число от 1 до 99.',
   hbErrAs: 'Целое число от 0 до 12.',
   hbErrTh: 'Два целых числа от 1 до 99.',
   hbErrThOrder: 'Второй порог должен быть больше первого.',
-  hbErrAlt: 'Заполните все четыре поля второго набора или очистите их.',
+  hbErrAlt: 'Заполните все четыре поля второго набора или нажмите «Очистить второй набор».',
   hbNotSaved: 'Не сохранено.',
   hbSaveNetwork:
     'Не удалось сохранить - нет связи. Правки остались в форме: нажмите «Сохранить» ещё раз.',
@@ -936,6 +944,7 @@ const en: Dict = {
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
     'Search all 1272 entries at once — loot, consumables and equipment, in Russian and English.',
+  subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description…',
   tableLink: 'Link to this table',
@@ -1178,7 +1187,7 @@ const en: Dict = {
 
   myItems: 'My items',
   subHomebrew:
-    'Items that are not in the books: add them to lists, print them and send them to your players.',
+    'Items that are not in the books: search finds them with the catalog, they appear in the tables and go into lists.',
   hbCount: 'My items: %n of %m',
   hbCountBare: 'My items: %n',
   srcHomebrew: 'Homebrew',
@@ -1197,6 +1206,8 @@ const en: Dict = {
   hbNewItem: 'New item',
   hbEmpty: 'No items of your own yet - create the first one.',
   hbSignIn: 'Sign in to create your own items.',
+  hbTablesSignIn: 'Sign in to see your own items in the tables.',
+  hbChipHint: 'Show your own items',
   hbLoadFailed: 'Could not load your items.',
   edit: 'Edit',
   hbNotAdded: 'Your own item cannot go into this list.',
@@ -1224,9 +1235,14 @@ const en: Dict = {
   hbTrait: 'Trait',
   hbRange: 'Range',
   hbDmg: 'Damage',
+  hbDie: 'Die',
+  hbDmgBonus: 'Damage bonus',
   hbDt: 'Damage type',
   hbBurden: 'Burden',
   hbAlt: 'Second stat set',
+  hbAltHint:
+    'For a weapon whose feature switches it to other stats, for example Versatile. Fill in all four fields or leave the set empty. Say in the description when the set applies; the print card shows it as a second damage strip.',
+  hbAltClear: 'Clear the second set',
   hbAs: 'Armor Score',
   hbTh: 'Damage thresholds',
   hbFixN: 'Not saved: fix %n field.|Not saved: fix %n fields.',
@@ -1235,11 +1251,11 @@ const en: Dict = {
   hbErrControl: 'Remove the control characters.',
   hbErrTier: 'Choose the tier as in the book. The tier is never worked out from the stats.',
   hbErrPick: 'Choose a value.',
-  hbErrDmg: 'Write it as d8 or d10+2: a die d4-d20 and, if needed, +1..+20.',
+  hbErrDmg: 'Choose a die d4-d20; a bonus, if any, is a whole number from 1 to 99.',
   hbErrAs: 'A whole number from 0 to 12.',
   hbErrTh: 'Two whole numbers from 1 to 99.',
   hbErrThOrder: 'The second threshold must be greater than the first.',
-  hbErrAlt: 'Fill in all four fields of the second set or clear them.',
+  hbErrAlt: 'Fill in all four fields of the second set, or press "Clear the second set".',
   hbNotSaved: 'Not saved.',
   hbSaveNetwork:
     'Could not save - no connection. Your edits are still in the form: press "Save" again.',

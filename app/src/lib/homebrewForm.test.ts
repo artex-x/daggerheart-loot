@@ -96,27 +96,45 @@ describe('draftOf and contentOf', () => {
     const d = { ...draftOf(AXE, 'ru'), kind: 'item' as const };
     const c = contentOf(d, 'ru', AXE.content) as Record<string, unknown>;
     expect(c['eq']).toBeUndefined();
-    expect(d.dmg).toBe('d10+2');
+    expect([d.dmgDie, d.dmgBonus]).toEqual(['d10', '2']);
     const armour = contentOf({ ...draftOf(AXE, 'ru'), t: 'armor' }, 'ru', null) as {
       eq: Record<string, unknown>;
     };
     expect(Object.keys(armour.eq).sort()).toEqual(['t', 'tier']);
   });
 
-  it('lower-cases the damage, drops its spaces and reads the numbers of an armour', () => {
+  it('splits a stored damage into the die and the bonus', () => {
+    const d = draftOf(AXE, 'ru');
+    expect([d.dmgDie, d.dmgBonus]).toEqual(['d10', '2']);
+    expect([d.altDmgDie, d.altDmgBonus]).toEqual(['d8', '']);
+    const four = draftOf(
+      row({ kind: 'equip', ru: 'Нож', eq: { ...AXE.content.eq!, dmg: 'd4' } }),
+      'ru'
+    );
+    expect([four.dmgDie, four.dmgBonus]).toEqual(['d4', '']);
+  });
+
+  it.each([
+    ['d12', '25', 'd12+25'],
+    ['d12', '', 'd12'],
+    ['d8', ' +7 ', 'd8+7'],
+    ['d8', '05', 'd8+5'],
+    ['', '', undefined]
+  ] as const)('joins the die %s and the bonus %o into %o', (die, bonus, dmg) => {
     const c = contentOf(
-      draft({
-        kind: 'equip',
-        t: 'weapon',
-        eqTier: '1',
-        dmg: ' D8 + 2 ',
-        bu: 'any',
-        altDmg: 'D6'
-      }),
+      draft({ kind: 'equip', t: 'weapon', eqTier: '1', dmgDie: die, dmgBonus: bonus }),
       'ru',
       null
     ) as { eq: Record<string, unknown> };
-    expect(c.eq['dmg']).toBe('d8+2');
+    expect(c.eq['dmg']).toBe(dmg);
+  });
+
+  it('writes the second set from its own pair and reads the numbers of an armour', () => {
+    const c = contentOf(
+      draft({ kind: 'equip', t: 'weapon', eqTier: '1', bu: 'any', altDmgDie: 'd6' }),
+      'ru',
+      null
+    ) as { eq: Record<string, unknown> };
     expect(c.eq['bu']).toBe('any');
     expect(c.eq['alt']).toEqual({ dmg: 'd6' });
     const a = contentOf(
@@ -170,6 +188,26 @@ describe('formProblems', () => {
       { path: 'book', rule: 'gone' }
     ]);
   });
+
+  it.each([
+    ['', '5', true],
+    ['d8', '0', true],
+    ['d8', '100', true],
+    ['d8', 'x', true],
+    ['d8', '99', false]
+  ] as const)(
+    'refuses the die %o with the bonus %o as a damage problem: %s',
+    (die, bonus, bad) => {
+      const main = { ...draftOf(AXE, 'ru'), dmgDie: die, dmgBonus: bonus };
+      expect(formProblems(main, 'ru', AXE.content, [BOOK]).map(fieldOf)).toEqual(
+        bad ? ['hb-dmg'] : []
+      );
+      const alt = { ...draftOf(AXE, 'ru'), altDmgDie: die, altDmgBonus: bonus };
+      expect(formProblems(alt, 'ru', AXE.content, [BOOK]).map(fieldOf)).toEqual(
+        bad ? ['hb-alt-dmg'] : []
+      );
+    }
+  );
 
   it('refuses a half-filled second set on each field left empty', () => {
     const d = { ...draftOf(AXE, 'ru'), altRg: '' as const, altDt: '' as const };

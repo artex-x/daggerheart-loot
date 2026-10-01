@@ -39,7 +39,8 @@ const TABLES = [
   'alt_consumable',
   'eq_weapon',
   'eq_secondary',
-  'eq_armor'
+  'eq_armor',
+  'homebrew'
 ];
 
 /* audit2's own 41 addresses, plus the routes only tests/app/states.js
@@ -91,6 +92,14 @@ const PAGES = [
     ['#/tables/eq_weapon/t3', 'якорь раздела'],
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
     ['#/tables/community/Seaborne', 'якорь сообщества']
+  ])
+  /* An optional third element signs that seed user in. The storage seed's browser lists
+   * then move into the account, and the move notice may draw: expected, not a finding. */
+  .concat([
+    ['#/tables/homebrew', 'таблица своих предметов', 'gm1'],
+    ['#/tables/eq_weapon', 'таблица снаряжения со своими предметами', 'gm1'],
+    ['#/search', 'поиск со своими предметами', 'gm1'],
+    ['#/homebrew/hb_emberaxeaaaaaaaa', 'редактор своего предмета', 'gm1']
   ]);
 
 /* An A4 sheet legitimately scrolls sideways in a 360px window - the overflow
@@ -280,11 +289,12 @@ async function focusWalk(page, where) {
       });
 
       const pages = width === 1180 ? PAGES.concat(PRINT_ONLY_1180) : PAGES;
-      for (const [hash, label] of pages) {
+      for (const [hash, label, as] of pages) {
         const asked = hash.replace('%%SHARED%%', shared);
         const where = label + ' @' + width + ' ' + lang;
         try {
-          await d.open(asked);
+          await d.open(asked, { as });
+          if (as) await d.moveSettled(where);
         } catch (e) {
           ok(false, where + ': the page did not render - ' + e.message);
           continue;
@@ -366,7 +376,7 @@ async function focusWalk(page, where) {
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
             const known =
-              /^(roll\/(std|alt|wondrous|dread|voa|dv|community)|tables|lists|search|print\/|i\/|l\/|lists\/|account$)/.test(
+              /^(roll\/(std|alt|wondrous|dread|voa|dv|community)|tables|lists|search|print\/|i\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);
@@ -411,7 +421,8 @@ async function focusWalk(page, where) {
               ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0))
               : 0;
           });
-          const cap = width < 500 ? 260 : width < 1000 ? 150 : 130;
+          /* The signed-in strip carries the Homebrew group chip: docs/specs/FEATURES.md, "Rolling". */
+          const cap = width < 500 ? (as ? 300 : 260) : width < 1000 ? 150 : 130;
           ok(strip <= cap, where + ': section strip ' + strip + 'px, cap ' + cap);
         }
 

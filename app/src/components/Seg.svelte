@@ -22,6 +22,9 @@
     /** The id of the error line under the group. `aria-invalid` is not allowed on a
      *  group, so a choice with a problem draws its line only. */
     describedby?: string | undefined;
+    /** The value a press on the pressed option sends; absent, a pressed option stays
+     *  pressed. */
+    none?: T | undefined;
     onchange: (value: T) => void;
   }
 
@@ -32,6 +35,7 @@
     small = false,
     id,
     describedby,
+    none,
     onchange
   }: Props<T> = $props();
 </script>
@@ -54,7 +58,7 @@
       class:on={o.value === value}
       aria-pressed={o.value === value}
       onclick={() => {
-        onchange(o.value);
+        onchange(o.value === value && none !== undefined ? none : o.value);
       }}>{o.label}</button
     >
   {/each}

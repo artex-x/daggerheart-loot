@@ -38,7 +38,10 @@ across.
   descriptive wording measured 293 px on a 360 px viewport against the
   subchip's 260 px cap. Shrinking type, reducing spacing, wrapping,
   truncating, horizontal scroll and any other layout change were rejected -
-  the short wording is the fix.
+  the short wording is the fix. A signed-in strip (width under 500 px) has a
+  300 px cap, because the Homebrew group chip adds a row: at 360 px as gm1
+  the Equipment and Other strips measure 298 px, past 260 px; every other
+  group's strip stays at or under 256 px (measured 2026-10-01).
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
   consumables off on one switches them off everywhere, not per page.
@@ -69,7 +72,8 @@ across.
 
 ## Tables and search
 
-- 16 tables (`TABLE_IDS`), each with its own search box and a list/grid switch.
+- 17 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
+  the seventeenth, `homebrew`, has its group chip signed in only.
   The switch changes the view until the page reloads; the default is the
   Display section's «Таблицы» row ("Account"). While the view differs from
   the default, a build with sign-in draws the note «Только до перезагрузки.
@@ -81,7 +85,10 @@ across.
   hits, a "300 из <n>" line - the same shown-of-total wording the table
   filter strip's own count already uses - says so above the rows; under the
   cap nothing is said, because the count on screen already
-  is the whole answer.
+  is the whole answer. A signed-in author's own items follow the catalog's
+  matches, and the 300 cap counts both. While the account holds items the
+  intro adds «И N ваших предметов.» / "And N items of your own." after the
+  catalog count, whatever the chip below.
 - Search folds case, `ё`/`е`, typographic apostrophes (U+2019, U+02BC), Latin
   diacritics (`ä`/`ö` etc., NFD-stripped - Cyrillic is excluded so `й` never
   merges into `и`) and the Unicode minus sign (U+2212 -> `-`) on both the
@@ -114,6 +121,30 @@ across.
   rank goes; the tier facet offers an `A` chip, `Артефакты` / `Artifacts`
   (the section's label, as on the `voa` table), only on a table whose kind has
   such a record; the suggested price is the legendary item band.
+- A signed-in author's own equipment joins the equipment table of its type,
+  in its tier section after the books' records. The `src` facet then offers
+  `hb` («Хоумбрю», own items with no source) and each own source after the
+  books, sources by name.
+- **`#/tables/homebrew`**: the author's own items, one section per source and
+  section in the `#/homebrew` order («Мастерская Ольхи · Холодное оружие»,
+  then the source's items outside its sections under the source name, the
+  items with no source under «Хоумбрю» last), the rows by name. Facets:
+  `kind`, `src` (`hb` first, then the sources by name) and `sect` (each
+  section that holds an item, labelled «<source> · <section>»). A section
+  anchor is the section's key, a source anchor its key (the source's items
+  outside its sections), `hb` the items with no source; a row anchor that
+  arrives with the page plays once the own items load. Signed out the page
+  draws the sign-in prompt «Войдите, чтобы видеть свои предметы в таблицах.»
+  and no toolbar; while the session or the items load, «Загружаем...»; a
+  failed read, «Не получилось загрузить ваши предметы.» and «Повторить»; no
+  own item, the empty text and «Новый предмет»; a build with no sign-in
+  configured, the not-found page with the address kept. A pin may hold it.
+- **The «Хоумбрю» chip**: on `#/search` (last in the kind row) and in the
+  equipment tables' toolbar (after the view switch), drawn only while the
+  account holds an item, titled «Показывать свои предметы». It is on by
+  default; off, it removes the own records and their `src` values from those
+  pages for the visit. A record dialog, a list, `#/i/<key>` and
+  `#/tables/homebrew` still draw them. It is memory only (`STATE.md`).
 - The filter panel is one component across all tables; where a table has nothing
   to filter by, there is no panel. Nothing is selected by default and an empty
   row means "any". Chosen values show as pills outside the panel, with a reset
@@ -660,7 +691,8 @@ browser lists writable after the date.
   a purchase request. Ceilings of one call stay whatever the override: an
   import takes at most 1000 lists and 5000 entries of one list, a write at
   most 5000 entries of one list, and a purchase request's lines at most 32
-  KiB of JSON (about 900 lines of catalog ids). One import is also bounded
+  KiB of JSON (about 900 lines of catalog ids, about 700 of homebrew keys
+  of 19 characters, about 360 of 64 characters). One import is also bounded
   by the hosted statement timeout of 8 s, which counts only the database's
   work: on the test project 50 lists of 100 entries take about 320-450 ms
   of it, 100 lists of 100 entries about 810 ms, and 1000 lists of 5
@@ -753,7 +785,8 @@ browser lists writable after the date.
   reader, signed out included, gets «Предмет не найден», and «Загружаем...»
   draws until the session and the author's items are known. Its path reads
   «Хоумбрю · <source> · <section>», its tag «<source> (HB)» (the Latin mark
-  in both languages) or «Хоумбрю», and the pick row adds «Изменить» (to
+  in both languages) or «Хоумбрю», with «показать в таблице» to its row on
+  `#/tables/homebrew`, and the pick row adds «Изменить» (to
   `#/homebrew/<key>`) after the print link. It offers no link: no
   «Скопировать ссылку», «Отправить» carries no address, and with no share
   sheet it copies the text. Item links come with R9. While the author's
@@ -884,7 +917,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 "My items". Homebrew items live in the account only
 (`docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md`).
 
-- **`#/homebrew`**: the heading «Мои предметы» with its lead line, then the
+- **`#/homebrew`**: the heading «Мои предметы» with its lead line (search finds
+  the items with the catalog, they appear in the tables and go into lists), then the
   count «Мои предметы: N из M» / "My items: N of M" (M from the database,
   an override's own number; «Мои предметы: N» when the limit read failed),
   the «Источники» panel, «Новый предмет» (to `#/homebrew/new`) and the items
@@ -937,18 +971,31 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   and the hint «Как в книге - по характеристикам ранг не определяется.»,
   for weapons «Класс», «Характеристика», «Дистанция», «Урон», «Тип урона»,
   «Хват», each *, and the fold «Второй набор характеристик», for armour
-  «Показатель брони» * and «Пороги урона» *. The card draws no stat block
-  until a tier is chosen: a tier is never shown that the author did not
-  choose. The type and the weapon values stay in the form while another
+  «Показатель брони» * and «Пороги урона» *. «Урон» is a die select
+  («Кость», d4-d20) and «Бонус к урону» (empty for none), in the main stats
+  and in the second set. The fold opens on the hint «Для оружия, которое по
+  своему свойству переходит на другие характеристики - например,
+  «Универсальное». Заполните все четыре поля или оставьте набор пустым.
+  Когда набор действует, напишите в описании; на печатной карте он идёт
+  второй полосой урона.»; a second press on a pressed choice of the set
+  unpresses it (a pressed choice of the main stats stays pressed), and
+  «Очистить второй набор», drawn while the set holds a value, empties the
+  set and its lines, keeps the rest of the form and focuses the fold's
+  title. The card draws no stat block until a tier is chosen: a tier is
+  never shown that the author did not choose. The card of a saved item has
+  «Добавить в список»: it adds the stored item as a reference, so unsaved
+  edits reach the list with «Сохранить»; a new item has none before its
+  first save. The type and the weapon values stay in the form while another
   kind or type is chosen.
 - **Checks**: the form checks on «Сохранить» only, with the database's own
   rules. A failed save sends nothing and focuses the summary «Не сохранено:
   исправьте N полей.», which lists each field once with its problem; a
   press on one focuses the field. Each field draws its line under it,
   `aria-invalid` and `aria-describedby` on a text field; the line goes on
-  the field's next change. Damage is `d4`-`d20` with an optional `+1`..`+20`;
+  the field's next change. Damage is `d4`-`d20` with an optional `+1`..`+99`;
   an armour score 0-12; thresholds two whole numbers 1-99, the second larger;
-  the second set all four fields or none. A source another tab deleted
+  the second set all four fields or none, and its lines name «Очистить второй
+  набор»; a set emptied by any path takes its lines along. A source another tab deleted
   reads «Этот источник удалили - выберите другой.».
 - **Saving**: «Сохранить», Ctrl+S or Cmd+S, or Enter in any one-line field
   of the form saves. A new item's save replaces the address with
@@ -991,7 +1038,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   one: «Добавить в список» into it says «Свой предмет нельзя добавить в этот
   список.», and a `#/l/` link and a lists file never carry an own key. A
   list another user saved from a share link, or added the item to from one,
-  keeps a frozen copy of the item.
+  keeps a frozen copy of the item. Search lists own items after the catalog's,
+  and the tables draw them on `#/tables/homebrew` and, for equipment, in the
+  equipment table of its type ("Tables and search").
 - **What a delete removes**: the item and its references in the author's
   own lists. A frozen copy in another user's list stays as it was; it is
   not deleted with the item or with the author's account.
@@ -1003,7 +1052,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   источников: N. ...».
 - Another tab's or device's homebrew write arrives as the owner topic's
   `homebrew` message and reads the items again once; this tab's own is
-  ignored. While the topic is down a homebrew page reads again every 45 s,
+  ignored. While the topic is down a homebrew page (`#/homebrew`, the editor,
+  an own `#/i/<key>` and `#/tables/homebrew`) reads again every 45 s,
   and after a failed first read on every tick.
 - «Скачать мои данные (ZIP)» and the privacy pages' merge steps do not carry
   homebrew items and sources yet (`DEBT.md` D69).

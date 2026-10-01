@@ -58,8 +58,9 @@ The app is served over HTTP only; running from `file://` was retired on
 - Seven roll modes: Core rules, alternate tables, Wondrous, Dread, Vault of
   Ages, The Dragon's Vault and Communities. Other is two browsable tables, not
   a roll mode.
-- 16 tables with per-table search, a list and grid switch, addressable sections,
-  copy-link buttons and a filter panel driven from the address.
+- 16 catalog tables with per-table search, a list and grid switch, addressable
+  sections, copy-link buttons and a filter panel driven from the address, and a
+  seventeenth for a signed-in GM's own items.
 - One search across all 1272 records, over names, descriptions and stat lines, in
   both languages at once.
 - Lists: create, rename, reorder, remove with undo, share as a link, copy as

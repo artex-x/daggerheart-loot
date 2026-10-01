@@ -1,0 +1,1748 @@
+# #/tables/eq_weapon ~ own items hidden as gm1
+# route: #/tables/eq_weapon
+# why: the toolbar chip pressed off, found by its title «Показывать свои предметы» (the group chip link has the same word and no title): the chip unpressed, the axe gone from «Ранг 2»
+# as: gm1
+
+## ru :: tree
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/tables/eq_weapon]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    link "Core" [url=index.html?as=gm1#/tables/core_item]
+    link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
+    link "Альт. таблицы" [url=index.html?as=gm1#/tables/alt_item]
+    link "Wondrous Loot" [url=index.html?as=gm1#/tables/wondrous]
+    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
+    link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
+    link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Сообщества" [url=index.html?as=gm1#/tables/community]
+    link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
+    link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
+    link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew]
+    link "Оружие" [url=index.html?as=gm1#/tables/eq_weapon]
+    link "Вторичное" [url=index.html?as=gm1#/tables/eq_secondary]
+    link "Броня" [url=index.html?as=gm1#/tables/eq_armor]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=false]
+    button "Сеткой" [pressed=true]
+    button "Хоумбрю" [description=Показывать свои предметы pressed=false]
+    button "Фильтры" [expanded=false]
+    StaticText "381"
+    ... StaticText x8 of 12 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    checkbox "Выбрать все (75)" [checked=false]
+    checkbox "Палаш" [checked=false]
+    button "Ранг 1 Палаш Broadsword"
+    ... checkbox x382 of 386 same-shape siblings elided
+    ... button x378 of 382 same-shape siblings elided
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    button "133 Меч Ангелов Sword of Angels"
+    StaticText "АРТЕФАКТЫ"
+    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    checkbox "Выбрать все (1)" [checked=false]
+    StaticText "Выбрать все (1)"
+    checkbox "Клятва Равновесия" [checked=false]
+    button "9 Клятва Равновесия Oath of Balance"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+100Фрикционные ОбмоткиFriction Wraps
+101Фроствирд (Дремлющий)Frostwyrd (Dormant)
+102Фроствирд (Пробуждённый)Frostwyrd (Awakened)
+103Фроствирд (Возвышенный)Frostwyrd (Exalted)
+104Студенистый МолотGelatinous Hammer
+105Меч Призрачного КасанияGhost Touch Sword
+107Молот ГрифонаGryphon Hammer
+108Меч Адского ПламениHellfire Sword
+109Метеор ХиларадаHilarad's Meteor
+10Клинок ШаманаShaman's Blade
+10НимойрасNimoiras
+111Клинок ГидрыHydra Blade
+112Инфернальные КастетыInfernal Knuckles
+113Кинетическое ЛезвиеKinetic Edge
+114Рукавицы УбийцыMurderer's Gauntlets
+115Падение ПриродыNature's Fall
+116Неугомонное ВозмездиеRestless Vengeance
+117Жезл Пылающих ЧереповRod of Flaming Skulls
+118Розовый КлинокRoseblade
+119ПробникSampler
+11Воля ГлашатаяHerald's Will
+121Меч-РазрушительShattersword
+124Кирка Небесного ГномаSky Gnome Pickaxe
+125Клинок СомнусаSomnus Blade
+126Боевой Посох Душевного ОгняSoulfire Quarterstaff
+127Заклинательный КлинокSpellblade
+129Посох ЛейтисаStaff of Laethys
+12Посох Мохового ЦветкаMossblossom Staff
+130Звёздное КопьёStar Lance
+131Паровые РукавицыSteampowered Gauntlets
+132Разящие КлыкиStriking Fangs
+133Меч АнгеловSword of Angels
+134Меч НежитиSword of Undeath
+135Сухожильный ЛукTendon Bow
+136Триединая ПалицаTrinity Club
+137Глефа ТиранаTyrant's Glaive
+138Двуручный Меч ВайатыWaiata Greatsword
+139Жезл Нестабильной АрканыWand of Unstable Arcana
+13ХаррокливHarrowcleave
+140Жало ОсыWasp's Sting
+141Дротик Гребня ВолныWavecrest Javelin
+17Клинок БраксусаBlade of Braxus
+17Церебральный ШипCerebral Spike
+19Мясницкий ТесакMeat Cleaver
+1Благословенный Нож Шеф-ПовараBlessed Chef's Knife
+1Эфирная ВинтовкаAether Rifle
+20Железный КонстебльIron Constable
+23Всадник ВолнWaverider
+25Когти ИфангаClaws of Yifang
+26Губитель из СухостояDeadwood Slayer
+27Посох Чёрной ДырыBlack Hole Staff
+29Святой КлинокSaintly Blade
+2Клинок ЖивущихBlade of the Living
+30Крушитель МонолитовMonolith Smasher
+30ТенерубShadowcull
+31Войнарианский АрбалетVoynarian Crossbow
+31Молот Инфернального КузнецаDevil's Smithing Hammer
+31Посох ПоганкиToadstool Staff
+32Вихревой РезакWhirlwind Slasher
+33Ярость ЗантакаZanthak's Rage
+34Дочь ЗелениVerdant Daughter
+3Длинный Лук ФираLongbow of Fyr
+3Кулаки РазорителяFists of the Ravager
+4Туманный Проектор Ми-ГоMi-Go Mist Projector
+51Гарпун ЛевиафанаLeviathan Harpoon
+54Жезл ЖизниLife Wand
+5ИнееметательRimecaster
+5Посох Тайного ПламениStaff of the Secret Flame
+6Последний РубежLast Stand
+79Кислотное ЛезвиеAcid Edge
+79Лук ИскателяSeeker's Bow
+7Молниевая Пушка ЙитианцевYithian Lightning Gun
+80Янтарный МолотAmber Hammer
+81Крюк АнанимусаAnanimus Hook
+82Клеймор Дуговой МолнииArc-Lightning Claymore
+82Снежный КлинокSnowblade
+83Астральная ГлефаAstral Glaive
+84Топор Чёрной ПорчиBlack Corruption Axe
+85КровоглотBloodgorger
+85Паучье ЖалоSpider's Sting
+86Арбалет Костяных ОсколковBoneshard Crossbow
+88Посох Шепчущего АрхиваStaff of the Whispering Archive
+88ХладноклинокChillblade
+89Меч Хрустального ДухаCrystal Spirit Sword
+8ТемпрусTemprus
+91Драконий КлыкDraketooth
+92Шип ДриадыDryad's Thorn
+93Дука СаламетDuka Salamet
+94Сумеречное КрылоDusk Wing
+95Стихийный Длинный ЛукElemental Longbow
+96УголёкEmber
+98Булава СкверныFilth Mace
+9Клятва РавновесияOath of Balance
+Core
+Dragon's Vault
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Аккаунт: gm1@example.test
+Алебарда
+Альт. таблицы
+Арбалет
+Арбалет Гравитации
+Арбалет Костяных Осколков
+Аркебуза
+Астральная Глефа
+Благословенный Клинок
+Благословенный Нож Шеф-Повара
+Благословленный Медный Кастет
+Боевая Кирка
+Боевая Коса
+Боевой Молот
+Боевой Посох
+Боевой Посох Душевного Огня
+Большой Лук
+Броня
+Булава
+Булава Скверны
+Веер из Лезвий
+Венчик
+Взрывной Молот
+Взрывные Зелья
+Вилы
+Винтовка
+Винтовка Ильмари
+Вихревой Резак
+Возвращающийся клинок
+Войнарианский Арбалет
+Волнистый Кинжал
+Волшебная Палочка Цепной Молнии
+Волшебная палочка
+Воля Глашатая
+Всадник Волн
+Вторичное
+Выдвижная сабля
+Вырванный Коготь Дракона
+Ганблейд
+Гарпун Левиафана
+Глефа Тирана
+Губитель из Сухостоя
+Двойной Посох
+Двойной Цеп
+Двуручный Меч
+Двуручный Меч Вайаты
+Двуручный Посох
+Длинный Лук
+Длинный Лук Фира
+Длинный Меч
+Дочь Зелени
+Драконий Клык
+Древний Лук
+Дробовик
+Дротик Гребня Волны
+Дука Саламет
+Жало Осы
+Жезл Жизни
+Жезл Нестабильной Арканы
+Жезл Пылающих Черепов
+Железная Сковорода
+Железный Констебль
+Заклинательный Клинок
+Заколдованные Браслеты
+Заточенные Грабли
+Зачарованная Кузнечная Зажигалка
+Зачарованная Лютня
+Зачарованная Метла
+Зачарованная Швабра
+Зачарованная Шилейла
+Зачарованные Ножницы
+Зачарованный Бумеранг
+Зачарованный Воздушный Змей
+Зачарованный Молот
+Зачарованный Чакрам
+Звёздное Копьё
+Изогнутый Кинжал
+Инееметатель
+Инфернальные Кастеты
+К содержимому
+Как это работает
+Кастет
+Кастеты с лезвиями
+Катана
+Кинетическое Лезвие
+Кинжал
+Кинжал на Веревке
+Кирка Небесного Гнома
+Кислотное Лезвие
+Клевец
+Клеймор Дуговой Молнии
+Клинки-Когти
+Клинковый Кнут
+Клинок Браксуса
+Клинок Гидры
+Клинок Демона
+Клинок Живущих
+Клинок Света и Пламени
+Клинок Светлячка
+Клинок Сомнуса
+Клинок Шамана
+Клинок Эго
+Клинок из Звездного Металла
+Клык Гадюки
+Клятва Равновесия
+Кованый Крюк
+Когти Ифанга
+Колдующий Кинжал
+Колдующий Меч
+Колючий Лук
+Конфиденциальность
+Копьё
+Короткий Лук
+Короткий Посох
+Коса
+Коса Мидаса
+Кристалл Ярости
+Кристальное Копье
+Кровавый Лук Ютари
+Кровоглот
+Крушитель Монолитов
+Крюк Ананимуса
+Кувалда
+Кулаки Разорителя
+Кулон Видогаста
+Кухонный Нож
+Легендарная Алебарда
+Легендарная Булава
+Легендарная Винтовка
+Легендарная Волшебная палочка
+Легендарная Катана
+Легендарная Магическая Винтовка
+Легендарная Рапира
+Легендарная Сабля
+Легендарная Секира
+Легендарное Копьё
+Легендарные Магические Наручи
+Легендарные Наручные Руны
+Легендарные Сияющие Кольца
+Легендарный Арбалет
+Легендарный Благословленный Медный Кастет
+Легендарный Боевой Молот
+Легендарный Боевой Посох
+Легендарный Возвращающийся клинок
+Легендарный Волнистый Кинжал
+Легендарный Двойной Посох
+Легендарный Двуручный Меч
+Легендарный Двуручный Посох
+Легендарный Длинный Лук
+Легендарный Длинный меч
+Легендарный Дробовик
+Легендарный Зачарованный Чакрам
+Легендарный Кастет
+Легендарный Кинжал
+Легендарный Кинжал на Веревке
+Легендарный Колдующий Кинжал
+Легендарный Короткий Лук
+Легендарный Короткий Посох
+Легендарный Меч Света
+Легендарный Меч Тьмы
+Легендарный Меч-Хлыст
+Легендарный Многозарядный Арбалет
+Легендарный Палаш
+Легендарный Револьвер
+Легендарный Рунный Пистолет
+Легендарный Святой Дробовик
+Легендарный Священный Топор
+Легендарный Скимитар
+Легендарный Скипетр
+Лук Аантари
+Лук Искателя
+ЛутDaggerheart
+Магическая Винтовка
+Магическая Сфера
+Магические Наручи
+Метательное Копье
+Метеор Хиларада
+Меч Адского Пламени
+Меч Ангелов
+Меч Нежити
+Меч Призрачного Касания
+Меч Света
+Меч Тьмы
+Меч Храбрости
+Меч Хрустального Духа
+Меч-Разрушитель
+Меч-Трость
+Меч-Хлыст
+Многозарядный Арбалет
+Молниевая Пушка Йитианцев
+Молниеносный Молот
+Молот Гнева
+Молот Грифона
+Молот Инфернального Кузнеца
+Молот Экзоты
+Мушкетон
+Мясницкий Тесак
+Мясницкий Топор
+Наручные Руны
+Неугомонное Возмездие
+Нимойрас
+Обоюдоострый Меч
+Обычные правила
+Оружие
+Открывать этот раздел при запуске
+Падение Природы
+Палаш
+Палаш Урока
+Палочка Очарования
+Палочка Эссека
+Паровые Рукавицы
+Парящие Осколки Клинка
+Паучье Жало
+Перчатки Слияния
+Платиновый Эсток
+Поглощающие Рукавицы
+Пожирающий Кинжал
+Позолоченный Лук
+Позолоченный Фальшион
+Поиск
+Показывать свои предметы
+Пороховая Серпантина
+Последний Рубеж
+Посох Аугмы
+Посох Бесконечности
+Посох Крови
+Посох Лейтиса
+Посох Мохового Цветка
+Посох Огня
+Посох Поганки
+Посох Тайного Пламени
+Посох Хранителя
+Посох Чёрной Дыры
+Посох Шепчущего Архива
+Походная Палка
+Поющий Меч
+Призрачный Клинок
+Пробник
+Продвинутая Алебарда
+Продвинутая Булава
+Продвинутая Винтовка
+Продвинутая Волшебная Палочка
+Продвинутая Катана
+Продвинутая Магическая Винтовка
+Продвинутая Рапира
+Продвинутая Сабля
+Продвинутая Секира
+Продвинутое Копьё
+Продвинутые Магические Наручи
+Продвинутые Наручные Руны
+Продвинутые Сияющие Кольца
+Продвинутый Арбалет
+Продвинутый Благословленный Медный Кастет
+Продвинутый Боевой Молот
+Продвинутый Боевой Посох
+Продвинутый Возвращающийся Клинок
+Продвинутый Волнистый Кинжал
+Продвинутый Двойной Посох
+Продвинутый Двуручный Меч
+Продвинутый Двуручный Посох
+Продвинутый Длинный Лук
+Продвинутый Длинный Меч
+Продвинутый Дробовик
+Продвинутый Зачарованный Чакрам
+Продвинутый Кастет
+Продвинутый Кинжал
+Продвинутый Кинжал на Веревке
+Продвинутый Колдующий Кинжал
+Продвинутый Короткий Лук
+Продвинутый Короткий Посох
+Продвинутый Меч Света
+Продвинутый Меч Тьмы
+Продвинутый Меч-Хлыст
+Продвинутый Многозарядный Арбалет
+Продвинутый Палаш
+Продвинутый Револьвер
+Продвинутый Рунный Пистолет
+Продвинутый Святой Дробовик
+Продвинутый Священный Топор
+Продвинутый Скимитар
+Продвинутый Скипетр
+Прочее
+Разрушительный Колун
+Разящие Клыки
+Ранг 1АлебардаHalberd
+Ранг 1АрбалетCrossbow
+Ранг 1Благословленный Медный КастетBlessed Brass Knuckles
+Ранг 1Боевой МолотWarhammer
+Ранг 1Боевой ПосохQuarterstaff
+Ранг 1БулаваMace
+Ранг 1ВенчикWhisk Wand
+Ранг 1Взрывные ЗельяExploding Potions
+Ранг 1ВилыPitchfork
+Ранг 1ВинтовкаRifle
+Ранг 1Возвращающийся клинокReturning Blade
+Ранг 1Волнистый КинжалTwisted Dagger
+Ранг 1Волшебная палочкаWand
+Ранг 1Двойной ПосохDualstaff
+Ранг 1Двуручный МечGreatsword
+Ранг 1Двуручный ПосохGreatstaff
+Ранг 1Длинный ЛукLongbow
+Ранг 1Длинный МечLongsword
+Ранг 1ДробовикShotgun
+Ранг 1Железная СковородаIron Skillet
+Ранг 1Заточенные ГраблиSharpened Rake
+Ранг 1Зачарованная Кузнечная ЗажигалкаEnchanted Forge Lighter
+Ранг 1Зачарованная МетлаEnchanted Broomstick
+Ранг 1Зачарованная ШвабраEnchanted Mop
+Ранг 1Зачарованные НожницыEnchanted Scissors
+Ранг 1Зачарованный БумерангEnchanted Boomerang
+Ранг 1Зачарованный Воздушный ЗмейEnchanted Kite
+Ранг 1Зачарованный МолотEnchanted Hammer
+Ранг 1Зачарованный ЧакрамEnchanted Chakram
+Ранг 1КастетBrass Knuckles
+Ранг 1КатанаKatana
+Ранг 1Кинжал на ВеревкеRope Dart
+Ранг 1КинжалDagger
+Ранг 1Кованый КрюкForge Poker
+Ранг 1Колдующий КинжалCasting Dagger
+Ранг 1КопьёSpear
+Ранг 1Короткий ЛукShortbow
+Ранг 1Короткий ПосохShortstaff
+Ранг 1КосаCrop Scythe
+Ранг 1КувалдаSledgehammer
+Ранг 1Кухонный НожCooking Knife
+Ранг 1Магическая ВинтовкаArcane Rifle
+Ранг 1Магические НаручиArcane Gauntlets
+Ранг 1Меч СветаBrightsword
+Ранг 1Меч ТьмыShadowblade
+Ранг 1Меч-ХлыстWhipsword
+Ранг 1Многозарядный АрбалетRepeating Crossbow
+Ранг 1Мясницкий ТопорButcher's Axe
+Ранг 1Наручные РуныHand Runes
+Ранг 1ПалашBroadsword
+Ранг 1Походная ПалкаWalking Staff
+Ранг 1РапираRapier
+Ранг 1РевольверRevolver
+Ранг 1РогаткаSlingshot
+Ранг 1Рунный ПистолетRunelock Pistol
+Ранг 1СабляCutlass
+Ранг 1Сверкающий ПосохSparkling Staff
+Ранг 1Святой ДробовикHoly Shotgun
+Ранг 1Священный ТопорHallowed Axe
+Ранг 1СекираBattleaxe
+Ранг 1СерпSickle
+Ранг 1Сияющие КольцаGlowing Rings
+Ранг 1СкалкаRolling Pin
+Ранг 1СкимитарScimitar
+Ранг 1СкипетрScepter
+Ранг 1ТесакCleaver
+Ранг 1УдочкаFishing Rod
+Ранг 1Установка для ФейерверковFirework Launcher
+Ранг 2Боевая КиркаWar Pick
+Ранг 2Боевая КосаWar Scythe
+Ранг 2Большой ЛукGreatbow
+Ранг 2Веер из ЛезвийBladed Fan
+Ранг 2Древний ЛукElder Bow
+Ранг 2Заколдованные БраслетыSpellbound Bangles
+Ранг 2Зачарованная ЛютняEnchanted Lute
+Ранг 2Зачарованная ШилейлаEnchanted Shillelagh
+Ранг 2Кастеты с лезвиямиKnuckle Blades
+Ранг 2Клинковый КнутBladed Whip
+Ранг 2Клинок ЭгоEgo Blade
+Ранг 2Колдующий МечCasting Sword
+Ранг 2Кристалл ЯростиFury Gem
+Ранг 2Кровавый Лук ЮтариYutari Bloodbow
+Ранг 2Метательное КопьеJavelins
+Ранг 2Меч-ТростьCane Sword
+Ранг 2Молот ЭкзотыHammer of Exota
+Ранг 2МушкетонBlunderbuss
+Ранг 2Палаш УрокаUrok Broadsword
+Ранг 2Палочка ОчарованияWand of Enthrallment
+Ранг 2Пожирающий КинжалDevouring Dagger
+Ранг 2Позолоченный ФальшионGilded Falchion
+Ранг 2Посох ХранителяKeeper's Staff
+Ранг 2Расщепляющийся ЛукSplintershaft Bow
+Ранг 2Скальпель ХирургаCyrurgien's Scalpel
+Ранг 2Скипетр ЭлиасаScepter of Elias
+Ранг 2Стальная АлебардаSteelforged Halberd
+Ранг 2Тяжелое КопьеLance
+Ранг 2Улучшенная АлебардаImproved Halberd
+Ранг 2Улучшенная БулаваImproved Mace
+Ранг 2Улучшенная ВинтовкаImproved Rifle
+Ранг 2Улучшенная Волшебная ПалочкаImproved Wand
+Ранг 2Улучшенная КатанаImproved Katana
+Ранг 2Улучшенная Магическая ВинтовкаImproved Arcane Rifle
+Ранг 2Улучшенная РапираImproved Rapier
+Ранг 2Улучшенная СабляImproved Cutlass
+Ранг 2Улучшенная СекираImproved Battleaxe
+Ранг 2Улучшенное КопьёImproved Spear
+Ранг 2Улучшенные Магические НаручиImproved Arcane Gauntlets
+Ранг 2Улучшенные Наручные РуныImproved Hand Runes
+Ранг 2Улучшенные Сияющие КольцаImproved Glowing Rings
+Ранг 2Улучшенный АрбалетImproved Crossbow
+Ранг 2Улучшенный Благословленный Медный КастетImproved Blessed B... [namelen=77 namehash=b38d0861]
+Ранг 2Улучшенный Боевой МолотImproved Warhammer
+Ранг 2Улучшенный Боевой ПосохImproved Quarterstaff
+Ранг 2Улучшенный Возвращающийся КлинокImproved Returning Blade
+Ранг 2Улучшенный Волнистый КинжалImproved Twisted Dagger
+Ранг 2Улучшенный Двойной ПосохImproved Dualstaff
+Ранг 2Улучшенный Двуручный МечImproved Greatsword
+Ранг 2Улучшенный Двуручный ПосохImproved Greatstaff
+Ранг 2Улучшенный Длинный ЛукImproved Longbow
+Ранг 2Улучшенный Длинный МечImproved Longsword
+Ранг 2Улучшенный ДробовикImproved Shotgun
+Ранг 2Улучшенный Зачарованный ЧакрамImproved Enchanted Chakram
+Ранг 2Улучшенный КастетImproved Brass Knuckles
+Ранг 2Улучшенный Кинжал на ВеревкеImproved Rope Dart
+Ранг 2Улучшенный КинжалImproved Dagger
+Ранг 2Улучшенный Колдующий КинжалImproved Casting Dagger
+Ранг 2Улучшенный Короткий ЛукImproved Shortbow
+Ранг 2Улучшенный Короткий ПосохImproved Shortstaff
+Ранг 2Улучшенный Меч СветаImproved Brightsword
+Ранг 2Улучшенный Меч ТьмыImproved Shadowblade
+Ранг 2Улучшенный Меч-ХлыстImproved Whipsword
+Ранг 2Улучшенный Многозарядный АрбалетImproved Repeating Crossbo... [namelen=65 namehash=3e70b296]
+Ранг 2Улучшенный ПалашImproved Broadsword
+Ранг 2Улучшенный РевольверImproved Revolver
+Ранг 2Улучшенный Рунный ПистолетImproved Runelock Pistol
+Ранг 2Улучшенный Святой ДробовикImproved Holy Shotgun
+Ранг 2Улучшенный Священный ТопорImproved Hallowed Axe
+Ранг 2Улучшенный СкимитарImproved Scimitar
+Ранг 2Улучшенный СкипетрImproved Scepter
+Ранг 2Ускользающее ЛезвиеDisplacement Razor
+Ранг 2Шёлковый ЛукFinehair Bow
+Ранг 3Благословенный КлинокBlessed Anlace
+Ранг 3Взрывной МолотRocket Maul
+Ранг 3Винтовка ИльмариIlmari's Rifle
+Ранг 3Волшебная Палочка Цепной МолнииArc Wand
+Ранг 3Выдвижная сабляRetractable Saber
+Ранг 3ГанблейдGunblade
+Ранг 3Двойной ЦепDouble Flail
+Ранг 3Клинки-КогтиTalon Blades
+Ранг 3Клинок СветлячкаFlickerfly Blade
+Ранг 3Кристальное КопьеCrystal Spear
+Ранг 3Кулон ВидогастаWidogast Pendant
+Ранг 3Магическая СфераMage Orb
+Ранг 3Меч ХрабростиBravesword
+Ранг 3Молниеносный МолотBlitz Hammer
+Ранг 3Молот ГневаHammer of Wrath
+Ранг 3Платиновый ЭстокPlatinum Estoc
+Ранг 3Позолоченный ЛукGilded Bow
+Ранг 3Посох АугмыStaff of Augma
+Ранг 3Посох ОгняFirestaff
+Ранг 3Поющий МечSinging Sword
+Ранг 3Призрачный КлинокGhostblade
+Ранг 3Продвинутая АлебардаAdvanced Halberd
+Ранг 3Продвинутая БулаваAdvanced Mace
+Ранг 3Продвинутая ВинтовкаAdvanced Rifle
+Ранг 3Продвинутая Волшебная ПалочкаAdvanced Wand
+Ранг 3Продвинутая КатанаAdvanced Katana
+Ранг 3Продвинутая Магическая ВинтовкаAdvanced Arcane Rifle
+Ранг 3Продвинутая РапираAdvanced Rapier
+Ранг 3Продвинутая СабляAdvanced Cutlass
+Ранг 3Продвинутая СекираAdvanced Battleaxe
+Ранг 3Продвинутое КопьёAdvanced Spear
+Ранг 3Продвинутые Магические НаручиAdvanced Arcane Gauntlets
+Ранг 3Продвинутые Наручные РуныAdvanced Hand Runes
+Ранг 3Продвинутые Сияющие КольцаAdvanced Glowing Rings
+Ранг 3Продвинутый АрбалетAdvanced Crossbow
+Ранг 3Продвинутый Благословленный Медный КастетAdvanced Blessed ... [namelen=78 namehash=ef305ad5]
+Ранг 3Продвинутый Боевой МолотAdvanced Warhammer
+Ранг 3Продвинутый Боевой ПосохAdvanced Quarterstaff
+Ранг 3Продвинутый Возвращающийся КлинокAdvanced Returning Blade
+Ранг 3Продвинутый Волнистый КинжалAdvanced Twisted Dagger
+Ранг 3Продвинутый Двойной ПосохAdvanced Dualstaff
+Ранг 3Продвинутый Двуручный МечAdvanced Greatsword
+Ранг 3Продвинутый Двуручный ПосохAdvanced Greatstaff
+Ранг 3Продвинутый Длинный ЛукAdvanced Longbow
+Ранг 3Продвинутый Длинный МечAdvanced Longsword
+Ранг 3Продвинутый ДробовикAdvanced Shotgun
+Ранг 3Продвинутый Зачарованный ЧакрамAdvanced Enchanted Chakram
+Ранг 3Продвинутый КастетAdvanced Brass Knuckles
+Ранг 3Продвинутый Кинжал на ВеревкеAdvanced Rope Dart
+Ранг 3Продвинутый КинжалAdvanced Dagger
+Ранг 3Продвинутый Колдующий КинжалAdvanced Casting Dagger
+Ранг 3Продвинутый Короткий ЛукAdvanced Shortbow
+Ранг 3Продвинутый Короткий ПосохAdvanced Shortstaff
+Ранг 3Продвинутый Меч СветаAdvanced Brightsword
+Ранг 3Продвинутый Меч ТьмыAdvanced Shadowblade
+Ранг 3Продвинутый Меч-ХлыстAdvanced Whipsword
+Ранг 3Продвинутый Многозарядный АрбалетAdvanced Repeating Crossb... [namelen=66 namehash=35506ce0]
+Ранг 3Продвинутый ПалашAdvanced Broadsword
+Ранг 3Продвинутый РевольверAdvanced Revolver
+Ранг 3Продвинутый Рунный ПистолетAdvanced Runelock Pistol
+Ранг 3Продвинутый Святой ДробовикAdvanced Holy Shotgun
+Ранг 3Продвинутый Священный ТопорAdvanced Hallowed Axe
+Ранг 3Продвинутый СкимитарAdvanced Scimitar
+Ранг 3Продвинутый СкипетрAdvanced Scepter
+Ранг 3Револьвер на Черном ПорохеBlack Powder Revolver
+Ранг 3Руны ПогибелиRunes of Ruination
+Ранг 3Сабля МеридианаMeridian Cutlass
+Ранг 3Секира ФортунисаAxe of Fortunis
+Ранг 3Серпы на ЦепиChained Scythe
+Ранг 3Скипетр ИнеяRime Scepter
+Ранг 3Солдатская ПикаSoldier's Pike
+Ранг 3СюрикенBladed Star
+Ранг 3Топор ЛабрисLabrys Axe
+Ранг 3Шипастый ЛукSpiked Bow
+Ранг 4Арбалет ГравитацииGravity Arbalest
+Ранг 4АркебузаArquebus
+Ранг 4Вырванный Коготь ДраконаSevered Dragon Claw
+Ранг 4Изогнутый КинжалCurved Dagger
+Ранг 4КлевецBec de Corbin
+Ранг 4Клинок ДемонаDemon's Edge
+Ранг 4Клинок Света и ПламениSword of Light & Flame
+Ранг 4Клинок из Звездного МеталлаStarmetal Blade
+Ранг 4Клык ГадюкиAdder's Fang
+Ранг 4Колючий ЛукThistlebow
+Ранг 4Коса МидасаMidas Scythe
+Ранг 4Легендарная АлебардаLegendary Halberd
+Ранг 4Легендарная БулаваLegendary Mace
+Ранг 4Легендарная ВинтовкаLegendary Rifle
+Ранг 4Легендарная Волшебная палочкаLegendary Wand
+Ранг 4Легендарная КатанаLegendary Katana
+Ранг 4Легендарная Магическая ВинтовкаLegendary Arcane Rifle
+Ранг 4Легендарная РапираLegendary Rapier
+Ранг 4Легендарная СабляLegendary Cutlass
+Ранг 4Легендарная СекираLegendary Battleaxe
+Ранг 4Легендарное КопьёLegendary Spear
+Ранг 4Легендарные Магические НаручиLegendary Arcane Gauntlets
+Ранг 4Легендарные Наручные РуныLegendary Hand Runes
+Ранг 4Легендарные Сияющие КольцаLegendary Glowing Rings
+Ранг 4Легендарный АрбалетLegendary Crossbow
+Ранг 4Легендарный Благословленный Медный КастетLegendary Blessed... [namelen=79 namehash=95d70c3c]
+Ранг 4Легендарный Боевой МолотLegendary Warhammer
+Ранг 4Легендарный Боевой ПосохLegendary Quarterstaff
+Ранг 4Легендарный Возвращающийся клинокLegendary Returning Blade
+Ранг 4Легендарный Волнистый КинжалLegendary Twisted Dagger
+Ранг 4Легендарный Двойной ПосохLegendary Dualstaff
+Ранг 4Легендарный Двуручный МечLegendary Greatsword
+Ранг 4Легендарный Двуручный ПосохLegendary Greatstaff
+Ранг 4Легендарный Длинный ЛукLegendary Longbow
+Ранг 4Легендарный Длинный мечLegendary Longsword
+Ранг 4Легендарный ДробовикLegendary Shotgun
+Ранг 4Легендарный Зачарованный ЧакрамLegendary Enchanted Chakram
+Ранг 4Легендарный КастетLegendary Brass Knuckles
+Ранг 4Легендарный Кинжал на ВеревкеLegendary Rope Dart
+Ранг 4Легендарный КинжалLegendary Dagger
+Ранг 4Легендарный Колдующий КинжалLegendary Casting Dagger
+Ранг 4Легендарный Короткий ЛукLegendary Shortbow
+Ранг 4Легендарный Короткий ПосохLegendary Shortstaff
+Ранг 4Легендарный Меч СветаLegendary Brightsword
+Ранг 4Легендарный Меч ТьмыLegendary Shadowblade
+Ранг 4Легендарный Меч-ХлыстLegendary Whipsword
+Ранг 4Легендарный Многозарядный АрбалетLegendary Repeating Cross... [namelen=67 namehash=f6378717]
+Ранг 4Легендарный ПалашLegendary Broadsword
+Ранг 4Легендарный РевольверLegendary Revolver
+Ранг 4Легендарный Рунный ПистолетLegendary Runelock Pistol
+Ранг 4Легендарный Святой ДробовикLegendary Holy Shotgun
+Ранг 4Легендарный Священный ТопорLegendary Hallowed Axe
+Ранг 4Легендарный СкимитарLegendary Scimitar
+Ранг 4Легендарный СкипетрLegendary Scepter
+Ранг 4Лук АантариAantari Bow
+Ранг 4Обоюдоострый МечDual-Ended Sword
+Ранг 4Палочка ЭссекаWand of Essek
+Ранг 4Парящие Осколки КлинкаFloating Bladeshards
+Ранг 4Перчатки СлиянияFusion Gloves
+Ранг 4Поглощающие РукавицыSiphoning Gauntlets
+Ранг 4Пороховая СерпантинаBlack Powder Serpentine
+Ранг 4Посох БесконечностиInfinite Staff
+Ранг 4Посох КровиBloodstaff
+Ранг 4Разрушительный КолунSledge Axe
+Ранг 4Револьвер МагусаMagus Revolver
+Ранг 4Ручная ПушкаHand Cannon
+Ранг 4Секира ГромовержцаStorm God's Greataxe
+Ранг 4Топоры РикошетаRicochet Axes
+Ранг 4Ударная ПерчаткаImpact Gauntlet
+Ранг 4Удлинённая ГлефаExtended Polearm
+Ранг 4Часовой АрбалетClockwork Crossbow
+Ранг 4ШэнбяоSwinging Ropeblade
+Ранг 4Эфирный Двуручный МечEthereal Zweihänder
+Рапира
+Расщепляющийся Лук
+Револьвер
+Револьвер Магуса
+Револьвер на Черном Порохе
+Рогатка
+Розовый Клинок
+Рукавицы Убийцы
+Рунный Пистолет
+Руны Погибели
+Ручная Пушка
+Сабля
+Сабля Меридиана
+Сверкающий Посох
+Святой Дробовик
+Святой Клинок
+Священный Топор
+Секира
+Секира Громовержца
+Секира Фортуниса
+Серп
+Серпы на Цепи
+Сеткой
+Сияющие Кольца
+Скалка
+Скальпель Хирурга
+Скимитар
+Скипетр
+Скипетр Инея
+Скипетр Элиаса
+Скопировать ссылку на этот раздел
+Снаряжение
+Снежный Клинок
+Солдатская Пика
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Стальная Алебарда
+Стихийный Длинный Лук
+Студенистый Молот
+Сумеречное Крыло
+Сухожильный Лук
+Сюрикен
+Таблицы
+Темпрус
+Тенеруб
+Тесак
+Топор Лабрис
+Топор Чёрной Порчи
+Топоры Рикошета
+Триединая Палица
+Туманный Проектор Ми-Го
+Тяжелое Копье
+Уголёк
+Ударная Перчатка
+Удлинённая Глефа
+Удочка
+Улучшенная Алебарда
+Улучшенная Булава
+Улучшенная Винтовка
+Улучшенная Волшебная Палочка
+Улучшенная Катана
+Улучшенная Магическая Винтовка
+Улучшенная Рапира
+Улучшенная Сабля
+Улучшенная Секира
+Улучшенное Копьё
+Улучшенные Магические Наручи
+Улучшенные Наручные Руны
+Улучшенные Сияющие Кольца
+Улучшенный Арбалет
+Улучшенный Благословленный Медный Кастет
+Улучшенный Боевой Молот
+Улучшенный Боевой Посох
+Улучшенный Возвращающийся Клинок
+Улучшенный Волнистый Кинжал
+Улучшенный Двойной Посох
+Улучшенный Двуручный Меч
+Улучшенный Двуручный Посох
+Улучшенный Длинный Лук
+Улучшенный Длинный Меч
+Улучшенный Дробовик
+Улучшенный Зачарованный Чакрам
+Улучшенный Кастет
+Улучшенный Кинжал
+Улучшенный Кинжал на Веревке
+Улучшенный Колдующий Кинжал
+Улучшенный Короткий Лук
+Улучшенный Короткий Посох
+Улучшенный Меч Света
+Улучшенный Меч Тьмы
+Улучшенный Меч-Хлыст
+Улучшенный Многозарядный Арбалет
+Улучшенный Палаш
+Улучшенный Револьвер
+Улучшенный Рунный Пистолет
+Улучшенный Святой Дробовик
+Улучшенный Священный Топор
+Улучшенный Скимитар
+Улучшенный Скипетр
+Ускользающее Лезвие
+Условия использования
+Установить как приложение
+Установка для Фейерверков
+Фильтры
+Фрикционные Обмотки
+Фроствирд (Возвышенный)
+Фроствирд (Дремлющий)
+Фроствирд (Пробуждённый)
+Харроклив
+Хладноклинок
+Хоумбрю
+Церебральный Шип
+Часовой Арбалет
+Шип Дриады
+Шипастый Лук
+Шэнбяо
+Шёлковый Лук
+Эфирная Винтовка
+Эфирный Двуручный Меч
+Янтарный Молот
+Ярость Зантака
+
+## en :: tree
+RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tables/eq_weapon]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    link "Core" [url=index.html?as=gm1#/tables/core_item]
+    link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
+    link "Alt. tables" [url=index.html?as=gm1#/tables/alt_item]
+    link "Wondrous Loot" [url=index.html?as=gm1#/tables/wondrous]
+    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
+    link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
+    link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Communities" [url=index.html?as=gm1#/tables/community]
+    link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
+    link "Other" [url=index.html?as=gm1#/tables/other_starting]
+    link "Homebrew" [url=index.html?as=gm1#/tables/homebrew]
+    link "Weapons" [url=index.html?as=gm1#/tables/eq_weapon]
+    link "Secondary" [url=index.html?as=gm1#/tables/eq_secondary]
+    link "Armor" [url=index.html?as=gm1#/tables/eq_armor]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=false]
+    button "Grid" [pressed=true]
+    button "Homebrew" [description=Show your own items pressed=false]
+    button "Filters" [expanded=false]
+    StaticText "381"
+    ... StaticText x8 of 12 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (75)" [checked=false]
+    checkbox "Broadsword" [checked=false]
+    button "Tier 1 Broadsword Палаш"
+    ... checkbox x382 of 386 same-shape siblings elided
+    ... button x378 of 382 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    button "Copy a link to this section" [description=Copy a link to this section]
+    button "Copy a link to this section" [description=Copy a link to this section]
+    button "133 Sword of Angels Меч Ангелов"
+    StaticText "ARTIFACTS"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (1)" [checked=false]
+    StaticText "Select all (1)"
+    checkbox "Oath of Balance" [checked=false]
+    button "9 Oath of Balance Клятва Равновесия"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+100Friction WrapsФрикционные Обмотки
+101Frostwyrd (Dormant)Фроствирд (Дремлющий)
+102Frostwyrd (Awakened)Фроствирд (Пробуждённый)
+103Frostwyrd (Exalted)Фроствирд (Возвышенный)
+104Gelatinous HammerСтуденистый Молот
+105Ghost Touch SwordМеч Призрачного Касания
+107Gryphon HammerМолот Грифона
+108Hellfire SwordМеч Адского Пламени
+109Hilarad's MeteorМетеор Хиларада
+10NimoirasНимойрас
+10Shaman's BladeКлинок Шамана
+111Hydra BladeКлинок Гидры
+112Infernal KnucklesИнфернальные Кастеты
+113Kinetic EdgeКинетическое Лезвие
+114Murderer's GauntletsРукавицы Убийцы
+115Nature's FallПадение Природы
+116Restless VengeanceНеугомонное Возмездие
+117Rod of Flaming SkullsЖезл Пылающих Черепов
+118RosebladeРозовый Клинок
+119SamplerПробник
+11Herald's WillВоля Глашатая
+121ShatterswordМеч-Разрушитель
+124Sky Gnome PickaxeКирка Небесного Гнома
+125Somnus BladeКлинок Сомнуса
+126Soulfire QuarterstaffБоевой Посох Душевного Огня
+127SpellbladeЗаклинательный Клинок
+129Staff of LaethysПосох Лейтиса
+12Mossblossom StaffПосох Мохового Цветка
+130Star LanceЗвёздное Копьё
+131Steampowered GauntletsПаровые Рукавицы
+132Striking FangsРазящие Клыки
+133Sword of AngelsМеч Ангелов
+134Sword of UndeathМеч Нежити
+135Tendon BowСухожильный Лук
+136Trinity ClubТриединая Палица
+137Tyrant's GlaiveГлефа Тирана
+138Waiata GreatswordДвуручный Меч Вайаты
+139Wand of Unstable ArcanaЖезл Нестабильной Арканы
+13HarrowcleaveХарроклив
+140Wasp's StingЖало Осы
+141Wavecrest JavelinДротик Гребня Волны
+17Blade of BraxusКлинок Браксуса
+17Cerebral SpikeЦеребральный Шип
+19Meat CleaverМясницкий Тесак
+1Aether RifleЭфирная Винтовка
+1Blessed Chef's KnifeБлагословенный Нож Шеф-Повара
+20Iron ConstableЖелезный Констебль
+23WaveriderВсадник Волн
+25Claws of YifangКогти Ифанга
+26Deadwood SlayerГубитель из Сухостоя
+27Black Hole StaffПосох Чёрной Дыры
+29Saintly BladeСвятой Клинок
+2Blade of the LivingКлинок Живущих
+30Monolith SmasherКрушитель Монолитов
+30ShadowcullТенеруб
+31Devil's Smithing HammerМолот Инфернального Кузнеца
+31Toadstool StaffПосох Поганки
+31Voynarian CrossbowВойнарианский Арбалет
+32Whirlwind SlasherВихревой Резак
+33Zanthak's RageЯрость Зантака
+34Verdant DaughterДочь Зелени
+3Fists of the RavagerКулаки Разорителя
+3Longbow of FyrДлинный Лук Фира
+4Mi-Go Mist ProjectorТуманный Проектор Ми-Го
+51Leviathan HarpoonГарпун Левиафана
+54Life WandЖезл Жизни
+5RimecasterИнееметатель
+5Staff of the Secret FlameПосох Тайного Пламени
+6Last StandПоследний Рубеж
+79Acid EdgeКислотное Лезвие
+79Seeker's BowЛук Искателя
+7Yithian Lightning GunМолниевая Пушка Йитианцев
+80Amber HammerЯнтарный Молот
+81Ananimus HookКрюк Ананимуса
+82Arc-Lightning ClaymoreКлеймор Дуговой Молнии
+82SnowbladeСнежный Клинок
+83Astral GlaiveАстральная Глефа
+84Black Corruption AxeТопор Чёрной Порчи
+85BloodgorgerКровоглот
+85Spider's StingПаучье Жало
+86Boneshard CrossbowАрбалет Костяных Осколков
+88ChillbladeХладноклинок
+88Staff of the Whispering ArchiveПосох Шепчущего Архива
+89Crystal Spirit SwordМеч Хрустального Духа
+8TemprusТемпрус
+91DraketoothДраконий Клык
+92Dryad's ThornШип Дриады
+93Duka SalametДука Саламет
+94Dusk WingСумеречное Крыло
+95Elemental LongbowСтихийный Длинный Лук
+96EmberУголёк
+98Filth MaceБулава Скверны
+9Oath of BalanceКлятва Равновесия
+Aantari Bow
+Account: gm1@example.test
+Acid Edge
+Adder's Fang
+Advanced Arcane Gauntlets
+Advanced Arcane Rifle
+Advanced Battleaxe
+Advanced Blessed Brass Knuckles
+Advanced Brass Knuckles
+Advanced Brightsword
+Advanced Broadsword
+Advanced Casting Dagger
+Advanced Crossbow
+Advanced Cutlass
+Advanced Dagger
+Advanced Dualstaff
+Advanced Enchanted Chakram
+Advanced Glowing Rings
+Advanced Greatstaff
+Advanced Greatsword
+Advanced Halberd
+Advanced Hallowed Axe
+Advanced Hand Runes
+Advanced Holy Shotgun
+Advanced Katana
+Advanced Longbow
+Advanced Longsword
+Advanced Mace
+Advanced Quarterstaff
+Advanced Rapier
+Advanced Repeating Crossbow
+Advanced Returning Blade
+Advanced Revolver
+Advanced Rifle
+Advanced Rope Dart
+Advanced Runelock Pistol
+Advanced Scepter
+Advanced Scimitar
+Advanced Shadowblade
+Advanced Shortbow
+Advanced Shortstaff
+Advanced Shotgun
+Advanced Spear
+Advanced Twisted Dagger
+Advanced Wand
+Advanced Warhammer
+Advanced Whipsword
+Aether Rifle
+Alt. tables
+Amber Hammer
+Ananimus Hook
+Arc Wand
+Arc-Lightning Claymore
+Arcane Gauntlets
+Arcane Rifle
+Armor
+Arquebus
+Astral Glaive
+Axe of Fortunis
+Battleaxe
+Bec de Corbin
+Black Corruption Axe
+Black Hole Staff
+Black Powder Revolver
+Black Powder Serpentine
+Blade of Braxus
+Blade of the Living
+Bladed Fan
+Bladed Star
+Bladed Whip
+Blessed Anlace
+Blessed Brass Knuckles
+Blessed Chef's Knife
+Blitz Hammer
+Bloodgorger
+Bloodstaff
+Blunderbuss
+Boneshard Crossbow
+Brass Knuckles
+Bravesword
+Brightsword
+Broadsword
+Butcher's Axe
+Cane Sword
+Casting Dagger
+Casting Sword
+Cerebral Spike
+Chained Scythe
+Chillblade
+Claws of Yifang
+Cleaver
+Clockwork Crossbow
+Communities
+Cooking Knife
+Copy a link to this section
+Core
+Crop Scythe
+Crossbow
+Crystal Spear
+Crystal Spirit Sword
+Curved Dagger
+Cutlass
+Cyrurgien's Scalpel
+Dagger
+Deadwood Slayer
+Demon's Edge
+Devil's Smithing Hammer
+Devouring Dagger
+Displacement Razor
+Double Flail
+Dragon's Vault
+Draketooth
+Dread
+Dread GM Toolbox
+Dryad's Thorn
+Dual-Ended Sword
+Dualstaff
+Duka Salamet
+Dusk Wing
+EN
+Ego Blade
+Elder Bow
+Elemental Longbow
+Ember
+Enchanted Boomerang
+Enchanted Broomstick
+Enchanted Chakram
+Enchanted Forge Lighter
+Enchanted Hammer
+Enchanted Kite
+Enchanted Lute
+Enchanted Mop
+Enchanted Scissors
+Enchanted Shillelagh
+Equipment
+Ethereal Zweihänder
+Exploding Potions
+Extended Polearm
+Filters
+Filth Mace
+Finehair Bow
+Firestaff
+Firework Launcher
+Fishing Rod
+Fists of the Ravager
+Flickerfly Blade
+Floating Bladeshards
+Forge Poker
+Friction Wraps
+Frostwyrd (Awakened)
+Frostwyrd (Dormant)
+Frostwyrd (Exalted)
+Fury Gem
+Fusion Gloves
+Gelatinous Hammer
+Ghost Touch Sword
+Ghostblade
+Gilded Bow
+Gilded Falchion
+Glowing Rings
+Gravity Arbalest
+Greatbow
+Greatstaff
+Greatsword
+Grid
+Gryphon Hammer
+Gunblade
+Halberd
+Hallowed Axe
+Hammer of Exota
+Hammer of Wrath
+Hand Cannon
+Hand Runes
+Harrowcleave
+Hellfire Sword
+Herald's Will
+Hilarad's Meteor
+Holy Shotgun
+Homebrew
+Hope & Fear
+How this works
+Hydra Blade
+Ilmari's Rifle
+Impact Gauntlet
+Improved Arcane Gauntlets
+Improved Arcane Rifle
+Improved Battleaxe
+Improved Blessed Brass Knuckles
+Improved Brass Knuckles
+Improved Brightsword
+Improved Broadsword
+Improved Casting Dagger
+Improved Crossbow
+Improved Cutlass
+Improved Dagger
+Improved Dualstaff
+Improved Enchanted Chakram
+Improved Glowing Rings
+Improved Greatstaff
+Improved Greatsword
+Improved Halberd
+Improved Hallowed Axe
+Improved Hand Runes
+Improved Holy Shotgun
+Improved Katana
+Improved Longbow
+Improved Longsword
+Improved Mace
+Improved Quarterstaff
+Improved Rapier
+Improved Repeating Crossbow
+Improved Returning Blade
+Improved Revolver
+Improved Rifle
+Improved Rope Dart
+Improved Runelock Pistol
+Improved Scepter
+Improved Scimitar
+Improved Shadowblade
+Improved Shortbow
+Improved Shortstaff
+Improved Shotgun
+Improved Spear
+Improved Twisted Dagger
+Improved Wand
+Improved Warhammer
+Improved Whipsword
+Infernal Knuckles
+Infinite Staff
+Install as an app
+Iron Constable
+Iron Skillet
+Javelins
+Katana
+Keeper's Staff
+Kinetic Edge
+Knuckle Blades
+Labrys Axe
+Lance
+Last Stand
+Legendary Arcane Gauntlets
+Legendary Arcane Rifle
+Legendary Battleaxe
+Legendary Blessed Brass Knuckles
+Legendary Brass Knuckles
+Legendary Brightsword
+Legendary Broadsword
+Legendary Casting Dagger
+Legendary Crossbow
+Legendary Cutlass
+Legendary Dagger
+Legendary Dualstaff
+Legendary Enchanted Chakram
+Legendary Glowing Rings
+Legendary Greatstaff
+Legendary Greatsword
+Legendary Halberd
+Legendary Hallowed Axe
+Legendary Hand Runes
+Legendary Holy Shotgun
+Legendary Katana
+Legendary Longbow
+Legendary Longsword
+Legendary Mace
+Legendary Quarterstaff
+Legendary Rapier
+Legendary Repeating Crossbow
+Legendary Returning Blade
+Legendary Revolver
+Legendary Rifle
+Legendary Rope Dart
+Legendary Runelock Pistol
+Legendary Scepter
+Legendary Scimitar
+Legendary Shadowblade
+Legendary Shortbow
+Legendary Shortstaff
+Legendary Shotgun
+Legendary Spear
+Legendary Twisted Dagger
+Legendary Wand
+Legendary Warhammer
+Legendary Whipsword
+Leviathan Harpoon
+Life Wand
+Link to this table
+List
+Lists
+Longbow
+Longbow of Fyr
+Longsword
+Mace
+Mage Orb
+Magus Revolver
+Meat Cleaver
+Meridian Cutlass
+Mi-Go Mist Projector
+Midas Scythe
+Monolith Smasher
+Mossblossom Staff
+Murderer's Gauntlets
+Nature's Fall
+Nimoiras
+Oath of Balance
+Open this section on start
+Other
+Pitchfork
+Platinum Estoc
+Privacy
+Quarterstaff
+RU
+Rapier
+Repeating Crossbow
+Restless Vengeance
+Retractable Saber
+Returning Blade
+Revolver
+Ricochet Axes
+Rifle
+Rime Scepter
+Rimecaster
+Rocket Maul
+Rod of Flaming Skulls
+Rolling Pin
+Rope Dart
+Roseblade
+Runelock Pistol
+Runes of Ruination
+Saintly Blade
+Sampler
+Scepter
+Scepter of Elias
+Scimitar
+Search
+Secondary
+Seeker's Bow
+Severed Dragon Claw
+Shadowblade
+Shadowcull
+Shaman's Blade
+Sharpened Rake
+Shattersword
+Shortbow
+Shortstaff
+Shotgun
+Show your own items
+Sickle
+Singing Sword
+Siphoning Gauntlets
+Skip to content
+Sky Gnome Pickaxe
+Sledge Axe
+Sledgehammer
+Slingshot
+Snowblade
+Soldier's Pike
+Somnus Blade
+Soulfire Quarterstaff
+Sparkling Staff
+Spear
+Spellblade
+Spellbound Bangles
+Spider's Sting
+Spiked Bow
+Splintershaft Bow
+Staff of Augma
+Staff of Laethys
+Staff of the Secret Flame
+Staff of the Whispering Archive
+Standard rules
+Star Lance
+Starmetal Blade
+Steampowered Gauntlets
+Steelforged Halberd
+Storm God's Greataxe
+Striking Fangs
+Swinging Ropeblade
+Sword of Angels
+Sword of Light & Flame
+Sword of Undeath
+Tables
+Talon Blades
+Temprus
+Tendon Bow
+Terms of use
+Thistlebow
+Tier 1Arcane GauntletsМагические Наручи
+Tier 1Arcane RifleМагическая Винтовка
+Tier 1BattleaxeСекира
+Tier 1Blessed Brass KnucklesБлагословленный Медный Кастет
+Tier 1Brass KnucklesКастет
+Tier 1BrightswordМеч Света
+Tier 1BroadswordПалаш
+Tier 1Butcher's AxeМясницкий Топор
+Tier 1Casting DaggerКолдующий Кинжал
+Tier 1CleaverТесак
+Tier 1Cooking KnifeКухонный Нож
+Tier 1Crop ScytheКоса
+Tier 1CrossbowАрбалет
+Tier 1CutlassСабля
+Tier 1DaggerКинжал
+Tier 1DualstaffДвойной Посох
+Tier 1Enchanted BoomerangЗачарованный Бумеранг
+Tier 1Enchanted BroomstickЗачарованная Метла
+Tier 1Enchanted ChakramЗачарованный Чакрам
+Tier 1Enchanted Forge LighterЗачарованная Кузнечная Зажигалка
+Tier 1Enchanted HammerЗачарованный Молот
+Tier 1Enchanted KiteЗачарованный Воздушный Змей
+Tier 1Enchanted MopЗачарованная Швабра
+Tier 1Enchanted ScissorsЗачарованные Ножницы
+Tier 1Exploding PotionsВзрывные Зелья
+Tier 1Firework LauncherУстановка для Фейерверков
+Tier 1Fishing RodУдочка
+Tier 1Forge PokerКованый Крюк
+Tier 1Glowing RingsСияющие Кольца
+Tier 1GreatstaffДвуручный Посох
+Tier 1GreatswordДвуручный Меч
+Tier 1HalberdАлебарда
+Tier 1Hallowed AxeСвященный Топор
+Tier 1Hand RunesНаручные Руны
+Tier 1Holy ShotgunСвятой Дробовик
+Tier 1Iron SkilletЖелезная Сковорода
+Tier 1KatanaКатана
+Tier 1LongbowДлинный Лук
+Tier 1LongswordДлинный Меч
+Tier 1MaceБулава
+Tier 1PitchforkВилы
+Tier 1QuarterstaffБоевой Посох
+Tier 1RapierРапира
+Tier 1Repeating CrossbowМногозарядный Арбалет
+Tier 1Returning BladeВозвращающийся клинок
+Tier 1RevolverРевольвер
+Tier 1RifleВинтовка
+Tier 1Rolling PinСкалка
+Tier 1Rope DartКинжал на Веревке
+Tier 1Runelock PistolРунный Пистолет
+Tier 1ScepterСкипетр
+Tier 1ScimitarСкимитар
+Tier 1ShadowbladeМеч Тьмы
+Tier 1Sharpened RakeЗаточенные Грабли
+Tier 1ShortbowКороткий Лук
+Tier 1ShortstaffКороткий Посох
+Tier 1ShotgunДробовик
+Tier 1SickleСерп
+Tier 1SledgehammerКувалда
+Tier 1SlingshotРогатка
+Tier 1Sparkling StaffСверкающий Посох
+Tier 1SpearКопьё
+Tier 1Twisted DaggerВолнистый Кинжал
+Tier 1Walking StaffПоходная Палка
+Tier 1WandВолшебная палочка
+Tier 1WarhammerБоевой Молот
+Tier 1WhipswordМеч-Хлыст
+Tier 1Whisk WandВенчик
+Tier 2Bladed FanВеер из Лезвий
+Tier 2Bladed WhipКлинковый Кнут
+Tier 2BlunderbussМушкетон
+Tier 2Cane SwordМеч-Трость
+Tier 2Casting SwordКолдующий Меч
+Tier 2Cyrurgien's ScalpelСкальпель Хирурга
+Tier 2Devouring DaggerПожирающий Кинжал
+Tier 2Displacement RazorУскользающее Лезвие
+Tier 2Ego BladeКлинок Эго
+Tier 2Elder BowДревний Лук
+Tier 2Enchanted LuteЗачарованная Лютня
+Tier 2Enchanted ShillelaghЗачарованная Шилейла
+Tier 2Finehair BowШёлковый Лук
+Tier 2Fury GemКристалл Ярости
+Tier 2Gilded FalchionПозолоченный Фальшион
+Tier 2GreatbowБольшой Лук
+Tier 2Hammer of ExotaМолот Экзоты
+Tier 2Improved Arcane GauntletsУлучшенные Магические Наручи
+Tier 2Improved Arcane RifleУлучшенная Магическая Винтовка
+Tier 2Improved BattleaxeУлучшенная Секира
+Tier 2Improved Blessed Brass KnucklesУлучшенный Благословленный ... [namelen=77 namehash=4d215495]
+Tier 2Improved Brass KnucklesУлучшенный Кастет
+Tier 2Improved BrightswordУлучшенный Меч Света
+Tier 2Improved BroadswordУлучшенный Палаш
+Tier 2Improved Casting DaggerУлучшенный Колдующий Кинжал
+Tier 2Improved CrossbowУлучшенный Арбалет
+Tier 2Improved CutlassУлучшенная Сабля
+Tier 2Improved DaggerУлучшенный Кинжал
+Tier 2Improved DualstaffУлучшенный Двойной Посох
+Tier 2Improved Enchanted ChakramУлучшенный Зачарованный Чакрам
+Tier 2Improved Glowing RingsУлучшенные Сияющие Кольца
+Tier 2Improved GreatstaffУлучшенный Двуручный Посох
+Tier 2Improved GreatswordУлучшенный Двуручный Меч
+Tier 2Improved HalberdУлучшенная Алебарда
+Tier 2Improved Hallowed AxeУлучшенный Священный Топор
+Tier 2Improved Hand RunesУлучшенные Наручные Руны
+Tier 2Improved Holy ShotgunУлучшенный Святой Дробовик
+Tier 2Improved KatanaУлучшенная Катана
+Tier 2Improved LongbowУлучшенный Длинный Лук
+Tier 2Improved LongswordУлучшенный Длинный Меч
+Tier 2Improved MaceУлучшенная Булава
+Tier 2Improved QuarterstaffУлучшенный Боевой Посох
+Tier 2Improved RapierУлучшенная Рапира
+Tier 2Improved Repeating CrossbowУлучшенный Многозарядный Арбале... [namelen=65 namehash=589efad1]
+Tier 2Improved Returning BladeУлучшенный Возвращающийся Клинок
+Tier 2Improved RevolverУлучшенный Револьвер
+Tier 2Improved RifleУлучшенная Винтовка
+Tier 2Improved Rope DartУлучшенный Кинжал на Веревке
+Tier 2Improved Runelock PistolУлучшенный Рунный Пистолет
+Tier 2Improved ScepterУлучшенный Скипетр
+Tier 2Improved ScimitarУлучшенный Скимитар
+Tier 2Improved ShadowbladeУлучшенный Меч Тьмы
+Tier 2Improved ShortbowУлучшенный Короткий Лук
+Tier 2Improved ShortstaffУлучшенный Короткий Посох
+Tier 2Improved ShotgunУлучшенный Дробовик
+Tier 2Improved SpearУлучшенное Копьё
+Tier 2Improved Twisted DaggerУлучшенный Волнистый Кинжал
+Tier 2Improved WandУлучшенная Волшебная Палочка
+Tier 2Improved WarhammerУлучшенный Боевой Молот
+Tier 2Improved WhipswordУлучшенный Меч-Хлыст
+Tier 2JavelinsМетательное Копье
+Tier 2Keeper's StaffПосох Хранителя
+Tier 2Knuckle BladesКастеты с лезвиями
+Tier 2LanceТяжелое Копье
+Tier 2Scepter of EliasСкипетр Элиаса
+Tier 2Spellbound BanglesЗаколдованные Браслеты
+Tier 2Splintershaft BowРасщепляющийся Лук
+Tier 2Steelforged HalberdСтальная Алебарда
+Tier 2Urok BroadswordПалаш Урока
+Tier 2Wand of EnthrallmentПалочка Очарования
+Tier 2War PickБоевая Кирка
+Tier 2War ScytheБоевая Коса
+Tier 2Yutari BloodbowКровавый Лук Ютари
+Tier 3Advanced Arcane GauntletsПродвинутые Магические Наручи
+Tier 3Advanced Arcane RifleПродвинутая Магическая Винтовка
+Tier 3Advanced BattleaxeПродвинутая Секира
+Tier 3Advanced Blessed Brass KnucklesПродвинутый Благословленный... [namelen=78 namehash=fb57fb04]
+Tier 3Advanced Brass KnucklesПродвинутый Кастет
+Tier 3Advanced BrightswordПродвинутый Меч Света
+Tier 3Advanced BroadswordПродвинутый Палаш
+Tier 3Advanced Casting DaggerПродвинутый Колдующий Кинжал
+Tier 3Advanced CrossbowПродвинутый Арбалет
+Tier 3Advanced CutlassПродвинутая Сабля
+Tier 3Advanced DaggerПродвинутый Кинжал
+Tier 3Advanced DualstaffПродвинутый Двойной Посох
+Tier 3Advanced Enchanted ChakramПродвинутый Зачарованный Чакрам
+Tier 3Advanced Glowing RingsПродвинутые Сияющие Кольца
+Tier 3Advanced GreatstaffПродвинутый Двуручный Посох
+Tier 3Advanced GreatswordПродвинутый Двуручный Меч
+Tier 3Advanced HalberdПродвинутая Алебарда
+Tier 3Advanced Hallowed AxeПродвинутый Священный Топор
+Tier 3Advanced Hand RunesПродвинутые Наручные Руны
+Tier 3Advanced Holy ShotgunПродвинутый Святой Дробовик
+Tier 3Advanced KatanaПродвинутая Катана
+Tier 3Advanced LongbowПродвинутый Длинный Лук
+Tier 3Advanced LongswordПродвинутый Длинный Меч
+Tier 3Advanced MaceПродвинутая Булава
+Tier 3Advanced QuarterstaffПродвинутый Боевой Посох
+Tier 3Advanced RapierПродвинутая Рапира
+Tier 3Advanced Repeating CrossbowПродвинутый Многозарядный Арбал... [namelen=66 namehash=d670bbf0]
+Tier 3Advanced Returning BladeПродвинутый Возвращающийся Клинок
+Tier 3Advanced RevolverПродвинутый Револьвер
+Tier 3Advanced RifleПродвинутая Винтовка
+Tier 3Advanced Rope DartПродвинутый Кинжал на Веревке
+Tier 3Advanced Runelock PistolПродвинутый Рунный Пистолет
+Tier 3Advanced ScepterПродвинутый Скипетр
+Tier 3Advanced ScimitarПродвинутый Скимитар
+Tier 3Advanced ShadowbladeПродвинутый Меч Тьмы
+Tier 3Advanced ShortbowПродвинутый Короткий Лук
+Tier 3Advanced ShortstaffПродвинутый Короткий Посох
+Tier 3Advanced ShotgunПродвинутый Дробовик
+Tier 3Advanced SpearПродвинутое Копьё
+Tier 3Advanced Twisted DaggerПродвинутый Волнистый Кинжал
+Tier 3Advanced WandПродвинутая Волшебная Палочка
+Tier 3Advanced WarhammerПродвинутый Боевой Молот
+Tier 3Advanced WhipswordПродвинутый Меч-Хлыст
+Tier 3Arc WandВолшебная Палочка Цепной Молнии
+Tier 3Axe of FortunisСекира Фортуниса
+Tier 3Black Powder RevolverРевольвер на Черном Порохе
+Tier 3Bladed StarСюрикен
+Tier 3Blessed AnlaceБлагословенный Клинок
+Tier 3Blitz HammerМолниеносный Молот
+Tier 3BraveswordМеч Храбрости
+Tier 3Chained ScytheСерпы на Цепи
+Tier 3Crystal SpearКристальное Копье
+Tier 3Double FlailДвойной Цеп
+Tier 3FirestaffПосох Огня
+Tier 3Flickerfly BladeКлинок Светлячка
+Tier 3GhostbladeПризрачный Клинок
+Tier 3Gilded BowПозолоченный Лук
+Tier 3GunbladeГанблейд
+Tier 3Hammer of WrathМолот Гнева
+Tier 3Ilmari's RifleВинтовка Ильмари
+Tier 3Labrys AxeТопор Лабрис
+Tier 3Mage OrbМагическая Сфера
+Tier 3Meridian CutlassСабля Меридиана
+Tier 3Platinum EstocПлатиновый Эсток
+Tier 3Retractable SaberВыдвижная сабля
+Tier 3Rime ScepterСкипетр Инея
+Tier 3Rocket MaulВзрывной Молот
+Tier 3Runes of RuinationРуны Погибели
+Tier 3Singing SwordПоющий Меч
+Tier 3Soldier's PikeСолдатская Пика
+Tier 3Spiked BowШипастый Лук
+Tier 3Staff of AugmaПосох Аугмы
+Tier 3Talon BladesКлинки-Когти
+Tier 3Widogast PendantКулон Видогаста
+Tier 4Aantari BowЛук Аантари
+Tier 4Adder's FangКлык Гадюки
+Tier 4ArquebusАркебуза
+Tier 4Bec de CorbinКлевец
+Tier 4Black Powder SerpentineПороховая Серпантина
+Tier 4BloodstaffПосох Крови
+Tier 4Clockwork CrossbowЧасовой Арбалет
+Tier 4Curved DaggerИзогнутый Кинжал
+Tier 4Demon's EdgeКлинок Демона
+Tier 4Dual-Ended SwordОбоюдоострый Меч
+Tier 4Ethereal ZweihänderЭфирный Двуручный Меч
+Tier 4Extended PolearmУдлинённая Глефа
+Tier 4Floating BladeshardsПарящие Осколки Клинка
+Tier 4Fusion GlovesПерчатки Слияния
+Tier 4Gravity ArbalestАрбалет Гравитации
+Tier 4Hand CannonРучная Пушка
+Tier 4Impact GauntletУдарная Перчатка
+Tier 4Infinite StaffПосох Бесконечности
+Tier 4Legendary Arcane GauntletsЛегендарные Магические Наручи
+Tier 4Legendary Arcane RifleЛегендарная Магическая Винтовка
+Tier 4Legendary BattleaxeЛегендарная Секира
+Tier 4Legendary Blessed Brass KnucklesЛегендарный Благословленны... [namelen=79 namehash=25a9e4c3]
+Tier 4Legendary Brass KnucklesЛегендарный Кастет
+Tier 4Legendary BrightswordЛегендарный Меч Света
+Tier 4Legendary BroadswordЛегендарный Палаш
+Tier 4Legendary Casting DaggerЛегендарный Колдующий Кинжал
+Tier 4Legendary CrossbowЛегендарный Арбалет
+Tier 4Legendary CutlassЛегендарная Сабля
+Tier 4Legendary DaggerЛегендарный Кинжал
+Tier 4Legendary DualstaffЛегендарный Двойной Посох
+Tier 4Legendary Enchanted ChakramЛегендарный Зачарованный Чакрам
+Tier 4Legendary Glowing RingsЛегендарные Сияющие Кольца
+Tier 4Legendary GreatstaffЛегендарный Двуручный Посох
+Tier 4Legendary GreatswordЛегендарный Двуручный Меч
+Tier 4Legendary HalberdЛегендарная Алебарда
+Tier 4Legendary Hallowed AxeЛегендарный Священный Топор
+Tier 4Legendary Hand RunesЛегендарные Наручные Руны
+Tier 4Legendary Holy ShotgunЛегендарный Святой Дробовик
+Tier 4Legendary KatanaЛегендарная Катана
+Tier 4Legendary LongbowЛегендарный Длинный Лук
+Tier 4Legendary LongswordЛегендарный Длинный меч
+Tier 4Legendary MaceЛегендарная Булава
+Tier 4Legendary QuarterstaffЛегендарный Боевой Посох
+Tier 4Legendary RapierЛегендарная Рапира
+Tier 4Legendary Repeating CrossbowЛегендарный Многозарядный Арба... [namelen=67 namehash=4a058e8a]
+Tier 4Legendary Returning BladeЛегендарный Возвращающийся клинок
+Tier 4Legendary RevolverЛегендарный Револьвер
+Tier 4Legendary RifleЛегендарная Винтовка
+Tier 4Legendary Rope DartЛегендарный Кинжал на Веревке
+Tier 4Legendary Runelock PistolЛегендарный Рунный Пистолет
+Tier 4Legendary ScepterЛегендарный Скипетр
+Tier 4Legendary ScimitarЛегендарный Скимитар
+Tier 4Legendary ShadowbladeЛегендарный Меч Тьмы
+Tier 4Legendary ShortbowЛегендарный Короткий Лук
+Tier 4Legendary ShortstaffЛегендарный Короткий Посох
+Tier 4Legendary ShotgunЛегендарный Дробовик
+Tier 4Legendary SpearЛегендарное Копьё
+Tier 4Legendary Twisted DaggerЛегендарный Волнистый Кинжал
+Tier 4Legendary WandЛегендарная Волшебная палочка
+Tier 4Legendary WarhammerЛегендарный Боевой Молот
+Tier 4Legendary WhipswordЛегендарный Меч-Хлыст
+Tier 4Magus RevolverРевольвер Магуса
+Tier 4Midas ScytheКоса Мидаса
+Tier 4Ricochet AxesТопоры Рикошета
+Tier 4Severed Dragon ClawВырванный Коготь Дракона
+Tier 4Siphoning GauntletsПоглощающие Рукавицы
+Tier 4Sledge AxeРазрушительный Колун
+Tier 4Starmetal BladeКлинок из Звездного Металла
+Tier 4Storm God's GreataxeСекира Громовержца
+Tier 4Swinging RopebladeШэнбяо
+Tier 4Sword of Light & FlameКлинок Света и Пламени
+Tier 4ThistlebowКолючий Лук
+Tier 4Wand of EssekПалочка Эссека
+Toadstool Staff
+Trinity Club
+Twisted Dagger
+Tyrant's Glaive
+Urok Broadsword
+Vault of Ages
+Verdant Daughter
+Voynarian Crossbow
+Waiata Greatsword
+Walking Staff
+Wand
+Wand of Enthrallment
+Wand of Essek
+Wand of Unstable Arcana
+War Pick
+War Scythe
+Warhammer
+Wasp's Sting
+Wavecrest Javelin
+Waverider
+Weapons
+Whipsword
+Whirlwind Slasher
+Whisk Wand
+Widogast Pendant
+Wondrous
+Wondrous Loot
+Yithian Lightning Gun
+Yutari Bloodbow
+Zanthak's Rage
+daggerheart.com
+ЛутDaggerheart
