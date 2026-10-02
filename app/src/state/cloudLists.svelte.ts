@@ -16,7 +16,7 @@
  * one invoker RPC with a result per write", "A request the database fails
  * three times is halved; a lone write is dropped". */
 
-import { toImportRows, type ImportList } from '../lib/bundle.js';
+import { toImportRows, withHeld, type ImportList } from '../lib/bundle.js';
 import {
   BATCH_OPS,
   batchSize,
@@ -132,6 +132,8 @@ export class CloudLists implements ListModel {
   readonly #feed: LiveFeed | null;
   #remoteTimer: ReturnType<typeof setTimeout> | null = null;
   readonly #sourceOf: (key: string) => EntrySource | null;
+  /* Whether the account holds an own item: an import's homebrew entry is a reference then. */
+  readonly #hasOwn: (key: string) => boolean;
   /* What each removed entry was written as, by list and key: an undo writes it back
      exactly, never resolved again (docs/specs/FEATURES.md, "Lists"). */
   #removed: Record<string, EntrySource> = {};
@@ -146,9 +148,15 @@ export class CloudLists implements ListModel {
       /** The owner's purchase requests: one feed per topic, so they read its messages too. */
       requests?:
         { message(event: string, payload: unknown): void; refetch(): void } | undefined;
-      /** The author's homebrew: the same feed carries its `homebrew` messages. */
+      /** The author's homebrew: the same feed carries its `homebrew` messages, and an
+       *  import asks it which keys the account holds. */
       homebrew?:
-        { message(event: string, payload: unknown): void; refetch(): void } | undefined;
+        | {
+            message(event: string, payload: unknown): void;
+            refetch(): void;
+            has?(key: string): boolean;
+          }
+        | undefined;
     },
     /** What an added entry is written as; null leaves the key out. The default writes
      *  catalog keys only. */
@@ -161,6 +169,7 @@ export class CloudLists implements ListModel {
     this.#events = live?.events ?? null;
     const requests = live?.requests;
     const homebrew = live?.homebrew;
+    this.#hasOwn = (key) => homebrew?.has?.(key) ?? false;
     this.#feed = live
       ? new LiveFeed(live.events, live.random, {
           message: (event, payload) => {
@@ -551,9 +560,21 @@ export class CloudLists implements ListModel {
   }
 
   /** The rows of an import, every id new: built once per chosen file, so a retry sends
-   *  the same ids. */
+   *  the same ids. A homebrew entry the account holds is a reference, any other a frozen
+   *  copy of the file's snapshot. */
   importRows(lists: readonly ImportList[]): ImportRow[] {
-    return toImportRows(lists, () => this.#repo.newId());
+    return toImportRows(
+      lists,
+      () => this.#repo.newId(),
+      (key) => this.#hasOwn(key)
+    );
+  }
+
+  /** The rows of `importRows` again for a press: a homebrew entry whose key the account
+   *  holds now is a reference, any other a frozen copy, the ids kept; `rows` itself when
+   *  nothing changed since they were built. */
+  importRowsFor(rows: ImportRow[], lists: readonly ImportList[]): ImportRow[] {
+    return withHeld(rows, lists, (key) => this.#hasOwn(key)) as ImportRow[];
   }
 
   /** Imports lists in one call (`import_lists`) after the buffer is sent, then reads the

@@ -14,6 +14,7 @@
  * language split is what `run-all.js`'s two 1180 rows pass). No language
  * argument means both, the original shape. */
 const { fresh, axe, reporter, closeBrowser } = require('./lib.js');
+const { HB_FILE, hbImportOpen, longNamesFile } = require('./inventory.js');
 
 const argv = process.argv.slice(2);
 const ONLY = argv.map(Number).filter(Boolean);
@@ -104,6 +105,39 @@ const PAGES = [
     ['#/lists/00000000-0000-4000-8000-000000000102', 'пустой список аккаунта', 'gm1'],
     ['#/lists', 'списки аккаунта', 'gm1'],
     ['#/homebrew', 'мои предметы', 'gm1'],
+    /* A fourth element opens a panel first: the homebrew import's preview with the
+       longest source name, its refused file, and the bulk move (rule 16 at 360). */
+    [
+      '#/homebrew',
+      'импорт предметов: длинное название источника',
+      'gm1',
+      async (d) => {
+        await hbImportOpen(d);
+        await d.upload(longNamesFile());
+        for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (1)'); i++)
+          await d.settle();
+      }
+    ],
+    [
+      '#/homebrew',
+      'импорт предметов: файл с ошибками',
+      'gm1',
+      async (d) => {
+        await hbImportOpen(d);
+        await d.upload(HB_FILE('errors.json'));
+        for (let i = 0; i < 40 && !(await d.count('.errs')); i++) await d.settle();
+      }
+    ],
+    [
+      '#/homebrew',
+      'перемещение отмеченных предметов',
+      'gm1',
+      async (d) => {
+        for (const name of ['Настой кузнеца', 'Whispering Cap', 'Кольцо с гравировкой'])
+          await d.tick(name);
+        await d.click('Переместить (3)');
+      }
+    ],
     ['#/i/ci1', 'карточка со своими улучшениями', 'gm3'],
     ['#/i/q1', 'лестница рангов со своими ступенями', 'gm3'],
     ['#/i/voa4_t3d', 'комплект со своими предметами', 'gm3']
@@ -296,12 +330,13 @@ async function focusWalk(page, where) {
       });
 
       const pages = width === 1180 ? PAGES.concat(PRINT_ONLY_1180) : PAGES;
-      for (const [hash, label, as] of pages) {
+      for (const [hash, label, as, enter] of pages) {
         const asked = hash.replace('%%SHARED%%', shared);
         const where = label + ' @' + width + ' ' + lang;
         try {
           await d.open(asked, { as });
           if (as) await d.moveSettled(where);
+          if (enter) await enter(d);
         } catch (e) {
           ok(false, where + ': the page did not render - ' + e.message);
           continue;

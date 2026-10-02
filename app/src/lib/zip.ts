@@ -1,10 +1,10 @@
 /* The account's data zip: a store-only writer and a reader that refuses
- * anything a v1 data zip is not (docs/specs/CONTRACTS.md section 4, "The
+ * anything a data zip is not (docs/specs/CONTRACTS.md section 4, "The
  * account's data zip"). Store-only because the site reads only the zips it
  * writes; the pictures a later release adds are WebP, which deflate does
  * not shrink. Pure module; loaded by a dynamic `import()`. */
 
-import { decodeText } from './bundle.js';
+import { decodeText, FILE_MAX_BYTES } from './bundle.js';
 
 let table: Uint32Array | null = null;
 
@@ -213,30 +213,51 @@ function ignored(name: string): boolean {
 const lastSegment = (name: string): string => name.slice(name.lastIndexOf('/') + 1);
 const depth = (name: string): number => name.split('/').length - 1;
 
-export type DataZip =
-  | { ok: true; lists: string; other: string[]; more: number }
-  | { ok: false; reason: 'notZip' | 'noLists' | 'manyLists' | 'packed' | 'notText' };
+/** The two data files of the account's zip; each import page reads one. */
+export type DataFile = 'lists.json' | 'homebrew.json';
 
-/** Returns the text of a data zip's `lists.json` - the one at the root, else the shallowest
- *  one in a folder; two at one depth answer `manyLists`, never a guess - and the other
+export type DataZip =
+  | { ok: true; text: string; sibling: boolean; other: string[]; more: number }
+  | { ok: false; reason: 'notZip' | 'missing' | 'many' | 'packed' | 'tooBig' | 'notText' };
+
+/** Why an import's chosen file is not read: past 5 MiB (a zip's data file included), a zip
+ *  past `ZIP_MAX_BYTES`, a failed read or chunk, not UTF-8 text, a zip that is not a data
+ *  zip, or a data zip without its file, with two at one depth, or compressed by another
+ *  program. */
+export type FileRefusal =
+  'tooBig' | 'zipTooBig' | 'failed' | 'notJson' | 'notZip' | 'missing' | 'many' | 'packed';
+
+/** An import's chosen file: its text and, from a zip, whether it holds the other data file
+ *  and the names of the rest; or why it is not read. */
+export type FileRead =
+  | { ok: true; text: string; sibling: boolean; other: string[]; more: number }
+  | { ok: false; reason: FileRefusal };
+
+/** Returns the text of a data zip's `name` - the one at the root, else the shallowest one
+ *  in a folder; two at one depth answer `many`, never a guess -, whether the zip holds the
+ *  other data file (`sibling`, which the other import page reads), and the rest of the
  *  files' names, the first five, with `more` counting the rest. */
-export function readDataZip(bytes: Uint8Array): DataZip {
+export function readDataZip(bytes: Uint8Array, name: DataFile): DataZip {
   const entries = readZip(bytes);
   if (!entries) return { ok: false, reason: 'notZip' };
   const kept = entries.filter((e) => !ignored(e.name));
-  const found = kept.filter((e) => lastSegment(e.name) === 'lists.json');
+  const found = kept.filter((e) => lastSegment(e.name) === name);
   const shallowest = Math.min(...found.map((e) => depth(e.name)));
   const at = found.filter((e) => depth(e.name) === shallowest);
   const [chosen] = at;
-  if (!chosen) return { ok: false, reason: 'noLists' };
-  if (at.length > 1) return { ok: false, reason: 'manyLists' };
+  if (!chosen) return { ok: false, reason: 'missing' };
+  if (at.length > 1) return { ok: false, reason: 'many' };
   if (!chosen.bytes) return { ok: false, reason: 'packed' };
+  if (chosen.bytes.length > FILE_MAX_BYTES) return { ok: false, reason: 'tooBig' };
   const text = decodeText(chosen.bytes);
   if (text === null) return { ok: false, reason: 'notText' };
-  const other = kept.filter((e) => e !== chosen).map((e) => lastSegment(e.name));
+  const siblingName: DataFile = name === 'lists.json' ? 'homebrew.json' : 'lists.json';
+  const rest = kept.filter((e) => e !== chosen).map((e) => lastSegment(e.name));
+  const other = rest.filter((n) => n !== siblingName);
   return {
     ok: true,
-    lists: text,
+    text,
+    sibling: rest.includes(siblingName),
     other: other.slice(0, 5),
     more: Math.max(0, other.length - 5)
   };

@@ -271,6 +271,20 @@
           "rule": "extra"
         }
       ]
+    },
+    {
+      "name": "a name of only U+00A0",
+      "kind": "set",
+      "content": {
+        "ru": " ",
+        "rud": "Бонус."
+      },
+      "problems": [
+        {
+          "path": "name",
+          "rule": "required"
+        }
+      ]
     }
   ]
 }

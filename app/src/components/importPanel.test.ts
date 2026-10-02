@@ -10,11 +10,11 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/sv
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import { FILE_MAX_BYTES } from '../lib/bundle.js';
+import { FILE_MAX_BYTES, ZIP_MAX_BYTES } from '../lib/bundle.js';
 import type { Loot } from '../lib/data.js';
 import { zipStored } from '../lib/zip.js';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
@@ -166,6 +166,36 @@ describe('the import field', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('previews a version 2 file and imports its homebrew entries as frozen copies', async () => {
+    const { container, cloud } = await opened();
+    choose(container, fixture('example-v2.json'), 'example-v2.json');
+    await userEvent.click(await importButton(1));
+    expect(container.querySelector('.preview')).toBeNull();
+    const read = await cloud.lists.list();
+    const made = read.ok ? read.lists.find((l) => l.name === 'Лавка Ольхи') : undefined;
+    expect(made?.list_entries.map((e) => [e.item_key, e.source, e.snapshot !== null])).toEqual([
+      ['ci1', 'official', false],
+      ['hb_flintlockpistola', 'homebrew', true],
+      ['hb_wanderlampaaaaaa', 'homebrew', true]
+    ]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('refuses a version 2 file with a bad snapshot and an id that is not a key, in words', async () => {
+    const { container } = await opened();
+    choose(container, fixture('errors-v2.json'));
+    await alertText();
+    const lines = lineTexts(container.querySelector('.rep-list.bad')!);
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toContain(
+      'snapshot: не копия предмета - сверьте поля с описанием в llms.txt lists[0].entries[1].snapshot'
+    );
+    expect(lines[1]).toContain(
+      'id «lamp-1»: не ключ своего предмета - hb_ и 16 знаков a-z, 2-7 lists[0].entries[2].id'
+    );
+    await expectNoA11yViolations(container);
+  });
+
   it("puts the file's own errors in the box, before any list", async () => {
     const { container } = await opened();
     choose(container, utf8(doc([{ name: 'L', entries: [] }], { extra: 1 })));
@@ -179,13 +209,13 @@ describe('the import field', () => {
   it.each([
     [
       'another version',
-      fixture('v2.json'),
-      'Неизвестная версия формата: 2. Приложение читает версию 1.'
+      fixture('v3.json'),
+      'Неизвестная версия формата: 3. Приложение читает версии 1 и 2.'
     ],
     [
       'no version',
       utf8(JSON.stringify({ format: 'daggerheart-loot/lists', lists: [] })),
-      'В файле нет поля version. Приложение читает версию 1.'
+      'В файле нет поля version. Приложение читает версии 1 и 2.'
     ],
     [
       'an empty object',
@@ -223,6 +253,16 @@ describe('the import field', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('refuses a zip over 10 MiB before reading it', async () => {
+    const { container } = await opened();
+    const zip = new File(
+      [new Uint8Array([0x50, 0x4b, 0x03, 0x04]), new Uint8Array(ZIP_MAX_BYTES)],
+      'big.zip'
+    );
+    choose(container, zip);
+    expect(await alertText()).toBe('Архив больше 10 МБ.');
+  });
+
   it("previews the account's data zip", async () => {
     const { container } = await opened();
     choose(container, fixture('data.zip'), 'data.zip');
@@ -231,7 +271,7 @@ describe('the import field', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('names the files of a zip it does not read, and imports the lists', async () => {
+  it("names a zip's homebrew.json with its page, and the files it does not read", async () => {
     const { container } = await opened();
     const at = new Date('2026-10-01T12:00:00Z');
     choose(
@@ -239,7 +279,8 @@ describe('the import field', () => {
       zipStored(
         [
           { name: 'lists.json', bytes: fixture('example.json') },
-          { name: 'homebrew.json', bytes: utf8('{}') }
+          { name: 'homebrew.json', bytes: utf8('{}') },
+          { name: 'notes.txt', bytes: utf8('') }
         ],
         at
       )
@@ -249,7 +290,8 @@ describe('the import field', () => {
       [...container.querySelectorAll('.preview')].map((p) => p.textContent.trim())
     ).toEqual([
       'Списков: 1, позиций: 3.',
-      'В архиве есть файлы, которые эта версия не читает: homebrew.json.'
+      'Файл homebrew.json из архива импортируется на странице «Мои предметы».',
+      'В архиве есть файлы, которые эта версия не читает: notes.txt.'
     ]);
   });
 
@@ -317,6 +359,202 @@ describe('the import field', () => {
     expect(lineTexts(a!).at(-1)).toBe('...и ещё 1 в этом списке');
     expect(lineTexts(b!).at(-1)).toBe('...и ещё 29 в этом списке');
     expect(container.querySelector('.rep-more')?.textContent).toBe('...и ещё 1 ошибка');
+  });
+});
+
+describe('own items in a lists file', () => {
+  const hbFixture = (name: string): Uint8Array =>
+    new Uint8Array(readFileSync(join(ROOT, 'docs', 'fixtures', 'homebrew-file', name)));
+
+  it('says how many own items the account lacks: they import as frozen copies', async () => {
+    const { container } = await opened();
+    choose(container, fixture('example-v2.json'));
+    await importButton(1);
+    expect(
+      [...container.querySelectorAll('.preview')].map((p) => p.textContent.trim())
+    ).toEqual([
+      'Списков: 1, позиций: 3.',
+      'Своих предметов, которых нет в аккаунте: 2 - они сохранятся копиями. Чтобы они остались живыми, сначала импортируйте предметы на странице «Мои предметы».'
+    ]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('waits for the account items before the preview of a file with own items', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let open: () => void = () => undefined;
+    const gate = new Promise<void>((r) => {
+      open = r;
+    });
+    const load = cloud.homebrew.load.bind(cloud.homebrew);
+    vi.spyOn(cloud.homebrew, 'load').mockImplementationOnce(async () => {
+      await gate;
+      return load();
+    });
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/lists'),
+        data: fakeData(LOOT),
+        dialog: fakeDialog(),
+        cloud
+      })
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
+    choose(container, fixture('example-v2.json'));
+    expect(
+      await screen.findByText('Ваши предметы ещё загружаются - повторите через секунду.')
+    ).toHaveAttribute('role', 'status');
+    expect(screen.queryByRole('button', { name: /Импортировать/ })).toBeNull();
+    await expectNoA11yViolations(container);
+    open();
+    expect(await importButton(1)).toBeInTheDocument();
+  });
+
+  it('refuses a snapshot without a text the schema requires', async () => {
+    const { container } = await opened();
+    const v2 = JSON.parse(new TextDecoder().decode(fixture('example-v2.json'))) as {
+      lists: { entries: { snapshot?: Record<string, unknown> }[] }[];
+    };
+    const snap = v2.lists[0]?.entries[1]?.snapshot;
+    if (snap) delete snap['rud'];
+    choose(container, utf8(JSON.stringify(v2)));
+    await alertText();
+    expect(lineTexts(container.querySelector('.rep-list.bad')!)).toEqual([
+      expect.stringContaining(
+        'snapshot: не копия предмета - сверьте поля с описанием в llms.txt lists[0].entries[1].snapshot'
+      )
+    ]);
+  });
+
+  /* The axe's snapshot as gm1's lists export writes it. */
+  const axeSnapshot = (): unknown => {
+    const exported = JSON.parse(new TextDecoder().decode(fixture('export-v2.json'))) as {
+      lists: { entries: { id: string; snapshot?: unknown }[] }[];
+    };
+    return exported.lists.flatMap((l) => l.entries).find((e) => e.id === 'hb_emberaxeaaaaaaaa')
+      ?.snapshot;
+  };
+
+  it('says a reference the server refused, keeps the preview and freezes it on the next press', async () => {
+    const { container, cloud } = await opened();
+    /* The axe gm1 holds, as a reference, deleted on another device after the preview. */
+    const text = JSON.stringify({
+      format: 'daggerheart-loot/lists',
+      version: 2,
+      lists: [
+        {
+          name: 'Топоры',
+          entries: [
+            {
+              id: 'hb_emberaxeaaaaaaaa',
+              source: 'homebrew',
+              snapshot: axeSnapshot()
+            }
+          ]
+        }
+      ]
+    });
+    choose(container, utf8(text));
+    const button = await importButton(1);
+    expect(container.querySelectorAll('.preview')).toHaveLength(1);
+    const read = await cloud.homebrew.load();
+    const axe = read.ok ? read.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa') : undefined;
+    const imp = vi.spyOn(cloud.lists, 'import');
+    const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
+    /* The database's 23503: the reference names an item gone since the preview. */
+    imp.mockImplementationOnce(async () => {
+      await remove(axe!.id);
+      return { ok: false, error: 'refused' };
+    });
+    await userEvent.click(button);
+    expect(await alertText()).toBe(
+      'Сервер не принял файл: данные в аккаунте изменились. Нажмите «Импортировать» ещё раз.'
+    );
+    expect(await importButton(1)).toBeEnabled();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Своих предметов, которых нет в аккаунте: 1/)
+      ).toBeInTheDocument();
+    });
+    await userEvent.click(await importButton(1));
+    expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
+    const sent = imp.mock.calls[1]?.[0];
+    expect(sent?.[0]?.entries[0]?.snapshot).not.toBeNull();
+    expect(sent?.[0]?.list.id).toBe(imp.mock.calls[0]?.[0][0]?.list.id);
+  });
+
+  it('imports bedroll-shop.json as live references after bedrolls.json, else as frozen copies', async () => {
+    const { container, cloud } = await opened();
+    const file = JSON.parse(new TextDecoder().decode(hbFixture('bedrolls.json'))) as {
+      books: { key: string; en?: string; ru?: string; sections?: unknown[] }[];
+      cards: { key: string; kind: 'set' | 'ref'; book?: string }[];
+      items: { key: string; book?: string }[];
+    };
+    choose(container, fixture('bedroll-shop.json'));
+    await importButton(1);
+    expect(screen.getByText(/Своих предметов, которых нет в аккаунте: 6/)).toBeInTheDocument();
+    cleanup();
+    await cloud.homebrew.import({
+      books: file.books.map(({ key, ...content }, i) => ({
+        id: uuid(8000 + i),
+        key,
+        content: content as never,
+        names: true
+      })),
+      cards: file.cards.map(({ key, kind, book, ...content }, i) => ({
+        id: uuid(8100 + i),
+        key,
+        kind,
+        book: book ?? null,
+        content
+      })),
+      items: file.items.map(({ key, book, ...content }, i) => ({
+        id: uuid(8200 + i),
+        key,
+        book: book ?? null,
+        content: content as never
+      })),
+      update: false
+    });
+    const view = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/lists'),
+        data: fakeData(LOOT),
+        dialog: fakeDialog(),
+        cloud
+      })
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
+    choose(view.container, fixture('bedroll-shop.json'));
+    await userEvent.click(await importButton(1));
+    expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
+    const lists = await cloud.lists.list();
+    const shop = lists.ok ? lists.lists.find((l) => l.name === 'Лавка спальников') : undefined;
+    expect(shop?.list_entries.map((e) => [e.source, e.snapshot === null])).toEqual([
+      ['official', true],
+      ...file.items.map(() => ['homebrew', true])
+    ]);
+  });
+});
+
+describe('the report past 20 lists', () => {
+  it('draws 20 list blocks, then «и ещё N списков», for 1000 lists with skips', async () => {
+    const { container } = await opened();
+    /* The bound times the read and the render of 1000 lists, not the single pass over the
+       skips: a per-list scan of these 2000 skips also stays under it. */
+    const lists = Array.from({ length: 1000 }, (_, i) => ({
+      name: 'Список ' + String(i),
+      entries: [{ id: 'ci1' }, { id: 'ci1' }, { id: 'zzz' + String(i) }]
+    }));
+    const started = performance.now();
+    choose(container, utf8(doc(lists)));
+    await importButton(1000);
+    expect(container.querySelectorAll('.rep-list')).toHaveLength(20);
+    const more = screen.getByRole('button', { name: 'и ещё 980 списков' });
+    expect(performance.now() - started).toBeLessThan(3000);
+    await userEvent.click(more);
+    expect(container.querySelectorAll('.rep-list')).toHaveLength(1000);
+    await userEvent.click(screen.getByRole('button', { name: 'свернуть' }));
+    expect(container.querySelectorAll('.rep-list')).toHaveLength(20);
   });
 });
 

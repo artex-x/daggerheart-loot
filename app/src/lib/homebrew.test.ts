@@ -15,6 +15,7 @@ import {
   counterFrom,
   editLang,
   groupsOf,
+  hasName,
   HOMEBREW_KEY,
   isHomebrewKey,
   isHomebrewRecord,
@@ -63,6 +64,33 @@ const items = read('items.json') as Cases;
 const cards = read('cards.json') as CardCases;
 const books = read('books.json') as Cases;
 const snapshots = read('snapshots.json') as Snapshots;
+
+describe('hasName', () => {
+  /* The class homebrew_names_ok holds: JavaScript's whitespace plus U+0085 and U+180E. */
+  const SPACES = [
+    0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x20, 0x85, 0xa0, 0x1680, 0x180e, 0x2000, 0x2005, 0x200a,
+    0x2028, 0x2029, 0x202f, 0x205f, 0x3000, 0xfeff
+  ];
+
+  it.each(SPACES.map((c) => [c.toString(16), String.fromCharCode(c)] as const))(
+    'takes U+%s for a space',
+    (_hex, ch) => {
+      expect(hasName(ch + ch)).toBe(false);
+    }
+  );
+
+  it.each(
+    [0x200b, 0x2060, 0x41, 0x416].map((c) => [c.toString(16), String.fromCharCode(c)] as const)
+  )('takes U+%s for a name', (_hex, ch) => {
+    expect(hasName(' ' + ch)).toBe(true);
+  });
+
+  it('decides the language the editor writes in with the same class', () => {
+    expect(
+      editLang({ kind: 'item', en: String.fromCharCode(0x180e), ru: 'Кольцо' }, 'en')
+    ).toBe('ru');
+  });
+});
 
 describe('contentProblems over docs/fixtures/homebrew/items.json', () => {
   it.each(items.valid.map((c) => [c.name, c.content] as const))('accepts %s', (_n, content) => {

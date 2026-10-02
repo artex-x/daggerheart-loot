@@ -1,0 +1,110 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "books": [
+    {
+      "key": "hb_alderworkshopaaa",
+      "en": "Alder Workshop",
+      "ru": "Мастерская Ольхи",
+      "sections": [
+        {
+          "key": "hb_sectpistolsaaaaa",
+          "en": "Pistols",
+          "ru": "Пистоли"
+        },
+        {
+          "key": "hb_sectbladesaaaaaa",
+          "en": "Blades",
+          "ru": "Холодное оружие"
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "key": "hb_emberpairsetaaaa",
+      "kind": "set",
+      "book": "hb_alderworkshopaaa",
+      "en": "Smouldering Pair",
+      "ru": "Тлеющая пара",
+      "ende": "Both pistols of the pair: +1 to damage rolls with either.",
+      "rud": "Оба пистоля пары: +1 к Броскам Урона каждым из них."
+    },
+    {
+      "key": "hb_reloadruleaaaaaa",
+      "kind": "ref",
+      "book": "hb_alderworkshopaaa",
+      "en": "Reload",
+      "ru": "Перезарядка",
+      "ensub": "Weapon feature",
+      "rusub": "Свойство оружия",
+      "ende": "After a shot, spend an action to reload before you fire again.",
+      "rud": "После выстрела потратьте действие на перезарядку, прежде чем стрелять снова."
+    }
+  ],
+  "items": [
+    {
+      "key": "hb_flintlockpistola",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectpistolsaaaaa",
+      "kind": "equip",
+      "en": "Flintlock Pistol",
+      "ru": "Кремнёвый пистоль",
+      "ende": "Loud: everyone within Far range hears the shot.",
+      "rud": "Громкий: выстрел слышат все в пределах Далёкой дистанции.",
+      "eq": {
+        "t": "weapon",
+        "tier": 1,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d8+1",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_flintlockpistola"
+      },
+      "set": "hb_emberpairsetaaaa",
+      "refs": [
+        "hb_reloadruleaaaaaa"
+      ]
+    },
+    {
+      "key": "hb_doublepistolaaaa",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectpistolsaaaaa",
+      "kind": "equip",
+      "en": "Double-Barrelled Pistol",
+      "ru": "Двуствольный пистоль",
+      "ende": "Loud. Fire both barrels at once: roll damage twice and take the higher.",
+      "rud": "Громкий. Выстрел из обоих стволов: бросьте урон дважды и выберите больший.",
+      "eq": {
+        "t": "weapon",
+        "tier": 2,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d10+2",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_flintlockpistola"
+      },
+      "set": "hb_emberpairsetaaaa",
+      "refs": [
+        "hb_reloadruleaaaaaa"
+      ]
+    },
+    {
+      "key": "hb_patchbedrollaaaa",
+      "kind": "item",
+      "en": "Patchwork Bedroll",
+      "ru": "Лоскутный спальник",
+      "ende": "Sewn from a Premium Bedroll and a Ghostproof Blanket: during downtime nothing that haunts you reaches your sleep.",
+      "rud": "Сшит из Первоклассного Спального Мешка и Одеяла от Призраков: во время отдыха ничто из того, что вас преследует, не тревожит ваш сон.",
+      "craft_from": [
+        "ci1",
+        "dv34"
+      ]
+    }
+  ]
+}

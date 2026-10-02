@@ -48,15 +48,16 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     checkbox "Топор Тлеющих Углей" [checked=false]
     button "Топор Тлеющих Углей 800 зол. Ранг 2 · Магическое · Характеристик..." [namelen=198 namehash=83860c79]
     status ""
-  generic ""
-    StaticText "Выбрано 2 позиции · 7 шт."
-    StaticText "Итого: "
-    StaticText "400 зол."
-  button "Снять выделение" [description=Снять выделение]
-  paragraph "Сообщить владельцу списка, что вы взяли эти предметы?" [focused=true]
-  button "Сообщить"
-  button "Не сообщать"
-  checkbox "Запомнить ответ" [checked=false]
+  region "Выбранные записи"
+    generic ""
+      StaticText "Выбрано 2 позиции · 7 шт."
+      StaticText "Итого: "
+      StaticText "400 зол."
+    button "Снять выделение" [description=Снять выделение]
+    paragraph "Сообщить владельцу списка, что вы взяли эти предметы?" [focused=true]
+    button "Сообщить"
+    button "Не сообщать"
+    checkbox "Запомнить ответ" [checked=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -162,15 +163,16 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/s/player-token-
     checkbox "Ember Axe" [checked=false]
     button "Ember Axe 800 gp Tier 2 · Magic · Spellcast · Melee · d10+2 mag ..." [namelen=171 namehash=48f755cc]
     status ""
-  generic ""
-    StaticText "Selected 2 items · 7 pcs"
-    StaticText "Total: "
-    StaticText "400 gp"
-  button "Clear selection" [description=Clear selection]
-  paragraph "Tell the list's owner that you took these items?" [focused=true]
-  button "Notify"
-  button "Don't notify"
-  checkbox "Remember the answer" [checked=false]
+  region "Selected records"
+    generic ""
+      StaticText "Selected 2 items · 7 pcs"
+      StaticText "Total: "
+      StaticText "400 gp"
+    button "Clear selection" [description=Clear selection]
+    paragraph "Tell the list's owner that you took these items?" [focused=true]
+    button "Notify"
+    button "Don't notify"
+    checkbox "Remember the answer" [checked=false]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

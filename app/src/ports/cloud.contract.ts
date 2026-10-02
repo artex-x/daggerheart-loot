@@ -8,7 +8,8 @@
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
  * cases for the port member it adds: A-F the account, G the lists, H the
  * share links, I the move of a browser list, J the live topics, K the purchase
- * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards. */
+ * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards, O the
+ * import of a homebrew file and the bulk move. */
 
 import type { EntryRow, ImportRow, ListRow } from '../lib/cloudLists.js';
 import {
@@ -21,6 +22,7 @@ import {
   type CardRef,
   type HomebrewContent
 } from '../lib/homebrew.js';
+import type { HomebrewImportRows } from '../lib/homebrewFile.js';
 import { readOwnerMessage, readRequestMessage, readShareMessage } from '../lib/live.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { CloudPort, ListWrites, LiveStatus, Session } from './types.js';
@@ -858,19 +860,35 @@ async function importCases(
   );
   await removeAll(port, assert, 'after the maximal import');
 
-  /* The same with long notes: the request body a 5 MiB file makes. Its time is logged, not
-     asserted: it swings 0.4-5 s on the swapping test host (docs/specs/COVERAGE.md, case L). */
+  /* The body a 5 MiB file makes: it passes on success or a whole `tooSlow` refusal, its time
+     logged, because a swapping test host reaches the 8 s statement timeout (docs/decisions/,
+     2026-10-02, "E2E case L passes the 5 MB import on success or a whole tooSlow refusal"). */
   const heavy = fullImport(port, HEAVY_NOTE);
   const bytes = new TextEncoder().encode(JSON.stringify(heavy)).length;
   started = Date.now();
   const sent = await lists.import(heavy);
   ms = Date.now() - started;
-  log('import of a 5 MB file (' + String(bytes) + ' bytes of rows): ' + String(ms) + ' ms');
+  const tooSlow = !sent.ok && sent.error === 'refused' && sent.reason === 'tooSlow';
+  log(
+    'import of a 5 MB file (' +
+      String(bytes) +
+      ' bytes of rows): ' +
+      (tooSlow ? 'refused tooSlow after ' : '') +
+      String(ms) +
+      ' ms'
+  );
   assert(
     bytes > 5_000_000 && bytes < 6_000_000,
     'import: the notes-heavy rows are ' + String(bytes) + ' bytes, not about 5.5 MB'
   );
-  assert(sent.ok, 'import: the notes-heavy import answered ' + JSON.stringify(sent));
+  assert(sent.ok || tooSlow, 'import: the notes-heavy import answered ' + JSON.stringify(sent));
+  if (tooSlow) {
+    const kept = (await listsOf(port, assert, 'after the refused notes-heavy import')) ?? [];
+    assert(
+      kept.length === 0,
+      'import: a refused notes-heavy import left ' + String(kept.length) + ' lists'
+    );
+  }
   await removeAll(port, assert, 'after the notes-heavy import');
 }
 
@@ -1265,6 +1283,172 @@ async function cardCases(port: CloudPort, assert: Assert): Promise<void> {
   );
 }
 
+/* O. A homebrew file's rows imported in one call, then skipped, then updated with the
+   source's sections merged; the items moved to a section in one call, a stale move and a
+   move to a deleted source refused with nothing moved; on the doomed user. */
+async function homebrewFileCases(port: CloudPort, assert: Assert): Promise<void> {
+  const { homebrew } = port;
+  const counts = (o: Record<string, number>): string =>
+    canonJson({
+      books_created: 0,
+      cards_created: 0,
+      cards_updated: 0,
+      cards_skipped: 0,
+      items_created: 0,
+      items_updated: 0,
+      items_skipped: 0,
+      ...o
+    });
+  const answered = (a: unknown): string =>
+    a !== null && typeof a === 'object' && 'counts' in a
+      ? canonJson(a.counts)
+      : JSON.stringify(a);
+  const bookKey = homebrew.newKey();
+  const pistols = homebrew.newKey();
+  const blades = homebrew.newKey();
+  const setKey = homebrew.newKey();
+  const ruleKey = homebrew.newKey();
+  const flintKey = homebrew.newKey();
+  const rollKey = homebrew.newKey();
+  const book: BookContent = {
+    ru: 'Мастерская Ольхи',
+    en: 'Alder Workshop',
+    sections: [{ key: pistols, ru: 'Пистоли' }]
+  };
+  const flint: HomebrewContent = {
+    kind: 'item',
+    ru: 'Кремнёвый пистоль',
+    section: pistols,
+    set: setKey,
+    refs: [ruleKey]
+  };
+  const roll: HomebrewContent = { kind: 'item', ru: 'Скатка', craft_from: ['ci1'] };
+  const rows: HomebrewImportRows = {
+    books: [{ id: homebrew.newId(), key: bookKey, content: book, names: true }],
+    cards: [
+      {
+        id: homebrew.newId(),
+        key: setKey,
+        kind: 'set',
+        book: bookKey,
+        content: { ru: 'Пара' }
+      },
+      { id: homebrew.newId(), key: ruleKey, kind: 'ref', book: null, content: { en: 'Reload' } }
+    ],
+    items: [
+      { id: homebrew.newId(), key: flintKey, book: bookKey, content: flint },
+      { id: homebrew.newId(), key: rollKey, book: null, content: roll }
+    ],
+    update: false
+  };
+  const first = await homebrew.import(rows);
+  assert(
+    answered(first) === counts({ books_created: 1, cards_created: 2, items_created: 2 }),
+    'homebrew file: the first import answered ' + JSON.stringify(first)
+  );
+  const read = await homebrew.load();
+  const bookRow = read.ok ? read.books.find((b) => b.key === bookKey) : undefined;
+  const flintRow = read.ok ? read.items.find((i) => i.key === flintKey) : undefined;
+  assert(
+    !!bookRow &&
+      canonJson(bookRow.content) === canonJson(book) &&
+      flintRow?.book_id === bookRow.id &&
+      canonJson(flintRow.content) === canonJson(flint),
+    'homebrew file: the imported rows do not read back: ' + JSON.stringify(read)
+  );
+  const skipped = await homebrew.import(rows);
+  assert(
+    answered(skipped) === counts({ cards_skipped: 2, items_skipped: 2 }),
+    'homebrew file: the second import answered ' + JSON.stringify(skipped)
+  );
+  const [flintRow0, rollRow0] = rows.items;
+  if (!flintRow0 || !rollRow0) return;
+  const edited: HomebrewContent = { ...roll, ru: 'Скатка II' };
+  const updated = await homebrew.import({
+    ...rows,
+    books: [
+      {
+        id: homebrew.newId(),
+        key: bookKey,
+        content: { en: 'Alder Workshop II', sections: [{ key: blades, ru: 'Клинки' }] },
+        names: true
+      }
+    ],
+    items: [flintRow0, { ...rollRow0, content: edited }],
+    update: true
+  });
+  assert(
+    answered(updated) === counts({ cards_skipped: 2, items_updated: 1, items_skipped: 1 }),
+    'homebrew file: the update import answered ' + JSON.stringify(updated)
+  );
+  const after = await homebrew.load();
+  const merged = after.ok ? after.books.find((b) => b.key === bookKey) : undefined;
+  assert(
+    canonJson(merged?.content) ===
+      canonJson({
+        ru: 'Мастерская Ольхи',
+        en: 'Alder Workshop II',
+        sections: [...(book.sections ?? []), { key: blades, ru: 'Клинки' }]
+      }),
+    'homebrew file: the source did not merge: ' + JSON.stringify(merged)
+  );
+  const held = after.ok
+    ? after.items.filter((i) => i.key === flintKey || i.key === rollKey)
+    : [];
+  const revisions = held.map((i) => ({ id: i.id, revision: i.revision }));
+  const moved = await homebrew.moveItems(revisions, merged?.id ?? null, blades);
+  assert(moved.ok, 'homebrew file: the move answered ' + JSON.stringify(moved));
+  const placed = await homebrew.load();
+  const both = placed.ok
+    ? placed.items.filter((i) => i.key === flintKey || i.key === rollKey)
+    : [];
+  assert(
+    both.length === 2 &&
+      both.every((i) => i.book_id === merged?.id && i.content.section === blades),
+    'homebrew file: the moved items are not in the section: ' + JSON.stringify(both)
+  );
+  const stale = await homebrew.moveItems(revisions, null, null);
+  assert(
+    !stale.ok && stale.error === 'conflict',
+    'homebrew file: a stale move answered ' + JSON.stringify(stale)
+  );
+  const doomedBook = {
+    id: homebrew.newId(),
+    key: homebrew.newKey(),
+    content: { ru: 'Временный' }
+  };
+  assert((await homebrew.createBook(doomedBook)).ok, 'homebrew file: a source was refused');
+  assert((await homebrew.removeBook(doomedBook.id)).ok, 'homebrew file: a removal was refused');
+  const fresh = both.map((i) => ({ id: i.id, revision: i.revision }));
+  const gone = await homebrew.moveItems(fresh, doomedBook.id, null);
+  assert(
+    !gone.ok && gone.error === 'gone',
+    'homebrew file: a move to a deleted source answered ' + JSON.stringify(gone)
+  );
+  const still = await homebrew.load();
+  assert(
+    still.ok &&
+      still.items
+        .filter((i) => i.key === flintKey || i.key === rollKey)
+        .every((i) => i.book_id === merged?.id && i.content.section === blades),
+    'homebrew file: a refused move moved an item'
+  );
+
+  for (const i of both) {
+    assert((await homebrew.removeItem(i.id)).ok, 'homebrew file: an item removal was refused');
+  }
+  const end = await homebrew.load();
+  for (const c of end.ok ? end.cards : []) {
+    assert((await homebrew.removeCard(c.id)).ok, 'homebrew file: a card removal was refused');
+  }
+  if (merged) {
+    assert(
+      (await homebrew.removeBook(merged.id)).ok,
+      'homebrew file: the source removal was refused'
+    );
+  }
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -1411,6 +1595,10 @@ export async function runCloudContract(
   /* N. the homebrew cards and the relation keys, on the doomed user; the account's
      deletion takes the rows with it. */
   await cardCases(doomedPort, assert);
+
+  /* O. a homebrew file imported and the bulk move, on the doomed user; the account's
+     deletion takes the rows with it. */
+  await homebrewFileCases(doomedPort, assert);
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

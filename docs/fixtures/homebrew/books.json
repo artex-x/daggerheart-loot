@@ -395,6 +395,30 @@
           "rule": "pattern"
         }
       ]
+    },
+    {
+      "name": "a name of only U+00A0",
+      "content": {
+        "en": "  "
+      },
+      "problems": [
+        {
+          "path": "name",
+          "rule": "required"
+        }
+      ]
+    },
+    {
+      "name": "a name of only U+FEFF",
+      "content": {
+        "en": "﻿﻿"
+      },
+      "problems": [
+        {
+          "path": "name",
+          "rule": "required"
+        }
+      ]
     }
   ]
 }

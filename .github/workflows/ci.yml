@@ -453,7 +453,8 @@ jobs:
                    llms.txt robots.txt LICENSE 404.html manifest.webmanifest \
                    sw.js icons/icon-192.png pages/install.html pages/en/install.html \
                    pages/privacy.html pages/en/privacy.html pages/terms.html \
-                   pages/en/terms.html schema/import-v1.json; do
+                   pages/en/terms.html schema/import-v1.json schema/import-v2.json \
+                   schema/homebrew-v1.json; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
           # .nojekyll is empty by design - its presence here is the whole

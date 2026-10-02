@@ -610,6 +610,8 @@ const COVERED: Record<string, string> = {
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
+  'HomebrewImport.svelte':
+    'homebrewImport.test.ts: the panel empty, a preview with every row note, a refused file, the update chosen',
   'HomebrewPage.svelte':
     'homebrewPage.test.ts filled, empty and signed out; the sections open above',
   'HomebrewSources.svelte':
@@ -678,6 +680,10 @@ const COVERED: Record<string, string> = {
   'RecordPage.svelte': 'record.test.ts',
   'RequestsPanel.svelte':
     'requestsPanel.test.ts pending, short with and without «Принять доступное», and the fold open',
+  'ImportFile.svelte':
+    'importPanel.test.ts and homebrewImport.test.ts, the field open with and without a file',
+  'ImportLines.svelte':
+    "importPanel.test.ts's grouped report and refusals, and homebrewImport.test.ts's refused file",
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'PrintCard.svelte': 'printPage.test.ts, and the black-and-white sheet below',
   'PrintPage.svelte': 'printPage.test.ts, and the black-and-white sheet below',
@@ -690,6 +696,8 @@ const COVERED: Record<string, string> = {
   'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind off below',
   'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
   'SelBar.svelte': 'the state above, and tables.test.ts',
+  'SourcePicker.svelte':
+    "homebrewImport.test.ts's «Куда» rows, and the move panel open in homebrewPage.test.ts",
   'SharedListPage.svelte':
     'sharedListPage.test.ts in both modes, and the shared list and both share links above',
   'SharePanel.svelte': 'sharePanel.test.ts open, with a deleted link, and with a failed read',

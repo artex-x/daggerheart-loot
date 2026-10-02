@@ -21,13 +21,14 @@ import {
   bundleFileName,
   bundleText,
   dataFileName,
-  officialOnly,
+  FILE_MAX_BYTES,
   overBounds,
   toBundle,
   type Bundle
 } from '../lib/bundle.js';
 import {
   entrySource,
+  frozenOf,
   isCloudId,
   limitText,
   snapshotRecords,
@@ -59,6 +60,7 @@ import { plural } from '../lib/plural.js';
 import { legacyWritable } from '../lib/legacy.js';
 import { decodeList, encodeList, type DecodedList } from '../lib/listLink.js';
 import { copyInit, findListByPayload, LIST_PAGE, type StoredList } from '../lib/lists.js';
+import type { Subset } from '../lib/homebrewFile.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import { readPrefs, type NotifyGm, type Prefs } from '../lib/prefs.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
@@ -723,40 +725,53 @@ export class AppState {
   }
 
   /** Downloads the account's lists as one lists file: every list, or the lists `ids` names,
-   *  in the index's order. A file past the schema's bounds still downloads whole, and a
-   *  toast says why it cannot be imported whole (docs/specs/FEATURES.md, "Account and
-   *  browser lists"). */
+   *  in the index's order. A file past the schema's bounds or the import's 5 MiB still
+   *  downloads whole, and a toast says why it cannot be imported whole
+   *  (docs/specs/FEATURES.md, "Account and browser lists"). */
   async exportLists(ids?: readonly string[]): Promise<void> {
     const store = this.cloudLists;
     if (!store) return;
     const lists = ids ? store.lists.filter((l) => ids.includes(l.id)) : store.lists;
+    if (!this.#homebrewReady(lists)) return;
     const now = this.#exportedAt();
     const { b, skipped } = this.#bundle(lists, now);
+    const bytes = new TextEncoder().encode(bundleText(b));
     try {
       await this.env.image.download(
-        new Blob([bundleText(b)], { type: 'application/json' }),
+        new Blob([bytes], { type: 'application/json' }),
         bundleFileName(lists, now)
       );
     } catch {
       this.say((t) => t.accountFailed, { error: true });
       return;
     }
-    this.#warnBounds(b, skipped);
+    this.#warnBounds(b, skipped, bytes.length, 0);
   }
 
   /** Downloads «Скачать мои данные»: a store-only zip holding `lists.json`, the lists file
-   *  of every account list (docs/specs/CONTRACTS.md section 4). */
+   *  of every account list, then `homebrew.json`, the account's whole homebrew file, when it
+   *  holds a source, a card or an item (docs/specs/CONTRACTS.md section 4). */
   async exportData(): Promise<void> {
     const store = this.cloudLists;
     if (!store) return;
+    if (!this.#homebrewReady(null)) return;
     const now = this.#exportedAt();
     const { b, skipped } = this.#bundle(store.lists, now);
+    const own = this.homebrew;
+    const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
+    const listsBytes = encode(bundleText(b));
+    let homebrewSize = 0;
     try {
       const { zipStored } = await import('../lib/zip.js');
-      const bytes = zipStored(
-        [{ name: 'lists.json', bytes: new TextEncoder().encode(bundleText(b)) }],
-        now
-      );
+      const files = [{ name: 'lists.json', bytes: listsBytes }];
+      if (own && (own.books.length || own.cards.length || own.items.length)) {
+        const f = await import('../lib/homebrewFile.js');
+        const text = f.homebrewText(f.toHomebrewFile(own.books, own.items, own.cards, now));
+        const homebrewBytes = encode(text);
+        homebrewSize = homebrewBytes.length;
+        files.push({ name: 'homebrew.json', bytes: homebrewBytes });
+      }
+      const bytes = zipStored(files, now);
       await this.env.image.download(
         new Blob([bytes], { type: 'application/zip' }),
         dataFileName(now)
@@ -765,7 +780,38 @@ export class AppState {
       this.say((t) => t.accountFailed, { error: true });
       return;
     }
-    this.#warnBounds(b, skipped);
+    this.#warnBounds(b, skipped, listsBytes.length, homebrewSize);
+  }
+
+  /** Downloads a homebrew file: one source with its items and cards, or the ticked items
+   *  (`subsetOf`). `name` is the source's name on screen, null for ticked items, which take
+   *  a dated name (docs/specs/FEATURES.md, "Homebrew"). */
+  async exportHomebrew(pick: Subset, name: string | null): Promise<void> {
+    const own = this.homebrew;
+    if (!own || !this.#homebrewReady(null)) return;
+    const now = this.#exportedAt();
+    try {
+      const f = await import('../lib/homebrewFile.js');
+      const rows = f.subsetOf(own, pick);
+      const text = f.homebrewText(f.toHomebrewFile(rows.books, rows.items, rows.cards, now));
+      await this.env.image.download(
+        new Blob([text], { type: 'application/json' }),
+        f.homebrewFileName(name, now)
+      );
+    } catch {
+      this.say((t) => t.accountFailed, { error: true });
+    }
+  }
+
+  /* A download that writes own items waits for the account's homebrew, so a file never
+     silently lacks them: the zip and a homebrew file always, a lists file when one of its
+     lists holds an own key. False after the toast. */
+  #homebrewReady(lists: readonly CloudList[] | null): boolean {
+    const own = this.homebrew;
+    if (!own || own.status === 'ready') return true;
+    if (lists && !lists.some((l) => l.ids.some(isHomebrewKey))) return true;
+    this.say((t) => t.hbNotReady, { error: true });
+    return false;
   }
 
   /* The export's moment: the test build's fixed clock names a known file. */
@@ -774,31 +820,38 @@ export class AppState {
     return new Date(this.env.clock.now());
   }
 
-  /* The lists file is official only (docs/specs/CONTRACTS.md section 4): a homebrew entry
-     is left out and counted. */
+  /* The lists file. A homebrew entry carries its snapshot: a frozen copy its own, a
+     reference the live item as `homebrew_snapshot_of` writes it; one with neither is left
+     out and counted (docs/specs/CONTRACTS.md section 4). */
   #bundle(lists: readonly CloudList[], now: Date): { b: Bundle; skipped: number } {
     const byId = this.index?.byId;
-    const { lists: official, skipped } = officialOnly(lists);
-    const b = toBundle(
-      official,
+    const own = this.homebrew;
+    const { bundle: b, skipped } = toBundle(
+      lists,
       (id) => {
         const it = byId?.get(id);
         return it ? nameOf(it, this.lang) : undefined;
       },
       this.t.untitled,
-      now
+      now,
+      (id, list) => frozenOf(list)[id] ?? own?.records.find((r) => r.id === id) ?? null
     );
     return { b, skipped };
   }
 
-  /* Not an error: the file downloaded. */
-  #warnBounds(b: Bundle, skipped: number): void {
+  /* Not an error: the file downloaded. `listsSize` and `homebrewSize` are the UTF-8 bytes of
+     the lists file and of the zip's `homebrew.json` (0 when none), each read against the
+     import's 5 MiB. */
+  #warnBounds(b: Bundle, skipped: number, listsSize: number, homebrewSize: number): void {
     const { many, long } = overBounds(b);
-    const over = many || long.length > 0;
-    if (!over && !skipped) return;
+    const big = listsSize > FILE_MAX_BYTES;
+    const over = many || long.length > 0 || big;
+    const homebrewBig = homebrewSize > FILE_MAX_BYTES;
+    if (!over && !skipped && !homebrewBig) return;
     this.say((t, lang) =>
       [
         over ? t.exportOverBounds : '',
+        big ? t.exportBig : '',
         many ? t.exportManyLists : '',
         long.length
           ? t.exportLongLists.replace(
@@ -809,6 +862,7 @@ export class AppState {
               )
             )
           : '',
+        homebrewBig ? t.exportHomebrewBig : '',
         skipped ? plural(skipped, t.exportHomebrewSkippedN, lang) : ''
       ]
         .filter(Boolean)

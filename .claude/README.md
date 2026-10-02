@@ -1756,9 +1756,9 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-188 kB for the unconfigured build and 247 kB for the configured one, which
+209 kB for the unconfigured build and 269 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 188 kB limit. The 247 kB limit runs in
+unconfigured and so measures only the 209 kB limit. The 269 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -1770,9 +1770,14 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 247 kB budget (with the account client chunk)`; 246.0
-kB on 2026-10-02 with the search's Snowball stemmers and ranking, 186.6 kB
-unconfigured (242.8 kB on 2026-10-02 with the revision-keyed reads and the
+Expected: `within the 269 kB budget (with the account client chunk)`; 264.2
+kB on 2026-10-02 at R7d's closeout, rebased on the search's Snowball stemmers
+and ranking, with the homebrew import, the bulk move, the downloads and the
+export byte warning, 204.4 kB unconfigured (260.9 kB on 2026-10-02 at R7d
+before the rebase, 10.3 kB of it the lazy import and file chunks:
+`HomebrewImport` 5.6 kB, its CSS 0.5 kB, `homebrewFile` 4.2 kB, 201.1 kB
+unconfigured; 246.0 kB on 2026-10-02 with the search's stemmers, 186.6 kB
+unconfigured; 242.8 kB on 2026-10-02 with the revision-keyed reads and the
 frozen-copy byte limit, 183.4 kB unconfigured; 242.2 kB on 2026-10-02 with the homebrew editor's field
 help, 183.1 kB unconfigured; 236.6 kB on 2026-10-01 with the homebrew relations, 177.6 kB unconfigured; 224.8 kB
 on 2026-10-01 with homebrew in the catalog pages, 165.9 kB unconfigured;
@@ -2171,6 +2176,48 @@ to it with the generic limit toast («Достигнут предел: 1048576. 
 migration whose body is the reversal file: it drops the overload, the
 byte-limit triggers, their function and the `limit_defaults` row (the
 overrides of the key go with it); stored copies past the sum stay.
+
+To undo `20261002130000_homebrew_files`, revert the app alone: the old
+frontend never calls `import_homebrew` or `move_homebrew_items`, and its
+lists export stays official-only version 1. The migration narrows
+`homebrew_names_ok()` to the explicit space class (a name of only U+00A0,
+U+FEFF and their kin has no name), a superset of what the old `\S` called
+space, so a row valid under it stays valid after the reversal. A CHECK runs
+on every UPDATE: before a push that carries the class, run this read-only
+query on the target project, written with escapes only (copy it as text;
+an editor can drop U+FEFF without a sign). Expected 0; a row found blocks
+the push: an own row is renamed in the app, and a frozen copy, which no
+page renames, is fixed in SQL (its name rewritten inside the snapshot, or
+the entry deleted). Run on 2026-10-02 at R7d's closeout: 0 on production
+and 0 on the test project.
+
+```sql
+with n as (
+  select content->>'en' en, content->>'ru' ru from public.homebrew_items
+  union all select content->>'en', content->>'ru' from public.homebrew_books
+  union all select content->>'en', content->>'ru' from public.homebrew_cards
+  union all select s->>'en', s->>'ru' from public.homebrew_books b,
+    jsonb_array_elements(coalesce(b.content->'sections', '[]')) s
+  union all select snapshot->>'en', snapshot->>'ru' from public.list_entries
+    where snapshot is not null
+  union all select snapshot#>>'{book,en}', snapshot#>>'{book,ru}' from public.list_entries
+    where snapshot ? 'book'
+  union all select snapshot#>>'{book,section,en}', snapshot#>>'{book,section,ru}'
+    from public.list_entries where snapshot #> '{book,section}' is not null
+  union all select c.value->>'en', c.value->>'ru' from public.list_entries e,
+    jsonb_each(coalesce(e.snapshot #> '{cards,sets}', '{}')) c
+    where e.snapshot is not null
+  union all select c.value->>'en', c.value->>'ru' from public.list_entries e,
+    jsonb_each(coalesce(e.snapshot #> '{cards,refs}', '{}')) c
+    where e.snapshot is not null
+)
+select count(*) from n
+where not (coalesce(en, '') ~ '[^\x09-\x0d\x20\u0085\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]'
+        or coalesce(ru, '') ~ '[^\x09-\x0d\x20\u0085\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]');
+```
+
+The reversal drops both functions and restores the old name check; run it
+only as a second push, a new migration whose body is the reversal file.
 
 ### Usage monitoring
 

@@ -40,8 +40,13 @@ export function entryOf(html) {
   return found.length === 1 ? found[0] : null;
 }
 
-/** The lists file schema's published URL, which the file names as its `$id`. */
-export const SCHEMA_ID = 'https://artex-x.github.io/daggerheart-loot/schema/import-v1.json';
+/** The published schemas by path, each naming its own URL as its `$id`. */
+export const SCHEMA_IDS = {
+  'schema/import-v1.json': 'https://artex-x.github.io/daggerheart-loot/schema/import-v1.json',
+  'schema/import-v2.json': 'https://artex-x.github.io/daggerheart-loot/schema/import-v2.json',
+  'schema/homebrew-v1.json':
+    'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json'
+};
 
 /** The `$id` of a JSON body, or null when it is not JSON. */
 function schemaId(body) {
@@ -113,15 +118,16 @@ export function checks() {
       ...status200(f)
     })),
 
-    /* The lists file schema is a public contract, named by its own `$id`
+    /* The file schemas are public contracts, each named by its own `$id`
      * (docs/specs/CONTRACTS.md section 4). */
-    { path: 'schema/import-v1.json', ...status200('schema/import-v1.json') },
-    {
-      path: 'schema/import-v1.json',
-      test: (body) => schemaId(body) === SCHEMA_ID,
-      message: (meta) =>
-        `schema/import-v1.json names another $id: ${String(schemaId(meta.body))}`
-    },
+    ...Object.entries(SCHEMA_IDS).flatMap(([f, id]) => [
+      { path: f, ...status200(f) },
+      {
+        path: f,
+        test: (body) => schemaId(body) === id,
+        message: (meta) => `${f} names another $id: ${String(schemaId(meta.body))}`
+      }
+    ]),
 
     /* The stub is what a messenger fetches for a link preview, one per
      * language (docs/specs/I18N.md). */

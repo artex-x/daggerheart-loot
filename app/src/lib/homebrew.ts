@@ -238,7 +238,16 @@ const hasControl = (s: string): boolean =>
     const c = ch.charCodeAt(0);
     return c <= 0x1f && c !== 0x09 && c !== 0x0a;
   });
-const NON_SPACE = /\S/u;
+/* A name is named when it holds one character outside this class: JavaScript's `\s` plus
+   U+0085 and U+180E, as `homebrew_names_ok` writes it. Escapes only: U+2028 and U+2029 in a
+   regex literal are a SyntaxError, and an editor can drop U+FEFF without a sign. */
+const NAMED =
+  /[^\t-\r \u0085\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]/u;
+
+/** Returns whether `s` holds a character outside the space class, so it can name a record. */
+export function hasName(s: string): boolean {
+  return NAMED.test(s);
+}
 const DMG = /^d(4|6|8|10|12|20)(\+[1-9][0-9]?)?$/;
 
 const RELATION_ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -309,7 +318,7 @@ function textProblems(o: Obj, key: string, max: number, base: string, out: Probl
 function namesProblems(o: Obj, max: number, base: string, out: Problem[]): void {
   const named = ['en', 'ru'].some((k) => {
     const v = o[k];
-    return typeof v === 'string' && NON_SPACE.test(v);
+    return typeof v === 'string' && hasName(v);
   });
   if (!named) out.push({ path: at(base, 'name'), rule: 'required' });
   textProblems(o, 'en', max, base, out);
@@ -713,12 +722,16 @@ export function browseIndex(index: Index, base: Index, shown: boolean): Index {
   return { ...index, searchable: base.searchable, allEquip: base.allEquip };
 }
 
-/** Returns the language the editor writes an item's name and description in: the UI
- *  language for a new item or one named in both, else the one language that names it. */
-export function editLang(content: HomebrewContent | CardContent | null, ui: Lang): Lang {
+/** Returns the language the editor writes a name in - an item's, a card's, a source's or a
+ *  section's: the UI language for a new one or one named in both, else the one language
+ *  that names it. */
+export function editLang(
+  content: HomebrewContent | CardContent | BookContent | SectionRow | null,
+  ui: Lang
+): Lang {
   if (!content) return ui;
-  const en = NON_SPACE.test(content.en ?? '');
-  const ru = NON_SPACE.test(content.ru ?? '');
+  const en = hasName(content.en ?? '');
+  const ru = hasName(content.ru ?? '');
   if (en === ru) return ui;
   return en ? 'en' : 'ru';
 }
@@ -744,6 +757,11 @@ export function cardUses(items: readonly ItemRow[], kind: CardKind, key: string)
 }
 
 const folded = (s: string): string => s.trim().toLocaleLowerCase();
+
+/** The default source's names: a new or renamed source never takes them. */
+export const HOME_NAMES: readonly { en: string; ru: string }[] = [
+  { ru: 'Хоумбрю', en: 'Homebrew' }
+];
 
 /** Returns whether `name` repeats a name of `names` in either language, without case. */
 export function nameTaken(

@@ -14,9 +14,13 @@ deleted.
 
 ## Index
 
+- 2026-10-02 - [A homebrew import matches items by key, never by name](decisions/2026-10-02-a-homebrew-import-matches-items-by-key-never-by-name.md)
+- 2026-10-02 - [A lists file is version 2 only when it holds homebrew](decisions/2026-10-02-a-lists-file-is-version-2-only-when-it-holds-homebrew.md)
 - 2026-10-02 - [A list's frozen copies hold up to 1048576 bytes together](decisions/2026-10-02-a-lists-frozen-copies-hold-up-to-1048576-bytes.md)
 - 2026-10-02 - [A shared page re-read names its revision; an unchanged list answers unchanged](decisions/2026-10-02-a-shared-page-re-read-names-its-revision.md)
+- 2026-10-02 - [E2E case L passes the 5 MB import on success or a whole tooSlow refusal](decisions/2026-10-02-e2e-case-l-passes-the-5-mb-import-on-success-or-a-whole-tooslow.md)
 - 2026-10-02 - [Field help is a «?» by the label; every input has its own visible label](decisions/2026-10-02-field-help-is-a-by-the-label-every.md)
+- 2026-10-02 - [Homebrew import and the bulk move are each one all-or-nothing call](decisions/2026-10-02-homebrew-import-and-the-bulk-move-are-one-call-each.md)
 - 2026-10-02 - [The account re-read fetches only the lists whose revision moved](decisions/2026-10-02-the-account-re-read-fetches-only-lists-whose-revision-moved.md)
 - 2026-10-02 - [The bundle ceilings rise to 300 kB configured and 250 unconfigured](decisions/2026-10-02-the-bundle-ceilings-rise-to-300-kb-configured.md)
 - 2026-10-02 - [The homebrew editor offers no tier and tiers 1-4; a stored A or C tier stays](decisions/2026-10-02-the-homebrew-editor-offers-no-tier-and-tiers.md)

@@ -99,14 +99,17 @@ bounded function any link holder calls").
 
 Homebrew items, their sources and sections, and the author's set and rule
 cards live in the account only: never in the browser's storage, and never
-in a `#/l/` link or a lists file (`FEATURES.md`, "Homebrew"). An own item
-opens for its author alone.
+in a `#/l/` link. They leave it only as the reader's own file: a homebrew
+file, the data zip's `homebrew.json`, or a lists file's version 2 entry with
+its snapshot (`FEATURES.md`, "Homebrew"). An own item opens for its author
+alone.
 
 An account's lists leave it only as the reader's own file: the lists JSON
 or the data zip of `#/account` (`FEATURES.md`, "Account and browser
 lists", "Exports"), which is the per-user backup and the way between two
-accounts. The site keeps no copy of a file, and «Импорт из файла» imports
-only a file the reader chose, through the same Supabase backend.
+accounts. The site keeps no copy of a file, and «Импорт из файла» and
+«Импорт предметов» import only a file the reader chose, through the same
+Supabase backend.
 
 Add no server beside the Supabase backend: no upload endpoint and no paste
 service.
@@ -129,7 +132,8 @@ What stays:
   module runs (`CONTRACTS.md` section 4).
 - The `<noscript>` links resolve through the build: `vite.config.mts`'s
   `closeBundle` copies `catalog.csv`, `data.json` and `llms.txt` into
-  `dist/`, `schema/import-v1.json` resolves through the `schema` entry of
+  `dist/`, `schema/import-v1.json`, `schema/import-v2.json` and
+  `schema/homebrew-v1.json` resolve through the `schema` entry of
   `vite.config.mts`' `ROOT_DIRS` (a junction in `dist/`, as `img/`), and
   `tools/smoke-http.mjs` asserts every `noscript a[href]` resolves to a
   real file under `dist/`.

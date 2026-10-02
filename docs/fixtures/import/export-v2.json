@@ -1,0 +1,111 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v2.json",
+  "format": "daggerheart-loot/lists",
+  "version": 2,
+  "exported_at": "2026-09-25T12:00:00.000Z",
+  "lists": [
+    {
+      "name": "Пустой список",
+      "entries": []
+    },
+    {
+      "name": "Лавка кузнеца",
+      "money_mode": "coin",
+      "player_note": "Открыта с рассвета до заката.",
+      "gm_note": "Кузнец торгуется, если назвать имя его брата.",
+      "entries": [
+        {
+          "id": "ci1",
+          "name": "Первоклассный Спальный Мешок",
+          "quantity": 2,
+          "price_coins": 150
+        },
+        {
+          "id": "q1",
+          "name": "Палаш",
+          "player_note": "Последний в наличии."
+        },
+        {
+          "id": "q313",
+          "name": "Стеганый Доспех"
+        },
+        {
+          "id": "cc1",
+          "name": "Зелье Быстрого Шага",
+          "quantity": 5,
+          "price_coins": 20
+        },
+        {
+          "id": "voa2_a3",
+          "name": "Колода Сумерек",
+          "gm_note": "Проклят."
+        },
+        {
+          "id": "q23",
+          "name": "Скипетр"
+        },
+        {
+          "id": "w51",
+          "name": "Гарпун Левиафана",
+          "price_coins": 99999
+        },
+        {
+          "id": "q35",
+          "name": "Колдующий Кинжал"
+        },
+        {
+          "id": "di11",
+          "name": "Брошюра по Истории Искусства"
+        },
+        {
+          "id": "hb_emberaxeaaaaaaaa",
+          "name": "Топор Тлеющих Углей",
+          "source": "homebrew",
+          "price_coins": 800,
+          "snapshot": {
+            "kind": "equip",
+            "ru": "Топор Тлеющих Углей",
+            "en": "Ember Axe",
+            "rud": "Лезвие тлеет и не гаснет под дождём.",
+            "ende": "The blade smoulders and does not go out in the rain.",
+            "eq": {
+              "t": "weapon",
+              "tier": 2,
+              "cls": "mag",
+              "tr": "spellcast",
+              "rg": "melee",
+              "dmg": "d10+2",
+              "dt": "mag",
+              "bu": 2
+            },
+            "id": "hb_emberaxeaaaaaaaa",
+            "src": "homebrew",
+            "book": {
+              "key": "hb_alderworkshopaaa",
+              "en": "Alder Workshop",
+              "ru": "Мастерская Ольхи",
+              "section": {
+                "key": "hb_sectbladesaaaaaa",
+                "en": "Blades",
+                "ru": "Холодное оружие"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Трофеи",
+      "entries": [
+        {
+          "id": "q1",
+          "name": "Палаш"
+        },
+        {
+          "id": "ci1",
+          "name": "Первоклассный Спальный Мешок"
+        }
+      ]
+    }
+  ]
+}

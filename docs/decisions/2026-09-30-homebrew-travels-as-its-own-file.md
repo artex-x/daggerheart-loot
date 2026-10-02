@@ -1,5 +1,6 @@
 # 2026-09-30 - Homebrew travels as its own file; a lists file v2 carries frozen entries
 
+- Amended by "A lists file is version 2 only when it holds homebrew" (2026-10-02): the download reads «Скачать JSON».
 - Task: `persist-7-homebrew`, for release `persist-7d-homebrew-files` (owner's item 8 and answers to Q7 and Q9, 2026-09-30; planner).
 - Decision: `daggerheart-loot/homebrew` version 1 (`schema/homebrew-v1.json`: `books` with sections,
   `cards` and `items` in the catalog's field names under their `hb_` keys) is written by «Скачать

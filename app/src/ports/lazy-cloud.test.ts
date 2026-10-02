@@ -213,6 +213,18 @@ describe('lazyCloud', () => {
       )
     ).toEqual({ ok: true, revision: 2 });
     expect(await homebrew.removeCard(uuid(7012))).toEqual({ ok: true });
+    const moved = { id: uuid(512), revision: 1 };
+    expect(await homebrew.moveItems([moved], uuid(7010), null)).toEqual({ ok: true });
+    expect(
+      await homebrew.import({
+        books: [],
+        cards: [],
+        items: [
+          { id: uuid(7013), key: 'hb_itemeeeeeeeeeeee', book: null, content: item.content }
+        ],
+        update: false
+      })
+    ).toMatchObject({ ok: true, counts: { items_created: 1 } });
     expect(await homebrew.removeBook(uuid(7010))).toEqual({ ok: true });
     expect(load).toHaveBeenCalledOnce();
   });
@@ -268,6 +280,10 @@ describe('lazyCloud', () => {
       unsent
     );
     expect(await homebrew.removeCard('x')).toEqual(unsent);
+    expect(await homebrew.import({ books: [], cards: [], items: [], update: false })).toEqual(
+      unsent
+    );
+    expect(await homebrew.moveItems([{ id: 'x', revision: 1 }], null, null)).toEqual(unsent);
     off();
     expect(fn).not.toHaveBeenCalled();
   });

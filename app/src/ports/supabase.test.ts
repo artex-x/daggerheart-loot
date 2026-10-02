@@ -2119,3 +2119,150 @@ describe('the homebrew rows', () => {
     });
   });
 });
+
+describe('the homebrew import and the bulk move', () => {
+  const ROWS = {
+    books: [{ id: 'b1', key: 'hb_bookbbbbbbbbbbbb', content: { ru: 'Источник' }, names: true }],
+    cards: [],
+    items: [
+      {
+        id: 'i1',
+        key: 'hb_itemcccccccccccc',
+        book: 'hb_bookbbbbbbbbbbbb',
+        content: { kind: 'item' as const, ru: 'Предмет' }
+      }
+    ],
+    update: false
+  };
+  const COUNTS = {
+    books_created: 1,
+    cards_created: 0,
+    cards_updated: 0,
+    cards_skipped: 0,
+    items_created: 1,
+    items_updated: 0,
+    items_skipped: 0
+  };
+
+  it('sends the rows in one import_homebrew call and reads the counts', async () => {
+    client.rpc.mockResolvedValueOnce({ data: COUNTS, error: null, status: 200 });
+    expect(await make().homebrew.import(ROWS)).toEqual({ ok: true, counts: COUNTS });
+    expect(client.rpc).toHaveBeenCalledWith('import_homebrew', {
+      p_books: ROWS.books,
+      p_cards: [],
+      p_items: ROWS.items,
+      p_update: false
+    });
+  });
+
+  it('reads the seven counts of an answer that holds an eighth key', async () => {
+    client.rpc.mockResolvedValueOnce({
+      data: { ...COUNTS, books_updated: 2 },
+      error: null,
+      status: 200
+    });
+    expect(await make().homebrew.import(ROWS)).toEqual({ ok: true, counts: COUNTS });
+  });
+
+  it.each([
+    ['a count missing', { ...COUNTS, items_skipped: undefined }],
+    ['a count that is not a whole number', { ...COUNTS, items_created: 1.5 }],
+    ['a negative count', { ...COUNTS, cards_created: -1 }],
+    ['an array', [COUNTS]],
+    ['null', null]
+  ])('reads an answer with %s as refused', async (_name, data) => {
+    client.rpc.mockResolvedValueOnce({ data, error: null, status: 200 });
+    expect(await make().homebrew.import(ROWS)).toEqual({ ok: false, error: 'refused' });
+  });
+
+  it.each([
+    [
+      '400 an item limit',
+      {
+        error: { code: 'P0001', message: 'limit: homebrew_items_per_owner', details: '100' },
+        status: 400
+      },
+      { ok: false, error: 'limit', key: 'homebrew_items_per_owner', value: 100 }
+    ],
+    [
+      '400 22023',
+      { error: { code: '22023', message: 'import_homebrew: no source x' }, status: 400 },
+      { ok: false, error: 'refused' }
+    ],
+    [
+      '400 23514, a check',
+      { error: { code: '23514', message: 'homebrew_books_content_check' }, status: 400 },
+      { ok: false, error: 'refused' }
+    ],
+    [
+      '403 28000',
+      { error: { code: '28000', message: 'import_homebrew: not signed in' }, status: 403 },
+      { ok: false, error: 'network' }
+    ],
+    [
+      '500 57014, the statement timeout',
+      { error: { code: '57014', message: 'canceling statement' }, status: 500 },
+      { ok: false, error: 'refused', reason: 'tooSlow' }
+    ],
+    ['thrown', new Error('offline'), { ok: false, error: 'network' }]
+  ])('reads an import answered %s', async (_name, answer, want) => {
+    if (answer instanceof Error) client.rpc.mockRejectedValueOnce(answer);
+    else client.rpc.mockResolvedValueOnce({ data: null, ...answer });
+    expect(await make().homebrew.import(ROWS)).toEqual(want);
+  });
+
+  const MOVE = [{ id: 'i1', revision: 3 }];
+
+  it('sends a move in one move_homebrew_items call', async () => {
+    client.rpc.mockResolvedValueOnce({ data: 1, error: null, status: 200 });
+    expect(await make().homebrew.moveItems(MOVE, 'b1', 'hb_sectaaaaaaaaaaaa')).toEqual({
+      ok: true
+    });
+    expect(client.rpc).toHaveBeenCalledWith('move_homebrew_items', {
+      p_items: MOVE,
+      p_book: 'b1',
+      p_section: 'hb_sectaaaaaaaaaaaa'
+    });
+  });
+
+  it.each([
+    [
+      'a conflict',
+      {
+        error: { code: 'P0001', message: 'move_homebrew_items: conflict i1' },
+        status: 400
+      },
+      { ok: false, error: 'conflict' }
+    ],
+    [
+      'a deleted source, P0002 with HTTP 500',
+      { error: { code: 'P0002', message: 'move_homebrew_items: no source' }, status: 500 },
+      { ok: false, error: 'gone' }
+    ],
+    [
+      'the statement timeout, never network',
+      { error: { code: '57014', message: 'canceling statement' }, status: 500 },
+      { ok: false, error: 'refused' }
+    ],
+    [
+      '400 22023',
+      { error: { code: '22023', message: 'move_homebrew_items: an item twice' }, status: 400 },
+      { ok: false, error: 'refused' }
+    ],
+    [
+      '403 28000',
+      { error: { code: '28000', message: 'move_homebrew_items: not signed in' }, status: 403 },
+      { ok: false, error: 'network' }
+    ],
+    [
+      '503',
+      { error: { code: 'PGRST000', message: 'x' }, status: 503 },
+      { ok: false, error: 'network' }
+    ],
+    ['thrown', new Error('offline'), { ok: false, error: 'network' }]
+  ])('reads a move answered %s', async (_name, answer, want) => {
+    if (answer instanceof Error) client.rpc.mockRejectedValueOnce(answer);
+    else client.rpc.mockResolvedValueOnce({ data: null, ...answer });
+    expect(await make().homebrew.moveItems(MOVE, null, null)).toEqual(want);
+  });
+});

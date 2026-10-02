@@ -16,6 +16,7 @@ import {
   cardProblems,
   contentProblems,
   DESC_MAX,
+  hasName,
   NAME_MAX,
   nameTaken,
   recordOf,
@@ -499,8 +500,6 @@ export function cardContentOf(
   return out;
 }
 
-const NON_SPACE = /\S/u;
-
 /** Returns every problem the card form refuses: the database's rules, then a name another
  *  card of `others` holds (without case), then a card with no text in either language. */
 export function cardFormProblems(
@@ -514,7 +513,7 @@ export function cardFormProblems(
   const out = cardProblems(kind, c);
   const names = others.map((o) => o.content);
   if (nameTaken(names, d.name)) out.push({ path: 'name', rule: 'duplicate' });
-  if (!NON_SPACE.test(c.ende ?? '') && !NON_SPACE.test(c.rud ?? '')) {
+  if (!hasName(c.ende ?? '') && !hasName(c.rud ?? '')) {
     out.push({ path: 'text', rule: 'required' });
   }
   return out;

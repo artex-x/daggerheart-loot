@@ -1,0 +1,130 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "books": [
+    {
+      "key": "hb_alderworkshopaaa",
+      "en": "Alder Workshop, Second Edition",
+      "ru": "Мастерская Ольхи, второе издание",
+      "sections": [
+        {
+          "key": "hb_sectpistolsaaaaa",
+          "en": "Pistols",
+          "ru": "Пистоли"
+        },
+        {
+          "key": "hb_sectbladesaaaaaa",
+          "en": "Blades",
+          "ru": "Холодное оружие"
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "key": "hb_emberpairsetaaaa",
+      "kind": "set",
+      "book": "hb_alderworkshopaaa",
+      "en": "Smouldering Pair",
+      "ru": "Тлеющая пара",
+      "ende": "Both pistols of the pair: +2 to damage rolls with either.",
+      "rud": "Оба пистоля пары: +2 к Броскам Урона каждым из них."
+    },
+    {
+      "key": "hb_reloadruleaaaaaa",
+      "kind": "ref",
+      "book": "hb_alderworkshopaaa",
+      "en": "Slow Reload",
+      "ru": "Долгая перезарядка",
+      "ensub": "Weapon feature",
+      "rusub": "Свойство оружия",
+      "ende": "After a shot, spend an action to reload before you fire again.",
+      "rud": "После выстрела потратьте действие на перезарядку, прежде чем стрелять снова."
+    }
+  ],
+  "items": [
+    {
+      "key": "hb_flintlockpistola",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectpistolsaaaaa",
+      "kind": "equip",
+      "en": "Old Flintlock Pistol",
+      "ru": "Старый кремнёвый пистоль",
+      "ende": "Loud: everyone within Far range hears the shot.",
+      "rud": "Громкий: выстрел слышат все в пределах Далёкой дистанции.",
+      "eq": {
+        "t": "weapon",
+        "tier": 1,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d8+1",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_flintlockpistola"
+      },
+      "set": "hb_emberpairsetaaaa",
+      "refs": [
+        "hb_reloadruleaaaaaa"
+      ]
+    },
+    {
+      "key": "hb_doublepistolaaaa",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectpistolsaaaaa",
+      "kind": "equip",
+      "en": "Twin-Barrelled Pistol",
+      "ru": "Двуствольный пистоль мастера",
+      "ende": "Loud. Fire both barrels at once: roll damage twice and take the higher.",
+      "rud": "Громкий. Выстрел из обоих стволов: бросьте урон дважды и выберите больший.",
+      "eq": {
+        "t": "weapon",
+        "tier": 2,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d10+2",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_flintlockpistola"
+      },
+      "set": "hb_emberpairsetaaaa",
+      "refs": [
+        "hb_reloadruleaaaaaa"
+      ]
+    },
+    {
+      "key": "hb_patchbedrollaaaa",
+      "kind": "item",
+      "en": "Patchwork Bedroll",
+      "ru": "Лоскутный спальник",
+      "ende": "Sewn from a Premium Bedroll and a Ghostproof Blanket: during downtime nothing that haunts you reaches your sleep. It smells of smoke.",
+      "rud": "Сшит из Первоклассного Спального Мешка и Одеяла от Призраков: во время отдыха ничто из того, что вас преследует, не тревожит ваш сон. Пахнет дымом.",
+      "craft_from": [
+        "ci1",
+        "dv34"
+      ]
+    },
+    {
+      "key": "hb_powderhornaaaaaa",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectpistolsaaaaa",
+      "kind": "item",
+      "en": "Powder Horn",
+      "ru": "Пороховой рог",
+      "ende": "Holds powder for twenty shots and keeps it dry.",
+      "rud": "Хранит порох на двадцать выстрелов и не даёт ему отсыреть."
+    },
+    {
+      "key": "hb_ramrodaaaaaaaaaa",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectpistolsaaaaa",
+      "kind": "consumable",
+      "en": "Oiled Ramrod",
+      "ru": "Промасленный шомпол",
+      "ende": "Reload as part of your move once; then it breaks.",
+      "rud": "Один раз перезарядите оружие во время перемещения; после этого шомпол ломается."
+    }
+  ]
+}

@@ -1,9 +1,10 @@
-/* The lists file `import-v1`: the export writes it, the import reads it.
+/* The lists file `import-v1` and `import-v2`: the export writes it, the import reads it.
  *
- * `schema/import-v1.json` is the published contract and this module its
- * hand-written validator; `bundle.test.ts` keeps the two equal. Pure module:
- * the report's words are the component's, this returns indexes and keys.
- * docs/specs/CONTRACTS.md section 4. */
+ * `schema/import-v1.json` and `schema/import-v2.json` are the published contracts and
+ * this module their hand-written validator; `bundle.test.ts` keeps them equal. Version 2
+ * is version 1 plus homebrew entries, each with its snapshot; an export without one stays
+ * version 1, byte for byte. Pure module: the report's words are the component's, this
+ * returns indexes and keys. docs/specs/CONTRACTS.md section 4. */
 
 import {
   NAME_MAX,
@@ -13,26 +14,35 @@ import {
   type EntryRow,
   type ImportRow
 } from './cloudLists.js';
-import { isHomebrewKey } from './homebrew.js';
+import { isHomebrewKey, snapshotValid, type HomebrewRecord } from './homebrew.js';
 import { QTY_MAX, type ListEntryMeta } from './listLink.js';
 import { MONEY_DEFAULT, MONEY_MODES, type MoneyMode } from './money.js';
 
 export const BUNDLE_FORMAT = 'daggerheart-loot/lists';
 export const BUNDLE_VERSION = 1;
+/** The version that adds homebrew entries; the import reads both. */
+export const BUNDLE_VERSION_HOMEBREW = 2;
 /** The schema's `$id`; an export names it as its `$schema`. */
 export const BUNDLE_SCHEMA = 'https://artex-x.github.io/daggerheart-loot/schema/import-v1.json';
+export const BUNDLE_SCHEMA_HOMEBREW =
+  'https://artex-x.github.io/daggerheart-loot/schema/import-v2.json';
 /** The most lists one file holds: `import_lists`' bound per call; the account's limit is the
  *  database's. */
 export const LISTS_MAX = 1000;
 /** The most entries one list of a file holds: `import_lists`' bound per list; the account's
  *  limit is the database's. */
 export const ENTRIES_MAX = 5000;
-/** The largest file the import reads. */
+/** The largest file the import reads, and the largest data file it reads from a zip. */
 export const FILE_MAX_BYTES = 5 * 1024 * 1024;
+/** The largest data zip the import reads: its two data files at their bound, and their
+ *  headers. */
+export const ZIP_MAX_BYTES = 2 * FILE_MAX_BYTES + 4096;
 /** A record id: `catalog.csv`'s `id` column. */
 export const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 /** The entry sources version 1 takes. */
 export const SOURCES: readonly string[] = ['official'];
+/** The entry sources version 2 takes. */
+export const SOURCES_HOMEBREW: readonly string[] = ['official', 'homebrew'];
 /** The most errors a refused file reports; the rest are counted. */
 export const ERRORS_MAX = 50;
 
@@ -44,6 +54,8 @@ export interface BundleEntry {
   price_coins?: number;
   player_note?: string;
   gm_note?: string;
+  /** Version 2, `source: homebrew` only: the item as a catalog record. */
+  snapshot?: HomebrewRecord;
 }
 
 export interface BundleList {
@@ -58,58 +70,70 @@ export interface BundleList {
 export interface Bundle {
   $schema: string;
   format: typeof BUNDLE_FORMAT;
-  version: typeof BUNDLE_VERSION;
+  version: typeof BUNDLE_VERSION | typeof BUNDLE_VERSION_HOMEBREW;
   exported_at: string;
   lists: BundleList[];
 }
 
-/** Returns the lists file of `lists`, in the order given. An entry's `name` is `nameOf`'s,
- *  left out when it has none; a blank list name is written as `untitled`, so the file keeps
- *  the schema's `minLength`. */
+/** Returns the lists file of `lists`, in the order given, and how many entries it left
+ *  out. An entry's `name` is `nameOf`'s, left out when it has none; a blank list name is
+ *  written as `untitled`, so the file keeps the schema's `minLength`. A homebrew entry is
+ *  written with `snapshotOf`'s record (the live item of a reference, or a frozen copy's
+ *  own), or left out and counted when it answers null. The file is version 2 only when it
+ *  holds a homebrew entry, else version 1. */
 export function toBundle(
   lists: readonly CloudList[],
   nameOf: (id: string) => string | undefined,
   untitled: string,
-  now: Date
-): Bundle {
-  return {
-    $schema: BUNDLE_SCHEMA,
-    format: BUNDLE_FORMAT,
-    version: BUNDLE_VERSION,
-    exported_at: now.toISOString(),
-    lists: lists.map((l): BundleList => ({
+  now: Date,
+  snapshotOf: (id: string, list: CloudList) => HomebrewRecord | null
+): { bundle: Bundle; skipped: number } {
+  let skipped = 0;
+  const out = lists.map((l): BundleList => {
+    const entries: BundleEntry[] = [];
+    for (const id of l.ids) {
+      const snapshot = isHomebrewKey(id) ? snapshotOf(id, l) : null;
+      if (isHomebrewKey(id) && !snapshot) {
+        skipped++;
+        continue;
+      }
+      entries.push(entryOf(id, l.meta?.[id] ?? {}, nameOf(id), snapshot));
+    }
+    return {
       name: l.name.trim() ? l.name : untitled,
       ...(l.money === 'coin' ? { money_mode: 'coin' as const } : {}),
       ...(l.note ? { player_note: l.note } : {}),
       ...(l.hnote ? { gm_note: l.hnote } : {}),
-      entries: l.ids.map((id) => entryOf(id, l.meta?.[id] ?? {}, nameOf(id)))
-    }))
+      entries
+    };
+  });
+  const homebrew = out.some((l) => l.entries.some((e) => e.source === 'homebrew'));
+  return {
+    bundle: {
+      $schema: homebrew ? BUNDLE_SCHEMA_HOMEBREW : BUNDLE_SCHEMA,
+      format: BUNDLE_FORMAT,
+      version: homebrew ? BUNDLE_VERSION_HOMEBREW : BUNDLE_VERSION,
+      exported_at: now.toISOString(),
+      lists: out
+    },
+    skipped
   };
 }
 
-/** Returns the lists with their homebrew entries left out, and how many were: a lists file
- *  carries catalog ids only (docs/specs/CONTRACTS.md section 4). A list with none is the
- *  same object. */
-export function officialOnly(lists: readonly CloudList[]): {
-  lists: CloudList[];
-  skipped: number;
-} {
-  let skipped = 0;
-  const out = lists.map((l) => {
-    const ids = l.ids.filter((k) => !isHomebrewKey(k));
-    skipped += l.ids.length - ids.length;
-    return ids.length === l.ids.length ? l : { ...l, ids };
-  });
-  return { lists: out, skipped };
-}
-
-function entryOf(id: string, m: ListEntryMeta, name: string | undefined): BundleEntry {
+function entryOf(
+  id: string,
+  m: ListEntryMeta,
+  name: string | undefined,
+  snapshot: HomebrewRecord | null
+): BundleEntry {
   const e: BundleEntry = { id };
   if (name) e.name = name;
+  if (snapshot) e.source = 'homebrew';
   if (m.qty && m.qty > 1) e.quantity = m.qty;
   if (m.gold) e.price_coins = m.gold;
   if (m.note) e.player_note = m.note;
   if (m.hnote) e.gm_note = m.hnote;
+  if (snapshot) e.snapshot = snapshot;
   return e;
 }
 
@@ -122,21 +146,27 @@ const two = (n: number): string => String(n).padStart(2, '0');
 /* The characters Windows refuses in a file name; control characters are replaced too. */
 const UNSAFE = '\\/:*?"<>|';
 
-/* The export's day, YYYY-MM-DD in local time. */
-const dayOf = (now: Date): string =>
+/** Returns an export's day, YYYY-MM-DD in local time. */
+export const dayOf = (now: Date): string =>
   [now.getFullYear(), two(now.getMonth() + 1), two(now.getDate())].join('-');
+
+/** Returns `<name>.json` with each character Windows refuses as `_`, cut to 80 characters;
+ *  `<fallback>.json` for a name left empty. */
+export function jsonFileName(name: string, fallback: string): string {
+  const safe = Array.from(name, (c) =>
+    c < ' ' || c === '\u007f' || UNSAFE.includes(c) ? '_' : c
+  );
+  const cut = safe.join('').trim();
+  const short = Array.from(cut).slice(0, 80).join('').trim();
+  return (short || fallback) + '.json';
+}
 
 /** Returns an export's file name: `<name>.json` for one list, else the dated
  *  `daggerheart-loot-lists-<YYYY-MM-DD>.json` in local time. */
 export function bundleFileName(lists: readonly { name: string }[], now: Date): string {
   const [only] = lists;
   if (lists.length !== 1 || !only) return 'daggerheart-loot-lists-' + dayOf(now) + '.json';
-  const safe = Array.from(only.name, (c) =>
-    c < ' ' || c === '\u007f' || UNSAFE.includes(c) ? '_' : c
-  );
-  const cut = safe.join('').trim();
-  const short = Array.from(cut).slice(0, 80).join('').trim();
-  return (short || 'list') + '.json';
+  return jsonFileName(only.name, 'list');
 }
 
 /** Returns the account's data file name, `daggerheart-loot-data-<YYYY-MM-DD>.zip` in local
@@ -169,8 +199,11 @@ export function decodeText(bytes: Uint8Array): string | null {
 }
 
 /** Why a value was refused. `type` also covers an `id` that does not match `ID_PATTERN`;
- *  `missing` also covers an empty list name. */
-export type ErrorKind = 'missing' | 'type' | 'long' | 'range' | 'enum' | 'extra' | 'many';
+ *  `missing` also covers an empty list name. Version 2 only: `hbId` - a homebrew entry's
+ *  `id` that is not a key; `snapshot` - a snapshot that is not a valid copy of its key, or
+ *  lacks a text `schema/import-v2.json` requires. */
+export type ErrorKind =
+  'missing' | 'type' | 'long' | 'range' | 'enum' | 'extra' | 'many' | 'hbId' | 'snapshot';
 
 /** One error of a refused file. `list` and `entry` are indexes in the file (0-based), null
  *  for the file itself or for a list's own field; `field` is the key, `''` for a list or an
@@ -200,6 +233,9 @@ export interface Skipped {
 
 export interface ImportEntry {
   item_key: string;
+  source: 'official' | 'homebrew';
+  /** A homebrew entry's snapshot from the file; null for an official one. */
+  snapshot: HomebrewRecord | null;
   quantity: number;
   price_coins: number | null;
   player_note: string;
@@ -244,6 +280,8 @@ export const ENTRY_KEYS = [
   'gm_note'
 ] as const;
 export const ENTRY_REQUIRED: readonly string[] = ['id'];
+/** Version 2's entry keys: version 1's and `snapshot`. */
+export const ENTRY_KEYS_HOMEBREW = [...ENTRY_KEYS, 'snapshot'] as const;
 
 const isKey = <K extends string>(keys: readonly K[], k: string): k is K =>
   (keys as readonly string[]).includes(k);
@@ -345,9 +383,33 @@ function notObject(r: Report, at: At, v: unknown): void {
   });
 }
 
+/* The texts `schema/import-v2.json` requires of a snapshot and of its embedded cards, which
+   `homebrew_snapshot_of` always writes; `snapshotValid` alone takes a snapshot without them. */
+const SNAPSHOT_TEXTS = ['en', 'ru', 'ende', 'rud'] as const;
+const SET_TEXTS = SNAPSHOT_TEXTS;
+const REF_TEXTS = ['en', 'ru', 'ensub', 'rusub', 'ende', 'rud', 'url'] as const;
+
+const holds = (v: unknown, keys: readonly string[]): boolean =>
+  isObj(v) && keys.every((k) => typeof v[k] === 'string');
+
+const cardsHold = (v: unknown, keys: readonly string[]): boolean =>
+  v === undefined || (isObj(v) && Object.values(v).every((c) => holds(c, keys)));
+
+function snapshotComplete(snap: Obj): boolean {
+  const cards = snap['cards'];
+  return (
+    holds(snap, SNAPSHOT_TEXTS) &&
+    (cards === undefined ||
+      (isObj(cards) &&
+        cardsHold(cards['sets'], SET_TEXTS) &&
+        cardsHold(cards['refs'], REF_TEXTS)))
+  );
+}
+
 /* One entry; null when it has an error. Its id is read first, so an error on a key before
-   `id` names the record too. */
-function walkEntry(r: Report, where: At, v: unknown): ImportEntry | null {
+   `id` names the record too. In version 2 a homebrew entry's id is a key and its snapshot a
+   valid copy of it, checked after its own keys. */
+function walkEntry(r: Report, where: At, v: unknown, v2: boolean): ImportEntry | null {
   if (!isObj(v)) {
     notObject(r, where, v);
     return null;
@@ -357,17 +419,24 @@ function walkEntry(r: Report, where: At, v: unknown): ImportEntry | null {
   const before = r.errors.length + r.more;
   const e: ImportEntry = {
     item_key: '',
+    source: 'official',
+    snapshot: null,
     quantity: 1,
     price_coins: null,
     player_note: '',
     gm_note: ''
   };
+  const keys: readonly string[] = v2 ? ENTRY_KEYS_HOMEBREW : ENTRY_KEYS;
+  const sources = v2 ? SOURCES_HOMEBREW : SOURCES;
+  const homebrew = v2 && v['source'] === 'homebrew';
   for (const [k, x] of Object.entries(v)) {
-    if (!isKey(ENTRY_KEYS, k)) {
+    if (!keys.includes(k) || (k === 'snapshot' && !homebrew)) {
       fieldError(r, at, k, 'extra');
       continue;
     }
     switch (k) {
+      case 'snapshot':
+        break;
       case 'id':
         if (typeof x !== 'string' || !ID_PATTERN.test(x)) {
           fieldError(r, at, k, 'type', { value: shown(x), limit: ID_PATTERN.source });
@@ -377,8 +446,8 @@ function walkEntry(r: Report, where: At, v: unknown): ImportEntry | null {
         stringUpTo(r, at, k, x, NAME_MAX);
         break;
       case 'source':
-        if (typeof x !== 'string' || !SOURCES.includes(x)) {
-          fieldError(r, at, k, 'enum', { value: shown(x), limit: SOURCES.join(', ') });
+        if (typeof x !== 'string' || !sources.includes(x)) {
+          fieldError(r, at, k, 'enum', { value: shown(x), limit: sources.join(', ') });
         }
         break;
       case 'quantity':
@@ -394,6 +463,28 @@ function walkEntry(r: Report, where: At, v: unknown): ImportEntry | null {
     }
   }
   required(r, at, v, ENTRY_REQUIRED);
+  if (homebrew) {
+    const id = v['id'];
+    const keyed = typeof id === 'string' && isHomebrewKey(id);
+    if (typeof id === 'string' && ID_PATTERN.test(id) && !keyed) {
+      fieldError(r, at, 'id', 'hbId', { value: shown(id) });
+    }
+    const snap = v['snapshot'];
+    if (!('snapshot' in v)) fieldError(r, at, 'snapshot', 'missing');
+    /* A snapshot names its key: with no valid key there is nothing to check it against. */
+    else if (!keyed) return null;
+    else if (
+      !snapshotValid(snap) ||
+      !isObj(snap) ||
+      snap['id'] !== id ||
+      !snapshotComplete(snap)
+    ) {
+      fieldError(r, at, 'snapshot', 'snapshot');
+    } else {
+      e.source = 'homebrew';
+      e.snapshot = snap as unknown as HomebrewRecord;
+    }
+  }
   return r.errors.length + r.more === before ? e : null;
 }
 
@@ -403,7 +494,8 @@ function walkList(
   i: number,
   v: unknown,
   knows: (id: string) => boolean,
-  skipped: Skipped[]
+  skipped: Skipped[],
+  v2: boolean
 ): ImportList | null {
   const at: At = { path: 'lists[' + String(i) + ']', list: i, entry: null };
   if (!isObj(v)) {
@@ -452,11 +544,12 @@ function walkList(
           const e = walkEntry(
             r,
             { path: at.path + '.entries[' + String(j) + ']', list: i, entry: j },
-            item
+            item,
+            v2
           );
           if (!e) return;
           const seen = first.get(e.item_key);
-          if (!knows(e.item_key)) {
+          if (e.source === 'official' && !knows(e.item_key)) {
             skipped.push({ list: i, entry: j, id: e.item_key, why: 'unknown' });
           } else if (seen !== undefined) {
             skipped.push({ list: i, entry: j, id: e.item_key, why: 'repeat', first: seen });
@@ -473,10 +566,10 @@ function walkList(
   return r.errors.length + r.more === before ? l : null;
 }
 
-/** Reads a lists file: JSON, then `format`, then `version`, then every key and bound in
- *  document order, a list's or an entry's missing keys after its own. An id `knows` does
- *  not know, and a later copy of an id in one list, is left out and recorded in `skipped`,
- *  never an error. */
+/** Reads a lists file of version 1 or 2: JSON, then `format`, then `version`, then every
+ *  key and bound in document order, a list's or an entry's missing keys after its own. A
+ *  catalog id `knows` does not know, and a later copy of an id in one list, is left out
+ *  and recorded in `skipped`, never an error; a homebrew entry is never unknown. */
 export function parseBundle(text: string, knows: (id: string) => boolean): Parsed {
   let doc: unknown;
   try {
@@ -485,9 +578,10 @@ export function parseBundle(text: string, knows: (id: string) => boolean): Parse
     return { ok: false, reason: 'notJson' };
   }
   if (!isObj(doc) || doc['format'] !== BUNDLE_FORMAT) return { ok: false, reason: 'notBundle' };
-  if (doc['version'] !== BUNDLE_VERSION) {
+  if (doc['version'] !== BUNDLE_VERSION && doc['version'] !== BUNDLE_VERSION_HOMEBREW) {
     return { ok: false, reason: 'version', version: doc['version'] };
   }
+  const v2 = doc['version'] === BUNDLE_VERSION_HOMEBREW;
   const r = new Report();
   const root: At = { path: '', list: null, entry: null };
   const lists: ImportList[] = [];
@@ -520,7 +614,7 @@ export function parseBundle(text: string, knows: (id: string) => boolean): Parse
         );
         if (x.length > LISTS_MAX) fieldError(r, root, k, 'many', { limit: LISTS_MAX });
         x.forEach((item: unknown, i) => {
-          const l = walkList(r, i, item, knows, skipped);
+          const l = walkList(r, i, item, knows, skipped, v2);
           if (l) lists.push(l);
         });
         break;
@@ -534,8 +628,14 @@ export function parseBundle(text: string, knows: (id: string) => boolean): Parse
   return { ok: true, lists, skipped };
 }
 
-/** Returns the import's rows: every id from `newId`, positions counted after the skips. */
-export function toImportRows(lists: readonly ImportList[], newId: () => string): ImportRow[] {
+/** Returns the import's rows: every id from `newId`, positions counted after the skips. A
+ *  homebrew entry whose key `has` answers true is a reference (`snapshot` null); any other
+ *  is a frozen copy with the file's snapshot object, never JSON `null`. */
+export function toImportRows(
+  lists: readonly ImportList[],
+  newId: () => string,
+  has: (key: string) => boolean
+): ImportRow[] {
   return lists.map((l) => ({
     list: {
       id: newId(),
@@ -547,8 +647,8 @@ export function toImportRows(lists: readonly ImportList[], newId: () => string):
     entries: l.entries.map((e, position): EntryRow => ({
       id: newId(),
       item_key: e.item_key,
-      source: 'official',
-      snapshot: null,
+      source: e.source,
+      snapshot: e.source === 'homebrew' && !has(e.item_key) ? e.snapshot : null,
       position,
       quantity: e.quantity,
       price_coins: e.price_coins,
@@ -556,4 +656,27 @@ export function toImportRows(lists: readonly ImportList[], newId: () => string):
       gm_note: e.gm_note
     }))
   }));
+}
+
+/** Returns `rows` (made by `toImportRows` from `lists`) with each homebrew entry a reference
+ *  when `has` answers true for its key now and a frozen copy of the file's snapshot when it
+ *  does not, every id kept; `rows` itself when no entry changes. */
+export function withHeld(
+  rows: readonly ImportRow[],
+  lists: readonly ImportList[],
+  has: (key: string) => boolean
+): readonly ImportRow[] {
+  /* Set inside the callbacks below, which the type narrowing does not follow. */
+  let changed = false as boolean;
+  const next = rows.map((r, i) => ({
+    ...r,
+    entries: r.entries.map((e, j): EntryRow => {
+      if (e.source !== 'homebrew') return e;
+      const held = has(e.item_key);
+      if (held === (e.snapshot === null)) return e;
+      changed = true;
+      return { ...e, snapshot: held ? null : (lists[i]?.entries[j]?.snapshot ?? null) };
+    })
+  }));
+  return changed ? next : rows;
 }

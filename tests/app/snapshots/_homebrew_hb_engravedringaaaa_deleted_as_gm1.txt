@@ -31,6 +31,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "ИСТОЧНИКИ · 1 источник из 20" [expanded=false]
     DisclosureTriangle "КАРТЫ · 2 карты из 100: 1 комплект, 1 карта правил" [expanded=false]
     link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
+    button "Импорт предметов" [expanded=false]
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
@@ -65,6 +66,7 @@ daggerheart.com
 Альт. таблицы
 Выбрать все
 Изменить
+Импорт предметов
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -78,6 +80,7 @@ daggerheart.com
 Переименовать
 Поиск
 Разделы
+Скачать JSON
 Сообщества
 Списки
 Таблицы
@@ -115,6 +118,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     DisclosureTriangle "SOURCES · 1 source of 20" [expanded=false]
     DisclosureTriangle "CARDS · 2 cards of 100: 1 set, 1 rule card" [expanded=false]
     link "New item" [url=index.html?as=gm1#/homebrew/new]
+    button "Import items" [expanded=false]
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""
@@ -140,12 +144,14 @@ Account: gm1@example.test
 Alt. tables
 Communities
 Delete
+Download JSON
 Dragon's Vault
 Dread
 EN
 Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Import items
 Install as an app
 Lists
 New item

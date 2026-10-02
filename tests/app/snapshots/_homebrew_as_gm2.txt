@@ -1,6 +1,6 @@
 # #/homebrew as gm2
 # route: #/homebrew
-# why: an account with no homebrew: «0 предметов из 100», the closed folds «Источники · 0 источников из 20» and «Карты · 0 карт из 100», «Своих предметов пока нет - создайте первый выше.»
+# why: an account with no homebrew: «0 предметов из 100», the closed folds «Источники · 0 источников из 20» and «Карты · 0 карт из 100», «Своих предметов пока нет - создайте первый выше или импортируйте файл.»
 # as: gm2
 
 ## ru :: tree
@@ -31,7 +31,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "ИСТОЧНИКИ · 0 источников из 20" [expanded=false]
     DisclosureTriangle "КАРТЫ · 0 карт из 100" [expanded=false]
     link "Новый предмет" [url=index.html?as=gm2#/homebrew/new]
-    StaticText "Своих предметов пока нет - создайте первый выше."
+    button "Импорт предметов" [expanded=false]
+    StaticText "Своих предметов пока нет - создайте первый выше или импортируйте..." [namelen=70 namehash=e9719360]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -49,6 +50,7 @@ Wondrous
 daggerheart.com
 Аккаунт: gm2@example.test
 Альт. таблицы
+Импорт предметов
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -58,6 +60,7 @@ daggerheart.com
 Новый предмет
 Обычные правила
 Поиск
+Скачать JSON
 Сообщества
 Списки
 Таблицы
@@ -92,7 +95,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm2#/ho
     DisclosureTriangle "SOURCES · 0 sources of 20" [expanded=false]
     DisclosureTriangle "CARDS · 0 cards of 100" [expanded=false]
     link "New item" [url=index.html?as=gm2#/homebrew/new]
-    StaticText "No items of your own yet - create the first one above."
+    button "Import items" [expanded=false]
+    StaticText "No items of your own yet - create the first one above or import ..." [namelen=71 namehash=f1a6f970]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -104,9 +108,11 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm2#/ho
 Account: gm2@example.test
 Alt. tables
 Communities
+Download JSON
 Dragon's Vault
 Dread
 EN
+Import items
 Install as an app
 Lists
 New item

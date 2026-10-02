@@ -45,6 +45,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       option "Хоумбрю" [selected=true]
       option "Мастерская Ольхи" [selected=false]
     link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
+    button "Импорт предметов" [expanded=false]
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
@@ -77,6 +78,7 @@ daggerheart.com
 Альт. таблицы
 Выбрать все
 Изменить
+Импорт предметов
 К содержимому
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
@@ -93,6 +95,7 @@ daggerheart.com
 Переименовать
 Поиск
 Разделы
+Скачать JSON
 Сообщества
 Сохранить
 Списки
@@ -146,6 +149,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       option "Homebrew" [selected=true]
       option "Alder Workshop" [selected=false]
     link "New item" [url=index.html?as=gm1#/homebrew/new]
+    button "Import items" [expanded=false]
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""
@@ -170,6 +174,7 @@ Alt. tables
 Cancel
 Communities
 Delete
+Download JSON
 Dragon's Vault
 Dread
 EN
@@ -177,6 +182,7 @@ Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
 HomebrewAlder Workshop
+Import items
 Install as an app
 Lists
 New item

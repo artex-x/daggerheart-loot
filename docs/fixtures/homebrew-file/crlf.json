@@ -1,0 +1,21 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "items": [
+    {
+      "key": "hb_crlfnoteaaaaaaaa",
+      "kind": "item",
+      "en": "Folded Note",
+      "ru": "Сложенная записка",
+      "ende": "First line.\r\nSecond line.\r\nThird line.",
+      "rud": "Первая строка.\r\nВторая строка.\r\nТретья строка."
+    },
+    {
+      "key": "hb_crlfmapaaaaaaaaa",
+      "kind": "item",
+      "ru": "Карта с пометками",
+      "rud": "Пометка на полях.\rЕщё одна пометка."
+    }
+  ]
+}

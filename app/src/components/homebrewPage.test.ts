@@ -1,7 +1,7 @@
 /* `#/homebrew` over the fake cloud: the count, the groups, the folds «Источники» and
    «Карты», the sources and sections and the set and rule cards with every refusal and
-   confirm, the empty, signed-out, unconfigured and failed states, the batch delete and a
-   row opening the editor.
+   confirm, the empty, signed-out, unconfigured and failed states, the batch delete, the bulk
+   move, the downloads, a rename in the language that names it and a row opening the editor.
    docs/specs/FEATURES.md, "Homebrew". */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -11,7 +11,15 @@ import { dict } from '../lib/dict.js';
 import { COALESCE_MS } from '../lib/live.js';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import { fakeDialog, fakeEnv, fakePage, memoryRouter, memoryStorage } from '../ports/index.js';
+import {
+  fakeDialog,
+  fakeEnv,
+  fakeImage,
+  fakePage,
+  fixedClock,
+  memoryRouter,
+  memoryStorage
+} from '../ports/index.js';
 import type { CloudPort } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
@@ -741,5 +749,250 @@ describe('#/homebrew «Карты»', () => {
     expect(await screen.findByText('Карта правил «Клеймо Ольхи» удалена')).toBeInTheDocument();
     const read = await cloud?.homebrew.load();
     expect(read?.ok && read.cards.map((c) => c.key)).toEqual(['hb_aldersetaaaaaaaa']);
+  });
+});
+
+const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
+/* A key from a number: `hb_` and 16 base32 characters. */
+const keyN = (n: number): string => {
+  let tail = '';
+  let v = n;
+  do {
+    tail = BASE32.charAt(v % 32) + tail;
+    v = Math.floor(v / 32);
+  } while (v > 0);
+  return 'hb_' + tail.padStart(16, 'a');
+};
+
+describe('the bulk move', () => {
+  const HOME = ['Кольцо с гравировкой', 'Настой кузнеца', 'Whispering Cap'];
+  /* gm1's three items of the default source, ticked, and the move panel open. */
+  async function moving(cloud = fakeCloud(SEED, 'gm1')) {
+    const view = page('gm1', { cloud });
+    await screen.findByText('4 предмета из 100');
+    for (const name of HOME) await userEvent.click(screen.getByRole('checkbox', { name }));
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить (3)' }));
+    return view;
+  }
+  const go = (): HTMLElement => screen.getByRole('button', { name: 'Переместить' });
+
+  it('opens under the strip with the source and section selects, nothing to move at first', async () => {
+    const { container } = await moving();
+    expect(screen.getByRole('button', { name: 'Переместить (3)' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    const strip = container.querySelector('.batch');
+    expect(
+      [...strip!.querySelectorAll('.batch-acts button')].map((b) => b.textContent.trim())
+    ).toEqual(['Переместить (3)', 'Скачать JSON (3)', 'Удалить (3)']);
+    const source = screen.getByLabelText('Источник');
+    expect([...source.querySelectorAll('option')].map((o) => o.textContent)).toEqual([
+      'Хоумбрю',
+      'Мастерская Ольхи'
+    ]);
+    expect(screen.queryByLabelText('Раздел')).toBeNull();
+    expect(go()).toBeDisabled();
+    expect(screen.getByText('Отмеченные предметы уже здесь.')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.selectOptions(source, 'Мастерская Ольхи');
+    const section = screen.getByLabelText('Раздел');
+    expect([...section.querySelectorAll('option')].map((o) => o.textContent)).toEqual([
+      'Без раздела',
+      'Пистоли',
+      'Холодное оружие'
+    ]);
+    expect(go()).toBeEnabled();
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить (3)' }));
+    expect(screen.queryByLabelText('Источник')).toBeNull();
+  });
+
+  it('moves the ticked items in one call, toasts, clears the selection and closes the panel', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const move = vi.spyOn(cloud.homebrew, 'moveItems');
+    await moving(cloud);
+    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Мастерская Ольхи');
+    await userEvent.selectOptions(screen.getByLabelText('Раздел'), 'Пистоли');
+    await userEvent.click(go());
+    expect(await screen.findByText('Перемещено предметов: 3')).toBeInTheDocument();
+    expect(move).toHaveBeenCalledOnce();
+    expect(move.mock.calls[0]?.[0]).toHaveLength(3);
+    expect(move.mock.calls[0]?.[0].every((r) => r.revision === 1)).toBe(true);
+    expect(move.mock.calls[0]?.slice(1)).toEqual([ALDER, 'hb_sectpistolsaaaaa']);
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Мастерская Ольхи · Пистоли 3' })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Переместить/ })).toBeNull();
+    expect(screen.queryByLabelText('Источник')).toBeNull();
+  });
+
+  it('sends only the items whose place differs, and reads «Перемещаем...» while it runs', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const real = cloud.homebrew.moveItems.bind(cloud.homebrew);
+    let open: () => void = () => undefined;
+    const gate = new Promise<void>((r) => {
+      open = r;
+    });
+    const move = vi.spyOn(cloud.homebrew, 'moveItems').mockImplementationOnce(async (...a) => {
+      await gate;
+      return real(...a);
+    });
+    page('gm1', { cloud });
+    await screen.findByText('4 предмета из 100');
+    for (const name of ['Топор Тлеющих Углей', 'Настой кузнеца']) {
+      await userEvent.click(screen.getByRole('checkbox', { name }));
+    }
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить (2)' }));
+    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Мастерская Ольхи');
+    await userEvent.selectOptions(screen.getByLabelText('Раздел'), 'Холодное оружие');
+    await userEvent.click(go());
+    expect(screen.getByRole('button', { name: 'Перемещаем...' })).toBeDisabled();
+    open();
+    expect(await screen.findByText('Перемещено предметов: 1')).toBeInTheDocument();
+    expect(move.mock.calls[0]?.[0].map((r) => r.id)).toEqual([uuid(512)]);
+  });
+
+  it('names a section and a source deleted on another device under the selects', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container } = await moving(cloud);
+    vi.spyOn(cloud.homebrew, 'moveItems').mockResolvedValue({ ok: false, error: 'gone' });
+    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Мастерская Ольхи');
+    await userEvent.selectOptions(screen.getByLabelText('Раздел'), 'Пистоли');
+    await userEvent.click(go());
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Этого раздела больше нет - его удалили на другом устройстве. Выберите другой раздел.'
+    );
+    expect(screen.getByLabelText('Источник')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await cloud.homebrew.removeBook(ALDER);
+    await userEvent.click(go());
+    expect(
+      await screen.findByText(
+        'Этого источника больше нет - его удалили на другом устройстве. Выберите другой источник.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Настой кузнеца' })).toBeChecked();
+  });
+
+  it.each([
+    [{ ok: false, error: 'conflict' } as const, t.hbMoveChanged],
+    [{ ok: false, error: 'network' } as const, t.hbMoveFailed],
+    [{ ok: false, error: 'refused' } as const, t.hbMoveRefused]
+  ])('says a move answered %o, keeps the selection and reads again', async (answer, text) => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await moving(cloud);
+    vi.spyOn(cloud.homebrew, 'moveItems').mockResolvedValueOnce(answer);
+    const read = vi.spyOn(cloud.homebrew, 'load');
+    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Мастерская Ольхи');
+    await userEvent.click(go());
+    expect(await screen.findByText(text)).toBeInTheDocument();
+    expect(read).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Переместить (3)' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+  });
+
+  /* 300 rows in jsdom under coverage take about 35 s; the bound is the render's, not the move's. */
+  it('moves 300 ticked items in one call', async () => {
+    const cloud = fakeCloud(SEED, 'gm2', { limits: { items: 300 } });
+    await cloud.homebrew.import({
+      books: [
+        { id: uuid(7000), key: 'hb_bigsourceaaaaaaa', content: { ru: 'Склад' }, names: true }
+      ],
+      cards: [],
+      items: Array.from({ length: 300 }, (_, i) => ({
+        id: uuid(7001 + i),
+        key: keyN(i),
+        book: null,
+        content: { kind: 'item' as const, ru: 'Предмет ' + String(i) }
+      })),
+      update: false
+    });
+    const move = vi.spyOn(cloud.homebrew, 'moveItems');
+    page('gm2', { cloud });
+    await screen.findByText('300 предметов из 300');
+    await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить (300)' }));
+    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Склад');
+    await userEvent.click(go());
+    expect(await screen.findByText('Перемещено предметов: 300')).toBeInTheDocument();
+    expect(move).toHaveBeenCalledOnce();
+    expect(move.mock.calls[0]?.[0]).toHaveLength(300);
+  }, 120_000);
+});
+
+describe('the downloads', () => {
+  it('downloads a source, the default source and the ticked items as homebrew files', async () => {
+    const image = fakeImage();
+    const cloud = fakeCloud(SEED, 'gm1');
+    render(App, {
+      env: fakeEnv({
+        cloud,
+        router: memoryRouter('#/homebrew'),
+        dialog: fakeDialog(true),
+        storage: memoryStorage(),
+        clock: fixedClock(Date.UTC(2026, 9, 2, 12)),
+        image
+      })
+    });
+    await screen.findByText('4 предмета из 100');
+    const panel = await sources();
+    const buttons = within(panel).getAllByRole('button', { name: 'Скачать JSON' });
+    expect(buttons).toHaveLength(2);
+    await userEvent.click(buttons[0]!);
+    await userEvent.click(buttons[1]!);
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Скачать JSON (1)' }));
+    await waitFor(() => {
+      expect(image.downloaded.map((d) => d.filename)).toEqual([
+        'Хоумбрю.json',
+        'Мастерская Ольхи.json',
+        'daggerheart-loot-homebrew-2026-10-02.json'
+      ]);
+    });
+    const one = JSON.parse(await image.downloaded[2]!.blob.text()) as {
+      items: { key: string }[];
+    };
+    expect(one.items.map((i) => i.key)).toEqual(['hb_smithpotionaaaaa']);
+  });
+});
+
+describe('a rename in the language that names it', () => {
+  it('writes an English-only source and section in English in the Russian interface', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.homebrew.createBook({
+      id: uuid(7500),
+      key: 'hb_englishonlyaaaaa',
+      content: { en: 'Old Forge', sections: [{ key: 'hb_englishsectaaaaa', en: 'Tongs' }] }
+    });
+    page('gm1', { cloud });
+    const panel = await sources();
+    const row = within(panel).getByText('Old Forge').closest('li')!;
+    await userEvent.click(within(row).getByRole('button', { name: 'Переименовать' }));
+    const box = within(row).getByRole('textbox');
+    await userEvent.clear(box);
+    await userEvent.type(box, 'New Forge');
+    await userEvent.click(within(row).getByRole('button', { name: 'Сохранить' }));
+    await waitFor(async () => {
+      const read = await cloud.homebrew.load();
+      const b = read.ok ? read.books.find((x) => x.key === 'hb_englishonlyaaaaa') : undefined;
+      expect(b?.content).toMatchObject({ en: 'New Forge' });
+      expect(b?.content.ru).toBeUndefined();
+    });
+    const fresh = within(panel).getByText('New Forge').closest('li')!;
+    await userEvent.click(within(fresh).getByRole('button', { name: 'Разделы' }));
+    const sect = within(fresh).getByText('Tongs').closest('li')!;
+    await userEvent.click(within(sect).getByRole('button', { name: 'Переименовать' }));
+    const sbox = within(sect).getByRole('textbox');
+    await userEvent.clear(sbox);
+    await userEvent.type(sbox, 'Pliers');
+    await userEvent.click(within(sect).getByRole('button', { name: 'Сохранить' }));
+    await waitFor(async () => {
+      const read = await cloud.homebrew.load();
+      const b = read.ok ? read.books.find((x) => x.key === 'hb_englishonlyaaaaa') : undefined;
+      expect(b?.content.sections).toEqual([{ key: 'hb_englishsectaaaaa', en: 'Pliers' }]);
+    });
   });
 });

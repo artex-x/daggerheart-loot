@@ -497,6 +497,13 @@ describe('the card form', () => {
       'name',
       'text'
     ]);
+    /* U+180E survives trim() and is still a space of the class homebrew_names_ok holds. */
+    const mongolian = String.fromCharCode(0x180e);
+    const spaced = { name: mongolian, sub: '', text: mongolian, url: '', bookId: null };
+    expect(cardFormProblems('set', spaced, 'ru', null, []).map(cardFieldOf)).toEqual([
+      'name',
+      'text'
+    ]);
     const taken = { name: 'клеймо', sub: '', text: 'Т.', url: 'http://a.test', bookId: null };
     const problems = cardFormProblems('ref', taken, 'ru', null, [card({})]);
     expect(problems).toEqual([

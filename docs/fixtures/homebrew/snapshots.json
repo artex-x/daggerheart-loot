@@ -970,6 +970,29 @@
           }
         }
       }
+    },
+    {
+      "name": "an embedded set card named only U+00A0",
+      "snapshot": {
+        "kind": "item",
+        "ru": "Пряжка Ольхи",
+        "en": "Пряжка Ольхи",
+        "set": "hb_aldersetaaaaaaaa",
+        "id": "hb_relateditemaaaaa",
+        "src": "homebrew",
+        "ende": "",
+        "rud": "",
+        "cards": {
+          "sets": {
+            "hb_aldersetaaaaaaaa": {
+              "en": " ",
+              "ru": " ",
+              "ende": "Бонус.",
+              "rud": "Бонус."
+            }
+          }
+        }
+      }
     }
   ]
 }

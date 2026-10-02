@@ -47,15 +47,16 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     checkbox "Топор Тлеющих Углей" [checked=false]
     button "Топор Тлеющих Углей 800 зол. Ранг 2 · Магическое · Характеристик..." [namelen=198 namehash=83860c79]
     status ""
-  generic ""
-    StaticText "Выбрано 2 позиции · 7 шт."
-    StaticText "Итого: "
-    StaticText "400 зол."
-  button "Снять выделение" [description=Снять выделение]
-  button "Добавить в список" [expanded=false]
-  link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1*2-cc1*5]
-  button "Скопировать"
-  button "Запрос отправлен" [disabled=true]
+  region "Выбранные записи"
+    generic ""
+      StaticText "Выбрано 2 позиции · 7 шт."
+      StaticText "Итого: "
+      StaticText "400 зол."
+    button "Снять выделение" [description=Снять выделение]
+    button "Добавить в список" [expanded=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1*2-cc1*5]
+    button "Скопировать"
+    button "Запрос отправлен" [disabled=true]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -163,15 +164,16 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     checkbox "Ember Axe" [checked=false]
     button "Ember Axe 800 gp Tier 2 · Magic · Spellcast · Melee · d10+2 mag ..." [namelen=171 namehash=48f755cc]
     status ""
-  generic ""
-    StaticText "Selected 2 items · 7 pcs"
-    StaticText "Total: "
-    StaticText "400 gp"
-  button "Clear selection" [description=Clear selection]
-  button "Add to list" [expanded=false]
-  link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1*2-cc1*5]
-  button "Copy"
-  button "Request sent" [disabled=true]
+  region "Selected records"
+    generic ""
+      StaticText "Selected 2 items · 7 pcs"
+      StaticText "Total: "
+      StaticText "400 gp"
+    button "Clear selection" [description=Clear selection]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1*2-cc1*5]
+    button "Copy"
+    button "Request sent" [disabled=true]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

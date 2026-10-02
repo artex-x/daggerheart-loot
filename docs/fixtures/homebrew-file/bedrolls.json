@@ -1,0 +1,133 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "books": [
+    {
+      "key": "hb_campfirerestaaaa",
+      "en": "Campfire Rest",
+      "ru": "Привал у костра",
+      "sections": [
+        {
+          "key": "hb_sectbedrollsaaaa",
+          "en": "Bedrolls",
+          "ru": "Спальные мешки"
+        },
+        {
+          "key": "hb_sectcampgearaaaa",
+          "en": "Camp Gear",
+          "ru": "Снаряжение лагеря"
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "key": "hb_starsleepsetaaaa",
+      "kind": "set",
+      "book": "hb_campfirerestaaaa",
+      "en": "Sleep Under the Stars",
+      "ru": "Сон под звёздами",
+      "ende": "Two pieces of the set: during a long rest, clear an additional Stress.",
+      "rud": "Два предмета комплекта: во время долгого отдыха очистите дополнительный Стресс."
+    },
+    {
+      "key": "hb_reststopruleaaaa",
+      "kind": "ref",
+      "book": "hb_campfirerestaaaa",
+      "en": "Rest Stop",
+      "ru": "Привал",
+      "ensub": "Camp rule",
+      "rusub": "Правило лагеря",
+      "ende": "When the party makes camp, each member may swap one downtime move for another.",
+      "rud": "Когда группа разбивает лагерь, каждый может заменить одно действие отдыха другим.",
+      "url": ""
+    }
+  ],
+  "items": [
+    {
+      "key": "hb_travelrollaaaaaa",
+      "book": "hb_campfirerestaaaa",
+      "section": "hb_sectbedrollsaaaa",
+      "kind": "item",
+      "en": "Traveller's Roll",
+      "ru": "Скатка путника",
+      "ende": "A Premium Bedroll rolled tight with straps: during downtime you clear a Stress.",
+      "rud": "Первоклассный Спальный Мешок, туго скатанный ремнями: во время отдыха вы очищаете Стресс.",
+      "craft": [
+        "hb_trackerrollaaaaa"
+      ],
+      "craft_from": [
+        "ci1"
+      ],
+      "refs": [
+        "hb_reststopruleaaaa"
+      ]
+    },
+    {
+      "key": "hb_trackerrollaaaaa",
+      "book": "hb_campfirerestaaaa",
+      "section": "hb_sectbedrollsaaaa",
+      "kind": "item",
+      "en": "Tracker's Roll",
+      "ru": "Скатка следопыта",
+      "ende": "As the Traveller's Roll; you also wake at the first sound of danger.",
+      "rud": "Как Скатка путника; кроме того, вы просыпаетесь при первом звуке опасности.",
+      "craft": [
+        "hb_wardenrollaaaaaa"
+      ],
+      "set": "hb_starsleepsetaaaa"
+    },
+    {
+      "key": "hb_wardenrollaaaaaa",
+      "book": "hb_campfirerestaaaa",
+      "section": "hb_sectbedrollsaaaa",
+      "kind": "item",
+      "en": "Warden's Roll",
+      "ru": "Скатка стража",
+      "ende": "As the Tracker's Roll; an ally sleeping beside you clears a Stress too.",
+      "rud": "Как Скатка следопыта; союзник, спящий рядом, тоже очищает Стресс.",
+      "refs": [
+        "hb_reststopruleaaaa"
+      ]
+    },
+    {
+      "key": "hb_mosspillowaaaaaa",
+      "book": "hb_campfirerestaaaa",
+      "section": "hb_sectcampgearaaaa",
+      "kind": "item",
+      "en": "Moss Pillow",
+      "ru": "Подушка из мха",
+      "ende": "Whoever sleeps on it dreams of the next day's road.",
+      "rud": "Тому, кто спит на ней, снится завтрашняя дорога.",
+      "set": "hb_starsleepsetaaaa",
+      "refs": [
+        "enrapture"
+      ]
+    },
+    {
+      "key": "hb_campblanketaaaaa",
+      "book": "hb_campfirerestaaaa",
+      "section": "hb_sectcampgearaaaa",
+      "kind": "item",
+      "en": "Camp Blanket",
+      "ru": "Походный плед",
+      "ende": "Keeps you warm in any weather that is not magical.",
+      "rud": "Согревает в любую погоду, если она не волшебная.",
+      "set": "hb_starsleepsetaaaa"
+    },
+    {
+      "key": "hb_emberpotaaaaaaaa",
+      "book": "hb_campfirerestaaaa",
+      "section": "hb_sectcampgearaaaa",
+      "kind": "consumable",
+      "en": "Ember Pot",
+      "ru": "Котелок углей",
+      "ende": "Lights a campfire in any rain, once.",
+      "rud": "Один раз разжигает костёр под любым дождём.",
+      "craft_from": [
+        "dv34"
+      ]
+    }
+  ]
+}

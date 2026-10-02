@@ -1,0 +1,13 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "items": [
+    {
+      "key": "hb_nbspnameaaaaaaaa",
+      "kind": "item",
+      "ru": " ",
+      "rud": "Только неразрывный пробел вместо названия."
+    }
+  ]
+}

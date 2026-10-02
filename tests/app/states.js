@@ -3666,7 +3666,8 @@ const picks = () => ({
 
 /** 58. The ticked lists download as one lists file: two account cards ticked,
  *  «Скачать JSON (2)» saves the dated file of the test build's clock with the
- *  two lists in index order and both notes; the ticks stay. */
+ *  two lists in index order and both notes, version 2 because «Лавка кузнеца»
+ *  refers to the axe, which it carries with its snapshot; the ticks stay. */
 async function ticksDownloadAsOneFile() {
   const at = '58 (the ticked lists download as one lists file): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
@@ -3685,7 +3686,7 @@ async function ticksDownloadAsOneFile() {
   const doc = file ? JSON.parse(Buffer.from(file.base64, 'base64').toString('utf8')) : null;
   ok(
     doc?.format === 'daggerheart-loot/lists' &&
-      doc?.version === 1 &&
+      doc?.version === 2 &&
       doc?.exported_at === '2026-10-01T12:00:00.000Z',
     at + 'the head - ' + JSON.stringify(doc && { ...doc, lists: undefined })
   );
@@ -3702,6 +3703,11 @@ async function ticksDownloadAsOneFile() {
     at + 'ci1 at 2 and 150, q1 with its player note - ' + JSON.stringify({ ci1, q1 })
   );
   ok(shop?.money_mode === 'coin', at + 'no coin money mode on «Лавка кузнеца»');
+  const axe = shop?.entries?.find((e) => e.id === 'hb_emberaxeaaaaaaaa');
+  ok(
+    axe?.source === 'homebrew' && axe?.snapshot?.id === 'hb_emberaxeaaaaaaaa',
+    at + 'the axe is not a homebrew entry with its snapshot - ' + JSON.stringify(axe)
+  );
   ok(
     (doc?.lists ?? []).every((l) => !('id' in l)),
     at + 'a list carries an id - ' + JSON.stringify(doc?.lists)

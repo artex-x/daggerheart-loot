@@ -100,7 +100,8 @@ No release plan owns it; the owner decides which one takes it.
 
 ## Harness parity (no task filed yet; the owner names the release)
 
-Owns: the fake's parity with the database's bounds of one write.
+Owns: the fake's parity with the database's bounds of one write, and the
+browser suites' language runs for a signed-in seed user.
 
 ### D68 - the fake takes more than 5000 entries in one `create` or `add`
 
@@ -114,6 +115,22 @@ Owns: the fake's parity with the database's bounds of one write.
 - **How to verify the fix**: `fake-cloud.test.ts` expects a `create` of
   5001 entries answered as the database answers it, and the export tests in
   `state/app.test.ts` build their long lists another way.
+
+### D89 - the sweep's English run draws gm1's pages in Russian
+
+- **Where**: `tests/app/sweep.js` (the language set through
+  `localStorage`), `app/src/ports/fake-cloud-seed.ts` (gm1's preferences).
+- **What**: the sweep sets the language through `localStorage`, but gm1's
+  seeded preferences (`lang: 'ru'`) replace it on sign-in. So every
+  `as: 'gm1'` entry, the three `#/homebrew` panel entries included, draws
+  Russian in the "en" run too, and "clean at 360 (ru, en)" proves only the
+  Russian pages for those entries.
+- **Why deferred**: found in the review of R7d (2026-10-02); the gap is
+  older than that release, and a change to the harness's language setup
+  touches every signed-in entry and its goldens.
+- **How to verify the fix**: the "en" run of `node tests/app/sweep.js 360`
+  draws gm1's pages in English (the run asserts the page's `lang`
+  attribute for each signed-in entry), and the Russian run is unchanged.
 
 ## A live revoke on the shared page (no task filed yet; the owner names the release)
 
@@ -355,51 +372,24 @@ R7d, R7e, R7f and R7g).
 - **How to verify the fix**: with a shared page open, edit one note; the
   re-read carries no frozen snapshot the page already holds.
 
-## Homebrew files (`persist-7d-homebrew-files`)
+### D90 - `npm run check:db` waits silently on a stack that cannot start
 
-Owns: the homebrew file formats, their import, and the account's data zip.
-
-### D69 - the data zip and the privacy merge steps leave out homebrew
-
-- **Where**: `app/src/state/app.svelte.ts` (`exportData`, `#bundle`);
-  `app/src/lib/dict.ts` (`yourDataHint`); `pages/src/privacy.html` and
-  `pages/src/en/privacy.html` (the paragraph "Если Google или Discord уже
-  занят" and its English twin).
-- **What**: «Скачать мои данные (ZIP)» carries no homebrew item or source
-  and, from the lists release of R7 on, no homebrew list entry, while the
-  hint says the archive holds everything in the account. The privacy
-  pages' merge steps (export, delete the account, load the file into the
-  other one) therefore lose the homebrew for good.
-- **Why deferred**: the owner released R7 first (2026-09-30, "release
-  fast"); the homebrew file formats and their import are R7d's.
-- **How to verify the fix**: the zip of an account with a source, an item
-  and a list holding a reference and a frozen copy loads back into a new
-  account with all of them.
-
-### D72 - a source or section rename writes only the language on screen
-
-- **Where**: the source and section rename in `app/src/state/homebrew.svelte.ts` and
-  `app/src/components/HomebrewSources.svelte`; items avoid it with `editLang`.
-- **What**: a source named only in English and renamed in the Russian
-  interface keeps its old English name, so the English interface shows the
-  old name.
-- **Why deferred**: R7 draws one language per source name; the second
-  language is filled only by a file import (R7d).
-- **How to verify the fix**: rename an English-only source in the Russian
-  interface; the English interface shows the new name too, or the rename
-  asks which language it changes.
-
-### D73 - the database and the library differ on a name of only U+00A0
-
-- **Where**: the name checks in `supabase/migrations/20260930130000_homebrew.sql`
-  (SQL `\S`) and `app/src/lib/homebrew.ts` (`/\S/u`).
-- **What**: a name of only U+00A0, U+2007, U+202F or U+FEFF passes the
-  database and fails the library. Only a direct API write reaches the gap.
-- **Why deferred**: the client is the stricter side; a migration after the
-  test push needs its own review, and a file import (R7d) makes the gap
-  reachable.
-- **How to verify the fix**: one explicit space class on both sides and one
-  fixture case that holds such a name.
+- **Where**: `tests/db/run.mjs` (the `supabase db reset --local` step).
+- **What**: after a host restart on 2026-10-02, Rancher Desktop came up
+  without seven Supabase images (PostgREST, Studio, postgres-meta and
+  others). `db reset` restarted the database and then waited about 20
+  minutes for containers that never started, with no output and the CPU
+  idle; only a manual `npx supabase stop` and `start` (which pulled the
+  images) recovered it.
+- **Why deferred**: found while gating R7d; a change to tooling every
+  later session runs under needs its own plan and review (owner,
+  2026-10-02: paid in the `debt-cleanup` release).
+- **How to verify the fix**: a preflight checks that every container the
+  stack needs is running before the reset and fails within seconds naming
+  the missing one and the `npx supabase stop` / `start` remedy; a timeout
+  of about 5 minutes stops a hung reset with the same advice; both lines
+  join the "FAIL" table in `.claude/README.md`; a test of
+  `tests/db/run.mjs`'s helpers covers both failures.
 
 ## Item links (`persist-9-item-share`)
 

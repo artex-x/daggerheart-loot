@@ -60,15 +60,16 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "59 Кольцо Несокрушимой Решимости Один раз за сессию, когда Масте..." [namelen=166 namehash=5d88a8d7]
     checkbox "Пояс Единства" [checked=false]
     button "60 Пояс Единства Один раз за сессию вы можете потратить 5 Надежд..." [namelen=144 namehash=5ce27726]
-  StaticText "Выбрано 2"
-  button "Снять выделение" [description=Снять выделение]
-  button "Добавить в список" [expanded=true]
-  StaticText "ДОБАВИТЬ В"
-  button "Лавка в порту" [pressed=false]
-  button "Клад дракона" [pressed=false]
-  button "+ Новый список" [pressed=false]
-  link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2]
-  button "Скопировать"
+  region "Выбранные записи"
+    StaticText "Выбрано 2"
+    button "Снять выделение" [description=Снять выделение]
+    button "Добавить в список" [expanded=true]
+    StaticText "ДОБАВИТЬ В"
+    button "Лавка в порту" [pressed=false]
+    button "Клад дракона" [pressed=false]
+    button "+ Новый список" [pressed=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1-ci2]
+    button "Скопировать"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -297,11 +298,12 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     button "59 Ring of Unbreakable Resolve Once per session, when the GM spe..." [namelen=148 namehash=201f0c67]
     checkbox "Belt of Unity" [checked=false]
     button "60 Belt of Unity Once per session, you can spend 5 Hope to lead ..." [namelen=120 namehash=2cbc5f0e]
-  StaticText "Selected 2"
-  button "Clear selection" [description=Clear selection]
-  button "Add to list" [expanded=false]
-  link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2]
-  button "Copy"
+  region "Selected records"
+    StaticText "Selected 2"
+    button "Clear selection" [description=Clear selection]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1-ci2]
+    button "Copy"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

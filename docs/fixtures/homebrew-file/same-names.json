@@ -1,0 +1,51 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "items": [
+    {
+      "key": "hb_flintlockcopyaaa",
+      "kind": "equip",
+      "en": "Flintlock Pistol",
+      "ru": "Кремнёвый пистоль",
+      "ende": "Loud: everyone within Far range hears the shot.",
+      "rud": "Громкий: выстрел слышат все в пределах Далёкой дистанции.",
+      "eq": {
+        "t": "weapon",
+        "tier": 1,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d8+1",
+        "dt": "phy",
+        "bu": 1
+      }
+    },
+    {
+      "key": "hb_doublecopyaaaaaa",
+      "kind": "equip",
+      "en": "Double-Barrelled Pistol",
+      "ru": "Двуствольный пистоль",
+      "ende": "Loud. Fire both barrels at once: roll damage twice and take the higher.",
+      "rud": "Громкий. Выстрел из обоих стволов: бросьте урон дважды и выберите больший.",
+      "eq": {
+        "t": "weapon",
+        "tier": 2,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d10+2",
+        "dt": "phy",
+        "bu": 1
+      }
+    },
+    {
+      "key": "hb_cleaningkitaaaaa",
+      "kind": "item",
+      "en": "Cleaning Kit",
+      "ru": "Набор для чистки",
+      "ende": "Cleaning a firearm during downtime gives +1 to its next attack roll.",
+      "rud": "Чистка огнестрельного оружия во время отдыха даёт +1 к его следующему Броску Атаки."
+    }
+  ]
+}

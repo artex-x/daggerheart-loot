@@ -258,37 +258,57 @@ across.
   one delete does, the ticks clear, and the toast «Удалено списков: 2» has no
   «Вернуть». A removal the server refuses draws that list again with one
   «Изменение не сохранилось...» toast; the others stay deleted.
-- Signed in, with the account lists read, the «Новый список» panel has
-  «Импорт из файла» / "Import from file" under the name row, a toggle that
-  opens the field «Импорт из файла JSON» / "Import from a JSON file" in the
-  same panel: «Выбрать файл...», the chosen file's name, and a hint that links
-  the published schema (`schema/import-v1.json`) and `llms.txt`, relative, in
-  a new tab. The toggle and «Отмена» fold the field and forget the file, and
-  the focus returns to the toggle. A file of more than 5 MB is refused before
-  it is read; a file that starts with a zip's signature is read as the data
-  zip ("Account and browser lists", "Exports"), anything else as UTF-8 text.
-  A file the app refuses whole says why in one alert line: not JSON, not a
-  lists file, another version or none, no lists, not a data archive, a zip
-  with no `lists.json`, with two at one depth, or compressed by another
-  program. A file with field errors draws «В файле ошибки - ничего не
-  импортировано. Исправьте их и выберите файл снова.», the file's own errors
-  in the alert box, then one block per list with errors, headed «N. <name>»
-  (cut to 40 characters), each line naming the entry's position and record
-  where it has one, the field, the reason and the JSON path; at most ten lines
-  a list, then «...и ещё N в этом списке», and past 50 errors «...и ещё N
-  ошибок». A clean file draws the preview «Списков: 2, позиций: 3.» with
-  «Пропущено позиций: 2.» when entries were skipped, and a report grouped by
-  list when a list has a skip or a name the account holds: an unknown id and
-  a repeated id are skipped and named with their positions, and a name the
-  account holds is allowed and noted («...появится второй»). A zip's other
+- Signed in, with the account lists read, the «Новый список» panel has «Импорт
+  из файла» / "Import from file" under the name row, a toggle that opens the
+  field «Импорт из файла JSON» / "Import from a JSON file" in the same panel:
+  «Выбрать файл...», the chosen file's name, and a hint that links the published
+  schema (`schema/import-v1.json`) and `llms.txt`, relative, in a new tab. The
+  toggle and «Отмена» fold the field and forget the file, and the focus returns
+  to the toggle. A file of more than 5 MB is refused before it is read; a file
+  that starts with a zip's signature is read as the data zip ("Account and
+  browser lists", "Exports"), anything else as UTF-8 text. A zip of more than 10
+  MB is refused before it is read, «Архив больше 10 МБ.»; a zip's chosen data
+  file of more than 5 MB reads «Файл больше 5 МБ.». The import reads versions 1
+  and 2: a version 2 file's homebrew entry imports as a reference when the
+  account holds its key and as a frozen copy of its snapshot otherwise
+  (`CONTRACTS.md` section 4), is never skipped as unknown, and its own refusals
+  read «snapshot: не копия предмета - сверьте поля с описанием в llms.txt» and
+  «id «...»: не ключ своего предмета - hb_ и 16 знаков a-z, 2-7». While the
+  account's own items load, a version 2 file with a homebrew entry draws «Ваши
+  предметы ещё загружаются - повторите через секунду.» in place of the preview,
+  and the preview once they are read. When the account lacks some of its own
+  items, the preview says «Своих предметов, которых нет в аккаунте: 2 - они
+  сохранятся копиями. Чтобы они остались живыми, сначала импортируйте предметы
+  на странице «Мои предметы».». A snapshot without a text the schema requires
+  (the record's four, a set card's four, a rule card's seven) is refused as not
+  a copy. A file the app refuses whole says why in one alert line: not JSON, not
+  a lists file, another version or none, no lists, not a data archive, a zip
+  with no `lists.json`, with two at one depth, or compressed by another program.
+  A file with field errors draws «В файле ошибки - ничего не импортировано.
+  Исправьте их и выберите файл снова.», the file's own errors in the alert box,
+  then one block per list with errors, headed «N. <name>» (cut to 40
+  characters), each line naming the entry's position and record where it has
+  one, the field, the reason and the JSON path; at most ten lines a list, then
+  «...и ещё N в этом списке», and past 50 errors «...и ещё N ошибок». A clean
+  file draws the preview «Списков: 2, позиций: 3.» with «Пропущено позиций: 2.»
+  when entries were skipped, and a report grouped by list when a list has a skip
+  or a name the account holds: an unknown id and a repeated id are skipped and
+  named with their positions, and a name the account holds is allowed and noted
+  («...появится второй»). The report draws the first 20 list blocks, then «и ещё
+  N списков» / «свернуть» (rule 12); the skips are grouped by list once, so 1000
+  lists of skips draw at once. A zip's `homebrew.json` draws one line, «Файл
+  homebrew.json из архива импортируется на странице «Мои предметы».»; its other
   files are named under the preview (the first five, then «и ещё N»), and its
   lists import. «Импортировать (N)» and «Отмена» are disabled while the import
   runs; success folds the field, draws the new lists first and toasts
-  «Импортировано списков: N»; a limit toasts the limit text, a statement
-  timeout «Файл слишком большой для одного импорта: разделите его на
-  несколько.», anything else «Не получилось. Проверьте соединение и попробуйте
-  ещё раз.», and the
-  preview stays for another press, which sends the same ids.
+  «Импортировано списков: N»; a limit toasts the limit text, a statement timeout
+  «Файл слишком большой для одного импорта: разделите его на несколько.», a
+  refusal by the server «Сервер не принял файл: данные в аккаунте изменились.
+  Нажмите «Импортировать» ещё раз.» (an own item a reference names was deleted
+  after the preview; the account's items are read again), anything else «Не
+  получилось. Проверьте соединение и попробуйте ещё раз.», and the preview stays
+  for another press, which sends the same ids; a homebrew entry whose item the
+  account no longer holds is sent as a frozen copy of the file's snapshot then.
 - Optional quantity and price per entry; both travel into copied text. The
   price is the price of one unit: after a count over 1 the copied line reads
   "×2 — по 7 мешков 5 горстей" / "×2 — 7 bags 5 handfuls each", in the
@@ -332,7 +352,8 @@ across.
   region is mounted while nothing is ticked, so the first tick is announced
   too. A table
   or search selection has no taken count and no total, and its bar reads
-  "Выбрано N".
+  "Выбрано N". The bar is a region named «Выбранные записи» / "Selected
+  records": it sits after the footer, outside every other landmark.
 - A typed quantity is held to 99, the most a list link carries, and a
   negative one to none; the field then shows the held value.
 - A list has its own roll button, folded by default and opened on its
@@ -703,25 +724,35 @@ browser lists writable after the date.
   be undone.
 - **Exports**: an account's lists leave it only as the reader's own file.
   «Скачать JSON (N)» on the index's strip and «Скачать JSON» on an account
-  list's page download a lists file, `import-v1`, of the ticked lists in the
-  index's order or of the one list, both notes of every list and entry
-  included: `<name>.json` for one list, else
-  `daggerheart-loot-lists-<YYYY-MM-DD>.json` (the local day). «Скачать мои
-  данные (ZIP)» on `#/account` downloads `daggerheart-loot-data-<YYYY-MM-DD>.zip`,
-  a store-only zip whose root holds `lists.json`, the same lists file of every
-  account list (`CONTRACTS.md` section 4). An export has no toast of its own,
-  and a failed download toasts «Не получилось. Проверьте соединение и
-  попробуйте ещё раз.». A file
-  past the import's bounds - more than 1000 lists, or more than 5000 entries
-  in one list - still downloads whole, and one toast says «Этот файл нельзя
-  импортировать целиком.» with «В нём больше 1000 списков: экспортируйте их
-  частями.» and «В списках «Склад» позиций больше 5000: разделите такие
-  списки.» as they apply. The lists file carries catalog records only: an
-  own item or a frozen copy is left out, and the toast counts them, «%n свой
-  предмет не попал в файл: файл списков пока переносит только предметы из
-  книг.» alone, or after the bounds text. A list moved from this browser with more than a
-  hundred entries imports only into an account whose entry limit holds it:
-  the account's limit refuses it, not the file.
+  list's page download a lists file of the ticked lists in the index's order or
+  of the one list, both notes of every list and entry included: `<name>.json`
+  for one list, else `daggerheart-loot-lists-<YYYY-MM-DD>.json` (the local day).
+  The file is `import-v1`, or `import-v2` when it holds an own item or a frozen
+  copy: a reference is written with the live item as its snapshot, a frozen copy
+  with its own (`CONTRACTS.md` section 4). «Скачать мои данные (ZIP)» on
+  `#/account` downloads `daggerheart-loot-data-<YYYY-MM-DD>.zip`, a store-only
+  zip whose root holds `lists.json`, the same lists file of every account list,
+  and, when the account holds a source, a card or an own item, `homebrew.json`,
+  the account's whole homebrew file ("Homebrew"). A download that writes own
+  items waits for them: while they load, or after their read failed, it toasts
+  «Ваши предметы ещё загружаются - повторите через секунду.» and downloads
+  nothing. An export has no toast of its own, and a failed download toasts «Не
+  получилось. Проверьте соединение и попробуйте ещё раз.». A file past the
+  import's bounds - more than 1000 lists, or more than 5000 entries in one list
+  - still downloads whole, and one toast says «Этот файл нельзя импортировать
+  целиком.» with «В нём больше 1000 списков: экспортируйте их частями.» and «В
+  списках «Склад» позиций больше 5000: разделите такие списки.» as they apply. A
+  lists file of more than 5 MB in UTF-8, alone or as the zip's `lists.json`,
+  adds «Он больше 5 МБ: экспортируйте списки частями.» after the first sentence;
+  the zip's `homebrew.json` of more than 5 MB says «Файл homebrew.json больше 5
+  МБ: скачайте источники по одному на странице «Мои предметы».». The import
+  refuses either file past 5 MB, so the toast says it at download time, before
+  an account delete. An own item the account no longer holds and no frozen copy
+  names (deleted on another device before the lists were read again) is left
+  out, and the toast counts it, «%n свой предмет не попал в файл: его больше нет
+  в аккаунте.» alone, or after the bounds text. A list moved from this browser
+  with more than a hundred entries imports only into an account whose entry
+  limit holds it: the account's limit refuses it, not the file.
 - **Import**: «Импорт из файла» ("Lists") adds the file's lists to the
   account as new lists, every list and entry with a new id, all or nothing in
   one call: a refused call leaves the account as it was. The write buffer is
@@ -1001,35 +1032,36 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 (`docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md`).
 
 - **`#/homebrew`**: the heading «Мои предметы» with its lead line (search finds
-  the items with the catalog, they appear in the tables and go into lists), then the
-  count «3 предмета из 100» / "3 items of 100" (the limit from the database,
-  an override's own number; «3 предмета» when the limit read failed),
-  the «Источники» and «Карты» folds, «Новый предмет» (to `#/homebrew/new`)
-  and the items as table rows under one heading per source and section:
-  each named source by its creation, its sections in the author's order,
-  then its items with no section under the source name, «Хоумбрю» /
-  "Homebrew" last, empty headings left out, the items by name. A row opens
-  the editor; its tick
-  feeds the selection bar (add to a list, print, copy) and the strip above
-  the rows, whose «Удалить (N)» asks «Удалить предметы (N)? Они пропадут и
-  из ваших списков. Отменить удаление нельзя.». The delete sends one request
-  per item and stops at the first failure: while it runs the button is
-  disabled, a status line under the strip counts «Удаляем предметы: 12 из 40»
-  up, and a second press sends nothing; then the toast «Удалено предметов:
-  N», or «Не получилось удалить. Проверьте соединение и попробуйте ещё
-  раз.». No items: «Своих предметов пока нет - создайте первый выше.». Signed out: the heading and the sign-in prompt
-  «Войдите, чтобы создавать свои предметы.». A failed read: «Не получилось
-  загрузить ваши предметы.» and a small «Повторить». With no sign-in configured the
-  route draws the not-found page and keeps the address. The page cannot be
-  pinned.
+  the items with the catalog, they appear in the tables and go into lists), then
+  the count «3 предмета из 100» / "3 items of 100" (the limit from the database,
+  an override's own number; «3 предмета» when the limit read failed), the
+  «Источники» and «Карты» folds, «Новый предмет» (to `#/homebrew/new`) and
+  «Импорт предметов» after it ("Import"), and the items as table rows under one
+  heading per source and section: each named source by its creation, its
+  sections in the author's order, then its items with no section under the
+  source name, «Хоумбрю» / "Homebrew" last, empty headings left out, the items
+  by name. A row opens the editor; its tick feeds the selection bar (add to a
+  list, print, copy) and the strip above the rows: «Переместить (N)» ("The bulk
+  move"), «Скачать JSON (N)» ("Downloads") and «Удалить (N)», which asks
+  «Удалить предметы (N)? Они пропадут и из ваших списков. Отменить удаление
+  нельзя.». The delete sends one request per item and stops at the first
+  failure: while it runs the button is disabled, a status line under the strip
+  counts «Удаляем предметы: 12 из 40» up, and a second press sends nothing; then
+  the toast «Удалено предметов: N», or «Не получилось удалить. Проверьте
+  соединение и попробуйте ещё раз.». No items: «Своих предметов пока нет -
+  создайте первый выше или импортируйте файл.». Signed out: the heading and the
+  sign-in prompt «Войдите, чтобы создавать свои предметы.». A failed read: «Не
+  получилось загрузить ваши предметы.» and a small «Повторить». With no sign-in
+  configured the route draws the not-found page and keeps the address. The page
+  cannot be pinned.
 - **Sources and sections**: the fold «Источники» / "Sources", closed on each
   visit («Источники · 2 источника из 20» with the source limit known, «0
   источников из 20» too; «Источники · 2 источника» with none, nothing at 0),
   lists them. The default source «Хоумбрю» holds every item
-  with no named source; its row shows only the count. A named source shows
-  its name in the language on screen (the other language when it has
-  none), «N предметов · M разделов из 30» (the sections only from one),
-  «Разделы», «Переименовать» and
+  with no named source; its row shows the count and «Скачать JSON». A named
+  source shows its name in the language on screen (the other language when
+  it has none), «N предметов · M разделов из 30» (the sections only from
+  one), «Разделы», «Переименовать», «Скачать JSON» and
   «Удалить». «Разделы» opens its sections, each with its count,
   «Переименовать» and «Удалить», then «Без раздела» with its count, then
   «Новый раздел» with the plus icon. «Новый источник» with the plus icon at
@@ -1046,7 +1078,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   and a lost network («Не получилось создать. ...» / «Не получилось
   сохранить. ...»). A create toasts «Источник «%s» создан» / «Раздел «%s»
   создан»; a rename is silent. A refusal draws under the field and keeps the typed name. A rename
-  writes the language on screen and keeps the other one. Deleting a source
+  writes the language that names the source or section - the one language
+  that names it, else the language on screen - and keeps the other one: an
+  English-only source renamed in the Russian interface stays English. Deleting a source
   asks «Удалить источник «%s»? Его N предметов останутся в «Хоумбрю».
   Отменить удаление нельзя.», and its items move to «Хоумбрю»; deleting a
   section asks «Удалить раздел «%s»? Его N предметов останутся в источнике
@@ -1262,8 +1296,93 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   ignored. While the topic is down a homebrew page (`#/homebrew`, the editor,
   an own `#/i/<key>` and `#/tables/homebrew`) reads again every 45 s,
   and after a failed first read on every tick.
-- «Скачать мои данные (ZIP)» and the privacy pages' merge steps do not carry
-  homebrew items and sources yet (`DEBT.md` D69).
+- **Import** (m15): «Импорт предметов» / "Import items", a toggle with a caret,
+  opens the field «Импорт предметов из файла JSON» in a panel under the row; its
+  code loads on the first open as its own chunk, with «Загружаем...» meanwhile
+  and «Не получилось загрузить импорт.» with a small «Повторить» after a failed
+  load. The field takes a `homebrew-v1` file or the data zip's `homebrew.json`
+  (the file field, the 5 MB bound, the zip and the text rules of «Импорт из
+  файла», "Lists"); its hint links `schema/homebrew-v1.json` and `llms.txt`. A
+  zip's `lists.json` draws «Файл lists.json из архива импортируется на странице
+  «Мои списки».». A file the app refuses whole says why in one alert line (not
+  JSON, not an items file, another version or none, nothing in it, not a data
+  archive, a zip with no `homebrew.json`, with two at one depth, or compressed
+  by another program); a file with errors draws «В файле ошибки - ничего не
+  импортировано...» and one line per error with its object («Предмет 3,
+  «Мушкет»»), the field, the reason and the path (`items[2].eq.dmg`), the first
+  50, then «...и ещё N ошибок». A clean file draws «Источников: 1, разделов: 2,
+  карт: 2, предметов: 3.», «Предметов и карт, которые уже есть в аккаунте: N.»
+  when any key is held, and «Предметов с таким же названием уже есть: N - они
+  добавятся ещё раз» for new keys whose name an own item has: the key is the
+  only identity, a name never matches. Then «Куда положить предметы»: one row
+  per source of the file, then «Без источника» for the items and cards with
+  none, each row's name and size the label of its select. The options: «В
+  «Хоумбрю»», «В «<source>»» for each held source by creation, the row's own
+  «Новый источник «<name>»» (« 2», « 3», ... when the name is held), on «Без
+  источника» «В «<name>» (новый)» for each source the file makes, and «+ Новый
+  источник...», which shows «Название нового источника» (at most 80; an empty or
+  held name is refused on the press). Default: the source of the same key, then
+  one of the same name (either language, no case), then the new source; «Без
+  источника» goes to «Хоумбрю». A line under the row says what the press does
+  (the source is created with N sections; the key matches; a source of the name
+  exists with another key; N sections are added; «Хоумбрю» has no sections).
+  Sections join by key, then by name, else are added; a merge past 30 sections
+  reads «В «<name>» будет больше 30 разделов - выберите другой источник.» and
+  the press sends nothing. Past 20 rows the rest fold behind «и ещё N
+  источников» / «свернуть». When any key is held, «Пропустить» (default) or
+  «Обновить» for the held items, cards and sources, with a line that says what
+  each does (a file whose only held keys are sources: «Названия существующих
+  источников останутся как есть; новые разделы добавятся.» or «...заменятся
+  данными из файла; ...»); «Обновить» asks «Обновить существующие предметы и
+  карты (N)? Их текст и характеристики заменятся данными из файла. Отменить
+  нельзя.». Notes under the rows name a relation that names nothing anywhere
+  (kept, draws nothing) and a held card of the other kind (skipped), the first
+  ten. «Импортировать (N)» (the file's items and cards) sends one call, every
+  row or none; its ids and keys are made once per file, so a retry sends the
+  same rows. Success toasts «Импортировано предметов: N» with «, обновлено: N»,
+  «, пропущено: N», «, новых источников: N», «, новых карт: N» when not zero,
+  folds the panel and reads the items again; a limit toasts its text, a
+  statement timeout «Файл слишком большой для одного импорта: разделите его на
+  несколько.», a refusal «Сервер не принял файл. Обновите страницу и выберите
+  файл снова.», a lost network «Не получилось импортировать. Проверьте
+  соединение и попробуйте ещё раз.»; the preview stays. Both buttons and the
+  toggle are disabled while the call runs; «Отмена» folds the panel, drops the
+  file and focuses the toggle. A retry after a lost answer ends with the same
+  account (held keys then), only the counts differ.
+- **The bulk move** (m24): «Переместить (N)», a toggle with a caret first in
+  the strip (the list page's «Цены» is the sibling; the owner's «Переместить...»
+  takes the caret for the ellipsis), opens a panel in the strip: «Источник»
+  («Хоумбрю», then the named sources by creation) and, for a named source,
+  «Раздел» («Без раздела», then its sections; a source change resets it),
+  then «Переместить». It sends only the ticked items whose place differs, in
+  one call with the revision of each; none differs: the button is disabled
+  with «Отмеченные предметы уже здесь.». While it runs it reads
+  «Перемещаем...». Success toasts «Перемещено предметов: N», clears the
+  selection and closes the panel; every item keeps its key, so list
+  references stay live. A source or section deleted on another device draws
+  «Этого источника больше нет - его удалили на другом устройстве. Выберите
+  другой источник.» / the section's twin under the selects; an item changed
+  on another device toasts «Предметы изменили на другом устройстве. Данные
+  обновлены - повторите.», a lost network «Не получилось переместить.
+  Проверьте соединение и попробуйте ещё раз.», a refusal (a timeout
+  included) «Сервер не принял перемещение. Обновите страницу и попробуйте
+  ещё раз.». Every answer reads the items again; a failure keeps the
+  selection and the panel, and a retry sends the revisions of that read.
+- **Downloads**: «Скачать JSON» on a source's row downloads that source, its
+  items and the own cards that belong to it or that its items name, as
+  `<source name>.json` (the name in the language on screen, the lists' rule
+  for unsafe characters; «Хоумбрю.json» for the default source);
+  «Скачать JSON (N)» in the strip downloads the ticked items, their sources
+  and the cards they name as `daggerheart-loot-homebrew-<YYYY-MM-DD>.json`.
+  Each is a `homebrew-v1` file (`CONTRACTS.md` section 4) whose items keep
+  only a section their source holds. While the items load, or after their
+  read failed, a download toasts «Ваши предметы ещё загружаются - повторите
+  через секунду.»; a failed download or a chunk that did not load toasts «Не
+  получилось. Проверьте соединение и попробуйте ещё раз.».
+- **Moving to another account**: the zip of «Скачать мои данные (ZIP)» loads
+  back in two presses, its `homebrew.json` on «Мои предметы» first, then its
+  `lists.json` on «Мои списки», so the lists keep live references
+  (`docs/decisions/2026-10-02-a-lists-file-is-version-2-only-when-it-holds-homebrew.md`).
 
 ## Print
 
@@ -1418,9 +1537,11 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   connected, «Отключить»; a missing one says «не подключён» and offers
   «Подключить <provider>»; with exactly one connected, a hint says it cannot
   be disconnected until another is connected; «Ваши данные» / "Your data" -
-  the hint «Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём
-  файл lists.json с вашими списками. Архив можно импортировать в другой
-  аккаунт на странице «Мои списки»: за один раз - до 1000 списков.» and «Скачать
+  the hint «Всё, что хранится в аккаунте, одним архивом ZIP: файл lists.json
+  со списками и, если есть свои предметы, homebrew.json с ними, их
+  источниками и картами. Чтобы перенести всё в другой аккаунт, импортируйте
+  архив сначала на странице «Мои предметы», затем на странице «Мои списки»:
+  за один раз - до 1000 списков и до 1000 своих предметов.» and «Скачать
   мои данные (ZIP)» ("Account
   and browser lists", "Exports"), disabled until the account's lists are
   read and while its zip is built, with «Не получилось загрузить списки
@@ -1630,7 +1751,10 @@ Each rule keeps its number: a review cites it by number.
   «Мои списки» / "My lists".
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>
-  «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent.
+  «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent. A bulk write
+  says «<Причастие> предметов: N» / "Items <verb>: N" («Удалено предметов:
+  N», «Импортировано предметов: N», «Перемещено предметов: N»), an import
+  adding its other counts after a comma when not zero.
 - **6. Load states**: one `LoadState`: «Загружаем...» / "Loading..."
   (`role="status"`); a failure line (`role="alert"`) with «Повторить» /
   "Retry": primary where the failure replaces the page and its title says so
@@ -1646,17 +1770,25 @@ Each rule keeps its number: a review cites it by number.
   the row «Свой предмет» / "Own item" after an account list's entries (plus
   icon), whose panel's submit reads «Добавить в список» / "Add to list":
   one press makes the item and adds it to the list
-  (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`).
+  (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`);
+  and the homebrew import's «Куда» option «Новый источник «<name>»», which
+  names the source the press makes from the file, so it carries the name and
+  no «+» (its custom option is the rule's «+ Новый источник...»).
 - **9. The primary action** is the first control under the lead, before any
   management panel. Departures: `#/homebrew` keeps «Источники» and «Карты»
-  above «Новый предмет» (owner, 2026-10-01); an account list's page makes
-  an own item from the row after its entries.
+  above «Новый предмет» (owner, 2026-10-01), with «Импорт предметов» after
+  it; an account list's page makes an own item from the row after its
+  entries.
 - **10. Undo**: a removal the app can write back offers «Вернуть» / "Undo"
   in its toast; a server delete that cannot be undone asks the browser's
-  confirm first and offers no undo.
+  confirm first and offers no undo. The homebrew import's «Обновить» asks
+  too and ends «Отменить нельзя.» / "This cannot be undone.", not the
+  delete confirms' words, since nothing is deleted.
 - **11. Cancel and close**: «Отмена» / "Cancel" discards what was typed;
   «Закрыть» / "Close" folds a panel and keeps what it holds; a read-only
-  panel or dialog says «Закрыть».
+  panel or dialog says «Закрыть». A toggle with a caret folds its panel the
+  same way: the homebrew import's toggle drops the file as «Отмена» does,
+  the bulk move's keeps the chosen place, as the list page's «Цены».
 - **12. Folds**: a fold that names a group keeps its name and turns its
   caret («Решённые в этот раз (2)», «Источники · ...»); a fold that shows
   the rest of a cut list reads «и ещё N ...» / "and N more ..." closed and

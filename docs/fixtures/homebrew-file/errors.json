@@ -1,0 +1,94 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "items": [
+    {
+      "key": "hb_filleraaaaaaaaaa",
+      "kind": "item",
+      "ru": "Безделушка 1",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_filleraaaaaaaaab",
+      "kind": "item",
+      "ru": "Безделушка 2",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_musketaaaaaaaaaa",
+      "kind": "equip",
+      "ru": "Мушкет",
+      "rud": "Длинный ствол, долгая перезарядка.",
+      "eq": {
+        "t": "weapon",
+        "tier": 1,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "2d8",
+        "dt": "phy",
+        "bu": 2
+      }
+    },
+    {
+      "key": "hb_filleraaaaaaaaad",
+      "kind": "item",
+      "ru": "Безделушка 4",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_filleraaaaaaaaae",
+      "kind": "item",
+      "ru": "Безделушка 5",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_filleraaaaaaaaaf",
+      "kind": "item",
+      "ru": "Безделушка 6",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_filleraaaaaaaaag",
+      "kind": "item",
+      "rud": "Описание без названия."
+    },
+    {
+      "key": "hb_filleraaaaaaaaah",
+      "kind": "item",
+      "ru": "Безделушка 8",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_filleraaaaaaaaai",
+      "kind": "item",
+      "ru": "Безделушка 9",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_filleraaaaaaaaaj",
+      "kind": "item",
+      "ru": "Безделушка 10",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_filleraaaaaaaaak",
+      "kind": "item",
+      "ru": "Безделушка 11",
+      "rud": "Ничем не примечательна."
+    },
+    {
+      "key": "hb_filleraaaaaaaaal",
+      "kind": "item",
+      "ru": "Безделушка 12",
+      "rud": "Ничем не примечательна.",
+      "refs": [
+        "enrapture",
+        "slow",
+        "vampire",
+        "hb_landmarkruleaaaa"
+      ]
+    }
+  ]
+}

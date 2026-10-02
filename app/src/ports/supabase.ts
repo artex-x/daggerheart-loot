@@ -33,6 +33,8 @@ import type {
   AuthResult,
   CloudPort,
   EventsPort,
+  HomebrewImport,
+  HomebrewMoved,
   HomebrewRepository,
   HomebrewSaved,
   Identity,
@@ -270,6 +272,41 @@ const BOOK_SELECT = 'id,key,content,revision,created_at,updated_at';
 const ITEM_SELECT = 'id,key,book_id,content,revision,created_at,updated_at';
 const CARD_SELECT = 'id,key,kind,book_id,content,revision,created_at,updated_at';
 type HomebrewTable = 'homebrew_books' | 'homebrew_items' | 'homebrew_cards';
+/* `import_homebrew`'s seven counts, each a whole number; a key past them is ignored, so a
+   later migration that adds a count never reads a committed import as refused. */
+const IMPORTED = [
+  'books_created',
+  'cards_created',
+  'cards_updated',
+  'cards_skipped',
+  'items_created',
+  'items_updated',
+  'items_skipped'
+] as const;
+
+function importedOf(v: unknown): Extract<HomebrewImport, { ok: true }> | null {
+  if (v === null || typeof v !== 'object' || Array.isArray(v)) return null;
+  const o = v as Record<string, unknown>;
+  const counts = {} as Record<(typeof IMPORTED)[number], number>;
+  for (const k of IMPORTED) {
+    const n = o[k];
+    if (typeof n !== 'number' || !Number.isInteger(n) || n < 0) return null;
+    counts[k] = n;
+  }
+  return { ok: true, counts };
+}
+
+/* A move's own refusals first: PostgREST answers P0001 and P0002 with HTTP 4xx or 500,
+   and a timeout through `writeOf` would read as `network`, which repeats on every press. */
+function movedOf(answer: Answer): HomebrewMoved {
+  const { error } = answer;
+  if (error?.message?.startsWith('move_homebrew_items: conflict')) {
+    return { ok: false, error: 'conflict' };
+  }
+  if (error?.code === 'P0002') return { ok: false, error: 'gone' };
+  if (error?.code === '57014') return { ok: false, error: 'refused' };
+  return writeOf(answer);
+}
 
 type RequestFailure =
   | { ok: false; error: 'gone' | 'stale' | 'decided' | 'expired' }
@@ -891,7 +928,47 @@ export function createCloud(
         { content: patch.content, book_id: patch.book_id },
         revision
       ),
-    removeCard: (id) => homebrewRemove('homebrew_cards', id)
+    removeCard: (id) => homebrewRemove('homebrew_cards', id),
+    async import(rows) {
+      try {
+        const answer = await timed(
+          (signal) =>
+            client
+              .rpc('import_homebrew', {
+                p_books: rows.books,
+                p_cards: rows.cards,
+                p_items: rows.items,
+                p_update: rows.update
+              })
+              .abortSignal(signal),
+          IMPORT_TIMEOUT_MS
+        );
+        if (answer.error?.code === '57014')
+          return { ok: false, error: 'refused', reason: 'tooSlow' };
+        const failed = writeOf(answer);
+        if (!failed.ok) return failed;
+        return importedOf(answer.data) ?? { ok: false, error: 'refused' };
+      } catch {
+        return { ok: false, error: 'network' };
+      }
+    },
+    async moveItems(items, bookId, section) {
+      try {
+        return movedOf(
+          await timed((signal) =>
+            client
+              .rpc('move_homebrew_items', {
+                p_items: items,
+                p_book: bookId,
+                p_section: section
+              })
+              .abortSignal(signal)
+          )
+        );
+      } catch {
+        return NETWORK;
+      }
+    }
   };
   return { auth, prefs, lists, shares, events, requests, homebrew };
 }

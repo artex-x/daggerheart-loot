@@ -1,0 +1,613 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "items": [
+    {
+      "key": "hb_foundaaaaaaaaaaa",
+      "kind": "item",
+      "ru": "Находка 1",
+      "en": "Find 1"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaab",
+      "kind": "item",
+      "ru": "Находка 2",
+      "en": "Find 2"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaac",
+      "kind": "item",
+      "ru": "Находка 3",
+      "en": "Find 3"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaad",
+      "kind": "item",
+      "ru": "Находка 4",
+      "en": "Find 4"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaae",
+      "kind": "item",
+      "ru": "Находка 5",
+      "en": "Find 5"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaaf",
+      "kind": "item",
+      "ru": "Находка 6",
+      "en": "Find 6"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaag",
+      "kind": "item",
+      "ru": "Находка 7",
+      "en": "Find 7"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaah",
+      "kind": "item",
+      "ru": "Находка 8",
+      "en": "Find 8"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaai",
+      "kind": "item",
+      "ru": "Находка 9",
+      "en": "Find 9"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaaj",
+      "kind": "item",
+      "ru": "Находка 10",
+      "en": "Find 10"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaak",
+      "kind": "item",
+      "ru": "Находка 11",
+      "en": "Find 11"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaal",
+      "kind": "item",
+      "ru": "Находка 12",
+      "en": "Find 12"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaam",
+      "kind": "item",
+      "ru": "Находка 13",
+      "en": "Find 13"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaan",
+      "kind": "item",
+      "ru": "Находка 14",
+      "en": "Find 14"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaao",
+      "kind": "item",
+      "ru": "Находка 15",
+      "en": "Find 15"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaap",
+      "kind": "item",
+      "ru": "Находка 16",
+      "en": "Find 16"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaaq",
+      "kind": "item",
+      "ru": "Находка 17",
+      "en": "Find 17"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaar",
+      "kind": "item",
+      "ru": "Находка 18",
+      "en": "Find 18"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaas",
+      "kind": "item",
+      "ru": "Находка 19",
+      "en": "Find 19"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaat",
+      "kind": "item",
+      "ru": "Находка 20",
+      "en": "Find 20"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaau",
+      "kind": "item",
+      "ru": "Находка 21",
+      "en": "Find 21"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaav",
+      "kind": "item",
+      "ru": "Находка 22",
+      "en": "Find 22"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaaw",
+      "kind": "item",
+      "ru": "Находка 23",
+      "en": "Find 23"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaax",
+      "kind": "item",
+      "ru": "Находка 24",
+      "en": "Find 24"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaay",
+      "kind": "item",
+      "ru": "Находка 25",
+      "en": "Find 25"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaaz",
+      "kind": "item",
+      "ru": "Находка 26",
+      "en": "Find 26"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaa2",
+      "kind": "item",
+      "ru": "Находка 27",
+      "en": "Find 27"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaa3",
+      "kind": "item",
+      "ru": "Находка 28",
+      "en": "Find 28"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaa4",
+      "kind": "item",
+      "ru": "Находка 29",
+      "en": "Find 29"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaa5",
+      "kind": "item",
+      "ru": "Находка 30",
+      "en": "Find 30"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaa6",
+      "kind": "item",
+      "ru": "Находка 31",
+      "en": "Find 31"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaa7",
+      "kind": "item",
+      "ru": "Находка 32",
+      "en": "Find 32"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaba",
+      "kind": "item",
+      "ru": "Находка 33",
+      "en": "Find 33"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabb",
+      "kind": "item",
+      "ru": "Находка 34",
+      "en": "Find 34"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabc",
+      "kind": "item",
+      "ru": "Находка 35",
+      "en": "Find 35"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabd",
+      "kind": "item",
+      "ru": "Находка 36",
+      "en": "Find 36"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabe",
+      "kind": "item",
+      "ru": "Находка 37",
+      "en": "Find 37"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabf",
+      "kind": "item",
+      "ru": "Находка 38",
+      "en": "Find 38"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabg",
+      "kind": "item",
+      "ru": "Находка 39",
+      "en": "Find 39"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabh",
+      "kind": "item",
+      "ru": "Находка 40",
+      "en": "Find 40"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabi",
+      "kind": "item",
+      "ru": "Находка 41",
+      "en": "Find 41"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabj",
+      "kind": "item",
+      "ru": "Находка 42",
+      "en": "Find 42"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabk",
+      "kind": "item",
+      "ru": "Находка 43",
+      "en": "Find 43"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabl",
+      "kind": "item",
+      "ru": "Находка 44",
+      "en": "Find 44"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabm",
+      "kind": "item",
+      "ru": "Находка 45",
+      "en": "Find 45"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabn",
+      "kind": "item",
+      "ru": "Находка 46",
+      "en": "Find 46"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabo",
+      "kind": "item",
+      "ru": "Находка 47",
+      "en": "Find 47"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabp",
+      "kind": "item",
+      "ru": "Находка 48",
+      "en": "Find 48"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabq",
+      "kind": "item",
+      "ru": "Находка 49",
+      "en": "Find 49"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabr",
+      "kind": "item",
+      "ru": "Находка 50",
+      "en": "Find 50"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabs",
+      "kind": "item",
+      "ru": "Находка 51",
+      "en": "Find 51"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabt",
+      "kind": "item",
+      "ru": "Находка 52",
+      "en": "Find 52"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabu",
+      "kind": "item",
+      "ru": "Находка 53",
+      "en": "Find 53"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabv",
+      "kind": "item",
+      "ru": "Находка 54",
+      "en": "Find 54"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabw",
+      "kind": "item",
+      "ru": "Находка 55",
+      "en": "Find 55"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabx",
+      "kind": "item",
+      "ru": "Находка 56",
+      "en": "Find 56"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaby",
+      "kind": "item",
+      "ru": "Находка 57",
+      "en": "Find 57"
+    },
+    {
+      "key": "hb_foundaaaaaaaaabz",
+      "kind": "item",
+      "ru": "Находка 58",
+      "en": "Find 58"
+    },
+    {
+      "key": "hb_foundaaaaaaaaab2",
+      "kind": "item",
+      "ru": "Находка 59",
+      "en": "Find 59"
+    },
+    {
+      "key": "hb_foundaaaaaaaaab3",
+      "kind": "item",
+      "ru": "Находка 60",
+      "en": "Find 60"
+    },
+    {
+      "key": "hb_foundaaaaaaaaab4",
+      "kind": "item",
+      "ru": "Находка 61",
+      "en": "Find 61"
+    },
+    {
+      "key": "hb_foundaaaaaaaaab5",
+      "kind": "item",
+      "ru": "Находка 62",
+      "en": "Find 62"
+    },
+    {
+      "key": "hb_foundaaaaaaaaab6",
+      "kind": "item",
+      "ru": "Находка 63",
+      "en": "Find 63"
+    },
+    {
+      "key": "hb_foundaaaaaaaaab7",
+      "kind": "item",
+      "ru": "Находка 64",
+      "en": "Find 64"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaca",
+      "kind": "item",
+      "ru": "Находка 65",
+      "en": "Find 65"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacb",
+      "kind": "item",
+      "ru": "Находка 66",
+      "en": "Find 66"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacc",
+      "kind": "item",
+      "ru": "Находка 67",
+      "en": "Find 67"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacd",
+      "kind": "item",
+      "ru": "Находка 68",
+      "en": "Find 68"
+    },
+    {
+      "key": "hb_foundaaaaaaaaace",
+      "kind": "item",
+      "ru": "Находка 69",
+      "en": "Find 69"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacf",
+      "kind": "item",
+      "ru": "Находка 70",
+      "en": "Find 70"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacg",
+      "kind": "item",
+      "ru": "Находка 71",
+      "en": "Find 71"
+    },
+    {
+      "key": "hb_foundaaaaaaaaach",
+      "kind": "item",
+      "ru": "Находка 72",
+      "en": "Find 72"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaci",
+      "kind": "item",
+      "ru": "Находка 73",
+      "en": "Find 73"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacj",
+      "kind": "item",
+      "ru": "Находка 74",
+      "en": "Find 74"
+    },
+    {
+      "key": "hb_foundaaaaaaaaack",
+      "kind": "item",
+      "ru": "Находка 75",
+      "en": "Find 75"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacl",
+      "kind": "item",
+      "ru": "Находка 76",
+      "en": "Find 76"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacm",
+      "kind": "item",
+      "ru": "Находка 77",
+      "en": "Find 77"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacn",
+      "kind": "item",
+      "ru": "Находка 78",
+      "en": "Find 78"
+    },
+    {
+      "key": "hb_foundaaaaaaaaaco",
+      "kind": "item",
+      "ru": "Находка 79",
+      "en": "Find 79"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacp",
+      "kind": "item",
+      "ru": "Находка 80",
+      "en": "Find 80"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacq",
+      "kind": "item",
+      "ru": "Находка 81",
+      "en": "Find 81"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacr",
+      "kind": "item",
+      "ru": "Находка 82",
+      "en": "Find 82"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacs",
+      "kind": "item",
+      "ru": "Находка 83",
+      "en": "Find 83"
+    },
+    {
+      "key": "hb_foundaaaaaaaaact",
+      "kind": "item",
+      "ru": "Находка 84",
+      "en": "Find 84"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacu",
+      "kind": "item",
+      "ru": "Находка 85",
+      "en": "Find 85"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacv",
+      "kind": "item",
+      "ru": "Находка 86",
+      "en": "Find 86"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacw",
+      "kind": "item",
+      "ru": "Находка 87",
+      "en": "Find 87"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacx",
+      "kind": "item",
+      "ru": "Находка 88",
+      "en": "Find 88"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacy",
+      "kind": "item",
+      "ru": "Находка 89",
+      "en": "Find 89"
+    },
+    {
+      "key": "hb_foundaaaaaaaaacz",
+      "kind": "item",
+      "ru": "Находка 90",
+      "en": "Find 90"
+    },
+    {
+      "key": "hb_foundaaaaaaaaac2",
+      "kind": "item",
+      "ru": "Находка 91",
+      "en": "Find 91"
+    },
+    {
+      "key": "hb_foundaaaaaaaaac3",
+      "kind": "item",
+      "ru": "Находка 92",
+      "en": "Find 92"
+    },
+    {
+      "key": "hb_foundaaaaaaaaac4",
+      "kind": "item",
+      "ru": "Находка 93",
+      "en": "Find 93"
+    },
+    {
+      "key": "hb_foundaaaaaaaaac5",
+      "kind": "item",
+      "ru": "Находка 94",
+      "en": "Find 94"
+    },
+    {
+      "key": "hb_foundaaaaaaaaac6",
+      "kind": "item",
+      "ru": "Находка 95",
+      "en": "Find 95"
+    },
+    {
+      "key": "hb_foundaaaaaaaaac7",
+      "kind": "item",
+      "ru": "Находка 96",
+      "en": "Find 96"
+    },
+    {
+      "key": "hb_foundaaaaaaaaada",
+      "kind": "item",
+      "ru": "Находка 97",
+      "en": "Find 97"
+    },
+    {
+      "key": "hb_foundaaaaaaaaadb",
+      "kind": "item",
+      "ru": "Находка 98",
+      "en": "Find 98"
+    },
+    {
+      "key": "hb_foundaaaaaaaaadc",
+      "kind": "item",
+      "ru": "Находка 99",
+      "en": "Find 99"
+    },
+    {
+      "key": "hb_foundaaaaaaaaadd",
+      "kind": "item",
+      "ru": "Находка 100",
+      "en": "Find 100"
+    },
+    {
+      "key": "hb_foundaaaaaaaaade",
+      "kind": "item",
+      "ru": "Находка 101",
+      "en": "Find 101"
+    }
+  ]
+}

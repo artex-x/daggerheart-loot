@@ -1,0 +1,44 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "cards": [
+    {
+      "key": "hb_landmarkruleaaaa",
+      "kind": "ref",
+      "en": "Landmark",
+      "ru": "Ориентир",
+      "ende": "Name a landmark you have seen: you cannot get lost on the way to it.",
+      "rud": "Назовите ориентир, который вы видели: по пути к нему вы не заблудитесь."
+    }
+  ],
+  "items": [
+    {
+      "key": "hb_coppercompassaaa",
+      "kind": "item",
+      "en": "Copper Compass",
+      "ru": "Медный компас",
+      "ende": "It points to the last place you slept.",
+      "rud": "Указывает на место, где вы ночевали в последний раз.",
+      "refs": [
+        "hb_landmarkruleaaaa"
+      ]
+    },
+    {
+      "key": "hb_lanterncandleaaa",
+      "kind": "consumable",
+      "en": "Lantern Candle",
+      "ru": "Свеча в фонаре",
+      "ende": "Burns for one scene and does not go out in the wind.",
+      "rud": "Горит одну сцену и не гаснет на ветру."
+    },
+    {
+      "key": "hb_saltpouchaaaaaaa",
+      "kind": "consumable",
+      "en": "Pouch of Salt",
+      "ru": "Мешочек соли",
+      "ende": "Pour a line of salt: an undead cannot cross it until the end of the scene.",
+      "rud": "Насыпьте линию соли: нежить не может пересечь её до конца сцены."
+    }
+  ]
+}

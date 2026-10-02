@@ -41,7 +41,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     checkbox "Топор Тлеющих Углей" [checked=false]
     button "Топор Тлеющих Углей 800 зол. Ранг 2 · Магическое · Характеристик..." [namelen=198 namehash=83860c79]
     status ""
-  generic ""
+  region "Выбранные записи"
+    generic ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -130,7 +131,8 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     checkbox "Ember Axe" [checked=false]
     button "Ember Axe 800 gp Tier 2 · Magic · Spellcast · Melee · d10+2 mag ..." [namelen=171 namehash=48f755cc]
     status ""
-  generic ""
+  region "Selected records"
+    generic ""
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

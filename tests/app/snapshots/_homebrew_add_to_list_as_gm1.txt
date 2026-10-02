@@ -31,30 +31,33 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "ИСТОЧНИКИ · 1 источник из 20" [expanded=false]
     DisclosureTriangle "КАРТЫ · 2 карты из 100: 1 комплект, 1 карта правил" [expanded=false]
     link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
+    button "Импорт предметов" [expanded=false]
     checkbox "Выбрать все" [checked=mixed]
     generic ""
       StaticText "Выбрано 1"
+    button "Переместить (1)" [expanded=false]
+    button "Скачать JSON (1)"
     button "Удалить (1)"
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
     checkbox "Топор Тлеющих Углей" [checked=true]
-    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
+    ... button x2 of 6 same-shape siblings elided
     heading "Хоумбрю 3" [level=2]
     checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой Надпись на неизвестном языке. Тёплое на ощу..." [namelen=83 namehash=c133104c]
     checkbox "Настой кузнеца" [checked=false]
     button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=110 namehash=fe1ee452]
     checkbox "Whispering Cap" [checked=false]
     button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=88 namehash=4553c982]
-  StaticText "Выбрано 1"
-  button "Снять выделение" [description=Снять выделение]
-  button "Добавить в список" [expanded=true]
-  StaticText "ЛЕЖИТ В СПИСКАХ"
-  button "✓ Лавка кузнеца" [pressed=true]
-  button "Пустой список" [pressed=false]
-  button "Трофеи" [pressed=false]
-  button "+ Новый список" [pressed=false]
-  link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
-  button "Скопировать"
+  region "Выбранные записи"
+    StaticText "Выбрано 1"
+    button "Снять выделение" [description=Снять выделение]
+    button "Добавить в список" [expanded=true]
+    StaticText "ЛЕЖИТ В СПИСКАХ"
+    button "✓ Лавка кузнеца" [pressed=true]
+    button "Пустой список" [pressed=false]
+    button "Трофеи" [pressed=false]
+    button "+ Новый список" [pressed=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
+    button "Скопировать"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -78,6 +81,7 @@ daggerheart.com
 Выбрать все
 Добавить в список
 Изменить
+Импорт предметов
 К содержимому
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
@@ -91,9 +95,12 @@ daggerheart.com
 Новый предмет
 Обычные правила
 Переименовать
+Переместить (1)
 Поиск
 Пустой список
 Разделы
+Скачать JSON
+Скачать JSON (1)
 Скопировать
 Снять выделение
 Собрать карточки для печати: девять на лист A4
@@ -137,25 +144,28 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     DisclosureTriangle "SOURCES · 1 source of 20" [expanded=false]
     DisclosureTriangle "CARDS · 2 cards of 100: 1 set, 1 rule card" [expanded=false]
     link "New item" [url=index.html?as=gm1#/homebrew/new]
+    button "Import items" [expanded=false]
     checkbox "Select all" [checked=mixed]
     generic ""
       StaticText "Selected 1"
+    button "Move (1)" [expanded=false]
+    button "Download JSON (1)"
     button "Delete (1)"
     heading "Alder Workshop · Blades 1" [level=2]
     checkbox "Ember Axe" [checked=true]
-    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
+    ... button x2 of 6 same-shape siblings elided
     heading "Homebrew 3" [level=2]
     checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=86 namehash=49ff78d8]
     checkbox "Кольцо с гравировкой" [checked=false]
     button "Кольцо с гравировкой Надпись на неизвестном языке. Тёплое на ощу..." [namelen=81 namehash=01a2fff3]
     checkbox "Настой кузнеца" [checked=false]
     button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=112 namehash=02806db1]
-  StaticText "Selected 1"
-  button "Clear selection" [description=Clear selection]
-  button "Add to list" [expanded=false]
-  link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
-  button "Copy"
+  region "Selected records"
+    StaticText "Selected 1"
+    button "Clear selection" [description=Clear selection]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
+    button "Copy"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -172,15 +182,19 @@ Communities
 Copy
 Delete
 Delete (1)
+Download JSON
+Download JSON (1)
 Dragon's Vault
 Dread
 EN
 Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Import items
 Install as an app
 Lay these out for printing: nine to an A4 sheet
 Lists
+Move (1)
 New item
 New rule card
 New set

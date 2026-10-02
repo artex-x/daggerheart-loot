@@ -1,16 +1,25 @@
 <script lang="ts">
   /* The fold «Источники» on `#/homebrew` (m02, m19, m13 in the homebrew mocks), closed
-     on each visit with the count of named sources: the default source with its count,
-     then each named source with its count, «Разделы», «Переименовать» and «Удалить»,
-     and «Новый источник» for a new one. A source's sections open under it with the same
-     actions. Every write goes through the store (docs/specs/FEATURES.md, "Homebrew"). */
+     on each visit with the count of named sources: the default source with its count and
+     «Скачать JSON», then each named source with its count, «Разделы», «Переименовать»,
+     «Скачать JSON» and «Удалить», and «Новый источник» for a new one. A source's sections
+     open under it with «Переименовать» and «Удалить». A rename writes the language that
+     names the source or section (`editLang`). Every write goes through the store
+     (docs/specs/FEATURES.md, "Homebrew"). */
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import NameField from './NameField.svelte';
   import PanelFold from './PanelFold.svelte';
   import { limitText } from '../lib/cloudLists.js';
-  import { BOOK_NAME_MAX, nameTaken, SECTIONS_MAX, type BookRow } from '../lib/homebrew.js';
+  import {
+    BOOK_NAME_MAX,
+    editLang,
+    HOME_NAMES,
+    nameTaken,
+    SECTIONS_MAX,
+    type BookRow
+  } from '../lib/homebrew.js';
   import { countOf, plural } from '../lib/plural.js';
   import type { ListWrite, HomebrewSaved } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -60,12 +69,9 @@
     return failed;
   }
 
-  /* The default source's name in both languages: a named source never takes it. */
-  const HOME = [{ ru: 'Хоумбрю', en: 'Homebrew' }];
-
   async function createSource(name: string): Promise<string | null> {
     if (!name.trim()) return t.hbErrSourceName;
-    if (nameTaken([...store.books.map((b) => b.content), ...HOME], name)) {
+    if (nameTaken([...store.books.map((b) => b.content), ...HOME_NAMES], name)) {
       return t.hbSourceTaken.replace('%s', name.trim());
     }
     if (!ids) return t.hbCreateFailed;
@@ -80,9 +86,9 @@
   async function renameSource(book: BookRow, name: string): Promise<string | null> {
     if (!name.trim()) return t.hbErrSourceName;
     const others = store.books.filter((b) => b.id !== book.id).map((b) => b.content);
-    if (nameTaken([...others, ...HOME], name))
+    if (nameTaken([...others, ...HOME_NAMES], name))
       return t.hbSourceTaken.replace('%s', name.trim());
-    const r = await store.renameBook(book, name, lang);
+    const r = await store.renameBook(book, name, editLang(book.content, lang));
     if (!r.ok) return writeError(r, t.hbWriteFailed);
     close();
     return null;
@@ -112,7 +118,8 @@
     const others = (book.content.sections ?? []).filter((s) => s.key !== key);
     if (!name.trim()) return t.hbErrSectionName;
     if (nameTaken(others, name)) return t.hbSectionTaken.replace('%s', name.trim());
-    const r = await store.renameSection(book, key, name, lang);
+    const section = (book.content.sections ?? []).find((s) => s.key === key) ?? null;
+    const r = await store.renameSection(book, key, name, editLang(section, lang));
     if (!r.ok) return writeError(r, t.hbWriteFailed);
     close();
     return null;
@@ -161,6 +168,13 @@
       <div class="head">
         <span class="name">{t.srcHomebrew}</span>
         <span class="count">{itemsN(defaultCount)}</span>
+        <span class="acts">
+          <Button
+            size="sm"
+            onclick={() => void app.exportHomebrew({ book: null }, t.srcHomebrew)}
+            >{t.exportJson}</Button
+          >
+        </span>
       </div>
     </li>
     {#each books as book (book.id)}
@@ -205,6 +219,11 @@
                 onclick={() => {
                   start('book:' + book.id);
                 }}>{t.hbRename}</Button
+              >
+              <Button
+                size="sm"
+                onclick={() => void app.exportHomebrew({ book: book.id }, named(book.content))}
+                >{t.exportJson}</Button
               >
               <Button size="sm" variant="danger" onclick={() => void removeSource(book)}
                 >{t.del}</Button

@@ -165,3 +165,13 @@ export interface Record_ {
    *  stored. A lowercase key, `[a-z0-9-]+`. */
   set?: string;
 }
+
+/** A line of an import report: the object's place and name, when it has them, then the
+ *  text and the JSON path; `item` is a record id drawn in code after the name. */
+export interface ReportLine {
+  pos?: string;
+  name?: string;
+  item?: string;
+  text: string;
+  path?: string;
+}

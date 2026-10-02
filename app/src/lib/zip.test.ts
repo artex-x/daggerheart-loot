@@ -8,6 +8,9 @@ import { crc32, ZIP_ENTRIES_MAX, readDataZip, readZip, zipStored } from './zip.j
 const FIX = join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'import');
 const DATA_ZIP = new Uint8Array(readFileSync(join(FIX, 'data.zip')));
 const EXPORT = readFileSync(join(FIX, 'export.json'), 'utf8');
+const HOMEBREW_ZIP = new Uint8Array(readFileSync(join(FIX, 'data-homebrew.zip')));
+const EXPORT_V2 = readFileSync(join(FIX, 'export-v2.json'), 'utf8');
+const HOMEBREW = readFileSync(join(FIX, '..', 'homebrew-file', 'export.json'), 'utf8');
 const AT = new Date('2026-09-25T12:00:00.000Z');
 const utf8 = (s: string): Uint8Array => new TextEncoder().encode(s);
 const zip = (files: Record<string, string | Uint8Array>): Uint8Array =>
@@ -64,6 +67,17 @@ describe('crc32', () => {
 describe('zipStored', () => {
   it('writes data.zip byte for byte from export.json and its date', () => {
     expect(zip({ 'lists.json': EXPORT })).toEqual(DATA_ZIP);
+  });
+
+  it('writes data-homebrew.zip byte for byte: lists.json, then homebrew.json', () => {
+    expect(zip({ 'lists.json': EXPORT_V2, 'homebrew.json': HOMEBREW })).toEqual(HOMEBREW_ZIP);
+    expect(readDataZip(HOMEBREW_ZIP, 'homebrew.json')).toEqual({
+      ok: true,
+      text: HOMEBREW,
+      sibling: true,
+      other: [],
+      more: 0
+    });
   });
 
   it('stores each file with a UTF-8 name, and reads back every file', () => {
@@ -315,24 +329,37 @@ describe('readDataZip', () => {
     });
 
   it('reads data.zip as its lists.json, with nothing else in it', () => {
-    expect(readDataZip(DATA_ZIP)).toEqual({ ok: true, lists: EXPORT, other: [], more: 0 });
+    expect(readDataZip(DATA_ZIP, 'lists.json')).toEqual({
+      ok: true,
+      text: EXPORT,
+      sibling: false,
+      other: [],
+      more: 0
+    });
   });
 
   it('refuses a file that is not a zip', () => {
-    expect(readDataZip(utf8(EXPORT))).toEqual({ ok: false, reason: 'notZip' });
+    expect(readDataZip(utf8(EXPORT), 'lists.json')).toEqual({ ok: false, reason: 'notZip' });
   });
 
   it('refuses a zip with no lists.json', () => {
-    expect(readDataZip(zip({ 'homebrew.json': '{}' }))).toEqual({
+    expect(readDataZip(zip({ 'homebrew.json': '{}' }), 'lists.json')).toEqual({
       ok: false,
-      reason: 'noLists'
+      reason: 'missing'
+    });
+    expect(readDataZip(zip({ 'lists.json': '{}' }), 'homebrew.json')).toEqual({
+      ok: false,
+      reason: 'missing'
     });
   });
 
   it('takes lists.json at the root over one in a folder, and names the other', () => {
-    expect(readDataZip(zip({ 'old/lists.json': '1', 'lists.json': '2' }))).toEqual({
+    expect(
+      readDataZip(zip({ 'old/lists.json': '1', 'lists.json': '2' }), 'lists.json')
+    ).toEqual({
       ok: true,
-      lists: '2',
+      text: '2',
+      sibling: false,
       other: ['lists.json'],
       more: 0
     });
@@ -340,33 +367,34 @@ describe('readDataZip', () => {
 
   it('takes the shallowest folder/lists.json of a re-zipped folder when it is stored', () => {
     expect(
-      readDataZip(zip({ 'data/lists.json': EXPORT, 'data/x/lists.json': '' }))
+      readDataZip(zip({ 'data/lists.json': EXPORT, 'data/x/lists.json': '' }), 'lists.json')
     ).toMatchObject({
       ok: true,
-      lists: EXPORT
+      text: EXPORT
     });
   });
 
   it('answers packed for a deflated lists.json, in a folder too', () => {
-    expect(readDataZip(deflate(zip({ 'lists.json': EXPORT }), 0))).toEqual({
+    expect(readDataZip(deflate(zip({ 'lists.json': EXPORT }), 0), 'lists.json')).toEqual({
       ok: false,
       reason: 'packed'
     });
-    expect(readDataZip(deflate(zip({ 'data/lists.json': EXPORT }), 0))).toEqual({
+    expect(readDataZip(deflate(zip({ 'data/lists.json': EXPORT }), 0), 'lists.json')).toEqual({
       ok: false,
       reason: 'packed'
     });
   });
 
   it('never guesses between two lists.json at one depth', () => {
-    expect(readDataZip(zip({ 'a/lists.json': '1', 'b/lists.json': '2' }))).toEqual({
-      ok: false,
-      reason: 'manyLists'
-    });
-    expect(readDataZip(zip({ 'lists.json': '1', 'lists.json ': '2' }))).toMatchObject({
-      ok: true,
-      lists: '1'
-    });
+    expect(
+      readDataZip(zip({ 'a/lists.json': '1', 'b/lists.json': '2' }), 'lists.json')
+    ).toEqual({ ok: false, reason: 'many' });
+    expect(
+      readDataZip(zip({ 'a/homebrew.json': '1', 'b/homebrew.json': '2' }), 'homebrew.json')
+    ).toEqual({ ok: false, reason: 'many' });
+    expect(
+      readDataZip(zip({ 'lists.json': '1', 'lists.json ': '2' }), 'lists.json')
+    ).toMatchObject({ ok: true, text: '1' });
   });
 
   it('ignores the files an archiver adds, and folder entries', () => {
@@ -380,16 +408,48 @@ describe('readDataZip', () => {
       'data/lists.json': '1',
       'data/homebrew.json': '{}'
     });
-    expect(readDataZip(z)).toEqual({ ok: true, lists: '1', other: ['homebrew.json'], more: 0 });
+    expect(readDataZip(z, 'lists.json')).toEqual({
+      ok: true,
+      text: '1',
+      sibling: true,
+      other: [],
+      more: 0
+    });
+  });
+
+  it('reads homebrew.json and names lists.json as the sibling, never among the other files', () => {
+    const z = zip({ 'lists.json': '[]', 'homebrew.json': '{}', 'notes.txt': '' });
+    expect(readDataZip(z, 'homebrew.json')).toEqual({
+      ok: true,
+      text: '{}',
+      sibling: true,
+      other: ['notes.txt'],
+      more: 0
+    });
+    expect(readDataZip(z, 'lists.json')).toEqual({
+      ok: true,
+      text: '[]',
+      sibling: true,
+      other: ['notes.txt'],
+      more: 0
+    });
+  });
+
+  it('answers packed for a deflated homebrew.json', () => {
+    expect(readDataZip(deflate(zip({ 'homebrew.json': '{}' }), 0), 'homebrew.json')).toEqual({
+      ok: false,
+      reason: 'packed'
+    });
   });
 
   it('names the first five other files and counts the rest', () => {
     const others = Object.fromEntries(
       Array.from({ length: 8 }, (_, i) => ['f' + String(i) + '.json', ''])
     );
-    expect(readDataZip(zip({ 'lists.json': '[]', ...others }))).toEqual({
+    expect(readDataZip(zip({ 'lists.json': '[]', ...others }), 'lists.json')).toEqual({
       ok: true,
-      lists: '[]',
+      text: '[]',
+      sibling: false,
       other: ['f0.json', 'f1.json', 'f2.json', 'f3.json', 'f4.json'],
       more: 3
     });
@@ -397,11 +457,13 @@ describe('readDataZip', () => {
 
   it('drops a byte order mark, and refuses bytes that are not UTF-8', () => {
     const bom = new Uint8Array([0xef, 0xbb, 0xbf, ...utf8('{"a":1}')]);
-    expect(readDataZip(zip({ 'lists.json': bom }))).toMatchObject({
+    expect(readDataZip(zip({ 'lists.json': bom }), 'lists.json')).toMatchObject({
       ok: true,
-      lists: '{"a":1}'
+      text: '{"a":1}'
     });
-    expect(readDataZip(zip({ 'lists.json': new Uint8Array([0x7b, 0xff]) }))).toEqual({
+    expect(
+      readDataZip(zip({ 'lists.json': new Uint8Array([0x7b, 0xff]) }), 'lists.json')
+    ).toEqual({
       ok: false,
       reason: 'notText'
     });

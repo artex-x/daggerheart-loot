@@ -143,7 +143,10 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     createCard: async (row) => (await port())?.homebrew.createCard(row) ?? UNSENT,
     updateCard: async (id, patch, revision) =>
       (await port())?.homebrew.updateCard(id, patch, revision) ?? UNSENT,
-    removeCard: async (id) => (await port())?.homebrew.removeCard(id) ?? UNSENT
+    removeCard: async (id) => (await port())?.homebrew.removeCard(id) ?? UNSENT,
+    import: async (rows) => (await port())?.homebrew.import(rows) ?? UNSENT,
+    moveItems: async (items, bookId, section) =>
+      (await port())?.homebrew.moveItems(items, bookId, section) ?? UNSENT
   };
   return { auth, prefs, lists, shares, events, requests, homebrew };
 }

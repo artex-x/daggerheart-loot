@@ -9,7 +9,25 @@
  * writes that screen. */
 
 import { describe, expect, it, vi } from 'vitest';
-import { bundleText, ENTRIES_MAX, LISTS_MAX, officialOnly, toBundle } from '../lib/bundle.js';
+import {
+  bundleText,
+  ENTRIES_MAX,
+  FILE_MAX_BYTES,
+  LISTS_MAX,
+  parseBundle,
+  toBundle
+} from '../lib/bundle.js';
+import { frozenOf } from '../lib/cloudLists.js';
+import { nameOf } from '../lib/i18n.js';
+import {
+  defaultTarget,
+  homebrewText,
+  parseHomebrew,
+  rowsOf,
+  subsetOf,
+  toHomebrewFile,
+  toHomebrewRows
+} from '../lib/homebrewFile.js';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { sharedListHash } from '../lib/hash.js';
@@ -40,7 +58,7 @@ import type {
   Session
 } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, type Seed } from '../ports/fake-cloud-seed.js';
 import { AppState, LIST_POLL_MS, SIGN_OUT_WAIT_MS } from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -2832,13 +2850,15 @@ describe('the exports', () => {
 
   async function signedIn(
     image = fakeImage(),
-    limits: { lists?: number; entries?: number } = {}
+    limits: { lists?: number; entries?: number } = {},
+    as: 'gm1' | 'gm2' | 'gm3' = 'gm1',
+    seed: Seed = SEED
   ) {
     const app = new AppState(
       fakeEnv({
         router: memoryRouter('#/lists'),
         storage: memoryStorage(),
-        cloud: fakeCloud(SEED, 'gm1', { limits }),
+        cloud: fakeCloud(seed, as, { limits }),
         data: { load: () => loot },
         clock: fixedClock(NOW),
         image
@@ -2846,20 +2866,36 @@ describe('the exports', () => {
     );
     app.start();
     await flush();
+    await vi.waitFor(() => {
+      expect(app.homebrew?.status).toBe('ready');
+    });
     return { app, image };
   }
 
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  /* The lists file as the export writes it: the axe gm1's first list refers to carries the
+     live item as its snapshot. */
   const expected = (app: AppState, ids?: string[]): string => {
     const store = app.cloudLists!;
     const lists = ids ? store.lists.filter((l) => ids.includes(l.id)) : store.lists;
     const names: Record<string, string> =
       app.lang === 'ru' ? { ci1: 'А', q1: 'Б' } : { ci1: 'A', q1: 'B' };
     return bundleText(
-      toBundle(officialOnly(lists).lists, (id) => names[id], app.t.untitled, new Date(NOW))
+      toBundle(
+        lists,
+        (id) => {
+          const own = app.homebrew?.records.find((r) => r.id === id);
+          return names[id] ?? (own ? nameOf(own, app.lang) : undefined);
+        },
+        app.t.untitled,
+        new Date(NOW),
+        (id, list) =>
+          frozenOf(list)[id] ?? app.homebrew?.records.find((r) => r.id === id) ?? null
+      ).bundle
     );
   };
 
-  it('downloads every list as the dated file, in the index order, and counts the own items left out', async () => {
+  it('downloads every list as the dated file, in the index order, version 2 with the axe', async () => {
     const { app, image } = await signedIn();
     await app.exportLists();
     const [file] = image.downloaded;
@@ -2867,17 +2903,42 @@ describe('the exports', () => {
     expect(file?.blob.type).toBe('application/json');
     const text = await file!.blob.text();
     expect(text).toBe(expected(app));
-    expect(text).not.toContain('hb_emberaxeaaaaaaaa');
-    expect(
-      (JSON.parse(text) as { lists: { name: string }[] }).lists.map((l) => l.name)
-    ).toEqual(['Пустой список', 'Лавка кузнеца', 'Трофеи']);
+    const doc = JSON.parse(text) as {
+      version: number;
+      lists: { name: string; entries: { id: string; source?: string; snapshot?: unknown }[] }[];
+    };
+    expect(doc.version).toBe(2);
+    expect(doc.lists.map((l) => l.name)).toEqual(['Пустой список', 'Лавка кузнеца', 'Трофеи']);
+    const axe = doc.lists.flatMap((l) => l.entries).find((e) => e.id === AXE);
+    expect(axe?.source).toBe('homebrew');
+    expect(axe?.snapshot).toEqual(app.homebrew?.records.find((r) => r.id === AXE));
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('counts an own item the account no longer holds, left out of the file', async () => {
+    const { app, image } = await signedIn();
+    /* Deleted on another device, before this tab read its lists again. */
+    app.homebrew!.items = app.homebrew!.items.filter((i) => i.key !== AXE);
+    await app.exportLists();
+    const text = await image.downloaded[0]!.blob.text();
+    expect(text).not.toContain(AXE);
     expect(app.toast).toMatchObject({
-      msg: '1 свой предмет не попал в файл: файл списков пока переносит только предметы из книг.',
+      msg: '1 свой предмет не попал в файл: его больше нет в аккаунте.',
       mode: ''
     });
+    app.stop();
+  });
+
+  it('downloads nothing while the own items load when a list holds one, and says so', async () => {
+    const { app, image } = await signedIn();
+    app.homebrew!.status = 'loading';
+    await app.exportLists();
+    expect(image.downloaded).toEqual([]);
+    expect(app.toast).toMatchObject({ msg: app.t.hbNotReady, mode: 'err' });
     app.hideToast();
     await app.exportLists([EMPTY]);
-    expect(app.toast).toBeNull();
+    expect(image.downloaded.map((d) => d.filename)).toEqual(['Пустой список.json']);
     app.stop();
   });
 
@@ -2924,14 +2985,96 @@ describe('the exports', () => {
     app.stop();
   });
 
-  it("downloads the account's data as a zip whose lists.json is the lists file", async () => {
+  it("downloads the account's data as a zip: the lists file, then the homebrew file", async () => {
     const { app, image } = await signedIn();
     await app.exportData();
     const [file] = image.downloaded;
     expect(file?.filename).toBe(`daggerheart-loot-data-${DAY}.zip`);
     expect(file?.blob.type).toBe('application/zip');
-    const read = readDataZip(new Uint8Array(await file!.blob.arrayBuffer()));
-    expect(read).toEqual({ ok: true, lists: expected(app), other: [], more: 0 });
+    const bytes = new Uint8Array(await file!.blob.arrayBuffer());
+    expect(readDataZip(bytes, 'lists.json')).toEqual({
+      ok: true,
+      text: expected(app),
+      sibling: true,
+      other: [],
+      more: 0
+    });
+    const own = app.homebrew!;
+    expect(readDataZip(bytes, 'homebrew.json')).toEqual({
+      ok: true,
+      text: homebrewText(toHomebrewFile(own.books, own.items, own.cards, new Date(NOW))),
+      sibling: true,
+      other: [],
+      more: 0
+    });
+    app.stop();
+  });
+
+  it('writes no homebrew.json for an account with no own source, card or item', async () => {
+    const image = fakeImage();
+    const app = new AppState(
+      fakeEnv({
+        router: memoryRouter('#/lists'),
+        storage: memoryStorage(),
+        cloud: fakeCloud(SEED, 'gm2'),
+        data: { load: () => loot },
+        clock: fixedClock(NOW),
+        image
+      })
+    );
+    app.start();
+    await vi.waitFor(() => {
+      expect(app.homebrew?.status).toBe('ready');
+    });
+    await vi.waitFor(() => {
+      expect(app.cloudLists?.lists.length).toBeGreaterThan(0);
+    });
+    await app.exportData();
+    const bytes = new Uint8Array(await image.downloaded[0]!.blob.arrayBuffer());
+    expect(readDataZip(bytes, 'lists.json')).toMatchObject({ ok: true, sibling: false });
+    expect(readDataZip(bytes, 'homebrew.json')).toEqual({ ok: false, reason: 'missing' });
+    app.stop();
+  });
+
+  it('downloads no zip while the own items load or after their read failed, and says so', async () => {
+    const { app, image } = await signedIn();
+    app.homebrew!.status = 'loading';
+    await app.exportData();
+    app.homebrew!.status = 'error';
+    await app.exportData();
+    await app.exportHomebrew({ book: null }, 'Хоумбрю');
+    expect(image.downloaded).toEqual([]);
+    expect(app.toast).toMatchObject({ msg: app.t.hbNotReady, mode: 'err' });
+    app.stop();
+  });
+
+  it('downloads one source, the default source and the ticked items as homebrew files', async () => {
+    const { app, image } = await signedIn();
+    const own = app.homebrew!;
+    const alder = own.books[0]!;
+    await app.exportHomebrew({ book: alder.id }, 'Мастерская Ольхи');
+    await app.exportHomebrew({ book: null }, 'Хоумбрю');
+    await app.exportHomebrew({ items: [AXE] }, null);
+    expect(image.downloaded.map((d) => [d.filename, d.blob.type])).toEqual([
+      ['Мастерская Ольхи.json', 'application/json'],
+      ['Хоумбрю.json', 'application/json'],
+      [`daggerheart-loot-homebrew-${DAY}.json`, 'application/json']
+    ]);
+    const fileOf = (pick: Parameters<typeof subsetOf>[1]): string => {
+      const rows = subsetOf(own, pick);
+      return homebrewText(toHomebrewFile(rows.books, rows.items, rows.cards, new Date(NOW)));
+    };
+    expect(await image.downloaded[0]!.blob.text()).toBe(fileOf({ book: alder.id }));
+    expect(await image.downloaded[1]!.blob.text()).toBe(fileOf({ book: null }));
+    expect(await image.downloaded[2]!.blob.text()).toBe(fileOf({ items: [AXE] }));
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('says a failed homebrew download', async () => {
+    const { app } = await signedIn(fakeImage({ failDownload: true }));
+    await app.exportHomebrew({ items: [AXE] }, null);
+    expect(app.toast).toMatchObject({ msg: app.t.accountFailed, mode: 'err' });
     app.stop();
   });
 
@@ -2960,15 +3103,129 @@ describe('the exports', () => {
     for (let i = 0; i < LISTS_MAX - 2; i++) store.create('Список ' + String(i));
     await app.exportLists();
     expect(app.toast?.msg).toBe(
-      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями. 1 свой предмет не попал в файл: файл списков пока переносит только предметы из книг.'
+      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями.'
     );
     store.create('Склад', {
       ids: Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => 'r' + String(i))
     });
     await app.exportData();
     expect(app.toast?.msg).toBe(
-      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями. В списках «Склад» позиций больше 5000: разделите такие списки. 1 свой предмет не попал в файл: файл списков пока переносит только предметы из книг.'
+      'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями. В списках «Склад» позиций больше 5000: разделите такие списки.'
     );
+    app.stop();
+  });
+
+  it('says a lists file past 5 MB, downloaded alone and in the zip', async () => {
+    const { app, image } = await signedIn(fakeImage(), { entries: 1000 });
+    /* 700 entries with a GM note of 4000 two-byte characters: about 5.6 MB of UTF-8. */
+    const ids = Array.from({ length: 700 }, (_, i) => 'r' + String(i));
+    const note = 'я'.repeat(4000);
+    const big = app.cloudLists!.create('Склад', {
+      ids,
+      meta: Object.fromEntries(ids.map((id) => [id, { hnote: note }]))
+    });
+    await app.exportLists([big.id]);
+    expect(image.downloaded[0]!.blob.size).toBeGreaterThan(FILE_MAX_BYTES);
+    const said =
+      'Этот файл нельзя импортировать целиком. Он больше 5 МБ: экспортируйте списки частями.';
+    expect(app.toast).toMatchObject({ msg: said, mode: '' });
+    app.hideToast();
+    await app.exportData();
+    expect(app.toast).toMatchObject({ msg: said, mode: '' });
+    app.stop();
+  });
+
+  it("says the zip's homebrew.json past 5 MB, and not the lists file under it", async () => {
+    const { app } = await signedIn();
+    const own = app.homebrew!;
+    const [ring] = own.items.filter((i) => i.key === 'hb_engravedringaaaa');
+    /* 700 copies with a description of 4000 two-byte characters: about 5.6 MB. */
+    const copies = Array.from({ length: 700 }, (_, i) => ({
+      ...ring!,
+      id: 'copy' + String(i),
+      key: 'hb_copy' + String(i).padStart(12, 'a'),
+      content: { ...ring!.content, rud: 'я'.repeat(4000) }
+    }));
+    own.items = [...own.items, ...copies];
+    await app.exportData();
+    expect(app.toast).toMatchObject({
+      msg: 'Файл homebrew.json больше 5 МБ: скачайте источники по одному на странице «Мои предметы».',
+      mode: ''
+    });
+    app.setLang('en');
+    await app.exportData();
+    expect(app.toast?.msg).toBe(
+      'The homebrew.json file is larger than 5 MB: download the sources one by one on the My items page.'
+    );
+    app.stop();
+  });
+
+  it("restores gm2's and gm1's data zips into an empty account: a frozen copy and a live reference", async () => {
+    const zipOf = async (as: 'gm1' | 'gm2'): Promise<Uint8Array> => {
+      const { app, image } = await signedIn(fakeImage(), {}, as);
+      await app.exportData();
+      app.stop();
+      return new Uint8Array(await image.downloaded[0]!.blob.arrayBuffer());
+    };
+    const frozenAxe = async (): Promise<unknown> => {
+      const { app } = await signedIn(fakeImage(), {}, 'gm2');
+      const list = app.cloudLists!.lists.find((l) => l.ids.includes(AXE))!;
+      app.stop();
+      return frozenOf(list)[AXE];
+    };
+    const [gm1, gm2, stored] = [await zipOf('gm1'), await zipOf('gm2'), await frozenAxe()];
+    expect(stored).toBeTruthy();
+    const empty: Seed = {
+      ...SEED,
+      homebrew: { ...SEED.homebrew, gm3: { books: [], items: [], cards: [] } }
+    };
+    const { app } = await signedIn(fakeImage(), {}, 'gm3', empty);
+    const own = app.homebrew!;
+    const lists = app.cloudLists!;
+    expect([lists.lists, own.items]).toEqual([[], []]);
+    const loadLists = async (zip: Uint8Array): Promise<void> => {
+      const read = readDataZip(zip, 'lists.json');
+      if (!read.ok) throw new Error('The zip holds no lists.json');
+      const parsed = parseBundle(read.text, (id) => app.catalog?.byId.has(id) ?? false);
+      if (!parsed.ok) throw new Error('The lists.json is refused: ' + parsed.reason);
+      expect(await lists.import(lists.importRows(parsed.lists))).toEqual({ ok: true });
+    };
+    /* gm2's lists first: the account lacks the axe, so its entry stays a frozen copy. */
+    expect(readDataZip(gm2, 'homebrew.json')).toEqual({ ok: false, reason: 'missing' });
+    await loadLists(gm2);
+    const hb = readDataZip(gm1, 'homebrew.json');
+    if (!hb.ok) throw new Error('The zip holds no homebrew.json');
+    const parsed = parseHomebrew(hb.text, {
+      catalogHas: (id) => app.catalog?.byId.has(id) ?? false,
+      catalogSet: () => false,
+      catalogRef: () => false,
+      ownItem: (key) => own.has(key),
+      ownCard: () => null,
+      lineMembers: () => []
+    });
+    if (!parsed.ok) throw new Error('The homebrew.json is refused: ' + parsed.reason);
+    const rows = rowsOf(parsed.file);
+    const ids = {
+      id: () => own.newIds().id,
+      key: (_slot: string, first?: string) => first ?? own.newIds().key
+    };
+    const call = toHomebrewRows(
+      parsed.file,
+      rows,
+      rows.map((r) => defaultTarget(r, own)),
+      own,
+      false,
+      ids
+    );
+    expect(await own.import(call)).toMatchObject({ ok: true });
+    expect(own.has(AXE)).toBe(true);
+    await loadLists(gm1);
+    const withAxe = lists.lists.filter((l) => l.ids.includes(AXE));
+    expect(withAxe).toHaveLength(2);
+    const frozen = withAxe.map((l) => frozenOf(l)[AXE] ?? null);
+    /* gm1's list refers to the live axe; gm2's keeps the snapshot gm2 stored. */
+    expect(frozen).toContainEqual(null);
+    expect(frozen).toContainEqual(stored);
     app.stop();
   });
 

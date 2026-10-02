@@ -229,6 +229,33 @@ const GM2_LIST = '#/lists/00000000-0000-4000-8000-000000000201';
  *  first: the fake seed holds none, so a state makes its own. */
 /** A file of docs/fixtures/import/, for the import field's states. */
 const IMPORT = (name) => path.join(__dirname, '../../docs/fixtures/import', name);
+const HB_FILE = (name) => path.join(__dirname, '../../docs/fixtures/homebrew-file', name);
+/* A homebrew file whose source name is the longest one (80 code points, no space),
+   written to the system's temp directory. */
+function longNamesFile() {
+  const fs = require('fs');
+  const os = require('os');
+  const file = path.join(os.tmpdir(), 'dhloot-golden-long-names.json');
+  const book = 'hb_longnamesourceaa';
+  fs.writeFileSync(
+    file,
+    JSON.stringify({
+      format: 'daggerheart-loot/homebrew',
+      version: 1,
+      books: [{ key: book, ru: 'Мастерская'.repeat(8) }],
+      items: [
+        { key: 'hb_longnameitemaaaa', book, kind: 'item', ru: 'Предмет'.repeat(17) + 'а' }
+      ]
+    })
+  );
+  return file;
+}
+/* «Импорт предметов» open, its lazy chunk loaded. */
+async function hbImportOpen(d) {
+  await d.click('Импорт предметов');
+  for (let i = 0; i < 40 && !(await d.text()).includes('Импорт предметов из файла JSON'); i++)
+    await d.settle();
+}
 
 /** Waits for gm1's account cards, then opens «Импорт из файла». */
 async function importOpen(d) {
@@ -1205,6 +1232,18 @@ const STATES = [
     }
   },
   {
+    id: '#/lists ~ import preview v2 as gm2',
+    route: '#/lists',
+    as: 'gm2',
+    why: 'example-v2.json chosen in an account with no homebrew: «Списков: 1, позиций: 3.» and «Своих предметов, которых нет в аккаунте: 2 - они сохранятся копиями...», then «Импортировать (1)» and «Отмена»',
+    enter: async (d) => {
+      await importOpen(d);
+      await d.upload(IMPORT('example-v2.json'));
+      for (let i = 0; i < 40 && !(await d.text()).includes('Своих предметов, которых'); i++)
+        await d.settle();
+    }
+  },
+  {
     id: '#/lists ~ import refused as gm1',
     route: '#/lists',
     as: 'gm1',
@@ -2049,13 +2088,83 @@ const STATES = [
     id: '#/homebrew as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«4 предмета из 100», the closed folds «Источники · 1 источник из 20» and «Карты · 2 карты из 100: 1 комплект, 1 карта правил», «Новый предмет», the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+    why: '«4 предмета из 100», the closed folds «Источники · 1 источник из 20» and «Карты · 2 карты из 100: 1 комплект, 1 карта правил», «Новый предмет» and «Импорт предметов» with its caret, the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+  },
+  {
+    id: '#/homebrew ~ import panel as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: '«Импорт предметов» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json and llms.txt',
+    enter: hbImportOpen
+  },
+  {
+    id: '#/homebrew ~ import preview as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: 'example-edited.json chosen over the held «Мастерская Ольхи»: «Источников: 1, разделов: 2, карт: 2, предметов: 5.», «Куда положить предметы» with the row «Мастерская Ольхи» on «В «Мастерская Ольхи»» and «Ключ источника совпал с вашим...», the row «Без источника» on «В «Хоумбрю»», «Пропустить» pressed with its line, «Импортировать (7)» and «Отмена»',
+    enter: async (d) => {
+      await hbImportOpen(d);
+      await d.upload(HB_FILE('example-edited.json'));
+      for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (7)'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew ~ import long names as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: 'a file whose source name is 80 code points with no space: the row label wraps inside the panel at 360 px (rule 16), the select with the new source under it; an error line cuts an item name to 40 characters, so no longer name reaches the panel',
+    enter: async (d) => {
+      await hbImportOpen(d);
+      await d.upload(longNamesFile());
+      for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (1)'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew ~ import refused as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: 'errors.json chosen: the alert «В файле ошибки - ничего не импортировано...» with three lines, each with its object, its text and its path, and «Отмена» only',
+    enter: async (d) => {
+      await hbImportOpen(d);
+      await d.upload(HB_FILE('errors.json'));
+      for (let i = 0; i < 40 && !(await d.count('.errs')); i++) await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew ~ imported as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: 'example.json imported into the held source: the panel folded, the two pistols under «Мастерская Ольхи · Пистоли», the bedroll under «Хоумбрю», the toast «Импортировано предметов: 3, новых карт: 2»',
+    enter: async (d) => {
+      await hbImportOpen(d);
+      await d.upload(HB_FILE('example.json'));
+      for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (5)'); i++)
+        await d.settle();
+      await d.click('Импортировать (5)');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/homebrew ~ move as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: 'the three items of «Хоумбрю» ticked, «Переместить (3)» pressed and expanded (m24): «Источник» on «Мастерская Ольхи», «Раздел» on «Без раздела», «Переместить»; the strip «Переместить (3)», «Скачать JSON (3)», «Удалить (3)»',
+    enter: async (d) => {
+      for (const name of ['Настой кузнеца', 'Whispering Cap', 'Кольцо с гравировкой'])
+        await d.tick(name);
+      await d.click('Переместить (3)');
+      /* The seed's «Мастерская Ольхи», `uuid(501)`. */
+      await d.choose('#hb-move', '00000000-0000-4000-8000-000000000501');
+    }
   },
   {
     id: '#/homebrew ~ sections as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: 'the fold «Источники» open («Хоумбрю» 3 предмета, «Мастерская Ольхи» 1 предмет · 2 раздела из 30), then «Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Новый раздел» with the plus icon',
+    why: 'the fold «Источники» open («Хоумбрю» 3 предмета with «Скачать JSON», «Мастерская Ольхи» 1 предмет · 2 раздела из 30 with «Разделы», «Переименовать», «Скачать JSON» and «Удалить»), then «Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Новый раздел» with the plus icon',
     enter: async (d) => {
       await d.click('Источники');
       await d.click('Разделы');
@@ -2084,7 +2193,7 @@ const STATES = [
     id: '#/homebrew as gm2',
     route: '#/homebrew',
     as: 'gm2',
-    why: 'an account with no homebrew: «0 предметов из 100», the closed folds «Источники · 0 источников из 20» and «Карты · 0 карт из 100», «Своих предметов пока нет - создайте первый выше.»'
+    why: 'an account with no homebrew: «0 предметов из 100», the closed folds «Источники · 0 источников из 20» and «Карты · 0 карт из 100», «Своих предметов пока нет - создайте первый выше или импортируйте файл.»'
   },
   {
     id: '#/homebrew',
@@ -2446,4 +2555,4 @@ const STATES = [
   }
 ];
 
-module.exports = { STATES, LANGS };
+module.exports = { STATES, LANGS, HB_FILE, hbImportOpen, longNamesFile };

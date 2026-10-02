@@ -1,0 +1,44 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v2.json",
+  "format": "daggerheart-loot/lists",
+  "version": 2,
+  "lists": [
+    {
+      "name": "Лавка с ошибками",
+      "entries": [
+        {
+          "id": "ci1"
+        },
+        {
+          "id": "hb_wanderlampaaaaaa",
+          "source": "homebrew",
+          "snapshot": {
+            "id": "hb_wanderlampaaaaaa",
+            "src": "homebrew",
+            "kind": "item",
+            "ende": "A lamp with no name.",
+            "rud": "Лампа без названия."
+          }
+        },
+        {
+          "id": "lamp-1",
+          "source": "homebrew",
+          "snapshot": {
+            "kind": "item",
+            "ru": "Лампа странника",
+            "en": "Wanderer's Lamp",
+            "rud": "Светит только тому, кто её несёт.",
+            "ende": "Sheds light only for the one who carries it.",
+            "id": "lamp-1",
+            "src": "homebrew",
+            "book": {
+              "key": "hb_roadnotesaaaaaaa",
+              "en": "A Vagrant's Notes",
+              "ru": "Записки бродяги"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

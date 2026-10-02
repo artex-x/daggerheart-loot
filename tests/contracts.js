@@ -12,8 +12,9 @@
    working filter while selecting nothing.
 
    This file covers only its fs-only half - the list-encoding
-   check, the docs-name check and the lists file import-v1 (its schema,
-   fixtures, llms.txt section and data zip). The browser half (the link against a real
+   check, the docs-name check, the lists file import-v1 and import-v2 and the
+   homebrew file homebrew-v1 (their schemas, fixtures, llms.txt sections and
+   the data zip). The browser half (the link against a real
    app, the address grammar, the stat line, the filter-group probe) moved to
    `tests/app/contracts.js`, which reads the rewrite instead of the live app;
    `docs/specs/COVERAGE.md`'s `contracts` row says where each assertion went. */
@@ -311,32 +312,315 @@ const N_REC = '\x1e',
     ok(text.includes('schema/import-v1.json'), name + ' does not name schema/import-v1.json');
   });
 
-  /* The account's data zip, read by a walk of its own: the end record, the
-     central directory, the local header. */
-  const zip = fs.readFileSync(path.join(IMPORT, 'data.zip'));
-  const end = zip.length - 22;
-  ok(zip.readUInt32LE(end) === 0x06054b50, 'data.zip: no end record at its end');
-  ok(zip.readUInt16LE(end + 10) === 1, 'data.zip: not exactly one entry');
-  const cd = zip.readUInt32LE(end + 16);
-  ok(zip.readUInt32LE(cd) === 0x02014b50, 'data.zip: no central directory entry');
-  const flags = zip.readUInt16LE(cd + 8);
-  const method = zip.readUInt16LE(cd + 10);
-  const crc = zip.readUInt32LE(cd + 16);
-  const packed = zip.readUInt32LE(cd + 20);
-  const size = zip.readUInt32LE(cd + 24);
-  const nameLen = zip.readUInt16LE(cd + 28);
-  const local = zip.readUInt32LE(cd + 42);
-  const entryName = zip.toString('utf8', cd + 46, cd + 46 + nameLen);
-  ok(entryName === 'lists.json', 'data.zip: the entry is ' + entryName + ', not lists.json');
-  ok(method === 0 && packed === size, 'data.zip: the entry is not stored');
-  ok((flags & 0x0800) !== 0, 'data.zip: the name is not flagged UTF-8');
-  ok(zip.readUInt32LE(local) === 0x04034b50, 'data.zip: no local header');
-  const data = local + 30 + zip.readUInt16LE(local + 26) + zip.readUInt16LE(local + 28);
-  const content = zip.subarray(data, data + size);
-  ok(zlib.crc32(content) === crc, 'data.zip: the CRC does not match the content');
+  /* ---------- the homebrew file homebrew-v1 and the lists file import-v2 ---------- */
+  /* Both are frozen as import-v1 is (CONTRACTS.md section 4): a bound may widen in
+     place, never narrow. Their bounds are the import calls' ceilings, written here as
+     literals; the fixtures and llms.txt are checked by a walk of their own. */
+  console.log('homebrew file and import-v2');
+  const HB_URL = 'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json';
+  const V2_URL = 'https://artex-x.github.io/daggerheart-loot/schema/import-v2.json';
+  const HB_DIR = path.join(FIX, 'homebrew-file');
+  const hb = JSON.parse(fs.readFileSync(path.join(ROOT, 'schema', 'homebrew-v1.json'), 'utf8'));
+  const v2 = JSON.parse(fs.readFileSync(path.join(ROOT, 'schema', 'import-v2.json'), 'utf8'));
+  ok(hb.$id === HB_URL, 'schema/homebrew-v1.json: $id is not ' + HB_URL);
+  ok(v2.$id === V2_URL, 'schema/import-v2.json: $id is not ' + V2_URL);
   ok(
-    content.equals(fs.readFileSync(path.join(IMPORT, 'export.json'))),
+    hb.properties.format.const === 'daggerheart-loot/homebrew' &&
+      hb.properties.version.const === 1,
+    'homebrew-v1: format or version is not daggerheart-loot/homebrew, 1'
+  );
+  ok(
+    v2.properties.format.const === 'daggerheart-loot/lists' &&
+      v2.properties.version.const === 2,
+    'import-v2: format or version is not daggerheart-loot/lists, 2'
+  );
+  const hd = hb.$defs;
+  const vd = v2.$defs;
+  [
+    ['homebrew-v1 root', hb],
+    ['homebrew-v1 book', hd.book],
+    ['homebrew-v1 section', hd.section],
+    ['homebrew-v1 card', hd.card],
+    ['homebrew-v1 item', hd.item],
+    ['homebrew-v1 eq', hd.eq],
+    ['homebrew-v1 stats', hd.stats],
+    ['import-v2 root', v2],
+    ['import-v2 list', vd.list],
+    ['import-v2 entry', vd.entry],
+    ['import-v2 snapshot', vd.snapshot],
+    ['import-v2 snapshot book', vd.snapshot.properties.book],
+    ['import-v2 snapshot cards', vd.snapshot.properties.cards],
+    ['import-v2 snapshotSet', vd.snapshotSet],
+    ['import-v2 snapshotRef', vd.snapshotRef]
+  ].forEach(function ([what, s]) {
+    ok(s.additionalProperties === false, 'schema: ' + what + ' takes keys it does not name');
+  });
+  [
+    ['homebrew-v1 books.maxItems', hb.properties.books.maxItems, 100],
+    ['homebrew-v1 cards.maxItems', hb.properties.cards.maxItems, 1000],
+    ['homebrew-v1 items.maxItems', hb.properties.items.maxItems, 1000],
+    ['homebrew-v1 sections.maxItems', hd.book.properties.sections.maxItems, 30],
+    ['homebrew-v1 book name', hd.book.properties.en.maxLength, 80],
+    ['homebrew-v1 section name', hd.section.properties.ru.maxLength, 80],
+    ['homebrew-v1 card name', hd.card.properties.en.maxLength, 80],
+    ['homebrew-v1 card subtitle', hd.card.properties.rusub.maxLength, 60],
+    ['homebrew-v1 card text', hd.card.properties.rud.maxLength, 1500],
+    ['homebrew-v1 card url', hd.card.properties.url.maxLength, 300],
+    ['homebrew-v1 item name', hd.item.properties.ru.maxLength, 120],
+    ['homebrew-v1 item text', hd.item.properties.rud.maxLength, 3000],
+    ['homebrew-v1 craft', hd.item.properties.craft.maxItems, 8],
+    ['homebrew-v1 craft_from', hd.item.properties.craft_from.maxItems, 8],
+    ['homebrew-v1 refs', hd.item.properties.refs.maxItems, 3],
+    ['homebrew-v1 as', hd.eq.properties.as.maximum, 12],
+    ['homebrew-v1 th', hd.eq.properties.th.items.maximum, 99],
+    ['import-v2 lists.maxItems', v2.properties.lists.maxItems, 1000],
+    ['import-v2 entries.maxItems', vd.list.properties.entries.maxItems, 5000]
+  ].forEach(function ([what, got, want]) {
+    ok(got === want, 'schema: ' + what + ' is ' + got + ', not ' + want);
+  });
+  ok(hd.key.pattern === '^hb_[a-z2-7]{16}$', 'homebrew-v1: the key pattern changed');
+  ok(
+    hd.damage.pattern === '^d(4|6|8|10|12|20)(\\+[1-9][0-9]?)?$',
+    'homebrew-v1: the damage pattern is not d4..d20 with a bonus of +1..+99'
+  );
+  ok(
+    JSON.stringify(vd.entry.properties.source.enum) === '["official","homebrew"]',
+    'import-v2: source is not official or homebrew'
+  );
+
+  const hbFiles = fs.readdirSync(HB_DIR).filter((f) => f.endsWith('.json'));
+  hbFiles.forEach(function (f) {
+    const text = fs.readFileSync(path.join(HB_DIR, f), 'utf8');
+    ok(
+      JSON.stringify(JSON.parse(text), null, 2) + '\n' === text,
+      'docs/fixtures/homebrew-file/' + f + ' is not canonical JSON (two-space, a final newline)'
+    );
+  });
+  /* A valid homebrew file uses only the keys the schema declares, at each level. */
+  [
+    'example.json',
+    'example-edited.json',
+    'no-book.json',
+    'bedrolls.json',
+    'lines.json',
+    'crlf.json',
+    'over-limit.json',
+    'same-names.json',
+    'export.json',
+    'from-llms.json'
+  ].forEach(function (f) {
+    const doc = JSON.parse(fs.readFileSync(path.join(HB_DIR, f), 'utf8'));
+    ok(
+      doc.format === 'daggerheart-loot/homebrew' && doc.version === 1,
+      f + ': not format daggerheart-loot/homebrew, version 1'
+    );
+    declared(doc, hb, f);
+    (doc.books || []).forEach(function (b, i) {
+      declared(b, hd.book, f + ' books[' + i + ']');
+      (b.sections || []).forEach((s, j) =>
+        declared(s, hd.section, f + ' books[' + i + '].sections[' + j + ']')
+      );
+    });
+    (doc.cards || []).forEach((c, i) => declared(c, hd.card, f + ' cards[' + i + ']'));
+    (doc.items || []).forEach(function (it, i) {
+      declared(it, hd.item, f + ' items[' + i + ']');
+      if (it.eq) declared(it.eq, hd.eq, f + ' items[' + i + '].eq');
+    });
+  });
+  ['example-v2.json', 'from-llms-v2.json', 'export-v2.json', 'bedroll-shop.json'].forEach(
+    function (f) {
+      const doc = JSON.parse(fs.readFileSync(path.join(IMPORT, f), 'utf8'));
+      ok(
+        doc.format === 'daggerheart-loot/lists' && doc.version === 2,
+        f + ': not format daggerheart-loot/lists, version 2'
+      );
+      declared(doc, v2, f);
+      doc.lists.forEach(function (l, i) {
+        declared(l, vd.list, f + ' lists[' + i + ']');
+        l.entries.forEach(function (e, j) {
+          const at = f + ' lists[' + i + '].entries[' + j + ']';
+          declared(e, vd.entry, at);
+          ok(
+            (e.source === 'homebrew') === 'snapshot' in e,
+            at + ': a snapshot without homebrew, or the reverse'
+          );
+          if (e.snapshot) declared(e.snapshot, vd.snapshot, at + '.snapshot');
+        });
+      });
+    }
+  );
+
+  /* llms.txt teaches both formats: each example verbatim, and every key, value and
+     bound named in its own section. */
+  const sectionOf = (head, level) => {
+    const at = machine.indexOf(head);
+    ok(at >= 0, 'llms.txt has no section "' + head + '"');
+    const rest = machine.slice(at + 1);
+    const next = rest.search(new RegExp('\\n#{2,' + level + '} '));
+    return next < 0 ? rest : rest.slice(0, next);
+  };
+  const hbSection = sectionOf('## Homebrew items as a file (homebrew-v1)', 2);
+  const hbExample = fs.readFileSync(path.join(HB_DIR, 'example.json'), 'utf8');
+  ok(
+    hbSection.includes('```json\n' + hbExample + '```'),
+    'llms.txt does not hold docs/fixtures/homebrew-file/example.json verbatim in a json block'
+  );
+  const namedKeys = new Set();
+  [hb, hd.book, hd.section, hd.card, hd.item, hd.eq, hd.stats].forEach((s) =>
+    Object.keys(s.properties).forEach((k) => namedKeys.add(k))
+  );
+  /* A stat block key is named as `eq.<key>`: a bare `rg` or `bu` reads as a filter group. */
+  namedKeys.forEach((k) =>
+    ok(
+      hbSection.includes('`' + k + '`') || hbSection.includes('`eq.' + k + '`'),
+      'llms.txt homebrew section does not name the key `' + k + '`'
+    )
+  );
+  [
+    'daggerheart-loot/homebrew',
+    'set',
+    'ref',
+    'item',
+    'consumable',
+    'equip',
+    'weapon',
+    'secondary',
+    'armor',
+    'phy',
+    'mag',
+    'any',
+    ...hd.trait.enum,
+    ...hd.range.enum,
+    'A',
+    'C',
+    '+1',
+    '+99'
+  ].forEach((v) =>
+    ok(
+      hbSection.includes('`' + v + '`'),
+      'llms.txt homebrew section does not name the value `' + v + '`'
+    )
+  );
+  [100, 1000, 30, 80, 60, 1500, 300, 120, 3000, 8, 3, 12, 99, 20].forEach((n) =>
+    ok(
+      new RegExp('(^|\\D)' + n + '(\\D|$)').test(hbSection),
+      'llms.txt homebrew section does not name the bound ' + n
+    )
+  );
+  [
+    '5 MB',
+    HB_URL,
+    'catalog.csv',
+    'never work it out from the stats',
+    '`catalog.csv`, `data.json`, `i/` and `og/` never carry a homebrew record'
+  ].forEach((s) => ok(hbSection.includes(s), 'llms.txt homebrew section does not say ' + s));
+  const v2Section = sectionOf('### Version 2: homebrew entries (import-v2)', 3);
+  const v2Example = fs.readFileSync(path.join(IMPORT, 'example-v2.json'), 'utf8');
+  ok(
+    v2Section.includes('```json\n' + v2Example + '```'),
+    'llms.txt does not hold docs/fixtures/import/example-v2.json verbatim in a json block'
+  );
+  [
+    ...Object.keys(vd.snapshot.properties),
+    ...Object.keys(vd.snapshot.properties.cards.properties),
+    'source',
+    'snapshot',
+    'homebrew'
+  ].forEach((k) =>
+    ok(
+      v2Section.includes('`' + k + '`'),
+      'llms.txt version 2 section does not name `' + k + '`'
+    )
+  );
+  [
+    '131072',
+    V2_URL,
+    'never carries a bare reference',
+    'import the homebrew file first'
+  ].forEach((s) => ok(v2Section.includes(s), 'llms.txt version 2 section does not say ' + s));
+  /* The zip's lines name both data files and the two-press restore. */
+  ok(
+    section.includes('`lists.json` is this same document, beside\n`homebrew.json`'),
+    'llms.txt: the lists section does not say the zip holds homebrew.json beside lists.json'
+  );
+  ok(
+    section.includes('`homebrew.json` first on «Мои предметы», then `lists.json` on'),
+    'llms.txt: "Reading an export" does not name the two-press restore'
+  );
+  ok(
+    !section.includes('today only `lists.json`'),
+    'llms.txt: the zip still holds only lists.json'
+  );
+  /* The lines version 2 made false, corrected. */
+  ok(
+    section.includes('version 2 adds `homebrew`'),
+    'llms.txt: the entry source row still says official is the only value'
+  );
+  ok(
+    /What this site cannot do[\s\S]*Homebrew items as a file \(homebrew-v1\)/.test(machine),
+    'llms.txt: "What this site cannot do" does not name the homebrew file'
+  );
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText]
+  ].forEach(function ([name, text]) {
+    ['schema/homebrew-v1.json', 'schema/import-v2.json'].forEach((p) =>
+      ok(text.includes(p), name + ' does not name ' + p)
+    );
+  });
+
+  /* The account's data zips, read by a walk of their own: the end record, the central
+     directory, each local header. data.zip is the frozen v1 pin; data-homebrew.zip is
+     today's zip of an account with own items, lists.json then homebrew.json. */
+  const zipEntries = function (name) {
+    const zip = fs.readFileSync(path.join(IMPORT, name));
+    const end = zip.length - 22;
+    ok(zip.readUInt32LE(end) === 0x06054b50, name + ': no end record at its end');
+    const count = zip.readUInt16LE(end + 10);
+    let cd = zip.readUInt32LE(end + 16);
+    const out = [];
+    for (let i = 0; i < count; i++) {
+      ok(zip.readUInt32LE(cd) === 0x02014b50, name + ': no central directory entry ' + i);
+      const flags = zip.readUInt16LE(cd + 8);
+      const method = zip.readUInt16LE(cd + 10);
+      const crc = zip.readUInt32LE(cd + 16);
+      const packed = zip.readUInt32LE(cd + 20);
+      const size = zip.readUInt32LE(cd + 24);
+      const nameLen = zip.readUInt16LE(cd + 28);
+      const local = zip.readUInt32LE(cd + 42);
+      const entryName = zip.toString('utf8', cd + 46, cd + 46 + nameLen);
+      ok(method === 0 && packed === size, name + ': ' + entryName + ' is not stored');
+      ok((flags & 0x0800) !== 0, name + ': the name ' + entryName + ' is not flagged UTF-8');
+      ok(zip.readUInt32LE(local) === 0x04034b50, name + ': no local header for ' + entryName);
+      const data = local + 30 + zip.readUInt16LE(local + 26) + zip.readUInt16LE(local + 28);
+      const content = zip.subarray(data, data + size);
+      ok(zlib.crc32(content) === crc, name + ': the CRC of ' + entryName + ' does not match');
+      out.push({ name: entryName, content });
+      cd += 46 + nameLen + zip.readUInt16LE(cd + 30) + zip.readUInt16LE(cd + 32);
+    }
+    return out;
+  };
+  const v1Zip = zipEntries('data.zip');
+  ok(
+    v1Zip.length === 1 && v1Zip[0].name === 'lists.json',
+    'data.zip: not exactly one entry, lists.json'
+  );
+  ok(
+    v1Zip[0].content.equals(fs.readFileSync(path.join(IMPORT, 'export.json'))),
     'data.zip: lists.json is not export.json'
+  );
+  const hbZip = zipEntries('data-homebrew.zip');
+  ok(
+    hbZip.map((e) => e.name).join(',') === 'lists.json,homebrew.json',
+    'data-homebrew.zip: not lists.json then homebrew.json'
+  );
+  ok(
+    hbZip[0].content.equals(fs.readFileSync(path.join(IMPORT, 'export-v2.json'))),
+    'data-homebrew.zip: lists.json is not export-v2.json'
+  );
+  ok(
+    hbZip[1].content.equals(fs.readFileSync(path.join(HB_DIR, 'export.json'))),
+    'data-homebrew.zip: homebrew.json is not homebrew-file/export.json'
   );
 
   console.log(failed() ? '\n' + failed() + ' FAILED' : '\ncontracts match the fixtures');

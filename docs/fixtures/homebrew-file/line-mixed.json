@@ -1,0 +1,33 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "items": [
+    {
+      "key": "hb_alderringaaaaaaa",
+      "kind": "item",
+      "en": "Alder Ring",
+      "ru": "Кольцо Ольхи",
+      "ende": "Warm to the touch near running water.",
+      "rud": "Теплеет рядом с проточной водой."
+    },
+    {
+      "key": "hb_revolvercuirassa",
+      "kind": "equip",
+      "en": "Revolver Cuirass",
+      "ru": "Кираса-револьвер",
+      "ende": "A breastplate with a hidden barrel.",
+      "rud": "Нагрудник со спрятанным стволом.",
+      "eq": {
+        "t": "armor",
+        "tier": 1,
+        "as": 3,
+        "th": [
+          6,
+          13
+        ],
+        "line": "f37"
+      }
+    }
+  ]
+}

@@ -669,3 +669,72 @@ describe('the edges', () => {
     expect(load).not.toHaveBeenCalled();
   });
 });
+
+describe('the import and the bulk move', () => {
+  const NEW = 'hb_importedaaaaaaaa';
+  const rows = (update = false) => ({
+    books: [],
+    cards: [],
+    items: [
+      { id: uuid(9001), key: NEW, book: null, content: { kind: 'item' as const, ru: 'Новый' } }
+    ],
+    update
+  });
+
+  it('imports in one call and reads the account again', async () => {
+    const { store, cloud } = await loaded();
+    const imp = vi.spyOn(cloud.homebrew, 'import');
+    const r = await store.import(rows());
+    expect(r).toMatchObject({ ok: true, counts: { items_created: 1 } });
+    expect(imp).toHaveBeenCalledOnce();
+    expect(store.has(NEW)).toBe(true);
+  });
+
+  it('reads again after a lost answer and after a refusal', async () => {
+    const { store, cloud } = await loaded();
+    cloud.setOffline(true);
+    expect(await store.import(rows())).toEqual({ ok: false, error: 'network' });
+    cloud.setOffline(false);
+    vi.spyOn(cloud.homebrew, 'import').mockResolvedValueOnce({
+      ok: false,
+      error: 'limit',
+      key: 'homebrew_items_per_owner',
+      value: 4
+    });
+    const read = vi.spyOn(cloud.homebrew, 'load');
+    expect(await store.import(rows())).toMatchObject({ error: 'limit' });
+    expect(read).toHaveBeenCalled();
+    /* The refusal's limit wins over the read's, so «N предметов из 4» shows it at once. */
+    expect(store.itemLimit).toBe(4);
+  });
+
+  it('moves the items with the revisions it holds, then reads the new ones', async () => {
+    const { store, cloud } = await loaded();
+    const move = vi.spyOn(cloud.homebrew, 'moveItems');
+    const ring = store.item(RING)!;
+    const r = await store.moveItems([ring], ALDER, 'hb_sectpistolsaaaaa');
+    expect(r).toEqual({ ok: true });
+    expect(move).toHaveBeenCalledWith(
+      [{ id: ring.id, revision: ring.revision }],
+      ALDER,
+      'hb_sectpistolsaaaaa'
+    );
+    expect(store.item(RING)).toMatchObject({
+      book_id: ALDER,
+      revision: ring.revision + 1,
+      content: { section: 'hb_sectpistolsaaaaa' }
+    });
+  });
+
+  it('reads again on a refused move, so a retry sends the new revisions', async () => {
+    const { store, cloud } = await loaded();
+    const ring = store.item(RING)!;
+    vi.spyOn(cloud.homebrew, 'moveItems').mockResolvedValueOnce({
+      ok: false,
+      error: 'conflict'
+    });
+    const read = vi.spyOn(cloud.homebrew, 'load');
+    expect(await store.moveItems([ring], null, null)).toEqual({ ok: false, error: 'conflict' });
+    expect(read).toHaveBeenCalledOnce();
+  });
+});

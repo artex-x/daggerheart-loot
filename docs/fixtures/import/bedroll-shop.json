@@ -1,0 +1,255 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v2.json",
+  "format": "daggerheart-loot/lists",
+  "version": 2,
+  "lists": [
+    {
+      "name": "Лавка спальников",
+      "money_mode": "coin",
+      "player_note": "У входа сушатся скатки, пахнет дымом и мхом.",
+      "entries": [
+        {
+          "id": "ci1",
+          "name": "Первоклассный Спальный Мешок",
+          "price_coins": 150
+        },
+        {
+          "id": "hb_travelrollaaaaaa",
+          "name": "Скатка путника",
+          "source": "homebrew",
+          "price_coins": 40,
+          "quantity": 3,
+          "snapshot": {
+            "kind": "item",
+            "en": "Traveller's Roll",
+            "ru": "Скатка путника",
+            "ende": "A Premium Bedroll rolled tight with straps: during downtime you clear a Stress.",
+            "rud": "Первоклассный Спальный Мешок, туго скатанный ремнями: во время отдыха вы очищаете Стресс.",
+            "craft": [
+              "hb_trackerrollaaaaa"
+            ],
+            "craft_from": [
+              "ci1"
+            ],
+            "refs": [
+              "hb_reststopruleaaaa"
+            ],
+            "id": "hb_travelrollaaaaaa",
+            "src": "homebrew",
+            "cards": {
+              "refs": {
+                "hb_reststopruleaaaa": {
+                  "en": "Rest Stop",
+                  "ru": "Привал",
+                  "ensub": "Camp rule",
+                  "rusub": "Правило лагеря",
+                  "ende": "When the party makes camp, each member may swap one downtime move for another.",
+                  "rud": "Когда группа разбивает лагерь, каждый может заменить одно действие отдыха другим.",
+                  "url": ""
+                }
+              }
+            },
+            "book": {
+              "key": "hb_campfirerestaaaa",
+              "en": "Campfire Rest",
+              "ru": "Привал у костра",
+              "section": {
+                "key": "hb_sectbedrollsaaaa",
+                "en": "Bedrolls",
+                "ru": "Спальные мешки"
+              }
+            }
+          }
+        },
+        {
+          "id": "hb_trackerrollaaaaa",
+          "name": "Скатка следопыта",
+          "source": "homebrew",
+          "price_coins": 90,
+          "quantity": 2,
+          "gm_note": "Продавец уверяет, что в ней спал сам следопыт Ольхового леса.",
+          "snapshot": {
+            "kind": "item",
+            "en": "Tracker's Roll",
+            "ru": "Скатка следопыта",
+            "ende": "As the Traveller's Roll; you also wake at the first sound of danger.",
+            "rud": "Как Скатка путника; кроме того, вы просыпаетесь при первом звуке опасности.",
+            "craft": [
+              "hb_wardenrollaaaaaa"
+            ],
+            "set": "hb_starsleepsetaaaa",
+            "id": "hb_trackerrollaaaaa",
+            "src": "homebrew",
+            "cards": {
+              "sets": {
+                "hb_starsleepsetaaaa": {
+                  "en": "Sleep Under the Stars",
+                  "ru": "Сон под звёздами",
+                  "ende": "Two pieces of the set: during a long rest, clear an additional Stress.",
+                  "rud": "Два предмета комплекта: во время долгого отдыха очистите дополнительный Стресс."
+                }
+              }
+            },
+            "book": {
+              "key": "hb_campfirerestaaaa",
+              "en": "Campfire Rest",
+              "ru": "Привал у костра",
+              "section": {
+                "key": "hb_sectbedrollsaaaa",
+                "en": "Bedrolls",
+                "ru": "Спальные мешки"
+              }
+            }
+          }
+        },
+        {
+          "id": "hb_wardenrollaaaaaa",
+          "name": "Скатка стража",
+          "source": "homebrew",
+          "price_coins": 200,
+          "snapshot": {
+            "kind": "item",
+            "en": "Warden's Roll",
+            "ru": "Скатка стража",
+            "ende": "As the Tracker's Roll; an ally sleeping beside you clears a Stress too.",
+            "rud": "Как Скатка следопыта; союзник, спящий рядом, тоже очищает Стресс.",
+            "refs": [
+              "hb_reststopruleaaaa"
+            ],
+            "id": "hb_wardenrollaaaaaa",
+            "src": "homebrew",
+            "cards": {
+              "refs": {
+                "hb_reststopruleaaaa": {
+                  "en": "Rest Stop",
+                  "ru": "Привал",
+                  "ensub": "Camp rule",
+                  "rusub": "Правило лагеря",
+                  "ende": "When the party makes camp, each member may swap one downtime move for another.",
+                  "rud": "Когда группа разбивает лагерь, каждый может заменить одно действие отдыха другим.",
+                  "url": ""
+                }
+              }
+            },
+            "book": {
+              "key": "hb_campfirerestaaaa",
+              "en": "Campfire Rest",
+              "ru": "Привал у костра",
+              "section": {
+                "key": "hb_sectbedrollsaaaa",
+                "en": "Bedrolls",
+                "ru": "Спальные мешки"
+              }
+            }
+          }
+        },
+        {
+          "id": "hb_mosspillowaaaaaa",
+          "name": "Подушка из мха",
+          "source": "homebrew",
+          "price_coins": 15,
+          "quantity": 4,
+          "snapshot": {
+            "kind": "item",
+            "en": "Moss Pillow",
+            "ru": "Подушка из мха",
+            "ende": "Whoever sleeps on it dreams of the next day's road.",
+            "rud": "Тому, кто спит на ней, снится завтрашняя дорога.",
+            "set": "hb_starsleepsetaaaa",
+            "refs": [
+              "enrapture"
+            ],
+            "id": "hb_mosspillowaaaaaa",
+            "src": "homebrew",
+            "cards": {
+              "sets": {
+                "hb_starsleepsetaaaa": {
+                  "en": "Sleep Under the Stars",
+                  "ru": "Сон под звёздами",
+                  "ende": "Two pieces of the set: during a long rest, clear an additional Stress.",
+                  "rud": "Два предмета комплекта: во время долгого отдыха очистите дополнительный Стресс."
+                }
+              }
+            },
+            "book": {
+              "key": "hb_campfirerestaaaa",
+              "en": "Campfire Rest",
+              "ru": "Привал у костра",
+              "section": {
+                "key": "hb_sectcampgearaaaa",
+                "en": "Camp Gear",
+                "ru": "Снаряжение лагеря"
+              }
+            }
+          }
+        },
+        {
+          "id": "hb_campblanketaaaaa",
+          "name": "Походный плед",
+          "source": "homebrew",
+          "price_coins": 20,
+          "quantity": 2,
+          "snapshot": {
+            "kind": "item",
+            "en": "Camp Blanket",
+            "ru": "Походный плед",
+            "ende": "Keeps you warm in any weather that is not magical.",
+            "rud": "Согревает в любую погоду, если она не волшебная.",
+            "set": "hb_starsleepsetaaaa",
+            "id": "hb_campblanketaaaaa",
+            "src": "homebrew",
+            "cards": {
+              "sets": {
+                "hb_starsleepsetaaaa": {
+                  "en": "Sleep Under the Stars",
+                  "ru": "Сон под звёздами",
+                  "ende": "Two pieces of the set: during a long rest, clear an additional Stress.",
+                  "rud": "Два предмета комплекта: во время долгого отдыха очистите дополнительный Стресс."
+                }
+              }
+            },
+            "book": {
+              "key": "hb_campfirerestaaaa",
+              "en": "Campfire Rest",
+              "ru": "Привал у костра",
+              "section": {
+                "key": "hb_sectcampgearaaaa",
+                "en": "Camp Gear",
+                "ru": "Снаряжение лагеря"
+              }
+            }
+          }
+        },
+        {
+          "id": "hb_emberpotaaaaaaaa",
+          "name": "Котелок углей",
+          "source": "homebrew",
+          "price_coins": 10,
+          "quantity": 5,
+          "snapshot": {
+            "kind": "consumable",
+            "en": "Ember Pot",
+            "ru": "Котелок углей",
+            "ende": "Lights a campfire in any rain, once.",
+            "rud": "Один раз разжигает костёр под любым дождём.",
+            "craft_from": [
+              "dv34"
+            ],
+            "id": "hb_emberpotaaaaaaaa",
+            "src": "homebrew",
+            "book": {
+              "key": "hb_campfirerestaaaa",
+              "en": "Campfire Rest",
+              "ru": "Привал у костра",
+              "section": {
+                "key": "hb_sectcampgearaaaa",
+                "en": "Camp Gear",
+                "ru": "Снаряжение лагеря"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

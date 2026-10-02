@@ -7,13 +7,16 @@ import { describe, expect, it } from 'vitest';
 import {
   BUNDLE_FORMAT,
   BUNDLE_SCHEMA,
+  BUNDLE_SCHEMA_HOMEBREW,
   BUNDLE_VERSION,
+  BUNDLE_VERSION_HOMEBREW,
   bundleFileName,
   bundleText,
   dataFileName,
   decodeText,
   ENTRIES_MAX,
   ENTRY_KEYS,
+  ENTRY_KEYS_HOMEBREW,
   ENTRY_REQUIRED,
   ERRORS_MAX,
   FILE_MAX_BYTES,
@@ -21,20 +24,30 @@ import {
   LIST_KEYS,
   LIST_REQUIRED,
   LISTS_MAX,
-  officialOnly,
   overBounds,
   parseBundle,
   ROOT_KEYS,
   ROOT_REQUIRED,
   SOURCES,
+  SOURCES_HOMEBREW,
   toBundle,
   toImportRows,
+  withHeld,
   type Bundle,
   type BundleList,
   type Parsed
 } from './bundle.js';
 import { NAME_MAX, NOTE_MAX, PRICE_MAX, type CloudList } from './cloudLists.js';
 import { buildIndex, type Loot } from './data.js';
+import {
+  recordOf,
+  SNAPSHOT_BYTES,
+  type BookContent,
+  type CardContent,
+  type CardKind,
+  type HomebrewContent,
+  type HomebrewRecord
+} from './homebrew.js';
 import { QTY_MAX } from './listLink.js';
 import { MONEY_DEFAULT, MONEY_MODES } from './money.js';
 
@@ -187,7 +200,15 @@ describe('the schema and the validator (the drift guard)', () => {
         player_note: 'p',
         gm_note: 'g',
         entries: [
-          { item_key: 'ci1', quantity: 3, price_coins: 7, player_note: 'ep', gm_note: 'eg' }
+          {
+            item_key: 'ci1',
+            source: 'official',
+            snapshot: null,
+            quantity: 3,
+            price_coins: 7,
+            player_note: 'ep',
+            gm_note: 'eg'
+          }
         ]
       }
     ]);
@@ -211,10 +232,10 @@ describe('parseBundle', () => {
   });
 
   it('refuses another version with the value found, before the walk', () => {
-    expect(parseBundle(fixture('v2.json'), knows)).toEqual({
+    expect(parseBundle(fixture('v3.json'), knows)).toEqual({
       ok: false,
       reason: 'version',
-      version: 2
+      version: 3
     });
     expect(parseBundle('{"format":"daggerheart-loot/lists","qty":1}', knows)).toEqual({
       ok: false,
@@ -240,7 +261,15 @@ describe('parseBundle', () => {
         player_note: '',
         gm_note: '',
         entries: [
-          { item_key: 'ci1', quantity: 1, price_coins: null, player_note: '', gm_note: '' }
+          {
+            item_key: 'ci1',
+            source: 'official',
+            snapshot: null,
+            quantity: 1,
+            price_coins: null,
+            player_note: '',
+            gm_note: ''
+          }
         ]
       }
     ]);
@@ -541,9 +570,19 @@ describe('the fixtures', () => {
         player_note: 'Открыта с рассвета до заката.',
         gm_note: 'Кузнец торгуется, если назвать имя его брата.',
         entries: [
-          { item_key: 'ci1', quantity: 2, price_coins: 150, player_note: '', gm_note: '' },
+          {
+            item_key: 'ci1',
+            source: 'official',
+            snapshot: null,
+            quantity: 2,
+            price_coins: 150,
+            player_note: '',
+            gm_note: ''
+          },
           {
             item_key: 'q1',
+            source: 'official',
+            snapshot: null,
             quantity: 1,
             price_coins: null,
             player_note: 'Последний в наличии.',
@@ -551,6 +590,8 @@ describe('the fixtures', () => {
           },
           {
             item_key: 'q313',
+            source: 'official',
+            snapshot: null,
             quantity: 1,
             price_coins: null,
             player_note: '',
@@ -693,8 +734,9 @@ describe('toBundle and the round trip', () => {
       ],
       nameOf,
       'Без названия',
-      AT
-    );
+      AT,
+      () => null
+    ).bundle;
     expect(b).toEqual({
       $schema: BUNDLE_SCHEMA,
       format: BUNDLE_FORMAT,
@@ -729,8 +771,9 @@ describe('toBundle and the round trip', () => {
       [cloud({ name: '' }), cloud({ id: 'l2', name: '   ', ids: ['ci1'] })],
       nameOf,
       'Без названия',
-      AT
-    );
+      AT,
+      () => null
+    ).bundle;
     expect(b.lists.map((l) => l.name)).toEqual(['Без названия', 'Без названия']);
     const p = okOf(parseBundle(bundleText(b), knows));
     expect(p.lists.map((l) => l.name)).toEqual(['Без названия', 'Без названия']);
@@ -745,7 +788,7 @@ describe('toBundle and the round trip', () => {
         meta: { ci1: { qty: 99, gold: 99999, note: 'a' }, q313: { hnote: 'b' } }
       })
     ];
-    const text = bundleText(toBundle(lists, nameOf, 'U', AT));
+    const text = bundleText(toBundle(lists, nameOf, 'U', AT, () => null).bundle);
     expect(text.endsWith('}\n')).toBe(true);
     expect(text).toBe(JSON.stringify(JSON.parse(text), null, 2) + '\n');
     expect(okOf(parseBundle(text, knows)).lists).toEqual([
@@ -755,8 +798,24 @@ describe('toBundle and the round trip', () => {
         player_note: '',
         gm_note: 'g',
         entries: [
-          { item_key: 'q313', quantity: 1, price_coins: null, player_note: '', gm_note: 'b' },
-          { item_key: 'ci1', quantity: 99, price_coins: 99999, player_note: 'a', gm_note: '' }
+          {
+            item_key: 'q313',
+            source: 'official',
+            snapshot: null,
+            quantity: 1,
+            price_coins: null,
+            player_note: '',
+            gm_note: 'b'
+          },
+          {
+            item_key: 'ci1',
+            source: 'official',
+            snapshot: null,
+            quantity: 99,
+            price_coins: 99999,
+            player_note: 'a',
+            gm_note: ''
+          }
         ]
       }
     ]);
@@ -767,7 +826,11 @@ describe('toImportRows', () => {
   it('makes every id with newId and counts positions after the skips', () => {
     let n = 0;
     const p = okOf(parseBundle(fixture('unknown-id.json'), knows));
-    const rows = toImportRows(p.lists, () => 'id' + String(n++));
+    const rows = toImportRows(
+      p.lists,
+      () => 'id' + String(n++),
+      () => false
+    );
     expect(rows.map((r) => r.list)).toEqual([
       {
         id: 'id0',
@@ -900,22 +963,456 @@ describe('decodeText', () => {
   });
 });
 
-describe('officialOnly', () => {
-  const list = (id: string, ids: string[]) => ({
-    id,
-    name: id,
-    ids,
-    updated: 0,
-    entryIds: {}
+/* ---------- version 2: homebrew entries (schema/import-v2.json) ---------- */
+
+/* A walk of a value against a schema node, for the keywords the two lists schemas use; the
+   problems by path. */
+type Schema = Record<string, unknown>;
+function walk(v: unknown, node: Schema, root: Schema, path: string, out: string[]): void {
+  const ref = node['$ref'];
+  if (typeof ref === 'string') {
+    const name = ref.replace('#/$defs/', '');
+    walk(v, (root['$defs'] as Record<string, Schema>)[name] ?? {}, root, path, out);
+  }
+  if ('const' in node && v !== node['const']) out.push(path + ' const');
+  if (Array.isArray(node['enum']) && !node['enum'].includes(v)) out.push(path + ' enum');
+  const type = node['type'];
+  const isObj = v !== null && typeof v === 'object' && !Array.isArray(v);
+  if (type === 'object' && !isObj) out.push(path + ' type');
+  if (type === 'array' && !Array.isArray(v)) out.push(path + ' type');
+  if (type === 'string' && typeof v !== 'string') out.push(path + ' type');
+  if (type === 'integer' && !Number.isInteger(v)) out.push(path + ' type');
+  if (typeof v === 'string') {
+    if (typeof node['maxLength'] === 'number' && Array.from(v).length > node['maxLength'])
+      out.push(path + ' maxLength');
+    if (typeof node['pattern'] === 'string' && !new RegExp(node['pattern'], 'u').test(v))
+      out.push(path + ' pattern');
+  }
+  if (typeof v === 'number') {
+    if (typeof node['minimum'] === 'number' && v < node['minimum']) out.push(path + ' minimum');
+    if (typeof node['maximum'] === 'number' && v > node['maximum']) out.push(path + ' maximum');
+  }
+  if (Array.isArray(v)) {
+    if (typeof node['maxItems'] === 'number' && v.length > node['maxItems'])
+      out.push(path + ' maxItems');
+    if (typeof node['minItems'] === 'number' && v.length < node['minItems'])
+      out.push(path + ' minItems');
+    const items = node['items'] as Schema | undefined;
+    if (items) {
+      v.forEach((x, i) => {
+        walk(x, items, root, path + '[' + String(i) + ']', out);
+      });
+    }
+  }
+  if (isObj) {
+    const o = v as Record<string, unknown>;
+    const props = (node['properties'] ?? {}) as Record<string, Schema>;
+    for (const k of (node['required'] ?? []) as string[]) {
+      if (!(k in o)) out.push(path + '.' + k + ' required');
+    }
+    for (const [k, x] of Object.entries(o)) {
+      const own = props[k];
+      if (own) walk(x, own, root, path + '.' + k, out);
+      else if (node['additionalProperties'] === false) out.push(path + '.' + k + ' extra');
+      else if (typeof node['additionalProperties'] === 'object') {
+        walk(x, node['additionalProperties'] as Schema, root, path + '.' + k, out);
+      }
+      if (node['propertyNames']) {
+        walk(k, node['propertyNames'] as Schema, root, path + ' key ' + k, out);
+      }
+    }
+  }
+  const passes = (n: Schema): boolean => {
+    const probe: string[] = [];
+    walk(v, n, root, path, probe);
+    return !probe.length;
+  };
+  const cond = node['if'] as Schema | undefined;
+  if (cond) {
+    const branch = (passes(cond) ? node['then'] : node['else']) as Schema | undefined;
+    if (branch) walk(v, branch, root, path, out);
+  }
+  const not = node['not'] as Schema | undefined;
+  if (not && passes(not)) out.push(path + ' not');
+  const anyOf = node['anyOf'] as Schema[] | undefined;
+  if (anyOf && !anyOf.some(passes)) out.push(path + ' anyOf');
+}
+const V2 = JSON.parse(read('schema', 'import-v2.json')) as ObjectSchema & {
+  $defs: Record<string, ObjectSchema>;
+};
+const schemaProblems = (v: unknown): string[] => {
+  const out: string[] = [];
+  walk(v, V2 as unknown as Schema, V2 as unknown as Schema, '', out);
+  return out;
+};
+const AXE = 'hb_emberaxeaaaaaaaa';
+const SNAP: HomebrewRecord = recordOf(
+  AXE,
+  {
+    kind: 'equip',
+    ru: 'Топор',
+    set: 'hb_aldersetaaaaaaaa',
+    refs: ['hb_alderrulecardaaa', 'slow'],
+    section: 'hb_sectbladesaaaaaa',
+    eq: {
+      t: 'weapon',
+      tier: 'A',
+      cls: 'mag',
+      tr: 'spellcast',
+      rg: 'melee',
+      dmg: 'd10+2',
+      dt: 'mag',
+      bu: 2
+    }
+  },
+  {
+    key: 'hb_alderworkshopaaa',
+    ru: 'Мастерская Ольхи',
+    sections: [{ key: 'hb_sectbladesaaaaaa', en: 'Blades' }]
+  },
+  [
+    { key: 'hb_aldersetaaaaaaaa', kind: 'set', ru: 'Комплект', rud: 'Бонус.' },
+    { key: 'hb_alderrulecardaaa', kind: 'ref', en: 'Brand', ende: 'Text.' }
+  ]
+);
+
+describe('the import-v2 schema and the validator (the drift guard)', () => {
+  const list = V2.$defs['list'] as ObjectSchema;
+  const entry = V2.$defs['entry'] as ObjectSchema;
+
+  it('names its URL and version 2, and keeps every key and bound of version 1', () => {
+    expect(V2.$id).toBe(BUNDLE_SCHEMA_HOMEBREW);
+    expect(prop(V2, 'format').const).toBe(BUNDLE_FORMAT);
+    expect(prop(V2, 'version').const).toBe(BUNDLE_VERSION_HOMEBREW);
+    expect(Object.keys(V2.properties)).toEqual(ROOT_KEYS);
+    expect(Object.keys(list.properties)).toEqual(LIST_KEYS);
+    expect(Object.keys(entry.properties)).toEqual(ENTRY_KEYS_HOMEBREW);
+    expect(prop(entry, 'source').enum).toEqual(SOURCES_HOMEBREW);
+    expect(prop(V2, 'lists').maxItems).toBe(LISTS_MAX);
+    expect(prop(list, 'entries').maxItems).toBe(ENTRIES_MAX);
+    for (const k of Object.keys(LIST.properties)) expect(prop(list, k)).toEqual(prop(LIST, k));
+    for (const k of ['name', 'quantity', 'price_coins', 'player_note', 'gm_note']) {
+      expect(prop(entry, k)).toEqual(prop(ENTRY, k));
+    }
+    for (const s of [V2, list, entry, V2.$defs['snapshot'] as ObjectSchema]) {
+      expect(s.additionalProperties).toBe(false);
+      for (const x of Object.values(s.properties)) expect(x.description).toBeTruthy();
+    }
   });
 
-  it('leaves the homebrew entries out, counts them and keeps a list with none as it is', () => {
-    const plain = list('a', ['q1']);
-    const mixed = list('b', ['hb_emberaxeaaaaaaaa', 'q2', 'hb_mineaaaaaaaaaaaa']);
-    const { lists, skipped } = officialOnly([plain, mixed]);
-    expect(lists[0]).toBe(plain);
-    expect(lists[1]?.ids).toEqual(['q2']);
-    expect(skipped).toBe(2);
-    expect(officialOnly([plain]).skipped).toBe(0);
+  it("describes the snapshot's tier rule and its byte bound", () => {
+    const snapshot = V2.$defs['snapshot'] as ObjectSchema;
+    expect(prop(snapshot, 'tier').description).toContain('eq.tier is A');
+    expect(prop(entry, 'snapshot').description).toContain(String(SNAPSHOT_BYTES));
+  });
+
+  it('takes a v2 export with an embedded set and rule card, url "" included, by its own walk', () => {
+    expect(SNAP.cards?.refs?.['hb_alderrulecardaaa']?.url).toBe('');
+    const { bundle } = toBundle(
+      [cloud({ ids: ['ci1', AXE], meta: { [AXE]: { qty: 2 } } })],
+      nameOf,
+      'U',
+      AT,
+      (id) => (id === AXE ? SNAP : null)
+    );
+    expect(schemaProblems(bundle)).toEqual([]);
+    expect(schemaProblems(JSON.parse(fixture('example-v2.json')))).toEqual([]);
+    expect(schemaProblems({ ...bundle, version: 1 })).toEqual(['.version const']);
+    const bare = {
+      ...bundle,
+      lists: [{ name: 'L', entries: [{ id: AXE, source: 'homebrew' }] }]
+    };
+    expect(schemaProblems(bare)).toContain('.lists[0].entries[0].snapshot required');
+  });
+});
+
+describe('a lists file of version 2', () => {
+  it('reads version 1 and 2, and refuses 3', () => {
+    expect(okOf(parseBundle(fixture('example.json'), knows)).lists).toHaveLength(1);
+    expect(okOf(parseBundle(fixture('example-v2.json'), knows)).lists).toHaveLength(1);
+    expect(parseBundle(fixture('v3.json'), knows)).toMatchObject({
+      reason: 'version',
+      version: 3
+    });
+  });
+
+  it('reads example-v2.json: the catalog entry, then two homebrew entries with their snapshots', () => {
+    const [l] = okOf(parseBundle(fixture('example-v2.json'), knows)).lists;
+    expect(l?.entries.map((e) => [e.item_key, e.source, e.snapshot?.id ?? null])).toEqual([
+      ['ci1', 'official', null],
+      ['hb_flintlockpistola', 'homebrew', 'hb_flintlockpistola'],
+      ['hb_wanderlampaaaaaa', 'homebrew', 'hb_wanderlampaaaaaa']
+    ]);
+  });
+
+  it('reads errors-v2.json as a snapshot that is not a copy and an id that is not a key', () => {
+    expect(errorsOf(parseBundle(fixture('errors-v2.json'), knows))).toEqual([
+      {
+        path: 'lists[0].entries[1].snapshot',
+        field: 'snapshot',
+        kind: 'snapshot',
+        value: undefined,
+        limit: undefined
+      },
+      {
+        path: 'lists[0].entries[2].id',
+        field: 'id',
+        kind: 'hbId',
+        value: 'lamp-1',
+        limit: undefined
+      }
+    ]);
+  });
+
+  const v2 = (entry: Record<string, unknown>): string =>
+    JSON.stringify({
+      format: BUNDLE_FORMAT,
+      version: 2,
+      lists: [{ name: 'L', entries: [{ id: AXE, ...entry }] }]
+    });
+
+  it.each([
+    ['no snapshot', { source: 'homebrew' }, 'snapshot', 'missing'],
+    [
+      'a snapshot of another key',
+      { source: 'homebrew', snapshot: { ...SNAP, id: 'hb_otherkeyaaaaaaaa' } },
+      'snapshot',
+      'snapshot'
+    ],
+    ['an official entry with a snapshot', { snapshot: SNAP }, 'snapshot', 'extra'],
+    ['another source', { source: 'shared', snapshot: SNAP }, 'source', 'enum']
+  ])('refuses %s', (_what, entry, field, kind) => {
+    expect(
+      errorsOf(parseBundle(v2(entry), knows)).map((e) => [e['field'], e['kind']])
+    ).toContainEqual([field, kind]);
+  });
+
+  /* The keys schema/import-v2.json requires, which snapshotValid alone does not ask. */
+  const without = (o: object, key: string): Record<string, unknown> =>
+    Object.fromEntries(Object.entries(o).filter(([k]) => k !== key));
+  const SET_KEY = 'hb_aldersetaaaaaaaa';
+  const REF_KEY = 'hb_alderrulecardaaa';
+  it.each(['en', 'ru', 'ende', 'rud'])('refuses a snapshot without its %s', (key) => {
+    const snapshot = without(SNAP, key);
+    expect(
+      errorsOf(parseBundle(v2({ source: 'homebrew', snapshot }), knows)).map((e) => [
+        e['path'],
+        e['kind']
+      ])
+    ).toEqual([['lists[0].entries[0].snapshot', 'snapshot']]);
+  });
+
+  it.each(['en', 'ru', 'ende', 'rud'])('refuses an embedded set card without its %s', (key) => {
+    const set = SNAP.cards?.sets?.[SET_KEY];
+    expect(set).toBeDefined();
+    const snapshot = {
+      ...SNAP,
+      cards: { ...SNAP.cards, sets: { [SET_KEY]: without(set!, key) } }
+    };
+    expect(
+      errorsOf(parseBundle(v2({ source: 'homebrew', snapshot }), knows)).map((e) => e['kind'])
+    ).toEqual(['snapshot']);
+  });
+
+  it.each(['en', 'ru', 'ensub', 'rusub', 'ende', 'rud', 'url'])(
+    'refuses an embedded rule card without its %s',
+    (key) => {
+      const ref = SNAP.cards?.refs?.[REF_KEY];
+      expect(ref).toBeDefined();
+      const snapshot = {
+        ...SNAP,
+        cards: { ...SNAP.cards, refs: { [REF_KEY]: without(ref!, key) } }
+      };
+      expect(
+        errorsOf(parseBundle(v2({ source: 'homebrew', snapshot }), knows)).map((e) => e['kind'])
+      ).toEqual(['snapshot']);
+    }
+  );
+
+  it('refuses a homebrew entry and a snapshot in version 1', () => {
+    const v1 = JSON.stringify({
+      format: BUNDLE_FORMAT,
+      version: 1,
+      lists: [{ name: 'L', entries: [{ id: AXE, source: 'homebrew', snapshot: SNAP }] }]
+    });
+    expect(errorsOf(parseBundle(v1, knows)).map((e) => [e['field'], e['kind']])).toEqual([
+      ['source', 'enum'],
+      ['snapshot', 'extra']
+    ]);
+  });
+
+  it('never skips a homebrew entry as unknown, and skips its repeat', () => {
+    const text = JSON.stringify({
+      format: BUNDLE_FORMAT,
+      version: 2,
+      lists: [
+        {
+          name: 'L',
+          entries: [
+            { id: AXE, source: 'homebrew', snapshot: SNAP },
+            { id: AXE, source: 'homebrew', snapshot: SNAP }
+          ]
+        }
+      ]
+    });
+    const p = okOf(parseBundle(text, () => false));
+    expect(p.lists[0]?.entries.map((e) => e.item_key)).toEqual([AXE]);
+    expect(p.skipped).toEqual([{ list: 0, entry: 1, id: AXE, why: 'repeat', first: 0 }]);
+  });
+
+  it('makes a held key a reference and any other a frozen copy object, never a JSON null', () => {
+    const p = okOf(parseBundle(fixture('example-v2.json'), knows));
+    let n = 0;
+    const id = (): string => 'id' + String(n++);
+    const held = toImportRows(p.lists, id, (k) => k === 'hb_flintlockpistola');
+    expect(held[0]?.entries.map((e) => [e.source, e.snapshot === null])).toEqual([
+      ['official', true],
+      ['homebrew', true],
+      ['homebrew', false]
+    ]);
+    const none = toImportRows(p.lists, id, () => false);
+    const frozen = none.flatMap((r) => r.entries).filter((e) => e.source === 'homebrew');
+    expect(frozen).toHaveLength(2);
+    for (const e of frozen) {
+      expect(e.snapshot).not.toBeNull();
+      expect(typeof e.snapshot).toBe('object');
+      expect(JSON.stringify(e)).not.toContain('"snapshot":null');
+    }
+  });
+
+  it('writes version 1 when no homebrew entry is written, and counts the ones left out', () => {
+    const lists = [cloud({ ids: ['ci1', AXE] })];
+    const none = toBundle(lists, nameOf, 'U', AT, () => null);
+    expect([none.bundle.version, none.bundle.$schema, none.skipped]).toEqual([
+      1,
+      BUNDLE_SCHEMA,
+      1
+    ]);
+    expect(none.bundle.lists[0]?.entries).toEqual([
+      { id: 'ci1', name: 'Первоклассный Спальный Мешок' }
+    ]);
+    const one = toBundle(lists, nameOf, 'U', AT, () => SNAP);
+    expect([one.bundle.version, one.bundle.$schema, one.skipped]).toEqual([
+      2,
+      BUNDLE_SCHEMA_HOMEBREW,
+      0
+    ]);
+    expect(Object.keys(one.bundle.lists[0]?.entries[1] ?? {})).toEqual([
+      'id',
+      'source',
+      'snapshot'
+    ]);
+    const back = okOf(parseBundle(bundleText(one.bundle), knows));
+    expect(back.lists[0]?.entries[1]).toMatchObject({
+      item_key: AXE,
+      source: 'homebrew',
+      snapshot: SNAP
+    });
+  });
+});
+
+/* The blind round's lists file for request R-B: the Premium Bedroll, 2 at 150 coins, and
+   both blades of the agent's homebrew file, each with its snapshot. */
+describe('from-llms-v2.json, the blind round', () => {
+  const text = fixture('from-llms-v2.json');
+  const blades = (
+    JSON.parse(read('docs', 'fixtures', 'homebrew-file', 'from-llms.json')) as {
+      items: { key: string; kind: string; eq?: { t: string } }[];
+    }
+  ).items
+    .filter((i) => i.eq?.t === 'weapon')
+    .map((i) => i.key);
+
+  it('reads clean, and passes a walk of the schema', () => {
+    expect(okOf(parseBundle(text, knows)).skipped).toEqual([]);
+    expect(schemaProblems(JSON.parse(text))).toEqual([]);
+  });
+
+  it('does what the GM asked', () => {
+    const [l] = okOf(parseBundle(text, knows)).lists;
+    expect(l?.name).toBe('Лавка у перевала');
+    expect(l?.entries[0]).toMatchObject({ item_key: 'ci1', quantity: 2, price_coins: 150 });
+    const own = l?.entries.filter((e) => e.source === 'homebrew') ?? [];
+    expect(own.map((e) => e.item_key)).toEqual(blades);
+    expect(own.map((e) => e.snapshot?.id)).toEqual(blades);
+  });
+});
+
+/* The owner's hand-test file over bedrolls.json: the catalog's Premium Bedroll and the six
+   bedrolls, each with the snapshot `homebrew_snapshot_of` writes for its item. */
+describe('bedroll-shop.json', () => {
+  const text = fixture('bedroll-shop.json');
+  const file = JSON.parse(read('docs', 'fixtures', 'homebrew-file', 'bedrolls.json')) as {
+    books: (BookContent & { key: string })[];
+    cards: (CardContent & { key: string; kind: CardKind })[];
+    items: (HomebrewContent & { key: string; book?: string })[];
+  };
+
+  it('reads clean with the v2 reader, and passes a walk of the schema', () => {
+    const p = okOf(parseBundle(text, knows));
+    expect(p.skipped).toEqual([]);
+    expect(schemaProblems(JSON.parse(text))).toEqual([]);
+    const [l] = p.lists;
+    expect(l?.name).toBe('Лавка спальников');
+    expect(l?.entries.map((e) => e.item_key)).toEqual(['ci1', ...file.items.map((i) => i.key)]);
+  });
+
+  it("holds each snapshot equal to recordOf of its bedrolls.json item, with that file's cards", () => {
+    /* recordOf reads a card's texts only: the file's `book` key changes nothing. */
+    const cards = file.cards;
+    const [l] = okOf(parseBundle(text, knows)).lists;
+    for (const e of l?.entries.filter((x) => x.source === 'homebrew') ?? []) {
+      const it = file.items.find((i) => i.key === e.item_key);
+      expect(it).toBeDefined();
+      const { key, book, ...content } = it!;
+      const b = file.books.find((x) => x.key === book) ?? null;
+      expect(e.snapshot).toEqual(recordOf(key, content, b, cards));
+    }
+  });
+
+  it('makes six live references in an account that holds the bedrolls, else six frozen copies', () => {
+    const p = okOf(parseBundle(text, knows));
+    let n = 0;
+    const id = (): string => 'id' + String(n++);
+    const keys = new Set(file.items.map((i) => i.key));
+    const held = toImportRows(p.lists, id, (k) => keys.has(k));
+    expect(
+      held[0]?.entries.filter((e) => e.source === 'homebrew' && e.snapshot === null)
+    ).toHaveLength(6);
+    const none = toImportRows(p.lists, id, () => false);
+    expect(none[0]?.entries.filter((e) => e.snapshot !== null)).toHaveLength(6);
+  });
+});
+
+describe('export-v2.json, the lists export with an own item', () => {
+  it('reads clean, the axe as a homebrew entry, and passes a walk of the schema', () => {
+    const text = fixture('export-v2.json');
+    const p = okOf(parseBundle(text, knows));
+    expect(schemaProblems(JSON.parse(text))).toEqual([]);
+    expect(
+      p.lists.flatMap((l) => l.entries).filter((e) => e.source === 'homebrew')
+    ).toHaveLength(1);
+  });
+});
+
+describe('withHeld: the rows again for a press', () => {
+  it('turns a reference whose item is gone into a frozen copy and back, the ids kept', () => {
+    const p = okOf(parseBundle(fixture('example-v2.json'), knows));
+    let n = 0;
+    const rows = toImportRows(
+      p.lists,
+      () => 'id' + String(n++),
+      (k) => k === 'hb_flintlockpistola'
+    );
+    expect(withHeld(rows, p.lists, (k) => k === 'hb_flintlockpistola')).toBe(rows);
+    const frozen = withHeld(rows, p.lists, () => false);
+    expect(frozen).not.toBe(rows);
+    expect(frozen[0]?.entries.map((e) => [e.id, e.snapshot === null])).toEqual(
+      rows[0]?.entries.map((e) => [e.id, e.source === 'official'])
+    );
+    const back = withHeld(frozen, p.lists, (k) => k === 'hb_flintlockpistola');
+    expect(back[0]?.entries.map((e) => e.snapshot === null)).toEqual(
+      rows[0]?.entries.map((e) => e.snapshot === null)
+    );
   });
 });

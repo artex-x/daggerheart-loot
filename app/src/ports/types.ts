@@ -48,6 +48,7 @@ import type {
   NewCardRow,
   NewItemRow
 } from '../lib/homebrew.js';
+import type { HomebrewImported, HomebrewImportRows } from '../lib/homebrewFile.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { OwnerRequest, ShortLine } from '../lib/requests.js';
@@ -521,6 +522,16 @@ export type HomebrewSaved =
   | { ok: false; error: 'conflict' | 'gone' }
   | Exclude<ListWrite, { ok: true }>;
 
+/** An import's answer: the counts, or why not; `refused` with `tooSlow` is a call the
+ *  database stopped at its statement timeout, as for a lists import. */
+export type HomebrewImport =
+  { ok: true; counts: HomebrewImported } | Exclude<ListWrite, { ok: true }>;
+/** A move's answer: `conflict` - an item's revision is no longer the one sent; `gone` - the
+ *  target source or section no longer exists; `refused` - any other refusal, a timeout
+ *  included. Nothing moved unless ok. */
+export type HomebrewMoved =
+  { ok: true } | { ok: false; error: 'conflict' | 'gone' } | Exclude<ListWrite, { ok: true }>;
+
 /** The signed-in author's homebrew
  *  (docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md). Row level
  *  security keeps every row the author's; a create is idempotent on the client-made id. */
@@ -548,6 +559,17 @@ export interface HomebrewRepository {
     revision: number | null
   ): Promise<HomebrewSaved>;
   removeCard(id: string): Promise<ListWrite>;
+  /** Writes a homebrew file's sources, cards and items in one call (`import_homebrew`),
+   *  every row or none; a held key is skipped, or rewritten with `update`. */
+  import(rows: HomebrewImportRows): Promise<HomebrewImport>;
+  /** Moves items to a source (null: the default one) and one of its sections (null: none)
+   *  in one call (`move_homebrew_items`), every item or none; each item names the revision
+   *  the caller read. */
+  moveItems(
+    items: readonly { id: string; revision: number }[],
+    bookId: string | null,
+    section: string | null
+  ): Promise<HomebrewMoved>;
 }
 
 /** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, R3 events, R4

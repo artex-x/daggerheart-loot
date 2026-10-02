@@ -11,7 +11,10 @@
  * through «Импорт из файла» and two lists deleted together, F14 a homebrew source
  * with a section, an item in them edited and deleted, F15 an own item in a list as a
  * reference, its rename read through a players' link, and «Свой предмет», F16 an own
- * item's relations picked by name with a rule card made inline. Each flow gets its own
+ * item's relations picked by name with a rule card made inline, F17 a homebrew file imported
+ * through «Импорт предметов», imported again with «Обновить», two items moved together, the
+ * data zip's homebrew.json read back, and a version 2 lists file imported with a reference
+ * and a frozen copy. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -21,6 +24,7 @@
 
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { readDataZip } from '../../app/src/lib/zip.ts';
 import {
   createThrowaway,
   deleteHomebrewOf,
@@ -1062,4 +1066,132 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteHomebrewOf(admin, member.id);
   }
   console.log('e2e: F16 ok');
+
+  /* F17: homebrew files on the hosted project. example.json imported through the page,
+     imported again with «Обновить» from example-edited.json, the two pistols moved to
+     «Холодное оружие» in one call, the data zip's homebrew.json holding every row, and
+     example-v2.json imported into lists: the held pistol a reference, the lamp a frozen
+     copy. */
+  await deleteListsOf(admin, member.id);
+  await deleteHomebrewOf(admin, member.id);
+  const fixture = (dir, name) =>
+    fileURLToPath(new URL('../../docs/fixtures/' + dir + '/' + name, import.meta.url));
+  try {
+    const mine = () => homebrewOf(admin, member.id);
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      /* The toggle is disabled while a call runs, the panel folds on an ok answer and stays
+         open on any other: a press before the fold is lost, and a press on a panel kept
+         open by a refusal closes it, so the next file field never appears. Each import
+         waits for its answer's toast and names the toast it got instead. */
+      const answered = async (text) => {
+        try {
+          await page.waitForFunction((t) => document.body.textContent.includes(t), WAIT, text);
+        } catch {
+          const said = await page.evaluate(
+            () =>
+              document.querySelector('.toast')?.textContent.replace(/\s+/g, ' ').trim() ?? ''
+          );
+          throw new Error(
+            'e2e F17: the import never said «' + text + '»; the toast: «' + said + '»'
+          );
+        }
+      };
+      const openImport = async () => {
+        await waitFor(
+          page,
+          'e2e F17: the import panel did not fold after the answer',
+          () => !document.querySelector('input[type="file"]')
+        );
+        await waitControl(page, 'F17', 'Импорт предметов');
+        await d.press('Импорт предметов');
+        await waitText(page, 'F17', 'Импорт предметов из файла JSON');
+      };
+      await d.open('#/homebrew');
+      await openImport();
+      await d.upload(fixture('homebrew-file', 'example.json'));
+      await waitControl(page, 'F17', 'Импортировать (5)');
+      await d.press('Импортировать (5)');
+      await answered('Импортировано предметов: 3');
+      await until('F17: the file did not reach the account', async () => {
+        const r = await mine();
+        return r.books.length === 1 && r.items.length === 3 && r.cards.length === 2;
+      });
+
+      await openImport();
+      await d.upload(fixture('homebrew-file', 'example-edited.json'));
+      await waitControl(page, 'F17', 'Импортировать (7)');
+      await d.press('Обновить');
+      /* The driver accepts the update's confirm. */
+      await d.press('Импортировать (7)');
+      await answered('Импортировано предметов: 2');
+      await until('F17: the update did not reach the account', async () => {
+        const r = await mine();
+        const pistol = r.items.find((i) => i.key === 'hb_flintlockpistola');
+        return r.items.length === 5 && pistol?.content.ru === 'Старый кремнёвый пистоль';
+      });
+
+      const { books } = await mine();
+      const alder = books.find((b) => b.key === 'hb_alderworkshopaaa');
+      if (!alder) throw new Error('e2e F17: the source is missing');
+      await d.open('#/homebrew');
+      await waitControl(page, 'F17', 'Импорт предметов');
+      await d.tick('Старый кремнёвый пистоль');
+      await d.tick('Двуствольный пистоль мастера');
+      await d.press('Переместить (2)');
+      await page.select('#hb-move', alder.id);
+      await page.waitForSelector('#hb-move-section', WAIT);
+      await page.select('#hb-move-section', 'hb_sectbladesaaaaaa');
+      await d.press('Переместить');
+      await until('F17: the move did not reach the account', async () => {
+        const { items } = await mine();
+        return ['hb_flintlockpistola', 'hb_doublepistolaaaa'].every(
+          (k) => items.find((i) => i.key === k)?.content.section === 'hb_sectbladesaaaaaa'
+        );
+      });
+
+      /* prepare() keeps a download in the page instead of saving it. */
+      await d.open('#/account');
+      await waitControl(page, 'F17', 'Скачать мои данные (ZIP)');
+      await d.press('Скачать мои данные (ZIP)');
+      let zip = null;
+      await until('F17: the data zip did not download', async () => {
+        zip = await d.download();
+        return zip?.filename.endsWith('.zip') ?? false;
+      });
+      const read = readDataZip(
+        new Uint8Array(Buffer.from(zip.base64, 'base64')),
+        'homebrew.json'
+      );
+      if (!read.ok) throw new Error('e2e F17: the zip holds no homebrew.json');
+      const file = JSON.parse(read.text);
+      const rows = await mine();
+      const keys = (list) => list.map((x) => x.key).sort();
+      if (
+        JSON.stringify(keys(file.books)) !== JSON.stringify(keys(rows.books)) ||
+        JSON.stringify(keys(file.items)) !== JSON.stringify(keys(rows.items)) ||
+        JSON.stringify(keys(file.cards)) !== JSON.stringify(keys(rows.cards))
+      ) {
+        throw new Error('e2e F17: the zip homebrew.json does not hold the account rows');
+      }
+
+      await d.open('#/lists');
+      await waitControl(page, 'F17', 'Импорт из файла');
+      await d.press('Импорт из файла');
+      await d.upload(fixture('import', 'example-v2.json'));
+      await waitControl(page, 'F17', 'Импортировать (1)');
+      await d.press('Импортировать (1)');
+      await until('F17: the lists file did not reach the account', async () => {
+        const list = (await listsOf(admin, member.id)).find((l) => l.name === 'Лавка Ольхи');
+        const by = (k) => list?.list_entries.find((e) => e.item_key === k);
+        return (
+          by('hb_flintlockpistola')?.snapshot === null &&
+          by('hb_wanderlampaaaaaa')?.snapshot?.id === 'hb_wanderlampaaaaaa'
+        );
+      });
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+    await deleteHomebrewOf(admin, member.id);
+  }
+  console.log('e2e: F17 ok');
 }

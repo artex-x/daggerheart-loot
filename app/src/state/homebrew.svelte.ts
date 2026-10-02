@@ -26,7 +26,14 @@ import {
 } from '../lib/homebrew.js';
 import { COALESCE_MS, readHomebrewMessage } from '../lib/live.js';
 import type { Lang } from '../lib/types.js';
-import type { HomebrewRepository, HomebrewSaved, ListWrite } from '../ports/index.js';
+import type { HomebrewImportRows } from '../lib/homebrewFile.js';
+import type {
+  HomebrewImport,
+  HomebrewMoved,
+  HomebrewRepository,
+  HomebrewSaved,
+  ListWrite
+} from '../ports/index.js';
 
 export interface HomebrewHooks {
   /** This page load's tab id: a message with it is this tab's own. */
@@ -383,6 +390,29 @@ export class Homebrew {
     return r;
   }
 
+  /** Writes a homebrew file's rows in one call, every row or none, then reads the account
+   *  again on every answer: the call may have landed though its answer was lost. */
+  async import(rows: HomebrewImportRows): Promise<HomebrewImport> {
+    const r = await this.#send(() => this.#repo.import(rows));
+    await this.read();
+    if (!r.ok && r.error === 'limit' && r.value !== null) this.#limited(r.key, r.value);
+    return r;
+  }
+
+  /** Moves the items to the source `bookId` (null: the default one) and its section
+   *  `section` (null: none) in one call, each with the revision it holds, then reads the
+   *  account again on every answer: the new revisions come from the read. */
+  async moveItems(
+    rows: readonly ItemRow[],
+    bookId: string | null,
+    section: string | null
+  ): Promise<HomebrewMoved> {
+    const items = rows.map((r) => ({ id: r.id, revision: r.revision }));
+    const r = await this.#send(() => this.#repo.moveItems(items, bookId, section));
+    await this.read();
+    return r;
+  }
+
   /* A book write names the revision read; a conflict or a gone row reads the account again,
      so the next press writes over what is there now. */
   async #updateBook(book: BookRow, content: BookContent): Promise<HomebrewSaved> {
@@ -412,12 +442,15 @@ export class Homebrew {
   #created(id: string, r: ListWrite): ListWrite {
     if (!r.ok && r.error === 'network') this.#unsure[id] = true;
     else Reflect.deleteProperty(this.#unsure, id);
-    if (!r.ok && r.error === 'limit' && r.value !== null) {
-      if (r.key === 'homebrew_items_per_owner') this.itemLimit = r.value;
-      if (r.key === 'homebrew_books_per_owner') this.bookLimit = r.value;
-      if (r.key === 'homebrew_cards_per_owner') this.cardLimit = r.value;
-    }
+    if (!r.ok && r.error === 'limit' && r.value !== null) this.#limited(r.key, r.value);
     return r;
+  }
+
+  /* A limit refusal names the limit the database applied: the counts show it from now on. */
+  #limited(key: string, value: number): void {
+    if (key === 'homebrew_items_per_owner') this.itemLimit = value;
+    if (key === 'homebrew_books_per_owner') this.bookLimit = value;
+    if (key === 'homebrew_cards_per_owner') this.cardLimit = value;
   }
 
   /* A create sent again as an update of the row it made: a conflict or a gone row there is

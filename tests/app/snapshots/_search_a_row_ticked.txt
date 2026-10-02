@@ -44,11 +44,12 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     button "Божественный Пластинчатый Доспех Ранг 4 · Пороги 13/36 · Броня 6..." [namelen=155 namehash=ddbafa4a]
     checkbox "Латы Ужаса" [checked=false]
     button "Латы Ужаса Ранг 4 · Пороги 14/38 · Броня 6 Проклятое: Когда вы о..." [namelen=207 namehash=7ecca134]
-  StaticText "Выбрано 1"
-  button "Снять выделение" [description=Снять выделение]
-  button "Добавить в список" [expanded=false]
-  link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/dve12]
-  button "Скопировать"
+  region "Выбранные записи"
+    StaticText "Выбрано 1"
+    button "Снять выделение" [description=Снять выделение]
+    button "Добавить в список" [expanded=false]
+    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/dve12]
+    button "Скопировать"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -369,11 +370,12 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     button "Godbound Laminar Tier 4 · Thresholds 13/36 · Armor 6 Divine: Whe..." [namelen=127 namehash=7a71d3e9]
     checkbox "Circle-Forged Dreadplate" [checked=false]
     button "Circle-Forged Dreadplate Tier 4 · Thresholds 14/38 · Armor 6 Acc..." [namelen=229 namehash=a994e13f]
-  StaticText "Selected 1"
-  button "Clear selection" [description=Clear selection]
-  button "Add to list" [expanded=false]
-  link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/dve12]
-  button "Copy"
+  region "Selected records"
+    StaticText "Selected 1"
+    button "Clear selection" [description=Clear selection]
+    button "Add to list" [expanded=false]
+    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/dve12]
+    button "Copy"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

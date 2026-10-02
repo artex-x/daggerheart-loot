@@ -48,6 +48,8 @@ import type {
   AuthRedirect,
   CloudPort,
   EventsPort,
+  HomebrewImport,
+  HomebrewMoved,
   HomebrewRepository,
   HomebrewSaved,
   Identity,
@@ -313,6 +315,12 @@ const limited = (key: string, value: number): Extract<ListWrite, { error: 'limit
 
 /* `import_lists` refuses a call of more lists (22023), whatever the account's limit. */
 const IMPORT_LISTS_MAX = 1000;
+/* `import_homebrew`'s and `move_homebrew_items`' bounds per call (22023). */
+const IMPORT_BOOKS_MAX = 100;
+const IMPORT_CARDS_MAX = 1000;
+const IMPORT_ITEMS_MAX = 1000;
+const MOVE_ITEMS_MAX = 1000;
+const SECTIONS_MAX = 30;
 
 /* `create_purchase_request`'s bounds: its constants and the `limit_defaults` rows. */
 const HOUR_MS = 3_600_000;
@@ -1378,6 +1386,213 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       if (!c) return Promise.resolve(OK);
       mine.cards.splice(at, 1);
       touchReferences(naming(mine, c.key));
+      homebrewSaid();
+      return Promise.resolve(OK);
+    },
+    /* import_homebrew(): every row or none, on a copy of the account's rows. */
+    import(rows): Promise<HomebrewImport> {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      const unique = (list: readonly { key: string }[]): boolean =>
+        new Set(list.map((r) => r.key)).size === list.length;
+      if (
+        typeof rows.update !== 'boolean' ||
+        rows.books.length > IMPORT_BOOKS_MAX ||
+        rows.cards.length > IMPORT_CARDS_MAX ||
+        rows.items.length > IMPORT_ITEMS_MAX ||
+        !unique(rows.books) ||
+        !unique(rows.cards) ||
+        !unique(rows.items)
+      ) {
+        return Promise.resolve(REFUSED);
+      }
+      const next = structuredClone(mine);
+      const at = stamp();
+      const counts = {
+        books_created: 0,
+        cards_created: 0,
+        cards_updated: 0,
+        cards_skipped: 0,
+        items_created: 0,
+        items_updated: 0,
+        items_skipped: 0
+      };
+      const touched: string[] = [];
+      const bump = (r: { revision: number; updated_at: string }): void => {
+        r.revision++;
+        r.updated_at = at;
+      };
+      const taken = (pick: (h: HeldHomebrew) => { id: string }[], id: string): boolean =>
+        [...homebrewHeld.values()].some((h) => h !== mine && pick(h).some((r) => r.id === id));
+      for (const row of rows.books) {
+        const held = next.books.find((b) => b.key === row.key);
+        if (!held) {
+          if (!isHomebrewKey(row.key) || bookProblems(row.content).length)
+            return Promise.resolve(REFUSED);
+          if (taken((h) => h.books, row.id) || next.books.some((b) => b.id === row.id)) {
+            return Promise.resolve(REFUSED);
+          }
+          next.books.push({
+            ...structuredClone(row),
+            revision: 1,
+            created_at: at,
+            updated_at: at
+          });
+          counts.books_created++;
+          continue;
+        }
+        const content = structuredClone(held.content);
+        const sections = [...(content.sections ?? [])];
+        for (const s of row.content.sections ?? []) {
+          if (!sections.some((x) => x.key === s.key)) sections.push(structuredClone(s));
+        }
+        if (sections.length !== (content.sections ?? []).length) content.sections = sections;
+        if (rows.update && row.names) {
+          if (row.content.en !== undefined) content.en = row.content.en;
+          if (row.content.ru !== undefined) content.ru = row.content.ru;
+        }
+        if (canonJson(content) === canonJson(held.content)) continue;
+        if (bookProblems(content).length || sections.length > SECTIONS_MAX) {
+          return Promise.resolve(REFUSED);
+        }
+        held.content = content;
+        bump(held);
+        touched.push(...next.items.filter((i) => i.book_id === held.id).map((i) => i.key));
+      }
+      const bookOf = (key: string | null) =>
+        key === null ? null : (next.books.find((b) => b.key === key) ?? undefined);
+      for (const row of rows.cards) {
+        const book = bookOf(row.book);
+        if (book === undefined) return Promise.resolve(REFUSED);
+        const bookId = book?.id ?? null;
+        const held = next.cards.find((c) => c.key === row.key);
+        if (!held) {
+          if (!isHomebrewKey(row.key) || cardProblems(row.kind, row.content).length) {
+            return Promise.resolve(REFUSED);
+          }
+          if (taken((h) => h.cards, row.id) || next.cards.some((c) => c.id === row.id)) {
+            return Promise.resolve(REFUSED);
+          }
+          next.cards.push({
+            id: row.id,
+            key: row.key,
+            kind: row.kind,
+            book_id: bookId,
+            content: structuredClone(row.content),
+            revision: 1,
+            created_at: at,
+            updated_at: at
+          });
+          counts.cards_created++;
+          touched.push(...naming(next, row.key));
+          continue;
+        }
+        const same =
+          canonJson({ c: held.content, b: held.book_id }) ===
+          canonJson({ c: row.content, b: bookId });
+        if (!rows.update || held.kind !== row.kind || same) {
+          counts.cards_skipped++;
+          continue;
+        }
+        if (cardProblems(held.kind, row.content).length) return Promise.resolve(REFUSED);
+        held.content = structuredClone(row.content);
+        held.book_id = bookId;
+        bump(held);
+        counts.cards_updated++;
+        touched.push(...naming(next, held.key));
+      }
+      for (const row of rows.items) {
+        const book = bookOf(row.book);
+        if (book === undefined) return Promise.resolve(REFUSED);
+        const section = row.content.section;
+        if (section !== undefined && !book?.content.sections?.some((s) => s.key === section)) {
+          return Promise.resolve(REFUSED);
+        }
+        const bookId = book?.id ?? null;
+        const held = next.items.find((i) => i.key === row.key);
+        if (!held) {
+          if (!isHomebrewKey(row.key) || contentProblems(row.content, row.key).length) {
+            return Promise.resolve(REFUSED);
+          }
+          if (taken((h) => h.items, row.id) || next.items.some((i) => i.id === row.id)) {
+            return Promise.resolve(REFUSED);
+          }
+          next.items.push({
+            id: row.id,
+            key: row.key,
+            book_id: bookId,
+            content: structuredClone(row.content),
+            revision: 1,
+            created_at: at,
+            updated_at: at
+          });
+          counts.items_created++;
+          continue;
+        }
+        const same =
+          canonJson({ c: held.content, b: held.book_id }) ===
+          canonJson({ c: row.content, b: bookId });
+        if (!rows.update || same) {
+          counts.items_skipped++;
+          continue;
+        }
+        if (contentProblems(row.content, held.key).length) return Promise.resolve(REFUSED);
+        held.content = structuredClone(row.content);
+        held.book_id = bookId;
+        bump(held);
+        counts.items_updated++;
+        touched.push(held.key);
+      }
+      if (counts.books_created && next.books.length > maxBooks) {
+        return Promise.resolve(limited('homebrew_books_per_owner', maxBooks));
+      }
+      if (counts.cards_created && next.cards.length > maxCards) {
+        return Promise.resolve(limited('homebrew_cards_per_owner', maxCards));
+      }
+      if (counts.items_created && next.items.length > maxItems) {
+        return Promise.resolve(limited('homebrew_items_per_owner', maxItems));
+      }
+      mine.books = next.books;
+      mine.cards = next.cards;
+      mine.items = next.items;
+      touchReferences(touched);
+      homebrewSaid();
+      return Promise.resolve({ ok: true, counts });
+    },
+    /* move_homebrew_items(): every item or none. */
+    moveItems(items, bookId, section): Promise<HomebrewMoved> {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      if (
+        !items.length ||
+        items.length > MOVE_ITEMS_MAX ||
+        new Set(items.map((i) => i.id)).size !== items.length ||
+        (section !== null && bookId === null)
+      ) {
+        return Promise.resolve(REFUSED);
+      }
+      if (bookId !== null) {
+        const book = mine.books.find((b) => b.id === bookId);
+        if (!book) return Promise.resolve({ ok: false, error: 'gone' });
+        if (section !== null && !book.content.sections?.some((s) => s.key === section)) {
+          return Promise.resolve({ ok: false, error: 'gone' });
+        }
+      }
+      const rows = items.map((x) =>
+        mine.items.find((i) => i.id === x.id && i.revision === x.revision)
+      );
+      if (rows.some((r) => !r)) return Promise.resolve({ ok: false, error: 'conflict' });
+      const at = stamp();
+      for (const i of rows as ItemRow[]) {
+        i.book_id = bookId;
+        const content = { ...i.content };
+        if (section === null) delete content.section;
+        else content.section = section;
+        i.content = content;
+        i.revision++;
+        i.updated_at = at;
+      }
+      touchReferences((rows as ItemRow[]).map((i) => i.key));
       homebrewSaid();
       return Promise.resolve(OK);
     }

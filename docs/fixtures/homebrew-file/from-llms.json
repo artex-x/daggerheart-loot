@@ -1,0 +1,110 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "books": [
+    {
+      "key": "hb_northwindforgeaa",
+      "en": "North Wind Forge",
+      "ru": "Кузница Северного Ветра",
+      "sections": [
+        {
+          "key": "hb_sectbladesaaaaaa",
+          "en": "Blades",
+          "ru": "Клинки"
+        },
+        {
+          "key": "hb_sectarmouraaaaaa",
+          "en": "Armour",
+          "ru": "Доспехи"
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "key": "hb_northsetaaaaaaaa",
+      "kind": "set",
+      "book": "hb_northwindforgeaa",
+      "ru": "Северный набор",
+      "rud": "+1 к Уклонению в снегу"
+    },
+    {
+      "key": "hb_frostbiteruleaaa",
+      "kind": "ref",
+      "book": "hb_northwindforgeaa",
+      "ru": "Обморожение",
+      "rusub": "Свойство оружия",
+      "rud": "Удар оставляет на цели иней: цель мёрзнет и действует медленнее."
+    }
+  ],
+  "items": [
+    {
+      "key": "hb_frostbladeaaaaaa",
+      "book": "hb_northwindforgeaa",
+      "section": "hb_sectbladesaaaaaa",
+      "kind": "equip",
+      "ru": "Ледяной клинок",
+      "eq": {
+        "t": "weapon",
+        "tier": 1,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "melee",
+        "dmg": "d8+1",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_frostbladeaaaaaa"
+      },
+      "refs": [
+        "hb_frostbiteruleaaa"
+      ]
+    },
+    {
+      "key": "hb_temperedfrostbld",
+      "book": "hb_northwindforgeaa",
+      "section": "hb_sectbladesaaaaaa",
+      "kind": "equip",
+      "ru": "Закалённый ледяной клинок",
+      "eq": {
+        "t": "weapon",
+        "tier": 2,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "melee",
+        "dmg": "d10+2",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_frostbladeaaaaaa"
+      }
+    },
+    {
+      "key": "hb_furarmouraaaaaaa",
+      "book": "hb_northwindforgeaa",
+      "section": "hb_sectarmouraaaaaa",
+      "kind": "equip",
+      "ru": "Меховой доспех",
+      "eq": {
+        "t": "armor",
+        "tier": 1,
+        "as": 3,
+        "th": [
+          5,
+          11
+        ]
+      },
+      "set": "hb_northsetaaaaaaaa"
+    },
+    {
+      "key": "hb_warmflaskaaaaaaa",
+      "book": "hb_northwindforgeaa",
+      "kind": "item",
+      "ru": "Тёплая фляга",
+      "tier": 1,
+      "craft_from": [
+        "ci1"
+      ],
+      "set": "hb_northsetaaaaaaaa"
+    }
+  ]
+}

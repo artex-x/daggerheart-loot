@@ -1,0 +1,19 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 2,
+  "items": [
+    {
+      "key": "hb_patchbedrollaaaa",
+      "kind": "item",
+      "en": "Patchwork Bedroll",
+      "ru": "Лоскутный спальник",
+      "ende": "Sewn from a Premium Bedroll and a Ghostproof Blanket: during downtime nothing that haunts you reaches your sleep.",
+      "rud": "Сшит из Первоклассного Спального Мешка и Одеяла от Призраков: во время отдыха ничто из того, что вас преследует, не тревожит ваш сон.",
+      "craft_from": [
+        "ci1",
+        "dv34"
+      ]
+    }
+  ]
+}

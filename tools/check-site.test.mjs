@@ -18,7 +18,7 @@ import {
   dirReader,
   UNKNOWN_PATH,
   NOT_FOUND_MARKER,
-  SCHEMA_ID
+  SCHEMA_IDS
 } from './check-site.lib.mjs';
 
 /** An in-memory site: `files` maps a request path (`''` for root) to
@@ -59,10 +59,12 @@ const GOOD = {
   'catalog.csv': { type: 'text/csv', body: 'id\n' },
   'llms.txt': { type: 'text/plain', body: 'ok' },
   'robots.txt': { type: 'text/plain', body: 'User-agent: *\nAllow: /' },
-  'schema/import-v1.json': {
-    type: 'application/json',
-    body: JSON.stringify({ $id: SCHEMA_ID })
-  },
+  ...Object.fromEntries(
+    Object.entries(SCHEMA_IDS).map(([f, id]) => [
+      f,
+      { type: 'application/json', body: JSON.stringify({ $id: id }) }
+    ])
+  ),
   'i/w1.html': { type: 'text/html', body: '<meta property="og:image" content="og/1.jpg">' },
   'i/en/w1.html': { type: 'text/html', body: '<meta property="og:image" content="og/1.jpg">' },
   'en/index.html': {
@@ -118,23 +120,25 @@ describe('checks() against broken sites', () => {
     );
   });
 
-  it('catches a missing lists file schema, and one that names another $id', async () => {
-    const { 'schema/import-v1.json': _gone, ...withoutSchema } = GOOD;
-    const missing = await runChecks(memoryReader(withoutSchema));
-    assert.ok(
-      missing.some((m) => /schema\/import-v1\.json returned 404, not 200/.test(m)),
-      `expected a schema-status failure, got: ${JSON.stringify(missing)}`
-    );
-    for (const body of [JSON.stringify({ $id: 'https://example.test/x.json' }), 'not json']) {
-      const bad = await runChecks(
-        memoryReader({ ...GOOD, 'schema/import-v1.json': { type: 'application/json', body } })
-      );
+  for (const f of Object.keys(SCHEMA_IDS)) {
+    it(`catches a missing ${f}, and one that names another $id`, async () => {
+      const withoutSchema = Object.fromEntries(Object.entries(GOOD).filter(([k]) => k !== f));
+      const missing = await runChecks(memoryReader(withoutSchema));
       assert.ok(
-        bad.some((m) => /names another \$id/.test(m)),
-        `expected an $id failure, got: ${JSON.stringify(bad)}`
+        missing.some((m) => m.includes(`${f} returned 404, not 200`)),
+        `expected a schema-status failure, got: ${JSON.stringify(missing)}`
       );
-    }
-  });
+      for (const body of [JSON.stringify({ $id: 'https://example.test/x.json' }), 'not json']) {
+        const bad = await runChecks(
+          memoryReader({ ...GOOD, [f]: { type: 'application/json', body } })
+        );
+        assert.ok(
+          bad.some((m) => m.includes(`${f} names another $id`)),
+          `expected an $id failure, got: ${JSON.stringify(bad)}`
+        );
+      }
+    });
+  }
 
   it('catches a tiny entry module that is not a real build', async () => {
     const broken = {
@@ -311,7 +315,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 48);
+    assert.equal(list.length, 52);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
     ].sort();
@@ -339,7 +343,9 @@ describe('checks() shape', () => {
       'pages/privacy.html',
       'pages/terms.html',
       'robots.txt',
+      'schema/homebrew-v1.json',
       'schema/import-v1.json',
+      'schema/import-v2.json',
       'sw.js',
       UNKNOWN_PATH
     ]);

@@ -2,15 +2,15 @@
   /* «Импорт из файла JSON» in the lists index's «Новый список» panel: the
      file, its preview with the skips grouped by list, or the reason it is
      refused, and the press that imports every list or none
-     (docs/specs/FEATURES.md, "Lists"). A zip goes through `lib/zip.ts`,
-     loaded only when one is chosen. The rows are built once per file, so a
-     retry after a lost answer sends the same ids. */
+     (docs/specs/FEATURES.md, "Lists"). A zip's `lists.json` is read by
+     `ImportFile`; its `homebrew.json` is the homebrew import's. The rows are
+     built once per file, so a retry after a lost answer sends the same ids. */
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import Field from './Field.svelte';
+  import ImportFile from './ImportFile.svelte';
+  import ImportLines from './ImportLines.svelte';
   import {
-    decodeText,
-    FILE_MAX_BYTES,
     ID_PATTERN,
     parseBundle,
     type BundleError,
@@ -20,6 +20,8 @@
   import { limitText, type ImportRow } from '../lib/cloudLists.js';
   import { fewNames, nameOf } from '../lib/i18n.js';
   import { plural } from '../lib/plural.js';
+  import type { ReportLine as Line } from '../lib/types.js';
+  import type { FileRead, FileRefusal } from '../lib/zip.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -41,12 +43,14 @@
         lists: ImportList[];
         skipped: Skipped[];
         rows: ImportRow[];
+        sibling: boolean;
         other: string[];
         otherMore: number;
       };
 
   type Refusal =
     | 'importTooBig'
+    | 'importZipTooBig'
     | 'accountFailed'
     | 'importNotJson'
     | 'importNotBundle'
@@ -58,25 +62,29 @@
     | 'importZipManyLists'
     | 'importZipPacked';
 
-  /** A report line: the entry's place and record, when it has them, then the text and
-   *  the JSON path. */
-  interface Line {
-    pos?: string;
-    name?: string;
-    item?: string;
-    text: string;
-    path?: string;
-  }
-
   const t = $derived(app.t);
   let view = $state<View>({ kind: 'empty' });
-  let fileName = $state('');
-  let input = $state<HTMLInputElement | undefined>(undefined);
-  /* A file chosen while another is read wins: the older read is dropped. */
-  let reading = 0;
+  /* The text of a v2 file read while the account's items load: read again once they are. */
+  let waiting = $state<{
+    text: string;
+    sibling: boolean;
+    other: string[];
+    more: number;
+  } | null>(null);
+  /* The report draws the first lists; «и ещё N списков» opens the rest. */
+  let allLists = $state(false);
 
-  const ZIP_START = [0x50, 0x4b, 0x03, 0x04];
-  const REPORT_LINES = 10;
+  const LISTS_SHOWN = 20;
+  const REFUSALS: Record<FileRefusal, Refusal> = {
+    tooBig: 'importTooBig',
+    zipTooBig: 'importZipTooBig',
+    failed: 'accountFailed',
+    notJson: 'importNotJson',
+    notZip: 'importNotZip',
+    missing: 'importZipNoLists',
+    many: 'importZipManyLists',
+    packed: 'importZipPacked'
+  };
 
   const cut = (s: string): string => {
     const cps = Array.from(s);
@@ -90,60 +98,48 @@
       const v = by[k];
       return v === undefined ? m : String(v);
     });
+  const moreLines = (n: number): string => t.importErrMoreList.replace('%n', String(n));
 
   function refuse(key: Refusal, version?: string): void {
     view = version === undefined ? { kind: 'refused', key } : { kind: 'refused', key, version };
   }
 
-  async function choose(file: File): Promise<void> {
-    const mine = ++reading;
-    fileName = file.name;
-    view = { kind: 'empty' };
-    if (file.size > FILE_MAX_BYTES) {
-      refuse('importTooBig');
-      return;
-    }
-    let bytes: Uint8Array;
-    try {
-      bytes = new Uint8Array(await file.arrayBuffer());
-    } catch {
-      if (mine === reading) refuse('accountFailed');
-      return;
-    }
-    const text = await textOf(bytes);
-    if (mine !== reading) return;
-    if ('refused' in text) refuse(text.refused);
-    else read(text.lists, text.other, text.more);
+  function onread(r: FileRead): void {
+    if (!r.ok) refuse(REFUSALS[r.reason]);
+    else read(r.text, r.sibling, r.other, r.more);
   }
 
-  /* The lists file's text, from a plain file or the data zip, or the refusal. */
-  async function textOf(
-    bytes: Uint8Array
-  ): Promise<{ lists: string; other: string[]; more: number } | { refused: Refusal }> {
-    if (!ZIP_START.every((b, i) => bytes[i] === b)) {
-      const text = decodeText(bytes);
-      return text === null ? { refused: 'importNotJson' } : { lists: text, other: [], more: 0 };
-    }
-    const zip = await import('../lib/zip.js').catch(() => null);
-    if (!zip) return { refused: 'accountFailed' };
-    const r = zip.readDataZip(bytes);
-    if (r.ok) return r;
-    const keys = {
-      notZip: 'importNotZip',
-      noLists: 'importZipNoLists',
-      manyLists: 'importZipManyLists',
-      packed: 'importZipPacked',
-      notText: 'importNotJson'
-    } as const;
-    return { refused: keys[r.reason] };
-  }
+  /* A v2 file names own items: its rows wait for the account's items, so a held key is a
+     reference, never a frozen copy by a read that has not answered yet. */
+  const homebrewLoading = (): boolean => {
+    const status = app.homebrew?.status;
+    return status !== undefined && status !== 'ready';
+  };
 
-  function read(text: string, other: string[], otherMore: number): void {
+  function read(text: string, sibling: boolean, other: string[], otherMore: number): void {
+    waiting = null;
+    allLists = false;
     /* A lists file holds catalog ids only: an own key never imports as an official entry. */
     const p = parseBundle(text, (id) => app.catalog?.byId.has(id) ?? false);
     if (p.ok) {
+      if (
+        p.lists.some((l) => l.entries.some((e) => e.source === 'homebrew')) &&
+        homebrewLoading()
+      ) {
+        waiting = { text, sibling, other, more: otherMore };
+        view = { kind: 'empty' };
+        return;
+      }
       const rows = app.cloudLists?.importRows(p.lists) ?? [];
-      view = { kind: 'preview', lists: p.lists, skipped: p.skipped, rows, other, otherMore };
+      view = {
+        kind: 'preview',
+        lists: p.lists,
+        skipped: p.skipped,
+        rows,
+        sibling,
+        other,
+        otherMore
+      };
     } else if (p.reason === 'errors') {
       view = { kind: 'errors', errors: p.errors, more: p.more, names: p.names };
     } else if (p.reason === 'version') {
@@ -159,13 +155,12 @@
     }
   }
 
-  function onfile(e: Event & { currentTarget: HTMLInputElement }): void {
-    const el = e.currentTarget;
-    const [file] = el.files ?? [];
-    /* Emptied so the same file can be chosen again. */
-    el.value = '';
-    if (file) void choose(file);
-  }
+  $effect(() => {
+    if (waiting && !homebrewLoading()) {
+      const w = waiting;
+      read(w.text, w.sibling, w.other, w.more);
+    }
+  });
 
   /* The record of an entry, named when the data knows it. */
   function where(entry: number, item: string | undefined): Pick<Line, 'pos' | 'name' | 'item'> {
@@ -207,6 +202,12 @@
       case 'many':
         text = fill(e.field === 'lists' ? t.importErrManyLists : t.importErrManyEntries, by);
         break;
+      case 'hbId':
+        text = fill(t.importErrHbId, by);
+        break;
+      case 'snapshot':
+        text = t.importErrSnapshot;
+        break;
     }
     return {
       ...(e.entry === null ? {} : where(e.entry, e.item)),
@@ -242,15 +243,20 @@
   });
 
   /* The preview's report: every list, when any list has a skip or a name the account
-     holds. */
+     holds. The skips are grouped by list once, so a file of 1000 lists reads them once. */
   const report = $derived.by(() => {
     if (view.kind !== 'preview') return null;
-    const held = app.cloudLists?.lists ?? [];
-    const { skipped } = view;
+    const held = new Set((app.cloudLists?.lists ?? []).map((h) => h.name.trim()));
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a grouping read once, never state
+    const byList = new Map<number, Skipped[]>();
+    for (const s of view.skipped) {
+      const list = byList.get(s.list);
+      if (list) list.push(s);
+      else byList.set(s.list, [s]);
+    }
     const lists = view.lists.map((l, i) => {
-      const lines = skipped.filter((s) => s.list === i).map(skipLine);
-      if (held.some((h) => h.name.trim() === l.name.trim()))
-        lines.push({ text: t.importNameTaken });
+      const lines = (byList.get(i) ?? []).map(skipLine);
+      if (held.has(l.name.trim())) lines.push({ text: t.importNameTaken });
       return {
         head: `${String(i + 1)}. ${listName(l.name)}`,
         size: l.entries.length
@@ -270,25 +276,37 @@
       '%l': lists.length,
       '%n': lists.reduce((sum, l) => sum + l.entries.length, 0)
     };
+    /* Read from the account's items now: one deleted since the preview freezes too. */
+    const own = app.homebrew;
+    const frozen = lists.reduce(
+      (n, l) =>
+        n + l.entries.filter((e) => e.source === 'homebrew' && !own?.has(e.item_key)).length,
+      0
+    );
     return {
       parts: t.importPreview.split(/(%[ln])/).map((p) => String(counts[p] ?? p)),
       skipped: skipped.length
         ? t.importSkippedN.split(/(%n)/).map((p) => (p === '%n' ? String(skipped.length) : p))
         : null,
+      frozen: frozen ? t.importFrozenN.replace('%n', String(frozen)) : '',
       other: other.length
         ? t.importZipOther.replace('%s', () => fewNames(other, t, otherMore))
         : ''
     };
   });
 
-  async function send(rows: ImportRow[]): Promise<void> {
+  async function send(rows: ImportRow[], lists: ImportList[]): Promise<void> {
     const store = app.cloudLists;
     if (!store || sending) return;
+    /* An own item deleted or imported since the preview: the rows follow the account,
+       with the same ids. */
+    const fresh = store.importRowsFor(rows, lists);
+    if (fresh !== rows && view.kind === 'preview') view = { ...view, rows: fresh };
     sending = true;
-    const answer = await store.import(rows);
+    const answer = await store.import(fresh);
     sending = false;
     if (answer.ok) {
-      const n = rows.length;
+      const n = fresh.length;
       app.say((t) => t.importDone.replace('%n', String(n)));
       onclose();
     } else if (answer.error === 'limit') {
@@ -296,6 +314,11 @@
       app.say((t) => limitText(key, value, t), { error: true });
     } else if (answer.error === 'refused' && answer.reason === 'tooSlow') {
       app.say((t) => t.importTooSlow, { error: true });
+    } else if (answer.error === 'refused') {
+      /* The account changed under the preview (a reference's item deleted): the next
+         press builds its rows from the read. */
+      void app.homebrew?.read();
+      app.say((t) => t.importRefused, { error: true });
     } else {
       app.say((t) => t.accountFailed, { error: true });
     }
@@ -305,44 +328,27 @@
 <!-- A `{@render}` tag reads as a void expression to this rule wherever it
      sits among text; the report renders its snippets inside lines and boxes. -->
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -->
-{#snippet lineOf(l: Line)}{#if l.pos}{l.pos}{#if l.item},&#32;{#if l.name}{l.name}&#32;(<code
-          >{l.item}</code
-        >){:else}<code>{l.item}</code>{/if}{/if}:&#32;{/if}{l.text}{l.path
-    ? ' '
-    : ''}{#if l.path}<code>{l.path}</code>{/if}{/snippet}
-
 {#snippet bold(parts: string[])}{#each parts as part, i (i)}{#if i % 2}<b>{part}</b
       >{:else}{part}{/if}{/each}{/snippet}
-
-{#snippet lines(ls: Line[], cls?: string)}
-  <ul>
-    {#each ls.slice(0, REPORT_LINES) as l, i (i)}
-      <li class={cls}>{@render lineOf(l)}</li>
-    {/each}
-    {#if ls.length > REPORT_LINES}
-      <li class={cls}>{t.importErrMoreList.replace('%n', String(ls.length - REPORT_LINES))}</li>
-    {/if}
-  </ul>
-{/snippet}
 
 {#snippet cancel()}
   <Button size="sm" variant="ghost" disabled={sending} onclick={onclose}>{t.cancel}</Button>
 {/snippet}
 
 <Field label={t.importHead}>
-  <Actions>
-    <Button size="sm" onclick={() => input?.click()}>{t.importPick}</Button>
-    {#if fileName}<span class="fname">{fileName}</span>{/if}
-  </Actions>
-  <input
-    bind:this={input}
-    type="file"
-    hidden
-    accept=".json,.zip,application/json,application/zip"
-    onchange={onfile}
+  <ImportFile
+    {t}
+    name="lists.json"
+    onpick={() => {
+      view = { kind: 'empty' };
+      waiting = null;
+    }}
+    {onread}
   />
 
-  {#if view.kind === 'refused'}
+  {#if waiting}
+    <p class="preview" role="status">{t.hbNotReady}</p>
+  {:else if view.kind === 'refused'}
     {@const version = view.version ?? ''}
     <div class="errs" role="alert">
       <b>{t[view.key].replace('%s', () => version)}</b>
@@ -351,14 +357,14 @@
   {:else if view.kind === 'errors' && refused}
     <div class="errs" role="alert">
       <b>{t.importErrors}</b>
-      {#if refused.file.length}{@render lines(refused.file)}{/if}
+      {#if refused.file.length}<ImportLines lines={refused.file} more={moreLines} />{/if}
     </div>
     {#if refused.lists.length || refused.more}
       <div class="rep">
         {#each refused.lists as l (l.head)}
           <div class="rep-list bad">
             <b>{l.head}</b>
-            {@render lines(l.lines)}
+            <ImportLines lines={l.lines} more={moreLines} />
           </div>
         {/each}
         {#if refused.more}
@@ -369,26 +375,53 @@
     <Actions style="margin-top:12px">{@render cancel()}</Actions>
   {:else if view.kind === 'preview' && head}
     {@const rows = view.rows}
+    {@const lists = view.lists}
     <p class="preview">
       {@render bold(head.parts)}{head.skipped ? ' ' : ''}{#if head.skipped}{@render bold(
           head.skipped
         )}{/if}
     </p>
+    {#if head.frozen}
+      <p class="preview">{head.frozen}</p>
+    {/if}
+    {#if view.sibling}
+      <p class="preview">{t.importZipHomebrew}</p>
+    {/if}
     {#if head.other}
       <p class="preview">{head.other}</p>
     {/if}
     {#if report}
       <div class="rep">
-        {#each report as l (l.head)}
+        {#each allLists ? report : report.slice(0, LISTS_SHOWN) as l (l.head)}
           <div class="rep-list">
             <b>{l.head}</b><small>{l.size}</small>
-            {#if l.lines.length}{@render lines(l.lines, 'skip')}{/if}
+            {#if l.lines.length}<ImportLines lines={l.lines} more={moreLines} cls="skip" />{/if}
           </div>
         {/each}
+        {#if report.length > LISTS_SHOWN}
+          <div>
+            <Button
+              size="sm"
+              variant="bare"
+              caret
+              expanded={allLists}
+              onclick={() => {
+                allLists = !allLists;
+              }}
+              >{allLists
+                ? t.relLess
+                : plural(report.length - LISTS_SHOWN, t.importMoreLists, app.lang)}</Button
+            >
+          </div>
+        {/if}
       </div>
     {/if}
     <Actions style="margin-top:12px">
-      <Button size="sm" variant="primary" disabled={sending} onclick={() => void send(rows)}
+      <Button
+        size="sm"
+        variant="primary"
+        disabled={sending}
+        onclick={() => void send(rows, lists)}
         >{`${t.importGo} (${String(rows.length)})`}</Button
       >
       {@render cancel()}
@@ -443,21 +476,15 @@
     font-size: 12.5px;
   }
 
-  .rep-list ul {
-    margin: 4px 0 0;
-    padding-left: 18px;
-  }
-
-  .rep-list code {
-    font: 12px/1.4 var(--mono);
+  .rep-list :global(code) {
     color: var(--gold-soft);
   }
 
-  .rep-list.bad code {
+  .rep-list.bad :global(code) {
     color: var(--warn-strong);
   }
 
-  .rep-list .skip {
+  .rep-list :global(.skip) {
     color: var(--muted);
   }
 
@@ -466,12 +493,6 @@
     margin: 4px 0 0;
     font-size: 13px;
     color: var(--warn-text);
-  }
-
-  .fname {
-    font-size: 13px;
-    color: var(--muted);
-    overflow-wrap: anywhere;
   }
 
   .preview {
@@ -499,13 +520,7 @@
     display: block;
   }
 
-  .errs ul {
-    margin: 4px 0 0;
-    padding-left: 18px;
-  }
-
-  .errs code {
-    font: 12px/1.4 var(--mono);
+  .errs :global(code) {
     color: var(--warn-strong);
   }
 

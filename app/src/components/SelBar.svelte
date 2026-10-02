@@ -104,7 +104,8 @@
 </script>
 
 {#if n || shared}
-  <div class="selbarwrap" class:idle={!n}>
+  <!-- A labelled region: the bar sits after the footer, outside every other landmark. -->
+  <section class="selbarwrap" class:idle={!n} aria-label={t.selRegion}>
     <div class="selbar" bind:this={bar}>
       <span class="selsumm" aria-live={shared ? 'polite' : undefined}
         >{#if n}<span class="selcount">{countText}</span>&#32;{#if total}<span class="seltotal"
@@ -164,7 +165,7 @@
           </div>
         {/if}{/if}
     </div>
-  </div>
+  </section>
 {/if}
 
 <style>

@@ -230,8 +230,10 @@ already in the account changes.
 The site writes the same format: «Скачать JSON» ("Download JSON") on the
 Lists page for the lists ticked there and on a list's own page, and
 «Скачать мои данные (ZIP)» ("Download my data (ZIP)") on the account page
-writes a zip whose `lists.json` is this same document. A file a GM gives
-you reads the same way - see "Reading an export" below.
+writes a zip whose `lists.json` is this same document, beside
+`homebrew.json`, the account's own items (see "Homebrew items as a file
+(homebrew-v1)"). A file a GM gives you reads the same way - see "Reading an
+export" below.
 
 Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v1.json
 (JSON Schema, draft 2020-12). The site checks every file against it before
@@ -287,7 +289,7 @@ name is an error, not ignored: write `quantity`, never `qty`.
 | `entries` | yes | The list's entries in list order: 0 to 5000 of them; `[]` for an empty list. |
 | entry `id` | yes | A record id from `catalog.csv`, e.g. `ci1`. |
 | entry `name` | no | The record's name, for a person reading the file. Ignored on import. |
-| entry `source` | no | `official` - the only value in version 1. |
+| entry `source` | no | `official` - the only value in version 1; version 2 adds `homebrew` (see "Version 2"). |
 | entry `quantity` | no | A whole number, 1 to 99. Default 1. |
 | entry `price_coins` | no | A whole number of coins, 1 to 99999. Leave the key out for no price; never `null` or `0`. |
 | entry `player_note`, `gm_note` | no | The entry's two notes, up to 4000 characters each. |
@@ -310,7 +312,8 @@ name is an error, not ignored: write `quantity`, never `qty`.
   the account past its limits imports nothing. One file holds at most 1000
   lists, and at most 5000 per list, the bounds of one import: a bigger export
   imports in parts.
-- A file is at most 5 MB.
+- A file is at most 5 MB; the data zip at most 10 MB, its `lists.json` at
+  most 5 MB.
 - Importing the same file twice makes two copies. A file never carries list
   ids, so nothing already in the account is matched or overwritten.
 
@@ -337,9 +340,419 @@ language at export time; use `id` to find the rest in `catalog.csv`.
 missing `quantity` is 1, a missing note is empty, a missing `price_coins`
 is no price.
 
-The account's data zip holds one file per kind; today only `lists.json`.
-Unzip it and read `lists.json` as above. The site imports either the JSON
-file or that zip, but hand a GM a JSON file in one code block, never a zip.
+The account's data zip holds one file per kind: `lists.json`, and
+`homebrew.json` when the account holds own items. Unzip it and read
+`lists.json` as above. To restore a zip into another account the GM loads
+it twice, `homebrew.json` first on «Мои предметы», then `lists.json` on
+«Мои списки», so the lists keep live references. The site imports either
+the JSON file or that zip, but hand a GM a JSON file in one code block,
+never a zip.
+
+### Version 2: homebrew entries (import-v2)
+
+A GM's own items ("homebrew", keys `hb_` and 16 characters of `a-z2-7`)
+travel in a lists file as version 2. The site writes version 2 only for an
+export that holds a homebrew entry; every other export stays version 1. The
+site reads both versions.
+
+Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v2.json
+(version 1 plus the two keys below; every bound of version 1 holds).
+
+```json
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v2.json",
+  "format": "daggerheart-loot/lists",
+  "version": 2,
+  "lists": [
+    {
+      "name": "Лавка Ольхи",
+      "money_mode": "coin",
+      "player_note": "Пахнет порохом и свежей стружкой.",
+      "entries": [
+        {
+          "id": "ci1",
+          "name": "Первоклассный Спальный Мешок",
+          "price_coins": 150
+        },
+        {
+          "id": "hb_flintlockpistola",
+          "name": "Кремнёвый пистоль",
+          "source": "homebrew",
+          "price_coins": 30,
+          "gm_note": "Ольха продаёт его себе в убыток, чтобы о мастерской узнали.",
+          "snapshot": {
+            "kind": "equip",
+            "en": "Flintlock Pistol",
+            "ru": "Кремнёвый пистоль",
+            "ende": "Loud: everyone within Far range hears the shot.",
+            "rud": "Громкий: выстрел слышат все в пределах Далёкой дистанции.",
+            "eq": {
+              "t": "weapon",
+              "tier": 1,
+              "cls": "phy",
+              "tr": "finesse",
+              "rg": "far",
+              "dmg": "d8+1",
+              "dt": "phy",
+              "bu": 1,
+              "line": "hb_flintlockpistola"
+            },
+            "set": "hb_emberpairsetaaaa",
+            "refs": [
+              "hb_reloadruleaaaaaa"
+            ],
+            "id": "hb_flintlockpistola",
+            "src": "homebrew",
+            "cards": {
+              "sets": {
+                "hb_emberpairsetaaaa": {
+                  "en": "Smouldering Pair",
+                  "ru": "Тлеющая пара",
+                  "ende": "Both pistols of the pair: +1 to damage rolls with either.",
+                  "rud": "Оба пистоля пары: +1 к Броскам Урона каждым из них."
+                }
+              },
+              "refs": {
+                "hb_reloadruleaaaaaa": {
+                  "en": "Reload",
+                  "ru": "Перезарядка",
+                  "ensub": "Weapon feature",
+                  "rusub": "Свойство оружия",
+                  "ende": "After a shot, spend an action to reload before you fire again.",
+                  "rud": "После выстрела потратьте действие на перезарядку, прежде чем стрелять снова.",
+                  "url": ""
+                }
+              }
+            },
+            "book": {
+              "key": "hb_alderworkshopaaa",
+              "en": "Alder Workshop",
+              "ru": "Мастерская Ольхи",
+              "section": {
+                "key": "hb_sectpistolsaaaaa",
+                "en": "Pistols",
+                "ru": "Пистоли"
+              }
+            }
+          }
+        },
+        {
+          "id": "hb_wanderlampaaaaaa",
+          "name": "Лампа странника",
+          "source": "homebrew",
+          "quantity": 2,
+          "snapshot": {
+            "kind": "item",
+            "ru": "Лампа странника",
+            "en": "Wanderer's Lamp",
+            "rud": "Светит только тому, кто её несёт.",
+            "ende": "Sheds light only for the one who carries it.",
+            "id": "hb_wanderlampaaaaaa",
+            "src": "homebrew",
+            "book": {
+              "key": "hb_roadnotesaaaaaaa",
+              "en": "A Vagrant's Notes",
+              "ru": "Записки бродяги"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+- entry `source`: `homebrew` for an own item; leave it out (or `official`)
+  for a catalog record.
+- entry `id`: for `source: homebrew`, the item's key.
+- entry `snapshot`: required with `source: homebrew`, never on an official
+  entry. It is the item as a catalog record, at most 131072 bytes of JSON:
+  `id` (the key again), `src` (always `homebrew`), `kind`, both names `en`
+  and `ru` and both descriptions `ende` and `rud` (each filled from the other
+  language when it lacks one), `tier`, `eq`, `craft`, `craft_from`, `set`,
+  `refs` as in the homebrew file below, `book` (`key`, `en`, `ru` and its
+  `section` with `key`, `en`, `ru`) and `cards` (`sets` and `refs`: the own
+  set card and rule cards the item names, by key, each with every text
+  field). `tier` is the loot tier, or `A` on equipment only when `eq.tier`
+  is `A`.
+
+A file never carries a bare reference: every homebrew entry has its
+snapshot. When the GM gave you an export, copy its snapshots whole. When you
+write the homebrew file yourself, build each snapshot from its item:
+
+1. Take the item's fields except `key`, `book` and `section`.
+2. Add `id` (the item's key) and `src` (`homebrew`).
+3. Write all four of `en`, `ru`, `ende` and `rud`: a missing one takes the
+   other language's text, and `""` when neither language has one.
+4. Leave `tier` out on equipment, unless `eq.tier` is `A`: then `tier` is
+   `A` too.
+5. Add `book` when the item has a source: the source's `key` and both names
+   (filled the same way), and its `section` with `key`, `en` and `ru` when
+   the item has one.
+6. Add `cards` only when the item names an own set card or rule card: under
+   `sets` the set card by its key with `en`, `ru`, `ende`, `rud`; under
+   `refs` each rule card by its key with `en`, `ru`, `ensub`, `rusub`,
+   `ende`, `rud` and `url` (`""` for none), every text filled the same way.
+   Leave `cards` out when the item names none.
+
+On import, an entry whose key the account already holds becomes a live
+reference to that item; any other becomes a frozen copy of its snapshot. So
+import the homebrew file first (see "Homebrew items as a file"), then the
+lists file: the entries stay live.
+
+## Homebrew items as a file (homebrew-v1)
+
+A signed-in GM keeps their own items on the «Мои предметы» ("My items") page
+(`#/homebrew`): items, the sources they come from (a book, a supplement, a
+setting) with sections, and their own set cards and rule cards. A homebrew
+file carries all of these. It is the way to hand a GM items you converted
+from a book or wrote for them. You cannot import it yourself - there is no
+API. The GM saves the file and presses «Импорт предметов» ("Import items")
+on the «Мои предметы» page.
+
+The site writes the same format when the GM downloads their items. A file a
+GM gives you reads the same way - see "Reading a homebrew export" below.
+
+Schema: https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json
+(JSON Schema, draft 2020-12). The site checks every file against it before
+it imports anything. Every key is checked, and a key the schema does not
+name is an error. The field names are the catalog's: an item is written as
+a record of `data.json` is.
+
+### A complete homebrew file
+
+```json
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "books": [
+    {
+      "key": "hb_alderworkshopaaa",
+      "en": "Alder Workshop",
+      "ru": "Мастерская Ольхи",
+      "sections": [
+        {
+          "key": "hb_sectpistolsaaaaa",
+          "en": "Pistols",
+          "ru": "Пистоли"
+        },
+        {
+          "key": "hb_sectbladesaaaaaa",
+          "en": "Blades",
+          "ru": "Холодное оружие"
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "key": "hb_emberpairsetaaaa",
+      "kind": "set",
+      "book": "hb_alderworkshopaaa",
+      "en": "Smouldering Pair",
+      "ru": "Тлеющая пара",
+      "ende": "Both pistols of the pair: +1 to damage rolls with either.",
+      "rud": "Оба пистоля пары: +1 к Броскам Урона каждым из них."
+    },
+    {
+      "key": "hb_reloadruleaaaaaa",
+      "kind": "ref",
+      "book": "hb_alderworkshopaaa",
+      "en": "Reload",
+      "ru": "Перезарядка",
+      "ensub": "Weapon feature",
+      "rusub": "Свойство оружия",
+      "ende": "After a shot, spend an action to reload before you fire again.",
+      "rud": "После выстрела потратьте действие на перезарядку, прежде чем стрелять снова."
+    }
+  ],
+  "items": [
+    {
+      "key": "hb_flintlockpistola",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectpistolsaaaaa",
+      "kind": "equip",
+      "en": "Flintlock Pistol",
+      "ru": "Кремнёвый пистоль",
+      "ende": "Loud: everyone within Far range hears the shot.",
+      "rud": "Громкий: выстрел слышат все в пределах Далёкой дистанции.",
+      "eq": {
+        "t": "weapon",
+        "tier": 1,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d8+1",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_flintlockpistola"
+      },
+      "set": "hb_emberpairsetaaaa",
+      "refs": [
+        "hb_reloadruleaaaaaa"
+      ]
+    },
+    {
+      "key": "hb_doublepistolaaaa",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectpistolsaaaaa",
+      "kind": "equip",
+      "en": "Double-Barrelled Pistol",
+      "ru": "Двуствольный пистоль",
+      "ende": "Loud. Fire both barrels at once: roll damage twice and take the higher.",
+      "rud": "Громкий. Выстрел из обоих стволов: бросьте урон дважды и выберите больший.",
+      "eq": {
+        "t": "weapon",
+        "tier": 2,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d10+2",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_flintlockpistola"
+      },
+      "set": "hb_emberpairsetaaaa",
+      "refs": [
+        "hb_reloadruleaaaaaa"
+      ]
+    },
+    {
+      "key": "hb_patchbedrollaaaa",
+      "kind": "item",
+      "en": "Patchwork Bedroll",
+      "ru": "Лоскутный спальник",
+      "ende": "Sewn from a Premium Bedroll and a Ghostproof Blanket: during downtime nothing that haunts you reaches your sleep.",
+      "rud": "Сшит из Первоклассного Спального Мешка и Одеяла от Призраков: во время отдыха ничто из того, что вас преследует, не тревожит ваш сон.",
+      "craft_from": [
+        "ci1",
+        "dv34"
+      ]
+    }
+  ]
+}
+```
+
+### The homebrew fields
+
+| Key | Required | Value |
+|---|---|---|
+| `$schema` | no | The schema URL above. Ignored. |
+| `format` | yes | Exactly `daggerheart-loot/homebrew`. |
+| `version` | yes | Exactly `1`. |
+| `exported_at` | no | When the site wrote the file (ISO 8601). Ignored on import. |
+| `books` | no | 0 to 100 sources. |
+| `cards` | no | 0 to 1000 set cards and rule cards. |
+| `items` | no | 0 to 1000 items. At least one of `books`, `cards` and `items` holds an object. |
+| source `key` | yes | The source's key (see "The homebrew rules"). |
+| source `en`, `ru` | one of them | The source's names, up to 80 characters each. |
+| source `sections` | no | 0 to 30 sections in order, each `key`, `en`, `ru`; names up to 80 characters. |
+| card `key` | yes | The card's key. |
+| card `kind` | yes | `set` - a set card: the bonus of the items that share it; `ref` - a rule card: a rule items refer to. |
+| card `book` | no | The `key` of a source of this file. Leave it out for no source. |
+| card `en`, `ru` | one of them | The card's names, up to 80 characters each. |
+| card `ensub`, `rusub` | no | A rule card's subtitles, up to 60 characters each. Never on a set card. |
+| card `ende`, `rud` | no | A set card's bonus or a rule card's text, up to 1500 characters each. |
+| card `url` | no | A rule card's link: empty, or `https://` and printable ASCII, up to 300 characters. Never on a set card. |
+| item `key` | yes | The item's key. |
+| item `book` | no | The `key` of a source of this file. Leave it out for no source. |
+| item `section` | no | The `key` of a section of the item's own source; never without `book`. |
+| item `kind` | yes | `item` (kept), `consumable` (spent) or `equip` (a weapon or armour, with `eq`). |
+| item `en`, `ru` | one of them | The item's names, up to 120 characters each. |
+| item `ende`, `rud` | no | The item's texts, up to 3000 characters each. |
+| item `tier` | no | Loot only: `1` to `4`, `A` (artifact) or `C` (cursed), from the book. Leave it out for none. |
+| item `eq` | with `equip` | The stat block below. |
+| item `craft` | no | 1 to 8 ids this item upgrades into. |
+| item `craft_from` | no | 1 to 8 ids this item is made from. |
+| item `set` | no | The key of the set card the item belongs to. |
+| item `refs` | no | 1 to 3 keys of rule cards the item refers to. |
+| `eq.t` | yes | `weapon` (primary), `secondary` or `armor`. |
+| `eq.tier` | yes | `1` to `4`, or `A` for an artifact. |
+| `eq.cls` | weapon | `phy` (physical) or `mag` (magic). |
+| `eq.tr` | weapon | The trait: `agility`, `strength`, `finesse`, `instinct`, `presence`, `knowledge` or `spellcast`. |
+| `eq.rg` | weapon | The range: `melee`, `veryclose`, `close`, `far` or `veryfar`. |
+| `eq.dmg` | weapon | A die `d4`, `d6`, `d8`, `d10`, `d12` or `d20` with an optional bonus `+1` to `+99`: `d8`, `d10+2`. |
+| `eq.dt` | weapon | The damage type: `phy`, `mag` or `any`. |
+| `eq.bu` | weapon | The burden: `1`, `2` or `any` hands. |
+| `eq.alt` | no | A weapon's second stat set, with the keys of `eq.tr`, `eq.rg`, `eq.dmg` and `eq.dt`. |
+| `eq.as` | armour | The armour score, 0 to 12. |
+| `eq.th` | armour | The two damage thresholds, whole numbers 1 to 99, the first lower: `[5, 11]`. |
+| `eq.line` | no | The upgrade line (see the rules). |
+
+A weapon holds no `eq.as` or `eq.th`; armour holds none of `eq.cls`, `eq.tr`,
+`eq.rg`, `eq.dmg`, `eq.dt`, `eq.bu` and `eq.alt`.
+
+### The homebrew rules
+
+- A `key` is `hb_` and 16 characters of `a-z` and `2-7`, unique within its
+  array: make each one at random. The key names the object in the account
+  for good, so when you write a file for the same objects again, keep their
+  keys.
+- `craft`, `craft_from` and `eq.line` name an item: a key of this file, of
+  the account, or an id from `catalog.csv`. `set` names a set card and
+  `refs` rule cards: a key of this file or of the account, or a key of
+  `data.json`'s `sets` or `refs`. Never put the item's own key in `craft` or
+  `craft_from`.
+- An item's `section` is a section of the item's own source.
+- An upgrade line holds equipment of one type only. To start a line, give
+  its first item its own key as `eq.line`; every later tier names that key.
+  To join a catalog line, name the catalog line's id (the `id` of its first
+  record in `catalog.csv`). A line needs no `craft`: the ladder comes from
+  `eq.line` and `eq.tier`.
+- At most 3 `refs` and 8 ids in `craft` and in `craft_from`.
+- Write the tier from the source book; never work it out from the stats.
+
+### What the site does with a homebrew file
+
+- It checks the whole file first. Any mistake refuses the whole file: the
+  GM sees each error with its object and its path, e.g.
+  `items[2].eq.dmg`, and nothing is imported.
+- The GM chooses where the items go («Куда»): one row per source of the
+  file, and one for the items and cards with no `book`. By default a source
+  is created, or the account's source with the same key or name takes the
+  items. The items and cards with no `book` go to no source («Хоумбрю»,
+  "Homebrew") by default. Sections join by key, then by name; any other
+  section is added.
+- A key the account already holds is skipped by default, or updated if the
+  GM chooses so: an update replaces the item's or the card's text and stats
+  whole; a source's names change, and its sections only grow. The same file
+  imported again with the default changes nothing.
+- An item with a new key is added even when the account holds an item of
+  the same name: the key is the only identity.
+- A relation that names nothing is kept and draws nothing; the GM sees a
+  note.
+- `\r\n` and `\r` in any text become `\n`.
+- One file holds at most 100 sources, 1000 cards and 1000 items, the bounds
+  of one import, and is at most 5 MB.
+- An account holds at most 20 sources, 100 items and 100 cards by default,
+  and a source at most 30 sections; the site's owner can raise the limits
+  for one account. A file that would take the account past a limit imports
+  nothing.
+- Lengths count Unicode characters (code points), not bytes.
+
+`catalog.csv`, `data.json`, `i/` and `og/` never carry a homebrew record: a
+GM's own items live only in their account.
+
+### What a homebrew file never carries
+
+`img` (art), `roll`, `frame`, `starting`, `recall`, `community`, row ids
+and edit dates. Version 1 carries no art.
+
+### How to hand a homebrew file over
+
+Put the whole file in one code block tagged `json` - never split it across
+messages - and tell the GM: save it as `<source name>.json`, open «Мои
+предметы» and press «Импорт предметов» ("Import items"). Before you hand it
+over, check every id against `catalog.csv` and every key against the table
+above.
+
+### Reading a homebrew export
+
+An export is this format: the sources, then the cards, then the items, each
+by creation, with an object's `book` as its source's `key`. Keys the GM
+holds are already there; to change an item, keep its `key` and tell the GM
+to choose the update on import.
 
 ## The two notes
 
@@ -405,8 +818,9 @@ from the book.
 
 - No public API. Signing in is optional; a signed-in GM's lists live in the
   account and reach players through `#/s/` links. A list reaches an account
-  as a file ("Lists as a file (import-v1)"); you cannot import it yourself -
-  the GM does, on the Lists page.
+  as a file ("Lists as a file (import-v1)"), and a GM's own items as a
+  homebrew file ("Homebrew items as a file (homebrew-v1)"); you cannot import
+  either yourself - the GM does, on the Lists page and on «Мои предметы».
 - You cannot edit someone else's list.
 - Art is at `img/<id>.webp`, link previews at `og/<id>.jpg`.
 

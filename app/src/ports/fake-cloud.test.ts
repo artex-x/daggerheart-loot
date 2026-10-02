@@ -3,8 +3,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { bundleText, officialOnly, toBundle } from '../lib/bundle.js';
-import { toCloudList, type EntryRow, type ImportRow, type ListOp } from '../lib/cloudLists.js';
+import { bundleText, toBundle } from '../lib/bundle.js';
+import {
+  frozenOf,
+  toCloudList,
+  type EntryRow,
+  type ImportRow,
+  type ListOp
+} from '../lib/cloudLists.js';
 import { buildIndex, type Loot } from '../lib/data.js';
 import {
   bookProblems,
@@ -14,11 +20,12 @@ import {
   recordOf,
   snapshotValid
 } from '../lib/homebrew.js';
+import { homebrewText, toHomebrewFile } from '../lib/homebrewFile.js';
 import { runCloudContract } from './cloud.contract.js';
 import { fakeCloud, installFakeCloud } from './fake-cloud.js';
 import { SEED, uuid } from './fake-cloud-seed.js';
 import { browserEnv, fakeEnv } from './index.js';
-import type { CloudPort, Session } from './types.js';
+import type { CloudPort, ListWrite, Session } from './types.js';
 
 afterEach(() => {
   delete window.__dhlootFake;
@@ -34,6 +41,59 @@ describe('the fake cloud', () => {
         expect(c, m).toBe(true);
       }
     );
+  });
+
+  describe("the contract's notes-heavy import", () => {
+    const gm1 = SEED.users.gm1;
+    const users = { member: { as: 'gm1', userId: gm1.id, email: gm1.email }, doomed: 'gm2' };
+    /* A port whose import past 5 MB answers `answer`, after writing the rows when `write`. */
+    const heavyAnswers =
+      (answer: ListWrite, write: boolean) =>
+      (as?: string): Promise<CloudPort> => {
+        const port = fakeCloud(SEED, as);
+        const inner = port.lists.import.bind(port.lists);
+        port.lists.import = async (rows) => {
+          if (new TextEncoder().encode(JSON.stringify(rows)).length <= 5_000_000) {
+            return inner(rows);
+          }
+          if (write) await inner(rows);
+          return answer;
+        };
+        return Promise.resolve(port);
+      };
+    const TOO_SLOW: ListWrite = { ok: false, error: 'refused', reason: 'tooSlow' };
+    const throwing = (c: boolean, m: string): void => {
+      if (!c) throw new Error(m);
+    };
+
+    it('passesWhenTheHeavyImportIsRefusedTooSlowAndWritesNothing', async () => {
+      const logs: string[] = [];
+      await runCloudContract(
+        heavyAnswers(TOO_SLOW, false),
+        users,
+        (c, m) => {
+          expect(c, m).toBe(true);
+        },
+        (m) => logs.push(m)
+      );
+      expect(logs).toContainEqual(
+        expect.stringMatching(
+          /import of a 5 MB file \(\d+ bytes of rows\): refused tooSlow after \d+ ms/
+        )
+      );
+    });
+
+    it('failsWhenTheHeavyImportAnswersNetwork', async () => {
+      await expect(
+        runCloudContract(heavyAnswers({ ok: false, error: 'network' }, false), users, throwing)
+      ).rejects.toThrow(/the notes-heavy import answered/);
+    });
+
+    it('failsWhenATooSlowHeavyImportLeftLists', async () => {
+      await expect(
+        runCloudContract(heavyAnswers(TOO_SLOW, true), users, throwing)
+      ).rejects.toThrow(/a refused notes-heavy import left 50 lists/);
+    });
   });
 
   /* The seed's own behaviour: on the test project a sign-in and a link are
@@ -955,11 +1015,12 @@ describe("the fake's import", () => {
     );
     const text = bundleText(
       toBundle(
-        officialOnly(lists).lists,
+        lists,
         (id) => index.byId.get(id)?.ru,
         'Без названия',
-        new Date('2026-09-25T12:00:00.000Z')
-      )
+        new Date('2026-09-25T12:00:00.000Z'),
+        () => null
+      ).bundle
     );
     expect(text).toBe(
       readFileSync(
@@ -2105,5 +2166,357 @@ describe("the fake's homebrew", () => {
       await off.homebrew.updateCard(uuid(521), { content: { ru: 'a' }, book_id: null }, null)
     ).toEqual(NETWORK);
     expect(await off.homebrew.removeCard(uuid(521))).toEqual(NETWORK);
+  });
+});
+
+describe("the fake's homebrew import and move", () => {
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const ALDER_KEY = 'hb_alderworkshopaaa';
+  const BLADES = 'hb_sectbladesaaaaaa';
+  const PISTOLS = 'hb_sectpistolsaaaaa';
+  const REFUSED = { ok: false, error: 'refused' };
+  const NETWORK = { ok: false, error: 'network' };
+  const none = { books: [], cards: [], items: [], update: false };
+  const counts = (o: Record<string, number> = {}) => ({
+    books_created: 0,
+    cards_created: 0,
+    cards_updated: 0,
+    cards_skipped: 0,
+    items_created: 0,
+    items_updated: 0,
+    items_skipped: 0,
+    ...o
+  });
+  const L = 'abcdefghijklmnopqrstuvwxyz';
+  /* A key from a prefix and a number: `hb_`, the prefix, two letters, padded to 16. */
+  const k = (prefix: string, n: number): string =>
+    'hb_' + (prefix + L.charAt(n % 26) + L.charAt(Math.floor(n / 26) % 26)).padEnd(16, 'a');
+  const newItem = (n: number, extra: Record<string, unknown> = {}) => ({
+    id: uuid(8000 + n),
+    key: k('imp', n),
+    book: null,
+    content: { kind: 'item' as const, ru: 'Новый ' + String(n) },
+    ...extra
+  });
+  const loaded = async (cloud: CloudPort) => {
+    const r = await cloud.homebrew.load();
+    if (!r.ok) throw new Error('the read failed');
+    return r;
+  };
+
+  it('writes the rows, then skips the held keys, then updates them with the flag', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const rows = {
+      books: [
+        {
+          id: uuid(8100),
+          key: ALDER_KEY,
+          names: true,
+          content: {
+            en: 'Alder II',
+            sections: [{ key: 'hb_secttoolsaaaaaaa', ru: 'Инструменты' }]
+          }
+        }
+      ],
+      cards: [
+        {
+          id: uuid(8101),
+          key: 'hb_aldersetaaaaaaaa',
+          kind: 'set' as const,
+          book: ALDER_KEY,
+          content: { ru: 'Новый' }
+        },
+        {
+          id: uuid(8102),
+          key: 'hb_newcardaaaaaaaaa',
+          kind: 'ref' as const,
+          book: null,
+          content: { en: 'R' }
+        }
+      ],
+      items: [
+        {
+          id: uuid(8103),
+          key: AXE,
+          book: null,
+          content: { kind: 'item' as const, ru: 'Топор II' }
+        },
+        newItem(0, {
+          book: ALDER_KEY,
+          content: { kind: 'item', ru: 'В разделе', section: 'hb_secttoolsaaaaaaa' }
+        })
+      ],
+      update: false
+    };
+    expect(await cloud.homebrew.import(rows)).toEqual({
+      ok: true,
+      counts: counts({ cards_created: 1, cards_skipped: 1, items_created: 1, items_skipped: 1 })
+    });
+    const once = await loaded(cloud);
+    const book = once.books.find((b) => b.key === ALDER_KEY);
+    expect(book?.content).toEqual({
+      ru: 'Мастерская Ольхи',
+      en: 'Alder Workshop',
+      sections: [
+        { key: PISTOLS, ru: 'Пистоли', en: 'Pistols' },
+        { key: BLADES, ru: 'Холодное оружие', en: 'Blades' },
+        { key: 'hb_secttoolsaaaaaaa', ru: 'Инструменты' }
+      ]
+    });
+    expect(await cloud.homebrew.import({ ...rows, update: true })).toEqual({
+      ok: true,
+      counts: counts({ cards_updated: 1, cards_skipped: 1, items_updated: 1, items_skipped: 1 })
+    });
+    const twice = await loaded(cloud);
+    expect(twice.books.find((b) => b.key === ALDER_KEY)?.content.en).toBe('Alder II');
+    expect(twice.items.find((i) => i.key === AXE)).toMatchObject({
+      id: uuid(511),
+      book_id: null,
+      content: { kind: 'item', ru: 'Топор II' },
+      revision: 2
+    });
+    expect(twice.cards.find((c) => c.key === 'hb_aldersetaaaaaaaa')?.content).toEqual({
+      ru: 'Новый'
+    });
+  });
+
+  it('skips a held card of another kind under the flag', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const card = {
+      id: uuid(8101),
+      key: 'hb_aldersetaaaaaaaa',
+      kind: 'ref' as const,
+      book: null,
+      content: { en: 'X' }
+    };
+    expect(await cloud.homebrew.import({ ...none, cards: [card], update: true })).toEqual({
+      ok: true,
+      counts: counts({ cards_skipped: 1 })
+    });
+  });
+
+  it.each([
+    [
+      '101 sources',
+      {
+        ...none,
+        books: Array.from({ length: 101 }, (_, i) => ({
+          id: uuid(9000 + i),
+          key: k('bk', i),
+          names: false,
+          content: { ru: 'И' }
+        }))
+      }
+    ],
+    ['1001 items', { ...none, items: Array.from({ length: 1001 }, (_, i) => newItem(i)) }],
+    ['a key twice', { ...none, items: [newItem(1), { ...newItem(1), id: uuid(8999) }] }],
+    ['an unknown source', { ...none, items: [newItem(1, { book: 'hb_nosuchsourceaaaa' })] }],
+    [
+      'a section its source lacks',
+      {
+        ...none,
+        items: [
+          newItem(1, {
+            book: ALDER_KEY,
+            content: { kind: 'item', ru: 'X', section: 'hb_sectnoneaaaaaaaa' }
+          })
+        ]
+      }
+    ],
+    [
+      'a section with no source',
+      { ...none, items: [newItem(1, { content: { kind: 'item', ru: 'X', section: PISTOLS } })] }
+    ],
+    [
+      'an invalid item',
+      { ...none, items: [newItem(1, { content: { kind: 'item', ru: 'X\r' } })] }
+    ],
+    [
+      'a merge past 30 sections',
+      {
+        ...none,
+        books: [
+          {
+            id: uuid(8100),
+            key: ALDER_KEY,
+            names: false,
+            content: {
+              ru: 'М',
+              sections: Array.from({ length: 29 }, (_, i) => ({
+                key: k('sc', i),
+                ru: 'Р' + String(i)
+              }))
+            }
+          }
+        ]
+      }
+    ]
+  ])('refuses %s, writing nothing', async (_what, rows) => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const was = await loaded(cloud);
+    expect(await cloud.homebrew.import(rows)).toEqual(REFUSED);
+    expect(await loaded(cloud)).toEqual(was);
+  });
+
+  it('refuses a call past the item limit whole, and takes 300 under a limit of 300', async () => {
+    const cloud = fakeCloud(SEED, 'gm3');
+    expect(
+      await cloud.homebrew.import({
+        ...none,
+        items: Array.from({ length: 67 }, (_, i) => newItem(i))
+      })
+    ).toEqual({ ok: false, error: 'limit', key: 'homebrew_items_per_owner', value: 100 });
+    expect((await loaded(cloud)).items).toHaveLength(34);
+    const raised = fakeCloud(SEED, 'gm2', { limits: { items: 300 } });
+    expect(
+      await raised.homebrew.import({
+        ...none,
+        items: Array.from({ length: 300 }, (_, i) => newItem(i))
+      })
+    ).toEqual({ ok: true, counts: counts({ items_created: 300 }) });
+  });
+
+  it('moves every item or none, and answers conflict, gone and refused', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const items = (await loaded(cloud)).items;
+    const pick = items.map((i) => ({ id: i.id, revision: i.revision }));
+    expect(
+      await cloud.homebrew.moveItems([{ ...pick[0]!, revision: 9 }, pick[1]!], null, null)
+    ).toEqual({
+      ok: false,
+      error: 'conflict'
+    });
+    expect(await loaded(cloud)).toMatchObject({ items });
+    expect(await cloud.homebrew.moveItems(pick, uuid(9999), null)).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+    expect(await cloud.homebrew.moveItems(pick, uuid(501), 'hb_sectnoneaaaaaaaa')).toEqual({
+      ok: false,
+      error: 'gone'
+    });
+    expect(await cloud.homebrew.moveItems(pick, null, PISTOLS)).toEqual(REFUSED);
+    expect(await cloud.homebrew.moveItems([], null, null)).toEqual(REFUSED);
+    expect(await cloud.homebrew.moveItems([pick[0]!, pick[0]!], null, null)).toEqual(REFUSED);
+    expect(await cloud.homebrew.moveItems(pick, uuid(501), PISTOLS)).toEqual({ ok: true });
+    const moved = (await loaded(cloud)).items;
+    expect(moved.every((i) => i.book_id === uuid(501) && i.content.section === PISTOLS)).toBe(
+      true
+    );
+    expect(moved.map((i) => i.revision)).toEqual(items.map((i) => i.revision + 1));
+    expect(
+      await cloud.homebrew.moveItems(
+        moved.map((i) => ({ id: i.id, revision: i.revision })),
+        null,
+        null
+      )
+    ).toEqual({ ok: true });
+    expect(
+      (await loaded(cloud)).items.every((i) => i.book_id === null && !('section' in i.content))
+    ).toBe(true);
+  });
+
+  it('answers network offline and signed out', async () => {
+    for (const cloud of [fakeCloud(SEED, 'gm1', { offline: true }), fakeCloud(SEED)]) {
+      expect(await cloud.homebrew.import(none)).toEqual(NETWORK);
+      expect(
+        await cloud.homebrew.moveItems([{ id: uuid(511), revision: 1 }], null, null)
+      ).toEqual(NETWORK);
+    }
+  });
+
+  it('sends one homebrew message per import and per move, and none for a refused one', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const seen: string[] = [];
+    cloud.events.subscribe('owner:' + SEED.users.gm1.id, {
+      message: (event) => seen.push(event),
+      status: () => undefined
+    });
+    await Promise.resolve();
+    await cloud.homebrew.import({ ...none, items: [newItem(1), newItem(2)] });
+    await cloud.homebrew.import({
+      ...none,
+      items: [newItem(3, { book: 'hb_nosuchsourceaaaa' })]
+    });
+    await cloud.homebrew.moveItems(
+      [
+        { id: uuid(512), revision: 1 },
+        { id: uuid(513), revision: 1 }
+      ],
+      uuid(501),
+      null
+    );
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+    expect(seen.filter((e) => e === 'homebrew')).toHaveLength(2);
+  });
+
+  /* The lists export with a reference: gm1's first list refers to the axe, so the file is
+     version 2 with the live axe as its snapshot. export.json stays the frozen v1 pin. */
+  it("writes gm1's lists with their own items as docs/fixtures/import/export-v2.json", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const r = await loaded(cloud);
+    const read = await cloud.lists.list();
+    const lists = (read.ok ? read.lists : [])
+      .map(toCloudList)
+      .sort((a, b) => b.updated - a.updated || (a.id < b.id ? -1 : 1));
+    const index = buildIndex(
+      JSON.parse(
+        readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+      ) as Loot
+    );
+    const cards = r.cards.map((c) => ({ ...c.content, key: c.key, kind: c.kind }));
+    const record = (key: string) => {
+      const it = r.items.find((i) => i.key === key);
+      if (!it) return null;
+      const b = r.books.find((x) => x.id === it.book_id);
+      return recordOf(it.key, it.content, b ? { ...b.content, key: b.key } : null, cards);
+    };
+    const text = bundleText(
+      toBundle(
+        lists,
+        (id) => index.byId.get(id)?.ru ?? record(id)?.ru,
+        'Без названия',
+        new Date('2026-09-25T12:00:00.000Z'),
+        (id, list) => frozenOf(list)[id] ?? record(id)
+      ).bundle
+    );
+    expect(JSON.parse(text)).toMatchObject({ version: 2 });
+    expect(text).toBe(
+      readFileSync(
+        join(
+          import.meta.dirname,
+          '..',
+          '..',
+          '..',
+          'docs',
+          'fixtures',
+          'import',
+          'export-v2.json'
+        ),
+        'utf8'
+      )
+    );
+  });
+
+  it("writes gm1's homebrew as docs/fixtures/homebrew-file/export.json, byte for byte", async () => {
+    const r = await loaded(fakeCloud(SEED, 'gm1'));
+    const text = homebrewText(
+      toHomebrewFile(r.books, r.items, r.cards, new Date('2026-09-25T12:00:00.000Z'))
+    );
+    expect(text).toBe(
+      readFileSync(
+        join(
+          import.meta.dirname,
+          '..',
+          '..',
+          '..',
+          'docs',
+          'fixtures',
+          'homebrew-file',
+          'export.json'
+        ),
+        'utf8'
+      )
+    );
   });
 });

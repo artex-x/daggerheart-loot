@@ -1,0 +1,101 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v2.json",
+  "format": "daggerheart-loot/lists",
+  "version": 2,
+  "lists": [
+    {
+      "name": "Лавка Ольхи",
+      "money_mode": "coin",
+      "player_note": "Пахнет порохом и свежей стружкой.",
+      "entries": [
+        {
+          "id": "ci1",
+          "name": "Первоклассный Спальный Мешок",
+          "price_coins": 150
+        },
+        {
+          "id": "hb_flintlockpistola",
+          "name": "Кремнёвый пистоль",
+          "source": "homebrew",
+          "price_coins": 30,
+          "gm_note": "Ольха продаёт его себе в убыток, чтобы о мастерской узнали.",
+          "snapshot": {
+            "kind": "equip",
+            "en": "Flintlock Pistol",
+            "ru": "Кремнёвый пистоль",
+            "ende": "Loud: everyone within Far range hears the shot.",
+            "rud": "Громкий: выстрел слышат все в пределах Далёкой дистанции.",
+            "eq": {
+              "t": "weapon",
+              "tier": 1,
+              "cls": "phy",
+              "tr": "finesse",
+              "rg": "far",
+              "dmg": "d8+1",
+              "dt": "phy",
+              "bu": 1,
+              "line": "hb_flintlockpistola"
+            },
+            "set": "hb_emberpairsetaaaa",
+            "refs": [
+              "hb_reloadruleaaaaaa"
+            ],
+            "id": "hb_flintlockpistola",
+            "src": "homebrew",
+            "cards": {
+              "sets": {
+                "hb_emberpairsetaaaa": {
+                  "en": "Smouldering Pair",
+                  "ru": "Тлеющая пара",
+                  "ende": "Both pistols of the pair: +1 to damage rolls with either.",
+                  "rud": "Оба пистоля пары: +1 к Броскам Урона каждым из них."
+                }
+              },
+              "refs": {
+                "hb_reloadruleaaaaaa": {
+                  "en": "Reload",
+                  "ru": "Перезарядка",
+                  "ensub": "Weapon feature",
+                  "rusub": "Свойство оружия",
+                  "ende": "After a shot, spend an action to reload before you fire again.",
+                  "rud": "После выстрела потратьте действие на перезарядку, прежде чем стрелять снова.",
+                  "url": ""
+                }
+              }
+            },
+            "book": {
+              "key": "hb_alderworkshopaaa",
+              "en": "Alder Workshop",
+              "ru": "Мастерская Ольхи",
+              "section": {
+                "key": "hb_sectpistolsaaaaa",
+                "en": "Pistols",
+                "ru": "Пистоли"
+              }
+            }
+          }
+        },
+        {
+          "id": "hb_wanderlampaaaaaa",
+          "name": "Лампа странника",
+          "source": "homebrew",
+          "quantity": 2,
+          "snapshot": {
+            "kind": "item",
+            "ru": "Лампа странника",
+            "en": "Wanderer's Lamp",
+            "rud": "Светит только тому, кто её несёт.",
+            "ende": "Sheds light only for the one who carries it.",
+            "id": "hb_wanderlampaaaaaa",
+            "src": "homebrew",
+            "book": {
+              "key": "hb_roadnotesaaaaaaa",
+              "en": "A Vagrant's Notes",
+              "ru": "Записки бродяги"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

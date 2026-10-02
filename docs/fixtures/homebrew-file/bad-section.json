@@ -1,0 +1,51 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "books": [
+    {
+      "key": "hb_alderworkshopaaa",
+      "en": "Alder Workshop",
+      "ru": "Мастерская Ольхи",
+      "sections": [
+        {
+          "key": "hb_sectpistolsaaaaa",
+          "en": "Pistols",
+          "ru": "Пистоли"
+        },
+        {
+          "key": "hb_sectbladesaaaaaa",
+          "en": "Blades",
+          "ru": "Холодное оружие"
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "key": "hb_flintlockpistola",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectmissingaaaaa",
+      "kind": "equip",
+      "en": "Flintlock Pistol",
+      "ru": "Кремнёвый пистоль",
+      "ende": "Loud: everyone within Far range hears the shot.",
+      "rud": "Громкий: выстрел слышат все в пределах Далёкой дистанции.",
+      "eq": {
+        "t": "weapon",
+        "tier": 1,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "far",
+        "dmg": "d8+1",
+        "dt": "phy",
+        "bu": 1,
+        "line": "hb_flintlockpistola"
+      },
+      "set": "hb_emberpairsetaaaa",
+      "refs": [
+        "hb_reloadruleaaaaaa"
+      ]
+    }
+  ]
+}

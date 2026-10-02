@@ -144,7 +144,7 @@ plain form, so everything downstream sees one format.
   the English preview card of the site, which redirects to the app at the
   root with the fragment kept.
 
-All of them except `schema/import-v1.json` are generated from `data.js` by
+All of them except the three `schema/` files are generated from `data.js` by
 `node tools/build.js` and compared byte for byte by `tests/derived.js`.
 
 - `schema/import-v1.json` - the lists file `import-v1`, a JSON Schema (draft
@@ -164,15 +164,63 @@ All of them except `schema/import-v1.json` are generated from `data.js` by
   `JSON.stringify(v, null, 2) + '\n'`; `tests/contracts.js` checks the
   schema, the fixtures and the `llms.txt` section, and `lib/bundle.test.ts`
   keeps the app's validator equal to the schema.
+- `schema/import-v2.json` - the lists file `import-v2`: `import-v1` with
+  `version` 2, an entry `source` of `official` or `homebrew`, and a
+  homebrew entry's `snapshot` (the item as a catalog record, at most 131072
+  bytes, what `homebrew_snapshot_of` writes); `$id`
+  `https://artex-x.github.io/daggerheart-loot/schema/import-v2.json`. A
+  homebrew entry requires `snapshot` and a key as its `id`; an official entry
+  never holds one. The export writes version 2 only for a file that holds a
+  homebrew entry, so an official-only export stays an `import-v1` file byte
+  for byte; the import reads both versions, and a v1 reader refuses version 2.
+  On import a held key becomes a reference and any other key a frozen copy
+  of its snapshot, sent as an object: `jsonb_to_recordset` in
+  `import_lists` and `apply_list_writes` turns a JSON `null` snapshot into
+  SQL null, which reads as a reference. Frozen as `import-v1`: v1's bounds (1000 lists, 5000
+  entries per list) hold, a bound widens in place and never narrows, any
+  other change is `import-v3.json`. Its `eq` and `key` definitions are copies
+  of `homebrew-v1.json`'s, held deep-equal by `lib/homebrewFile.test.ts`.
+  `llms.txt`, "Version 2: homebrew entries (import-v2)", describes it.
+  Fixtures: `docs/fixtures/import/example-v2.json`, `errors-v2.json`,
+  `from-llms-v2.json` (the blind round); `v3.json` is the refused "another
+  version" file.
+- `schema/homebrew-v1.json` - the homebrew file `homebrew-v1`, a JSON Schema
+  (draft 2020-12) with `$id`
+  `https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json`:
+  `format` `daggerheart-loot/homebrew`, `version` 1, and `books` (sources
+  with `sections`), `cards` (set and rule cards) and `items` in the catalog's
+  field names, every fixed-key object closed. Its bounds are one
+  `import_homebrew` call's ceilings, at least three times the default limits:
+  100 sources, 1000 cards, 1000 items, 30 sections per source; the account's
+  limits are the database's. The «Мои предметы» page imports it and writes
+  it; `llms.txt`, "Homebrew items as a file (homebrew-v1)", describes it.
+  Frozen: a bound may widen in place and never narrows; any other change is
+  `homebrew-v2.json` beside it. Fixtures: `docs/fixtures/homebrew-file/`, the
+  hand-test files, `export.json` (gm1's homebrew written by the export) and
+  `from-llms.json` (the blind round), each canonical; `tests/contracts.js`
+  checks both schemas, the fixtures and the two `llms.txt` sections, and
+  `lib/homebrewFile.test.ts` and `lib/bundle.test.ts` keep the validators
+  equal to them. A homebrew record never reaches `data.json`, `catalog.csv`,
+  `i/` or `og/`.
 - The account's data zip (`daggerheart-loot-data-<YYYY-MM-DD>.zip`, from
   «Скачать мои данные» on `#/account`): one JSON file per kind at the root,
-  each with its own `format` and `version`; today only `lists.json`, which
-  is exactly an `import-v1` file. Frozen: a v1 data zip written today
-  imports for good, and a new kind is a new root file. A v1 data zip holds
-  `lists.json` at its root and no folders; every entry is stored (method 0)
-  with a UTF-8 name (flag bit 11), no zip64, no encryption, one disk, at
-  most 1000 entries. The pin is `docs/fixtures/import/data.zip`, the zip of
-  `export.json`, byte for byte.
+  each with its own `format` and `version`: `lists.json`, exactly the lists
+  file of every account list (`import-v1`, or `import-v2` when it holds an
+  own item or a frozen copy), then `homebrew.json`, exactly the account's
+  whole `homebrew-v1` file, when the account holds a source, a card or an
+  item. Frozen: a data zip written today imports for good, and a new kind is
+  a new root file. A data zip holds its files at its root and no folders;
+  every entry is stored (method 0) with a UTF-8 name (flag bit 11), no
+  zip64, no encryption, one disk, at most 1000 entries. The import reads a
+  zip of at most 10 MB whose chosen file is at most 5 MB. «Импорт из файла»
+  reads its `lists.json` and «Импорт предметов» its `homebrew.json`, each
+  naming the other file with its page; a restore into another account is
+  `homebrew.json` first, then `lists.json`
+  (`docs/decisions/2026-10-02-a-lists-file-is-version-2-only-when-it-holds-homebrew.md`).
+  The pins are `docs/fixtures/import/data.zip`, the zip of `export.json`
+  (an account with no own item), and `docs/fixtures/import/data-homebrew.zip`,
+  the zip of `export-v2.json` (gm1's lists, the axe as a homebrew entry) and
+  `docs/fixtures/homebrew-file/export.json`, each byte for byte.
 
 `data.js` assigns `window.LOOT` from a classic script. That is not decoration:
 the dataset is cached apart from the hashed bundle, so a code change does not
@@ -191,8 +239,8 @@ grows past a few MB (433 KB measured).
 ## 5. Static asset paths
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`, `i/en/<id>.html`,
-`en/` (the file `en/index.html`), `og/_share.jpg`, `og/_share_en.jpg` and
-`schema/import-v1.json`.
+`en/` (the file `en/index.html`), `og/_share.jpg`, `og/_share_en.jpg`,
+`schema/import-v1.json`, `schema/import-v2.json` and `schema/homebrew-v1.json`.
 Referenced from outside (link previews, other people's bookmarks), so the
 layout is public. `i/<id>.html` and the site root keep a Russian preview;
 `i/en/<id>.html` and `en/` are their English counterparts (issue 64,

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 1,
+  "items": [
+    {
+      "key": "hb_ashbowoneaaaaaaa",
+      "kind": "equip",
+      "en": "Ash Bow",
+      "ru": "Ясеневый лук",
+      "ende": "Strung with ash sinew; it never warps in the damp.",
+      "rud": "Натянут жилой ясеня; от сырости не ведёт.",
+      "eq": {
+        "t": "weapon",
+        "tier": 1,
+        "cls": "phy",
+        "tr": "agility",
+        "rg": "far",
+        "dmg": "d6+3",
+        "dt": "phy",
+        "bu": 2,
+        "line": "hb_ashbowoneaaaaaaa"
+      }
+    },
+    {
+      "key": "hb_ashbowtwoaaaaaaa",
+      "kind": "equip",
+      "en": "Improved Ash Bow",
+      "ru": "Улучшенный ясеневый лук",
+      "ende": "Strung with ash sinew; it never warps in the damp.",
+      "rud": "Натянут жилой ясеня; от сырости не ведёт.",
+      "eq": {
+        "t": "weapon",
+        "tier": 2,
+        "cls": "phy",
+        "tr": "agility",
+        "rg": "far",
+        "dmg": "d6+6",
+        "dt": "phy",
+        "bu": 2,
+        "line": "hb_ashbowoneaaaaaaa"
+      }
+    },
+    {
+      "key": "hb_ashbowthreeaaaaa",
+      "kind": "equip",
+      "en": "Advanced Ash Bow",
+      "ru": "Продвинутый ясеневый лук",
+      "ende": "Strung with ash sinew; it never warps in the damp.",
+      "rud": "Натянут жилой ясеня; от сырости не ведёт.",
+      "eq": {
+        "t": "weapon",
+        "tier": 3,
+        "cls": "phy",
+        "tr": "agility",
+        "rg": "far",
+        "dmg": "d6+9",
+        "dt": "phy",
+        "bu": 2,
+        "line": "hb_ashbowoneaaaaaaa"
+      }
+    },
+    {
+      "key": "hb_ashbowfouraaaaaa",
+      "kind": "equip",
+      "en": "Legendary Ash Bow",
+      "ru": "Легендарный ясеневый лук",
+      "ende": "Strung with ash sinew; it never warps in the damp.",
+      "rud": "Натянут жилой ясеня; от сырости не ведёт.",
+      "eq": {
+        "t": "weapon",
+        "tier": 4,
+        "cls": "phy",
+        "tr": "agility",
+        "rg": "far",
+        "dmg": "d6+12",
+        "dt": "phy",
+        "bu": 2,
+        "line": "hb_ashbowoneaaaaaaa"
+      }
+    },
+    {
+      "key": "hb_engravedrevolver",
+      "kind": "equip",
+      "en": "Engraved Revolver",
+      "ru": "Револьвер с гравировкой",
+      "ende": "The engraving names its first owner, who wants it back.",
+      "rud": "Гравировка называет первого владельца, и он хочет его вернуть.",
+      "eq": {
+        "t": "weapon",
+        "tier": 2,
+        "cls": "phy",
+        "tr": "finesse",
+        "rg": "close",
+        "dmg": "d8+4",
+        "dt": "phy",
+        "bu": 1,
+        "line": "f37"
+      }
+    }
+  ]
+}

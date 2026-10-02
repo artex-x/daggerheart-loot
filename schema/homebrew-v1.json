@@ -1,0 +1,429 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "title": "Daggerheart Loot homebrew file, version 1",
+  "description": "A GM's own items, their sources with sections, and their set and rule cards as one JSON file: the site imports it on the «Мои предметы» page and writes it on export. llms.txt, section \"Homebrew items as a file (homebrew-v1)\", describes it for AI assistants. The field names are the catalog's (data.json). At least one of books, cards and items holds an object. Frozen: a bound may widen in place, never narrow; any other change is homebrew-v2.json beside this one.",
+  "type": "object",
+  "required": ["format", "version"],
+  "additionalProperties": false,
+  "anyOf": [
+    { "required": ["books"], "properties": { "books": { "minItems": 1 } } },
+    { "required": ["cards"], "properties": { "cards": { "minItems": 1 } } },
+    { "required": ["items"], "properties": { "items": { "minItems": 1 } } }
+  ],
+  "properties": {
+    "$schema": {
+      "title": "Schema",
+      "description": "The URL of this schema, for editors. Ignored on import.",
+      "type": "string"
+    },
+    "format": {
+      "title": "Format",
+      "description": "Names the file as a homebrew file.",
+      "const": "daggerheart-loot/homebrew"
+    },
+    "version": {
+      "title": "Version",
+      "description": "The format version this schema describes.",
+      "const": 1
+    },
+    "exported_at": {
+      "title": "Exported at",
+      "description": "When the site wrote the file. Ignored on import.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "books": {
+      "title": "Sources",
+      "description": "The sources the items and cards belong to, each with its sections. The bound is one import's.",
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/book" }
+    },
+    "cards": {
+      "title": "Cards",
+      "description": "Set cards and rule cards that items name in set and refs. The bound is one import's.",
+      "type": "array",
+      "maxItems": 1000,
+      "items": { "$ref": "#/$defs/card" }
+    },
+    "items": {
+      "title": "Items",
+      "description": "The items. The bound is one import's.",
+      "type": "array",
+      "maxItems": 1000,
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "key": {
+      "title": "Key",
+      "description": "A homebrew key: hb_ and 16 characters of a-z and 2-7. It names the object in one account and never changes; a key unique within its array. The site makes keys; a converter makes them at random.",
+      "type": "string",
+      "pattern": "^hb_[a-z2-7]{16}$"
+    },
+    "relationId": {
+      "title": "Record id",
+      "description": "A key of this file or the account, or an id from catalog.csv. An id that names nothing is kept and draws nothing.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "section": {
+      "title": "Section",
+      "description": "A section of a source. One of en and ru holds a character other than a space.",
+      "type": "object",
+      "required": ["key"],
+      "anyOf": [{ "required": ["en"] }, { "required": ["ru"] }],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "description": "The section's key, unique within its source; an item's section names it.",
+          "$ref": "#/$defs/key"
+        },
+        "en": {
+          "title": "English name",
+          "description": "The section's English name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "ru": {
+          "title": "Russian name",
+          "description": "The section's Russian name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 80
+        }
+      }
+    },
+    "book": {
+      "title": "Source",
+      "description": "A source: a book, a supplement or a setting the items come from. One of en and ru holds a character other than a space.",
+      "type": "object",
+      "required": ["key"],
+      "anyOf": [{ "required": ["en"] }, { "required": ["ru"] }],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "description": "The source's key; an item's or a card's book names it.",
+          "$ref": "#/$defs/key"
+        },
+        "en": {
+          "title": "English name",
+          "description": "The source's English name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "ru": {
+          "title": "Russian name",
+          "description": "The source's Russian name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "sections": {
+          "title": "Sections",
+          "description": "The source's sections in order, keys unique within the source.",
+          "type": "array",
+          "maxItems": 30,
+          "items": { "$ref": "#/$defs/section" }
+        }
+      }
+    },
+    "card": {
+      "title": "Card",
+      "description": "A set card (kind set: the bonus of the items that share it) or a rule card (kind ref: a rule an item refers to). One of en and ru holds a character other than a space; a set card holds no subtitle and no link.",
+      "type": "object",
+      "required": ["key", "kind"],
+      "anyOf": [{ "required": ["en"] }, { "required": ["ru"] }],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "description": "The card's key; an item's set or refs names it.",
+          "$ref": "#/$defs/key"
+        },
+        "kind": {
+          "title": "Kind",
+          "description": "set for a set card, ref for a rule card. A card already in the account under the key with the other kind is skipped.",
+          "enum": ["set", "ref"]
+        },
+        "book": {
+          "title": "Source",
+          "description": "The key of a source of this file; leave the key out for no source.",
+          "$ref": "#/$defs/key"
+        },
+        "en": {
+          "title": "English name",
+          "description": "The card's English name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "ru": {
+          "title": "Russian name",
+          "description": "The card's Russian name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "ensub": {
+          "title": "English subtitle",
+          "description": "A rule card's English subtitle, such as its type.",
+          "type": "string",
+          "maxLength": 60
+        },
+        "rusub": {
+          "title": "Russian subtitle",
+          "description": "A rule card's Russian subtitle.",
+          "type": "string",
+          "maxLength": 60
+        },
+        "ende": {
+          "title": "English text",
+          "description": "A set card's bonus or a rule card's text, in English.",
+          "type": "string",
+          "maxLength": 1500
+        },
+        "rud": {
+          "title": "Russian text",
+          "description": "A set card's bonus or a rule card's text, in Russian.",
+          "type": "string",
+          "maxLength": 1500
+        },
+        "url": {
+          "title": "Link",
+          "description": "A rule card's link to its source: empty, or https:// and printable ASCII.",
+          "type": "string",
+          "maxLength": 300,
+          "pattern": "^(https://[\\x21-\\x7e]+)?$"
+        }
+      },
+      "if": { "properties": { "kind": { "const": "set" } } },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "required": ["ensub"] },
+            { "required": ["rusub"] },
+            { "required": ["url"] }
+          ]
+        }
+      }
+    },
+    "stats": {
+      "title": "Second stat set",
+      "description": "A weapon's second set of stats, used in its other mode.",
+      "type": "object",
+      "required": ["tr", "rg", "dmg", "dt"],
+      "additionalProperties": false,
+      "properties": {
+        "tr": { "$ref": "#/$defs/trait" },
+        "rg": { "$ref": "#/$defs/range" },
+        "dmg": { "$ref": "#/$defs/damage" },
+        "dt": { "$ref": "#/$defs/damageType" }
+      }
+    },
+    "trait": {
+      "title": "Trait",
+      "description": "The trait the weapon attacks with.",
+      "enum": [
+        "agility",
+        "strength",
+        "finesse",
+        "instinct",
+        "presence",
+        "knowledge",
+        "spellcast"
+      ]
+    },
+    "range": {
+      "title": "Range",
+      "description": "The weapon's range.",
+      "enum": ["melee", "veryclose", "close", "far", "veryfar"]
+    },
+    "damage": {
+      "title": "Damage",
+      "description": "The damage die and a bonus of 1 to 99, as d8 or d10+2.",
+      "type": "string",
+      "pattern": "^d(4|6|8|10|12|20)(\\+[1-9][0-9]?)?$"
+    },
+    "damageType": {
+      "title": "Damage type",
+      "description": "phy physical, mag magic, any either.",
+      "enum": ["phy", "mag", "any"]
+    },
+    "eq": {
+      "title": "Stat block",
+      "description": "An equipment item's stats. A weapon (t weapon or secondary) holds cls, tr, rg, dmg, dt and bu; armour holds as and th. Write the tier from the source book; never work it out from the stats.",
+      "type": "object",
+      "required": ["t", "tier"],
+      "additionalProperties": false,
+      "properties": {
+        "t": {
+          "title": "Type",
+          "description": "weapon (primary), secondary or armor.",
+          "enum": ["weapon", "secondary", "armor"]
+        },
+        "tier": {
+          "title": "Tier",
+          "description": "The tier from the source book, or A for an artifact.",
+          "enum": [1, 2, 3, 4, "A"]
+        },
+        "cls": {
+          "title": "Class",
+          "description": "phy physical or mag magic weapon.",
+          "enum": ["phy", "mag"]
+        },
+        "tr": { "$ref": "#/$defs/trait" },
+        "rg": { "$ref": "#/$defs/range" },
+        "dmg": { "$ref": "#/$defs/damage" },
+        "dt": { "$ref": "#/$defs/damageType" },
+        "bu": {
+          "title": "Burden",
+          "description": "The hands the weapon takes: 1, 2, or any.",
+          "enum": [1, 2, "any"]
+        },
+        "as": {
+          "title": "Armor score",
+          "description": "The armour's score.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "th": {
+          "title": "Thresholds",
+          "description": "The armour's major and severe damage thresholds, the first lower than the second.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "integer", "minimum": 1, "maximum": 99 }
+        },
+        "alt": {
+          "title": "Second stat set",
+          "description": "A weapon's second set of stats.",
+          "$ref": "#/$defs/stats"
+        },
+        "line": {
+          "title": "Upgrade line",
+          "description": "The line the item upgrades along: a catalog record's line id (catalog.csv) or the key of the line's own first item. Every member of a line is of one equipment type.",
+          "$ref": "#/$defs/relationId"
+        }
+      },
+      "if": { "properties": { "t": { "const": "armor" } } },
+      "then": {
+        "required": ["as", "th"],
+        "not": {
+          "anyOf": [
+            { "required": ["cls"] },
+            { "required": ["tr"] },
+            { "required": ["rg"] },
+            { "required": ["dmg"] },
+            { "required": ["dt"] },
+            { "required": ["bu"] },
+            { "required": ["alt"] }
+          ]
+        }
+      },
+      "else": {
+        "required": ["cls", "tr", "rg", "dmg", "dt", "bu"],
+        "not": { "anyOf": [{ "required": ["as"] }, { "required": ["th"] }] }
+      }
+    },
+    "item": {
+      "title": "Item",
+      "description": "One item in the catalog's shape. One of en and ru holds a character other than a space.",
+      "type": "object",
+      "required": ["key", "kind"],
+      "anyOf": [{ "required": ["en"] }, { "required": ["ru"] }],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "description": "The item's key; it names the item in the account's lists.",
+          "$ref": "#/$defs/key"
+        },
+        "book": {
+          "title": "Source",
+          "description": "The key of a source of this file; leave the key out for no source.",
+          "$ref": "#/$defs/key"
+        },
+        "section": {
+          "title": "Section",
+          "description": "The key of a section of the item's own source; never without book.",
+          "$ref": "#/$defs/key"
+        },
+        "kind": {
+          "title": "Kind",
+          "description": "item (kept), consumable (spent) or equip (a weapon or armour with eq).",
+          "enum": ["item", "consumable", "equip"]
+        },
+        "en": {
+          "title": "English name",
+          "description": "The item's English name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 120
+        },
+        "ru": {
+          "title": "Russian name",
+          "description": "The item's Russian name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 120
+        },
+        "ende": {
+          "title": "English description",
+          "description": "The item's English text.",
+          "type": "string",
+          "maxLength": 3000
+        },
+        "rud": {
+          "title": "Russian description",
+          "description": "The item's Russian text.",
+          "type": "string",
+          "maxLength": 3000
+        },
+        "tier": {
+          "title": "Tier",
+          "description": "A loot item's tier from its source book: 1-4, A artifact or C cursed; leave the key out for none. Equipment writes its tier in eq.",
+          "enum": [1, 2, 3, 4, "A", "C"]
+        },
+        "eq": {
+          "title": "Stat block",
+          "description": "Only when kind is equip.",
+          "$ref": "#/$defs/eq"
+        },
+        "craft": {
+          "title": "Upgrades into",
+          "description": "The ids this item upgrades into; never the item's own key.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relationId" }
+        },
+        "craft_from": {
+          "title": "Made from",
+          "description": "The ids this item is made from; never the item's own key.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relationId" }
+        },
+        "set": {
+          "title": "Set card",
+          "description": "The key of a set card of this file or the account, or a catalog set's key from data.json.",
+          "$ref": "#/$defs/relationId"
+        },
+        "refs": {
+          "title": "Rule cards",
+          "description": "Keys of rule cards of this file or the account, or catalog rule card keys from data.json.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relationId" }
+        }
+      },
+      "if": { "properties": { "kind": { "const": "equip" } } },
+      "then": { "required": ["eq"], "not": { "required": ["tier"] } },
+      "else": { "not": { "required": ["eq"] } }
+    }
+  }
+}

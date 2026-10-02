@@ -1437,7 +1437,15 @@ describe('an import', () => {
       player_note: '',
       gm_note: '',
       entries: [
-        { item_key: 'ci1', quantity: 2, price_coins: 150, player_note: '', gm_note: '' }
+        {
+          item_key: 'ci1',
+          source: 'official',
+          snapshot: null,
+          quantity: 2,
+          price_coins: 150,
+          player_note: '',
+          gm_note: ''
+        }
       ]
     },
     { name: 'Пустой', money_mode: 'bag', player_note: '', gm_note: '', entries: [] }
@@ -1515,6 +1523,89 @@ describe('an import', () => {
     });
     expect(list).not.toHaveBeenCalled();
     expect(store.lists).toHaveLength(3);
+  });
+
+  it('writes a homebrew entry the account holds as a reference, and any other as its frozen copy object', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const has = vi.fn((key: string) => key === AXE);
+    const store = new CloudLists(cloud.lists, say, t, {
+      events: cloud.events,
+      random: () => 0.5,
+      homebrew: { message: () => undefined, refetch: () => undefined, has }
+    });
+    await store.load();
+    const lamp = 'hb_wanderlampaaaaaa';
+    const snapshot = (id: string) => ({
+      id,
+      src: 'homebrew' as const,
+      kind: 'item' as const,
+      en: 'Lamp',
+      ru: 'Лампа',
+      ende: '',
+      rud: ''
+    });
+    const entry = (key: string) => ({
+      item_key: key,
+      source: 'homebrew' as const,
+      snapshot: snapshot(key),
+      quantity: 1,
+      price_coins: null,
+      player_note: '',
+      gm_note: ''
+    });
+    const [row] = store.importRows([
+      {
+        name: 'Своё',
+        money_mode: 'bag',
+        player_note: '',
+        gm_note: '',
+        entries: [entry(AXE), entry(lamp)]
+      }
+    ]);
+    expect(row?.entries.map((e) => [e.item_key, e.source, e.snapshot])).toEqual([
+      [AXE, 'homebrew', null],
+      [lamp, 'homebrew', snapshot(lamp)]
+    ]);
+    expect(has).toHaveBeenCalledWith(lamp);
+    expect(await store.import(row ? [row] : [])).toEqual({ ok: true });
+    const read = await serverList(cloud.lists, row?.list.id ?? '');
+    expect(read?.list_entries.map((e) => [e.item_key, e.snapshot])).toEqual([
+      [AXE, null],
+      [lamp, snapshot(lamp)]
+    ]);
+    store.clear();
+  });
+
+  it('writes every homebrew entry as a frozen copy with no homebrew hook', async () => {
+    const { store } = await loaded();
+    const [row] = store.importRows([
+      {
+        name: 'Своё',
+        money_mode: 'bag',
+        player_note: '',
+        gm_note: '',
+        entries: [
+          {
+            item_key: AXE,
+            source: 'homebrew',
+            snapshot: {
+              id: AXE,
+              src: 'homebrew',
+              kind: 'item',
+              en: 'A',
+              ru: 'A',
+              ende: '',
+              rud: ''
+            },
+            quantity: 1,
+            price_coins: null,
+            player_note: '',
+            gm_note: ''
+          }
+        ]
+      }
+    ]);
+    expect(row?.entries[0]?.snapshot).toMatchObject({ id: AXE });
   });
 
   it('makes new ids on every call; the same rows sent twice carry the same ids', async () => {
