@@ -230,6 +230,20 @@ scale finding the owner sent to this task's scale re-run.
   request alone (or the rows changed since the last read);
   `supabase.test.ts` counts the rows of the second read.
 
+### D87 - an older account read can overwrite newer list rows
+
+- **Where**: `CloudLists.#pull` in `app/src/lib/cloudLists.ts`.
+- **What**: two account reads can overlap (a poll, a Realtime message, an
+  other-tab edit). When the older one answers last, its changed rows
+  replace the newer objects the store already holds, until the next read
+  brings them back. The defect is older than the revision-keyed re-read;
+  that change did not add it.
+- **Why deferred**: found in the review of the revision-keyed re-read
+  (2026-10-02), outside that release's scope.
+- **How to verify the fix**: skip a changed row whose `revision` is below
+  the one the store holds; a `cloudLists.test.ts` case answers two reads
+  out of order and expects the newer row to stay.
+
 ## Debt cleanup (`debt-cleanup`)
 
 Owns: scale findings at up to three times the default limits that no
