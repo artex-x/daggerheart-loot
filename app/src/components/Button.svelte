@@ -23,6 +23,10 @@
     label?: string;
     /** `aria-expanded`, for a button that folds a panel open. */
     expanded?: boolean | undefined;
+    /** `aria-controls`: the region a disclosure button shows. */
+    controls?: string | undefined;
+    /** The button element, for a caller that moves focus back to it. */
+    el?: HTMLButtonElement | undefined;
     /** The pressed look - `.btn.on` / `.btn.primary.on` - for a toggle that
      *  stays visible once it is on, rather than a filled fill like `toggle`. */
     on?: boolean;
@@ -54,12 +58,14 @@
      is not one, and a link does its work by being a link. */
   type Props = Base & ({ href: string } | { onclick: () => void });
 
-  const {
+  let {
     variant = 'plain',
     size = 'md',
     title,
     label,
     expanded,
+    controls,
+    el = $bindable(),
     on,
     caret,
     href,
@@ -90,6 +96,8 @@
     {title}
     aria-label={label}
     aria-expanded={expanded}
+    aria-controls={controls}
+    bind:this={el}
     {disabled}
     {onclick}
   >

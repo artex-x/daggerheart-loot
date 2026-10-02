@@ -220,7 +220,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText ""Premium Bedroll" removed"
+    StaticText ""Premium Bedroll" removed from the list"
     button "Undo" [focused=true]
 
 ## en :: controls

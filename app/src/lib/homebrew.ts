@@ -59,6 +59,12 @@ export const DESC_MAX = 3000;
 export const BOOK_NAME_MAX = 80;
 /** The most sections a source holds. */
 export const SECTIONS_MAX = 30;
+
+/** Returns the length past which a form's text box shows «N / M»: five sixths of its cap
+ *  (docs/specs/FEATURES.md, "Consistency rules", rule 13). */
+export function counterFrom(max: number): number {
+  return Math.floor((max * 5) / 6);
+}
 /** The most bytes of a frozen copy's snapshot (`list_entries_snapshot_size`). */
 export const SNAPSHOT_BYTES = 131072;
 

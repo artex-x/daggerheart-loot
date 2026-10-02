@@ -254,6 +254,18 @@ async function twoRequests(d) {
   ]);
 }
 
+/** Four purchase requests on «Лавка кузнеца», the newest of seven lines: the panel
+ *  draws three and folds the rest. */
+async function manyRequests(d) {
+  await twoRequests(d);
+  await d.fake('request', 'player-token-1', [{ item: 'q1', qty: 1 }]);
+  await d.fake(
+    'request',
+    'gm-token-1',
+    ['ci1', 'q1', 'q313', 'cc1', 'voa2_a3', 'q23', 'w51'].map((item) => ({ item, qty: 1 }))
+  );
+}
+
 /* Storage seeds for the list states below. A state that needs a list to
    exist cannot be entered - every state opens a fresh page whose `prepare()`
    clears storage - so it is seeded instead. */
@@ -1023,7 +1035,7 @@ const STATES = [
     id: '#/lists as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: "the seed's two browser lists moved on sign-in: the notice under the header names both; «Импорт из файла» under the name row; «Ваш аккаунт» with the idle strip «Выбрать все», then the moved lists first (uuid(5000), uuid(5001)) with «0 позиций · изменён только что», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no browser group",
+    why: "the seed's two browser lists moved on sign-in: the notice under the header names both; «Импорт из файла» under the name row; «Ваш аккаунт» with «5 списков из 50», the idle strip «Выбрать все», then the moved lists first (uuid(5000), uuid(5001)) with «0 позиций · изменён только что», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no browser group",
     storage: two,
     enter: async (d) => {
       await d.moveSettled();
@@ -1237,13 +1249,13 @@ const STATES = [
     id: SHOP + ' as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Лавка кузнеца»: «10 позиций · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»; the row «Свой предмет» folded after it'
+    why: '«Лавка кузнеца»: «10 позиций из 100 · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»; the row «Свой предмет» folded after it'
   },
   {
     id: SHOP + ' ~ own item as gm1',
     route: SHOP,
     as: 'gm1',
-    why: 'the row «Свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «Добавить в список», «Закрыть» and the note on «Мои предметы»',
+    why: 'the row «Свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «Добавить в список», «Отмена» and the note on «Мои предметы»',
     enter: async (d) => {
       await d.click('Свой предмет');
     }
@@ -1252,7 +1264,7 @@ const STATES = [
     id: SHOP + ' ~ own item added as gm1',
     route: SHOP,
     as: 'gm1',
-    why: 'a name typed and «Добавить в список» pressed: «11 позиций», the new plain item last, right above the row, the fields empty, the toast «Предмет «Фляга контрабандиста» добавлен в список» with the link «Изменить»',
+    why: 'a name typed and «Добавить в список» pressed: «11 позиций из 100», the new plain item last, right above the row, the fields empty, the toast «Предмет «Фляга контрабандиста» создан и добавлен в список» with the link «Изменить»',
     enter: async (d) => {
       await d.click('Свой предмет');
       await d.type('Название*', 'Фляга контрабандиста');
@@ -1276,7 +1288,7 @@ const STATES = [
     id: EMPTY_LIST + ' as gm1',
     route: EMPTY_LIST,
     as: 'gm1',
-    why: '«Пустой список»: «0 позиций · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Свой предмет» folded'
+    why: '«Пустой список»: «0 позиций из 100 · Сохранено», the empty hint ending «Свой предмет можно создать здесь же, кнопкой ниже.», then the row «Свой предмет» folded'
   },
   {
     id: GM2_LIST + ' as gm2',
@@ -1313,6 +1325,17 @@ const STATES = [
     enter: async (d) => {
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (2)'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: SHOP + ' ~ many requests as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: '«Запросы (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret',
+    enter: async (d) => {
+      await manyRequests(d);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (4)'); i++)
         await d.settle();
     }
   },
@@ -2018,13 +2041,13 @@ const STATES = [
     id: '#/homebrew as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«Мои предметы: 4 из 100», the closed folds «Источники · 1 источник» and «Карты · 1 комплект, 1 карта правил», «Новый предмет», the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+    why: '«4 предмета из 100», the closed folds «Источники · 1 источник из 20» and «Карты · 2 карты из 100: 1 комплект, 1 карта правил», «Новый предмет», the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
   },
   {
     id: '#/homebrew ~ sections as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: 'the fold «Источники» open («Хоумбрю» 3 предмета, «Мастерская Ольхи» 1 предмет · 2 раздела), then «Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Добавить раздел»',
+    why: 'the fold «Источники» open («Хоумбрю» 3 предмета, «Мастерская Ольхи» 1 предмет · 2 раздела из 30), then «Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Новый раздел» with the plus icon',
     enter: async (d) => {
       await d.click('Источники');
       await d.click('Разделы');
@@ -2034,7 +2057,7 @@ const STATES = [
     id: '#/homebrew ~ cards as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: 'the fold «Карты · 1 комплект, 1 карта правил» open: «Комплекты» with «+ Новый комплект» and «Комплект Ольхи» «0 предметов · Мастерская Ольхи», «Карты правил» with «+ Новая карта правил» and «Клеймо Ольхи» «0 предметов», each card with «Изменить» and «Удалить»',
+    why: 'the fold «Карты · 2 карты из 100: 1 комплект, 1 карта правил» open: «Комплекты» with «Новый комплект» and «Комплект Ольхи» «0 предметов · Мастерская Ольхи», «Карты правил» with «Новая карта правил» and «Клеймо Ольхи» «0 предметов», each card with «Изменить» and «Удалить»',
     enter: async (d) => {
       await d.click('Карты');
     }
@@ -2053,7 +2076,7 @@ const STATES = [
     id: '#/homebrew as gm2',
     route: '#/homebrew',
     as: 'gm2',
-    why: 'an account with no homebrew: «Мои предметы: 0 из 100», the closed folds «Источники» and «Карты» with no count, «Своих предметов пока нет - создайте первый.»'
+    why: 'an account with no homebrew: «0 предметов из 100», the closed folds «Источники · 0 источников из 20» and «Карты · 0 карт из 100», «Своих предметов пока нет - создайте первый выше.»'
   },
   {
     id: '#/homebrew',
@@ -2064,7 +2087,17 @@ const STATES = [
     id: '#/homebrew/new as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
-    why: 'a new item: «Новый предмет», the legend, «Вид» on «Предмет», «Источник» on «Хоумбрю», «Название» *, «Описание», «Ранг» on «Нет», «Сохранить» and «Отмена», the preview card'
+    why: 'a new item: «Новый предмет», the legend, «Вид» on «Предмет», «Источник» with its «?» on «Хоумбрю», «Название» *, «Описание», «Ранг» with its «?» on «Без ранга» then 1-4, «Сохранить» and «Отмена», the preview card'
+  },
+  {
+    id: '#/homebrew/new ~ armour as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: '«Снаряжение» and «Броня»: «Ранг» * 1-4 with its «?», «Показатель брони» *, the caption «Пороги урона» * over two labelled boxes «Порог Ощутимого урона» and «Порог Тяжёлого урона»',
+    enter: async (d) => {
+      await d.click('Снаряжение');
+      await d.click('Броня');
+    }
   },
   {
     id: '#/homebrew/new ~ problems as gm1',
@@ -2109,17 +2142,28 @@ const STATES = [
     id: '#/homebrew/new ~ new card as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
-    why: 'the fold «Связи» open and «+ Новая карта правил» pressed: the rule card form under «Карты правил», «Название карты» * focused, «Подзаголовок», «Текст карты» *, «Ссылка», «Создать карту» and «Отмена», the hint',
+    why: 'the fold «Связи» open and «Новая карта правил» pressed: the rule card form under «Карты правил», «Название карты» * focused, «Подзаголовок», «Текст карты» *, «Ссылка», «Создать карту» and «Отмена», the hint',
     enter: async (d) => {
       await d.click('Связи');
-      await d.press('+ Новая карта правил');
+      await d.press('Новая карта правил');
     }
   },
   {
     id: '#/homebrew/' + HB_AXE + ' as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: 'the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Второй набор характеристик» folded, «Удалить», the preview card'
+    why: 'the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Урон» with its «?» over «Кость урона» and «Бонус к урону», the disclosure «Второй набор характеристик» closed with its «?», «Удалить», the preview card'
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ help open as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: 'the fold «Связи» open, the «?» of «Комплект» and of «Второй набор характеристик» pressed: each hint under its label, every other «?» closed',
+    enter: async (d) => {
+      await d.click('Связи');
+      await d.click('Подсказка: Комплект');
+      await d.click('Подсказка: Второй набор характеристик');
+    }
   },
   {
     id: '#/homebrew/' + HB_AXE + ' ~ conflict as gm1',
@@ -2135,7 +2179,7 @@ const STATES = [
     id: '#/homebrew/' + HB_AXE + ' ~ not saved as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: 'the network lost, then «Сохранить»: «Не удалось сохранить - нет связи. Правки остались в форме...» under the buttons, the form kept',
+    why: 'the network lost, then «Сохранить»: «Не получилось сохранить: нет связи. Правки остались в форме...» under the buttons, the form kept',
     enter: async (d) => {
       await d.fake('setOffline', true);
       await d.press('Сохранить');
@@ -2145,7 +2189,7 @@ const STATES = [
     id: '#/homebrew/' + HB_RING + ' ~ deleted as gm1',
     route: '#/homebrew/' + HB_RING,
     as: 'gm1',
-    why: '«Удалить» with the confirm accepted: back on «Мои предметы: 3 из 100» with the toast «Предмет «Кольцо с гравировкой» удалён»',
+    why: '«Удалить» with the confirm accepted: back on «3 предмета из 100» with the toast «Предмет «Кольцо с гравировкой» удалён»',
     enter: async (d) => {
       await d.press('Удалить');
     },
@@ -2181,7 +2225,7 @@ const STATES = [
     id: '#/homebrew/' + HB_AXE + ' ~ second set as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: 'the fold «Второй набор характеристик» open on its hint, «Проворность» pressed in it, then «Сохранить»: «Не сохранено: исправьте 3 поля.», three lines that name «Очистить второй набор», and that button',
+    why: 'the disclosure «Второй набор характеристик» open, its hint closed behind its «?», «Проворность» pressed in it, then «Сохранить»: «Не сохранено: исправьте 3 поля.», three lines that name «Очистить второй набор», and that button',
     enter: async (d) => {
       await d.click('Второй набор характеристик');
       await d.click('Проворность', 1);
@@ -2192,7 +2236,7 @@ const STATES = [
     id: '#/homebrew/' + HB_AXE + ' ~ second set cleared as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: 'the same, then «Очистить второй набор»: the fold open on its hint with nothing pressed and the die on «Кость», no summary, no error line, no clear button',
+    why: 'the same, then «Очистить второй набор»: the disclosure open with nothing pressed and the die on «Кость», no summary, no error line, no clear button',
     enter: async (d) => {
       await d.click('Второй набор характеристик');
       await d.click('Проворность', 1);
@@ -2248,7 +2292,7 @@ const STATES = [
     id: '#/tables/homebrew as gm2',
     route: '#/tables/homebrew',
     as: 'gm2',
-    why: 'an account with no own item: «Своих предметов пока нет - создайте первый.» and «Новый предмет»'
+    why: 'an account with no own item: «Своих предметов пока нет.» and «Новый предмет»'
   },
   {
     id: '#/tables/homebrew',

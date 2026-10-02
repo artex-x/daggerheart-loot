@@ -9,6 +9,7 @@
   import Button from './Button.svelte';
   import CardForm from './CardForm.svelte';
   import FormField from './FormField.svelte';
+  import Icon from './Icon.svelte';
   import ItemPicker from './ItemPicker.svelte';
   import Seg from './Seg.svelte';
   import { lineMembers } from '../lib/data.js';
@@ -169,7 +170,12 @@
 
 <div class="rel">
   {#if draft.kind === 'equip'}
-    <FormField label={t.hbLine} error={errText('hb-line')} errorId={errId('hb-line')}>
+    <FormField
+      label={t.hbLine}
+      error={errText('hb-line')}
+      errorId={errId('hb-line')}
+      help={{ id: 'hb-line-help', text: t.hbLineHelp, lang }}
+    >
       <Seg
         id="hb-line"
         label={t.hbLine}
@@ -198,8 +204,6 @@
             set('line', '', 'hb-line');
           }}
         />
-      {:else if draft.lineMode === 'new'}
-        <p class="hint">{t.hbLineNewHint}</p>
       {/if}
     </FormField>
   {/if}
@@ -209,6 +213,7 @@
     for="hb-craft"
     error={errText('hb-craft')}
     errorId={errId('hb-craft')}
+    help={{ id: 'hb-craft-help', text: t.hbCraftIntoHelp, lang }}
   >
     <ItemPicker
       id="hb-craft"
@@ -241,6 +246,7 @@
     for="hb-craft-from"
     error={errText('hb-craft-from')}
     errorId={errId('hb-craft-from')}
+    help={{ id: 'hb-craft-from-help', text: t.hbCraftFromHelp, lang }}
   >
     <ItemPicker
       id="hb-craft-from"
@@ -273,6 +279,7 @@
     for={adding === 'set' ? undefined : 'hb-set'}
     error={errText('hb-set')}
     errorId={errId('hb-set')}
+    help={{ id: 'hb-set-help', text: t.hbSetHelp, lang }}
   >
     {#if adding === 'set'}
       <CardForm
@@ -330,6 +337,7 @@
     for="hb-refs"
     error={errText('hb-refs')}
     errorId={errId('hb-refs')}
+    help={{ id: 'hb-refs-help', text: t.hbRefsHelp, lang }}
   >
     <ItemPicker
       id="hb-refs"
@@ -377,7 +385,7 @@
           size="sm"
           onclick={() => {
             adding = 'ref';
-          }}>{t.hbCardNew}</Button
+          }}><Icon name="plus" />{t.hbNewCard}</Button
         >
       </div>
     {/if}

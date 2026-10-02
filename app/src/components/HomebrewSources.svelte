@@ -2,15 +2,16 @@
   /* The fold «Источники» on `#/homebrew` (m02, m19, m13 in the homebrew mocks), closed
      on each visit with the count of named sources: the default source with its count,
      then each named source with its count, «Разделы», «Переименовать» and «Удалить»,
-     and «Добавить» for a new one. A source's sections open under it with the same
+     and «Новый источник» for a new one. A source's sections open under it with the same
      actions. Every write goes through the store (docs/specs/FEATURES.md, "Homebrew"). */
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
+  import Icon from './Icon.svelte';
   import NameField from './NameField.svelte';
   import PanelFold from './PanelFold.svelte';
   import { limitText } from '../lib/cloudLists.js';
-  import { nameTaken, SECTIONS_MAX, type BookRow } from '../lib/homebrew.js';
-  import { plural } from '../lib/plural.js';
+  import { BOOK_NAME_MAX, nameTaken, SECTIONS_MAX, type BookRow } from '../lib/homebrew.js';
+  import { countOf, plural } from '../lib/plural.js';
   import type { ListWrite, HomebrewSaved } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Homebrew, NewIds } from '../state/homebrew.svelte.js';
@@ -117,21 +118,27 @@
     return null;
   }
 
+  /* The question, the consequence when items stay, and the no-undo clause. */
+  const asked = (ask: string, stay: string): string =>
+    [ask, stay, t.deleteNoUndo].filter(Boolean).join(' ');
+
   async function removeSource(book: BookRow): Promise<void> {
     const n = held(book).length;
-    const ask = t.hbDeleteSource.replace('%s', named(book.content));
-    if (!app.env.dialog.confirm(n ? ask + ' ' + plural(n, t.hbSourceStayN, lang) : ask)) return;
+    const name = named(book.content);
+    const stay = n ? plural(n, t.hbSourceStayN, lang) : '';
+    if (!app.env.dialog.confirm(asked(t.hbDeleteSource.replace('%s', name), stay))) return;
     const r = await store.removeBook(book.id);
-    if (!r.ok) app.say((t) => t.hbDeleteFailed, { error: true });
+    if (r.ok) app.say((t) => t.hbSourceDeleted.replace('%s', name));
+    else app.say((t) => t.hbDeleteFailed, { error: true });
   }
 
   async function removeSection(book: BookRow, key: string, name: string): Promise<void> {
     const n = held(book).filter((i) => i.content.section === key).length;
-    const ask = t.hbDeleteSection.replace('%s', name);
-    if (!app.env.dialog.confirm(n ? ask + ' ' + plural(n, t.hbSectionStayN, lang) : ask))
-      return;
+    const stay = n ? plural(n, t.hbSectionStayN, lang) : '';
+    if (!app.env.dialog.confirm(asked(t.hbDeleteSection.replace('%s', name), stay))) return;
     const r = await store.removeSection(book, key);
-    if (!r.ok) {
+    if (r.ok) app.say((t) => t.hbSectionDeleted.replace('%s', name));
+    else {
       const changed = r.error === 'conflict' || r.error === 'gone';
       app.say((t) => (changed ? t.hbBookChanged : t.hbDeleteFailed), { error: true });
     }
@@ -145,7 +152,9 @@
 
 <PanelFold
   label={t.hbSources}
-  count={books.length ? plural(books.length, t.hbSourcesN, lang) : undefined}
+  count={store.bookLimit !== null || books.length
+    ? countOf(books.length, store.bookLimit, t.hbSourcesN, lang, t.ofLimit)
+    : undefined}
 >
   <ul class="books">
     <li class="book">
@@ -167,13 +176,20 @@
             cancel={t.cancel}
             onsubmit={(name: string) => renameSource(book, name)}
             oncancel={close}
+            maxlength={BOOK_NAME_MAX}
           />
         {:else}
           <div class="head">
             <span class="name">{named(book.content)}</span>
             <span class="count"
               >{itemsN(mine.length)}{#if sections.length}{' · ' +
-                  plural(sections.length, t.hbSectionsN, lang)}{/if}</span
+                  countOf(
+                    sections.length,
+                    SECTIONS_MAX,
+                    t.hbSectionsN,
+                    lang,
+                    t.ofLimit
+                  )}{/if}</span
             >
             <span class="acts">
               <Button
@@ -210,6 +226,7 @@
                     cancel={t.cancel}
                     onsubmit={(name: string) => renameSection(book, s.key, name)}
                     oncancel={close}
+                    maxlength={BOOK_NAME_MAX}
                   />
                 {:else}
                   <div class="head">
@@ -257,13 +274,14 @@
                   cancel={t.cancel}
                   onsubmit={(name: string) => addSection(book, name)}
                   oncancel={close}
+                  maxlength={BOOK_NAME_MAX}
                 />
               {:else}
                 <Button
                   size="sm"
                   onclick={() => {
                     start('add:' + book.id, true);
-                  }}>{t.hbAddSection}</Button
+                  }}><Icon name="plus" />{t.hbNewSection}</Button
                 >
               {/if}
             </li>
@@ -281,13 +299,14 @@
         cancel={t.cancel}
         onsubmit={createSource}
         oncancel={close}
+        maxlength={BOOK_NAME_MAX}
       />
     {:else}
       <Button
         size="sm"
         onclick={() => {
           start('new', true);
-        }}>{t.hbAdd}</Button
+        }}><Icon name="plus" />{t.hbNewSource}</Button
       >
     {/if}
   </div>
@@ -328,6 +347,7 @@
 
   .name {
     font-weight: 600;
+    overflow-wrap: anywhere;
   }
 
   .count {

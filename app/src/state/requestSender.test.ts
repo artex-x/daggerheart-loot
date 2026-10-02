@@ -92,10 +92,13 @@ describe('RequestSender.send', () => {
       t.limitOther.replace('%n', '?')
     ],
     [
-      { ok: false, error: 'limit', key: 'request_lines', value: 100 },
-      t.limitOther.replace('%n', '100')
+      { ok: false, error: 'limit', key: 'request_lines', value: null },
+      t.limitOther.replace('%n', '?')
     ],
-    [{ ok: false, error: 'network' }, 'Не получилось отправить. Проверьте соединение.'],
+    [
+      { ok: false, error: 'network' },
+      'Не получилось отправить. Проверьте соединение и попробуйте ещё раз.'
+    ],
     [{ ok: false, error: 'refused' }, 'Сервер не принял запрос.']
   ] as [RequestSent, string][])(
     'says an error for %j and keeps the selection',
@@ -107,6 +110,47 @@ describe('RequestSender.send', () => {
       expect(hooks.reread).not.toHaveBeenCalled();
     }
   );
+
+  it('names the request-lines limit and the ticked count, never the address, in both languages', async () => {
+    const lines = Array.from({ length: 101 }, (_, i) => ({ item: 'q' + String(i), qty: 1 }));
+    const refusal: RequestSent = {
+      ok: false,
+      error: 'limit',
+      key: 'request_lines',
+      value: 100
+    };
+    const { s, said } = sender([refusal, refusal]);
+    await s.send('tok', lines);
+    expect(said).toEqual([
+      [
+        'В запросе может быть не больше 100 позиций, а отмечено 101. Снимите лишние отметки и отправьте ещё раз.',
+        true
+      ]
+    ]);
+    const en = dict('en');
+    const msg = vi.fn<(m: Msg) => void>();
+    const s2 = new RequestSender(
+      {
+        list: () => Promise.resolve({ ok: false }),
+        send: () => Promise.resolve(refusal),
+        apply: () => Promise.resolve({ ok: false, error: 'network' }),
+        decline: () => Promise.resolve({ ok: false, error: 'network' })
+      },
+      {
+        newId: () => 'x',
+        say: msg,
+        reread: vi.fn(),
+        notifyGm: () => 'ask',
+        setNotifyGm: vi.fn()
+      }
+    );
+    await s2.send('tok', lines);
+    const said2 = msg.mock.calls[0]?.[0];
+    expect(said2?.(en, 'en')).toBe(
+      'A request can hold at most 100 items, and 101 are ticked. Untick some and send again.'
+    );
+    expect(said2?.(en, 'en')).not.toContain('@');
+  });
 
   it('reads the link again for a stale list, with a toast, and for a gone one, without', async () => {
     const { s, hooks, said } = sender([

@@ -14,6 +14,7 @@
   import Icon from './Icon.svelte';
   import ImportPanel from './ImportPanel.svelte';
   import ListCard from './ListCard.svelte';
+  import LoadState from './LoadState.svelte';
   import MoveStatus from './MoveStatus.svelte';
   import NoData from './NoData.svelte';
   import NumRow from './NumRow.svelte';
@@ -24,13 +25,13 @@
   import StorageNotice from './StorageNotice.svelte';
   import TextInput from './TextInput.svelte';
   import { agoText } from '../lib/ago.js';
-  import { frozenOf, type CloudList } from '../lib/cloudLists.js';
+  import { frozenOf, NAME_MAX, type CloudList } from '../lib/cloudLists.js';
   import { sharedListHash, storedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import { fewNames } from '../lib/i18n.js';
   import { encodeList, encodeListRaw } from '../lib/listLink.js';
   import { LIST_PAGE, LIST_SEARCH_AT, matchLists, type StoredList } from '../lib/lists.js';
-  import { plural } from '../lib/plural.js';
+  import { countOf, plural } from '../lib/plural.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -222,7 +223,7 @@
   }
 </script>
 
-<PageHead {app} title={t.lists} sub={t.subLists} help={helpFor('lists', app.lang)} />
+<PageHead {app} title={t.menuLists} sub={t.subLists} help={helpFor('lists', app.lang)} />
 
 {#if !index}
   <StorageNotice {app} />
@@ -238,6 +239,7 @@
               bind:el={nameInput}
               placeholder={t.listNamePh}
               label={t.newList}
+              maxlength={NAME_MAX}
             />
           </div>
           <Button variant="primary" onclick={create}>{t.create}</Button>
@@ -278,14 +280,24 @@
     {#if signedIn && cloud}
       <div class="group">
         <Field label={t.groupAccount} heading>
-          {#if cloud.status === 'error'}
-            <p class="grouptext err">{t.cloudLoadFailed}</p>
-            <Button size="sm" onclick={() => void app.retryLists()}>{t.retry}</Button>
-          {:else if cloud.status !== 'ready'}
-            <p class="grouptext">{t.cloudLoading}</p>
-          {:else if !account.length}
-            <p class="grouptext">{t.noCloudLists}</p>
-          {:else if drawnAccount.length}
+          {#if cloud.status !== 'ready'}
+            <LoadState
+              {t}
+              failed={cloud.status === 'error'}
+              text={t.cloudLoadFailed}
+              onretry={() => void app.retryLists()}
+            />
+          {:else}
+            {#if cloud.listLimit !== null || account.length}
+              <p class="grouptext count">
+                {countOf(account.length, cloud.listLimit, t.listsN, app.lang, t.ofLimit)}
+              </p>
+            {/if}
+            {#if !account.length}
+              <p class="grouptext">{t.noCloudLists}</p>
+            {/if}
+          {/if}
+          {#if cloud.status === 'ready' && drawnAccount.length}
             <BatchBar
               total={drawnAccount.length}
               picked={ticked.length}
@@ -420,8 +432,7 @@
     color: var(--muted2);
   }
 
-  .grouptext.err {
-    color: var(--danger-text);
+  .grouptext.count {
     margin-bottom: 8px;
   }
 

@@ -25,7 +25,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
-    heading "Списки" [level=1]
+    heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
@@ -33,15 +33,15 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
     button "Импорт из файла" [expanded=true]
-    ... StaticText x25 of 29 same-shape siblings elided
+    ... StaticText x26 of 30 same-shape siblings elided
     button "Выбрать файл..."
     alert ""
       StaticText "В файле ошибки - ничего не импортировано. Исправьте их и выберит..." [namelen=77 namehash=19ee0ad5]
     ... button x2 of 6 same-shape siblings elided
     link "схеме import-v1" [url=schema/import-v1.json]
     link "описание для ИИ-помощников" [url=llms.txt]
-    StaticText "), или архив ZIP из «Скачать мои данные». Списки добавятся как н..." [namelen=96 namehash=cade2d7e]
     heading "ВАШ АККАУНТ" [level=2]
+    StaticText "3 списка из 50"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
@@ -127,7 +127,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
-    heading "Lists" [level=1]
+    heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
@@ -135,15 +135,15 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
     textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
     button "Import from file" [expanded=true]
-    ... StaticText x25 of 29 same-shape siblings elided
+    ... StaticText x26 of 30 same-shape siblings elided
     button "Choose a file..."
     alert ""
       StaticText "The file has errors - nothing was imported. Fix them and choose ..." [namelen=79 namehash=2aab81ca]
     ... button x2 of 6 same-shape siblings elided
     link "import-v1 schema" [url=schema/import-v1.json]
     link "a description for AI assistants" [url=llms.txt]
-    StaticText "), or the ZIP archive from "Download my data". The lists are add..." [namelen=113 namehash=069a136e]
     heading "YOUR ACCOUNT" [level=2]
+    StaticText "3 lists of 50"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""

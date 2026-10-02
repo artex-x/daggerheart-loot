@@ -348,7 +348,7 @@ describe('the press', () => {
     const button = await importButton(1);
     cloud.setOffline(true);
     await userEvent.click(button);
-    expect(await alertText()).toBe('Не получилось. Попробуйте ещё раз.');
+    expect(await alertText()).toBe('Не получилось. Проверьте соединение и попробуйте ещё раз.');
     expect(await importButton(1)).toBeEnabled();
     cloud.setOffline(false);
     await userEvent.click(await importButton(1));

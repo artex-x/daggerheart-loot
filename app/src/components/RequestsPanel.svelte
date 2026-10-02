@@ -4,15 +4,18 @@
      «Отклонить», the refused apply's short lines and «Принять доступное», and
      the requests decided on this page load, folded, each with the items it
      asked for, and «Скрыть», which forgets them until the next page load. Drawn
-     only while there is one of either (docs/specs/FEATURES.md, "Account and
-     browser lists"). */
+     only while there is one of either. A request shows its first lines and the first
+     requests show, each rest behind one fold button, so the panel stays about one screen
+     at three times the limits (docs/specs/FEATURES.md, "Account and browser lists"). */
   import { tick } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import { frozenOf } from '../lib/cloudLists.js';
   import { nameOf } from '../lib/i18n.js';
   import type { StoredList } from '../lib/lists.js';
   import { moneyMode, priceText, totalParts } from '../lib/money.js';
+  import { plural } from '../lib/plural.js';
   import { ageText, requestTotal, shortText, whoText } from '../lib/requests.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -29,8 +32,15 @@
   const decided = $derived(owner?.decidedFor(list.id) ?? []);
   const mode = $derived(moneyMode(list));
 
+  const LINES_SHOWN = 5;
+  const REQUESTS_SHOWN = 3;
+
   let open = $state(false);
   let head = $state<HTMLHeadingElement | undefined>(undefined);
+  /* The requests whose every line is drawn, and whether every request is. */
+  const linesOpen = new SvelteSet<string>();
+  let allOpen = $state(false);
+  const shown = $derived(allOpen ? pending : pending.slice(0, REQUESTS_SHOWN));
 
   /* The focus stays in the panel while it stays, and goes to the page's main when it goes. */
   async function hide(): Promise<void> {
@@ -45,9 +55,10 @@
     const it = app.index?.byId.get(item) ?? frozenOf(list)[item];
     return it ? nameOf(it, app.lang) : item;
   };
+  const held = $derived(new Set(list.ids));
   /* The stock now; null when the list no longer holds the item. */
   const stockOf = (item: string): number | null =>
-    list.ids.includes(item) ? (list.meta?.[item]?.qty ?? 1) : null;
+    held.has(item) ? (list.meta?.[item]?.qty ?? 1) : null;
 </script>
 
 {#if owner && (pending.length || decided.length)}
@@ -55,14 +66,16 @@
     <h2 id="reqpanel-h" tabindex="-1" bind:this={head}>
       {t.requestsHead.replace('%n', String(pending.length))}
     </h2>
-    {#each pending as r (r.id)}
+    {#each shown as r (r.id)}
       {@const short = owner.short[r.id]}
       {@const total = totalParts(requestTotal(r.lines), mode, app.lang, t)}
+      {@const all = linesOpen.has(r.id)}
+      {@const rest = r.lines.length - LINES_SHOWN}
       <div class="req">
         <div class="who">{whoText(r, app.now, app.lang, t)}</div>
         <table>
           <tbody>
-            {#each r.lines as l (l.item)}
+            {#each all ? r.lines : r.lines.slice(0, LINES_SHOWN) as l (l.item)}
               {@const stock = stockOf(l.item)}
               <tr>
                 <td>{itemName(l.item)}</td>
@@ -78,6 +91,20 @@
             {/each}
           </tbody>
         </table>
+        {#if rest > 0}
+          <div class="more">
+            <Button
+              size="sm"
+              variant="bare"
+              caret
+              expanded={all}
+              onclick={() => {
+                if (all) linesOpen.delete(r.id);
+                else linesOpen.add(r.id);
+              }}>{all ? t.relLess : plural(rest, t.requestLinesMoreN, app.lang)}</Button
+            >
+          </div>
+        {/if}
         {#if total}
           <div class="total">
             {total.label} <b>{total.value}</b>{total.unpriced ? ' ' + total.unpriced : ''}
@@ -110,6 +137,22 @@
         </Actions>
       </div>
     {/each}
+    {#if pending.length > REQUESTS_SHOWN}
+      <div class="more">
+        <Button
+          size="sm"
+          variant="bare"
+          caret
+          expanded={allOpen}
+          onclick={() => {
+            allOpen = !allOpen;
+          }}
+          >{allOpen
+            ? t.relLess
+            : plural(pending.length - REQUESTS_SHOWN, t.requestsMoreN, app.lang)}</Button
+        >
+      </div>
+    {/if}
     {#if decided.length}
       <div class="decided">
         <div class="dhead">
@@ -228,6 +271,10 @@
     font-weight: 650;
   }
 
+  .more {
+    margin: 0 0 8px;
+  }
+
   .shortmsg {
     font-size: 13.5px;
     color: var(--danger-text);
@@ -297,7 +344,8 @@
 
     /* A touch target at phone width, as every control here (DESIGN.md, "The Two
        Breakpoints Rule"). */
-    .decided :global(.btn) {
+    .decided :global(.btn),
+    .more :global(.btn) {
       min-height: 36px;
     }
   }

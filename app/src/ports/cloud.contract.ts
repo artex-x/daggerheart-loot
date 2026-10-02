@@ -101,6 +101,12 @@ const answered = (w: ListWrites): string =>
 
 async function listCases(port: CloudPort, assert: Assert): Promise<void> {
   const { lists } = port;
+  const first = await lists.list();
+  assert(
+    first.ok && first.listLimit === 50 && first.entryLimit === 100,
+    'lists: the first read does not carry the default limits 50 and 100: ' +
+      JSON.stringify(first.ok ? [first.listLimit, first.entryLimit] : first)
+  );
   const before = (await listsOf(port, assert, 'at first'))?.length ?? 0;
 
   const id = lists.newId();
@@ -797,8 +803,14 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
   const { homebrew, lists, shares } = port;
   const first = await homebrew.load();
   assert(
-    first.ok && !first.books.length && !first.items.length && first.itemLimit === 100,
-    'homebrew: a new account reads rows, or a limit other than 100: ' + JSON.stringify(first)
+    first.ok &&
+      !first.books.length &&
+      !first.items.length &&
+      first.itemLimit === 100 &&
+      first.bookLimit === 20 &&
+      first.cardLimit === 100,
+    'homebrew: a new account reads rows, or limits other than 100, 20 and 100: ' +
+      JSON.stringify(first)
   );
   const [k1, k2] = [homebrew.newKey(), homebrew.newKey()];
   assert(

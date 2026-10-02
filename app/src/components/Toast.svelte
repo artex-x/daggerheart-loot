@@ -172,6 +172,7 @@
     box-shadow: 0 12px 30px -10px rgb(0 0 0 / 70%);
     z-index: 200;
     animation: toastIn 0.2s ease both;
+    overflow-wrap: anywhere;
   }
 
   .toast.err {

@@ -13,7 +13,13 @@
   import TextInput from './TextInput.svelte';
   import { limitText } from '../lib/cloudLists.js';
   import { homebrewItemHash } from '../lib/hash.js';
-  import type { HomebrewContent, Problem } from '../lib/homebrew.js';
+  import {
+    counterFrom,
+    DESC_MAX,
+    NAME_MAX,
+    type HomebrewContent,
+    type Problem
+  } from '../lib/homebrew.js';
   import {
     contentOf,
     draftOf,
@@ -46,6 +52,8 @@
 
   const nameProblem = $derived(problems.find((p) => fieldOf(p) === 'hb-name'));
   const descProblem = $derived(problems.find((p) => fieldOf(p) === 'hb-desc'));
+  /* Code points, as the validator counts. */
+  const descLength = $derived(Array.from(desc).length);
 
   onMount(() => {
     ids = app.homebrew?.newIds() ?? null;
@@ -66,6 +74,13 @@
     }
     if (store.status !== 'ready') {
       refused = store.status === 'error' ? t.hbLoadFailed : t.hbNotReady;
+      return;
+    }
+    /* A full list would refuse the entry after the item is made, leaving the item out of
+       the list: nothing is written. With no limit known the write goes as before. */
+    const full = lists.entryLimit;
+    if (full !== null && (lists.get(listId)?.ids.length ?? 0) >= full) {
+      refused = limitText('entries_per_list', full, t);
       return;
     }
     busy = true;
@@ -124,6 +139,7 @@
         id="qi-name"
         bind:value={name}
         bind:el={nameEl}
+        maxlength={NAME_MAX}
         required
         invalid={!!nameProblem}
         describedby={nameProblem ? 'qi-name-err' : undefined}
@@ -143,18 +159,22 @@
         id="qi-desc"
         bind:value={desc}
         bind:el={descEl}
+        maxlength={DESC_MAX}
         invalid={!!descProblem}
         describedby={descProblem ? 'qi-desc-err' : undefined}
         oninput={() => {
           problems = problems.filter((p) => fieldOf(p) !== 'hb-desc');
         }}
       />
+      {#if descLength > counterFrom(DESC_MAX)}
+        <span class="counter">{descLength} / {DESC_MAX}</span>
+      {/if}
     </FormField>
     <Actions>
       <Button size="sm" variant="primary" disabled={busy} onclick={() => void add()}
         >{t.addToList}</Button
       >
-      <Button size="sm" variant="ghost" onclick={onclose}>{t.close}</Button>
+      <Button size="sm" variant="ghost" onclick={onclose}>{t.cancel}</Button>
     </Actions>
     {#if refused}<p class="refused" role="alert">{refused}</p>{/if}
     <p class="note">{t.quickNote}</p>
@@ -182,5 +202,11 @@
 
   .refused {
     color: var(--danger-text);
+  }
+
+  .counter {
+    justify-self: end;
+    font-size: 12.5px;
+    color: var(--muted2);
   }
 </style>

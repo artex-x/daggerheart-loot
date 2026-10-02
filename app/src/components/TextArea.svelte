@@ -12,6 +12,8 @@
     invalid?: boolean;
     /** The id of the field's error line. */
     describedby?: string | undefined;
+    /** The most the database keeps (docs/specs/FEATURES.md, "Consistency rules"). */
+    maxlength?: number | undefined;
     oninput?: () => void;
   }
 
@@ -22,6 +24,7 @@
     rows = 3,
     invalid = false,
     describedby,
+    maxlength,
     oninput
   }: Props = $props();
 </script>
@@ -33,6 +36,7 @@
   {rows}
   aria-invalid={invalid || undefined}
   aria-describedby={describedby}
+  {maxlength}
   {oninput}></textarea>
 
 <style>

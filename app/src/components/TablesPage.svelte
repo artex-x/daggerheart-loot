@@ -25,9 +25,9 @@
   import ChipRow from './ChipRow.svelte';
   import Empty from './Empty.svelte';
   import FilterBar from './FilterBar.svelte';
-  import HomebrewLoad from './HomebrewLoad.svelte';
   import Icon from './Icon.svelte';
   import KeepNote from './KeepNote.svelte';
+  import LoadState from './LoadState.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
   import RecordHost from './RecordHost.svelte';
@@ -512,12 +512,21 @@
         <SignInPrompt {app} lead={t.hbTablesSignIn} after={{ hash: tablesHash('homebrew') }} />
       </div>
     {:else if table === 'homebrew' && app.homebrew?.status === 'error'}
-      <div class="hbstate"><HomebrewLoad {app} failed /></div>
+      <div class="hbstate">
+        <LoadState {t} failed text={t.hbLoadFailed} onretry={() => void app.homebrew?.load()} />
+      </div>
     {:else if table === 'homebrew' && (app.user === undefined || app.homebrew?.status !== 'ready')}
-      <div class="hbstate"><HomebrewLoad {app} failed={false} /></div>
+      <div class="hbstate">
+        <LoadState
+          {t}
+          failed={false}
+          text={t.hbLoadFailed}
+          onretry={() => void app.homebrew?.load()}
+        />
+      </div>
     {:else if table === 'homebrew' && !rows.length}
       <Empty>
-        {t.hbEmpty}
+        {t.hbEmptyTable}
         <Button href={homebrewItemHash(null)} sameTab>{t.hbNewItem}</Button>
       </Empty>
     {:else}

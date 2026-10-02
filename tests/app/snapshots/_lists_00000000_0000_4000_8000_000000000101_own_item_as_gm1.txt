@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ own item as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: the row «Свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «Добавить в список», «Закрыть» and the note on «Мои предметы»
+# why: the row «Свой предмет» after the entries pressed and expanded: the panel «Свой предмет в этот список» under it with «Название» *, «Описание», «Добавить в список», «Отмена» and the note on «Мои предметы»
 # as: gm1
 
 ## ru :: tree
@@ -26,7 +26,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "10 позиций · "
+    StaticText "10 позиций из 100 · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
@@ -105,7 +105,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       StaticText "Описание"
       textbox "Описание" [multiline=true readonly=false required=false]
       button "Добавить в список"
-      button "Закрыть"
+      button "Отмена"
       StaticText "Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник ..." [namelen=107 namehash=7d14b241]
     status ""
     status ""
@@ -133,7 +133,6 @@ daggerheart.com
 Гарпун Левиафана
 Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8+3... [namelen=359 namehash=d7ce48f5]
 Добавить в список
-Закрыть
 Заметка
 Зелье Быстрого Шага
 Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Про... [namelen=86 namehash=921b5c09]
@@ -153,6 +152,7 @@ daggerheart.com
 Название списка
 Обычные правила
 Открыта с рассвета до заката.
+Отмена
 Очистить заметку
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
@@ -205,7 +205,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "10 items · "
+    StaticText "10 items of 100 · "
     StaticText "Saved"
     button "Share" [expanded=false]
     button "Copy text"
@@ -284,7 +284,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       StaticText "Description"
       textbox "Description" [multiline=true readonly=false required=false]
       button "Add to list"
-      button "Close"
+      button "Cancel"
       StaticText "The item is saved in "My items", under "Homebrew". Its kind, sou..." [namelen=112 namehash=c2f9bbe6]
     status ""
     status ""
@@ -304,10 +304,10 @@ Art History BookletThis is a finely illustrated booklet (donatio... [namelen=532
 As in the book
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+Cancel
 Casting Dagger
 Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
 Clear the note
-Close
 Communities
 Copy text
 Delete

@@ -1,6 +1,6 @@
 <script lang="ts">
   /* One set or rule card form (m21, m04 and m05's inline forms in the homebrew mocks): the
-     editor's «+ Новый комплект...» and «+ Новая карта правил», and the «Карты» fold's
+     editor's «+ Новый комплект...» and «Новая карта правил», and the «Карты» fold's
      create and edit. It edits one language and keeps the other; it checks on its own
      button, draws each field's problem under it and keeps the typed text. A new card keeps
      one id pair until an `ok`, so a press after a lost answer makes no second card
@@ -12,7 +12,17 @@
   import TextArea from './TextArea.svelte';
   import TextInput from './TextInput.svelte';
   import { limitText } from '../lib/cloudLists.js';
-  import { editLang, type CardKind, type CardRow, type Problem } from '../lib/homebrew.js';
+  import {
+    CARD_NAME_MAX,
+    CARD_SUB_MAX,
+    CARD_TEXT_MAX,
+    CARD_URL_MAX,
+    counterFrom,
+    editLang,
+    type CardKind,
+    type CardRow,
+    type Problem
+  } from '../lib/homebrew.js';
   import {
     cardContentOf,
     cardDraftOf,
@@ -96,6 +106,8 @@
     card ? named(card.content) : kind === 'set' ? t.hbNewSet : t.hbNewCard
   );
   const submit = $derived(card ? t.save : kind === 'set' ? t.hbCreateSet : t.hbCreateCard);
+  /* Code points, as the validator counts. */
+  const textLength = $derived(Array.from(draft.text).length);
 
   async function send(): Promise<void> {
     if (busy) return;
@@ -120,6 +132,7 @@
           card.revision
         );
         if (r.ok) {
+          app.say((t) => t.hbSaved.replace('%s', name));
           onsaved(card.key);
           return;
         }
@@ -172,6 +185,7 @@
       id={id + '-name'}
       bind:value={draft.name}
       bind:el={nameEl}
+      maxlength={CARD_NAME_MAX}
       required
       invalid={!!problemOf('name')}
       describedby={errId('name')}
@@ -191,6 +205,7 @@
       <TextInput
         id={id + '-sub'}
         bind:value={draft.sub}
+        maxlength={CARD_SUB_MAX}
         invalid={!!problemOf('sub')}
         describedby={errId('sub') ?? id + '-sub-hint'}
         autocomplete="off"
@@ -212,12 +227,16 @@
       id={id + '-text'}
       rows={kind === 'set' ? 4 : 5}
       bind:value={draft.text}
+      maxlength={CARD_TEXT_MAX}
       invalid={!!problemOf('text')}
       describedby={errId('text')}
       oninput={() => {
         clear('text');
       }}
     />
+    {#if textLength > counterFrom(CARD_TEXT_MAX)}
+      <span class="counter">{textLength} / {CARD_TEXT_MAX}</span>
+    {/if}
   </FormField>
   {#if kind === 'ref'}
     <FormField
@@ -229,6 +248,7 @@
       <TextInput
         id={id + '-url'}
         bind:value={draft.url}
+        maxlength={CARD_URL_MAX}
         placeholder="https://..."
         invalid={!!problemOf('url')}
         describedby={errId('url') ?? id + '-url-hint'}
@@ -287,10 +307,15 @@
     height: 38px;
   }
 
-  .hint {
+  .hint,
+  .counter {
     margin: 0;
     font-size: 12.5px;
     color: var(--muted2);
+  }
+
+  .counter {
+    justify-self: end;
   }
 
   .refused {

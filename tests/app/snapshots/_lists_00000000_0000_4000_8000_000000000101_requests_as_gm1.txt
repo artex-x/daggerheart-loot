@@ -26,7 +26,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "10 позиций · "
+    StaticText "10 позиций из 100 · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
@@ -207,7 +207,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "10 items · "
+    StaticText "10 items of 100 · "
     StaticText "Saved"
     button "Share" [expanded=false]
     button "Copy text"

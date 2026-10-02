@@ -3444,7 +3444,7 @@ async function readOnlyAfterTheCutoff() {
     };
   });
   ok(
-    bar.n === 9 && !bar.lists && bar.h1 === 'Списки',
+    bar.n === 9 && !bar.lists && bar.h1 === 'Мои списки',
     at +
       'the bar is not nine tabs without «Списки» over the lists index - ' +
       JSON.stringify(bar)
@@ -4212,6 +4212,185 @@ async function ownItemRowAndNoteBox() {
   }
 }
 
+/** 65. The requests panel of «Лавка кузнеца» at 360x640 as `gm1` with four requests, the
+ *  newest of seven lines: three requests and five lines drawn, the panel under 1000 px,
+ *  the first «Принять» within one screen under the panel head, nothing sideways; the
+ *  line fold opens in place and keeps the focus (docs/specs/FEATURES.md, "Account and
+ *  browser lists"). */
+async function requestsPanelFolds() {
+  const at = '65 (the requests panel folds at 360): ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  await d.open(SHOP, { as: 'gm1' });
+  await waitIn(page, () => !!document.querySelector('h1 input'));
+  await d.fake('request', 'player-token-1', [
+    { item: 'ci1', qty: 1 },
+    { item: 'cc1', qty: 3 }
+  ]);
+  await d.fake('request', 'gm-token-1', [{ item: 'cc1', qty: 9 }]);
+  await d.fake('request', 'player-token-1', [{ item: 'q1', qty: 1 }]);
+  await d.fake(
+    'request',
+    'gm-token-1',
+    ['ci1', 'q1', 'q313', 'cc1', 'voa2_a3', 'q23', 'w51'].map((item) => ({ item, qty: 1 }))
+  );
+  ok(
+    await waitIn(page, () => document.body.innerText.includes('Запросы (4)')),
+    at + 'the panel did not count four requests'
+  );
+  const m = await page.evaluate(() => {
+    const panel = document.querySelector('.reqpanel');
+    const head = panel?.querySelector('h2')?.getBoundingClientRect();
+    const take = [...(panel?.querySelectorAll('button') ?? [])].find(
+      (b) => b.textContent.trim() === 'Принять'
+    );
+    return {
+      reqs: panel?.querySelectorAll('.req').length ?? 0,
+      lines: panel?.querySelector('.req')?.querySelectorAll('tbody tr').length ?? 0,
+      height: panel?.getBoundingClientRect().height ?? 0,
+      take: head && take ? take.getBoundingClientRect().bottom - head.top : null,
+      sideways: document.documentElement.scrollWidth > innerWidth
+    };
+  });
+  ok(m.reqs === 3, at + 'not three requests drawn - ' + JSON.stringify(m));
+  ok(m.lines === 5, at + 'the first request does not draw five lines - ' + JSON.stringify(m));
+  ok(m.height > 0 && m.height < 1000, at + 'the panel is not under 1000 px - ' + m.height);
+  ok(
+    m.take !== null && m.take <= 640,
+    at + 'the first «Принять» is past one screen under the head - ' + JSON.stringify(m)
+  );
+  ok(!m.sideways, at + 'the panel scrolls the page sideways');
+  await d.press('и ещё 2 позиции');
+  const open = await page.evaluate(() => ({
+    lines: document.querySelector('.reqpanel .req')?.querySelectorAll('tbody tr').length ?? 0,
+    focus: document.activeElement?.textContent.trim() ?? ''
+  }));
+  ok(open.lines === 7, at + 'the fold did not draw every line - ' + JSON.stringify(open));
+  ok(open.focus === 'свернуть', at + 'the focus left the fold button - ' + open.focus);
+  await ctx.close();
+}
+
+/** 66. A 200-character unbroken list name at 360 as `gm1`: its card on `#/lists`, its
+ *  page heading and its delete toast wrap, and nothing scrolls sideways
+ *  (docs/specs/FEATURES.md, "Consistency rules", rule 16). */
+async function longListName() {
+  const at = '66 (a 200-character list name at 360): ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  const long = 'Ж'.repeat(200);
+  await d.open('#/lists', { as: 'gm1' });
+  await waitIn(page, () => document.body.innerText.includes('Трофеи'));
+  await d.fake('setLive', false);
+  await d.fake('lists.apply', [
+    { op: 'update', id: '00000000-0000-4000-8000-000000000103', patch: { name: long } }
+  ]);
+  await d.shownAgain();
+  ok(
+    await waitIn(page, (v) => document.body.innerText.includes(v), long),
+    at + 'the long name did not draw on #/lists'
+  );
+  const sideways = () => page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+  ok(!(await sideways()), at + 'the card scrolls #/lists sideways');
+  await page.evaluate(() => {
+    location.hash = '#/lists/00000000-0000-4000-8000-000000000103';
+  });
+  await waitIn(page, () => !!document.querySelector('h1 input'));
+  ok(!(await sideways()), at + 'the list page scrolls sideways');
+  await page.evaluate(() => {
+    location.hash = '#/lists';
+  });
+  await waitIn(page, () => document.body.innerText.includes('Пустой список'));
+  const index = await page.evaluate(
+    (v) =>
+      [...document.querySelectorAll('.listcard')].findIndex((c) => c.textContent.includes(v)),
+    long
+  );
+  ok(index >= 0, at + 'the long name has no card after the return');
+  if (index >= 0) {
+    await d.press('Удалить', index);
+    ok(
+      await waitIn(page, () => !!document.querySelector('.toast:popover-open')),
+      at + 'the delete toast did not show'
+    );
+    const toast = await page.evaluate(() => {
+      const r = document.querySelector('.toast')?.getBoundingClientRect();
+      return r ? { left: r.left, right: r.right } : null;
+    });
+    ok(
+      !!toast && toast.left >= 0 && toast.right <= 360,
+      at + 'the toast lies outside 0..360 - ' + JSON.stringify(toast)
+    );
+    ok(!(await sideways()), at + 'the toast scrolls the page sideways');
+  }
+  await ctx.close();
+}
+
+/** 67. The editor's field help and the threshold labels at 360x640 as `gm1`: the «?» of
+ *  «Комплект» opens its hint under its label inside 0..360; an armour's two threshold
+ *  labels and boxes lie inside 0..360; nothing scrolls sideways (docs/specs/FEATURES.md,
+ *  "Consistency rules", rule 15). */
+async function fieldHelpAt360() {
+  const at = '67 (field help and threshold labels at 360): ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  const sideways = () => page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+  await d.open('#/homebrew/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+  ok(
+    await waitIn(page, () => !!document.querySelector('#hb-name')),
+    at + 'the axe editor did not draw'
+  );
+  await d.click('Связи');
+  await d.click('Подсказка: Комплект');
+  const help = await page.evaluate(() => {
+    const button = document.querySelector('button[aria-controls="hb-set-help"]');
+    const hint = document.getElementById('hb-set-help');
+    const label = document.querySelector('label[for="hb-set"]');
+    const h = hint?.getBoundingClientRect();
+    const l = label?.getBoundingClientRect();
+    return {
+      expanded: button?.getAttribute('aria-expanded') ?? null,
+      left: h?.left ?? -1,
+      right: h?.right ?? 999,
+      height: h?.height ?? 0,
+      under: !!h && !!l && h.top >= l.bottom
+    };
+  });
+  ok(help.expanded === 'true', at + 'the «?» is not expanded - ' + JSON.stringify(help));
+  ok(
+    help.height > 0 && help.left >= 0 && help.right <= 360,
+    at + 'the hint lies outside 0..360 - ' + JSON.stringify(help)
+  );
+  ok(help.under, at + 'the hint is not under its label - ' + JSON.stringify(help));
+  ok(!(await sideways()), at + 'the open hint scrolls the editor sideways');
+  await page.evaluate(() => {
+    location.hash = '#/homebrew/new';
+  });
+  ok(
+    await waitIn(
+      page,
+      () => !document.querySelector('#hb-dmg') && !!document.querySelector('#hb-name')
+    ),
+    at + 'the new item did not draw'
+  );
+  await d.click('Снаряжение');
+  await d.click('Броня');
+  ok(
+    await waitIn(page, () => !!document.querySelector('#hb-th1')),
+    at + 'the armour fields did not draw'
+  );
+  const boxes = await page.evaluate(() =>
+    ['label[for="hb-th0"]', '#hb-th0', 'label[for="hb-th1"]', '#hb-th1'].map((sel) => {
+      const r = document.querySelector(sel)?.getBoundingClientRect();
+      return r ? { sel, left: r.left, right: r.right } : { sel, left: -1, right: 999 };
+    })
+  );
+  for (const b of boxes) {
+    ok(
+      b.left >= 0 && b.right <= 360,
+      at + b.sel + ' lies outside 0..360 - ' + JSON.stringify(b)
+    );
+  }
+  ok(!(await sideways()), at + 'the armour form scrolls sideways');
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -4278,7 +4457,10 @@ const CASES = [
     searchPrunesTicks
   ],
   ['63 (relation folds, the fold summary and the preview menu)', relationFolds],
-  ['64 (the own-item row and a row note box)', ownItemRowAndNoteBox]
+  ['64 (the own-item row and a row note box)', ownItemRowAndNoteBox],
+  ['65 (the requests panel folds at 360)', requestsPanelFolds],
+  ['66 (a 200-character list name at 360)', longListName],
+  ['67 (field help and threshold labels at 360)', fieldHelpAt360]
 ];
 
 (async () => {

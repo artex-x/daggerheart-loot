@@ -152,7 +152,15 @@ describe('reading', () => {
       }
     }));
     const reading = store.load();
-    const stale: HomebrewRead = { ok: true, books: [], items: [], cards: [], itemLimit: 100 };
+    const stale: HomebrewRead = {
+      ok: true,
+      books: [],
+      items: [],
+      cards: [],
+      itemLimit: 100,
+      bookLimit: 20,
+      cardLimit: 100
+    };
     const made = await store.createItem(store.newIds(), null, { kind: 'item', ru: 'Новое' });
     expect(made).toEqual({ ok: true });
     (hold as unknown as (r: HomebrewRead) => void)(stale);
@@ -262,6 +270,9 @@ describe('sources and sections', () => {
       value: 0
     });
     expect(small.books).toEqual([]);
+    expect([small.bookLimit, small.cardLimit, small.itemLimit]).toEqual([0, 100, 100]);
+    small.clear();
+    expect([small.bookLimit, small.cardLimit, small.itemLimit]).toEqual([null, null, null]);
   });
 });
 
@@ -521,7 +532,9 @@ describe('the edges', () => {
             }
           ],
           cards: [],
-          itemLimit: null
+          itemLimit: null,
+          bookLimit: null,
+          cardLimit: null
         })
     }));
     await store.load();

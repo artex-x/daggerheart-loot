@@ -1,5 +1,6 @@
 # 2026-09-30 - The bundle budget steps up per batch to 250 kB configured and 190 unconfigured
 
+- Amended by "The bundle ceilings rise to 300 kB configured and 250 unconfigured" (2026-10-02): the ceilings.
 - Task: `persist-7-homebrew` (owner's answer to Q14, 2026-09-30; written with R7's pages and editor).
 - Decision: during the homebrew releases (R7-R7d) a batch whose build passes
   a budget in `tools/bundle-budget.mjs` raises that budget to its measured

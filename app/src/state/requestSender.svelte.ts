@@ -96,6 +96,12 @@ export class RequestSender {
             (t, lang) => t.requestPending.replace('%s', plural(value, t.requestsN, lang)),
             true
           );
+        } else if (r.key === 'request_lines' && r.value !== null) {
+          /* The reader cannot read the owner's limit, so the refusal names it, never
+             the owner's «напишите на почту». */
+          const value = r.value;
+          const sent = String(lines.length);
+          say((t, lang) => plural(value, t.requestLinesMax, lang).replace('%k', sent), true);
         } else {
           const { key, value } = r;
           say((t) => limitText(key, value, t), true);

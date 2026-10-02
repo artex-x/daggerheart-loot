@@ -542,6 +542,21 @@ describe('the lists', () => {
     expect(read.ok && read.lists[0]?.list_entries.map((e) => e.id)).toEqual(['c', 'a', 'b']);
   });
 
+  it('reads the list and entry limits beside the lists, and a failed limit read as null', async () => {
+    answers({ data: [], error: null, status: 200 });
+    client.rpc
+      .mockImplementationOnce(() => Promise.resolve({ data: 50, error: null, status: 200 }))
+      .mockImplementationOnce(() => Promise.reject(new Error('offline')));
+    expect(await make().lists.list()).toEqual({
+      ok: true,
+      lists: [],
+      listLimit: 50,
+      entryLimit: null
+    });
+    expect(client.rpc).toHaveBeenCalledWith('my_limit', { p_key: 'lists_per_owner' });
+    expect(client.rpc).toHaveBeenCalledWith('my_limit', { p_key: 'entries_per_list' });
+  });
+
   it('answers not ok to an error, a thrown read and no rows', async () => {
     answers({ data: null, error: { code: '42501' }, status: 401 }, new Error('offline'), {
       data: null,
@@ -1600,17 +1615,27 @@ describe('the homebrew rows', () => {
     updated_at: '2026-09-30T11:00:00+00:00'
   };
 
-  it('reads the three tables and the item limit', async () => {
+  it('reads the three tables and the item, source and card limits', async () => {
     const books = query(answer([BOOK]));
     const items = query(answer([ITEM]));
     const cards = query(answer([CARD]));
-    client.rpc.mockResolvedValueOnce(answer(100));
+    const LIMITS: Record<string, number> = {
+      homebrew_items_per_owner: 100,
+      homebrew_books_per_owner: 20,
+      homebrew_cards_per_owner: 90
+    };
+    for (let i = 0; i < 3; i++)
+      client.rpc.mockImplementationOnce((_: string, a: { p_key: string }) =>
+        Promise.resolve(answer(LIMITS[a.p_key]))
+      );
     expect(await make().homebrew.load()).toEqual({
       ok: true,
       books: [BOOK],
       items: [ITEM],
       cards: [CARD],
-      itemLimit: 100
+      itemLimit: 100,
+      bookLimit: 20,
+      cardLimit: 90
     });
     expect(client.from.mock.calls.map((c) => c[0])).toEqual([
       'homebrew_books',
@@ -1637,13 +1662,15 @@ describe('the homebrew rows', () => {
       query(answer([]));
       query(answer([]));
       query(answer([]));
-      client.rpc.mockImplementationOnce(() => limit);
+      for (let i = 0; i < 3; i++) client.rpc.mockImplementationOnce(() => limit);
       expect(await cloud.homebrew.load()).toEqual({
         ok: true,
         books: [],
         items: [],
         cards: [],
-        itemLimit: null
+        itemLimit: null,
+        bookLimit: null,
+        cardLimit: null
       });
     }
   });

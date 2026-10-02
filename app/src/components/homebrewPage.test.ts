@@ -62,7 +62,7 @@ async function typeInto(label: string, text: string): Promise<void> {
 describe('#/homebrew', () => {
   it('draws the count, the sources and the items under their source and section', async () => {
     const { container } = page();
-    expect(await screen.findByText('Мои предметы: 4 из 100')).toBeInTheDocument();
+    expect(await screen.findByText('4 предмета из 100')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: t.myItems })).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -79,14 +79,14 @@ describe('#/homebrew', () => {
     const folds = [...container.querySelectorAll<HTMLDetailsElement>('.stack details')];
     expect(folds.map((d) => d.open)).toEqual([false, false]);
     expect(folds.map((d) => d.querySelector('summary')?.textContent)).toEqual([
-      'Источники · 1 источник',
-      'Карты · 1 комплект, 1 карта правил'
+      'Источники · 1 источник из 20',
+      'Карты · 2 карты из 100: 1 комплект, 1 карта правил'
     ]);
     await expectNoA11yViolations(container);
     const panel = await sources();
     expect(folds[0]?.open).toBe(true);
     expect(within(panel).getByText('Мастерская Ольхи')).toBeInTheDocument();
-    expect(within(panel).getByText('1 предмет · 2 раздела')).toBeInTheDocument();
+    expect(within(panel).getByText('1 предмет · 2 раздела из 30')).toBeInTheDocument();
     expect(within(panel).getByText('3 предмета')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Новый предмет/ })).toHaveAttribute(
       'href',
@@ -112,7 +112,7 @@ describe('#/homebrew', () => {
   it('makes a source, and refuses an empty, a taken and the default name', async () => {
     page('gm2');
     const panel = await sources();
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbAdd }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSource }));
     const box = screen.getByLabelText(t.hbNewSource);
     await waitFor(() => {
       expect(box).toHaveFocus();
@@ -128,7 +128,7 @@ describe('#/homebrew', () => {
     await userEvent.keyboard('{Enter}');
     expect(await screen.findByText('Источник «Кузня» создан')).toBeInTheDocument();
     expect(within(panel).getByText('Кузня')).toBeInTheDocument();
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbAdd }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSource }));
     await typeInto(t.hbNewSource, 'КУЗНЯ');
     await userEvent.keyboard('{Enter}');
     expect(await screen.findByText('Источник «КУЗНЯ» уже есть.')).toBeInTheDocument();
@@ -139,7 +139,7 @@ describe('#/homebrew', () => {
   it('says the limit and the lost network, and keeps the typed name', async () => {
     const { cloud } = page('gm2', { fake: { limits: { books: 0 } } });
     const panel = await sources();
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbAdd }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSource }));
     await typeInto(t.hbNewSource, 'Кузня');
     await userEvent.keyboard('{Enter}');
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -188,7 +188,7 @@ describe('#/homebrew', () => {
     const { cloud, dialog } = page();
     const panel = await sources();
     await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbAddSection }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSection }));
     await userEvent.keyboard('{Enter}');
     expect(await screen.findByText(t.hbErrSectionName)).toBeInTheDocument();
     await typeInto(t.hbNewSection, 'пистоли');
@@ -218,7 +218,7 @@ describe('#/homebrew', () => {
     const dels = within(panel).getAllByRole('button', { name: t.del });
     await userEvent.click(dels[2] as HTMLElement);
     expect(dialog.asked.at(-1)).toBe(
-      'Удалить раздел «Холодное оружие»? Его 1 предмет останется в источнике без раздела.'
+      'Удалить раздел «Холодное оружие»? Его 1 предмет останется в источнике без раздела. Отменить удаление нельзя.'
     );
     await waitFor(() => {
       expect(within(panel).queryByText('Холодное оружие')).not.toBeInTheDocument();
@@ -226,7 +226,7 @@ describe('#/homebrew', () => {
     await userEvent.click(
       within(panel).getAllByRole('button', { name: t.del })[1] as HTMLElement
     );
-    expect(dialog.asked.at(-1)).toBe('Удалить раздел «Пистоли»?');
+    expect(dialog.asked.at(-1)).toBe('Удалить раздел «Пистоли»? Отменить удаление нельзя.');
   });
 
   it('refuses a thirty-first section', async () => {
@@ -239,7 +239,7 @@ describe('#/homebrew', () => {
     page('gm1', { cloud });
     const panel = await sources();
     await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbAddSection }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSection }));
     await typeInto(t.hbNewSection, 'Ещё один');
     await userEvent.keyboard('{Enter}');
     expect(
@@ -252,7 +252,7 @@ describe('#/homebrew', () => {
     const panel = await sources();
     await userEvent.click(within(panel).getByRole('button', { name: t.del }));
     expect(dialog.asked).toEqual([
-      'Удалить источник «Мастерская Ольхи»? Его 1 предмет останется в «Хоумбрю».'
+      'Удалить источник «Мастерская Ольхи»? Его 1 предмет останется в «Хоумбрю». Отменить удаление нельзя.'
     ]);
     expect(within(panel).getByText('Мастерская Ольхи')).toBeInTheDocument();
     cleanup();
@@ -269,11 +269,11 @@ describe('#/homebrew', () => {
   it('asks the short form for a source with no items', async () => {
     const { dialog } = page('gm2');
     const panel = await sources();
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbAdd }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSource }));
     await typeInto(t.hbNewSource, 'Пустой');
     await userEvent.keyboard('{Enter}');
     await userEvent.click(await within(panel).findByRole('button', { name: t.del }));
-    expect(dialog.asked).toEqual(['Удалить источник «Пустой»?']);
+    expect(dialog.asked).toEqual(['Удалить источник «Пустой»? Отменить удаление нельзя.']);
   });
 
   it('says a failed delete', async () => {
@@ -284,10 +284,107 @@ describe('#/homebrew', () => {
     expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
   });
 
+  it('counts the sources and cards against their limits at zero, and the sections of a source', async () => {
+    const { container } = page('gm2');
+    await screen.findByText(t.hbEmpty);
+    const summaries = [...container.querySelectorAll('.stack summary')].map(
+      (e) => e.textContent
+    );
+    expect(summaries).toEqual(['Источники · 0 источников из 20', 'Карты · 0 карт из 100']);
+    cleanup();
+    page('gm1');
+    const panel = await sources();
+    expect(within(panel).getByText('1 предмет · 2 раздела из 30')).toBeInTheDocument();
+  });
+
+  it('counts at an override of three times the limits', async () => {
+    const { container } = page('gm1', {
+      fake: { limits: { items: 300, books: 60, cards: 300 } }
+    });
+    expect(await screen.findByText('4 предмета из 300')).toBeInTheDocument();
+    const summaries = [...container.querySelectorAll('.stack summary')].map(
+      (e) => e.textContent
+    );
+    expect(summaries).toEqual([
+      'Источники · 1 источник из 60',
+      'Карты · 2 карты из 300: 1 комплект, 1 карта правил'
+    ]);
+  });
+
+  it('toasts a deleted source and a deleted section', async () => {
+    page('gm1');
+    const panel = await sources();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
+    const dels = within(panel).getAllByRole('button', { name: t.del });
+    await userEvent.click(dels[1] as HTMLElement);
+    expect(await screen.findByText('Раздел «Пистоли» удалён')).toBeInTheDocument();
+    await userEvent.click(
+      within(panel).getAllByRole('button', { name: t.del })[0] as HTMLElement
+    );
+    expect(await screen.findByText('Источник «Мастерская Ольхи» удалён')).toBeInTheDocument();
+  });
+
+  it('shows the progress of a bulk delete, holds the button and ignores a second press', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
+    const gates: (() => void)[] = [];
+    let sent = 0;
+    cloud.homebrew.removeItem = async (id) => {
+      sent++;
+      await new Promise<void>((go) => gates.push(go));
+      return remove(id);
+    };
+    const { dialog, container } = page('gm1', { cloud });
+    await screen.findByText('4 предмета из 100');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    const del = screen.getByRole('button', { name: 'Удалить (2)' });
+    await userEvent.click(del);
+    expect(await screen.findByText('Удаляем предметы: 0 из 2')).toBeInTheDocument();
+    expect(del).toBeDisabled();
+    await expectNoA11yViolations(container);
+    gates.shift()?.();
+    expect(await screen.findByText('Удаляем предметы: 1 из 2')).toBeInTheDocument();
+    del.click();
+    expect(dialog.asked).toHaveLength(1);
+    await vi.waitFor(() => {
+      expect(gates).toHaveLength(1);
+    });
+    gates.shift()?.();
+    expect(await screen.findByText('Удалено предметов: 2')).toBeInTheDocument();
+    expect(sent).toBe(2);
+    expect(screen.queryByText(/^Удаляем предметы/)).toBeNull();
+  });
+
+  it('stops a bulk delete at the first failure, keeps the rest and frees the button', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
+    let sent = 0;
+    cloud.homebrew.removeItem = (id) => {
+      sent++;
+      if (sent === 2) cloud.setOffline(true);
+      return remove(id);
+    };
+    page('gm1', { cloud });
+    await screen.findByText('4 предмета из 100');
+    for (const name of ['Кольцо с гравировкой', 'Настой кузнеца', 'Топор Тлеющих Углей']) {
+      await userEvent.click(screen.getByRole('checkbox', { name }));
+    }
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (3)' }));
+    expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
+    expect(sent).toBe(2);
+    expect(screen.queryByText(/^Удаляем предметы/)).toBeNull();
+    expect(screen.getByText('3 предмета из 100')).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'Топор Тлеющих Углей' })).toBeNull();
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeEnabled();
+  });
+
   it('draws the empty page', async () => {
     const { container } = page('gm2');
     expect(await screen.findByText(t.hbEmpty)).toBeInTheDocument();
-    expect(screen.getByText('Мои предметы: 0 из 100')).toBeInTheDocument();
+    expect(screen.getByText('0 предметов из 100')).toBeInTheDocument();
     expect(screen.getByText(t.hbSources, { selector: 'summary' })).toBeInTheDocument();
     expect(screen.getByText(t.hbCards, { selector: 'summary' })).toBeInTheDocument();
     const panel = await cards();
@@ -313,26 +410,26 @@ describe('#/homebrew', () => {
     expect(await screen.findByText(t.hbLoadFailed)).toBeInTheDocument();
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: t.retry }));
-    expect(await screen.findByText('Мои предметы: 4 из 100')).toBeInTheDocument();
+    expect(await screen.findByText('4 предмета из 100')).toBeInTheDocument();
   });
 
   it('deletes the ticked items after one confirm', async () => {
     const { dialog } = page();
-    await screen.findByText('Мои предметы: 4 из 100');
+    await screen.findByText('4 предмета из 100');
     await userEvent.click(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' }));
     await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
     expect(dialog.asked).toEqual([
-      'Удалить предметы (2)? Они пропадут и из ваших списков. Отменить нельзя.'
+      'Удалить предметы (2)? Они пропадут и из ваших списков. Отменить удаление нельзя.'
     ]);
     expect(await screen.findByText('Удалено предметов: 2')).toBeInTheDocument();
-    expect(screen.getByText('Мои предметы: 2 из 100')).toBeInTheDocument();
+    expect(screen.getByText('2 предмета из 100')).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: 'Кольцо с гравировкой' })).toBeNull();
   });
 
   it('puts a ticked item into a list as a reference from the selection bar', async () => {
     const { cloud, pagePort, container } = page();
-    await screen.findByText('Мои предметы: 4 из 100');
+    await screen.findByText('4 предмета из 100');
     await userEvent.click(screen.getByRole('checkbox', { name: 'Топор Тлеющих Углей' }));
     await userEvent.click(screen.getByRole('button', { name: t.addToList }));
     await expectNoA11yViolations(container);
@@ -356,14 +453,14 @@ describe('#/homebrew', () => {
 
   it('ticks every item from the strip', async () => {
     page();
-    await screen.findByText('Мои предметы: 4 из 100');
+    await screen.findByText('4 предмета из 100');
     await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
     expect(screen.getByRole('button', { name: 'Удалить (4)' })).toBeInTheDocument();
   });
 
   it('opens the editor from a row', async () => {
     const { router } = page();
-    await screen.findByText('Мои предметы: 4 из 100');
+    await screen.findByText('4 предмета из 100');
     await userEvent.click(screen.getByText('Кольцо с гравировкой'));
     expect(router.hash()).toBe('#/homebrew/hb_engravedringaaaa');
     expect(
@@ -379,7 +476,7 @@ describe('#/homebrew', () => {
       return r.ok ? { ...r, itemLimit: null } : r;
     };
     page('gm1', { cloud });
-    expect(await screen.findByText('Мои предметы: 4')).toBeInTheDocument();
+    expect(await screen.findByText('4 предмета')).toBeInTheDocument();
   });
 });
 
@@ -400,12 +497,12 @@ describe('#/homebrew «Карты»', () => {
     );
     expect(order).toEqual([
       t.hbSets,
-      t.hbAddSet,
+      t.hbNewSet,
       'Комплект Ольхи',
       t.edit,
       t.del,
       t.hbRefs,
-      t.hbCardNew,
+      t.hbNewCard,
       'Клеймо Ольхи',
       t.edit,
       t.del
@@ -429,19 +526,28 @@ describe('#/homebrew «Карты»', () => {
     const names = [...panel.querySelectorAll('.name')].map((e) => e.textContent);
     expect(names).toEqual(['Альфа', 'Комплект Ольхи', 'Клеймо Ольхи']);
     expect(panel.querySelector('summary')?.textContent).toBe(
-      'Карты · 2 комплекта, 1 карта правил'
+      'Карты · 3 карты из 100: 2 комплекта, 1 карта правил'
     );
   });
 
   it('makes, edits and deletes a set', async () => {
     const { cloud, container, dialog } = page();
     const panel = await cards();
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbAddSet }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSet }));
     const form = screen.getByRole('group', { name: t.hbNewSet });
     await waitFor(() => {
       expect(within(form).getByLabelText(/^Название комплекта/)).toHaveFocus();
     });
     await expectNoA11yViolations(container);
+    expect(within(form).getByLabelText(/^Название комплекта/)).toHaveAttribute(
+      'maxlength',
+      '80'
+    );
+    const bonus = within(form).getByLabelText(/^Бонус комплекта/);
+    expect(bonus).toHaveAttribute('maxlength', '1500');
+    await userEvent.click(bonus);
+    await userEvent.paste('я'.repeat(1251));
+    expect(form.querySelector('.counter')?.textContent).toBe('1251 / 1500');
     await fill(/^Название комплекта/, 'Кузнечный');
     await fill(/^Бонус комплекта/, 'Два предмета: +1 к Броне.');
     await userEvent.selectOptions(within(form).getByLabelText(t.hbSource), ALDER);
@@ -463,6 +569,7 @@ describe('#/homebrew «Карты»', () => {
     await fill(/^Название комплекта/, 'Комплект Ивы');
     await userEvent.keyboard('{Enter}');
     expect(await within(panel).findByText('Комплект Ивы')).toBeInTheDocument();
+    expect(await screen.findByText('Сохранено: «Комплект Ивы»')).toBeInTheDocument();
     read = await cloud?.homebrew.load();
     expect(read?.ok && read.cards.find((c) => c.id === uuid(521))).toMatchObject({
       revision: 2,
@@ -476,7 +583,9 @@ describe('#/homebrew «Карты»', () => {
 
     const dels = within(panel).getAllByRole('button', { name: t.del });
     await userEvent.click(dels[0] as HTMLElement);
-    expect(dialog.asked.at(-1)).toBe('Удалить комплект «Комплект Ивы»? Отменить нельзя.');
+    expect(dialog.asked.at(-1)).toBe(
+      'Удалить комплект «Комплект Ивы»? Отменить удаление нельзя.'
+    );
     expect(await screen.findByText('Комплект «Комплект Ивы» удалён')).toBeInTheDocument();
     expect(within(panel).queryByText('Комплект Ивы')).not.toBeInTheDocument();
   });
@@ -484,7 +593,7 @@ describe('#/homebrew «Карты»', () => {
   it('refuses an empty name and bonus, a taken name, the card limit and an http link', async () => {
     const { container } = page('gm1', { fake: { limits: { cards: 2 } } });
     const panel = await cards();
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbAddSet }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSet }));
     await userEvent.click(screen.getByRole('button', { name: t.hbCreateSet }));
     expect(await screen.findByText(t.hbErrName)).toBeInTheDocument();
     expect(screen.getByText(t.hbErrSetBonus)).toBeInTheDocument();
@@ -504,7 +613,7 @@ describe('#/homebrew «Карты»', () => {
     );
     expect(screen.getByLabelText(/^Название комплекта/)).toHaveValue('Кузнечный');
 
-    await userEvent.click(screen.getByRole('button', { name: t.hbCardNew }));
+    await userEvent.click(screen.getByRole('button', { name: t.hbNewCard }));
     expect(screen.queryByRole('group', { name: t.hbNewSet })).not.toBeInTheDocument();
     const form = screen.getByRole('group', { name: t.hbNewCard });
     await fill(/^Название карты/, 'Огненный след');
@@ -577,7 +686,7 @@ describe('#/homebrew «Карты»', () => {
   it('says a lost network on a new card', async () => {
     const { cloud } = page();
     const panel = await cards();
-    await userEvent.click(within(panel).getByRole('button', { name: t.hbCardNew }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewCard }));
     await fill(/^Название карты/, 'Огненный след');
     await fill(/^Текст карты/, 'Цель горит.');
     (cloud as ReturnType<typeof fakeCloud>).setOffline(true);
@@ -603,8 +712,8 @@ describe('#/homebrew «Карты»', () => {
     await userEvent.click(dels[0] as HTMLElement);
     await userEvent.click(dels[1] as HTMLElement);
     expect(dialog.asked).toEqual([
-      'Удалить комплект «Комплект Ольхи»? Он указан в 1 предмете - там пропадут его название и бонус. Отменить нельзя.',
-      'Удалить карту правил «Клеймо Ольхи»? Она указана в 1 предмете - там она пропадёт. Отменить нельзя.'
+      'Удалить комплект «Комплект Ольхи»? Он указан в 1 предмете - там пропадут его название и бонус. Отменить удаление нельзя.',
+      'Удалить карту правил «Клеймо Ольхи»? Она указана в 1 предмете - там она пропадёт. Отменить удаление нельзя.'
     ]);
     const edits = within(panel).getAllByRole('button', { name: t.edit });
     await userEvent.click(edits[1] as HTMLElement);
@@ -617,7 +726,9 @@ describe('#/homebrew «Карты»', () => {
     (off.cloud as ReturnType<typeof fakeCloud>).setOffline(true);
     const offDels = within(again).getAllByRole('button', { name: t.del });
     await userEvent.click(offDels[1] as HTMLElement);
-    expect(off.dialog.asked).toEqual(['Удалить карту правил «Клеймо Ольхи»? Отменить нельзя.']);
+    expect(off.dialog.asked).toEqual([
+      'Удалить карту правил «Клеймо Ольхи»? Отменить удаление нельзя.'
+    ]);
     expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
     expect(within(again).getByText('Клеймо Ольхи')).toBeInTheDocument();
   });

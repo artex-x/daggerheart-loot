@@ -1113,7 +1113,10 @@ describe('a purchase request', () => {
       { ok: false, error: 'limit', key: 'pending_requests_per_list', value: 10 },
       'У владельца уже 10 запросов без ответа. Попробуйте позже.'
     ],
-    [{ ok: false, error: 'network' }, 'Не получилось отправить. Проверьте соединение.']
+    [
+      { ok: false, error: 'network' },
+      'Не получилось отправить. Проверьте соединение и попробуйте ещё раз.'
+    ]
   ] as const)('keeps the selection and says %j', async (answer, text) => {
     const { cloud, container } = open('#/s/player-token-1');
     vi.spyOn(cloud.requests, 'send').mockResolvedValueOnce(answer);

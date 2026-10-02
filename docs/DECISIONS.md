@@ -14,6 +14,10 @@ deleted.
 
 ## Index
 
+- 2026-10-02 - [Field help is a «?» by the label; every input has its own visible label](decisions/2026-10-02-field-help-is-a-by-the-label-every.md)
+- 2026-10-02 - [The bundle ceilings rise to 300 kB configured and 250 unconfigured](decisions/2026-10-02-the-bundle-ceilings-rise-to-300-kb-configured.md)
+- 2026-10-02 - [The homebrew editor offers no tier and tiers 1-4; a stored A or C tier stays](decisions/2026-10-02-the-homebrew-editor-offers-no-tier-and-tiers.md)
+- 2026-10-02 - [The signed-in pages follow one set of consistency rules](decisions/2026-10-02-the-signed-in-pages-follow-one-set-of.md)
 - 2026-10-01 - [A frozen copy holds up to 131072 bytes; a card text holds 1500 code points](decisions/2026-10-01-a-frozen-copy-holds-up-to-131072-bytes.md)
 - 2026-10-01 - [A plan review's fix-then-continue is applied once, with no second look](decisions/2026-10-01-a-plan-reviews-fix-then-continue-is-applied-once.md)
 - 2026-10-01 - [An RTK command piped into head or tail is denied when RTK bounds it](decisions/2026-10-01-an-rtk-command-piped-into-head-or-tail.md)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dict } from './dict.js';
-import { plural } from './plural.js';
+import { countOf, plural } from './plural.js';
 
 const COUNTS = [0, 1, 2, 5, 11, 12, 21, 22, 25, 101, 111];
 
@@ -77,5 +77,15 @@ describe('plural', () => {
       'Skipped 1 item - no longer in the data',
       'Skipped 2 items - no longer in the data'
     ]);
+  });
+
+  it('namesTheLimitAfterTheCountOnlyWhenTheLimitIsKnown', () => {
+    const ru = dict('ru');
+    const en = dict('en');
+    expect(countOf(3, 50, ru.listsN, 'ru', ru.ofLimit)).toBe('3 списка из 50');
+    expect(countOf(0, 20, ru.hbSourcesN, 'ru', ru.ofLimit)).toBe('0 источников из 20');
+    expect(countOf(3, null, ru.listsN, 'ru', ru.ofLimit)).toBe('3 списка');
+    expect(countOf(1, 100, en.hbCardsN, 'en', en.ofLimit)).toBe('1 card of 100');
+    expect(countOf(5, null, en.hbCardsN, 'en', en.ofLimit)).toBe('5 cards');
   });
 });

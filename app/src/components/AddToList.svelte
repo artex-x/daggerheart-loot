@@ -12,6 +12,7 @@
   import Chip from './Chip.svelte';
   import Icon from './Icon.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
+  import { NAME_MAX } from '../lib/cloudLists.js';
   import type { Msg } from '../lib/dict.js';
   import { recordHash } from '../lib/hash.js';
   import { isHomebrewKey } from '../lib/homebrew.js';
@@ -409,6 +410,7 @@
             bind:this={newInput}
             value={draft}
             placeholder={t.listNamePh}
+            maxlength={NAME_MAX}
             aria-label={t.newList}
             oninput={(e) => {
               draft = e.currentTarget.value;

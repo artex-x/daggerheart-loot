@@ -24,7 +24,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
-    heading "Списки" [level=1]
+    heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
@@ -32,7 +32,8 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
     heading "ВАШ АККАУНТ" [level=2]
-    StaticText "Не получилось загрузить списки аккаунта."
+    alert ""
+      StaticText "Не получилось загрузить списки аккаунта."
     button "Повторить"
   contentinfo ""
     navigation "Страницы сайта"
@@ -89,7 +90,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
-    heading "Lists" [level=1]
+    heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
@@ -97,7 +98,8 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
     heading "YOUR ACCOUNT" [level=2]
-    StaticText "Could not load the lists in your account."
+    alert ""
+      StaticText "Could not load the lists in your account."
     button "Retry"
   contentinfo ""
     navigation "Site pages"

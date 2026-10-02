@@ -15,7 +15,8 @@
 
   interface Props {
     title: string | Snippet;
-    sub: string | Snippet;
+    /** None where a load line under the heading says it all. */
+    sub?: string | Snippet;
   }
 
   const { title, sub }: Props = $props();
@@ -34,7 +35,7 @@
 {/if}
 {#if typeof sub === 'string'}
   <p class="page-sub">{sub}</p>
-{:else}
+{:else if sub}
   <p class="page-sub">{@render sub()}</p>
 {/if}
 
@@ -49,6 +50,7 @@
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    overflow-wrap: anywhere;
   }
 
   /* off `.page-sub` (style.css:140) */

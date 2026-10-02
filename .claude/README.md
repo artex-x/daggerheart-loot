@@ -1751,9 +1751,9 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-183 kB for the unconfigured build and 242 kB for the configured one, which
+188 kB for the unconfigured build and 247 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 183 kB limit. The 242 kB limit runs in
+unconfigured and so measures only the 188 kB limit. The 247 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -1765,18 +1765,20 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 242 kB budget (with the account client chunk)`; 236.6
-kB on 2026-10-01 with the homebrew relations, 177.6 kB unconfigured (224.8 kB
+Expected: `within the 247 kB budget (with the account client chunk)`; 242.2
+kB on 2026-10-02 with the homebrew editor's field help, 183.1 kB unconfigured
+(236.6 kB on 2026-10-01 with the homebrew relations, 177.6 kB unconfigured; 224.8 kB
 on 2026-10-01 with homebrew in the catalog pages, 165.9 kB unconfigured;
 220.8 kB on 2026-09-30 with the homebrew pages, 203.0 kB before them, after the
 import and export and the requests polish; 184.5 kB on 2026-09-27 with the
 Realtime client, 178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
 `check:built` rebuilds it. During R7-R7d a batch whose build passes a limit
 raises it to the measured size plus about 5 kB in the same commit, never past
-250 kB configured and 190 kB unconfigured, and past a ceiling it stops and
+300 kB configured and 250 kB unconfigured, and past a ceiling it stops and
 asks the owner. Decisions: "The configured bundle budget is 210 kB; the
 unconfigured stays 150 kB", amended by "The bundle budget steps up per batch
-to 250 kB configured and 190 unconfigured"; the slimmer client neither waits
+to 250 kB configured and 190 unconfigured", amended by "The bundle ceilings
+rise to 300 kB configured and 250 unconfigured"; the slimmer client neither waits
 on is still `docs/specs/DEBT.md`, D60.
 
 Branch migrations on the test project: `migrate-test` runs on every

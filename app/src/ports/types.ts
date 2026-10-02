@@ -360,8 +360,11 @@ export type ListWrite =
    *  database stopped at its statement timeout, which the same call would reach again. */
   | { ok: false; error: 'refused'; reason?: 'tooSlow' };
 
-/** `{ ok: false }` is signed out or a read that failed, never an empty account. */
-export type ListsRead = { ok: true; lists: ListRow[] } | { ok: false };
+/** `{ ok: false }` is signed out or a read that failed, never an empty account. A limit
+ *  is null for no limit or a limit read that failed. */
+export type ListsRead =
+  | { ok: true; lists: ListRow[]; listLimit: number | null; entryLimit: number | null }
+  | { ok: false };
 
 /** One write's answer inside an `apply` call: never `network`; `gone` when the row it
  *  edits was deleted or is not the caller's (`P0002`). */
@@ -483,10 +486,18 @@ export interface RequestRepository {
   decline(id: string): Promise<RequestDeclined>;
 }
 
-/** `{ ok: false }` is signed out or a read that failed; `itemLimit` is null for no limit
- *  or a limit read that failed. */
+/** `{ ok: false }` is signed out or a read that failed; a limit is null for no limit or a
+ *  limit read that failed. */
 export type HomebrewRead =
-  | { ok: true; books: BookRow[]; items: ItemRow[]; cards: CardRow[]; itemLimit: number | null }
+  | {
+      ok: true;
+      books: BookRow[];
+      items: ItemRow[];
+      cards: CardRow[];
+      itemLimit: number | null;
+      bookLimit: number | null;
+      cardLimit: number | null;
+    }
   | { ok: false };
 /** An update's answer: the row's new revision, or why not. */
 export type HomebrewSaved =

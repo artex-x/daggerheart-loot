@@ -861,16 +861,16 @@ export async function runFlows({ env, admin, member, browser, base }) {
     const mine = () => homebrewOf(admin, member.id);
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       await d.open('#/homebrew');
-      await waitText(page, 'F14', 'Мои предметы: 0');
+      await waitText(page, 'F14', '0 предметов');
       await d.press('Источники');
-      await d.press('Добавить');
+      await d.press('Новый источник');
       await page.type('#hb-new-source', 'F14');
       await d.press('Создать');
       await until('F14: the source did not reach the account', async () => {
         return (await mine()).books.length === 1;
       });
       await d.press('Разделы');
-      await d.press('Добавить раздел');
+      await d.press('Новый раздел');
       const { books } = await mine();
       const book = books[0];
       await page.type('#hb-section-' + book.id, 'Клинки');
@@ -1022,7 +1022,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
 
   /* F16: an own item's relations on the hosted project: a loot item that upgrades into
      ci1 and is made from ci2, both picked by name in «Связи», with a rule card made by
-     «+ Новая карта правил»; the card row and the item's relation keys read back. */
+     «Новая карта правил»; the card row and the item's relation keys read back. */
   await deleteHomebrewOf(admin, member.id);
   try {
     const mine = () => homebrewOf(admin, member.id);
@@ -1035,7 +1035,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.click('Первоклассный Спальный Мешок');
       await d.type('Получается из', 'Пронзительная Свирель');
       await d.click('Пронзительная Свирель');
-      await d.press('+ Новая карта правил');
+      await d.press('Новая карта правил');
       await d.type('Название карты*', 'Клеймо F16');
       await d.type('Текст карты*', 'Раз за отдых: перебросьте одну кость урона.');
       await d.press('Создать карту');

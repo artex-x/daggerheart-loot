@@ -10,7 +10,7 @@
     el?: HTMLInputElement | undefined;
     placeholder?: string;
     /** The name, when no `<label>` points at `id`. */
-    label?: string;
+    label?: string | undefined;
     id?: string;
     autocomplete?: HTMLInputAttributes['autocomplete'];
     inputmode?: HTMLInputAttributes['inputmode'];
@@ -20,6 +20,8 @@
     invalid?: boolean;
     /** The id of the field's error line. */
     describedby?: string | undefined;
+    /** The most the database keeps (docs/specs/FEATURES.md, "Consistency rules"). */
+    maxlength?: number | undefined;
     oninput?: () => void;
   }
 
@@ -34,6 +36,7 @@
     required = false,
     invalid = false,
     describedby,
+    maxlength,
     oninput
   }: Props = $props();
 </script>
@@ -50,6 +53,7 @@
   aria-required={required || undefined}
   aria-invalid={invalid || undefined}
   aria-describedby={describedby}
+  {maxlength}
   {oninput}
 />
 

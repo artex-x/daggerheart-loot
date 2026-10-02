@@ -12,6 +12,7 @@ import {
   cardProblems,
   cardUses,
   contentProblems,
+  counterFrom,
   editLang,
   groupsOf,
   HOMEBREW_KEY,
@@ -632,5 +633,11 @@ describe('itemUses and cardUses', () => {
     expect(cardUses(items, 'ref', 'slow')).toBe(2);
     expect(cardUses(items, 'ref', 'hb_cardaaaaaaaaaaaa')).toBe(1);
     expect(cardUses(items, 'set', 'slow')).toBe(0);
+  });
+});
+
+describe('counterFrom', () => {
+  it('startsTheCounterPastFiveSixthsOfTheCap', () => {
+    expect([counterFrom(3000), counterFrom(1500), counterFrom(7)]).toEqual([2500, 1250, 5]);
   });
 });

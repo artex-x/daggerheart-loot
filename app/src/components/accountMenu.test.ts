@@ -157,7 +157,7 @@ describe('the account menu', () => {
     await openMenu();
     await userEvent.click(screen.getByRole('menuitem', { name: 'Выйти' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Не получилось. Попробуйте ещё раз.'
+      'Не получилось. Проверьте соединение и попробуйте ещё раз.'
     );
     expect(screen.getByRole('button', { name: CONTROL })).toBeInTheDocument();
   });

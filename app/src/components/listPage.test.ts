@@ -32,7 +32,7 @@ import {
 } from '../ports/index.js';
 import type { CloudPort, CompressPort, Env, ListWrites } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -1109,7 +1109,7 @@ describe('deleting', () => {
     const dialog = fakeDialog(true);
     render(App, { env: at('#/lists/a', { router, storage, dialog }) });
     await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
-    expect(dialog.asked[0]).toBe('Удалить список «Тайник»? Это действие необратимо.');
+    expect(dialog.asked[0]).toBe('Удалить список «Тайник»? Отменить удаление нельзя.');
     expect(router.stack[router.stack.length - 1]).toBe('#/lists');
     expect(readLists(storage)).toEqual([]);
     expect(screen.getByText('Список «Тайник» удалён')).toBeInTheDocument();
@@ -1328,7 +1328,7 @@ describe('announcing a reorder', () => {
     drag.handlers?.onDrag?.(0);
     drag.handlers?.onDrop(0, 2);
     await tick();
-    expect(region).toHaveTextContent('«Спальный мешок» — позиция 3 из 3');
+    expect(region).toHaveTextContent('«Спальный мешок» - позиция 3 из 3');
 
     await expectNoA11yViolations(container);
   });
@@ -1374,7 +1374,7 @@ describe('announcing a reorder', () => {
     await userEvent.clear(posAfter[2] as HTMLElement);
     await userEvent.type(posAfter[2] as HTMLElement, '1');
     await userEvent.tab();
-    expect(region).toHaveTextContent('«Меч» — позиция 1 из 3');
+    expect(region).toHaveTextContent('«Меч» - позиция 1 из 3');
   });
 
   it('announces the same typed move in English under dhloot.lang.v1: en', async () => {
@@ -1439,11 +1439,96 @@ describe('an account list', () => {
   const sub = (container: HTMLElement): string =>
     container.querySelector('.page-sub')?.textContent.replace(/\s+/g, ' ').trim() ?? '';
 
+  it('counts its entries against the entry limit, and bare when the limit read failed', async () => {
+    const { container } = openAs(fakeCloud(SEED, 'gm1', { limits: { entries: 4 } }));
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(sub(container)).toBe('4 позиции из 4 · Сохранено');
+    cleanup();
+    const cloud = fakeCloud(SEED, 'gm1');
+    const read = cloud.lists.list.bind(cloud.lists);
+    cloud.lists.list = async () => {
+      const r = await read();
+      return r.ok ? { ...r, entryLimit: null } : r;
+    };
+    const bare = openAs(cloud);
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(sub(bare.container)).toBe('4 позиции · Сохранено');
+  });
+
+  /* gm1's shop holds ten entries, six of them records this data lacks; `more` fills it
+     with stand-ins, and the six get stand-ins too, so each entry counts. */
+  const STANDINS: Loot = {
+    ...LOOT,
+    items: {
+      ...LOOT.items,
+      core_item: [
+        ...(LOOT.items['core_item'] ?? []),
+        ...['q313', 'voa2_a3', 'q23', 'w51', 'q35', 'di11']
+          .concat(Array.from({ length: 290 }, (_, i) => 'x' + String(i)))
+          .map((id, i) => ({
+            id,
+            src: 'core',
+            kind: 'item' as const,
+            roll: 1,
+            en: 'Stand-in ' + String(i),
+            ende: '',
+            ru: 'Подставка ' + String(i),
+            rud: ''
+          }))
+      ]
+    }
+  };
+  const filled = async (more: number, entries: number): Promise<CloudPort> => {
+    const cloud = fakeCloud(SEED, 'gm1', { limits: { entries } });
+    const r = await cloud.lists.apply([
+      {
+        op: 'add',
+        list_id: uuid(101),
+        entries: Array.from({ length: more }, (_, i) => ({
+          id: uuid(7000 + i),
+          item_key: 'x' + String(i),
+          source: 'official' as const,
+          snapshot: null,
+          position: 10 + i,
+          quantity: 1,
+          price_coins: null,
+          player_note: '',
+          gm_note: ''
+        }))
+      }
+    ]);
+    if (!r.ok) throw new Error(`The fake refused ${String(more)} entries. Raise the limit.`);
+    return cloud;
+  };
+
+  it('counts its entries at the limit and at three times the limit', async () => {
+    const full = openAs(await filled(90, 100), SHOP, { data: fakeData(STANDINS) });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    await waitFor(() => {
+      expect(sub(full.container)).toBe('100 позиций из 100 · Сохранено');
+    });
+    cleanup();
+    const big = openAs(await filled(290, 300), SHOP, { data: fakeData(STANDINS) });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    await waitFor(() => {
+      expect(sub(big.container)).toBe('300 позиций из 300 · Сохранено');
+    });
+  });
+
+  it('stops the name at 200 characters and each note at 4000', async () => {
+    const { container } = openAs(fakeCloud(SEED, 'gm1'));
+    const input = await screen.findByRole('textbox', { name: 'Название списка' });
+    expect(input).toHaveAttribute('maxlength', '200');
+    const notes = [...container.querySelectorAll('textarea[data-note]')];
+    expect(notes.length).toBeGreaterThan(0);
+    for (const n of notes) expect(n).toHaveAttribute('maxlength', '4000');
+  });
+
   it('keeps its address, draws no link buttons and no notice, and says saved', async () => {
     const { container, router } = openAs(fakeCloud(SEED, 'gm1'));
     const input = await screen.findByRole('textbox', { name: 'Название списка' });
     expect(input).toHaveValue('Лавка кузнеца');
-    expect(sub(container)).toBe('4 позиции · Сохранено');
+    expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
     expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ссылка себе' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
@@ -1542,7 +1627,7 @@ describe('an account list', () => {
     const { container, page } = openAs(cloud);
     const saving = () => container.querySelector('.sync')?.hasAttribute('data-saving');
     await userEvent.type(await screen.findByRole('textbox', { name: 'Название списка' }), '!');
-    expect(sub(container)).toBe('4 позиции · Сохраняем...');
+    expect(sub(container)).toBe('4 позиции из 100 · Сохраняем...');
     expect(saving()).toBe(true);
     expect(sent).not.toHaveBeenCalled();
     page.fireHidden();
@@ -1552,7 +1637,7 @@ describe('an account list', () => {
     expect(saving()).toBe(true);
     answer({ ok: true, results: [{ ok: true }] });
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции · Сохранено');
+      expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
     });
     expect(saving()).toBe(false);
     await expectNoA11yViolations(container);
@@ -1566,7 +1651,7 @@ describe('an account list', () => {
     await userEvent.type(input, '!');
     page.fireHidden();
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции · Не сохраненоПовторить');
+      expect(sub(container)).toBe('4 позиции из 100 · Не сохраненоПовторить');
     });
     expect(input).toHaveValue('Лавка кузнеца!');
     const status = [...container.querySelectorAll('.lsaid')].map((s) => s.textContent);
@@ -1575,7 +1660,7 @@ describe('an account list', () => {
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции · Сохранено');
+      expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
     });
     const said = () => [...container.querySelectorAll('.lsaid')].map((s) => s.textContent);
     expect(said()).toContain('Сохранено');
@@ -1649,7 +1734,7 @@ describe('an account list', () => {
     expect(router.hash()).toBe('#/account');
   });
 
-  it('draws nothing while the account answers, and a failed read with a retry', async () => {
+  it('draws nothing while the account answers, and a failed read as «Список не загрузился» with a retry', async () => {
     const pending = fakeCloud(SEED);
     pending.auth.session = () => new Promise(() => undefined);
     openAs(pending);
@@ -1658,7 +1743,13 @@ describe('an account list', () => {
 
     const cloud = fakeCloud(SEED, 'gm1', { offline: true });
     const { container } = openAs(cloud);
-    expect(await screen.findByText('Не получилось загрузить списки аккаунта.')).toBeVisible();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Не получилось загрузить списки аккаунта.'
+    );
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Список не загрузился' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Список не найден')).toBeNull();
     await expectNoA11yViolations(container);
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
@@ -1747,7 +1838,7 @@ describe('a browser list after the cutoff, and while the move is due', () => {
       env: at('#/lists/a', { storage, router, dialog, cloud: signedOut(), ...AFTER })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
-    expect(dialog.asked).toEqual(['Удалить список «Тайник»? Это действие необратимо.']);
+    expect(dialog.asked).toEqual(['Удалить список «Тайник»? Отменить удаление нельзя.']);
     expect(router.hash()).toBe('#/lists');
     expect(readLists(storage)).toEqual([]);
     expect(screen.getByText('Список «Тайник» удалён')).toBeInTheDocument();
@@ -1897,7 +1988,7 @@ describe('a toast and a language switch', () => {
     expect(screen.getByText('Убрано из списка: «Зелье»')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(screen.getByText('"Potion" removed')).toBeInTheDocument();
+    expect(screen.getByText('"Potion" removed from the list')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
   });
 });

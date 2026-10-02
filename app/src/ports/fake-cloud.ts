@@ -75,8 +75,17 @@ export interface FakeCloudOptions {
   /** Starts with no network: every read fails and every write answers `network`. */
   offline?: boolean;
   /** The count limits in place of the database defaults (50 lists, 100 entries, 20
-   *  homebrew sources, 100 homebrew items, 100 homebrew cards). */
-  limits?: { lists?: number; entries?: number; books?: number; items?: number; cards?: number };
+   *  homebrew sources, 100 homebrew items, 100 homebrew cards, 10 pending requests per
+   *  list, 100 lines per request). */
+  limits?: {
+    lists?: number;
+    entries?: number;
+    books?: number;
+    items?: number;
+    cards?: number;
+    pending?: number;
+    lines?: number;
+  };
   /** Whether a subscribe joins (default `true`); `false` keeps every feed on the poll. */
   live?: boolean;
 }
@@ -301,8 +310,6 @@ const IMPORT_LISTS_MAX = 1000;
 const HOUR_MS = 3_600_000;
 const RATE_MS = 60_000;
 const RATE_MAX = 5;
-const PENDING_MAX = 10;
-const LINES_MAX = 100;
 
 /** A purchase request as the fake holds it. */
 interface HeldRequest {
@@ -372,6 +379,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   const maxBooks = options.limits?.books ?? 20;
   const maxItems = options.limits?.items ?? 100;
   const maxCards = options.limits?.cards ?? 100;
+  const maxPending = options.limits?.pending ?? 10;
+  const maxLines = options.limits?.lines ?? 100;
   const listeners = new Set<(s: Session | null) => void>();
 
   const user = (): SeedUser | null => (current === null ? null : (users.get(current) ?? null));
@@ -780,7 +789,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         lists: mine.map((h) => ({
           ...h.row,
           list_entries: h.entries.map((e) => ({ ...e })).sort(entryOrder)
-        }))
+        })),
+        listLimit: maxLists,
+        entryLimit: maxEntries
       });
     },
     apply(ops) {
@@ -987,14 +998,14 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     const had = purchases.find((r) => r.id === id);
     if (had) return had.shareId === sh.id ? OK : { ok: false, error: 'gone' };
     if (!linesOk(lines)) return REFUSED;
-    if (lines.length > LINES_MAX) return limited('request_lines', LINES_MAX);
+    if (lines.length > maxLines) return limited('request_lines', maxLines);
     const stock = new Map(h.entries.map((e) => [e.item_key, e]));
     if (lines.some((l) => !stock.has(l.item))) return { ok: false, error: 'stale' };
     const now = Date.now();
     const recent = purchases.filter((r) => r.shareId === sh.id && r.createdAt > now - RATE_MS);
     if (recent.length >= RATE_MAX) return limited('request_rate', RATE_MAX);
-    if (pendingOf(h.row.id, now).length >= PENDING_MAX) {
-      return limited('pending_requests_per_list', PENDING_MAX);
+    if (pendingOf(h.row.id, now).length >= maxPending) {
+      return limited('pending_requests_per_list', maxPending);
     }
     purchases.push({
       id,
@@ -1152,7 +1163,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         books: structuredClone(mine.books),
         items: structuredClone(mine.items),
         cards: structuredClone(mine.cards),
-        itemLimit: maxItems
+        itemLimit: maxItems,
+        bookLimit: maxBooks,
+        cardLimit: maxCards
       });
     },
     createBook(row) {

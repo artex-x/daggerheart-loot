@@ -1,6 +1,6 @@
 # #/homebrew/hb_emberaxeaaaaaaaa as gm1
 # route: #/homebrew/hb_emberaxeaaaaaaaa
-# why: the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Второй набор характеристик» folded, «Удалить», the preview card
+# why: the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Урон» with its «?» over «Кость урона» and «Бонус к урону», the disclosure «Второй набор характеристик» closed with its «?», «Удалить», the preview card
 # as: gm1
 
 ## ru :: tree
@@ -38,11 +38,12 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Вторичное оружие" [pressed=false]
         button "Броня" [pressed=false]
       StaticText "Источник"
+      button "Подсказка: Источник" [description=Подсказка: Источник expanded=false]
       combobox "Источник" [value=Мастерская Ольхи expanded=false haspopup=menu]
         option "Хоумбрю" [selected=false]
         option "Мастерская Ольхи" [selected=true]
         option "+ Новый источник..." [selected=false]
-      ... StaticText x6 of 10 same-shape siblings elided
+      ... StaticText x5 of 9 same-shape siblings elided
       combobox "Раздел" [value=Холодное оружие expanded=false haspopup=menu]
         option "Без раздела" [selected=false]
         option "Пистоли" [selected=false]
@@ -50,12 +51,12 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         option "+ Новый раздел..." [selected=false]
       textbox "Название*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
       textbox "Описание" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
-      group "Ранг" [description=Как в книге - по характеристикам ранг не определяется.]
+      button "Подсказка: Ранг" [description=Подсказка: Ранг expanded=false]
+      group "Ранг"
         button "1" [pressed=false]
         button "2" [pressed=true]
         button "3" [pressed=false]
         button "4" [pressed=false]
-        button "Артефакт" [pressed=false]
       group "Класс"
         button "Физическое" [pressed=false]
         button "Магическое" [pressed=true]
@@ -72,14 +73,15 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Средне" [pressed=false]
         button "Далеко" [pressed=false]
         button "Очень далеко" [pressed=false]
-      StaticText "*"
-      combobox "Урон*" [value=d10 expanded=false haspopup=menu]
+      button "Подсказка: Урон" [description=Подсказка: Урон expanded=false]
+      combobox "Кость урона" [value=d10 expanded=false haspopup=menu]
         option "Кость" [selected=false]
         option "d4" [selected=false]
         ... option x2 of 6 same-shape siblings elided
         option "d10" [selected=true]
         option "d12" [selected=false]
         option "d20" [selected=false]
+      StaticText "Бонус к урону"
       textbox "Бонус к урону" [value=2 multiline=false readonly=false required=false]
       group "Тип урона"
         button "физ" [pressed=false]
@@ -89,7 +91,8 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Одноручное" [pressed=false]
         button "Двуручное" [pressed=true]
         button "Одноручное/двуручное" [pressed=false]
-      DisclosureTriangle "Второй набор характеристик" [expanded=false]
+      button "Второй набор характеристик" [expanded=false]
+      button "Подсказка: Второй набор характеристик" [description=Подсказка: Второй набор характеристик expanded=false]
       DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
@@ -110,7 +113,6 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-+ Новая карта правил
 1
 2
 3
@@ -124,17 +126,14 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
-Артефакт
 Без разделаПистолиХолодное оружие+ Новый раздел...
 Близко
-Бонус к урону
 Броня
 В линии
 Влияние
 Вплотную
 Вторичное оружие
-Второй набор характеристик: Бонус к урону
-Второй набор характеристик: Урон
+Второй набор характеристик
 Далеко
 Двуручное
 Добавить в список
@@ -148,6 +147,7 @@ daggerheart.com
 ЛутDaggerheart
 Магическое
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая карта правил
 Новая линия
 Обычные правила
 Одноручное
@@ -155,6 +155,15 @@ daggerheart.com
 Основное оружие
 Отмена
 Очень далеко
+Подсказка: Второй набор характеристик
+Подсказка: Источник
+Подсказка: Карты правил
+Подсказка: Комплект
+Подсказка: Линия улучшений
+Подсказка: Получается из
+Подсказка: Ранг
+Подсказка: Улучшается до
+Подсказка: Урон
 Поиск
 Получается из
 Предмет
@@ -215,11 +224,12 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Secondary weapon" [pressed=false]
         button "Armor" [pressed=false]
       StaticText "Source"
+      button "Help: Source" [description=Help: Source expanded=false]
       combobox "Source" [value=Alder Workshop expanded=false haspopup=menu]
         option "Homebrew" [selected=false]
         option "Alder Workshop" [selected=true]
         option "+ New source..." [selected=false]
-      ... StaticText x6 of 10 same-shape siblings elided
+      ... StaticText x5 of 9 same-shape siblings elided
       combobox "Section" [value=Blades expanded=false haspopup=menu]
         option "No section" [selected=false]
         option "Pistols" [selected=false]
@@ -227,12 +237,12 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         option "+ New section..." [selected=false]
       textbox "Name*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
       textbox "Description" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
-      group "Tier" [description=As in the book - the tier is never worked out from the stats.]
+      button "Help: Tier" [description=Help: Tier expanded=false]
+      group "Tier"
         button "1" [pressed=false]
         button "2" [pressed=true]
         button "3" [pressed=false]
         button "4" [pressed=false]
-        button "Artifact" [pressed=false]
       group "Class"
         button "Physical" [pressed=false]
         button "Magic" [pressed=true]
@@ -249,14 +259,15 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Close" [pressed=false]
         button "Far" [pressed=false]
         button "Very Far" [pressed=false]
-      StaticText "*"
-      combobox "Damage*" [value=d10 expanded=false haspopup=menu]
+      button "Help: Damage" [description=Help: Damage expanded=false]
+      combobox "Damage die" [value=d10 expanded=false haspopup=menu]
         option "Die" [selected=false]
         option "d4" [selected=false]
         ... option x2 of 6 same-shape siblings elided
         option "d10" [selected=true]
         option "d12" [selected=false]
         option "d20" [selected=false]
+      StaticText "Damage bonus"
       textbox "Damage bonus" [value=2 multiline=false readonly=false required=false]
       group "Damage type"
         button "phy" [pressed=false]
@@ -266,7 +277,8 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "One-Handed" [pressed=false]
         button "Two-Handed" [pressed=true]
         button "One/Two-Handed" [pressed=false]
-      DisclosureTriangle "Second stat set" [expanded=false]
+      button "Second stat set" [expanded=false]
+      button "Help: Second stat set" [description=Help: Second stat set expanded=false]
       DisclosureTriangle "Relations" [expanded=false]
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
@@ -287,7 +299,6 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
-+ New rule card
 1
 2
 3
@@ -297,12 +308,10 @@ Add to list
 Agility
 Alt. tables
 Armor
-Artifact
 Cancel
 Close
 Communities
 Consumable
-Damage bonus
 Delete
 Died4d6d8d10d12d20
 Dragon's Vault
@@ -311,6 +320,15 @@ EN
 Equipment
 Far
 Finesse
+Help: Damage
+Help: Made from
+Help: Rule cards
+Help: Second stat set
+Help: Set
+Help: Source
+Help: Tier
+Help: Upgrade line
+Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 In a line
 Install as an app
@@ -322,6 +340,7 @@ Made from
 Magic
 Melee
 New line
+New rule card
 No sectionPistolsBlades+ New section...
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 One-Handed
@@ -335,8 +354,7 @@ RU
 Rule cards
 Save
 Search
-Second stat set: Damage
-Second stat set: Damage bonus
+Second stat set
 Secondary weapon
 Skip to content
 Spellcast

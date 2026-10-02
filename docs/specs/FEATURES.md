@@ -137,7 +137,7 @@ across.
   draws the sign-in prompt «Войдите, чтобы видеть свои предметы в таблицах.»
   and no toolbar; while the session or the items load, «Загружаем...»; a
   failed read, «Не получилось загрузить ваши предметы.» and «Повторить»; no
-  own item, the empty text and «Новый предмет»; a build with no sign-in
+  own item, «Своих предметов пока нет.» and «Новый предмет»; a build with no sign-in
   configured, the not-found page with the address kept. A pin may hold it.
 - **The «Хоумбрю» chip**: on `#/search` (last in the kind row) and in the
   equipment tables' toolbar (after the view switch), drawn only while the
@@ -276,7 +276,8 @@ across.
   runs; success folds the field, draws the new lists first and toasts
   «Импортировано списков: N»; a limit toasts the limit text, a statement
   timeout «Файл слишком большой для одного импорта: разделите его на
-  несколько.», anything else «Не получилось. Попробуйте ещё раз.», and the
+  несколько.», anything else «Не получилось. Проверьте соединение и попробуйте
+  ещё раз.», and the
   preview stays for another press, which sends the same ids.
 - Optional quantity and price per entry; both travel into copied text. The
   price is the price of one unit: after a count over 1 the copied line reads
@@ -424,18 +425,27 @@ browser lists writable after the date.
   typed; a shared list is saved into the account and opened. Leaving
   `#/account` any other way forgets it, and so does a navigation or a
   sign-out before the action finishes.
-- **The index**: signed in, the create panel, then the group «Ваш аккаунт» /
-  "Your account" - the selection strip, then the account lists, newest edit
-  first, each card with its pick box, the meta line «N позиций · изменён N
-  назад» / "N items · edited N ago" under its name (`I18N.md`) and one
+- **The index**: the heading «Мои списки» / "My lists" (the menu item's
+  name; the tab bar keeps «Списки» until the cutoff). Signed in, the create
+  panel, then the group «Ваш аккаунт» / "Your account" - the count «3 списка
+  из 50» / "3 lists of 50" (the limit from `my_limit()`, an override's own
+  number; «3 списка» when the limit read failed; with a known limit «0
+  списков из 50» too), the selection strip, then the account lists, newest
+  edit first, each card with its pick box, the meta line «N позиций · изменён
+  N назад» / "N items · edited N ago" under its name (`I18N.md`) and one
   «Удалить»; «Загружаем...» while the first read runs; «Не получилось
-  загрузить списки аккаунта.» and «Повторить» when it fails; «В аккаунте пока
-  нет списков - создайте первый выше.» when there are none. Then «Этот
+  загрузить списки аккаунта.» and a small «Повторить» when it fails; «В
+  аккаунте пока нет списков - создайте первый выше.» under the count when
+  there are none. Then «Этот
   браузер» / "This browser" with the storage notice at its head and today's
   cards. Signed out, the browser group has no heading and is drawn only when
   there are browser lists or storage is broken or unreadable; with no sign-in
   configured it is always drawn.
-- **An account list's page** keeps its address `#/lists/<uuid>` (no `#/l/`
+- **An account list's page** counts its entries under the title against the
+  entry limit, «10 позиций из 100 · Сохранено» («10 позиций · Сохранено»
+  when the limit read failed); the name stops at 200 characters and each
+  note at 4000 (`maxlength`, no counter). It keeps its address
+  `#/lists/<uuid>` (no `#/l/`
   rewrite), draws «Поделиться» / "Share" first in its actions in place of
   "Ссылка игрокам"/"Ссылка себе", «Скачать JSON» / "Download JSON" after
   «Скопировать текст», no storage notice, and says its save status
@@ -503,18 +513,22 @@ browser lists writable after the date.
   and expanded while open, folded on another list; on a window of 600 px
   and more it adds the grey hint «название и описание, остальное потом в
   редакторе») opens «Свой предмет в этот список» under it: «Название» *
-  (focused), «Описание», «Добавить в список», «Закрыть» and the note
+  (focused; at most 120 characters), «Описание» (at most 3000, with the
+  counter «N / 3000» past 2500), «Добавить в список», «Отмена» and the note
   «Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и
   остальное можно задать потом в редакторе.». «Добавить в список» (or Enter
   in the name) makes a plain item in «Хоумбрю», awaited, then adds it to the
   list through the buffer as a reference (last, right above the row), clears
-  the fields, focuses the name and toasts «Предмет «%s» добавлен в список»
+  the fields, focuses the name and toasts «Предмет «%s» создан и добавлен в список»
   with «Изменить», which opens the item's editor in a new tab. No name draws «Введите
-  название.» under the field; the item limit and a lost network («Не удалось
-  создать предмет - проверьте соединение. Текст остался в форме.») draw under
-  the buttons; each keeps the text. A press sent again after a lost answer
-  makes no second item. Escape and «Закрыть» close the panel and focus the
-  row. An empty account list draws the row under its hint, which adds «Свой
+  название.» under the field; the item limit and a lost network («Не
+  получилось создать предмет. Проверьте соединение - текст остался в
+  форме.») draw under the buttons; each keeps the text. At a full list (its
+  entries at the entry limit the account read) a press writes nothing and
+  draws the entry limit text under the buttons, so no item is made that the
+  list would refuse; with no limit known the press writes as before. A press
+  sent again after a lost answer makes no second item. Escape and «Отмена»
+  close the panel, drop the typed text and focus the row. An empty account list draws the row under its hint, which adds «Свой
   предмет можно создать здесь же, кнопкой ниже.». A browser list has no row.
 - **Share links**: «Поделиться» reads pressed and expanded and opens a panel
   under the actions with two rows, «Ссылка для игроков» and «Ссылка для
@@ -531,9 +545,10 @@ browser lists writable after the date.
   создана.»; the next open does not make one by itself. Replacing a link is
   delete, then create. Under the rows a hint says what the two buttons do and
   that the GM's link shows the «Только для мастера» notes. «Загружаем...»
-  while the links are read; «Не получилось загрузить ссылки.» and «Повторить»
-  when the read, or a link it had to make, failed; a failed change toasts «Не
-  получилось изменить ссылку. Проверьте сеть и попробуйте ещё раз.», keeps
+  while the links are read; «Не получилось загрузить ссылки.» and a small
+  «Повторить» when the read, or a link it had to make, failed; a failed change
+  toasts «Не получилось изменить ссылку. Проверьте соединение и попробуйте ещё
+  раз.», keeps
   the row, and reloads the panel when it was refused. A row's buttons are
   disabled while its change runs. An empty list can be shared. No account
   list's page or panel writes or copies a `#/l/` address.
@@ -556,19 +571,20 @@ browser lists writable after the date.
   copy into the account with only the notes the link shows (a player link's
   copy has no GM note) and opens it; signed out it opens the sign-in prompt
   under it, and after the sign-in the copy is made by itself; a refusal
-  toasts the limit text or «Не получилось сохранить список себе. Попробуйте
-  ещё раз.». A stopped, deleted, unknown or empty token, and every token in a
+  toasts the limit text or «Не получилось сохранить список себе. Проверьте
+  соединение и попробуйте ещё раз.». A stopped, deleted, unknown or empty token, and every token in a
   build with no sign-in, draws «Список больше не доступен» / «Владелец удалил
   эту ссылку или список.» and «На главную», the address kept, never the home
-  page; a read that failed draws «Список не загрузился» / «Проверьте сеть и
-  нажмите «Повторить».» and «Повторить». Nothing is drawn while the first
+  page; a read that failed draws «Список не загрузился» / «Проверьте
+  соединение и нажмите «Повторить».» and «Повторить». Nothing is drawn while the first
   read runs.
 - **Not found**: an account address signed out draws «Список не найден», «Если
   это список из вашего аккаунта, войдите, чтобы открыть его.» and one
   «Войти», which returns to that address; nothing while the session or the
-  first read is pending; «Не получилось загрузить списки аккаунта.» and
-  «Повторить» when the read failed; today's not-found page for an id the
-  account does not hold.
+  first read is pending; the heading «Список не загрузился», «Не получилось
+  загрузить списки аккаунта.» and a primary «Повторить» when the read failed
+  (never «Список не найден», which would call a list missing that may exist);
+  today's not-found page for an id the account does not hold.
 - **Delete** asks through the browser's confirm «Удалить список «%s»? Ссылки
   для игроков и мастера перестанут работать. Отменить удаление нельзя.»; the
   toast has no «Вернуть». On the list page it returns to `#/lists`.
@@ -603,9 +619,13 @@ browser lists writable after the date.
   запросов без ответа. Попробуйте позже.» (the pending cap, with its number),
   «Список изменился. Проверьте выбор и отправьте снова.» (an entry the list no
   longer holds; the page reads the list again), «Не получилось отправить.
-  Проверьте соединение.» (no answer in 20 s; a second press sends the same
-  request again, which the server stores once), the line limit through the
-  limit text, and «Сервер не принял запрос.»; a stopped or deleted link draws
+  Проверьте соединение и попробуйте ещё раз.» (no answer in 20 s; a second press sends the same
+  request again, which the server stores once), the line limit as «В
+  запросе может быть не больше 100 позиций, а отмечено 101. Снимите лишние
+  отметки и отправьте ещё раз.» (the limit the server applied and the count
+  sent; the reader cannot read the owner's limit, so no line warns before
+  the send, and no text asks the reader to write to the address), and
+  «Сервер не принял запрос.»; a stopped or deleted link draws
   «Список больше не доступен». The requester sees no answer from the owner:
   the toast is the only answer, and an applied request reaches an open page
   as a lowered or removed entry, as any owner edit. Nothing of a request is kept in the
@@ -631,8 +651,18 @@ browser lists writable after the date.
   минут»), its lines («×3 из 5», the count over the stock now, in the danger
   colour above the stock; «нет в списке» for an item the list no longer
   holds; the line sum at the price when it was sent, or «-») and the total.
+  A request draws its first 5 lines, then a bare fold button «и ещё N
+  позиций» / "and N more items", which draws the rest and reads «свернуть» /
+  "show less", one button both ways, so the focus stays on it. The panel
+  draws the first 3 pending requests, then one fold button «и ещё N
+  запросов» / "and N more requests" that draws the rest the same way; the
+  heading still counts every pending request. At the limits (10 requests of
+  100 lines) and at three times them the panel draws 15 lines and 4 fold
+  buttons, so «Принять» of the first request stays within one screen of the
+  panel head.
   «Принять» sends the write buffer first (a write that waits for the network
-  stops it with «Не получилось ответить на запрос. Проверьте соединение.»),
+  stops it with «Не получилось ответить на запрос. Проверьте соединение и попробуйте ещё
+  раз.»),
   takes the counts in one transaction, deletes an entry taken to zero, reads
   the lists again (once the write buffer drains, when an edit waits) and
   toasts «Запрос принят». A request above the stock
@@ -667,7 +697,8 @@ browser lists writable after the date.
   данные (ZIP)» on `#/account` downloads `daggerheart-loot-data-<YYYY-MM-DD>.zip`,
   a store-only zip whose root holds `lists.json`, the same lists file of every
   account list (`CONTRACTS.md` section 4). An export has no toast of its own,
-  and a failed download toasts «Не получилось. Попробуйте ещё раз.». A file
+  and a failed download toasts «Не получилось. Проверьте соединение и
+  попробуйте ещё раз.». A file
   past the import's bounds - more than 1000 lists, or more than 5000 entries
   in one list - still downloads whole, and one toast says «Этот файл нельзя
   импортировать целиком.» with «В нём больше 1000 списков: экспортируйте их
@@ -950,8 +981,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 
 - **`#/homebrew`**: the heading «Мои предметы» with its lead line (search finds
   the items with the catalog, they appear in the tables and go into lists), then the
-  count «Мои предметы: N из M» / "My items: N of M" (M from the database,
-  an override's own number; «Мои предметы: N» when the limit read failed),
+  count «3 предмета из 100» / "3 items of 100" (the limit from the database,
+  an override's own number; «3 предмета» when the limit read failed),
   the «Источники» and «Карты» folds, «Новый предмет» (to `#/homebrew/new`)
   and the items as table rows under one heading per source and section:
   each named source by its creation, its sections in the author's order,
@@ -960,22 +991,30 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   the editor; its tick
   feeds the selection bar (add to a list, print, copy) and the strip above
   the rows, whose «Удалить (N)» asks «Удалить предметы (N)? Они пропадут и
-  из ваших списков. Отменить нельзя.». No items: «Своих предметов пока нет
-  - создайте первый.». Signed out: the heading and the sign-in prompt
+  из ваших списков. Отменить удаление нельзя.». The delete sends one request
+  per item and stops at the first failure: while it runs the button is
+  disabled, a status line under the strip counts «Удаляем предметы: 12 из 40»
+  up, and a second press sends nothing; then the toast «Удалено предметов:
+  N», or «Не получилось удалить. Проверьте соединение и попробуйте ещё
+  раз.». No items: «Своих предметов пока нет - создайте первый выше.». Signed out: the heading and the sign-in prompt
   «Войдите, чтобы создавать свои предметы.». A failed read: «Не получилось
-  загрузить ваши предметы.» and «Повторить». With no sign-in configured the
+  загрузить ваши предметы.» and a small «Повторить». With no sign-in configured the
   route draws the not-found page and keeps the address. The page cannot be
   pinned.
 - **Sources and sections**: the fold «Источники» / "Sources", closed on each
-  visit («Источники · N источников» while the account holds a named source),
+  visit («Источники · 2 источника из 20» with the source limit known, «0
+  источников из 20» too; «Источники · 2 источника» with none, nothing at 0),
   lists them. The default source «Хоумбрю» holds every item
   with no named source; its row shows only the count. A named source shows
   its name in the language on screen (the other language when it has
-  none), «N предметов · M разделов», «Разделы», «Переименовать» and
+  none), «N предметов · M разделов из 30» (the sections only from one),
+  «Разделы», «Переименовать» and
   «Удалить». «Разделы» opens its sections, each with its count,
   «Переименовать» and «Удалить», then «Без раздела» with its count, then
-  «Добавить раздел». «Добавить» at the end opens «Новый источник». A name
-  field sends on Enter or its button and cancels on Escape. It refuses an
+  «Новый раздел» with the plus icon. «Новый источник» with the plus icon at
+  the end opens the field «Новый источник». A name field (at most 80
+  characters) sends on Enter or its button and cancels on Escape or
+  «Отмена». It refuses an
   empty name («Введите название источника.» / «Введите название
   раздела.»), a name another source holds, or «Хоумбрю» / "Homebrew",
   compared without case in both languages («Источник «%s» уже есть.»), a
@@ -983,27 +1022,37 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   источнике.»), a 31st section («В источнике уже 30 разделов - это
   предел.»), the source limit, a source changed on another device
   («Источник изменили на другом устройстве. Данные обновлены - повторите.»)
-  and a lost network («Не удалось создать - ...» / «Не удалось сохранить -
-  ...»). A refusal draws under the field and keeps the typed name. A rename
+  and a lost network («Не получилось создать. ...» / «Не получилось
+  сохранить. ...»). A create toasts «Источник «%s» создан» / «Раздел «%s»
+  создан»; a rename is silent. A refusal draws under the field and keeps the typed name. A rename
   writes the language on screen and keeps the other one. Deleting a source
-  asks «Удалить источник «%s»? Его N предметов останутся в «Хоумбрю».»,
-  and its items move to «Хоумбрю»; deleting a section asks «Удалить раздел
-  «%s»? Его N предметов останутся в источнике без раздела.», and its items
-  draw with no section. An empty source or section asks the short form.
+  asks «Удалить источник «%s»? Его N предметов останутся в «Хоумбрю».
+  Отменить удаление нельзя.», and its items move to «Хоумбрю»; deleting a
+  section asks «Удалить раздел «%s»? Его N предметов останутся в источнике
+  без раздела. Отменить удаление нельзя.», and its items draw with no
+  section. An empty source or section asks the short form («Удалить
+  источник «%s»? Отменить удаление нельзя.»). A delete toasts «Источник «%s»
+  удалён» / «Раздел «%s» удалён».
 - **Cards**: the fold «Карты» / "Cards", closed on each visit, names the
-  account's set and rule card counts («Карты · 1 комплект, 1 карта правил»)
+  account's card count against the card limit, then the set and rule card
+  counts («Карты · 5 карт из 100: 3 комплекта, 2 карты правил»; «Карты · 0
+  карт из 100»; with no limit known «Карты · 3 комплекта, 2 карты правил»,
+  nothing at 0)
   and opens «Комплекты» and «Карты правил». Each card shows its name in the
   language on screen, «N предметов» (the own items that name it) with its
   source, «Изменить» and «Удалить»; an empty group reads «Комплектов пока
-  нет.» / «Карт правил пока нет.». «+ Новый комплект» and «+ Новая карта
-  правил» open the card form, and «Изменить» opens it in place of the card's
+  нет.» / «Карт правил пока нет.». «Новый комплект» and «Новая карта
+  правил», each with the plus icon, open the card form, and «Изменить» opens it in place of the card's
   row; one form is open at a time. In each group the create button comes
   first, under the heading, and the cards follow by name. A card delete
   toasts «Комплект «%s» удалён» / «Карта правил «%s» удалена». The set form
   holds «Название комплекта» * and «Бонус комплекта» *; the rule card form
   «Название карты» *, «Подзаголовок», «Текст карты» * and «Ссылка» (empty,
   or `https://` in Latin characters with no spaces); in the fold both hold
-  «Источник». A form sends on its button or Enter in a one-line field and
+  «Источник». The name stops at 80 characters, the subtitle at 60, the
+  text or bonus at 1500 (with the counter «N / 1500» past 1250) and the link
+  at 300. An edit saved toasts «Сохранено: «%s»». A form sends on its button
+  or Enter in a one-line field and
   cancels on Escape or «Отмена». It refuses an empty name («Введите
   название.»), an empty bonus or text («Введите бонус комплекта.» /
   «Введите текст карты.»), a name another own card of the kind holds,
@@ -1017,37 +1066,56 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   edit writes the language on screen, keeps the other one as the account
   holds it at the press and names how many items show the change. Deleting a
   card asks «Удалить карту правил «%s»? Она указана в N предметах - там она
-  пропадёт. Отменить нельзя.» or «Удалить комплект «%s»? Он указан в N
-  предметах - там пропадут его название и бонус. Отменить нельзя.», the
-  short form («Удалить карту правил «%s»? Отменить нельзя.») for a card no
+  пропадёт. Отменить удаление нельзя.» or «Удалить комплект «%s»? Он указан
+  в N предметах - там пропадут его название и бонус. Отменить удаление
+  нельзя.», the short form («Удалить карту правил «%s»? Отменить удаление
+  нельзя.») for a card no
   item names; the items keep its key and draw nothing for it, and an editor
   save keeps that key.
 - **The editor** (`#/homebrew/new`, `#/homebrew/<key>`): the form beside a
   live full card of the item from 800 px, the card under the form below; an
-  item with no name yet reads «Новый предмет» on it.
+  item with no name yet reads «Новый предмет» on it. While the items load
+  the page draws the heading «Мои предметы» and «Загружаем...».
   The heading is the item's name, or «Новый предмет»; the line under it is
   the item's path, with the tier of chosen equipment. The legend «* -
   обязательное поле. Остальное можно заполнить позже.» heads the form. The
   fields: «Вид» (item, consumable, equipment), for equipment «Тип
   снаряжения», «Источник» (with «+ Новый источник...», which makes the
   source at once and selects it), for a named source «Раздел» (with «+
-  Новый раздел...»; a source change resets it), «Название» *, «Описание»
-  (a counter past 2500 of 3000 characters), for loot «Ранг» («Нет», 1-4,
-  «Артефакт», «Проклятый предмет»), for equipment «Ранг» * with no default
-  and the hint «Как в книге - по характеристикам ранг не определяется.»,
-  for weapons «Класс», «Характеристика», «Дистанция», «Урон», «Тип урона»,
-  «Хват», each *, and the fold «Второй набор характеристик», for armour
-  «Показатель брони» * and «Пороги урона» *. «Урон» is a die select
-  («Кость», d4-d20) and «Бонус к урону» (empty for none), in the main stats
-  and in the second set. The fold opens on the hint «Для оружия, которое по
+  Новый раздел...»; a source change resets it), «Название» * (at most 120
+  characters), «Описание» (at most 3000, a counter past 2500), for loot and
+  consumables «Ранг» («Без ранга», 1-4), for equipment «Ранг» * (1-4, no
+  default), for weapons «Класс», «Характеристика», «Дистанция», «Урон»,
+  «Тип урона», «Хват», each *, and the disclosure «Второй набор
+  характеристик», for armour «Показатель брони» * and «Пороги урона» *.
+  «Артефакт» and «Проклятый предмет» are Vault of Ages categories: a new
+  item cannot take them, and an item stored with one shows it after 4,
+  pressed, until a saved change of the tier drops it; the store and the
+  import keep accepting both
+  (`docs/decisions/2026-10-02-the-homebrew-editor-offers-no-tier-and-tiers.md`).
+  «Пороги урона» is the caption of two boxes, each with its own label:
+  «Порог Ощутимого урона» / "Major threshold" and «Порог Тяжёлого урона» /
+  "Severe threshold" (the terms of `ru.daggerheart.su/rule/damage-threshold`,
+  checked 2026-10-02; the app writes ё, as in its «Тяжёлый урон»); a Severe
+  threshold not above the Major one reads
+  «Порог Тяжёлого урона должен быть больше порога Ощутимого урона.». «Урон»
+  is a die select «Кость урона» («Кость», d4-d20) and «Бонус к урону»
+  (empty for none), each with its own label, in the main stats and in the
+  second set. «Источник», «Ранг» and «Урон» carry a «?» (rule 15 of
+  "Consistency rules"): «Подсказка: <поле>» opens a hint under the label -
+  what a source is, the stage of play of each tier (1 - level 1, 2 - levels
+  2-4, 3 - levels 5-7, 4 - levels 8-10, never worked out from the stats),
+  and that Proficiency sets the dice count. «Второй набор характеристик» is
+  a button that shows and hides the set (the fields stay in the form while
+  hidden; a save problem inside it opens it), with its own «?», whose hint reads «Для оружия, которое по
   своему свойству переходит на другие характеристики - например,
   «Универсальное». Заполните все четыре поля или оставьте набор пустым.
   Когда набор действует, напишите в описании; на печатной карте он идёт
   второй полосой урона.»; a second press on a pressed choice of the set
   unpresses it (a pressed choice of the main stats stays pressed), and
   «Очистить второй набор», drawn while the set holds a value, empties the
-  set and its lines, keeps the rest of the form and focuses the fold's
-  title. The card draws no stat block until a tier is chosen: a tier is
+  set and its lines, keeps the rest of the form and focuses the set's
+  button. The card draws no stat block until a tier is chosen: a tier is
   never shown that the author did not choose. The card of a saved item has
   «Добавить в список»: it adds the stored item as a reference, so unsaved
   edits reach the list with «Сохранить»; a new item has none before its
@@ -1060,12 +1128,18 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   default, «В линии», «Новая линия»): «В линии» picks equipment of the same
   type in an upgrade line, catalog or own, and draws the line's lowest rung
   with «линия из N рангов»; «Новая линия» starts a line at this item, which
-  other own items of the type can join. «Улучшается до» and «Получается из»
+  other own items of the type can join, and shows no note under the
+  choice; its «?» explains it.
+  «Линия улучшений», «Улучшается до», «Получается из», «Комплект» and
+  «Карты правил» each carry a «?» whose hint says what the relation does
+  and how it differs from its neighbour (a line is rungs of one item; a
+  craft link is another item made from this one). «Улучшается до» and «Получается из»
   hold up to 8 items each, catalog or own; the item itself is never offered.
   «Комплект» is a select of the catalog's sets and the own ones («<name>
   (HB)»), with «+ Новый комплект...», which opens the set form in its place
   and selects the set it makes. «Карты правил» holds up to 3 cards, the
-  catalog's and the own ones, with «+ Новая карта правил», which opens the
+  catalog's and the own ones, with «Новая карта правил» and the plus icon,
+  which opens the
   rule card form and adds the card it makes. A card made here goes into the
   item's source and is written at once («Комплект «%s» создан» / «Карта
   правил «%s» создана»). A picker finds items by name, description or stat
@@ -1099,16 +1173,17 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - **Saving**: «Сохранить», Ctrl+S or Cmd+S, or Enter in any one-line field
   of the form saves. A new item's save replaces the address with
   `#/homebrew/<key>` and keeps the form and the focus; an edit writes over
-  the revision the form loaded. Both toast «Сохранено: «%s»». The limit
+  the revision the form loaded. A create toasts «Предмет «%s» создан», an
+  edit «Сохранено: «%s»». The limit
   draws «Не сохранено. Достигнут предел своих предметов: N. ...» under the
-  buttons, a lost network «Не удалось сохранить - нет связи. Правки
-  остались в форме: нажмите «Сохранить» ещё раз.»; both keep the form. An
+  buttons, a lost network «Не получилось сохранить: нет связи. Правки
+  остались в форме - нажмите «Сохранить» ещё раз.»; both keep the form. An
   item changed on another device draws «Этот предмет изменили на другом
   устройстве, пока форма была открыта. Ваши правки не сохранены.» with
   «Сохранить мою версию» (writes over it) and «Показать новую версию»
   (asks «Ваши правки пропадут. Показать новую версию?» while the form is
   dirty, then reloads; a read that fails keeps the form and says «Не
-  удалось сохранить - ...»). An item deleted on another device draws «Этот
+  получилось сохранить: ...»). An item deleted on another device draws «Этот
   предмет удалили на другом устройстве.» with «Сохранить как новый» (a new
   key; the address moves) and «К моим предметам». A read that removes the
   item under a dirty form keeps the typed text and draws that banner; a
@@ -1124,16 +1199,17 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   страницы?» (a no keeps the page and its address), and closing the tab
   gets the browser's own prompt. After a save or a delete nothing asks.
   While a delete reads the lists again, the form stays as it was.
-- **Delete**: «Удалить» asks «Удалить предмет «%s»? Отменить нельзя.», or
-  «Предмет «%s» есть в N списках. Удалить его и убрать из списков? Отменить
-  нельзя.» while account lists hold it; «Предмет «%s» указан в N предметах.
-  Удалить его? Отменить нельзя.» while other own items name it in a craft
-  link or a line, and «Предмет «%s» есть в N списках и указан в M
-  предметах. Удалить его и убрать из списков? Отменить нельзя.» for both;
+- **Delete**: «Удалить» asks «Удалить предмет «%s»? Отменить удаление
+  нельзя.», or «Предмет «%s» есть в N списках. Удалить его и убрать из
+  списков? Отменить удаление нельзя.» while account lists hold it; «Предмет
+  «%s» указан в N предметах. Удалить его? Отменить удаление нельзя.» while
+  other own items name it in a craft link or a line, and «Предмет «%s» есть
+  в N списках и указан в M предметах. Удалить его и убрать из списков?
+  Отменить удаление нельзя.» for both;
   the other items keep its key and draw nothing for it; the item leaves the
   account, its references leave the lists, the page goes to `#/homebrew`
-  and toasts «Предмет «%s» удалён». A failed delete draws «Не удалось
-  удалить - проверьте соединение и попробуйте ещё раз.». The editor names
+  and toasts «Предмет «%s» удалён». A failed delete draws «Не получилось
+  удалить. Проверьте соединение и попробуйте ещё раз.». The editor names
   how many account lists hold the item.
 - **Where an item is used**: an own item goes into the account's lists as a
   reference and draws live there, on their share links too; «Свой предмет»
@@ -1322,7 +1398,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   be disconnected until another is connected; «Ваши данные» / "Your data" -
   the hint «Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём
   файл lists.json с вашими списками. Архив можно импортировать в другой
-  аккаунт на странице «Списки»: за один раз - до 1000 списков.» and «Скачать
+  аккаунт на странице «Мои списки»: за один раз - до 1000 списков.» and «Скачать
   мои данные (ZIP)» ("Account
   and browser lists", "Exports"), disabled until the account's lists are
   read and while its zip is built, with «Не получилось загрузить списки
@@ -1344,7 +1420,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   before the app mounts and replaced by the page the reader left
   (`ROUTES.md`, "Account").
 - When the connected providers cannot be read, «Способы входа» says «Не
-  получилось. Попробуйте ещё раз.» (`role="alert"`) in place of the rows,
+  получилось. Проверьте соединение и попробуйте ещё раз.» (`role="alert"`) in place of the rows,
   and offers no Connect.
 - A Connect refused because that provider account already belongs to
   another account says «Этот аккаунт <provider> уже подключён к другому
@@ -1352,7 +1428,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   refusal came back from the call or from the provider's redirect; it
   clears on the next action. Any other refusal - a cancelled consent, a
   failed sign-out, disconnect or deletion - is the error toast «Не
-  получилось. Попробуйте ещё раз.».
+  получилось. Проверьте соединение и попробуйте ещё раз.».
 - Sign-out and deletion stay on `#/account`, which becomes the signed-out
   page, with the toast «Вы вышли из аккаунта.» or «Аккаунт удалён.».
   Deletion removes the account on the server (`delete_account()`, a
@@ -1412,7 +1488,10 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   nothing for the money chips and `aria-current="true"` for the menu chips.
 - Help panels under a `?` per section, folded by default, fold state remembered
   for the session only.
-- Toasts with an undo action for destructive things. A toast that offers an
+- A removal the app can write back (an entry, its notes, a reprice, a
+  browser list) toasts with an undo, «Вернуть»; a server delete that cannot be undone (an
+  account list, an own item, a source, a section, a card) asks the browser's
+  confirm first and its toast offers none. A toast that offers an
   undo moves focus to its button, so the keyboard reaches it within the
   7000 ms it lasts; a toast with no action never takes focus. When the toast
   goes with focus still in it, focus returns to the element it came from, or
@@ -1497,3 +1576,110 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   620, 560, 540) render as authored only with a variable font, and the print
   card needs a real italic - both argue for self-hosting, but the owner
   decided against it.
+
+### Consistency rules
+
+The signed-in pages follow one set of rules; a new screen or string follows
+them too, and a departure is named here
+(`docs/decisions/2026-10-02-the-signed-in-pages-follow-one-set-of.md`).
+Each rule keeps its number: a review cites it by number.
+
+- **1. Counters**: a limited collection shows «N <plural> из M» / "N
+  <plural> of M" in one place: the account group of `#/lists` («3 списка из
+  50»), an account list's sub («10 позиций из 100 · Сохранено»), the count
+  line of `#/homebrew` («3 предмета из 100»), the «Источники» and «Карты»
+  summaries («Источники · 2 источника из 20», «Карты · 5 карт из 100: 3
+  комплекта, 2 карты правил») and a source's row («4 раздела из 30»). The
+  limit comes from `my_limit()`; with no limit known the plural shows alone
+  («3 списка»). With a known limit the count shows at zero too («0 списков
+  из 50»); a count inside a row shows from one. The heading never repeats
+  in the count.
+- **2. Failures**: a failed account read or write says «Не получилось
+  <глагол>. Проверьте соединение и попробуйте ещё раз.» / "Could not <verb>.
+  Check the connection and try again."; a load line says «Не получилось
+  загрузить <что>.» / "Could not load <what>." with «Повторить». Clipboard
+  and browser storage failures are outside this rule.
+- **3. Delete confirms**: a delete that cannot be undone ends its confirm
+  with «Отменить удаление нельзя.» / "This cannot be undone.", after its
+  consequence sentence («Его 3 предмета останутся в «Хоумбрю».»).
+- **4. One name**: the menu item, the page heading and the tab name a page
+  the same way. Departure until 2026-10-26: the tab bar, the pin label and
+  the window title of `#/lists` say «Списки» / "Lists" for the page headed
+  «Мои списки» / "My lists".
+- **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
+  created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>
+  «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent.
+- **6. Load states**: one `LoadState`: «Загружаем...» / "Loading..."
+  (`role="status"`); a failure line (`role="alert"`) with «Повторить» /
+  "Retry": primary where the failure replaces the page and its title says so
+  («Список не загрузился» / "The list did not load"), small everywhere else.
+- **7. Headings**: a page with a fixed heading draws it in every state,
+  loading and failed included.
+- **8. Create**: a button that opens a create form reads «Новый <noun>» /
+  "New <noun>" with the plus icon («Новый предмет», «Новый источник»,
+  «Новый раздел», «Новый комплект», «Новая карта правил»); the form's
+  submit reads «Создать» / "Create" (a card form «Создать комплект» /
+  «Создать карту»); a select option reads «+ Новый <noun>...». Departures:
+  the add-to-list chip «+ Новый список», because a chip has no icon; and
+  the row «Свой предмет» / "Own item" after an account list's entries (plus
+  icon), whose panel's submit reads «Добавить в список» / "Add to list":
+  one press makes the item and adds it to the list
+  (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`).
+- **9. The primary action** is the first control under the lead, before any
+  management panel. Departures: `#/homebrew` keeps «Источники» and «Карты»
+  above «Новый предмет» (owner, 2026-10-01); an account list's page makes
+  an own item from the row after its entries.
+- **10. Undo**: a removal the app can write back offers «Вернуть» / "Undo"
+  in its toast; a server delete that cannot be undone asks the browser's
+  confirm first and offers no undo.
+- **11. Cancel and close**: «Отмена» / "Cancel" discards what was typed;
+  «Закрыть» / "Close" folds a panel and keeps what it holds; a read-only
+  panel or dialog says «Закрыть».
+- **12. Folds**: a fold that names a group keeps its name and turns its
+  caret («Решённые в этот раз (2)», «Источники · ...»); a fold that shows
+  the rest of a cut list reads «и ещё N ...» / "and N more ..." closed and
+  «свернуть» / "show less" open, one button both ways, so the focus stays
+  on it.
+- **13. Capped text**: a field takes no more than the database keeps
+  (`maxlength` from the validator's constant); a form's multi-line box shows
+  «N / M» past five sixths of its cap. `maxlength` counts UTF-16 units and
+  the database code points, so a text of astral characters stops early,
+  never past the cap. Departure: the list notes stop at 4000 with no
+  counter.
+- **14. Text**: every string has RU and EN with the same facts and both
+  plural sets; ASCII punctuation (` - `, not an em dash); «ёлочки» in
+  Russian, straight quotes in English.
+- **15. Labels and help** (owner, 2026-10-02):
+  (a) every field of a form has a visible label that names the thing in the
+  game's own term, as `daggerheart.su` writes it («Порог Ощутимого урона»,
+  «Характеристика»); a placeholder is an example, never the label; no help
+  lives only in a hover `title`.
+  (b) A field with several inputs labels each input («Порог Ощутимого
+  урона» and «Порог Тяжёлого урона» under «Пороги урона»; «Кость урона» and
+  «Бонус к урону» under «Урон»).
+  (c) A «?» next to the label shows a hint of one to three sentences under
+  the label where the label and the game rules do not explain what the
+  field means or does («Линия улучшений», «Второй набор характеристик»,
+  «Источник»). The «?» is a button named «Подсказка: <label>» / "Help:
+  <label>" with `aria-expanded`; the hint is closed when the form opens. A
+  self-explanatory field has no «?».
+  (d) A line always visible under a field holds only what the person must
+  know before typing or pressing: a limit («До 8 предметов.»), a format
+  («Необязательно. Например: ...»), fields that go together, or what a
+  press does at once («Комплект создаётся сразу...»); one short line.
+  (e) A capped text follows rule 13.
+  (f) An error under a field states the fix («Два целых числа от 1 до
+  99.»); the summary at the top of a form names the field first («Пороги
+  урона - ...»).
+  Departures: the list page's heading input (the heading is its label); a
+  row's position box and the add-to-list menu's new-list box (an
+  `aria-label` in a row or a menu with no room for a caption); the search
+  boxes (a search is no form field); the list row's «Золото» «?» glyph
+  (hover only; `DEBT.md` D79); the list notes' two boxes, whose visible
+  label is not tied to the box, so the name is the placeholder (`DEBT.md`
+  D74); the second set's «Заполните все четыре поля или
+  оставьте набор пустым» stays behind its «?» (owner, 2026-10-02), and a
+  save names the fix in each field's line.
+- **16. Long names**: a name of any allowed length wraps inside its box at
+  360 px (`overflow-wrap: anywhere` on the list card, the page heading, the
+  toast, the chip and the source and card rows); nothing scrolls sideways.

@@ -15,8 +15,9 @@
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
-  import HomebrewLoad from './HomebrewLoad.svelte';
+  import HelpButton from './HelpButton.svelte';
   import HomebrewRelations from './HomebrewRelations.svelte';
+  import LoadState from './LoadState.svelte';
   import NameField from './NameField.svelte';
   import NoticeBox from './NoticeBox.svelte';
   import PageTitle from './PageTitle.svelte';
@@ -30,9 +31,12 @@
   import { lineMembers } from '../lib/data.js';
   import { HOMEBREW_HASH, homebrewItemHash } from '../lib/hash.js';
   import {
+    BOOK_NAME_MAX,
+    counterFrom,
     DESC_MAX,
     editLang,
     itemUses,
+    NAME_MAX,
     nameTaken,
     SECTIONS_MAX,
     withRecords,
@@ -94,6 +98,10 @@
   let loadedId = $state<string | null>(null);
   /* The language the name and description are written in: the item's own. */
   let editIn = $state<Lang>('ru');
+  /* The tiers the row was loaded with or last saved with: a stored «Артефакт» or
+     «Проклятый предмет» stays a choice until a saved change drops it. */
+  let heldTier = $state<ItemDraft['tier']>('');
+  let heldEqTier = $state<ItemDraft['eqTier']>('');
   let formLoaded = $state(false);
   let missing = $state(false);
   let problems = $state.raw<Problem[]>([]);
@@ -124,6 +132,8 @@
     revision = r?.revision ?? null;
     loadedId = r?.id ?? null;
     draft = draftOf(r, editIn);
+    heldTier = draft.tier;
+    heldEqTier = draft.eqTier;
     const c = r?.content;
     relOpen = !!(c && (c.eq?.line || c.craft || c.craft_from || c.set || c.refs));
     loaded = JSON.stringify(draft);
@@ -297,7 +307,8 @@
   }
 
   let altOpen = $state(false);
-  let altSummary = $state<HTMLElement | undefined>(undefined);
+  let altHelp = $state(false);
+  let altSummary = $state<HTMLButtonElement | undefined>(undefined);
   /* The second set is written when any of its four fields holds a value. */
   const altFilled = $derived(
     !!(draft.altTr || draft.altRg || dmgOf(draft.altDmgDie, draft.altDmgBonus) || draft.altDt)
@@ -334,14 +345,16 @@
   }
 
   /* After a write that created or wrote over the row: the draft is what is stored. */
-  function settled(id: string, rev: number, content: HomebrewContent): void {
+  function settled(id: string, rev: number, content: HomebrewContent, made = false): void {
     loadedId = id;
     revision = rev;
     base = content;
     loaded = JSON.stringify(draft);
+    heldTier = draft.tier;
+    heldEqTier = draft.eqTier;
     banner = null;
     const name = title;
-    app.say((t) => t.hbSaved.replace('%s', name));
+    app.say((t) => (made ? t.hbCreated : t.hbSaved).replace('%s', name));
   }
 
   async function create(pair: NewIds, content: HomebrewContent): Promise<void> {
@@ -352,7 +365,7 @@
     }
     rowKey = pair.key;
     ids = store.newIds();
-    settled(pair.id, 1, content);
+    settled(pair.id, 1, content, true);
     app.replace(homebrewItemHash(pair.key));
   }
 
@@ -388,6 +401,7 @@
     if (found.length) {
       problems = found;
       if (found.some((p) => REL_FIELDS.includes(fieldOf(p)))) relOpen = true;
+      if (found.some((p) => fieldOf(p).startsWith('hb-alt'))) altOpen = true;
       await tick();
       summary?.focus();
       return;
@@ -548,21 +562,29 @@
     { value: 'equip' as const, label: t.fEquip }
   ]);
   const TYPES = $derived(pair(EQ_TYPE) as { value: ItemDraft['t']; label: string }[]);
-  const TIERS = $derived([
-    { value: '' as const, label: t.hbNone },
-    { value: '1' as const, label: '1' },
-    { value: '2' as const, label: '2' },
-    { value: '3' as const, label: '3' },
-    { value: '4' as const, label: '4' },
-    { value: 'A' as const, label: t.voaArtifact1 },
-    { value: 'C' as const, label: t.voaCursed1 }
+  /* 'A' and 'C' are Vault of Ages categories: a new item cannot take them, a stored one
+     keeps its own (docs/specs/FEATURES.md, "Homebrew"). */
+  const TIERS = $derived<{ value: ItemDraft['tier']; label: string }[]>([
+    { value: '', label: t.hbNoTier },
+    { value: '1', label: '1' },
+    { value: '2', label: '2' },
+    { value: '3', label: '3' },
+    { value: '4', label: '4' },
+    ...(draft.tier === 'A' || heldTier === 'A'
+      ? [{ value: 'A' as const, label: t.voaArtifact1 }]
+      : []),
+    ...(draft.tier === 'C' || heldTier === 'C'
+      ? [{ value: 'C' as const, label: t.voaCursed1 }]
+      : [])
   ]);
-  const EQ_TIERS = $derived([
-    { value: '1' as const, label: '1' },
-    { value: '2' as const, label: '2' },
-    { value: '3' as const, label: '3' },
-    { value: '4' as const, label: '4' },
-    { value: 'A' as const, label: t.voaArtifact1 }
+  const EQ_TIERS = $derived<{ value: ItemDraft['eqTier']; label: string }[]>([
+    { value: '1', label: '1' },
+    { value: '2', label: '2' },
+    { value: '3', label: '3' },
+    { value: '4', label: '4' },
+    ...(draft.eqTier === 'A' || heldEqTier === 'A'
+      ? [{ value: 'A' as const, label: t.voaArtifact1 }]
+      : [])
   ]);
   const CLASSES = $derived(pair(EQ_CLS) as { value: ItemDraft['cls']; label: string }[]);
   const TRAITS = $derived(pair(EQ_TRAIT) as { value: ItemDraft['tr']; label: string }[]);
@@ -605,35 +627,41 @@
   main: boolean
 )}
   <div class="dmg">
-    <select
-      id={field}
-      value={draft[dieKey]}
-      aria-label={main ? undefined : LABELS[field]}
-      aria-required={main ? true : undefined}
-      aria-invalid={problemOf(field) ? true : undefined}
-      aria-describedby={errId(field)}
-      onchange={(e) => {
-        set(dieKey, e.currentTarget.value as ItemDraft['dmgDie'], field);
-      }}
-    >
-      <option value="">{t.hbDie}</option>
-      {#each DICE as d (d)}
-        <option value={d}>{d}</option>
-      {/each}
-    </select>
+    <div class="col">
+      <label class="sub" for={field}>{t.hbDmgDie}</label>
+      <select
+        id={field}
+        value={draft[dieKey]}
+        aria-label={main ? undefined : t.hbAlt + ': ' + t.hbDmgDie}
+        aria-required={main ? true : undefined}
+        aria-invalid={problemOf(field) ? true : undefined}
+        aria-describedby={errId(field)}
+        onchange={(e) => {
+          set(dieKey, e.currentTarget.value as ItemDraft['dmgDie'], field);
+        }}
+      >
+        <option value="">{t.hbDie}</option>
+        {#each DICE as d (d)}
+          <option value={d}>{d}</option>
+        {/each}
+      </select>
+    </div>
     <span class="plus" aria-hidden="true">+</span>
-    <TextInput
-      id={field + '-bonus'}
-      label={main ? t.hbDmgBonus : t.hbAlt + ': ' + t.hbDmgBonus}
-      bind:value={draft[bonusKey]}
-      inputmode="numeric"
-      invalid={!!problemOf(field)}
-      describedby={errId(field)}
-      autocomplete="off"
-      oninput={() => {
-        clear(field);
-      }}
-    />
+    <div class="col">
+      <label class="sub" for={field + '-bonus'}>{t.hbDmgBonus}</label>
+      <TextInput
+        id={field + '-bonus'}
+        label={main ? undefined : t.hbAlt + ': ' + t.hbDmgBonus}
+        bind:value={draft[bonusKey]}
+        inputmode="numeric"
+        invalid={!!problemOf(field)}
+        describedby={errId(field)}
+        autocomplete="off"
+        oninput={() => {
+          clear(field);
+        }}
+      />
+    </div>
   </div>
 {/snippet}
 
@@ -653,9 +681,10 @@
   <!-- The session is not known yet. -->
 {:else if store.status === 'error' && !formLoaded}
   <PageTitle title={t.myItems} sub={t.subHomebrew} />
-  <HomebrewLoad {app} failed />
+  <LoadState {t} failed text={t.hbLoadFailed} onretry={() => void store.load()} />
 {:else if !formLoaded && !missing}
-  <HomebrewLoad {app} failed={false} />
+  <PageTitle title={t.myItems} sub={t.subHomebrew} />
+  <LoadState {t} failed={false} text={t.hbLoadFailed} onretry={() => void store.load()} />
 {:else if missing}
   <PageTitle title={t.notFound} sub={t.notFoundSub} />
   <Button variant="primary" href={HOMEBREW_HASH} sameTab>{t.hbToMyItems}</Button>
@@ -749,6 +778,7 @@
           for="hb-book"
           error={adding === 'book' ? undefined : errText('hb-book')}
           errorId={errId('hb-book')}
+          help={{ id: 'hb-book-help', text: t.hbSourceHelp, lang }}
         >
           {#if adding === 'book'}
             <NameField
@@ -758,6 +788,7 @@
               cancel={t.cancel}
               onsubmit={createSource}
               oncancel={closeAdd}
+              maxlength={BOOK_NAME_MAX}
             />
           {:else}
             <select
@@ -795,6 +826,7 @@
                 cancel={t.cancel}
                 onsubmit={createSection}
                 oncancel={closeAdd}
+                maxlength={BOOK_NAME_MAX}
               />
             {:else}
               <select
@@ -825,6 +857,7 @@
           <TextInput
             id="hb-name"
             bind:value={draft.name}
+            maxlength={NAME_MAX}
             required
             invalid={!!problemOf('hb-name')}
             describedby={errId('hb-name')}
@@ -844,49 +877,54 @@
             id="hb-desc"
             rows={5}
             bind:value={draft.desc}
+            maxlength={DESC_MAX}
             invalid={!!problemOf('hb-desc')}
             describedby={errId('hb-desc')}
             oninput={() => {
               clear('hb-desc');
             }}
           />
-          {#if descLength > 2500}
+          {#if descLength > counterFrom(DESC_MAX)}
             <span class="counter">{descLength} / {DESC_MAX}</span>
           {/if}
         </FormField>
 
         {#if draft.kind !== 'equip'}
-          {@render choice(
-            'hb-tier',
-            t.tier,
-            TIERS,
-            draft.tier,
-            (v) => {
-              set('tier', v, 'hb-tier');
-            },
-            false,
-            undefined
-          )}
+          <FormField
+            label={t.tier}
+            error={errText('hb-tier')}
+            errorId={errId('hb-tier')}
+            help={{ id: 'hb-tier-help', text: t.hbTierHelp, lang }}
+          >
+            <Seg
+              id="hb-tier"
+              label={t.tier}
+              options={TIERS}
+              value={draft.tier}
+              describedby={errId('hb-tier')}
+              onchange={(v: ItemDraft['tier']) => {
+                set('tier', v, 'hb-tier');
+              }}
+            />
+          </FormField>
         {:else}
           <FormField
             label={t.tier}
             required
             error={errText('hb-eqtier')}
             errorId={errId('hb-eqtier')}
+            help={{ id: 'hb-eqtier-help', text: t.hbTierHelp, lang }}
           >
             <Seg
               id="hb-eqtier"
               label={t.tier}
               options={EQ_TIERS}
               value={draft.eqTier}
-              describedby={errId('hb-eqtier') ?? 'hb-eqtier-hint'}
+              describedby={errId('hb-eqtier')}
               onchange={(v: ItemDraft['eqTier']) => {
                 set('eqTier', v, 'hb-eqtier');
               }}
             />
-            {#if !problemOf('hb-eqtier')}
-              <p class="hint" id="hb-eqtier-hint">{t.hbTierHint}</p>
-            {/if}
           </FormField>
           {#if weapon}
             {@render choice(
@@ -924,10 +962,10 @@
             )}
             <FormField
               label={t.hbDmg}
-              for="hb-dmg"
               required
               error={errText('hb-dmg')}
               errorId={errId('hb-dmg')}
+              help={{ id: 'hb-dmg-help', text: t.hbDmgHelp, lang }}
             >
               {@render damage('hb-dmg', 'dmgDie', 'dmgBonus', true)}
             </FormField>
@@ -953,54 +991,78 @@
               true,
               undefined
             )}
-            <details class="alt" bind:open={altOpen}>
-              <summary bind:this={altSummary}>{t.hbAlt}</summary>
-              <p class="hint" id="hb-alt-hint">{t.hbAltHint}</p>
-              {@render choice(
-                'hb-alt-tr',
-                t.hbTrait,
-                TRAITS,
-                draft.altTr,
-                (v) => {
-                  set('altTr', v, 'hb-alt-tr');
-                },
-                false,
-                ''
-              )}
-              {@render choice(
-                'hb-alt-rg',
-                t.hbRange,
-                RANGES,
-                draft.altRg,
-                (v) => {
-                  set('altRg', v, 'hb-alt-rg');
-                },
-                false,
-                ''
-              )}
-              <FormField
-                label={t.hbDmg}
-                for="hb-alt-dmg"
-                error={errText('hb-alt-dmg')}
-                errorId={errId('hb-alt-dmg')}
-              >
-                {@render damage('hb-alt-dmg', 'altDmgDie', 'altDmgBonus', false)}
-              </FormField>
-              {@render choice(
-                'hb-alt-dt',
-                t.hbDt,
-                DAMAGE,
-                draft.altDt,
-                (v) => {
-                  set('altDt', v, 'hb-alt-dt');
-                },
-                false,
-                ''
-              )}
-              {#if altFilled}
-                <Button size="sm" onclick={() => void clearAlt()}>{t.hbAltClear}</Button>
-              {/if}
-            </details>
+            <!-- A disclosure, not a <details>: its «?» cannot sit inside a <summary>. -->
+            <div class="alt">
+              <div class="althead">
+                <Button
+                  variant="bare"
+                  size="sm"
+                  caret
+                  expanded={altOpen}
+                  controls="hb-alt-body"
+                  bind:el={altSummary}
+                  onclick={() => {
+                    altOpen = !altOpen;
+                  }}>{t.hbAlt}</Button
+                >
+                <HelpButton
+                  {lang}
+                  size="sm"
+                  open={altHelp}
+                  label={t.fieldHelp.replace('%s', t.hbAlt)}
+                  controls="hb-alt-help"
+                  onclick={() => {
+                    altHelp = !altHelp;
+                  }}
+                />
+              </div>
+              <p class="hint" id="hb-alt-help" hidden={!altHelp}>{t.hbAltHint}</p>
+              <div class="altbody" id="hb-alt-body" hidden={!altOpen}>
+                {@render choice(
+                  'hb-alt-tr',
+                  t.hbTrait,
+                  TRAITS,
+                  draft.altTr,
+                  (v) => {
+                    set('altTr', v, 'hb-alt-tr');
+                  },
+                  false,
+                  ''
+                )}
+                {@render choice(
+                  'hb-alt-rg',
+                  t.hbRange,
+                  RANGES,
+                  draft.altRg,
+                  (v) => {
+                    set('altRg', v, 'hb-alt-rg');
+                  },
+                  false,
+                  ''
+                )}
+                <FormField
+                  label={t.hbDmg}
+                  error={errText('hb-alt-dmg')}
+                  errorId={errId('hb-alt-dmg')}
+                >
+                  {@render damage('hb-alt-dmg', 'altDmgDie', 'altDmgBonus', false)}
+                </FormField>
+                {@render choice(
+                  'hb-alt-dt',
+                  t.hbDt,
+                  DAMAGE,
+                  draft.altDt,
+                  (v) => {
+                    set('altDt', v, 'hb-alt-dt');
+                  },
+                  false,
+                  ''
+                )}
+                {#if altFilled}
+                  <Button size="sm" onclick={() => void clearAlt()}>{t.hbAltClear}</Button>
+                {/if}
+              </div>
+            </div>
           {:else}
             <FormField
               label={t.hbAs}
@@ -1024,37 +1086,41 @@
             </FormField>
             <FormField
               label={t.hbTh}
-              for="hb-th0"
               required
               error={errText('hb-th')}
               errorId={errId('hb-th')}
             >
-              <div class="pair">
-                <TextInput
-                  id="hb-th0"
-                  bind:value={draft.th0}
-                  inputmode="numeric"
-                  required
-                  invalid={!!problemOf('hb-th')}
-                  describedby={errId('hb-th')}
-                  autocomplete="off"
-                  oninput={() => {
-                    clear('hb-th');
-                  }}
-                />
-                <TextInput
-                  id="hb-th1"
-                  label={t.hbTh + ' 2'}
-                  bind:value={draft.th1}
-                  inputmode="numeric"
-                  required
-                  invalid={!!problemOf('hb-th')}
-                  describedby={errId('hb-th')}
-                  autocomplete="off"
-                  oninput={() => {
-                    clear('hb-th');
-                  }}
-                />
+              <div class="pair" role="group" aria-label={t.hbTh}>
+                <div class="col">
+                  <label class="sub" for="hb-th0">{t.hbThMajor}</label>
+                  <TextInput
+                    id="hb-th0"
+                    bind:value={draft.th0}
+                    inputmode="numeric"
+                    required
+                    invalid={!!problemOf('hb-th')}
+                    describedby={errId('hb-th')}
+                    autocomplete="off"
+                    oninput={() => {
+                      clear('hb-th');
+                    }}
+                  />
+                </div>
+                <div class="col">
+                  <label class="sub" for="hb-th1">{t.hbThSevere}</label>
+                  <TextInput
+                    id="hb-th1"
+                    bind:value={draft.th1}
+                    inputmode="numeric"
+                    required
+                    invalid={!!problemOf('hb-th')}
+                    describedby={errId('hb-th')}
+                    autocomplete="off"
+                    oninput={() => {
+                      clear('hb-th');
+                    }}
+                  />
+                </div>
               </div>
             </FormField>
           {/if}
@@ -1180,17 +1246,35 @@
     justify-self: start;
   }
 
+  /* Each input of a pair carries its own label over it; at 360 px a label wraps inside
+     its column (docs/specs/FEATURES.md, "Consistency rules", rule 15). */
   .pair {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--gap-sm);
-    max-width: 240px;
+    max-width: 360px;
+  }
+
+  .pair .col {
+    flex: 1 1 140px;
+  }
+
+  .col {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .sub {
+    font-size: 12.5px;
+    color: var(--muted);
   }
 
   .dmg {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: var(--gap-sm);
-    max-width: 240px;
+    max-width: 360px;
   }
 
   .dmg select {
@@ -1198,20 +1282,35 @@
   }
 
   .plus {
+    padding-bottom: 12px;
     color: var(--muted);
   }
 
   .alt,
+  .altbody,
   .rel {
     display: grid;
     gap: 16px;
   }
 
-  .alt > :global(.btn) {
+  .altbody[hidden] {
+    display: none;
+  }
+
+  .althead {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .althead :global(.btn.bare) {
+    color: var(--gold-soft);
+  }
+
+  .altbody > :global(.btn) {
     justify-self: start;
   }
 
-  .alt summary,
   .rel summary {
     cursor: pointer;
     font-size: 13.5px;
@@ -1224,7 +1323,6 @@
     font-weight: 500;
   }
 
-  .alt[open] summary,
   .rel[open] summary {
     margin-bottom: 12px;
   }

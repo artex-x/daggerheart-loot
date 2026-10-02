@@ -26,7 +26,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
       link "Поиск" [url=index.html?as=gm2#/search]
   main ""
     textbox "Название списка" [value=Лавка multiline=false readonly=false required=false]
-    StaticText "3 позиции · "
+    StaticText "3 позиции из 100 · "
     StaticText "Сохраняем..."
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
@@ -146,7 +146,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
       link "Search" [url=index.html?as=gm2#/search]
   main ""
     textbox "List name" [value=Лавка multiline=false readonly=false required=false]
-    StaticText "3 items · "
+    StaticText "3 items of 100 · "
     StaticText "Saving..."
     button "Share" [expanded=false]
     button "Copy text"

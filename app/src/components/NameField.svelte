@@ -17,9 +17,19 @@
     cancel: string;
     onsubmit: (name: string) => Promise<string | null>;
     oncancel: () => void;
+    maxlength?: number;
   }
 
-  const { id, label, value = '', submit, cancel, onsubmit, oncancel }: Props = $props();
+  const {
+    id,
+    label,
+    value = '',
+    submit,
+    cancel,
+    onsubmit,
+    oncancel,
+    maxlength
+  }: Props = $props();
 
   // svelte-ignore state_referenced_locally
   let name = $state(value);
@@ -64,6 +74,7 @@
       invalid={error !== null}
       describedby={error === null ? undefined : id + '-err'}
       autocomplete="off"
+      {maxlength}
     />
     <Button variant="primary" size="sm" disabled={busy} onclick={() => void send()}
       >{submit}</Button

@@ -25,7 +25,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
-    heading "Списки" [level=1]
+    heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
@@ -34,6 +34,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Создать"
     button "Импорт из файла" [expanded=false]
     heading "ВАШ АККАУНТ" [level=2]
+    StaticText "1 список из 50"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
@@ -103,7 +104,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
-    heading "Lists" [level=1]
+    heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
@@ -112,6 +113,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
     button "Create"
     button "Import from file" [expanded=false]
     heading "YOUR ACCOUNT" [level=2]
+    StaticText "1 list of 50"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""

@@ -16,11 +16,16 @@
     /** `.helpbtn.sm` (style.css:696) - 22x22 at every width, the class
      *  specificity keeping it there even inside the 600px override. */
     size?: 'sm';
+    /** The name and the title; a field's «?» names its field. */
+    label?: string;
+    /** The id of the hint this button shows. */
+    controls?: string;
   }
 
-  const { lang, open, onclick, size }: Props = $props();
+  const { lang, open, onclick, size, label, controls }: Props = $props();
 
   const t = $derived(dict(lang));
+  const name = $derived(label ?? t.helpHint);
 </script>
 
 <button
@@ -28,9 +33,10 @@
   class="helpbtn"
   class:sm={size === 'sm'}
   class:on={open}
-  title={t.helpHint}
-  aria-label={t.helpHint}
+  title={name}
+  aria-label={name}
   aria-expanded={open}
+  aria-controls={controls}
   {onclick}>?</button
 >
 

@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101 as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: «Лавка кузнеца»: «10 позиций · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»; the row «Свой предмет» folded after it
+# why: «Лавка кузнеца»: «10 позиций из 100 · Сохранено», «Поделиться» folded in place of «Ссылка игрокам»/«Ссылка себе», «Скачать JSON» after «Скопировать текст», no storage notice, coins, both list notes open; the own axe last, 800 монет, tagged «Мастерская Ольхи (HB)»; the row «Свой предмет» folded after it
 # as: gm1
 
 ## ru :: tree
@@ -26,7 +26,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "10 позиций · "
+    StaticText "10 позиций из 100 · "
     StaticText "Сохранено"
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
@@ -193,7 +193,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "10 items · "
+    StaticText "10 items of 100 · "
     StaticText "Saved"
     button "Share" [expanded=false]
     button "Copy text"

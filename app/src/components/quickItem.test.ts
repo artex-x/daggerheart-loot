@@ -73,7 +73,7 @@ describe('the own-item panel', () => {
     });
     await openPanel();
     const panel = screen.getByRole('region', { name: 'Свой предмет в этот список' });
-    await userEvent.click(within(panel).getByRole('button', { name: 'Закрыть' }));
+    await userEvent.click(within(panel).getByRole('button', { name: 'Отмена' }));
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await waitFor(() => {
       expect(toggle).toHaveFocus();
@@ -92,7 +92,7 @@ describe('the own-item panel', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
     expect(
-      await screen.findByText('Предмет «Фляга контрабандиста» добавлен в список')
+      await screen.findByText('Предмет «Фляга контрабандиста» создан и добавлен в список')
     ).toBeInTheDocument();
     expect(name).toHaveValue('');
     expect(screen.getByRole('textbox', { name: 'Описание' })).toHaveValue('');
@@ -138,7 +138,7 @@ describe('the own-item panel', () => {
     const name = await openPanel();
     await userEvent.type(name, 'Свечной огарок{Enter}');
     expect(
-      await screen.findByText('Предмет «Свечной огарок» добавлен в список')
+      await screen.findByText('Предмет «Свечной огарок» создан и добавлен в список')
     ).toBeInTheDocument();
     expect(await itemsNamed(cloud, 'Свечной огарок')).toBe(1);
   });
@@ -175,6 +175,34 @@ describe('the own-item panel', () => {
     expect(name).toHaveValue('Пятый');
   });
 
+  it('makes no item at a full list and says the entry limit in the panel', async () => {
+    const { cloud } = openShop({ limits: { entries: 4 } });
+    const create = vi.spyOn(cloud.homebrew, 'createItem');
+    const name = await openPanel();
+    await userEvent.type(name, 'Лишний');
+    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    expect(
+      await screen.findByText(
+        'Достигнут предел позиций в списке: 4. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+      )
+    ).toBeInTheDocument();
+    expect(create).not.toHaveBeenCalled();
+    expect(await itemsNamed(cloud, 'Лишний')).toBe(0);
+    expect(name).toHaveValue('Лишний');
+  });
+
+  it('stops the name and the description at their caps and counts the description past 2500', async () => {
+    const { container } = openShop();
+    const name = await openPanel();
+    const desc = screen.getByRole('textbox', { name: 'Описание' });
+    expect(name).toHaveAttribute('maxlength', '120');
+    expect(desc).toHaveAttribute('maxlength', '3000');
+    expect(container.querySelector('.counter')).toBeNull();
+    await userEvent.click(desc);
+    await userEvent.paste('я'.repeat(2501));
+    expect(container.querySelector('.counter')?.textContent).toBe('2501 / 3000');
+  });
+
   it('makes one item when a lost answer is followed by a second press', async () => {
     const { cloud } = openShop();
     const real = cloud.homebrew.createItem.bind(cloud.homebrew);
@@ -187,13 +215,13 @@ describe('the own-item panel', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
     expect(
       await screen.findByText(
-        'Не удалось создать предмет - проверьте соединение. Текст остался в форме.'
+        'Не получилось создать предмет. Проверьте соединение - текст остался в форме.'
       )
     ).toBeInTheDocument();
     expect(name).toHaveValue('Потерянный ответ');
     await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
     expect(
-      await screen.findByText('Предмет «Потерянный ответ» добавлен в список')
+      await screen.findByText('Предмет «Потерянный ответ» создан и добавлен в список')
     ).toBeInTheDocument();
     expect(await itemsNamed(cloud, 'Потерянный ответ')).toBe(1);
   });

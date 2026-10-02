@@ -4,8 +4,8 @@
      Three states, and two of them happen - a link to a record that has been
      renumbered, and a deploy where data.js did not load. */
   import Button from './Button.svelte';
-  import HomebrewLoad from './HomebrewLoad.svelte';
   import Icon from './Icon.svelte';
+  import LoadState from './LoadState.svelte';
   import NoData from './NoData.svelte';
   import PageTitle from './PageTitle.svelte';
   import PickRow from './PickRow.svelte';
@@ -38,6 +38,7 @@
   const failed = $derived(
     isHomebrewKey(id) && !!app.user && app.homebrew?.status === 'error' && !it
   );
+  const retry = (): void => void app.homebrew?.load();
 
   /* The line under the heading: where the record is from, and its number in the
      table it is printed in. The link goes to the row itself rather than to the
@@ -64,10 +65,10 @@
     {#if !index}
       <NoData>{t.noData}</NoData>
     {:else if waiting}
-      <HomebrewLoad {app} failed={false} />
+      <LoadState {t} failed={false} text={t.hbLoadFailed} onretry={retry} />
     {:else if failed}
       <!-- The author's items did not load: the item may exist, so no «Предмет не найден». -->
-      <HomebrewLoad {app} failed />
+      <LoadState {t} failed text={t.hbLoadFailed} onretry={retry} />
     {:else if !it}
       <!-- A link to a record that is no longer in the data: an old share, or an id
            that was renumbered. Saying which is kinder than an empty page. -->

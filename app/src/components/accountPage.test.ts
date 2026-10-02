@@ -108,7 +108,9 @@ describe('signed out', () => {
     expect(screen.getByRole('button', { name: 'Войти через Google' })).toBeDisabled();
     await expectNoA11yViolations(container);
     answer({ ok: false, error: 'failed' });
-    expect(await screen.findByText('Не получилось. Попробуйте ещё раз.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Не получилось. Проверьте соединение и попробуйте ещё раз.')
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Войти через Discord' })).toBeEnabled();
   });
 
@@ -163,7 +165,9 @@ describe('signed in as gm1', () => {
     cloud.auth.unlink = () => Promise.resolve({ ok: false, error: 'failed' });
     open(cloud);
     await press('Отключить Discord');
-    expect(await screen.findByText('Не получилось. Попробуйте ещё раз.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Не получилось. Проверьте соединение и попробуйте ещё раз.')
+    ).toBeInTheDocument();
     expect(rows()).toHaveLength(2);
   });
 
@@ -203,7 +207,7 @@ describe('signed in as gm1', () => {
       auth: { ...real.auth, identities: () => Promise.resolve(null) }
     });
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Не получилось. Попробуйте ещё раз.'
+      'Не получилось. Проверьте соединение и попробуйте ещё раз.'
     );
     expect(screen.queryByRole('list')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Подключить/ })).not.toBeInTheDocument();
@@ -217,7 +221,9 @@ describe('signed in as gm1', () => {
     cloud.auth.signOut = () => Promise.resolve({ ok: false, error: 'failed' });
     open(cloud);
     await press('Выйти');
-    expect(await screen.findByText('Не получилось. Попробуйте ещё раз.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Не получилось. Проверьте соединение и попробуйте ещё раз.')
+    ).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Выход' })).toBeInTheDocument();
   });
 });
@@ -248,7 +254,7 @@ describe('your data', () => {
     });
     expect(
       screen.getByText(
-        'Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём файл lists.json с вашими списками. Архив можно импортировать в другой аккаунт на странице «Списки»: за один раз - до 1000 списков.'
+        'Всё, что хранится в аккаунте, одним архивом ZIP: сейчас в нём файл lists.json с вашими списками. Архив можно импортировать в другой аккаунт на странице «Мои списки»: за один раз - до 1000 списков.'
       )
     ).toBeInTheDocument();
     await userEvent.click(button);
@@ -334,7 +340,9 @@ describe('deleting the account', () => {
     await press('Удалить аккаунт...');
     await userEvent.type(screen.getByRole('textbox'), 'удалить');
     await press('Удалить навсегда');
-    expect(await screen.findByText('Не получилось. Попробуйте ещё раз.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Не получилось. Проверьте соединение и попробуйте ещё раз.')
+    ).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 });
@@ -401,7 +409,9 @@ describe('signed in as gm2', () => {
   it('toasts any other refused link', async () => {
     open(as('gm2', { linkError: 'failed' }));
     await press('Подключить Discord');
-    expect(await screen.findByText('Не получилось. Попробуйте ещё раз.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Не получилось. Проверьте соединение и попробуйте ещё раз.')
+    ).toBeInTheDocument();
   });
 
   it('draws in English', async () => {

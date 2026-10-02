@@ -344,3 +344,142 @@ describe('homebrew lines', () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe('the folds of a long panel', () => {
+  const SEVEN = ['ci1', 'q1', 'q313', 'cc1', 'voa2_a3', 'q23', 'w51'].map((item) => ({
+    item,
+    qty: 1
+  }));
+  const rows = (req: HTMLElement): number => req.querySelectorAll('tbody tr').length;
+
+  it('cuts a request at five lines and the panel at three requests, each rest behind one fold', async () => {
+    const { container } = openShop((cloud) => {
+      for (let i = 0; i < 3; i++) {
+        vi.setSystemTime(T0 + i * 60_000);
+        cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
+      }
+      vi.setSystemTime(T0 + 3 * 60_000);
+      expect(cloud.request('player-token-1', SEVEN)).not.toBeNull();
+    });
+    const p = await panel();
+    expect(requestsOf(p)).toHaveLength(3);
+    const big = requestsOf(p).find((r) => rows(r) === 5);
+    if (!big) throw new Error('no cut request: ' + requestsOf(p).map(rows).join(','));
+    const more = within(big).getByRole('button', { name: 'и ещё 2 позиции' });
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    const rest = within(p).getByRole('button', { name: 'и ещё 1 запрос' });
+    await expectNoA11yViolations(container);
+    await userEvent.click(more);
+    expect(rows(big)).toBe(7);
+    expect(within(big).getByRole('button', { name: 'свернуть' })).toBe(more);
+    expect(more).toHaveFocus();
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.click(rest);
+    expect(requestsOf(p)).toHaveLength(4);
+    expect(within(p).getAllByRole('button', { name: 'свернуть', expanded: true })).toHaveLength(
+      2
+    );
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws fifteen lines and four folds at the limits of ten requests of a hundred lines', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const keys = Array.from({ length: 90 }, (_, i) => 'x' + String(i));
+    await cloud.lists.apply([
+      {
+        op: 'add',
+        list_id: SHOP,
+        entries: keys.map((key, i) => ({
+          id: uuid(7000 + i),
+          item_key: key,
+          source: 'official',
+          snapshot: null,
+          position: 10 + i,
+          quantity: 1,
+          price_coins: null,
+          player_note: '',
+          gm_note: ''
+        }))
+      }
+    ]);
+    const all = [
+      'ci1',
+      'q1',
+      'q313',
+      'cc1',
+      'voa2_a3',
+      'q23',
+      'w51',
+      'q35',
+      'di11',
+      'hb_emberaxeaaaaaaaa',
+      ...keys
+    ];
+    const lines = all.map((item) => ({ item, qty: 1 }));
+    expect(lines).toHaveLength(100);
+    for (let i = 0; i < 10; i++) {
+      vi.setSystemTime(T0 + i * 60_000);
+      expect(cloud.request(i % 2 ? 'gm-token-1' : 'player-token-1', lines)).not.toBeNull();
+    }
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/lists/' + SHOP), data: fakeData(LOOT), cloud })
+    });
+    const p = await panel();
+    expect(requestsOf(p)).toHaveLength(3);
+    expect(p.querySelectorAll('tbody tr')).toHaveLength(15);
+    expect(within(p).getAllByRole('button', { name: 'и ещё 95 позиций' })).toHaveLength(3);
+    expect(within(p).getByRole('button', { name: 'и ещё 7 запросов' })).toBeInTheDocument();
+    expect(p.querySelector('h2')).toHaveTextContent('Запросы (10)');
+  });
+
+  it('draws the same fifteen lines at three times the limits, thirty requests of 300 lines', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { limits: { entries: 300, pending: 30, lines: 300 } });
+    const keys = Array.from({ length: 290 }, (_, i) => 'x' + String(i));
+    const added = await cloud.lists.apply([
+      {
+        op: 'add',
+        list_id: SHOP,
+        entries: keys.map((key, i) => ({
+          id: uuid(7000 + i),
+          item_key: key,
+          source: 'official',
+          snapshot: null,
+          position: 10 + i,
+          quantity: 1,
+          price_coins: null,
+          player_note: '',
+          gm_note: ''
+        }))
+      }
+    ]);
+    expect(added.ok).toBe(true);
+    const all = [
+      'ci1',
+      'q1',
+      'q313',
+      'cc1',
+      'voa2_a3',
+      'q23',
+      'w51',
+      'q35',
+      'di11',
+      'hb_emberaxeaaaaaaaa',
+      ...keys
+    ];
+    const lines = all.map((item) => ({ item, qty: 1 }));
+    expect(lines).toHaveLength(300);
+    for (let i = 0; i < 30; i++) {
+      vi.setSystemTime(T0 + i * 60_000);
+      expect(cloud.request(i % 2 ? 'gm-token-1' : 'player-token-1', lines)).not.toBeNull();
+    }
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/lists/' + SHOP), data: fakeData(LOOT), cloud })
+    });
+    const p = await panel();
+    expect(requestsOf(p)).toHaveLength(3);
+    expect(p.querySelectorAll('tbody tr')).toHaveLength(15);
+    expect(within(p).getAllByRole('button', { name: 'и ещё 295 позиций' })).toHaveLength(3);
+    expect(within(p).getByRole('button', { name: 'и ещё 27 запросов' })).toBeInTheDocument();
+    expect(p.querySelector('h2')).toHaveTextContent('Запросы (30)');
+  });
+});

@@ -28,7 +28,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Войти и перенести списки"
     button "Скрыть напоминание"
   main ""
-    heading "Списки" [level=1]
+    heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
@@ -250,7 +250,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
     button "Sign in and move the lists"
     button "Dismiss the reminder"
   main ""
-    heading "Lists" [level=1]
+    heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]

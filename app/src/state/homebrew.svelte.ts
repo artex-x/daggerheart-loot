@@ -71,8 +71,11 @@ export class Homebrew {
   books = $state.raw<BookRow[]>([]);
   items = $state.raw<ItemRow[]>([]);
   cards = $state.raw<CardRow[]>([]);
-  /** The account's item limit; null for none, or when the limit read failed. */
+  /** The account's item, source and card limits; null for none, or when the limit read
+   *  failed. A refusal for the same key replaces the read number. */
   itemLimit = $state<number | null>(null);
+  bookLimit = $state<number | null>(null);
+  cardLimit = $state<number | null>(null);
 
   /** Every own card as a record embeds it. */
   cardRefs: CardRef[] = $derived(
@@ -158,6 +161,8 @@ export class Homebrew {
       this.items = kept(this.items, r.items);
       this.cards = kept(this.cards, r.cards);
       this.itemLimit = r.itemLimit;
+      this.bookLimit = r.bookLimit;
+      this.cardLimit = r.cardLimit;
       this.status = 'ready';
       return true;
     }
@@ -185,6 +190,8 @@ export class Homebrew {
     this.items = [];
     this.cards = [];
     this.itemLimit = null;
+    this.bookLimit = null;
+    this.cardLimit = null;
     this.status = 'idle';
   }
 
@@ -297,8 +304,11 @@ export class Homebrew {
   }
 
   /** Deletes the items one by one and stops at the first failure; the ones deleted leave
-   *  the store either way. */
-  async removeItems(rows: readonly ItemRow[]): Promise<ListWrite> {
+   *  the store either way. `onstep` hears the count deleted after each delete. */
+  async removeItems(
+    rows: readonly ItemRow[],
+    onstep?: (done: number) => void
+  ): Promise<ListWrite> {
     let answer: ListWrite = { ok: true };
     const gone: string[] = [];
     for (const row of rows) {
@@ -308,6 +318,7 @@ export class Homebrew {
         break;
       }
       gone.push(row.id);
+      onstep?.(gone.length);
     }
     if (gone.length) {
       this.items = this.items.filter((x) => !gone.includes(x.id));
@@ -399,6 +410,11 @@ export class Homebrew {
   #created(id: string, r: ListWrite): ListWrite {
     if (!r.ok && r.error === 'network') this.#unsure[id] = true;
     else Reflect.deleteProperty(this.#unsure, id);
+    if (!r.ok && r.error === 'limit' && r.value !== null) {
+      if (r.key === 'homebrew_items_per_owner') this.itemLimit = r.value;
+      if (r.key === 'homebrew_books_per_owner') this.bookLimit = r.value;
+      if (r.key === 'homebrew_cards_per_owner') this.cardLimit = r.value;
+    }
     return r;
   }
 

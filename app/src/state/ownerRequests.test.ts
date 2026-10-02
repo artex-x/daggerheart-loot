@@ -173,7 +173,9 @@ describe('OwnerRequests apply and decline', () => {
     await o.read();
     await o.apply(id, false);
     expect(apply).not.toHaveBeenCalled();
-    expect(said).toEqual([['Не получилось ответить на запрос. Проверьте соединение.', true]]);
+    expect(said).toEqual([
+      ['Не получилось ответить на запрос. Проверьте соединение и попробуйте ещё раз.', true]
+    ]);
     expect(o.pendingCount(SHOP, Date.now())).toBe(1);
   });
 
@@ -245,7 +247,9 @@ describe('OwnerRequests apply and decline', () => {
       return { ok: false, error: 'network' };
     });
     await o.apply(id, false);
-    expect(said).toEqual([['Не получилось ответить на запрос. Проверьте соединение.', true]]);
+    expect(said).toEqual([
+      ['Не получилось ответить на запрос. Проверьте соединение и попробуйте ещё раз.', true]
+    ]);
     said.length = 0;
     hooks.refreshLists.mockClear();
     await o.apply(id, false);

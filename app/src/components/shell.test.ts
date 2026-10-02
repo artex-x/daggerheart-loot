@@ -827,7 +827,7 @@ describe('the account control', () => {
   it('titles the homebrew pages and marks the homebrew store status', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const { container } = render(App, { env: at('#/homebrew', { cloud }) });
-    await screen.findByText('Мои предметы: 4 из 100');
+    await screen.findByText('4 предмета из 100');
     expect(document.title).toBe('Мои предметы — Генератор лута — Daggerheart');
     expect(container.querySelector('main')?.dataset['homebrew']).toBe('ready');
     cleanup();

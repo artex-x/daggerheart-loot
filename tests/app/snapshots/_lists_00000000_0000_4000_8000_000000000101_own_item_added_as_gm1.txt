@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ own item added as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: a name typed and «Добавить в список» pressed: «11 позиций», the new plain item last, right above the row, the fields empty, the toast «Предмет «Фляга контрабандиста» добавлен в список» with the link «Изменить»
+# why: a name typed and «Добавить в список» pressed: «11 позиций из 100», the new plain item last, right above the row, the fields empty, the toast «Предмет «Фляга контрабандиста» создан и добавлен в список» with the link «Изменить»
 # as: gm1
 
 ## ru :: tree
@@ -26,7 +26,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "11 позиций · "
+    StaticText "11 позиций из 100 · "
     StaticText "Сохраняем..."
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
@@ -106,7 +106,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       StaticText "Описание"
       textbox "Описание" [multiline=true readonly=false required=false]
       button "Добавить в список"
-      button "Закрыть"
+      button "Отмена"
       StaticText "Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник ..." [namelen=107 namehash=7d14b241]
     status ""
     status ""
@@ -117,7 +117,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       link "Условия использования" [url=pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
   status ""
-    StaticText "Предмет «Фляга контрабандиста» добавлен в список"
+    StaticText "Предмет «Фляга контрабандиста» создан и добавлен в список"
     link "Изменить" [url=index.html?as=gm1#/homebrew/hb_newaaaaaaaaaaaaa]
 
 ## ru :: controls
@@ -136,7 +136,6 @@ daggerheart.com
 Гарпун Левиафана
 Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8+3... [namelen=359 namehash=d7ce48f5]
 Добавить в список
-Закрыть
 Заметка
 Зелье Быстрого Шага
 Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Про... [namelen=86 namehash=921b5c09]
@@ -157,6 +156,7 @@ daggerheart.com
 Название списка
 Обычные правила
 Открыта с рассвета до заката.
+Отмена
 Очистить заметку
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
@@ -212,7 +212,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
-    StaticText "11 items · "
+    StaticText "11 items of 100 · "
     StaticText "Saving..."
     button "Share" [expanded=false]
     button "Copy text"
@@ -292,7 +292,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       StaticText "Description"
       textbox "Description" [multiline=true readonly=false required=false]
       button "Add to list"
-      button "Close"
+      button "Cancel"
       StaticText "The item is saved in "My items", under "Homebrew". Its kind, sou..." [namelen=112 namehash=c2f9bbe6]
     status ""
     status ""
@@ -303,7 +303,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Terms of use" [url=pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
-    StaticText "Item "Фляга контрабандиста" added to the list"
+    StaticText "Item "Фляга контрабандиста" created and added to the list"
     link "Edit" [url=index.html?as=gm1#/homebrew/hb_newaaaaaaaaaaaaa]
 
 ## en :: controls
@@ -315,10 +315,10 @@ Art History BookletThis is a finely illustrated booklet (donatio... [namelen=532
 As in the book
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+Cancel
 Casting Dagger
 Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
 Clear the note
-Close
 Communities
 Copy text
 Delete

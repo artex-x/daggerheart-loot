@@ -7,6 +7,7 @@
   import { tick } from 'svelte';
   import Button from './Button.svelte';
   import Field from './Field.svelte';
+  import LoadState from './LoadState.svelte';
   import NumRow from './NumRow.svelte';
   import PageTitle from './PageTitle.svelte';
   import Panel from './Panel.svelte';
@@ -415,9 +416,13 @@
             >
           </div>
           {#if app.cloudLists?.status === 'error'}
-            <p class="err" role="alert" style="margin-top:10px">{t.cloudLoadFailed}</p>
-            <div class="row-btns" style="margin-top:8px">
-              <Button size="sm" onclick={() => void app.retryLists()}>{t.retry}</Button>
+            <div style="margin-top:10px">
+              <LoadState
+                {t}
+                failed
+                text={t.cloudLoadFailed}
+                onretry={() => void app.retryLists()}
+              />
             </div>
           {/if}
         </Field>

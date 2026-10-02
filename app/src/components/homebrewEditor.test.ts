@@ -98,6 +98,12 @@ const press = async (groupName: string, option: string): Promise<void> => {
   await userEvent.click(within(group(groupName)).getByRole('button', { name: option }));
 };
 const save = (): Promise<void> => userEvent.click(screen.getByRole('button', { name: t.save }));
+/* The main damage pair by its own labels; the second set's carry its prefix. */
+const dieBox = (): HTMLElement => screen.getByRole('combobox', { name: t.hbDmgDie });
+const bonusBox = (): HTMLElement => screen.getByRole('textbox', { name: t.hbDmgBonus });
+const altButton = (): HTMLElement => screen.getByRole('button', { name: t.hbAlt });
+const helpButton = (label: string): HTMLElement =>
+  screen.getByRole('button', { name: t.fieldHelp.replace('%s', label) });
 const stored = async (cloud: FakeCloud, key: string): Promise<HomebrewContent | undefined> => {
   const r = await cloud.homebrew.load();
   return r.ok ? r.items.find((i) => i.key === key)?.content : undefined;
@@ -114,7 +120,7 @@ describe('the form', () => {
       'aria-pressed',
       'true'
     );
-    expect(within(group(t.tier)).getByRole('button', { name: t.hbNone })).toHaveAttribute(
+    expect(within(group(t.tier)).getByRole('button', { name: t.hbNoTier })).toHaveAttribute(
       'aria-pressed',
       'true'
     );
@@ -136,18 +142,20 @@ describe('the form', () => {
       'false',
       'false',
       'false',
-      'false',
       'false'
     ]);
-    expect(screen.getByText(t.hbTierHint)).toBeInTheDocument();
+    expect(helpButton(t.tier)).toHaveAttribute('aria-expanded', 'false');
     for (const name of [t.hbCls, t.hbTrait, t.hbRange, t.hbDt, t.hbBurden]) {
       expect(group(name)).toBeInTheDocument();
     }
-    expect(screen.getByLabelText(/^Урон\*/)).toBeInTheDocument();
-    const alt = screen.getByText(t.hbAlt).closest('details') as HTMLDetailsElement;
-    expect(alt.open).toBe(false);
-    await userEvent.click(screen.getByText(t.hbAlt));
-    expect(alt.open).toBe(true);
+    expect(dieBox()).toBeInTheDocument();
+    const body = document.getElementById('hb-alt-body');
+    expect(altButton()).toHaveAttribute('aria-expanded', 'false');
+    expect(altButton()).toHaveAttribute('aria-controls', 'hb-alt-body');
+    expect(body).not.toBeVisible();
+    await userEvent.click(altButton());
+    expect(altButton()).toHaveAttribute('aria-expanded', 'true');
+    expect(body).toBeVisible();
     await expectNoA11yViolations(container);
   });
 
@@ -155,11 +163,16 @@ describe('the form', () => {
     const { container } = await editor(AXE);
     await press(t.hbType, 'Броня');
     expect(screen.getByLabelText(/^Показатель брони/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Пороги урона\*/)).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: t.hbThMajor })).toHaveAttribute('id', 'hb-th0');
+    expect(screen.getByRole('textbox', { name: t.hbThSevere })).toHaveAttribute('id', 'hb-th1');
+    expect(screen.getByRole('group', { name: t.hbTh })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: t.fieldHelp.replace('%s', t.hbTh) })
+    ).toBeNull();
     expect(screen.queryByRole('group', { name: t.hbCls })).toBeNull();
     await press(t.hbType, 'Основное оружие');
-    expect(screen.getByLabelText(/^Урон\*/)).toHaveValue('d10');
-    expect(screen.getByLabelText(t.hbDmgBonus)).toHaveValue('2');
+    expect(dieBox()).toHaveValue('d10');
+    expect(bonusBox()).toHaveValue('2');
     await expectNoA11yViolations(container);
   });
 
@@ -192,7 +205,7 @@ describe('the checks on «Сохранить»', () => {
     expect(group(t.tier)).toHaveAttribute('aria-describedby', 'hb-eqtier-err');
     await userEvent.click(within(box).getByRole('button', { name: /^Урон - выберите кость/ }));
     await waitFor(() => {
-      expect(screen.getByLabelText(/^Урон\*/)).toHaveFocus();
+      expect(dieBox()).toHaveFocus();
     });
     await userEvent.click(within(box).getByRole('button', { name: /^Ранг - выберите/ }));
     await waitFor(() => {
@@ -209,34 +222,35 @@ describe('the checks on «Сохранить»', () => {
 
   it('draws each rule of a weapon and an armour', async () => {
     await editor(AXE);
-    const bonus = screen.getByLabelText(t.hbDmgBonus);
+    const bonus = bonusBox();
     await userEvent.clear(bonus);
     await userEvent.type(bonus, 'x');
-    await userEvent.click(screen.getByText(t.hbAlt));
+    await userEvent.click(altButton());
     await press(t.hbAlt + ': ' + t.hbTrait, 'Сила');
     await save();
     expect(screen.getByText(t.hbErrDmg)).toBeInTheDocument();
     expect(screen.getAllByText(t.hbErrAlt)).toHaveLength(3);
     await press(t.hbType, 'Броня');
     await userEvent.type(screen.getByLabelText(/^Показатель брони/), '13');
-    await userEvent.type(screen.getByLabelText(/^Пороги урона\*/), '9');
-    await userEvent.type(screen.getByLabelText(t.hbTh + ' 2'), '4');
+    await userEvent.type(screen.getByLabelText(t.hbThMajor), '9');
+    await userEvent.type(screen.getByLabelText(t.hbThSevere), '4');
     await save();
     expect(screen.getByText(t.hbErrAs)).toBeInTheDocument();
     expect(screen.getByText(t.hbErrThOrder)).toBeInTheDocument();
-    await userEvent.clear(screen.getByLabelText(/^Пороги урона\*/));
-    await userEvent.type(screen.getByLabelText(/^Пороги урона\*/), 'x');
+    await userEvent.clear(screen.getByLabelText(t.hbThMajor));
+    await userEvent.type(screen.getByLabelText(t.hbThMajor), 'x');
     await save();
     expect(screen.getByText(t.hbErrTh)).toBeInTheDocument();
   });
 
-  it('refuses a name past 120 characters and a text with a control character', async () => {
+  it('stops a name at 120 characters and refuses a text with a control character', async () => {
     await editor(null);
     const name = screen.getByLabelText(/Название/);
+    expect(name).toHaveAttribute('maxlength', '120');
+    expect(screen.getByLabelText(t.hbDesc)).toHaveAttribute('maxlength', '3000');
     await userEvent.click(name);
     await userEvent.paste('я'.repeat(121));
-    await save();
-    expect(screen.getByText('Не длиннее 120 знаков.')).toBeInTheDocument();
+    expect(name).toHaveValue('я'.repeat(120));
     await userEvent.clear(name);
     await userEvent.type(name, 'Рог');
     await userEvent.click(screen.getByLabelText(t.hbDesc));
@@ -255,7 +269,7 @@ describe('saving', () => {
     await userEvent.type(name, 'Рог охотника');
     await userEvent.type(screen.getByLabelText(t.hbDesc), 'Трубит.');
     await save();
-    expect(await screen.findByText('Сохранено: «Рог охотника»')).toBeInTheDocument();
+    expect(await screen.findByText('Предмет «Рог охотника» создан')).toBeInTheDocument();
     const read = await cloud.homebrew.load();
     const key = read.ok ? read.items[0]?.key : undefined;
     expect(read.ok && read.items[0]?.content).toEqual({
@@ -439,7 +453,7 @@ describe('another device', () => {
     expect(await screen.findByText(t.hbGone)).toBeInTheDocument();
     expect(screen.getByLabelText(/Название/)).toHaveValue('Кольцо с гравировкой мой');
     await userEvent.click(screen.getByRole('button', { name: t.hbSaveAsNew }));
-    await toastSays('Сохранено: «Кольцо с гравировкой мой»');
+    await toastSays('Предмет «Кольцо с гравировкой мой» создан');
     expect(router.hash()).toMatch(/^#\/homebrew\/hb_new/);
     expect(screen.queryByText(t.hbGone)).toBeNull();
     expect(screen.getByLabelText(/Название/)).toHaveValue('Кольцо с гравировкой мой');
@@ -501,7 +515,9 @@ describe('the guard', () => {
     const { app, dialog, cloud } = await editor(RING);
     await userEvent.type(screen.getByLabelText(/Название/), '!');
     await userEvent.click(screen.getByRole('button', { name: t.del }));
-    expect(dialog.asked).toEqual(['Удалить предмет «Кольцо с гравировкой!»? Отменить нельзя.']);
+    expect(dialog.asked).toEqual([
+      'Удалить предмет «Кольцо с гравировкой!»? Отменить удаление нельзя.'
+    ]);
     await waitFor(() => {
       expect(app.hash).toBe('#/homebrew');
     });
@@ -518,7 +534,7 @@ describe('the guard', () => {
     cloud.setOffline(true);
     await userEvent.click(screen.getByRole('button', { name: t.del }));
     expect(dialog.asked.at(-1)).toBe(
-      'Предмет «Кольцо с гравировкой» есть в 1 списке. Удалить его и убрать из списков? Отменить нельзя.'
+      'Предмет «Кольцо с гравировкой» есть в 1 списке. Удалить его и убрать из списков? Отменить удаление нельзя.'
     );
     expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
   });
@@ -620,7 +636,7 @@ describe('a retry, a delete in flight, Enter and the preview', () => {
     await userEvent.click(again);
     expect(await screen.findByText(t.hbSaveNetwork)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: t.hbSaveAsNew }));
-    await toastSays('Сохранено: «Кольцо с гравировкой мой»');
+    await toastSays('Предмет «Кольцо с гравировкой мой» создан');
     const after = await cloud.homebrew.load();
     const mine = after.ok
       ? after.items.filter((i) => i.content.ru === 'Кольцо с гравировкой мой')
@@ -657,8 +673,8 @@ describe('a retry, a delete in flight, Enter and the preview', () => {
 
   it('saves on Enter in a one-line field of a weapon', async () => {
     const { cloud } = await editor(AXE);
-    await userEvent.selectOptions(screen.getByLabelText(/^Урон\*/), 'd12');
-    const bonus = screen.getByLabelText(t.hbDmgBonus);
+    await userEvent.selectOptions(dieBox(), 'd12');
+    const bonus = bonusBox();
     await userEvent.clear(bonus);
     await userEvent.type(bonus, '{Enter}');
     await waitFor(async () => {
@@ -676,7 +692,7 @@ describe('a retry, a delete in flight, Enter and the preview', () => {
 describe('the damage pair', () => {
   it('offers «Кость» and the six dice, and saves d12 with 25 as d12+25', async () => {
     const { cloud, container } = await editor(AXE);
-    const die = screen.getByLabelText(/^Урон\*/);
+    const die = dieBox();
     expect(
       within(die)
         .getAllByRole('option')
@@ -684,7 +700,7 @@ describe('the damage pair', () => {
     ).toEqual([t.hbDie, 'd4', 'd6', 'd8', 'd10', 'd12', 'd20']);
     expect(die).toHaveAttribute('aria-required', 'true');
     await userEvent.selectOptions(die, 'd12');
-    const bonus = screen.getByLabelText(t.hbDmgBonus);
+    const bonus = bonusBox();
     await userEvent.clear(bonus);
     await userEvent.type(bonus, '25');
     await save();
@@ -697,12 +713,12 @@ describe('the damage pair', () => {
   it('draws the damage problem under «Урон» for a bonus of 100 and sends nothing', async () => {
     const { cloud, container } = await editor(AXE);
     const update = vi.spyOn(cloud.homebrew, 'updateItem');
-    const bonus = screen.getByLabelText(t.hbDmgBonus);
+    const bonus = bonusBox();
     await userEvent.clear(bonus);
     await userEvent.type(bonus, '100');
     await save();
     expect(screen.getByText(t.hbErrDmg)).toHaveAttribute('id', 'hb-dmg-err');
-    expect(screen.getByLabelText(/^Урон\*/)).toHaveAttribute('aria-invalid', 'true');
+    expect(dieBox()).toHaveAttribute('aria-invalid', 'true');
     expect(bonus).toHaveAttribute('aria-invalid', 'true');
     expect(bonus).toHaveAttribute('aria-describedby', 'hb-dmg-err');
     expect(update).not.toHaveBeenCalled();
@@ -715,11 +731,19 @@ describe('the second set', () => {
   const pressedIn = (name: string): HTMLElement =>
     within(group(name)).getByRole('button', { pressed: true });
 
-  it('opens on its hint; a second press unpresses a choice of the set, never a main one', async () => {
+  it('opens with its hint behind its «?»; a second press unpresses a choice of the set, never a main one', async () => {
     const { container } = await editor(null);
     await press(t.hbKind, t.fEquip);
-    await userEvent.click(screen.getByText(t.hbAlt));
-    expect(screen.getByText(t.hbAltHint)).toHaveAttribute('id', 'hb-alt-hint');
+    await userEvent.click(altButton());
+    const hint = screen.getByText(t.hbAltHint);
+    expect(hint).toHaveAttribute('id', 'hb-alt-help');
+    expect(hint).not.toBeVisible();
+    const help = helpButton(t.hbAlt);
+    expect(help).toHaveAttribute('aria-controls', 'hb-alt-help');
+    await userEvent.click(help);
+    expect(help).toHaveAttribute('aria-expanded', 'true');
+    expect(hint).toBeVisible();
+    await expectNoA11yViolations(container);
     expect(screen.queryByRole('button', { name: t.hbAltClear })).toBeNull();
     await press(ALT_TRAIT, 'Сила');
     expect(pressedIn(ALT_TRAIT)).toHaveTextContent('Сила');
@@ -737,7 +761,7 @@ describe('the second set', () => {
 
   /* The axe has no second set: one chip of it leaves three fields empty. */
   async function oneChipLeft(): Promise<void> {
-    await userEvent.click(screen.getByText(t.hbAlt));
+    await userEvent.click(altButton());
     await press(ALT_TRAIT, 'Сила');
   }
 
@@ -756,8 +780,8 @@ describe('the second set', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     expect(within(group(ALT_TRAIT)).queryByRole('button', { pressed: true })).toBeNull();
     expect(screen.queryByRole('button', { name: t.hbAltClear })).toBeNull();
-    const fold = screen.getByText(t.hbAlt);
-    expect((fold.closest('details') as HTMLDetailsElement).open).toBe(true);
+    const fold = altButton();
+    expect(fold).toHaveAttribute('aria-expanded', 'true');
     await waitFor(() => {
       expect(fold).toHaveFocus();
     });
@@ -767,6 +791,45 @@ describe('the second set', () => {
       expect((await stored(cloud, AXE))?.ru).toBe('Топор II');
     });
     expect((await stored(cloud, AXE))?.eq?.alt).toBeUndefined();
+  });
+
+  it('opens a closed set when a save finds a problem in it', async () => {
+    await editor(AXE);
+    await oneChipLeft();
+    await userEvent.click(altButton());
+    expect(altButton()).toHaveAttribute('aria-expanded', 'false');
+    await save();
+    expect(altButton()).toHaveAttribute('aria-expanded', 'true');
+    const lines = screen.getAllByText(t.hbErrAlt, { selector: '.ferr' });
+    expect(lines).toHaveLength(3);
+    for (const line of lines) expect(line).toBeVisible();
+  });
+
+  it('keeps the values of the set across a fold', async () => {
+    await editor(AXE);
+    await oneChipLeft();
+    await userEvent.click(altButton());
+    expect(altButton()).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(altButton());
+    expect(pressedIn(ALT_TRAIT)).toHaveTextContent('Сила');
+  });
+
+  it('labels each box of the damage pair in the main stats and the second set', async () => {
+    const { container } = await editor(AXE);
+    await userEvent.click(altButton());
+    expect(dieBox()).toHaveAttribute('id', 'hb-dmg');
+    expect(bonusBox()).toHaveAttribute('id', 'hb-dmg-bonus');
+    expect(screen.getByRole('combobox', { name: t.hbAlt + ': ' + t.hbDmgDie })).toHaveAttribute(
+      'id',
+      'hb-alt-dmg'
+    );
+    expect(
+      screen.getByRole('textbox', { name: t.hbAlt + ': ' + t.hbDmgBonus })
+    ).toHaveAttribute('id', 'hb-alt-dmg-bonus');
+    for (const id of ['hb-dmg', 'hb-dmg-bonus', 'hb-alt-dmg', 'hb-alt-dmg-bonus']) {
+      const label = container.querySelector(`label[for="${id}"]`);
+      expect(label?.textContent).toBe(id.endsWith('bonus') ? t.hbDmgBonus : t.hbDmgDie);
+    }
   });
 
   it('drops the lines of the set and their summary when an unpress empties the set', async () => {
@@ -780,13 +843,133 @@ describe('the second set', () => {
   });
 });
 
+/* A fake cloud whose axe holds the Vault of Ages tier 'A', and whose ring holds 'C'. */
+async function heldTiers(): Promise<FakeCloud> {
+  const cloud = fakeCloud(SEED, 'gm1');
+  const r = await cloud.homebrew.load();
+  if (!r.ok) throw new Error('The fake refused its own load. Check fake-cloud.ts.');
+  for (const row of r.items) {
+    const c = row.content;
+    let content: HomebrewContent | null = null;
+    if (row.key === AXE && c.eq) content = { ...c, eq: { ...c.eq, tier: 'A' } };
+    if (row.key === RING) content = { ...c, tier: 'C' };
+    if (!content) continue;
+    const w = await cloud.homebrew.updateItem(row.id, { content, book_id: row.book_id }, null);
+    if (!w.ok) throw new Error(`The fake refused ${row.key}: ${w.error}. Fix the test patch.`);
+  }
+  return cloud;
+}
+
+const tierNames = (name = t.tier): (string | null)[] =>
+  within(group(name))
+    .getAllByRole('button')
+    .map((b) => b.textContent);
+
+describe('the tier', () => {
+  it('offers «Без ранга» and 1-4 for loot and 1-4 for equipment, never a Vault of Ages tier', async () => {
+    await editor(null);
+    expect(tierNames()).toEqual([t.hbNoTier, '1', '2', '3', '4']);
+    await press(t.hbKind, t.cons);
+    expect(tierNames()).toEqual([t.hbNoTier, '1', '2', '3', '4']);
+    await press(t.hbKind, t.fEquip);
+    expect(tierNames()).toEqual(['1', '2', '3', '4']);
+    expect(screen.queryByRole('button', { name: t.voaArtifact1 })).toBeNull();
+    expect(screen.queryByRole('button', { name: t.voaCursed1 })).toBeNull();
+  });
+
+  it('shows a stored «Артефакт» pressed after 4 and keeps it on a save with no tier change', async () => {
+    const cloud = await heldTiers();
+    await editor(AXE, { cloud });
+    expect(tierNames()).toEqual(['1', '2', '3', '4', t.voaArtifact1]);
+    expect(within(group(t.tier)).getByRole('button', { name: t.voaArtifact1 })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await press(t.tier, '3');
+    expect(tierNames()).toEqual(['1', '2', '3', '4', t.voaArtifact1]);
+    await press(t.tier, t.voaArtifact1);
+    const name = screen.getByLabelText(/Название/);
+    await userEvent.type(name, '!');
+    await save();
+    await toastSays(/^Сохранено/);
+    expect((await stored(cloud, AXE))?.eq?.tier).toBe('A');
+    expect(tierNames()).toEqual(['1', '2', '3', '4', t.voaArtifact1]);
+  });
+
+  it('drops a stored «Проклятый предмет» after a saved change of the tier', async () => {
+    const cloud = await heldTiers();
+    await editor(RING, { cloud });
+    expect(tierNames()).toEqual([t.hbNoTier, '1', '2', '3', '4', t.voaCursed1]);
+    await press(t.tier, '2');
+    expect(tierNames()).toEqual([t.hbNoTier, '1', '2', '3', '4', t.voaCursed1]);
+    await save();
+    await toastSays(/^Сохранено/);
+    expect((await stored(cloud, RING))?.tier).toBe(2);
+    expect(tierNames()).toEqual([t.hbNoTier, '1', '2', '3', '4']);
+  });
+});
+
+describe('the «?» of a field', () => {
+  const HELP: [string, string, string][] = [
+    [t.hbSource, 'hb-book-help', t.hbSourceHelp],
+    [t.tier, 'hb-eqtier-help', t.hbTierHelp],
+    [t.hbDmg, 'hb-dmg-help', t.hbDmgHelp],
+    [t.hbAlt, 'hb-alt-help', t.hbAltHint],
+    [t.hbLine, 'hb-line-help', t.hbLineHelp],
+    [t.craftInto, 'hb-craft-help', t.hbCraftIntoHelp],
+    [t.craftFrom, 'hb-craft-from-help', t.hbCraftFromHelp],
+    [t.setLabel, 'hb-set-help', t.hbSetHelp],
+    [t.hbRefs, 'hb-refs-help', t.hbRefsHelp]
+  ];
+
+  it('names its field, starts closed and shows its hint under the label on a press', async () => {
+    const { container } = await editor(AXE);
+    await openRel();
+    for (const [label, id, text] of HELP) {
+      const button = helpButton(label);
+      const hint = document.getElementById(id);
+      expect(button).toHaveAttribute('aria-expanded', 'false');
+      expect(button).toHaveAttribute('aria-controls', id);
+      expect(hint).toHaveTextContent(text);
+      expect(hint).not.toBeVisible();
+    }
+    await expectNoA11yViolations(container);
+    for (const [label, id] of HELP) {
+      await userEvent.click(helpButton(label));
+      expect(helpButton(label)).toHaveAttribute('aria-expanded', 'true');
+      expect(document.getElementById(id)).toBeVisible();
+    }
+    await expectNoA11yViolations(container);
+  });
+
+  it('toggles with Enter and Space', async () => {
+    await editor(null);
+    const button = helpButton(t.hbSource);
+    button.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.keyboard(' ');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('draws the loot tier «?» and none on a self-explanatory field or on «Пороги урона»', async () => {
+    await editor(null);
+    expect(helpButton(t.tier)).toHaveAttribute('aria-controls', 'hb-tier-help');
+    for (const label of [t.hbKind, t.hbName, t.hbDesc, t.hbTh]) {
+      expect(
+        screen.queryByRole('button', { name: t.fieldHelp.replace('%s', label) })
+      ).toBeNull();
+    }
+  });
+});
+
 describe('«Добавить в список» in the preview', () => {
   it('is absent on a new item before its first save and drawn after it', async () => {
     await editor(null);
     await userEvent.type(screen.getByLabelText(/Название/), 'Рог');
     expect(screen.queryByRole('button', { name: t.addToList })).toBeNull();
     await save();
-    await toastSays('Сохранено: «Рог»');
+    await toastSays('Предмет «Рог» создан');
     expect(await screen.findByRole('button', { name: t.addToList })).toBeInTheDocument();
   });
 
@@ -870,7 +1053,6 @@ describe('the fold «Связи»', () => {
     await press(t.hbLine, t.hbLineIn);
     expect(picker(t.hbLinePick)).toBeInTheDocument();
     await press(t.hbLine, t.hbLineNew);
-    expect(screen.getByText(t.hbLineNewHint)).toBeInTheDocument();
     expect(relSummary().textContent).toBe('Связи · 1');
     await expectNoA11yViolations(container);
   });
@@ -960,12 +1142,12 @@ describe('the fold «Связи»', () => {
     await press(t.hbType, 'Броня');
     await press(t.tier, '1');
     await userEvent.type(screen.getByLabelText(/^Показатель брони/), '3');
-    await userEvent.type(screen.getByLabelText(/^Пороги урона\*$/), '5');
-    await userEvent.type(screen.getByLabelText(t.hbTh + ' 2'), '10');
+    await userEvent.type(screen.getByLabelText(t.hbThMajor), '5');
+    await userEvent.type(screen.getByLabelText(t.hbThSevere), '10');
     await openRel();
     await press(t.hbLine, t.hbLineNew);
     await save();
-    await toastSays('Сохранено: «Латы»');
+    await toastSays('Предмет «Латы» создан');
     const key = fresh.router.hash().replace('#/homebrew/', '');
     expect((await stored(fresh.cloud, key))?.eq?.line).toBe(key);
   });
@@ -1055,12 +1237,19 @@ describe('the fold «Связи»', () => {
   it('makes a rule card and adds it, with its own refusals under its fields', async () => {
     const { cloud, container } = await editor(RING, { real: true });
     await openRel();
-    await userEvent.click(screen.getByRole('button', { name: t.hbCardNew }));
+    await userEvent.click(screen.getByRole('button', { name: t.hbNewCard }));
     const form = screen.getByRole('group', { name: t.hbNewCard });
     await userEvent.click(within(form).getByRole('button', { name: t.hbCreateCard }));
     expect(within(form).getByText(t.hbErrName)).toBeInTheDocument();
     expect(within(form).getByText(t.hbErrCardText)).toBeInTheDocument();
     await expectNoA11yViolations(container);
+    expect(
+      ['Название карты', 'Подзаголовок', 'Текст карты', 'Ссылка'].map((l) =>
+        within(form)
+          .getByLabelText(new RegExp('^' + l))
+          .getAttribute('maxlength')
+      )
+    ).toEqual(['80', '60', '1500', '300']);
     await userEvent.type(within(form).getByLabelText(/^Название карты/), 'Огонь');
     await userEvent.type(within(form).getByLabelText(/^Текст карты/), 'Жжёт.');
     await userEvent.click(within(form).getByRole('button', { name: t.hbCreateCard }));
@@ -1077,7 +1266,7 @@ describe('the fold «Связи»', () => {
   it('refuses a save while a card form is open, and reopens a closed fold on its name field', async () => {
     const { cloud } = await editor(RING, { real: true });
     await openRel();
-    await userEvent.click(screen.getByRole('button', { name: t.hbCardNew }));
+    await userEvent.click(screen.getByRole('button', { name: t.hbNewCard }));
     await userEvent.click(relSummary());
     expect(relFold().open).toBe(false);
     await userEvent.type(screen.getByLabelText(/^Название\*$/), '!');
@@ -1138,7 +1327,7 @@ describe('the fold «Связи»', () => {
       expect(screen.getByLabelText(t.setLabel)).toHaveFocus();
     });
     expect(screen.getByLabelText(t.setLabel)).toHaveValue('ember-spark');
-    await userEvent.click(screen.getByRole('button', { name: t.hbCardNew }));
+    await userEvent.click(screen.getByRole('button', { name: t.hbNewCard }));
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('group', { name: t.hbNewCard })).toBeNull();
     await expectNoA11yViolations(container);
@@ -1154,7 +1343,7 @@ describe('the fold «Связи»', () => {
     const { app, dialog } = await editor(RING, { cloud, answer: false, real: true });
     await userEvent.click(screen.getByRole('button', { name: t.del }));
     expect(dialog.asked.at(-1)).toBe(
-      'Предмет «Кольцо с гравировкой» указан в 2 предметах. Удалить его? Отменить нельзя.'
+      'Предмет «Кольцо с гравировкой» указан в 2 предметах. Удалить его? Отменить удаление нельзя.'
     );
     app.listsHolding = () => 1;
     cleanup();
@@ -1162,7 +1351,7 @@ describe('the fold «Связи»', () => {
     await flush();
     await userEvent.click(screen.getByRole('button', { name: t.del }));
     expect(dialog.asked.at(-1)).toBe(
-      'Предмет «Кольцо с гравировкой» есть в 1 списке и указан в 2 предметах. Удалить его и убрать из списков? Отменить нельзя.'
+      'Предмет «Кольцо с гравировкой» есть в 1 списке и указан в 2 предметах. Удалить его и убрать из списков? Отменить удаление нельзя.'
     );
   });
 });

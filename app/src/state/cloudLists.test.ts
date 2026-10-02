@@ -849,6 +849,14 @@ describe('a refused write', () => {
       'Достигнут предел списков в аккаунте: 3. Нужно больше - напишите на daggerheart.loot@gmail.com.'
     ]);
     expect(store.get(l.id)).toBeUndefined();
+    expect(store.listLimit).toBe(3);
+  });
+
+  it('keeps the list and entry limits of a read, and clears them on sign-out', async () => {
+    const { store } = await loaded({ limits: { lists: 7, entries: 9 } });
+    expect([store.listLimit, store.entryLimit]).toEqual([7, 9]);
+    store.clear();
+    expect([store.listLimit, store.entryLimit]).toEqual([null, null]);
   });
 
   it("drops a refused create with the list's writes still in the buffer", async () => {

@@ -1246,7 +1246,7 @@ describe('the account session', () => {
     refused.start();
     await flush();
     expect(refused.toast).toEqual({
-      msg: 'Не получилось. Попробуйте ещё раз.',
+      msg: 'Не получилось. Проверьте соединение и попробуйте ещё раз.',
       mode: 'err',
       action: undefined
     });
@@ -2201,7 +2201,9 @@ describe('account lists', () => {
     expect(app.toast).toMatchObject({ mode: 'err' });
     expect(app.toast?.msg).toContain('Достигнут предел списков в аккаунте: 1.');
     await app.saveShareCopy('unknown-token');
-    expect(app.toast?.msg).toBe('Не получилось сохранить список себе. Попробуйте ещё раз.');
+    expect(app.toast?.msg).toBe(
+      'Не получилось сохранить список себе. Проверьте соединение и попробуйте ещё раз.'
+    );
     app.stop();
   });
 
@@ -2333,7 +2335,9 @@ describe("the account's write buffer", () => {
     app.cloudLists?.rename(own, 'Не дойдёт');
     await app.saveShareCopy('player-token-1');
     expect(clone).toHaveBeenCalledOnce();
-    expect(app.toast?.msg).toBe('Не получилось сохранить список себе. Попробуйте ещё раз.');
+    expect(app.toast?.msg).toBe(
+      'Не получилось сохранить список себе. Проверьте соединение и попробуйте ещё раз.'
+    );
     expect(app.cloning).toBe(false);
     app.stop();
     app.cloudLists?.clear();

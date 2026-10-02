@@ -25,6 +25,7 @@
   import NumberField from './NumberField.svelte';
   import NumRow from './NumRow.svelte';
   import OrGrid from './OrGrid.svelte';
+  import LoadState from './LoadState.svelte';
   import PageTitle from './PageTitle.svelte';
   import PickQty from './PickQty.svelte';
   import RecordActions from './RecordActions.svelte';
@@ -37,13 +38,13 @@
   import SharedListPage from './SharedListPage.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import QuickItem from './QuickItem.svelte';
-  import { frozenOf, isCloudId } from '../lib/cloudLists.js';
+  import { frozenOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
   import type { Dict } from '../lib/dict.js';
   import { moneyHelpFor } from '../lib/help.js';
   import { printHash, sectionHash, sharedListHash } from '../lib/hash.js';
   import { nameOf, selCountText } from '../lib/i18n.js';
-  import { plural } from '../lib/plural.js';
+  import { countOf, plural } from '../lib/plural.js';
   import { encodeListRaw, QTY_MAX } from '../lib/listLink.js';
   import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
   import {
@@ -861,6 +862,7 @@
         rows="3"
         data-note="{key}:note"
         placeholder={key === 'list' ? t.listNotePhPub : t.notePhPub}
+        maxlength={NOTE_MAX}
         readonly={readOnly}
         use:seedText={o.note ?? ''}
         oninput={readOnly
@@ -885,6 +887,7 @@
         rows="3"
         data-note="{key}:hnote"
         placeholder={key === 'list' ? t.listNotePhHid : t.notePhHid}
+        maxlength={NOTE_MAX}
         readonly={readOnly}
         use:seedText={o.hnote ?? ''}
         oninput={readOnly
@@ -916,8 +919,14 @@
           }}>{t.signIn}</Button
         >
       {:else if cloudAddress && cloud?.status === 'error'}
-        <PageTitle title={t.listNotFound} sub={t.cloudLoadFailed} />
-        <Button variant="primary" onclick={() => void app.retryLists()}>{t.retry}</Button>
+        <PageTitle title={t.sharedFailed} />
+        <LoadState
+          {t}
+          failed
+          page
+          text={t.cloudLoadFailed}
+          onretry={() => void app.retryLists()}
+        />
       {:else if cloudAddress && (app.user === undefined || cloud?.status !== 'ready' || app.legacyMove?.status === 'moving')}
         <!-- The account is still answering, or a moved list's page waits for
              the account to be read again: nothing yet, so neither the sign-in
@@ -962,13 +971,14 @@
           class="titleinput"
           class:ro={readOnly}
           value={own.name}
+          maxlength={NAME_MAX}
           aria-label={t.rename}
           readonly={readOnly}
           oninput={readOnly ? undefined : rename}
         />
       {/snippet}
       {#snippet cloudSub()}
-        {plural(items.length, t.itemsN, app.lang)} ·
+        {countOf(items.length, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
         <span
           class="sync"
           class:bad={syncFailed}

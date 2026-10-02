@@ -8,6 +8,7 @@
   import { onMount, tick } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import LoadState from './LoadState.svelte';
   import Panel from './Panel.svelte';
   import { shareOf, type ShareAudience } from '../lib/cloudLists.js';
   import type { Msg } from '../lib/dict.js';
@@ -128,13 +129,13 @@
 </script>
 
 <Panel style="margin-bottom:16px">
-  {#if status === 'loading'}
-    <p class="state">{t.cloudLoading}</p>
-  {:else if status === 'error'}
-    <div class="state">
-      <p>{t.shareLoadFailed}</p>
-      <Button size="sm" onclick={() => void load()}>{t.retry}</Button>
-    </div>
+  {#if status === 'loading' || status === 'error'}
+    <LoadState
+      {t}
+      failed={status === 'error'}
+      text={t.shareLoadFailed}
+      onretry={() => void load()}
+    />
   {:else}
     {#each AUDIENCES as audience (audience)}
       {@const row = rows[audience]}
@@ -217,19 +218,5 @@
     margin: 10px 0 0;
     font-size: 13px;
     color: var(--muted);
-  }
-
-  .state {
-    margin: 0;
-    font-size: 13.5px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .state p {
-    margin: 0;
   }
 </style>

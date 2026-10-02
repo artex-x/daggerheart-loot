@@ -1,6 +1,6 @@
 # #/lists as gm1
 # route: #/lists
-# why: the seed's two browser lists moved on sign-in: the notice under the header names both; «Импорт из файла» under the name row; «Ваш аккаунт» with the idle strip «Выбрать все», then the moved lists first (uuid(5000), uuid(5001)) with «0 позиций · изменён только что», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no browser group
+# why: the seed's two browser lists moved on sign-in: the notice under the header names both; «Импорт из файла» under the name row; «Ваш аккаунт» with «5 списков из 50», the idle strip «Выбрать все», then the moved lists first (uuid(5000), uuid(5001)) with «0 позиций · изменён только что», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no browser group
 # as: gm1
 
 ## ru :: tree
@@ -28,7 +28,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона..." [namelen=83 namehash=f2bd8dcc]
     button "Скрыть"
   main ""
-    heading "Списки" [level=1]
+    heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
@@ -37,6 +37,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     button "Создать"
     button "Импорт из файла" [expanded=false]
     heading "ВАШ АККАУНТ" [level=2]
+    StaticText "5 списков из 50"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
@@ -137,7 +138,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
     StaticText "Lists from this browser were moved to your account: "Клад дракон..." [namelen=84 namehash=5748a9e2]
     button "Dismiss"
   main ""
-    heading "Lists" [level=1]
+    heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
@@ -146,6 +147,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
     button "Create"
     button "Import from file" [expanded=false]
     heading "YOUR ACCOUNT" [level=2]
+    StaticText "5 lists of 50"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""

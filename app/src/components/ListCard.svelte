@@ -169,6 +169,7 @@
     font-size: var(--step-0);
     font-weight: 650;
     line-height: 1.3;
+    overflow-wrap: anywhere;
   }
 
   .listcard-main:hover .listcard-top b {

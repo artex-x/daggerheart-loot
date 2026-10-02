@@ -82,25 +82,9 @@ No release plan owns it; the owner decides which one takes it.
   (for example the «Новый список» field), not `body`. Cover it in
   `listsPage.test.ts`.
 
-## Limit texts and harness parity (no task filed yet; the owner names the release)
+## Harness parity (no task filed yet; the owner names the release)
 
-Owns: what a reader is told at a count limit that is not theirs, and the
-fake's parity with the database's bounds of one write.
-
-### D67 - a requester at `request_lines` is told to write to the site's owner
-
-- **Where**: `app/src/lib/dict.ts` `limitOther` (RU, EN), shown for the
-  refusal `limit: request_lines` of `create_purchase_request()`.
-- **What**: a player whose request has more lines than the list owner's
-  limit reads «Достигнут предел: %n. Нужно больше - напишите на
-  daggerheart.loot@gmail.com.». The override of `request_lines` is the list
-  owner's, set by the site's owner, so the requester's email asks for a
-  limit on an account that is not theirs.
-- **Why deferred**: found in the limits audit (2026-09-30), which changed
-  no request text; a requester's own text is a small separate fix.
-- **How to verify the fix**: over the fake, send a request past the lines
-  limit through a share link as another reader and confirm the toast names
-  the list's limit without the email line. Cover it in `state/app.test.ts`.
+Owns: the fake's parity with the database's bounds of one write.
 
 ### D68 - the fake takes more than 5000 entries in one `create` or `add`
 
@@ -138,6 +122,190 @@ list. No release plan owns it; the owner decides which one takes it.
   `shares.revoke` for its share, and confirm that a polite status region
   (or the focused heading) reads «Список больше не доступен» once. Cover it
   in `sharedListPage.test.ts`.
+
+## Persistence review (`persist-review`)
+
+Owns: the consistency pass over the persistence surfaces after R7f, against
+`docs/specs/FEATURES.md`, "Chrome", "Consistency rules", and the decision
+"The signed-in pages follow one set of consistency rules". Each entry below
+is a named departure from a rule, or a defect found in R7f's reviews.
+
+### D74 - the list notes' two boxes take their name from the placeholder
+
+- **Where**: `app/src/components/ListPage.svelte`, the `notePair` snippet
+  (`.nlbl` and the two `<textarea>`s, list and row notes).
+- **What**: the visible label («Для игроков» / «Только для мастера» and its
+  consequence line) is a `span`, not tied to the box, so a screen reader
+  names each box by its placeholder. Rule 15 (a) says a placeholder is never
+  the label; rule 15 names this departure.
+- **Why deferred**: the fix needs a per-key id on an inner text span
+  (`.nlbl` also holds the clear button) and moves every list-page golden
+  (four shards of compare and re-seed); the visible label already serves
+  sighted readers.
+- **How to verify the fix**: `listPage.test.ts` finds each note box with
+  `getByRole('textbox', { name: /Для игроков/ })` and the hidden one by its
+  own label; the re-seeded list goldens name the boxes by their labels.
+
+### D75 - each «?» has a description equal to its name
+
+- **Where**: `app/src/components/HelpButton.svelte` (`title` and
+  `aria-label` hold the same text).
+- **What**: Chrome exposes the `title` as a description, so a screen reader
+  can read «Подсказка: Источник» twice; the homebrew editor has nine such
+  buttons, and the page-level «?» does the same (golden lines read
+  `button "Подсказка: Источник" [description=Подсказка: Источник ...]`).
+- **Why deferred**: found in the review of the editor's field help
+  (2026-10-02); the fix moves every golden that draws a help button.
+- **How to verify the fix**: the goldens show each «?» with no
+  `description`; `a11y.test.ts` still passes on the help states.
+
+### D76 - a failed limit read clears a known limit until the next read
+
+- **Where**: `app/src/state/cloudLists.svelte.ts` and
+  `app/src/state/homebrew.svelte.ts` (`load` copies the limits);
+  `limitOf` in `app/src/ports/supabase.ts`.
+- **What**: a transient failure of `my_limit()` answers `null`, which the
+  stores copy over a number an earlier read returned, so «3 списка из 50»
+  reads «3 списка» until the next read (45 s poll). `null` also means "no
+  limit" (a null override), so the store cannot tell the two apart.
+- **Why deferred**: a visible flicker only, no data risk; the fix is a port
+  answer that separates "failed" from "no limit", which R7g's account-read
+  work (`persist-7g-read-scale`) may take.
+- **How to verify the fix**: `cloudLists.test.ts` loads with a limit, then
+  fails the limit read once, and the count keeps «из 50».
+
+### D77 - a refusal line keeps the language it was written in
+
+- **Where**: the `refused` strings of `app/src/components/HomebrewEditor.svelte`,
+  `CardForm.svelte` and `QuickItem.svelte`.
+- **What**: each refusal is stored as a finished string, so after a
+  language switch the line stays in the old language (the golden
+  `#/homebrew/hb_emberaxeaaaaaaaa ~ not saved as gm1` shows the Russian line
+  in its English tree). Rule 14 asks for both languages.
+- **Why deferred**: found in R7f's first review (2026-10-02); the fix keeps
+  a `Msg` (`lib/dict.ts`) instead of a string in three components.
+- **How to verify the fix**: a refused save, then «EN»: the line reads in
+  English (`homebrewEditor.test.ts`, `quickItem.test.ts`); the golden's
+  English tree shows the English line.
+
+### D78 - the bulk delete's progress line announces every step
+
+- **Where**: `app/src/components/HomebrewPage.svelte`, the `p.note
+  role="status"` line «Удаляем предметы: N из M».
+- **What**: the line changes after each delete, so at 300 items a screen
+  reader queues up to 300 polite announcements.
+- **Why deferred**: found in R7f's first review (2026-10-02); the progress
+  is correct on screen.
+- **How to verify the fix**: the status region announces the start and the
+  end only (a visible counter outside the live region, or a live text set
+  twice); `homebrewPage.test.ts` checks the region's text at both ends.
+
+### D79 - the list row's «Золото» «?» works on hover only
+
+- **Where**: `app/src/components/ListPage.svelte`, the `.goldhint` glyph in
+  a row's «Золото» label.
+- **What**: the glyph shows the coin conversion in a `title` only: it is no
+  button, answers no touch and no keyboard. Rule 15 (a) and (c) name it a
+  departure.
+- **Why deferred**: a rename of the field to «Цена» and a real «?» move
+  every list golden.
+- **How to verify the fix**: the conversion opens from a «?» button with
+  `aria-expanded` on touch and keyboard; `listPage.test.ts` and the list
+  goldens show it.
+
+### D80 - strings outside the consistency rules
+
+- **Where**: `app/src/lib/dict.ts` (the clipboard failure strings, the
+  `docTitle` separator, `uniqueHint`, `printSub`, `printSubCompact`);
+  `app/src/lib/help.ts` (45 em dashes; the «Хоумбрю» sentence of the tables
+  help uses ` - ` among them); the `app.say` calls of `RequestsPanel`,
+  `AddToList` and the `state/` stores.
+- **What**: these strings predate rules 2, 5 and 14 (one failure wording,
+  one toast shape, ASCII punctuation) and were not reviewed against them.
+- **Why deferred**: each changes goldens across many pages; the owner sent
+  them to one pass after R7f (2026-10-01).
+- **How to verify the fix**: `git grep -n "—" -- app/src/lib/help.ts
+  app/src/lib/dict.ts` finds nothing; each toast and failure string follows
+  rules 2 and 5.
+
+## Debt cleanup (`debt-cleanup`)
+
+Owns: scale findings at up to three times the default limits that no
+release took (the scale review of 2026-10-01; the owner placed the rest in
+R7d, R7e, R7f and R7g).
+
+### D81 - the homebrew read downloads every row each time
+
+- **Where**: `homebrew.load` in `app/src/ports/supabase.ts`;
+  `app/src/state/homebrew.svelte.ts` (`load`); the poll and the `homebrew`
+  message in `app/src/state/app.svelte.ts`.
+- **What**: three whole-table reads (items, sources, cards) run on every
+  45 s poll while the topic is down and after every remote homebrew
+  message. At the defaults, maximal content is about 2.5 MB of items, 1.3 MB
+  of cards and 0.4 MB of sources (estimate); typical use is under 100 KB.
+- **Why deferred**: typical accounts are small; the owner did not place it.
+- **How to verify the fix**: the read asks for `id,revision,updated_at`
+  first and fetches only changed rows; `supabase.test.ts` counts the
+  requests of an unchanged second read.
+
+### D82 - a print card clips a long text with no notice
+
+- **Where**: `app/src/components/PrintCard.svelte` (the text size ladder,
+  then `overflow: hidden` on the text box).
+- **What**: an item description may hold 3000 code points; past the last
+  step of the ladder the text is cut on the printed card and nothing says
+  so. Not measured in a browser.
+- **Why deferred**: the owner did not place it; the catalog's longest text
+  (1299 code points) fits.
+- **How to verify the fix**: a 3000-character own item on `#/print/<key>`
+  draws one warning line above the sheet (`printPage.test.ts`, and a
+  `tests/app/print.js` measurement).
+
+### D83 - a statement timeout makes the write buffer wait about a minute
+
+- **Where**: the `57014` mapping in `app/src/ports/supabase.ts` (a fault);
+  the retry in `app/src/state/cloudLists.svelte.ts`;
+  `supabase/migrations/20260925120000_delete_account.sql`.
+- **What**: an `apply_list_writes()` batch of big list deletes can pass the
+  8 s timeout; `57014` counts as a fault, so the buffer waits 15 s three
+  times before it halves the batch and shows «Не сохранено» meanwhile. The
+  account delete cascades in one statement and is unmeasured for an
+  override account (up to millions of rows).
+- **Why deferred**: unverified; the default limits keep a batch small.
+- **How to verify the fix**: one measured run on the test project; then
+  `57014` halves at once (`cloudLists.test.ts`), and a chunked account
+  delete passes `tests/db/delete-account.test.mjs` at a large seed.
+
+### D84 - small costs at three times the limits
+
+- **Where** and **What**, one line each (estimates, none measured):
+  - `matchLists` (`app/src/lib/lists.ts`) folds every list name per
+    keystroke (1000 x 200 characters, 30-80 ms); memoise as `hayFor` does.
+  - `waiting()` in `ListsPage.svelte` calls `pendingFor`
+    (`lib/requests.ts`) per card (1000 x 1000 parses); a `Map` by list id.
+  - `AddToList.svelte` calls `l.ids.includes` twice per chip per render of
+    the open menu; use the set built at open.
+  - `listsHolding` (`state/app.svelte.ts`) is lists x entries x keys per
+    lists change.
+  - The `homebrew` table's «Раздел» filter row draws one chip per used
+    section (up to 100) with no fold or search (`lib/facets.ts`,
+    `FilterBar.svelte`).
+  - `HomebrewCards.svelte` lists up to 100 cards per fold with no search.
+  - `shares.list` returns revoked rows, which stay for ever.
+  - An `add` or `create` op with a frozen copy over 60 kB goes alone and
+    without `keepalive` (`lib/cloudLists.ts`), so a tab closed inside the
+    2 s window loses it.
+  - The editor stringifies the draft and rebuilds the preview index per
+    keystroke; `findItems` maps every match before the picker keeps 8.
+  - One toast slot: an error can be replaced by the next success, a 7 s
+    undo by any later toast.
+  - `exportData` builds one string in memory (5 MiB at the import ceiling);
+    the homebrew export must stay a few files (the zip reader takes 1000).
+- **Why deferred**: each is a nit at the default limits; the owner did not
+  place them.
+- **How to verify the fix**: per line, a unit test or a timing at three
+  times the limits; delete the line when it is paid, and the entry with its
+  last line.
 
 ## Homebrew files (`persist-7d-homebrew-files`)
 

@@ -77,13 +77,13 @@ const readLists = (storage: { get: (k: string) => string | null }): StoredList[]
 describe('the head and the panel', () => {
   it('draws the heading, the create field, the folded notice and the empty state', async () => {
     const { container } = render(App, { env: at() });
-    expect(screen.getByRole('heading', { level: 1, name: 'Списки' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Мои списки' })).toBeInTheDocument();
     expect(screen.getByText('Списки живут только в этом браузере.')).toBeInTheDocument();
     expect(screen.getByText('подробнее')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Скрыть' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Например: клад дракона')).toBeInTheDocument();
     expect(screen.getAllByRole('textbox')).toHaveLength(1);
-    expect(screen.getByText('Списков пока нет — создайте первый выше')).toBeInTheDocument();
+    expect(screen.getByText('Списков пока нет - создайте первый выше.')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
@@ -280,7 +280,7 @@ describe('deleting a list', () => {
     render(App, { env: at({ storage, dialog }) });
     await userEvent.click(screen.getAllByRole('button', { name: 'Удалить' })[0] as HTMLElement);
 
-    expect(dialog.asked).toEqual(['Удалить список «Клад дракона»? Это действие необратимо.']);
+    expect(dialog.asked).toEqual(['Удалить список «Клад дракона»? Отменить удаление нельзя.']);
     expect(screen.getByRole('link', { name: 'Клад дракона, 1 позиция' })).toBeInTheDocument();
     expect(readLists(storage)).toHaveLength(2);
   });
@@ -503,11 +503,11 @@ describe('«Показать ещё»', () => {
 describe('a dataset that did not load', () => {
   it('draws noData and no panel', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/lists'), data: noData() }) });
-    expect(screen.getByRole('heading', { level: 1, name: 'Списки' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Мои списки' })).toBeInTheDocument();
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
     expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
     expect(
-      screen.queryByText('Списков пока нет — создайте первый выше')
+      screen.queryByText('Списков пока нет - создайте первый выше.')
     ).not.toBeInTheDocument();
   });
 });
@@ -548,7 +548,7 @@ describe('with sign-in configured', () => {
     /* No local lists and working storage: no browser group, no notice. */
     expect(screen.queryByText('Списки живут только в этом браузере.')).not.toBeInTheDocument();
     expect(
-      screen.queryByText('Списков пока нет — создайте первый выше')
+      screen.queryByText('Списков пока нет - создайте первый выше.')
     ).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
     await userEvent.click(button);
@@ -739,11 +739,52 @@ describe('with sign-in configured', () => {
     expect(await screen.findByText('Загружаем...')).toBeInTheDocument();
     cleanup();
     const empty = fakeCloud(SEED, 'gm1');
-    empty.lists.list = () => Promise.resolve({ ok: true, lists: [] });
+    empty.lists.list = () =>
+      Promise.resolve({ ok: true, lists: [], listLimit: 50, entryLimit: 100 });
     withCloud(empty);
     expect(
       await screen.findByText('В аккаунте пока нет списков - создайте первый выше.')
     ).toBeInTheDocument();
+    expect(screen.getByText('0 списков из 50')).toBeInTheDocument();
+  });
+
+  it('counts the account lists with the limit, at the limit and at an override of 150', async () => {
+    const { container } = withCloud(fakeCloud(SEED, 'gm1'));
+    expect(await screen.findByText('3 списка из 50')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    cleanup();
+    withCloud(fakeCloud(SEED, 'gm1', { limits: { lists: 3 } }));
+    expect(await screen.findByText('3 списка из 3')).toBeInTheDocument();
+    cleanup();
+    const big = fakeCloud(SEED, 'gm1', { limits: { lists: 150 } });
+    for (let i = 0; i < 147; i++) {
+      await big.lists.apply([
+        {
+          op: 'create',
+          list: {
+            id: uuid(9000 + i),
+            name: 'Л' + String(i),
+            money_mode: 'bag',
+            player_note: '',
+            gm_note: ''
+          },
+          entries: []
+        }
+      ]);
+    }
+    withCloud(big);
+    expect(await screen.findByText('150 списков из 150')).toBeInTheDocument();
+  });
+
+  it('counts with no limit when the limit read failed', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const read = cloud.lists.list.bind(cloud.lists);
+    cloud.lists.list = async () => {
+      const r = await read();
+      return r.ok ? { ...r, listLimit: null } : r;
+    };
+    withCloud(cloud);
+    expect(await screen.findByText('3 списка')).toBeInTheDocument();
   });
 
   it('filters both groups with one box and folds them as one sequence', async () => {
@@ -939,7 +980,7 @@ describe('the move into the account and the cutoff', () => {
     );
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getAllByRole('button', { name: 'Удалить' })[0] as HTMLElement);
-    expect(dialog.asked).toEqual(['Удалить список «Клад дракона»? Это действие необратимо.']);
+    expect(dialog.asked).toEqual(['Удалить список «Клад дракона»? Отменить удаление нельзя.']);
     expect(readLists(storage).map((l) => l.id)).toEqual(['b']);
     expect(screen.getByText('Список «Клад дракона» удалён')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Вернуть' })).toBeNull();

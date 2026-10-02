@@ -1,6 +1,6 @@
 # #/tables/homebrew as gm2
 # route: #/tables/homebrew
-# why: an account with no own item: «Своих предметов пока нет - создайте первый.» and «Новый предмет»
+# why: an account with no own item: «Своих предметов пока нет.» and «Новый предмет»
 # as: gm2
 
 ## ru :: tree
@@ -28,7 +28,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, — можно листать, фи..." [namelen=95 namehash=09bdbea3]
+    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=index.html?as=gm2#/tables/core_item]
     link "Hope & Fear" [url=index.html?as=gm2#/tables/hnf_item]
     link "Альт. таблицы" [url=index.html?as=gm2#/tables/alt_item]
@@ -40,7 +40,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Снаряжение" [url=index.html?as=gm2#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm2#/tables/other_starting]
     link "Хоумбрю" [url=index.html?as=gm2#/tables/homebrew]
-    StaticText "Своих предметов пока нет - создайте первый."
+    StaticText "Своих предметов пока нет."
     link "Новый предмет" [url=index.html?as=gm2#/homebrew/new]
   contentinfo ""
     navigation "Страницы сайта"
@@ -105,7 +105,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm2#/tabl
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
-    StaticText "Every table in full, weapons and armor included — browse, filter..." [namelen=80 namehash=ac154f94]
+    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=index.html?as=gm2#/tables/core_item]
     link "Hope & Fear" [url=index.html?as=gm2#/tables/hnf_item]
     link "Alt. tables" [url=index.html?as=gm2#/tables/alt_item]
@@ -117,7 +117,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm2#/tabl
     link "Equipment" [url=index.html?as=gm2#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm2#/tables/other_starting]
     link "Homebrew" [url=index.html?as=gm2#/tables/homebrew]
-    StaticText "No items of your own yet - create the first one."
+    StaticText "No items of your own yet."
     link "New item" [url=index.html?as=gm2#/homebrew/new]
   contentinfo ""
     navigation "Site pages"

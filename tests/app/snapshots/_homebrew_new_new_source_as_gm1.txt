@@ -42,13 +42,13 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       textbox "Название*" [multiline=false readonly=false required=true]
       StaticText "Описание"
       textbox "Описание" [multiline=true readonly=false required=false]
+      button "Подсказка: Ранг" [description=Подсказка: Ранг expanded=false]
       group "Ранг"
-        button "Нет" [pressed=true]
+        button "Без ранга" [pressed=true]
         button "1" [pressed=false]
         button "2" [pressed=false]
-        ... button x2 of 6 same-shape siblings elided
-        button "Артефакт" [pressed=false]
-        button "Проклятый предмет" [pressed=false]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
       DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
@@ -64,7 +64,6 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-+ Новая карта правил
 1
 2
 3
@@ -78,19 +77,23 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
-Артефакт
+Без ранга
 К содержимому
 Карты правил
 Конфиденциальность
 ЛутDaggerheart
-Нет
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая карта правил
 Обычные правила
 Отмена
+Подсказка: Карты правил
+Подсказка: Комплект
+Подсказка: Получается из
+Подсказка: Ранг
+Подсказка: Улучшается до
 Поиск
 Получается из
 Предмет
-Проклятый предмет
 Расходник
 Снаряжение
 Создать
@@ -142,13 +145,13 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       textbox "Name*" [multiline=false readonly=false required=true]
       StaticText "Description"
       textbox "Description" [multiline=true readonly=false required=false]
+      button "Help: Tier" [description=Help: Tier expanded=false]
       group "Tier"
-        button "None" [pressed=true]
+        button "No tier" [pressed=true]
         button "1" [pressed=false]
         button "2" [pressed=false]
-        ... button x2 of 6 same-shape siblings elided
-        button "Artifact" [pressed=false]
-        button "Cursed object" [pressed=false]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
       DisclosureTriangle "Relations" [expanded=false]
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
@@ -164,28 +167,31 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
-+ New rule card
 1
 2
 3
 4
 Account: gm1@example.test
 Alt. tables
-Artifact
 Cancel
 Communities
 Consumable
 Create
-Cursed object
 Dragon's Vault
 Dread
 EN
 Equipment
+Help: Made from
+Help: Rule cards
+Help: Set
+Help: Tier
+Help: Upgrades to
 Install as an app
 Item
 Lists
 Made from
-None
+New rule card
+No tier
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Page
 Privacy

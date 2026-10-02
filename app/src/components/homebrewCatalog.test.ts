@@ -249,7 +249,7 @@ describe('#/tables/homebrew', () => {
 
   it('draws the empty state with «Новый предмет» for an account with no item', async () => {
     const { container } = page('#/tables/homebrew', { as: 'gm2' });
-    expect(await screen.findByText(t.hbEmpty)).toBeInTheDocument();
+    expect(await screen.findByText(t.hbEmptyTable)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: t.hbNewItem })).toHaveAttribute(
       'href',
       '#/homebrew/new'

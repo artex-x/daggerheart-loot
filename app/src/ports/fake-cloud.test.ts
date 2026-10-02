@@ -465,6 +465,7 @@ describe("the fake's lists", () => {
         { error: 'limit', key: 'entries_per_list', value: 1 }
       ]
     });
+    expect(await lists.list()).toMatchObject({ ok: true, listLimit: 1, entryLimit: 1 });
   });
 
   it('answers network offline and signed out, and reads again when online', async () => {
@@ -1535,7 +1536,9 @@ describe("the fake's homebrew", () => {
       books: [],
       items: [],
       cards: [],
-      itemLimit: 100
+      itemLimit: 100,
+      bookLimit: 20,
+      cardLimit: 100
     });
   });
 
@@ -1625,6 +1628,7 @@ describe("the fake's homebrew", () => {
       value: 4
     });
     expect((await read(gm1)).itemLimit).toBe(4);
+    expect((await read(gm1)).bookLimit).toBe(1);
     const def = fakeCloud(SEED, 'gm2');
     for (let i = 0; i < 20; i++) {
       await def.homebrew.createBook(newBook(uuid(7100 + i), def.homebrew.newKey()));
@@ -1877,7 +1881,9 @@ describe("the fake's homebrew", () => {
       books: [],
       items: [],
       cards: [],
-      itemLimit: 100
+      itemLimit: 100,
+      bookLimit: 20,
+      cardLimit: 100
     });
   });
 

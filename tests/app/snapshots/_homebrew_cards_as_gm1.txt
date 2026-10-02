@@ -1,6 +1,6 @@
 # #/homebrew ~ cards as gm1
 # route: #/homebrew
-# why: the fold «Карты · 1 комплект, 1 карта правил» open: «Комплекты» with «+ Новый комплект» and «Комплект Ольхи» «0 предметов · Мастерская Ольхи», «Карты правил» with «+ Новая карта правил» and «Клеймо Ольхи» «0 предметов», each card with «Изменить» and «Удалить»
+# why: the fold «Карты · 2 карты из 100: 1 комплект, 1 карта правил» open: «Комплекты» with «Новый комплект» and «Комплект Ольхи» «0 предметов · Мастерская Ольхи», «Карты правил» with «Новая карта правил» and «Клеймо Ольхи» «0 предметов», each card with «Изменить» and «Удалить»
 # as: gm1
 
 ## ru :: tree
@@ -27,11 +27,11 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
   main ""
     heading "Мои предметы" [level=1]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    StaticText "Мои предметы: 4 из 100"
-    DisclosureTriangle "ИСТОЧНИКИ · 1 источник" [expanded=false]
-    DisclosureTriangle "КАРТЫ · 1 комплект, 1 карта правил" [expanded=true]
+    StaticText "4 предмета из 100"
+    DisclosureTriangle "ИСТОЧНИКИ · 1 источник из 20" [expanded=false]
+    DisclosureTriangle "КАРТЫ · 2 карты из 100: 1 комплект, 1 карта правил" [expanded=true]
     heading "КОМПЛЕКТЫ" [level=2]
-    button "+ Новый комплект"
+    button "Новый комплект"
     ... StaticText x4 of 8 same-shape siblings elided
     button "Изменить"
     ... button x6 of 10 same-shape siblings elided
@@ -57,8 +57,6 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-+ Новая карта правил
-+ Новый комплект
 Dragon's Vault
 Dread
 EN
@@ -71,7 +69,6 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Выбрать все
-Добавить
 Изменить
 К содержимому
 Кольцо с гравировкой
@@ -80,6 +77,9 @@ daggerheart.com
 ЛутDaggerheart
 Настой кузнеца
 Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
+Новая карта правил
+Новый источник
+Новый комплект
 Новый предмет
 Обычные правила
 Переименовать
@@ -118,11 +118,11 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
   main ""
     heading "My items" [level=1]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    StaticText "My items: 4 of 100"
-    DisclosureTriangle "SOURCES · 1 source" [expanded=false]
-    DisclosureTriangle "CARDS · 1 set, 1 rule card" [expanded=true]
+    StaticText "4 items of 100"
+    DisclosureTriangle "SOURCES · 1 source of 20" [expanded=false]
+    DisclosureTriangle "CARDS · 2 cards of 100: 1 set, 1 rule card" [expanded=true]
     heading "SETS" [level=2]
-    button "+ New set"
+    button "New set"
     ... StaticText x4 of 8 same-shape siblings elided
     button "Edit"
     ... button x6 of 10 same-shape siblings elided
@@ -148,10 +148,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
-+ New rule card
-+ New set
 Account: gm1@example.test
-Add
 Alt. tables
 Communities
 Delete
@@ -164,6 +161,9 @@ Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namele
 Install as an app
 Lists
 New item
+New rule card
+New set
+New source
 Privacy
 RU
 Rename

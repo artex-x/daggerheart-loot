@@ -42,7 +42,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     generic ""
       StaticText "Выбрана 1 позиция"
     button "Цены" [expanded=true]
-    StaticText "В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок вел..." [namelen=222 namehash=9946f45b]
+    StaticText "В книге цен нет: Core (с. 105) оставляет их мастеру. Порядок вел..." [namelen=222 namehash=c1eb9171]
     ... StaticText x15 of 19 same-shape siblings elided
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]

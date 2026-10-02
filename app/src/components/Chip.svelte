@@ -99,6 +99,7 @@
     font-size: 13px;
     font-weight: 540;
     transition: 0.15s;
+    overflow-wrap: anywhere;
   }
 
   .chip small {

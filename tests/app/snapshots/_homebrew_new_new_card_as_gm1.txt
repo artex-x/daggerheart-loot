@@ -1,6 +1,6 @@
 # #/homebrew/new ~ new card as gm1
 # route: #/homebrew/new
-# why: the fold «Связи» open and «+ Новая карта правил» pressed: the rule card form under «Карты правил», «Название карты» * focused, «Подзаголовок», «Текст карты» *, «Ссылка», «Создать карту» and «Отмена», the hint
+# why: the fold «Связи» open and «Новая карта правил» pressed: the rule card form under «Карты правил», «Название карты» * focused, «Подзаголовок», «Текст карты» *, «Ссылка», «Создать карту» and «Отмена», the hint
 # as: gm1
 
 ## ru :: tree
@@ -34,6 +34,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         button "Расходник" [pressed=false]
         button "Снаряжение" [pressed=false]
       StaticText "Источник"
+      button "Подсказка: Источник" [description=Подсказка: Источник expanded=false]
       combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
@@ -41,22 +42,26 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       ... StaticText x17 of 21 same-shape siblings elided
       textbox "Название*" [multiline=false readonly=false required=true]
       textbox "Описание" [multiline=true readonly=false required=false]
+      button "Подсказка: Ранг" [description=Подсказка: Ранг expanded=false]
       group "Ранг"
-        button "Нет" [pressed=true]
+        button "Без ранга" [pressed=true]
         button "1" [pressed=false]
         button "2" [pressed=false]
-        ... button x2 of 6 same-shape siblings elided
-        button "Артефакт" [pressed=false]
-        button "Проклятый предмет" [pressed=false]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
       DisclosureTriangle "Связи" [expanded=true]
+      button "Подсказка: Улучшается до" [description=Подсказка: Улучшается до expanded=false]
       combobox "Улучшается до" [expanded=false required=false autocomplete=list haspopup=listbox]
+      button "Подсказка: Получается из" [description=Подсказка: Получается из expanded=false]
       combobox "Получается из" [expanded=false required=false autocomplete=list haspopup=listbox]
+      button "Подсказка: Комплект" [description=Подсказка: Комплект expanded=false]
       combobox "Комплект" [value=Нет expanded=false haspopup=menu]
         option "Нет" [selected=true]
         option "Пылающие близнецы" [selected=false]
         option "Убранство Святого" [selected=false]
         option "Комплект Ольхи (HB)" [selected=false]
         option "+ Новый комплект..." [selected=false]
+      button "Подсказка: Карты правил" [description=Подсказка: Карты правил expanded=false]
       combobox "Карты правил" [expanded=false required=false autocomplete=list haspopup=listbox]
       textbox "Название карты*" [focused=true multiline=false readonly=false required=true]
       textbox "Подзаголовок" [description=Необязательно. Например: Мудрость · Уровень 1 · Заклинание. multiline=false readonly=false required=false]
@@ -93,19 +98,23 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
-Артефакт
+Без ранга
 К содержимому
 Карты правил
 Конфиденциальность
 ЛутDaggerheart
-Нет
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Обычные правила
 Отмена
+Подсказка: Источник
+Подсказка: Карты правил
+Подсказка: Комплект
+Подсказка: Получается из
+Подсказка: Ранг
+Подсказка: Улучшается до
 Поиск
 Получается из
 Предмет
-Проклятый предмет
 Расходник
 Снаряжение
 Создать карту
@@ -150,6 +159,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         button "Consumable" [pressed=false]
         button "Equipment" [pressed=false]
       StaticText "Source"
+      button "Help: Source" [description=Help: Source expanded=false]
       combobox "Source" [value=Homebrew expanded=false haspopup=menu]
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
@@ -157,22 +167,26 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       ... StaticText x17 of 21 same-shape siblings elided
       textbox "Name*" [multiline=false readonly=false required=true]
       textbox "Description" [multiline=true readonly=false required=false]
+      button "Help: Tier" [description=Help: Tier expanded=false]
       group "Tier"
-        button "None" [pressed=true]
+        button "No tier" [pressed=true]
         button "1" [pressed=false]
         button "2" [pressed=false]
-        ... button x2 of 6 same-shape siblings elided
-        button "Artifact" [pressed=false]
-        button "Cursed object" [pressed=false]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
       DisclosureTriangle "Relations" [expanded=true]
+      button "Help: Upgrades to" [description=Help: Upgrades to expanded=false]
       combobox "Upgrades to" [expanded=false required=false autocomplete=list haspopup=listbox]
+      button "Help: Made from" [description=Help: Made from expanded=false]
       combobox "Made from" [expanded=false required=false autocomplete=list haspopup=listbox]
+      button "Help: Set" [description=Help: Set expanded=false]
       combobox "Set" [value=None expanded=false haspopup=menu]
         option "None" [selected=true]
         option "Blazing Twins" [selected=false]
         option "Saint's Ensemble" [selected=false]
         option "Alder Set (HB)" [selected=false]
         option "+ New set..." [selected=false]
+      button "Help: Rule cards" [description=Help: Rule cards expanded=false]
       combobox "Rule cards" [expanded=false required=false autocomplete=list haspopup=listbox]
       textbox "Card name*" [focused=true multiline=false readonly=false required=true]
       textbox "Subtitle" [description=Optional. For example: Sage · Level 1 · Spell. multiline=false readonly=false required=false]
@@ -202,22 +216,26 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
 4
 Account: gm1@example.test
 Alt. tables
-Artifact
 Cancel
 Communities
 Consumable
 Create card
-Cursed object
 Dragon's Vault
 Dread
 EN
 Equipment
+Help: Made from
+Help: Rule cards
+Help: Set
+Help: Source
+Help: Tier
+Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 Install as an app
 Item
 Lists
 Made from
-None
+No tier
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Page
 Privacy

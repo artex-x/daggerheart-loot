@@ -458,7 +458,7 @@ const STATES: {
     enter: async () => {
       await userEvent.click(await screen.findByText(/^Источники/, { selector: 'summary' }));
       await userEvent.click(await screen.findByRole('button', { name: 'Разделы' }));
-      await userEvent.click(screen.getByRole('button', { name: 'Добавить' }));
+      await userEvent.click(screen.getByRole('button', { name: 'Новый источник' }));
       await screen.findByLabelText('Новый источник');
     }
   },
@@ -467,7 +467,7 @@ const STATES: {
     route: '#/homebrew/hb_emberaxeaaaaaaaa',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      const bonus = await screen.findByLabelText('Бонус к урону');
+      const bonus = await screen.findByRole('textbox', { name: 'Бонус к урону' });
       await userEvent.clear(bonus);
       await userEvent.type(bonus, 'x');
       await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }));
@@ -508,6 +508,54 @@ const STATES: {
       await userEvent.click(await screen.findByRole('button', { name: 'Свой предмет' }));
       await userEvent.type(screen.getByRole('textbox', { name: 'Название*' }), 'Фляга{Enter}');
       await screen.findByRole('link', { name: 'Изменить' });
+    }
+  },
+  {
+    what: 'the lists index while the account read is loading',
+    route: '#/lists',
+    cloud: () => {
+      const cloud = fakeCloud(SEED, 'gm1');
+      cloud.lists.list = () => new Promise(() => undefined);
+      return cloud;
+    },
+    enter: async () => {
+      await screen.findByText('Загружаем...');
+    }
+  },
+  {
+    what: 'the lists index after a failed account read, with «Повторить»',
+    route: '#/lists',
+    cloud: () => {
+      const cloud = fakeCloud(SEED, 'gm1');
+      cloud.lists.list = () => Promise.resolve({ ok: false });
+      return cloud;
+    },
+    enter: async () => {
+      await screen.findByText('Не получилось загрузить списки аккаунта.');
+    }
+  },
+  {
+    what: 'an account list page after a failed account read',
+    route: '#/lists/00000000-0000-4000-8000-000000000101',
+    cloud: () => {
+      const cloud = fakeCloud(SEED, 'gm1');
+      cloud.lists.list = () => Promise.resolve({ ok: false });
+      return cloud;
+    },
+    enter: async () => {
+      await screen.findByRole('heading', { level: 1, name: 'Список не загрузился' });
+    }
+  },
+  {
+    what: '#/homebrew after a failed read of the own items',
+    route: '#/homebrew',
+    cloud: () => {
+      const cloud = fakeCloud(SEED, 'gm1');
+      cloud.homebrew.load = () => Promise.resolve({ ok: false });
+      return cloud;
+    },
+    enter: async () => {
+      await screen.findByText('Не получилось загрузить ваши предметы.');
     }
   },
   {
@@ -562,8 +610,6 @@ const COVERED: Record<string, string> = {
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
-  'HomebrewLoad.svelte':
-    'homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',
   'HomebrewPage.svelte':
     'homebrewPage.test.ts filled, empty and signed out; the sections open above',
   'HomebrewSources.svelte':
@@ -581,17 +627,19 @@ const COVERED: Record<string, string> = {
     'the new source field above, and homebrewEditor.test.ts with its inline source',
   'PickRow.svelte': 'record.test.ts on a catalog and an own record, and inside the modal above',
   'QuickItem.svelte': 'quickItem.test.ts, and the refused own-item panel above',
-  'FormField.svelte': 'the own-item panel above, and every field of homebrewEditor.test.ts',
+  'FormField.svelte':
+    'the own-item panel above, and every field of homebrewEditor.test.ts with each «?» closed and open',
   'TextArea.svelte': 'the own-item panel above, and the description in homebrewEditor.test.ts',
   'HelpButton.svelte':
-    "PageHead's help panel states above, and the list page's own priced entry below",
+    "PageHead's help panel states above, the list page's own priced entry below, and each field «?» of homebrewEditor.test.ts closed and open",
   'HitNote.svelte':
     "the list page's priced, noted entry with the roll panel open above, and the shared list below",
   'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
   'ListCard.svelte': 'listsPage.test.ts, signed out, signed in and with a failed read',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
-  'Button.svelte': 'the roll button and the card actions, on every roll page',
+  'Button.svelte':
+    'the roll button and the card actions, on every roll page; the second set disclosure in homebrewEditor.test.ts',
   'Chip.svelte': 'the Vault of Ages and community pickers - sections.test.ts and above',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
   'BatchBar.svelte':
@@ -608,6 +656,8 @@ const COVERED: Record<string, string> = {
   'KeepNote.svelte':
     'the note under the print bar in printPage.test.ts, and under the toolbar in tables.test.ts',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
+  'LoadState.svelte':
+    'the loading and failed account reads above; homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',
   'MoveNotice.svelte': 'moveNotice.test.ts in every form, and the moved-lists state above',
   'MoveStatus.svelte': 'moveStatus.test.ts in every form, and listsPage.test.ts',
   'NoticeBox.svelte': 'through MoveNotice and MoveStatus, in their tests and the state above',

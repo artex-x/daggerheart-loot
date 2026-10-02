@@ -8,9 +8,10 @@
   import Button from './Button.svelte';
   import CardForm from './CardForm.svelte';
   import Field from './Field.svelte';
+  import Icon from './Icon.svelte';
   import PanelFold from './PanelFold.svelte';
   import { cardUses, type CardKind, type CardRow } from '../lib/homebrew.js';
-  import { plural } from '../lib/plural.js';
+  import { countOf, plural } from '../lib/plural.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Homebrew } from '../state/homebrew.svelte.js';
 
@@ -35,14 +36,18 @@
       .sort((a, b) => named(a.content).localeCompare(named(b.content), lang));
   const sets = $derived(sorted('set'));
   const refs = $derived(sorted('ref'));
-  const count = $derived(
-    [
+  /* With a known limit: «5 карт из 100: 3 комплекта, 2 карты правил», «0 карт из 100». */
+  const count = $derived.by(() => {
+    const parts = [
       sets.length ? plural(sets.length, t.hbSetsN, lang) : '',
       refs.length ? plural(refs.length, t.hbRefsN, lang) : ''
     ]
       .filter(Boolean)
-      .join(', ') || undefined
-  );
+      .join(', ');
+    if (store.cardLimit === null) return parts || undefined;
+    const all = countOf(store.cards.length, store.cardLimit, t.hbCardsN, lang, t.ofLimit);
+    return parts ? all + ': ' + parts : all;
+  });
   const usesOf = (c: CardRow): number => cardUses(store.items, c.kind, c.key);
   const sourceOf = (c: CardRow): string => {
     const b = c.book_id === null ? undefined : store.book(c.book_id);
@@ -90,7 +95,7 @@
             size="sm"
             onclick={() => {
               editing = 'new:' + kind;
-            }}>{add}</Button
+            }}><Icon name="plus" />{add}</Button
           >
         </div>
       {/if}
@@ -145,8 +150,8 @@
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag
      reads as a void expression to this rule. -->
 <PanelFold label={t.hbCards} {count}>
-  {@render group('set', t.hbSets, t.hbAddSet, t.hbNoSets, sets)}
-  {@render group('ref', t.hbRefs, t.hbCardNew, t.hbNoRefs, refs)}
+  {@render group('set', t.hbSets, t.hbNewSet, t.hbNoSets, sets)}
+  {@render group('ref', t.hbRefs, t.hbNewCard, t.hbNoRefs, refs)}
 </PanelFold>
 
 <style>
@@ -180,6 +185,7 @@
 
   .name {
     font-weight: 600;
+    overflow-wrap: anywhere;
   }
 
   .count,

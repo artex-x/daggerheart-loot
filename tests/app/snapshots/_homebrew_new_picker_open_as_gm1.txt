@@ -34,6 +34,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         button "Расходник" [pressed=false]
         button "Снаряжение" [pressed=false]
       StaticText "Источник"
+      button "Подсказка: Источник" [description=Подсказка: Источник expanded=false]
       combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
@@ -41,19 +42,22 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       ... StaticText x8 of 12 same-shape siblings elided
       textbox "Название*" [multiline=false readonly=false required=true]
       textbox "Описание" [multiline=true readonly=false required=false]
+      button "Подсказка: Ранг" [description=Подсказка: Ранг expanded=false]
       group "Ранг"
-        button "Нет" [pressed=true]
+        button "Без ранга" [pressed=true]
         button "1" [pressed=false]
         button "2" [pressed=false]
-        ... button x2 of 6 same-shape siblings elided
-        button "Артефакт" [pressed=false]
-        button "Проклятый предмет" [pressed=false]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
       DisclosureTriangle "Связи" [expanded=true]
+      button "Подсказка: Улучшается до" [description=Подсказка: Улучшается до expanded=false]
       combobox "Улучшается до" [expanded=false required=false autocomplete=list haspopup=listbox]
+      button "Подсказка: Получается из" [description=Подсказка: Получается из expanded=false]
       combobox "Получается из" [value=зель expanded=true focused=true required=false autocomplete=list haspopup=listbox]
       listbox "Получается из" [multiselectable=false required=false orientation=vertical]
       status ""
         StaticText "Ещё 39 - уточните запрос"
+      button "Подсказка: Комплект" [description=Подсказка: Комплект expanded=false]
       combobox "Комплект" [value=Нет expanded=false haspopup=menu]
         option "Нет" [selected=true]
         option "Пылающие близнецы" [selected=false]
@@ -61,8 +65,9 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         option "Комплект Ольхи (HB)" [selected=false]
         option "+ Новый комплект..." [selected=false]
       StaticText "Карты правил"
+      button "Подсказка: Карты правил" [description=Подсказка: Карты правил expanded=false]
       combobox "Карты правил" [expanded=false required=false autocomplete=list haspopup=listbox]
-      button "+ Новая карта правил"
+      button "Новая карта правил"
       StaticText "До 3 карт."
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
@@ -78,7 +83,6 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-+ Новая карта правил
 1
 2
 3
@@ -92,19 +96,24 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
-Артефакт
+Без ранга
 К содержимому
 Карты правил
 Конфиденциальность
 ЛутDaggerheart
-Нет
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая карта правил
 Обычные правила
 Отмена
+Подсказка: Источник
+Подсказка: Карты правил
+Подсказка: Комплект
+Подсказка: Получается из
+Подсказка: Ранг
+Подсказка: Улучшается до
 Поиск
 Получается из
 Предмет
-Проклятый предмет
 Расходник
 Снаряжение
 Сообщества
@@ -148,6 +157,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         button "Consumable" [pressed=false]
         button "Equipment" [pressed=false]
       StaticText "Source"
+      button "Help: Source" [description=Help: Source expanded=false]
       combobox "Source" [value=Homebrew expanded=false haspopup=menu]
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
@@ -155,19 +165,22 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       ... StaticText x8 of 12 same-shape siblings elided
       textbox "Name*" [multiline=false readonly=false required=true]
       textbox "Description" [multiline=true readonly=false required=false]
+      button "Help: Tier" [description=Help: Tier expanded=false]
       group "Tier"
-        button "None" [pressed=true]
+        button "No tier" [pressed=true]
         button "1" [pressed=false]
         button "2" [pressed=false]
-        ... button x2 of 6 same-shape siblings elided
-        button "Artifact" [pressed=false]
-        button "Cursed object" [pressed=false]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
       DisclosureTriangle "Relations" [expanded=true]
+      button "Help: Upgrades to" [description=Help: Upgrades to expanded=false]
       combobox "Upgrades to" [expanded=false required=false autocomplete=list haspopup=listbox]
+      button "Help: Made from" [description=Help: Made from expanded=false]
       combobox "Made from" [value=зель expanded=true focused=true required=false autocomplete=list haspopup=listbox]
       listbox "Made from" [multiselectable=false required=false orientation=vertical]
       status ""
         StaticText "39 more - narrow the search"
+      button "Help: Set" [description=Help: Set expanded=false]
       combobox "Set" [value=None expanded=false haspopup=menu]
         option "None" [selected=true]
         option "Blazing Twins" [selected=false]
@@ -175,8 +188,9 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         option "Alder Set (HB)" [selected=false]
         option "+ New set..." [selected=false]
       StaticText "Rule cards"
+      button "Help: Rule cards" [description=Help: Rule cards expanded=false]
       combobox "Rule cards" [expanded=false required=false autocomplete=list haspopup=listbox]
-      button "+ New rule card"
+      button "New rule card"
       StaticText "Up to 3 cards."
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
@@ -192,28 +206,32 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
-+ New rule card
 1
 2
 3
 4
 Account: gm1@example.test
 Alt. tables
-Artifact
 Cancel
 Communities
 Consumable
-Cursed object
 Dragon's Vault
 Dread
 EN
 Equipment
+Help: Made from
+Help: Rule cards
+Help: Set
+Help: Source
+Help: Tier
+Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 Install as an app
 Item
 Lists
 Made from
-None
+New rule card
+No tier
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Page
 Privacy

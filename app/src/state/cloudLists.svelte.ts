@@ -92,6 +92,10 @@ export class CloudLists implements ListModel {
   lists = $state.raw<CloudList[]>([]);
   /** Whether every write is in: `failed` while one waits for the network. */
   sync = $state<'saved' | 'saving' | 'failed'>('saved');
+  /** The account's list and entry limits; null for none, or when the limit read failed. A
+   *  refusal for the same key replaces the read number with the one the database applied. */
+  listLimit = $state<number | null>(null);
+  entryLimit = $state<number | null>(null);
 
   readonly #repo: ListRepository;
   readonly #say: (msg: Msg, error?: boolean) => void;
@@ -265,6 +269,8 @@ export class CloudLists implements ListModel {
     this.#read = {};
     this.#removed = {};
     this.lists = [];
+    this.listLimit = null;
+    this.entryLimit = null;
     this.status = 'idle';
     this.sync = 'saved';
   }
@@ -280,6 +286,8 @@ export class CloudLists implements ListModel {
       return;
     }
     if (read.ok) {
+      this.listLimit = read.listLimit;
+      this.entryLimit = read.entryLimit;
       this.#apply(read.lists);
       this.status = 'ready';
     } else if (this.status === 'loading') {
@@ -426,6 +434,8 @@ export class CloudLists implements ListModel {
         if (!told) {
           if (r.error === 'limit') {
             const { key, value } = r;
+            if (value !== null && key === 'lists_per_owner') this.listLimit = value;
+            if (value !== null && key === 'entries_per_list') this.entryLimit = value;
             this.#say((t) => limitText(key, value, t), true);
           } else this.#say((t) => t.writeRefused, true);
         }

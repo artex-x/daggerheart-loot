@@ -28,3 +28,17 @@ export function plural(n: number, forms: string, lang: Lang): string {
   const i = Math.min(INDEX[lang][RULES[lang].select(n)] ?? last, last);
   return String(f[i]).replaceAll('%n', String(n));
 }
+
+/** Returns the plural of `n` alone, or `ofLimit` ("%s из %m") with the plural and the
+ *  account's `limit` when the limit is known (docs/specs/FEATURES.md, "Consistency
+ *  rules", rule 1). */
+export function countOf(
+  n: number,
+  limit: number | null,
+  forms: string,
+  lang: Lang,
+  ofLimit: string
+): string {
+  const s = plural(n, forms, lang);
+  return limit === null ? s : ofLimit.replace('%s', s).replace('%m', String(limit));
+}

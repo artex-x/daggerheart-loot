@@ -498,18 +498,37 @@ export function createCloud(
     }
   };
 
+  /* The caller's limit for one `limit_defaults` key (an unknown key raises 22023). A limit
+     read that fails answers null: the count shows without its limit, and the read of the
+     rows never fails for it. */
+  const limitOf = async (key: string): Promise<number | null> => {
+    try {
+      const r = await client.rpc('my_limit', { p_key: key });
+      const data: unknown = r.error ? null : r.data;
+      return typeof data === 'number' ? data : null;
+    } catch {
+      return null;
+    }
+  };
+
   const lists: ListRepository = {
     newId: () => crypto.randomUUID(),
     async list() {
       try {
-        const { data, error } = await client.from('lists').select(LIST_SELECT);
+        const [{ data, error }, listLimit, entryLimit] = await Promise.all([
+          client.from('lists').select(LIST_SELECT),
+          limitOf('lists_per_owner'),
+          limitOf('entries_per_list')
+        ]);
         if (error || !Array.isArray(data)) return { ok: false };
         return {
           ok: true,
           lists: (data as unknown as ListRow[]).map((l) => ({
             ...l,
             list_entries: [...l.list_entries].sort(entryOrder)
-          }))
+          })),
+          listLimit,
+          entryLimit
         };
       } catch {
         return { ok: false };
@@ -767,23 +786,14 @@ export function createCloud(
     newKey: () => keyFrom(crypto.getRandomValues(new Uint8Array(10))),
     async load() {
       if (!(await userId())) return { ok: false };
-      /* A limit read that fails leaves the count without its limit; it never fails the
-         read of the rows. */
-      const limit = Promise.resolve(
-        client.rpc('my_limit', { p_key: 'homebrew_items_per_owner' })
-      ).then(
-        (r): number | null => {
-          const data: unknown = r.error ? null : r.data;
-          return typeof data === 'number' ? data : null;
-        },
-        () => null
-      );
       try {
-        const [books, items, cards, itemLimit] = await Promise.all([
+        const [books, items, cards, itemLimit, bookLimit, cardLimit] = await Promise.all([
           client.from('homebrew_books').select(BOOK_SELECT),
           client.from('homebrew_items').select(ITEM_SELECT),
           client.from('homebrew_cards').select(CARD_SELECT),
-          limit
+          limitOf('homebrew_items_per_owner'),
+          limitOf('homebrew_books_per_owner'),
+          limitOf('homebrew_cards_per_owner')
         ]);
         if (books.error || items.error || cards.error) return { ok: false };
         if (
@@ -797,7 +807,9 @@ export function createCloud(
           books: books.data as unknown as BookRow[],
           items: items.data as unknown as ItemRow[],
           cards: cards.data as unknown as CardRow[],
-          itemLimit
+          itemLimit,
+          bookLimit,
+          cardLimit
         };
       } catch {
         return { ok: false };
