@@ -38,6 +38,7 @@ import type {
   Identity,
   ListOpResult,
   ListRepository,
+  ListsRead,
   ListWrite,
   ListWrites,
   MoveWrite,
@@ -249,6 +250,13 @@ async function made(call: () => PromiseLike<MadeAnswer>): Promise<ShareMade> {
 const LIST_SELECT =
   'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
   'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)';
+
+/** The most changed lists a re-read fetches by id: `in.(...)` of 50 UUIDs is about 1.9 kB
+ *  of address, far under a common 8 kB request line. More read the whole account. */
+export const CHANGED_LISTS_MAX = 50;
+/** PostgREST's row cap (`supabase/config.toml`, `[api] max_rows`): a page of the requests
+ *  read. The cap limits top-level rows only, not embedded ones. */
+export const READ_PAGE = 1000;
 
 /* The owner's pending requests with their lines; row level security keeps them to the
    owner of each request's list. */
@@ -499,37 +507,57 @@ export function createCloud(
   };
 
   /* The caller's limit for one `limit_defaults` key (an unknown key raises 22023). A limit
-     read that fails answers null: the count shows without its limit, and the read of the
-     rows never fails for it. */
-  const limitOf = async (key: string): Promise<number | null> => {
+     read that fails answers undefined, so the caller keeps the limit it knows; null is no
+     limit. The read of the rows never fails for it. */
+  const limitOf = async (key: string): Promise<number | null | undefined> => {
     try {
       const r = await client.rpc('my_limit', { p_key: key });
-      const data: unknown = r.error ? null : r.data;
-      return typeof data === 'number' ? data : null;
+      if (r.error) return undefined;
+      const data: unknown = r.data;
+      if (data === null) return null;
+      return typeof data === 'number' ? data : undefined;
     } catch {
-      return null;
+      return undefined;
     }
   };
 
+  /* A fresh builder per read: postgrest-js builders keep the filters of an earlier call. */
+  const listsQuery = (columns: string) =>
+    client.from('lists').select(columns).order('updated_at', { ascending: false }).order('id');
+  const listRows = (data: unknown): ListRow[] | null =>
+    Array.isArray(data)
+      ? (data as ListRow[]).map((l) => ({
+          ...l,
+          list_entries: [...l.list_entries].sort(entryOrder)
+        }))
+      : null;
+
   const lists: ListRepository = {
     newId: () => crypto.randomUUID(),
-    async list() {
+    async list(known) {
       try {
-        const [{ data, error }, listLimit, entryLimit] = await Promise.all([
-          client.from('lists').select(LIST_SELECT),
-          limitOf('lists_per_owner'),
-          limitOf('entries_per_list')
-        ]);
-        if (error || !Array.isArray(data)) return { ok: false };
-        return {
-          ok: true,
-          lists: (data as unknown as ListRow[]).map((l) => ({
-            ...l,
-            list_entries: [...l.list_entries].sort(entryOrder)
-          })),
-          listLimit,
-          entryLimit
+        const limits = Promise.all([limitOf('lists_per_owner'), limitOf('entries_per_list')]);
+        const full = async (): Promise<ListsRead> => {
+          const [{ data, error }, [listLimit, entryLimit]] = await Promise.all([
+            listsQuery(LIST_SELECT),
+            limits
+          ]);
+          const rows = error ? null : listRows(data);
+          return rows ? { ok: true, lists: rows, listLimit, entryLimit } : { ok: false };
         };
+        if (!known || !Object.keys(known).length) return await full();
+        const head = await listsQuery('id,revision');
+        if (head.error || !Array.isArray(head.data)) return { ok: false };
+        const held = head.data as unknown as { id: string; revision: number }[];
+        const changed = held.filter((l) => known[l.id] !== l.revision).map((l) => l.id);
+        if (changed.length > CHANGED_LISTS_MAX) return await full();
+        const kept = held.filter((l) => known[l.id] === l.revision).map((l) => l.id);
+        const [read, [listLimit, entryLimit]] = await Promise.all([
+          changed.length ? listsQuery(LIST_SELECT).in('id', changed) : null,
+          limits
+        ]);
+        const rows = !read ? [] : read.error ? null : listRows(read.data);
+        return rows ? { ok: true, lists: rows, kept, listLimit, entryLimit } : { ok: false };
       } catch {
         return { ok: false };
       }
@@ -614,11 +642,24 @@ export function createCloud(
           client.rpc('revoke_list_share', { p_share: shareId }).abortSignal(signal)
         )
       ),
-    async read(token) {
+    /* `{ p_token }` alone names `get_shared_list(text)`; with `p_since` PostgREST picks the
+       `(text, bigint)` overload, which answers `{ unchanged: true }` for a known revision. */
+    async read(token, since) {
       try {
-        const answer = await client.rpc('get_shared_list', { p_token: token });
+        const answer = await client.rpc(
+          'get_shared_list',
+          since === undefined ? { p_token: token } : { p_token: token, p_since: since }
+        );
         if (answer.error) return { ok: false };
         const shared: unknown = answer.data;
+        if (
+          since !== undefined &&
+          shared !== null &&
+          typeof shared === 'object' &&
+          (shared as { unchanged?: unknown }).unchanged === true
+        ) {
+          return { ok: true, unchanged: true };
+        }
         return { ok: true, shared: (shared as SharedRow | null) ?? null };
       } catch {
         return { ok: false };
@@ -678,14 +719,28 @@ export function createCloud(
      (tests/db/purchase-requests.test.mjs); a send and a decision go through the
      functions, which check the token or the owner again. */
   const requests: RequestRepository = {
+    /* Keyset pages by id past PostgREST's row cap: an offset page would skip a row when a
+       request is deleted between two pages. */
     async list() {
       try {
-        const { data, error } = await client
-          .from('purchase_requests')
-          .select(REQUEST_SELECT)
-          .eq('status', 'pending');
-        if (error) return { ok: false };
-        const read = readRequests(data);
+        const rows: unknown[] = [];
+        let last: string | null = null;
+        for (;;) {
+          const q = client
+            .from('purchase_requests')
+            .select(REQUEST_SELECT)
+            .eq('status', 'pending');
+          const page = await (last === null ? q : q.gt('id', last))
+            .order('id')
+            .limit(READ_PAGE);
+          if (page.error || !Array.isArray(page.data)) return { ok: false };
+          const got = page.data as unknown[];
+          rows.push(...got);
+          const end = got.at(-1) as { id?: unknown } | undefined;
+          if (got.length < READ_PAGE || typeof end?.id !== 'string') break;
+          last = end.id;
+        }
+        const read = readRequests(rows);
         return read ? { ok: true, requests: read } : { ok: false };
       } catch {
         return { ok: false };

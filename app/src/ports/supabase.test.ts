@@ -1,10 +1,12 @@
 /* The real adapter's mapping, over a stub supabase-js client - layer 1's
    "ports against fake clients". The client itself meets the hosted test
    project in the E2E layer (docs/specs/COVERAGE.md, "Test layers"). */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ImportRow, ListOp } from '../lib/cloudLists.js';
 import { RETURN_KEY, type Redirect } from './redirect.js';
-import { createCloud, IMPORT_TIMEOUT_MS, WRITE_TIMEOUT_MS } from './supabase.js';
+import { createCloud, IMPORT_TIMEOUT_MS, READ_PAGE, WRITE_TIMEOUT_MS } from './supabase.js';
 
 const { client, createClient, rows } = vi.hoisted(() => {
   /* `from('user_prefs')`'s builder: `select().eq().maybeSingle()` and
@@ -479,7 +481,17 @@ describe('the lists', () => {
   function query(answer: unknown) {
     const calls: Call[] = [];
     const q: Record<string, unknown> = {};
-    for (const m of ['select', 'upsert', 'update', 'delete', 'eq', 'in']) {
+    for (const m of [
+      'select',
+      'upsert',
+      'update',
+      'delete',
+      'eq',
+      'in',
+      'order',
+      'gt',
+      'limit'
+    ]) {
       q[m] = (...args: unknown[]) => {
         calls.push([m, args]);
         return q;
@@ -530,31 +542,129 @@ describe('the lists', () => {
     });
     const read = await make().lists.list();
     expect(client.from).toHaveBeenCalledWith('lists');
+    expect(client.from).toHaveBeenCalledTimes(1);
     expect(calls).toEqual([
-      [
-        'select',
-        [
-          'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
-            'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)'
-        ]
-      ]
+      ['select', [SELECT]],
+      ['order', ['updated_at', { ascending: false }]],
+      ['order', ['id']]
     ]);
     expect(read.ok && read.lists[0]?.list_entries.map((e) => e.id)).toEqual(['c', 'a', 'b']);
+    expect(read.ok && 'kept' in read).toBe(false);
   });
 
-  it('reads the list and entry limits beside the lists, and a failed limit read as null', async () => {
+  it('reads the list and entry limits beside the lists: a failed limit read as undefined, no limit as null', async () => {
     answers({ data: [], error: null, status: 200 });
     client.rpc
       .mockImplementationOnce(() => Promise.resolve({ data: 50, error: null, status: 200 }))
       .mockImplementationOnce(() => Promise.reject(new Error('offline')));
-    expect(await make().lists.list()).toEqual({
-      ok: true,
-      lists: [],
-      listLimit: 50,
-      entryLimit: null
-    });
+    const read = await make().lists.list();
+    expect(read).toEqual({ ok: true, lists: [], listLimit: 50, entryLimit: undefined });
+    expect(read.ok && read.entryLimit).toBeUndefined();
     expect(client.rpc).toHaveBeenCalledWith('my_limit', { p_key: 'lists_per_owner' });
     expect(client.rpc).toHaveBeenCalledWith('my_limit', { p_key: 'entries_per_list' });
+  });
+
+  it('answers a limit read refused by the database as undefined, and a null answer as null', async () => {
+    answers({ data: [], error: null, status: 200 });
+    client.rpc
+      .mockImplementationOnce(() =>
+        Promise.resolve({ data: null, error: { code: '42501' }, status: 401 })
+      )
+      .mockImplementationOnce(() => Promise.resolve({ data: null, error: null, status: 200 }));
+    const read = await make().lists.list();
+    expect(read.ok && read.listLimit).toBeUndefined();
+    expect(read.ok && read.entryLimit).toBeNull();
+  });
+
+  const SELECT =
+    'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
+    'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)';
+  const ORDERED = [
+    ['order', ['updated_at', { ascending: false }]],
+    ['order', ['id']]
+  ];
+  const row = (id: string, revision: number) => ({
+    ...LIST,
+    id,
+    revision,
+    updated_at: '2026-10-02T00:00:00Z',
+    list_entries: []
+  });
+  const limits = () =>
+    client.rpc
+      .mockImplementationOnce(() => Promise.resolve({ data: 7, error: null, status: 200 }))
+      .mockImplementationOnce(() => Promise.resolve({ data: 7, error: null, status: 200 }));
+
+  it('re-reads with nothing changed by the head read alone, every list kept', async () => {
+    limits();
+    const [head] = answers({
+      data: [
+        { id: 'l1', revision: 3 },
+        { id: 'l2', revision: 5 }
+      ],
+      error: null,
+      status: 200
+    });
+    const read = await make().lists.list({ l1: 3, l2: 5 });
+    expect(client.from).toHaveBeenCalledTimes(1);
+    expect(head).toEqual([['select', ['id,revision']], ...ORDERED]);
+    expect(read).toEqual({
+      ok: true,
+      lists: [],
+      kept: ['l1', 'l2'],
+      listLimit: 7,
+      entryLimit: 7
+    });
+  });
+
+  it('re-reads one changed list by its id, the others kept, and a list it does not hold', async () => {
+    limits();
+    const [, changed] = answers(
+      {
+        data: [
+          { id: 'l1', revision: 4 },
+          { id: 'l2', revision: 5 },
+          { id: 'l3', revision: 1 }
+        ],
+        error: null,
+        status: 200
+      },
+      { data: [row('l1', 4), row('l3', 1)], error: null, status: 200 }
+    );
+    const read = await make().lists.list({ l1: 3, l2: 5, gone: 2 });
+    expect(changed).toEqual([['select', [SELECT]], ...ORDERED, ['in', ['id', ['l1', 'l3']]]]);
+    expect(read.ok && read.lists.map((l) => l.id)).toEqual(['l1', 'l3']);
+    expect(read.ok && read.kept).toEqual(['l2']);
+  });
+
+  it('reads every list in full when more than 50 changed', async () => {
+    limits();
+    const known = Object.fromEntries(
+      Array.from({ length: 51 }, (_, i) => [`l${String(i)}`, 1])
+    );
+    const [, full] = answers(
+      {
+        data: Object.keys(known).map((id) => ({ id, revision: 2 })),
+        error: null,
+        status: 200
+      },
+      { data: [row('l0', 2)], error: null, status: 200 }
+    );
+    const read = await make().lists.list(known);
+    expect(full).toEqual([['select', [SELECT]], ...ORDERED]);
+    expect(read.ok && 'kept' in read).toBe(false);
+  });
+
+  it('answers not ok to a failed head read or a failed changed read', async () => {
+    limits();
+    answers(
+      { data: null, error: { code: '42501' }, status: 401 },
+      { data: [{ id: 'l1', revision: 4 }], error: null, status: 200 },
+      new Error('offline')
+    );
+    const { lists } = make();
+    expect(await lists.list({ l1: 3 })).toEqual({ ok: false });
+    expect(await lists.list({ l1: 3 })).toEqual({ ok: false });
   });
 
   it('answers not ok to an error, a thrown read and no rows', async () => {
@@ -1226,6 +1336,26 @@ describe('the share links', () => {
     expect(await shares.read('t1')).toEqual({ ok: false });
   });
 
+  it('names the shown revision as p_since, and reads its unchanged answer', async () => {
+    const shared = { audience: 'player', updated_at: 'x', revision: 8, list: {}, entries: [] };
+    client.rpc
+      .mockResolvedValueOnce({ data: { unchanged: true }, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: shared, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: null, error: null, status: 200 });
+    const { shares } = make();
+    expect(await shares.read('t1', 7)).toEqual({ ok: true, unchanged: true });
+    expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', {
+      p_token: 't1',
+      p_since: 7
+    });
+    expect(await shares.read('t1', 7)).toEqual({ ok: true, shared });
+    expect(await shares.read('t1', 0)).toEqual({ ok: true, shared: null });
+    expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', {
+      p_token: 't1',
+      p_since: 0
+    });
+  });
+
   const NETWORK = { ok: false, error: 'network' };
   const REFUSED = { ok: false, error: 'refused' };
   const COPY: [string, unknown, unknown][] = [
@@ -1333,11 +1463,12 @@ describe('the purchase requests', () => {
   type Call = [string, unknown[]];
   const LIST = '00000000-0000-4000-8000-000000000101';
 
-  /* One PostgREST query: `select().eq()`, then the answer. */
+  /* One PostgREST query: `select().eq()`, a keyset page's `gt().order().limit()`, then the
+     answer. */
   function query(answer: unknown) {
     const calls: Call[] = [];
     const q: Record<string, unknown> = {};
-    for (const m of ['select', 'eq']) {
+    for (const m of ['select', 'eq', 'gt', 'order', 'limit']) {
       q[m] = (...args: unknown[]) => {
         calls.push([m, args]);
         return q;
@@ -1390,8 +1521,48 @@ describe('the purchase requests', () => {
             'purchase_request_lines(item_key,quantity,price_coins,applied_quantity)'
         ]
       ],
-      ['eq', ['status', 'pending']]
+      ['eq', ['status', 'pending']],
+      ['order', ['id']],
+      ['limit', [READ_PAGE]]
     ]);
+  });
+
+  it('reads every request past the row cap in keyset pages by id, a fresh query per page', async () => {
+    const page = Array.from({ length: READ_PAGE }, (_, i) => ({
+      ...ROW,
+      id: 'r' + String(i).padStart(4, '0')
+    }));
+    const first = query({ data: page, error: null, status: 200 });
+    const second = query({ data: [{ ...ROW, id: 'r9999' }], error: null, status: 200 });
+    const read = await make().requests.list();
+    expect(client.from).toHaveBeenCalledTimes(2);
+    expect(first).not.toContainEqual(['gt', expect.anything()]);
+    expect(second).toEqual([
+      ['select', [expect.any(String)]],
+      ['eq', ['status', 'pending']],
+      ['gt', ['id', 'r0999']],
+      ['order', ['id']],
+      ['limit', [READ_PAGE]]
+    ]);
+    expect(read.ok && read.requests.length).toBe(READ_PAGE + 1);
+  });
+
+  it('answers not ok when a later page fails', async () => {
+    query({
+      data: Array.from({ length: READ_PAGE }, (_, i) => ({ ...ROW, id: 'r' + String(i) })),
+      error: null,
+      status: 200
+    });
+    query({ data: null, error: { code: '57014' }, status: 500 });
+    expect(await make().requests.list()).toEqual({ ok: false });
+  });
+
+  it("pages by PostgREST's row cap as supabase/config.toml sets it", () => {
+    const toml = readFileSync(
+      resolve(import.meta.dirname, '..', '..', '..', 'supabase', 'config.toml'),
+      'utf8'
+    );
+    expect(/^max_rows = (\d+)$/m.exec(toml)?.[1]).toBe(String(READ_PAGE));
   });
 
   it('answers not ok to a failed, thrown or malformed read', async () => {
@@ -1652,26 +1823,24 @@ describe('the homebrew rows', () => {
     expect(client.rpc).toHaveBeenCalledWith('my_limit', { p_key: 'homebrew_items_per_owner' });
   });
 
-  it('reads no limit as null, and a limit read that fails or throws as null too', async () => {
+  it('reads no limit as null, and a limit read that fails or throws as undefined', async () => {
     const cloud = make();
-    for (const limit of [
-      Promise.resolve(answer(null)),
-      Promise.resolve(failed('PGRST202', 404)),
-      Promise.reject(new Error('offline'))
-    ]) {
+    for (const [limit, read] of [
+      [Promise.resolve(answer(null)), null],
+      [Promise.resolve(failed('PGRST202', 404)), undefined],
+      [Promise.reject(new Error('offline')), undefined]
+    ] as const) {
+      limit.catch(() => undefined);
       query(answer([]));
       query(answer([]));
       query(answer([]));
       for (let i = 0; i < 3; i++) client.rpc.mockImplementationOnce(() => limit);
-      expect(await cloud.homebrew.load()).toEqual({
-        ok: true,
-        books: [],
-        items: [],
-        cards: [],
-        itemLimit: null,
-        bookLimit: null,
-        cardLimit: null
-      });
+      const got = await cloud.homebrew.load();
+      expect(got.ok && [got.itemLimit, got.bookLimit, got.cardLimit]).toEqual([
+        read,
+        read,
+        read
+      ]);
     }
   });
 

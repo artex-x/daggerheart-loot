@@ -481,6 +481,264 @@ describe('lists limits', () => {
   });
 });
 
+/* docs/decisions/2026-10-02-a-lists-frozen-copies-hold-up-to-1048576-bytes.md. */
+describe('the frozen-copy byte limit per list', () => {
+  const limitError = (detail) => (err) => {
+    assert.equal(err.code, 'P0001', err.message);
+    assert.equal(err.message, 'limit: snapshot_bytes_per_list');
+    assert.equal(err.detail, detail);
+    return true;
+  };
+  const ALPHABET = 'abcdefghijklmnopqrstuvwxyz234567';
+  /* A homebrew key per number: `hb_snap` and twelve base-32 digits. */
+  const keyOf = (n) => {
+    let digits = '';
+    for (let i = 0; i < 12; i++) {
+      digits = ALPHABET[n % 32] + digits;
+      n = Math.floor(n / 32);
+    }
+    return 'hb_snap' + digits;
+  };
+  const BASE = (key) => ({
+    id: key,
+    src: 'homebrew',
+    kind: 'item',
+    en: 'Stone',
+    ru: 'Stone',
+    ende: '',
+    rud: ''
+  });
+  /* `octet_length(snapshot::text)`: jsonb's text puts a space after each `:` and `,`. */
+  const sizeOf = (snapshot) =>
+    Buffer.byteLength(JSON.stringify(snapshot)) + 2 * Object.keys(snapshot).length - 1;
+  /* A valid frozen copy of `key` that is `bytes` long as the database measures it: its
+     texts padded with two-byte letters (3000 each at most, the validator's cap). */
+  const frozenOf = (key, bytes) => {
+    const s = BASE(key);
+    let rest = bytes - sizeOf(s);
+    assert.ok(rest >= 0 && rest <= 12000, `a copy of ${bytes} bytes cannot be built`);
+    if (rest % 2) {
+      s.en += 'x';
+      rest -= 1;
+    }
+    const letters = rest / 2;
+    s.ende = 'ж'.repeat(Math.min(letters, 3000));
+    s.rud = 'ж'.repeat(letters - s.ende.length);
+    assert.equal(sizeOf(s), bytes);
+    return s;
+  };
+  const rowOf = (tx, listId, n, bytes, position = n) => ({
+    id: id(30000 + n),
+    list_id: listId,
+    item_key: keyOf(n),
+    source: 'homebrew',
+    snapshot: tx.json(frozenOf(keyOf(n), bytes)),
+    position
+  });
+  const insert = (tx, rows) => tx`insert into public.list_entries ${tx(rows)}`;
+  const override = (tx, value, user = A) =>
+    tx`insert into public.user_limit_overrides (user_id, key, value)
+      values (${user}, 'snapshot_bytes_per_list', ${value})`;
+  const frozenSum = async (tx, listId = LA) => {
+    const [r] = await tx`select coalesce(sum(octet_length(snapshot::text)), 0)::int as n
+      from public.list_entries where list_id = ${listId} and snapshot is not null`;
+    return r.n;
+  };
+  /* A's list LA with no entries and a limit of 3000 bytes. */
+  const small = async (tx) => {
+    await world(tx);
+    await tx`delete from public.list_entries where list_id = ${LA}`;
+    await override(tx, 3000);
+  };
+
+  it('takes copies up to the limit and refuses one past it', async () => {
+    const out = await asA(small, async (tx) => {
+      await insert(tx, [rowOf(tx, LA, 1, 1000), rowOf(tx, LA, 2, 1000)]);
+      await insert(tx, [rowOf(tx, LA, 3, 1000)]);
+      const sum = await frozenSum(tx);
+      const err = await tx
+        .savepoint((sp) => insert(sp, [rowOf(sp, LA, 4, 200)]))
+        .then(
+          () => null,
+          (e) => e
+        );
+      return { sum, err };
+    });
+    assert.equal(out.sum, 3000);
+    assert.ok(out.err && limitError('3000')(out.err));
+  });
+
+  it('takes copies summing to exactly 1048576 bytes at the default, and refuses one more', async () => {
+    const setup = async (tx) => {
+      await world(tx);
+      await tx`delete from public.list_entries where list_id = ${LA}`;
+    };
+    await assert.rejects(
+      asA(setup, async (tx) => {
+        const rows = Array.from({ length: 89 }, (_, i) => rowOf(tx, LA, i + 1, 11700));
+        rows.push(rowOf(tx, LA, 90, 1048576 - 89 * 11700));
+        await insert(tx, rows);
+        assert.equal(await frozenSum(tx), 1048576);
+        await insert(tx, [rowOf(tx, LA, 91, 200)]);
+      }),
+      limitError('1048576')
+    );
+  });
+
+  for (const [what, value] of [
+    ['an override of 2097152', 2097152],
+    ['a null override', null]
+  ]) {
+    it(`takes copies past 1048576 bytes under ${what}`, async () => {
+      const setup = async (tx) => {
+        await world(tx);
+        await override(tx, value);
+      };
+      const sum = await asA(setup, async (tx) => {
+        await insert(
+          tx,
+          Array.from({ length: 90 }, (_, i) => rowOf(tx, LA, i + 1, 12000, i + 3))
+        );
+        return frozenSum(tx);
+      });
+      assert.equal(sum, 90 * 12000);
+    });
+  }
+
+  /* LA past the limit: four copies of 1000 bytes taken under a raised override, which is
+     then removed; A also owns the item IA. */
+  const IA = id(31001);
+  const IA_KEY = keyOf(9000);
+  const past = async (tx) => {
+    await small(tx);
+    await tx`update public.user_limit_overrides set value = 10000
+      where user_id = ${A} and key = 'snapshot_bytes_per_list'`;
+    await insert(
+      tx,
+      [1, 2, 3, 4].map((n) => rowOf(tx, LA, n, 1000))
+    );
+    await tx`update public.user_limit_overrides set value = 3000
+      where user_id = ${A} and key = 'snapshot_bytes_per_list'`;
+    await tx`insert into public.homebrew_items (id, owner_id, key, content)
+      values (${IA}, ${A}, ${IA_KEY}, ${tx.json({ kind: 'item', en: 'Axe' })})`;
+  };
+
+  it('lets a list already past the limit take an official entry, a reference, a reorder and a note edit', async () => {
+    const out = await asA(past, async (tx) => {
+      await tx`insert into public.list_entries (id, list_id, item_key, position)
+        values (${id(31101)}, ${LA}, 'ci1', 10)`;
+      await tx`insert into public.list_entries (id, list_id, item_key, source, position)
+        values (${id(31102)}, ${LA}, ${IA_KEY}, 'homebrew', 11)`;
+      await tx`update public.list_entries set position = 20 - position where list_id = ${LA}`;
+      await tx`update public.list_entries set player_note = 'kept' where list_id = ${LA}`;
+      const [r] = await tx`select count(*)::int as n from public.list_entries
+        where list_id = ${LA} and player_note = 'kept'`;
+      return { n: r.n, sum: await frozenSum(tx) };
+    });
+    assert.deepEqual(out, { n: 6, sum: 4000 });
+  });
+
+  it('refuses a direct update of a snapshot that passes the limit', async () => {
+    await assert.rejects(
+      asA(small, async (tx) => {
+        await insert(tx, [rowOf(tx, LA, 1, 1000), rowOf(tx, LA, 2, 1000)]);
+        await tx`update public.list_entries
+          set snapshot = ${tx.json(frozenOf(keyOf(1), 2500))} where id = ${id(30001)}`;
+      }),
+      limitError('3000')
+    );
+  });
+
+  it('refuses a direct update that sets a new id together with a snapshot past the limit', async () => {
+    await assert.rejects(
+      asA(small, async (tx) => {
+        await insert(tx, [rowOf(tx, LA, 1, 1000), rowOf(tx, LA, 2, 1000)]);
+        await tx`update public.list_entries
+          set id = ${id(30099)}, snapshot = ${tx.json(frozenOf(keyOf(1), 2500))}
+          where id = ${id(30001)}`;
+      }),
+      limitError('3000')
+    );
+  });
+
+  it('checks each list of one statement', async () => {
+    const L2 = id(1002);
+    const setup = async (tx) => {
+      await small(tx);
+      await tx`insert into public.lists (id, owner_id, name) values (${L2}, ${A}, 'A2')`;
+    };
+    await assert.rejects(
+      asA(setup, (tx) =>
+        insert(tx, [rowOf(tx, LA, 1, 1000), rowOf(tx, L2, 2, 2000), rowOf(tx, L2, 3, 2000)])
+      ),
+      limitError('3000')
+    );
+  });
+
+  it('refuses import_lists past the limit whole', async () => {
+    const L3 = id(1003);
+    const out = await asA(small, async (tx) => {
+      const err = await tx
+        .savepoint(
+          (sp) =>
+            sp`select public.import_lists(${sp.json([
+              {
+                list: { id: L3, name: 'I', money_mode: 'bag', player_note: '', gm_note: '' },
+                entries: [1, 2, 3, 4].map((n) => ({
+                  id: id(30000 + n),
+                  item_key: keyOf(n),
+                  source: 'homebrew',
+                  snapshot: frozenOf(keyOf(n), 1000),
+                  position: n,
+                  quantity: 1,
+                  price_coins: null,
+                  player_note: '',
+                  gm_note: ''
+                }))
+              }
+            ])}::jsonb)`
+        )
+        .then(
+          () => null,
+          (e) => e
+        );
+      const [r] = await tx`select count(*)::int as n from public.lists where id = ${L3}`;
+      return { err, n: r.n };
+    });
+    assert.ok(out.err && limitError('3000')(out.err));
+    assert.equal(out.n, 0);
+  });
+
+  it('refuses clone_shared_list past the limit whole', async () => {
+    const COPY = id(2002);
+    let token = '';
+    const setup = async (tx) => {
+      await world(tx);
+      await tx`delete from public.list_entries where list_id = ${LA}`;
+      await insert(
+        tx,
+        [1, 2, 3, 4].map((n) => rowOf(tx, LA, n, 1000))
+      );
+      const [s] = await tx`insert into public.list_shares (list_id, audience)
+        values (${LA}, 'player') returning token`;
+      token = s.token;
+      await override(tx, 3000, B);
+    };
+    const out = await asRole(sql, { role: 'authenticated', sub: B, setup }, async (tx) => {
+      const err = await tx
+        .savepoint((sp) => sp`select public.clone_shared_list(${token}, ${COPY})`)
+        .then(
+          () => null,
+          (e) => e
+        );
+      const [r] = await tx`select count(*)::int as n from public.lists where id = ${COPY}`;
+      return { err, n: r.n };
+    });
+    assert.ok(out.err && limitError('3000')(out.err));
+    assert.equal(out.n, 0);
+  });
+});
+
 describe('reorder_list()', () => {
   const order = (tx) =>
     tx`select id from public.list_entries where list_id = ${LA} order by position, id`;

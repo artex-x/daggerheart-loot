@@ -57,6 +57,28 @@ describe('reading', () => {
     ]);
   });
 
+  it('keeps a known limit through a limit read that failed, and takes no limit as null', async () => {
+    let limits: Pick<
+      HomebrewRead & { ok: true },
+      'itemLimit' | 'bookLimit' | 'cardLimit'
+    > | null = null;
+    const { store } = make('gm1', (cloud) => ({
+      ...cloud.homebrew,
+      load: async () => {
+        const r = await cloud.homebrew.load();
+        return r.ok && limits ? { ...r, ...limits } : r;
+      }
+    }));
+    await store.load();
+    expect([store.itemLimit, store.bookLimit, store.cardLimit]).toEqual([100, 20, 100]);
+    limits = { itemLimit: undefined, bookLimit: undefined, cardLimit: undefined };
+    await store.read();
+    expect([store.itemLimit, store.bookLimit, store.cardLimit]).toEqual([100, 20, 100]);
+    limits = { itemLimit: null, bookLimit: undefined, cardLimit: 7 };
+    await store.read();
+    expect([store.itemLimit, store.bookLimit, store.cardLimit]).toEqual([null, 20, 7]);
+  });
+
   it('keeps the cards array when a read finds the same cards', async () => {
     const { store } = await loaded();
     const { cards } = store;

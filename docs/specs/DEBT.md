@@ -128,7 +128,8 @@ list. No release plan owns it; the owner decides which one takes it.
 Owns: the consistency pass over the persistence surfaces after R7f, against
 `docs/specs/FEATURES.md`, "Chrome", "Consistency rules", and the decision
 "The signed-in pages follow one set of consistency rules". Each entry below
-is a named departure from a rule, or a defect found in R7f's reviews.
+is a named departure from a rule, a defect found in R7f's reviews, or a
+scale finding the owner sent to this task's scale re-run.
 
 ### D74 - the list notes' two boxes take their name from the placeholder
 
@@ -158,21 +159,6 @@ is a named departure from a rule, or a defect found in R7f's reviews.
   (2026-10-02); the fix moves every golden that draws a help button.
 - **How to verify the fix**: the goldens show each «?» with no
   `description`; `a11y.test.ts` still passes on the help states.
-
-### D76 - a failed limit read clears a known limit until the next read
-
-- **Where**: `app/src/state/cloudLists.svelte.ts` and
-  `app/src/state/homebrew.svelte.ts` (`load` copies the limits);
-  `limitOf` in `app/src/ports/supabase.ts`.
-- **What**: a transient failure of `my_limit()` answers `null`, which the
-  stores copy over a number an earlier read returned, so «3 списка из 50»
-  reads «3 списка» until the next read (45 s poll). `null` also means "no
-  limit" (a null override), so the store cannot tell the two apart.
-- **Why deferred**: a visible flicker only, no data risk; the fix is a port
-  answer that separates "failed" from "no limit", which R7g's account-read
-  work (`persist-7g-read-scale`) may take.
-- **How to verify the fix**: `cloudLists.test.ts` loads with a limit, then
-  fails the limit read once, and the count keeps «из 50».
 
 ### D77 - a refusal line keeps the language it was written in
 
@@ -227,6 +213,22 @@ is a named departure from a rule, or a defect found in R7f's reviews.
 - **How to verify the fix**: `git grep -n "—" -- app/src/lib/help.ts
   app/src/lib/dict.ts` finds nothing; each toast and failure string follows
   rules 2 and 5.
+
+### D86 - the owner's pending requests are read whole after each new request
+
+- **Where**: `requests.list` in `app/src/ports/supabase.ts`;
+  `app/src/state/ownerRequests.svelte.ts` (the owner-topic `request`
+  message and the 300 s safety read).
+- **What**: every new request (an owner-topic `request` message) and every
+  safety read downloads all pending requests with their lines again: up to
+  about 4 MB at the defaults (500 requests of up to 100 lines, estimate)
+  and up to 4500 requests of 300 lines at three times them. A link holder
+  can send 5 requests a minute per link.
+- **Why deferred**: found while R7g was planned (2026-10-01); the owner
+  placed it with this section's scale re-run, not in R7g.
+- **How to verify the fix**: after one new request, the read fetches that
+  request alone (or the rows changed since the last read);
+  `supabase.test.ts` counts the rows of the second read.
 
 ## Debt cleanup (`debt-cleanup`)
 
@@ -306,6 +308,22 @@ R7d, R7e, R7f and R7g).
 - **How to verify the fix**: per line, a unit test or a timing at three
   times the limits; delete the line when it is paid, and the entry with its
   last line.
+
+### D85 - the shared page downloads the whole list after each owner edit
+
+- **Where**: `app/src/state/sharedView.svelte.ts` (`#message`, then
+  `refresh()`); `get_shared_list` in the migrations.
+- **What**: after each owner commit every open shared page downloads the
+  whole projection again: about 0.1-1 MB for a real list of up to 300
+  entries, up to 1 MiB of frozen copies plus 300 references of up to 81 KB
+  at three times the limits (estimates). An owner who types with pauses
+  commits every 2 s.
+- **Why deferred**: `p_since` removes the unchanged re-reads only. A
+  smaller changed read needs per-entry change tracking, or sending only the
+  snapshots the page lacks (a frozen copy never changes per entry id): a
+  projection contract change the owner did not place.
+- **How to verify the fix**: with a shared page open, edit one note; the
+  re-read carries no frozen snapshot the page already holds.
 
 ## Homebrew files (`persist-7d-homebrew-files`)
 

@@ -190,7 +190,7 @@ describe('homebrew grants and functions', () => {
       from pg_proc p
       where p.pronamespace = 'public'::regnamespace
         and (p.proname like 'homebrew\\_%' or p.proname in ('list_entries_reference_exists',
-          'my_limit', 'get_shared_list', 'clone_shared_list'))
+          'my_limit', 'get_shared_list', 'clone_shared_list', 'list_entries_snapshot_limit'))
       order by 1`;
     const pin = (prosecdef, anon, authed) => ({
       anon,
@@ -204,6 +204,7 @@ describe('homebrew grants and functions', () => {
     assert.deepEqual(Object.fromEntries(rows.map(({ fn, ...r }) => [fn, r])), {
       'clone_shared_list(text,uuid)': pin(true, false, true),
       'get_shared_list(text)': pin(true, true, true),
+      'get_shared_list(text,bigint)': pin(false, true, true),
       'homebrew_book_valid(jsonb)': validator,
       'homebrew_books_before_update()': pin(false, false, false),
       'homebrew_books_limit()': pin(true, false, false),
@@ -225,6 +226,7 @@ describe('homebrew grants and functions', () => {
       'homebrew_snapshot_valid(jsonb)': validator,
       'homebrew_text_ok(jsonb,text,integer)': validator,
       'list_entries_reference_exists()': pin(true, false, false),
+      'list_entries_snapshot_limit()': pin(true, false, false),
       'my_limit(text)': pin(true, false, true)
     });
   });

@@ -16,6 +16,7 @@ import {
 } from '../lib/cloudLists.js';
 import { dict, type Msg } from '../lib/dict.js';
 import type { StoredList } from '../lib/lists.js';
+import { countOf } from '../lib/plural.js';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, memoryStorage } from '../ports/index.js';
@@ -159,6 +160,58 @@ describe('reading the account', () => {
     await store.refresh();
     expect(store.lists[0]?.name).toBe('Лавка у моста');
     expect(store.get(TROPHIES)).toBe(trophies);
+  });
+
+  it('reads first with no revisions, then names the revision of every list it holds', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const list = vi.spyOn(cloud.lists, 'list');
+    const store = new CloudLists(cloud.lists, say, t);
+    await store.load();
+    expect(list.mock.calls[0]).toEqual([]);
+    const first = await cloud.lists.list();
+    const held = first.ok ? Object.fromEntries(first.lists.map((l) => [l.id, l.revision])) : {};
+    await store.refresh();
+    expect(list.mock.calls[2]).toEqual([held]);
+    expect(Object.keys(held)).toEqual(expect.arrayContaining([SHOP, EMPTY, TROPHIES]));
+    expect(await cloud.lists.list(held)).toMatchObject({ lists: [] });
+  });
+
+  it("drops a list deleted elsewhere, keeping every other list's object", async () => {
+    const { cloud, store } = await loaded();
+    const shop = store.get(SHOP);
+    await cloud.lists.apply([{ op: 'remove', id: TROPHIES }]);
+    await store.refresh();
+    expect(store.get(TROPHIES)).toBeUndefined();
+    expect(store.get(SHOP)).toBe(shop);
+    expect(store.lists).toHaveLength(2);
+  });
+
+  it('reads again, drawing nothing, when a kept list is one the store does not hold', async () => {
+    const { cloud, store } = await loaded();
+    const list = vi.spyOn(cloud.lists, 'list');
+    list.mockResolvedValueOnce({
+      ok: true,
+      lists: [],
+      kept: [uuid(9999)],
+      listLimit: 50,
+      entryLimit: 100
+    });
+    const drawn = store.lists;
+    await store.refresh();
+    await settle();
+    expect(list).toHaveBeenCalledTimes(2);
+    expect(store.lists).toBe(drawn);
+    expect(store.status).toBe('ready');
+  });
+
+  it('keeps the unchanged lists of a full re-read by their updated_at', async () => {
+    const { cloud, store } = await loaded();
+    const full = await cloud.lists.list();
+    const list = vi.spyOn(cloud.lists, 'list');
+    list.mockResolvedValueOnce(full);
+    const drawn = store.lists;
+    await store.refresh();
+    expect(store.lists).toBe(drawn);
   });
 
   it('keeps what is shown when a silent re-read fails', async () => {
@@ -857,6 +910,32 @@ describe('a refused write', () => {
     expect([store.listLimit, store.entryLimit]).toEqual([7, 9]);
     store.clear();
     expect([store.listLimit, store.entryLimit]).toEqual([null, null]);
+  });
+
+  it('keeps a known limit through a limit read that failed, and takes no limit as null', async () => {
+    const { cloud, store } = await loaded({ limits: { lists: 50, entries: 100 } });
+    const list = vi.spyOn(cloud.lists, 'list');
+    list.mockResolvedValueOnce({
+      ok: true,
+      lists: [],
+      kept: store.lists.map((l) => l.id),
+      listLimit: undefined,
+      entryLimit: undefined
+    });
+    await store.refresh();
+    expect([store.listLimit, store.entryLimit]).toEqual([50, 100]);
+    expect(countOf(store.lists.length, store.listLimit, t().listsN, 'ru', t().ofLimit)).toBe(
+      '3 списка из 50'
+    );
+    list.mockResolvedValueOnce({
+      ok: true,
+      lists: [],
+      kept: store.lists.map((l) => l.id),
+      listLimit: null,
+      entryLimit: undefined
+    });
+    await store.refresh();
+    expect([store.listLimit, store.entryLimit]).toEqual([null, 100]);
   });
 
   it("drops a refused create with the list's writes still in the buffer", async () => {
@@ -1592,6 +1671,28 @@ describe('homebrew entries', () => {
     await quiet();
     expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
     expect(store.get(SHOP)?.ids).not.toContain(AXE);
+  });
+
+  it('says the frozen-copy byte limit in KB when the database refuses a copy', async () => {
+    const gm2 = await resolved('gm2', own([]));
+    const copy = gm2.store.get(GM2_LIST)?.frozen?.[AXE];
+    const { cloud, store, apply } = await resolved('gm2', (key) =>
+      entrySource(key, { ready: true, has: () => false }, key === AXE ? copy : undefined)
+    );
+    apply.mockResolvedValueOnce({
+      ok: true,
+      results: [{ ok: false, error: 'limit', key: 'snapshot_bytes_per_list', value: 1048576 }]
+    });
+    const l = store.create('Копия', { ids: [AXE] });
+    await quiet();
+    expect(said).toEqual([
+      {
+        msg: 'Достигнут предел копий предметов других игроков в списке: 1024 КБ. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+        error: true
+      }
+    ]);
+    expect(store.get(l.id)).toBeUndefined();
+    expect(await serverList(cloud.lists, l.id)).toBeUndefined();
   });
 
   it('forgets what it removed on a sign-out', async () => {

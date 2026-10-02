@@ -71,8 +71,9 @@ export class Homebrew {
   books = $state.raw<BookRow[]>([]);
   items = $state.raw<ItemRow[]>([]);
   cards = $state.raw<CardRow[]>([]);
-  /** The account's item, source and card limits; null for none, or when the limit read
-   *  failed. A refusal for the same key replaces the read number. */
+  /** The account's item, source and card limits; null for none or before a limit read
+   *  answered. A failed limit read keeps the number known; a refusal for the same key
+   *  replaces it. */
   itemLimit = $state<number | null>(null);
   bookLimit = $state<number | null>(null);
   cardLimit = $state<number | null>(null);
@@ -160,9 +161,10 @@ export class Homebrew {
       this.books = kept(this.books, r.books);
       this.items = kept(this.items, r.items);
       this.cards = kept(this.cards, r.cards);
-      this.itemLimit = r.itemLimit;
-      this.bookLimit = r.bookLimit;
-      this.cardLimit = r.cardLimit;
+      /* A limit read that failed (undefined) keeps the limit known. */
+      if (r.itemLimit !== undefined) this.itemLimit = r.itemLimit;
+      if (r.bookLimit !== undefined) this.bookLimit = r.bookLimit;
+      if (r.cardLimit !== undefined) this.cardLimit = r.cardLimit;
       this.status = 'ready';
       return true;
     }

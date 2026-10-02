@@ -80,7 +80,11 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
      moment a list is created. */
   const lists: ListRepository = {
     newId: () => crypto.randomUUID(),
-    list: async () => (await port())?.lists.list() ?? UNLISTED,
+    list: async (known) => {
+      const p = await port();
+      if (!p) return UNLISTED;
+      return known === undefined ? p.lists.list() : p.lists.list(known);
+    },
     apply: async (ops) => (await port())?.lists.apply(ops) ?? UNSENT,
     move: async (id, canonical) => (await port())?.lists.move(id, canonical) ?? UNSENT,
     import: async (rows) => (await port())?.lists.import(rows) ?? UNSENT
@@ -89,7 +93,11 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     list: async (id) => (await port())?.shares.list(id) ?? NO_SHARES,
     create: async (id, audience) => (await port())?.shares.create(id, audience) ?? UNSENT,
     revoke: async (id) => (await port())?.shares.revoke(id) ?? UNSENT,
-    read: async (token) => (await port())?.shares.read(token) ?? UNSHARED,
+    read: async (token, since) => {
+      const p = await port();
+      if (!p) return UNSHARED;
+      return since === undefined ? p.shares.read(token) : p.shares.read(token, since);
+    },
     ownerOf: async (token) => (await port())?.shares.ownerOf(token) ?? null,
     clone: async (token, id) => (await port())?.shares.clone(token, id) ?? UNSENT
   };

@@ -577,7 +577,8 @@ browser lists writable after the date.
   эту ссылку или список.» and «На главную», the address kept, never the home
   page; a read that failed draws «Список не загрузился» / «Проверьте
   соединение и нажмите «Повторить».» and «Повторить». Nothing is drawn while the first
-  read runs.
+  read runs. A re-read names the revision the page shows, and a list still at
+  that revision answers with nothing to download or draw.
 - **Not found**: an account address signed out draws «Список не найден», «Если
   это список из вашего аккаунта, войдите, чтобы открыть его.» and one
   «Войти», which returns to that address; nothing while the session or the
@@ -597,7 +598,9 @@ browser lists writable after the date.
   also reads the account again when the tab is shown again and every 5
   minutes while the owner's topic is joined; the index and an account list's
   page read it every 45 s while Realtime is not joined. Each read waits until
-  no write is buffered or in flight. A shared page
+  no write is buffered or in flight. A re-read asks for each list's revision
+  and fetches the lists whose revision moved (every list when more than 50
+  did); a page load reads every list. A shared page
   `#/s/<token>` reads its list again on the same signals. The last write wins per entry and there is no conflict
   dialog. A reorder made
   on a device with an old entry set keeps the given order and puts the
@@ -740,7 +743,15 @@ browser lists writable after the date.
   after an hour and is deleted a day after its answer or expiry, when the
   next request is sent to any list. Homebrew counts 100 own items, 100 cards
   and 20 sources per account (`homebrew_items_per_owner`,
-  `homebrew_cards_per_owner`, `homebrew_books_per_owner`; "Homebrew").
+  `homebrew_cards_per_owner`, `homebrew_books_per_owner`; "Homebrew"). The
+  frozen copies of other players' items in one list hold at most 1048576
+  bytes together (`snapshot_bytes_per_list`; `limits:set` changes it per
+  user); a copy past it is refused with «Достигнут предел копий предметов
+  других игроков в списке: 1024 КБ. Нужно больше - напишите на
+  daggerheart.loot@gmail.com.» (the limit the database applied, in KB rounded
+  up), and a list already past it keeps its copies and takes catalog entries
+  and own items. No «N из M» counts the bytes: a byte sum means nothing to a
+  reader before the refusal (a named departure from "Consistency rules" 1).
   Every surface is designed for up to 3x every default in this bullet and
   nothing past that (`docs/decisions/`, 2026-10-01, "Scale is designed for
   three times the default limits; nothing past that").

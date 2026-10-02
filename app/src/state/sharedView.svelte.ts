@@ -81,15 +81,20 @@ export class SharedView {
     if (this.token === token && this.#checkedFor === userId) this.mine = mine;
   }
 
-  /** Re-reads the open link; an unchanged list keeps its object, a failed read keeps
-   *  what is shown. After a failed first read it reads with no `loading`: the error stays
-   *  drawn until a read answers, and the owner check runs again, as `retry()` does. */
+  /** Re-reads the open link, naming the shown revision; an unchanged list keeps its
+   *  object, a failed read keeps what is shown. After a failed first read it reads with
+   *  no `loading`: the error stays drawn until a read answers, and the owner check runs
+   *  again, as `retry()` does. */
   async refresh(): Promise<void> {
     const token = this.token;
     if (token === null || this.status === 'idle' || this.status === 'loading') return;
     const failed = this.status === 'error';
-    const read = await this.#repo.read(token);
-    if (this.token !== token || !read.ok) return;
+    /* The shown revision: an unchanged list answers with nothing to download. */
+    const since = this.status === 'ready' ? this.shared?.revision : undefined;
+    const read = await (since === undefined
+      ? this.#repo.read(token)
+      : this.#repo.read(token, since));
+    if (this.token !== token || !read.ok || read.unchanged) return;
     if (!read.shared) {
       this.shared = null;
       this.status = 'gone';

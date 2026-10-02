@@ -90,10 +90,12 @@ active token, a client-made id whose replay inserts nothing, at most 100
 lines of items the list holds and 10 pending per list (the defaults of
 `request_lines` and `pending_requests_per_list`), 5 requests a minute per
 link - and stores no name, account or address of the sender. `anon`
-executes two functions, `get_shared_list(text)` and that one, and reads no
-table (`tests/db/harness.test.mjs`; `docs/DECISIONS.md`, 2026-09-26,
-"Purchase requests are written only by a bounded function any link holder
-calls").
+executes three functions, `get_shared_list(text)`, its revision overload
+`get_shared_list(text,bigint)` (security invoker: it answers `unchanged`
+for a revision the list has not passed, else what `get_shared_list(text)`
+answers) and that one, and reads no table (`tests/db/harness.test.mjs`;
+`docs/DECISIONS.md`, 2026-09-26, "Purchase requests are written only by a
+bounded function any link holder calls").
 
 Homebrew items, their sources and sections, and the author's set and rule
 cards live in the account only: never in the browser's storage, and never

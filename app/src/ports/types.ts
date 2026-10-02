@@ -360,10 +360,18 @@ export type ListWrite =
    *  database stopped at its statement timeout, which the same call would reach again. */
   | { ok: false; error: 'refused'; reason?: 'tooSlow' };
 
-/** `{ ok: false }` is signed out or a read that failed, never an empty account. A limit
- *  is null for no limit or a limit read that failed. */
+/** `{ ok: false }` is signed out or a read that failed, never an empty account. `kept`
+ *  names the lists whose revision equals the one the caller holds; their rows are not
+ *  sent, and an id in neither `lists` nor `kept` is gone. A limit is null for no limit and
+ *  undefined when its read failed, so the caller keeps the limit it knows. */
 export type ListsRead =
-  | { ok: true; lists: ListRow[]; listLimit: number | null; entryLimit: number | null }
+  | {
+      ok: true;
+      lists: ListRow[];
+      kept?: readonly string[];
+      listLimit: number | null | undefined;
+      entryLimit: number | null | undefined;
+    }
   | { ok: false };
 
 /** One write's answer inside an `apply` call: never `network`; `gone` when the row it
@@ -397,8 +405,11 @@ export type MoveWrite =
 export interface ListRepository {
   /** A fresh list or entry id. */
   newId(): string;
-  /** The owner's lists, each with its entries in list order. */
-  list(): Promise<ListsRead>;
+  /** The owner's lists, each with its entries in list order; the real port orders them
+   *  newest first, the fake in its own order. `known` maps a list id to the revision the
+   *  caller holds: a list still at that revision answers in
+   *  `kept`, not in `lists`. */
+  list(known?: Readonly<Record<string, number>>): Promise<ListsRead>;
   /** Applies the writes in order in one request (`apply_list_writes`), each on its own:
    *  a refused write rolls back alone. */
   apply(ops: ListOp[]): Promise<ListWrites>;
@@ -417,8 +428,12 @@ export type SharesRead = { ok: true; shares: ShareRow[] } | { ok: false };
 /** A share made, or why not. */
 export type ShareMade =
   { ok: true; id: string; token: string } | Exclude<ListWrite, { ok: true }>;
-/** `shared: null` is a link that opens nothing: stopped, deleted, unknown or malformed. */
-export type SharedRead = { ok: true; shared: SharedRow | null } | { ok: false };
+/** `shared: null` is a link that opens nothing: stopped, deleted, unknown or malformed.
+ *  `unchanged` answers a read that named a revision the list has not passed. */
+export type SharedRead =
+  | { ok: true; shared: SharedRow | null; unchanged?: never }
+  | { ok: true; unchanged: true; shared?: never }
+  | { ok: false };
 
 /** An account list's share links (docs/specs/FEATURES.md, "Account and browser lists"). The owner
  *  makes and deletes them; anyone holding a token reads the list through it. */
@@ -429,8 +444,9 @@ export interface ShareRepository {
   create(listId: string, audience: ShareAudience): Promise<ShareMade>;
   /** Stops the share; a stopped one stays as it is (`revoke_list_share`). */
   revoke(shareId: string): Promise<ListWrite>;
-  /** The list as the link's audience sees it (`get_shared_list`), signed out too. */
-  read(token: string): Promise<SharedRead>;
+  /** The list as the link's audience sees it (`get_shared_list`), signed out too. With
+   *  `since`, a list whose revision is at most `since` answers `unchanged`. */
+  read(token: string, since?: number): Promise<SharedRead>;
   /** The reader's own list id behind the token; null signed out, for another user's
    *  list, or when the read failed. */
   ownerOf(token: string): Promise<string | null>;
@@ -486,17 +502,17 @@ export interface RequestRepository {
   decline(id: string): Promise<RequestDeclined>;
 }
 
-/** `{ ok: false }` is signed out or a read that failed; a limit is null for no limit or a
- *  limit read that failed. */
+/** `{ ok: false }` is signed out or a read that failed; a limit is null for no limit and
+ *  undefined when its read failed, so the caller keeps the limit it knows. */
 export type HomebrewRead =
   | {
       ok: true;
       books: BookRow[];
       items: ItemRow[];
       cards: CardRow[];
-      itemLimit: number | null;
-      bookLimit: number | null;
-      cardLimit: number | null;
+      itemLimit: number | null | undefined;
+      bookLimit: number | null | undefined;
+      cardLimit: number | null | undefined;
     }
   | { ok: false };
 /** An update's answer: the row's new revision, or why not. */

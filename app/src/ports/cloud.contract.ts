@@ -182,6 +182,41 @@ async function listCases(port: CloudPort, assert: Assert): Promise<void> {
     'lists: a stale reorder does not put the entries it was not given after the given ones'
   );
 
+  /* A re-read names the revisions held: a list still at its revision answers in `kept`
+     alone, a changed one in `lists`, an id the owner does not hold in neither. */
+  const held = (await listsOf(port, assert, 'before the re-read')) ?? [];
+  const known = Object.fromEntries(held.map((l) => [l.id, l.revision]));
+  const keptAll = await lists.list(known);
+  assert(
+    keptAll.ok &&
+      keptAll.lists.length === 0 &&
+      keptAll.kept?.length === held.length &&
+      held.every((l) => keptAll.kept?.includes(l.id)),
+    'lists: a re-read with nothing changed does not keep every list alone'
+  );
+  assert(
+    answered(await lists.apply([{ op: 'update', id, patch: { gm_note: 'G2' } }])) === 'ok',
+    'lists: the update before the re-read was refused'
+  );
+  const oneChanged = await lists.list(known);
+  assert(
+    oneChanged.ok &&
+      oneChanged.lists.map((l) => l.id).join(',') === id &&
+      oneChanged.lists[0]?.gm_note === 'G2' &&
+      oneChanged.kept?.length === held.length - 1 &&
+      !oneChanged.kept.includes(id),
+    'lists: a re-read after one update does not read that list alone'
+  );
+  const unknown = lists.newId();
+  const odd = await lists.list({ ...known, [id]: (known[id] ?? 1) - 1, [unknown]: 1 });
+  assert(
+    odd.ok &&
+      odd.lists.some((l) => l.id === id) &&
+      !odd.lists.some((l) => l.id === unknown) &&
+      !odd.kept?.includes(unknown),
+    'lists: a re-read with a stale revision and an unknown id does not read as expected'
+  );
+
   /* A row that is not there: an edit of it is gone, a delete of it is ok. */
   const [x, y] = [lists.newId(), lists.newId()];
   const gone = await lists.apply([
@@ -212,6 +247,11 @@ async function listCases(port: CloudPort, assert: Assert): Promise<void> {
   assert(
     after?.length === before && !after.some((l) => l.id === id),
     'lists: the removal left the list'
+  );
+  const removed = await lists.list({ [id]: 1 });
+  assert(
+    removed.ok && !removed.lists.some((l) => l.id === id) && !removed.kept?.includes(id),
+    'lists: a re-read after the removal still names the list'
   );
 }
 
@@ -277,6 +317,39 @@ async function shareCases(port: CloudPort, assert: Assert): Promise<void> {
     "shares: ownerOf is not the owner's list"
   );
 
+  /* A re-read that names the shown revision: unchanged at it, the projection below it. */
+  const shown = p?.revision ?? 0;
+  const same = await shares.read(player.token, shown);
+  assert(
+    same.ok && same.unchanged === true,
+    'shares: a read at the shown revision is not unchanged'
+  );
+  const older = await shares.read(player.token, shown - 1);
+  assert(
+    older.ok && older.shared?.revision === shown,
+    'shares: a read below the shown revision does not answer the projection'
+  );
+  assert(
+    answered(await lists.apply([{ op: 'update', id, patch: { player_note: 'p2' } }])) === 'ok',
+    'shares: the edit before the re-read was refused'
+  );
+  const edited = await shares.read(player.token, shown);
+  assert(
+    edited.ok &&
+      (edited.shared?.revision ?? 0) > shown &&
+      edited.shared?.list.player_note === 'p2',
+    'shares: a read after an edit does not answer the newer projection'
+  );
+  assert(
+    answered(await lists.apply([{ op: 'update', id, patch: { player_note: 'p' } }])) === 'ok',
+    'shares: the edit back after the re-read was refused'
+  );
+  const nothing = await shares.read('x'.repeat(43), shown);
+  assert(
+    nothing.ok && nothing.shared === null,
+    'shares: an unknown token with a revision does not read as no link'
+  );
+
   /* A link is replaced by deleting it and making a new one. */
   assert((await shares.revoke(player.id)).ok, 'shares: revoke(player) was refused');
   const old = await shares.read(player.token);
@@ -296,6 +369,11 @@ async function shareCases(port: CloudPort, assert: Assert): Promise<void> {
   assert(
     stopped.ok && stopped.shared === null,
     'shares: a deleted GM link still opens the list'
+  );
+  const stoppedSince = await shares.read(gm.token, 1);
+  assert(
+    stoppedSince.ok && stoppedSince.shared === null,
+    'shares: a deleted GM link with a revision still opens the list'
   );
 
   const all = await shares.list(id);

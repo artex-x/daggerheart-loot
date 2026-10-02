@@ -1643,11 +1643,16 @@ SECURITY DEFINER functions: seven executable by a signed-in user, and
 
 The ninth warning is leaked password protection, which is off because there
 is no password sign-in (Google and Discord only). `apply_list_writes` is
-`security invoker` and adds none. After R11's `migrate-prod` the report is 0
-errors, 9 warnings and 3 info. The three info are "RLS enabled, no policy"
-for `limit_defaults`, `user_limit_overrides` and `usage_snapshots`, by
-design: no Data API role reads them. A warning that is not in this list stops
-the release until a review accepts it and adds it here with its reason.
+`security invoker` and adds none, and so is the revision overload
+`get_shared_list(text, bigint)` that `anon` executes
+(`20261002120000_read_scale`). That migration's trigger function
+`list_entries_snapshot_limit()` is SECURITY DEFINER and executable by no
+Data API role, so it adds none either. After R11's `migrate-prod` the report
+is 0 errors, 9 warnings and 3 info. The three info are "RLS enabled, no
+policy" for `limit_defaults`, `user_limit_overrides` and `usage_snapshots`,
+by design: no Data API role reads them. A warning that is not in this list
+stops the release until a review accepts it and adds it here with its
+reason.
 
 **The local stack lock.** One local Supabase stack serves every checkout on
 this host, and `npm run check:db` and `npm run restore:drill` reset it.
@@ -1765,9 +1770,10 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 247 kB budget (with the account client chunk)`; 242.2
-kB on 2026-10-02 with the homebrew editor's field help, 183.1 kB unconfigured
-(236.6 kB on 2026-10-01 with the homebrew relations, 177.6 kB unconfigured; 224.8 kB
+Expected: `within the 247 kB budget (with the account client chunk)`; 242.8
+kB on 2026-10-02 with the revision-keyed reads and the frozen-copy byte limit,
+183.4 kB unconfigured (242.2 kB on 2026-10-02 with the homebrew editor's field
+help, 183.1 kB unconfigured; 236.6 kB on 2026-10-01 with the homebrew relations, 177.6 kB unconfigured; 224.8 kB
 on 2026-10-01 with homebrew in the catalog pages, 165.9 kB unconfigured;
 220.8 kB on 2026-09-30 with the homebrew pages, 203.0 kB before them, after the
 import and export and the requests polish; 184.5 kB on 2026-09-27 with the
@@ -2036,16 +2042,18 @@ Steps:
    `pending_requests_per_list`; `20260930130000_homebrew.sql` adds
    `homebrew_books_per_owner` 20 and `homebrew_items_per_owner` 100;
    `20261001130000_homebrew_relations.sql` adds `homebrew_cards_per_owner`
-   100), and every call that reads a missing key raises `unknown limit
+   100; `20261002120000_read_scale.sql` adds `snapshot_bytes_per_list`
+   1048576, without which every statement that writes a frozen copy raises
+   `22023`), and every call that reads a missing key raises `unknown limit
    key`. Run `select key, value from public.limit_defaults order by key;`.
    Expected: `entries_per_list`, `homebrew_books_per_owner`,
    `homebrew_cards_per_owner`, `homebrew_items_per_owner`, `lists_per_owner`,
-   `pending_requests_per_list` and `request_lines`. For each missing key,
-   insert it at its migration's default, for example `insert into
-   public.limit_defaults (key, value) values ('request_lines', 100),
-   ('pending_requests_per_list', 10), ('homebrew_books_per_owner', 20),
-   ('homebrew_cards_per_owner', 100), ('homebrew_items_per_owner', 100) on
-   conflict (key) do nothing;`, and
+   `pending_requests_per_list`, `request_lines` and `snapshot_bytes_per_list`.
+   For each missing key, insert it at its migration's default, for example
+   `insert into public.limit_defaults (key, value) values ('request_lines',
+   100), ('pending_requests_per_list', 10), ('homebrew_books_per_owner', 20),
+   ('homebrew_cards_per_owner', 100), ('homebrew_items_per_owner', 100),
+   ('snapshot_bytes_per_list', 1048576) on conflict (key) do nothing;`, and
    run the check again.
 
 Before it asks for the ref, the command checks the receipt, reads
@@ -2153,6 +2161,15 @@ and only a backup restores them; the old list pages hide a frozen copy or a
 shared reference whose snapshot holds any relation key (`craft`,
 `craft_from`, `set`, `refs`, `eq.line`) or `cards` (the rows stay in the
 database).
+
+To undo `20261002120000_read_scale`, revert the app alone: the old frontend
+never calls `get_shared_list(text, bigint)` and reads the account by its old
+embedded select, and a frozen copy past `snapshot_bytes_per_list` is refused
+to it with the generic limit toast («Достигнут предел: 1048576. ...»,
+`limitOther`). Narrow the database too only as a second push, a new
+migration whose body is the reversal file: it drops the overload, the
+byte-limit triggers, their function and the `limit_defaults` row (the
+overrides of the key go with it); stored copies past the sum stay.
 
 ### Usage monitoring
 

@@ -119,7 +119,30 @@ describe('lazyCloud', () => {
     ).toEqual({ ok: true });
     const after = await lists.list();
     expect(after.ok && after.lists.map((l) => l.name)).toContain('Импорт');
+    const known = after.ok
+      ? Object.fromEntries(after.lists.map((l) => [l.id, l.revision]))
+      : {};
+    const again = await lists.list(known);
+    expect(again.ok && again.lists).toEqual([]);
+    expect(again.ok && again.kept).toHaveLength(Object.keys(known).length);
     expect(load).toHaveBeenCalledOnce();
+  });
+
+  it('forwards the known revisions and the shown revision', async () => {
+    const real = fakeCloud(SEED, 'gm1');
+    const list = vi.spyOn(real.lists, 'list');
+    const read = vi.spyOn(real.shares, 'read');
+    const { lists, shares } = lazyCloud(() => Promise.resolve(real));
+    await lists.list();
+    await lists.list({ [uuid(101)]: 1 });
+    expect(list.mock.calls).toEqual([[], [{ [uuid(101)]: 1 }]]);
+    const first = await shares.read('player-token-1');
+    const revision = first.ok ? (first.shared?.revision ?? 0) : 0;
+    expect(await shares.read('player-token-1', revision)).toEqual({
+      ok: true,
+      unchanged: true
+    });
+    expect(read.mock.calls).toEqual([['player-token-1'], ['player-token-1', revision]]);
   });
 
   it('forwards every share call to the loaded port', async () => {

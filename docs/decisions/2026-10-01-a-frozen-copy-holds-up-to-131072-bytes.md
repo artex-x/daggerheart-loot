@@ -1,5 +1,6 @@
 # 2026-10-01 - A frozen copy holds up to 131072 bytes; a card text holds 1500 code points
 
+- Amended by "A list's frozen copies hold up to 1048576 bytes together" (2026-10-02): a sum bound per list.
 - Task: `persist-7c-homebrew-relations` (the owner's answer to Q15, 2026-10-01; planner refresh).
 - Decision: `list_entries_snapshot_size` bounds a frozen copy's snapshot at 131072 bytes (was
   32768), and a homebrew card's text (`ende`, `rud`) holds at most 1500 code points per language,

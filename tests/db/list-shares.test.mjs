@@ -61,6 +61,15 @@ const shared = async (tx, token) => {
   const [r] = await tx`select public.get_shared_list(${token}) as v`;
   return r.v;
 };
+const since = async (tx, token, revision) => {
+  const [r] = await tx`select public.get_shared_list(${token}, ${revision}::bigint) as v`;
+  return r.v;
+};
+const revisionOf = async (tx) => {
+  await tx.unsafe('reset role');
+  const [l] = await tx`select revision::int as r from public.lists where id = ${LA}`;
+  return l.r;
+};
 const byCode = (code, text) => (err) => {
   assert.equal(err.code, code, err.message);
   if (text) assert.match(err.message, text);
@@ -112,6 +121,8 @@ describe('list_shares grants', () => {
       'clone_shared_list(text,uuid)': pinned(false),
       'create_list_share(uuid,text)': pinned(false),
       'get_shared_list(text)': pinned(true),
+      /* Security invoker: the projection is still built by get_shared_list(text). */
+      'get_shared_list(text,bigint)': { ...pinned(true), prosecdef: false },
       'revoke_list_share(uuid)': pinned(false)
     });
   });
@@ -459,5 +470,91 @@ describe('a stopped link', () => {
       asB(stopped, (tx) => tx`select public.clone_shared_list(${tokens.player}, ${COPY})`),
       byCode('22023', /unknown link/)
     );
+  });
+});
+
+/* docs/decisions/2026-10-02-a-shared-page-re-read-names-its-revision.md. */
+describe('get_shared_list(text, bigint)', () => {
+  it('answers unchanged for the revision and above, the projection below it and for null', async () => {
+    const out = await asAnon(withShare('player'), async (tx) => {
+      const v = await shared(tx, tokens.player);
+      return {
+        v,
+        at: await since(tx, tokens.player, v.revision),
+        above: await since(tx, tokens.player, v.revision + 5),
+        below: await since(tx, tokens.player, v.revision - 1),
+        none: await since(tx, tokens.player, null)
+      };
+    });
+    assert.deepEqual(out.at, { unchanged: true });
+    assert.deepEqual(out.above, { unchanged: true });
+    assert.deepEqual(out.below, out.v);
+    assert.deepEqual(out.none, out.v);
+  });
+
+  it('answers the projection with a higher revision after an edit, named with the old one', async () => {
+    const out = await asA(withShare('gm'), async (tx) => {
+      const old = await shared(tx, tokens.gm);
+      await tx`update public.lists set name = 'Shop 2' where id = ${LA}`;
+      return { old, now: await since(tx, tokens.gm, old.revision) };
+    });
+    assert.equal(out.now.list.name, 'Shop 2');
+    assert.ok(out.now.revision > out.old.revision);
+  });
+
+  it("answers the projection after an own item's edit, named with the old revision", async () => {
+    const KEY = 'hb_snap' + 'a'.repeat(11) + 'b';
+    const ITEM = id(3001);
+    const setup = async (tx) => {
+      await withShare('player')(tx);
+      await tx`insert into public.homebrew_items (id, owner_id, key, content)
+        values (${ITEM}, ${A}, ${KEY}, ${tx.json({ kind: 'item', en: 'Axe' })})`;
+      await tx`insert into public.list_entries (id, list_id, item_key, source, position)
+        values (${id(1103)}, ${LA}, ${KEY}, 'homebrew', 2)`;
+    };
+    const out = await asA(setup, async (tx) => {
+      const old = await shared(tx, tokens.player);
+      await tx`update public.homebrew_items
+        set content = ${tx.json({ kind: 'item', en: 'Axe 2' })} where id = ${ITEM}`;
+      return { old, now: await since(tx, tokens.player, old.revision) };
+    });
+    assert.ok(out.now.revision > out.old.revision);
+    assert.equal(out.now.entries.find((e) => e.item_key === KEY).snapshot.en, 'Axe 2');
+  });
+
+  for (const token of [null, 'nonsense', 'x'.repeat(43)]) {
+    it(`answers null for ${JSON.stringify(token)} with any revision`, async () => {
+      for (const revision of [null, 0, 1000]) {
+        assert.equal(
+          await asAnon(withShare('player'), (tx) => since(tx, token, revision)),
+          null
+        );
+      }
+    });
+  }
+
+  it('answers null for a stopped link with its revision', async () => {
+    const out = await asAnon(
+      async (tx) => {
+        await withShare('player')(tx);
+        await tx`update public.list_shares set revoked_at = now()`;
+      },
+      async (tx) => since(tx, tokens.player, await revisionOf(tx))
+    );
+    assert.equal(out, null);
+  });
+
+  it('leaves get_shared_list(text) answering the whole projection', async () => {
+    const v = await asAnon(withShare('player'), (tx) => shared(tx, tokens.player));
+    assert.equal(v.audience, 'player');
+    assert.equal(v.entries.length, 2);
+  });
+
+  it('may be run by anon and by authenticated', async () => {
+    const [row] = await sql`
+      select has_function_privilege('anon', 'public.get_shared_list(text, bigint)', 'EXECUTE') as anon,
+        has_function_privilege('authenticated', 'public.get_shared_list(text, bigint)', 'EXECUTE')
+          as authed`;
+    assert.deepEqual({ ...row }, { anon: true, authed: true });
   });
 });

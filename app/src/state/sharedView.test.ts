@@ -49,6 +49,31 @@ describe('SharedView', () => {
     expect(view.shared).toBe(first);
   });
 
+  it('names the shown revision on a re-read, and keeps the object and the count on unchanged', async () => {
+    const cloud = fakeCloud(SEED);
+    const read = vi.spyOn(cloud.shares, 'read');
+    const view = new SharedView(cloud.shares);
+    await view.open('player-token-1', null);
+    expect(read.mock.calls[0]).toEqual(['player-token-1']);
+    const first = view.shared;
+    await view.refresh();
+    expect(read.mock.calls[1]).toEqual(['player-token-1', first?.revision]);
+    expect(await read.mock.results[1]?.value).toEqual({ ok: true, unchanged: true });
+    expect(view.shared).toBe(first);
+    expect(view.changes).toBe(0);
+    expect(view.status).toBe('ready');
+  });
+
+  it('names no revision on the refresh after a failed first read', async () => {
+    const cloud = fakeCloud(SEED, undefined, { offline: true });
+    const view = new SharedView(cloud.shares);
+    await view.open('player-token-1', null);
+    cloud.setOffline(false);
+    const read = vi.spyOn(cloud.shares, 'read');
+    await view.refresh();
+    expect(read.mock.calls).toEqual([['player-token-1']]);
+  });
+
   it("re-reads the owner's edit and a deleted link", async () => {
     const owner = fakeCloud(SEED, 'gm1');
     const view = new SharedView(owner.shares);

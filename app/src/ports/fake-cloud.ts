@@ -76,7 +76,7 @@ export interface FakeCloudOptions {
   offline?: boolean;
   /** The count limits in place of the database defaults (50 lists, 100 entries, 20
    *  homebrew sources, 100 homebrew items, 100 homebrew cards, 10 pending requests per
-   *  list, 100 lines per request). */
+   *  list, 100 lines per request, 1048576 bytes of frozen copies per list). */
   limits?: {
     lists?: number;
     entries?: number;
@@ -85,6 +85,7 @@ export interface FakeCloudOptions {
     cards?: number;
     pending?: number;
     lines?: number;
+    snapshotBytes?: number;
   };
   /** Whether a subscribe joins (default `true`); `false` keeps every feed on the poll. */
   live?: boolean;
@@ -209,6 +210,13 @@ function seedHomebrew(
 
 const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
 const utf8 = new TextEncoder();
+/* The frozen copies' bytes, as `snapshot_bytes_per_list` sums them; JSON here, so a
+   boundary test stays per layer (the database's `jsonb::text` adds spaces). */
+const frozenBytes = (entries: readonly EntryRow[]): number =>
+  entries.reduce(
+    (n, e) => (e.snapshot === null ? n : n + utf8.encode(JSON.stringify(e.snapshot)).length),
+    0
+  );
 
 /** A moved list's text as `move_legacy_list` reads it. */
 interface Canonical {
@@ -381,6 +389,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   const maxCards = options.limits?.cards ?? 100;
   const maxPending = options.limits?.pending ?? 10;
   const maxLines = options.limits?.lines ?? 100;
+  const maxSnapshotBytes = options.limits?.snapshotBytes ?? 1048576;
   const listeners = new Set<(s: Session | null) => void>();
 
   const user = (): SeedUser | null => (current === null ? null : (users.get(current) ?? null));
@@ -506,6 +515,13 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     }
     if (h.entries.length + fresh.length > maxEntries) {
       return limited('entries_per_list', maxEntries);
+    }
+    /* After the count, as the database's triggers fire by name. */
+    if (
+      fresh.some((e) => e.snapshot !== null) &&
+      frozenBytes([...h.entries, ...fresh]) > maxSnapshotBytes
+    ) {
+      return limited('snapshot_bytes_per_list', maxSnapshotBytes);
     }
     h.entries.push(...fresh.map((e) => ({ ...e })));
     touch(h);
@@ -781,15 +797,22 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
 
   const listRepo: ListRepository = {
     newId: () => uuid(made++),
-    list() {
+    /* With `known`, a list at the revision held answers in `kept`; an id the owner does not
+       hold is ignored, so it reads as gone. */
+    list(known) {
       const mine = own();
       if (offline || !mine) return Promise.resolve({ ok: false });
+      const held = known && Object.keys(known).length ? known : null;
+      const kept = held ? mine.filter((h) => held[h.row.id] === h.row.revision) : [];
       return Promise.resolve({
         ok: true,
-        lists: mine.map((h) => ({
-          ...h.row,
-          list_entries: h.entries.map((e) => ({ ...e })).sort(entryOrder)
-        })),
+        lists: mine
+          .filter((h) => !kept.includes(h))
+          .map((h) => ({
+            ...h.row,
+            list_entries: h.entries.map((e) => ({ ...e })).sort(entryOrder)
+          })),
+        ...(held ? { kept: kept.map((h) => h.row.id) } : {}),
         listLimit: maxLists,
         entryLimit: maxEntries
       });
@@ -929,9 +952,13 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         }
         return OK;
       }),
-    read(token) {
+    read(token, since) {
       if (offline) return Promise.resolve({ ok: false });
-      return Promise.resolve({ ok: true, shared: projection(token) });
+      const shared = projection(token);
+      if (shared && since !== undefined && shared.revision <= since) {
+        return Promise.resolve({ ok: true, unchanged: true });
+      }
+      return Promise.resolve({ ok: true, shared });
     },
     ownerOf(token) {
       const mine = own();
@@ -964,6 +991,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
           };
         });
         if (copied.some((e) => entryRefused(e, current))) return REFUSED;
+        if (frozenBytes(copied) > maxSnapshotBytes) {
+          return limited('snapshot_bytes_per_list', maxSnapshotBytes);
+        }
         const was = before();
         const at = stamp();
         mine.push({

@@ -157,6 +157,19 @@ describe('limitText', () => {
     );
   });
 
+  it('says the frozen-copy byte limit in KB, rounded up, in both languages', () => {
+    expect(limitText('snapshot_bytes_per_list', 1048576, dict('ru'))).toBe(
+      'Достигнут предел копий предметов других игроков в списке: 1024 КБ. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+    );
+    expect(limitText('snapshot_bytes_per_list', 1048576, dict('en'))).toBe(
+      "This list has reached its limit of 1024 KB of copies of other players' items. Need more? Write to daggerheart.loot@gmail.com."
+    );
+    expect(limitText('snapshot_bytes_per_list', 2097152, dict('ru'))).toContain(': 2048 КБ.');
+    expect(limitText('snapshot_bytes_per_list', 2097152, dict('en'))).toContain(' 2048 KB ');
+    expect(limitText('snapshot_bytes_per_list', 500, dict('ru'))).toContain(': 1 КБ.');
+    expect(limitText('snapshot_bytes_per_list', null, dict('ru'))).toContain(': ? КБ.');
+  });
+
   it('names the homebrew item and source limits', () => {
     const t = dict('ru');
     expect(limitText('homebrew_items_per_owner', 100, t)).toBe(

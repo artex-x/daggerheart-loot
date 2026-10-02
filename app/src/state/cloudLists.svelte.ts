@@ -92,8 +92,9 @@ export class CloudLists implements ListModel {
   lists = $state.raw<CloudList[]>([]);
   /** Whether every write is in: `failed` while one waits for the network. */
   sync = $state<'saved' | 'saving' | 'failed'>('saved');
-  /** The account's list and entry limits; null for none, or when the limit read failed. A
-   *  refusal for the same key replaces the read number with the one the database applied. */
+  /** The account's list and entry limits; null for none or before a limit read answered. A
+   *  failed limit read keeps the number known; a refusal for the same key replaces it with
+   *  the one the database applied. */
   listLimit = $state<number | null>(null);
   entryLimit = $state<number | null>(null);
 
@@ -278,7 +279,9 @@ export class CloudLists implements ListModel {
   async #pull(): Promise<void> {
     const epoch = this.#epoch;
     const edits = this.#edits;
-    const read = await this.#repo.list();
+    /* The revisions held: the read sends only the lists whose revision moved. */
+    const known = Object.fromEntries(Object.entries(this.#read).map(([id, r]) => [id, r.rev]));
+    const read = await (Object.keys(known).length ? this.#repo.list(known) : this.#repo.list());
     if (epoch !== this.#epoch) return;
     if (edits !== this.#edits || this.#queue.length || this.#flushing) {
       this.#reread = true;
@@ -286,27 +289,45 @@ export class CloudLists implements ListModel {
       return;
     }
     if (read.ok) {
-      this.listLimit = read.listLimit;
-      this.entryLimit = read.entryLimit;
-      this.#apply(read.lists);
+      /* A limit read that failed (undefined) keeps the limit known. */
+      if (read.listLimit !== undefined) this.listLimit = read.listLimit;
+      if (read.entryLimit !== undefined) this.entryLimit = read.entryLimit;
+      if (!this.#apply(read.lists, read.kept ?? [])) {
+        /* A kept list this store no longer holds (an overlapping read replaced it): read
+           again with the revisions held now, and draw nothing from this read. */
+        this.#reread = true;
+        this.#rereadWhenIdle();
+        return;
+      }
       this.status = 'ready';
     } else if (this.status === 'loading') {
       this.status = 'error';
     }
   }
 
-  #apply(rows: readonly ListRow[]): void {
+  /* Answers false, changing nothing, when a kept id is not held. */
+  #apply(rows: readonly ListRow[], kept: readonly string[]): boolean {
     const read: Record<string, { at: string; rev: number; list: CloudList }> = {};
+    const keptLists: CloudList[] = [];
+    for (const id of kept) {
+      const had = this.#read[id];
+      if (!had) return false;
+      read[id] = had;
+      keptLists.push(had.list);
+    }
     const next = rows.map((row) => {
       const had = this.#read[row.id];
       const list = had?.at === row.updated_at ? had.list : toCloudList(row);
       read[row.id] = { at: row.updated_at, rev: row.revision, list };
       return list;
     });
+    next.push(...keptLists);
     this.#read = read;
     next.sort(byUpdated);
-    const same = next.length === this.lists.length && next.every((l, i) => l === this.lists[i]);
-    if (!same) this.lists = next;
+    if (next.length !== this.lists.length || next.some((l, i) => l !== this.lists[i])) {
+      this.lists = next;
+    }
+    return true;
   }
 
   /* A message from this tab's own write, or of a revision already read, asks

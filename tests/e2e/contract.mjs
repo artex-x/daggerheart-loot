@@ -264,12 +264,19 @@ export async function runRealContract(env, admin, member) {
   }
   const limit = await anon.rpc('my_limit', { p_key: 'homebrew_items_per_owner' });
   if (!limit.error) throw new Error('contract: my_limit() answered a caller with no session');
-  /* The two functions anon may run: get_shared_list, and create_purchase_request, which
-     case K and F12 send through. An unknown link reads as null, not an error. */
+  /* The three functions anon may run: get_shared_list(text), its revision overload
+     get_shared_list(text, bigint), and create_purchase_request, which case K and F12 send
+     through. An unknown link reads as null through either, not an error. */
   const shared = await anon.rpc('get_shared_list', { p_token: 'nonsense' });
   if (shared.error || shared.data !== null) {
     throw new Error(
       `contract: get_shared_list('nonsense') answered ${JSON.stringify(shared.error ?? shared.data)}, not null`
+    );
+  }
+  const since = await anon.rpc('get_shared_list', { p_token: 'nonsense', p_since: 1 });
+  if (since.error || since.data !== null) {
+    throw new Error(
+      `contract: get_shared_list('nonsense', 1) answered ${JSON.stringify(since.error ?? since.data)}, not null`
     );
   }
 }

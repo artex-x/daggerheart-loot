@@ -499,6 +499,8 @@ const ru = {
     'Достигнут предел списков в аккаунте: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   limitEntries:
     'Достигнут предел позиций в списке: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+  limitSnapshots:
+    'Достигнут предел копий предметов других игроков в списке: %n КБ. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   limitOther: 'Достигнут предел: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   writeRefused: 'Изменение не сохранилось: сервер его не принял. Показан список из аккаунта.',
 
@@ -1297,6 +1299,8 @@ const en: Dict = {
     'You have reached the limit of %n lists. Need more? Write to daggerheart.loot@gmail.com.',
   limitEntries:
     'This list has reached its limit of %n entries. Need more? Write to daggerheart.loot@gmail.com.',
+  limitSnapshots:
+    "This list has reached its limit of %n KB of copies of other players' items. Need more? Write to daggerheart.loot@gmail.com.",
   limitOther: 'A limit has been reached: %n. Need more? Write to daggerheart.loot@gmail.com.',
   writeRefused:
     'The change was not saved: the server refused it. The list from your account is shown.',

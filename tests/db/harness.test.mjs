@@ -161,17 +161,19 @@ describe('public schema invariants', () => {
 // Supabase's default privileges grant EXECUTE on every new public function
 // to anon, so a migration has to revoke it.
 // The deliberate exceptions: a share link opens signed out, and its holder
-// sends a purchase request.
+// sends a purchase request. In code-point order ("C"), as JS sorts: the
+// database's own collation puts `(text,bigint)` before `(text)`.
 const EXPECTED_ANON_FUNCTIONS = [
   'create_purchase_request(uuid,text,jsonb)',
-  'get_shared_list(text)'
+  'get_shared_list(text)',
+  'get_shared_list(text,bigint)'
 ];
 function anonFunctions(db) {
   return db`
     select p.oid::regprocedure::text as fn
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'EXECUTE')
-    order by 1`;
+    order by p.oid::regprocedure::text collate "C"`;
 }
 
 describe('public function invariants', () => {

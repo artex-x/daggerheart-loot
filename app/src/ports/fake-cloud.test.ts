@@ -1774,6 +1774,70 @@ describe("the fake's homebrew", () => {
     ).toEqual(REFUSED);
   });
 
+  it('refuses a frozen copy that takes a list past its byte limit, 1048576 bytes by default', async () => {
+    const bytesOf = (x: unknown) => new TextEncoder().encode(JSON.stringify(x)).length;
+    const limited = (value: number) => ({
+      ok: false,
+      error: 'limit',
+      key: 'snapshot_bytes_per_list',
+      value
+    });
+    /* 90 copies of about 12 KB: two-byte letters at the validator's text caps. */
+    const ALPHABET = 'abcdefghijklmnopqrstuvwxyz234567';
+    const big = Array.from({ length: 90 }, (_, i) => {
+      const key = `hb_copy${ALPHABET.charAt(Math.floor(i / 32))}${ALPHABET.charAt(i % 32)}aaaaaaaaaa`;
+      return hbEntry(uuid(8000 + i), key, i, {
+        ...potionRecord(),
+        id: key,
+        ende: 'ж'.repeat(3000),
+        rud: 'ж'.repeat(3000)
+      });
+    });
+    expect(big.reduce((n, e) => n + bytesOf(e.snapshot), 0)).toBeGreaterThan(1048576);
+    const cloud = fakeCloud(SEED, 'gm1');
+    expect(
+      await cloud.lists.apply([
+        { op: 'add', list_id: EMPTY, entries: big.slice(0, 80) },
+        { op: 'add', list_id: EMPTY, entries: big.slice(80) }
+      ])
+    ).toEqual({ ok: true, results: [OK, limited(1048576)] });
+
+    const potion = potionRecord();
+    const low = fakeCloud(SEED, 'gm1', { limits: { snapshotBytes: bytesOf(potion) } });
+    const other = 'hb_othercopyaaaaaaa';
+    expect(
+      await low.lists.apply([
+        { op: 'add', list_id: EMPTY, entries: [hbEntry(uuid(7211), POTION, 0, potion)] },
+        {
+          op: 'add',
+          list_id: EMPTY,
+          entries: [hbEntry(uuid(7212), other, 1, { ...potion, id: other })]
+        },
+        { op: 'add', list_id: EMPTY, entries: [hbEntry(uuid(7213), AXE, 2)] }
+      ])
+    ).toEqual({ ok: true, results: [OK, limited(bytesOf(potion)), OK] });
+  });
+
+  it('checks the entry count before the byte limit, and the byte limit on a copy of a share', async () => {
+    const both = fakeCloud(SEED, 'gm1', { limits: { entries: 0, snapshotBytes: 1 } });
+    expect(
+      await both.lists.apply([
+        { op: 'add', list_id: EMPTY, entries: [hbEntry(uuid(7221), POTION, 0, potionRecord())] }
+      ])
+    ).toEqual({
+      ok: true,
+      results: [{ ok: false, error: 'limit', key: 'entries_per_list', value: 0 }]
+    });
+    /* gm1's shared list refers to the axe: gm2's copy freezes it. */
+    const gm2 = fakeCloud(SEED, 'gm2', { limits: { snapshotBytes: 10 } });
+    expect(await gm2.shares.clone('player-token-1', uuid(7222))).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'snapshot_bytes_per_list',
+      value: 10
+    });
+  });
+
   it("projects a reference from the owner's live item and a frozen entry as written", async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     await withEntries(cloud);

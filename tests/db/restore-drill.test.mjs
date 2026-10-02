@@ -157,7 +157,8 @@ describe('restoreDump', () => {
       'homebrew_items_per_owner=100',
       'lists_per_owner=50',
       'pending_requests_per_list=10',
-      'request_lines=100'
+      'request_lines=100',
+      'snapshot_bytes_per_list=1048576'
     ]);
     clean = true;
   });

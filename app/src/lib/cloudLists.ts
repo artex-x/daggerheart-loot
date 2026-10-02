@@ -342,16 +342,19 @@ export function entryRowsOf(
     });
 }
 
-/** Returns the toast for a refused write that hit a count limit (`limit: <key>`, the
- *  database's message), with the number the database gave. */
+/** Returns the toast for a refused write that hit a limit (`limit: <key>`, the database's
+ *  message), with the number the database gave; a byte limit shows in KB, rounded up. */
 export function limitText(key: string, value: number | null, t: Dict): string {
   const named: Partial<Record<string, string>> = {
     lists_per_owner: t.limitLists,
     entries_per_list: t.limitEntries,
+    snapshot_bytes_per_list: t.limitSnapshots,
     homebrew_items_per_owner: t.limitHbItems,
     homebrew_books_per_owner: t.limitHbBooks,
     homebrew_cards_per_owner: t.limitHbCards
   };
   const text = named[key] ?? t.limitOther;
-  return text.replace('%n', value === null ? '?' : String(value));
+  const shown =
+    value !== null && key === 'snapshot_bytes_per_list' ? Math.ceil(value / 1024) : value;
+  return text.replace('%n', shown === null ? '?' : String(shown));
 }
