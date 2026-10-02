@@ -29,7 +29,9 @@ const row = (over: Partial<Record_>): Record_ => ({
   ...over
 });
 
-/* Two records share "Ветра" in Russian and "Wind" in English - one item, one
+/* `w1`'s description holds «зелье», which is `cc1`'s name, so a ranked
+ * query has a description hit ahead of a name hit in catalogue order.
+ * Two records share "Ветра" in Russian and "Wind" in English - one item, one
  * consumable, so the kind chips have something to narrow. `ci2` shares
  * nothing with either word, in either language, but carries a stat block
  * whose range word ("Вплотную") is on no record as text - only the assembled
@@ -38,7 +40,14 @@ const row = (over: Partial<Record_>): Record_ => ({
 const LOOT: Loot = {
   items: {
     wondrous: [
-      row({ id: 'w1', src: 'wondrous', roll: 1, ru: 'Плащ Ветра', en: 'Wind Cloak' }),
+      row({
+        id: 'w1',
+        src: 'wondrous',
+        roll: 1,
+        ru: 'Плащ Ветра',
+        en: 'Wind Cloak',
+        rud: 'Пахнет как зелье.'
+      }),
       row({
         id: 'w2',
         src: 'wondrous',
@@ -110,7 +119,11 @@ describe('arrival', () => {
     const box = screen.getByPlaceholderText('Поиск по названию или описанию…');
     expect(box).toHaveFocus();
 
-    expect(screen.getByText('Начните вводить запрос')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Начните вводить запрос. Несколько слов ищутся в любом порядке, «фраза в кавычках» - дословно.'
+      )
+    ).toBeInTheDocument();
     expect(screen.queryByRole('checkbox', { name: /Выбрать все/ })).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /Плащ|Кольцо|Клинок/ })
@@ -124,17 +137,35 @@ describe('arrival', () => {
   });
 });
 
-describe('a query narrows, in catalogue order', () => {
+describe('a query narrows, best match first', () => {
+  it('ranks a name hit above a description hit that comes first in the catalogue', async () => {
+    render(App, { env: at() });
+    await type('зелье');
+    const rows = screen.getAllByRole('button', { name: /Зелье|Плащ Ветра/ });
+    expect(rows.map((r) => r.textContent)).toEqual([
+      expect.stringContaining('Зелье'),
+      expect.stringContaining('Плащ Ветра')
+    ]);
+  });
+
+  it('finds words in any order, each in its own field', async () => {
+    render(App, { env: at() });
+    await type('зелье плащ');
+    expect(screen.getByRole('button', { name: /Плащ Ветра/ })).toBeInTheDocument();
+    expect(rowCheckboxes()).toHaveLength(1);
+  });
+
   it('finds both records sharing the Russian word', async () => {
     render(App, { env: at() });
     await type('Ветра');
     const rows = screen.getAllByRole('button', { name: /Ветра/ });
+    /* An equal score keeps catalogue order */
     expect(rows.map((r) => r.textContent)).toEqual([
       expect.stringContaining('Плащ Ветра'),
       expect.stringContaining('Сапоги Ветра')
     ]);
     expect(screen.getByRole('checkbox', { name: 'Выбрать все (2)' })).toBeInTheDocument();
-    expect(screen.queryByText('Начните вводить запрос')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Начните вводить запрос/)).not.toBeInTheDocument();
     /* P7: the shown-of-total line only earns its place once the cap bites -
        two results out of two has nothing to say. */
     expect(screen.queryByText(/из 2/)).not.toBeInTheDocument();
@@ -316,7 +347,11 @@ describe('English', () => {
     expect(screen.getByRole('heading', { name: 'Search' })).toBeInTheDocument();
     expect(screen.getByText(/Search all 1272 entries at once/)).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Search by name or description…')).toBeInTheDocument();
-    expect(screen.getByText('Start typing')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Start typing. Several words match in any order; "a phrase in quotes" matches exactly.'
+      )
+    ).toBeInTheDocument();
     for (const label of ['Items', 'Consumables', 'Equipment']) {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
     }

@@ -1770,9 +1770,10 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 247 kB budget (with the account client chunk)`; 242.8
-kB on 2026-10-02 with the revision-keyed reads and the frozen-copy byte limit,
-183.4 kB unconfigured (242.2 kB on 2026-10-02 with the homebrew editor's field
+Expected: `within the 247 kB budget (with the account client chunk)`; 246.0
+kB on 2026-10-02 with the search's Snowball stemmers and ranking, 186.6 kB
+unconfigured (242.8 kB on 2026-10-02 with the revision-keyed reads and the
+frozen-copy byte limit, 183.4 kB unconfigured; 242.2 kB on 2026-10-02 with the homebrew editor's field
 help, 183.1 kB unconfigured; 236.6 kB on 2026-10-01 with the homebrew relations, 177.6 kB unconfigured; 224.8 kB
 on 2026-10-01 with homebrew in the catalog pages, 165.9 kB unconfigured;
 220.8 kB on 2026-09-30 with the homebrew pages, 203.0 kB before them, after the

@@ -23,7 +23,7 @@
     type ItemDraft,
     type PickOption
   } from '../lib/homebrewForm.js';
-  import { hayFor, matches, statLineFor } from '../lib/search.js';
+  import { hayFor, parseQuery, rankHits, statLineFor } from '../lib/search.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Homebrew } from '../state/homebrew.svelte.js';
 
@@ -78,11 +78,12 @@
 
   function findItems(chosen: readonly string[]): (q: string) => PickOption[] {
     return (q) =>
-      (index?.searchable ?? [])
-        .filter(
-          (it) => it.id !== selfKey && !chosen.includes(it.id) && matches(it, q, statLine, hay)
-        )
-        .map((it) => recordOption(it, lang, t));
+      rankHits(
+        (index?.searchable ?? []).filter((it) => it.id !== selfKey && !chosen.includes(it.id)),
+        parseQuery(q),
+        statLine,
+        hay
+      ).map((it) => recordOption(it, lang, t));
   }
 
   const rungsOf = (line: string) =>
@@ -95,11 +96,11 @@
   function findLines(q: string): PickOption[] {
     const seen: string[] = [];
     const out: PickOption[] = [];
-    for (const it of index?.allEquip ?? []) {
+    /* Each line appears once, at its best-ranked member. */
+    for (const it of rankHits(index?.allEquip ?? [], parseQuery(q), statLine, hay)) {
       const line = it.eq?.line;
       if (!line || it.eq?.t !== draft.t || it.id === selfKey || line === selfKey) continue;
-      if (seen.includes(line) || line === draft.line || !matches(it, q, statLine, hay))
-        continue;
+      if (seen.includes(line) || line === draft.line) continue;
       seen.push(line);
       out.push(lineOption(rungsOf(line), line, lang, t));
     }

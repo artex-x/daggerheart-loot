@@ -1,6 +1,6 @@
-# #/search
+# #/search ~ words in any order
 # route: #/search
-# why: the page as opened: head, sub, the box focused with its ring painted, three chips on, the hint
+# why: two words in another order and form: the healing potions, which a contiguous match misses
 
 ## ru :: tree
 RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
@@ -27,12 +27,22 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     StaticText "Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=8026affd]
-    searchbox "Поиск по названию или описанию…" [focused=true]
+    searchbox "Поиск по названию или описанию…" [value=лечения зелья focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    StaticText "Начните вводить запрос. Несколько слов ищутся в любом порядке, «..." [namelen=93 namehash=7235fc45]
+    checkbox "Выбрать все (5)" [checked=false]
+    StaticText "Выбрать все (5)"
+    checkbox "Рецепт Малого Зелья Лечения" [checked=false]
+    button "19 Рецепт Малого Зелья Лечения В качестве Хода Отдыха вы можете ..." [namelen=175 namehash=4e8dc348]
+    ... checkbox x2 of 6 same-shape siblings elided
+    button "7 Малое Зелье Лечения Излечите 1d4 Ран. Получается из: Рецепт Ма..." [namelen=97 namehash=233941ba]
+    button "19 Зелье Лечения Излечите 1d4+1 Ран. РАСХОДНИК CORE"
+    checkbox "Большое Зелье Лечения" [checked=false]
+    button "43 Большое Зелье Лечения Излечите 1d4+2 Ран. РАСХОДНИК CORE"
+    checkbox "Фляга Путника" [checked=false]
+    button "29 Фляга Путника Стоимость Призыва: 1 Эта фляга всегда полна хол..." [namelen=241 namehash=497a1b97]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -41,6 +51,11 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+19Зелье ЛеченияИзлечите 1d4+1 Ран.РасходникCore
+19Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете ис... [namelen=170 namehash=963ee2dd]
+29Фляга ПутникаСтоимость Призыва: 1Эта фляга всегда полна холодн... [namelen=236 namehash=9a994db9]
+43Большое Зелье ЛеченияИзлечите 1d4+2 Ран.РасходникCore
+7Малое Зелье ЛеченияИзлечите 1d4 Ран.Получается из: Рецепт Малог... [namelen=92 namehash=8fa1fd1b]
 Dragon's Vault
 Dread
 EN
@@ -49,21 +64,26 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Большое Зелье Лечения
 Войти
+Зелье Лечения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
+Малое Зелье Лечения
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
 Предметы
 Расходники
+Рецепт Малого Зелья Лечения
 Снаряжение
 Сообщества
 Списки
 Таблицы
 Условия использования
 Установить как приложение
+Фляга Путника
 
 ## en :: tree
 RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
@@ -90,12 +110,22 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     StaticText "Search all 1272 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=5c6c39fd]
-    searchbox "Search by name or description…" [focused=true]
+    searchbox "Search by name or description…" [value=лечения зелья focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    StaticText "Start typing. Several words match in any order; "a phrase in quo..." [namelen=85 namehash=fc509637]
+    checkbox "Select all (5)" [checked=false]
+    StaticText "Select all (5)"
+    checkbox "Minor Health Potion Recipe" [checked=false]
+    button "19 Minor Health Potion Recipe As a downtime move, you can use a ..." [namelen=152 namehash=ac148939]
+    ... checkbox x2 of 6 same-shape siblings elided
+    button "7 Minor Health Potion Clear 1d4 HP. Made from: Minor Health Poti..." [namelen=89 namehash=8ca9071e]
+    button "19 Health Potion Clear 1d4+1 HP. CONSUMABLE CORE"
+    checkbox "Major Health Potion" [checked=false]
+    button "43 Major Health Potion Clear 1d4+2 HP. CONSUMABLE CORE"
+    checkbox "Traveler's Flask" [checked=false]
+    button "29 Traveler's Flask Recall Cost: 1 This flask is always full of ..." [namelen=218 namehash=56284955]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -104,6 +134,11 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+19Health PotionClear 1d4+1 HP.ConsumableCore
+19Minor Health Potion RecipeAs a downtime move, you can use a vi... [namelen=147 namehash=ae04911f]
+29Traveler's FlaskRecall Cost: 1This flask is always full of col... [namelen=213 namehash=9be572d2]
+43Major Health PotionClear 1d4+2 HP.ConsumableCore
+7Minor Health PotionClear 1d4 HP.Made from: Minor Health Potion ... [namelen=84 namehash=a5eb3ecf]
 Alt. tables
 Communities
 Consumables
@@ -111,9 +146,13 @@ Dragon's Vault
 Dread
 EN
 Equipment
+Health Potion
 Install as an app
 Items
 Lists
+Major Health Potion
+Minor Health Potion
+Minor Health Potion Recipe
 Open this section on start
 Privacy
 RU
@@ -123,6 +162,7 @@ Skip to content
 Standard rules
 Tables
 Terms of use
+Traveler's Flask
 Vault of Ages
 Wondrous
 daggerheart.com

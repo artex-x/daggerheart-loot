@@ -35,7 +35,8 @@ const LOOT: Loot = {
   items: {
     core_item: [
       row({ id: 'ci1', roll: 1, ru: 'Кольцо Тишины', en: 'Ring of Silence' }),
-      row({ id: 'ci2', roll: 2, ru: 'Плащ Теней', en: 'Shadow Cloak' })
+      /* Its description names a «топор»: a catalog hit that ranks below an own name */
+      row({ id: 'ci2', roll: 2, ru: 'Плащ Теней', en: 'Shadow Cloak', rud: 'Прячет топор.' })
     ]
   },
   eq: [
@@ -325,17 +326,19 @@ describe('own equipment in the equipment tables', () => {
 });
 
 describe('search with own items', () => {
-  it('lists own matches after the catalog, says how many own items there are, and the chip hides them', async () => {
+  it('ranks own matches with the catalog, says how many own items there are, and the chip hides them', async () => {
     const { container } = page('#/search');
     expect(
       await screen.findByText(t.subSearch + ' ' + 'И 4 ваших предмета.')
     ).toBeInTheDocument();
     await userEvent.type(screen.getByPlaceholderText(t.searchPh), 'топор');
-    expect(rowIds()).toEqual(['w2', AXE]);
+    /* Two names at a word start tie, the catalog first; the axe's name ranks above
+       the catalog's description hit */
+    expect(rowIds()).toEqual(['w2', AXE, 'ci2']);
     expect(toolbarChip()).toHaveAttribute('aria-pressed', 'true');
     await expectNoA11yViolations(container);
     await userEvent.click(toolbarChip());
-    expect(rowIds()).toEqual(['w2']);
+    expect(rowIds()).toEqual(['w2', 'ci2']);
     expect(screen.getByText(t.subSearch + ' И 4 ваших предмета.')).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });

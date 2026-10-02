@@ -241,7 +241,8 @@ const ru = {
   viewList: 'Списком',
   viewGrid: 'Сеткой',
   nothing: 'Ничего не найдено',
-  startTyping: 'Начните вводить запрос',
+  startTyping:
+    'Начните вводить запрос. Несколько слов ищутся в любом порядке, «фраза в кавычках» - дословно.',
   selectAll: 'Выбрать все',
   selected: 'Выбрано',
   /* A `|` string is a form set for `plural()` (I18N.md, "Rules"). */
@@ -1069,7 +1070,8 @@ const en: Dict = {
   viewList: 'List',
   viewGrid: 'Grid',
   nothing: 'Nothing found',
-  startTyping: 'Start typing',
+  startTyping:
+    'Start typing. Several words match in any order; "a phrase in quotes" matches exactly.',
   selectAll: 'Select all',
   selected: 'Selected',
   selectedN: 'Selected %n item|Selected %n items',

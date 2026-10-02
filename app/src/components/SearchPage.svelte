@@ -2,8 +2,9 @@
   /* Search, `#/search` - reproduced from `renderSearch` (app.js 2841-2859).
      Both languages at once, over loot and gear together: the head, one panel
      holding the box (focused on arrival) and the three kind chips, then the
-     hint, up to 300 rows, or "nothing found". A signed-in author's own items
-     follow the catalog's, and the «Хоумбрю» chip hides them for the visit. */
+     hint, up to 300 rows ranked best first, or "nothing found". A signed-in
+     author's own items rank with the catalog's, the catalog's record first
+     on a tie, and the «Хоумбрю» chip hides them for the visit. */
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import ChipRow from './ChipRow.svelte';
@@ -15,7 +16,7 @@
   import SearchBox from './SearchBox.svelte';
   import TableRows from './TableRows.svelte';
   import { kindOf } from '../lib/data.js';
-  import { foldQuery, hayFor, matches, statLineFor } from '../lib/search.js';
+  import { hayFor, parseQuery, rankHits, statLineFor } from '../lib/search.js';
   import { plural } from '../lib/plural.js';
   import { isLastOn } from '../lib/std.js';
   import { KINDS } from '../lib/types.js';
@@ -44,7 +45,7 @@
      and search follows the live `S.search.q`'s own rule. */
   let q = $state('');
 
-  const query = $derived(foldQuery(q.trim()));
+  const terms = $derived(parseQuery(q));
   const statLine = $derived(statLineFor(app.lang, t));
   const hay = $derived(hayFor(statLine));
   /* The unsliced match count, kept so a broad query can say "these are
@@ -53,10 +54,13 @@
      line the table filter strip already prints (`FilterBar.svelte`'s
      `.fcount`, `t.outOf`). */
   const matched = $derived.by(() =>
-    !browse || !query
+    !browse || !terms.length
       ? []
-      : browse.searchable.filter(
-          (it) => app.kinds[kindOf(it)] && matches(it, query, statLine, hay)
+      : rankHits(
+          browse.searchable.filter((it) => app.kinds[kindOf(it)]),
+          terms,
+          statLine,
+          hay
         )
   );
   const found = $derived(matched.slice(0, 300));
@@ -112,7 +116,7 @@
         </Field>
       </Panel>
 
-      {#if !query}
+      {#if !terms.length}
         <Empty>{t.startTyping}</Empty>
       {:else if !found.length}
         <Empty>{t.nothing}</Empty>

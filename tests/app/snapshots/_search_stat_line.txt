@@ -1,6 +1,6 @@
 # #/search ~ stat line
 # route: #/search
-# why: rows found by the assembled stat line alone - the word is on no record as text
+# why: a phrase in quotes: rows found by the assembled stat line alone - the exact word is on no record as text
 
 ## ru :: tree
 RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
@@ -27,7 +27,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     StaticText "Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=8026affd]
-    searchbox "Поиск по названию или описанию…" [value=двуручное focused=true]
+    searchbox "Поиск по названию или описанию…" [value="двуручное" focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
@@ -500,7 +500,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     StaticText "Search all 1272 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=5c6c39fd]
-    searchbox "Search by name or description…" [value=двуручное focused=true]
+    searchbox "Search by name or description…" [value="двуручное" focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]

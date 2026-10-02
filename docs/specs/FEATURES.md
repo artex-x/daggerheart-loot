@@ -85,8 +85,9 @@ across.
   hits, a "300 из <n>" line - the same shown-of-total wording the table
   filter strip's own count already uses - says so above the rows; under the
   cap nothing is said, because the count on screen already
-  is the whole answer. A signed-in author's own items follow the catalog's
-  matches, and the 300 cap counts both. While the account holds items the
+  is the whole answer. A signed-in author's own items rank with the
+  catalog's matches, the catalog's record first on a tie, and the 300 cap
+  counts both. While the account holds items the
   intro adds «И N ваших предметов.» / "And N items of your own." after the
   catalog count, whatever the chip below.
 - Search folds case, `ё`/`е`, typographic apostrophes (U+2019, U+02BC), Latin
@@ -95,8 +96,17 @@ across.
   query and the catalogue, so `плетеная` finds "Плетёная", a query typed with
   the typographic apostrophe autocorrect produces (`keeper’s staff` -> the
   now-ASCII "Keeper's Staff") still finds it, `zweihander` finds
-  "Zweihänder" and `-1` finds a "−1" penalty; still a substring match, not
-  fuzzy.
+  "Zweihänder" and `-1` finds a "−1" penalty. A query is words in any
+  order: each word must appear in the record's name, description or stat
+  line, in either language, as typed or in another form of the same word by
+  its Snowball stem (`мечи` finds «Меч», `potions` finds "Potion"; «зелёный»
+  does not answer `зелье`; `allies` finds "ally" and `enemies` finds
+  "enemy", although the English stem is not a prefix of either). A word
+  that is its own stem is matched as typed, so `move` does not reach
+  "moving" while `moves` does. A phrase in quotes (`"ring of"`, `«ring of»`)
+  matches as typed, in one field. No near misses: `лук` does not offer
+  «клык». `#/search` ranks its hits - names before descriptions, a word
+  start before a match inside a word - and a table keeps its own order.
 - Starting inventory is searchable, opens on direct record pages, and is
   browsable under Other's Starting items table (`other_starting`); it remains
   held in the non-rollable `starting` collection. Its source and class context
@@ -1153,9 +1163,10 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   which opens the
   rule card form and adds the card it makes. A card made here goes into the
   item's source and is written at once («Комплект «%s» создан» / «Карта
-  правил «%s» создана»). A picker finds items by name, description or stat
-  line, and cards by name or subtitle, in both languages; it lists at most 8
-  matches, then «Ещё N - уточните запрос», or «Ничего не найдено». ArrowDown
+  правил «%s» создана»). An item picker finds items as search does
+  ("Tables and search"), the best matches first; the card picker finds cards
+  by name or subtitle as one substring; both match both languages and list
+  at most 8 matches, then «Ещё N - уточните запрос», or «Ничего не найдено». ArrowDown
   and ArrowUp move, Enter or a click picks, Escape closes, Backspace in an
   empty field removes the last chosen one, and a full list reads «Уже 8 -
   больше нельзя». A chosen item or card the account no longer holds reads
@@ -1229,7 +1240,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   список.», and a `#/l/` link and a lists file never carry an own key. A
   list another user saved from a share link, or added the item to from one,
   keeps a frozen copy of the item, with its source and the own set and rule
-  cards it names. Search lists own items after the catalog's, and the tables
+  cards it names. Search ranks own items with the catalog's, and the tables
   draw them on `#/tables/homebrew` and, for equipment, in the equipment table
   of its type ("Tables and search").
 - **What a delete removes**: the item and its references in the author's

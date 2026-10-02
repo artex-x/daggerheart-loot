@@ -36,15 +36,15 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     button "Хоумбрю" [description=Показывать свои предметы pressed=false]
     checkbox "Выбрать все (13)" [checked=false]
     StaticText "Выбрать все (13)"
+    checkbox "Топор-Пила Лесоруба" [checked=false]
+    button "10 Топор-Пила Лесоруба Этот массивный гибридный инструмент рубит..." [namelen=231 namehash=8a95748b]
+    ... checkbox x10 of 14 same-shape siblings elided
+    button "4 Топор Лесного Стража Этот внешне обычный топор несёт в себе бл..." [namelen=232 namehash=eec036d1]
+    ... button x9 of 13 same-shape siblings elided
     checkbox "Стопорный Ключ" [checked=false]
     button "49 Стопорный Ключ При успешном Броске Искусности вставьте этот и..." [namelen=359 namehash=bb980761]
-    ... checkbox x10 of 14 same-shape siblings elided
-    button "10 Топор-Пила Лесоруба Этот массивный гибридный инструмент рубит..." [namelen=231 namehash=8a95748b]
-    ... button x9 of 13 same-shape siblings elided
-    checkbox "Легендарный Священный Топор" [checked=false]
-    button "Легендарный Священный Топор Ранг 4 · Магическое · Сила · Вплотну..." [namelen=111 namehash=4167aae9]
-    checkbox "Возвращающийся Топор" [checked=false]
-    button "Возвращающийся Топор Ранг 2 · Физическое · Проворность · Средне ..." [namelen=230 namehash=575ed869]
+    checkbox "Неугомонное Возмездие" [checked=false]
+    button "116 Неугомонное Возмездие Ранг 3 · Физическое · Сила · Вплотную ..." [namelen=461 namehash=44a24d25]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -137,15 +137,15 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
     button "Homebrew" [description=Show your own items pressed=false]
     checkbox "Select all (13)" [checked=false]
     StaticText "Select all (13)"
+    checkbox "Felling Axe-Saw" [checked=false]
+    button "10 Felling Axe-Saw This massive hybrid tool cuts through wood, r..." [namelen=234 namehash=b9fd3bb4]
+    ... checkbox x10 of 14 same-shape siblings elided
+    button "4 Forestwarden's Axe This seemingly ordinary axe carries the ble..." [namelen=200 namehash=1cca126c]
+    ... button x9 of 13 same-shape siblings elided
     checkbox "Jamming Spanner" [checked=false]
     button "49 Jamming Spanner Make a successful Finesse Roll to place this ..." [namelen=339 namehash=005e0aec]
-    ... checkbox x10 of 14 same-shape siblings elided
-    button "10 Felling Axe-Saw This massive hybrid tool cuts through wood, r..." [namelen=234 namehash=b9fd3bb4]
-    ... button x9 of 13 same-shape siblings elided
-    checkbox "Legendary Hallowed Axe" [checked=false]
-    button "Legendary Hallowed Axe Tier 4 · Magic · Strength · Melee · d8+10..." [namelen=101 namehash=9b8eb9ce]
-    checkbox "Returning Axe" [checked=false]
-    button "Returning Axe Tier 2 · Physical · Agility · Close · d6+4 phy · O..." [namelen=212 namehash=67b099ee]
+    checkbox "Restless Vengeance" [checked=false]
+    button "116 Restless Vengeance Tier 3 · Physical · Strength · Melee · d1..." [namelen=469 namehash=b9538014]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

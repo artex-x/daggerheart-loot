@@ -1,6 +1,6 @@
 # #/search ~ own items as gm1
 # route: #/search
-# why: «топор» typed: the 13 catalog matches, then the axe; the intro ends «И 4 ваших предмета.»; the chip «Хоумбрю» last in the kind row, pressed
+# why: «топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; the chip «Хоумбрю» last in the kind row, pressed
 # as: gm1
 
 ## ru :: tree
@@ -36,15 +36,15 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     button "Хоумбрю" [description=Показывать свои предметы pressed=true]
     checkbox "Выбрать все (14)" [checked=false]
     StaticText "Выбрать все (14)"
+    checkbox "Топор-Пила Лесоруба" [checked=false]
+    button "10 Топор-Пила Лесоруба Этот массивный гибридный инструмент рубит..." [namelen=231 namehash=8a95748b]
+    ... checkbox x11 of 15 same-shape siblings elided
+    button "4 Топор Лесного Стража Этот внешне обычный топор несёт в себе бл..." [namelen=232 namehash=eec036d1]
+    ... button x10 of 14 same-shape siblings elided
     checkbox "Стопорный Ключ" [checked=false]
     button "49 Стопорный Ключ При успешном Броске Искусности вставьте этот и..." [namelen=359 namehash=bb980761]
-    ... checkbox x11 of 15 same-shape siblings elided
-    button "10 Топор-Пила Лесоруба Этот массивный гибридный инструмент рубит..." [namelen=231 namehash=8a95748b]
-    ... button x10 of 14 same-shape siblings elided
-    checkbox "Возвращающийся Топор" [checked=false]
-    button "Возвращающийся Топор Ранг 2 · Физическое · Проворность · Средне ..." [namelen=230 namehash=575ed869]
-    checkbox "Топор Тлеющих Углей" [checked=false]
-    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
+    checkbox "Неугомонное Возмездие" [checked=false]
+    button "116 Неугомонное Возмездие Ранг 3 · Физическое · Сила · Вплотную ..." [namelen=461 namehash=44a24d25]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -139,15 +139,15 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
     button "Homebrew" [description=Show your own items pressed=true]
     checkbox "Select all (14)" [checked=false]
     StaticText "Select all (14)"
+    checkbox "Felling Axe-Saw" [checked=false]
+    button "10 Felling Axe-Saw This massive hybrid tool cuts through wood, r..." [namelen=234 namehash=b9fd3bb4]
+    ... checkbox x11 of 15 same-shape siblings elided
+    button "4 Forestwarden's Axe This seemingly ordinary axe carries the ble..." [namelen=200 namehash=1cca126c]
+    ... button x10 of 14 same-shape siblings elided
     checkbox "Jamming Spanner" [checked=false]
     button "49 Jamming Spanner Make a successful Finesse Roll to place this ..." [namelen=339 namehash=005e0aec]
-    ... checkbox x11 of 15 same-shape siblings elided
-    button "10 Felling Axe-Saw This massive hybrid tool cuts through wood, r..." [namelen=234 namehash=b9fd3bb4]
-    ... button x10 of 14 same-shape siblings elided
-    checkbox "Returning Axe" [checked=false]
-    button "Returning Axe Tier 2 · Physical · Agility · Close · d6+4 phy · O..." [namelen=212 namehash=67b099ee]
-    checkbox "Ember Axe" [checked=false]
-    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
+    checkbox "Restless Vengeance" [checked=false]
+    button "116 Restless Vengeance Tier 3 · Physical · Strength · Melee · d1..." [namelen=469 namehash=b9538014]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

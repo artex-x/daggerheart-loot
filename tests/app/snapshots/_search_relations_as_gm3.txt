@@ -1,6 +1,6 @@
 # #/search ~ relations as gm3
 # route: #/search
-# why: «спальный мешок» typed: the catalog matches, then the own bedrolls; ci1's row «Улучшается до: Мешок спокойных снов (HB) и ещё 14»; each own row «Получается из: Первоклассный Спальный Мешок»
+# why: «спальный мешок» typed: the catalog matches and the own bedrolls ranked together; ci1's row «Улучшается до: Мешок спокойных снов (HB) и ещё 14»; each own row «Получается из: Первоклассный Спальный Мешок»
 # as: gm3
 
 ## ru :: tree
@@ -39,12 +39,12 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     button "1 Первоклассный Спальный Мешок Во время отдыха вы автоматически ..." [namelen=143 namehash=6cf6562f]
     ... checkbox x14 of 18 same-shape siblings elided
-    button "Базовые припасы Стартовый предмет Core. Палатка, спальный мешок,..." [namelen=124 namehash=dd5a25f7]
+    button "Спальный мешок странника Спальный мешок для долгой дороги. Получ..." [namelen=118 namehash=6b706036]
     ... button x13 of 17 same-shape siblings elided
-    checkbox "Спальный мешок ловца снов" [checked=false]
-    button "Спальный мешок ловца снов Спальный мешок для долгой дороги. Полу..." [namelen=119 namehash=a9c96473]
-    checkbox "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [checked=false namelen=120 namehash=084a20d9]
-    button "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [namelen=214 namehash=58ff682c]
+    checkbox "Мешок спокойных снов" [checked=false]
+    button "Мешок спокойных снов Спальный мешок для долгой дороги. Получаетс..." [namelen=114 namehash=bb42df51]
+    checkbox "Базовые припасы" [checked=false]
+    button "Базовые припасы Стартовый предмет Core. Палатка, спальный мешок,..." [namelen=124 namehash=dd5a25f7]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -148,12 +148,12 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/sear
     checkbox "Premium Bedroll" [checked=false]
     button "1 Premium Bedroll During downtime, you automatically clear a Str..." [namelen=120 namehash=4e741ab7]
     ... checkbox x14 of 18 same-shape siblings elided
-    button "Basic supplies Core starting item. Tent, bedroll, tinderbox, rat..." [namelen=104 namehash=6497ce2a]
+    button "Wanderer's Bedroll A bedroll for a long road. Made from: Premium..." [namelen=86 namehash=747ae2c0]
     ... button x13 of 17 same-shape siblings elided
-    checkbox "Dreamcatcher's Bedroll" [checked=false]
-    button "Dreamcatcher's Bedroll A bedroll for a long road. Made from: Pre..." [namelen=90 namehash=8e05c941]
-    checkbox "Bedroll of the long road over the pass, through the marshes, the..." [checked=false namelen=120 namehash=bbb6ed09]
-    button "Bedroll of the long road over the pass, through the marshes, the..." [namelen=188 namehash=855e460c]
+    checkbox "Sack of Quiet Dreams" [checked=false]
+    button "Sack of Quiet Dreams A bedroll for a long road. Made from: Premi..." [namelen=88 namehash=1503549c]
+    checkbox "Basic supplies" [checked=false]
+    button "Basic supplies Core starting item. Tent, bedroll, tinderbox, rat..." [namelen=104 namehash=6497ce2a]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

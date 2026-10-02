@@ -1781,7 +1781,7 @@ const STATES = [
   {
     id: '#/search ~ searched',
     route: '#/search',
-    why: '121 rows of loot and gear together in catalogue order, "Выбрать все (121)"',
+    why: '121 rows of loot and gear together, ranked: the names with «меч» at a word start first, then the rest; "Выбрать все (121)"',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'меч');
     }
@@ -1798,9 +1798,10 @@ const STATES = [
   {
     id: '#/search ~ stat line',
     route: '#/search',
-    why: 'rows found by the assembled stat line alone - the word is on no record as text',
+    why: 'a phrase in quotes: rows found by the assembled stat line alone - the exact word is on no record as text',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'двуручное');
+      /* A phrase: the bare word also reaches «двуручный» in descriptions by its stem */
+      await d.type('Поиск по названию или описанию…', '"двуручное"');
     }
   },
   {
@@ -1809,6 +1810,14 @@ const STATES = [
     why: 'the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'а');
+    }
+  },
+  {
+    id: '#/search ~ words in any order',
+    route: '#/search',
+    why: 'two words in another order and form: the healing potions, which a contiguous match misses',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'лечения зелья');
     }
   },
   {
@@ -1825,10 +1834,9 @@ const STATES = [
     why: 'the bar over search',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'меч');
-      /* The first hit for "меч" - verified against the real catalogue,
-         `search.ts`'s own matcher (`node -e` against `data.json`, both
-         directly and through `buildIndex`/`matches`/`hayFor`). */
-      await d.tick('Камень Доблести');
+      /* The first ranked hit for "меч" - computed against `data.json` through
+         `buildIndex`, `parseQuery` and `rankHits`. */
+      await d.tick('Меч Хрустального Духа');
     }
   },
   {
@@ -2324,7 +2332,7 @@ const STATES = [
     id: '#/search ~ own items as gm1',
     route: '#/search',
     as: 'gm1',
-    why: '«топор» typed: the 13 catalog matches, then the axe; the intro ends «И 4 ваших предмета.»; the chip «Хоумбрю» last in the kind row, pressed',
+    why: '«топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; the chip «Хоумбрю» last in the kind row, pressed',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'топор');
     }
@@ -2382,7 +2390,7 @@ const STATES = [
     id: '#/search ~ relations as gm3',
     route: '#/search',
     as: 'gm3',
-    why: "«спальный мешок» typed: the catalog matches, then the own bedrolls; ci1's row «Улучшается до: Мешок спокойных снов (HB) и ещё 14»; each own row «Получается из: Первоклассный Спальный Мешок»",
+    why: "«спальный мешок» typed: the catalog matches and the own bedrolls ranked together; ci1's row «Улучшается до: Мешок спокойных снов (HB) и ещё 14»; each own row «Получается из: Первоклассный Спальный Мешок»",
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'спальный мешок');
     }

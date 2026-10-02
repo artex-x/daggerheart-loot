@@ -10,6 +10,22 @@ user-visible defect does not belong here. Why this file is the home:
 `docs/DECISIONS.md`, "Kept defects live in `docs/specs/DEBT.md`, grouped by
 the task that owes them".
 
+## Search (no task filed yet; the owner names the task)
+
+Owns: search defects found at the review of the words-in-any-order search
+(task 63, 2026-10-02).
+
+### D88 - search does not fold the left single quotation mark
+
+- **Where**: `foldQuery` in `app/src/lib/search.ts`.
+- **What**: the fold reads U+2019 and U+02BC as `'`, but not U+2018 (`‘`).
+  A query typed with `‘` in place of an apostrophe (`keeper‘s`) finds
+  nothing, while `keeper's` and `keeper’s` find "Keeper's Staff".
+- **Why deferred**: found at the closeout review; a keyboard rarely types
+  U+2018 inside a word, and the owner did not place it.
+- **How to verify the fix**: `search.test.ts` finds q80 for `keeper‘s
+  staff`, and the cached and uncached paths agree on it.
+
 ## Slimmer account client (no task filed yet)
 
 Owns: an account client built from the Supabase packages the app uses,

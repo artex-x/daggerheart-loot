@@ -398,7 +398,22 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
     StaticText "123"
-    StaticText "Nothing found"
+    ... StaticText x6 of 10 same-shape siblings elided
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (1)" [checked=false]
+    checkbox "Offhand Brass Knuckles" [checked=false]
+    button "Offhand Brass Knuckles Tier 1 · Physical · Strength · Melee · d8..." [namelen=176 namehash=ded8b6be]
+    button "Copy a link to this section" [description=Copy a link to this section]
+    ... checkbox x4 of 8 same-shape siblings elided
+    button "Improved Offhand Brass Knuckles Tier 2 · Physical · Strength · M..." [namelen=187 namehash=fc070216]
+    button "Copy a link to this section" [description=Copy a link to this section]
+    button "Advanced Offhand Brass Knuckles Tier 3 · Physical · Strength · M..." [namelen=187 namehash=c8583376]
+    StaticText "TIER 4"
+    button "Copy a link to this section" [description=Copy a link to this section]
+    checkbox "Select all (1)" [checked=false]
+    StaticText "Select all (1)"
+    checkbox "Legendary Offhand Brass Knuckles" [checked=false]
+    button "Legendary Offhand Brass Knuckles Tier 4 · Physical · Strength · ..." [namelen=188 namehash=44ef8317]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -407,9 +422,12 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+Advanced Offhand Brass Knuckles
+Advanced Offhand Brass KnucklesTier 3 · Physical · Strength · Me... [namelen=183 namehash=26c6b964]
 Alt. tables
 Armor
 Communities
+Copy a link to this section
 Core
 Dragon's Vault
 Dread
@@ -420,10 +438,16 @@ Filters
 Grid
 Hope & Fear
 How this works
+Improved Offhand Brass Knuckles
+Improved Offhand Brass KnucklesTier 2 · Physical · Strength · Me... [namelen=183 namehash=740b51ad]
 Install as an app
+Legendary Offhand Brass Knuckles
+Legendary Offhand Brass KnucklesTier 4 · Physical · Strength · M... [namelen=184 namehash=c2d0af43]
 Link to this table
 List
 Lists
+Offhand Brass Knuckles
+Offhand Brass KnucklesTier 1 · Physical · Strength · Melee · d8 ... [namelen=172 namehash=04f3e20d]
 Open this section on start
 Other
 Privacy

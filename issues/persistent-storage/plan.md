@@ -467,7 +467,7 @@ Releases, in the order the owner set (batch ids carry the release number):
 | R10 | `persist-10-legacy-removal` | `B10.1`-`B10.4` (planned 2026-10-01; `issues/persist-10-legacy-removal/plan.md` is the authority) | The first release after the cutoff date (owner, 2026-09-27; `docs/DECISIONS.md`, "R10 removes browser lists and the move; an old `#/l/` link is not found"): browser lists and all move support go - the codec, its fixtures and contract text, the `#/l/` list page and the retired page (an old `#/l/` link draws the not-found page, the address kept: a contract change), `ListStore`'s browser lists, `LegacyMove`, `MoveNotice`, `MoveStatus`, `StorageNotice`, the move's RPC path; its plan decides whether a migration drops `move_legacy_list` and `lists.legacy_fingerprint` (`DEBT.md` D62, D63). The browser's data is not deleted |
 
 The order is R0, R1, R2, R5, R5b (closed 2026-09-27), the process task
-`process-guards`, R11, `display-settings`, R3, R4, R6, R7, R7b, R7c (closed 2026-10-01), `scale-challenge`, R7e, R7f, R7g, R7d, R9, R8, `debt-cleanup`,
+`process-guards`, R11, `display-settings`, R3, R4, R6, R7, R7b, R7c (closed 2026-10-01), `scale-challenge`, R7e, R7f, R7g, task 63 (intelligent search, not a persistence release; owner, 2026-10-02), R7d, R9, R8, `debt-cleanup`,
 `persist-review`, R10 (owner, 2026-09-25; `persist-review` placed before R10 by the owner, 2026-09-27;
 `debt-cleanup` placed before `persist-review` by the owner, 2026-10-01;
 R9 placed before R8 by the owner, 2026-10-02 (R9 needs nothing of R8);

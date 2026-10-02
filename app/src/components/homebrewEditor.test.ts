@@ -1169,6 +1169,31 @@ describe('the fold «Связи»', () => {
     expect((await stored(cloud, AXE))?.craft).toEqual(['ci1']);
   });
 
+  it('ranks an item picker: a name with the word at a word start comes first', async () => {
+    await editor(AXE, { real: true });
+    await openRel();
+    await userEvent.type(picker(t.craftInto), 'меч');
+    const first = within(screen.getByRole('listbox', { name: t.craftInto })).getAllByRole(
+      'option'
+    )[0] as HTMLElement;
+    const nm = first.querySelector('.nm');
+    const name = (nm?.textContent ?? '').replace(
+      nm?.querySelector('small')?.textContent ?? '',
+      ''
+    );
+    expect(name).toMatch(/(^|[^\p{L}\p{N}])меч/iu);
+  });
+
+  it('lists each upgrade line once in «Линия улучшений», at its best-ranked member', async () => {
+    await editor(AXE, { real: true });
+    await openRel();
+    await press(t.hbLine, t.hbLineIn);
+    await userEvent.type(picker(t.hbLinePick), 'Палаш');
+    expect(
+      within(screen.getByRole('listbox', { name: t.hbLinePick })).getAllByRole('option')
+    ).toHaveLength(1);
+  });
+
   it('disables a picker with eight chosen', async () => {
     const craft = ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7', 'ci8'];
     const { container } = await editor(AXE, {

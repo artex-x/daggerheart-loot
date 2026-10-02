@@ -58,7 +58,7 @@
   import { homebrewItemHash, tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import { groupsOf, isHomebrewKey, isHomebrewRecord } from '../lib/homebrew.js';
-  import { foldQuery, hayFor, matches, statLineFor } from '../lib/search.js';
+  import { hayFor, matches, parseQuery, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
   import { TABLE_GROUPS, groupOf, subLabelOf } from '../lib/tables.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -208,9 +208,9 @@
   const hay = $derived(hayFor(statLine));
 
   const filtered = $derived.by(() => {
-    const query = foldQuery(q.trim());
-    if (!query) return facPassed;
-    return facPassed.filter((it) => matches(it, query, statLine, hay));
+    const terms = parseQuery(q);
+    if (!terms.length) return facPassed;
+    return facPassed.filter((it) => matches(it, terms, statLine, hay));
   });
 
   async function copyTableLink(): Promise<void> {
@@ -351,7 +351,7 @@
 
   const altSections = $derived.by<AltSection[]>(() => {
     if (!altKind || !index) return [];
-    const query = foldQuery(q.trim());
+    const terms = parseQuery(q);
     return RARITIES.map((r) => {
       const cols: AltCol[] = (['hope', 'fear'] as const)
         .map((col) => ({
@@ -359,7 +359,7 @@
           label: col === 'hope' ? t.hope : t.fear,
           entries: index
             .altColumn(altKind, r, col)
-            .filter((x) => !query || matches(x.it, query, statLine, hay))
+            .filter((x) => !terms.length || matches(x.it, terms, statLine, hay))
         }))
         .filter((c) => c.entries.length > 0);
       return { key: r, label: rarityLabel(r, t), cols };
