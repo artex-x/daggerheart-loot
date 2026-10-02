@@ -586,7 +586,7 @@ before R7e.** The planner had recommended after R7f; the owner chose the
 earlier slot.
 
 - Order from now: R7c, task 63 (`B63.1` and its closeout push), R7e, R7f,
-  R7d, R8, R9, `debt-cleanup`, `persist-review`, R10.
+  R7d, R9, R8, `debt-cleanup`, `persist-review`, R10.
 - R7e is deferred behind `B63.1`: it is implement-ready, and its base
   becomes task 63's closeout commit instead of R7c's. R7e shares only
   `dict.ts` with `B63.1` (`startTyping` against R7e's two new keys), so

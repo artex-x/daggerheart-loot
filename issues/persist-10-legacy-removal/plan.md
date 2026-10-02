@@ -5,7 +5,7 @@
 - Planning pass 1, 2026-10-01, planner, at HEAD `930dc986` (R7b built,
   unpushed). Mode A: no plan existed.
 - Not dispatchable before 2026-10-26: R10 is the first release dispatched
-  after `LEGACY_WRITE_UNTIL`. Order (owner, 2026-10-01): R7c, R7d, R8, R9,
+  after `LEGACY_WRITE_UNTIL`. Order (owner, 2026-10-01; R9 before R8, 2026-10-02): R7c, R7d, R9, R8,
   `debt-cleanup`, `persist-review`, R10.
 - Batches: `B10.1` (implement-ready), `B10.2`, `B10.3`, `B10.4` (outlines).
   None started.
@@ -221,7 +221,7 @@ owner can object before the plan review.
 
 ## 6. What an earlier release may move (the dispatch refresh)
 
-R7c, R7d, R8, R9, `debt-cleanup` and `persist-review` land before R10.
+R7c, R7d, R9, R8, `debt-cleanup` and `persist-review` land before R10.
 At dispatch the planner refresh does, in order:
 
 1. Confirm the date: `LEGACY_WRITE_UNTIL` in `app/src/lib/legacy.ts` still

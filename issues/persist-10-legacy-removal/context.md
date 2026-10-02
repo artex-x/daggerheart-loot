@@ -26,7 +26,7 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
     `#/l/` link draws the not-found page, the address kept. The browser's
     data is not deleted. `#/print/<id>*<n>` keeps its spelling.
   - Owner, 2026-10-01: `DEBT.md` D64 and D66 are not in R10. A new release
-    `debt-cleanup` between R9 and `persist-review` takes every `DEBT.md`
+    `debt-cleanup` between R8 and `persist-review` takes every `DEBT.md`
     entry still open then. R10 removes only what it deletes anyway:
     `MoveNotice`'s half of D64, D24, D63, and D62 through the migration.
   - `STATE.md`: `dhloot.lists.v1` is never deleted; R10 deletes no key.
