@@ -53,7 +53,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
 
 ## ru :: controls
 11Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная бро... [namelen=612 namehash=094e189a]
-1Зелье Быстрого Шага×5 · 20 зол.Вы получаете бонус +1 к следующе... [namelen=99 namehash=37be7764]
+1Зелье Быстрого Шага×5 · 20 зол.Вы получаете бонус +1 к следующе... [namelen=141 namehash=88f7ef0b]
 1Первоклассный Спальный Мешок×2 · 150 зол.Во время отдыха вы авт... [namelen=102 namehash=f527509a]
 3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
 51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
@@ -145,7 +145,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
 ## en :: controls
 11Art History BookletThis is a finely illustrated booklet (donat... [namelen=534 namehash=84c3b132]
 1Premium Bedroll×2 · 150 gpDuring downtime, you automatically cl... [namelen=85 namehash=b9388206]
-1Stride Potion×5 · 20 gpYou gain a +1 bonus to your next Agility... [namelen=84 namehash=35b6c241]
+1Stride Potion×5 · 20 gpYou gain a +1 bonus to your next Agility... [namelen=116 namehash=1d3add45]
 3Twilight DeckRecall Cost: 2This deck enhances fortunes with the... [namelen=871 namehash=62fc9683]
 51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=351 namehash=189625cc]
 Alt. tables

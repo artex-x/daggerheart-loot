@@ -138,7 +138,7 @@ daggerheart.com
 Добавить в список
 Заметка
 Зелье Быстрого Шага
-Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Про... [namelen=86 namehash=921b5c09]
+Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Про... [namelen=128 namehash=a50f77f6]
 Изменить
 К содержимому
 Как в книге
@@ -359,7 +359,7 @@ Share
 Skip to content
 Standard rules
 Stride Potion
-Stride PotionYou gain a +1 bonus to your next Agility Roll.Consu... [namelen=73 namehash=9f5c0bc5]
+Stride PotionYou gain a +1 bonus to your next Agility Roll.Upgra... [namelen=105 namehash=01e4c083]
 Tables
 Terms of use
 Twilight Deck

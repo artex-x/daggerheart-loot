@@ -51,7 +51,7 @@ RootWebArea "Альт. таблицы — Генератор лута — Dagger
       button "Страница"
       StaticText "1"
       StaticText "НАДЕЖДА"
-      ... StaticText x19 of 23 same-shape siblings elided
+      ... StaticText x20 of 24 same-shape siblings elided
       link "Крюк-Кошка" [description=Страница url=#/i/hi2]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -67,6 +67,7 @@ RootWebArea "Альт. таблицы — Генератор лута — Dagger
       link "Зелье Быстрого Шага" [description=Страница url=#/i/cc1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
+      link "Большое Зелье Быстрого Шага" [url=#/i/cc25]
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
       button "Страница"
@@ -94,6 +95,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Большое Зелье Быстрого Шага
 Бросить кости
 Войти
 К содержимому
@@ -178,7 +180,7 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
       button "Page"
       StaticText "1"
       StaticText "HOPE"
-      ... StaticText x19 of 23 same-shape siblings elided
+      ... StaticText x20 of 24 same-shape siblings elided
       link "Grapnel" [description=Page url=#/i/hi2]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
@@ -194,6 +196,7 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
       link "Stride Potion" [description=Page url=#/i/cc1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
+      link "Major Stride Potion" [url=#/i/cc25]
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
       button "Page"
@@ -236,6 +239,7 @@ Install as an app
 Items
 LegendaryTier 3–4
 Lists
+Major Stride Potion
 Open this section on start
 Page
 Privacy

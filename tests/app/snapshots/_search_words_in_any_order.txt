@@ -37,10 +37,10 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     checkbox "Рецепт Малого Зелья Лечения" [checked=false]
     button "19 Рецепт Малого Зелья Лечения В качестве Хода Отдыха вы можете ..." [namelen=175 namehash=4e8dc348]
     ... checkbox x2 of 6 same-shape siblings elided
-    button "7 Малое Зелье Лечения Излечите 1d4 Ран. Получается из: Рецепт Ма..." [namelen=97 namehash=233941ba]
-    button "19 Зелье Лечения Излечите 1d4+1 Ран. РАСХОДНИК CORE"
+    button "7 Малое Зелье Лечения Излечите 1d4 Ран. Получается из: Рецепт Ма..." [namelen=128 namehash=02726f7c]
+    button "19 Зелье Лечения Излечите 1d4+1 Ран. Получается из: Малое Зелье ..." [namelen=125 namehash=0abec79d]
     checkbox "Большое Зелье Лечения" [checked=false]
-    button "43 Большое Зелье Лечения Излечите 1d4+2 Ран. РАСХОДНИК CORE"
+    button "43 Большое Зелье Лечения Излечите 1d4+2 Ран. Получается из: Зель..." [namelen=88 namehash=a03637e6]
     checkbox "Фляга Путника" [checked=false]
     button "29 Фляга Путника Стоимость Призыва: 1 Эта фляга всегда полна хол..." [namelen=241 namehash=497a1b97]
   contentinfo ""
@@ -51,11 +51,11 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-19Зелье ЛеченияИзлечите 1d4+1 Ран.РасходникCore
+19Зелье ЛеченияИзлечите 1d4+1 Ран.Получается из: Малое Зелье Леч... [namelen=118 namehash=c1a74b10]
 19Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете ис... [namelen=170 namehash=963ee2dd]
 29Фляга ПутникаСтоимость Призыва: 1Эта фляга всегда полна холодн... [namelen=236 namehash=9a994db9]
-43Большое Зелье ЛеченияИзлечите 1d4+2 Ран.РасходникCore
-7Малое Зелье ЛеченияИзлечите 1d4 Ран.Получается из: Рецепт Малог... [namelen=92 namehash=8fa1fd1b]
+43Большое Зелье ЛеченияИзлечите 1d4+2 Ран.Получается из: Зелье Л... [namelen=83 namehash=da1f102c]
+7Малое Зелье ЛеченияИзлечите 1d4 Ран.Получается из: Рецепт Малог... [namelen=121 namehash=323f2852]
 Dragon's Vault
 Dread
 EN
@@ -120,10 +120,10 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     checkbox "Minor Health Potion Recipe" [checked=false]
     button "19 Minor Health Potion Recipe As a downtime move, you can use a ..." [namelen=152 namehash=ac148939]
     ... checkbox x2 of 6 same-shape siblings elided
-    button "7 Minor Health Potion Clear 1d4 HP. Made from: Minor Health Poti..." [namelen=89 namehash=8ca9071e]
-    button "19 Health Potion Clear 1d4+1 HP. CONSUMABLE CORE"
+    button "7 Minor Health Potion Clear 1d4 HP. Made from: Minor Health Poti..." [namelen=118 namehash=d9955d5b]
+    button "19 Health Potion Clear 1d4+1 HP. Made from: Minor Health Potion ..." [namelen=114 namehash=7957a0d0]
     checkbox "Major Health Potion" [checked=false]
-    button "43 Major Health Potion Clear 1d4+2 HP. CONSUMABLE CORE"
+    button "43 Major Health Potion Clear 1d4+2 HP. Made from: Health Potion ..." [namelen=79 namehash=ab950a0d]
     checkbox "Traveler's Flask" [checked=false]
     button "29 Traveler's Flask Recall Cost: 1 This flask is always full of ..." [namelen=218 namehash=56284955]
   contentinfo ""
@@ -134,11 +134,11 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
-19Health PotionClear 1d4+1 HP.ConsumableCore
+19Health PotionClear 1d4+1 HP.Made from: Minor Health Potion·Upg... [namelen=107 namehash=c27d0002]
 19Minor Health Potion RecipeAs a downtime move, you can use a vi... [namelen=147 namehash=ae04911f]
 29Traveler's FlaskRecall Cost: 1This flask is always full of col... [namelen=213 namehash=9be572d2]
-43Major Health PotionClear 1d4+2 HP.ConsumableCore
-7Minor Health PotionClear 1d4 HP.Made from: Minor Health Potion ... [namelen=84 namehash=a5eb3ecf]
+43Major Health PotionClear 1d4+2 HP.Made from: Health PotionCons... [namelen=74 namehash=522c5e63]
+7Minor Health PotionClear 1d4 HP.Made from: Minor Health Potion ... [namelen=111 namehash=a7eac893]
 Alt. tables
 Communities
 Consumables

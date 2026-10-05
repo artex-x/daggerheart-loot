@@ -49,7 +49,7 @@ RootWebArea "Обычные правила — Генератор лута — D
       button "Страница"
       StaticText "1"
       StaticText "ПРЕДМЕТ"
-      ... StaticText x15 of 19 same-shape siblings elided
+      ... StaticText x16 of 20 same-shape siblings elided
       link "Первоклассный Спальный Мешок" [description=Страница url=index.html?as=gm1#/i/ci1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -60,6 +60,7 @@ RootWebArea "Обычные правила — Генератор лута — D
       link "Зелье Быстрого Шага" [description=Страница url=index.html?as=gm1#/i/cc1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
+      link "Большое Зелье Быстрого Шага" [url=index.html?as=gm1#/i/cc25]
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
       link "Шипы" [description=Страница url=index.html?as=gm1#/i/hi1]
@@ -95,6 +96,7 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
+Большое Зелье Быстрого Шага
 Бросить 1d12 — Обычная
 Бросить 2d12 — Обычная / Необычная
 Бросить 3d12 — Необычная / Редкая
@@ -171,7 +173,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=index.html?as=g
       button "Page"
       StaticText "1"
       StaticText "ITEM"
-      ... StaticText x15 of 19 same-shape siblings elided
+      ... StaticText x16 of 20 same-shape siblings elided
       link "Premium Bedroll" [description=Page url=index.html?as=gm1#/i/ci1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
@@ -182,6 +184,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=index.html?as=g
       link "Stride Potion" [description=Page url=index.html?as=gm1#/i/cc1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
+      link "Major Stride Potion" [url=index.html?as=gm1#/i/cc25]
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
       link "Caltrops" [description=Page url=index.html?as=gm1#/i/hi1]
@@ -224,6 +227,7 @@ How this works
 Install as an app
 Items
 Lists
+Major Stride Potion
 One higher
 One lower
 Opens on start

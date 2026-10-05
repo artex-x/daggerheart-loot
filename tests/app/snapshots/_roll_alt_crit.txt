@@ -53,7 +53,7 @@ RootWebArea "Альт. таблицы — Генератор лута — Dagger
       link "Таблица расходников" [url=#/tables/alt_consumable/common]
       button "Поднять до Необычной"
       button "Страница"
-      ... StaticText x21 of 25 same-shape siblings elided
+      ... StaticText x22 of 26 same-shape siblings elided
       link "Первоклассный Спальный Мешок" [description=Страница url=#/i/ci1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -68,6 +68,7 @@ RootWebArea "Альт. таблицы — Генератор лута — Dagger
       link "Зелье Усиления" [description=Страница url=#/i/cc2]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
+      link "Большое Зелье Усиления" [url=#/i/cc26]
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
       button "Страница"
@@ -95,6 +96,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Большое Зелье Усиления
 Бросить кости
 Войти
 К содержимому
@@ -184,7 +186,7 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
       link "Consumables table" [url=#/tables/alt_consumable/common]
       button "Bump to Uncommon"
       button "Page"
-      ... StaticText x21 of 25 same-shape siblings elided
+      ... StaticText x22 of 26 same-shape siblings elided
       link "Premium Bedroll" [description=Page url=#/i/ci1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
@@ -199,6 +201,7 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
       link "Bolster Potion" [description=Page url=#/i/cc2]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
+      link "Major Bolster Potion" [url=#/i/cc26]
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
       button "Page"
@@ -244,6 +247,7 @@ Items
 Items table
 LegendaryTier 3–4
 Lists
+Major Bolster Potion
 Open this section on start
 Page
 Privacy

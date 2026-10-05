@@ -25,7 +25,7 @@ ALL.forEach((x) => {
 const withCraft = ALL.filter((x) => x.craft);
 
 console.log('data (' + withCraft.length + ' chains)');
-ok(withCraft.length === 17, 'expected 17 chains, got ' + withCraft.length);
+ok(withCraft.length === 31, 'expected 31 chains, got ' + withCraft.length);
 
 withCraft.forEach((x) => {
   const c = x.craft;

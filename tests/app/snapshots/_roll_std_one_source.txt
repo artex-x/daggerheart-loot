@@ -48,7 +48,7 @@ RootWebArea "Обычные правила — Генератор лута — D
       button "Страница"
       StaticText "1"
       StaticText "ПРЕДМЕТ"
-      ... StaticText x5 of 9 same-shape siblings elided
+      ... StaticText x6 of 10 same-shape siblings elided
       link "Первоклассный Спальный Мешок" [description=Страница url=#/i/ci1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -56,11 +56,12 @@ RootWebArea "Обычные правила — Генератор лута — D
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
       button "Страница"
-      StaticText "CORE"
       link "Зелье Быстрого Шага" [description=Страница url=#/i/cc1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "Вы получаете бонус +1 к следующему Броску Проворности."
+      StaticText "УЛУЧШАЕТСЯ ДО"
+      link "Большое Зелье Быстрого Шага" [url=#/i/cc25]
       button "Отправить"
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
@@ -81,6 +82,7 @@ Vault of Ages
 Wondrous
 daggerheart.com
 Альт. таблицы
+Большое Зелье Быстрого Шага
 Бросить 1d12 — Обычная
 Бросить 2d12 — Обычная / Необычная
 Бросить 3d12 — Необычная / Редкая
@@ -159,7 +161,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
       button "Page"
       StaticText "1"
       StaticText "ITEM"
-      ... StaticText x5 of 9 same-shape siblings elided
+      ... StaticText x6 of 10 same-shape siblings elided
       link "Premium Bedroll" [description=Page url=#/i/ci1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
@@ -167,11 +169,12 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
       button "Page"
-      StaticText "CORE"
       link "Stride Potion" [description=Page url=#/i/cc1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       StaticText "You gain a +1 bonus to your next Agility Roll."
+      StaticText "UPGRADES TO"
+      link "Major Stride Potion" [url=#/i/cc25]
       button "Share"
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
@@ -200,6 +203,7 @@ How this works
 Install as an app
 Items
 Lists
+Major Stride Potion
 One higher
 One lower
 Opens on start
