@@ -190,7 +190,29 @@ describe('the index over the real dataset', () => {
 
 describe('upgrade chains', () => {
   it('derives the reverse link rather than storing it', () => {
-    expect(index.craftedFrom.size).toBe(17);
+    expect(index.craftedFrom.size).toBe(31);
+  });
+
+  it.each([
+    ['cc9', 'cc14'],
+    ['cc12', 'cc24', 'cc38'],
+    ['cc7', 'cc19', 'cc43'],
+    ['cc8', 'cc20', 'cc44'],
+    ['cc1', 'cc25'],
+    ['cc2', 'cc26'],
+    ['cc3', 'cc27'],
+    ['cc4', 'cc28'],
+    ['cc5', 'cc29'],
+    ['cc6', 'cc30'],
+    ['w4', 'w91']
+  ])('links the stronger versions of %s in both directions', (...ids: string[]) => {
+    for (let i = 0; i < ids.length - 1; i++) {
+      const from = index.byId.get(ids[i]!)!;
+      const into = index.byId.get(ids[i + 1]!)!;
+      expect(upgradesTo(index, from).map((r) => r.id)).toEqual([into.id]);
+      expect(madeFrom(index, into).map((r) => r.id)).toContain(from.id);
+    }
+    expect(upgradesTo(index, index.byId.get(ids.at(-1)!)!)).toEqual([]);
   });
 
   it('points back at something that exists, every time', () => {

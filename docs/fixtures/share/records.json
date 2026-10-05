@@ -30,8 +30,8 @@
         "text": "Зелье Быстрого Шага (расходник)"
       },
       "full": {
-        "html": "<b>Зелье Быстрого Шага (расходник)</b><br><br>Вы получаете бонус +1 к следующему Броску Проворности.",
-        "text": "Зелье Быстрого Шага (расходник)\n\nВы получаете бонус +1 к следующему Броску Проворности."
+        "html": "<b>Зелье Быстрого Шага (расходник)</b><br><br>Вы получаете бонус +1 к следующему Броску Проворности.<br><br><i>Улучшается до: Большое Зелье Быстрого Шага</i><br>Вы получаете бонус +1 к Проворности до следующего отдыха.",
+        "text": "Зелье Быстрого Шага (расходник)\n\nВы получаете бонус +1 к следующему Броску Проворности.\n\nУлучшается до: Большое Зелье Быстрого Шага\nВы получаете бонус +1 к Проворности до следующего отдыха."
       }
     },
     "en": {
@@ -40,8 +40,8 @@
         "text": "Stride Potion (consumable)"
       },
       "full": {
-        "html": "<b>Stride Potion (consumable)</b><br><br>You gain a +1 bonus to your next Agility Roll.",
-        "text": "Stride Potion (consumable)\n\nYou gain a +1 bonus to your next Agility Roll."
+        "html": "<b>Stride Potion (consumable)</b><br><br>You gain a +1 bonus to your next Agility Roll.<br><br><i>Upgrades to: Major Stride Potion</i><br>You gain a +1 bonus to your Agility until your next rest.",
+        "text": "Stride Potion (consumable)\n\nYou gain a +1 bonus to your next Agility Roll.\n\nUpgrades to: Major Stride Potion\nYou gain a +1 bonus to your Agility until your next rest."
       }
     }
   },

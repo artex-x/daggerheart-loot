@@ -954,6 +954,11 @@ browser lists writable after the date.
   arrow. The share stub keeps the same order. The copied text of a chain
   record carries only what the next rung adds: the lines of the target's
   description that its own description does not already carry.
+- The catalog also links Grindletooth Venom to Improved Grindletooth Venom;
+  Unstable Arcane Shard through Improved to Major; Health and Stamina Potions
+  from Minor through the standard version to Major; each of the six trait
+  potions to its Major version; and Alconite Crystal to Superior Alconite
+  Crystal. These use the same `craft` relationships and draw in both languages.
 - Equipment that belongs to an upgrade **line** carries a tier ladder: one rung
   per tier of that line, in tier order, the rung you are on marked and inert
   and the others opening that tier's record over whatever is on screen. A line
