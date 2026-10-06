@@ -4,7 +4,7 @@
 ## Status
 - Task status: in_progress (plan review fix-then-continue applied 2026-10-06; next: `B7h.1`)
 - Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: no for `B7h.1`; owner questions Q1 and Q2 (`plan.md` 8.1) must be answered before `B7h.3`
+- NEEDS_HUMAN_CONFIRMATION: no (the owner answered Q1 and Q2 on 2026-10-06, `plan.md` 8.1)
 - Branch: `claude/r7h-homebrew-replan-275175` (planning); the release branch is the orchestrator's choice
 - Base / starting commit: `70fe5598` (on `d997f4f0`, origin/main; R7d closed and live)
 - Pushed: no
@@ -23,9 +23,13 @@
 - Review: plan review `reviews/plan-B7h.1.md` (fix-then-continue, reviewed
   `438b3315`); every finding 1-26 applied once (`plan.md` Status, "Plan
   review findings applied"); findings 19 and 26 placed in `B7h.1` and
-  `B7h.4`; finding 9 is owner question Q1. Owner input of 2026-10-06
-  (change-log expiry 1 hour after read, or 30 days after creation) applied;
-  the request lifecycle is owner question Q2. No second plan review.
+  `B7h.4`; finding 9 became owner question Q1. Owner input of 2026-10-06
+  (change-log expiry 1 hour after read, or 30 days after creation) applied.
+  Owner answers of 2026-10-06: Q1 - conversion rule 3 and the fixed-copy
+  branch dropped, any frozen copy the list owner does not hold is deleted
+  after an assert of at most one (production counts in `context.md`); Q2 =
+  B - purchase requests expire 1 hour after read, or 30 days after
+  creation. No second plan review.
 
 ## Verification
 - Commands run (exact): `npx prettier --check .` (result in the commit
@@ -61,9 +65,7 @@
   needs the planner.
 
 ## Blockers
-- None for `B7h.1`.
-- `B7h.3` waits for the owner's answers to Q1 (conversion rule 3) and Q2
-  (the purchase request lifecycle), `plan.md` 8.1.
+- None.
 
 ## Deferred
 - To the owner, not `DEBT.md`: an author-side count of other players'

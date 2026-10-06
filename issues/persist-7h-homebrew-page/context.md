@@ -40,8 +40,19 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
     equipment tables' toolbar. `STATE.md`: memory only, unchanged.
 - Change-log expiry (owner, 2026-10-06): an entry expires 1 hour after it
   is read, or 30 days after it was created if nobody reads it.
-- Open questions: Q1 (conversion rule 3) and Q2 (the purchase request
-  lifecycle), `plan.md` 8.1; both before `B7h.3`.
+- Purchase request expiry (owner, 2026-10-06, Q2 = B): a request expires
+  1 hour after it is read, or 30 days after it is created; «Принять» works
+  until then; a stale apply and unread requests against the limit of 10
+  are accepted.
+- Conversion (owner, 2026-10-06, Q1): rule 3 dropped; a frozen copy the
+  list owner does not hold is deleted after an assert of at most one.
+- Production counts (owner, read-only, 2026-10-06): `homebrew_items` 30,
+  authors 2, books 5; homebrew `list_entries` 8 - 7 references to the list
+  owner's own items, 1 frozen copy whose key no account holds (376 bytes,
+  the owner's own test list: "it's mine, it's safe to delete"); no row
+  links another account's item; no list owner holds two snapshot variants
+  of one key.
+- Open questions: none.
 
 ## Screenshot / attachment findings
 - Owner screenshots 01 and 02 (below). Mocks m01-m05 (planner, 2026-10-02

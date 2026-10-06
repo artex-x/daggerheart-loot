@@ -10,7 +10,7 @@
 | plan-B7h.1-6 | risk | local | fixed plan |
 | plan-B7h.1-7 | risk | local | fixed plan |
 | plan-B7h.1-8 | risk | local | fixed plan |
-| plan-B7h.1-9 | risk (owner question) | local | named |
+| plan-B7h.1-9 | risk (owner question) | local | fixed plan (owner: rule 3 dropped, no branch-3 rows in prod) |
 | plan-B7h.1-10 | risk | local | fixed plan |
 | plan-B7h.1-11 | risk | local | fixed plan |
 | plan-B7h.1-12 | risk | local | fixed plan |

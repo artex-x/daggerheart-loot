@@ -431,7 +431,9 @@
           <section class="panel new">
             <h2 style="font-size: 16px; margin: 0 0 6px">Новое в списке (3)</h2>
             <div class="req">
-              <div class="who">По ссылке для игроков · только что · истечёт через 59 мин</div>
+              <div class="who">
+                <span class="dot" aria-hidden="true"></span>По ссылке для игроков · только что
+              </div>
               <div>Скатка следопыта ×1 из 2</div>
               <div class="btnrow">
                 <span class="btn small gold">Принять</span
@@ -456,8 +458,10 @@
             N = pending requests + unread notices. The dot marks unread; drawing the panel in a
             visible tab marks the list's notices read. The database deletes a notice 1 hour
             after it is read, or 30 days after it was created if nobody reads it (owner,
-            2026-10-06; P5). One notice per item per list. The request row's lifecycle waits for
-            owner question Q2.
+            2026-10-06; P5). One notice per item per list. A request follows the same rule
+            (owner, 2026-10-06, Q2 = B): it expires 1 hour after it is read, or 30 days after it
+            was created; «Принять» works until then, and the line shows «истечёт через N мин»
+            only once the request is read.
           </p>
         </div>
       </section>

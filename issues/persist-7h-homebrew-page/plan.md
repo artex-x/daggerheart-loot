@@ -6,22 +6,20 @@
   rework W1-W6 merged into the release (owner, 2026-10-03 and 2026-10-05,
   section 10); not started. R7d is closed and live. R7h ships before R9
   and R8 (owner R1).
-- NEEDS_HUMAN_CONFIRMATION: no for `B7h.1` (it can start now). Two owner
-  questions are open in section 8.1: Q1 (conversion rule 3, plan review
-  finding plan-B7h.1-9) and Q2 (the purchase request lifecycle, owner
-  input 2026-10-06). Both must be answered before `B7h.3` is dispatched;
-  neither touches `B7h.1` (it moves today's request retention unchanged)
-  or `B7h.2`. Every other fork is decided with a recommendation (section
-  8).
+- NEEDS_HUMAN_CONFIRMATION: no. The owner answered Q1 and Q2 on
+  2026-10-06 (section 8.1); every other fork is decided with a
+  recommendation (section 8).
 - Plan review: required before B7h.1 (trigger: migrations - a `pg_cron`
   schedule that deletes rows in B7h.1, SECURITY DEFINER functions that
   `anon` executes in B7h.3; possible loss of stored data - the clean-up
-  deletes rows past their retention, and B7h.3 converts every stored frozen
-  copy and drops `list_entries.snapshot`; public contract changes - the
+  deletes rows past their retention, and B7h.3 converts the stored
+  references and own-held frozen copies, deletes at most one frozen copy
+  with no own holder, and drops `list_entries.snapshot`; public contract changes - the
   route `#/h/<uuid>` in B7h.4, the lists file v2 import meaning in B7h.3, the
   `#/homebrew` tab routes in B7h.5, the meaning of `src` on
   `#/tables/homebrew` in B7h.6; a new write protocol - live links across
-  accounts and the list change log in B7h.3)
+  accounts, the list change log and the read mark that starts a purchase
+  request's expiry in B7h.3)
 - Plan review findings applied: reviews/plan-B7h.1.md
   - plan-B7h.1-1: 2.8.5 step 4, 2.8.7, 4.3, 5.1 - one fixed copy per
     distinct (list owner, key, snapshot); a variant item or card gets a
@@ -34,7 +32,7 @@
   - plan-B7h.1-4: 2.8.4 - `revision` is an md5 of the answer, compared for
     equality.
   - plan-B7h.1-5: 2.8.3, 2.8.6, 4.3 - `read_at` is set only by the definer
-    function `mark_list_notices_read`; no update grant.
+    function `mark_list_read`; no update grant.
   - plan-B7h.1-6: 2.8.3, 2.8.6, 4.3 - the broadcast sends on insert and on
     a change of `kind` or `created_at` only; a read sends no message.
   - plan-B7h.1-7: 2.8.3, 4.3 - `get_homebrew_items` for `authenticated`
@@ -82,6 +80,14 @@
     8 P5, 10: a change-log entry expires 1 hour after it is read, or 30
     days after creation if unread; the request lifecycle is owner question
     Q2 (8.1).
+  - owner 2026-10-06: Q1 and Q2 answered - 2.8.5 (rule 3, the fixed-copy
+    branch, the limit bypass and the card-variant rules dropped; any frozen
+    copy the list owner does not hold is deleted after an assert of at most
+    one), 2.8.3 (the purchase request rows), 2.7 A4 and A10, 2.8.6, 2.8.7,
+    4.1, 4.3, 5.1, 5.2, 8 P3 and P4, 8.1, 9, 10, m03 (purchase requests
+    expire 1 hour after they are read, or 30 days after creation; Q2 = B).
+    plan-B7h.1-1's distinct-snapshot rule now applies to the lists file
+    import only.
 - Batch reviews: required for B7h.1 (migration, scheduled delete),
   B7h.2 (prompt and skill changes), B7h.3 (migration, definer functions,
   stored-data conversion), B7h.4 (public contract, new screens, privacy
@@ -95,7 +101,7 @@
 |---|---|---|---|
 | R7h | `persist-7h-homebrew-page` | `B7h.1` W2: the scheduled clean-up in the database, the lifecycle law, the audit's backend findings | implement-ready after the plan review (section 3) |
 | R7h | | `B7h.2` W5: owner insights are written to their homes | outline (4.2) |
-| R7h | | `B7h.3` W1 schema: live links by item id, the change log, the snapshot conversion, the read-by-id functions, port, fake, contract case, the foreign add and the lists file export and import | outline (4.3); dispatch after the owner answers Q1 (8.1) |
+| R7h | | `B7h.3` W1 schema: live links by item id, the change log, the snapshot conversion, the read-by-id functions, port, fake, contract case, the foreign add and the lists file export and import | outline (4.3) |
 | R7h | | `B7h.4` W1 screens: `#/h/<uuid>`, relation links, «Сохранить себе», the change log view, privacy, D71 | outline (4.4) |
 | R7h | | `B7h.5` W3 + W4 + 2.1-2.5: the «Мои предметы» tabs, the import preview names, the field help, the search, the counter, the 300-item measurement | outline (4.5) |
 | R7h | | `B7h.6` W6 + 2.6: the «Свои предметы» switch and the `#/tables/homebrew` source chips and facets | outline (4.6) |
@@ -248,7 +254,8 @@ It answers `{ "requests": n, "shares": n, "runs": n }`, which `pg_cron`
 keeps in its run log. The schedule: `cron.schedule('dhloot-lifecycle',
 '7 * * * *', 'select public.lifecycle_cleanup()')`. `create_purchase_request`
 loses its delete (one rule, one place). B7h.3 adds the change log's rows to
-the same function.
+the same function and replaces the two request rows with one: a request
+whose `expires_at` has passed (owner, 2026-10-06, Q2 = B; 2.8.3).
 
 The standing law (decision file in B7h.1): data with a lifecycle - expiry,
 retention after a decision or a read, a stopped link - is deleted on the
@@ -274,13 +281,13 @@ The audit of frontend-owned lifecycle logic (one-time, 2026-10-06):
 | A1 | Request clean-up runs only when a new request is sent | `create_purchase_request` | B7h.1: the scheduled job; the delete leaves the function |
 | A2 | Revoked share links are never deleted; every revoke and re-create adds a row | `revoke_list_share`, `list_shares` | B7h.1: the job, with the newest-row rule above |
 | A3 | `pg_cron`'s own run log would grow | `cron.job_run_details` | B7h.1: the job |
-| A4 | The owner's panel hides an expired request by the browser clock | `lib/requests.ts` `pendingFor`, `ownerRequests.svelte.ts` | keep: display only; the database refuses a late apply or decline (`request: expired`) and deletes the row 24 hours later |
+| A4 | The owner's panel hides an expired request by the browser clock | `lib/requests.ts` `pendingFor`, `ownerRequests.svelte.ts` | keep: display only; the database refuses a late apply or decline (`request: expired`) and deletes the row 24 hours later (from B7h.3: in the hour after `expires_at`, which the database sets) |
 | A5 | Decided requests show until the page reloads | `ownerRequests.svelte.ts` `decided`, `forget` | keep: memory display, nothing stored |
 | A6 | `usage_snapshots` past 400 days are deleted by the nightly report | `tools/supabase/usage.mjs` `saveSnapshot` | keep: the backend workflow that owns the table deletes them as `postgres` (the law's second form); the rows stop with the workflow, so they cannot pile up |
 | A7 | The legacy write cutoff (2026-10-26) is the browser clock | `lib/legacy.ts` | keep: it gates the browser's own `localStorage`; R10 removes the legacy path and `move_legacy_list` |
 | A8 | Browser keys: `dhloot.auth.return` expires after 10 minutes; tombstones grow | `ports/redirect.ts`, `state/lists.svelte.ts` | keep: browser data, not backend data |
 | A9 | The fake mirrors expiry with `Date.now()` | `ports/fake-cloud.ts` | keep: a test double; the port does not expose the clean-up |
-| A10 | The change log (new in W1) needs a retention | `list_notices` | B7h.3: 1 hour after read, or 30 days after creation if nobody reads it (owner, 2026-10-06), in the same function |
+| A10 | The change log (new in W1) and the purchase requests that share its view need one retention | `list_notices`, `purchase_requests` | B7h.3: 1 hour after read, or 30 days after creation if nobody reads it (owner, 2026-10-06, for both), in the same function |
 
 No finding goes to `DEBT.md`.
 
@@ -346,7 +353,8 @@ No finding goes to `DEBT.md`.
 | `list_entries_hb_key()` | before insert or update of `hb_item`: sets `item_key` and `source` from the item; replaces `list_entries_reference_exists()` (the FK checks existence; `for key share` is the FK's own lock) | the old trigger restored |
 | `list_entries.snapshot` | converted (2.8.5), then dropped with `list_entries_snapshot_source`, `_valid`, `_size`, `list_entries_snapshot_limit()` and its two triggers, and the `limit_defaults` row `snapshot_bytes_per_list` | the column, its checks, the triggers and the row restored; every foreign link rebuilt as a snapshot of the live item |
 | `list_notices` | `id uuid pk default gen_random_uuid()`, `list_id uuid not null references lists on delete cascade`, `item_key text not null`, `hid uuid` (null after a delete), `kind text check (kind in ('changed', 'deleted'))`, `name jsonb not null` (`{ en, ru }` at the time), `created_at`, `read_at`; `unique (list_id, item_key)`; RLS: the list's owner may `select` and `delete`; no insert or update grant | dropped |
-| `mark_list_notices_read(p_list uuid) returns void` | definer, `set search_path = public, pg_temp`, `revoke execute ... from public, anon` then `grant ... to authenticated`: `42501` unless the caller owns the list; `update list_notices set read_at = now() where list_id = p_list and read_at is null` - a client never chooses the value, so no row outlives its retention | dropped |
+| `mark_list_read(p_list uuid) returns void` | definer, `set search_path = public, pg_temp`, `revoke execute ... from public, anon` then `grant ... to authenticated`: `42501` unless the caller owns the list; `update list_notices set read_at = now() where list_id = p_list and read_at is null`, and `update purchase_requests set read_at = now(), expires_at = least(expires_at, now() + interval '1 hour') where list_id = p_list and read_at is null` - a client never chooses a value, so no row outlives its retention | dropped |
+| `purchase_requests.read_at` | `timestamptz` (null until the owner's panel draws the request). `expires_at` keeps its meaning "the request can be decided until then", with new values: `create_purchase_request` sets `now() + interval '30 days'` (was 1 hour); `mark_list_read`, `apply_purchase_request` and `decline_purchase_request` set `read_at` when it is null and `expires_at = least(expires_at, now() + interval '1 hour')`. The checks `expires_at <= now()` (apply, decline: `request: expired`) and `expires_at > now()` (`pending_requests_per_list`) stay, so «Принять» works until the request expires and an unread request counts against the limit of 10 for up to 30 days (owner, 2026-10-06, Q2 = B: accepted). Stored rows: a pending row whose `expires_at` has not passed gets `created_at + interval '30 days'`; every other row keeps its value. `purchase_requests_broadcast` fires on `update of status` only, so a read sends no message | `read_at` dropped; pending rows get `least(expires_at, created_at + interval '1 hour')`; the three function bodies restored |
 | `homebrew_items_before_delete()` | rewritten: for every list of another owner that links the item, upsert a `deleted` notice with the item's names; the FK cascade then removes the entries (own lists too, as today) | the old body |
 | `homebrew_items_touch()`, `homebrew_books_touch()`, `homebrew_cards_touch()` | rewritten: bump every list that links an affected item (any owner, by `hb_item`), and upsert a `changed` notice (read_at null, created_at now) for each such list of another owner | the old bodies |
 | `list_notices_broadcast()` | deferred constraint trigger on `list_notices` insert, and on an update that changes `kind` or `created_at` (the early return of `purchase_requests_broadcast`); a `read_at` change sends nothing: one `notice` message `{ list }` per list owner per transaction on `owner:<uid>` (the request event's pattern) | dropped |
@@ -355,7 +363,7 @@ No finding goes to `DEBT.md`.
 | `get_shared_list(text)` | a homebrew entry's `snapshot` filled from the linked item through `hb_item` (any owner), with the book and cards of the item's owner (`i.owner_id`, not `v_list.owner_id` as the shipped body reads them), and `hid` added to the entry object (not inside `snapshot`, whose shape a stale tab validates) | the previous body |
 | `clone_shared_list(text, uuid)` | copies `hb_item` (every homebrew entry stays live) | the previous body |
 | `apply_list_writes(jsonb)`, `import_lists(jsonb)` | an entry carries `hb_item` instead of `snapshot`; a `snapshot` key is refused (`22023`) | the previous bodies |
-| `lifecycle_cleanup()` | adds: `list_notices` read more than 1 hour ago (`read_at < now() - interval '1 hour'`), or unread and created more than 30 days ago (`read_at is null and created_at < now() - interval '30 days'`) - owner, 2026-10-06 | the B7h.1 body |
+| `lifecycle_cleanup()` | adds: `list_notices` read more than 1 hour ago (`read_at < now() - interval '1 hour'`), or unread and created more than 30 days ago (`read_at is null and created_at < now() - interval '30 days'`); replaces the two request rows with `delete from purchase_requests where expires_at < now()` (pending or decided) - owner, 2026-10-06; `tools/supabase/usage.mjs` takes the same request predicate for `lifecycle_overdue` | the B7h.1 body |
 
 `META.md` section 3: `anon` executes four functions (today three; adds
 `get_homebrew_item(uuid)`); `tests/db/harness.test.mjs` pins the list.
@@ -376,7 +384,7 @@ No finding goes to `DEBT.md`.
   as `{ hid, key, kind, en, ru, tier, eq: { t, tier, line }, set, craft,
   craft_from }` (no descriptions, no cards), ordered by name, at most 1000
   rows (a fixed cap, as `get_homebrew_items`: an author above the item
-  limit after the conversion still gets every relation).
+  limit, for example after a lowered limit, still gets every relation).
 
 The client builds the card's relation lines from `related` with the same
 functions the author's index uses (`madeFrom`, `upgradesTo`, `setOf` in
@@ -385,43 +393,26 @@ functions the author's index uses (`madeFrom`, `upgradesTo`, `setOf` in
 #### 2.8.5 The conversion of stored rows (owner W1-d)
 
 In the migration, in this order, for every `list_entries` row with
-`source = 'homebrew'`:
+`source = 'homebrew'` (owner, 2026-10-06, Q1):
 
 1. A reference (`snapshot` null): `hb_item` = the list owner's item of
    that key.
 2. A frozen copy whose key the list owner holds: `hb_item` = that own item
    (visible content may change: accepted by the owner).
-3. A frozen copy whose key exactly one other account holds: `hb_item` =
-   that item. Exposure (plan-B7h.1-9): keys repeat only through a file
-   import, so when the author deleted the item and one importer still
-   holds it, the list owner's row links the importer's item - the
-   importer's item id and, through `related`, the importer's connected
-   items reach an account the importer never shared with, and the
-   importer's later edits and delete change that list. Rule 3 stands
-   unless the owner answers Q1 (8.1) otherwise.
-4. Every other frozen copy (no holder, or more than one): a fixed copy in
-   the list owner's «Хоумбрю» (no source, no section), its content the
-   snapshot minus `id`, `src`, `book`, `cards` and the derived `tier:
-   "A"`. One new item per distinct (list owner, key, snapshot content):
-   the first distinct snapshot (by entry `id`) keeps the key; each other
-   gets a new key made in SQL (`'hb_' || translate(substr(encode(
-   gen_random_bytes(10), 'hex'), 1, 16), '0189', 'wxyz')`, valid for
-   `homebrew_key_ok`), and each entry links the copy of its own snapshot,
-   so no frozen content is lost. Embedded set and rule cards follow the
-   same rule: a card key the owner does not hold becomes a new own card of
-   that key (no source) from the first distinct text; a key the owner
-   already holds with another text, or a later text that differs, becomes
-   a new card under a new key, and the variant item's `set` or `refs` is
-   rewritten to it. `hb_item` = the new item. The migration disables
-   `homebrew_items_limit` and `homebrew_cards_limit` for these inserts
-   only: an account may end above its limit, as after a lowered limit, and
-   loses nothing.
+3. Any other frozen copy is deleted. Before the delete, the migration
+   counts these rows and raises (the whole migration rolls back) when there
+   are more than 1; the planner then revisits the conversion. Production on
+   2026-10-06 held exactly one such row: 376 bytes on the owner's own test
+   list, which the owner released for deletion ("it's mine, it's safe to
+   delete"). No row linked another account's item, and no list owner held
+   two snapshot variants of one key, so the old rule 3, the fixed-copy
+   branch, the limit bypass and the card-variant rules are dropped.
 
 The migration raises and rolls back if a homebrew entry is left without
 `hb_item`. The reversal rebuilds a snapshot for every entry whose linked
 item belongs to another account; entries that point to the list owner's
-own items, including the fixed copies, stay references; the fixed copies
-stay own items.
+own items stay references. The deleted frozen copy is not restored (owner,
+2026-10-06: accepted).
 
 #### 2.8.6 The change log (owner W1-c, W1-e)
 
@@ -436,11 +427,11 @@ stay own items.
   «Автор изменил «%s».» with «Открыть» (`#/h/<hid>`), or «Автор удалил
   «%s» - строка убрана из списка.»; each has «Скрыть» (deletes the row);
   «Скрыть изменения» deletes every notice of the list.
-- Read: the page calls `mark_list_notices_read(list)` when the panel draws
-  an unread notice in a visible tab (only rows with `read_at` null change,
-  and a read sends no message, so the owner's devices do not ping-pong); a
-  read notice stays drawn, without the «новое» mark, until it is hidden or
-  the job deletes it.
+- Read: the page calls `mark_list_read(list)` when the panel draws an
+  unread notice or request in a visible tab (only rows with `read_at` null
+  change, and a read sends no message, so the owner's devices do not
+  ping-pong); a read row stays drawn, without the «новое» mark, until it
+  is hidden, decided or deleted by the job.
 - Retention (owner, 2026-10-06): a notice expires 1 hour after it is
   read, so it never disappears before somebody has seen it; if nobody reads
   it, it expires 30 days after it was created (the backend cap the
@@ -449,6 +440,14 @@ stay own items.
   point. One row per (list, item): a second edit refreshes the row
   (`created_at` now, `read_at` null), so the 30 days count from the last
   change; a delete after an edit turns it into `deleted`.
+- Purchase requests take the same rule whole (owner, 2026-10-06, Q2 = B): a
+  request expires 1 hour after it is read, or 30 days after it is created
+  if nobody reads it; «Принять» and «Отклонить» work until it expires, and
+  the job deletes it in the hour after. Accepted consequences: a GM may
+  apply a request days after the player asked (the apply takes the stock
+  as it is then); an unread request counts against the limit of 10
+  pending requests per list for up to 30 days. The request line shows
+  «истечёт через N мин» only once the request is read.
 - The lists index line adds the unread count beside the requests:
   «%n изменение» (plural set). The owner's devices re-read on the `notice`
   message, as on `request`.
@@ -470,9 +469,14 @@ source and cards; a reference must exist when written", both superseded in
 part; amends D7 "Homebrew keeps the way open to shared books": items are
 readable by id, `list_entries.hb_item` is the anticipated `item_owner`,
 books stay owner-only, subscriptions stay open; its consequences name the
-exposure of conversion rule 3, 2.8.5, as the owner answers Q1); "A list's
-change log shares the requests' view and the database's clean-up"
-(rejected: one table for requests and notices, 2.8.6). Decisions of R7d
+deleted frozen copy, 2.8.5, owner 2026-10-06); "A list's change log
+shares the requests' view and the database's clean-up" (the retention of
+2.8.6 for notices and requests; amends "Purchase requests are written
+only by a bounded function any link holder calls": a request expires 1
+hour after it is read or 30 days after it is created, no longer 1 hour
+after it is created; rejected: one table for requests and notices, 2.8.6;
+a decision window of 1 hour from creation with a visible expired row, the
+planner's recommendation the owner declined). Decisions of R7d
 that name frozen copies ("A lists file is version 2 only when it holds
 homebrew", "A frozen copy holds up to 131072 bytes", "A list's frozen
 copies hold up to 1048576 bytes") get their "Superseded in part" pointers.
@@ -825,12 +829,12 @@ Risks, do-nots:
 |---|---|---|---|
 | `B7h.1` | 2.7 | probe 1, `check:db` 10, `check` 9, after approve `db:push` 1, `e2e` 3 = 24 | first batch (owner R3) |
 | `B7h.2` | 2.12 | `check` 9 (prettier and the hook selftest) = 9 | owner R4: W5 is its own batch |
-| `B7h.3` | 2.8.3-2.8.5, the lists file row of 2.8.7, the foreign add, the port, the fake, contract case R, layer 3, the e2e flows | `check` 9, `check:db` 12, `build:test` + `check:built` 2, goldens compare of the lists import states and re-seed 4, after approve `db:push` 1, `e2e` 3 = 31 | a review that cannot be held in one pass (with B7h.1); W5 sits between them (owner R4) |
+| `B7h.3` | 2.8.3-2.8.5, the request expiry of 2.8.6, the lists file row of 2.8.7, the foreign add, the port, the fake, contract case R, layer 3, the e2e flows | `check` 9, `check:db` 12, `build:test` + `check:built` 2, goldens compare of the lists import and purchase request states and re-seed 6, after approve `db:push` 1, `e2e` 3 = 33 | a review that cannot be held in one pass (with B7h.1); W5 sits between them (owner R4) |
 | `B7h.4` | 2.8.2 screens, 2.8.6, the route rows of 2.8.7 | `check` x2 18, `check:built` 2, `app/states` 6, `app/contracts` 8, `app/print` 4, goldens compare 13 + re-seed 6, `sweep.js 360` 8, `e2e` 3 = 68 | the schema batch rule (the migration's definer functions stop for review, the test push and `e2e` before a screen reads them) and a public-contract change (`#/h/<uuid>`) |
 | `B7h.5` | 2.1-2.5, 2.9, 2.10, C8 | `check` x2 18, `check:built` 2, `app/states` 8 (with the timed case), `app/contracts` 8, goldens compare 13 + re-seed 6, `sweep.js 360` 8 = 63 | a different route and filter set (`#/homebrew/*` and its editor, after `#/h/`, lists and `#/s/`) and a public-contract change (the tab routes) |
 | `B7h.6` | 2.6, 2.11 | `check` x2 18, `check:built` 2, `app/states` 6, `app/contracts` 8, goldens compare 13 + re-seed 4, `sweep.js 360` 8 = 59 | a different route and filter set (`#/search`, `#/tables`) and a public-contract change (the meaning of `src` on `#/tables/homebrew`) |
 
-Total: about 254 minutes of gates (about 4 hours 15 minutes) plus a
+Total: about 256 minutes of gates (about 4 hours 15 minutes) plus a
 10-minute closeout, the plan review and the batch reviews. The fallback
 fold of 2.4 adds one `app/states` run (about 6).
 
@@ -865,6 +869,16 @@ fold of 2.4 adds one `app/states` run (about 6).
   `tests/e2e/flows.mjs` F15 and F17 (assert the column; F17 imports
   `example-v2.json` with a frozen copy, which now becomes an own item),
   `tests/e2e/contract.mjs` (sends `snapshot: null`);
+  `purchase-requests.test.mjs` and `apply-pending.test.mjs` (the request
+  expiry of 2.8.3); `tools/supabase/usage.mjs` (the request predicate);
+  `app/src/lib/requests.ts` (`whoText`: «истечёт» only for a read
+  request), `state/ownerRequests.svelte.ts`, `requestsPanel.test.ts`, the
+  port's `REQUEST_SELECT` with `read_at`, the fake's request expiry and
+  `read_at`, `docs/specs/FEATURES.md` "Account and browser lists" (the
+  request expiry), `lib/dict.ts` `requestExpired` (RU «Этот запрос истёк:
+  прошёл час после того, как его открыли, или 30 дней без ответа.» / EN
+  "This request has expired: an hour passed after it was opened, or 30
+  days with no answer.");
   `app/src/ports/types.ts` (`HomebrewRead`, `HomebrewItemRead`,
   `NoticeRow`, the entry's `hb_item`), `supabase.ts`, `fake-cloud.ts`,
   `fake-cloud.test.ts` (vitest fixtures for links and notices; the seed
@@ -887,10 +901,10 @@ fold of 2.4 adds one `app/states` run (about 6).
   `backup.yml` (`gh workflow run backup.yml --ref main`); an agent runs
   `npm run restore:drill` on that backup, applies the B7h.3 migration to
   the drilled database, and records in the handoff a read-only count of
-  the conversion branches (references, own key, one holder, none, several
-  holders, distinct-snapshot variants, copies per account, accounts that
-  end above a limit). A branch count the owner did not expect stops the
-  release push.
+  the conversion branches (references, frozen copies the list owner holds,
+  frozen copies with no own holder) beside the owner's counts of
+  2026-10-06 (`context.md`). More than one frozen copy with no own holder
+  stops the release push (the migration's assert would roll it back).
 - Step 1: `git grep -n -E "randomUUID|newId" -- app/src` - every item
   create path makes the id with `crypto.randomUUID()`; else fix it here.
 - Contract case R (fake by vitest, real by `npm run e2e`): the member makes
@@ -899,17 +913,19 @@ fold of 2.4 adds one `app/states` run (about 6).
   doomed user's list holds one `changed` notice; edits it again - still
   one; deletes it - the entry is gone and the notice is `deleted` with
   the name; `get_homebrew_items` of an unknown id answers nothing for it.
-- Layer 3: every row of 2.8.3 and each branch of 2.8.5 (reference, own
-  key, one holder, two holders, none, a copy over the limit, cards held
-  and not held, two lists of one owner with one key and the same snapshot
-  - one copy; with two different snapshots - two copies, the second under
-  a new key, each entry linking its own; a card variant under a new key
-  with the variant item's `set` rewritten); the reversal rebuilds
-  snapshots; RLS on `list_notices` (owner select and delete; no update);
-  `mark_list_notices_read` sets `now()` on unread rows only and refuses
-  another owner; a read sends no message; the notice retention (a notice
-  read 61 minutes ago deleted, 59 minutes ago kept; unread 31 days after
-  `created_at` deleted, 29 days kept); the notice upsert and broadcast
+- Layer 3: every row of 2.8.3 and each branch of 2.8.5 (a reference, a
+  frozen copy the owner holds, one frozen copy with no own holder deleted,
+  two such copies - the migration raises and changes nothing); the
+  reversal rebuilds snapshots of foreign links; RLS on `list_notices`
+  (owner select and delete; no update); `mark_list_read` sets `now()` on
+  unread notices and requests only, caps a request's `expires_at` at 1
+  hour from the read, and refuses another owner; a read sends no message;
+  the notice retention (a notice read 61 minutes ago deleted, 59 minutes
+  ago kept; unread 31 days after `created_at` deleted, 29 days kept); the
+  request expiry (a new request expires in 30 days; read, it expires in
+  1 hour; apply and decline succeed before and answer `request: expired`
+  after; an unread request counts against `pending_requests_per_list`; the
+  job deletes a request whose `expires_at` passed); the notice upsert and broadcast
   count per transaction; `anon` executes exactly four functions and
   `get_homebrew_items` is not among them; the answer of
   `get_homebrew_item` holds no `owner_id`, `book_id` or `created_at`;
@@ -921,12 +937,13 @@ fold of 2.4 adds one `app/states` run (about 6).
   foreign add writes a link; case R over the fake and the test project;
   `npm run e2e` green with F15 and F17 updated; the pre-flight counts in
   the handoff; the "To undo" note; the three decisions, the B7h.3 one
-  naming the rule 3 exposure as Q1 settles it; the request lifecycle as Q2
-  settles it (8.1); standing checks: scale (the 300-list touch, the import
-  at the limit), error scenarios (5.1 rows "migration", "revert", "lists
-  file import"), consistency (the import panel's line), RU/EN
-  (`importFrozenN` in both languages).
-- Dispatch condition: the owner has answered Q1 and Q2 (8.1).
+  naming the deleted frozen copy; the request expiry of 2.8.3 and 2.8.6
+  (Q2 = B) with the stored-row update and its reversal; standing checks:
+  scale (the 300-list touch, the import at the limit, 10 unread requests
+  and one more refused), error scenarios (5.1 rows "migration", "revert",
+  "lists file import", "a stale request applied"), consistency (the import
+  panel's line, the request line), RU/EN (`importFrozenN` and
+  `requestExpired` in both languages).
 
 ### 4.4 `B7h.4` - W1 screens and routes (outline)
 
@@ -1003,7 +1020,8 @@ fold of 2.4 adds one `app/states` run (about 6).
   languages; each state of the States table (5.2) and each scenario of
   5.1 that the batch adds, the two rows placed from plan-B7h.1-26
   included; the key collision case; no «Печать» on another account's
-  item; the request view as Q2 settles it (8.1); D71 deleted.
+  item; requests and notices in one panel with the retention of 2.8.6;
+  D71 deleted.
 
 ### 4.5 `B7h.5` - the tabs, the import names, the page fixes (outline)
 
@@ -1072,7 +1090,10 @@ design-level answers the plan review reads.
 
 | Scenario | Screen | Stored data and recovery |
 |---|---|---|
-| Migration B7h.3 meets a frozen copy it cannot place | none: the migration rolls back and `db:push` fails | nothing changed; the planner revisits 2.8.5 |
+| Migration B7h.3 finds more than one frozen copy with no own holder | none: the migration rolls back and `db:push` fails | nothing changed; the planner revisits 2.8.5 |
+| Migration B7h.3 deletes the one frozen copy with no own holder | the owner's test list loses that row | not restored (owner, 2026-10-06: released for deletion) |
+| A GM applies a request read less than an hour ago, or unread and days old (B7h.3, Q2 = B) | today's apply: the stock as it is now, the short lines if it is too low | the request is applied; nothing else changes |
+| 10 unread requests on a list (B7h.3) | the requester sees `requestPending` («У владельца уже ... без ответа») | nothing written; the GM's read starts each request's last hour |
 | `#/h/` first read fails or offline | «Предмет не загрузился» and «Повторить» | nothing stored |
 | `#/h/` of a deleted item | «Предмет не найден» | none |
 | The author deletes an item while a reader's list links it | the row goes; the panel says «Автор удалил «%s»...» | the entry is deleted by the cascade with its quantity, price and both notes (lost; the author's confirm says so, `hbDeleteOthers`); the notice keeps the name until 1 hour after it is read, or 30 days after it was created if nobody reads it |
@@ -1086,7 +1107,7 @@ design-level answers the plan review reads.
 | Conflict: another device hid a notice | the next read drops it | none |
 | Lists file import: the copies call succeeds, the lists call fails | the import's failure line | the copies exist; a retry skips held keys and links them |
 | Lists file import past the item or card limit, or past 1000 rows (B7h.3) | the import refused whole with the limit text | nothing written |
-| One owner held two different snapshots of one key (B7h.3 migration, lists file import) | two own items, the second under a new key | each entry links the copy of its own snapshot; nothing lost |
+| A lists file holds two different snapshots of one key (B7h.3 import) | two own items, the second under a new key | each entry links the copy of its own snapshot; nothing lost |
 | Stale tab (previous bundle) after B7h.3 | its write buffer sends `snapshot`: refused, «Не сохранено» until a reload; a link to another account's item draws as a missing record | nothing lost; a reload loads the new bundle |
 | Revert: previous frontend over the B7h.3 schema | as the stale tab | entries, items and notices kept |
 | Revert: B7h.3 down migration | frozen copies are back for foreign links | snapshots rebuilt from live items; notices dropped (a plan-review trigger; transient data) |
@@ -1101,6 +1122,7 @@ design-level answers the plan review reads.
 | `#/h/` with 0 related, 3 related, 300 related (3x items in one set) | B7h.4 | unit; the relation line folds after three own names («и ещё N») |
 | A list with 0, 1 and 200 linked foreign items (`entries_per_list` limit) | B7h.4 | unit; one `get_homebrew_items` call per list read |
 | The panel with 0, 1, 10 requests and 0, 1, 200 notices; one past (none: notices have no limit beyond one per entry) | B7h.4 | unit; the panel folds after three, as requests do |
+| 10 unread requests (the limit) and one more send refused; a request read and not read | B7h.3 | layer 3; unit for the request line |
 | The Items tab at 0, 1, 7, 8, 34, 100, 300 items | B7h.5 | goldens, unit, the timed case |
 | Sources at 0, 1, 20 (the limit), 21 refused, 60 (3x) | B7h.5 | unit; golden at gm1 |
 | Sets and Rules at 0, 1, 8, 100, 300 cards; a set with 300 members | B7h.5 | unit (timed under 100 ms in jsdom at 300) |
@@ -1169,9 +1191,8 @@ reverse any of them at the plan review.
 |---|---|---|---|
 | P1 | The item's public id | `homebrew_items.id` (uuid) at `#/h/<uuid>`; keys stay per owner | a long address (36 characters); two addresses for an own item (`#/i/hb_...` kept) |
 | P2 | How a list names another account's item | `list_entries.hb_item` (FK, cascade) | one more column; `item_key` is derived by a trigger |
-| P3 | A frozen copy with no single holder | a fixed copy in «Хоумбрю», no source | the source tag of such a copy changes to «Хоумбрю» |
-| P4 | Fixed copies past the item limit | allowed in the migration only | an account may sit above its limit until it deletes items |
-| P5 | Change-log retention | owner, 2026-10-06: 1 hour after read, or 30 days after creation if unread; one row per item | an unread notice older than a month is lost |
+| P3 | A frozen copy the list owner does not hold | deleted by the migration after an assert of at most one (owner, 2026-10-06, Q1) | the one production row is gone; the owner released it |
+| P5 | Change-log and purchase request retention | owner, 2026-10-06: 1 hour after read, or 30 days after creation if unread; one notice row per item; requests the same (Q2 = B) | an unread notice older than a month is lost; a stale request can be applied; unread requests fill the limit of 10 |
 | P6 | Which writes notify | every write that bumps a linking list (item, its source, its cards) | a source rename notifies too |
 | P7 | The clean-up mechanism | `pg_cron`, hourly | one extension on both projects |
 | P8 | The tabs' place | inside «Мои предметы» (owner's preference) | a tab row on the page |
@@ -1181,71 +1202,25 @@ reverse any of them at the plan review.
 | P12 | Subset downloads (per source, ticked items) | kept | they are not per-tab exports, so no feature is dropped |
 | P13 | `#/h/` live updates | re-read when the tab is shown again; no topic | a reader sees an edit after a tab switch or a reload |
 
-### 8.1 Open owner questions
+### 8.1 Owner questions answered (2026-10-06)
 
-**Q1 (plan-B7h.1-9) - conversion rule 3 links an importer's item.** When
-a frozen copy's author has deleted the item and exactly one other account
-holds the same key (it imported the author's file), rule 3 links the list
-owner's row to that importer's item. The importer never shared it: its
-item id and, through `related`, its connected items reach the list owner,
-and the importer's later edits and delete change that list. Needed before
-`B7h.3` is dispatched; `B7h.1` and `B7h.2` do not depend on it.
-
-- **A (recommended): keep rule 3.** The common case - the author still
-  holds the item and nobody imported it - links the original, which is
-  your goal in W1-d; the exposed content is a copy the list owner already
-  saw. Trade-off: in the rare import case a stranger's later edits reach
-  the list.
-- B: link only when exactly one account holds the key and that account
-  made the list's share link the copy came from. A snapshot does not
-  record its source account, so B cannot be checked for most rows and
-  falls back to a fixed copy. Trade-off: many entries whose author still
-  holds the item become fixed copies instead of live links.
-- C: never relink to another account; every frozen copy whose key the list
-  owner does not hold becomes a fixed copy. Trade-off: W1-d ("an entry
-  whose original item still exists becomes a live link") is not met for
-  any foreign copy.
-
-**Q2 (owner input 2026-10-06) - do purchase requests also expire after
-they are read?** Today a request can be accepted for 1 hour after it is
-created (`expires_at`), read or not; the panel then hides it by the clock,
-so a request the GM never saw disappears silently; the row is deleted 24
-hours after its expiry or decision. W1-e puts requests and change-log
-entries in one view, and change-log entries now expire 1 hour after they
-are read, or 30 days after creation. Moving requests fully to that rule
-changes what a request means: a GM could accept a request days later,
-after the player has left the shop, and 10 unread requests (the
-`pending_requests_per_list` limit) would block new sends for up to 30
-days. Needed before `B7h.3` (a `read_at` column on `purchase_requests`)
-and `B7h.4` (the view); `B7h.1` moves today's retention unchanged.
-
-- **A (recommended): the decision window stays 1 hour from creation; the
-  visibility follows the log.** A request can be accepted or declined only
-  in its first hour, as today. An expired request the GM has not seen stays
-  in «Новое в списке» as «Истёк без ответа» until it is read, then expires
-  1 hour after it is read, or 30 days after creation if nobody reads it;
-  a decided request expires 1 hour after its decision. Nothing disappears
-  unseen, and a stale request is never applied. Trade-off: an expired row
-  for each unseen request, at most 10 live ones per list plus the expired
-  ones, until read.
-- B: requests take the log's rule whole: «Принять» works until 1 hour
-  after the GM reads the request, or 30 days after creation. Trade-off: a
-  GM may apply a request days after the player asked; stale stock changes;
-  unread requests fill the 10-request limit and block new sends.
-- C: no change: 1 hour from creation, hidden when expired, deleted 24 hours
-  later. Trade-off: a request the GM never saw disappears silently (the
-  owner's concern).
+- Q1 (plan-B7h.1-9, conversion rule 3): rule 3 is dropped. Production
+  held no row in that branch; the conversion links references and
+  own-held frozen copies and deletes any other frozen copy after an assert
+  of at most one (2.8.5).
+- Q2 (the purchase request lifecycle): B. Purchase requests take the
+  change log's rule whole: 1 hour after read, or 30 days after creation;
+  «Принять» works until then (2.8.3, 2.8.6).
 
 ## 9. Risks, assumptions, deferred
 
 - Risk: a popular item linked from many lists makes each edit update every
   linking list and upsert a notice per list; bounded by the user base, and
   B7h.3 measures 300 linking lists on the local stack.
-- Risk: the conversion picks a holder by key; when the original author
-  deleted the item and one other account imported the same file, the entry
-  links that account's item: the importer's item id and its related items
-  reach the list owner, and the importer's edits and delete change the
-  list (2.8.5 rule 3; owner question Q1, 8.1).
+- Risk: a frozen copy made in production between the counts of
+  2026-10-06 and the release push can make the migration's assert fail;
+  the migration then rolls back, nothing changes, and the planner revisits
+  the conversion (2.8.5). The pre-flight counts (4.3) show it first.
 - Assumption: `pg_cron` can be created by `postgres` on the hosted projects
   (B7h.1's test push proves it before production).
 - Deferred (to the owner, not `DEBT.md`): telling the author how many other
@@ -1338,5 +1313,20 @@ need to ensure we expire 1 hour AFTER it was read because otherwise it
 will silently disappear", and the follow-up "or have some workaround maybe
 in a month since created". Read together: a change-log entry expires 1
 hour after it is read, or 30 days after it was created if nobody reads it,
-whichever comes first. Whether purchase requests follow is question Q2
-(8.1).
+whichever comes first. Whether purchase requests follow was question Q2
+(8.1), answered below.
+
+Production counts and Q1 (owner, 2026-10-06, in chat): `homebrew_items`
+30, authors 2, books 5; homebrew `list_entries` 8 - 7 references to the
+list owner's own items and 1 frozen copy whose key no account holds (376
+bytes, on the owner's own test list); no row in the "one other holder"
+branch; no list owner with two snapshot variants of one key. Of the one
+frozen copy: "it's mine, it's safe to delete". Decision: rule 3 and the
+fixed-copy branch are dropped; any frozen copy the list owner does not
+hold is deleted after an assert of at most one.
+
+Q2 (owner, 2026-10-06, in chat): B - purchase requests take the change
+log's rule whole: a request expires 1 hour after it is read, or 30 days
+after it is created if nobody reads it; «Принять» works until it expires.
+The owner accepted the consequences: a GM may apply a stale request, and
+unread requests count against the limit of 10.
