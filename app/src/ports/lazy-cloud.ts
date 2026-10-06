@@ -30,6 +30,7 @@ import type {
 const FAILED: AuthResult = { ok: false, error: 'failed' };
 const UNREAD: PrefsRead = { ok: false };
 const UNLISTED: ListsRead = { ok: false };
+const NO_ITEMS = { ok: false } as const;
 /* A chunk that never arrived sent nothing, so the write may be sent again. */
 const UNSENT: Extract<ListWrite, { error: 'network' }> = { ok: false, error: 'network' };
 const NO_SHARES: SharesRead = { ok: false };
@@ -87,7 +88,9 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     },
     apply: async (ops) => (await port())?.lists.apply(ops) ?? UNSENT,
     move: async (id, canonical) => (await port())?.lists.move(id, canonical) ?? UNSENT,
-    import: async (rows) => (await port())?.lists.import(rows) ?? UNSENT
+    import: async (rows) => (await port())?.lists.import(rows) ?? UNSENT,
+    items: async (ids) => (await port())?.lists.items(ids) ?? NO_ITEMS,
+    item: async (id) => (await port())?.lists.item(id) ?? NO_ITEMS
   };
   const shares: ShareRepository = {
     list: async (id) => (await port())?.shares.list(id) ?? NO_SHARES,
@@ -125,7 +128,15 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     list: async () => (await port())?.requests.list() ?? UNREQUESTED,
     send: async (id, token, lines) => (await port())?.requests.send(id, token, lines) ?? UNSENT,
     apply: async (id, clamp) => (await port())?.requests.apply(id, clamp) ?? UNSENT,
-    decline: async (id) => (await port())?.requests.decline(id) ?? UNSENT
+    decline: async (id) => (await port())?.requests.decline(id) ?? UNSENT,
+    markRead: async (listId) => (await port())?.requests.markRead(listId) ?? UNSENT,
+    notices: async (listId) => {
+      const p = await port();
+      if (!p) return NO_ITEMS;
+      return listId === undefined ? p.requests.notices() : p.requests.notices(listId);
+    },
+    hideNotices: async (listId, ids) =>
+      (await port())?.requests.hideNotices(listId, ids) ?? UNSENT
   };
   /* `newId()` and `newKey()` answer before the chunk loads, as `lists.newId()` does. */
   const homebrew: HomebrewRepository = {

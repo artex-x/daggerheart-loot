@@ -1,6 +1,6 @@
 # #/tables/eq_weapon/f_src-hb_alderworkshopaaa as gm1
 # route: #/tables/eq_weapon/f_src-hb_alderworkshopaaa
-# why: an own source in the weapons filter by link: the panel open, «Мастерская Ольхи» last in «Источник», the pill «Мастерская Ольхи», the axe alone
+# why: an own source in the weapons filter by link: the panel open, «Мастерская Ольхи» last in «Источник», the pill «Мастерская Ольхи», the axe alone, the switch «Свои предметы» on
 # as: gm1
 
 ## ru :: tree
@@ -49,13 +49,13 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Ссылка на таблицу"
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
-    button "Хоумбрю" [description=Показывать свои предметы pressed=true]
+    switch "Свои предметы" [checked=true]
+    StaticText "Свои предметы"
     button "Фильтры (1)" [expanded=true]
     button "Мастерская Ольхи" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "1 из 411"
-    ... StaticText x13 of 17 same-shape siblings elided
+    ... StaticText x14 of 18 same-shape siblings elided
     button "1" [pressed=false]
     ... button x29 of 33 same-shape siblings elided
     button "Мастерская Ольхи" [pressed=true]
@@ -118,7 +118,6 @@ daggerheart.com
 Очень далеко
 Пир зверей
 Поиск
-Показывать свои предметы
 Проворность
 Прочее
 Ранг 2Топор Тлеющих УглейEmber Axe
@@ -191,13 +190,13 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    button "Homebrew" [description=Show your own items pressed=true]
+    switch "Own items" [checked=true]
+    StaticText "Own items"
     button "Filters (1)" [expanded=true]
     button "Alder Workshop" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "1 of 411"
-    ... StaticText x13 of 17 same-shape siblings elided
+    ... StaticText x14 of 18 same-shape siblings elided
     button "1" [pressed=false]
     ... button x29 of 33 same-shape siblings elided
     button "Alder Workshop" [pressed=true]
@@ -268,7 +267,6 @@ Remove from the filter
 Reset all
 Search
 Secondary
-Show your own items
 Skip to content
 Standard rules
 Strength

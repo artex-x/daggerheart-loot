@@ -10,6 +10,9 @@ import {
   ACCOUNT_HASH,
   HOMEBREW_HASH,
   homebrewItemHash,
+  homebrewTabHash,
+  itemHash,
+  keepsTicks,
   legacySource,
   parseHash,
   printAsked,
@@ -17,6 +20,7 @@ import {
   printIds,
   PRINT_MAX,
   recordHash,
+  recordHref,
   sectionHash,
   sharedListHash,
   shareHash,
@@ -79,9 +83,10 @@ describe('golden route fixtures', () => {
          while the panel does not show it and the filter does not apply it -
          which is why the table stays whole. */
       if (route.kind === 'tables' && route.table) {
-        const shown = groupsFor(route.table).flatMap((g) =>
-          (route.filter[g] ?? []).map((v) => g + ':' + v)
-        );
+        /* On `homebrew` the `src` value is the source chip, never a pill. */
+        const shown = groupsFor(route.table)
+          .filter((g) => route.table !== 'homebrew' || g !== 'src')
+          .flatMap((g) => (route.filter[g] ?? []).map((v) => g + ':' + v));
         expect(shown.sort()).toEqual([...fx.resolves.picked].sort());
       }
     });
@@ -335,7 +340,7 @@ describe('the account page', () => {
 
 describe('the homebrew pages', () => {
   it('reads `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`', () => {
-    expect(parseHash(HOMEBREW_HASH)).toEqual({ kind: 'homebrew' });
+    expect(parseHash(HOMEBREW_HASH)).toEqual({ kind: 'homebrew', tab: 'items', key: null });
     expect(parseHash('#/homebrew/new')).toEqual({ kind: 'homebrewItem', key: null });
     expect(parseHash('#/homebrew/hb_emberaxeaaaaaaaa')).toEqual({
       kind: 'homebrewItem',
@@ -343,9 +348,58 @@ describe('the homebrew pages', () => {
     });
   });
 
+  it('reads each tab, and a card key on the Sets and Rules tabs', () => {
+    expect(parseHash('#/homebrew/sources')).toEqual({
+      kind: 'homebrew',
+      tab: 'sources',
+      key: null
+    });
+    expect(parseHash('#/homebrew/sets')).toEqual({ kind: 'homebrew', tab: 'sets', key: null });
+    expect(parseHash('#/homebrew/rules')).toEqual({
+      kind: 'homebrew',
+      tab: 'rules',
+      key: null
+    });
+    expect(parseHash('#/homebrew/sets/hb_aldersetaaaaaaaa')).toEqual({
+      kind: 'homebrew',
+      tab: 'sets',
+      key: 'hb_aldersetaaaaaaaa'
+    });
+    expect(parseHash('#/homebrew/rules/hb_alderrulecardaaa')).toEqual({
+      kind: 'homebrew',
+      tab: 'rules',
+      key: 'hb_alderrulecardaaa'
+    });
+  });
+
+  it('builds each tab address and reads it back', () => {
+    expect(homebrewTabHash('items')).toBe('#/homebrew');
+    expect(homebrewTabHash('sources')).toBe('#/homebrew/sources');
+    expect(homebrewTabHash('sets')).toBe('#/homebrew/sets');
+    expect(homebrewTabHash('rules', 'hb_alderrulecardaaa')).toBe(
+      '#/homebrew/rules/hb_alderrulecardaaa'
+    );
+    for (const [tab, key] of [
+      ['items', null],
+      ['sources', null],
+      ['sets', null],
+      ['sets', 'hb_aldersetaaaaaaaa'],
+      ['rules', null],
+      ['rules', 'hb_alderrulecardaaa']
+    ] as const) {
+      expect(parseHash(homebrewTabHash(tab, key))).toEqual({ kind: 'homebrew', tab, key });
+    }
+  });
+
   it('reads any other homebrew address as unreadable', () => {
     for (const h of [
       '#/homebrew/',
+      '#/homebrew/items',
+      '#/homebrew/sources/hb_aldersetaaaaaaaa',
+      '#/homebrew/sets/x',
+      '#/homebrew/sets/',
+      '#/homebrew/rules/',
+      '#/homebrew/rules/hb_x',
       '#/homebrew/pistols',
       '#/homebrew/hb_x',
       '#/homebrew/hb_emberaxeaaaaaaaa/x',
@@ -431,6 +485,34 @@ describe('a share link', () => {
   it('builds the address back', () => {
     expect(shareHash(SAMPLE)).toBe('#/s/' + SAMPLE);
     expect(parseHash(shareHash(SAMPLE))).toEqual({ kind: 'share', token: SAMPLE });
+  });
+});
+
+describe('an item address', () => {
+  const HID = '00000000-0000-4000-8000-000000000511';
+
+  it('reads the id after `#/h/`, lowercased', () => {
+    expect(parseHash('#/h/' + HID)).toEqual({ kind: 'item', id: HID });
+    expect(parseHash('#/h/' + HID.toUpperCase())).toEqual({ kind: 'item', id: HID });
+  });
+
+  it('drops a stray character after the id and reads a malformed one as written', () => {
+    expect(parseHash('#/h/' + HID + '.')).toEqual({ kind: 'item', id: HID });
+    expect(parseHash('#/h/not-a-uuid')).toEqual({ kind: 'item', id: '' });
+    expect(parseHash('#/h/')).toEqual({ kind: 'item', id: '' });
+    expect(parseHash('#/h').kind).toBe('unknown');
+  });
+
+  it('links a homebrew record with an id to its address, and every other record to its page', () => {
+    expect(itemHash(HID)).toBe('#/h/' + HID);
+    expect(parseHash(itemHash(HID))).toEqual({ kind: 'item', id: HID });
+    expect(recordHref({ id: 'hb_emberaxeaaaaaaaa', src: 'homebrew', hid: HID })).toBe(
+      '#/h/' + HID
+    );
+    expect(recordHref({ id: 'hb_emberaxeaaaaaaaa', src: 'homebrew' })).toBe(
+      '#/i/hb_emberaxeaaaaaaaa'
+    );
+    expect(recordHref({ id: 'q1', src: 'core', hid: HID })).toBe('#/i/q1');
   });
 });
 
@@ -598,5 +680,31 @@ describe('a link to hand somebody else', () => {
   it('lands on an address the app can read back', () => {
     const r = parseHash(appUrl(host, recordHash('w1')).split('/loot/')[1] ?? '');
     expect(r).toEqual({ kind: 'record', id: 'w1' });
+  });
+});
+
+describe('keepsTicks', () => {
+  const at = (h: string) => parseHash(h);
+
+  it('keeps the ticks between two «Мои предметы» tabs', () => {
+    expect(keepsTicks(at('#/homebrew'), at('#/homebrew/sources'))).toBe(true);
+  });
+
+  it('keeps the ticks between two #/tables/homebrew addresses', () => {
+    const bare = at('#/tables/homebrew');
+    const chip = at('#/tables/homebrew/f_src-hb');
+    const anchor = at('#/tables/homebrew/hb_sectbladesaaaaaa');
+    expect(keepsTicks(bare, chip)).toBe(true);
+    expect(keepsTicks(chip, anchor)).toBe(true);
+    expect(keepsTicks(anchor, bare)).toBe(true);
+  });
+
+  it('clears the ticks from the homebrew table to another table and from a tab to the table', () => {
+    expect(keepsTicks(at('#/tables/homebrew'), at('#/tables/core_item'))).toBe(false);
+    expect(keepsTicks(at('#/tables/core_item'), at('#/tables/homebrew'))).toBe(false);
+    expect(keepsTicks(at('#/homebrew'), at('#/tables/homebrew'))).toBe(false);
+    expect(keepsTicks(at('#/tables/core_item'), at('#/tables/core_item/f_kind-item'))).toBe(
+      false
+    );
   });
 });

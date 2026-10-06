@@ -1649,7 +1649,7 @@ const LONG_CHECKS = [
   {
     re: /^(?:rtk\s+)?npm run check:[12](?![:\w-])/,
     family: 'check-half',
-    cost: 'check:1 about 250 s with the hook selftest uncached and check:2 (vitest) about 310 s (measured 2026-10-07 on this host)',
+    cost: 'check:1 about 250 s with the hook selftest uncached and check:2 (vitest) 308 s idle, 465-682 s under load (measured 2026-10-07 on this host)',
     message: (joined, cost) =>
       `${longCheckMessage(joined, cost)} The commit gate arms when both halves, \`rtk npm run check:1\` and \`rtk npm run check:2\`, pass on one tree.`
   },

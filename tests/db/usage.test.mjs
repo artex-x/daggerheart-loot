@@ -4,11 +4,15 @@
   committed Auth rows), the Storage branch this stack has, the near-limit
   counts with the part above 100 %, the one-row-a-day upsert and the
   400-day delete, the 28-day history before today, the realtime.messages
-  rows of the last 24 hours, and no Data API role on
+  rows of the last 24 hours, the clean-up watch (a request, a stopped share,
+  a run and a notice each past its retention plus 2 hours counted, each one
+  inside it not; the newest run of the job; the 24-hour request retention
+  on a database before the links migration), and no Data API role on
   public.usage_snapshots. .claude/README.md, "Usage monitoring".
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { asRole, connect, realtimePartition } from './roles.mjs';
 import { collect, readHistory, saveSnapshot } from '../../tools/supabase/usage.mjs';
 import { mauPlan, monthStart } from '../../tools/supabase/usage-lib.mjs';
@@ -23,6 +27,7 @@ const PUBLIC_TABLES = [
   'homebrew_items',
   'limit_defaults',
   'list_entries',
+  'list_notices',
   'list_shares',
   'lists',
   'purchase_request_lines',
@@ -216,6 +221,81 @@ describe('collect()', () => {
     });
     assert.equal(typeof out.base.realtime_rows_24h, 'number');
     assert.equal(out.next.realtime_rows_24h, out.base.realtime_rows_24h + 1);
+  });
+
+  it('counts each row past its retention plus 2 hours, none inside it, and reads the newest run of the job', async () => {
+    const list = crypto.randomUUID();
+    const share = crypto.randomUUID();
+    const out = await rolledBack(async (tx) => {
+      const base = await collect(tx, new Date());
+      await tx`insert into auth.users (id, email) values (${A}, 'usage-a@example.test')`;
+      await tx`insert into public.lists (id, owner_id) values (${list}, ${A})`;
+      await tx`insert into public.list_shares (id, list_id, audience) values (${share}, ${list}, 'player')`;
+      // Stopped 31 and 29 days ago, both older than the active row.
+      for (const stopped of ['31 days', '29 days']) {
+        await tx`insert into public.list_shares (id, list_id, audience, token, created_at, revoked_at)
+          values (${crypto.randomUUID()}, ${list}, 'player', ${'u'.repeat(40) + stopped.slice(0, 2) + 'x'},
+            now() - interval '60 days', now() - ${stopped}::interval)`;
+      }
+      // Expired 3 hours and 1 hour ago.
+      const put = (expired) => tx`insert into public.purchase_requests
+        (id, list_id, share_id, audience, status, created_at, expires_at, decided_at)
+        values (${crypto.randomUUID()}, ${list}, ${share}, 'player', 'declined',
+          now() - interval '30 hours', now() - ${expired}::interval, now() - interval '29 hours')`;
+      await put('3 hours');
+      await put('1 hour');
+      // Read 4 and 2 hours ago; unread and made 31 and 29 days ago.
+      const note = (key, readAgo, madeAgo) => tx`insert into public.list_notices
+        (list_id, item_key, kind, name, created_at, read_at)
+        values (${list}, ${key}, 'changed', ${tx.json({ en: 'x', ru: 'x' })}, now() - ${madeAgo}::interval,
+          now() - ${readAgo}::interval)`;
+      await note('hb_readfouraaaaaaaa', '4 hours', '5 hours');
+      await note('hb_readtwoaaaaaaaaa', '2 hours', '5 hours');
+      await note('hb_madethirtyoneaaa', null, '31 days');
+      await note('hb_madetwentynineaa', null, '29 days');
+      const [{ jobid }] =
+        await tx`select jobid from cron.job where jobname = 'dhloot-lifecycle'`;
+      // Ended 8 and 6 days ago, then the newest, failed.
+      await tx`insert into cron.job_run_details (jobid, runid, command, status, start_time, end_time)
+        values (${jobid}, 9000000004, 'select 1', 'succeeded',
+            now() - interval '8 days', now() - interval '8 days'),
+          (${jobid}, 9000000005, 'select 1', 'succeeded',
+            now() - interval '6 days', now() - interval '6 days'),
+          (${jobid}, 9000000003, 'select public.lifecycle_cleanup()', 'failed',
+            now() + interval '1 minute', now() + interval '2 minutes')`;
+      return { base, next: await collect(tx, new Date()) };
+    });
+    // The request of 3 hours, the share of 31 days, the run of 8 days, the
+    // notice read 4 hours ago and the one made 31 days ago.
+    assert.equal(out.next.lifecycle_overdue, out.base.lifecycle_overdue + 5);
+    assert.equal(out.next.lifecycle_last.status, 'failed');
+    assert.match(out.next.lifecycle_last.start_time, /^\d{4}-\d\d-\d\dT/);
+    assert.equal(out.next.lifecycle_note, undefined);
+  });
+
+  it('takes the 24-hour request retention on a database before the links migration', async () => {
+    const down = readFileSync(
+      new URL('../../supabase/reversals/20261007130000_homebrew_links.sql', import.meta.url),
+      'utf8'
+    );
+    const list = crypto.randomUUID();
+    const share = crypto.randomUUID();
+    const out = await rolledBack(async (tx) => {
+      await tx.unsafe(down);
+      const base = await collect(tx, new Date());
+      await tx`insert into auth.users (id, email) values (${A}, 'usage-a@example.test')`;
+      await tx`insert into public.lists (id, owner_id) values (${list}, ${A})`;
+      await tx`insert into public.list_shares (id, list_id, audience) values (${share}, ${list}, 'player')`;
+      // Decided 27 and 3 hours ago, both expired more than 2 hours ago.
+      for (const decided of ['27 hours', '3 hours']) {
+        await tx`insert into public.purchase_requests
+            (id, list_id, share_id, audience, status, created_at, expires_at, decided_at)
+          values (${crypto.randomUUID()}, ${list}, ${share}, 'player', 'declined',
+            now() - interval '30 hours', now() - interval '29 hours', now() - ${decided}::interval)`;
+      }
+      return { base, next: await collect(tx, new Date()) };
+    });
+    assert.equal(out.next.lifecycle_overdue, out.base.lifecycle_overdue + 1);
   });
 
   it('runs in a read only transaction, as the nightly report does', async () => {

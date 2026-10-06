@@ -6,13 +6,14 @@
   recordOf() does. The cards themselves are homebrew-cards.test.mjs's. A key
   is pinned after insert; the count limits refuse the 21st source and the
   101st item; my_limit() reads the caller's own limit. A list entry is an
-  official record, a reference to an item the list's owner holds, or a
-  frozen copy with a valid snapshot of its own key; an edit bumps the lists
-  that refer, a delete takes the owner's references. A share projects a
-  reference from the live item; a copy freezes it for another user. One
-  homebrew message per owner per committed transaction.
+  official record or a live link to an item of any owner (hb_item), sent by
+  id or, for the list owner's own item, by key; an edit bumps every list
+  that links, a delete removes every linked entry. A share projects a link
+  from the live item; a copy links the same items for any user. The notices
+  and get_homebrew_item(s) are homebrew-links.test.mjs's. One homebrew
+  message per owner per committed transaction.
   docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md;
-  docs/decisions/2026-09-30-a-frozen-copy-embeds-its-source-a-reference-must-exist.md.
+  docs/decisions/2026-10-07-an-item-is-read-by-its-id-by-anyone-a-list-holds-a-live-link.md.
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -96,8 +97,8 @@ after(async () => {
 
 const users = (tx) => tx`insert into auth.users (id) values (${A}), (${B})`;
 /* A's source BA with the axe IA in it and the potion IP in none; B's source BB with an
-   item IB under A's axe key; A's list LA refers to the axe and holds a frozen potion, A's
-   list LA2 holds only a frozen axe; B's list LB holds a frozen axe. */
+   item IB under A's axe key; A's list LA links the axe (sent by key) and the potion (by
+   id), A's list LA2 links the axe; B's list LB links A's axe by its id. */
 const world = async (tx) => {
   await users(tx);
   await tx`insert into public.homebrew_books (id, owner_id, key, content) values
@@ -109,18 +110,12 @@ const world = async (tx) => {
     (${IB}, ${B}, ${AXE}, ${BB}, ${tx.json({ kind: 'item', en: 'B axe' })})`;
   await tx`insert into public.lists (id, owner_id, name) values
     (${LA}, ${A}, 'A'), (${LA2}, ${A}, 'A2'), (${LB}, ${B}, 'B')`;
-  const frozenAxe = await snapshotOf(tx, AXE, AXE_CONTENT, { ...BOOK, key: ALDER });
-  await tx`insert into public.list_entries (id, list_id, item_key, source, snapshot, position)
+  await tx`insert into public.list_entries (id, list_id, item_key, source, hb_item, position)
     values
       (${id(8301)}, ${LA}, ${AXE}, 'homebrew', null, 0),
-      (${id(8302)}, ${LA}, ${POTION}, 'homebrew', ${tx.json(POTION_SNAPSHOT)}, 1),
-      (${id(8303)}, ${LA2}, ${AXE}, 'homebrew', ${tx.json(frozenAxe)}, 0),
-      (${id(8304)}, ${LB}, ${AXE}, 'homebrew', ${tx.json(frozenAxe)}, 0)`;
-};
-const snapshotOf = async (tx, key, content, book) => {
-  const [{ v }] = await tx`select public.homebrew_snapshot_of(${key}, ${tx.json(content)},
-    ${book === null ? null : tx.json(book)}::jsonb, null) as v`;
-  return v;
+      (${id(8302)}, ${LA}, ${POTION}, 'homebrew', ${IP}, 1),
+      (${id(8303)}, ${LA2}, ${AXE}, 'homebrew', ${IA}, 0),
+      (${id(8304)}, ${LB}, ${AXE}, 'homebrew', ${IA}, 0)`;
 };
 const asA = (setup, fn) => asRole(sql, { role: 'authenticated', sub: A, setup }, fn);
 /* Reads as the connection's own role, which row level security does not bind, then acts
@@ -189,8 +184,9 @@ describe('homebrew grants and functions', () => {
         p.prosecdef, p.proconfig
       from pg_proc p
       where p.pronamespace = 'public'::regnamespace
-        and (p.proname like 'homebrew\\_%' or p.proname in ('list_entries_reference_exists',
-          'my_limit', 'get_shared_list', 'clone_shared_list', 'list_entries_snapshot_limit'))
+        and (p.proname like 'homebrew\\_%' or p.proname in ('list_entries_hb_key',
+          'my_limit', 'get_shared_list', 'clone_shared_list', 'get_homebrew_item',
+          'get_homebrew_items'))
       order by 1`;
     const pin = (prosecdef, anon, authed) => ({
       anon,
@@ -203,6 +199,8 @@ describe('homebrew grants and functions', () => {
     const validator = pin(false, false, true);
     assert.deepEqual(Object.fromEntries(rows.map(({ fn, ...r }) => [fn, r])), {
       'clone_shared_list(text,uuid)': pin(true, false, true),
+      'get_homebrew_item(uuid)': pin(true, true, true),
+      'get_homebrew_items(uuid[])': pin(true, false, true),
       'get_shared_list(text)': pin(true, true, true),
       'get_shared_list(text,bigint)': pin(false, true, true),
       'homebrew_book_valid(jsonb)': validator,
@@ -216,17 +214,18 @@ describe('homebrew grants and functions', () => {
       'homebrew_cards_touch()': pin(true, false, false),
       'homebrew_content_valid(jsonb)': validator,
       'homebrew_ids_ok(jsonb,text,integer)': validator,
+      'homebrew_item_record(uuid)': pin(false, false, false),
       'homebrew_items_before_delete()': pin(true, false, false),
       'homebrew_items_before_update()': pin(false, false, false),
       'homebrew_items_limit()': pin(true, false, false),
       'homebrew_items_touch()': pin(true, false, false),
       'homebrew_key_ok(text)': validator,
+      'homebrew_links_touch(uuid[],text)': pin(true, false, false),
       'homebrew_names_ok(jsonb,integer)': validator,
       'homebrew_snapshot_of(text,jsonb,jsonb,jsonb)': validator,
       'homebrew_snapshot_valid(jsonb)': validator,
       'homebrew_text_ok(jsonb,text,integer)': validator,
-      'list_entries_reference_exists()': pin(true, false, false),
-      'list_entries_snapshot_limit()': pin(true, false, false),
+      'list_entries_hb_key()': pin(true, false, false),
       'my_limit(text)': pin(true, false, true)
     });
   });
@@ -292,15 +291,10 @@ describe('the validators over docs/fixtures/homebrew/', () => {
     assert.deepEqual(wrong, []);
   });
 
-  it('keeps the R7 maximal snapshot under 32768 bytes and takes it as a frozen entry', async () => {
+  it('keeps the R7 maximal snapshot under 32768 bytes', async () => {
     const max = SNAPSHOTS.valid.find((c) => c.key === 'hb_maximalitemaaaaa');
-    const out = await asA(world, async (tx) => {
-      const [{ n }] = await tx`select octet_length(${tx.json(max.snapshot)}::jsonb::text) as n`;
-      await tx`insert into public.list_entries (id, list_id, item_key, source, snapshot, position)
-        values (${id(8310)}, ${LA}, ${max.key}, 'homebrew', ${tx.json(max.snapshot)}, 5)`;
-      return n;
-    });
-    assert.ok(out > 25000 && out < 32768, String(out));
+    const [{ n }] = await sql`select octet_length(${sql.json(max.snapshot)}::jsonb::text) as n`;
+    assert.ok(n > 25000 && n < 32768, String(n));
   });
 
   it('takes only the key shape', async () => {
@@ -478,33 +472,56 @@ describe('the rows', () => {
   });
 });
 
-describe('references and frozen copies', () => {
-  const insert = (tx, key, snapshot = null, source = 'homebrew', list = LA) =>
+describe('links', () => {
+  const insert = (tx, key, hbItem = null, source = 'homebrew', list = LA) =>
     refused(
       tx,
       (
         sp
-      ) => sp`insert into public.list_entries (id, list_id, item_key, source, snapshot, position)
-        values (gen_random_uuid(), ${list}, ${key}, ${source},
-          ${snapshot === null ? null : sp.json(snapshot)}::jsonb, 9)`
+      ) => sp`insert into public.list_entries (id, list_id, item_key, source, hb_item, position)
+        values (gen_random_uuid(), ${list}, ${key}, ${source}, ${hbItem}::uuid, 9)`
     );
 
-  it("takes a reference to the owner's key, and refuses a key it lacks and B's key", async () => {
+  it("links the owner's item sent by key, refuses a key it lacks and B's key, and links B's item by its id", async () => {
     const out = await asA(world, async (tx) => {
       await tx`delete from public.list_entries where list_id = ${LA}`;
+      const own = await insert(tx, AXE);
+      const [linked] = await tx`select hb_item from public.list_entries
+        where list_id = ${LA} and item_key = ${AXE}`;
       return {
-        own: await insert(tx, AXE),
+        own,
+        linked: linked.hb_item,
         missing: await insert(tx, MISSING),
         other: await unbound(
           tx,
           (u) => u`insert into public.homebrew_items (id, owner_id, key, content)
             values (${id(8120)}, ${B}, 'hb_onlybaaaaaaaaaaa', ${u.json({ kind: 'item', en: 'x' })})`
-        ).then(() => insert(tx, 'hb_onlybaaaaaaaaaaa'))
+        ).then(() => insert(tx, 'hb_onlybaaaaaaaaaaa')),
+        byId: await insert(tx, 'hb_onlybaaaaaaaaaaa', id(8120))
       };
     });
     assert.equal(out.own, null);
+    assert.equal(out.linked, IA);
     byCode('23503', /^list_entries: no homebrew item hb_nosuchitemaaaaaa$/)(out.missing);
     byCode('23503')(out.other);
+    assert.equal(out.byId, null);
+  });
+
+  it('takes the key and the source from the linked item, and refuses an unknown id', async () => {
+    const out = await asA(world, async (tx) => {
+      await tx`delete from public.list_entries where list_id = ${LA2}`;
+      const official = await insert(tx, 'q1', IB, 'official', LA2);
+      const [row] = await tx`select item_key, source from public.list_entries
+        where list_id = ${LA2} and hb_item = ${IB}`;
+      return {
+        official,
+        row: { ...row },
+        unknown: await insert(tx, AXE, id(8999), 'homebrew', LA2)
+      };
+    });
+    assert.equal(out.official, null);
+    assert.deepEqual(out.row, { item_key: AXE, source: 'homebrew' });
+    byCode('23503', /no homebrew item/)(out.unknown);
   });
 
   it('answers 23503 to a reference A lacks through apply_list_writes, beside a write that lands', async () => {
@@ -513,7 +530,7 @@ describe('references and frozen copies', () => {
         id: entryId,
         item_key: key,
         source: 'homebrew',
-        snapshot: null,
+        hb_item: null,
         position,
         quantity: 1,
         price_coins: null,
@@ -531,26 +548,7 @@ describe('references and frozen copies', () => {
     assert.deepEqual(out[1], { ok: true });
   });
 
-  it('takes a frozen copy under any key, and refuses a snapshot on an official entry, an invalid one and one of another key', async () => {
-    const out = await asA(world, async (tx) => {
-      const frozenOther = { ...POTION_SNAPSHOT, id: MISSING };
-      return {
-        frozen: await insert(tx, MISSING, frozenOther),
-        official: await insert(tx, 'q1', POTION_SNAPSHOT, 'official'),
-        invalid: await insert(tx, 'hb_otheraaaaaaaaaaa', {
-          id: 'hb_otheraaaaaaaaaaa',
-          src: 'homebrew'
-        }),
-        mismatched: await insert(tx, 'hb_otheraaaaaaaaaaa', POTION_SNAPSHOT)
-      };
-    });
-    assert.equal(out.frozen, null);
-    byCode('23514', /list_entries_snapshot_source/)(out.official);
-    byCode('23514', /list_entries_snapshot_valid/)(out.invalid);
-    byCode('23514', /list_entries_snapshot_valid/)(out.mismatched);
-  });
-
-  it('bumps each list holding a reference once on an item edit, and no list holding only a frozen copy', async () => {
+  it('bumps each list linking the item once on an item edit, of any owner', async () => {
     const out = await asA(world, async (tx) => {
       const was = await unbound(tx, revisions);
       await tx`update public.homebrew_items set content = ${tx.json({ ...AXE_CONTENT, rud: 'Новое' })}
@@ -558,15 +556,17 @@ describe('references and frozen copies', () => {
       const edited = await unbound(tx, revisions);
       await tx`update public.homebrew_items set content = ${tx.json({ ...POTION_CONTENT, rud: 'Новое' })}
         where id = ${IP}`;
-      return { was, edited, frozenOnly: await unbound(tx, revisions) };
+      return { was, edited, potion: await unbound(tx, revisions) };
     });
     assert.equal(out.edited[LA], out.was[LA] + 1);
-    assert.equal(out.edited[LA2], out.was[LA2]);
-    assert.equal(out.edited[LB], out.was[LB]);
-    assert.deepEqual(out.frozenOnly, out.edited);
+    assert.equal(out.edited[LA2], out.was[LA2] + 1);
+    assert.equal(out.edited[LB], out.was[LB] + 1);
+    assert.equal(out.potion[LA], out.edited[LA] + 1);
+    assert.equal(out.potion[LA2], out.edited[LA2]);
+    assert.equal(out.potion[LB], out.edited[LB]);
   });
 
-  it('bumps the lists referring to its items on a source rename, and on its delete moves the items to no source', async () => {
+  it('bumps the lists linking its items on a source rename, and on its delete moves the items to no source', async () => {
     const out = await asA(world, async (tx) => {
       const was = await unbound(tx, revisions);
       await tx`update public.homebrew_books set content = ${tx.json({ ...BOOK, ru: 'Мастерская II' })}
@@ -580,12 +580,13 @@ describe('references and frozen copies', () => {
       return { was, renamed, before: before.r, item, deleted: await unbound(tx, revisions) };
     });
     assert.equal(out.renamed[LA], out.was[LA] + 1);
-    assert.equal(out.renamed[LA2], out.was[LA2]);
+    assert.equal(out.renamed[LA2], out.was[LA2] + 1);
+    assert.equal(out.renamed[LB], out.was[LB] + 1);
     assert.deepEqual(out.item, { book_id: null, r: out.before + 1 });
     assert.equal(out.deleted[LA], out.renamed[LA] + 1);
   });
 
-  it("removes the owner's references with an item and keeps every frozen copy", async () => {
+  it('removes every entry that links an item with it, of any owner', async () => {
     const out = await asA(world, async (tx) => {
       const was = await unbound(tx, revisions);
       await tx`delete from public.homebrew_items where id = ${IA}`;
@@ -593,21 +594,17 @@ describe('references and frozen copies', () => {
         was,
         entries: await unbound(
           tx,
-          (u) => u`select list_id, item_key, snapshot is null as reference
-            from public.list_entries order by list_id, position`
+          (u) => u`select list_id, item_key from public.list_entries order by list_id, position`
         ),
         now: await unbound(tx, revisions)
       };
     });
     assert.deepEqual(
-      out.entries.map((e) => [e.list_id, e.item_key, e.reference]),
-      [
-        [LA, POTION, false],
-        [LA2, AXE, false],
-        [LB, AXE, false]
-      ]
+      out.entries.map((e) => [e.list_id, e.item_key]),
+      [[LA, POTION]]
     );
     assert.equal(out.now[LA], out.was[LA] + 1);
+    assert.equal(out.now[LB], out.was[LB] + 1);
   });
 
   const shareOf = async (tx, list) => {
@@ -616,10 +613,10 @@ describe('references and frozen copies', () => {
   };
   const projected = async (tx, token) => {
     const [{ v }] = await tx`select public.get_shared_list(${token}) as v`;
-    return v.entries.map((e) => [e.item_key, e.snapshot]);
+    return v.entries.map((e) => [e.item_key, e.snapshot, e.hid]);
   };
 
-  it('projects a reference from the live item, its source and its section, and shows an edit in the next read', async () => {
+  it('projects a link from the live item, its source and its section, with its hid, and shows an edit in the next read', async () => {
     const out = await asA(world, async (tx) => {
       const token = await shareOf(tx, LA);
       const first = await projected(tx, token);
@@ -645,11 +642,12 @@ describe('references and frozen copies', () => {
         section: { key: BLADES, en: 'Blades', ru: 'Холодное оружие' }
       }
     });
-    assert.deepEqual(potion, [POTION, POTION_SNAPSHOT]);
+    assert.equal(axe[2], IA);
+    assert.deepEqual(potion, [POTION, POTION_SNAPSHOT, IP]);
     assert.equal(out.second[0][1].book.en, 'Workshop II');
   });
 
-  it('freezes the references in a copy by B, keeps them in a copy by A, and keeps a frozen entry frozen for both', async () => {
+  it('links the same items in a copy by A and in a copy by B', async () => {
     let token;
     const shared = async (tx) => {
       await world(tx);
@@ -662,29 +660,19 @@ describe('references and frozen copies', () => {
         const copy = id(as === A ? 8401 : 8402);
         await tx`select public.clone_shared_list(${token}, ${copy})`;
         return (
-          await tx`select item_key, source, snapshot from public.list_entries
+          await tx`select item_key, source, hb_item from public.list_entries
             where list_id = ${copy} order by position`
         ).map((e) => ({ ...e }));
       });
-    const byA = await copyOf(A);
-    /* The owner copies its own share holding a frozen entry: the frozen entry stays
-       frozen with its snapshot, the reference stays a reference. */
-    assert.deepEqual(byA, [
-      { item_key: AXE, source: 'homebrew', snapshot: null },
-      { item_key: POTION, source: 'homebrew', snapshot: POTION_SNAPSHOT }
-    ]);
-    const byB = await copyOf(B);
-    assert.equal(byB[0].item_key, AXE);
-    assert.equal(byB[0].snapshot.id, AXE);
-    assert.equal(byB[0].snapshot.book.key, ALDER);
-    assert.deepEqual(byB[1], {
-      item_key: POTION,
-      source: 'homebrew',
-      snapshot: POTION_SNAPSHOT
-    });
+    const linked = [
+      { item_key: AXE, source: 'homebrew', hb_item: IA },
+      { item_key: POTION, source: 'homebrew', hb_item: IP }
+    ];
+    assert.deepEqual(await copyOf(A), linked);
+    assert.deepEqual(await copyOf(B), linked);
   });
 
-  it("removes A's sources, items and references with A's user, in either order", async () => {
+  it("removes A's sources, items and every link to them with A's user, in either order", async () => {
     for (const first of ['user', 'source']) {
       const left = await asA(world, async (tx) =>
         unbound(tx, async (u) => {
@@ -694,11 +682,13 @@ describe('references and frozen copies', () => {
             (select count(*)::int from public.homebrew_books where owner_id = ${A}) as books,
             (select count(*)::int from public.homebrew_items where owner_id = ${A}) as items,
             (select count(*)::int from public.lists where owner_id = ${A}) as lists,
-            (select count(*)::int from public.list_entries where list_id = ${LB}) as frozen`;
+            (select count(*)::int from public.list_entries where list_id = ${LB}) as linked,
+            (select count(*)::int from public.list_notices
+              where list_id = ${LB} and kind = 'deleted') as notices`;
           return { ...c };
         })
       );
-      assert.deepEqual(left, { books: 0, items: 0, lists: 0, frozen: 1 }, first);
+      assert.deepEqual(left, { books: 0, items: 0, lists: 0, linked: 0, notices: 1 }, first);
     }
   });
 });

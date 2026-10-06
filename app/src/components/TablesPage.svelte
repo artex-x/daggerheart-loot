@@ -4,9 +4,12 @@
 
      One component holds every table - each `TableId` draws a real body, and
      `homebrew` (the signed-in author's own items, body `hb`) is sectioned by
-     source and section the way `#/homebrew` is. Building separate page components for one route
-     would fight the second use this component is heading for - search reuses
-     the row wholesale.
+     source and section the way `#/homebrew` is; with two or more sources one
+     source chip (the `src` filter with one value) picks the source, and the
+     headings are its sections
+     (docs/decisions/2026-10-08-a-source-chip-on-the-homebrew-table-is-the-src-filter-with-one-value.md).
+     Building separate page components for one route would fight the second
+     use this component is heading for - search reuses the row wholesale.
 
      Four tables have no facet to filter by at all (`docs/specs/ROUTES.md`,
      "Filter grammar"): `core_item`, `core_consumable`, `hnf_item` and
@@ -35,6 +38,7 @@
   import SectionHead from './SectionHead.svelte';
   import Seg from './Seg.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
+  import Switch from './Switch.svelte';
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
   import { RARITIES, rarityLabel } from '../lib/alt.js';
@@ -57,7 +61,17 @@
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
   import { homebrewItemHash, tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
-  import { groupsOf, isHomebrewKey, isHomebrewRecord } from '../lib/homebrew.js';
+  import {
+    groupsOf,
+    hbFilterFix,
+    isHomebrewKey,
+    isHomebrewRecord,
+    pickSource,
+    sectionKeysOf,
+    sourceGroups,
+    sourceKeyOf,
+    sourcesOf
+  } from '../lib/homebrew.js';
   import { hayFor, matches, parseQuery, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
   import { TABLE_GROUPS, groupOf, subLabelOf } from '../lib/tables.js';
@@ -73,7 +87,7 @@
   const t = $derived(app.t);
   const index = $derived(app.index);
   /* The row pool and the facets only: `RecordHost` and `TableRows` keep `index`, so the
-     «Хоумбрю» chip never hides an own record inside a dialog or a row. */
+     «Свои предметы» switch never hides an own record inside a dialog or a row. */
   const browse = $derived(app.browse);
 
   /* `S.tables.t`'s default off app.js: the name in the address may be missing
@@ -125,7 +139,32 @@
   const filterState = $derived<FilterState>(
     app.route.kind === 'tables' ? app.route.filter : {}
   );
-  const facRows = $derived(browse ? facetRows(browse, table, t, app.lang) : []);
+
+  /* The source chips of `#/tables/homebrew`: `hbSource` is the chosen one, null with fewer
+     than two sources. On this table `src` is the chip only: the facets, `passes` and the
+     panel's `seenSeg` leave it out, and every facet write carries it. */
+  const hbBooks = $derived(app.homebrew?.books ?? []);
+  const hbOwn = $derived(
+    table === 'homebrew' ? (browse?.rows.get('homebrew') ?? []).filter(isHomebrewRecord) : []
+  );
+  const hbSources = $derived(sourcesOf(hbBooks, hbOwn, app.lang, t.srcHomebrew));
+  const hbSource = $derived(
+    table === 'homebrew'
+      ? pickSource(
+          hbSources,
+          filterState,
+          app.route.kind === 'tables' ? app.route.anchor : '',
+          hbOwn,
+          hbBooks
+        )
+      : null
+  );
+  const facRows = $derived(browse ? facetRows(browse, table, t, app.lang, hbSource) : []);
+
+  /** Returns the segment the panel compares: the encoded filter, without `src` on `homebrew`. */
+  function segOf(filter: FilterState, tbl: TableId): string {
+    return encodeFilter(tbl === 'homebrew' ? { ...filter, src: [] } : filter, groupsFor(tbl));
+  }
 
   let filterOpen = $state(false);
   let seenSeg = $state('');
@@ -133,14 +172,13 @@
   $effect(() => {
     const route = app.route;
     const tbl = table;
-    const groups = groupsFor(tbl);
     untrack(() => {
       if (seenTable !== tbl) {
         seenTable = tbl;
         seenSeg = '';
         filterOpen = false;
       }
-      const seg = route.kind === 'tables' ? encodeFilter(route.filter, groups) : '';
+      const seg = route.kind === 'tables' ? segOf(route.filter, tbl) : '';
       if (seg !== seenSeg) filterOpen = true;
       seenSeg = seg;
     });
@@ -149,9 +187,23 @@
   /** Writes a filter through `replace()`, and marks it as our own edit so the
    *  effect above does not treat it as a link arriving from elsewhere. */
   function applyFilter(next: FilterState): void {
-    seenSeg = encodeFilter(next, facetGroups);
-    app.replace(tablesHash(table, { filter: next }));
+    const filter = hbSource === null ? next : { ...next, src: [hbSource] };
+    seenSeg = segOf(filter, table);
+    app.replace(tablesHash(table, { filter }));
   }
+
+  /* An address that disagrees with the chosen chip is written once: more than one `src`
+     value, a `src` that names no held source, or a `sect` of another source. */
+  $effect(() => {
+    const chosen = hbSource;
+    if (chosen === null) return;
+    const fix = hbFilterFix(filterState, chosen, sectionKeysOf(hbBooks, chosen));
+    if (fix) {
+      untrack(() => {
+        applyFilter(fix);
+      });
+    }
+  });
 
   function pickFacet(group: string, value: string): void {
     const row = facRows.find((r) => r.group === group);
@@ -194,12 +246,22 @@
         ? otherTableRows(browse, table)
         : (browse?.rows.get(table) ?? [])
   );
+  /* The chosen chip's rows; every row of the table elsewhere. */
+  const shownRows = $derived.by<readonly Record_[]>(() => {
+    if (hbSource === null) return rows;
+    const known = new Set(hbBooks.map((b) => b.key));
+    return hbOwn.filter((r) => sourceKeyOf(r, known) === hbSource);
+  });
+  /* The filter the rows pass: `src` is the chip on `homebrew`, never a facet. */
+  const facetState = $derived<FilterState>(
+    table === 'homebrew' ? { ...filterState, src: [] } : filterState
+  );
   const facPassed = $derived.by(() => {
-    if (!facetGroups.length) return rows;
+    if (!facetGroups.length) return shownRows;
     const valueOf = eqKind
       ? (it: Record_, g: string) => equipFacets(it)[g] ?? ''
       : (it: Record_, g: string) => plainFacets(it)[g] ?? '';
-    return rows.filter((it) => passes(filterState, facetGroups, (g) => valueOf(it, g)));
+    return shownRows.filter((it) => passes(facetState, facetGroups, (g) => valueOf(it, g)));
   });
   /* The stat line `matches` searches - shared with `altSections` below, so
      the rule lives once. `statLineFor`'s own doc comment carries the reason:
@@ -215,7 +277,12 @@
 
   async function copyTableLink(): Promise<void> {
     await app.copied(
-      () => app.env.clipboard.writeText(app.linkTo(tablesHash(table))),
+      () =>
+        app.env.clipboard.writeText(
+          app.linkTo(
+            tablesHash(table, hbSource === null ? {} : { filter: { src: [hbSource] } })
+          )
+        ),
       (t) => t.tableLinkCopied
     );
   }
@@ -301,15 +368,14 @@
   );
 
   /* The own items' sections, as `#/homebrew` heads them: a section's key, a source's key
-     (its items outside its sections) or `hb` (no source) is the anchor. */
+     (its items outside its sections) or `hb` (no source) is the anchor. Inside a chosen
+     chip the headings are that source's sections, then «Без раздела». */
   const hbSections = $derived.by<Section[]>(() =>
     bodyKind !== 'hb' || !app.homebrew
       ? []
-      : groupsOf(
-          app.homebrew.books,
-          filtered.filter(isHomebrewRecord),
-          app.lang,
-          t.srcHomebrew
+      : (hbSource === null
+          ? groupsOf(hbBooks, filtered.filter(isHomebrewRecord), app.lang, t.srcHomebrew)
+          : sourceGroups(hbBooks, filtered.filter(isHomebrewRecord), hbSource, app.lang, t)
         ).map((g) => ({
           key: g.id,
           label: g.label,
@@ -491,7 +557,23 @@
           <Chip label={t[g.label]} on={g.id === group.id} href={tablesHash(g.top)} />
         {/each}
       </ChipRow>
-      {#if group.subs.length > 1}
+      {#if table === 'homebrew' && hbSources.length > 1}
+        <ChipRow sub>
+          {#each hbSources as s (s.key)}
+            <Chip
+              size="sm"
+              label={s.label}
+              on={s.key === hbSource}
+              href={tablesHash('homebrew', {
+                filter: {
+                  ...(filterState['kind'] ? { kind: filterState['kind'] } : {}),
+                  src: [s.key]
+                }
+              })}
+            />
+          {/each}
+        </ChipRow>
+      {:else if group.subs.length > 1}
         <ChipRow sub>
           {#each group.subs as sub (sub)}
             <Chip
@@ -553,13 +635,7 @@
           }}
         />
         {#if eqKind && (app.homebrew?.records.length ?? 0) > 0}
-          <!-- The `title` tells this toggle apart from the group chip link of the same word. -->
-          <Chip
-            label={t.srcHomebrew}
-            title={t.hbChipHint}
-            on={app.homebrewShown}
-            onclick={toggleOwn}
-          />
+          <Switch label={t.ownSwitch} on={app.homebrewShown} onchange={toggleOwn} />
         {/if}
       </div>
       {#if app.tablesViewChanged}<KeepNote {app} />{/if}
@@ -568,7 +644,7 @@
         rows={facRows}
         picked={filterState}
         shown={filtered.length}
-        total={rows.length}
+        total={shownRows.length}
         open={filterOpen}
         {t}
         ontoggle={() => {
@@ -623,7 +699,7 @@
       {:else if filtered.length === 0}
         <Empty>
           {t.nothing}
-          {#if chosenCount(filterState, facetGroups) > 0}
+          {#if chosenCount(facetState, facetGroups) > 0}
             <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
           {/if}
         </Empty>

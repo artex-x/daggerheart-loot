@@ -92,11 +92,70 @@ async function readRealtime(db) {
   return { realtime_rows_24h: num(r.n) };
 }
 
+/* The watch on the hourly clean-up (lifecycle_cleanup(), as the
+   20261007130000 migration leaves it): `lifecycle_overdue`, the rows past
+   their retention plus 2 hours, and `lifecycle_last`, the newest run of the
+   job as `{ status, start_time }` or null. Without a readable cron schema the
+   runs are not counted and `lifecycle_note` names the gap. A database before
+   that migration has no list_notices to count and keeps its requests 24
+   hours after a decision or expiry, so the watch takes that predicate. */
+async function readLifecycle(db) {
+  const [s] = await db`
+    select to_regclass('cron.job_run_details') is not null as present,
+      coalesce(has_table_privilege(to_regclass('cron.job_run_details'), 'select'), false)
+        and coalesce(has_table_privilege(to_regclass('cron.job'), 'select'), false) as readable,
+      to_regclass('public.list_notices') is not null as notices`;
+  const [{ requests }] = s.notices
+    ? await db`select count(*)::int as requests from public.purchase_requests r
+        where r.expires_at < now() - interval '2 hours'`
+    : await db`select count(*)::int as requests from public.purchase_requests r
+        where r.decided_at < now() - interval '26 hours'
+          or (r.status = 'pending' and r.expires_at < now() - interval '26 hours')`;
+  const [{ rows }] = await db`
+    select (${requests}::int
+      + (select count(*) from public.list_shares s
+        where s.revoked_at < now() - interval '30 days 2 hours'
+          and exists (
+            select 1 from public.list_shares n
+            where n.list_id = s.list_id and n.audience = s.audience
+              and n.created_at > s.created_at)))::int as rows`;
+  let n = rows;
+  if (s.notices) {
+    const [{ notices }] = await db`
+      select count(*)::int as notices from public.list_notices x
+      where x.read_at < now() - interval '3 hours'
+        or (x.read_at is null and x.created_at < now() - interval '30 days 2 hours')`;
+    n += notices;
+  }
+  if (!s.present || !s.readable) {
+    return {
+      lifecycle_overdue: n,
+      lifecycle_last: null,
+      lifecycle_note: s.present ? 'no cron.job_run_details access' : 'no cron.job_run_details'
+    };
+  }
+  const [{ runs }] = await db`
+    select count(*)::int as runs from cron.job_run_details
+    where end_time < now() - interval '7 days 2 hours'`;
+  const [last] = await db`
+    select d.status, d.start_time from cron.job_run_details d
+      join cron.job j on j.jobid = d.jobid
+    where j.jobname = 'dhloot-lifecycle'
+    order by d.start_time desc nulls last limit 1`;
+  return {
+    lifecycle_overdue: n + runs,
+    lifecycle_last: last
+      ? { status: last.status, start_time: last.start_time?.toISOString() ?? null }
+      : null
+  };
+}
+
 /** Returns today's metrics from `db` (a connection or a transaction):
  * `db_bytes`, the Storage figures, `mau`, `auth_users`,
  * `realtime_rows_24h`, `tables` (every
- * `public` table's exact rows and total bytes) and `near_limits`. Totals
- * only: no id, email or name leaves the database. */
+ * `public` table's exact rows and total bytes), `near_limits` and the
+ * clean-up watch (`lifecycle_overdue`, `lifecycle_last`). Totals only: no
+ * id, email or name leaves the database. */
 export async function collect(db, now) {
   const [{ bytes }] =
     await db`select sum(pg_database_size(datname))::bigint as bytes from pg_database`;
@@ -140,7 +199,8 @@ export async function collect(db, now) {
     auth_users: num(users),
     ...(await readRealtime(db)),
     tables,
-    near_limits: { ...near }
+    near_limits: { ...near },
+    ...(await readLifecycle(db))
   };
 }
 
@@ -211,7 +271,7 @@ async function main() {
         ? await keepAlive({ url: apiUrl, key, fetchImpl: globalThis.fetch })
         : undefined;
     const metrics = { ...snapshot, requests_24h: requests?.ok ? requests.counts : null };
-    const rows = evaluate(metrics, history, today, { requests, keepAlive: kept });
+    const rows = evaluate(metrics, history, today, { requests, keepAlive: kept, now });
     emit(
       renderSummary({
         today,

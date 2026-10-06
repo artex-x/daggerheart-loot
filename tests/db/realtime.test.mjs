@@ -106,7 +106,7 @@ const entryOf = (itemKey, position) => ({
   id: uuid(),
   item_key: itemKey,
   source: 'official',
-  snapshot: null,
+  hb_item: null,
   position,
   quantity: 1,
   price_coins: null,

@@ -87,7 +87,7 @@ describe('lazyCloud', () => {
       id: uuid(7001),
       item_key: 'ci1',
       source: 'official' as const,
-      snapshot: null,
+      hb_item: null,
       position: 0,
       quantity: 1,
       price_coins: null,
@@ -125,6 +125,8 @@ describe('lazyCloud', () => {
     const again = await lists.list(known);
     expect(again.ok && again.lists).toEqual([]);
     expect(again.ok && again.kept).toHaveLength(Object.keys(known).length);
+    const items = await lists.items([uuid(511)]);
+    expect(items.ok && items.items.map((i) => i.hid)).toEqual([uuid(511)]);
     expect(load).toHaveBeenCalledOnce();
   });
 
@@ -168,6 +170,16 @@ describe('lazyCloud', () => {
     expect(read.ok && read.requests.map((r) => r.id)).toEqual([id]);
     expect(await requests.apply(id, false)).toEqual({ ok: true, taken: 1 });
     expect(await requests.decline(id)).toEqual({ ok: false, error: 'decided' });
+    expect(await requests.markRead(uuid(101))).toEqual({ ok: true });
+    expect(await requests.notices()).toEqual({ ok: true, notices: [] });
+    expect(await requests.notices(uuid(101))).toEqual({ ok: true, notices: [] });
+    expect(await requests.hideNotices(uuid(101), [uuid(681)])).toEqual({ ok: true });
+  });
+
+  it('reads an item by its id through the loaded port', async () => {
+    const { lists } = lazyCloud(() => Promise.resolve(fakeCloud(SEED)));
+    const read = await lists.item(uuid(511));
+    expect(read.ok && (read.item as { hid: string }).hid).toBe(uuid(511));
   });
 
   it('forwards every homebrew call to the loaded port, and makes ids and keys before it loads', async () => {
@@ -251,6 +263,7 @@ describe('lazyCloud', () => {
     expect(await lists.apply([{ op: 'remove', id: 'x' }])).toEqual(unsent);
     expect(await lists.move('x', '{}')).toEqual(unsent);
     expect(await lists.import([])).toEqual(unsent);
+    expect(await lists.items(['x'])).toEqual({ ok: false });
     expect(await shares.list('x')).toEqual({ ok: false });
     expect(await shares.read('t')).toEqual({ ok: false });
     expect(await shares.create('x', 'player')).toEqual(unsent);
@@ -261,6 +274,11 @@ describe('lazyCloud', () => {
     expect(await requests.send('x', 't', [{ item: 'ci1', qty: 1 }])).toEqual(unsent);
     expect(await requests.apply('x', false)).toEqual(unsent);
     expect(await requests.decline('x')).toEqual(unsent);
+    expect(await requests.markRead('x')).toEqual(unsent);
+    expect(await requests.notices()).toEqual({ ok: false });
+    expect(await requests.notices('x')).toEqual({ ok: false });
+    expect(await requests.hideNotices('x', ['y'])).toEqual(unsent);
+    expect(await lists.item('x')).toEqual({ ok: false });
     expect(await homebrew.load()).toEqual({ ok: false });
     const book = { id: 'x', key: 'hb_bookbbbbbbbbbbbb', content: { ru: 'a' } };
     expect(await homebrew.createBook(book)).toEqual(unsent);

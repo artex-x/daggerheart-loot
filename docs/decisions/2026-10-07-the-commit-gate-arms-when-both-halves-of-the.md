@@ -11,7 +11,7 @@
   shards with merged blob reports (the next step when vitest alone nears 600 s on an idle host);
   arming by the observer (it cannot see a run that the harness moved to the background).
 - Amends "A green check arms the commit gate by its own exit, not a host-wide lock" (2026-09-27): a half records its pass by its exit, and two records on one key arm the gate.
-- Accepted trade-off: two calls instead of one. In a batch that changes the hooks, `check:1` runs the
-  selftest uncached and can pass 600 s; its exit still records the half, and the `gate credit:` line
-  in the background output is the evidence. If `check:1` passes 600 s on an idle host, the selftest is
-  the next stage to split out.
+- Accepted trade-off: two calls instead of one. Either half can pass 600 s: `check:1` in a batch that
+  changes the hooks (the selftest uncached), `check:2` on a loaded host (308 s idle, 465-682 s under load (2026-10-07)). Its
+  exit still records the half; the `gate credit:` line in the background output is the evidence. Past
+  600 s on an idle host, `check:1` splits out the selftest and `check:2` takes vitest shards.

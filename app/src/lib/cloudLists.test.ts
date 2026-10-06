@@ -5,9 +5,10 @@ import {
   entryOrder,
   entryRowsOf,
   entrySource,
-  frozenOf,
   isCloudId,
   limitText,
+  linkedOf,
+  linkedRecords,
   OFFICIAL,
   priceOf,
   quantityOf,
@@ -20,7 +21,8 @@ import {
   type ListOp,
   type ListRow,
   type SharedRow,
-  type ShareRow
+  type ShareRow,
+  itemOf
 } from './cloudLists.js';
 import { dict } from './dict.js';
 import { recordOf } from './homebrew.js';
@@ -29,7 +31,7 @@ const entry = (id: string, key: string, position: number, over: Partial<EntryRow
   id,
   item_key: key,
   source: 'official' as const,
-  snapshot: null,
+  hb_item: null,
   position,
   quantity: 1,
   price_coins: null,
@@ -157,17 +159,10 @@ describe('limitText', () => {
     );
   });
 
-  it('says the frozen-copy byte limit in KB, rounded up, in both languages', () => {
-    expect(limitText('snapshot_bytes_per_list', 1048576, dict('ru'))).toBe(
-      'Достигнут предел копий предметов других игроков в списке: 1024 КБ. Нужно больше - напишите на daggerheart.loot@gmail.com.'
-    );
+  it('says the removed frozen-copy byte limit as any other limit', () => {
     expect(limitText('snapshot_bytes_per_list', 1048576, dict('en'))).toBe(
-      "This list has reached its limit of 1024 KB of copies of other players' items. Need more? Write to daggerheart.loot@gmail.com."
+      'A limit has been reached: 1048576. Need more? Write to daggerheart.loot@gmail.com.'
     );
-    expect(limitText('snapshot_bytes_per_list', 2097152, dict('ru'))).toContain(': 2048 КБ.');
-    expect(limitText('snapshot_bytes_per_list', 2097152, dict('en'))).toContain(' 2048 KB ');
-    expect(limitText('snapshot_bytes_per_list', 500, dict('ru'))).toContain(': 1 КБ.');
-    expect(limitText('snapshot_bytes_per_list', null, dict('ru'))).toContain(': ? КБ.');
   });
 
   it('names the homebrew item and source limits', () => {
@@ -187,9 +182,32 @@ describe('limitText', () => {
   });
 });
 
-const sharedEntry = (key: string, position: number, over: Partial<EntryRow> = {}) => {
-  const { gm_note, ...rest } = entry('e' + String(position), key, position, over);
-  return over.gm_note === undefined ? rest : { ...rest, gm_note };
+type SharedEntry = SharedRow['entries'][number];
+const sharedEntry = (
+  key: string,
+  position: number,
+  over: Partial<SharedEntry> = {}
+): SharedEntry => {
+  const {
+    id,
+    item_key,
+    source,
+    position: at,
+    quantity,
+    price_coins,
+    player_note
+  } = entry('e' + String(position), key, position);
+  return {
+    id,
+    item_key,
+    source,
+    position: at,
+    quantity,
+    price_coins,
+    player_note,
+    snapshot: null,
+    ...over
+  };
 };
 
 const known = (id: string): boolean => id !== 'gone';
@@ -336,7 +354,7 @@ describe('sameProjection', () => {
     expect(
       sameProjection(base, {
         ...base,
-        entries: [entry('e1', 'ci1', 0)]
+        entries: [sharedEntry('ci1', 0)]
       })
     ).toBe(false);
   });
@@ -345,26 +363,35 @@ describe('sameProjection', () => {
 describe('homebrew entries', () => {
   const AXE = 'hb_emberaxeaaaaaaaa';
   const copy = recordOf(AXE, { kind: 'item', ru: 'Топор' }, null);
-  const ready = { ready: true, has: (k: string) => k === 'hb_mineaaaaaaaaaaaa' };
+  const HID = '00000000-0000-4000-8000-000000000511';
+  const MINE = '00000000-0000-4000-8000-000000000512';
+  const linked = { ...copy, hid: HID };
+  const ready = {
+    ready: true,
+    has: (k: string) => k === 'hb_mineaaaaaaaaaaaa',
+    hidOf: (k: string) => (k === 'hb_mineaaaaaaaaaaaa' ? MINE : null)
+  };
 
-  it('resolves a catalog key, an own item, a valid copy and nothing else', () => {
-    expect(entrySource('q1', { ready: false, has: () => false }, undefined)).toBe(OFFICIAL);
+  it("links a catalog key as official, an own item by its id, another account's record by its hid, and nothing else", () => {
+    expect(
+      entrySource('q1', { ready: false, has: () => false, hidOf: () => null }, undefined)
+    ).toBe(OFFICIAL);
     expect(entrySource('hb_mineaaaaaaaaaaaa', ready, undefined)).toEqual({
       source: 'homebrew',
-      snapshot: null
+      hb_item: MINE
     });
-    expect(entrySource(AXE, ready, copy)).toEqual({ source: 'homebrew', snapshot: copy });
+    expect(entrySource(AXE, ready, linked)).toEqual({ source: 'homebrew', hb_item: HID });
     expect(entrySource(AXE, ready, undefined)).toBeNull();
-    /* A copy of another key, a catalog record or a broken copy is never written. */
-    expect(entrySource(AXE, ready, { ...copy, id: 'hb_otheraaaaaaaaaaa' })).toBeNull();
-    expect(entrySource(AXE, ready, { ...copy, src: 'core' })).toBeNull();
-    expect(entrySource(AXE, ready, { ...copy, kind: 'nope' } as never)).toBeNull();
+    /* A record with no id, of another key, or a catalog record is never written. */
+    expect(entrySource(AXE, ready, copy)).toBeNull();
+    expect(entrySource(AXE, ready, { ...linked, id: 'hb_otheraaaaaaaaaaa' })).toBeNull();
+    expect(entrySource(AXE, ready, { ...linked, src: 'core' })).toBeNull();
   });
 
   it('answers null for every homebrew key while the account items are not read', () => {
-    const loading = { ready: false, has: () => true };
+    const loading = { ready: false, has: () => true, hidOf: () => MINE };
     expect(entrySource('hb_mineaaaaaaaaaaaa', loading, undefined)).toBeNull();
-    expect(entrySource(AXE, loading, copy)).toBeNull();
+    expect(entrySource(AXE, loading, linked)).toBeNull();
   });
 
   it('writes each row as the resolver answers and leaves a refused key out', () => {
@@ -373,12 +400,12 @@ describe('homebrew entries', () => {
       undefined,
       () => 'x',
       0,
-      (k) => entrySource(k, ready, k === AXE ? copy : undefined)
+      (k) => entrySource(k, ready, k === AXE ? linked : undefined)
     );
-    expect(rows.map((r) => [r.item_key, r.source, r.snapshot, r.position])).toEqual([
+    expect(rows.map((r) => [r.item_key, r.source, r.hb_item, r.position])).toEqual([
       ['q1', 'official', null, 0],
-      [AXE, 'homebrew', copy, 1],
-      ['hb_mineaaaaaaaaaaaa', 'homebrew', null, 2],
+      [AXE, 'homebrew', HID, 1],
+      ['hb_mineaaaaaaaaaaaa', 'homebrew', MINE, 2],
       ['q2', 'official', null, 3]
     ]);
     expect(
@@ -392,25 +419,35 @@ describe('homebrew entries', () => {
     ).toEqual([]);
   });
 
-  it('reads a valid frozen copy into `frozen` and skips a broken one', () => {
+  it('reads the item each homebrew entry links into `links`, and no record into `linked`', () => {
     const l = toCloudList(
       row({
         list_entries: [
-          entry('a', AXE, 0, { source: 'homebrew', snapshot: copy }),
-          entry('b', 'hb_brokenaaaaaaaaaa', 1, { source: 'homebrew', snapshot: { id: 1 } }),
-          entry('c', 'hb_mineaaaaaaaaaaaa', 2, { source: 'homebrew' })
+          entry('a', AXE, 0, { source: 'homebrew', hb_item: HID }),
+          entry('c', 'hb_mineaaaaaaaaaaaa', 1, { source: 'homebrew', hb_item: MINE }),
+          entry('d', 'q1', 2)
         ]
       })
     );
-    expect(l.ids).toEqual([AXE, 'hb_brokenaaaaaaaaaa', 'hb_mineaaaaaaaaaaaa']);
-    expect(l.frozen).toEqual({ [AXE]: copy });
-    expect(frozenOf(l)).toBe(l.frozen);
-    expect(toCloudList(row()).frozen).toBeUndefined();
-    expect(frozenOf(toCloudList(row()))).toBe(frozenOf({ id: 'x', name: '', ids: [] }));
-    expect(frozenOf({ id: 'x', name: '', ids: [] })).toEqual({});
+    expect(l.ids).toEqual([AXE, 'hb_mineaaaaaaaaaaaa', 'q1']);
+    expect(l.links).toEqual({ [AXE]: HID, hb_mineaaaaaaaaaaaa: MINE });
+    expect(l.linked).toBeUndefined();
+    expect(toCloudList(row()).links).toBeUndefined();
+    expect(linkedOf(l)).toBe(linkedOf({ id: 'x', name: '', ids: [] }));
+    expect(linkedOf({ id: 'x', name: '', ids: [] })).toEqual({});
+    const withLinked = { ...l, linked: { [AXE]: linked } };
+    expect(linkedOf(withLinked)).toBe(withLinked.linked);
   });
 
-  it("returns a projection's valid snapshots, a reference's included", () => {
+  it('reads the valid records of an items() answer by id, each with its hid', () => {
+    const got = linkedRecords([
+      { hid: HID, item: copy },
+      { hid: MINE, item: { id: 1 } }
+    ]);
+    expect([...got.entries()]).toEqual([[HID, linked]]);
+  });
+
+  it("returns a projection's valid snapshots, each with its entry's hid", () => {
     const shared: SharedRow = {
       audience: 'player',
       updated_at: '2026-09-22T10:00:00.000Z',
@@ -419,11 +456,106 @@ describe('homebrew entries', () => {
       list: { name: 'Лавка', money_mode: 'bag', player_note: '' },
       entries: [
         sharedEntry('q1', 0),
-        sharedEntry(AXE, 1, { source: 'homebrew', snapshot: copy }),
+        sharedEntry(AXE, 1, { source: 'homebrew', snapshot: copy, hid: HID }),
         sharedEntry('hb_brokenaaaaaaaaaa', 2, { source: 'homebrew', snapshot: copy })
       ]
     };
-    expect(snapshotRecords(shared)).toEqual([copy]);
+    expect(snapshotRecords(shared)).toEqual([linked]);
     expect(snapshotRecords(null)).toEqual([]);
+  });
+});
+
+describe('itemOf', () => {
+  const HID = '00000000-0000-4000-8000-000000000662';
+  const REL = '00000000-0000-4000-8000-000000000661';
+  const item = recordOf(
+    'hb_rangerrollaaaaaa',
+    { kind: 'item', ru: 'Скатка', craft_from: ['hb_travelrollaaaaaa'] },
+    null
+  );
+  const answer = (over: Record<string, unknown> = {}) => ({
+    hid: HID,
+    mine: false,
+    revision: 'r1',
+    item,
+    related: [
+      {
+        hid: REL,
+        key: 'hb_travelrollaaaaaa',
+        kind: 'item',
+        en: 'Roll',
+        ru: 'Скатка путника',
+        craft: ['hb_rangerrollaaaaaa']
+      },
+      {
+        hid: REL,
+        key: 'hb_bladeaaaaaaaaaaa',
+        kind: 'equip',
+        en: 'Blade',
+        ru: 'Клинок',
+        eq: { t: 'weapon', tier: 2, line: 'q1' },
+        tier: 'A'
+      }
+    ],
+    updated_at: '2026-10-07T10:00:00Z',
+    ...over
+  });
+
+  it('reads the record with its id and each related item as a record', () => {
+    const read = itemOf(answer());
+    expect(read?.record).toEqual({ ...item, hid: HID });
+    expect(read?.mine).toBe(false);
+    expect(read?.revision).toBe('r1');
+    expect(read?.related).toEqual([
+      {
+        id: 'hb_travelrollaaaaaa',
+        src: 'homebrew',
+        hid: REL,
+        kind: 'item',
+        en: 'Roll',
+        ru: 'Скатка путника',
+        ende: '',
+        rud: '',
+        craft: ['hb_rangerrollaaaaaa']
+      },
+      {
+        id: 'hb_bladeaaaaaaaaaaa',
+        src: 'homebrew',
+        hid: REL,
+        kind: 'equip',
+        en: 'Blade',
+        ru: 'Клинок',
+        ende: '',
+        rud: '',
+        tier: 'A',
+        eq: { t: 'weapon', tier: 2, line: 'q1' }
+      }
+    ]);
+  });
+
+  it('drops a related row of another shape', () => {
+    const bad = [
+      null,
+      { hid: REL, key: 'q1', kind: 'item', en: 'A', ru: 'А' },
+      { hid: 'x', key: 'hb_travelrollaaaaaa', kind: 'item', en: 'A', ru: 'А' },
+      { hid: REL, key: 'hb_travelrollaaaaaa', kind: 'weapon', en: 'A', ru: 'А' },
+      { hid: REL, key: 'hb_travelrollaaaaaa', kind: 'item', en: 1, ru: 'А' }
+    ];
+    expect(itemOf(answer({ related: bad }))?.related).toEqual([]);
+    expect(itemOf(answer({ related: 'none' }))?.related).toEqual([]);
+  });
+
+  it('answers null for anything that is not an item answer', () => {
+    for (const a of [
+      null,
+      [],
+      answer({ hid: 'not-a-uuid' }),
+      answer({ mine: 'no' }),
+      answer({ revision: 3 }),
+      answer({ item: { ...item, id: 'q1' } }),
+      answer({ item: null })
+    ]) {
+      expect(itemOf(a), JSON.stringify(a)).toBeNull();
+    }
   });
 });

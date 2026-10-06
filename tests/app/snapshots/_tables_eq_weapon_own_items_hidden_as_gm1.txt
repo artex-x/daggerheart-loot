@@ -1,6 +1,6 @@
 # #/tables/eq_weapon ~ own items hidden as gm1
 # route: #/tables/eq_weapon
-# why: the toolbar chip pressed off, found by its title «Показывать свои предметы» (the group chip link has the same word and no title): the chip unpressed, the axe gone from «Ранг 2»
+# why: the switch «Свои предметы» turned off: the switch unchecked, the axe gone from «Ранг 2»
 # as: gm1
 
 ## ru :: tree
@@ -49,10 +49,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Ссылка на таблицу"
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
-    button "Хоумбрю" [description=Показывать свои предметы pressed=false]
+    switch "Свои предметы" [checked=false]
+    StaticText "Свои предметы"
     button "Фильтры" [expanded=false]
-    StaticText "410"
-    ... StaticText x8 of 12 same-shape siblings elided
+    ... StaticText x9 of 13 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (80)" [checked=false]
     checkbox "Палаш" [checked=false]
@@ -447,7 +447,6 @@ daggerheart.com
 Позолоченный Лук
 Позолоченный Фальшион
 Поиск
-Показывать свои предметы
 Пороховая Серпантина
 Последний Рубеж
 Посох Аугмы
@@ -982,10 +981,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    button "Homebrew" [description=Show your own items pressed=false]
+    switch "Own items" [checked=false]
+    StaticText "Own items"
     button "Filters" [expanded=false]
-    StaticText "410"
-    ... StaticText x8 of 12 same-shape siblings elided
+    ... StaticText x9 of 13 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (80)" [checked=false]
     checkbox "Broadsword" [checked=false]
@@ -1500,7 +1499,6 @@ Shattersword
 Shortbow
 Shortstaff
 Shotgun
-Show your own items
 Sickle
 Singing Sword
 Siphoning Gauntlets

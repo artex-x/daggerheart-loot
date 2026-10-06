@@ -1161,18 +1161,56 @@ describe('the import plan', () => {
         )
       ]
     );
-    expect(heldOf(fileOf('example.json'), held)).toEqual({
+    const ex = fileOf('example.json');
+    const same = fileOf('same-names.json');
+    const pair = (v: { en?: string; ru?: string }) => ({ en: v.en, ru: v.ru });
+    expect(heldOf(ex, held)).toEqual({
       items: 2,
       cards: 1,
       books: 1,
-      sameNames: 0
+      sameNames: 0,
+      names: {
+        items: ex.items.slice(0, 2).map(pair),
+        cards: [pair(ex.cards[1]!)],
+        books: [pair(ex.books[0]!)],
+        sameNamed: []
+      }
     });
-    expect(heldOf(fileOf('same-names.json'), held)).toEqual({
+    expect(heldOf(same, held)).toEqual({
       items: 0,
       cards: 0,
       books: 0,
-      sameNames: 2
+      sameNames: 2,
+      names: { items: [], cards: [], books: [], sameNamed: same.items.slice(0, 2).map(pair) }
     });
+    expect(heldOf(ex, account()).names).toEqual({
+      items: [],
+      cards: [],
+      books: [],
+      sameNamed: []
+    });
+  });
+
+  it('leaves a held card of the other kind out of the card names', () => {
+    const held = account(
+      [],
+      [],
+      [
+        row(
+          {
+            id: 'c1',
+            key: 'hb_reloadruleaaaaaa',
+            kind: 'set' as const,
+            book_id: null,
+            content: { ru: 'П' }
+          },
+          '2026-09-01'
+        )
+      ]
+    );
+    const r = heldOf(fileOf('example.json'), held);
+    expect(r.cards).toBe(1);
+    expect(r.names.cards).toEqual([]);
   });
 });
 

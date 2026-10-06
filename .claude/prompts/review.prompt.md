@@ -157,6 +157,11 @@ list says what to look for.
 4. RU/EN parity: each new or changed string in both languages, with the
    same facts, both plural sets and ASCII punctuation.
 
+Owner rules (every review, after the four): a rule that `context.md` tags
+with this batch, or that the owner stated in this batch's sources, is in
+its home inside the budget (`.claude/README.md`, "Owner insights"); a
+missing or over-budget rule is a finding.
+
 A plan review checks that the plan answers each check, and challenges
 the answers. A batch review checks the code, the golden snapshots and
 the sweep results that the handoff records against them. A run that a
@@ -183,7 +188,8 @@ each, no markup.
    same way.
 5. **Deviations** - each deviation the handoff records, accepted or not
 6. **Standing checks** - section I: four numbered lines, each
-   `checked - <what you read>` or `not applicable - <reason>`
+   `checked - <what you read>` or `not applicable - <reason>`, then the
+   Owner rules line
 7. **Suggested next action**
 8. **Checks still needed**
 

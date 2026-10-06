@@ -3,8 +3,12 @@
   the local stack, with fake dumps in the CLI's format encrypted at run
   time to a fresh key: a good dump loads in one transaction after the
   truncate, every table matches its dump, and the sequence guard lifts the
-  dump's low setval to the highest id; a dump that names a missing column
-  fails with SQLSTATE 42703, reports no value and leaves no row; the reset
+  dump's low setval to the highest id; the clean-up job is paused for the
+  load and active after it, also after a throw, and a job paused before
+  stays paused; a failed resume never hides an error of the load and goes
+  to its own handler when one is given; a dump that names a
+  missing column fails with SQLSTATE 42703, reports no value and leaves no
+  row; the reset
   restores the migrations' seed. The key leaves the environment before the
   drill starts any child process. .claude/README.md, "Run the agent drill".
 */
@@ -14,14 +18,20 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Encrypter, generateX25519Identity, identityToRecipient } from 'age-encryption';
-import { connect, rowCounts } from '../../tools/supabase/db.mjs';
+import { connect, rowCounts, setCronJobActive } from '../../tools/supabase/db.mjs';
 import {
   decryptAge,
   drillReport,
   dumpRowCounts,
   localProjectId
 } from '../../tools/supabase/lib.mjs';
-import { resetLocal, restoreDump, takeIdentity } from '../../tools/supabase/restore.mjs';
+import {
+  LIFECYCLE_JOB,
+  resetLocal,
+  restoreDump,
+  takeIdentity,
+  withLifecyclePaused
+} from '../../tools/supabase/restore.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
@@ -31,6 +41,7 @@ const CONTAINER = `supabase_db_${localProjectId(
 )}`;
 const TABLES = [
   'auth.users',
+  'public.homebrew_items',
   'public.limit_defaults',
   'public.list_entries',
   'public.list_shares',
@@ -65,6 +76,45 @@ async function limitDefaults() {
   try {
     const rows = await sql`select key, value from public.limit_defaults order by key`;
     return rows.map((r) => `${r.key}=${r.value}`);
+  } finally {
+    await sql.end();
+  }
+}
+
+/* Sets the clean-up job active or paused, as the connection's own role. */
+async function setJob(active) {
+  const sql = connect(dbUrl);
+  try {
+    await setCronJobActive(sql, LIFECYCLE_JOB, active);
+  } finally {
+    await sql.end();
+  }
+}
+
+/* Makes every new postgres session read-only, so the next resume's update of
+   cron.job fails; the reset runs in an open session, which keeps its own
+   setting. */
+async function readOnlySessions(on) {
+  const sql = connect(dbUrl);
+  try {
+    await sql.unsafe('set default_transaction_read_only = off');
+    await sql.unsafe(
+      on
+        ? 'alter role postgres set default_transaction_read_only = on'
+        : 'alter role postgres reset default_transaction_read_only'
+    );
+  } finally {
+    await sql.end();
+  }
+}
+
+/* Answers whether the clean-up job is active. */
+async function jobActive() {
+  const sql = connect(dbUrl);
+  try {
+    const [{ active }] =
+      await sql`select active from cron.job where jobname = ${LIFECYCLE_JOB}`;
+    return active;
   } finally {
     await sql.end();
   }
@@ -119,6 +169,7 @@ describe('restoreDump', () => {
     const dataText = await roundTrip('data.sql');
     const result = await restoreDump({ dbUrl, container: CONTAINER, schemaText, dataText });
     assert.deepEqual(result.load, { ok: true });
+    assert.equal(await jobActive(), true);
     const dump = dumpRowCounts(dataText);
     for (const name of TABLES) {
       assert.deepEqual(
@@ -157,10 +208,88 @@ describe('restoreDump', () => {
       'homebrew_items_per_owner=100',
       'lists_per_owner=50',
       'pending_requests_per_list=10',
-      'request_lines=100',
-      'snapshot_bytes_per_list=1048576'
+      'request_lines=100'
     ]);
     clean = true;
+  });
+});
+
+describe('the clean-up job during a load', () => {
+  it('is paused while the load runs and active after it, also after a throw', async () => {
+    const seen = await withLifecyclePaused(dbUrl, () => jobActive());
+    assert.equal(seen, false);
+    assert.equal(await jobActive(), true);
+    const boom = new Error('boom');
+    await assert.rejects(
+      withLifecyclePaused(dbUrl, async () => {
+        throw boom;
+      }),
+      (err) => err === boom
+    );
+    assert.equal(await jobActive(), true);
+  });
+
+  it('leaves a job paused before the load paused after it', async () => {
+    await setJob(false);
+    try {
+      const seen = await withLifecyclePaused(dbUrl, () => jobActive());
+      assert.equal(seen, false);
+      assert.equal(await jobActive(), false);
+    } finally {
+      await setJob(true);
+    }
+  });
+
+  it('hands a failed resume to its handler, and throws it only when there is none', async () => {
+    const missed = [];
+    try {
+      const out = await withLifecyclePaused(
+        dbUrl,
+        async () => {
+          await readOnlySessions(true);
+          return 'loaded';
+        },
+        (err, jobid) => missed.push({ code: err.code, jobid })
+      );
+      assert.equal(out, 'loaded');
+      assert.equal(missed.length, 1);
+      assert.equal(missed[0].code, '25006');
+      assert.match(missed[0].jobid, /^\d+$/);
+      await readOnlySessions(false);
+      await setJob(true);
+      await assert.rejects(
+        withLifecyclePaused(dbUrl, () => readOnlySessions(true)),
+        (err) => err.code === '25006'
+      );
+    } finally {
+      await readOnlySessions(false);
+      await setJob(true);
+    }
+  });
+
+  it('keeps the error of the load when the resume fails too', async () => {
+    const boom = new Error('boom');
+    try {
+      await assert.rejects(
+        withLifecyclePaused(dbUrl, async () => {
+          await readOnlySessions(true);
+          throw boom;
+        }),
+        (err) => err === boom
+      );
+    } finally {
+      await readOnlySessions(false);
+      await setJob(true);
+    }
+  });
+
+  it('changes nothing for a database without the job', async () => {
+    const sql = connect(dbUrl);
+    try {
+      assert.equal(await setCronJobActive(sql, 'no-such-job', false), null);
+    } finally {
+      await sql.end();
+    }
   });
 });
 

@@ -94,7 +94,8 @@ export class Homebrew {
     }))
   );
 
-  /** Every own item as the app draws it, with its source and the own cards it names. */
+  /** Every own item as the app draws it, with its source, the own cards it names and its
+   *  row id as `hid`. */
   records: HomebrewRecord[] = $derived.by(() => {
     const refs: Record<string, BookRef> = Object.fromEntries(
       this.books.map((b) => [b.id, { ...b.content, key: b.key }])
@@ -105,7 +106,8 @@ export class Homebrew {
         row.key,
         row.content,
         row.book_id === null ? null : (refs[row.book_id] ?? null),
-        cards
+        cards,
+        row.id
       )
     );
   });

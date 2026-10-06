@@ -16,7 +16,8 @@ import {
 import { MONEY_DEFAULT } from './money.js';
 import { foldQuery } from './search.js';
 
-/** The list count from which both the add-to-list menu and the lists index draw a search box. */
+/** The count from which a search box is drawn: lists in the add-to-list menu and on the
+ *  lists index, own items, sets and rule cards on «Мои предметы». */
 export const LIST_SEARCH_AT = 8;
 
 /** How many cards the lists index draws before «Показать ещё», and how many each press adds (issue 68). */

@@ -1,4 +1,4 @@
-/* «Свой предмет» on an account list: the item first, then the entry that refers to it; the
+/* «Свой предмет» on an account list: the item first, then the entry that links it; the
  * refusals keep the text; a lost answer and a second press make one item; Enter adds and
  * Escape closes. docs/specs/FEATURES.md, "Lists". */
 
@@ -80,7 +80,7 @@ describe('the own-item panel', () => {
     });
   });
 
-  it('makes the item, then the entry that refers to it, and clears the form', async () => {
+  it('makes the item, then the entry that links it, and clears the form', async () => {
     const { cloud, page } = openShop();
     const create = vi.spyOn(cloud.homebrew, 'createItem');
     const apply = vi.spyOn(cloud.lists, 'apply');
@@ -129,7 +129,7 @@ describe('the own-item panel', () => {
     expect(shop?.list_entries.at(-1)).toMatchObject({
       item_key: made?.key,
       source: 'homebrew',
-      snapshot: null
+      hb_item: made?.id
     });
   });
 

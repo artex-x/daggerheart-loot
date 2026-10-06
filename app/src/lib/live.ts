@@ -146,3 +146,11 @@ export function readHomebrewMessage(
   if (by !== null && typeof by !== 'string') return null;
   return { by };
 }
+
+/** Returns an owner topic's change-log message (an item in one of the owner's lists was
+ *  changed or deleted by its author), or null for any other shape; other keys are ignored. */
+export function readNoticeMessage(event: string, payload: unknown): { list: string } | null {
+  if (event !== 'notice' || !isRecord(payload)) return null;
+  const list = payload['list'];
+  return typeof list === 'string' && isCloudId(list) ? { list } : null;
+}

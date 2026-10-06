@@ -1155,6 +1155,30 @@ describe('prodReport', () => {
     noEmail(lines);
   });
 
+  it('passes a restore whose clean-up job was not resumed and says how to resume it', () => {
+    const { verdict, lines } = prodReport({
+      ...base(),
+      resume: { jobid: '3', message: 'cannot execute UPDATE in a read-only transaction' }
+    });
+    assert.equal(verdict, 'PASS');
+    assert.equal(
+      lines.at(-2),
+      'the clean-up job was not resumed: cannot execute UPDATE in a read-only transaction; run select cron.alter_job(3, active := true)'
+    );
+  });
+
+  it('keeps a load error as the failure when the resume failed too', () => {
+    const { verdict, lines } = prodReport({
+      ...base(),
+      load: { ok: false, sqlstate: '42703', line: 3, status: 3 },
+      verify: undefined,
+      resume: { jobid: '3', message: 'x' }
+    });
+    assert.equal(verdict, 'FAIL');
+    assert.match(lines.find((l) => l.startsWith('load:')) ?? '', /42703/);
+    assert.ok(lines.some((l) => l.startsWith('the clean-up job was not resumed: x')));
+  });
+
   it('aborts on a wrong ref and keeps the safety backup', () => {
     const { verdict, lines } = prodReport({
       ...base(),

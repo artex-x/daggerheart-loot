@@ -31,15 +31,31 @@ Frozen as written in `ROUTES.md`. In particular:
 - `#/account`, the account page, read in every build (the not-found page,
   address kept, where no sign-in is configured)
 - `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`, the author's own
-  items and their editor, read in every build as `#/account` is; an own item
-  also opens at `#/i/<key>`, for its author only
+  items and their editor, and the tabs `#/homebrew/sources`,
+  `#/homebrew/sets[/<key>]` and `#/homebrew/rules[/<key>]` (a key opens that
+  card), read in every build as `#/account` is; an own item also opens at
+  `#/i/<key>`, for its author only
 - `#/tables/homebrew`, the author's own items as a table, read in every build
   as `#/account` is; its filter group `sect`, and the `src` values `hb` and
   `hb_<16>` on it and on the equipment tables (values that live in one
-  account)
+  account). On `homebrew`, `src` holds one value and picks the source chip:
+  with two or more sources the table shows one source at a time, and a
+  second value, a value that names no held source, or a `sect` value that is
+  not a section of the chosen source is dropped and the address rewritten (`ROUTES.md`, "Homebrew")
 - `#/s/<token>`, an account share link: the token is opaque, made only by
   the list's owner, one active per audience (players, GM); it opens from
-  `<site>#/s/<token>` and `<site>en/#/s/<token>` alike
+  `<site>#/s/<token>` and `<site>en/#/s/<token>` alike; its projection
+  (`get_shared_list`) draws each homebrew entry live from the linked item,
+  with the item's id as `hid` beside the entry's `snapshot`
+- `#/h/<uuid>`, one homebrew item by its id (`homebrew_items.id`), for
+  everyone, signed out too: the id is random, made by the author's client, so
+  an item is unlisted, not secret, and nobody can build or list one; the id
+  is read as the leading run of `[0-9A-Fa-f-]`, lowercased (a stray character
+  after it is dropped, the address kept); a malformed or unknown id draws the
+  record page's not-found page, never home; it opens from `<site>#/h/<uuid>`
+  and `<site>en/#/h/<uuid>` alike. Every homebrew link the app writes - a
+  relation, a list row, «Скопировать ссылку», «Отправить» - is this address;
+  `#/i/<key>` keeps opening the author's own item
 
 ## 2. Record ids
 
@@ -174,10 +190,13 @@ All of them except the three `schema/` files are generated from `data.js` by
   never holds one. The export writes version 2 only for a file that holds a
   homebrew entry, so an official-only export stays an `import-v1` file byte
   for byte; the import reads both versions, and a v1 reader refuses version 2.
-  On import a held key becomes a reference and any other key a frozen copy
-  of its snapshot, sent as an object: `jsonb_to_recordset` in
-  `import_lists` and `apply_list_writes` turns a JSON `null` snapshot into
-  SQL null, which reads as a reference. Frozen as `import-v1`: v1's bounds (1000 lists, 5000
+  On import a held key becomes a link to the own item. Each homebrew entry
+  the account does not hold becomes an own item, so the import counts
+  against the item and card limits and `import_homebrew`'s 1000 rows; past
+  either it is refused whole, and nothing is written. One copy is made per
+  distinct key and snapshot; a later differing snapshot of a key gets a new
+  key. The database stores a link (`list_entries.hb_item`), never a
+  snapshot. Frozen as `import-v1`: v1's bounds (1000 lists, 5000
   entries per list) hold, a bound widens in place and never narrows, any
   other change is `import-v3.json`. Its `eq` and `key` definitions are copies
   of `homebrew-v1.json`'s, held deep-equal by `lib/homebrewFile.test.ts`.
@@ -206,15 +225,16 @@ All of them except the three `schema/` files are generated from `data.js` by
 - The account's data zip (`daggerheart-loot-data-<YYYY-MM-DD>.zip`, from
   «Скачать мои данные» on `#/account`): one JSON file per kind at the root,
   each with its own `format` and `version`: `lists.json`, exactly the lists
-  file of every account list (`import-v1`, or `import-v2` when it holds an
-  own item or a frozen copy), then `homebrew.json`, exactly the account's
+  file of every account list (`import-v1`, or `import-v2` when it holds a
+  homebrew entry), then `homebrew.json`, exactly the account's
   whole `homebrew-v1` file, when the account holds a source, a card or an
   item. Frozen: a data zip written today imports for good, and a new kind is
   a new root file. A data zip holds its files at its root and no folders;
   every entry is stored (method 0) with a UTF-8 name (flag bit 11), no
   zip64, no encryption, one disk, at most 1000 entries. The import reads a
   zip of at most 10 MB whose chosen file is at most 5 MB. «Импорт из файла»
-  reads its `lists.json` and «Импорт предметов» its `homebrew.json`, each
+  on `#/lists` reads its `lists.json` and «Импорт из файла» on «Мои
+  предметы» its `homebrew.json`, each
   naming the other file with its page; a restore into another account is
   `homebrew.json` first, then `lists.json`
   (`docs/decisions/2026-10-02-a-lists-file-is-version-2-only-when-it-holds-homebrew.md`).

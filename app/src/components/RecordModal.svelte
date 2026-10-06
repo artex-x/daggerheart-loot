@@ -18,6 +18,7 @@
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import Toast from './Toast.svelte';
+  import { isHomebrewRecord } from '../lib/homebrew.js';
   import { nameOf } from '../lib/i18n.js';
   import type { ShareBlock } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -44,6 +45,13 @@
   const { app, index, it, onclose, onopen, extra }: Props = $props();
 
   let dialog = $state<HTMLDialogElement | null>(null);
+  /* The own items as read, not `isForeignItem`: that answers false while they load, which
+     would draw the author's links on another account's item for that moment. */
+  const own = $derived(
+    isHomebrewRecord(it) &&
+      typeof it.hid === 'string' &&
+      !!app.homebrew?.items.some((r) => r.id === it.hid)
+  );
 
   /* Opened as a modal rather than shown: that is what makes the rest of the
      page inert to a screen reader as well as to the mouse. The flag follows
@@ -105,6 +113,7 @@
       onartfail={(bad: string) => {
         app.markArtBroken(bad);
       }}
+      manage={own}
     >
       {#snippet nameActions()}
         <!-- RecordActions toasts through `app.say`; the toast is drawn

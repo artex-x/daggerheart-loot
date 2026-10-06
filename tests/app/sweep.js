@@ -14,7 +14,7 @@
  * language split is what `run-all.js`'s two 1180 rows pass). No language
  * argument means both, the original shape. */
 const { fresh, axe, reporter, closeBrowser } = require('./lib.js');
-const { HB_FILE, hbImportOpen, longNamesFile } = require('./inventory.js');
+const { HB_FILE, hbImportOpen, heldNamesFile, longNamesFile } = require('./inventory.js');
 
 const argv = process.argv.slice(2);
 const ONLY = argv.map(Number).filter(Boolean);
@@ -107,6 +107,35 @@ const PAGES = [
     ['#/lists/00000000-0000-4000-8000-000000000102', 'пустой список аккаунта', 'gm1'],
     ['#/lists', 'списки аккаунта', 'gm1'],
     ['#/homebrew', 'мои предметы', 'gm1'],
+    ['#/homebrew', 'мои предметы с поиском', 'gm3'],
+    ['#/homebrew/sources', 'мои источники', 'gm1'],
+    ['#/homebrew/sets/hb_starsleepsetaaaa', 'открытый комплект с предметами', 'gm3'],
+    ['#/homebrew/rules', 'мои карты правил', 'gm1'],
+    [
+      '#/homebrew',
+      'импорт предметов: названия тех, что уже есть',
+      'gm3',
+      /* gm3 has no stored language, so the English pass draws English labels. */
+      async (d) => {
+        const en = (await d.text()).includes('Import from file');
+        if (en) {
+          await d.click('Import from file');
+          for (
+            let i = 0;
+            i < 40 && !(await d.text()).includes('Import items from a JSON file');
+            i++
+          )
+            await d.settle();
+        } else {
+          await hbImportOpen(d);
+        }
+        await d.upload(heldNamesFile());
+        const go = en ? 'Import (12)' : 'Импортировать (12)';
+        for (let i = 0; i < 40 && !(await d.text()).includes(go); i++) await d.settle();
+        await d.click(en ? 'Update' : 'Обновить');
+        await d.click(en ? 'and 2 more' : 'и ещё 2');
+      }
+    ],
     /* A fourth element opens a panel first: the homebrew import's preview with the
        longest source name, its refused file, and the bulk move (rule 16 at 360). */
     [
@@ -142,7 +171,12 @@ const PAGES = [
     ],
     ['#/i/ci1', 'карточка со своими улучшениями', 'gm3'],
     ['#/i/q1', 'лестница рангов со своими ступенями', 'gm3'],
-    ['#/i/voa4_t3d', 'комплект со своими предметами', 'gm3']
+    ['#/i/voa4_t3d', 'комплект со своими предметами', 'gm3'],
+    /* The item page for everyone, the longest name on it, and the change log's panel with
+       a notice at the longest name (rule 16 at 360). */
+    ['#/h/00000000-0000-4000-8000-000000000662', 'страница чужого предмета'],
+    ['#/h/00000000-0000-4000-8000-000000000615', 'чужой предмет с длинным названием', 'gm2'],
+    ['#/lists/00000000-0000-4000-8000-000000000201', 'список с изменениями', 'gm2']
   ]);
 
 /* An A4 sheet legitimately scrolls sideways in a 360px window - the overflow
@@ -420,7 +454,7 @@ async function focusWalk(page, where) {
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
             const known =
-              /^(roll\/(std|alt|wondrous|dread|voa|dv|arazo|community)|tables|lists|search|print\/|i\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
+              /^(roll\/(std|alt|wondrous|dread|voa|dv|arazo|community)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);

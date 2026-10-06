@@ -9,7 +9,7 @@
  * cases for the port member it adds: A-F the account, G the lists, H the
  * share links, I the move of a browser list, J the live topics, K the purchase
  * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards, O the
- * import of a homebrew file and the bulk move. */
+ * import of a homebrew file and the bulk move, R the live links across accounts. */
 
 import type { EntryRow, ImportRow, ListRow } from '../lib/cloudLists.js';
 import {
@@ -25,6 +25,7 @@ import {
 import type { HomebrewImportRows } from '../lib/homebrewFile.js';
 import { readOwnerMessage, readRequestMessage, readShareMessage } from '../lib/live.js';
 import type { Prefs } from '../lib/prefs.js';
+import type { NoticeRow } from '../lib/requests.js';
 import type { CloudPort, ListWrites, LiveStatus, Session } from './types.js';
 
 export interface ContractUsers {
@@ -61,7 +62,7 @@ function entryOf(
     id,
     item_key: key,
     source: 'official',
-    snapshot: null,
+    hb_item: null,
     position,
     quantity: 1,
     price_coins: null,
@@ -657,8 +658,23 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
           JSON.stringify([{ item: 'ci1', qty: 1, price: 150, applied: null }]),
       'requests: the owner does not read the one request: ' + JSON.stringify(mine)
     );
-    const hour = first ? Date.parse(first.expiresAt) - Date.parse(first.createdAt) : 0;
-    assert(Math.abs(hour - 3_600_000) <= 1000, 'requests: it does not expire in an hour');
+    const month = first ? Date.parse(first.expiresAt) - Date.parse(first.createdAt) : 0;
+    assert(
+      first?.readAt === null && Math.abs(month - 30 * 86_400_000) <= 1000,
+      'requests: an unread request does not expire in 30 days: ' + JSON.stringify(first)
+    );
+    const marked = await requests.markRead(id);
+    assert(marked.ok, 'requests: the read mark answered ' + JSON.stringify(marked));
+    const reread = await requests.list();
+    const opened = reread.ok ? reread.requests.find((r) => r.id === r1) : undefined;
+    const lasts = opened?.readAt
+      ? Date.parse(opened.expiresAt) - Date.parse(opened.readAt)
+      : Number.NaN;
+    assert(
+      Math.abs(lasts - 3_600_000) <= 1000,
+      'requests: a read request does not expire an hour after its read: ' +
+        JSON.stringify(opened)
+    );
 
     const r2 = lists.newId();
     const two = [
@@ -893,8 +909,9 @@ async function importCases(
 }
 
 /* M. A source and an item written, read back, updated with and without the revision,
-   referred to and frozen in a list, projected through a share, and removed, on the doomed
-   user; the account's deletion takes whatever is left. */
+   linked in a list by its key (an unknown key and a previous bundle's frozen copy
+   refused), projected through a share with its id, and removed with its entry, on the
+   doomed user; the account's deletion takes whatever is left. */
 async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
   const { homebrew, lists, shares } = port;
   const first = await homebrew.load();
@@ -1024,19 +1041,26 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
     {
       op: 'create',
       list: { id: listId, name: 'Хоумбрю', money_mode: 'bag', player_note: '', gm_note: '' },
-      entries: [
-        entryOf(lists.newId(), key, 0, { source: 'homebrew' }),
-        entryOf(lists.newId(), potionKey, 1, { source: 'homebrew', snapshot: frozen })
-      ]
+      entries: [entryOf(lists.newId(), key, 0, { source: 'homebrew' })]
     },
     {
       op: 'add',
       list_id: listId,
-      entries: [entryOf(lists.newId(), homebrew.newKey(), 2, { source: 'homebrew' })]
+      entries: [entryOf(lists.newId(), homebrew.newKey(), 1, { source: 'homebrew' })]
+    },
+    {
+      op: 'add',
+      list_id: listId,
+      entries: [
+        {
+          ...entryOf(lists.newId(), potionKey, 2, { source: 'homebrew' }),
+          snapshot: frozen
+        } as EntryRow
+      ]
     }
   ]);
   assert(
-    answered(made) === 'ok,refused',
+    answered(made) === 'ok,refused,refused',
     'homebrew: the list writes answered ' + answered(made)
   );
 
@@ -1047,14 +1071,19 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
     const r = await shares.read(share.token);
     return r.ok && r.shared ? r.shared.entries.map((e) => e.snapshot) : [];
   };
+  const hids = async (): Promise<(string | undefined)[]> => {
+    const r = await shares.read(share.token);
+    return r.ok && r.shared ? r.shared.entries.map((e) => e.hid) : [];
+  };
   const withBook = { ...book, key: bookRow.key };
   let snaps = await projected();
   assert(
-    snaps.length === 2 &&
-      canonJson(snaps[0]) === canonJson(recordOf(key, edited, withBook)) &&
-      canonJson(snaps[1]) === canonJson(frozen),
-    'homebrew: the share does not project the live item and the frozen copy: ' +
-      canonJson(snaps)
+    snaps.length === 1 && canonJson(snaps[0]) === canonJson(recordOf(key, edited, withBook)),
+    'homebrew: the share does not project the live item: ' + canonJson(snaps)
+  );
+  assert(
+    canonJson(await hids()) === canonJson([itemId]),
+    'homebrew: the share does not carry the item id beside the snapshot'
   );
 
   const renamed: BookContent = { ...book, ru: 'Мастерская Ольхи II' };
@@ -1073,8 +1102,8 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
   assert((await homebrew.removeItem(itemId)).ok, 'homebrew: the item removal was refused');
   const left = await theList(port, listId, assert, 'after the item removal');
   assert(
-    left?.list_entries.map((e) => e.item_key).join(',') === potionKey,
-    'homebrew: the item removal did not leave only the frozen entry'
+    left?.list_entries.length === 0,
+    'homebrew: the item removal left an entry that linked it'
   );
   const gone = await homebrew.updateItem(itemId, patch, null);
   assert(
@@ -1449,11 +1478,190 @@ async function homebrewFileCases(port: CloudPort, assert: Assert): Promise<void>
   }
 }
 
+/* R. A live link across accounts: the member's item, read by its id signed out and by its
+   author (`item()`), linked in the doomed user's list by its id and read back through
+   `items()`; relinked in place to the doomed user's own item of the same key and back; the
+   member's two edits move the list's revision and the item's, and leave one unread
+   `changed` notice on the list, which `markRead` reads; the delete removes the entry and
+   turns the notice `deleted`, which `hideNotices` removes; `items()` answers nothing for an
+   unknown id and refuses a signed-out caller, and so does `notices()`. */
+async function linkCases(
+  author: CloudPort,
+  reader: CloudPort,
+  signedOut: CloudPort,
+  assert: Assert
+): Promise<void> {
+  const itemId = author.homebrew.newId();
+  const key = author.homebrew.newKey();
+  const content: HomebrewContent = { kind: 'item', ru: 'Скатка следопыта', en: 'Ranger roll' };
+  assert(
+    (await author.homebrew.createItem({ id: itemId, key, book_id: null, content })).ok,
+    "links: the author's item was refused"
+  );
+  const byId = async (
+    port: CloudPort
+  ): Promise<{ mine?: unknown; revision?: unknown; item?: unknown } | null> => {
+    const r = await port.lists.item(itemId);
+    assert(r.ok, 'links: item() failed');
+    return r.ok
+      ? (r.item as { mine?: unknown; revision?: unknown; item?: unknown } | null)
+      : null;
+  };
+  const outRead = await byId(signedOut);
+  assert(
+    outRead?.mine === false &&
+      canonJson(outRead.item) === canonJson(recordOf(key, content, null)),
+    'links: signed out, item() does not read the record: ' + JSON.stringify(outRead)
+  );
+  assert((await byId(author))?.mine === true, 'links: item() is not mine for its author');
+  const unknownRead = await signedOut.lists.item(reader.lists.newId());
+  assert(
+    unknownRead.ok && unknownRead.item === null,
+    'links: item() of an unknown id answered ' + JSON.stringify(unknownRead)
+  );
+
+  const listId = reader.lists.newId();
+  const entryId = reader.lists.newId();
+  const made = await reader.lists.apply([
+    {
+      op: 'create',
+      list: { id: listId, name: 'Ссылки', money_mode: 'bag', player_note: '', gm_note: '' },
+      entries: [
+        entryOf(entryId, key, 0, {
+          source: 'homebrew',
+          hb_item: itemId,
+          quantity: 3,
+          price_coins: 40,
+          player_note: 'p',
+          gm_note: 'g'
+        })
+      ]
+    }
+  ]);
+  assert(answered(made) === 'ok', 'links: the link was refused: ' + answered(made));
+  const read = await reader.lists.items([itemId]);
+  assert(
+    read.ok &&
+      read.items.length === 1 &&
+      read.items[0]?.hid === itemId &&
+      canonJson(read.items[0].item) === canonJson(recordOf(key, content, null)),
+    "links: items() does not read the author's item: " + JSON.stringify(read)
+  );
+  const entryOfList = async (when: string): Promise<EntryRow | undefined> =>
+    (await theList(reader, listId, assert, when))?.list_entries[0];
+  const kept = (e: EntryRow | undefined): string =>
+    e ? [e.id, e.position, e.quantity, e.price_coins, e.player_note, e.gm_note].join('|') : '';
+  const linked = await entryOfList('after the link');
+  assert(
+    linked?.hb_item === itemId && linked.source === 'homebrew',
+    'links: the entry does not link the item: ' + JSON.stringify(linked)
+  );
+
+  const ownId = reader.homebrew.newId();
+  assert(
+    (await reader.homebrew.createItem({ id: ownId, key, book_id: null, content })).ok,
+    "links: the reader's own item of the key was refused"
+  );
+  const relinked = await reader.lists.apply([{ op: 'relink', id: entryId, hb_item: ownId }]);
+  assert(answered(relinked) === 'ok', 'links: the relink answered ' + answered(relinked));
+  const moved = await entryOfList('after the relink');
+  assert(
+    moved?.hb_item === ownId && kept(moved) === kept(linked),
+    'links: the relink did not keep the entry: ' + JSON.stringify(moved)
+  );
+  const back = await reader.lists.apply([
+    { op: 'relink', id: entryId, hb_item: itemId },
+    { op: 'relink', id: reader.lists.newId(), hb_item: itemId }
+  ]);
+  assert(answered(back) === 'ok,gone', 'links: the relinks back answered ' + answered(back));
+
+  const before = (await theList(reader, listId, assert, 'before the edit'))?.revision ?? 0;
+  const revision = (await byId(signedOut))?.revision;
+  for (const rud of ['Пахнет хвоей.', 'Пахнет дымом.']) {
+    const edited = await author.homebrew.updateItem(
+      itemId,
+      { content: { ...content, rud }, book_id: null },
+      null
+    );
+    assert(edited.ok, "links: the author's edit was refused");
+  }
+  const after = (await theList(reader, listId, assert, 'after the edit'))?.revision ?? 0;
+  assert(after > before, "links: the author's edit did not move the list's revision");
+  assert(
+    (await byId(signedOut))?.revision !== revision,
+    "links: the author's edit did not move the item's revision"
+  );
+  const noticesOf = async (when: string): Promise<NoticeRow[]> => {
+    const r = await reader.requests.notices(listId);
+    assert(r.ok, 'links: notices() failed ' + when);
+    return r.ok ? r.notices : [];
+  };
+  const changed = await noticesOf('after the edits');
+  assert(
+    changed.length === 1 &&
+      changed[0]?.kind === 'changed' &&
+      changed[0].hid === itemId &&
+      changed[0].item_key === key &&
+      changed[0].read_at === null &&
+      changed[0].name.ru === content.ru &&
+      changed[0].name.en === content.en,
+    'links: two edits did not leave one unread changed notice: ' + JSON.stringify(changed)
+  );
+  assert((await reader.requests.markRead(listId)).ok, 'links: markRead was refused');
+  const marked = await noticesOf('after the read mark');
+  assert(marked[0]?.read_at !== null, 'links: markRead did not read the notice');
+
+  assert(
+    (await author.homebrew.removeItem(itemId)).ok,
+    "links: the author's delete was refused"
+  );
+  const gone = await theList(reader, listId, assert, 'after the delete');
+  assert(gone?.list_entries.length === 0, "links: the author's delete left the entry");
+  const deleted = await noticesOf('after the delete');
+  assert(
+    deleted.length === 1 &&
+      deleted[0]?.kind === 'deleted' &&
+      deleted[0].hid === null &&
+      deleted[0].read_at === null,
+    'links: the delete did not turn the notice deleted: ' + JSON.stringify(deleted)
+  );
+  assert(
+    (await reader.requests.hideNotices(listId, [deleted[0]?.id ?? ''])).ok,
+    'links: hideNotices was refused'
+  );
+  assert((await noticesOf('after the hide')).length === 0, 'links: the hide left the notice');
+  assert(
+    !(await signedOut.requests.notices()).ok,
+    'links: signed out, notices() is not refused'
+  );
+  const unknown = await reader.lists.items([itemId]);
+  assert(
+    unknown.ok && unknown.items.length === 0,
+    'links: items() of a deleted item answered ' + JSON.stringify(unknown)
+  );
+  assert(
+    !(await signedOut.lists.items([ownId])).ok,
+    'links: signed out, items() is not refused'
+  );
+
+  assert(
+    answered(await reader.lists.apply([{ op: 'remove', id: listId }])) === 'ok',
+    'links: the list removal was refused'
+  );
+  assert(
+    (await reader.homebrew.removeItem(ownId)).ok,
+    "links: the reader's item removal was refused"
+  );
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
   assert: (cond: boolean, msg: string) => void,
-  log: (msg: string) => void = () => undefined
+  log: (msg: string) => void = () => undefined,
+  /** The ports of case R, which reads one account's writes from another: `make` itself
+   *  when every port reaches one database. */
+  makeShared: (as?: string) => Promise<CloudPort> = make
 ): Promise<void> {
   /* A. signed out, with no redirect to report and no preferences */
   const signedOut = await make();
@@ -1599,6 +1807,15 @@ export async function runCloudContract(
   /* O. a homebrew file imported and the bulk move, on the doomed user; the account's
      deletion takes the rows with it. */
   await homebrewFileCases(doomedPort, assert);
+
+  /* R. a live link from the doomed user's list to the member's item; the case removes what
+     it makes. */
+  await linkCases(
+    await makeShared(member.as),
+    await makeShared(users.doomed),
+    await makeShared(),
+    assert
+  );
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

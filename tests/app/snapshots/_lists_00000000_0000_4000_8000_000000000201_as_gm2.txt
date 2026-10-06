@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000201 as gm2
 # route: #/lists/00000000-0000-4000-8000-000000000201
-# why: gm2's list: «2 позиции», the Scepter, then the frozen copy of gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries
+# why: gm2's list: «2 позиции», the panel «Новое в списке (2)» with gm1's two notices, each «новое»: «Автор изменил «Топор Тлеющих Углей».» with «Открыть», and the 120-code-point deleted name wrapped, each with «Скрыть», then «Скрыть изменения»; the Scepter, then a link to gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries
 # as: gm2
 
 ## ru :: tree
@@ -34,6 +34,16 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Скачать JSON"
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm2#/print/q23-hb_emberaxeaaaaaaaa]
     button "Удалить"
+    region "Новое в списке (2)"
+      heading "Новое в списке (2)" [level=2]
+      StaticText "новое"
+      StaticText "Автор изменил «Топор Тлеющих Углей». "
+      link "Открыть" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000511]
+      button "Скрыть изменение «Топор Тлеющих Углей»"
+      StaticText "новое"
+      StaticText "Автор удалил «Спальный мешок долгой дороги через перевал, болота..." [namelen=162 namehash=1c913d4d]
+      button "Скрыть изменение «Спальный мешок долгой дороги через перевал, бо..." [namelen=139 namehash=028772a7]
+      button "Скрыть изменения"
     status ""
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
@@ -86,6 +96,7 @@ daggerheart.com
 На единицу меньше
 Название списка
 Обычные правила
+Открыть
 Поделиться
 Позиция в списке
 Поиск
@@ -95,6 +106,9 @@ daggerheart.com
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать текст
+Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
+Скрыть изменение «Топор Тлеющих Углей»
+Скрыть изменения
 Случайно 1–2
 Собрать карточки для печати: девять на лист A4
 Сообщества
@@ -138,6 +152,16 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     button "Download JSON"
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm2#/print/q23-hb_emberaxeaaaaaaaa]
     button "Delete"
+    region "New in this list (2)"
+      heading "New in this list (2)" [level=2]
+      StaticText "new"
+      StaticText "The author changed "Ember Axe". "
+      link "Open" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000511]
+      button "Hide the change to "Ember Axe""
+      StaticText "new"
+      StaticText "The author deleted "Bedroll of the long road over the pass, thro..." [namelen=178 namehash=aab57179]
+      button "Hide the change to "Bedroll of the long road over the pass, thro..." [namelen=141 namehash=e3d544a4]
+      button "Hide changes"
     status ""
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
@@ -183,6 +207,9 @@ Dread
 EN
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Hide changes
+Hide the change to "Bedroll of the long road over the pass, thro... [namelen=141 namehash=e3d544a4]
+Hide the change to "Ember Axe"
 Install as an app
 Lay these out for printing: nine to an A4 sheet
 List name
@@ -190,6 +217,7 @@ Lists
 Note
 One higher
 One lower
+Open
 Own item
 Position in the list
 Privacy

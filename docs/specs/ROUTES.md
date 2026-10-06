@@ -53,7 +53,7 @@ working and keeps its own text.
 `TABLES_RE` is `/^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/`.
 
 Table names (`TABLE_IDS`): `core_item`, `core_consumable`, `hnf_item`,
-`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `dv`, `other_starting`, `other_frames`, `alt_item`,
+`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `dv`, `arazo`, `other_starting`, `other_frames`, `alt_item`,
 `alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`, `homebrew`.
 
 `frames` is an alias for `other_frames` (`TABLE_ALIASES`, `hash.ts:39`):
@@ -97,7 +97,7 @@ Group keys, by table:
 | `other_starting` | none |
 | `other_frames` | `kind`, `frame` |
 | `community` | `comm` |
-| `homebrew` | `kind`, `src`, `sect` |
+| `homebrew` | `kind`, `src` (one value: the source chip), `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
 
 Values: `tier` `1`-`4` (and `A`, `C` on `voa`; `A` on an equipment table
@@ -108,8 +108,16 @@ whose kind has an artifact record); `cls` `phy`/`mag`; `trait`
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
 community name. On `homebrew` and the equipment tables `src` also takes `hb`
 (own items with no source) and an own source's key; `sect` takes an own
-section's key. Such a value lives in one account: another account's key
-narrows to nothing, as any unknown value does.
+section's key. Such a value lives in one account: on the equipment tables
+another account's key narrows to nothing, as any unknown value does.
+
+On `homebrew`, `src` holds one value and picks the source chip ("Homebrew"
+below): it is not a facet, and values of two sources do not combine there.
+With two or more sources a second `src` value, a value that names no held
+source, and a `sect` value that is not a section of the chosen source are
+dropped, and the address is
+rewritten once; with one source the `src` value is ignored and the address
+kept.
 
 `other_frames` has four setting anchors, in order: `beast_feast`, `colossus`,
 `dark_heart`, and `motherboard`. Each canonical frame record and any framed
@@ -117,8 +125,8 @@ starting item (`f95`, under Motherboard) appears once, under its own setting.
 Unframed starting inventory is not part of this table - it is `other_starting`.
 
 An empty group means "any", so an untouched filter contributes nothing and a
-plain table link carries no `f_` part at all. Values inside a group are OR'd;
-groups narrow each other.
+plain table link carries no `f_` part at all. Values inside a group are OR'd
+(except `src` on `homebrew`, above); groups narrow each other.
 
 A group a table does not offer is ignored, and the table stays whole. This is
 silent, which is why the key names above are a contract: `f_rg-melee` on
@@ -131,6 +139,7 @@ silent, which is why the key names above are a contract: `f_rg-melee` on
 | `#/i/<id>` | one record |
 | `#/print/<id>[*<n>]-<id>[*<n>]-...` | a print sheet of those records, up to 180, each with an optional count |
 | `#/lists/<listId>` | a browser list, by its local id, or an account list, by its UUID (an account list's address is never rewritten to `#/l/`; a browser list's is not either after 2026-10-26, nor while the move into the account is due); the local id of a list that moved into the account opens that account list |
+| `#/h/<uuid>` | one homebrew item by its id, for everyone, signed out too, with the author's relation lines; the id is read as the leading run of `[0-9A-Fa-f-]`, lowercased (a stray character after it is dropped, the address kept); only a uuid is read; a malformed or unknown id, or a build with no sign-in configured, draws the record page's not-found page, never home |
 | `#/s/<token>` | an account list shared by its owner, read-only; the token is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept); a stopped, deleted, unknown or empty token draws one "no longer available" page, never home; with no sign-in configured that page too |
 | `#/l/<payload>` | a shared list, encoded in full (see `CONTRACTS.md`), until 2026-10-26 (`LEGACY_WRITE_UNTIL`); from then, in a build with sign-in configured, the retired page, the address kept and the payload never decoded |
 | `#/l/~<payload>` | the same, deflate-compressed; expanded and rewritten to the plain form on open, until 2026-10-26 (`LEGACY_WRITE_UNTIL`); from then the retired page, never unpacked |
@@ -175,12 +184,18 @@ the router never sees it (`STATE.md`, `dhloot.auth.return`).
 
 | Hash | Meaning |
 |---|---|
-| `#/homebrew` | «Мои предметы»: the signed-in author's own items, sources and sections |
+| `#/homebrew` | «Мои предметы», the Items tab: the signed-in author's own items |
+| `#/homebrew/sources` | the Sources tab: the sources and their sections |
+| `#/homebrew/sets`, `#/homebrew/sets/<key>` | the Sets tab; with a key, that set's fold open and scrolled to |
+| `#/homebrew/rules`, `#/homebrew/rules/<key>` | the Rules tab; with a key, that rule card's fold open and scrolled to |
 | `#/homebrew/new` | the editor of a new own item |
 | `#/homebrew/<key>` | the editor of one own item; `<key>` is `hb_` and 16 of `a-z2-7` |
 
-Exactly these three shapes; `#/homebrew/`, `#/homebrew/pistols` and any
-other key are unreadable addresses (`Fallback` below). The routes are read
+Exactly these seven shapes; `#/homebrew/`, `#/homebrew/items`,
+`#/homebrew/pistols`, `#/homebrew/sources/<key>`, `#/homebrew/sets/<not a
+key>` and any other key are unreadable addresses (`Fallback` below). A
+well-formed key the account does not hold, or a key of the other card kind,
+draws the tab with nothing open and keeps the address. The routes are read
 in every build, as `#/account` is: signed out they draw the sign-in prompt,
 and a build with no sign-in configured draws the not-found page and keeps
 the address. No tab reads current on them, and a pin may not hold them.
@@ -192,6 +207,16 @@ chip is drawn signed in only. Its anchors are a section's key (that
 section's items), a source's key (the source's items outside its sections;
 none when every item sits in a section), `hb` (the items with no source) or
 an item's key. A pin may hold it.
+
+With own items in two or more sources the table draws one source chip per
+source under the group chip, «Хоумбрю» last, and shows one source at a time.
+A chip is `#/tables/homebrew/f_src-<key>` (`f_src-hb` for «Хоумбрю»): `src`
+on this table holds one value and picks the source chip. The chosen chip is
+the first `src` value that names a held source; else the source of the
+anchor; else the source of the first `sect` value; else the first chip. A
+bare address and an anchor are kept as written; an address with a second
+`src` value, a `src` that names nothing held, or a `sect` value that is not
+a section of the chosen source is rewritten once to the chosen chip.
 
 An own item opens at `#/i/<key>` for its author only: any other reader,
 signed out included, gets «Предмет не найден». A key lives in one account,

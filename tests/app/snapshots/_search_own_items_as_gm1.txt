@@ -1,6 +1,6 @@
 # #/search ~ own items as gm1
 # route: #/search
-# why: «топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; the chip «Хоумбрю» last in the kind row, pressed
+# why: «топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; the three kinds in the kind row and the switch «Свои предметы» on under it
 # as: gm1
 
 ## ru :: tree
@@ -34,7 +34,8 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    button "Хоумбрю" [description=Показывать свои предметы pressed=true]
+    switch "Свои предметы" [checked=true]
+    StaticText "Свои предметы"
     checkbox "Выбрать все (15)" [checked=false]
     StaticText "Выбрать все (15)"
     checkbox "Топор-Пила Лесоруба" [checked=false]
@@ -83,7 +84,6 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
-Показывать свои предметы
 Предметы
 Продвинутый Священный Топор
 Продвинутый Священный ТопорРанг 3 · Магическое · Сила · Вплотную... [namelen=107 namehash=6323de8c]
@@ -141,7 +141,8 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    button "Homebrew" [description=Show your own items pressed=true]
+    switch "Own items" [checked=true]
+    StaticText "Own items"
     checkbox "Select all (15)" [checked=false]
     StaticText "Select all (15)"
     checkbox "Felling Axe-Saw" [checked=false]
@@ -207,7 +208,6 @@ Returning AxeTier 2 · Physical · Agility · Close · d6+4 phy · On... [namele
 Ricochet Axes
 Ricochet AxesTier 4 · Physical · Agility · Far · d6+11 phy · Two... [namelen=175 namehash=538d14ab]
 Search
-Show your own items
 Skip to content
 Standard rules
 Tables

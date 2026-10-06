@@ -18,7 +18,8 @@
  *
  * The signed-in author's own items add values at run time: the equipment `src` row
  * appends `hb` and each own source after the books, and the `homebrew` table offers
- * `kind`, `src` and `sect` over its own rows (docs/specs/ROUTES.md, "Values").
+ * `kind` and `sect` over its own rows; its `src` is the source chip above the table
+ * (docs/specs/ROUTES.md, "Values").
  *
  * Pure module: no DOM, no data beyond what is handed in. */
 
@@ -101,13 +102,17 @@ function homebrewSrcValues(records: readonly Record_[], t: Dict, lang: Lang): Fa
   ];
 }
 
-/* The `sect` values of own items, each labelled «<source> · <section>» as its heading is,
-   so two sources' sections of one name never draw two equal chips. */
-function homebrewSectValues(records: readonly Record_[], lang: Lang): FacetValue[] {
+/* The `sect` values of the shown source's own items (`source`, or every own item when
+   null), each labelled by the section's name: the row holds one source's sections. */
+function homebrewSectValues(
+  records: readonly Record_[],
+  lang: Lang,
+  source: string | null
+): FacetValue[] {
   const named = new Map<string, string>();
   for (const it of records.filter(isHomebrewRecord)) {
     const s = it.book?.section;
-    if (it.book && s) named.set(s.key, it.book[lang] + ' · ' + s[lang]);
+    if (s && (source === null || srcOf(it) === source)) named.set(s.key, s[lang]);
   }
   return [...named].map(([value, label]) => ({ value, label })).sort(byLabel(lang));
 }
@@ -207,7 +212,13 @@ export function eqFacetRows(index: Index, kind: EquipKind, t: Dict, lang: Lang):
  * not only the ones with rows left after the current pick - a facet offers
  * values, it does not narrow itself by what else is already narrowed.
  */
-export function facetRows(index: Index, table: TableId, t: Dict, lang: Lang): FacetRow[] {
+export function facetRows(
+  index: Index,
+  table: TableId,
+  t: Dict,
+  lang: Lang,
+  hbSource: string | null = null
+): FacetRow[] {
   const eqKind = EQ_TABLE[table];
   if (eqKind) return eqFacetRows(index, eqKind, t, lang);
 
@@ -234,10 +245,7 @@ export function facetRows(index: Index, table: TableId, t: Dict, lang: Lang): Fa
       values: communities(index).map((c) => ({ value: c.id, label: communityName(c, lang) }))
     });
   } else if (table === 'homebrew') {
-    const own = index.rows.get('homebrew') ?? [];
-    const src = homebrewSrcValues(own, t, lang);
-    if (src.length) rows.push({ group: 'src', label: t.source, values: src });
-    const sect = homebrewSectValues(own, lang);
+    const sect = homebrewSectValues(index.rows.get('homebrew') ?? [], lang, hbSource);
     if (sect.length) rows.push({ group: 'sect', label: t.hbSection, values: sect });
   }
 

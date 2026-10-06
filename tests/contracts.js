@@ -139,6 +139,7 @@ const N_REC = '\x1e',
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
     ok(text.includes('#/s/<token>'), name + ' does not name the share link #/s/<token>');
+    ok(text.includes('#/h/<uuid>'), name + ' does not name the item address #/h/<uuid>');
   });
   /* The homebrew pages and the reserved key prefix are public (CONTRACTS.md sections 1
      and 2): an agent must not take `hb_` for a record id it can build. */
@@ -153,6 +154,14 @@ const N_REC = '\x1e',
       name + ' does not name the homebrew table #/tables/homebrew'
     );
     ok(text.includes('hb_'), name + ' does not name the reserved key prefix hb_');
+    for (const tab of ['#/homebrew/sources', '#/homebrew/sets', '#/homebrew/rules']) {
+      ok(text.includes(tab), name + ' does not name the «Мои предметы» tab ' + tab);
+    }
+    /* The meaning of `src` on the homebrew table: one value, the source chip. */
+    ok(
+      /On `homebrew`, `src` holds one value and picks the\s+source chip/.test(text),
+      name + ' does not say that `src` on `homebrew` holds one value and picks the source chip'
+    );
   });
   [
     ['llms.txt', machine],

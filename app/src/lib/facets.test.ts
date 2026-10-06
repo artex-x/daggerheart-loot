@@ -375,30 +375,28 @@ describe('the own items', () => {
     ]);
   });
 
-  it('offers kind, source with hb first, and section on the homebrew table', () => {
+  it('offers kind and section on the homebrew table, and no source row', () => {
     const rows = facetRows(index, 'homebrew', t, 'ru');
-    expect(rows.map((r) => r.group)).toEqual(['kind', 'src', 'sect']);
-    expect(values(index, 'homebrew', 'src')).toEqual([
-      'Хоумбрю',
-      'Гильдия',
-      'Мастерская Ольхи'
-    ]);
-    expect(rows[1]?.values[0]?.value).toBe('hb');
+    expect(rows.map((r) => r.group)).toEqual(['kind', 'sect']);
   });
 
-  it('names a section with its source, so two equal section names differ', () => {
-    expect(values(index, 'homebrew', 'sect')).toEqual([
-      'Гильдия · Клинки',
-      'Мастерская Ольхи · Клинки'
-    ]);
-    expect(values(index, 'homebrew', 'sect').length).toBe(
-      new Set(values(index, 'homebrew', 'sect')).size
-    );
+  it('labels a section by its name and lists every source with no chip chosen', () => {
+    expect(values(index, 'homebrew', 'sect')).toEqual(['Клинки', 'Клинки']);
+  });
+
+  it('lists only the chosen source sections with a chip chosen', () => {
+    const sect = (source: string): string[] =>
+      facetRows(index, 'homebrew', t, 'ru', source)
+        .find((r) => r.group === 'sect')
+        ?.values.map((v) => v.value) ?? [];
+    expect(sect('hb_guildaaaaaaaaaaa')).toEqual(['hb_guildbladesaaaaa']);
+    expect(sect('hb_workshopaaaaaaaa')).toEqual(['hb_bladesaaaaaaaaaa']);
+    expect(sect('hb')).toEqual([]);
   });
 
   it('draws no section row when no own item sits in a section', () => {
     const plain = withRecords(base, [own[1] as HomebrewRecord], []);
-    expect(facetRows(plain, 'homebrew', t, 'ru').map((r) => r.group)).toEqual(['src']);
+    expect(facetRows(plain, 'homebrew', t, 'ru')).toEqual([]);
   });
 
   it('draws no row at all with no own item', () => {

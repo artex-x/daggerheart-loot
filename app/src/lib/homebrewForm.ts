@@ -445,6 +445,21 @@ export function cardMatches(card: CardContent, q: string): boolean {
   );
 }
 
+/* Here, not in homebrew.ts: homebrew.ts stays clear of search.ts, whose stemmers the
+   artwork review's transpiled copy of the label code cannot resolve. */
+/** Returns whether either language of the record's name holds `q`; `q` is already folded
+ *  (`foldQuery`). */
+export function recordMatches(r: Record_, q: string): boolean {
+  return foldQuery(r.ru).includes(q) || foldQuery(r.en).includes(q);
+}
+
+/** Returns the records whose name holds `query` as search folds it, in order; a blank
+ *  query keeps every record (the rule of `matchLists`). */
+export function matchRecords<T extends Record_>(records: readonly T[], query: string): T[] {
+  const q = foldQuery(query.trim());
+  return q ? records.filter((r) => recordMatches(r, q)) : [...records];
+}
+
 /** What the set or rule card form holds, in one language. */
 export interface CardDraft {
   name: string;
@@ -560,4 +575,11 @@ export function cardProblemText(kind: CardKind, p: Problem, t: Dict, name: strin
   if (p.rule === 'long') return t.hbErrLong.replace('%n', String(CARD_CAPS[field]));
   if (p.rule === 'pattern' && field === 'url') return t.hbErrUrl;
   return t.hbErrControl;
+}
+
+/** Returns an item delete's confirm: the question `lead`, then what the delete does to other
+ *  players' lists (`many` for several items), then «Отменить удаление нельзя.»
+ *  (docs/specs/FEATURES.md, "Consistency rules", rule 3). */
+export function deleteItemAsk(lead: string, many: boolean, t: Dict): string {
+  return lead + ' ' + (many ? t.hbDeleteOthersMany : t.hbDeleteOthers) + ' ' + t.deleteNoUndo;
 }

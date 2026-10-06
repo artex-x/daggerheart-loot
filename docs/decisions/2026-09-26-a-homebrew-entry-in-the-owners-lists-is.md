@@ -1,5 +1,6 @@
 # 2026-09-26 - Homebrew in the owner's lists is a live reference; a copy that leaves is frozen
 
+- Superseded in part by "An item is read by its id by anyone; a list holds a live link" (2026-10-07): a copy that leaves the account links the item instead of freezing it.
 - Amended by "A frozen copy embeds its source and cards; a reference must exist when written" (2026-09-30): the snapshot embeds its source and cards, its bound is 32768 bytes, and a reference must exist when written.
 - Task: `persist-7-homebrew` (owner, 2026-09-26).
 - Decision: adding an own homebrew item to a list writes `source = 'homebrew'` with `snapshot` null -

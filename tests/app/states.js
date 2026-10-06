@@ -1992,10 +1992,11 @@ async function noteClearTargetYieldsToTextarea() {
 
 /** 31. The card image's focus ring is drawn, not clipped by the card, at
  *  both card sizes: a pixel read of a 3px band inside each edge of the
- *  focused `.card-media`, against the ring's own colour. The 600 px height
- *  scrolls the page on every host, so the clip's scroll offset is tested. */
+ *  focused `.card-media`, against the ring's own colour. At 600 px the full
+ *  card scrolls the page, and the case asserts it, so the clip's scroll
+ *  offset stays tested. */
 async function cardMediaRingVisible() {
-  async function ringAt(route, selector, label) {
+  async function ringAt(route, selector, label, mustScroll) {
     const { ctx, page, d } = await fresh({ width: 1180, height: 600 });
     await d.open(route);
     let reached = false;
@@ -2030,6 +2031,14 @@ async function cardMediaRingVisible() {
       }, selector);
       const clip = pageClip(box);
       console.log('31 (card image focus ring, ' + label + '): scrollY ' + box.sy);
+      if (mustScroll) {
+        ok(
+          box.sy > 0,
+          '31 (card image focus ring, ' +
+            label +
+            '): the page did not scroll, so the clip offset is not tested'
+        );
+      }
       ok(!!box.rgb, '31 (card image focus ring, ' + label + '): no outline colour to match');
       if (!box.rgb) {
         await ctx.close();
@@ -2070,8 +2079,8 @@ async function cardMediaRingVisible() {
     }
     await ctx.close();
   }
-  await ringAt('#/i/ci1', '.card.full .card-media', 'full');
-  await ringAt('#/roll/wondrous', '.card.compact .card-media', 'compact');
+  await ringAt('#/i/ci1', '.card.full .card-media', 'full', true);
+  await ringAt('#/roll/wondrous', '.card.compact .card-media', 'compact', false);
 }
 
 /** 32. The undo toast an action inside the record dialog raises is drawn
@@ -3047,8 +3056,8 @@ async function liveRequests() {
   );
   await d.fake('request', 'player-token-1', [{ item: 'ci1', qty: 1 }]);
   ok(
-    await waitWithin(page, 1000, bodyHas, 'Запросы (1)'),
-    at + '«Запросы (1)» did not show within 1 s'
+    await waitWithin(page, 1000, bodyHas, 'Новое в списке (1)'),
+    at + '«Новое в списке (1)» did not show within 1 s'
   );
   await d.go('#/lists');
   ok(
@@ -3135,7 +3144,7 @@ async function applyARequest() {
     { item: 'ci1', qty: 1 },
     { item: 'cc1', qty: 5 }
   ]);
-  ok(await waitIn(page, bodyHas, 'Запросы (1)'), at + 'the request is not on the page');
+  ok(await waitIn(page, bodyHas, 'Новое в списке (1)'), at + 'the request is not on the page');
   const rows = await d.count('.lrow');
   await d.press('Принять');
   ok(await waitIn(page, bodyHas, 'Запрос принят'), at + 'no «Запрос принят»');
@@ -4056,20 +4065,69 @@ async function relationFolds() {
 
   {
     const { ctx, page, d } = await fresh({ width: 360, height: 800 });
-    await d.open('#/homebrew', { as: 'gm1' });
+    await d.open('#/homebrew/sets', { as: 'gm1' });
     ok(
-      await waitIn(page, () => document.querySelectorAll('details.fold > summary').length >= 2),
-      at + 'the #/homebrew folds did not draw'
+      await waitIn(page, () => !!document.querySelector('.hbtab .head .name button')),
+      at + 'the #/homebrew/sets card folds did not draw'
     );
     const heights = await page.evaluate(() =>
-      [...document.querySelectorAll('details.fold > summary')].map(
-        (s) => s.getBoundingClientRect().height
-      )
+      [
+        ...document.querySelectorAll('nav a.chip'),
+        ...document.querySelectorAll('.hbtab .head .name button')
+      ].map((e) => [e.textContent.trim(), e.getBoundingClientRect().height])
     );
     ok(
-      heights.every((h) => h >= 24),
-      at + 'a fold summary is under 24 px - ' + JSON.stringify(heights)
+      heights.length === 5 && heights.every(([, h]) => h >= 24),
+      at + 'a tab chip or a card fold is under 24 px - ' + JSON.stringify(heights)
     );
+    await ctx.close();
+  }
+
+  /* The address key scrolls its card below the sticky top bar, not under it. */
+  for (const [width, height] of [
+    [360, 480],
+    [1180, 480]
+  ]) {
+    const w = String(width) + ': ';
+    const { ctx, page, d } = await fresh({ width, height });
+    await d.open('#/homebrew/sets/hb_aldersetaaaaaaaa', { as: 'gm1' });
+    ok(
+      await waitIn(
+        page,
+        () => !!document.querySelector('.cards > li .head .name button[aria-expanded="true"]')
+      ),
+      at + w + 'the address key did not open its card'
+    );
+    /* The scroll has settled when scrollY holds across two frames. */
+    await waitIn(page, async () => {
+      const a = scrollY;
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      return a > 0 && scrollY === a;
+    });
+    const land = await page.evaluate(() => {
+      const li = document
+        .querySelector('.cards > li .head .name button[aria-expanded="true"]')
+        ?.closest('li');
+      const bar = document.querySelector('.topbar');
+      return {
+        head: li ? li.getBoundingClientRect().top : null,
+        bar: bar ? bar.getBoundingClientRect().bottom : null,
+        scrollY,
+        scrolls: document.documentElement.scrollHeight > innerHeight
+      };
+    });
+    ok(
+      land.head !== null && land.bar !== null && land.head >= land.bar - 1,
+      at + w + 'the open card head lies under the top bar - ' + JSON.stringify(land)
+    );
+    /* At 360 the gm1 page is long enough to scroll, so the margin itself is measured. */
+    if (width === 360) {
+      ok(
+        land.scrollY > 0,
+        at + w + 'the page did not scroll to the card - ' + JSON.stringify(land)
+      );
+    }
+    console.log('  63 card landing at ' + String(width) + 'x480: ' + JSON.stringify(land));
     await ctx.close();
   }
 
@@ -4258,7 +4316,7 @@ async function requestsPanelFolds() {
     ['ci1', 'q1', 'q313', 'cc1', 'voa2_a3', 'q23', 'w51'].map((item) => ({ item, qty: 1 }))
   );
   ok(
-    await waitIn(page, () => document.body.innerText.includes('Запросы (4)')),
+    await waitIn(page, () => document.body.innerText.includes('Новое в списке (4)')),
     at + 'the panel did not count four requests'
   );
   const m = await page.evaluate(() => {
@@ -4415,6 +4473,89 @@ async function fieldHelpAt360() {
   await ctx.close();
 }
 
+/** 68. «Мои предметы» at 300 own items (`?items=300`), at 1180x900 in Chrome as `gm1`:
+ *  (a) the navigation from `#/lists` to the 300 rows drawn, (b) one keystroke «9» in
+ *  «Найти предмет» to the second frame after it (54 rows drawn); each the median of three
+ *  runs, at most 500 ms and 100 ms (docs/specs/FEATURES.md, "Homebrew"). */
+async function homebrewAt300() {
+  const at = '68 (#/homebrew at 300 items): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/lists', { as: 'gm1', items: 300 });
+  await waitIn(page, () => document.body.innerText.includes('Пустой список'));
+  const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+  const nav = [];
+  for (let i = 0; i < 3; i++) {
+    await page.evaluate(() => {
+      location.hash = '#/lists';
+    });
+    await waitIn(page, () => !document.querySelector('.rows .row'));
+    nav.push(
+      await page.evaluate(
+        () =>
+          new Promise((done) => {
+            const t0 = performance.now();
+            location.hash = '#/homebrew';
+            const poll = () => {
+              if (document.querySelectorAll('.rows .row').length >= 300) {
+                done(performance.now() - t0);
+              } else requestAnimationFrame(poll);
+            };
+            requestAnimationFrame(poll);
+          })
+      )
+    );
+  }
+  const key = [];
+  let drawn = -1;
+  for (let i = 0; i < 3; i++) {
+    const r = await page.evaluate(
+      () =>
+        new Promise((done) => {
+          const box = document.querySelector('input[type="search"]');
+          if (!box) {
+            done({ ms: Infinity, rows: -1 });
+            return;
+          }
+          box.value = '';
+          box.dispatchEvent(new Event('input', { bubbles: true }));
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              const t0 = performance.now();
+              box.value = '9';
+              box.dispatchEvent(new Event('input', { bubbles: true }));
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => {
+                  done({
+                    ms: performance.now() - t0,
+                    rows: document.querySelectorAll('.rows .row').length
+                  });
+                })
+              );
+            })
+          );
+        })
+    );
+    key.push(r.ms);
+    drawn = r.rows;
+  }
+  const a = median(nav);
+  const b = median(key);
+  console.log(
+    '  68 medians at 300 items: (a) ' +
+      a.toFixed(1) +
+      ' ms ' +
+      JSON.stringify(nav.map((x) => Math.round(x))) +
+      ', (b) ' +
+      b.toFixed(1) +
+      ' ms ' +
+      JSON.stringify(key.map((x) => Math.round(x)))
+  );
+  ok(drawn === 54, at + 'the query «9» does not draw 54 rows - ' + String(drawn));
+  ok(a <= 500, at + 'the rows took ' + a.toFixed(1) + ' ms, over 500');
+  ok(b <= 100, at + 'a keystroke took ' + b.toFixed(1) + ' ms, over 100');
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -4484,7 +4625,8 @@ const CASES = [
   ['64 (the own-item row and a row note box)', ownItemRowAndNoteBox],
   ['65 (the requests panel folds at 360)', requestsPanelFolds],
   ['66 (a 200-character list name at 360)', longListName],
-  ['67 (field help and threshold labels at 360)', fieldHelpAt360]
+  ['67 (field help and threshold labels at 360)', fieldHelpAt360],
+  ['68 (#/homebrew at 300 items)', homebrewAt300]
 ];
 
 (async () => {

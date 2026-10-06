@@ -1283,7 +1283,7 @@ describe('homebrew entries on a share link', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('turns a reference into a frozen copy for another reader who saves the list', async () => {
+  it("links the owner's item for another reader who saves the list", async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const { router, page } = open('#/s/player-token-1', cloud);
     await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
@@ -1298,10 +1298,10 @@ describe('homebrew entries on a share link', () => {
     page.fireHidden();
     const axe = await saved(cloud, uuid(5000));
     expect(axe?.source).toBe('homebrew');
-    expect(axe?.snapshot).toMatchObject({ id: AXE, ru: 'Топор Тлеющих Углей' });
+    expect(axe?.hb_item).toBe(uuid(511));
   });
 
-  it('keeps a frozen copy frozen when its author saves the list', async () => {
+  it('keeps the link to the item when its author saves the list', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const made = await cloud.shares.create(uuid(201), 'player');
     if (!made.ok) throw new Error('no share');
@@ -1317,6 +1317,6 @@ describe('homebrew entries on a share link', () => {
     const id = router.hash().slice('#/lists/'.length);
     const axe = await saved(cloud, id);
     expect(axe?.source).toBe('homebrew');
-    expect(axe?.snapshot).toMatchObject({ id: AXE });
+    expect(axe?.hb_item).toBe(uuid(511));
   });
 });

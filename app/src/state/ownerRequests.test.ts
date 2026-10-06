@@ -80,9 +80,50 @@ describe('OwnerRequests reads', () => {
     expect(o.forList(SHOP, Date.now()).map((r) => r.id)).toEqual([b, a]);
     expect(o.pendingCount(SHOP, Date.now())).toBe(2);
     expect(o.pendingCount(TROPHIES, Date.now())).toBe(0);
-    const expired = NOW + 3_600_000;
-    expect(o.forList(SHOP, expired).map((r) => r.id)).toEqual([b]);
-    expect(o.pendingCount(SHOP, expired + 60_000)).toBe(0);
+    /* Unread, a request lasts 30 days from its send; read, an hour from the read. */
+    const DAY = 24 * 3_600_000;
+    expect(o.forList(SHOP, NOW + 30 * DAY).map((r) => r.id)).toEqual([b]);
+    await o.markRead(SHOP);
+    const read = Date.now();
+    expect(o.forList(SHOP, read).map((r) => r.readAt)).toEqual([
+      new Date(read).toISOString(),
+      new Date(read).toISOString()
+    ]);
+    expect(o.pendingCount(SHOP, read + 3_600_000)).toBe(0);
+  });
+
+  it('marks a list read only while it holds an unread request, once at a time, and retries a failure', async () => {
+    const { cloud, o, list } = owner();
+    const mark = vi.spyOn(cloud.requests, 'markRead');
+    await o.markRead(SHOP);
+    expect(mark).not.toHaveBeenCalled();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    list.mockClear();
+    mark.mockResolvedValueOnce({ ok: false, error: 'network' });
+    await o.markRead(SHOP);
+    expect(list).not.toHaveBeenCalled();
+    expect(o.requests[0]?.readAt).toBeNull();
+    const first = o.markRead(SHOP);
+    const second = o.markRead(SHOP);
+    await Promise.all([first, second]);
+    expect(mark).toHaveBeenCalledTimes(2);
+    expect(list).toHaveBeenCalledOnce();
+    expect(o.requests[0]?.readAt).not.toBeNull();
+    await o.markRead(SHOP);
+    expect(mark).toHaveBeenCalledTimes(2);
+  });
+
+  it('drops a read mark that answers after clear', async () => {
+    const { cloud, o, list } = owner();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    list.mockClear();
+    const marking = o.markRead(SHOP);
+    o.clear();
+    await marking;
+    expect(list).not.toHaveBeenCalled();
+    expect(o.requests).toEqual([]);
   });
 
   it("ignores this tab's own message and reads once for a burst of others'", async () => {
@@ -290,11 +331,15 @@ describe('OwnerRequests apply and decline', () => {
       .mockResolvedValueOnce({ ok: false, error: 'refused' });
     await o.decline(id);
     decline.mockRestore();
+    await o.markRead(SHOP);
     vi.setSystemTime(NOW + 3_600_000);
     await o.apply(id, false);
     expect(said).toEqual([
       [t.writeRefused, true],
-      ['Этот запрос истёк: прошёл час без ответа.', true]
+      [
+        'Этот запрос истёк: прошёл час после того, как его открыли, или 30 дней без ответа.',
+        true
+      ]
     ]);
   });
 
@@ -323,5 +368,149 @@ describe('OwnerRequests apply and decline', () => {
     expect(said).toEqual([]);
     expect(o.decided).toEqual([]);
     expect(o.busy).toBeNull();
+  });
+});
+
+describe("the owner's change log", () => {
+  const GM2_LIST = uuid(201);
+  const AXE_ID = uuid(511);
+
+  function gm2(seed = SEED) {
+    const world = fakeCloud(seed, 'gm1');
+    const port = world.as('gm2');
+    const said: string[] = [];
+    const o = new OwnerRequests(port.requests, {
+      flush: () => Promise.resolve(true),
+      refreshLists: () => Promise.resolve(),
+      say: (msg: Msg) => {
+        said.push(msg(t, 'ru'));
+      },
+      tab: () => 'gm2-tab'
+    });
+    return { world, port, o, said };
+  }
+
+  it('reads the notices with the requests, newest first, and counts the unread ones', async () => {
+    const { o } = gm2();
+    await o.read();
+    expect(o.noticesFor(GM2_LIST).map((n) => [n.itemKey, n.kind])).toEqual([
+      ['hb_emberaxeaaaaaaaa', 'changed'],
+      ['hb_longroadrollaaaa', 'deleted']
+    ]);
+    expect(o.unreadNotices(GM2_LIST)).toBe(2);
+    expect(o.noticesRead).toBe(false);
+  });
+
+  it('marks a list with unread notices read, and hides notices by id at once', async () => {
+    const { o, port } = gm2();
+    o.focus(GM2_LIST);
+    await settle();
+    expect(o.noticesRead).toBe(true);
+    await o.markRead(GM2_LIST);
+    expect(o.unreadNotices(GM2_LIST)).toBe(0);
+    const hide = o.hideNotices(GM2_LIST, [uuid(681)]);
+    expect(o.noticesFor(GM2_LIST).map((n) => n.id)).toEqual([uuid(682)]);
+    await hide;
+    const left = await port.requests.notices(GM2_LIST);
+    expect(left.ok && left.notices.map((n) => n.id)).toEqual([uuid(682)]);
+  });
+
+  it('says a failed hide and reads the notice back', async () => {
+    const { o, world, said } = gm2();
+    await o.read();
+    world.setOffline(true);
+    const hide = o.hideNotices(GM2_LIST, [uuid(681)]);
+    expect(o.noticesFor(GM2_LIST)).toHaveLength(1);
+    await hide;
+    expect(said).toEqual([t.noticeHideFailed]);
+    world.setOffline(false);
+    await o.read();
+    expect(o.noticesFor(GM2_LIST)).toHaveLength(2);
+  });
+
+  it('keeps a notice that arrived after the read when the held ones are hidden', async () => {
+    const { o, world, port } = gm2();
+    await o.read();
+    const held = o.noticesFor(GM2_LIST).map((n) => n.id);
+    /* gm1 links the cap in gm2's list, then changes it: a notice the panel never drew. */
+    await port.lists.apply([
+      {
+        op: 'add',
+        list_id: GM2_LIST,
+        entries: [
+          {
+            id: uuid(2190),
+            item_key: 'hb_whispercapaaaaaa',
+            source: 'homebrew',
+            hb_item: uuid(513),
+            position: 2,
+            quantity: 1,
+            price_coins: null,
+            player_note: '',
+            gm_note: ''
+          }
+        ]
+      }
+    ]);
+    const cap = SEED.homebrew.gm1.items.find((i) => i.id === uuid(513))!;
+    await world.homebrew.updateItem(
+      uuid(513),
+      { content: { ...cap.content, en: 'Whispering Hat' }, book_id: null },
+      null
+    );
+    await o.hideNotices(GM2_LIST, held);
+    const left = await port.requests.notices(GM2_LIST);
+    expect(left.ok && left.notices.map((n) => n.item_key)).toEqual(['hb_whispercapaaaaaa']);
+  });
+
+  it('reads a notice message again and announces it as a change, not a request', async () => {
+    const { o, world, port } = gm2();
+    port.events.subscribe('owner:' + SEED.users.gm2.id, {
+      message: (event, payload) => {
+        o.message(event, payload);
+      },
+      status: () => undefined
+    });
+    await o.read();
+    await settle();
+    const axe = SEED.homebrew.gm1.items.find((i) => i.id === AXE_ID)!;
+    await world.homebrew.updateItem(
+      AXE_ID,
+      { content: { ...axe.content, en: 'Ash Axe' }, book_id: uuid(501) },
+      null
+    );
+    await later(COALESCE_MS);
+    expect(o.arrived).toBe(1);
+    expect([o.arrivedKind, o.arrivedList]).toEqual(['notice', GM2_LIST]);
+    expect(o.noticesFor(GM2_LIST)[0]?.name.en).toBe('Ash Axe');
+  });
+
+  it("draws the focused list's oldest notice from its own read when every list's read is cut at 1000", async () => {
+    const lists = Array.from({ length: 11 }, (_, l) => ({
+      id: uuid(9100 + l),
+      name: 'L' + String(l),
+      entries: [],
+      createdAgoMs: 1000,
+      editedAgoMs: 1000
+    }));
+    const notices = lists.flatMap((l, li) =>
+      Array.from({ length: li === 10 ? 1 : 100 }, (_, n) => ({
+        id: uuid(20000 + li * 100 + n),
+        listId: l.id,
+        itemKey: 'hb_x' + String(n),
+        hid: null,
+        kind: 'deleted' as const,
+        name: { en: 'X', ru: 'Х' },
+        createdAgoMs: li === 10 ? 10_000_000 : li * 1000 + n
+      }))
+    );
+    const { o } = gm2({ ...SEED, lists: { ...SEED.lists, gm2: lists }, notices });
+    await o.read();
+    expect(o.notices).toHaveLength(1000);
+    expect(o.noticesFor(uuid(9110))).toHaveLength(0);
+    o.focus(uuid(9110));
+    await settle();
+    expect(o.noticesRead).toBe(true);
+    expect(o.noticesFor(uuid(9110)).map((n) => n.id)).toEqual([uuid(21000)]);
   });
 });

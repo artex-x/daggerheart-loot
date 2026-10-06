@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readPending } from './pending.js';
 
+const HID = '00000000-0000-4000-8000-000000000511';
+
 const add = (over: Record<string, unknown> = {}) => ({
   do: 'addToList',
   key: 'sel',
@@ -9,8 +11,12 @@ const add = (over: Record<string, unknown> = {}) => ({
 });
 
 describe('readPending', () => {
-  it('reads both actions', () => {
+  it('reads every action', () => {
     expect(readPending({ do: 'saveList', extra: 1 })).toEqual({ do: 'saveList' });
+    expect(readPending({ do: 'saveItem', hid: HID, extra: 1 })).toEqual({
+      do: 'saveItem',
+      hid: HID
+    });
     expect(readPending(add({ picked: { ci1: 2 } }))).toEqual({
       do: 'addToList',
       key: 'sel',
@@ -48,7 +54,11 @@ describe('readPending', () => {
       add({ picked: null }),
       add({ name: '' }),
       add({ name: 7 }),
-      add({ name: 'x'.repeat(201) })
+      add({ name: 'x'.repeat(201) }),
+      { do: 'saveItem' },
+      { do: 'saveItem', hid: 'hb_emberaxeaaaaaaaa' },
+      { do: 'saveItem', hid: HID + '0' },
+      { do: 'saveItem', hid: 7 }
     ]) {
       expect(readPending(bad), JSON.stringify(bad)).toBeNull();
     }

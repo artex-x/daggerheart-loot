@@ -1,5 +1,6 @@
 # 2026-10-02 - A lists file is version 2 only when it holds homebrew
 
+- Superseded in part by "An item is read by its id by anyone; a list holds a live link" (2026-10-07): every homebrew entry is written from the live item, and an entry the account does not hold imports as an own copy.
 - Amends "Homebrew travels as its own file; a lists file v2 carries frozen entries" (2026-09-30): the download reads «Скачать JSON».
 - Task: `persist-7d-homebrew-files` (R7d, batch `B7d.2`; the owner confirmed the two-press restore, 2026-10-02).
 - Decision: a lists export is `import-v2` only when it holds an own item or a frozen copy, each with its snapshot

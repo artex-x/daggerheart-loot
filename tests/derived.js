@@ -351,6 +351,15 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
         html.includes('href="' + BACK_HREF[lang] + '#/account"'),
         'pages/' + rel + ' does not link the account page at its own depth'
       );
+      /* The owner's sentence on the item address, word for word (owner, 2026-10-07). */
+      const said = {
+        ru: 'По адресу предмета видно и время его последней правки.',
+        en: "The item's address also shows when it was last changed."
+      }[lang];
+      ok(
+        source.replace(/\s+/g, ' ').includes(said),
+        'pages/src/' + rel + ' does not say: ' + said
+      );
     }
   });
 });

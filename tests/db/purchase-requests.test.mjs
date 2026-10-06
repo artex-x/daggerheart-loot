@@ -2,13 +2,16 @@
   Purchase requests: any holder of an active share link sends one through
   create_purchase_request(), the only writer, whose bounds are all inside
   it - the token, the client's id and its replay, the lines, the line
-  limit, the stale item, the rate, the pending cap - and whose
-  housekeeping runs only when it inserts; the owner alone reads, applies
-  (stock by item, in id order, short or clamped, an entry taken whole
-  deleted and the positions renumbered) or declines; two sends at the cap
+  limit, the stale item, the rate, the pending cap - and which deletes
+  nothing (lifecycle.test.mjs holds the clean-up); the owner alone reads,
+  applies (stock by item, in id order, short or clamped, an entry taken
+  whole deleted and the positions renumbered) or declines; two sends at the cap
   and two applies on one list run in order; a line whose entry is deleted
   while the send waits keeps a null price; each send and decision nudges
-  the owner's topic, with the tab only on a decision, and no share topic.
+  the owner's topic, with the tab only on a decision, and no share topic. A
+  request can be decided for 30 days, or until 1 hour after its first read
+  (mark_list_read(), an apply or a decline), and counts against the cap
+  while unread.
   docs/specs/FEATURES.md, "Account and browser lists";
   docs/decisions/2026-09-26-purchase-requests-are-written-only-by-a-bounded.md.
 */
@@ -69,8 +72,8 @@ const overrideOf = (key, value) => (tx) =>
   tx`insert into public.user_limit_overrides (user_id, key, value) values (${A}, ${key}, ${value})`;
 
 /* Inserts a request row as the connection's own role, times relative to
-   now(): `age` before it was made, `expiresIn` after now, `decidedAgo`
-   before now or null; `lines` as [item, qty, price]. */
+   now(): `age` before it was made, `expiresIn` after now, `decidedAgo` and
+   `readAgo` before now or null; `lines` as [item, qty, price]. */
 async function putRequest(
   tx,
   {
@@ -82,13 +85,15 @@ async function putRequest(
     age = '0 seconds',
     expiresIn = '1 hour',
     decidedAgo = null,
+    readAgo = null,
     lines = [['ci1', 1, 150]]
   } = {}
 ) {
   await tx`insert into public.purchase_requests
-    (id, list_id, share_id, audience, status, created_at, expires_at, decided_at)
+    (id, list_id, share_id, audience, status, created_at, expires_at, decided_at, read_at)
     values (${rid}, ${list}, ${share}, ${audience}, ${status}, now() - ${age}::interval,
-      now() + ${expiresIn}::interval, now() - ${decidedAgo}::interval)`;
+      now() + ${expiresIn}::interval, now() - ${decidedAgo}::interval,
+      now() - ${readAgo}::interval)`;
   for (const [item, qty, price] of lines) {
     await tx`insert into public.purchase_request_lines (request_id, item_key, quantity, price_coins)
       values (${rid}, ${item}, ${qty}, ${price})`;
@@ -222,7 +227,7 @@ describe('grants', () => {
 });
 
 describe('a send', () => {
-  it('stores a request through a player and a GM token as anon, with the audience, the hour and the prices', async () => {
+  it('stores a request through a player and a GM token as anon, with the audience, 30 days unread and the prices', async () => {
     const p = uuid();
     const g = uuid();
     const out = await asAnon(world, async (tx) => {
@@ -238,7 +243,7 @@ describe('a send', () => {
       await send(tx, TG, [{ item: 'cc1', qty: 3 }], g);
       await tx.unsafe('reset role');
       const reqs = await tx`select id, list_id, share_id, audience, status, decided_at,
-          (expires_at - created_at) = interval '1 hour' as hour
+          (expires_at - created_at) = interval '30 days' as month, read_at is null as unread
         from public.purchase_requests order by audience`;
       const lines =
         await tx`select request_id, item_key, quantity, price_coins, applied_quantity
@@ -254,7 +259,8 @@ describe('a send', () => {
         audience: 'gm',
         status: 'pending',
         decided_at: null,
-        hour: true
+        month: true,
+        unread: true
       },
       {
         id: p,
@@ -263,7 +269,8 @@ describe('a send', () => {
         audience: 'player',
         status: 'pending',
         decided_at: null,
-        hour: true
+        month: true,
+        unread: true
       }
     ]);
     assert.deepEqual(out.lines, [
@@ -513,56 +520,6 @@ describe('the pending cap', () => {
       return countOf(tx, 'purchase_requests');
     });
     assert.equal(n, 11);
-  });
-});
-
-describe('the housekeeping', () => {
-  it('deletes, on a successful send only, rows of any list decided or expired more than 24 hours ago', async () => {
-    const old = { decided: uuid(), expired: uuid(), other: uuid() };
-    const recent = uuid();
-    const setup = worldAnd(async (tx) => {
-      await putRequest(tx, {
-        rid: old.decided,
-        status: 'applied',
-        age: '26 hours',
-        expiresIn: '-25 hours',
-        decidedAgo: '25 hours'
-      });
-      await putRequest(tx, { rid: old.expired, age: '26 hours', expiresIn: '-25 hours' });
-      await putRequest(tx, {
-        rid: old.other,
-        list: LB,
-        share: SB,
-        status: 'declined',
-        age: '26 hours',
-        expiresIn: '-25 hours',
-        decidedAgo: '25 hours',
-        lines: [['ci1', 1, 99]]
-      });
-      await putRequest(tx, {
-        rid: recent,
-        status: 'declined',
-        age: '24 hours',
-        expiresIn: '-23 hours',
-        decidedAgo: '23 hours'
-      });
-    });
-    const out = await asAnon(setup, async (tx) => {
-      const err = await refusal(tx, (sp) => send(sp, TP, []));
-      const afterRefusal = await countOf(tx, 'purchase_requests');
-      await tx.unsafe('set local role anon');
-      const fresh = uuid();
-      await send(tx, TP, ONE, fresh);
-      await tx.unsafe('reset role');
-      const ids = await tx`select id from public.purchase_requests order by created_at`;
-      const lines = await tx`select count(*)::int as n from public.purchase_request_lines
-        where request_id in (${old.decided}, ${old.expired}, ${old.other})`;
-      return { err, afterRefusal, ids: ids.map((r) => r.id), fresh, lines: lines[0].n };
-    });
-    expectError(out.err, '22023', 'request: bad lines');
-    assert.equal(out.afterRefusal, 4);
-    assert.deepEqual(out.ids, [recent, out.fresh]);
-    assert.equal(out.lines, 0);
   });
 });
 
@@ -860,6 +817,99 @@ describe('a decision refused', () => {
       await refusal(tx, (sp) => decline(sp, rid))
     ]);
     for (const err of errs) expectError(err, '22023', 'request: expired');
+  });
+});
+
+describe('the expiry after the first read', () => {
+  const timesOf = async (tx, rid) => {
+    await tx.unsafe('reset role');
+    const [r] = await tx`select read_at = now() as read_now,
+        expires_at = now() + interval '1 hour' as hour_left
+      from public.purchase_requests where id = ${rid}`;
+    return { ...r };
+  };
+
+  it('caps an unread request at 1 hour from its first decision, for an apply and a decline', async () => {
+    for (const decide of [(tx, rid) => apply(tx, rid), (tx, rid) => decline(tx, rid)]) {
+      const rid = uuid();
+      const setup = worldAnd((tx) =>
+        putRequest(tx, { rid, age: '10 days', expiresIn: '20 days', lines: [['q1', 1, null]] })
+      );
+      const out = await asA(setup, async (tx) => {
+        await decide(tx, rid);
+        return timesOf(tx, rid);
+      });
+      assert.deepEqual(out, { read_now: true, hour_left: true });
+    }
+  });
+
+  it('keeps the expiry of a request read before', async () => {
+    const rid = uuid();
+    const setup = worldAnd((tx) =>
+      putRequest(tx, {
+        rid,
+        readAgo: '30 minutes',
+        expiresIn: '30 minutes',
+        lines: [['q1', 1, null]]
+      })
+    );
+    const out = await asA(setup, async (tx) => {
+      await decline(tx, rid);
+      await tx.unsafe('reset role');
+      const [r] = await tx`select read_at < now() as earlier,
+          expires_at < now() + interval '31 minutes' as kept
+        from public.purchase_requests where id = ${rid}`;
+      return { ...r };
+    });
+    assert.deepEqual(out, { earlier: true, kept: true });
+  });
+
+  it('decides a request read 59 minutes ago, and refuses one read 61 minutes ago as expired', async () => {
+    const live = uuid();
+    const gone = uuid();
+    const setup = worldAnd(async (tx) => {
+      await putRequest(tx, {
+        rid: live,
+        age: '2 hours',
+        readAgo: '59 minutes',
+        expiresIn: '1 minute'
+      });
+      await putRequest(tx, {
+        rid: gone,
+        age: '2 hours',
+        readAgo: '61 minutes',
+        expiresIn: '-1 minute'
+      });
+    });
+    const out = await asA(setup, async (tx) => ({
+      live: await decline(tx, live).then(() => null),
+      gone: await refusal(tx, (sp) => apply(sp, gone))
+    }));
+    assert.equal(out.live, null);
+    expectError(out.gone, '22023', 'request: expired');
+  });
+
+  it('applies an unread request days after it was sent', async () => {
+    const rid = uuid();
+    const setup = worldAnd((tx) =>
+      putRequest(tx, { rid, age: '5 days', expiresIn: '25 days' })
+    );
+    const out = await asA(setup, (tx) => apply(tx, rid));
+    assert.deepEqual(out, { applied: true, taken: 1 });
+  });
+
+  it('counts ten unread requests 20 days old against the cap', async () => {
+    const setup = worldAnd(async (tx) => {
+      for (let i = 0; i < 10; i++)
+        await putRequest(tx, { age: '20 days', expiresIn: '10 days' });
+    });
+    await assert.rejects(
+      asAnon(setup, (tx) => send(tx, TP, ONE)),
+      (err) => {
+        expectError(err, 'P0001', 'limit: pending_requests_per_list', '10');
+        return true;
+      }
+    );
   });
 });
 

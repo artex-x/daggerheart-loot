@@ -179,19 +179,30 @@ function recordPass(key, cacheName, command, cwd) {
   writeCache(key, cacheName, command, undefined, cwd);
 }
 
-/** Returns the directory of a leading `cd <dir> &&` (or `;`), resolved
- * against `cwd`, when it exists; else `cwd`. The check runs in that
- * directory, so its records are read and written there. */
+/** Returns the directory of a leading `cd <dir> &&` (or `;`, after an
+ * optional `set -o pipefail;`), resolved against `cwd`; `cwd` when the
+ * command has no leading `cd`; null when the target is not an existing
+ * directory. The check runs in that directory, so its records are read and
+ * written there, and an unknown one must not credit the session's checkout. */
 function checkCwd(command, cwd) {
-  const m = /^\s*cd\s+("[^"]+"|'[^']+'|[^\s;&|]+)\s*(?:&&|;)/i.exec(command);
+  const s = command.replace(/^\s*set -o pipefail\s*(?:;|&&)\s*/, '');
+  const m = /^\s*cd\s+("[^"]+"|'[^']+'|[^\s;&|]+)\s*(?:&&|;)/i.exec(s);
   if (!m) return cwd;
   try {
-    const dir = path.resolve(cwd || process.cwd(), m[1].replace(/^(["'])(.*)\1$/, '$2'));
-    return statSync(dir, { throwIfNoEntry: false })?.isDirectory() ? dir : cwd;
+    let target = m[1].replace(/^(["'])(.*)\1$/, '$2');
+    // Git Bash writes a drive as `/e/...`; Node on win32 reads that as `E:\e\...`.
+    if (process.platform === 'win32') {
+      target = target.replace(/^\/([a-z])(?=\/|$)/i, (_, d) => `${d.toUpperCase()}:`);
+    }
+    const dir = path.resolve(cwd || process.cwd(), target);
+    return statSync(dir, { throwIfNoEntry: false })?.isDirectory() ? dir : null;
   } catch {
-    return cwd;
+    return null;
   }
 }
+
+const UNRESOLVED =
+  'but its leading `cd` names no directory this hook can find, so the run cannot be attributed and nothing is recorded.';
 
 /** The verdict of `npm run check:<half>`. gate-credit.mjs writes the half
  * records; this hook only reads them, because it cannot see a run that the
@@ -211,19 +222,23 @@ function observeHalf(half, response, cwd) {
       `npm run check:${half}: FAIL${code}. The half is not recorded - fix the failure above and run \`rtk npm run check:${half}\` again.`
     );
   }
-  const key = treeKey(cwd);
-  const cache = readCache('.check-cache.json', cwd);
+  const key = cwd === null ? null : treeKey(cwd);
+  const cache = key === null ? null : readCache('.check-cache.json', cwd);
   if (key !== null && cache && cache.key === key) {
     return speak(
       EVENT,
-      `npm run check:${half}: PASS - both halves passed on this tree. Commit gate armed.`
+      cache.by === 'halves'
+        ? `npm run check:${half}: PASS - both halves passed on this tree. Commit gate armed.`
+        : `npm run check:${half}: PASS - the commit gate is armed for this tree.`
     );
   }
   let record = null;
   try {
-    record = JSON.parse(
-      readFileSync(path.join(stateDir(cwd), `.check-${half}-pass.json`), 'utf8')
-    );
+    if (key !== null) {
+      record = JSON.parse(
+        readFileSync(path.join(stateDir(cwd), `.check-${half}-pass.json`), 'utf8')
+      );
+    }
   } catch {
     // no record of this half
   }
@@ -261,6 +276,9 @@ function observeCheckDb(response, cwd) {
       EVENT,
       `npm run check:db: FAIL${code}. The commit gate for supabase/ and tests/db/ is not armed - fix the failure above and run \`npm run check:db\` again.`
     );
+  }
+  if (cwd === null) {
+    return speak(EVENT, `npm run check:db: no failure seen${code}, ${UNRESOLVED}`);
   }
   if (!/^check:db: PASS\s*$/m.test(text)) {
     if (armedByExit('.check-db-cache.json', cwd)) {
@@ -325,6 +343,9 @@ guard(() => {
     );
   }
 
+  if (cwd === null) {
+    return speak(EVENT, `npm run check: no failure seen${code}, ${UNRESOLVED}`);
+  }
   if (!COVERAGE_SUMMARY_RE.test(stdout) || !COVERAGE_LINES_RE.test(stdout)) {
     if (armedByExit('.check-cache.json', cwd)) {
       return speak(EVENT, "npm run check: PASS - armed by the check's own exit.");

@@ -33,8 +33,6 @@ const t = dict('ru');
 describe('the «?» of a field', () => {
   const HELP: [string, string, string][] = [
     [t.hbSource, 'hb-book-help', t.hbSourceHelp],
-    [t.tier, 'hb-eqtier-help', t.hbTierHelp],
-    [t.hbDmg, 'hb-dmg-help', t.hbDmgHelp],
     [t.hbAlt, 'hb-alt-help', t.hbAltHint],
     [t.hbLine, 'hb-line-help', t.hbLineHelp],
     [t.craftInto, 'hb-craft-help', t.hbCraftIntoHelp],

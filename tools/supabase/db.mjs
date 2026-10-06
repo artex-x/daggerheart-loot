@@ -3,7 +3,7 @@
   migrate-test.mjs applies the test project's pending migrations with it,
   pending-check.mjs reads production's history, restore.mjs and
   restore-prod.mjs read the tables, keys, sequences and rows of the restore
-  target, and tests/db/apply-pending.test.mjs
+  target and pause its clean-up job, and tests/db/apply-pending.test.mjs
   proves applyPending on the local stack.
   Why CI does not run `supabase db push` for the test project:
   docs/DECISIONS.md, 2026-09-25, "CI applies the test project's migrations
@@ -174,6 +174,20 @@ export async function sequenceState(sql, sequences) {
     out.push({ seq: s.seq, lastValue: v, max: m });
   }
   return out;
+}
+
+/** Sets the pg_cron job `name` active or paused. Returns `{ jobid, was
+ * }`, the job's id and whether it was active before, or null, changing
+ * nothing, when the database has no such job: no pg_cron, or a schema from
+ * before the job's migration. */
+export async function setCronJobActive(sql, name, active) {
+  const [{ present }] = await sql`select to_regclass('cron.job') is not null as present`;
+  if (!present) return null;
+  const [job] =
+    await sql`select jobid::text as jobid, active from cron.job where jobname = ${name}`;
+  if (!job) return null;
+  await sql`select cron.alter_job(${job.jobid}::bigint, active := ${active}::boolean)`;
+  return { jobid: job.jobid, was: job.active };
 }
 
 /** Returns a Map of each `schema.table` name in `names` to its row count. */

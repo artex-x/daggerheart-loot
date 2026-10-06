@@ -1,82 +1,40 @@
-/* «Импорт предметов» on `#/homebrew` over the fake cloud: the panel, the preview with its
+/* «Импорт из файла» on `#/homebrew` over the fake cloud: the panel, the preview with its
    counts, held keys and repeated names, the «Куда» rows with their defaults and notes, skip
    or update, the custom source, the fold past 20 rows, every refusal of a file or a zip, and
    the press - every row or none, the same rows on a retry (docs/specs/FEATURES.md,
    "Homebrew"). The files are docs/fixtures/homebrew-file/. */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import type { Loot } from '../lib/data.js';
 import { zipStored } from '../lib/zip.js';
-import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import {
+  LOOT,
+  choose,
+  doc,
+  fixture,
+  importButton,
+  keyN,
+  opened,
+  rowsOf,
+  utf8
+} from '../test/homebrewImport.js';
 
 afterEach(cleanup);
 
-const ROOT = join(import.meta.dirname, '..', '..', '..');
-const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
-const fixture = (name: string): Uint8Array =>
-  new Uint8Array(readFileSync(join(ROOT, 'docs', 'fixtures', 'homebrew-file', name)));
-const utf8 = (s: string): Uint8Array => new TextEncoder().encode(s);
-const doc = (o: Record<string, unknown>): Uint8Array =>
-  utf8(JSON.stringify({ format: 'daggerheart-loot/homebrew', version: 1, ...o }));
-const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
-/* A key from a number: `hb_` and 16 base32 characters. */
-const keyN = (n: number): string => {
-  let tail = '';
-  let v = n;
-  do {
-    tail = BASE32.charAt(v % 32) + tail;
-    v = Math.floor(v / 32);
-  } while (v > 0);
-  return 'hb_' + tail.padStart(16, 'a');
-};
 const ALDER = uuid(501);
 const ALDER_KEY = 'hb_alderworkshopaaa';
-
-async function opened(as: 'gm1' | 'gm2' = 'gm1', opts: FakeCloudOptions = {}, answer = true) {
-  const cloud = fakeCloud(SEED, as, opts);
-  const dialog = fakeDialog(answer);
-  const view = render(App, {
-    env: fakeEnv({
-      router: memoryRouter('#/homebrew'),
-      data: fakeData(LOOT),
-      dialog,
-      storage: memoryStorage(),
-      cloud
-    })
-  });
-  await userEvent.click(await screen.findByRole('button', { name: 'Импорт предметов' }));
-  /* The first open compiles the lazy chunk: slow on a loaded host. */
-  await screen.findByText('Импорт предметов из файла JSON', {}, { timeout: 10_000 });
-  return { ...view, cloud, dialog };
-}
-
-/* The input is `hidden`; its files are set as the browser's picker would. */
-function choose(container: HTMLElement, bytes: Uint8Array, name = 'items.json'): void {
-  const input = container.querySelector<HTMLInputElement>('input[type="file"]');
-  if (!input) throw new Error('no file input');
-  const file = new File([new Uint8Array(bytes)], name);
-  Object.defineProperty(input, 'files', { value: [file], configurable: true });
-  void fireEvent.change(input);
-}
 
 const alertText = async (): Promise<string> =>
   (await screen.findByRole('alert', {}, { timeout: 3000 })).textContent
     .replace(/\s+/g, ' ')
     .trim();
-const importButton = (n: number): Promise<HTMLElement> =>
-  screen.findByRole('button', { name: `Импортировать (${String(n)})` });
 const previews = (c: HTMLElement): string[] =>
   [...c.querySelectorAll('.preview')].map((p) => p.textContent.replace(/\s+/g, ' ').trim());
-const rowsOf = (c: HTMLElement): HTMLElement[] => [
-  ...c.querySelectorAll<HTMLElement>('.srcrow')
-];
 const selected = (row: HTMLElement): string => {
   const select = row.querySelector('select');
   return select?.selectedOptions[0]?.textContent ?? '';
@@ -87,7 +45,7 @@ const lineTexts = (el: Element): string[] =>
 describe('the import panel', () => {
   it('opens after «Новый предмет» with the pick button, the hint and its two links', async () => {
     const { container } = await opened();
-    const toggle = screen.getByRole('button', { name: 'Импорт предметов' });
+    const toggle = screen.getByRole('button', { name: 'Импорт из файла' });
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Выбрать файл...' })).toBeInTheDocument();
     const schema = screen.getByRole('link', { name: 'схеме homebrew-v1' });
@@ -155,10 +113,14 @@ describe('the import panel', () => {
     choose(container, fixture('example.json'));
     await userEvent.click(await importButton(5));
     await screen.findByText(/^Импортировано предметов: 3/);
-    await userEvent.click(screen.getByRole('button', { name: 'Импорт предметов' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Импорт из файла' }));
     choose(container, fixture('example.json'));
     await importButton(5);
-    expect(previews(container)).toContain('Предметов и карт, которые уже есть в аккаунте: 5.');
+    const keep = previews(container).filter((p) =>
+      p.includes('Уже есть - останутся как есть:')
+    );
+    expect(keep.map((p) => p.split('.')[0])).toEqual(['Предметы', 'Карты', 'Источники']);
+    expect(container.querySelectorAll('.held .names')).toHaveLength(3);
     expect(rowsOf(container)[0]?.querySelector('.fhint')?.textContent).toBe(
       'Ключ источника совпал с вашим: предметы попадут в него.'
     );
@@ -171,12 +133,15 @@ describe('the import panel', () => {
       await screen.findByText('Импортировано предметов: 0, пропущено: 5')
     ).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Импорт предметов' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Импорт из файла' }));
     choose(container, fixture('example-edited.json'));
     await importButton(7);
     await userEvent.click(screen.getByRole('button', { name: 'Обновить' }));
+    expect(
+      previews(container).filter((p) => p.includes('Уже есть - заменятся из файла:'))
+    ).toHaveLength(3);
     expect(container.querySelector('.held .fhint')?.textContent.trim()).toBe(
-      'Текст и характеристики существующих предметов и карт (5) заменятся данными из файла, названия источников тоже. Ссылки в списках останутся живыми, замороженные копии не изменятся.'
+      'Текст и характеристики существующих предметов и карт (5) заменятся данными из файла, названия источников тоже. Списки, где есть эти предметы, - ваши и других игроков, - покажут новую версию.'
     );
     await expectNoA11yViolations(container);
     const imp = vi.spyOn(cloud.homebrew, 'import');
@@ -241,17 +206,85 @@ describe('the import panel', () => {
     choose(container, fixture('example.json'));
     await userEvent.click(await importButton(5));
     await screen.findByText(/^Импортировано предметов: 3/);
-    await userEvent.click(screen.getByRole('button', { name: 'Импорт предметов' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Импорт из файла' }));
     choose(container, fixture('same-names.json'));
     await importButton(3);
-    expect(previews(container)).toContain(
-      'Предметов с таким же названием уже есть: 2 - они добавятся ещё раз'
+    const same = previews(container).filter((p) =>
+      p.startsWith('Новые с тем же названием, что у ваших:')
     );
-    expect(previews(container).some((p) => p.startsWith('Предметов и карт, которые'))).toBe(
-      false
-    );
+    expect(same).toHaveLength(1);
+    expect(
+      same[0]!.slice('Новые с тем же названием, что у ваших:'.length).split(', ')
+    ).toHaveLength(2);
+    expect(previews(container).some((p) => p.includes('Уже есть'))).toBe(false);
+    expect(container.querySelector('.held')).toBeNull();
     await userEvent.click(await importButton(3));
     expect(await screen.findByText('Импортировано предметов: 3')).toBeInTheDocument();
+  });
+
+  it('names the held items: 10 with no fold, 11 with «и ещё 1» and «свернуть», the verb by the choice', async () => {
+    const items = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        key: keyN(500 + i),
+        kind: 'item',
+        ru: 'Вещь ' + String(i + 1).padStart(2, '0')
+      }));
+    const names = (n: number): string =>
+      Array.from({ length: n }, (_, i) => 'Вещь ' + String(i + 1).padStart(2, '0')).join(', ');
+    const { container } = await opened('gm2');
+    choose(container, doc({ items: items(11) }));
+    expect(container.querySelector('.held')).toBeNull();
+    await userEvent.click(await importButton(11));
+    await screen.findByText(/^Импортировано предметов: 11/);
+    await userEvent.click(screen.getByRole('button', { name: 'Импорт из файла' }));
+    const line = (): HTMLElement => container.querySelector<HTMLElement>('.held .names')!;
+    const text = (): string => line().textContent.replace(/\s+/g, ' ').trim();
+    choose(container, doc({ items: items(1) }));
+    await importButton(1);
+    expect(text()).toBe('Предметы. Уже есть - останутся как есть: Вещь 01.');
+    choose(container, doc({ items: items(10) }));
+    await importButton(10);
+    await waitFor(() => {
+      expect(text()).toBe('Предметы. Уже есть - останутся как есть: ' + names(10) + '.');
+    });
+    expect(within(line()).queryByRole('button')).toBeNull();
+    choose(container, doc({ items: items(11) }));
+    await importButton(11);
+    await waitFor(() => {
+      expect(text()).toBe(
+        'Предметы. Уже есть - останутся как есть: ' + names(10) + ' и ещё 1.'
+      );
+    });
+    const more = within(line()).getByRole('button', { name: 'и ещё 1' });
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    await expectNoA11yViolations(container);
+    await userEvent.click(more);
+    expect(text()).toBe('Предметы. Уже есть - останутся как есть: ' + names(11) + ' свернуть.');
+    expect(more).toHaveTextContent('свернуть');
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+    expect(more).toHaveFocus();
+    await userEvent.click(screen.getByRole('button', { name: 'Обновить' }));
+    expect(text().startsWith('Предметы. Уже есть - заменятся из файла: Вещь 01,')).toBe(true);
+    await expectNoA11yViolations(container);
+  });
+
+  it('names the held cards and sources, and wraps a long name in its line', async () => {
+    const long = 'Д'.repeat(120);
+    const file = doc({
+      books: [{ key: ALDER_KEY, ru: 'Мастерская Ольхи' }],
+      cards: [{ key: 'hb_aldersetaaaaaaaa', kind: 'set', ru: 'Комплект Ольхи', rud: 'Бонус.' }],
+      items: [{ key: 'hb_emberaxeaaaaaaaa', book: ALDER_KEY, kind: 'item', ru: long }]
+    });
+    const { container } = await opened('gm1');
+    choose(container, file);
+    await importButton(2);
+    expect(previews(container).filter((p) => p.includes('Уже есть'))).toEqual([
+      'Предметы. Уже есть - останутся как есть: ' + long + '.',
+      'Карты. Уже есть - останутся как есть: Комплект Ольхи.',
+      'Источники. Уже есть - останутся как есть: Мастерская Ольхи.'
+    ]);
+    expect(container.querySelector('.held .names')).toHaveClass('names');
+    await expectNoA11yViolations(container);
   });
 
   it("reads a zip's homebrew.json and names its lists.json with its page, not as a file it does not read", async () => {
@@ -273,31 +306,6 @@ describe('the import panel', () => {
       'Источников: 1, разделов: 2, карт: 2, предметов: 3.',
       'Файл lists.json из архива импортируется на странице «Мои списки».'
     ]);
-  });
-
-  it('draws 20 rows of 60 sources, then «и ещё 40 источников» and «свернуть»', async () => {
-    const { container } = await opened('gm2');
-    const books = Array.from({ length: 60 }, (_, i) => ({
-      key: keyN(i),
-      ru: 'Источник ' + String(i)
-    }));
-    const items = books.map((b, i) => ({
-      key: keyN(1000 + i),
-      book: b.key,
-      kind: 'item',
-      ru: 'П' + String(i)
-    }));
-    choose(container, doc({ books, items }));
-    await importButton(60);
-    expect(rowsOf(container)).toHaveLength(20);
-    const more = screen.getByRole('button', { name: 'и ещё 40 источников' });
-    await userEvent.click(more);
-    expect(rowsOf(container)).toHaveLength(60);
-    expect(screen.getByRole('button', { name: 'свернуть' })).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    );
-    await expectNoA11yViolations(container);
   });
 
   it('refuses a merge past 30 sections in its row and sends nothing', async () => {
@@ -322,7 +330,7 @@ describe('the import panel', () => {
         cloud
       })
     });
-    await userEvent.click(await screen.findByRole('button', { name: 'Импорт предметов' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
     await screen.findByText('Импорт предметов из файла JSON');
     const imp = vi.spyOn(cloud.homebrew, 'import');
     choose(
@@ -634,18 +642,18 @@ describe('the press', () => {
     await userEvent.click(await importButton(5));
     expect(await importButton(5)).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Отмена' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Импорт предметов' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Импорт из файла' })).toBeDisabled();
     open();
     expect(await screen.findByText(/^Импортировано предметов: 3/)).toBeInTheDocument();
   });
 
-  it('folds on «Отмена», forgets the file and focuses «Импорт предметов»', async () => {
+  it('folds on «Отмена», forgets the file and focuses «Импорт из файла»', async () => {
     const { container } = await opened('gm2');
     choose(container, fixture('example.json'), 'example.json');
     await importButton(5);
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
     expect(screen.queryByText('Импорт предметов из файла JSON')).toBeNull();
-    const toggle = screen.getByRole('button', { name: 'Импорт предметов' });
+    const toggle = screen.getByRole('button', { name: 'Импорт из файла' });
     await waitFor(() => {
       expect(toggle).toHaveFocus();
     });

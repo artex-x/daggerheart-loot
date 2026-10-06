@@ -35,6 +35,14 @@ INSERT INTO "auth"."refresh_tokens" ("instance_id", "id", "token", "user_id", "r
 
 
 --
+-- Data for Name: homebrew_items; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO "public"."homebrew_items" ("id", "owner_id", "key", "book_id", "content", "revision", "created_at", "updated_at") VALUES
+	('d5000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-000000000001', 'hb_drillitemaaaaaaa', NULL, '{"en": "Drill item", "kind": "item"}', 1, '2026-09-22 10:00:00+00', '2026-09-22 10:00:00+00');
+
+
+--
 -- Data for Name: limit_defaults; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -57,10 +65,10 @@ on two lines', 3, '2026-09-22 10:00:00+00', '2026-09-22 10:00:00+00'),
 -- Data for Name: list_entries; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO "public"."list_entries" ("id", "list_id", "item_key", "source", "snapshot", "position", "quantity", "price_coins", "player_note", "gm_note") VALUES
-	('d2000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000001', 'w1', 'official', NULL, 0, 1, NULL, '', ''),
-	('d2000000-0000-4000-8000-000000000002', 'd1000000-0000-4000-8000-000000000001', 'a2', 'official', NULL, 1, 2, 150, '), (', ''),
-	('d2000000-0000-4000-8000-000000000003', 'd1000000-0000-4000-8000-000000000002', 'hb_drillitemaaaaaaa', 'homebrew', '{"id": "hb_drillitemaaaaaaa", "src": "homebrew", "kind": "item", "en": "Drill item", "ru": "Drill item", "ende": "", "rud": ""}', 0, 1, NULL, '', '');
+INSERT INTO "public"."list_entries" ("id", "list_id", "item_key", "source", "position", "quantity", "price_coins", "player_note", "gm_note", "hb_item") VALUES
+	('d2000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000001', 'w1', 'official', 0, 1, NULL, '', '', NULL),
+	('d2000000-0000-4000-8000-000000000002', 'd1000000-0000-4000-8000-000000000001', 'a2', 'official', 1, 2, 150, '), (', '', NULL),
+	('d2000000-0000-4000-8000-000000000003', 'd1000000-0000-4000-8000-000000000002', 'hb_drillitemaaaaaaa', 'homebrew', 0, 1, NULL, '', '', 'd5000000-0000-4000-8000-000000000001');
 
 
 --

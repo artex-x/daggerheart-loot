@@ -1,6 +1,6 @@
 # #/print/hb_emberaxeaaaaaaaa as gm2
 # route: #/print/hb_emberaxeaaaaaaaa
-# why: gm2's frozen copy of the axe from its own list, on the standard colour sheet, its source line the path
+# why: gm1's axe as a link in gm2's own list, on the standard colour sheet, its source line the path
 # as: gm2
 
 ## ru :: tree

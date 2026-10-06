@@ -1,4 +1,4 @@
-/* «Импорт предметов» while its lazy chunk loads and after the load failed: «Загружаем...»,
+/* «Импорт из файла» while its lazy chunk loads and after the load failed: «Загружаем...»,
    then «Не получилось загрузить импорт.» with «Повторить», which loads it again
    (docs/specs/FEATURES.md, "Homebrew"). Its own file: the chunk is mocked for the whole
    file. */
@@ -37,7 +37,7 @@ describe('the import chunk', () => {
         cloud: fakeCloud(SEED, 'gm1')
       })
     });
-    await userEvent.click(await screen.findByRole('button', { name: 'Импорт предметов' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
     expect(await screen.findByText('Загружаем...')).toHaveAttribute('role', 'status');
     open();
     expect(await screen.findByText('Не получилось загрузить импорт.')).toHaveAttribute(

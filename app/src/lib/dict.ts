@@ -504,8 +504,6 @@ const ru = {
     'Достигнут предел списков в аккаунте: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   limitEntries:
     'Достигнут предел позиций в списке: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
-  limitSnapshots:
-    'Достигнут предел копий предметов других игроков в списке: %n КБ. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   limitOther: 'Достигнут предел: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   writeRefused: 'Изменение не сохранилось: сервер его не принял. Показан список из аккаунта.',
 
@@ -534,7 +532,7 @@ const ru = {
   hbEmptyTable: 'Своих предметов пока нет.',
   hbSignIn: 'Войдите, чтобы создавать свои предметы.',
   hbTablesSignIn: 'Войдите, чтобы видеть свои предметы в таблицах.',
-  hbChipHint: 'Показывать свои предметы',
+  ownSwitch: 'Свои предметы',
   hbLoadFailed: 'Не получилось загрузить ваши предметы.',
   edit: 'Изменить',
   hbNotAdded: 'Свой предмет нельзя добавить в этот список.',
@@ -561,16 +559,12 @@ const ru = {
   hbDesc: 'Описание',
   hbNone: 'Нет',
   hbNoTier: 'Без ранга',
-  hbTierHelp:
-    'Ранг - этап игры, для которого предмет: 1 - уровень 1, 2 - уровни 2-4, 3 - уровни 5-7, 4 - уровни 8-10. Выберите его сами: по характеристикам ранг не определяется.',
   hbCls: 'Класс',
   hbTrait: 'Характеристика',
   hbRange: 'Дистанция',
   hbDmg: 'Урон',
   hbDie: 'Кость',
   hbDmgDie: 'Кость урона',
-  hbDmgHelp:
-    'Одна кость и бонус, как в строке оружия в книге: d8+2. Сколько костей бросать, задаёт Мастерство персонажа, поэтому число костей здесь не указывается.',
   hbDmgBonus: 'Бонус к урону',
   hbDt: 'Тип урона',
   hbBurden: 'Хват',
@@ -617,17 +611,19 @@ const ru = {
   hbSourceDeleted: 'Источник «%s» удалён',
   hbSectionDeleted: 'Раздел «%s» удалён',
   hbDeleteFailed: 'Не получилось удалить. Проверьте соединение и попробуйте ещё раз.',
-  hbDeleteItem: 'Удалить предмет «%s»? Отменить удаление нельзя.',
-  hbDeleteItemInLists:
-    'Предмет «%s» есть в %l. Удалить его и убрать из списков? Отменить удаление нельзя.',
+  hbDeleteItem: 'Удалить предмет «%s»?',
+  hbDeleteItemInLists: 'Предмет «%s» есть в %l. Удалить его и убрать из списков?',
   hbListsIn: '%n списке|%n списках|%n списках',
-  hbDeleteMany:
-    'Удалить предметы (%n)? Они пропадут и из ваших списков. Отменить удаление нельзя.',
+  hbDeleteMany: 'Удалить предметы (%n)? Они пропадут и из ваших списков.',
   hbDeleteSource: 'Удалить источник «%s»?',
   hbSourceStayN:
     'Его %n предмет останется в «Хоумбрю».|Его %n предмета останутся в «Хоумбрю».|Его %n предметов останутся в «Хоумбрю».',
   hbDeleteSection: 'Удалить раздел «%s»?',
   deleteNoUndo: 'Отменить удаление нельзя.',
+  hbDeleteOthers:
+    'Если предмет есть в списках других игроков, строка пропадёт и там - с количеством, ценой и заметками; владельцы списков увидят, что он удалён.',
+  hbDeleteOthersMany:
+    'Если эти предметы есть в списках других игроков, строки пропадут и там - с количеством, ценой и заметками; владельцы списков увидят, что предметы удалены.',
   hbSectionStayN:
     'Его %n предмет останется в источнике без раздела.|Его %n предмета останутся в источнике без раздела.|Его %n предметов останутся в источнике без раздела.',
   leaveUnsaved: 'Изменения не сохранены. Уйти со страницы?',
@@ -715,6 +711,16 @@ const ru = {
   hbCardsN: '%n карта|%n карты|%n карт',
   hbNoSets: 'Комплектов пока нет.',
   hbNoRefs: 'Карт правил пока нет.',
+  hbItems: 'Предметы',
+  hbFindOwn: 'Найти предмет',
+  hbFindSets: 'Найти комплект',
+  hbFindRules: 'Найти карту правил',
+  hbAddMember: 'Добавить предмет',
+  hbRemoveMember: 'Убрать',
+  hbMemberMoves: 'Предмет «%i» уйдёт из комплекта «%s». Перенести его?',
+  hbRefsFull: 'У предмета «%s» уже три карты правил.',
+  hbItemChanged: 'Предмет изменили на другом устройстве. Данные обновлены - повторите.',
+  hbCardManage: 'Открыть в «Мои предметы»',
   hbDeleteSet: 'Удалить комплект «%s»? Отменить удаление нельзя.',
   hbDeleteSetUsed:
     'Удалить комплект «%s»? Он указан в %r - там пропадут его название и бонус. Отменить удаление нельзя.',
@@ -724,21 +730,22 @@ const ru = {
   hbSetDeleted: 'Комплект «%s» удалён',
   hbCardDeleted: 'Карта правил «%s» удалена',
   hbItemsIn: '%n предмете|%n предметах|%n предметах',
-  hbDeleteItemRel: 'Предмет «%s» указан в %r. Удалить его? Отменить удаление нельзя.',
+  hbDeleteItemRel: 'Предмет «%s» указан в %r. Удалить его?',
   hbDeleteItemInListsRel:
-    'Предмет «%s» есть в %l и указан в %r. Удалить его и убрать из списков? Отменить удаление нельзя.',
+    'Предмет «%s» есть в %l и указан в %r. Удалить его и убрать из списков?',
   limitHbCards:
     'Достигнут предел карт (комплектов и карт правил): %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
-  /* Homebrew files: «Импорт предметов», the «Куда» rows, the bulk move and the downloads
+  /* Homebrew files: «Импорт из файла» on «Мои предметы», the «Куда» rows, the bulk move and the downloads
      (docs/specs/FEATURES.md, "Homebrew"). */
-  hbImport: 'Импорт предметов',
   hbImportHead: 'Импорт предметов из файла JSON',
+  hbImportHeldKeep: '%k. Уже есть - останутся как есть:',
+  hbImportHeldReplace: '%k. Уже есть - заменятся из файла:',
+  hbImportSameNamed: 'Новые с тем же названием, что у ваших:',
   hbImportHintBefore: 'Файл, сохранённый кнопкой «Скачать JSON» или собранный по ',
   hbImportSchema: 'схеме homebrew-v1',
   hbImportHintAfter:
     '), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.',
   hbImportCounts: 'Источников: %b, разделов: %s, карт: %c, предметов: %i.',
-  hbImportHeld: 'Предметов и карт, которые уже есть в аккаунте: %n.',
   hbImportWhere: 'Куда положить предметы',
   hbImportNoBook: 'Без источника',
   hbImportToHome: 'В «Хоумбрю»',
@@ -752,7 +759,6 @@ const ru = {
     'Источник с таким названием уже есть, но ключ другой (файл сделан заново). По умолчанию предметы попадут в ваш источник.',
   hbImportNoteAdd: 'В источник добавятся разделы: %n.',
   hbImportNoteHome: 'В «Хоумбрю» нет разделов: предметы лягут без раздела.',
-  hbImportSameNames: 'Предметов с таким же названием уже есть: %n - они добавятся ещё раз',
   hbImportFull: 'В «%s» будет больше 30 разделов - выберите другой источник.',
   hbImportMoreRows: 'и ещё %n источник|и ещё %n источника|и ещё %n источников',
   hbImportHeldLabel: 'Предметы, карты и источники, которые уже есть',
@@ -760,7 +766,7 @@ const ru = {
   hbImportUpdate: 'Обновить',
   hbImportSkipNote: 'Существующие предметы и карты (%n) останутся как есть; новые добавятся.',
   hbImportUpdateNote:
-    'Текст и характеристики существующих предметов и карт (%n) заменятся данными из файла, названия источников тоже. Ссылки в списках останутся живыми, замороженные копии не изменятся.',
+    'Текст и характеристики существующих предметов и карт (%n) заменятся данными из файла, названия источников тоже. Списки, где есть эти предметы, - ваши и других игроков, - покажут новую версию.',
   hbImportSkipBooksNote:
     'Названия существующих источников останутся как есть; новые разделы добавятся.',
   hbImportUpdateBooksNote:
@@ -880,7 +886,7 @@ const ru = {
   importRefused:
     'Сервер не принял файл: данные в аккаунте изменились. Нажмите «Импортировать» ещё раз.',
   importFrozenN:
-    'Своих предметов, которых нет в аккаунте: %n - они сохранятся копиями. Чтобы они остались живыми, сначала импортируйте предметы на странице «Мои предметы».',
+    'Своих предметов, которых нет в аккаунте: %n - они станут вашими копиями в «Мои предметы».',
   importMoreLists: 'и ещё %n список|и ещё %n списка|и ещё %n списков',
   importNotZip: 'Это не архив данных.',
   importErrors: 'В файле ошибки - ничего не импортировано. Исправьте их и выберите файл снова.',
@@ -947,7 +953,7 @@ const ru = {
   notifyQuestion: 'Сообщить владельцу списка, что вы взяли эти предметы?',
   notifyYes: 'Сообщить',
   notifyRemember: 'Запомнить ответ',
-  requestsHead: 'Запросы (%n)',
+  inboxHead: 'Новое в списке (%n)',
   requestByPlayers: 'По ссылке для игроков',
   requestByGm: 'По ссылке для мастера',
   requestJustNow: 'только что',
@@ -969,10 +975,37 @@ const ru = {
   requestTaken: 'Запрос принят: списано %n шт.',
   requestDeclined: 'Запрос отклонён',
   requestDecidedElsewhere: 'Этот запрос уже решён на другом устройстве.',
-  requestExpired: 'Этот запрос истёк: прошёл час без ответа.',
+  requestExpired:
+    'Этот запрос истёк: прошёл час после того, как его открыли, или 30 дней без ответа.',
   requestActFailed:
     'Не получилось ответить на запрос. Проверьте соединение и попробуйте ещё раз.',
   requestNew: 'Новый запрос',
+  noticeChanged: 'Автор изменил «%s».',
+  noticeDeleted: 'Автор удалил «%s» - строка убрана из списка.',
+  noticeNew: 'новое',
+  noticeOpen: 'Открыть',
+  noticeHideName: 'Скрыть изменение «%s»',
+  noticesHide: 'Скрыть изменения',
+  noticesMoreN: 'и ещё %n изменение|и ещё %n изменения|и ещё %n изменений',
+  noticesN: '%n изменение|%n изменения|%n изменений',
+  noticeArrived: 'Предмет в списке изменился',
+  noticeHideFailed:
+    'Не получилось скрыть изменения. Проверьте соединение и попробуйте ещё раз.',
+  itemFrom: 'Предмет другого игрока',
+  itemFailed: 'Предмет не загрузился',
+  saveItem: 'Сохранить себе',
+  saveItemDone: 'Сохранено',
+  saveItemNote: 'Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.',
+  saveItemNoteList:
+    'Копия попадёт в «Хоумбрю», а строки ваших списков с этим предметом будут вести на неё.',
+  signInToSaveItem: 'Войдите, и копия предмета сохранится в «Мои предметы».',
+  saveItemSaved: 'Предмет «%s» сохранён в «Мои предметы»',
+  saveItemRelinked:
+    'Предмет «%s» сохранён в «Мои предметы», строки ваших списков ведут на копию',
+  saveItemFailed:
+    'Не получилось сохранить предмет себе. Проверьте соединение и попробуйте ещё раз.',
+  saveItemRefused:
+    'Сервер не принял копию: данные в аккаунте изменились. Нажмите «Сохранить себе» ещё раз.',
   requestsWaitN: '%n запрос ждёт ответа|%n запроса ждут ответа|%n запросов ждут ответа',
 
   /* Browser lists moved into the account, and read-only after the cutoff
@@ -1413,8 +1446,6 @@ const en: Dict = {
     'You have reached the limit of %n lists. Need more? Write to daggerheart.loot@gmail.com.',
   limitEntries:
     'This list has reached its limit of %n entries. Need more? Write to daggerheart.loot@gmail.com.',
-  limitSnapshots:
-    "This list has reached its limit of %n KB of copies of other players' items. Need more? Write to daggerheart.loot@gmail.com.",
   limitOther: 'A limit has been reached: %n. Need more? Write to daggerheart.loot@gmail.com.',
   writeRefused:
     'The change was not saved: the server refused it. The list from your account is shown.',
@@ -1440,7 +1471,7 @@ const en: Dict = {
   hbEmptyTable: 'No items of your own yet.',
   hbSignIn: 'Sign in to create your own items.',
   hbTablesSignIn: 'Sign in to see your own items in the tables.',
-  hbChipHint: 'Show your own items',
+  ownSwitch: 'Own items',
   hbLoadFailed: 'Could not load your items.',
   edit: 'Edit',
   hbNotAdded: 'Your own item cannot go into this list.',
@@ -1467,16 +1498,12 @@ const en: Dict = {
   hbDesc: 'Description',
   hbNone: 'None',
   hbNoTier: 'No tier',
-  hbTierHelp:
-    'The tier is the stage of play the item is for: 1 - level 1, 2 - levels 2-4, 3 - levels 5-7, 4 - levels 8-10. Choose it yourself: the tier is never worked out from the stats.',
   hbCls: 'Class',
   hbTrait: 'Trait',
   hbRange: 'Range',
   hbDmg: 'Damage',
   hbDie: 'Die',
   hbDmgDie: 'Damage die',
-  hbDmgHelp:
-    "One die and a bonus, as a weapon line in the book prints them: d8+2. The character's Proficiency sets how many dice to roll, so the form takes no dice count.",
   hbDmgBonus: 'Damage bonus',
   hbDt: 'Damage type',
   hbBurden: 'Burden',
@@ -1522,15 +1549,18 @@ const en: Dict = {
   hbSourceDeleted: 'Source "%s" deleted',
   hbSectionDeleted: 'Section "%s" deleted',
   hbDeleteFailed: 'Could not delete. Check the connection and try again.',
-  hbDeleteItem: 'Delete the item "%s"? This cannot be undone.',
-  hbDeleteItemInLists:
-    'The item "%s" is in %l. Delete it and remove it from the lists? This cannot be undone.',
+  hbDeleteItem: 'Delete the item "%s"?',
+  hbDeleteItemInLists: 'The item "%s" is in %l. Delete it and remove it from the lists?',
   hbListsIn: '%n list|%n lists',
-  hbDeleteMany: 'Delete the items (%n)? They also leave your lists. This cannot be undone.',
+  hbDeleteMany: 'Delete the items (%n)? They also leave your lists.',
   hbDeleteSource: 'Delete the source "%s"?',
   hbSourceStayN: 'Its %n item stays in "Homebrew".|Its %n items stay in "Homebrew".',
   hbDeleteSection: 'Delete the section "%s"?',
   deleteNoUndo: 'This cannot be undone.',
+  hbDeleteOthers:
+    "If the item is in other players' lists, its row leaves them too, with its quantity, price and notes; the list owners see that it was deleted.",
+  hbDeleteOthersMany:
+    "If these items are in other players' lists, their rows leave them too, with their quantity, price and notes; the list owners see that the items were deleted.",
   hbSectionStayN:
     'Its %n item stays in the source with no section.|Its %n items stay in the source with no section.',
   leaveUnsaved: 'The changes are not saved. Leave the page?',
@@ -1618,6 +1648,16 @@ const en: Dict = {
   hbCardsN: '%n card|%n cards',
   hbNoSets: 'No sets yet.',
   hbNoRefs: 'No rule cards yet.',
+  hbItems: 'Items',
+  hbFindOwn: 'Find an item',
+  hbFindSets: 'Find a set',
+  hbFindRules: 'Find a rule card',
+  hbAddMember: 'Add an item',
+  hbRemoveMember: 'Remove',
+  hbMemberMoves: 'The item "%i" leaves the set "%s". Move it?',
+  hbRefsFull: 'The item "%s" already has three rule cards.',
+  hbItemChanged: 'The item was changed on another device. The data is updated - try again.',
+  hbCardManage: 'Open in "My items"',
   hbDeleteSet: 'Delete the set "%s"? This cannot be undone.',
   hbDeleteSetUsed:
     'Delete the set "%s"? It is named in %r - its name and bonus disappear there. This cannot be undone.',
@@ -1627,19 +1667,20 @@ const en: Dict = {
   hbSetDeleted: 'Set "%s" deleted',
   hbCardDeleted: 'Rule card "%s" deleted',
   hbItemsIn: '%n item|%n items',
-  hbDeleteItemRel: 'The item "%s" is named in %r. Delete it? This cannot be undone.',
+  hbDeleteItemRel: 'The item "%s" is named in %r. Delete it?',
   hbDeleteItemInListsRel:
-    'The item "%s" is in %l and named in %r. Delete it and remove it from the lists? This cannot be undone.',
+    'The item "%s" is in %l and named in %r. Delete it and remove it from the lists?',
   limitHbCards:
     'You have reached the limit of %n cards (sets and rule cards). Need more? Write to daggerheart.loot@gmail.com.',
-  hbImport: 'Import items',
   hbImportHead: 'Import items from a JSON file',
+  hbImportHeldKeep: '%k. Already held - they stay as they are:',
+  hbImportHeldReplace: '%k. Already held - replaced from the file:',
+  hbImportSameNamed: 'New, with the same name as yours:',
   hbImportHintBefore: 'A file saved with "Download JSON" or written to the ',
   hbImportSchema: 'homebrew-v1 schema',
   hbImportHintAfter:
     '), or the ZIP archive from "Download my data". Items you already hold can be skipped or updated.',
   hbImportCounts: 'Sources: %b, sections: %s, cards: %c, items: %i.',
-  hbImportHeld: 'Items and cards your account already holds: %n.',
   hbImportWhere: 'Where the items go',
   hbImportNoBook: 'No source',
   hbImportToHome: 'Into "Homebrew"',
@@ -1653,8 +1694,6 @@ const en: Dict = {
     'A source of this name exists with another key (the file was made again). By default the items go into your source.',
   hbImportNoteAdd: 'Sections added to the source: %n.',
   hbImportNoteHome: '"Homebrew" has no sections: the items go in with no section.',
-  hbImportSameNames:
-    'Items with the same name already in your account: %n - they are added again',
   hbImportFull: '"%s" would hold more than 30 sections - choose another source.',
   hbImportMoreRows: 'and %n more source|and %n more sources',
   hbImportHeldLabel: 'Items, cards and sources you already hold',
@@ -1662,7 +1701,7 @@ const en: Dict = {
   hbImportUpdate: 'Update',
   hbImportSkipNote: 'The items and cards you hold (%n) stay as they are; new ones are added.',
   hbImportUpdateNote:
-    'The text and stats of the items and cards you hold (%n) are replaced from the file, and so are the source names. List references stay live; frozen copies do not change.',
+    "The text and stats of the items and cards you hold (%n) are replaced from the file, and so are the source names. Lists that hold these items, yours and other players', show the new version.",
   hbImportSkipBooksNote:
     'The names of the sources you hold stay as they are; new sections are added.',
   hbImportUpdateBooksNote:
@@ -1780,7 +1819,7 @@ const en: Dict = {
   importRefused:
     'The server refused the file: your account\'s data changed. Press "Import" again.',
   importFrozenN:
-    'Own items your account does not hold: %n - they are kept as copies. To keep them live, import the items on the My items page first.',
+    'Own items your account does not hold: %n - they become your copies in My items.',
   importMoreLists: 'and %n more list|and %n more lists',
   importNotZip: 'This is not a data archive.',
   importErrors:
@@ -1843,7 +1882,7 @@ const en: Dict = {
   notifyQuestion: "Tell the list's owner that you took these items?",
   notifyYes: 'Notify',
   notifyRemember: 'Remember the answer',
-  requestsHead: 'Requests (%n)',
+  inboxHead: 'New in this list (%n)',
   requestByPlayers: "Through the players' link",
   requestByGm: 'Through the GM link',
   requestJustNow: 'just now',
@@ -1865,9 +1904,33 @@ const en: Dict = {
   requestTaken: 'Request applied: %n taken',
   requestDeclined: 'Request declined',
   requestDecidedElsewhere: 'This request was already decided on another device.',
-  requestExpired: 'This request has expired: an hour passed with no answer.',
+  requestExpired:
+    'This request has expired: an hour passed after it was opened, or 30 days with no answer.',
   requestActFailed: 'Could not answer the request. Check the connection and try again.',
   requestNew: 'New request',
+  noticeChanged: 'The author changed "%s".',
+  noticeDeleted: 'The author deleted "%s" - the row was removed from the list.',
+  noticeNew: 'new',
+  noticeOpen: 'Open',
+  noticeHideName: 'Hide the change to "%s"',
+  noticesHide: 'Hide changes',
+  noticesMoreN: 'and %n more change|and %n more changes',
+  noticesN: '%n change|%n changes',
+  noticeArrived: 'An item in the list changed',
+  noticeHideFailed: 'Could not hide the changes. Check the connection and try again.',
+  itemFrom: "Another player's item",
+  itemFailed: 'The item did not load',
+  saveItem: 'Save to my items',
+  saveItemDone: 'Saved',
+  saveItemNote: 'The copy goes to "Homebrew" and no longer changes with the original.',
+  saveItemNoteList:
+    'The copy goes to "Homebrew", and the rows of your lists that hold this item will point to it.',
+  signInToSaveItem: 'Sign in and a copy of the item is saved to My items.',
+  saveItemSaved: 'Item "%s" saved to My items',
+  saveItemRelinked: 'Item "%s" saved to My items; the rows of your lists now point to the copy',
+  saveItemFailed: 'Could not save the item to your items. Check the connection and try again.',
+  saveItemRefused:
+    'The server did not accept the copy: the data in your account changed. Press "Save to my items" again.',
   requestsWaitN: '%n request waits for an answer|%n requests wait for an answer',
 
   quoted: '"%s"',

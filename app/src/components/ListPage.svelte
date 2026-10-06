@@ -38,7 +38,7 @@
   import SharedListPage from './SharedListPage.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import QuickItem from './QuickItem.svelte';
-  import { frozenOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
+  import { linkedOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
   import type { Dict } from '../lib/dict.js';
   import { moneyHelpFor } from '../lib/help.js';
@@ -120,11 +120,11 @@
      no link buttons, no storage notice, and a save status in the sub. */
   const isCloud = $derived(own !== null && cloud?.get(own.id) === own);
   const store: ListModel = $derived(isCloud && cloud ? cloud : app.lists);
-  /* The list's frozen copies join this page's index: the store's edits keep the object,
-     so a note or a quantity typed keeps the index too. */
-  const frozenMap = $derived(own && isCloud ? frozenOf(own) : null);
+  /* The records of the items the list links from other accounts join this page's index:
+     the store's edits keep the object, so a note or a quantity typed keeps the index too. */
+  const linkedMap = $derived(own && isCloud ? linkedOf(own) : null);
   const index = $derived(
-    app.index && frozenMap ? withRecords(app.index, [], Object.values(frozenMap)) : app.index
+    app.index && linkedMap ? withRecords(app.index, [], Object.values(linkedMap)) : app.index
   );
   /* A browser list after the cutoff, or while the move is due: every control
      that writes is gone or read-only (docs/specs/FEATURES.md, "Account and

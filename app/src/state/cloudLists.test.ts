@@ -5,7 +5,7 @@
  * what changed. docs/specs/FEATURES.md, "Account and browser lists". */
 
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
-import type { ImportList } from '../lib/bundle.js';
+import { importPlan, type ImportList } from '../lib/bundle.js';
 import {
   BATCH_BYTES,
   entrySource,
@@ -15,9 +15,10 @@ import {
   type ListOp
 } from '../lib/cloudLists.js';
 import { dict, type Msg } from '../lib/dict.js';
+import { recordOf } from '../lib/homebrew.js';
 import type { StoredList } from '../lib/lists.js';
 import { countOf } from '../lib/plural.js';
-import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
+import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeEnv, memoryStorage } from '../ports/index.js';
 import type { ListRepository, ListWrites } from '../ports/index.js';
@@ -52,8 +53,9 @@ const EMPTY = uuid(102);
 const TROPHIES = uuid(103);
 /* «Лавка кузнеца»'s first entry's row id. */
 const CI1_ROW = uuid(1101);
-/* gm1's own axe: «Лавка кузнеца» refers to it, gm2's list holds a frozen copy. */
+/* gm1's own axe: «Лавка кузнеца» and gm2's list link it. */
 const AXE = 'hb_emberaxeaaaaaaaa';
+const AXE_ID = uuid(511);
 
 async function loaded(options: FakeCloudOptions = {}, as = 'gm1') {
   const cloud = fakeCloud(SEED, as, options);
@@ -64,6 +66,15 @@ async function loaded(options: FakeCloudOptions = {}, as = 'gm1') {
   const apply = vi.spyOn(cloud.lists, 'apply');
   return { cloud, store, apply, real };
 }
+
+/* A lists file's rows, every id from the port, no homebrew held. */
+const rowsOf = (cloud: FakeCloud, lists: readonly ImportList[]) =>
+  importPlan(lists, {
+    newId: () => cloud.lists.newId(),
+    newKey: () => cloud.homebrew.newKey(),
+    hasItem: () => false,
+    hasCard: () => false
+  }).rows;
 
 async function serverList(repo: ListRepository, id: string) {
   const read = await repo.list();
@@ -102,6 +113,8 @@ const plain = (l: CloudList | undefined): StoredList | undefined => {
   const copy: Partial<CloudList> = { ...l };
   delete copy.updated;
   delete copy.entryIds;
+  delete copy.links;
+  delete copy.linked;
   return copy as StoredList;
 };
 
@@ -848,7 +861,7 @@ describe('a refused write', () => {
             id: uuid(9001),
             item_key: 'q2',
             source: 'official',
-            snapshot: null,
+            hb_item: null,
             position: 10,
             quantity: 1,
             price_coins: null,
@@ -1455,7 +1468,7 @@ describe('an import', () => {
     const { cloud, store, apply } = await loaded();
     const imp = vi.spyOn(cloud.lists, 'import');
     const made = store.create('Буфер');
-    const rows = store.importRows(FILE);
+    const rows = rowsOf(cloud, FILE);
     const statuses: string[] = [];
     const realList = cloud.lists.list.bind(cloud.lists);
     vi.spyOn(cloud.lists, 'list').mockImplementationOnce(() => {
@@ -1485,7 +1498,7 @@ describe('an import', () => {
       await gate;
       return real(rows);
     });
-    const answer = store.import(store.importRows(FILE));
+    const answer = store.import(rowsOf(cloud, FILE));
     await settle();
     store.clear();
     open();
@@ -1500,7 +1513,7 @@ describe('an import', () => {
       await real(rows);
       return { ok: false, error: 'network' };
     });
-    const rows = store.importRows(FILE);
+    const rows = rowsOf(cloud, FILE);
     expect(await store.import(rows)).toEqual({ ok: true });
     expect(store.get(rows[0]?.list.id ?? '')).toBeDefined();
   });
@@ -1508,7 +1521,7 @@ describe('an import', () => {
   it('answers network for a lost call that wrote nothing', async () => {
     const { cloud, store } = await loaded();
     vi.spyOn(cloud.lists, 'import').mockResolvedValueOnce({ ok: false, error: 'network' });
-    const rows = store.importRows(FILE);
+    const rows = rowsOf(cloud, FILE);
     expect(await store.import(rows)).toEqual({ ok: false, error: 'network' });
     expect(store.get(rows[0]?.list.id ?? '')).toBeUndefined();
   });
@@ -1516,7 +1529,7 @@ describe('an import', () => {
   it('passes a refusal on without a read', async () => {
     const { cloud, store } = await loaded({ limits: { lists: 3 } });
     const list = vi.spyOn(cloud.lists, 'list');
-    expect(await store.import(store.importRows(FILE))).toMatchObject({
+    expect(await store.import(rowsOf(cloud, FILE))).toMatchObject({
       ok: false,
       error: 'limit',
       key: 'lists_per_owner'
@@ -1525,93 +1538,10 @@ describe('an import', () => {
     expect(store.lists).toHaveLength(3);
   });
 
-  it('writes a homebrew entry the account holds as a reference, and any other as its frozen copy object', async () => {
-    const cloud = fakeCloud(SEED, 'gm1');
-    const has = vi.fn((key: string) => key === AXE);
-    const store = new CloudLists(cloud.lists, say, t, {
-      events: cloud.events,
-      random: () => 0.5,
-      homebrew: { message: () => undefined, refetch: () => undefined, has }
-    });
-    await store.load();
-    const lamp = 'hb_wanderlampaaaaaa';
-    const snapshot = (id: string) => ({
-      id,
-      src: 'homebrew' as const,
-      kind: 'item' as const,
-      en: 'Lamp',
-      ru: 'Лампа',
-      ende: '',
-      rud: ''
-    });
-    const entry = (key: string) => ({
-      item_key: key,
-      source: 'homebrew' as const,
-      snapshot: snapshot(key),
-      quantity: 1,
-      price_coins: null,
-      player_note: '',
-      gm_note: ''
-    });
-    const [row] = store.importRows([
-      {
-        name: 'Своё',
-        money_mode: 'bag',
-        player_note: '',
-        gm_note: '',
-        entries: [entry(AXE), entry(lamp)]
-      }
-    ]);
-    expect(row?.entries.map((e) => [e.item_key, e.source, e.snapshot])).toEqual([
-      [AXE, 'homebrew', null],
-      [lamp, 'homebrew', snapshot(lamp)]
-    ]);
-    expect(has).toHaveBeenCalledWith(lamp);
-    expect(await store.import(row ? [row] : [])).toEqual({ ok: true });
-    const read = await serverList(cloud.lists, row?.list.id ?? '');
-    expect(read?.list_entries.map((e) => [e.item_key, e.snapshot])).toEqual([
-      [AXE, null],
-      [lamp, snapshot(lamp)]
-    ]);
-    store.clear();
-  });
-
-  it('writes every homebrew entry as a frozen copy with no homebrew hook', async () => {
-    const { store } = await loaded();
-    const [row] = store.importRows([
-      {
-        name: 'Своё',
-        money_mode: 'bag',
-        player_note: '',
-        gm_note: '',
-        entries: [
-          {
-            item_key: AXE,
-            source: 'homebrew',
-            snapshot: {
-              id: AXE,
-              src: 'homebrew',
-              kind: 'item',
-              en: 'A',
-              ru: 'A',
-              ende: '',
-              rud: ''
-            },
-            quantity: 1,
-            price_coins: null,
-            player_note: '',
-            gm_note: ''
-          }
-        ]
-      }
-    ]);
-    expect(row?.entries[0]?.snapshot).toMatchObject({ id: AXE });
-  });
-
   it('makes new ids on every call; the same rows sent twice carry the same ids', async () => {
     const { cloud, store } = await loaded();
-    const a = store.importRows(FILE);
-    const b = store.importRows(FILE);
+    const a = rowsOf(cloud, FILE);
+    const b = rowsOf(cloud, FILE);
     expect(a[0]?.list.id).not.toBe(b[0]?.list.id);
     expect(a[0]?.entries[0]?.id).not.toBe(b[0]?.entries[0]?.id);
     const imp = vi.spyOn(cloud.lists, 'import').mockResolvedValueOnce({
@@ -1655,135 +1585,261 @@ describe('a batch removal', () => {
 describe('homebrew entries', () => {
   const GM2_LIST = uuid(201);
   const own = (keys: readonly string[]) => (key: string) =>
-    entrySource(key, { ready: true, has: (k) => keys.includes(k) }, undefined);
+    entrySource(
+      key,
+      {
+        ready: true,
+        has: (k) => keys.includes(k),
+        hidOf: (k) => (keys.includes(k) ? AXE_ID : null)
+      },
+      undefined
+    );
 
-  async function resolved(as: string, sourceOf: (key: string) => EntrySource | null) {
-    const cloud = fakeCloud(SEED, as);
-    const store = new CloudLists(cloud.lists, say, t, undefined, sourceOf);
+  /* A store over `as`'s port of `cloud`, whose account holds the items of `held`. */
+  async function resolved(
+    as: string,
+    sourceOf: (key: string) => EntrySource | null,
+    held: readonly string[] = [],
+    cloud: FakeCloud = fakeCloud(SEED, as)
+  ) {
+    const port = cloud.as(as);
+    const items = vi.spyOn(port.lists, 'items');
+    const store = new CloudLists(
+      port.lists,
+      say,
+      t,
+      {
+        events: port.events,
+        random: () => 0.5,
+        homebrew: {
+          message: () => undefined,
+          refetch: () => undefined,
+          has: (k) => held.includes(k)
+        }
+      },
+      sourceOf
+    );
     await store.load();
-    const apply = vi.spyOn(cloud.lists, 'apply');
-    return { cloud, store, apply };
+    await settle();
+    const apply = vi.spyOn(port.lists, 'apply');
+    return { cloud, port, store, apply, items };
   }
 
-  /* The entries as the server holds them: the key, the source and the snapshot's id. */
+  /* The entries as the server holds them: the key, the source and the linked item. */
   async function written(repo: ListRepository, id: string) {
     const l = await serverList(repo, id);
-    return l?.list_entries.map((e) => [
-      e.item_key,
-      e.source,
-      (e.snapshot as { id?: string } | null)?.id ?? null
-    ]);
+    return l?.list_entries.map((e) => [e.item_key, e.source, e.hb_item]);
   }
 
-  it('reads a frozen copy into the list and a reference as a plain key', async () => {
+  it("reads another account's linked item into `linked`, and no record for an own item", async () => {
     const gm2 = await resolved('gm2', own([]));
-    const frozen = gm2.store.get(GM2_LIST)?.frozen?.[AXE];
-    expect(frozen).toMatchObject({ id: AXE, src: 'homebrew', ru: 'Топор Тлеющих Углей' });
-    const gm1 = await resolved('gm1', own([AXE]));
-    expect(gm1.store.get(SHOP)?.ids).toContain(AXE);
-    expect(gm1.store.get(SHOP)?.frozen).toBeUndefined();
+    expect(gm2.store.get(GM2_LIST)?.links).toEqual({ [AXE]: AXE_ID });
+    expect(gm2.store.get(GM2_LIST)?.linked?.[AXE]).toMatchObject({
+      id: AXE,
+      hid: AXE_ID,
+      src: 'homebrew',
+      ru: 'Топор Тлеющих Углей'
+    });
+    expect(gm2.items.mock.calls).toEqual([[[AXE_ID]]]);
+    const gm1 = await resolved('gm1', own([AXE]), [AXE]);
+    expect(gm1.store.get(SHOP)?.links).toEqual({ [AXE]: AXE_ID });
+    expect(gm1.store.get(SHOP)?.linked).toBeUndefined();
+    expect(gm1.items).not.toHaveBeenCalled();
   });
 
-  it('writes an own item as a reference, a catalog record as official, and leaves an unknown key out', async () => {
-    const { cloud, store } = await resolved('gm1', own([AXE]));
+  it('draws a linked item the read cannot fetch as a missing record, and fetches it on the next read', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const port = cloud.as('gm2');
+    const items = vi.spyOn(port.lists, 'items').mockResolvedValueOnce({ ok: false });
+    const store = new CloudLists(port.lists, say, t);
+    await store.load();
+    await settle();
+    expect(items).toHaveBeenCalledOnce();
+    expect(store.get(GM2_LIST)?.linked).toBeUndefined();
+    const kept = store.get(GM2_LIST);
+    expect(kept?.ids).toContain(AXE);
+    cloud.play(GM2_LIST, { name: 'Другое' });
+    await store.refresh();
+    await settle();
+    expect(store.get(GM2_LIST)?.linked?.[AXE]).toMatchObject({ id: AXE, hid: AXE_ID });
+    /* A failed read later keeps the records known. */
+    items.mockResolvedValueOnce({ ok: false });
+    const linked = store.get(GM2_LIST)?.linked;
+    cloud.play(GM2_LIST, { name: 'Третье' });
+    await store.refresh();
+    await settle();
+    expect(store.get(GM2_LIST)?.name).toBe('Третье');
+    expect(store.get(GM2_LIST)?.linked?.[AXE]).toBe(linked?.[AXE]);
+  });
+
+  it('reads the linked items of every list in one call per read, 300 of them in one list', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { limits: { items: 400, entries: 400 } });
+    const base32 = (n: number): string =>
+      Array.from({ length: 4 }, (_, i) =>
+        'abcdefghijklmnopqrstuvwxyz234567'.charAt(Math.floor(n / 32 ** (3 - i)) % 32)
+      ).join('');
+    const made = Array.from({ length: 300 }, (_, i) => ({
+      id: uuid(20000 + i),
+      key: 'hb_linkedaaaaaa' + base32(i),
+      book_id: null,
+      content: { kind: 'item' as const, ru: 'Связь ' + String(i) }
+    }));
+    for (const row of made) expect((await cloud.homebrew.createItem(row)).ok).toBe(true);
+    const gm2 = cloud.as('gm2');
+    const list = uuid(21000);
+    expect(
+      await gm2.lists.apply([
+        {
+          op: 'create',
+          list: { id: list, name: '300', money_mode: 'bag', player_note: '', gm_note: '' },
+          entries: made.map((row, i) => ({
+            id: uuid(22000 + i),
+            item_key: row.key,
+            source: 'homebrew' as const,
+            hb_item: row.id,
+            position: i,
+            quantity: 1,
+            price_coins: null,
+            player_note: '',
+            gm_note: ''
+          }))
+        }
+      ])
+    ).toMatchObject({ ok: true, results: [{ ok: true }] });
+    const { store, items } = await resolved('gm2', own([]), [], cloud);
+    expect(items).toHaveBeenCalledOnce();
+    expect(items.mock.calls[0]?.[0]).toHaveLength(301);
+    expect(Object.keys(store.get(list)?.linked ?? {})).toHaveLength(300);
+  });
+
+  it('writes an own item by its id, a catalog record as official, and leaves an unknown key out', async () => {
+    const { port, store } = await resolved('gm1', own([AXE]), [AXE]);
     const other = 'hb_nobodysitemaaaaa';
     expect(store.add(EMPTY, [AXE, 'q2', other], () => true)).toEqual([AXE, 'q2']);
-    expect(store.get(EMPTY)?.frozen).toBeUndefined();
+    expect(store.get(EMPTY)?.links).toEqual({ [AXE]: AXE_ID });
     await quiet();
-    expect(await written(cloud.lists, EMPTY)).toEqual([
-      [AXE, 'homebrew', null],
+    expect(await written(port.lists, EMPTY)).toEqual([
+      [AXE, 'homebrew', AXE_ID],
       ['q2', 'official', null]
     ]);
   });
 
-  it('writes a frozen copy with its snapshot on a create, and keeps it in memory', async () => {
+  it("writes a link to another account's item on a create, with its record at once", async () => {
     const gm2 = await resolved('gm2', own([]));
-    const copy = gm2.store.get(GM2_LIST)?.frozen?.[AXE];
-    const { cloud, store } = await resolved('gm2', (key) =>
-      entrySource(key, { ready: true, has: () => false }, key === AXE ? copy : undefined)
+    const linked = gm2.store.get(GM2_LIST)?.linked?.[AXE];
+    expect(linked).toBeDefined();
+    const { port, store } = await resolved(
+      'gm2',
+      (key) =>
+        entrySource(
+          key,
+          { ready: true, has: () => false, hidOf: () => null },
+          key === AXE ? linked : undefined
+        ),
+      [],
+      gm2.cloud
     );
     const l = store.create('Копия', { ids: [AXE, 'q1'] });
     expect(l.ids).toEqual([AXE, 'q1']);
-    expect(l.frozen?.[AXE]).toBe(copy);
+    expect(l.links).toEqual({ [AXE]: AXE_ID });
+    expect(l.linked?.[AXE]).toMatchObject({ id: AXE, hid: AXE_ID });
     await quiet();
-    expect(await written(cloud.lists, l.id)).toEqual([
-      [AXE, 'homebrew', AXE],
+    expect(await written(port.lists, l.id)).toEqual([
+      [AXE, 'homebrew', AXE_ID],
       ['q1', 'official', null]
     ]);
   });
 
+  it('reads a new link it has no record of at once', async () => {
+    const CAP = 'hb_whispercapaaaaaa';
+    const cap = { ...recordOf(CAP, { kind: 'item', ru: 'Шапка' }, null), hid: uuid(513) };
+    const { store, items } = await resolved('gm2', (key) =>
+      entrySource(
+        key,
+        { ready: true, has: () => false, hidOf: () => null },
+        key === CAP ? cap : undefined
+      )
+    );
+    items.mockClear();
+    store.add(GM2_LIST, [CAP], () => true);
+    await settle();
+    expect(items).toHaveBeenCalledOnce();
+    expect(store.get(GM2_LIST)?.linked?.[CAP]).toMatchObject({ id: CAP, hid: uuid(513) });
+  });
+
   it('writes nothing for a homebrew key while the account items are not read', async () => {
     const { store, apply } = await resolved('gm1', (key) =>
-      entrySource(key, { ready: false, has: () => true }, undefined)
+      entrySource(key, { ready: false, has: () => true, hidOf: () => AXE_ID }, undefined)
     );
     expect(store.add(EMPTY, [AXE], () => true)).toEqual([]);
     await quiet();
     expect(apply).not.toHaveBeenCalled();
   });
 
-  it("an undo of a frozen entry from the record's list menu writes the same snapshot", async () => {
+  it("an undo of a link from the record's list menu links the same item", async () => {
     /* The resolver finds nothing now: the undo must not ask it. */
-    const { cloud, store } = await resolved('gm2', () => null);
-    const copy = store.get(GM2_LIST)?.frozen?.[AXE];
-    const before = (await serverList(cloud.lists, GM2_LIST))?.list_entries[1]?.snapshot;
+    const { port, store } = await resolved('gm2', () => null);
+    const linked = store.get(GM2_LIST)?.linked?.[AXE];
     store.removeEntry(GM2_LIST, AXE);
-    expect(store.get(GM2_LIST)?.frozen).toBeUndefined();
+    expect(store.get(GM2_LIST)?.links).toBeUndefined();
+    expect(store.get(GM2_LIST)?.linked).toBeUndefined();
     store.restoreEntry(GM2_LIST, AXE, 1, {});
-    expect(store.get(GM2_LIST)?.frozen?.[AXE]).toBe(copy);
+    expect(store.get(GM2_LIST)?.linked?.[AXE]).toBe(linked);
     await quiet();
-    const after = (await serverList(cloud.lists, GM2_LIST))?.list_entries;
-    expect(after?.map((e) => [e.item_key, e.source])).toEqual([
-      ['q23', 'official'],
-      [AXE, 'homebrew']
+    expect(await written(port.lists, GM2_LIST)).toEqual([
+      ['q23', 'official', null],
+      [AXE, 'homebrew', AXE_ID]
     ]);
-    expect(after?.[1]?.snapshot).toEqual(before);
   });
 
-  it('an undo of a reference and of a catalog row writes each as it was', async () => {
-    const { cloud, store } = await resolved('gm1', () => null);
+  it('an undo of an own link and of a catalog row writes each as it was', async () => {
+    const { port, store } = await resolved('gm1', () => null, [AXE]);
     store.removeEntry(SHOP, AXE);
     store.removeEntry(SHOP, 'di11');
     store.restoreEntry(SHOP, 'di11', 8, {});
     store.restoreEntry(SHOP, AXE, 9, { gold: 800 });
     await quiet();
-    expect((await written(cloud.lists, SHOP))?.slice(-2)).toEqual([
+    expect((await written(port.lists, SHOP))?.slice(-2)).toEqual([
       ['di11', 'official', null],
-      [AXE, 'homebrew', null]
+      [AXE, 'homebrew', AXE_ID]
     ]);
     expect(said).toEqual([]);
   });
 
-  it('takes the refused path for a reference whose item was deleted meanwhile', async () => {
-    const { cloud, store } = await resolved('gm1', own([AXE]));
+  it('takes the refused path for a link whose item was deleted meanwhile', async () => {
+    const { port, store } = await resolved('gm1', own([AXE]), [AXE]);
     store.removeEntry(SHOP, AXE);
     await quiet();
-    expect((await cloud.homebrew.removeItem(uuid(511))).ok).toBe(true);
+    expect((await port.homebrew.removeItem(AXE_ID)).ok).toBe(true);
     store.restoreEntry(SHOP, AXE, 9, {});
     await quiet();
     expect(said).toEqual([{ msg: REFUSED_TEXT, error: true }]);
     expect(store.get(SHOP)?.ids).not.toContain(AXE);
   });
 
-  it('says the frozen-copy byte limit in KB when the database refuses a copy', async () => {
-    const gm2 = await resolved('gm2', own([]));
-    const copy = gm2.store.get(GM2_LIST)?.frozen?.[AXE];
-    const { cloud, store, apply } = await resolved('gm2', (key) =>
-      entrySource(key, { ready: true, has: () => false }, key === AXE ? copy : undefined)
-    );
-    apply.mockResolvedValueOnce({
-      ok: true,
-      results: [{ ok: false, error: 'limit', key: 'snapshot_bytes_per_list', value: 1048576 }]
-    });
-    const l = store.create('Копия', { ids: [AXE] });
+  it('relinks an entry in place to an item of the same key, keeping its quantity, price and notes', async () => {
+    const { cloud, port, store, apply } = await resolved('gm2', () => null);
+    const copy = uuid(9100);
+    expect(
+      (
+        await port.homebrew.createItem({
+          id: copy,
+          key: AXE,
+          book_id: null,
+          content: { kind: 'item', ru: 'Мой топор' }
+        })
+      ).ok
+    ).toBe(true);
+    store.setMeta(GM2_LIST, AXE, 'qty', 3);
+    store.setMeta(GM2_LIST, AXE, 'hnote', 'Себе');
+    expect(store.relink(GM2_LIST, 'hb_nosuchitemaaaaaa', copy)).toBe(false);
+    expect(store.relink(GM2_LIST, AXE, copy)).toBe(true);
+    expect(store.get(GM2_LIST)?.links).toEqual({ [AXE]: copy });
     await quiet();
-    expect(said).toEqual([
-      {
-        msg: 'Достигнут предел копий предметов других игроков в списке: 1024 КБ. Нужно больше - напишите на daggerheart.loot@gmail.com.',
-        error: true
-      }
-    ]);
-    expect(store.get(l.id)).toBeUndefined();
-    expect(await serverList(cloud.lists, l.id)).toBeUndefined();
+    expect(kinds(apply).flat()).toContain('relink');
+    const row = (await serverList(cloud.as('gm2').lists, GM2_LIST))?.list_entries[1];
+    expect(row).toMatchObject({ id: uuid(2102), hb_item: copy, quantity: 3, gm_note: 'Себе' });
+    expect(said).toEqual([]);
   });
 
   it('forgets what it removed on a sign-out', async () => {
@@ -1800,17 +1856,18 @@ describe('homebrew entries', () => {
   });
 });
 
-describe('the frozen copies in memory', () => {
-  it('keeps the frozen object through a note, a quantity and a rename, so a page keeps its index', async () => {
+describe('the linked records in memory', () => {
+  it('keeps the linked object through a note, a quantity and a rename, so a page keeps its index', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const store = new CloudLists(cloud.lists, say, t);
     await store.load();
+    await settle();
     const list = uuid(201);
-    const frozen = store.get(list)?.frozen;
-    expect(frozen).toBeDefined();
+    const linked = store.get(list)?.linked;
+    expect(linked).toBeDefined();
     store.setMeta(list, 'q23', 'note', 'Под прилавком');
     store.setMeta(list, AXE, 'qty', 3);
     store.rename(list, 'Другое имя');
-    expect(store.get(list)?.frozen).toBe(frozen);
+    expect(store.get(list)?.linked).toBe(linked);
   });
 });

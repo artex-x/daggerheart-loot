@@ -1,17 +1,19 @@
 <script lang="ts">
-  /* The fold «Источники» on `#/homebrew` (m02, m19, m13 in the homebrew mocks), closed
-     on each visit with the count of named sources: the default source with its count and
-     «Скачать JSON», then each named source with its count, «Разделы», «Переименовать»,
-     «Скачать JSON» and «Удалить», and «Новый источник» for a new one. A source's sections
-     open under it with «Переименовать» and «Удалить». A rename writes the language that
-     names the source or section (`editLang`). Every write goes through the store
-     (docs/specs/FEATURES.md, "Homebrew"). */
+  /* The Sources tab of «Мои предметы», `#/homebrew/sources` (m02, m19, m13 in the homebrew
+     mocks): «Новый источник» first, the count of named sources, then each named source by
+     creation with its count, «Разделы», «Переименовать», «Скачать JSON» and «Удалить», and
+     the default source last with its count and «Скачать JSON». A source's name links to its
+     items on `#/tables/homebrew` (the `src` filter, its source chip) while it holds an
+     item; an empty source's name is text, since its address would open another source's
+     chip. A source's sections open under it with «Переименовать» and «Удалить». A rename
+     writes the language that names the source or section (`editLang`). Every write goes
+     through the store (docs/specs/FEATURES.md, "Homebrew"). */
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import NameField from './NameField.svelte';
-  import PanelFold from './PanelFold.svelte';
   import { limitText } from '../lib/cloudLists.js';
+  import { tablesHash } from '../lib/hash.js';
   import {
     BOOK_NAME_MAX,
     editLang,
@@ -157,26 +159,31 @@
   }
 </script>
 
-<PanelFold
-  label={t.hbSources}
-  count={store.bookLimit !== null || books.length
-    ? countOf(books.length, store.bookLimit, t.hbSourcesN, lang, t.ofLimit)
-    : undefined}
->
+<div class="hbtab">
+  <div class="add">
+    {#if editing === 'new'}
+      <NameField
+        id="hb-new-source"
+        label={t.hbNewSource}
+        submit={t.create}
+        cancel={t.cancel}
+        onsubmit={createSource}
+        oncancel={close}
+        maxlength={BOOK_NAME_MAX}
+      />
+    {:else}
+      <Button
+        variant="primary"
+        onclick={() => {
+          start('new', true);
+        }}><Icon name="plus" />{t.hbNewSource}</Button
+      >
+    {/if}
+  </div>
+  {#if store.bookLimit !== null || books.length}
+    <p class="note">{countOf(books.length, store.bookLimit, t.hbSourcesN, lang, t.ofLimit)}</p>
+  {/if}
   <ul class="books">
-    <li class="book">
-      <div class="head">
-        <span class="name">{t.srcHomebrew}</span>
-        <span class="count">{itemsN(defaultCount)}</span>
-        <span class="acts">
-          <Button
-            size="sm"
-            onclick={() => void app.exportHomebrew({ book: null }, t.srcHomebrew)}
-            >{t.exportJson}</Button
-          >
-        </span>
-      </div>
-    </li>
     {#each books as book (book.id)}
       {@const sections = book.content.sections ?? []}
       {@const mine = held(book)}
@@ -194,7 +201,13 @@
           />
         {:else}
           <div class="head">
-            <span class="name">{named(book.content)}</span>
+            {#if mine.length}
+              <a class="name" href={tablesHash('homebrew', { filter: { src: [book.key] } })}
+                >{named(book.content)}</a
+              >
+            {:else}
+              <span class="name">{named(book.content)}</span>
+            {/if}
             <span class="count"
               >{itemsN(mine.length)}{#if sections.length}{' · ' +
                   countOf(
@@ -308,28 +321,27 @@
         {/if}
       </li>
     {/each}
+    <li class="book">
+      <div class="head">
+        {#if defaultCount}
+          <a class="name" href={tablesHash('homebrew', { filter: { src: ['hb'] } })}
+            >{t.srcHomebrew}</a
+          >
+        {:else}
+          <span class="name">{t.srcHomebrew}</span>
+        {/if}
+        <span class="count">{itemsN(defaultCount)}</span>
+        <span class="acts">
+          <Button
+            size="sm"
+            onclick={() => void app.exportHomebrew({ book: null }, t.srcHomebrew)}
+            >{t.exportJson}</Button
+          >
+        </span>
+      </div>
+    </li>
   </ul>
-  <div class="add">
-    {#if editing === 'new'}
-      <NameField
-        id="hb-new-source"
-        label={t.hbNewSource}
-        submit={t.create}
-        cancel={t.cancel}
-        onsubmit={createSource}
-        oncancel={close}
-        maxlength={BOOK_NAME_MAX}
-      />
-    {:else}
-      <Button
-        size="sm"
-        onclick={() => {
-          start('new', true);
-        }}><Icon name="plus" />{t.hbNewSource}</Button
-      >
-    {/if}
-  </div>
-</PanelFold>
+</div>
 
 <style>
   .books,
@@ -351,6 +363,12 @@
     padding-top: 0;
   }
 
+  .note {
+    margin: 18px 0 10px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
   .sections {
     margin: 8px 0 0 16px;
     padding-left: 12px;
@@ -369,6 +387,10 @@
     overflow-wrap: anywhere;
   }
 
+  a.name {
+    color: var(--txt);
+  }
+
   .count {
     font-size: 13px;
     color: var(--muted2);
@@ -381,7 +403,7 @@
     margin-left: auto;
   }
 
-  .add {
-    margin-top: 12px;
+  .add + .books {
+    margin-top: 18px;
   }
 </style>

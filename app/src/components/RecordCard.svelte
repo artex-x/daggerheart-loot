@@ -18,7 +18,7 @@
   import Icon from './Icon.svelte';
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
-  import { recordHash } from '../lib/hash.js';
+  import { homebrewTabHash, recordHref } from '../lib/hash.js';
   import { FOLD_OWN, cardBadges, foldOwn, relName, relOrder, srcLabel } from '../lib/label.js';
   import { madeFrom, setBonusOf, setOf, upgradeLine, upgradesTo } from '../lib/data.js';
   import { isHomebrewKey, isHomebrewRecord } from '../lib/homebrew.js';
@@ -64,6 +64,9 @@
     /** The add-to-list control and the print link, off `listPicker` in app.js -
      *  only the full card draws it, the same as `actions`. */
     pick?: Snippet | undefined;
+    /** The viewer is the author: an own set's name and each own rule card link to their
+     *  tabs on «Мои предметы». */
+    manage?: boolean;
   }
 
   const {
@@ -78,7 +81,8 @@
     onopen,
     nameActions,
     actions,
-    pick
+    pick,
+    manage = false
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -200,7 +204,7 @@
     <h2 class="card-name">
       {#if variant === 'compact'}
         <!-- A link, because from a result the name is the way to the page. -->
-        <a href={recordHash(it.id)} title={t.openPage}>{name}</a>
+        <a href={recordHref(it)} title={t.openPage}>{name}</a>
       {:else}
         <span>{name}</span>
       {/if}
@@ -278,8 +282,8 @@
             <Icon name="craftFrom" />
             <span class="craft-l">{t.craftFrom}</span>
             <span
-              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
-                  href={recordHash(r.id)}>{relName(r, lang)}</a
+              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a href={recordHref(r)}
+                  >{relName(r, lang)}</a
                 >{/each}{#if fromFold.more}{' '}{@render moreButton(
                   'from',
                   fromFold.more
@@ -292,8 +296,8 @@
             <Icon name="craft" />
             <span class="craft-l">{t.craftInto}</span>
             <span
-              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
-                  href={recordHash(r.id)}>{relName(r, lang)}</a
+              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a href={recordHref(r)}
+                  >{relName(r, lang)}</a
                 >{/each}{#if intoFold.more}{' '}{@render moreButton(
                   'into',
                   intoFold.more
@@ -316,7 +320,7 @@
                   ? ', '
                   : ''}{#if member.id === it.id}<span aria-current="true"
                     >{relName(member, lang)}</span
-                  >{:else}<a href={recordHash(member.id)}>{relName(member, lang)}</a
+                  >{:else}<a href={recordHref(member)}>{relName(member, lang)}</a
                   >{/if}{/each}{#if setFold.more}{' '}{@render moreButton(
                   'set',
                   setFold.more
@@ -329,7 +333,14 @@
                the text. A frozen copy alone in its set draws the bonus with no
                set line. -->
           <p>
-            <span><i>{setBonus.name}:</i> {setBonus.text}</span>
+            <span
+              ><i
+                >{#if manage && it.set && isHomebrewKey(it.set)}<a
+                    href={homebrewTabHash('sets', it.set)}>{setBonus.name}</a
+                  >:{:else}{setBonus.name}:{/if}</i
+              >
+              {setBonus.text}</span
+            >
           </p>
         {/if}
       </div>
@@ -359,6 +370,9 @@
               >
             {:else if r.url}
               <a href={r.url} target="_blank" rel="noopener">{hostOf(r.url)}</a>
+            {/if}
+            {#if manage && isHomebrewKey(key)}
+              <a href={homebrewTabHash('rules', key)}>{t.hbCardManage}</a>
             {/if}
           </details>
         {/each}

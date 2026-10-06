@@ -86,6 +86,10 @@ Design decisions - ask sparingly:
 - Never block planning on minor naming, trivial structure, or other low-impact choices
 - If confirmation IS required, set in handoff and summary: `NEEDS_HUMAN_CONFIRMATION: yes` and list exact questions
 
+Owner rules:
+- When an owner answer settles a reusable rule, give its write into its home an acceptance line in a batch: the batch that changes that behaviour, else the next batch; write the batch into the rule's tag in `context.md`
+- Keep the rule to one to three lines inside the home's budget (`.claude/README.md`, "Owner insights"); when the home is at its budget, name the older rule it replaces or merges
+
 UI / visual design - grounded mockups, not detached redesigns and not full implementation:
 - If the work introduces a new UI element, changes layout/interaction, or leaves visual structure under-specified, produce lightweight mockups before finalizing that part of the plan
 - Ground every mockup in the current app:

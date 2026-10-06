@@ -339,11 +339,7 @@ R7d, R7e, R7f and R7g).
   - The `homebrew` table's «Раздел» filter row draws one chip per used
     section (up to 100) with no fold or search (`lib/facets.ts`,
     `FilterBar.svelte`).
-  - `HomebrewCards.svelte` lists up to 100 cards per fold with no search.
   - `shares.list` returns revoked rows, which stay for ever.
-  - An `add` or `create` op with a frozen copy over 60 kB goes alone and
-    without `keepalive` (`lib/cloudLists.ts`), so a tab closed inside the
-    2 s window loses it.
   - The editor stringifies the draft and rebuilds the preview index per
     keystroke; `findItems` maps every match before the picker keeps 8.
   - One toast slot: an error can be replaced by the next success, a 7 s
@@ -362,15 +358,15 @@ R7d, R7e, R7f and R7g).
   `refresh()`); `get_shared_list` in the migrations.
 - **What**: after each owner commit every open shared page downloads the
   whole projection again: about 0.1-1 MB for a real list of up to 300
-  entries, up to 1 MiB of frozen copies plus 300 references of up to 81 KB
-  at three times the limits (estimates). An owner who types with pauses
+  entries, up to 300 linked items of up to 81 KB each at three times the
+  limits (estimates). An owner who types with pauses
   commits every 2 s.
 - **Why deferred**: `p_since` removes the unchanged re-reads only. A
   smaller changed read needs per-entry change tracking, or sending only the
-  snapshots the page lacks (a frozen copy never changes per entry id): a
+  snapshots the page lacks (by the item's `hid` and revision): a
   projection contract change the owner did not place.
 - **How to verify the fix**: with a shared page open, edit one note; the
-  re-read carries no frozen snapshot the page already holds.
+  re-read carries no snapshot of an unchanged item the page already holds.
 
 ### D90 - `npm run check:db` waits silently on a stack that cannot start
 
@@ -393,13 +389,14 @@ R7d, R7e, R7f and R7g).
 
 ## Item links (`persist-9-item-share`)
 
-Owns: `#/h/<token>`, the add and the clone from it, and print routes for
-cloud lists.
+Owns: print routes for cloud lists and for another account's item (`#/h/`
+ships in R7h), the drop of `list_entries.snapshot`, and a linked entry
+whose key the reader also holds.
 
 ### D70 - a homebrew entry of another account's list does not print from its address
 
 - **Where**: `app/src/state/app.svelte.ts` (`knows`, `recordFor`,
-  `frozenCopy`); `app/src/components/PrintPage.svelte`.
+  `linkedRecord`); `app/src/components/PrintPage.svelte`.
 - **What**: a reader who ticks such an entry on `#/s/<token>` and presses
   «Печать», or opens its `#/print/` address later, gets no card for it.
 - **Why deferred**: the address holds only keys, and the share page closes
@@ -408,15 +405,35 @@ cloud lists.
 - **How to verify the fix**: on `#/s/player-token-1` signed out, tick the
   axe and press «Печать»; the sheet holds its card, after a reload too.
 
-### D71 - the privacy pages say a share link to a homebrew item works
+### D93 - `list_entries.snapshot` stays as a column that is always null
 
-- **Where**: `pages/src/privacy.html` and `pages/src/en/privacy.html`.
-- **What**: both pages say a share link to a homebrew item works as a
-  list's. Item links ship only in R9, so the text promises a link that does
-  not exist.
-- **Why deferred**: the text describes the R9 behaviour; R9 corrects it.
-- **How to verify the fix**: the pages name the item link only after
-  `#/h/<token>` ships, and match `FEATURES.md`.
+- **Where**: `supabase/migrations/20261007130000_homebrew_links.sql`
+  (`list_entries_snapshot_null`).
+- **What**: R7h links every homebrew entry by `hb_item` and keeps the
+  `snapshot` column with `check (snapshot is null)`. Nothing reads a value
+  from it; each read and write of an entry carries the empty column.
+- **Why deferred**: the frontend before R7h's links selects the column,
+  so a frontend-only revert of R7h keeps reading the lists (owner,
+  2026-10-07). The next release's first migration drops it.
+- **How to verify the fix**: the first migration of R9 drops the column and
+  its check; `git grep -n snapshot -- app/src/ports/supabase.ts` finds no
+  select of it, and `npm run check:db` passes.
+
+### D94 - a linked entry draws the reader's own item of the same key
+
+- **Where**: `app/src/state/app.svelte.ts` (`recordFor`, which asks the
+  catalogue and own-item index before `linkedRecord`).
+- **What**: keys are unique per owner only. A reader who imported the
+  author's homebrew file holds own items with the author's keys. A row of
+  a list that links the author's item by its id then draws the reader's
+  own record, while the entry keeps the link to the author's item, and
+  «Сохранить себе» is not offered there.
+- **Why deferred**: found in the R7h plan (2026-10-07); it needs a file
+  import of another author's items first, and R9 owns the item links and
+  «Сохранить себе».
+- **How to verify the fix**: as gm2, import gm1's homebrew file, then open
+  a list that links gm1's axe; the row draws gm1's item, and a test of
+  `recordFor` covers a linked entry whose key the reader also holds.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 

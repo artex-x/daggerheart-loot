@@ -1,0 +1,164 @@
+# #/lists ~ changes as gm2
+# route: #/lists
+# why: gm2's index: the card of «Список второго ГМа» says «2 изменения» in gold under its meta line, in its link's name too
+# as: gm2
+
+## ru :: tree
+RootWebArea "Списки — Генератор лута — Daggerheart" [url=index.html?as=gm2#/lists]
+  link "К содержимому" [url=index.html?as=gm2#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm2@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm2#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm2#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm2#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
+      link "Сообщества" [url=index.html?as=gm2#/roll/community]
+      link "Таблицы" [url=index.html?as=gm2#/tables]
+      link "Списки" [url=index.html?as=gm2#/lists]
+      link "Поиск" [url=index.html?as=gm2#/search]
+  main ""
+    heading "Мои списки" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
+    StaticText "НОВЫЙ СПИСОК"
+    textbox "Новый список" [multiline=false readonly=false required=false]
+    button "Создать"
+    button "Импорт из файла" [expanded=false]
+    heading "ВАШ АККАУНТ" [level=2]
+    StaticText "1 список из 50"
+    checkbox "Выбрать все" [checked=false]
+    StaticText "ВЫБРАТЬ ВСЕ"
+    generic ""
+    checkbox "Выбрать: Список второго ГМа" [checked=false]
+    link "Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+      StaticText "Список второго ГМа"
+      StaticText "2 позиции · изменён позавчера"
+      StaticText "2 изменения"
+    button "Удалить"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Arazo's Artifacts
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm2@example.test
+Альт. таблицы
+Выбрать все
+Выбрать: Список второго ГМа
+Импорт из файла
+К содержимому
+Как это работает
+Конфиденциальность
+ЛутDaggerheart
+Новый список
+Обычные правила
+Открывать этот раздел при запуске
+Поиск
+Создать
+Сообщества
+Списки
+Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения
+Таблицы
+Удалить
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm2#/lists]
+  link "Skip to content" [url=index.html?as=gm2#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm2@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm2#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm2#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm2#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
+      link "Communities" [url=index.html?as=gm2#/roll/community]
+      link "Tables" [url=index.html?as=gm2#/tables]
+      link "Lists" [url=index.html?as=gm2#/lists]
+      link "Search" [url=index.html?as=gm2#/search]
+  main ""
+    heading "My lists" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
+    StaticText "NEW LIST"
+    textbox "New list" [multiline=false readonly=false required=false]
+    button "Create"
+    button "Import from file" [expanded=false]
+    heading "YOUR ACCOUNT" [level=2]
+    StaticText "1 list of 50"
+    checkbox "Select all" [checked=false]
+    StaticText "SELECT ALL"
+    generic ""
+    checkbox "Select: Список второго ГМа" [checked=false]
+    link "Список второго ГМа, 2 items, edited 2 days ago, 2 changes" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+      StaticText "Список второго ГМа"
+      StaticText "2 items · edited 2 days ago"
+      StaticText "2 changes"
+    button "Delete"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Account: gm2@example.test
+Alt. tables
+Arazo's Artifacts
+Communities
+Create
+Delete
+Dragon's Vault
+Dread
+EN
+How this works
+Import from file
+Install as an app
+Lists
+New list
+Open this section on start
+Privacy
+RU
+Search
+Select all
+Select: Список второго ГМа
+Skip to content
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart
+Список второго ГМа, 2 items, edited 2 days ago, 2 changes

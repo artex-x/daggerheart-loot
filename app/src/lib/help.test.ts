@@ -241,12 +241,16 @@ describe('the tables help against the data', () => {
 });
 
 describe('the tables help for a signed-in author', () => {
-  it('names the «Хоумбрю» group and its three filters in both languages', () => {
+  it('names the «Хоумбрю» group, its source chip and its two filters in both languages', () => {
     const ru = helpFor('tables', 'ru');
     const en = helpFor('tables', 'en');
     expect(textOf(ru, 0)).toContain('группа «Хоумбрю» - ваши собственные предметы');
-    expect(textOf(ru, 7)).toContain('у «Хоумбрю» тип, источник и раздел.');
+    expect(textOf(ru, 7)).toContain(
+      'у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей.'
+    );
     expect(textOf(en, 0)).toContain('one more group, "Homebrew": your own items');
-    expect(textOf(en, 7)).toContain('and type, source and section for Homebrew.');
+    expect(textOf(en, 7)).toContain(
+      'and type and section for Homebrew, where the row above the table picks the source.'
+    );
   });
 });

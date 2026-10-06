@@ -44,21 +44,30 @@
   A share link to a list is a player link or a GM link. Anybody who holds a link can read the
   player view or the GM view of that list until you replace the link with a new one or revoke
   it. The player view leaves out the GM notes. The link itself is kept with the list, and only
-  you can read it there, so you can copy it again at any time. A share link to a homebrew item
-  works the same way. A share link never shows your name or your email. A share link shows a
-  homebrew item of yours in the list as it is now. If another user saves such a list for
-  themselves, or adds an item from it to their own list, their list keeps a copy of the item as
-  it was then, with the set card and rule cards the item names, and that copy does not change.
+  you can read it there, so you can copy it again at any time. A share link shows the homebrew
+  items in the list as they are now.
+</p>
+<h3>Homebrew item addresses</h3>
+<p>
+  Each homebrew item has its own address. Anybody who has the address can open the item, signed
+  out too, with the items it relates to: the items it is made from or upgrades to, and the other
+  items of its set. Nobody can list your items without their addresses. The item's address also
+  shows when it was last changed. Neither a share link nor an item's address shows your name or
+  your email. If another user adds your item to their list, their list shows the item as it is
+  now: they see your changes, and when you delete the item, its row leaves their list, which
+  keeps only the item's name and the fact that it was deleted, for at most 30 days. If another
+  user saves a copy of your item to their own items, the copy is theirs: it does not change with
+  your item and stays when you delete the item or your account.
 </p>
 <h3>Requests to a list's owner</h3>
 <p>
   Anybody who holds a link to a list can send its owner a request for the items they picked. A
   request keeps the items, their counts, the kind of link (the player link or the GM link) and
   the time it was sent; it holds no name, email, account or IP address of the sender. Supabase,
-  like GitHub, receives the usual technical data of each request to its server. A request with
-  no answer expires after an hour. A day after its answer or its expiry, a request is deleted
-  when the next request of any list is sent; with the owner's list or account, it is deleted at
-  once. The sender's browser keeps nothing about the request.
+  like GitHub, receives the usual technical data of each request to its server. A request
+  expires 30 days after it was sent, or an hour after the owner first sees it, whichever comes
+  first. The site deletes it within the hour after it expires; with the owner's list or account,
+  at once. The sender's browser keeps nothing about the request.
 </p>
 <h3>Deleting your data</h3>
 <p>
@@ -66,9 +75,10 @@
   deletion is immediate: your lists, homebrew items, set and rule cards, pictures, settings and
   share links leave the live database at once, and every share link stops working. A backup made
   before the deletion is kept encrypted for at most 30 days; after that the deleted data is gone
-  from it too. Copies of your homebrew items (with their set and rule cards) in other users'
-  lists, whether they saved a list from a share link or added an item from one, stay with them:
-  they do not change, and they are not deleted with the item or with your account.
+  from it too. Your items also leave other users' lists at once: their rows go, and those lists
+  keep only each item's name and the fact that it was deleted, for at most 30 days. Copies of
+  your items that other users saved to their own items stay with them: they do not change, and
+  they are not deleted with your account.
 </p>
 <h3>If a Google or Discord account is already in use</h3>
 <p>
@@ -83,4 +93,4 @@
   For a privacy question, a deletion request or a report of an abused share link, write to
   <a href="mailto:daggerheart.loot@gmail.com">daggerheart.loot@gmail.com</a>.
 </p>
-<p>Last changed: 2 October 2026.</p>
+<p>Last changed: 7 October 2026.</p>

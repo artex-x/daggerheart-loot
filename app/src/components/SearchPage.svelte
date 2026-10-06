@@ -4,7 +4,7 @@
      holding the box (focused on arrival) and the three kind chips, then the
      hint, up to 300 rows ranked best first, or "nothing found". A signed-in
      author's own items rank with the catalog's, the catalog's record first
-     on a tie, and the «Хоумбрю» chip hides them for the visit. */
+     on a tie, and the «Свои предметы» switch under the kind chips hides them for the visit. */
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import ChipRow from './ChipRow.svelte';
@@ -14,6 +14,7 @@
   import Panel from './Panel.svelte';
   import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
+  import Switch from './Switch.svelte';
   import TableRows from './TableRows.svelte';
   import { kindOf } from '../lib/data.js';
   import { hayFor, parseQuery, rankHits, statLineFor } from '../lib/search.js';
@@ -35,7 +36,7 @@
   /* The row pool only: `RecordHost` and `TableRows` keep `index`. */
   const browse = $derived(app.browse);
   const own = $derived(app.homebrew?.records.length ?? 0);
-  /* The catalog count stays; the own items add a sentence, whatever the chip. */
+  /* The catalog count stays; the own items add a sentence, whatever the switch. */
   const intro = $derived(
     own > 0 ? t.subSearch + ' ' + plural(own, t.subSearchOwn, app.lang) : t.subSearch
   );
@@ -102,17 +103,18 @@
                 }}
               />
             {/each}
-            {#if own > 0}
-              <Chip
-                label={t.srcHomebrew}
-                title={t.hbChipHint}
+          </ChipRow>
+          {#if own > 0}
+            <div class="own">
+              <Switch
+                label={t.ownSwitch}
                 on={app.homebrewShown}
-                onclick={() => {
+                onchange={() => {
                   app.toggleHomebrew();
                 }}
               />
-            {/if}
-          </ChipRow>
+            </div>
+          {/if}
         </Field>
       </Panel>
 
@@ -151,6 +153,10 @@
      16px margin-bottom is the live inline attribute, passed as `style`. -->
 
 <style>
+  .own {
+    margin-top: 10px;
+  }
+
   /* Off `FilterBar.svelte`'s `.fcount`, the shown-of-total line the
      table filter strip already had: same font, same muted colour. */
   .scount {

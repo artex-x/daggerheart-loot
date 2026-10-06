@@ -493,6 +493,39 @@
     }
   },
   {
+    "hash": "#/h/00000000-0000-4000-8000-000000000511",
+    "why": "one homebrew item by its id, for everyone; the address is kept",
+    "resolves": {
+      "hash": "#/h/00000000-0000-4000-8000-000000000511",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/h/00000000-0000-4000-8000-000000000511.",
+    "why": "an item address with a stray trailing character reads the id before it; the address is not rewritten",
+    "resolves": {
+      "hash": "#/h/00000000-0000-4000-8000-000000000511.",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/h/not-a-uuid",
+    "why": "an item address whose id is not a uuid draws the not-found page with no read; the address is kept, never home",
+    "resolves": {
+      "hash": "#/h/not-a-uuid",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/account",
     "why": "the account page; with no sign-in configured it is the not-found page, address kept",
     "resolves": {
@@ -537,6 +570,28 @@
     }
   },
   {
+    "hash": "#/tables/homebrew/f_src-hb_alderworkshopaaa",
+    "why": "an own source's chip: src on homebrew holds one value and picks the source chip; signed out the sign-in prompt, address kept",
+    "resolves": {
+      "hash": "#/tables/homebrew/f_src-hb_alderworkshopaaa",
+      "tab": "#/tables",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/tables/homebrew/f_src-hb-hb_alderworkshopaaa",
+    "why": "two src values: kept signed out; signed in with two or more sources the first held value picks the chip and the address is rewritten to it",
+    "resolves": {
+      "hash": "#/tables/homebrew/f_src-hb-hb_alderworkshopaaa",
+      "tab": "#/tables",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/homebrew/new",
     "why": "the editor of a new own item; address kept in every build",
     "resolves": {
@@ -556,6 +611,65 @@
       "rows": 0,
       "printCards": 0,
       "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/sources",
+    "why": "the Sources tab of «Мои предметы»; signed out the sign-in prompt, with no sign-in configured the not-found page, address kept",
+    "resolves": {
+      "hash": "#/homebrew/sources",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/sets",
+    "why": "the Sets tab of «Мои предметы»; read as #/homebrew is, address kept",
+    "resolves": {
+      "hash": "#/homebrew/sets",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/sets/hb_aldersetaaaaaaaa",
+    "why": "the Sets tab with one set open and scrolled to (gm1 holds this set); address kept",
+    "resolves": {
+      "hash": "#/homebrew/sets/hb_aldersetaaaaaaaa",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/rules/hb_aaaaaaaaaaaaaaaa",
+    "why": "the Rules tab with a key the account does not hold: the tab with nothing open, address kept",
+    "resolves": {
+      "hash": "#/homebrew/rules/hb_aaaaaaaaaaaaaaaa",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/sources/hb_aldersetaaaaaaaa",
+    "why": "the Sources tab takes no key: an unreadable address, replaced by the home section",
+    "resolves": {
+      "hash": "#/roll/std",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
     }
   },
   {

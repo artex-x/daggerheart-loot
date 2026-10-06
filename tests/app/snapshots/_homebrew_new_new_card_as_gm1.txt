@@ -43,7 +43,6 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       ... StaticText x17 of 21 same-shape siblings elided
       textbox "Название*" [multiline=false readonly=false required=true]
       textbox "Описание" [multiline=true readonly=false required=false]
-      button "Подсказка: Ранг" [description=Подсказка: Ранг expanded=false]
       group "Ранг"
         button "Без ранга" [pressed=true]
         button "1" [pressed=false]
@@ -112,7 +111,6 @@ daggerheart.com
 Подсказка: Карты правил
 Подсказка: Комплект
 Подсказка: Получается из
-Подсказка: Ранг
 Подсказка: Улучшается до
 Поиск
 Получается из
@@ -170,7 +168,6 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       ... StaticText x17 of 21 same-shape siblings elided
       textbox "Name*" [multiline=false readonly=false required=true]
       textbox "Description" [multiline=true readonly=false required=false]
-      button "Help: Tier" [description=Help: Tier expanded=false]
       group "Tier"
         button "No tier" [pressed=true]
         button "1" [pressed=false]
@@ -232,7 +229,6 @@ Help: Made from
 Help: Rule cards
 Help: Set
 Help: Source
-Help: Tier
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 Install as an app

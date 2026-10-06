@@ -65,7 +65,8 @@ import {
   runningContainer,
   scrubbed,
   sha256,
-  takeIdentity
+  takeIdentity,
+  withLifecyclePaused
 } from './restore.mjs';
 
 const MIGRATIONS_DIR = path.join(ROOT, 'supabase', 'migrations');
@@ -228,49 +229,66 @@ export async function restoreToTarget(opts) {
     state.confirmed = String(typed ?? '').trim() === expectRef;
     if (!state.confirmed) return state;
 
-    // (g) One transaction: guard, truncate, delete by key, the dump, guard.
-    const guard = sequenceGuard(target.sequences);
-    state.load = loadDump({
-      container,
-      pgEnv,
-      prefix:
-        guard.before +
-        truncateStatement(target.tables) +
-        keyDeleteStatements(target.order, target.keys, target.keyColumns),
-      dataText: source.dataText,
-      suffix: guard.after
-    });
-    if (!state.load.ok) return state;
+    // (g, h) The clean-up job paused, so that it deletes no loaded row
+    // before the verify counts it. A failed resume is its own report line:
+    // it changes neither the load nor the verify.
+    const resumeFailed = (err, jobid) => {
+      state.resume = { jobid, message: scrubbed(err.message) };
+    };
+    return await withLifecyclePaused(
+      dbUrl,
+      async () => {
+        // (g) One transaction: guard, truncate, delete by key, the dump, guard.
+        const guard = sequenceGuard(target.sequences);
+        state.load = loadDump({
+          container,
+          pgEnv,
+          prefix:
+            guard.before +
+            truncateStatement(target.tables) +
+            keyDeleteStatements(target.order, target.keys, target.keyColumns),
+          dataText: source.dataText,
+          suffix: guard.after
+        });
+        if (!state.load.ok) return state;
 
-    // (h) Verify.
-    sql = connect(dbUrl);
-    try {
-      const publicNames = target.tables.map((t) => `public.${t}`);
-      const loaded = await rowCounts(sql, publicNames);
-      const mismatches = [];
-      for (const name of publicNames) {
-        const want = dumpCounts.get(name) ?? 0;
-        if (loaded.get(name) !== want) mismatches.push({ name, got: loaded.get(name), want });
-      }
-      for (const table of authTables) {
-        const want = dumpCounts.get(table);
-        const got = await countKeys(
-          sql,
-          table,
-          target.keyColumns.get(table),
-          target.keys.get(table)
-        );
-        if (got !== want) mismatches.push({ name: table, got, want });
-      }
-      const sequences = (await sequenceState(sql, target.sequences)).map((s) => ({
-        seq: s.seq,
-        ok: s.max === null || BigInt(s.lastValue) >= BigInt(s.max)
-      }));
-      state.verify = { tables: publicNames.length + authTables.length, mismatches, sequences };
-    } finally {
-      await sql.end();
-    }
-    return state;
+        // (h) Verify.
+        sql = connect(dbUrl);
+        try {
+          const publicNames = target.tables.map((t) => `public.${t}`);
+          const loaded = await rowCounts(sql, publicNames);
+          const mismatches = [];
+          for (const name of publicNames) {
+            const want = dumpCounts.get(name) ?? 0;
+            if (loaded.get(name) !== want)
+              mismatches.push({ name, got: loaded.get(name), want });
+          }
+          for (const table of authTables) {
+            const want = dumpCounts.get(table);
+            const got = await countKeys(
+              sql,
+              table,
+              target.keyColumns.get(table),
+              target.keys.get(table)
+            );
+            if (got !== want) mismatches.push({ name: table, got, want });
+          }
+          const sequences = (await sequenceState(sql, target.sequences)).map((s) => ({
+            seq: s.seq,
+            ok: s.max === null || BigInt(s.lastValue) >= BigInt(s.max)
+          }));
+          state.verify = {
+            tables: publicNames.length + authTables.length,
+            mismatches,
+            sequences
+          };
+        } finally {
+          await sql.end();
+        }
+        return state;
+      },
+      resumeFailed
+    );
   } catch (err) {
     state.failure = scrubbed(err instanceof Error ? err.message : 'an unknown error');
     return state;

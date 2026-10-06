@@ -177,6 +177,31 @@ function requestsRow(requests) {
   return { ...row, state: 'warn', note: `unavailable (${requests.reason})` };
 }
 
+/* The job runs hourly; 2 hours without a run is one missed run and more. */
+const LIFECYCLE_LATE_MS = 2 * 3600_000;
+
+function lifecycleRow(snapshot, now) {
+  const row = { kind: 'check', label: 'lifecycle' };
+  const notes = [];
+  const overdue = snapshot.lifecycle_overdue ?? 0;
+  if (overdue > 0) {
+    notes.push(`the hourly clean-up has not run: ${overdue} rows past their retention`);
+  }
+  const last = snapshot.lifecycle_last ?? null;
+  if (snapshot.lifecycle_note) notes.push(snapshot.lifecycle_note);
+  else if (!last) notes.push('the hourly clean-up has no run on record');
+  else if (last.status === 'failed') notes.push('the hourly clean-up failed');
+  else if (now.getTime() - Date.parse(last.start_time) > LIFECYCLE_LATE_MS) {
+    notes.push(`the hourly clean-up has not run since ${last.start_time}`);
+  }
+  if (notes.length) return { ...row, state: 'warn', note: notes.join('; ') };
+  return {
+    ...row,
+    state: 'ok',
+    note: `no row past its retention; last run ${last.status} at ${last.start_time}`
+  };
+}
+
 function keepAliveRow(result) {
   const row = { kind: 'check', label: 'keep-alive' };
   if (!result) return { ...row, state: 'warn', note: 'not run (no URL or key)' };
@@ -186,11 +211,13 @@ function keepAliveRow(result) {
 }
 
 /** Returns the report's rows: the three limited metrics, the info
- * metrics, then the `requests` and `keep-alive` checks. `history` holds
- * only the days before `today`; today's snapshot is the last point. A null
- * `mau` or `storage_bytes` is a `warn` row that names the missing source.
- * `checks.requests` is fetchApiCounts' answer (absent: no token);
- * `checks.keepAlive` is keepAlive's (absent: no URL or key). */
+ * metrics, then the `requests`, `lifecycle` and `keep-alive` checks.
+ * `history` holds only the days before `today`; today's snapshot is the
+ * last point. A null `mau` or `storage_bytes` is a `warn` row that names
+ * the missing source. `checks.requests` is fetchApiCounts' answer (absent:
+ * no token); `checks.keepAlive` is keepAlive's (absent: no URL or key);
+ * `checks.now` is the time the lifecycle job's newest run is measured
+ * against (absent: the current time). */
 export function evaluate(snapshot, history, today, checks = {}) {
   const rows = [];
   for (const m of LIMITED) {
@@ -242,7 +269,11 @@ export function evaluate(snapshot, history, today, checks = {}) {
       note: [m.noteKey && snapshot[m.noteKey], f.note].filter(Boolean).join('; ')
     });
   }
-  rows.push(requestsRow(checks.requests), keepAliveRow(checks.keepAlive));
+  rows.push(
+    requestsRow(checks.requests),
+    lifecycleRow(snapshot, checks.now ?? new Date()),
+    keepAliveRow(checks.keepAlive)
+  );
   return rows;
 }
 

@@ -160,11 +160,12 @@ describe('public schema invariants', () => {
 // has_function_privilege sees a grant to PUBLIC as well as one to anon;
 // Supabase's default privileges grant EXECUTE on every new public function
 // to anon, so a migration has to revoke it.
-// The deliberate exceptions: a share link opens signed out, and its holder
-// sends a purchase request. In code-point order ("C"), as JS sorts: the
+// The deliberate exceptions: a share link opens signed out, its holder
+// sends a purchase request, and an item opens by its id. In code-point order ("C"), as JS sorts: the
 // database's own collation puts `(text,bigint)` before `(text)`.
 const EXPECTED_ANON_FUNCTIONS = [
   'create_purchase_request(uuid,text,jsonb)',
+  'get_homebrew_item(uuid)',
   'get_shared_list(text)',
   'get_shared_list(text,bigint)'
 ];

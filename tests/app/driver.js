@@ -168,14 +168,17 @@ function makeDriver(page, target, url = TARGETS[target]) {
      * `today` (`YYYY-MM-DD`) is the test build's clock: `?today=` sets the
      * day the app reads for the legacy write cutoff. Without it the build is
      * pinned before the cutoff (`ports/clock.ts`). `holdToasts` opens with
-     * `?toasts=held`: a toast stays until the next one replaces it.
+     * `?toasts=held`: a toast stays until the next one replaces it. `items`
+     * opens with `?items=<n>`: the fake fills the signed-in user's homebrew to
+     * n items and sets the item limit to n (`fillItems`).
      */
-    async open(route, { as, today, holdToasts } = {}) {
+    async open(route, { as, today, holdToasts, items } = {}) {
       await page.goto('about:blank');
       const query = new URLSearchParams();
       if (as) query.set('as', as);
       if (today) query.set('today', today);
       if (holdToasts) query.set('toasts', 'held');
+      if (items) query.set('items', String(items));
       const qs = query.toString();
       const search = qs ? '?' + qs : '';
       await page.goto(url + search + route, {
@@ -353,8 +356,10 @@ function makeDriver(page, target, url = TARGETS[target]) {
       const ok = await page.evaluate(
         (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);
+          /* A switch (`Switch.svelte`) is named by the label that wraps it. */
+          const labelOf = (e) => (e.labels?.[0]?.textContent ?? '').replace(/\s+/g, ' ').trim();
           const boxes = [...document.querySelectorAll('input[type="checkbox"]')].filter(
-            (e) => nameOf(e) === n
+            (e) => nameOf(e) === n || (!nameOf(e) && labelOf(e) === n)
           );
           const el = boxes[idx];
           if (!el) return false;

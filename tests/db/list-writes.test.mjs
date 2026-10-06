@@ -7,7 +7,9 @@
   refuse with the key and the value, and a
   refused create leaves no list; a refused or malformed write drops only
   itself; a class 40 error fails the whole call; a call sent twice changes
-  nothing more. docs/specs/FEATURES.md, "Lists".
+  nothing more. A homebrew entry links an item of any owner by hb_item; a
+  snapshot is refused; relink points an entry at another item in place.
+  docs/specs/FEATURES.md, "Lists".
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,17 +26,12 @@ const E3 = id(6103);
 const E4 = id(6104);
 const EB = id(6201);
 const OK = { ok: true };
-/* A frozen homebrew copy's snapshot, as homebrew_snapshot_of() writes it. */
-const FROZEN_KEY = 'hb_frozenaaaaaaaaaa';
-const FROZEN = {
-  id: FROZEN_KEY,
-  src: 'homebrew',
-  kind: 'item',
-  en: 'X',
-  ru: 'X',
-  ende: '',
-  rud: ''
-};
+/* A's item IH and B's item IHB, under one key; B's second item IHB2. */
+const HB_KEY = 'hb_ownitemaaaaaaaaa';
+const HB_KEY2 = 'hb_seconditemaaaaaa';
+const IH = id(6301);
+const IHB = id(6302);
+const IHB2 = id(6303);
 
 let sql;
 before(() => {
@@ -45,6 +42,13 @@ after(async () => {
 });
 
 const users = (tx) => tx`insert into auth.users (id) values (${A}), (${B})`;
+const withItems = async (tx) => {
+  await users(tx);
+  await tx`insert into public.homebrew_items (id, owner_id, key, content) values
+    (${IH}, ${A}, ${HB_KEY}, ${tx.json({ kind: 'item', en: 'Own' })}),
+    (${IHB}, ${B}, ${HB_KEY}, ${tx.json({ kind: 'item', en: 'Theirs' })}),
+    (${IHB2}, ${B}, ${HB_KEY2}, ${tx.json({ kind: 'item', en: 'Second' })})`;
+};
 /* A's list L with E1-E3 at positions 0-2; B's list LB with EB. */
 const world = async (tx) => {
   await users(tx);
@@ -82,7 +86,7 @@ const entry = (entryId, itemKey, position, extra = {}) => ({
   id: entryId,
   item_key: itemKey,
   source: 'official',
-  snapshot: null,
+  hb_item: null,
   position,
   quantity: 1,
   price_coins: null,
@@ -98,7 +102,7 @@ const listOf = async (tx, listId) => {
 };
 const entriesOf = async (tx, listId) =>
   (
-    await tx`select id, item_key, source, snapshot, position, quantity, price_coins,
+    await tx`select id, item_key, source, hb_item, position, quantity, price_coins,
         player_note, gm_note
       from public.list_entries where list_id = ${listId} order by position, id`
   ).map((e) => ({ ...e }));
@@ -196,15 +200,15 @@ describe('apply_list_writes grants and shape', () => {
 
 describe('each write, as A', () => {
   it('create makes the list as A with its entries in position order', async () => {
-    const out = await asA(users, async (tx) => ({
+    const out = await asA(withItems, async (tx) => ({
       r: await batch(tx, [
         {
           op: 'create',
           list: newList(L, 'Клад', { money_mode: 'coin', player_note: 'p', gm_note: 'g' }),
           entries: [
-            entry(E2, FROZEN_KEY, 1, {
+            entry(E2, HB_KEY, 1, {
               source: 'homebrew',
-              snapshot: FROZEN,
+              hb_item: IH,
               quantity: 3,
               price_coins: 20,
               player_note: 'hp',
@@ -240,7 +244,7 @@ describe('each write, as A', () => {
         id: E1,
         item_key: 'ci1',
         source: 'official',
-        snapshot: null,
+        hb_item: null,
         position: 0,
         quantity: 2,
         price_coins: 150,
@@ -249,9 +253,9 @@ describe('each write, as A', () => {
       },
       {
         id: E2,
-        item_key: FROZEN_KEY,
+        item_key: HB_KEY,
         source: 'homebrew',
-        snapshot: FROZEN,
+        hb_item: IH,
         position: 1,
         quantity: 3,
         price_coins: 20,
@@ -377,6 +381,95 @@ describe('each write, as A', () => {
         [E2, 1]
       ]
     );
+  });
+});
+
+describe('homebrew links, as A', () => {
+  const homebrew = (entryId, key, hbItem, position = 3) =>
+    entry(entryId, key, position, { source: 'homebrew', hb_item: hbItem });
+
+  it("links B's item by its id, and A's own by its key", async () => {
+    const out = await asA(withItems, async (tx) => ({
+      r: await batch(tx, [
+        { op: 'create', list: newList(L), entries: [homebrew(E1, HB_KEY2, IHB2, 0)] },
+        { op: 'add', list_id: L, entries: [homebrew(E2, HB_KEY, null, 1)] }
+      ]),
+      entries: (await entriesOf(tx, L)).map((e) => [e.item_key, e.hb_item])
+    }));
+    assert.deepEqual(out.r, [OK, OK]);
+    assert.deepEqual(out.entries, [
+      [HB_KEY2, IHB2],
+      [HB_KEY, IH]
+    ]);
+  });
+
+  it('refuses an entry that holds a snapshot with 22023, beside a write that lands', async () => {
+    const out = await asA(withItems, async (tx) =>
+      batch(tx, [
+        {
+          op: 'create',
+          list: newList(L),
+          entries: [{ ...homebrew(E1, HB_KEY, null, 0), snapshot: { id: HB_KEY } }]
+        },
+        { op: 'create', list: newList(L), entries: [homebrew(E1, HB_KEY, IH, 0)] }
+      ])
+    );
+    assert.deepEqual(out, [
+      {
+        ok: false,
+        code: '22023',
+        message: 'apply_list_writes: an entry holds a snapshot; send hb_item instead',
+        details: null
+      },
+      OK
+    ]);
+  });
+
+  it('relinks an entry in place, keeping its id, position, quantity, price and both notes', async () => {
+    const out = await asA(withItems, async (tx) => {
+      await batch(tx, [
+        {
+          op: 'create',
+          list: newList(L),
+          entries: [
+            entry(E1, 'ci1', 0),
+            homebrew(E2, HB_KEY2, IHB2, 1),
+            {
+              ...homebrew(E3, HB_KEY, IHB, 2),
+              quantity: 4,
+              price_coins: 30,
+              player_note: 'p',
+              gm_note: 'g'
+            }
+          ]
+        }
+      ]);
+      return {
+        r: await batch(tx, [
+          { op: 'relink', id: E3, hb_item: IH },
+          { op: 'relink', id: E4, hb_item: IH },
+          { op: 'relink', id: E2, hb_item: IH },
+          { op: 'relink', id: E2 }
+        ]),
+        entries: await entriesOf(tx, L)
+      };
+    });
+    assert.deepEqual(out.r[0], OK);
+    assert.deepEqual(out.r[1], GONE);
+    // E3 now holds the key, so a second link of it in the list is a duplicate.
+    assert.equal(out.r[2].code, '23505');
+    assert.equal(out.r[3].code, '22023');
+    assert.deepEqual(out.entries[2], {
+      id: E3,
+      item_key: HB_KEY,
+      source: 'homebrew',
+      hb_item: IH,
+      position: 2,
+      quantity: 4,
+      price_coins: 30,
+      player_note: 'p',
+      gm_note: 'g'
+    });
   });
 });
 

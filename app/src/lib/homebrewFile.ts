@@ -931,30 +931,48 @@ const namesOf = (v: { en?: string; ru?: string }): { en?: string; ru?: string } 
   ...(v.ru !== undefined ? { ru: v.ru } : {})
 });
 
+/** A name in both languages, either one possibly missing. */
+export interface NamedPair {
+  en?: string;
+  ru?: string;
+}
+
 /** The preview's counts: the keys the account holds among the file's items, cards and
- *  sources, and the file items with a new key whose name an account item has. */
+ *  sources, and the file items with a new key whose name an account item has. `names`
+ *  lists them in file order; a held card of the other kind is left out of `names.cards`. */
 export interface HeldCounts {
   items: number;
   cards: number;
   books: number;
   sameNames: number;
+  names: { items: NamedPair[]; cards: NamedPair[]; books: NamedPair[]; sameNamed: NamedPair[] };
 }
 
 /** Returns the preview's counts of held keys and repeated names (`HeldCounts`). The key is
  *  the only identity: a repeated name with a new key is added, never matched. */
 export function heldOf(file: HomebrewFile, held: HeldRows): HeldCounts {
   const itemKeys = new Set(held.items.map((i) => i.key));
-  const cardKeys = new Set(held.cards.map((c) => c.key));
+  const cardKinds = new Map(held.cards.map((c) => [c.key, c.kind]));
   const bookKeys = new Set(held.books.map((b) => b.key));
   const names = held.items.map((i) => i.content);
+  const items = file.items.filter((i) => itemKeys.has(i.key));
+  const cards = file.cards.filter((c) => cardKinds.has(c.key));
+  const books = file.books.filter((b) => bookKeys.has(b.key));
+  const sameNamed = file.items.filter(
+    (i) =>
+      !itemKeys.has(i.key) &&
+      [i.en, i.ru].some((n) => n !== undefined && hasName(n) && nameTaken(names, n))
+  );
   return {
-    items: file.items.filter((i) => itemKeys.has(i.key)).length,
-    cards: file.cards.filter((c) => cardKeys.has(c.key)).length,
-    books: file.books.filter((b) => bookKeys.has(b.key)).length,
-    sameNames: file.items.filter(
-      (i) =>
-        !itemKeys.has(i.key) &&
-        [i.en, i.ru].some((n) => n !== undefined && hasName(n) && nameTaken(names, n))
-    ).length
+    items: items.length,
+    cards: cards.length,
+    books: books.length,
+    sameNames: sameNamed.length,
+    names: {
+      items: items.map(namesOf),
+      cards: cards.filter((c) => cardKinds.get(c.key) === c.kind).map(namesOf),
+      books: books.map(namesOf),
+      sameNamed: sameNamed.map(namesOf)
+    }
   };
 }

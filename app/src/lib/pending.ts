@@ -5,8 +5,8 @@
 
 /** An action a signed-out reader started and a sign-in finishes: reopen the add-to-list
  *  menu of `key` with `ids` ticked (and their taken counts) and, when the reader had typed
- *  one, a new list's `name` in its create slot; or save the open shared list (`#/l/` or
- *  `#/s/`). */
+ *  one, a new list's `name` in its create slot; save the open shared list (`#/l/` or
+ *  `#/s/`); or save a copy of the homebrew item `hid` («Сохранить себе»). */
 export type PendingAction =
   | {
       do: 'addToList';
@@ -15,7 +15,8 @@ export type PendingAction =
       picked?: Record<string, number>;
       name?: string;
     }
-  | { do: 'saveList' };
+  | { do: 'saveList' }
+  | { do: 'saveItem'; hid: string };
 
 /** Where a sign-in returns to, and what it finishes there. */
 export interface SignInAfter {
@@ -24,6 +25,7 @@ export interface SignInAfter {
 }
 
 const KEY = /^[\w-]{1,64}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
 /** The most rows a page can tick: a table's whole body. */
 const IDS_MAX = 180;
@@ -48,6 +50,10 @@ export function readPending(v: unknown): PendingAction | null {
   if (!v || typeof v !== 'object') return null;
   const r = v as Record<string, unknown>;
   if (r['do'] === 'saveList') return { do: 'saveList' };
+  if (r['do'] === 'saveItem') {
+    const hid = r['hid'];
+    return typeof hid === 'string' && UUID.test(hid) ? { do: 'saveItem', hid } : null;
+  }
   if (r['do'] !== 'addToList') return null;
   const { key, ids, picked, name } = r;
   if (typeof key !== 'string' || !KEY.test(key)) return null;

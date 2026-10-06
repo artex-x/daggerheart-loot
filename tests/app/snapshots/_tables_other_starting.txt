@@ -49,7 +49,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Выбрать все (29)" [checked=false]
     StaticText "Выбрать все (29)"
     checkbox "Факел" [checked=false]
-    button "Факел Стартовый предмет Core. Полезен для освещения тёмной комна..." [namelen=80 namehash=b0182946]
+    button "Факел Стартовый предмет базовой книги. Полезен для освещения тём..." [namelen=89 namehash=491616f5]
     ... checkbox x26 of 30 same-shape siblings elided
     ... button x26 of 30 same-shape siblings elided
     checkbox "Маленький безобидный питомец" [checked=false]
@@ -65,7 +65,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 
 ## ru :: controls
 15 метров верёвки
-15 метров верёвкиСтартовый предмет Core. Полезны, чтобы взобрать... [namelen=111 namehash=a174fddc]
+15 метров верёвкиСтартовый предмет базовой книги. Полезны, чтобы... [namelen=120 namehash=a6556e8c]
 Arazo's Artifacts
 Core
 Dragon's Vault
@@ -80,7 +80,7 @@ Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Базовые припасы
-Базовые припасыСтартовый предмет Core. Палатка, спальный мешок, ... [namelen=121 namehash=40e014e5]
+Базовые припасыСтартовый предмет базовой книги. Палатка, спальны... [namelen=130 namehash=510c9b6d]
 Бинты для рук от наставника
 Бинты для рук от наставникаСтартовый предмет Бойца. При создании... [namelen=142 namehash=6e6a0f0c]
 Войти
@@ -152,7 +152,7 @@ daggerheart.com
 Условия использования
 Установить как приложение
 Факел
-ФакелСтартовый предмет Core. Полезен для освещения тёмной комнат... [namelen=77 namehash=9159bafb]
+ФакелСтартовый предмет базовой книги. Полезен для освещения тёмн... [namelen=86 namehash=d22d488a]
 Шепчущая сфера
 Шепчущая сфераСтартовый предмет Чародея. При создании персонажа ... [namelen=124 namehash=48b4975e]
 

@@ -191,7 +191,9 @@ of two or three usually plays better than assigning one each.
   `frame` on `other_frames`, `comm` on `community`, `src` and `sect` on
   `homebrew`. On `homebrew` and the equipment tables `src` also takes `hb`, an
   own source key or (`sect`) a section key: these live in one account, so you
-  cannot build them. Other separates non-rollable
+  cannot build them. On `homebrew`, `src` holds one value and picks the
+  source chip: the table shows one source at a time, and a second value is
+  dropped. Other separates non-rollable
   starting inventory first, then campaign frames. An empty key means "any", so a
   plain table link carries no `f_` part at all. Links written with the old `_`
   separator are still read
@@ -210,13 +212,19 @@ of two or three usually plays better than assigning one each.
 - `#/s/<token>` — a list shared from an account; the token is opaque and made
   only by the list's owner, so you cannot build one, and fetching it tells you
   nothing (the fragment never leaves the browser)
+- `#/h/<uuid>` - one homebrew item, by an id the author's account made; you
+  cannot build one, and fetching it tells you nothing (the fragment never
+  leaves the browser). Ask the person for the item's text, or for an export
 - `#/lists` - the lists page; a signed-in GM imports a file here
 - `#/account` - the account page: sign in, connected providers, download
   my data as a file, sign out, delete the account
 - `#/homebrew` - a signed-in GM's own items («Мои предметы»), with
-  `#/homebrew/new` and `#/homebrew/<key>` to edit one; a key (`hb_` and 16
-  of `a-z2-7`) lives in one account, so you cannot build one, and
-  `#/i/<key>` opens only for its author
+  `#/homebrew/new` and `#/homebrew/<key>` to edit one, and the tabs
+  `#/homebrew/sources`, `#/homebrew/sets` and `#/homebrew/rules` for the
+  sources, the set cards and the rule cards (`#/homebrew/sets/<key>` and
+  `#/homebrew/rules/<key>` open one card); a key (`hb_` and 16 of `a-z2-7`)
+  lives in one account, so you cannot build one, and `#/i/<key>` opens only
+  for its author
 
 The English interface is https://artex-x.github.io/daggerheart-loot/en/
 followed by the same `#/...` address.
@@ -499,9 +507,12 @@ write the homebrew file yourself, build each snapshot from its item:
    Leave `cards` out when the item names none.
 
 On import, an entry whose key the account already holds becomes a live
-reference to that item; any other becomes a frozen copy of its snapshot. So
-import the homebrew file first (see "Homebrew items as a file"), then the
-lists file: the entries stay live.
+link to that item. Each homebrew entry the account does not hold becomes an
+own item, made from its snapshot, so the import counts against the item and
+card limits and the 1000 items of one homebrew import; past either it is
+refused whole, and nothing is written. So import the homebrew file first
+(see "Homebrew items as a file"), then the lists file: the entries link the
+items you imported, with no second copy.
 
 ## Homebrew items as a file (homebrew-v1)
 
@@ -510,8 +521,8 @@ A signed-in GM keeps their own items on the «Мои предметы» ("My ite
 setting) with sections, and their own set cards and rule cards. A homebrew
 file carries all of these. It is the way to hand a GM items you converted
 from a book or wrote for them. You cannot import it yourself - there is no
-API. The GM saves the file and presses «Импорт предметов» ("Import items")
-on the «Мои предметы» page.
+API. The GM saves the file and presses «Импорт из файла» ("Import from
+file") on the «Мои предметы» page.
 
 The site writes the same format when the GM downloads their items. A file a
 GM gives you reads the same way - see "Reading a homebrew export" below.
@@ -746,7 +757,7 @@ and edit dates. Version 1 carries no art.
 
 Put the whole file in one code block tagged `json` - never split it across
 messages - and tell the GM: save it as `<source name>.json`, open «Мои
-предметы» and press «Импорт предметов» ("Import items"). Before you hand it
+предметы» and press «Импорт из файла» ("Import from file"). Before you hand it
 over, check every id against `catalog.csv` and every key against the table
 above.
 

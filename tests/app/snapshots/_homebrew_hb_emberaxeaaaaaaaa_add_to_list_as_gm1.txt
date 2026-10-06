@@ -52,7 +52,6 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         option "+ Новый раздел..." [selected=false]
       textbox "Название*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
       textbox "Описание" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
-      button "Подсказка: Ранг" [description=Подсказка: Ранг expanded=false]
       group "Ранг"
         button "1" [pressed=false]
         button "2" [pressed=true]
@@ -74,7 +73,6 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Средне" [pressed=false]
         button "Далеко" [pressed=false]
         button "Очень далеко" [pressed=false]
-      button "Подсказка: Урон" [description=Подсказка: Урон expanded=false]
       combobox "Кость урона" [value=d10 expanded=false haspopup=menu]
         option "Кость" [selected=false]
         option "d4" [selected=false]
@@ -168,9 +166,7 @@ daggerheart.com
 Подсказка: Комплект
 Подсказка: Линия улучшений
 Подсказка: Получается из
-Подсказка: Ранг
 Подсказка: Улучшается до
-Подсказка: Урон
 Поиск
 Получается из
 Предмет
@@ -248,7 +244,6 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         option "+ New section..." [selected=false]
       textbox "Name*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
       textbox "Description" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
-      button "Help: Tier" [description=Help: Tier expanded=false]
       group "Tier"
         button "1" [pressed=false]
         button "2" [pressed=true]
@@ -270,7 +265,6 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Close" [pressed=false]
         button "Far" [pressed=false]
         button "Very Far" [pressed=false]
-      button "Help: Damage" [description=Help: Damage expanded=false]
       combobox "Damage die" [value=d10 expanded=false haspopup=menu]
         option "Die" [selected=false]
         option "d4" [selected=false]
@@ -332,13 +326,11 @@ EN
 Equipment
 Far
 Finesse
-Help: Damage
 Help: Made from
 Help: Rule cards
 Help: Second stat set
 Help: Set
 Help: Source
-Help: Tier
 Help: Upgrade line
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...

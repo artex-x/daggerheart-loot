@@ -97,6 +97,12 @@ function cacheFilePath() {
   return path.join(scratchState, '.check-cache.json');
 }
 
+/** The scratch repository with `/` separators, for a `cd` the observer
+ * resolves: a `cd` to a directory that does not exist records nothing. */
+function scratchPosix() {
+  return scratchRoot.replace(/\\/g, '/');
+}
+
 function clearCache() {
   fs.rmSync(cacheFilePath(), { force: true });
 }
@@ -2760,7 +2766,7 @@ async function testCheckObserver() {
     // made the gate unsatisfiable for an agent that types one.
     [
       '#49f leading cd',
-      'cd "E:/dev/daggerheart-loot" && npm run check 2>&1 | tail -n 130',
+      `cd "${scratchPosix()}" && npm run check 2>&1 | tail -n 130`,
       passingResponse,
       true
     ],
@@ -2788,13 +2794,13 @@ async function testCheckObserver() {
     ],
     [
       '#94 cd then pipefail',
-      'cd "E:/dev/daggerheart-loot" && set -o pipefail; npm run check 2>&1 | tail -n 120',
+      `cd "${scratchPosix()}" && set -o pipefail; npm run check 2>&1 | tail -n 120`,
       passingResponse,
       true
     ],
     [
       '#95 pipefail then cd',
-      'set -o pipefail; cd /repo && npm run check 2>&1 | tail -n 120',
+      `set -o pipefail; cd "${scratchPosix()}" && npm run check 2>&1 | tail -n 120`,
       passingResponse,
       true
     ],
@@ -2979,7 +2985,7 @@ async function testCheckDbObserver() {
   {
     const result = runHook(
       'check-observer.mjs',
-      observerPayload('PowerShell', 'cd E:\\dev\\daggerheart-loot; npm run check:db', {
+      observerPayload('PowerShell', `cd ${scratchRoot}; npm run check:db`, {
         stdout: passText
       })
     );
@@ -4455,6 +4461,40 @@ async function testCheckHalves() {
       const cache = readJson(path.join(wtState, '.check-cache.json'));
       check(
         "#331 an attributed pass after cd writes that checkout's cache only",
+        cache && cache.key === wtKey && !fs.existsSync(cacheFilePath()),
+        JSON.stringify(cache)
+      );
+    }
+    const attributed = { stdout: 'x\n' + COVERAGE_SUMMARY, stderr: '', interrupted: false };
+    fs.rmSync(path.join(wtState, '.check-cache.json'), { force: true });
+    clearCache();
+    {
+      const result = runHook(
+        'check-observer.mjs',
+        observerPayload('Bash', 'cd /no/such/dir && rtk npm run check', attributed)
+      );
+      check(
+        '#331 a cd to a missing directory records nothing in the session checkout',
+        !fs.existsSync(cacheFilePath()) &&
+          systemMessage(result).includes('nothing is recorded'),
+        systemMessage(result)
+      );
+    }
+    // Git Bash names a drive `/e/...`; on win32 the observer maps it to `E:/...`.
+    const shapes = [
+      [`set -o pipefail; cd ${wtPosix} && rtk npm run check`, 'pipefail then cd']
+    ];
+    if (process.platform === 'win32') {
+      const gitBash = wtPosix.replace(/^([A-Za-z]):/, (_, d) => `/${d.toLowerCase()}`);
+      shapes.push([`cd ${gitBash} && rtk npm run check`, 'a Git Bash drive path']);
+    }
+    for (const [command, label] of shapes) {
+      fs.rmSync(path.join(wtState, '.check-cache.json'), { force: true });
+      clearCache();
+      runHook('check-observer.mjs', observerPayload('Bash', command, attributed));
+      const cache = readJson(path.join(wtState, '.check-cache.json'));
+      check(
+        `#331 ${label}: writes that checkout's cache only`,
         cache && cache.key === wtKey && !fs.existsSync(cacheFilePath()),
         JSON.stringify(cache)
       );

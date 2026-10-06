@@ -2,11 +2,11 @@
   The author's set cards and rule cards (homebrew_cards) and the relation keys
   of an item. homebrew_card_valid() accepts and refuses every case of
   docs/fixtures/homebrew/cards.json as app/src/lib/homebrew.ts does; the table
-  refuses an item that names itself; a frozen copy carries the cards its item
-  names up to 131072 bytes, and an R7 copy stays valid. A card is its owner's,
-  its key and kind pinned, its count limited; its writes bump the lists that
-  refer to an item naming it; a share's projection embeds it.
-  docs/decisions/2026-10-01-a-frozen-copy-holds-up-to-131072-bytes.md.
+  refuses an item that names itself; a record with its cards stays under
+  131072 bytes. A card is its owner's, its key and kind pinned, its count
+  limited; its writes bump every list that links an item naming it; a
+  share's projection and get_homebrew_items() embed it.
+  docs/decisions/2026-10-07-an-item-is-read-by-its-id-by-anyone-a-list-holds-a-live-link.md.
 */
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -75,8 +75,8 @@ after(async () => {
 const users = (tx) => tx`insert into auth.users (id) values (${A}), (${B})`;
 /* A's source BA with the set card CS in it, A's rule card CR in none; B's card CB under A's
    set key. A's buckle IA names CS, CR, a catalog rule card and a card not made yet; A's
-   potion IP names none. A's list LA refers to the buckle, LA2 to the potion, LA3 holds a
-   frozen buckle; B's list LB holds nothing. */
+   potion IP names none. A's list LA links the buckle (sent by key), LA2 the potion, LA3
+   nothing; B's list LB links A's buckle by its id. */
 const world = async (tx) => {
   await users(tx);
   await tx`insert into public.homebrew_books (id, owner_id, key, content) values
@@ -91,16 +91,11 @@ const world = async (tx) => {
     (${IP}, ${A}, ${POTION}, ${tx.json(POTION_CONTENT)})`;
   await tx`insert into public.lists (id, owner_id, name) values
     (${LA}, ${A}, 'A'), (${LA2}, ${A}, 'A2'), (${LA3}, ${A}, 'A3'), (${LB}, ${B}, 'B')`;
-  const [{ frozen }] = await tx`select public.homebrew_snapshot_of(${BUCKLE},
-    ${tx.json(BUCKLE_CONTENT)}, null, ${tx.json([
-      { ...SET_CARD, key: SET, kind: 'set' },
-      { ...RULE_CARD, key: RULE, kind: 'ref' }
-    ])}) as frozen`;
-  await tx`insert into public.list_entries (id, list_id, item_key, source, snapshot, position)
+  await tx`insert into public.list_entries (id, list_id, item_key, source, hb_item, position)
     values
       (${id(9041)}, ${LA}, ${BUCKLE}, 'homebrew', null, 0),
       (${id(9042)}, ${LA2}, ${POTION}, 'homebrew', null, 0),
-      (${id(9043)}, ${LA3}, ${BUCKLE}, 'homebrew', ${tx.json(frozen)}, 0)`;
+      (${id(9043)}, ${LB}, ${BUCKLE}, 'homebrew', ${IA}, 0)`;
 };
 const asA = (setup, fn) => asRole(sql, { role: 'authenticated', sub: A, setup }, fn);
 /* Reads as the connection's own role, which row level security does not bind, then acts
@@ -199,29 +194,10 @@ describe('the relation keys', () => {
     assert.equal(out.line, null);
   });
 
-  it('keeps the maximal snapshot with its cards over 75000 and under 131072 bytes, taken as a frozen entry', async () => {
+  it('keeps the maximal snapshot with its cards over 75000 and under 131072 bytes', async () => {
     const max = SNAPSHOTS.valid.find((c) => c.key === 'hb_maximalcardsaaaa');
-    const out = await asA(world, async (tx) => {
-      const [{ n }] = await tx`select octet_length(${tx.json(max.snapshot)}::jsonb::text) as n`;
-      await tx`insert into public.list_entries (id, list_id, item_key, source, snapshot, position)
-        values (${id(9050)}, ${LA}, ${max.key}, 'homebrew', ${tx.json(max.snapshot)}, 5)`;
-      return n;
-    });
-    assert.ok(out > 75000 && out < 131072, String(out));
-  });
-
-  it('takes an update of a frozen entry written with an R7 snapshot', async () => {
-    const r7 = SNAPSHOTS.valid.find((c) => c.key === 'hb_maximalitemaaaaa');
-    const out = await asA(world, async (tx) => {
-      await tx`insert into public.list_entries (id, list_id, item_key, source, snapshot, position)
-        values (${id(9051)}, ${LA2}, ${r7.key}, 'homebrew', ${tx.json(r7.snapshot)}, 5)`;
-      return tx`update public.list_entries set quantity = 3, player_note = 'R7'
-        where id = ${id(9051)} returning quantity`;
-    });
-    assert.deepEqual(
-      out.map((r) => r.quantity),
-      [3]
-    );
+    const [{ n }] = await sql`select octet_length(${sql.json(max.snapshot)}::jsonb::text) as n`;
+    assert.ok(n > 75000 && n < 131072, String(n));
   });
 });
 
@@ -322,7 +298,7 @@ describe('the card rows', () => {
     assert.equal(out.over.detail, '105');
   });
 
-  it('bumps each list holding a reference to an item naming a card once on its insert, update and delete, and no other list', async () => {
+  it('bumps each list linking an item naming a card once on its insert, update and delete, of any owner, and no other list', async () => {
     const out = await asA(world, async (tx) => {
       const was = await unbound(tx, revisions);
       await tx`insert into public.homebrew_cards (id, owner_id, key, kind, content)
@@ -343,7 +319,8 @@ describe('the card rows', () => {
       [out.deleted, out.updated]
     ]) {
       assert.equal(now[LA], then[LA] + 1);
-      for (const other of [LA2, LA3, LB]) assert.equal(now[other], then[other]);
+      assert.equal(now[LB], then[LB] + 1);
+      for (const other of [LA2, LA3]) assert.equal(now[other], then[other]);
     }
     assert.deepEqual(out.unnamed, out.deleted);
   });
@@ -401,7 +378,7 @@ describe('the card rows', () => {
     assert.deepEqual(Object.keys(out.second.cards), ['sets']);
   });
 
-  it('freezes the named cards in a copy by B', async () => {
+  it('links the item in a copy by B, whose read embeds the named cards', async () => {
     let token;
     const shared = async (tx) => {
       await world(tx);
@@ -415,12 +392,15 @@ describe('the card rows', () => {
       async (tx) => {
         await tx`select public.clone_shared_list(${token}, ${id(9060)})`;
         const [e] =
-          await tx`select snapshot from public.list_entries where list_id = ${id(9060)}`;
-        return e.snapshot;
+          await tx`select hb_item from public.list_entries where list_id = ${id(9060)}`;
+        const [{ v }] =
+          await tx`select public.get_homebrew_items(array[${e.hb_item}]::uuid[]) as v`;
+        return { hbItem: e.hb_item, item: v[0].item };
       }
     );
-    assert.deepEqual(Object.keys(copy.cards.sets), [SET]);
-    assert.deepEqual(Object.keys(copy.cards.refs), [RULE]);
+    assert.equal(copy.hbItem, IA);
+    assert.deepEqual(Object.keys(copy.item.cards.sets), [SET]);
+    assert.deepEqual(Object.keys(copy.item.cards.refs), [RULE]);
   });
 
   it("removes A's cards with A's user", async () => {

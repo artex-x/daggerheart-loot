@@ -16,13 +16,13 @@
  * one invoker RPC with a result per write", "A request the database fails
  * three times is halved; a lone write is dropped". */
 
-import { toImportRows, withHeld, type ImportList } from '../lib/bundle.js';
 import {
   BATCH_OPS,
   batchSize,
   clip,
   entryRowsOf,
   limitText,
+  linkedRecords,
   NAME_MAX,
   NOTE_MAX,
   OFFICIAL,
@@ -39,7 +39,7 @@ import {
   type NewListRow
 } from '../lib/cloudLists.js';
 import type { Dict, Msg } from '../lib/dict.js';
-import { isHomebrewKey, type HomebrewRecord } from '../lib/homebrew.js';
+import { canonJson, isHomebrewKey, type HomebrewRecord } from '../lib/homebrew.js';
 import { COALESCE_MS, readOwnerMessage } from '../lib/live.js';
 import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
 import {
@@ -132,11 +132,16 @@ export class CloudLists implements ListModel {
   readonly #feed: LiveFeed | null;
   #remoteTimer: ReturnType<typeof setTimeout> | null = null;
   readonly #sourceOf: (key: string) => EntrySource | null;
-  /* Whether the account holds an own item: an import's homebrew entry is a reference then. */
+  /* Whether the account holds an own item: a list row of its key draws the own record, so
+     its link is not read through `items()`. */
   readonly #hasOwn: (key: string) => boolean;
   /* What each removed entry was written as, by list and key: an undo writes it back
      exactly, never resolved again (docs/specs/FEATURES.md, "Lists"). */
   #removed: Record<string, EntrySource> = {};
+  /* The records of linked items the account does not hold, by item id, as the last
+     `items()` answer read them: a failed read keeps them, an unchanged record keeps its
+     object. */
+  #linked: Record<string, HomebrewRecord> = {};
 
   constructor(
     repo: ListRepository,
@@ -148,8 +153,8 @@ export class CloudLists implements ListModel {
       /** The owner's purchase requests: one feed per topic, so they read its messages too. */
       requests?:
         { message(event: string, payload: unknown): void; refetch(): void } | undefined;
-      /** The author's homebrew: the same feed carries its `homebrew` messages, and an
-       *  import asks it which keys the account holds. */
+      /** The author's homebrew: the same feed carries its `homebrew` messages, and a list
+       *  row of a key it holds draws the own record, not a linked one. */
       homebrew?:
         | {
             message(event: string, payload: unknown): void;
@@ -278,6 +283,7 @@ export class CloudLists implements ListModel {
     this.#stopQuiet();
     this.#read = {};
     this.#removed = {};
+    this.#linked = {};
     this.lists = [];
     this.listLimit = null;
     this.entryLimit = null;
@@ -308,10 +314,79 @@ export class CloudLists implements ListModel {
         this.#rereadWhenIdle();
         return;
       }
-      this.status = 'ready';
+      /* The first draw waits for the linked records, so a card never counts an item short. */
+      await this.#fetchLinked();
+      if (epoch === this.#epoch) this.status = 'ready';
     } else if (this.status === 'loading') {
       this.status = 'error';
     }
+  }
+
+  /* `l` with the records of its linked items the account does not hold, as the last
+     `items()` answer read them; `l` itself when it carries those already. */
+  #withLinked(l: CloudList): CloudList {
+    const linked: Record<string, HomebrewRecord> = {};
+    for (const [key, hid] of Object.entries(l.links ?? {})) {
+      const r = this.#hasOwn(key) ? undefined : this.#linked[hid];
+      if (r) linked[key] = r;
+    }
+    const had = l.linked ?? {};
+    const keys = Object.keys(linked);
+    if (keys.length === Object.keys(had).length && keys.every((k) => had[k] === linked[k])) {
+      return l;
+    }
+    const out: CloudList = { ...l };
+    if (keys.length) out.linked = linked;
+    else delete out.linked;
+    return out;
+  }
+
+  /* The ids of the items the held lists link and the account does not hold. */
+  #linkedIds(): string[] {
+    const ids: Record<string, true> = {};
+    for (const l of this.lists) {
+      for (const [key, hid] of Object.entries(l.links ?? {})) {
+        if (!this.#hasOwn(key)) ids[hid] = true;
+      }
+    }
+    return Object.keys(ids);
+  }
+
+  /* One `items()` read of every linked item the account does not hold, whose answer fills
+     each list's `linked`. A failed read keeps the records known; the next read asks again. */
+  async #fetchLinked(): Promise<void> {
+    const epoch = this.#epoch;
+    const ids = this.#linkedIds();
+    if (!ids.length) return;
+    const read = await this.#repo.items(ids);
+    if (epoch !== this.#epoch || !read.ok) return;
+    const next: Record<string, HomebrewRecord> = {};
+    for (const [hid, r] of linkedRecords(read.items)) {
+      const had = this.#linked[hid];
+      next[hid] = had && canonJson(had) === canonJson(r) ? had : r;
+    }
+    this.#linked = next;
+    /* One new object per list: the drawn list and the one last read are often the same. */
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a lookup within one call, never state
+    const made = new Map<CloudList, CloudList>();
+    const withLinked = (l: CloudList): CloudList => {
+      let n = made.get(l);
+      if (!n) made.set(l, (n = this.#withLinked(l)));
+      return n;
+    };
+    const lists = this.lists.map(withLinked);
+    const changed = lists.some((n, i) => n !== this.lists[i]);
+    for (const [id, r] of Object.entries(this.#read)) {
+      const n = withLinked(r.list);
+      if (n !== r.list) this.#read[id] = { ...r, list: n };
+    }
+    if (changed) this.lists = lists;
+  }
+
+  /* A write that linked an item no `items()` answer has read: read them now. */
+  #readNewLinks(): void {
+    if (this.#linkedIds().some((hid) => !Object.hasOwn(this.#linked, hid)))
+      void this.#fetchLinked();
   }
 
   /* Answers false, changing nothing, when a kept id is not held. */
@@ -326,7 +401,7 @@ export class CloudLists implements ListModel {
     }
     const next = rows.map((row) => {
       const had = this.#read[row.id];
-      const list = had?.at === row.updated_at ? had.list : toCloudList(row);
+      const list = had?.at === row.updated_at ? had.list : this.#withLinked(toCloudList(row));
       read[row.id] = { at: row.updated_at, rev: row.revision, list };
       return list;
     });
@@ -543,8 +618,8 @@ export class CloudLists implements ListModel {
       updated: now,
       entryIds: Object.fromEntries(entries.map((e) => [e.item_key, e.id]))
     };
-    const frozen = frozenFrom(entries, {});
-    if (frozen) l.frozen = frozen;
+    const links = linksFrom(entries, {});
+    if (links) l.links = links;
     if (l.note) l.note = clip(l.note, NOTE_MAX);
     if (l.hnote) l.hnote = clip(l.hnote, NOTE_MAX);
     const row: NewListRow = {
@@ -554,27 +629,11 @@ export class CloudLists implements ListModel {
       player_note: l.note ?? '',
       gm_note: l.hnote ?? ''
     };
-    this.lists = [l, ...this.lists];
+    const made = this.#withLinked(l);
+    this.lists = [made, ...this.lists];
     this.#enqueue({ list: id, create: true, write: { op: 'create', list: row, entries } });
-    return l;
-  }
-
-  /** The rows of an import, every id new: built once per chosen file, so a retry sends
-   *  the same ids. A homebrew entry the account holds is a reference, any other a frozen
-   *  copy of the file's snapshot. */
-  importRows(lists: readonly ImportList[]): ImportRow[] {
-    return toImportRows(
-      lists,
-      () => this.#repo.newId(),
-      (key) => this.#hasOwn(key)
-    );
-  }
-
-  /** The rows of `importRows` again for a press: a homebrew entry whose key the account
-   *  holds now is a reference, any other a frozen copy, the ids kept; `rows` itself when
-   *  nothing changed since they were built. */
-  importRowsFor(rows: ImportRow[], lists: readonly ImportList[]): ImportRow[] {
-    return withHeld(rows, lists, (key) => this.#hasOwn(key)) as ImportRow[];
+    this.#readNewLinks();
+    return made;
   }
 
   /** Imports lists in one call (`import_lists`) after the buffer is sent, then reads the
@@ -678,30 +737,27 @@ export class CloudLists implements ListModel {
     const at = l.ids.indexOf(entryId);
     const entryIds = { ...l.entryIds };
     Reflect.deleteProperty(entryIds, entryId);
-    /* No list holds a homebrew key as an official row, so a homebrew key with no frozen
-       copy is a reference. */
-    const copy = l.frozen?.[entryId];
-    this.#removed[removedKey(id, entryId)] = copy
-      ? { source: 'homebrew', snapshot: copy }
-      : isHomebrewKey(entryId)
-        ? { source: 'homebrew', snapshot: null }
-        : OFFICIAL;
+    /* No list holds a homebrew key as an official row; the undo links the same item. */
+    const hid = l.links?.[entryId] ?? null;
+    this.#removed[removedKey(id, entryId)] = isHomebrewKey(entryId)
+      ? { source: 'homebrew', hb_item: hid }
+      : OFFICIAL;
     const next = this.#change(id, (x) => {
       const out: CloudList = { ...x, ids: x.ids.filter((k) => k !== entryId), entryIds };
-      if (copy) {
-        const frozen = { ...x.frozen };
-        Reflect.deleteProperty(frozen, entryId);
-        if (Object.keys(frozen).length) out.frozen = frozen;
-        else delete out.frozen;
+      if (hid) {
+        const links = { ...x.links };
+        Reflect.deleteProperty(links, entryId);
+        if (Object.keys(links).length) out.links = links;
+        else delete out.links;
       }
-      return out;
+      return this.#withLinked(out);
     });
     this.#enqueue({ list: id, write: { op: 'remove_entries', ids: [rowId] } });
     /* Positions stay 0..n-1, so an entry added at the end never shares one. */
     if (next && at < next.ids.length) this.#reorder(next);
   }
 
-  /** Writes back what `removeEntry` removed: the same source and snapshot. */
+  /** Writes back what `removeEntry` removed: the same source and linked item. */
   restoreEntry(id: string, entryId: string, at: number, meta: ListEntryMeta): void {
     const l = this.get(id);
     if (!l || l.ids.includes(entryId)) return;
@@ -711,12 +767,13 @@ export class CloudLists implements ListModel {
     Reflect.deleteProperty(this.#removed, k);
     const rowId = this.#repo.newId();
     const next = this.#change(id, (x) => {
-      const out: Omit<CloudList, 'updated'> = {
+      const out: CloudList = {
         ...withEntryAt(x, entryId, at, meta),
+        updated: x.updated,
         entryIds: { ...x.entryIds, [entryId]: rowId }
       };
-      if (src.snapshot) out.frozen = { ...x.frozen, [entryId]: src.snapshot };
-      return out;
+      if (src.hb_item) out.links = { ...x.links, [entryId]: src.hb_item };
+      return this.#withLinked(out);
     });
     if (!next) return;
     const place = next.ids.indexOf(entryId);
@@ -729,6 +786,7 @@ export class CloudLists implements ListModel {
     );
     this.#enqueue({ list: id, write: { op: 'add', list_id: id, entries: rows } });
     if (place < next.ids.length - 1) this.#reorder(next);
+    this.#readNewLinks();
   }
 
   add(
@@ -743,17 +801,35 @@ export class CloudLists implements ListModel {
     if (!fresh.length) return [];
     const added = withIds(l, fresh, meta);
     const rows = this.#rowsOf(fresh, added.meta, l.ids.length);
-    const frozen = frozenFrom(rows, l.frozen ?? {});
+    const links = linksFrom(rows, l.links ?? {});
     this.#change(id, () => {
-      const out: Omit<CloudList, 'updated'> = {
+      const out: CloudList = {
         ...added,
+        updated: l.updated,
         entryIds: { ...l.entryIds, ...Object.fromEntries(rows.map((r) => [r.item_key, r.id])) }
       };
-      if (frozen) out.frozen = frozen;
-      return out;
+      if (links) out.links = links;
+      return this.#withLinked(out);
     });
     this.#enqueue({ list: id, write: { op: 'add', list_id: id, entries: rows } });
+    this.#readNewLinks();
     return fresh;
+  }
+
+  /** Points the list's entry of `key` at the item `hbItem` of the same key in place
+   *  (`relink`): its position, quantity, price and notes stay. False when the list holds
+   *  no entry of `key`. */
+  relink(id: string, key: string, hbItem: string): boolean {
+    const rowId = this.get(id)?.entryIds[key];
+    if (!rowId) return false;
+    this.#change(id, (x) => this.#withLinked({ ...x, links: { ...x.links, [key]: hbItem } }));
+    this.#enqueue({
+      key: `entry:${rowId}:link`,
+      list: id,
+      write: { op: 'relink', id: rowId, hb_item: hbItem }
+    });
+    this.#readNewLinks();
+    return true;
   }
 
   /* The rows of the keys the resolver writes, with their meta. */
@@ -768,13 +844,13 @@ export class CloudLists implements ListModel {
 
 const removedKey = (list: string, key: string): string => list + ' ' + key;
 
-/* `frozen` with the rows' snapshots; null when no row carries one. */
-function frozenFrom(
+/* `links` with the rows' linked items by key; null when no row links one. */
+function linksFrom(
   rows: readonly EntryRow[],
-  frozen: Readonly<Record<string, HomebrewRecord>>
-): Record<string, HomebrewRecord> | null {
-  const copies = rows.flatMap((r) => (r.snapshot ? [[r.item_key, r.snapshot]] : []));
-  return copies.length
-    ? { ...frozen, ...(Object.fromEntries(copies) as Record<string, HomebrewRecord>) }
+  links: Readonly<Record<string, string>>
+): Record<string, string> | null {
+  const made = rows.flatMap((r) => (r.hb_item ? [[r.item_key, r.hb_item]] : []));
+  return made.length
+    ? { ...links, ...(Object.fromEntries(made) as Record<string, string>) }
     : null;
 }

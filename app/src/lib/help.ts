@@ -476,7 +476,7 @@ const TABLES: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        "Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы по источникам и разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
+        "Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы: ряд под ней выбирает источник, если их несколько, а внутри предметы лежат по разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
       ),
       {
         lead: 'Снаряжение',
@@ -509,7 +509,7 @@ const TABLES: Record<Lang, Help> = {
         ]
       },
       p(
-        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество, у «Хоумбрю» тип, источник и раздел. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
+        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество, у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
       ),
       p(
         "Оружие и броня из Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault и Arazo's Artifacts лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
@@ -526,7 +526,7 @@ const TABLES: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own. Signed in, the row ends with one more group, "Homebrew": your own items by source and section; your own equipment also sits in "Equipment", after the books\'.'
+        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own. Signed in, the row ends with one more group, "Homebrew": your own items, where the row under it picks a source when there are several, and the items sit by section; your own equipment also sits in "Equipment", after the books\'.'
       ),
       {
         lead: 'Equipment',
@@ -559,7 +559,7 @@ const TABLES: Record<Lang, Help> = {
         ]
       },
       p(
-        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items, and type, source and section for Homebrew. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
+        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items, and type and section for Homebrew, where the row above the table picks the source. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
       ),
       p(
         "The weapons and armor of Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault and Arazo's Artifacts sit in two places: in their book's table, with a roll number, and here."

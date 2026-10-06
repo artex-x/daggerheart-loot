@@ -1,6 +1,6 @@
 # #/homebrew/new ~ armour as gm1
 # route: #/homebrew/new
-# why: «Снаряжение» and «Броня»: «Ранг» * 1-4 with its «?», «Показатель брони» *, the caption «Пороги урона» * over two labelled boxes «Порог Ощутимого урона» and «Порог Тяжёлого урона»
+# why: «Снаряжение» and «Броня»: «Ранг» * 1-4, «Показатель брони» *, the caption «Пороги урона» * over two labelled boxes «Порог Ощутимого урона» and «Порог Тяжёлого урона»
 # as: gm1
 
 ## ru :: tree
@@ -47,7 +47,6 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       ... StaticText x5 of 9 same-shape siblings elided
       textbox "Название*" [multiline=false readonly=false required=true]
       textbox "Описание" [multiline=true readonly=false required=false]
-      button "Подсказка: Ранг" [description=Подсказка: Ранг expanded=false]
       group "Ранг"
         button "1" [pressed=false]
         button "2" [pressed=false]
@@ -105,7 +104,6 @@ daggerheart.com
 Подсказка: Комплект
 Подсказка: Линия улучшений
 Подсказка: Получается из
-Подсказка: Ранг
 Подсказка: Улучшается до
 Поиск
 Получается из
@@ -167,7 +165,6 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       ... StaticText x5 of 9 same-shape siblings elided
       textbox "Name*" [multiline=false readonly=false required=true]
       textbox "Description" [multiline=true readonly=false required=false]
-      button "Help: Tier" [description=Help: Tier expanded=false]
       group "Tier"
         button "1" [pressed=false]
         button "2" [pressed=false]
@@ -212,7 +209,6 @@ Help: Made from
 Help: Rule cards
 Help: Set
 Help: Source
-Help: Tier
 Help: Upgrade line
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...

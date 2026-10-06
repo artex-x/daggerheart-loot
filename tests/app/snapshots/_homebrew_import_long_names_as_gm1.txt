@@ -28,13 +28,10 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
   main ""
     heading "Мои предметы" [level=1]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    StaticText "4 предмета из 100"
-    DisclosureTriangle "ИСТОЧНИКИ · 1 источник из 20" [expanded=false]
-    DisclosureTriangle "КАРТЫ · 2 карты из 100: 1 комплект, 1 карта правил" [expanded=false]
-    link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
-    button "Импорт предметов" [expanded=true]
-    ... StaticText x16 of 20 same-shape siblings elided
+    button "Импорт из файла" [expanded=true]
+    StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
+    ... StaticText x16 of 20 same-shape siblings elided
     combobox "МастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМаст..." [value=Новый источник «МастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерская» expanded=false haspopup=menu namelen=90 namehash=b3b3ddc7]
       option "В «Хоумбрю»" [selected=false]
       option "В «Мастерская Ольхи»" [selected=false]
@@ -44,7 +41,13 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     ... button x3 of 7 same-shape siblings elided
     link "схеме homebrew-v1" [url=schema/homebrew-v1.json]
     link "описание для ИИ-помощников" [url=llms.txt]
-    StaticText "), или архив ZIP из «Скачать мои данные». Предметы, которые уже ..." [namelen=100 namehash=881a94a9]
+    navigation "Мои предметы"
+      link "Предметы" [url=index.html?as=gm1#/homebrew]
+      link "Источники" [url=index.html?as=gm1#/homebrew/sources]
+      link "Комплекты" [url=index.html?as=gm1#/homebrew/sets]
+      link "Карты правил" [url=index.html?as=gm1#/homebrew/rules]
+    link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
+    StaticText "4 предмета из 100"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
@@ -79,32 +82,28 @@ daggerheart.com
 В «Хоумбрю»В «Мастерская Ольхи»Новый источник «МастерскаяМастерс... [namelen=147 namehash=68b6113d]
 Выбрать все
 Выбрать файл...
-Изменить
-Импорт предметов
+Импорт из файла
 Импортировать (1)
+Источники
 К содержимому
+Карты правил
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
+Комплекты
 Конфиденциальность
 ЛутDaggerheart
 Настой кузнеца
 Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
-Новая карта правил
-Новый источник
-Новый комплект
 Новый предмет
 Обычные правила
 Отмена
-Переименовать
 Поиск
-Разделы
-Скачать JSON
+Предметы
 Сообщества
 Списки
 Таблицы
 Топор Тлеющих Углей
 Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
-Удалить
 Условия использования
 Установить как приложение
 описание для ИИ-помощников
@@ -135,13 +134,10 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
   main ""
     heading "My items" [level=1]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    StaticText "4 items of 100"
-    DisclosureTriangle "SOURCES · 1 source of 20" [expanded=false]
-    DisclosureTriangle "CARDS · 2 cards of 100: 1 set, 1 rule card" [expanded=false]
-    link "New item" [url=index.html?as=gm1#/homebrew/new]
-    button "Import items" [expanded=true]
-    ... StaticText x16 of 20 same-shape siblings elided
+    button "Import from file" [expanded=true]
+    StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
+    ... StaticText x16 of 20 same-shape siblings elided
     combobox "МастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМаст..." [value=New source "МастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерская" expanded=false haspopup=menu namelen=87 namehash=04e68653]
       option "Into "Homebrew"" [selected=false]
       option "Into "Alder Workshop"" [selected=false]
@@ -151,7 +147,13 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     ... button x3 of 7 same-shape siblings elided
     link "homebrew-v1 schema" [url=schema/homebrew-v1.json]
     link "a description for AI assistants" [url=llms.txt]
-    StaticText "), or the ZIP archive from "Download my data". Items you already..." [namelen=96 namehash=07a8e54c]
+    navigation "My items"
+      link "Items" [url=index.html?as=gm1#/homebrew]
+      link "Sources" [url=index.html?as=gm1#/homebrew/sources]
+      link "Sets" [url=index.html?as=gm1#/homebrew/sets]
+      link "Rule cards" [url=index.html?as=gm1#/homebrew/rules]
+    link "New item" [url=index.html?as=gm1#/homebrew/new]
+    StaticText "4 items of 100"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""
@@ -177,30 +179,26 @@ Arazo's Artifacts
 Cancel
 Choose a file...
 Communities
-Delete
-Download JSON
 Dragon's Vault
 Dread
 EN
-Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
 Import (1)
-Import items
+Import from file
 Install as an app
 Into "Homebrew"Into "Alder Workshop"New source "МастерскаяМастер... [namelen=144 namehash=d4476e02]
+Items
 Lists
 New item
-New rule card
-New set
-New source
 Privacy
 RU
-Rename
+Rule cards
 Search
-Sections
 Select all
+Sets
 Skip to content
+Sources
 Standard rules
 Tables
 Terms of use

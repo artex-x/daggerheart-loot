@@ -60,7 +60,7 @@ async function rolledBack(fn) {
 }
 
 describe('limit tables', () => {
-  it('hold the eight defaults', async () => {
+  it('hold the seven defaults', async () => {
     const rows = await sql`select key, value from public.limit_defaults order by key`;
     assert.deepEqual(
       rows.map((r) => `${r.key}=${r.value}`),
@@ -71,8 +71,7 @@ describe('limit tables', () => {
         'homebrew_items_per_owner=100',
         'lists_per_owner=50',
         'pending_requests_per_list=10',
-        'request_lines=100',
-        'snapshot_bytes_per_list=1048576'
+        'request_lines=100'
       ]
     );
   });

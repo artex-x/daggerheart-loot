@@ -1178,7 +1178,7 @@ describe('an own homebrew item', () => {
       ...over
     });
 
-  it('draws the path, the link to its table row, «Изменить» and no link action', async () => {
+  it('draws the path, the link to its table row, «Изменить» and a link to its item address', async () => {
     const { container } = render(App, { env: own() });
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Топор Тлеющих Углей' })
@@ -1194,25 +1194,94 @@ describe('an own homebrew item', () => {
       'href',
       '#/homebrew/' + AXE
     );
-    expect(screen.queryByRole('button', { name: 'Скопировать ссылку' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Скопировать ссылку' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Скопировать изображение' })).toBeNull();
     expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
-  it('sends no address, and with no share sheet copies the text, not a dead link', async () => {
+  it('links its own set and rule card to their tabs on its page and in the modal of a set member', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const held = await cloud.homebrew.load();
+    const row = (id: string) => (held.ok ? held.items.find((i) => i.id === id) : undefined);
+    const axe = row(uuid(511));
+    const ring = row(uuid(514));
+    if (!axe || !ring) throw new Error('The seed has no axe or ring.');
+    const SET = 'hb_aldersetaaaaaaaa';
+    await cloud.homebrew.updateItem(
+      axe.id,
+      {
+        content: { ...axe.content, set: SET, refs: ['hb_alderrulecardaaa'] },
+        book_id: axe.book_id
+      },
+      null
+    );
+    await cloud.homebrew.updateItem(
+      ring.id,
+      { content: { ...ring.content, set: SET }, book_id: null },
+      null
+    );
+    const { container } = render(App, { env: own({ cloud }) });
+    expect(await screen.findByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
+      'href',
+      '#/homebrew/sets/' + SET
+    );
+    expect(screen.getByRole('link', { name: 'Открыть в «Мои предметы»' })).toHaveAttribute(
+      'href',
+      '#/homebrew/rules/hb_alderrulecardaaa'
+    );
+    await expectNoA11yViolations(container);
+  });
+
+  it('links the own set in the record modal only for an own item read as own', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const held = await cloud.homebrew.load();
+    const SET = 'hb_aldersetaaaaaaaa';
+    for (const id of [uuid(511), uuid(514)]) {
+      const r = held.ok ? held.items.find((i) => i.id === id) : undefined;
+      if (!r) throw new Error('The seed has no axe or ring.');
+      await cloud.homebrew.updateItem(
+        r.id,
+        { content: { ...r.content, set: SET }, book_id: r.book_id },
+        null
+      );
+    }
+    const app = new AppState(own({ cloud }));
+    app.start();
+    await waitFor(() => {
+      expect(app.homebrew?.status).toBe('ready');
+      expect(app.index?.byId.has('hb_engravedringaaaa')).toBe(true);
+    });
+    const index = app.index!;
+    const ring = index.byId.get('hb_engravedringaaaa')!;
+    const view = render(RecordModal, { app, index, it: ring, onclose: () => {} });
+    expect(screen.getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
+      'href',
+      '#/homebrew/sets/' + SET
+    );
+    view.unmount();
+    render(RecordModal, {
+      app,
+      index,
+      it: { ...ring, hid: uuid(9999) } as typeof ring,
+      onclose: () => {}
+    });
+    expect(screen.queryByRole('link', { name: 'Комплект Ольхи' })).toBeNull();
+    app.stop();
+  });
+
+  it('sends its item address, and with no share sheet copies that address', async () => {
+    const ITEM_URL = 'https://example.test/#/h/00000000-0000-4000-8000-000000000511';
     const share = fakeShare();
     render(App, { env: own({ share }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
-    expect(share.last.url).toBeUndefined();
+    expect(share.last.url).toBe(ITEM_URL);
     expect(share.last.text).toContain('Топор Тлеющих Углей');
     cleanup();
     const clip = fakeClipboard();
     render(App, { env: own({ share: fakeShare({ available: false }), clipboard: clip }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
-    expect(clip.last.text).not.toContain('.html');
-    expect(clip.last.rich?.plain).toContain('Лезвие тлеет');
-    expect(clip.last.rich?.plain).not.toContain('.html');
+    expect(clip.last.text).toBe(ITEM_URL);
   });
 
   it('draws «Загружаем...» until the session and the items are known', async () => {
@@ -1261,7 +1330,7 @@ describe('an own homebrew item', () => {
     expect(screen.getByText('Предмет не найден')).toBeInTheDocument();
   });
 
-  it('puts the item into a list as a reference from «Добавить в список»', async () => {
+  it('puts the item into a list as a link from «Добавить в список»', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const page = fakePage();
     const { container } = render(App, { env: own({ cloud, page }) });
@@ -1274,7 +1343,7 @@ describe('an own homebrew item', () => {
       const read = await cloud.lists.list();
       const empty = read.ok ? read.lists.find((l) => l.id === uuid(102)) : undefined;
       expect(empty?.list_entries).toEqual([
-        expect.objectContaining({ item_key: AXE, source: 'homebrew', snapshot: null })
+        expect.objectContaining({ item_key: AXE, source: 'homebrew', hb_item: uuid(511) })
       ]);
     });
   });
@@ -1323,7 +1392,12 @@ describe('an own homebrew item', () => {
     expect(within(linked).queryByRole('link', { name: 'daggerheart.su' })).toBeNull();
     const plain = screen.getByText('Без ссылки').closest('details') as HTMLElement;
     expect(within(plain).getByText('Текст без адреса.')).toBeInTheDocument();
-    expect(within(plain).queryByRole('link')).toBeNull();
+    /* No address link; only the author's link to the card's tab. */
+    expect(
+      within(plain)
+        .getAllByRole('link')
+        .map((a) => a.getAttribute('href'))
+    ).toEqual(['#/homebrew/rules/' + bare]);
     await expectNoA11yViolations(container);
   });
 });
@@ -1484,6 +1558,72 @@ describe("the author's own relations on a catalog card", () => {
     expect(screen.getByText('Чужой комплект:')).toBeInTheDocument();
     expect(container.querySelector('.craft-l')).toBeNull();
     await expectNoA11yViolations(container);
+  });
+
+  it("links the author's own set and rule card to their tabs, and nothing for a reader or a catalog card", async () => {
+    const own = recordOf(
+      'hb_managedaxeaaaaaa',
+      {
+        kind: 'item',
+        ru: 'Свой топор',
+        set: 'hb_ownsetaaaaaaaaaa',
+        refs: ['hb_ownrulecardaaaaa', 'slow']
+      },
+      null,
+      [
+        { key: 'hb_ownsetaaaaaaaaaa', kind: 'set', ru: 'Свой комплект', rud: 'Бонус.' },
+        { key: 'hb_ownrulecardaaaaa', kind: 'ref', ru: 'Своё правило', rud: 'Текст.' }
+      ]
+    );
+    /* An own item alone in its set draws no bonus: a second member. */
+    const mate = recordOf(
+      'hb_managedmateaaaaa',
+      { kind: 'item', ru: 'Свой щит', set: 'hb_ownsetaaaaaaaaaa' },
+      null
+    );
+    const ix = withRecords(catalog, [own, mate], []);
+    const draw = (manage: boolean) =>
+      render(RecordCard, {
+        props: {
+          it: own,
+          index: ix,
+          lang: 'ru',
+          artBroken: false,
+          onartfail: () => {},
+          onopen: () => {},
+          manage
+        }
+      });
+    const { container } = draw(true);
+    expect(screen.getByRole('link', { name: 'Свой комплект' })).toHaveAttribute(
+      'href',
+      '#/homebrew/sets/hb_ownsetaaaaaaaaaa'
+    );
+    const manageLinks = screen.getAllByRole('link', { name: 'Открыть в «Мои предметы»' });
+    expect(manageLinks.map((a) => a.getAttribute('href'))).toEqual([
+      '#/homebrew/rules/hb_ownrulecardaaaaa'
+    ]);
+    await expectNoA11yViolations(container);
+    cleanup();
+    draw(false);
+    expect(screen.queryByRole('link', { name: 'Свой комплект' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Открыть в «Мои предметы»' })).toBeNull();
+    cleanup();
+    const catalogSet = [...ix.byId.values()].find((r) => r.set && !r.id.startsWith('hb_'));
+    if (!catalogSet) throw new Error('The catalog has no set member.');
+    render(RecordCard, {
+      props: {
+        it: catalogSet,
+        index: ix,
+        lang: 'ru',
+        artBroken: false,
+        onartfail: () => {},
+        onopen: () => {},
+        manage: true
+      }
+    });
+    expect(screen.queryByRole('link', { name: 'Открыть в «Мои предметы»' })).toBeNull();
+    expect(document.querySelector('a[href^="#/homebrew/sets/"]')).toBeNull();
   });
 
   it('draws no mark and no fold for a reader with no own items', async () => {

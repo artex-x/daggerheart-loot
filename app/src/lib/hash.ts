@@ -22,10 +22,16 @@ export const ACCOUNT_HASH = '#/account';
 /** The signed-in author's own items (docs/specs/ROUTES.md, "Homebrew"). */
 export const HOMEBREW_HASH = '#/homebrew';
 
+/** The four tabs of «Мои предметы» (docs/specs/ROUTES.md, "Homebrew"). */
+export type HomebrewTab = 'items' | 'sources' | 'sets' | 'rules';
+
 export type Route =
   | { kind: 'section'; section: Section }
   | { kind: 'tables'; table: TableId | null; anchor: string; filter: FilterState }
   | { kind: 'record'; id: string }
+  /** One homebrew item by its id, for everyone; `id` is the leading run of
+   *  `[0-9A-Fa-f-]`, lowercased (docs/specs/ROUTES.md). */
+  | { kind: 'item'; id: string }
   /** `dropped` is how many known ids the cap threw away - the red note on
    *  the bar counts them, off `printTooMany`. */
   | {
@@ -43,8 +49,9 @@ export type Route =
   /** In every build: with no sign-in configured it draws the not-found page,
    *  so the address never falls home (docs/specs/ROUTES.md, "Account"). */
   | { kind: 'account' }
-  /** The author's own items; like `account`, in every build. */
-  | { kind: 'homebrew' }
+  /** The author's own items, one tab; like `account`, in every build. `key` opens one
+   *  card and is only read on `sets` and `rules`. */
+  | { kind: 'homebrew'; tab: HomebrewTab; key: string | null }
   /** The editor of one own item; `key` null is a new item. */
   | { kind: 'homebrewItem'; key: string | null }
   /** Nothing could be read - the caller replaces it with the home section. */
@@ -134,8 +141,17 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
   if (/^s\//.test(h)) {
     return { kind: 'share', token: /^[A-Za-z0-9_-]*/.exec(h.slice(2))?.[0] ?? '' };
   }
+  if (/^h\//.test(h)) {
+    return { kind: 'item', id: (/^[0-9A-Fa-f-]*/.exec(h.slice(2))?.[0] ?? '').toLowerCase() };
+  }
   if (h === 'account') return { kind: 'account' };
-  if (h === 'homebrew') return { kind: 'homebrew' };
+  if (h === 'homebrew') return { kind: 'homebrew', tab: 'items', key: null };
+  const tab = /^homebrew\/(?:(sources)|(sets|rules)(?:\/(hb_[a-z2-7]{16}))?)$/.exec(h);
+  if (tab) {
+    return tab[1]
+      ? { kind: 'homebrew', tab: 'sources', key: null }
+      : { kind: 'homebrew', tab: tab[2] as HomebrewTab, key: tab[3] ?? null };
+  }
   const hb = /^homebrew\/(new|hb_[a-z2-7]{16})$/.exec(h);
   if (hb) return { kind: 'homebrewItem', key: hb[1] === 'new' ? null : (hb[1] ?? null) };
   /* Was `/^l\/[A-Za-z0-9_-]+$/`: a stray character after the payload - a chat
@@ -178,6 +194,19 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
   return { kind: 'unknown' };
 }
 
+/** Returns whether a navigation keeps the ticks: between two «Мои предметы» tabs, and
+ *  between two addresses of `#/tables/homebrew`, where a source chip is a filter change
+ *  (docs/specs/STATE.md, the UI row). */
+export function keepsTicks(from: Route, to: Route): boolean {
+  if (from.kind === 'homebrew' && to.kind === 'homebrew') return true;
+  return (
+    from.kind === 'tables' &&
+    to.kind === 'tables' &&
+    from.table === 'homebrew' &&
+    to.table === 'homebrew'
+  );
+}
+
 /* ---------- back again ---------- */
 
 export function sectionHash(section: Section): string {
@@ -186,6 +215,19 @@ export function sectionHash(section: Section): string {
 
 export function recordHash(id: string): string {
   return '#/i/' + id;
+}
+
+/** The address of one homebrew item, for everyone. */
+export function itemHash(hid: string): string {
+  return '#/h/' + hid;
+}
+
+/** Returns a record's address: a homebrew item's by its id when the record carries one,
+ *  else the record page's. */
+export function recordHref(it: { id: string; src?: string; hid?: string }): string {
+  return it.src === 'homebrew' && typeof it.hid === 'string'
+    ? itemHash(it.hid)
+    : recordHash(it.id);
 }
 
 /** Writes `*<n>` only for a count over 1, so a bare address stays byte-identical. */
@@ -207,6 +249,11 @@ export function printHash(
 /** The editor of an own item; null is a new item. */
 export function homebrewItemHash(key: string | null): string {
   return HOMEBREW_HASH + '/' + (key ?? 'new');
+}
+
+/** Returns the address of one «Мои предметы» tab; `key` opens one card on `sets` and `rules`. */
+export function homebrewTabHash(tab: HomebrewTab, key: string | null = null): string {
+  return tab === 'items' ? HOMEBREW_HASH : HOMEBREW_HASH + '/' + tab + (key ? '/' + key : '');
 }
 
 export function sharedListHash(payload: string): string {

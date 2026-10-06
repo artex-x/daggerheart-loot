@@ -15,9 +15,10 @@ import {
   FILE_MAX_BYTES,
   LISTS_MAX,
   parseBundle,
-  toBundle
+  toBundle,
+  type ImportList
 } from '../lib/bundle.js';
-import { frozenOf } from '../lib/cloudLists.js';
+import { linkedOf } from '../lib/cloudLists.js';
 import { nameOf } from '../lib/i18n.js';
 import {
   defaultTarget,
@@ -36,7 +37,7 @@ import type { StoredList } from '../lib/lists.js';
 import { LOOT_KINDS } from '../lib/std.js';
 import { readDataZip } from '../lib/zip.js';
 import type { Prefs } from '../lib/prefs.js';
-import { KINDS } from '../lib/types.js';
+import { KINDS, type Record_ } from '../lib/types.js';
 import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import {
   brokenStorage,
@@ -57,7 +58,7 @@ import type {
   RouterPort,
   Session
 } from '../ports/index.js';
-import { fakeCloud } from '../ports/fake-cloud.js';
+import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, type Seed } from '../ports/fake-cloud-seed.js';
 import { AppState, LIST_POLL_MS, SIGN_OUT_WAIT_MS } from './app.svelte.js';
 
@@ -475,10 +476,10 @@ describe('the install link', () => {
 describe('links to hand somebody else', () => {
   it('follow the language on screen', () => {
     const app = new AppState(at('#/roll/std'));
-    expect(app.linkToRecord('w1')).toBe('https://example.test/i/w1.html');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1.html');
     expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
     app.setLang('en');
-    expect(app.linkToRecord('w1')).toBe('https://example.test/i/en/w1.html');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/en/w1.html');
     expect(app.linkTo('#/lists')).toBe('https://example.test/en/#/lists');
   });
 });
@@ -796,6 +797,60 @@ describe('the selection', () => {
     app.sel.add('ci1');
     router.navigate('#/lists');
     expect(app.sel.size).toBe(0);
+  });
+
+  it('keeps the ticks and their counts between two «Мои предметы» tabs, and clears them on any other navigation', () => {
+    const router = memoryRouter('#/homebrew');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    const tick = (): void => {
+      app.sel.add('hb_engravedringaaaa');
+      app.picked.set('hb_engravedringaaaa', 2);
+    };
+    tick();
+    app.go('#/homebrew/sources');
+    router.navigate('#/homebrew/sets/hb_aldersetaaaaaaaa');
+    app.go('#/homebrew');
+    expect([...app.sel]).toEqual(['hb_engravedringaaaa']);
+    expect(app.picked.get('hb_engravedringaaaa')).toBe(2);
+
+    app.go('#/homebrew/hb_engravedringaaaa');
+    expect(app.sel.size).toBe(0);
+    expect(app.picked.size).toBe(0);
+
+    app.go('#/homebrew');
+    tick();
+    router.navigate('#/lists');
+    expect(app.sel.size).toBe(0);
+
+    tick();
+    app.go('#/homebrew/rules');
+    expect(app.sel.size).toBe(0);
+    expect(app.picked.size).toBe(0);
+    app.stop();
+  });
+
+  it('keeps the ticks between two #/tables/homebrew addresses, and clears them on leaving the table', () => {
+    const router = memoryRouter('#/tables/homebrew');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.sel.add('hb_emberaxeaaaaaaaa');
+    app.go('#/tables/homebrew/f_src-hb');
+    router.navigate('#/tables/homebrew/hb_sectbladesaaaaaa');
+    app.go('#/tables/homebrew');
+    expect([...app.sel]).toEqual(['hb_emberaxeaaaaaaaa']);
+
+    app.go('#/tables/core_item');
+    expect(app.sel.size).toBe(0);
+
+    app.go('#/tables/homebrew');
+    app.sel.add('hb_emberaxeaaaaaaaa');
+    router.navigate('#/homebrew');
+    expect(app.sel.size).toBe(0);
+    app.sel.add('hb_emberaxeaaaaaaaa');
+    app.go('#/tables/homebrew');
+    expect(app.sel.size).toBe(0);
+    app.stop();
   });
 
   it('survives replace() - a filter pick must not drop the ticks', () => {
@@ -2850,7 +2905,7 @@ describe('the exports', () => {
 
   async function signedIn(
     image = fakeImage(),
-    limits: { lists?: number; entries?: number } = {},
+    limits: FakeCloudOptions['limits'] = {},
     as: 'gm1' | 'gm2' | 'gm3' = 'gm1',
     seed: Seed = SEED
   ) {
@@ -2890,7 +2945,7 @@ describe('the exports', () => {
         app.t.untitled,
         new Date(NOW),
         (id, list) =>
-          frozenOf(list)[id] ?? app.homebrew?.records.find((r) => r.id === id) ?? null
+          app.homebrew?.records.find((r) => r.id === id) ?? linkedOf(list)[id] ?? null
       ).bundle
     );
   };
@@ -2911,7 +2966,10 @@ describe('the exports', () => {
     expect(doc.lists.map((l) => l.name)).toEqual(['Пустой список', 'Лавка кузнеца', 'Трофеи']);
     const axe = doc.lists.flatMap((l) => l.entries).find((e) => e.id === AXE);
     expect(axe?.source).toBe('homebrew');
-    expect(axe?.snapshot).toEqual(app.homebrew?.records.find((r) => r.id === AXE));
+    /* The file's record has no row id. */
+    const { hid, ...record } = app.homebrew!.records.find((r) => r.id === AXE)!;
+    expect(hid).toBe('00000000-0000-4000-8000-000000000511');
+    expect(axe?.snapshot).toEqual(record);
     expect(app.toast).toBeNull();
     app.stop();
   });
@@ -3160,21 +3218,14 @@ describe('the exports', () => {
     app.stop();
   });
 
-  it("restores gm2's and gm1's data zips into an empty account: a frozen copy and a live reference", async () => {
+  it("restores gm2's and gm1's data zips into an empty account: a fixed copy, then a link to it", async () => {
     const zipOf = async (as: 'gm1' | 'gm2'): Promise<Uint8Array> => {
       const { app, image } = await signedIn(fakeImage(), {}, as);
       await app.exportData();
       app.stop();
       return new Uint8Array(await image.downloaded[0]!.blob.arrayBuffer());
     };
-    const frozenAxe = async (): Promise<unknown> => {
-      const { app } = await signedIn(fakeImage(), {}, 'gm2');
-      const list = app.cloudLists!.lists.find((l) => l.ids.includes(AXE))!;
-      app.stop();
-      return frozenOf(list)[AXE];
-    };
-    const [gm1, gm2, stored] = [await zipOf('gm1'), await zipOf('gm2'), await frozenAxe()];
-    expect(stored).toBeTruthy();
+    const [gm1, gm2] = [await zipOf('gm1'), await zipOf('gm2')];
     const empty: Seed = {
       ...SEED,
       homebrew: { ...SEED.homebrew, gm3: { books: [], items: [], cards: [] } }
@@ -3188,11 +3239,15 @@ describe('the exports', () => {
       if (!read.ok) throw new Error('The zip holds no lists.json');
       const parsed = parseBundle(read.text, (id) => app.catalog?.byId.has(id) ?? false);
       if (!parsed.ok) throw new Error('The lists.json is refused: ' + parsed.reason);
-      expect(await lists.import(lists.importRows(parsed.lists))).toEqual({ ok: true });
+      const plan = app.importPlan(parsed.lists);
+      if (!plan) throw new Error('No plan with a cloud');
+      expect(await app.importLists(plan)).toEqual({ ok: true });
     };
-    /* gm2's lists first: the account lacks the axe, so its entry stays a frozen copy. */
+    /* gm2's lists first: the account lacks the axe, so the import makes it a fixed copy. */
     expect(readDataZip(gm2, 'homebrew.json')).toEqual({ ok: false, reason: 'missing' });
     await loadLists(gm2);
+    expect(own.has(AXE)).toBe(true);
+    expect(own.item(AXE)?.book_id).toBeNull();
     const hb = readDataZip(gm1, 'homebrew.json');
     if (!hb.ok) throw new Error('The zip holds no homebrew.json');
     const parsed = parseHomebrew(hb.text, {
@@ -3217,16 +3272,86 @@ describe('the exports', () => {
       false,
       ids
     );
-    expect(await own.import(call)).toMatchObject({ ok: true });
-    expect(own.has(AXE)).toBe(true);
+    /* The copy holds the axe's key: the homebrew file skips it. */
+    expect(await own.import(call)).toMatchObject({ ok: true, counts: { items_skipped: 1 } });
     await loadLists(gm1);
     const withAxe = lists.lists.filter((l) => l.ids.includes(AXE));
     expect(withAxe).toHaveLength(2);
-    const frozen = withAxe.map((l) => frozenOf(l)[AXE] ?? null);
-    /* gm1's list refers to the live axe; gm2's keeps the snapshot gm2 stored. */
-    expect(frozen).toContainEqual(null);
-    expect(frozen).toContainEqual(stored);
+    /* Both lists link the account's own axe: no record of another account. */
+    expect(withAxe.map((l) => l.links?.[AXE])).toEqual([own.item(AXE)?.id, own.item(AXE)?.id]);
+    expect(withAxe.map((l) => linkedOf(l)[AXE])).toEqual([undefined, undefined]);
     app.stop();
+  });
+
+  /* A lists file of three own lamps the account does not hold. */
+  const lamps = (): ImportList[] => {
+    const key = (n: number) =>
+      'hb_lamp' + 'abcdefghijklmnopqrstuvwxyz234567'.charAt(n) + 'aaaaaaaaaaa';
+    return [
+      {
+        name: 'Лампы',
+        money_mode: 'bag',
+        player_note: '',
+        gm_note: '',
+        entries: [0, 1, 2].map((n) => ({
+          item_key: key(n),
+          source: 'homebrew' as const,
+          snapshot: {
+            id: key(n),
+            src: 'homebrew',
+            kind: 'item',
+            en: 'Lamp ' + String(n),
+            ru: 'Лампа ' + String(n),
+            ende: '',
+            rud: ''
+          },
+          quantity: 1,
+          price_coins: null,
+          player_note: '',
+          gm_note: ''
+        }))
+      }
+    ];
+  };
+
+  it('refuses a lists file whose copies pass the item limit whole, writing nothing', async () => {
+    const { app } = await signedIn(fakeImage(), { items: 2 }, 'gm2');
+    const plan = app.importPlan(lamps());
+    expect(plan?.copies?.items).toHaveLength(3);
+    const before = app.cloudLists!.lists.length;
+    expect(await app.importLists(plan!)).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'homebrew_items_per_owner',
+      value: 2
+    });
+    expect(app.cloudLists!.lists).toHaveLength(before);
+    expect(app.homebrew!.items).toEqual([]);
+    app.stop();
+  });
+
+  it('keeps the copies of a lists call that failed, and links them on the retry', async () => {
+    const { app } = await signedIn(fakeImage(), {}, 'gm2');
+    const cloud = app.env.cloud!;
+    const plan = app.importPlan(lamps())!;
+    vi.spyOn(cloud.lists, 'import').mockResolvedValueOnce({ ok: false, error: 'refused' });
+    expect(await app.importLists(plan)).toEqual({ ok: false, error: 'refused' });
+    expect(app.homebrew!.items.map((i) => i.key)).toEqual(plan.copies?.items.map((i) => i.key));
+    const again = app.importPlan(lamps(), plan);
+    expect(again).toBe(plan);
+    expect(await app.importLists(plan)).toEqual({ ok: true });
+    const made = app.cloudLists!.get(plan.rows[0]!.list.id);
+    expect(Object.values(made?.links ?? {})).toEqual(app.homebrew!.items.map((i) => i.id));
+    app.stop();
+  });
+
+  it('answers network for an import with no cloud', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/lists'), cloud: null }));
+    expect(app.importPlan(lamps())).toBeNull();
+    expect(await app.importLists({ rows: [], copies: null })).toEqual({
+      ok: false,
+      error: 'network'
+    });
   });
 
   it('does nothing in a build with no sign-in', async () => {
@@ -3404,32 +3529,33 @@ describe('homebrew', () => {
       return l?.list_entries.map((e) => ({
         key: e.item_key,
         source: e.source,
-        snapshot: e.snapshot
+        hb_item: e.hb_item
       }));
     }
+    const AXE_ID = '00000000-0000-4000-8000-000000000511';
 
-    it('finds a frozen copy in the open share first, then in a list, and knows it', async () => {
+    it("finds another account's record in the open share first, then in a list, and knows it", async () => {
       const cloud = fakeCloud(SEED, 'gm2');
       const { app } = started(cloud, '#/lists');
       await flush();
-      const kept = app.cloudLists?.get(GM2_LIST)?.frozen?.[AXE];
-      expect(kept?.src).toBe('homebrew');
-      expect(app.frozenCopy(AXE)).toBe(kept);
+      const kept = app.cloudLists?.get(GM2_LIST)?.linked?.[AXE];
+      expect(kept).toMatchObject({ src: 'homebrew', hid: AXE_ID });
+      expect(app.linkedRecord(AXE)).toBe(kept);
       expect(app.recordFor(AXE)).toBe(kept);
       expect(app.knows(AXE)).toBe(true);
       expect(app.knows('hb_smithpotionaaaaa')).toBe(false);
-      expect(app.frozenCopy('ci1')).toBeUndefined();
+      expect(app.linkedRecord('ci1')).toBeUndefined();
       expect(app.recordFor('ci1')).toBe(app.catalog?.byId.get('ci1'));
       await app.sharedView?.open('player-token-1', '00000000-0000-4000-8000-000000000002');
-      const shown = app.sharedView?.shared?.entries.find((e) => e.item_key === AXE)?.snapshot;
-      expect(shown).toBeTruthy();
-      expect(app.frozenCopy(AXE)).toBe(shown);
+      const shown = app.sharedView?.shared?.entries.find((e) => e.item_key === AXE);
+      expect(shown?.hid).toBe(AXE_ID);
+      expect(app.linkedRecord(AXE)).toEqual({ ...(shown?.snapshot as object), hid: AXE_ID });
       app.sharedView?.close();
-      expect(app.frozenCopy(AXE)).toBe(kept);
+      expect(app.linkedRecord(AXE)).toBe(kept);
       app.stop();
     });
 
-    it('prints a frozen copy of an own list, and not a key only a closed share carried', async () => {
+    it('prints a linked item of an own list, and not a key only a closed share carried', async () => {
       const gm2 = started(fakeCloud(SEED, 'gm2'), '#/print/' + AXE);
       await flush();
       expect(gm2.app.route).toMatchObject({ kind: 'print', ids: [AXE] });
@@ -3440,7 +3566,7 @@ describe('homebrew', () => {
       reader.app.stop();
     });
 
-    it("writes the open share's snapshot on an add from #/s/, and a reference from the owner's own", async () => {
+    it("links the open share's item on an add from #/s/, and the owner's own item by its id", async () => {
       const cloud = fakeCloud(SEED, 'gm2');
       const { app } = started(cloud, '#/s/player-token-1');
       await flush();
@@ -3449,10 +3575,9 @@ describe('homebrew', () => {
       const l = store.create('С полки');
       expect(store.add(l.id, [AXE, 'ci1'], (id) => app.knows(id))).toEqual([AXE, 'ci1']);
       await store.flushNow();
-      const shown = app.sharedView?.shared?.entries.find((e) => e.item_key === AXE)?.snapshot;
       expect(await written(cloud, l.id)).toEqual([
-        { key: AXE, source: 'homebrew', snapshot: shown },
-        { key: 'ci1', source: 'official', snapshot: null }
+        { key: AXE, source: 'homebrew', hb_item: AXE_ID },
+        { key: 'ci1', source: 'official', hb_item: null }
       ]);
       app.stop();
 
@@ -3463,7 +3588,7 @@ describe('homebrew', () => {
       gm1.app.cloudLists?.add(EMPTY_LIST, [AXE], (id) => gm1.app.knows(id));
       await gm1.app.cloudLists?.flushNow();
       expect(await written(own, EMPTY_LIST)).toEqual([
-        { key: AXE, source: 'homebrew', snapshot: null }
+        { key: AXE, source: 'homebrew', hb_item: AXE_ID }
       ]);
       gm1.app.stop();
     });
@@ -3548,6 +3673,164 @@ describe('homebrew', () => {
     await flush();
     const made = app.cloudLists?.lists.find((l) => l.name === 'С топором');
     expect(made?.ids).toEqual(['ci1']);
+    app.stop();
+  });
+});
+
+describe('the item page and «Сохранить себе»', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const loot: Loot = {
+    items: {
+      core_item: [
+        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 }
+      ]
+    }
+  };
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const AXE_ID = '00000000-0000-4000-8000-000000000511';
+  const CAP = 'hb_whispercapaaaaaa';
+  const CAP_ID = '00000000-0000-4000-8000-000000000513';
+  const ROLL_B = '00000000-0000-4000-8000-000000000662';
+  const GM2_LIST = '00000000-0000-4000-8000-000000000201';
+  const SECOND = '00000000-0000-4000-8000-000000009201';
+  const ru = dict('ru');
+
+  function started(cloud: CloudPort, hash: string) {
+    const router = memoryRouter(hash);
+    const storage = memoryStorage();
+    const app = new AppState(fakeEnv({ router, storage, cloud, data: { load: () => loot } }));
+    app.start();
+    return { app, router, storage };
+  }
+
+  /* The server's rows of a list: what a relink must keep, and what it moves. */
+  async function rows(cloud: CloudPort, id: string) {
+    const read = await cloud.lists.list();
+    const l = read.ok ? read.lists.find((x) => x.id === id) : undefined;
+    return l?.list_entries.map((e) => ({ ...e }));
+  }
+
+  it('reads the open item first for a key, and re-reads it signed out when the tab is shown again', async () => {
+    const world = fakeCloud(SEED);
+    const { app } = started(world.as('gm2'), '#/h/' + AXE_ID);
+    await flush();
+    await app.itemView?.open(AXE_ID, SEED.users.gm2.id);
+    expect(app.linkedRecord(AXE)).toBe(app.itemView?.record);
+    app.stop();
+
+    const out = started(world.as(), '#/h/' + ROLL_B);
+    await flush();
+    await out.app.itemView?.open(ROLL_B, null);
+    const read = vi.spyOn(out.app.itemView as NonNullable<typeof out.app.itemView>, 'refresh');
+    out.storage.fireExternalChange(null);
+    expect(read).toHaveBeenCalledOnce();
+    out.app.stop();
+  });
+
+  it('keeps a «Сохранить себе» action across the sign-in, hands it to the page after the lists read, and forgets it on a navigation', async () => {
+    const { app } = started(fakeCloud(SEED), '#/h/' + ROLL_B);
+    await flush();
+    app.askSignIn({ hash: '#/h/' + ROLL_B, action: { do: 'saveItem', hid: ROLL_B } });
+    await app.signIn('google');
+    await flush();
+    expect(app.hash).toBe('#/h/' + ROLL_B);
+    expect(app.saveItemFor).toBe(ROLL_B);
+    app.go('#/lists');
+    expect(app.saveItemFor).toBeNull();
+    app.stop();
+  });
+
+  it('saves a copy under the key and relinks every list that links the item, each entry kept', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    await cloud.lists.apply([
+      {
+        op: 'create',
+        list: { id: SECOND, name: 'Второй', money_mode: 'bag', player_note: '', gm_note: '' },
+        entries: [
+          {
+            id: '00000000-0000-4000-8000-000000009202',
+            item_key: AXE,
+            source: 'homebrew',
+            hb_item: AXE_ID,
+            position: 0,
+            quantity: 3,
+            price_coins: 40,
+            player_note: 'Игрокам',
+            gm_note: 'Мастеру'
+          }
+        ]
+      }
+    ]);
+    const { app } = started(cloud, '#/lists/' + GM2_LIST);
+    await flush();
+    const before = [
+      ...((await rows(cloud, GM2_LIST)) ?? []),
+      ...((await rows(cloud, SECOND)) ?? [])
+    ];
+    const record = app.linkedRecord(AXE);
+    expect(record?.hid).toBe(AXE_ID);
+    expect(app.isForeignItem(record!)).toBe(true);
+    expect(app.relinkTargets(record!).sort()).toEqual([GM2_LIST, SECOND].sort());
+    await app.saveItem(record!);
+    await app.cloudLists?.flushNow();
+    const own = app.homebrew?.item(AXE);
+    expect(own?.id).not.toBe(AXE_ID);
+    expect(own?.book_id).toBeNull();
+    const after = [
+      ...((await rows(cloud, GM2_LIST)) ?? []),
+      ...((await rows(cloud, SECOND)) ?? [])
+    ];
+    const axeRows = (rs: typeof before) => rs.filter((e) => e.item_key === AXE);
+    expect(axeRows(after)).toEqual(axeRows(before).map((e) => ({ ...e, hb_item: own?.id })));
+    expect(app.toast?.msg).toBe(ru.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'));
+    expect(app.toast?.action?.href).toBe('#/homebrew/' + AXE);
+    expect(app.isForeignItem(record!)).toBe(true);
+    expect(app.relinkTargets(record!)).toEqual([]);
+    app.stop();
+  });
+
+  it('says the plain save when the row was removed while the copy was made', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { app } = started(cloud, '#/lists/' + GM2_LIST);
+    await flush();
+    const record = app.linkedRecord(AXE)!;
+    const real = cloud.homebrew.import.bind(cloud.homebrew);
+    cloud.homebrew.import = async (rows) => {
+      app.cloudLists?.removeEntry(GM2_LIST, AXE);
+      return real(rows);
+    };
+    await app.saveItem(record);
+    expect(app.toast?.msg).toBe(ru.saveItemSaved.replace('%s', 'Топор Тлеющих Углей'));
+    app.stop();
+  });
+
+  it('refuses an add of an item its author deleted meanwhile, and the add leaves the buffer', async () => {
+    const world = fakeCloud(SEED, 'gm1');
+    const { app } = started(world.as('gm2'), '#/h/' + CAP_ID);
+    await flush();
+    await app.itemView?.open(CAP_ID, SEED.users.gm2.id);
+    expect(app.cloudLists?.add(GM2_LIST, [CAP], (id) => app.knows(id))).toEqual([CAP]);
+    await world.homebrew.removeItem(CAP_ID);
+    expect(await app.cloudLists?.flushNow()).toBe(true);
+    await flush();
+    expect(app.toast?.msg).toBe(ru.writeRefused);
+    expect(app.cloudLists?.get(GM2_LIST)?.ids).not.toContain(CAP);
+    app.stop();
+  });
+
+  it('drops a buffered edit of a row the author deleted, and reads the list again', async () => {
+    const world = fakeCloud(SEED, 'gm1');
+    const gm2 = world.as('gm2');
+    const { app } = started(gm2, '#/lists/' + GM2_LIST);
+    await flush();
+    app.cloudLists?.setMeta(GM2_LIST, AXE, 'qty', 4);
+    await world.homebrew.removeItem(AXE_ID);
+    expect(await app.cloudLists?.flushNow()).toBe(true);
+    await flush();
+    await flush();
+    expect(app.cloudLists?.get(GM2_LIST)?.ids).toEqual(['q23']);
+    const notices = await gm2.requests.notices(GM2_LIST);
+    expect(notices.ok && notices.notices.find((n) => n.item_key === AXE)?.kind).toBe('deleted');
     app.stop();
   });
 });

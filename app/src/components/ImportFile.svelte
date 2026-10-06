@@ -1,6 +1,6 @@
 <script lang="ts">
-  /* The file field of both imports, «Импорт из файла» on `#/lists` and «Импорт предметов» on
-     `#/homebrew`: «Выбрать файл...», the file's name, the hidden input, the 5 MiB check (a
+  /* The file field of both imports, «Импорт из файла» on `#/lists` and on `#/homebrew`:
+     «Выбрать файл...», the file's name, the hidden input, the 5 MiB check (a
      zip's data file included, the zip itself at most `ZIP_MAX_BYTES`), the read, a zip's
      own data file through `lib/zip.ts` (loaded only when a zip is chosen) and the strict
      UTF-8 decode. A file chosen while another is read wins. Extracted on its second use

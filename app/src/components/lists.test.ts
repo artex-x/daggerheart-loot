@@ -572,7 +572,7 @@ describe('with sign-in configured', () => {
     });
   });
 
-  it('adds an own item to an account list as a reference, and never to a browser list', async () => {
+  it('adds an own item to an account list as a link, and never to a browser list', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const HB = 'hb_ownitemaaaaaaaaa';
     await cloud.homebrew.createItem({
@@ -601,7 +601,7 @@ describe('with sign-in configured', () => {
       expect(l?.list_entries.at(-1)).toMatchObject({
         item_key: HB,
         source: 'homebrew',
-        snapshot: null
+        hb_item: '00000000-0000-4000-8000-000000000599'
       });
     });
   });
@@ -622,7 +622,9 @@ describe('with sign-in configured', () => {
         '#/lists/00000000-0000-4000-8000-000000000201'
       );
       await signedInAs('gm2');
-      await userEvent.click(await screen.findByRole('button', { name: /Топор Тлеющих Углей/ }));
+      await userEvent.click(
+        await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ })
+      );
       const dialog = screen.getByRole('dialog');
       await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
       await userEvent.click(within(dialog).getByRole('button', { name: '+ Новый список' }));

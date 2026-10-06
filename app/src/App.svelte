@@ -25,6 +25,7 @@
   import CommunityPanel from './components/CommunityPanel.svelte';
   import HomebrewEditor from './components/HomebrewEditor.svelte';
   import HomebrewPage from './components/HomebrewPage.svelte';
+  import ItemPage from './components/ItemPage.svelte';
   import ListPage from './components/ListPage.svelte';
   import ListsPage from './components/ListsPage.svelte';
   import NoData from './components/NoData.svelte';
@@ -93,6 +94,11 @@
       {/if}
     {:else if app.route.kind === 'record'}
       <RecordPage {app} id={app.route.id} />
+    {:else if app.route.kind === 'item'}
+      <!-- A new id remounts the page, so its view opens the item it names. -->
+      {#key app.route.id}
+        <ItemPage {app} id={app.route.id} />
+      {/key}
     {:else if app.route.kind === 'tables' && (app.route.table !== 'homebrew' || app.homebrew)}
       <!-- With no sign-in configured `#/tables/homebrew` is not found, address kept. -->
       <TablesPage {app} />
@@ -109,7 +115,7 @@
     {:else if app.route.kind === 'account' && app.env.cloud}
       <AccountPage {app} />
     {:else if app.route.kind === 'homebrew' && app.homebrew}
-      <HomebrewPage {app} store={app.homebrew} />
+      <HomebrewPage {app} store={app.homebrew} tab={app.route.tab} openKey={app.route.key} />
     {:else if app.route.kind === 'homebrewItem' && app.homebrew}
       <!-- A real navigation remounts the editor; `replace()` after a save keeps it
            mounted, and the focus where it was. -->

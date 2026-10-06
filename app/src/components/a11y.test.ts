@@ -452,11 +452,10 @@ const STATES: {
     }
   },
   {
-    what: '#/homebrew with the sources fold, a source sections open and a new source field',
-    route: '#/homebrew',
+    what: '#/homebrew/sources with a source sections open and a new source field',
+    route: '#/homebrew/sources',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
-      await userEvent.click(await screen.findByText(/^Источники/, { selector: 'summary' }));
       await userEvent.click(await screen.findByRole('button', { name: 'Разделы' }));
       await userEvent.click(screen.getByRole('button', { name: 'Новый источник' }));
       await screen.findByLabelText('Новый источник');
@@ -613,17 +612,16 @@ const COVERED: Record<string, string> = {
   'HomebrewImport.svelte':
     'homebrewImport.test.ts: the panel empty, a preview with every row note, a refused file, the update chosen',
   'HomebrewPage.svelte':
-    'homebrewPage.test.ts filled, empty and signed out; the sections open above',
+    'homebrewPage.test.ts on each tab, filled, empty and signed out; the Sources tab above',
   'HomebrewSources.svelte':
-    'homebrewPage.test.ts, and the fold, the sections and new source open above',
-  'PanelFold.svelte':
-    'the sources fold open above, and both folds closed and open in homebrewPage.test.ts',
+    'homebrewPage.test.ts, and the Sources tab with the sections and the new source open above',
   'HomebrewCards.svelte':
-    'homebrewPage.test.ts closed, open, with each card form open and every refusal',
+    'homebrewPage.test.ts on the Sets and Rules tabs: a card closed and open, each card form open, every refusal',
   'CardForm.svelte':
-    'homebrewPage.test.ts in the fold, and homebrewEditor.test.ts with its inline set and rule card forms',
+    'homebrewPage.test.ts on the Sets and Rules tabs, and homebrewEditor.test.ts with its inline set and rule card forms',
   'HomebrewRelations.svelte':
     'homebrewEditor.test.ts with the fold «Связи» open for each kind, its problems and its forms',
+  'ItemPage.svelte': 'itemPage.test.ts: each state, a reader and the author',
   'ItemPicker.svelte': 'itemPicker.test.ts closed, open and full, and homebrewEditor.test.ts',
   'NameField.svelte':
     'the new source field above, and homebrewEditor.test.ts with its inline source',
@@ -705,9 +703,12 @@ const COVERED: Record<string, string> = {
     'signInPrompt.test.ts in its three forms, and inside the add-to-list menu (lists.test.ts)',
   'Shell.svelte': 'shell.test.ts',
   'StorageNotice.svelte': 'the lists index state above, and the list page below',
+  'Switch.svelte':
+    'switch.test.ts on and off, and «Свои предметы» on search and the equipment tables (homebrewCatalog.test.ts)',
   'TabBar.svelte': 'the frame, on every state',
   'TextInput.svelte':
     'the lists index above, and the delete confirmation open above (accountPage.test.ts)',
+  'TableLink.svelte': "record.test.ts and itemPage.test.ts: the author's table link",
   'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",
   'TablesPage.svelte': 'tables.test.ts, and the pressed states below',
   'VoaPanel.svelte': 'sections.test.ts, and in English above'

@@ -50,6 +50,8 @@ describe('reading', () => {
     expect(store.book(ALDER)?.content.ru).toBe('Мастерская Ольхи');
     const axe = store.records.find((r) => r.id === AXE);
     expect(axe?.book?.section?.ru).toBe('Холодное оружие');
+    expect(axe?.hid).toBe(store.item(AXE)?.id);
+    expect(axe?.hid).toMatch(/^[0-9a-f-]{36}$/);
     expect(store.records.find((r) => r.id === RING)?.book).toBeUndefined();
     expect(store.cards.map((c) => c.key)).toEqual([
       'hb_aldersetaaaaaaaa',

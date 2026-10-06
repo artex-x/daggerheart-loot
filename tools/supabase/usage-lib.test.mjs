@@ -2,7 +2,8 @@
   The usage report's pure half (usage-lib.mjs): the slope and the
   forecast, the states at each threshold, the MAU plan, the Management API
   answer in every shape, the keep-alive's 2xx rule and headers, the
-  summary's privacy and the exit code. .claude/README.md, "Usage monitoring".
+  lifecycle check's overdue rows and newest run, the summary's privacy and
+  the exit code. .claude/README.md, "Usage monitoring".
 */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -314,6 +315,72 @@ describe('evaluate', () => {
     assert.match(
       text,
       /\| Storage \| - \| 1000\.0 MB \| - \| - \| - \| warn \| no storage\.objects access \|/
+    );
+  });
+});
+
+describe('the lifecycle check', () => {
+  const NOW = new Date('2026-09-27T12:30:00Z');
+  const run = (status, start_time = '2026-09-27T12:07:00.000Z') => ({ status, start_time });
+  const lifecycle = (over) =>
+    rowOf(evaluate(snapshot(over), [], TODAY, { now: NOW }), 'lifecycle');
+
+  it('isOkAtZeroOverdueWithARecentSucceededRun', () => {
+    const row = lifecycle({ lifecycle_overdue: 0, lifecycle_last: run('succeeded') });
+    assert.equal(row.state, 'ok');
+    assert.equal(
+      row.note,
+      'no row past its retention; last run succeeded at 2026-09-27T12:07:00.000Z'
+    );
+  });
+
+  it('warnsOnRowsPastTheirRetention', () => {
+    const row = lifecycle({ lifecycle_overdue: 3, lifecycle_last: run('succeeded') });
+    assert.equal(row.state, 'warn');
+    assert.equal(row.note, 'the hourly clean-up has not run: 3 rows past their retention');
+  });
+
+  it('warnsWhenTheNewestRunFailed', () => {
+    const row = lifecycle({ lifecycle_overdue: 0, lifecycle_last: run('failed') });
+    assert.equal(row.state, 'warn');
+    assert.equal(row.note, 'the hourly clean-up failed');
+  });
+
+  it('warnsWhenTheNewestRunIsThreeHoursOld', () => {
+    const row = lifecycle({
+      lifecycle_overdue: 0,
+      lifecycle_last: run('succeeded', '2026-09-27T09:30:00.000Z')
+    });
+    assert.equal(row.state, 'warn');
+    assert.equal(row.note, 'the hourly clean-up has not run since 2026-09-27T09:30:00.000Z');
+  });
+
+  it('warnsWithNoRunOnRecordAndNamesAMissingCronAccess', () => {
+    assert.deepEqual(
+      [
+        lifecycle({ lifecycle_overdue: 0, lifecycle_last: null }),
+        lifecycle({ lifecycle_overdue: 0, lifecycle_note: 'no cron.job_run_details access' })
+      ].map((r) => `${r.state}: ${r.note}`),
+      ['warn: the hourly clean-up has no run on record', 'warn: no cron.job_run_details access']
+    );
+  });
+
+  it('comesAfterTheRequestsRowAndShowsInTheSummary', () => {
+    const rows = evaluate(snapshot({ lifecycle_overdue: 2 }), [], TODAY, { now: NOW });
+    assert.deepEqual(
+      rows.filter((r) => r.kind === 'check').map((r) => r.label),
+      ['requests', 'lifecycle', 'keep-alive']
+    );
+    const text = renderSummary({
+      today: TODAY,
+      rows,
+      tables: [],
+      nearLimits: { owners_near: 0, owners_over: 0, lists_near: 0, lists_over: 0 },
+      points: 1
+    });
+    assert.match(
+      text,
+      /- lifecycle: the hourly clean-up has not run: 2 rows past their retention; the hourly clean-up has no run on record - warn/
     );
   });
 });

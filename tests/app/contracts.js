@@ -222,6 +222,33 @@ function stampOf(parts) {
   }
   await rCtx.close();
 
+  console.log('every relation link on an item page opens its item');
+  /* `#/h/<uuid>` signed out: each relation line's link is an item address, and each one
+     draws a card headed by the name the link carries (docs/specs/FEATURES.md, "Records"). */
+  {
+    const { ctx: hCtx, page: hPage, d: hD } = await fresh({ width: 1280, height: 900 });
+    await hD.open('#/h/00000000-0000-4000-8000-000000000662');
+    const links = await hPage.evaluate(() =>
+      [...document.querySelectorAll('.craft a')].map((a) => ({
+        href: a.getAttribute('href'),
+        text: a.textContent.trim()
+      }))
+    );
+    ok(links.length === 4, 'the item page draws ' + links.length + ' relation links, not 4');
+    for (const link of links) {
+      ok(/^#\/h\/[0-9a-f-]{36}$/.test(link.href), link.text + ': links ' + link.href);
+      await hD.open(link.href);
+      const heading = await hPage.evaluate(
+        () => document.querySelector('h1')?.textContent.trim() ?? ''
+      );
+      ok(
+        !!heading && link.text.startsWith(heading),
+        link.href + ': draws ' + JSON.stringify(heading) + ' for the link ' + link.text
+      );
+    }
+    await hCtx.close();
+  }
+
   console.log('the stat line');
   const lines = JSON.parse(
     fs.readFileSync(path.join(FIX, 'statlines', 'equipment.json'), 'utf8')
@@ -335,37 +362,36 @@ function stampOf(parts) {
   await pCtx.close();
 
   /* The own items' values exist in one account only: gm1's seed. gm1's tables view is the
-     grid, so a row is any `[data-row]`. */
-  const OWN_PROBE = [
-    ['homebrew', 'kind-equip'],
-    ['homebrew', 'src-hb'],
-    ['homebrew', 'sect-hb_sectbladesaaaaaa'],
-    ['eq_weapon', 'src-hb_alderworkshopaaa']
-  ];
+     grid, so a row is any `[data-row]`. On `homebrew` the `src` value is the source chip
+     (docs/specs/ROUTES.md, "Homebrew"): the bare address draws the first chip, and the
+     chips add up to gm1's four own items. The `sect` narrowing inside a chip is proven in
+     homebrewCatalog.test.ts. */
   const { ctx: oCtx, page: oPage, d: oD } = await fresh({ width: 1280, height: 900 });
   const ownRowsAt = async (hash) => {
     await oD.open(hash, { as: 'gm1' });
     await oD.moveSettled();
     return oPage.evaluate(() => document.querySelectorAll('[data-row]').length);
   };
-  const ownWhole = {};
-  for (const [tid] of OWN_PROBE) {
-    if (!(tid in ownWhole)) ownWhole[tid] = await ownRowsAt('#/tables/' + tid);
+  const CHIP_PROBE = [
+    ['#/tables/homebrew', 1],
+    ['#/tables/homebrew/f_src-hb', 3],
+    ['#/tables/homebrew/f_src-hb_alderworkshopaaa', 1],
+    ['#/tables/homebrew/f_kind-item.src-hb', 2]
+  ];
+  for (const [hash, want] of CHIP_PROBE) {
+    const n = await ownRowsAt(hash);
+    ok(n === want, hash + ' as gm1: ' + n + ' rows, want ' + want);
   }
-  for (const [tid, seg] of OWN_PROBE) {
-    const n = await ownRowsAt('#/tables/' + tid + '/f_' + seg);
-    ok(
-      n > 0 && n < ownWhole[tid],
-      tid +
-        '/f_' +
-        seg +
-        ' as gm1: the group selects nothing (' +
-        n +
-        ' of ' +
-        ownWhole[tid] +
-        ')'
-    );
-  }
+  const weaponWhole = await ownRowsAt('#/tables/eq_weapon');
+  const ownWeapon = await ownRowsAt('#/tables/eq_weapon/f_src-hb_alderworkshopaaa');
+  ok(
+    ownWeapon > 0 && ownWeapon < weaponWhole,
+    'eq_weapon/f_src-hb_alderworkshopaaa as gm1: the group selects nothing (' +
+      ownWeapon +
+      ' of ' +
+      weaponWhole +
+      ')'
+  );
   await oCtx.close();
 
   await closeBrowser();

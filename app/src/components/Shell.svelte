@@ -77,7 +77,12 @@
     document.documentElement.lang = app.lang;
     const route = app.route;
     const own = app.openList ? app.lists.get(app.openList) : undefined;
-    const named = route.kind === 'record' ? app.index?.byId.get(route.id) : undefined;
+    const named =
+      route.kind === 'record'
+        ? app.index?.byId.get(route.id)
+        : route.kind === 'item' && app.itemView?.status === 'ready'
+          ? (app.itemView.record ?? undefined)
+          : undefined;
     const name = named
       ? nameOf(named, app.lang)
       : own

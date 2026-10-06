@@ -1488,7 +1488,7 @@ describe('an account list', () => {
           id: uuid(7000 + i),
           item_key: 'x' + String(i),
           source: 'official' as const,
-          snapshot: null,
+          hb_item: null,
           position: 10 + i,
           quantity: 1,
           price_coins: null,
@@ -1599,12 +1599,13 @@ describe('an account list', () => {
 
   it('draws the requests panel after the action row and an open share panel, before the money row; none on a browser list', async () => {
     render(App, { env: withA('#/lists/a') });
-    expect(screen.queryByRole('heading', { name: /^Запросы/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /^Новое в списке/ })).not.toBeInTheDocument();
     cleanup();
     const cloud = fakeCloud(SEED, 'gm1');
     cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
     const { container } = openAs(cloud);
-    const panel = (await screen.findByRole('heading', { name: 'Запросы (1)' })).parentElement!;
+    const panel = (await screen.findByRole('heading', { name: 'Новое в списке (1)' }))
+      .parentElement!;
     await userEvent.click(screen.getByRole('button', { name: 'Поделиться' }));
     const shares = (await screen.findByText('Ссылка для игроков')).closest('div')!;
     const money = container.querySelector('.money')!;
@@ -2014,13 +2015,15 @@ describe('homebrew entries', () => {
     return (read.ok ? read.lists.find((l) => l.id === id) : undefined)?.list_entries ?? [];
   }
   const axeRow = (): HTMLElement =>
-    screen.getByRole('button', { name: /Топор Тлеющих Углей/ }).closest('.lrow') as HTMLElement;
+    screen
+      .getByRole('button', { name: /^Топор Тлеющих Углей/ })
+      .closest('.lrow') as HTMLElement;
 
   it('draws an own item live: an edit of it redraws the row', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const { storage } = open(cloud, SHOP_ID);
     expect(
-      await screen.findByRole('button', { name: /Топор Тлеющих Углей/ })
+      await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ })
     ).toBeInTheDocument();
     const axe = SEED.homebrew.gm1.items.find((i) => i.key === AXE);
     await cloud.homebrew.updateItem(
@@ -2033,32 +2036,33 @@ describe('homebrew entries', () => {
     expect(await screen.findByRole('button', { name: /Топор Пепла/ })).toBeInTheDocument();
   });
 
-  it('offers «Изменить» in the modal for an own item, and not for a frozen copy', async () => {
+  it("offers «Изменить» in the modal for an own item, and not for another account's", async () => {
     open(fakeCloud(SEED, 'gm1'), SHOP_ID);
-    await userEvent.click(await screen.findByRole('button', { name: /Топор Тлеющих Углей/ }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
     expect(
       within(screen.getByRole('dialog')).getByRole('link', { name: 'Изменить' })
     ).toHaveAttribute('href', '#/homebrew/' + AXE);
     cleanup();
     const { container } = open(fakeCloud(SEED, 'gm2'), GM2_ID);
-    await userEvent.click(await screen.findByRole('button', { name: /Топор Тлеющих Углей/ }));
+    await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByText(/Мастерская Ольхи/)).toBeInTheDocument();
     expect(within(dialog).queryByRole('link', { name: 'Изменить' })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
-  it('undoes a removed frozen copy from the row, the bar and the list menu with its snapshot', async () => {
+  it("undoes a removed link to another account's item from the row, the bar and the list menu", async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const { page } = open(cloud, GM2_ID);
-    await screen.findByRole('button', { name: /Топор Тлеющих Углей/ });
-    const before = (await entries(cloud, GM2_ID))[1]?.snapshot;
+    await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
+    const before = (await entries(cloud, GM2_ID))[1]?.hb_item;
+    expect(before).toBe('00000000-0000-4000-8000-000000000511');
     const same = async (): Promise<void> => {
       page.fireHidden();
       await waitFor(async () => {
         const axe = (await entries(cloud, GM2_ID)).find((e) => e.item_key === AXE);
         expect(axe).toMatchObject({ item_key: AXE, source: 'homebrew' });
-        expect(axe?.snapshot).toEqual(before);
+        expect(axe?.hb_item).toBe(before);
       });
     };
     await userEvent.click(within(axeRow()).getByRole('button', { name: 'Убрать из списка' }));
@@ -2067,11 +2071,11 @@ describe('homebrew entries', () => {
     await userEvent.click(within(axeRow()).getByRole('checkbox'));
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
     expect(
-      screen.queryByRole('button', { name: /Топор Тлеющих Углей/ })
+      screen.queryByRole('button', { name: /^Топор Тлеющих Углей/ })
     ).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     await same();
-    await userEvent.click(screen.getByRole('button', { name: /Топор Тлеющих Углей/ }));
+    await userEvent.click(screen.getByRole('button', { name: /^Топор Тлеющих Углей/ }));
     const dialog = screen.getByRole('dialog');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
     await userEvent.click(within(dialog).getByRole('button', { name: '✓ Список второго ГМа' }));
@@ -2079,10 +2083,10 @@ describe('homebrew entries', () => {
     await same();
   });
 
-  it('undoes a removed reference as a reference', async () => {
+  it('undoes a removed own link as a link to the same item', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const { page } = open(cloud, SHOP_ID);
-    await screen.findByRole('button', { name: /Топор Тлеющих Углей/ });
+    await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
     await userEvent.click(within(axeRow()).getByRole('button', { name: 'Убрать из списка' }));
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     page.fireHidden();
@@ -2090,7 +2094,7 @@ describe('homebrew entries', () => {
       expect((await entries(cloud, SHOP_ID)).find((e) => e.item_key === AXE)).toMatchObject({
         item_key: AXE,
         source: 'homebrew',
-        snapshot: null,
+        hb_item: '00000000-0000-4000-8000-000000000511',
         price_coins: 800
       });
     });

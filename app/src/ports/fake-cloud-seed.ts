@@ -4,22 +4,16 @@
  * refuse). `gm1` keeps a preferences row, `gm2` none (a first sign-in
  * seeds it). Both own cloud lists; `gm1`'s first list has a player and a
  * GM share link. `gm1` holds one homebrew source with two sections and four
- * homebrew items; its first list refers to the axe, and `gm2`'s list holds a
- * frozen copy of it. `gm1` also holds a set card in its source and a rule card
+ * homebrew items; its first list and `gm2`'s list link the axe. `gm1` also holds a set card in its source and a rule card
  * with no source, which no item names, so no screen draws them. `gm2` holds no
- * homebrew. `gm3` holds no list and 34 items in the default source that name
- * catalog records: 15 loot items made from `ci1`, 15 weapons in `q1`'s line,
- * 4 loot items in the set `saints-ensemble` - the relation folds on a catalog card.
- * docs/specs/COVERAGE.md, "Test layers". */
+ * homebrew. `gm3` holds no list and 39 items in the default source: 34 that name
+ * catalog records - 15 loot items made from `ci1`, 15 weapons in `q1`'s line, 4 loot
+ * items in the set `saints-ensemble`, the relation folds on a catalog card - and a chain
+ * of 5 own items with an own set card, which `#/h/` draws with every relation line.
+ * `gm2`'s list holds two unread notices: gm1 changed the axe, and deleted an item at the
+ * longest name. docs/specs/COVERAGE.md, "Test layers". */
 
-import {
-  recordOf,
-  type BookContent,
-  type CardContent,
-  type CardKind,
-  type HomebrewContent,
-  type HomebrewRecord
-} from '../lib/homebrew.js';
+import type { BookContent, CardContent, CardKind, HomebrewContent } from '../lib/homebrew.js';
 import type { MoneyMode } from '../lib/money.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { Provider } from './types.js';
@@ -77,9 +71,11 @@ export interface SeedEntry {
   gold?: number;
   note?: string;
   hnote?: string;
-  /** Absent: `official`. A homebrew entry with no snapshot is a reference. */
+  /** Absent: `official`. A homebrew entry with no `hbItem` links its list owner's item of
+   *  the key, as the database's trigger does. */
   source?: 'official' | 'homebrew';
-  snapshot?: HomebrewRecord;
+  /** The linked item's id, of any account. */
+  hbItem?: string;
 }
 
 /** A seeded cloud list. The times are offsets back from the port's boot,
@@ -108,9 +104,9 @@ export interface SeedShare {
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
-/* gm1's source and its axe: the item gm1's first list refers to, and gm2's list keeps a
-   frozen copy of. */
+/* gm1's source and its axe: the item gm1's first list and gm2's list link. */
 const ALDER_KEY = 'hb_alderworkshopaaa';
+const AXE_ID = uuid(511);
 const ALDER: BookContent = {
   ru: 'Мастерская Ольхи',
   en: 'Alder Workshop',
@@ -189,13 +185,7 @@ const LISTS = {
       name: 'Список второго ГМа',
       entries: [
         { id: uuid(2101), itemKey: 'q23', position: 0 },
-        {
-          id: uuid(2102),
-          itemKey: AXE_KEY,
-          position: 1,
-          source: 'homebrew',
-          snapshot: recordOf(AXE_KEY, AXE, { ...ALDER, key: ALDER_KEY })
-        }
+        { id: uuid(2102), itemKey: AXE_KEY, position: 1, source: 'homebrew', hbItem: AXE_ID }
       ],
       createdAgoMs: 5 * DAY,
       editedAgoMs: 2 * DAY
@@ -336,6 +326,44 @@ const GM3_ITEMS: SeedItem[] = [
   }))
 ];
 
+/* gm3's chain: A is made into B, B into C; B, D and E are the set S. Their texts never say
+   «спальный мешок» or "bedroll", so the search states over gm3's items do not move. */
+const ROLL_A = 'hb_travelrollaaaaaa';
+const ROLL_B = 'hb_rangerrollaaaaaa';
+const ROLL_C = 'hb_sentryrollaaaaaa';
+const STAR_SET = 'hb_starsleepsetaaaa';
+const chainItem = (
+  n: number,
+  key: string,
+  ru: string,
+  en: string,
+  more: Partial<HomebrewContent> = {}
+): SeedItem => ({
+  id: uuid(n),
+  key,
+  content: {
+    kind: 'item',
+    ru,
+    en,
+    rud: 'Свёрнутая постель для ночёвки в пути.',
+    ende: 'A rolled bed for a night on the road.',
+    ...more
+  },
+  createdAgoMs: (12 - (n - 661)) * HOUR,
+  editedAgoMs: (12 - (n - 661)) * HOUR
+});
+const GM3_CHAIN: SeedItem[] = [
+  chainItem(661, ROLL_A, 'Скатка путника', "Traveller's Roll"),
+  chainItem(662, ROLL_B, 'Скатка следопыта', "Ranger's Roll", {
+    craft_from: [ROLL_A],
+    craft: [ROLL_C],
+    set: STAR_SET
+  }),
+  chainItem(663, ROLL_C, 'Скатка стража', "Sentry's Roll"),
+  chainItem(664, 'hb_mosspillowaaaaaa', 'Подушка из мха', 'Moss Pillow', { set: STAR_SET }),
+  chainItem(665, 'hb_campblanketaaaaa', 'Походный плед', 'Camp Blanket', { set: STAR_SET })
+];
+
 const HOMEBREW = {
   gm1: {
     books: [
@@ -349,7 +377,7 @@ const HOMEBREW = {
     ],
     items: [
       {
-        id: uuid(511),
+        id: AXE_ID,
         key: AXE_KEY,
         bookId: uuid(501),
         content: AXE,
@@ -425,8 +453,62 @@ const HOMEBREW = {
     ]
   },
   gm2: { books: [], items: [], cards: [] },
-  gm3: { books: [], items: GM3_ITEMS, cards: [] }
+  gm3: {
+    books: [],
+    items: [...GM3_ITEMS, ...GM3_CHAIN],
+    cards: [
+      {
+        id: uuid(671),
+        key: STAR_SET,
+        kind: 'set',
+        content: {
+          ru: 'Сон под звёздами',
+          en: 'Sleep Under the Stars',
+          rud: 'Два предмета комплекта: вы просыпаетесь отдохнувшим даже на голой земле.',
+          ende: 'Two pieces of the set: you wake rested even on bare ground.'
+        },
+        createdAgoMs: 12 * HOUR,
+        editedAgoMs: 12 * HOUR
+      }
+    ]
+  }
 } satisfies Record<SeedUserId, SeedHomebrew>;
+
+/** A seeded change-log row of a list; the times are offsets back from the port's boot. */
+export interface SeedNotice {
+  id: string;
+  listId: string;
+  itemKey: string;
+  /** Null once the item is deleted. */
+  hid: string | null;
+  kind: 'changed' | 'deleted';
+  name: { en: string; ru: string };
+  createdAgoMs: number;
+}
+
+/* gm2's list: gm1 changed the axe two hours ago, and deleted an item at the longest name a
+   day ago; both unread. */
+const LONG_ROLL = BEDROLLS[14] as readonly [string, string];
+const NOTICES: SeedNotice[] = [
+  {
+    id: uuid(681),
+    listId: uuid(201),
+    itemKey: AXE_KEY,
+    hid: AXE_ID,
+    kind: 'changed',
+    name: { en: 'Ember Axe', ru: 'Топор Тлеющих Углей' },
+    createdAgoMs: 2 * HOUR
+  },
+  {
+    id: uuid(682),
+    listId: uuid(201),
+    itemKey: 'hb_longroadrollaaaa',
+    hid: null,
+    kind: 'deleted',
+    name: { en: LONG_ROLL[1], ru: LONG_ROLL[0] },
+    createdAgoMs: DAY
+  }
+];
 
 export interface Seed {
   users: Record<SeedUserId, SeedUser>;
@@ -434,6 +516,7 @@ export interface Seed {
   lists: Record<SeedUserId, SeedList[]>;
   shares: SeedShare[];
   homebrew: Record<SeedUserId, SeedHomebrew>;
+  notices: SeedNotice[];
 }
 
 export const SEED: Seed = {
@@ -441,5 +524,6 @@ export const SEED: Seed = {
   defaultUser: 'gm1',
   lists: LISTS,
   shares: SHARES,
-  homebrew: HOMEBREW
+  homebrew: HOMEBREW,
+  notices: NOTICES
 };

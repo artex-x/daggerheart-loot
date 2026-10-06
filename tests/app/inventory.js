@@ -222,8 +222,13 @@ const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
 const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
 /** The fake seed's `gm1` list «Пустой список», `uuid(102)`, with no entries. */
 const EMPTY_LIST = '#/lists/00000000-0000-4000-8000-000000000102';
-/** The fake seed's `gm2` list, `uuid(201)`, which holds a frozen copy of gm1's axe. */
+/** The fake seed's `gm2` list, `uuid(201)`, which holds a link to gm1's axe. */
 const GM2_LIST = '#/lists/00000000-0000-4000-8000-000000000201';
+/* gm3's «Скатка следопыта», the middle of its own chain and set; gm3's item at the
+   120-code-point name; an id no item has. */
+const ITEM_H = '#/h/00000000-0000-4000-8000-000000000662';
+const ITEM_LONG = '#/h/00000000-0000-4000-8000-000000000615';
+const ITEM_NONE = '#/h/00000000-0000-4000-8000-000000009999';
 
 /** Two purchase requests on «Лавка кузнеца» from other readers, the players' link
  *  first: the fake seed holds none, so a state makes its own. */
@@ -250,9 +255,29 @@ function longNamesFile() {
   );
   return file;
 }
-/* «Импорт предметов» open, its lazy chunk loaded. */
+/* A homebrew file of 12 items with the keys of gm3's first 12 seeded bedrolls, so all 12
+   are held, written to the system's temp directory. */
+function heldNamesFile() {
+  const fs = require('fs');
+  const os = require('os');
+  const file = path.join(os.tmpdir(), 'dhloot-golden-held-names.json');
+  fs.writeFileSync(
+    file,
+    JSON.stringify({
+      format: 'daggerheart-loot/homebrew',
+      version: 1,
+      items: Array.from({ length: 12 }, (_, i) => ({
+        key: 'hb_bedroll' + String.fromCharCode(97 + i) + 'aaaaaaaa',
+        kind: 'item',
+        ru: 'Скатка из файла ' + String(i + 1).padStart(2, '0')
+      }))
+    })
+  );
+  return file;
+}
+/* «Импорт из файла» open on «Мои предметы», its lazy chunk loaded. */
 async function hbImportOpen(d) {
-  await d.click('Импорт предметов');
+  await d.click('Импорт из файла');
   for (let i = 0; i < 40 && !(await d.text()).includes('Импорт предметов из файла JSON'); i++)
     await d.settle();
 }
@@ -1253,7 +1278,7 @@ const STATES = [
     id: '#/lists ~ import preview v2 as gm2',
     route: '#/lists',
     as: 'gm2',
-    why: 'example-v2.json chosen in an account with no homebrew: «Списков: 1, позиций: 3.» and «Своих предметов, которых нет в аккаунте: 2 - они сохранятся копиями...», then «Импортировать (1)» and «Отмена»',
+    why: 'example-v2.json chosen in an account with no homebrew: «Списков: 1, позиций: 3.» and «Своих предметов, которых нет в аккаунте: 2 - они станут вашими копиями в «Мои предметы».», then «Импортировать (1)» and «Отмена»',
     enter: async (d) => {
       await importOpen(d);
       await d.upload(IMPORT('example-v2.json'));
@@ -1351,7 +1376,85 @@ const STATES = [
     id: GM2_LIST + ' as gm2',
     route: GM2_LIST,
     as: 'gm2',
-    why: "gm2's list: «2 позиции», the Scepter, then the frozen copy of gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries"
+    why: "gm2's list: «2 позиции», the panel «Новое в списке (2)» with gm1's two notices, each «новое»: «Автор изменил «Топор Тлеющих Углей».» with «Открыть», and the 120-code-point deleted name wrapped, each with «Скрыть», then «Скрыть изменения»; the Scepter, then a link to gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries"
+  },
+  {
+    id: GM2_LIST + ' ~ axe opened as gm2',
+    route: GM2_LIST,
+    as: 'gm2',
+    why: "gm1's axe opened from its row: the modal with «Добавить в список», «Печать», «Сохранить себе» and under it «Копия попадёт в «Хоумбрю», а строки ваших списков с этим предметом будут вести на неё.»",
+    enter: async (d) => {
+      await d.click('Лезвие тлеет');
+    }
+  },
+  {
+    id: GM2_LIST + ' ~ axe saved as gm2',
+    route: GM2_LIST,
+    as: 'gm2',
+    why: "«Сохранить себе» pressed in the axe's modal: «Сохранено» disabled, the toast «Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ваших списков ведут на копию» with «Изменить» (the dialog alone is captured; app/src/state/app.test.ts reads the relinked row)",
+    enter: async (d) => {
+      await d.click('Лезвие тлеет');
+      await d.click('Сохранить себе');
+      for (let i = 0; i < 40 && !(await d.text()).includes('ведут на копию'); i++)
+        await d.settle();
+    },
+    /* a 7000ms action toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/lists ~ changes as gm2',
+    route: '#/lists',
+    as: 'gm2',
+    why: "gm2's index: the card of «Список второго ГМа» says «2 изменения» in gold under its meta line, in its link's name too"
+  },
+  /* `#/h/<uuid>`: one homebrew item for everyone, with the author's relation lines. */
+  {
+    id: ITEM_H,
+    route: ITEM_H,
+    why: 'signed out: «Скатка следопыта», the sub «Предмет другого игрока · Хоумбрю», «Получается из» «Скатка путника», «Улучшается до» «Скатка стража», «Комплект» «Походный плед», «Подушка из мха», «Скатка следопыта» (current), the bonus «Сон под звёздами»; «Добавить в список» and «Сохранить себе» with its note, no «Печать», no «Изменить», no table link'
+  },
+  {
+    id: ITEM_H + ' as gm2',
+    route: ITEM_H,
+    as: 'gm2',
+    why: 'another player signed in: the same three relation lines and the bonus, every link an item address; «Сохранить себе» and «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.»'
+  },
+  {
+    id: ITEM_H + ' as gm3',
+    route: ITEM_H,
+    as: 'gm3',
+    why: 'the author: the same three relation lines and the bonus as a reader sees them; the sub «Хоумбрю» with «показать в таблице», «Печать» and «Изменить», no «Предмет другого игрока», no «Сохранить себе»'
+  },
+  {
+    id: ITEM_H + ' ~ sign-in prompt',
+    route: ITEM_H,
+    why: 'signed out, «Сохранить себе» pressed: the button expanded and under it the boxed «Войдите, и копия предмета сохранится в «Мои предметы».» with «Войти»',
+    enter: async (d) => {
+      await d.click('Сохранить себе');
+    }
+  },
+  {
+    id: ITEM_H + ' ~ saved as gm2',
+    route: ITEM_H,
+    as: 'gm2',
+    why: '«Сохранить себе» pressed: «Сохранено» disabled, no note, the toast «Предмет «Скатка следопыта» сохранён в «Мои предметы»» with «Изменить»',
+    enter: async (d) => {
+      await d.click('Сохранить себе');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено'); i++) await d.settle();
+    },
+    /* a 7000ms action toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: ITEM_LONG + ' as gm2',
+    route: ITEM_LONG,
+    as: 'gm2',
+    why: "gm3's item at the 120-code-point name, wrapped in the heading; «Получается из» «Первоклассный Спальный Мешок», a catalog record"
+  },
+  {
+    id: ITEM_NONE,
+    route: ITEM_NONE,
+    why: 'an id no item has, after the read: «Предмет не найден», its sub and «На главную», the address kept'
   },
   {
     id: SHOP + ' ~ share as gm1',
@@ -1378,10 +1481,11 @@ const STATES = [
     id: SHOP + ' ~ requests as gm1',
     route: SHOP,
     as: 'gm1',
-    why: "the requests panel after the action row, before the money row: «Запросы (2)», the GM link's request first (cc1 «×9 из 5» in the danger colour, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and «истечёт через 60 минут»",
+    why: "the requests panel after the action row, before the money row: «Новое в списке (2)», the GM link's request first (cc1 «×9 из 5» in the danger colour, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and, once the visible page has read them, «истечёт через 60 минут»",
     enter: async (d) => {
       await twoRequests(d);
-      for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (2)'); i++)
+      /* A drawn request is read at once in a visible tab; wait for that read. */
+      for (let i = 0; i < 40 && !(await d.text()).includes('истечёт через'); i++)
         await d.settle();
     }
   },
@@ -1389,10 +1493,10 @@ const STATES = [
     id: SHOP + ' ~ many requests as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Запросы (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret',
+    why: '«Новое в списке (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret; no «истечёт»: the list is read only once every pending request is drawn',
     enter: async (d) => {
       await manyRequests(d);
-      for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (4)'); i++)
+      for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (4)'); i++)
         await d.settle();
     }
   },
@@ -1403,7 +1507,7 @@ const STATES = [
     why: "«Принять» on the GM link's over-stock request: the alert «Не хватает: Зелье Быстрого Шага - просят 9, есть 5. Ничего не списано.», «Принять доступное» in place of «Принять»; nothing changed in the list",
     enter: async (d) => {
       await twoRequests(d);
-      for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (2)'); i++)
+      for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (2)'); i++)
         await d.settle();
       await d.click('Принять');
       for (let i = 0; i < 40 && !(await d.count('.shortmsg')); i++) await d.settle();
@@ -1413,10 +1517,10 @@ const STATES = [
     id: SHOP + ' ~ decided as gm1',
     route: SHOP,
     as: 'gm1',
-    why: "«Отклонить» on the GM link's request, the fold opened: «Запросы (1)» with the players' request, «Решённые в этот раз (1)» expanded with «По ссылке для мастера · только что · отклонён», «Зелье Быстрого Шага ×9» and «Палаш ×1», and «Скрыть» at the fold row's end",
+    why: "«Отклонить» on the GM link's request, the fold opened: «Новое в списке (1)» with the players' request, «Решённые в этот раз (1)» expanded with «По ссылке для мастера · только что · отклонён», «Зелье Быстрого Шага ×9» and «Палаш ×1», and «Скрыть» at the fold row's end",
     enter: async (d) => {
       await twoRequests(d);
-      for (let i = 0; i < 40 && !(await d.text()).includes('Запросы (2)'); i++)
+      for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (2)'); i++)
         await d.settle();
       await d.click('Отклонить');
       for (let i = 0; i < 40 && !(await d.text()).includes('Решённые в этот раз (1)'); i++)
@@ -2106,20 +2210,70 @@ const STATES = [
     id: '#/homebrew as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«4 предмета из 100», the closed folds «Источники · 1 источник из 20» and «Карты · 2 карты из 100: 1 комплект, 1 карта правил», «Новый предмет» and «Импорт предметов» with its caret, the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+    why: 'the Items tab: «Импорт из файла» with its caret, the tab row «Предметы» (current), «Источники», «Комплекты», «Карты правил», «Новый предмет», «4 предмета из 100» above the strip (no search under eight items), the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»'
+  },
+  {
+    id: '#/homebrew as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    why: "gm3's 39 items: the search box «Найти предмет», then «39 предметов из 100», then the strip and the groups"
+  },
+  {
+    id: '#/homebrew ~ search as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    why: '«скатка» typed in «Найти предмет»: only the heading «Хоумбрю» with the three rolls of the chain, the count «39 предметов из 100» kept',
+    enter: async (d) => {
+      await d.type('Найти предмет', 'скатка');
+    }
+  },
+  {
+    id: '#/homebrew ~ no match as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    why: 'a query with no match: «Ничего не найдено» in place of the strip and the groups, the count «39 предметов из 100» kept',
+    enter: async (d) => {
+      await d.type('Найти предмет', 'яяяя');
+    }
+  },
+  {
+    id: '#/homebrew ~ import held names as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    why: "a file of 12 items with gm3's bedroll keys: under «Пропустить» the line «Предметы. Уже есть - останутся как есть:» with the first 10 names and «и ещё 2»",
+    enter: async (d) => {
+      await hbImportOpen(d);
+      await d.upload(heldNamesFile());
+      for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (12)'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew ~ import held names open as gm3',
+    route: '#/homebrew',
+    as: 'gm3',
+    why: 'the same, «Обновить» and «и ещё 2» pressed: «Предметы. Уже есть - заменятся из файла:» with all 12 names and «свернуть»',
+    enter: async (d) => {
+      await hbImportOpen(d);
+      await d.upload(heldNamesFile());
+      for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (12)'); i++)
+        await d.settle();
+      await d.click('Обновить');
+      await d.click('и ещё 2');
+    }
   },
   {
     id: '#/homebrew ~ import panel as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«Импорт предметов» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json and llms.txt',
+    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json and llms.txt',
     enter: hbImportOpen
   },
   {
     id: '#/homebrew ~ import preview as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: 'example-edited.json chosen over the held «Мастерская Ольхи»: «Источников: 1, разделов: 2, карт: 2, предметов: 5.», «Куда положить предметы» with the row «Мастерская Ольхи» on «В «Мастерская Ольхи»» and «Ключ источника совпал с вашим...», the row «Без источника» on «В «Хоумбрю»», «Пропустить» pressed with its line, «Импортировать (7)» and «Отмена»',
+    why: 'example-edited.json chosen over the held «Мастерская Ольхи»: «Источников: 1, разделов: 2, карт: 2, предметов: 5.», «Куда положить предметы» with the row «Мастерская Ольхи» on «В «Мастерская Ольхи»» and «Ключ источника совпал с вашим...», the row «Без источника» on «В «Хоумбрю»», «Пропустить» pressed, the line «Источники. Уже есть - останутся как есть: Мастерская Ольхи.» and its note, «Импортировать (7)» and «Отмена»',
     enter: async (d) => {
       await hbImportOpen(d);
       await d.upload(HB_FILE('example-edited.json'));
@@ -2179,39 +2333,78 @@ const STATES = [
     }
   },
   {
-    id: '#/homebrew ~ sections as gm1',
-    route: '#/homebrew',
+    id: '#/homebrew/sources as gm1',
+    route: '#/homebrew/sources',
     as: 'gm1',
-    why: 'the fold «Источники» open («Хоумбрю» 3 предмета with «Скачать JSON», «Мастерская Ольхи» 1 предмет · 2 раздела из 30 with «Разделы», «Переименовать», «Скачать JSON» and «Удалить»), then «Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Новый раздел» with the plus icon',
+    why: 'the Sources tab: «Новый источник» first, «1 источник из 20», «Мастерская Ольхи» (a link to its rows) 1 предмет · 2 раздела из 30 with «Разделы», «Переименовать», «Скачать JSON» and «Удалить», then «Хоумбрю» (a link) 3 предмета with «Скачать JSON»'
+  },
+  {
+    id: '#/homebrew/sources ~ sections as gm1',
+    route: '#/homebrew/sources',
+    as: 'gm1',
+    why: '«Разделы» pressed and expanded: «Пистоли» 0, «Холодное оружие» 1, «Без раздела» 0, each named section with «Переименовать» and «Удалить», then «Новый раздел» with the plus icon',
     enter: async (d) => {
-      await d.click('Источники');
       await d.click('Разделы');
     }
   },
   {
-    id: '#/homebrew ~ cards as gm1',
-    route: '#/homebrew',
+    id: '#/homebrew/sets as gm1',
+    route: '#/homebrew/sets',
     as: 'gm1',
-    why: 'the fold «Карты · 2 карты из 100: 1 комплект, 1 карта правил» open: «Комплекты» with «Новый комплект» and «Комплект Ольхи» «0 предметов · Мастерская Ольхи», «Карты правил» with «Новая карта правил» and «Клеймо Ольхи» «0 предметов», each card with «Изменить» and «Удалить»',
-    enter: async (d) => {
-      await d.click('Карты');
-    }
+    why: 'the Sets tab: «Новый комплект» first, «1 комплект · 2 карты из 100», the closed fold «Комплект Ольхи» with «0 предметов · Мастерская Ольхи», «Изменить» and «Удалить»'
   },
   {
-    id: '#/homebrew ~ card edit as gm1',
-    route: '#/homebrew',
+    id: '#/homebrew/sets as gm2',
+    route: '#/homebrew/sets',
+    as: 'gm2',
+    why: 'an account with no cards: «Новый комплект», «0 комплектов · 0 карт из 100», «Комплектов пока нет.»'
+  },
+  {
+    id: '#/homebrew/rules as gm1',
+    route: '#/homebrew/rules',
+    as: 'gm1',
+    why: 'the Rules tab: «Новая карта правил» first, «1 карта правил · 2 карты из 100», the closed fold «Клеймо Ольхи» with «0 предметов», «Изменить» and «Удалить»'
+  },
+  {
+    id: '#/homebrew/rules ~ card edit as gm1',
+    route: '#/homebrew/rules',
     as: 'gm1',
     why: '«Изменить» of the rule card: its form in place of its row, «Название карты» *, «Подзаголовок», «Текст карты» *, «Ссылка», «Источник» on «Хоумбрю», «Сохранить» and «Отмена»',
     enter: async (d) => {
-      await d.click('Карты');
-      await d.click('Изменить', 1);
+      await d.click('Изменить');
     }
+  },
+  {
+    id: '#/homebrew/sets/hb_starsleepsetaaaa as gm3',
+    route: '#/homebrew/sets/hb_starsleepsetaaaa',
+    as: 'gm3',
+    why: 'the address opens the set S: its fold open with its bonus, then the field «Добавить предмет», then three member links (Подушка из мха, Походный плед, Скатка следопыта), «Убрать» each',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('[id^="hb-card-body-"]')); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew/rules/hb_alderrulecardaaa ~ item added as gm1',
+    route: '#/homebrew/rules/hb_alderrulecardaaa',
+    as: 'gm1',
+    why: 'the address opens «Клеймо Ольхи»; the axe picked in «Добавить предмет»: one member link «Топор Тлеющих Углей» with «Убрать», «1 предмет» on the card, the toast «Сохранено: «Топор Тлеющих Углей»»',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('[id^="hb-card-body-"]')); i++)
+        await d.settle();
+      await d.type('Найти предмет', 'Топор');
+      await d.click('Топор Тлеющих Углей');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено: «Топор'); i++)
+        await d.settle();
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: '#/homebrew as gm2',
     route: '#/homebrew',
     as: 'gm2',
-    why: 'an account with no homebrew: «0 предметов из 100», the closed folds «Источники · 0 источников из 20» and «Карты · 0 карт из 100», «Своих предметов пока нет - создайте первый выше или импортируйте файл.»'
+    why: 'an account with no homebrew: the Items tab with «Новый предмет», «0 предметов из 100», «Своих предметов пока нет - создайте первый выше или импортируйте файл.»'
   },
   {
     id: '#/homebrew',
@@ -2222,13 +2415,13 @@ const STATES = [
     id: '#/homebrew/new as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
-    why: 'a new item: «Новый предмет», the legend, «Вид» on «Предмет», «Источник» with its «?» on «Хоумбрю», «Название» *, «Описание», «Ранг» with its «?» on «Без ранга» then 1-4, «Сохранить» and «Отмена», the preview card'
+    why: 'a new item: «Новый предмет», the legend, «Вид» on «Предмет», «Источник» with its «?» on «Хоумбрю», «Название» *, «Описание», «Ранг» on «Без ранга» then 1-4, «Сохранить» and «Отмена», the preview card'
   },
   {
     id: '#/homebrew/new ~ armour as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
-    why: '«Снаряжение» and «Броня»: «Ранг» * 1-4 with its «?», «Показатель брони» *, the caption «Пороги урона» * over two labelled boxes «Порог Ощутимого урона» and «Порог Тяжёлого урона»',
+    why: '«Снаряжение» and «Броня»: «Ранг» * 1-4, «Показатель брони» *, the caption «Пороги урона» * over two labelled boxes «Порог Ощутимого урона» and «Порог Тяжёлого урона»',
     enter: async (d) => {
       await d.click('Снаряжение');
       await d.click('Броня');
@@ -2287,7 +2480,7 @@ const STATES = [
     id: '#/homebrew/' + HB_AXE + ' as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: 'the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Урон» with its «?» over «Кость урона» and «Бонус к урону», the disclosure «Второй набор характеристик» closed with its «?», «Удалить», the preview card'
+    why: 'the axe in its editor: the path «Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2», the weapon fields filled, «Урон» over «Кость урона» and «Бонус к урону», the disclosure «Второй набор характеристик» closed with its «?», «Удалить», the preview card'
   },
   {
     id: '#/homebrew/' + HB_AXE + ' ~ help open as gm1',
@@ -2415,13 +2608,19 @@ const STATES = [
     id: '#/tables/homebrew as gm1',
     route: '#/tables/homebrew',
     as: 'gm1',
-    why: 'the own items as a table: the group chip «Хоумбрю» last and on, the sections «Мастерская Ольхи · Холодное оружие» (the axe) and «Хоумбрю» (three items), the grid of the account view'
+    why: 'the own items as a table: the group chip «Хоумбрю» last and on, the source chips «Мастерская Ольхи» (on, the first) and «Хоумбрю» under it, the heading «Холодное оружие» with the axe, the grid of the account view'
+  },
+  {
+    id: '#/tables/homebrew/f_src-hb as gm1',
+    route: '#/tables/homebrew/f_src-hb',
+    as: 'gm1',
+    why: 'the source chip «Хоумбрю» by link: the chip on, the heading «Хоумбрю» with the three items, the filter button with the panel folded'
   },
   {
     id: '#/tables/homebrew/f_sect-hb_sectbladesaaaaaa as gm1',
     route: '#/tables/homebrew/f_sect-hb_sectbladesaaaaaa',
     as: 'gm1',
-    why: 'a section filter by link: the panel open with «Тип», «Источник» and «Раздел», the pill «Мастерская Ольхи · Холодное оружие», one row of four'
+    why: 'a section filter by link: the chip «Мастерская Ольхи» of the section on, the panel open with «Тип» and «Раздел», the pill «Холодное оружие», one row'
   },
   {
     id: '#/tables/homebrew as gm2',
@@ -2438,28 +2637,28 @@ const STATES = [
     id: '#/tables/eq_weapon as gm1',
     route: '#/tables/eq_weapon',
     as: 'gm1',
-    why: 'own equipment in the weapons table: the axe in «Ранг 2» after the catalog weapons, the toolbar chip «Хоумбрю» pressed after the view switch'
+    why: 'own equipment in the weapons table: the axe in «Ранг 2» after the catalog weapons, the switch «Свои предметы» on after the view switch'
   },
   {
     id: '#/tables/eq_weapon ~ own items hidden as gm1',
     route: '#/tables/eq_weapon',
     as: 'gm1',
-    why: 'the toolbar chip pressed off, found by its title «Показывать свои предметы» (the group chip link has the same word and no title): the chip unpressed, the axe gone from «Ранг 2»',
+    why: 'the switch «Свои предметы» turned off: the switch unchecked, the axe gone from «Ранг 2»',
     enter: async (d) => {
-      await d.click('Показывать свои предметы');
+      await d.tick('Свои предметы');
     }
   },
   {
     id: '#/tables/eq_weapon/f_src-hb_alderworkshopaaa as gm1',
     route: '#/tables/eq_weapon/f_src-hb_alderworkshopaaa',
     as: 'gm1',
-    why: 'an own source in the weapons filter by link: the panel open, «Мастерская Ольхи» last in «Источник», the pill «Мастерская Ольхи», the axe alone'
+    why: 'an own source in the weapons filter by link: the panel open, «Мастерская Ольхи» last in «Источник», the pill «Мастерская Ольхи», the axe alone, the switch «Свои предметы» on'
   },
   {
     id: '#/search ~ own items as gm1',
     route: '#/search',
     as: 'gm1',
-    why: '«топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; the chip «Хоумбрю» last in the kind row, pressed',
+    why: '«топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; the three kinds in the kind row and the switch «Свои предметы» on under it',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'топор');
     }
@@ -2468,15 +2667,15 @@ const STATES = [
     id: '#/search ~ own items hidden as gm1',
     route: '#/search',
     as: 'gm1',
-    why: 'the same, then the chip «Хоумбрю» pressed off: the 13 catalog matches alone, the intro sentence kept',
+    why: 'the same, then the switch «Свои предметы» turned off: the 13 catalog matches alone, the intro sentence kept',
     enter: async (d) => {
       await d.type('Поиск по названию или описанию…', 'топор');
-      await d.click('Показывать свои предметы');
+      await d.tick('Свои предметы');
     }
   },
   /* gm3 holds 34 items that name catalog records: 15 made from ci1, 15 in q1's line,
      4 in saints-ensemble - the own relations a catalog card marks and folds
-     (docs/specs/FEATURES.md, "Records"). */
+     (docs/specs/FEATURES.md, "Records") - and a chain of 5 own items that names none. */
   {
     id: '#/i/ci1 as gm3',
     route: '#/i/ci1',
@@ -2569,8 +2768,8 @@ const STATES = [
     id: '#/print/' + HB_AXE + ' as gm2',
     route: '#/print/' + HB_AXE,
     as: 'gm2',
-    why: "gm2's frozen copy of the axe from its own list, on the standard colour sheet, its source line the path"
+    why: "gm1's axe as a link in gm2's own list, on the standard colour sheet, its source line the path"
   }
 ];
 
-module.exports = { STATES, LANGS, HB_FILE, hbImportOpen, longNamesFile };
+module.exports = { STATES, LANGS, HB_FILE, hbImportOpen, heldNamesFile, longNamesFile };

@@ -31,7 +31,12 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
 2. Audit every file in the directory against the durable list (below). For
    each qualifying item: grep the candidate home for a distinctive phrase
    first (it may already be there), then write it there, self-contained.
-3. `git grep -n "issues/<id>" -- ':!issues/'`. Unslashed and scoped outside
+3. Check every owner rule in `context.md`, "Decisions already settled",
+   against its home: grep the home for a distinctive phrase; write a
+   missing rule inside the home's budget (`.claude/README.md`, "Owner
+   insights"). A rule whose behaviour did not ship goes to `DEBT.md`;
+   name each missed write in the closeout summary.
+4. `git grep -n "issues/<id>" -- ':!issues/'`. Unslashed and scoped outside
    all of `issues/`, matching the boundary `bash-guard.mjs` rule 2i checks -
    a bare-name citation with no trailing slash (`(issues/<id>, ...)`) is the
    dominant real shape and a slashed pattern misses it. Read each hit: a
@@ -44,9 +49,9 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
    an idea is named to the human in the closeout summary; then it drops.
    `issues/<id>/reviews.md` and `issues/<id>/reviews/` are scratch: their
    open rows go the same way, and the files drop with the directory.
-4. `git rm -r issues/<id>`; `git commit --amend`. Rule 2i denies while a
+5. `git rm -r issues/<id>`; `git commit --amend`. Rule 2i denies while a
    citation stands; that is the rule working - repair, do not bypass.
-5. `git push`. Once. Record the sha in the closeout summary.
+6. `git push`. Once. Record the sha in the closeout summary.
    A conflict on `docs/DECISIONS.md` at a rebase: `node tools/decisions.js`,
    `git add docs/DECISIONS.md`, continue. A branch that still carries inline
    `## <date> - <title>` entries: `node tools/decisions.js --split
@@ -92,6 +97,9 @@ dispatch (`CLAUDE.md`, "Start here"), and at roughly four bytes per token a
 150 KB file is ~37k tokens - a fifth of a worker's context spent before it has
 read a line of code. Issue 47's `plan.md` reached 1,031 KB before compaction
 existed.
+
+The permanent homes of owner rules have their own budgets, in one table:
+`.claude/README.md`, "Owner insights".
 
 ## Never drop (while the task is open)
 

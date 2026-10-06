@@ -24,6 +24,8 @@ format". -->
 3. Consistency: checked - <what you read> | not applicable - <reason>
 4. RU/EN parity: checked - <what you read> | not applicable - <reason>
 
+Owner rules: checked - <the rules and their homes> | not applicable - <reason>
+
 ## Suggested next action
 
 ## Checks still needed

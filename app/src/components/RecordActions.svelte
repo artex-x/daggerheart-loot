@@ -39,10 +39,12 @@
   const { app, index, it, row, extra }: Props = $props();
 
   const t = $derived(app.t);
-  const link = $derived(app.linkToRecord(it.id));
-  /* An own item opens for its author alone: a link would give a player «Предмет не
-     найден», so it offers none until item links (docs/specs/FEATURES.md, "Records"). */
-  const linked = $derived(!isHomebrewKey(it.id));
+  const link = $derived(app.linkToRecord(it));
+  /* A homebrew item's link is its `#/h/` address, which opens for everyone; one with no id
+     (a lists file's copy) offers none (docs/specs/FEATURES.md, "Records"). */
+  const linked = $derived(
+    !isHomebrewKey(it.id) || typeof (it as { hid?: unknown }).hid === 'string'
+  );
 
   async function copyName(): Promise<void> {
     await app.copied(

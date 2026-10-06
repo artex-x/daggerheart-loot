@@ -1,0 +1,165 @@
+# #/h/00000000-0000-4000-8000-000000000662 ~ sign-in prompt
+# route: #/h/00000000-0000-4000-8000-000000000662
+# why: signed out, «Сохранить себе» pressed: the button expanded and under it the boxed «Войдите, и копия предмета сохранится в «Мои предметы».» with «Войти»
+
+## ru :: tree
+RootWebArea "Скатка следопыта — Генератор лута — Daggerheart" [url=#/h/00000000-0000-4000-8000-000000000662]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Скатка следопыта" [level=1]
+    StaticText "Предмет другого игрока · Хоумбрю"
+    button "Страница"
+    StaticText "ПРЕДМЕТ"
+    ... StaticText x11 of 15 same-shape siblings elided
+    button "Скопировать название" [description=Скопировать название]
+    button "Скопировать ссылку" [description=Скопировать ссылку]
+    link "Скатка путника (HB)" [url=#/h/00000000-0000-4000-8000-000000000661]
+    link "Скатка стража (HB)" [url=#/h/00000000-0000-4000-8000-000000000663]
+    link "Подушка из мха (HB)" [url=#/h/00000000-0000-4000-8000-000000000664]
+    link "Походный плед (HB)" [url=#/h/00000000-0000-4000-8000-000000000665]
+    button "Отправить"
+    button "Скопировать текст" [description=Скопировать текст]
+    button "Добавить в список" [expanded=false]
+    button "Сохранить себе" [expanded=true]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    StaticText "Войдите, и копия предмета сохранится в «Мои предметы»."
+    button "Войти"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Arazo's Artifacts
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Войти
+Добавить в список
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Обычные правила
+Отправить
+Подушка из мха (HB)
+Поиск
+Походный плед (HB)
+Скатка путника (HB)
+Скатка стража (HB)
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Сообщества
+Сохранить себе
+Списки
+Страница
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=#/h/00000000-0000-4000-8000-000000000662]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Ranger's Roll" [level=1]
+    StaticText "Another player's item · Homebrew"
+    button "Page"
+    StaticText "ITEM"
+    ... StaticText x11 of 15 same-shape siblings elided
+    button "Copy name" [description=Copy name]
+    button "Copy link" [description=Copy link]
+    link "Traveller's Roll (HB)" [url=#/h/00000000-0000-4000-8000-000000000661]
+    link "Sentry's Roll (HB)" [url=#/h/00000000-0000-4000-8000-000000000663]
+    link "Camp Blanket (HB)" [url=#/h/00000000-0000-4000-8000-000000000665]
+    link "Moss Pillow (HB)" [url=#/h/00000000-0000-4000-8000-000000000664]
+    button "Share"
+    button "Copy text" [description=Copy text]
+    button "Add to list" [expanded=false]
+    button "Save to my items" [expanded=true]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    StaticText "Sign in and a copy of the item is saved to My items."
+    button "Sign in"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Add to list
+Alt. tables
+Arazo's Artifacts
+Camp Blanket (HB)
+Communities
+Copy link
+Copy name
+Copy text
+Dragon's Vault
+Dread
+EN
+Install as an app
+Lists
+Moss Pillow (HB)
+Page
+Privacy
+RU
+Save to my items
+Search
+Sentry's Roll (HB)
+Share
+Sign in
+Skip to content
+Standard rules
+Tables
+Terms of use
+Traveller's Roll (HB)
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

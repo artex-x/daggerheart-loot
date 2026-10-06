@@ -1,7 +1,7 @@
 <script lang="ts">
   /* One set or rule card form (m21, m04 and m05's inline forms in the homebrew mocks): the
-     editor's «+ Новый комплект...» and «Новая карта правил», and the «Карты» fold's
-     create and edit. It edits one language and keeps the other; it checks on its own
+     editor's «+ Новый комплект...» and «Новая карта правил», and the create and edit of
+     the Sets and Rules tabs. It edits one language and keeps the other; it checks on its own
      button, draws each field's problem under it and keeps the typed text. A new card keeps
      one id pair until an `ok`, so a press after a lost answer makes no second card
      (docs/specs/FEATURES.md, "Homebrew", "Cards"). A group, never a `<form>`: the editor's
@@ -49,6 +49,9 @@
     withBook?: boolean;
     /** The line under the buttons. */
     hint?: string | undefined;
+    /** Asks before a navigation, a reload or a closed tab drops a changed draft. The
+     *  editor's inline forms leave it off: the editor's own checks hold. */
+    guard?: boolean;
     onsaved: (key: string) => void;
     oncancel: () => void;
   }
@@ -62,6 +65,7 @@
     bookId,
     withBook = false,
     hint,
+    guard = false,
     onsaved,
     oncancel
   }: Props = $props();
@@ -75,6 +79,18 @@
      retry must keep what another device wrote there. */
   const base = $derived(card?.content ?? null);
   let draft = $state<CardDraft>(untrack(() => cardDraftOf(card, editIn, bookId)));
+  const opened = JSON.stringify(untrack(() => draft));
+
+  $effect(() => {
+    if (!guard) return;
+    const check = (): boolean => JSON.stringify(draft) !== opened;
+    const offLeave = app.guardLeave(check);
+    const offUnload = app.env.page.guardUnload(check);
+    return () => {
+      offLeave();
+      offUnload();
+    };
+  });
   let problems = $state.raw<Problem[]>([]);
   let refused = $state<string | null>(null);
   let busy = $state(false);

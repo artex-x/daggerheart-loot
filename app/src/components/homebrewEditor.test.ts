@@ -31,6 +31,10 @@ import {
   toastSays
 } from '../test/homebrewEditor.js';
 
+/* Every item delete's confirm ends with its consequence for other players' lists. */
+const OTHERS =
+  'Если предмет есть в списках других игроков, строка пропадёт и там - с количеством, ценой и заметками; владельцы списков увидят, что он удалён. Отменить удаление нельзя.';
+
 afterEach(cleanup);
 
 /* jsdom does not implement scrollIntoView - the preview's add-to-list menu places
@@ -81,7 +85,12 @@ describe('the form', () => {
       'false',
       'false'
     ]);
-    expect(helpButton(t.tier)).toHaveAttribute('aria-expanded', 'false');
+    /* A player knows the tier and the damage line (FEATURES.md, rule 15(c)). */
+    for (const label of [t.tier, t.hbDmg]) {
+      expect(
+        screen.queryByRole('button', { name: t.fieldHelp.replace('%s', label) })
+      ).toBeNull();
+    }
     for (const name of [t.hbCls, t.hbTrait, t.hbRange, t.hbDt, t.hbBurden]) {
       expect(group(name)).toBeInTheDocument();
     }
@@ -452,9 +461,7 @@ describe('the guard', () => {
     const { app, dialog, cloud } = await editor(RING);
     await userEvent.type(screen.getByLabelText(/Название/), '!');
     await userEvent.click(screen.getByRole('button', { name: t.del }));
-    expect(dialog.asked).toEqual([
-      'Удалить предмет «Кольцо с гравировкой!»? Отменить удаление нельзя.'
-    ]);
+    expect(dialog.asked).toEqual(['Удалить предмет «Кольцо с гравировкой!»? ' + OTHERS]);
     await waitFor(() => {
       expect(app.hash).toBe('#/homebrew');
     });
@@ -471,7 +478,8 @@ describe('the guard', () => {
     cloud.setOffline(true);
     await userEvent.click(screen.getByRole('button', { name: t.del }));
     expect(dialog.asked.at(-1)).toBe(
-      'Предмет «Кольцо с гравировкой» есть в 1 списке. Удалить его и убрать из списков? Отменить удаление нельзя.'
+      'Предмет «Кольцо с гравировкой» есть в 1 списке. Удалить его и убрать из списков? ' +
+        OTHERS
     );
     expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
   });
@@ -857,10 +865,9 @@ describe('the «?» of a field', () => {
     expect(button).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('draws the loot tier «?» and none on a self-explanatory field or on «Пороги урона»', async () => {
+  it('draws no «?» on «Ранг», a self-explanatory field or «Пороги урона»', async () => {
     await editor(null);
-    expect(helpButton(t.tier)).toHaveAttribute('aria-controls', 'hb-tier-help');
-    for (const label of [t.hbKind, t.hbName, t.hbDesc, t.hbTh]) {
+    for (const label of [t.tier, t.hbKind, t.hbName, t.hbDesc, t.hbTh]) {
       expect(
         screen.queryByRole('button', { name: t.fieldHelp.replace('%s', label) })
       ).toBeNull();
@@ -878,7 +885,7 @@ describe('«Добавить в список» in the preview', () => {
     expect(await screen.findByRole('button', { name: t.addToList })).toBeInTheDocument();
   });
 
-  it('puts the saved item into a list as a reference', async () => {
+  it('puts the saved item into a list as a link', async () => {
     const { cloud, page, container } = await editor(AXE);
     await userEvent.click(screen.getByRole('button', { name: t.addToList }));
     await expectNoA11yViolations(container);
@@ -889,7 +896,7 @@ describe('«Добавить в список» in the preview', () => {
       const read = await cloud.lists.list();
       const empty = read.ok ? read.lists.find((l) => l.id === uuid(102)) : undefined;
       expect(empty?.list_entries).toEqual([
-        expect.objectContaining({ item_key: AXE, source: 'homebrew', snapshot: null })
+        expect.objectContaining({ item_key: AXE, source: 'homebrew', hb_item: uuid(511) })
       ]);
     });
   });
@@ -1199,7 +1206,7 @@ describe('the fold «Связи»', () => {
     const { app, dialog } = await editor(RING, { cloud, answer: false, real: true });
     await userEvent.click(screen.getByRole('button', { name: t.del }));
     expect(dialog.asked.at(-1)).toBe(
-      'Предмет «Кольцо с гравировкой» указан в 2 предметах. Удалить его? Отменить удаление нельзя.'
+      'Предмет «Кольцо с гравировкой» указан в 2 предметах. Удалить его? ' + OTHERS
     );
     app.listsHolding = () => 1;
     cleanup();
@@ -1207,7 +1214,8 @@ describe('the fold «Связи»', () => {
     await flush();
     await userEvent.click(screen.getByRole('button', { name: t.del }));
     expect(dialog.asked.at(-1)).toBe(
-      'Предмет «Кольцо с гравировкой» есть в 1 списке и указан в 2 предметах. Удалить его и убрать из списков? Отменить удаление нельзя.'
+      'Предмет «Кольцо с гравировкой» есть в 1 списке и указан в 2 предметах. Удалить его и убрать из списков? ' +
+        OTHERS
     );
   });
 });

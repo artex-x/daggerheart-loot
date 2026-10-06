@@ -40,9 +40,10 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
     checkbox "Выбрать: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 2 позиции, изменён позавчера" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+    link "Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
       StaticText "Список второго ГМа"
       StaticText "2 позиции · изменён позавчера"
+      StaticText "2 изменения"
     button "Удалить"
     heading "ЭТОТ БРАУЗЕР" [level=2]
     DisclosureTriangle "Списки живут только в этом браузере. подробнее" [expanded=false]
@@ -94,7 +95,7 @@ daggerheart.com
 Создать
 Сообщества
 Списки
-Список второго ГМа, 2 позиции, изменён позавчера
+Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения
 Таблицы
 Удалить
 Условия использования
@@ -137,9 +138,10 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm2#/lists
     StaticText "SELECT ALL"
     generic ""
     checkbox "Select: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 2 items, edited 2 days ago" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+    link "Список второго ГМа, 2 items, edited 2 days ago, 2 changes" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
       StaticText "Список второго ГМа"
       StaticText "2 items · edited 2 days ago"
+      StaticText "2 changes"
     button "Delete"
     heading "THIS BROWSER" [level=2]
     DisclosureTriangle "Lists live in this browser only. more" [expanded=false]
@@ -195,4 +197,4 @@ daggerheart.com
 Клад дракона, 0 items
 Лавка в порту, 0 items
 ЛутDaggerheart
-Список второго ГМа, 2 items, edited 2 days ago
+Список второго ГМа, 2 items, edited 2 days ago, 2 changes

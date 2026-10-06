@@ -16,13 +16,15 @@ export interface RequestLine {
   applied: number | null;
 }
 
-/** A pending request as its list's owner reads it. */
+/** A pending request as its list's owner reads it. `readAt` is null until the owner's
+ *  page first draws it; from then it expires within the hour. */
 export interface OwnerRequest {
   id: string;
   listId: string;
   audience: ShareAudience;
   createdAt: string;
   expiresAt: string;
+  readAt: string | null;
   lines: RequestLine[];
 }
 
@@ -55,11 +57,12 @@ function lineOf(v: unknown): RequestLine | null {
 
 function requestOf(v: unknown): OwnerRequest | null {
   if (!isRecord(v)) return null;
-  const { id, list_id, audience, created_at, expires_at } = v;
+  const { id, list_id, audience, created_at, expires_at, read_at } = v;
   const rows = v['purchase_request_lines'];
   if (typeof id !== 'string' || typeof list_id !== 'string' || !isCloudId(list_id)) return null;
   if (audience !== 'player' && audience !== 'gm') return null;
   if (typeof created_at !== 'string' || typeof expires_at !== 'string') return null;
+  if (read_at !== null && read_at !== undefined && typeof read_at !== 'string') return null;
   if (!Array.isArray(rows)) return null;
   const lines = rows.map(lineOf);
   if (lines.some((l) => l === null)) return null;
@@ -69,6 +72,7 @@ function requestOf(v: unknown): OwnerRequest | null {
     audience,
     createdAt: created_at,
     expiresAt: expires_at,
+    readAt: typeof read_at === 'string' ? read_at : null,
     lines: (lines as RequestLine[]).sort((a, b) => (a.item < b.item ? -1 : 1))
   };
 }
@@ -79,6 +83,68 @@ function requestOf(v: unknown): OwnerRequest | null {
 export function readRequests(data: unknown): OwnerRequest[] | null {
   if (!Array.isArray(data)) return null;
   return data.map(requestOf).filter((r): r is OwnerRequest => r !== null);
+}
+
+/** A `list_notices` row as the owner's read returns it: one item of one list that its
+ *  author changed or deleted. */
+export interface NoticeRow {
+  id: string;
+  list_id: string;
+  item_key: string;
+  hid: string | null;
+  kind: 'changed' | 'deleted';
+  name: { en?: string; ru?: string };
+  created_at: string;
+  read_at: string | null;
+}
+
+/** A notice as the owner's panel draws it; `hid` is null once the item is deleted. */
+export interface ListNotice {
+  id: string;
+  listId: string;
+  itemKey: string;
+  hid: string | null;
+  kind: 'changed' | 'deleted';
+  name: { en: string; ru: string };
+  createdAt: string;
+  readAt: string | null;
+}
+
+const NOTICE_KEY = /^[A-Za-z0-9_-]{1,64}$/;
+const isTime = (v: unknown): v is string =>
+  typeof v === 'string' && !Number.isNaN(Date.parse(v));
+
+/** Returns a notice of a `list_notices` read, or null for a row of another shape: a uuid id
+ *  and list, a key of an entry's shape, `hid` a uuid or null, one of the two kinds, a name
+ *  in at least one language and ISO times. */
+export function noticeOf(v: unknown): ListNotice | null {
+  if (!isRecord(v)) return null;
+  const { id, list_id, item_key, hid, kind, name, created_at, read_at } = v;
+  if (typeof id !== 'string' || !isCloudId(id)) return null;
+  if (typeof list_id !== 'string' || !isCloudId(list_id)) return null;
+  if (typeof item_key !== 'string' || !NOTICE_KEY.test(item_key)) return null;
+  if (hid !== null && (typeof hid !== 'string' || !isCloudId(hid))) return null;
+  if (kind !== 'changed' && kind !== 'deleted') return null;
+  if (!isRecord(name)) return null;
+  const en = typeof name['en'] === 'string' ? name['en'] : '';
+  const ru = typeof name['ru'] === 'string' ? name['ru'] : '';
+  if (!en && !ru) return null;
+  if (!isTime(created_at) || (read_at !== null && !isTime(read_at))) return null;
+  return {
+    id,
+    listId: list_id,
+    itemKey: item_key,
+    hid,
+    kind,
+    name: { en, ru },
+    createdAt: created_at,
+    readAt: read_at
+  };
+}
+
+/** Returns a notice's item name in `lang`, else in the other language. */
+export function noticeName(n: Pick<ListNotice, 'name'>, lang: Lang): string {
+  return (lang === 'ru' ? n.name.ru || n.name.en : n.name.en || n.name.ru) || '';
 }
 
 /** Returns `apply_purchase_request`'s answer: the count taken, or the lines it could
@@ -173,9 +239,11 @@ export function ageText(
   return `${who} · ${age}`;
 }
 
-/** Returns `ageText` and the time to expiry, «... · истечёт через 50 минут». The
- *  minutes stay within 1..60, so a clock older than the request still reads 60. */
+/** Returns `ageText`, and for a read request the time to expiry, «... · истечёт через 50
+ *  минут». The minutes stay within 1..60, so a clock older than the read still reads 60;
+ *  an unread request has days left and names none. */
 export function whoText(r: OwnerRequest, now: number, lang: Lang, t: Dict): string {
+  if (r.readAt === null) return ageText(r, now, lang, t);
   const left = Math.ceil((Date.parse(r.expiresAt) - now) / MINUTE);
   const m = Math.min(60, Math.max(1, left));
   const expires = t.requestExpires.replace('%s', FORMAT[lang].format(m, 'minute'));

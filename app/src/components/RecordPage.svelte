@@ -4,7 +4,6 @@
      Three states, and two of them happen - a link to a record that has been
      renumbered, and a deploy where data.js did not load. */
   import Button from './Button.svelte';
-  import Icon from './Icon.svelte';
   import LoadState from './LoadState.svelte';
   import NoData from './NoData.svelte';
   import PageTitle from './PageTitle.svelte';
@@ -12,6 +11,7 @@
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
+  import TableLink from './TableLink.svelte';
   import { isHomebrewKey } from '../lib/homebrew.js';
   import { sectionHash, tablesHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
@@ -78,9 +78,7 @@
       {#snippet sub()}
         {where}
         {#if table}
-          <a class="itemtable" href={tablesHash(table, { anchor: it.id })}
-            >{t.showInTable}<Icon name="external" /></a
-          >
+          <TableLink href={tablesHash(table, { anchor: it.id })} label={t.showInTable} />
         {/if}
       {/snippet}
       <PageTitle title={nameOf(it, app.lang)} {sub} />
@@ -95,6 +93,7 @@
             app.markArtBroken(bad);
           }}
           onopen={openRecord}
+          manage={isHomebrewKey(it.id)}
         >
           {#snippet nameActions()}
             <RecordActions {app} {index} {it} row="name" />
@@ -114,27 +113,6 @@
 <style>
   /* `.page-h`/`.page-sub` moved to `PageTitle.svelte`, `.miss` to
      `NoData.svelte`. */
-  .itemtable {
-    white-space: nowrap;
-    font-size: 13px;
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    color: var(--gold-soft);
-  }
-
-  .itemtable:hover {
-    border-bottom-color: currentcolor;
-  }
-
-  .itemtable :global(svg) {
-    width: 12px;
-    height: 12px;
-    fill: currentcolor;
-    margin-left: 4px;
-    vertical-align: -1px;
-  }
-
-  /* off `.itempage` */
   .itempage {
     max-width: 520px;
   }

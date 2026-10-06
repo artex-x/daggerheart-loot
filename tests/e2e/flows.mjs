@@ -10,11 +10,11 @@
  * signed out, drawn on the owner's page and applied, F13 a lists file imported
  * through «Импорт из файла» and two lists deleted together, F14 a homebrew source
  * with a section, an item in them edited and deleted, F15 an own item in a list as a
- * reference, its rename read through a players' link, and «Свой предмет», F16 an own
+ * link, its rename read through a players' link, and «Свой предмет», F16 an own
  * item's relations picked by name with a rule card made inline, F17 a homebrew file imported
- * through «Импорт предметов», imported again with «Обновить», two items moved together, the
- * data zip's homebrew.json read back, and a version 2 lists file imported with a reference
- * and a frozen copy. Each flow gets its own
+ * through «Импорт из файла» of «Мои предметы», imported again with «Обновить», two items moved together, the
+ * data zip's homebrew.json read back, and a version 2 lists file imported with a held item
+ * and a copied one, F18 an item's `#/h/` address opened signed out. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -650,7 +650,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
             id: port.lists.newId(),
             item_key: 'ci1',
             source: 'official',
-            snapshot: null,
+            hb_item: null,
             position: 0,
             quantity: 1,
             price_coins: null,
@@ -742,7 +742,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
             id: port.lists.newId(),
             item_key: 'ci1',
             source: 'official',
-            snapshot: null,
+            hb_item: null,
             position: 0,
             quantity: 3,
             price_coins: null,
@@ -788,7 +788,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
         await b.press('Сообщить владельцу');
         await waitText(pageB, 'F12', 'Запрос отправлен владельцу списка.');
         await within10(pageA, 'F12: the owner page did not draw the request in 10 s', () =>
-          document.body.textContent.includes('Запросы (1)')
+          document.body.textContent.includes('Новое в списке (1)')
         );
         await a.press('Принять');
         await waitText(pageA, 'F12', 'Запрос принят');
@@ -858,15 +858,14 @@ export async function runFlows({ env, admin, member, browser, base }) {
   console.log('e2e: F13 ok');
 
   /* F14: the homebrew rows on the hosted project through the pages: a source with a
-     section on #/homebrew, a weapon in them on #/homebrew/new, its rename read back at
+     section on #/homebrew/sources, a weapon in them on #/homebrew/new, its rename read back at
      the next revision, and its delete. */
   await deleteHomebrewOf(admin, member.id);
   try {
     const mine = () => homebrewOf(admin, member.id);
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
-      await d.open('#/homebrew');
-      await waitText(page, 'F14', '0 предметов');
-      await d.press('Источники');
+      await d.open('#/homebrew/sources');
+      await waitText(page, 'F14', '0 источников');
       await d.press('Новый источник');
       await page.type('#hb-new-source', 'F14');
       await d.press('Создать');
@@ -972,9 +971,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.press('+ Новый список');
       await d.type('Например: клад дракона', 'F15');
       await d.press('Создать');
-      await until('F15: the entry is not a reference to the own item', async () => {
+      await until('F15: the entry does not link the own item', async () => {
         const [e] = await entriesOf();
-        return e?.item_key === key && e.source === 'homebrew' && e.snapshot === null;
+        return e?.item_key === key && e.source === 'homebrew' && e.hb_item === item.id;
       });
       const listId = (await listsOf(admin, member.id))[0].id;
 
@@ -1008,12 +1007,12 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.type('Название*', 'Свеча F15');
       await d.press('Добавить в список');
       await until(
-        'F15: the own item made on the list page, or its reference, is missing',
+        'F15: the own item made on the list page, or its link, is missing',
         async () => {
           const made = (await itemsOf()).find((i) => i.content.ru === 'Свеча F15');
           if (!made) return false;
           return (await entriesOf()).some(
-            (e) => e.item_key === made.key && e.source === 'homebrew' && e.snapshot === null
+            (e) => e.item_key === made.key && e.source === 'homebrew' && e.hb_item === made.id
           );
         }
       );
@@ -1070,8 +1069,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
   /* F17: homebrew files on the hosted project. example.json imported through the page,
      imported again with «Обновить» from example-edited.json, the two pistols moved to
      «Холодное оружие» in one call, the data zip's homebrew.json holding every row, and
-     example-v2.json imported into lists: the held pistol a reference, the lamp a frozen
-     copy. */
+     example-v2.json imported into lists: the held pistol linked, the lamp copied into the
+     account's homebrew and linked. */
   await deleteListsOf(admin, member.id);
   await deleteHomebrewOf(admin, member.id);
   const fixture = (dir, name) =>
@@ -1102,8 +1101,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
           'e2e F17: the import panel did not fold after the answer',
           () => !document.querySelector('input[type="file"]')
         );
-        await waitControl(page, 'F17', 'Импорт предметов');
-        await d.press('Импорт предметов');
+        await waitControl(page, 'F17', 'Импорт из файла');
+        await d.press('Импорт из файла');
         await waitText(page, 'F17', 'Импорт предметов из файла JSON');
       };
       await d.open('#/homebrew');
@@ -1134,7 +1133,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       const alder = books.find((b) => b.key === 'hb_alderworkshopaaa');
       if (!alder) throw new Error('e2e F17: the source is missing');
       await d.open('#/homebrew');
-      await waitControl(page, 'F17', 'Импорт предметов');
+      await waitControl(page, 'F17', 'Импорт из файла');
       await d.tick('Старый кремнёвый пистоль');
       await d.tick('Двуствольный пистоль мастера');
       await d.press('Переместить (2)');
@@ -1183,9 +1182,12 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await until('F17: the lists file did not reach the account', async () => {
         const list = (await listsOf(admin, member.id)).find((l) => l.name === 'Лавка Ольхи');
         const by = (k) => list?.list_entries.find((e) => e.item_key === k);
+        const { items } = await mine();
+        const idOf = (k) => items.find((i) => i.key === k)?.id;
         return (
-          by('hb_flintlockpistola')?.snapshot === null &&
-          by('hb_wanderlampaaaaaa')?.snapshot?.id === 'hb_wanderlampaaaaaa'
+          idOf('hb_wanderlampaaaaaa') !== undefined &&
+          by('hb_flintlockpistola')?.hb_item === idOf('hb_flintlockpistola') &&
+          by('hb_wanderlampaaaaaa')?.hb_item === idOf('hb_wanderlampaaaaaa')
         );
       });
     });
@@ -1194,4 +1196,40 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteHomebrewOf(admin, member.id);
   }
   console.log('e2e: F17 ok');
+
+  /* F18: an item's address on the hosted project. The member makes an item through the
+     page; a fresh signed-out context opens its `#/h/<id>` and draws the name, «Предмет
+     другого игрока» and «Сохранить себе», and no «Изменить». */
+  await deleteHomebrewOf(admin, member.id);
+  try {
+    const itemsOf = async () => (await homebrewOf(admin, member.id)).items;
+    await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+      await d.open('#/homebrew/new');
+      await waitControl(page, 'F18', 'Сохранить');
+      await page.type('#hb-name', 'Фонарь F18');
+      await d.press('Сохранить');
+      await until('F18: the item did not reach the account', async () => {
+        return (await itemsOf()).length === 1;
+      });
+    });
+    const [item] = await itemsOf();
+    await withPage(ctx, null, async (page, d) => {
+      await d.open('#/h/' + item.id);
+      await waitText(page, 'F18', 'Фонарь F18');
+      await waitText(page, 'F18', 'Предмет другого игрока');
+      await waitControl(page, 'F18', 'Сохранить себе');
+      await expectInPage(
+        page,
+        'F18',
+        'the reader is offered «Изменить»',
+        () =>
+          ![...document.querySelectorAll('a, button')].some(
+            (e) => e.textContent.trim() === 'Изменить'
+          )
+      );
+    });
+  } finally {
+    await deleteHomebrewOf(admin, member.id);
+  }
+  console.log('e2e: F18 ok');
 }

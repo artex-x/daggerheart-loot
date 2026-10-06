@@ -1,6 +1,6 @@
 # #/tables/homebrew as gm1
 # route: #/tables/homebrew
-# why: the own items as a table: the group chip «Хоумбрю» last and on, the sections «Мастерская Ольхи · Холодное оружие» (the axe) and «Хоумбрю» (three items), the grid of the account view
+# why: the own items as a table: the group chip «Хоумбрю» last and on, the source chips «Мастерская Ольхи» (on, the first) and «Хоумбрю» under it, the heading «Холодное оружие» with the axe, the grid of the account view
 # as: gm1
 
 ## ru :: tree
@@ -42,26 +42,20 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
     link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew]
+    link "Мастерская Ольхи" [url=index.html?as=gm1#/tables/homebrew/f_src-hb_alderworkshopaaa]
+    link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew/f_src-hb]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
     button "Фильтры" [expanded=false]
-    StaticText "4"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "1"
+    StaticText "ХОЛОДНОЕ ОРУЖИЕ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (1)" [checked=false]
+    StaticText "Выбрать все (1)"
     checkbox "Топор Тлеющих Углей" [checked=false]
     button "Ранг 2 Топор Тлеющих Углей Ember Axe"
-    StaticText "ХОУМБРЮ"
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    ... checkbox x2 of 6 same-shape siblings elided
-    StaticText "Выбрать все (3)"
-    button "Кольцо с гравировкой Кольцо с гравировкой"
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Настой кузнеца"
-    checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Whispering Cap"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -79,8 +73,6 @@ EN
 Hope & Fear
 RU
 Vault of Ages
-Whispering Cap
-Whispering CapWhispering Cap
 Wondrous
 Wondrous Loot
 daggerheart.com
@@ -88,12 +80,9 @@ daggerheart.com
 Альт. таблицы
 К содержимому
 Как это работает
-Кольцо с гравировкой
-Кольцо с гравировкойКольцо с гравировкой
 Конфиденциальность
 ЛутDaggerheart
-Настой кузнеца
-Настой кузнецаНастой кузнеца
+Мастерская Ольхи
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
@@ -152,26 +141,20 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
     link "Homebrew" [url=index.html?as=gm1#/tables/homebrew]
+    link "Alder Workshop" [url=index.html?as=gm1#/tables/homebrew/f_src-hb_alderworkshopaaa]
+    link "Homebrew" [url=index.html?as=gm1#/tables/homebrew/f_src-hb]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Filters" [expanded=false]
-    StaticText "4"
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "1"
+    StaticText "BLADES"
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (1)" [checked=false]
+    StaticText "Select all (1)"
     checkbox "Ember Axe" [checked=false]
     button "Tier 2 Ember Axe Топор Тлеющих Углей"
-    StaticText "HOMEBREW"
-    button "Copy a link to this section" [description=Copy a link to this section]
-    ... checkbox x2 of 6 same-shape siblings elided
-    StaticText "Select all (3)"
-    button "Whispering Cap Whispering Cap"
-    checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой Кольцо с гравировкой"
-    checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Настой кузнеца"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -181,6 +164,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 
 ## en :: controls
 Account: gm1@example.test
+Alder Workshop
 Alt. tables
 Arazo's Artifacts
 Communities
@@ -212,13 +196,7 @@ Tables
 Terms of use
 Tier 2Ember AxeТопор Тлеющих Углей
 Vault of Ages
-Whispering Cap
-Whispering CapWhispering Cap
 Wondrous
 Wondrous Loot
 daggerheart.com
-Кольцо с гравировкой
-Кольцо с гравировкойКольцо с гравировкой
 ЛутDaggerheart
-Настой кузнеца
-Настой кузнецаНастой кузнеца

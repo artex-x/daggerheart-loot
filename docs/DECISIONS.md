@@ -14,15 +14,23 @@ deleted.
 
 ## Index
 
+- 2026-10-08 - [A source chip on `#/tables/homebrew` is the `src` filter with one value](decisions/2026-10-08-a-source-chip-on-the-homebrew-table-is-the-src-filter-with-one-value.md)
 - 2026-10-08 - [A usage-profile line picks Max or Pro routing; review tier follows the writer](decisions/2026-10-08-a-usage-profile-line-picks-max-or-pro.md)
+- 2026-10-08 - [«Мои предметы» holds four tabs: items, sources, sets and rule cards](decisions/2026-10-08-my-items-holds-four-tabs-items-sources-sets-and-rule-cards.md)
+- 2026-10-08 - [The own-items filter is a labelled switch, «Свои предметы»](decisions/2026-10-08-the-own-items-filter-is-a-labelled-switch.md)
 - 2026-10-08 - [Workers dispatch read-only Haiku helpers for wide locate and extract work](decisions/2026-10-08-workers-dispatch-read-only-haiku-helpers-for-wide.md)
+- 2026-10-07 - [A list's change log shares the requests' view and the database's clean-up](decisions/2026-10-07-a-lists-change-log-shares-the-requests-view-and-clean-up.md)
 - 2026-10-07 - [A local check skips a stage whose inputs match its last local pass](decisions/2026-10-07-a-local-check-skips-a-stage-whose-inputs.md)
+- 2026-10-07 - [A saved copy of another account's item keeps its key](decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md)
+- 2026-10-07 - [An item is read by its id by anyone; a list holds a live link](decisions/2026-10-07-an-item-is-read-by-its-id-by-anyone-a-list-holds-a-live-link.md)
 - 2026-10-07 - [Arazo's Artifacts: source arazo, ids aa1-aa51, tier formulas as lines](decisions/2026-10-07-arazos-artifacts-source-arazo-section-roll-arazo-ids-aa.md)
+- 2026-10-07 - [Lifecycle data is deleted by the database on a schedule](decisions/2026-10-07-lifecycle-data-is-deleted-by-the-database-on-a-schedule.md)
+- 2026-10-07 - [Owner rules are written to their homes in the batch that hears them](decisions/2026-10-07-owner-rules-are-written-to-their-homes-in.md)
 - 2026-10-07 - [The commit gate arms when both halves of the check pass on one tree](decisions/2026-10-07-the-commit-gate-arms-when-both-halves-of-the.md)
 - 2026-10-07 - [The image review keeps its verdicts in the browser, keyed by hash](decisions/2026-10-07-the-image-review-keeps-its-verdicts-in-the-browser-by-hash.md)
 - 2026-10-02 - [A homebrew import matches items by key, never by name](decisions/2026-10-02-a-homebrew-import-matches-items-by-key-never-by-name.md)
-- 2026-10-02 - [A lists file is version 2 only when it holds homebrew](decisions/2026-10-02-a-lists-file-is-version-2-only-when-it-holds-homebrew.md)
-- 2026-10-02 - [A list's frozen copies hold up to 1048576 bytes together](decisions/2026-10-02-a-lists-frozen-copies-hold-up-to-1048576-bytes.md)
+- 2026-10-02 - [A lists file is version 2 only when it holds homebrew](decisions/2026-10-02-a-lists-file-is-version-2-only-when-it-holds-homebrew.md) - superseded in part
+- 2026-10-02 - [A list's frozen copies hold up to 1048576 bytes together](decisions/2026-10-02-a-lists-frozen-copies-hold-up-to-1048576-bytes.md) - superseded in part
 - 2026-10-02 - [A shared page re-read names its revision; an unchanged list answers unchanged](decisions/2026-10-02-a-shared-page-re-read-names-its-revision.md)
 - 2026-10-02 - [E2E case L passes the 5 MB import on success or a whole tooSlow refusal](decisions/2026-10-02-e2e-case-l-passes-the-5-mb-import-on-success-or-a-whole-tooslow.md)
 - 2026-10-02 - [Field help is a «?» by the label; every input has its own visible label](decisions/2026-10-02-field-help-is-a-by-the-label-every.md)
@@ -31,7 +39,7 @@ deleted.
 - 2026-10-02 - [The bundle ceilings rise to 300 kB configured and 250 unconfigured](decisions/2026-10-02-the-bundle-ceilings-rise-to-300-kb-configured.md)
 - 2026-10-02 - [The homebrew editor offers no tier and tiers 1-4; a stored A or C tier stays](decisions/2026-10-02-the-homebrew-editor-offers-no-tier-and-tiers.md)
 - 2026-10-02 - [The signed-in pages follow one set of consistency rules](decisions/2026-10-02-the-signed-in-pages-follow-one-set-of.md)
-- 2026-10-01 - [A frozen copy holds up to 131072 bytes; a card text holds 1500 code points](decisions/2026-10-01-a-frozen-copy-holds-up-to-131072-bytes.md)
+- 2026-10-01 - [A frozen copy holds up to 131072 bytes; a card text holds 1500 code points](decisions/2026-10-01-a-frozen-copy-holds-up-to-131072-bytes.md) - superseded in part
 - 2026-10-01 - [A plan review's fix-then-continue is applied once, with no second look](decisions/2026-10-01-a-plan-reviews-fix-then-continue-is-applied-once.md)
 - 2026-10-01 - [An RTK command piped into head or tail is denied when RTK bounds it](decisions/2026-10-01-an-rtk-command-piped-into-head-or-tail.md)
 - 2026-10-01 - [Homebrew keeps the way open to shared books without building them](decisions/2026-10-01-homebrew-keeps-the-way-open-to-shared-books.md)
@@ -40,7 +48,7 @@ deleted.
 - 2026-10-01 - [Scale is designed for three times the default limits; nothing past that](decisions/2026-10-01-scale-is-designed-for-three-times-the-default-limits.md)
 - 2026-10-01 - [Search is one mode: words in any order, Snowball word forms, quotes for a phrase](decisions/2026-10-01-search-is-one-mode-words-in-any-order-snowball-forms.md)
 - 2026-10-01 - [The quick item opens under a list's entries; its toast links the editor](decisions/2026-10-01-the-quick-item-opens-under-a-lists-entries.md)
-- 2026-09-30 - [A frozen copy embeds its source and cards; a reference must exist when written](decisions/2026-09-30-a-frozen-copy-embeds-its-source-a-reference-must-exist.md)
+- 2026-09-30 - [A frozen copy embeds its source and cards; a reference must exist when written](decisions/2026-09-30-a-frozen-copy-embeds-its-source-a-reference-must-exist.md) - superseded in part
 - 2026-09-30 - [A homebrew item carries the whole catalog shape; sources and cards are rows](decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md)
 - 2026-09-30 - [A homebrew source may hold sections, as the community book holds communities](decisions/2026-09-30-a-homebrew-source-may-hold-sections.md)
 - 2026-09-30 - [A list page makes a plain homebrew item in one press, with no draft mark](decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md)
@@ -48,7 +56,7 @@ deleted.
 - 2026-09-30 - [A toast is built in the language on screen each time it is drawn](decisions/2026-09-30-a-toast-is-built-in-the-language-on.md)
 - 2026-09-30 - [Agents search with grep; no language server and no ast-grep](decisions/2026-09-30-agents-search-with-grep-no-language-server-and-no.md)
 - 2026-09-30 - [(HB) marks homebrew, and a homebrew relation shows only to its author](decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md)
-- 2026-09-30 - [Homebrew is first-class in the catalog pages; the roll pages are excluded](decisions/2026-09-30-homebrew-is-first-class-in-the-catalog-pages.md)
+- 2026-09-30 - [Homebrew is first-class in the catalog pages; the roll pages are excluded](decisions/2026-09-30-homebrew-is-first-class-in-the-catalog-pages.md) - superseded in part
 - 2026-09-30 - [Homebrew ships in four releases: items, catalog pages, relations, files](decisions/2026-09-30-homebrew-ships-in-four-releases.md)
 - 2026-09-30 - [Homebrew travels as its own file; a lists file v2 carries frozen entries](decisions/2026-09-30-homebrew-travels-as-its-own-file.md)
 - 2026-09-30 - [`import-v1` bounds are the import call's ceilings, not the default limits](decisions/2026-09-30-import-v1-bounds-are-the-import-calls-ceilings.md)
@@ -77,7 +85,7 @@ deleted.
 - 2026-09-27 - [The reviewer writes its report to `issues/<id>/reviews/` and nowhere else](decisions/2026-09-27-the-reviewer-writes-its-report-to-issues-id.md)
 - 2026-09-27 - [The Supabase scripts take the local stack lock themselves](decisions/2026-09-27-the-supabase-scripts-take-the-local-stack-lock.md)
 - 2026-09-26 - [A browser list moves through one RPC that hashes its canonical text](decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md)
-- 2026-09-26 - [Homebrew in the owner's lists is a live reference; a copy that leaves is frozen](decisions/2026-09-26-a-homebrew-entry-in-the-owners-lists-is.md)
+- 2026-09-26 - [Homebrew in the owner's lists is a live reference; a copy that leaves is frozen](decisions/2026-09-26-a-homebrew-entry-in-the-owners-lists-is.md) - superseded in part
 - 2026-09-26 - [A request the database fails three times is halved; a lone write is dropped](decisions/2026-09-26-a-request-the-database-fails-three-times-is-halved.md)
 - 2026-09-26 - [A requester reads the status by a key kept in the tab's sessionStorage](decisions/2026-09-26-a-requester-reads-the-status-by-a-key.md) - superseded
 - 2026-09-26 - [Account list writes are buffered and sent two seconds after the last edit](decisions/2026-09-26-account-list-writes-are-buffered-and-sent-two.md)

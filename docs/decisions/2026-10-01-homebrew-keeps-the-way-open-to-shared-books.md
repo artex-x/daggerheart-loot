@@ -1,5 +1,6 @@
 # 2026-10-01 - Homebrew keeps the way open to shared books without building them
 
+- Amended by "An item is read by its id by anyone; a list holds a live link" (2026-10-07): items are readable by id, `list_entries.hb_item` is the anticipated `item_owner`; books stay owner-only and subscriptions stay open.
 - Task: `persist-7-homebrew` (owner's item 13, 2026-09-28; planner, passes 2-4; written at R7's closeout).
 - Decision: a later release may make a source a book that its author shares and keeps editing,
   that other users subscribe to and see everywhere (roll tables included), and whose unsubscribe

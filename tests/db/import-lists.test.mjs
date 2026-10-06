@@ -3,8 +3,9 @@
   transaction - every list or none. It runs as the caller, so row level
   security, the table checks and the count limits apply as to a plain
   write; a list id already the caller's is a retry that adds only missing
-  entries, another owner's id refuses the call; `source` and `snapshot`
-  pass through. The deferred broadcast trigger sends one owner message per
+  entries, another owner's id refuses the call; `source` and `hb_item`
+  pass through, a homebrew entry sent by key links the caller's item, and a
+  `snapshot` refuses the call. The deferred broadcast trigger sends one owner message per
   list at commit, and none for a refused call. docs/specs/CONTRACTS.md
   section 4; docs/decisions/2026-09-26-an-import-is-one-import-lists-transaction.md.
 */
@@ -60,7 +61,7 @@ const entry = (entryId, itemKey, position, extra = {}) => ({
   id: entryId,
   item_key: itemKey,
   source: 'official',
-  snapshot: null,
+  hb_item: null,
   position,
   quantity: 1,
   price_coins: null,
@@ -85,7 +86,7 @@ const rows = async (tx) => ({
       from public.lists order by id`)
   ].map((r) => ({ ...r })),
   entries: [
-    ...(await tx`select id, list_id, item_key, source, snapshot, position, quantity,
+    ...(await tx`select id, list_id, item_key, source, hb_item, position, quantity,
         price_coins, player_note, gm_note
       from public.list_entries order by list_id, position, id`)
   ].map((r) => ({ ...r }))
@@ -205,7 +206,7 @@ describe('an import, as A', () => {
       TWO[0].entries.map((e) => ({ ...e, list_id: L1 }))
     );
     assert.deepEqual(
-      out.rows.entries.map((e) => [e.position, e.source, e.snapshot]),
+      out.rows.entries.map((e) => [e.position, e.source, e.hb_item]),
       [
         [0, 'official', null],
         [1, 'official', null],
@@ -312,13 +313,14 @@ describe('an import, as A', () => {
       '23503'
     ],
     [
-      'a homebrew snapshot the validator refuses',
+      'a homebrew entry that holds a snapshot',
       [
-        list(L1, 'L', [
+        list(L1),
+        list(L2, 'L', [
           entry(id(7101), 'hb_x1', 0, { source: 'homebrew', snapshot: { name: 'X' } })
         ])
       ],
-      '23514'
+      '22023'
     ]
   ];
   for (const [what, lists, code] of tableRefusals) {
@@ -332,19 +334,30 @@ describe('an import, as A', () => {
     });
   }
 
-  it('imports a frozen homebrew entry', async () => {
-    const key = 'hb_frozenaaaaaaaaaa';
-    const hb = entry(id(7101), key, 0, {
+  it("imports a link to B's item by its id and one to A's item by its key", async () => {
+    const IA = id(7301);
+    const IB = id(7302);
+    const items = async (tx) => {
+      await users(tx);
+      await tx`insert into public.homebrew_items (id, owner_id, key, content) values
+        (${IA}, ${A}, 'hb_ownitemaaaaaaaaa', ${tx.json({ kind: 'item', en: 'A' })}),
+        (${IB}, ${B}, 'hb_theiritemaaaaaaa', ${tx.json({ kind: 'item', en: 'B' })})`;
+    };
+    const theirs = entry(id(7101), 'hb_theiritemaaaaaaa', 0, {
       source: 'homebrew',
-      snapshot: { id: key, src: 'homebrew', kind: 'item', en: 'X', ru: 'X', ende: '', rud: '' },
+      hb_item: IB,
       price_coins: 20
     });
-    const out = await asA(users, async (tx) => ({
-      n: await importAs(tx, [list(L1, 'L', [hb])]),
+    const own = entry(id(7102), 'hb_ownitemaaaaaaaaa', 1, { source: 'homebrew' });
+    const out = await asA(items, async (tx) => ({
+      n: await importAs(tx, [list(L1, 'L', [theirs, own])]),
       rows: await unbound(tx, rows)
     }));
     assert.equal(out.n, 1);
-    assert.deepEqual(out.rows.entries, [{ ...hb, list_id: L1 }]);
+    assert.deepEqual(out.rows.entries, [
+      { ...theirs, list_id: L1 },
+      { ...own, hb_item: IA, list_id: L1 }
+    ]);
   });
 });
 

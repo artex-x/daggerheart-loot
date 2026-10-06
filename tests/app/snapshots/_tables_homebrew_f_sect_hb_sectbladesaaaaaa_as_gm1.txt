@@ -1,6 +1,6 @@
 # #/tables/homebrew/f_sect-hb_sectbladesaaaaaa as gm1
 # route: #/tables/homebrew/f_sect-hb_sectbladesaaaaaa
-# why: a section filter by link: the panel open with «Тип», «Источник» and «Раздел», the pill «Мастерская Ольхи · Холодное оружие», one row of four
+# why: a section filter by link: the chip «Мастерская Ольхи» of the section on, the panel open with «Тип» and «Раздел», the pill «Холодное оружие», one row
 # as: gm1
 
 ## ru :: tree
@@ -42,22 +42,23 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
     link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew]
+    link "Мастерская Ольхи" [url=index.html?as=gm1#/tables/homebrew/f_src-hb_alderworkshopaaa]
+    link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew/f_src-hb]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
     button "Фильтры (1)" [expanded=true]
-    button "Мастерская Ольхи · Холодное оружие" [description=Убрать из фильтра]
+    button "Холодное оружие" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "1 из 4"
-    ... StaticText x5 of 9 same-shape siblings elided
+    StaticText "1 из 1"
+    ... StaticText x3 of 7 same-shape siblings elided
     button "Предметы" [pressed=false]
-    ... button x2 of 6 same-shape siblings elided
-    button "Хоумбрю" [pressed=false]
-    button "Мастерская Ольхи" [pressed=false]
-    button "Мастерская Ольхи · Холодное оружие" [pressed=true]
-    StaticText "МАСТЕРСКАЯ ОЛЬХИ · ХОЛОДНОЕ ОРУЖИЕ"
+    button "Расходники" [pressed=false]
+    button "Снаряжение" [pressed=false]
+    button "Холодное оружие" [pressed=true]
+    StaticText "ХОЛОДНОЕ ОРУЖИЕ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (1)" [checked=false]
     StaticText "Выбрать все (1)"
@@ -90,7 +91,6 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Мастерская Ольхи
-Мастерская Ольхи · Холодное оружие
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
@@ -113,6 +113,7 @@ daggerheart.com
 Условия использования
 Установить как приложение
 Фильтры (1)
+Холодное оружие
 Хоумбрю
 
 ## en :: tree
@@ -154,22 +155,23 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
     link "Homebrew" [url=index.html?as=gm1#/tables/homebrew]
+    link "Alder Workshop" [url=index.html?as=gm1#/tables/homebrew/f_src-hb_alderworkshopaaa]
+    link "Homebrew" [url=index.html?as=gm1#/tables/homebrew/f_src-hb]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Filters (1)" [expanded=true]
-    button "Alder Workshop · Blades" [description=Remove from the filter]
+    button "Blades" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "1 of 4"
-    ... StaticText x5 of 9 same-shape siblings elided
+    StaticText "1 of 1"
+    ... StaticText x3 of 7 same-shape siblings elided
     button "Items" [pressed=false]
-    ... button x2 of 6 same-shape siblings elided
-    button "Homebrew" [pressed=false]
-    button "Alder Workshop" [pressed=false]
-    button "Alder Workshop · Blades" [pressed=true]
-    StaticText "ALDER WORKSHOP · BLADES"
+    button "Consumables" [pressed=false]
+    button "Equipment" [pressed=false]
+    button "Blades" [pressed=true]
+    StaticText "BLADES"
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (1)" [checked=false]
     StaticText "Select all (1)"
@@ -185,9 +187,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 ## en :: controls
 Account: gm1@example.test
 Alder Workshop
-Alder Workshop · Blades
 Alt. tables
 Arazo's Artifacts
+Blades
 Communities
 Consumables
 Copy a link to this section

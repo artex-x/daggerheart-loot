@@ -9,7 +9,9 @@ import {
   requestTotal,
   shortText,
   whoText,
-  type OwnerRequest
+  type OwnerRequest,
+  noticeName,
+  noticeOf
 } from './requests.js';
 
 const LIST = '00000000-0000-4000-8000-000000000101';
@@ -24,6 +26,7 @@ const row = (over: Record<string, unknown> = {}) => ({
   audience: 'gm',
   created_at: '2026-09-27T11:50:00+00:00',
   expires_at: '2026-09-27T12:50:00+00:00',
+  read_at: '2026-09-27T11:50:00+00:00',
   purchase_request_lines: [
     { item_key: 'q1', quantity: 1, price_coins: null, applied_quantity: null },
     { item_key: 'cc1', quantity: 9, price_coins: 20, applied_quantity: 0 }
@@ -37,6 +40,7 @@ const req = (over: Partial<OwnerRequest> = {}): OwnerRequest => ({
   audience: 'player',
   createdAt: iso(NOW - 10 * MIN),
   expiresAt: iso(NOW + 50 * MIN),
+  readAt: iso(NOW - 10 * MIN),
   lines: [],
   ...over
 });
@@ -50,12 +54,20 @@ describe('readRequests', () => {
         audience: 'gm',
         createdAt: '2026-09-27T11:50:00+00:00',
         expiresAt: '2026-09-27T12:50:00+00:00',
+        readAt: '2026-09-27T11:50:00+00:00',
         lines: [
           { item: 'cc1', qty: 9, price: 20, applied: 0 },
           { item: 'q1', qty: 1, price: null, applied: null }
         ]
       }
     ]);
+  });
+
+  it('reads an unread row, and one with no read_at, as unread', () => {
+    expect(readRequests([row({ read_at: null })])?.[0]?.readAt).toBeNull();
+    const older: Record<string, unknown> = row();
+    delete older['read_at'];
+    expect(readRequests([older])?.[0]?.readAt).toBeNull();
   });
 
   it('skips a row of another shape and answers null for no array', () => {
@@ -66,6 +78,7 @@ describe('readRequests', () => {
       row({ audience: 'owner' }),
       row({ created_at: 1 }),
       row({ expires_at: null }),
+      row({ read_at: 7 }),
       row({ purchase_request_lines: null }),
       row({ purchase_request_lines: [{ item_key: 'q1', quantity: 0 }] }),
       row({ purchase_request_lines: ['x'] }),
@@ -186,6 +199,12 @@ describe('whoText and ageText', () => {
       "Through the players' link · just now"
     );
   });
+
+  it('names no time left for an unread request, which has days', () => {
+    const unread = req({ readAt: null, expiresAt: iso(NOW + 30 * 24 * 60 * MIN) });
+    expect(whoText(unread, NOW, 'ru', ru)).toBe('По ссылке для игроков · 10 минут назад');
+    expect(whoText(unread, NOW, 'en', en)).toBe("Through the players' link · 10 minutes ago");
+  });
 });
 
 describe('shortText', () => {
@@ -203,5 +222,56 @@ describe('shortText', () => {
     ).toBe(
       'Не хватает: Зелье - просят 9, есть 5, Палаш - просят 1, есть 0. Ничего не списано.'
     );
+  });
+});
+
+describe('noticeOf', () => {
+  const row = (over: Record<string, unknown> = {}) => ({
+    id: '00000000-0000-4000-8000-000000000681',
+    list_id: '00000000-0000-4000-8000-000000000201',
+    item_key: 'hb_emberaxeaaaaaaaa',
+    hid: '00000000-0000-4000-8000-000000000511',
+    kind: 'changed',
+    name: { en: 'Ember Axe', ru: 'Топор' },
+    created_at: '2026-10-07T10:00:00Z',
+    read_at: null,
+    ...over
+  });
+
+  it('reads a row, a deleted one and a name in one language', () => {
+    expect(noticeOf(row())).toEqual({
+      id: '00000000-0000-4000-8000-000000000681',
+      listId: '00000000-0000-4000-8000-000000000201',
+      itemKey: 'hb_emberaxeaaaaaaaa',
+      hid: '00000000-0000-4000-8000-000000000511',
+      kind: 'changed',
+      name: { en: 'Ember Axe', ru: 'Топор' },
+      createdAt: '2026-10-07T10:00:00Z',
+      readAt: null
+    });
+    const gone = noticeOf(
+      row({ hid: null, kind: 'deleted', name: { en: 'Axe' }, read_at: '2026-10-07T11:00:00Z' })
+    );
+    expect(gone).toMatchObject({ hid: null, kind: 'deleted', name: { en: 'Axe', ru: '' } });
+    expect(noticeName(gone!, 'ru')).toBe('Axe');
+    expect(noticeName(noticeOf(row())!, 'ru')).toBe('Топор');
+    expect(noticeName(noticeOf(row())!, 'en')).toBe('Ember Axe');
+  });
+
+  it('refuses a row of another shape', () => {
+    for (const bad of [
+      null,
+      row({ id: 'x' }),
+      row({ list_id: 'x' }),
+      row({ item_key: 'a b' }),
+      row({ hid: 'x' }),
+      row({ kind: 'edited' }),
+      row({ name: {} }),
+      row({ name: 'Axe' }),
+      row({ created_at: 'yesterday' }),
+      row({ read_at: 5 })
+    ]) {
+      expect(noticeOf(bad), JSON.stringify(bad)).toBeNull();
+    }
   });
 });

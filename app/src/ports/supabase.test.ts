@@ -6,7 +6,13 @@ import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ImportRow, ListOp } from '../lib/cloudLists.js';
 import { RETURN_KEY, type Redirect } from './redirect.js';
-import { createCloud, IMPORT_TIMEOUT_MS, READ_PAGE, WRITE_TIMEOUT_MS } from './supabase.js';
+import {
+  createCloud,
+  IMPORT_TIMEOUT_MS,
+  ITEMS_PER_CALL,
+  READ_PAGE,
+  WRITE_TIMEOUT_MS
+} from './supabase.js';
 
 const { client, createClient, rows } = vi.hoisted(() => {
   /* `from('user_prefs')`'s builder: `select().eq().maybeSingle()` and
@@ -514,7 +520,7 @@ describe('the lists', () => {
     id,
     item_key: key,
     source: 'official' as const,
-    snapshot: null,
+    hb_item: null,
     position,
     quantity: 1,
     price_coins: null,
@@ -578,7 +584,7 @@ describe('the lists', () => {
 
   const SELECT =
     'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
-    'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)';
+    'list_entries(id,item_key,source,hb_item,position,quantity,price_coins,player_note,gm_note)';
   const ORDERED = [
     ['order', ['updated_at', { ascending: false }]],
     ['order', ['id']]
@@ -868,7 +874,7 @@ describe('the import', () => {
           id: 'e1',
           item_key: 'ci1',
           source: 'official',
-          snapshot: null,
+          hb_item: null,
           position: 0,
           quantity: 2,
           price_coins: 150,
@@ -888,7 +894,6 @@ describe('the import', () => {
     expect(await make().lists.import(ROWS)).toEqual({ ok: true });
     expect(client.rpc).toHaveBeenCalledWith('import_lists', { p_lists: ROWS });
   });
-
   it.each([
     [
       '400 a lists limit',
@@ -972,6 +977,46 @@ describe('the import', () => {
       await vi.advanceTimersByTimeAsync(1);
       expect(answer).toEqual({ ok: false, error: 'network' });
     });
+  });
+});
+
+describe('the linked items', () => {
+  const ids = (n: number, from = 0) =>
+    Array.from(
+      { length: n },
+      (_, i) => '00000000-0000-4000-8000-' + String(from + i).padStart(12, '0')
+    );
+
+  it('reads the items in calls of at most ITEMS_PER_CALL ids, skipping a row with no hid', async () => {
+    const all = ids(ITEMS_PER_CALL + 1);
+    client.rpc
+      .mockResolvedValueOnce({
+        data: [{ hid: all[0], item: { id: 'hb_aaaaaaaaaaaaaaaa' } }, { item: {} }],
+        error: null,
+        status: 200
+      })
+      .mockResolvedValueOnce({ data: [], error: null, status: 200 });
+    expect(await make().lists.items(all)).toEqual({
+      ok: true,
+      items: [{ hid: all[0], item: { id: 'hb_aaaaaaaaaaaaaaaa' } }]
+    });
+    expect(client.rpc).toHaveBeenNthCalledWith(1, 'get_homebrew_items', {
+      p_ids: all.slice(0, ITEMS_PER_CALL)
+    });
+    expect(client.rpc).toHaveBeenNthCalledWith(2, 'get_homebrew_items', {
+      p_ids: all.slice(ITEMS_PER_CALL)
+    });
+  });
+
+  it('answers not ok when any call fails or throws, and makes no call for no ids', async () => {
+    client.rpc
+      .mockResolvedValueOnce({ data: null, error: { code: '42501' }, status: 401 })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { lists } = make();
+    expect(await lists.items(ids(1))).toEqual({ ok: false });
+    expect(await lists.items(ids(1))).toEqual({ ok: false });
+    expect(await lists.items([])).toEqual({ ok: true, items: [] });
+    expect(client.rpc).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -1488,6 +1533,7 @@ describe('the purchase requests', () => {
     audience: 'player',
     created_at: '2026-09-27T10:00:00+00:00',
     expires_at: '2026-09-27T11:00:00+00:00',
+    read_at: null,
     purchase_request_lines: [
       { item_key: 'q1', quantity: 1, price_coins: null, applied_quantity: null },
       { item_key: 'ci1', quantity: 2, price_coins: 150, applied_quantity: null }
@@ -1505,6 +1551,7 @@ describe('the purchase requests', () => {
           audience: 'player',
           createdAt: ROW.created_at,
           expiresAt: ROW.expires_at,
+          readAt: null,
           lines: [
             { item: 'ci1', qty: 2, price: 150, applied: null },
             { item: 'q1', qty: 1, price: null, applied: null }
@@ -1517,7 +1564,7 @@ describe('the purchase requests', () => {
       [
         'select',
         [
-          'id,list_id,audience,created_at,expires_at,' +
+          'id,list_id,audience,created_at,expires_at,read_at,' +
             'purchase_request_lines(item_key,quantity,price_coins,applied_quantity)'
         ]
       ],
@@ -1682,6 +1729,22 @@ describe('the purchase requests', () => {
     expect(await requests.decline('r1')).toEqual({ ok: true });
     expect(client.rpc).toHaveBeenLastCalledWith('decline_purchase_request', { p_id: 'r1' });
     expect(await requests.decline('r1')).toEqual({ ok: false, error: 'network' });
+  });
+
+  it("marks a list's rows read through mark_list_read", async () => {
+    client.rpc
+      .mockResolvedValueOnce({ data: null, error: null, status: 204 })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: '42501', message: 'mark_list_read: not the owner of the list' },
+        status: 403
+      })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { requests } = make();
+    expect(await requests.markRead(LIST)).toEqual({ ok: true });
+    expect(client.rpc).toHaveBeenLastCalledWith('mark_list_read', { p_list: LIST });
+    expect(await requests.markRead(LIST)).toMatchObject({ ok: false });
+    expect(await requests.markRead(LIST)).toEqual({ ok: false, error: 'network' });
   });
 
   describe('with no answer', () => {
@@ -2264,5 +2327,113 @@ describe('the homebrew import and the bulk move', () => {
     if (answer instanceof Error) client.rpc.mockRejectedValueOnce(answer);
     else client.rpc.mockResolvedValueOnce({ data: null, ...answer });
     expect(await make().homebrew.moveItems(MOVE, null, null)).toEqual(want);
+  });
+});
+
+describe('the item read and the change log', () => {
+  type Call = [string, unknown[]];
+  const LIST = '00000000-0000-4000-8000-000000000201';
+  const HID = '00000000-0000-4000-8000-000000000511';
+
+  /* One PostgREST query of `list_notices`: every builder call, then the answer. */
+  function query(answer: unknown) {
+    const calls: Call[] = [];
+    const q: Record<string, unknown> = {};
+    for (const m of ['select', 'delete', 'eq', 'in', 'order', 'limit', 'abortSignal']) {
+      q[m] = (...args: unknown[]) => {
+        calls.push([m, m === 'abortSignal' ? [] : args]);
+        return q;
+      };
+    }
+    q['then'] = (ok: (v: unknown) => unknown, fail: (e: unknown) => unknown) =>
+      (answer instanceof Error ? Promise.reject(answer) : Promise.resolve(answer)).then(
+        ok,
+        fail
+      );
+    client.from.mockImplementationOnce(() => q as unknown as typeof rows);
+    return calls;
+  }
+  const NOTICE = {
+    id: '00000000-0000-4000-8000-000000000681',
+    list_id: LIST,
+    item_key: 'hb_emberaxeaaaaaaaa',
+    hid: HID,
+    kind: 'changed',
+    name: { en: 'Ember Axe', ru: 'Топор' },
+    created_at: '2026-10-07T10:00:00+00:00',
+    read_at: null
+  };
+
+  it('reads one item by its id signed out too, an unknown id as null, a failure as not ok', async () => {
+    client.auth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+    client.rpc
+      .mockResolvedValueOnce({ data: { hid: HID }, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: null, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: null, error: { code: '22P02' }, status: 400 })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { lists } = make();
+    expect(await lists.item(HID)).toEqual({ ok: true, item: { hid: HID } });
+    expect(client.rpc).toHaveBeenLastCalledWith('get_homebrew_item', { p_id: HID });
+    expect(await lists.item(HID)).toEqual({ ok: true, item: null });
+    expect(await lists.item(HID)).toEqual({ ok: false });
+    expect(await lists.item(HID)).toEqual({ ok: false });
+  });
+
+  it('reads every list cut at the row cap, or one list, newest first', async () => {
+    const all = query({ data: [NOTICE], error: null, status: 200 });
+    const { requests } = make();
+    expect(await requests.notices()).toEqual({ ok: true, notices: [NOTICE] });
+    expect(client.from).toHaveBeenLastCalledWith('list_notices');
+    expect(all).toEqual([
+      ['select', ['id,list_id,item_key,hid,kind,name,created_at,read_at']],
+      ['order', ['created_at', { ascending: false }]],
+      ['order', ['id']],
+      ['limit', [READ_PAGE]]
+    ]);
+    const one = query({ data: [], error: null, status: 200 });
+    expect(await requests.notices(LIST)).toEqual({ ok: true, notices: [] });
+    expect(one[1]).toEqual(['eq', ['list_id', LIST]]);
+  });
+
+  it('answers not ok signed out, on an error and on a throw', async () => {
+    query({ data: null, error: { code: '42501' }, status: 401 });
+    query(new Error('offline'));
+    const { requests } = make();
+    expect(await requests.notices()).toEqual({ ok: false });
+    expect(await requests.notices()).toEqual({ ok: false });
+    client.auth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+    expect(await requests.notices()).toEqual({ ok: false });
+    expect(client.from).toHaveBeenCalledTimes(2);
+  });
+
+  it('hides notices by list and ids', async () => {
+    const calls = query({ data: null, error: null, status: 204 });
+    query(new Error('offline'));
+    const { requests } = make();
+    expect(await requests.hideNotices(LIST, ['n1', 'n2'])).toEqual({ ok: true });
+    expect(calls).toEqual([
+      ['delete', []],
+      ['eq', ['list_id', LIST]],
+      ['in', ['id', ['n1', 'n2']]],
+      ['abortSignal', []]
+    ]);
+    expect(await requests.hideNotices(LIST, ['n1'])).toEqual({ ok: false, error: 'network' });
+  });
+
+  it('hides 120 notices in three deletes of at most 50 ids, ok only when all are ok', async () => {
+    const ids = Array.from({ length: 120 }, (_, i) => `n${String(i)}`);
+    const chunks = [0, 1, 2].map(() => query({ data: null, error: null, status: 204 }));
+    const { requests } = make();
+    expect(await requests.hideNotices(LIST, ids)).toEqual({ ok: true });
+    expect(client.from).toHaveBeenCalledTimes(3);
+    expect(
+      chunks.map((c) => (c.find(([m]) => m === 'in')?.[1] as [string, string[]])[1])
+    ).toEqual([ids.slice(0, 50), ids.slice(50, 100), ids.slice(100)]);
+
+    client.from.mockClear();
+    query({ data: null, error: null, status: 204 });
+    query(new Error('offline'));
+    expect(await requests.hideNotices(LIST, ids)).toEqual({ ok: false, error: 'network' });
+    expect(client.from).toHaveBeenCalledTimes(2);
   });
 });

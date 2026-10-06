@@ -8,7 +8,8 @@ import {
   readRequestMessage,
   readShareMessage,
   type FeedEvent,
-  type FeedState
+  type FeedState,
+  readNoticeMessage
 } from './live.js';
 
 const LIST = '00000000-0000-4000-8000-000000000101';
@@ -245,5 +246,20 @@ describe('readHomebrewMessage', () => {
   it('is not read as a list or a request message', () => {
     expect(readOwnerMessage('homebrew', { by: null })).toBeNull();
     expect(readRequestMessage('homebrew', { by: null })).toBeNull();
+  });
+});
+
+describe('readNoticeMessage', () => {
+  const LIST = '00000000-0000-4000-8000-000000000201';
+
+  it('reads a notice message and ignores other keys', () => {
+    expect(readNoticeMessage('notice', { list: LIST, id: '3' })).toEqual({ list: LIST });
+  });
+
+  it('refuses another event or shape', () => {
+    expect(readNoticeMessage('request', { list: LIST })).toBeNull();
+    expect(readNoticeMessage('notice', { list: 'x' })).toBeNull();
+    expect(readNoticeMessage('notice', null)).toBeNull();
+    expect(readNoticeMessage('notice', [LIST])).toBeNull();
   });
 });

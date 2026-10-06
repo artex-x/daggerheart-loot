@@ -1,0 +1,180 @@
+# #/homebrew/rules/hb_alderrulecardaaa ~ item added as gm1
+# route: #/homebrew/rules/hb_alderrulecardaaa
+# why: the address opens «Клеймо Ольхи»; the axe picked in «Добавить предмет»: one member link «Топор Тлеющих Углей» with «Убрать», «1 предмет» on the card, the toast «Сохранено: «Топор Тлеющих Углей»»
+# as: gm1
+
+## ru :: tree
+RootWebArea "Мои предметы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/rules/hb_alderrulecardaaa]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Мои предметы" [level=1]
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
+    button "Импорт из файла" [expanded=false]
+    navigation "Мои предметы"
+      link "Предметы" [url=index.html?as=gm1#/homebrew]
+      link "Источники" [url=index.html?as=gm1#/homebrew/sources]
+      link "Комплекты" [url=index.html?as=gm1#/homebrew/sets]
+      link "Карты правил" [url=index.html?as=gm1#/homebrew/rules]
+    button "Новая карта правил"
+    StaticText "1 карта правил · 2 карты из 100"
+    button "Клеймо Ольхи" [expanded=true]
+    StaticText "1 предмет"
+    button "Изменить"
+    button "Удалить"
+    StaticText "Свойство оружия"
+    StaticText "Раз за отдых: перебросьте одну кость урона."
+    link "https://example.test/alder-brand" [url=https://example.test/alder-brand]
+    combobox "Добавить предмет" [expanded=false focused=true required=false autocomplete=list haspopup=listbox]
+    status ""
+    link "Топор Тлеющих Углей" [url=index.html?as=gm1#/h/00000000-0000-4000-8000-000000000511]
+    button "Убрать: Топор Тлеющих Углей"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+  status ""
+    StaticText "Сохранено: «Топор Тлеющих Углей»"
+
+## ru :: controls
+Arazo's Artifacts
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+https://example.test/alder-brand
+Аккаунт: gm1@example.test
+Альт. таблицы
+Добавить предмет
+Изменить
+Импорт из файла
+Источники
+К содержимому
+Карты правил
+Клеймо Ольхи
+Комплекты
+Конфиденциальность
+ЛутDaggerheart
+Новая карта правил
+Обычные правила
+Поиск
+Предметы
+Сообщества
+Списки
+Таблицы
+Топор Тлеющих Углей
+Убрать: Топор Тлеющих Углей
+Удалить
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/rules/hb_alderrulecardaaa]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "My items" [level=1]
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
+    button "Import from file" [expanded=false]
+    navigation "My items"
+      link "Items" [url=index.html?as=gm1#/homebrew]
+      link "Sources" [url=index.html?as=gm1#/homebrew/sources]
+      link "Sets" [url=index.html?as=gm1#/homebrew/sets]
+      link "Rule cards" [url=index.html?as=gm1#/homebrew/rules]
+    button "New rule card"
+    StaticText "1 rule card · 2 cards of 100"
+    button "Alder Brand" [expanded=true]
+    StaticText "1 item"
+    button "Edit"
+    button "Delete"
+    StaticText "Weapon feature"
+    StaticText "Once per rest: reroll one damage die."
+    link "https://example.test/alder-brand" [url=https://example.test/alder-brand]
+    combobox "Add an item" [expanded=false focused=true required=false autocomplete=list haspopup=listbox]
+    status ""
+    link "Ember Axe" [url=index.html?as=gm1#/h/00000000-0000-4000-8000-000000000511]
+    button "Remove: Ember Axe"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+  status ""
+    StaticText "Saved: "Топор Тлеющих Углей""
+
+## en :: controls
+Account: gm1@example.test
+Add an item
+Alder Brand
+Alt. tables
+Arazo's Artifacts
+Communities
+Delete
+Dragon's Vault
+Dread
+EN
+Edit
+Ember Axe
+Import from file
+Install as an app
+Items
+Lists
+New rule card
+Privacy
+RU
+Remove: Ember Axe
+Rule cards
+Search
+Sets
+Skip to content
+Sources
+Standard rules
+Tables
+Terms of use
+Vault of Ages
+Wondrous
+daggerheart.com
+https://example.test/alder-brand
+ЛутDaggerheart

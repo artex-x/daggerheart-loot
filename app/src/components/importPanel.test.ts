@@ -137,17 +137,25 @@ describe('the import field', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('previews a version 2 file and imports its homebrew entries as frozen copies', async () => {
+  it('previews a version 2 file and imports its homebrew entries as fixed copies the lists link', async () => {
     const { container, cloud } = await opened();
     choose(container, fixture('example-v2.json'), 'example-v2.json');
     await userEvent.click(await importButton(1));
     expect(container.querySelector('.preview')).toBeNull();
+    const own = await cloud.homebrew.load();
+    const copies = own.ok
+      ? own.items.filter((i) => ['hb_flintlockpistola', 'hb_wanderlampaaaaaa'].includes(i.key))
+      : [];
+    expect(copies.map((i) => [i.key, i.book_id])).toEqual([
+      ['hb_flintlockpistola', null],
+      ['hb_wanderlampaaaaaa', null]
+    ]);
     const read = await cloud.lists.list();
     const made = read.ok ? read.lists.find((l) => l.name === 'Лавка Ольхи') : undefined;
-    expect(made?.list_entries.map((e) => [e.item_key, e.source, e.snapshot !== null])).toEqual([
-      ['ci1', 'official', false],
-      ['hb_flintlockpistola', 'homebrew', true],
-      ['hb_wanderlampaaaaaa', 'homebrew', true]
+    expect(made?.list_entries.map((e) => [e.item_key, e.source, e.hb_item])).toEqual([
+      ['ci1', 'official', null],
+      ['hb_flintlockpistola', 'homebrew', copies[0]?.id],
+      ['hb_wanderlampaaaaaa', 'homebrew', copies[1]?.id]
     ]);
     await expectNoA11yViolations(container);
   });
@@ -337,7 +345,7 @@ describe('own items in a lists file', () => {
   const hbFixture = (name: string): Uint8Array =>
     new Uint8Array(readFileSync(join(ROOT, 'docs', 'fixtures', 'homebrew-file', name)));
 
-  it('says how many own items the account lacks: they import as frozen copies', async () => {
+  it('says how many own items the account lacks: they import as copies of its own', async () => {
     const { container } = await opened();
     choose(container, fixture('example-v2.json'));
     await importButton(1);
@@ -345,7 +353,7 @@ describe('own items in a lists file', () => {
       [...container.querySelectorAll('.preview')].map((p) => p.textContent.trim())
     ).toEqual([
       'Списков: 1, позиций: 3.',
-      'Своих предметов, которых нет в аккаунте: 2 - они сохранятся копиями. Чтобы они остались живыми, сначала импортируйте предметы на странице «Мои предметы».'
+      'Своих предметов, которых нет в аккаунте: 2 - они станут вашими копиями в «Мои предметы».'
     ]);
     await expectNoA11yViolations(container);
   });
@@ -380,6 +388,31 @@ describe('own items in a lists file', () => {
     expect(await importButton(1)).toBeInTheDocument();
   });
 
+  it('refuses the whole file with the item limit when its copies pass it, writing nothing', async () => {
+    const { container, cloud } = await opened({ limits: { items: 4 } });
+    choose(container, fixture('example-v2.json'));
+    await userEvent.click(await importButton(1));
+    expect(
+      await screen.findByText(
+        'Достигнут предел своих предметов: 4. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+      )
+    ).toBeInTheDocument();
+    const read = await cloud.lists.list();
+    expect(read.ok && read.lists.some((l) => l.name === 'Лавка Ольхи')).toBe(false);
+    expect(await importButton(1)).toBeEnabled();
+    await expectNoA11yViolations(container);
+  });
+
+  it('says a refused copies call as a refused import', async () => {
+    const { container, cloud } = await opened();
+    vi.spyOn(cloud.homebrew, 'import').mockResolvedValueOnce({ ok: false, error: 'refused' });
+    choose(container, fixture('example-v2.json'));
+    await userEvent.click(await importButton(1));
+    expect(await alertText()).toBe(
+      'Сервер не принял файл: данные в аккаунте изменились. Нажмите «Импортировать» ещё раз.'
+    );
+  });
+
   it('refuses a snapshot without a text the schema requires', async () => {
     const { container } = await opened();
     const v2 = JSON.parse(new TextDecoder().decode(fixture('example-v2.json'))) as {
@@ -405,9 +438,9 @@ describe('own items in a lists file', () => {
       ?.snapshot;
   };
 
-  it('says a reference the server refused, keeps the preview and freezes it on the next press', async () => {
+  it('says a link the server refused, keeps the preview and copies the item on the next press', async () => {
     const { container, cloud } = await opened();
-    /* The axe gm1 holds, as a reference, deleted on another device after the preview. */
+    /* The axe gm1 holds, linked by its key, deleted on another device after the preview. */
     const text = JSON.stringify({
       format: 'daggerheart-loot/lists',
       version: 2,
@@ -431,7 +464,7 @@ describe('own items in a lists file', () => {
     const axe = read.ok ? read.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa') : undefined;
     const imp = vi.spyOn(cloud.lists, 'import');
     const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
-    /* The database's 23503: the reference names an item gone since the preview. */
+    /* The database's 23503: the key names an item gone since the preview. */
     imp.mockImplementationOnce(async () => {
       await remove(axe!.id);
       return { ok: false, error: 'refused' };
@@ -449,11 +482,20 @@ describe('own items in a lists file', () => {
     await userEvent.click(await importButton(1));
     expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
     const sent = imp.mock.calls[1]?.[0];
-    expect(sent?.[0]?.entries[0]?.snapshot).not.toBeNull();
+    expect(sent?.[0]?.entries[0]).toMatchObject({
+      item_key: 'hb_emberaxeaaaaaaaa',
+      hb_item: null
+    });
     expect(sent?.[0]?.list.id).toBe(imp.mock.calls[0]?.[0][0]?.list.id);
+    const after = await cloud.homebrew.load();
+    const copy = after.ok
+      ? after.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa')
+      : undefined;
+    expect(copy?.id).not.toBe(axe?.id);
+    expect(copy?.book_id).toBeNull();
   });
 
-  it('imports bedroll-shop.json as live references after bedrolls.json, else as frozen copies', async () => {
+  it('imports bedroll-shop.json as links to the bedrolls held after bedrolls.json, with no copy', async () => {
     const { container, cloud } = await opened();
     const file = JSON.parse(new TextDecoder().decode(hbFixture('bedrolls.json'))) as {
       books: { key: string; en?: string; ru?: string; sections?: unknown[] }[];
@@ -500,10 +542,12 @@ describe('own items in a lists file', () => {
     expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
     const lists = await cloud.lists.list();
     const shop = lists.ok ? lists.lists.find((l) => l.name === 'Лавка спальников') : undefined;
-    expect(shop?.list_entries.map((e) => [e.source, e.snapshot === null])).toEqual([
+    expect(shop?.list_entries.map((e) => [e.source, e.hb_item === null])).toEqual([
       ['official', true],
-      ...file.items.map(() => ['homebrew', true])
+      ...file.items.map(() => ['homebrew', false])
     ]);
+    const held = await cloud.homebrew.load();
+    expect(held.ok && held.items.length).toBe(4 + file.items.length);
   });
 });
 

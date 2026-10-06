@@ -11,6 +11,11 @@ SELECT pg_catalog.set_config('search_path', '', false);
 
 COMMENT ON SCHEMA "public" IS 'standard public schema';
 
+CREATE TABLE IF NOT EXISTS "public"."homebrew_items" (
+    "id" "uuid" NOT NULL,
+    "owner_id" "uuid" NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS "public"."limit_defaults" (
     "key" "text" NOT NULL,
     "value" integer

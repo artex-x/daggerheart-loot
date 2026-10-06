@@ -48,6 +48,7 @@
   } from '../lib/homebrew.js';
   import {
     contentOf,
+    deleteItemAsk,
     DICE,
     dmgOf,
     draftOf,
@@ -440,7 +441,7 @@
     const uses = itemUses(store.items, r0.key);
     const lists = plural(inLists, t.hbListsIn, lang);
     const items = plural(uses, t.hbItemsIn, lang);
-    const ask =
+    const lead =
       inLists && uses
         ? t.hbDeleteItemInListsRel.replace('%s', name).replace('%l', lists).replace('%r', items)
         : inLists
@@ -448,7 +449,7 @@
           : uses
             ? t.hbDeleteItemRel.replace('%s', name).replace('%r', items)
             : t.hbDeleteItem.replace('%s', name);
-    if (!app.env.dialog.confirm(ask)) return;
+    if (!app.env.dialog.confirm(deleteItemAsk(lead, false, t))) return;
     refused = null;
     deleting = true;
     busy = true;
@@ -890,12 +891,7 @@
         </FormField>
 
         {#if draft.kind !== 'equip'}
-          <FormField
-            label={t.tier}
-            error={errText('hb-tier')}
-            errorId={errId('hb-tier')}
-            help={{ id: 'hb-tier-help', text: t.hbTierHelp, lang }}
-          >
+          <FormField label={t.tier} error={errText('hb-tier')} errorId={errId('hb-tier')}>
             <Seg
               id="hb-tier"
               label={t.tier}
@@ -913,7 +909,6 @@
             required
             error={errText('hb-eqtier')}
             errorId={errId('hb-eqtier')}
-            help={{ id: 'hb-eqtier-help', text: t.hbTierHelp, lang }}
           >
             <Seg
               id="hb-eqtier"
@@ -965,7 +960,6 @@
               required
               error={errText('hb-dmg')}
               errorId={errId('hb-dmg')}
-              help={{ id: 'hb-dmg-help', text: t.hbDmgHelp, lang }}
             >
               {@render damage('hb-dmg', 'dmgDie', 'dmgBonus', true)}
             </FormField>

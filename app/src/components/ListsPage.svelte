@@ -25,7 +25,7 @@
   import StorageNotice from './StorageNotice.svelte';
   import TextInput from './TextInput.svelte';
   import { agoText } from '../lib/ago.js';
-  import { frozenOf, NAME_MAX, type CloudList } from '../lib/cloudLists.js';
+  import { linkedOf, NAME_MAX, type CloudList } from '../lib/cloudLists.js';
   import { sharedListHash, storedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import { fewNames } from '../lib/i18n.js';
@@ -132,10 +132,17 @@
     app.say((t) => t.listsDeleted.replace('%n', String(n)));
   }
 
-  /* An account list's pending, unexpired purchase requests, for its card. */
+  /* An account list's pending, unexpired purchase requests and its unread notices, for its
+     card. */
   function waiting(listId: string): string | undefined {
-    const n = app.ownerRequests?.pendingCount(listId, app.now) ?? 0;
-    return n ? plural(n, t.requestsWaitN, app.lang) : undefined;
+    const owner = app.ownerRequests;
+    const n = owner?.pendingCount(listId, app.now) ?? 0;
+    const changed = owner?.unreadNotices(listId) ?? 0;
+    const parts = [
+      n ? plural(n, t.requestsWaitN, app.lang) : '',
+      changed ? plural(changed, t.noticesN, app.lang) : ''
+    ].filter(Boolean);
+    return parts.length ? parts.join(' · ') : undefined;
   }
 
   /* Any edit to the query starts the new result folded. */
@@ -157,9 +164,9 @@
      and the thumbs draw from, not `l.ids` itself: a deleted or renamed record
      must not leave a gap the count holds as though it were still there. */
   function knownItems(l: StoredList): Record_[] {
-    const frozen = frozenOf(l);
+    const linked = linkedOf(l);
     return l.ids
-      .map((id) => index?.byId.get(id) ?? frozen[id])
+      .map((id) => index?.byId.get(id) ?? linked[id])
       .filter((it): it is Record_ => it !== undefined);
   }
 

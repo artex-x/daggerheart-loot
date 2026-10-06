@@ -14,7 +14,13 @@ import {
   type User,
   type UserIdentity
 } from '@supabase/supabase-js';
-import { entryOrder, type ListRow, type SharedRow, type ShareRow } from '../lib/cloudLists.js';
+import {
+  entryOrder,
+  type LinkedRow,
+  type ListRow,
+  type SharedRow,
+  type ShareRow
+} from '../lib/cloudLists.js';
 import {
   canonJson,
   keyFrom,
@@ -24,7 +30,7 @@ import {
 } from '../lib/homebrew.js';
 import type { SignInAfter } from '../lib/pending.js';
 import { readPrefs } from '../lib/prefs.js';
-import { readApplied, readRequests, requestRefusal } from '../lib/requests.js';
+import { readApplied, readRequests, requestRefusal, type NoticeRow } from '../lib/requests.js';
 import { callbackUrl, saveReturn, type Redirect, type RedirectWindow } from './redirect.js';
 import type {
   AuthError,
@@ -251,7 +257,10 @@ async function made(call: () => PromiseLike<MadeAnswer>): Promise<ShareMade> {
    it to the owner (tests/db/lists.test.mjs). */
 const LIST_SELECT =
   'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
-  'list_entries(id,item_key,source,snapshot,position,quantity,price_coins,player_note,gm_note)';
+  'list_entries(id,item_key,source,hb_item,position,quantity,price_coins,player_note,gm_note)';
+
+/** The most ids one `get_homebrew_items` call takes; more go in several calls. */
+export const ITEMS_PER_CALL = 1000;
 
 /** The most changed lists a re-read fetches by id: `in.(...)` of 50 UUIDs is about 1.9 kB
  *  of address, far under a common 8 kB request line. More read the whole account. */
@@ -263,8 +272,11 @@ export const READ_PAGE = 1000;
 /* The owner's pending requests with their lines; row level security keeps them to the
    owner of each request's list. */
 const REQUEST_SELECT =
-  'id,list_id,audience,created_at,expires_at,' +
+  'id,list_id,audience,created_at,expires_at,read_at,' +
   'purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
+
+/* The owner's change log: one row per list and item. */
+const NOTICE_SELECT = 'id,list_id,item_key,hid,kind,name,created_at,read_at';
 
 /* The author's homebrew rows; row level security keeps them to the author
    (tests/db/homebrew.test.mjs). */
@@ -646,6 +658,39 @@ export function createCloud(
       } catch {
         return NETWORK;
       }
+    },
+    /* Keyed by the item, so another account's item reads as its own record; the
+       function answers only ids that exist. */
+    async items(ids) {
+      try {
+        const out: LinkedRow[] = [];
+        for (let at = 0; at < ids.length; at += ITEMS_PER_CALL) {
+          const part = ids.slice(at, at + ITEMS_PER_CALL);
+          const r0 = await client.rpc('get_homebrew_items', { p_ids: part });
+          const data: unknown = r0.data;
+          if (r0.error || !Array.isArray(data)) return { ok: false };
+          for (const row of data as unknown[]) {
+            const r = row as { hid?: unknown; item?: unknown } | null;
+            if (r && typeof r.hid === 'string') out.push({ hid: r.hid, item: r.item });
+          }
+        }
+        return { ok: true, items: out };
+      } catch {
+        return { ok: false };
+      }
+    },
+    /* Signed out too: `anon` executes `get_homebrew_item`; an unknown id answers null. */
+    async item(id) {
+      try {
+        const answer = await timed((signal) =>
+          client.rpc('get_homebrew_item', { p_id: id }).abortSignal(signal)
+        );
+        if (answer.error) return { ok: false };
+        const item: unknown = answer.data;
+        return { ok: true, item: item ?? null };
+      } catch {
+        return { ok: false };
+      }
     }
   };
 
@@ -816,6 +861,45 @@ export function createCloud(
       } catch {
         return REQUEST_UNSENT;
       }
+    },
+    markRead: (listId) =>
+      written(() =>
+        timed((signal) => client.rpc('mark_list_read', { p_list: listId }).abortSignal(signal))
+      ),
+    /* Row level security keeps a notice to its list's owner; one list reads whole, every
+       list is cut at the row cap (`READ_PAGE`), newest first. */
+    async notices(listId) {
+      if (!(await userId())) return { ok: false };
+      try {
+        const q = client.from('list_notices').select(NOTICE_SELECT);
+        const { data, error } = await (listId === undefined ? q : q.eq('list_id', listId))
+          .order('created_at', { ascending: false })
+          .order('id')
+          .limit(READ_PAGE);
+        if (error || !Array.isArray(data)) return { ok: false };
+        return { ok: true, notices: data as unknown as NoticeRow[] };
+      } catch {
+        return { ok: false };
+      }
+    },
+    /* The ids go in chunks of `CHANGED_LISTS_MAX`: one `in.(...)` of 210 ids passes an 8 kB
+       request line. A failed chunk stops; the caller reads the notices again. */
+    async hideNotices(listId, ids) {
+      for (let i = 0; i < ids.length; i += CHANGED_LISTS_MAX) {
+        const chunk = ids.slice(i, i + CHANGED_LISTS_MAX);
+        const r = await written(() =>
+          timed((signal) =>
+            client
+              .from('list_notices')
+              .delete()
+              .eq('list_id', listId)
+              .in('id', chunk)
+              .abortSignal(signal)
+          )
+        );
+        if (!r.ok) return r;
+      }
+      return { ok: true };
     }
   };
   /* An update names the revision the form loaded. When it matches no row, a read of the

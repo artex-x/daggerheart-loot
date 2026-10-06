@@ -34,11 +34,11 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
     ... StaticText x5 of 9 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    link "Мешок спокойных снов (HB)" [url=index.html?as=gm3#/i/hb_bedrolliaaaaaaaa]
+    link "Мешок спокойных снов (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000609]
     StaticText ", "
-    link "Спальный мешок дозорного (HB)" [url=index.html?as=gm3#/i/hb_bedrollfaaaaaaaa]
+    link "Спальный мешок дозорного (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000606]
     StaticText ", "
-    link "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [url=index.html?as=gm3#/i/hb_bedrolloaaaaaaaa namelen=125 namehash=a16051fb]
+    link "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000615 namelen=125 namehash=a16051fb]
     button "и ещё 12" [expanded=false]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
@@ -118,11 +118,11 @@ RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=index.html?as=
     ... StaticText x5 of 9 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    link "Ash Bedroll (HB)" [url=index.html?as=gm3#/i/hb_bedrolldaaaaaaaa]
+    link "Ash Bedroll (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000604]
     StaticText ", "
-    link "Bedroll of Silence (HB)" [url=index.html?as=gm3#/i/hb_bedrollcaaaaaaaa]
+    link "Bedroll of Silence (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000603]
     StaticText ", "
-    link "Bedroll of the long road over the pass, through the marshes, the..." [url=index.html?as=gm3#/i/hb_bedrolloaaaaaaaa namelen=125 namehash=8e210070]
+    link "Bedroll of the long road over the pass, through the marshes, the..." [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000615 namelen=125 namehash=8e210070]
     button "and 12 more" [expanded=false]
     button "Share"
     button "Copy image" [description=Copy image]

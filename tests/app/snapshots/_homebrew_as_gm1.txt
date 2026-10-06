@@ -1,6 +1,6 @@
 # #/homebrew as gm1
 # route: #/homebrew
-# why: «4 предмета из 100», the closed folds «Источники · 1 источник из 20» and «Карты · 2 карты из 100: 1 комплект, 1 карта правил», «Новый предмет» and «Импорт предметов» with its caret, the strip, the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»
+# why: the Items tab: «Импорт из файла» with its caret, the tab row «Предметы» (current), «Источники», «Комплекты», «Карты правил», «Новый предмет», «4 предмета из 100» above the strip (no search under eight items), the axe under «Мастерская Ольхи · Холодное оружие» and the other three under «Хоумбрю»
 # as: gm1
 
 ## ru :: tree
@@ -28,11 +28,14 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
   main ""
     heading "Мои предметы" [level=1]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
-    StaticText "4 предмета из 100"
-    DisclosureTriangle "ИСТОЧНИКИ · 1 источник из 20" [expanded=false]
-    DisclosureTriangle "КАРТЫ · 2 карты из 100: 1 комплект, 1 карта правил" [expanded=false]
+    button "Импорт из файла" [expanded=false]
+    navigation "Мои предметы"
+      link "Предметы" [url=index.html?as=gm1#/homebrew]
+      link "Источники" [url=index.html?as=gm1#/homebrew/sources]
+      link "Комплекты" [url=index.html?as=gm1#/homebrew/sets]
+      link "Карты правил" [url=index.html?as=gm1#/homebrew/rules]
     link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
-    button "Импорт предметов" [expanded=false]
+    StaticText "4 предмета из 100"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
@@ -67,30 +70,26 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Выбрать все
-Изменить
-Импорт предметов
+Импорт из файла
+Источники
 К содержимому
+Карты правил
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
+Комплекты
 Конфиденциальность
 ЛутDaggerheart
 Настой кузнеца
 Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
-Новая карта правил
-Новый источник
-Новый комплект
 Новый предмет
 Обычные правила
-Переименовать
 Поиск
-Разделы
-Скачать JSON
+Предметы
 Сообщества
 Списки
 Таблицы
 Топор Тлеющих Углей
 Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
-Удалить
 Условия использования
 Установить как приложение
 
@@ -119,11 +118,14 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
   main ""
     heading "My items" [level=1]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
-    StaticText "4 items of 100"
-    DisclosureTriangle "SOURCES · 1 source of 20" [expanded=false]
-    DisclosureTriangle "CARDS · 2 cards of 100: 1 set, 1 rule card" [expanded=false]
+    button "Import from file" [expanded=false]
+    navigation "My items"
+      link "Items" [url=index.html?as=gm1#/homebrew]
+      link "Sources" [url=index.html?as=gm1#/homebrew/sources]
+      link "Sets" [url=index.html?as=gm1#/homebrew/sets]
+      link "Rule cards" [url=index.html?as=gm1#/homebrew/rules]
     link "New item" [url=index.html?as=gm1#/homebrew/new]
-    button "Import items" [expanded=false]
+    StaticText "4 items of 100"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""
@@ -149,28 +151,24 @@ Account: gm1@example.test
 Alt. tables
 Arazo's Artifacts
 Communities
-Delete
-Download JSON
 Dragon's Vault
 Dread
 EN
-Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
-Import items
+Import from file
 Install as an app
+Items
 Lists
 New item
-New rule card
-New set
-New source
 Privacy
 RU
-Rename
+Rule cards
 Search
-Sections
 Select all
+Sets
 Skip to content
+Sources
 Standard rules
 Tables
 Terms of use

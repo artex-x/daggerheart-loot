@@ -315,7 +315,7 @@ opposite has now been observed twice, deny path included: a script edited
 mid-session blocked a command minutes later, so the scripts are re-read per
 invocation here. Do not rely on either behaviour across hosts.
 
-Eleven kinds of runtime file live under `.claude/` and are gitignored
+These runtime files live under `.claude/` and are gitignored
 (`.claude/.gitignore`). A worktree session keeps the two caches, the
 pending files, the half records and the index copies in the worktree's own
 `.claude/` ("Known limitations", the desktop worktree session):
@@ -527,16 +527,17 @@ half with the old key runs again; an edit undone (K, K', K) is the same
 content and arms. When the tool moves a half to the background, stay in the
 turn until it exits and read its output for the `gate credit:` line; run the
 half again only when that line is missing, because a re-run repeats the
-uncached stages. The exception to "each under 600 s": in a batch that changes
-the hooks, `check:1` runs the selftest uncached and can pass 600 s on a
-loaded host (252 s on an idle host, 2026-10-07; `check:2` 308 s); its exit
-still records the half, and the `gate
-credit:` line is the evidence. `npm run check` stays the full chain, arms
-alone and is what CI runs. Until the main checkout holds this change (the
-desktop app runs the main checkout's hook copy), its older hooks run: the
-observer says nothing about a half and rules 2g and 2k do not know the halves,
-but the commit gate accepts a `.check-cache.json` with any `by`, so the
-halves arm it all the same.
+uncached stages. The exception to "each under 600 s" covers both halves:
+`check:1` runs the selftest uncached in a batch that changes the hooks (252 s
+on an idle host, 2026-10-07), and `check:2` took 308 s idle, 465-682 s
+under load (2026-10-07). Past 600 s the exit still records the half, and the
+`gate credit:` line is the evidence. `npm run check` stays the full chain,
+arms alone and is what CI runs. Until the main checkout holds this change,
+a worktree session may run the main checkout's older hooks ("Known
+limitations", the desktop worktree session): then the observer says nothing
+about a half and rules 2g and 2k do not know the halves, but the commit gate
+accepts a `.check-cache.json` with any `by`, so the halves arm it all the
+same.
 
 **The fast pre-check.** `rtk npm run check:fast` (one call, Bash timeout
 600000) finds the cheap failures before the halves, and arms nothing.
@@ -623,13 +624,14 @@ untyped ESLint half use their own caches.
   inputs match its last local pass"). Never let ESLint write
   `.eslintcache` to the repository root: it is not gitignored and moves the
   tree key.
-- Three vitest tests failed under host load (2026-10-07): "picks and
+- Four vitest tests failed under host load (2026-10-07): "picks and
   removes in every picker" at its 30 s timeout (3.5 s on an idle host),
   "draws 20 list blocks ... for 1000 lists" at 3213.6 ms against its 3000 ms
-  bound, and the field help case "names its field, starts closed ..." at
-  30 s in two full runs in a row (5.3 s alone). All three now run in
-  the `timed` vitest project (`homebrewEditor.timed.test.ts`,
-  `importPanel.timed.test.ts`; `vite.config.mts`): one file at a time,
+  bound, the field help case "names its field, starts closed ..." at 30 s
+  in two full runs in a row (5.3 s alone), and "draws 20 rows of 60
+  sources" at 30 s in a 682 s run. All four now run in the `timed` vitest
+  project (`homebrewEditor.timed.test.ts`, `importPanel.timed.test.ts`,
+  `homebrewImport.timed.test.ts`; `vite.config.mts`): one file at a time,
   after every `unit` file, in the same run and coverage report. A new
   timing bound, or a case that passes 30 s under load, goes to a
   `*.timed.test.ts` file with its helpers in `app/src/test/`; the timeout
@@ -798,10 +800,10 @@ documented; the parity rows below are replaced by the gates that survive.
 
 | gate | idle host | loaded host |
 |---|---|---|
-| `npm run check` | ~165s | near or past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded and still arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
+| `npm run check` | 10-18 min with nothing cached (2026-10-07); agents run its halves below | past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded and still arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
 | `npm run check:fast` | 215-310 s (2026-10-07) | longer; one call |
 | `npm run check:1` | 252 s with the selftest uncached (2026-10-07) | longer; past 600 s it records the half by its exit |
-| `npm run check:2` | 308 s (2026-10-07) | longer |
+| `npm run check:2` | 308 s (2026-10-07); 344-566 s with the stack stopped and 3496-3532 tests (2026-10-08) | 465-682 s (2026-10-07); past 600 s it records the half by its exit |
 | `npm run check:built` | a few minutes | longer |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | longer; `app/sweep` as a whole (`run-all.js app/sweep`, all four widths) is past the cap and must run width by width |
@@ -1125,7 +1127,11 @@ adversary:
 - A desktop worktree session is the other case: the desktop app runs the
   main checkout's hook copy for it (measured 2026-09-30), so a hook change
   reaches it only when the main checkout's working tree carries the commit.
-  The gates read the session's checkout, `lib.mjs`'s `checkoutRoot(cwd)`:
+  On 2026-10-07 the opposite was seen: an implementer subagent working in a
+  worktree (its session cwd the worktree) got the worktree's new
+  `LONG_CHECKS` reminders for `check:fast` and `check:1`, which the main
+  checkout's `bash-guard.mjs` did not have. Which copy runs may depend on
+  the session type; do not rely on either. The gates read the session's checkout, `lib.mjs`'s `checkoutRoot(cwd)`:
   the commit gate's tree key and caches (`stateDir(cwd)`, the worktree's
   own `.claude/`), the reports of rule 2r, rules 2l, 2p and 2u, the
   orphan-task rule and `agent-guard.mjs`'s task directory. A worktree
@@ -1615,6 +1621,34 @@ folding every entry to the old fifteen-line cap removed 22 of 1660 lines
 inserted entries at line 15 of the one file, a conflict on every
 concurrent pair.
 
+## Owner insights
+
+A reusable rule the owner states (how a mock looks, when a field gets a «?», how a
+page is laid out) is written into its home in the batch that hears it: only a rule that
+changes later work, in one to three lines (`docs/decisions/2026-10-07-owner-rules-are-written-to-their-homes-in.md`).
+
+| Rule | Home | Budget |
+|---|---|---|
+| A rule for every signed-in page | `docs/specs/FEATURES.md`, "Consistency rules" (a numbered rule) | 20 rules; a merged or replaced rule keeps its number as a pointer; numbers are not reused |
+| Other product behaviour | the `docs/specs/` file and section that own it | one to three lines in the owning section; no new section for one rule |
+| Visual design | `DESIGN.md`, "Named Rules" of the section that owns it | 8 per section |
+| A mock rule | `DESIGN.md`, "Do's and Don'ts" | 8 per list |
+| Tooling, hooks, host and process | `.claude/README.md`, the section that owns the tool | no net lines: the rule merges, or removes as many lines as it adds |
+| A choice with rejected alternatives | `docs/decisions/` (one file) | the registry's 15-line body |
+| A step of one role | that role's prompt in `.claude/prompts/` | the file under its 2026-10-07 size plus 2 KB: `orchestrate.prompt.md` 35464 bytes (33416 measured), `plan.prompt.md` 16861 (14813), `review.prompt.md` 12250 (10202) |
+| A mistake that agents repeat | `CLAUDE.md` ("Maintaining this file") | one imperative line; the file under 200 lines |
+
+A rule that would go past a budget replaces or merges an older rule of that home, and the
+batch names the rule it replaced. This file's budget is net zero: it was 221 KB on
+2026-10-07, past the 150 KB line that the `Stop` hook applies to task documents only.
+
+| Role | Step |
+|---|---|
+| Orchestrator | Tags each rule of an owner answer with its home in `context.md`, "Decisions already settled" (`orchestrate.prompt.md`, "Shared context"); the planner adds the batch. |
+| Planner | Places the write as an acceptance line of a batch (`plan.prompt.md`, after "Design decisions"). |
+| Reviewer | Checks in every review that a rule tagged with the batch, or stated in its sources, is in its home (`review.prompt.md`, section I). |
+| Closeout | Checks every tagged rule against its home before the directory is deleted (`skills/handoff/SKILL.md`, "Finishing a task"). |
+
 ## Persistence era: decided now, activated at Phase 0
 
 Moved here verbatim from `config-audit`'s plan at that task's retirement
@@ -1813,7 +1847,7 @@ CLI facts (2.117.0, measured 2026-09-24):
 |---|---|---|
 | `npm run config:diff -- --project test\|prod [--env-file <path>]` | anyone; an agent only against `test` | read-only diff of `config.toml` against the project; prints `drift: none (N not-owned)` or `drift: N`, exits 2 on drift |
 | `npm run config:push -- --project test\|prod [--env-file <path>]` | the owner, in an interactive terminal | refuses without a TTY; for `prod` refuses while an `env(...)` name is unset; diffs, asks for a typed `yes`, then runs `config push` with the CLI's own prompt |
-| `npm run db:push -- --project test [--yes]` | the owner; an agent only after an approving report under `issues/*/reviews/` whose `Reviewed:` commit has `HEAD`'s `supabase/migrations` tree (rule 2r; `docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review"); `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing. It keeps `db push`, so it refuses while another branch's migration sits on the test project; CI's `migrate-test` is the path then |
+| `npm run db:push -- --project test [--yes]` | the owner; an agent only after an approving report under `issues/*/reviews/` whose `Reviewed:` commit has `HEAD`'s `supabase/migrations` tree (rule 2r; `docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review"); `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing. It keeps `db push`, so it refuses while another branch's migration sits on the test project; CI's `migrate-test` is the path then. On a host with no IPv6 it fails with `LegacyDbConfigIpv6Error` (the CLI resolves the direct IPv6 host; this host, 2026-10-07); there the working path is `tools/supabase/migrate-test.mjs` with `SUPABASE_DB_URL` set to the test project's session pooler string (`SUPABASE_DB_URL_TEST`) |
 | `npm run db:push -- --project prod` | the owner, in an interactive terminal | the fallback while CI's `migrate-prod` is broken; refuses without a TTY, and refuses `--yes`; dry run, typed `yes`, `db push`; records nothing |
 | `npm run limits:set -- --project test\|prod --user <email\|uuid> --key <key> --value <n>\|--default\|--clear\|--unlimited` | an agent only against `test` (rule 2n); `prod` the owner, in an interactive terminal | sets or removes one user's override of one count limit over `SUPABASE_DB_URL` from the environment; refuses a string that is not the named project's, a key not in `limit_defaults`, and a user that is not exactly one row; prints `before:` and `after:` (`200`, `unlimited`, `default 50`). `--clear` is `--default`: it deletes the override; an override does not lift the ceilings of one call (`FEATURES.md`, "Limits") |
 | `npm run check:db` | anyone (Docker; PowerShell on Windows) | layer 3 against the local stack |
@@ -2007,9 +2041,9 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-209 kB for the unconfigured build and 269 kB for the configured one, which
+211 kB for the unconfigured build and 269 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 209 kB limit. The 269 kB limit runs in
+unconfigured and so measures only the 211 kB limit. The 269 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2066,6 +2100,26 @@ supabase_migrations.schema_migrations where version = '<version>'`; or
 reset the test project. Expected: the next `migrate-test` log no longer
 lists the version.
 
+The scheduled clean-up: `20261007120000_lifecycle_cleanup` creates the
+`pg_cron` extension (`with schema pg_catalog`, the form the Supabase docs
+name; the local probe of 2026-10-07 needed no extra grant to `postgres`) and
+the job `dhloot-lifecycle`, which runs `select public.lifecycle_cleanup()`
+at minute 7 of every hour as `postgres` on the local stack and on both
+hosted projects (`docs/specs/META.md` section 3). The local stack runs it
+too, so a layer 3 case seeds its rows inside one rolled-back transaction.
+The owner reads the last runs read-only in the dashboard SQL editor:
+
+```sql
+select jobid, status, return_message, start_time from cron.job_run_details order by start_time desc limit 5
+```
+
+Expected: `succeeded` rows an hour apart. `return_message` holds the
+command tag (`SELECT 1`), not the function's answer `{ "requests": n,
+"shares": n, "runs": n }`; run the function by hand to see the counts,
+which deletes for real. The nightly
+usage report's `lifecycle` row warns on a failed or missing run ("Usage
+monitoring").
+
 ### Backups and restore
 
 `.github/workflows/backup.yml` dumps production every night at 03:17 UTC
@@ -2103,7 +2157,15 @@ Expected: `<dir>` holds `schema.sql.age` and `data.sql.age`.
 **Recovery.** Restore into the local stack first, then the test project,
 then production. The dump restores against the schema the migrations
 produce, and it sets `session_replication_role = replica`, so triggers stay
-off while it loads.
+off while it loads. `npm run restore:drill` and `npm run restore:prod` pause
+the hourly clean-up job `dhloot-lifecycle` (`cron.alter_job(jobid, active
+:= false)`) for the load and the count or the verify, and activate it again
+after, also on a failure (`tools/supabase/restore.mjs`,
+`withLifecyclePaused`): a run in between would delete loaded rows past
+their retention and change the count. A target without the job (no
+`pg_cron`, or a schema from before `20261007120000_lifecycle_cleanup`) loads
+as before. By hand, run the same pause before step 3 or 6 and `active :=
+true` after.
 
 Steps 1-3 and 7 against the local stack are one command for anyone, an
 agent included: `npm run restore:drill` ("Run the agent drill" below).
@@ -2470,6 +2532,31 @@ where not (coalesce(en, '') ~ '[^\x09-\x0d\x20\u0085\u00a0\u1680\u180e\u2000-\u2
 The reversal drops both functions and restores the old name check; run it
 only as a second push, a new migration whose body is the reversal file.
 
+To undo `20261007120000_lifecycle_cleanup`, revert the app alone: it reads
+nothing the job changes. The reversal unschedules the job, drops the
+function and the extension, and brings back the write-time delete of
+`create_purchase_request()`; rows the job deleted are not restored - they
+were past their retention.
+
+To undo `20261007130000_homebrew_links`, revert the app alone: the
+migration keeps `list_entries.snapshot`, always null, for this release, so
+the previous frontend reads every list. Each converted row links its list
+owner's own item, which that frontend reads as a reference by key; a link
+to another account's item made after the push draws there as a record it
+does not know. Its writes still land: a reference by key gets its
+`hb_item` from the trigger, and a frozen copy is refused (`22023`).
+Requests read with their later expiry, and notices wait unread until the
+30-day clean-up. Narrow the database too only as a second push, a new
+migration whose body is the reversal file; if the data must be as it was,
+`restore:prod` the pre-release backup after that. The reversal rebuilds a
+snapshot for every entry that links another account's item, restores the
+1-hour expiry of pending requests and drops `list_notices` with its rows.
+It cannot restore: the one frozen copy with no holder that the migration
+deleted (owner, 2026-10-06), the content of own-held frozen copies (they
+became links to the live item), the read marks of requests, and per-owner
+`snapshot_bytes_per_list` overrides (deleted by cascade; only the default
+row comes back).
+
 ### Usage monitoring
 
 `.github/workflows/usage.yml` reports production's free-plan usage every
@@ -2490,6 +2577,7 @@ call, not the dump".
 | Accounts, Storage objects | `count(*)` | none | growth a day |
 | Realtime messages (24 h, lower bound) | `count(*)` of `realtime.messages` with `inserted_at` in the last 24 hours: one row per broadcast, delivered once per subscriber, so the billed messages are at least this many; 0 and a note without the table, `null` and a note when the role may not read it | none (the quota is 2 million a month, the dashboard's) | growth a day |
 | requests | Management API `usage.api-counts?interval=1day`, summed per service: an egress proxy, never bytes | none | none |
+| lifecycle | the rows the hourly clean-up should have deleted more than 2 hours ago (`META.md` section 3, each retention plus 2 hours), and the newest `cron.job_run_details` row of `dhloot-lifecycle` | none | none |
 | keep-alive | one Data API call a night (below) | none | none |
 
 The summary also lists every `public` table by bytes with its exact row
@@ -2510,6 +2598,7 @@ left (a `::warning::` annotation); `fail` at 80 % or under 14 days left (a
 | no `SUPABASE_USAGE_TOKEN_PROD` | `requests: no token`, `warn` | green |
 | HTTP 401 or 403 from the Management API | `requests`, `FAIL`: "the usage token is expired or lacks Usage Analytics read" | red |
 | HTTP 429, 5xx, the 10 s timeout (the body read included), a body without `result[]` | `requests: unavailable (<reason>)`, `warn` | green |
+| rows past their retention plus 2 hours; the job's newest run failed, started more than 2 hours ago, or is missing; no read access to `cron` | `lifecycle: the hourly clean-up has not run: N rows past their retention`, `... failed`, `... has not run since <time>`, `... has no run on record` or `no cron.job_run_details access`, `warn` | green |
 | a keep-alive answer that is not 2xx, a network error, the timeout | `keep-alive: not reached (HTTP <status>)` or `(<reason>)`, `warn` | green |
 | an SQL error or a refused connection | none: the error line | red |
 | a failed snapshot save (for example read-only mode) | `usage: the snapshot was not saved: <message>` after the summary | red |

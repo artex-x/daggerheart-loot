@@ -27,7 +27,6 @@ import {
 import type { Env } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
-import { recordOf } from '../lib/homebrew.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -1280,7 +1279,7 @@ describe('homebrew cards', () => {
     expect(bottom(filled()[1])).toContain('Хоумбрю');
   });
 
-  it('prints a frozen copy of an own list, and nothing for a key the account does not hold', async () => {
+  it("prints another account's item an own list links, and nothing for a key no list holds", async () => {
     render(App, { env: at('#/print/' + AXE, { cloud: fakeCloud(SEED, 'gm2') }) });
     await screen.findByText('Топор Тлеющих Углей');
     expect(filled()).toHaveLength(1);
@@ -1345,25 +1344,41 @@ describe("the author's own set members", () => {
     await expectNoA11yViolations(container);
   });
 
-  it("prints a frozen copy's set bonus under its name alone when no other member is the reader's", async () => {
+  it("prints a linked item's set bonus under its name alone when no other member is the reader's", async () => {
     const KEY = 'hb_frozensetpieceaa';
-    const snapshot = recordOf(
-      KEY,
-      { kind: 'item', ru: 'Чужой браслет', set: 'hb_ownsetaaaaaaaaaa' },
-      null,
-      [
-        {
-          key: 'hb_ownsetaaaaaaaaaa',
-          kind: 'set',
-          ru: 'Чужой комплект',
-          en: 'Borrowed Set',
-          rud: 'Бонус комплекта.',
-          ende: 'The set bonus.'
-        }
-      ]
-    );
+    const ITEM = uuid(2950);
     const seed: Seed = {
       ...SEED,
+      homebrew: {
+        ...SEED.homebrew,
+        gm3: {
+          books: [],
+          cards: [
+            {
+              id: uuid(2951),
+              key: 'hb_ownsetaaaaaaaaaa',
+              kind: 'set',
+              content: {
+                ru: 'Чужой комплект',
+                en: 'Borrowed Set',
+                rud: 'Бонус комплекта.',
+                ende: 'The set bonus.'
+              },
+              createdAgoMs: 3_600_000,
+              editedAgoMs: 3_600_000
+            }
+          ],
+          items: [
+            {
+              id: ITEM,
+              key: KEY,
+              content: { kind: 'item', ru: 'Чужой браслет', set: 'hb_ownsetaaaaaaaaaa' },
+              createdAgoMs: 3_600_000,
+              editedAgoMs: 3_600_000
+            }
+          ]
+        }
+      },
       lists: {
         ...SEED.lists,
         gm2: [
@@ -1371,7 +1386,7 @@ describe("the author's own set members", () => {
             id: uuid(291),
             name: 'Чужое',
             entries: [
-              { id: uuid(2911), itemKey: KEY, position: 0, source: 'homebrew', snapshot }
+              { id: uuid(2911), itemKey: KEY, position: 0, source: 'homebrew', hbItem: ITEM }
             ],
             createdAgoMs: 3_600_000,
             editedAgoMs: 3_600_000

@@ -89,26 +89,57 @@ alone, a security definer function that holds every bound itself - a valid
 active token, a client-made id whose replay inserts nothing, at most 100
 lines of items the list holds and 10 pending per list (the defaults of
 `request_lines` and `pending_requests_per_list`), 5 requests a minute per
-link - and stores no name, account or address of the sender. `anon`
-executes three functions, `get_shared_list(text)`, its revision overload
-`get_shared_list(text,bigint)` (security invoker: it answers `unchanged`
-for a revision the list has not passed, else what `get_shared_list(text)`
-answers) and that one, and reads no table (`tests/db/harness.test.mjs`;
+link - and stores no name, account or address of the sender. A request
+expires 1 hour after the list's owner first reads it, applies or declines it,
+or 30 days after it was sent while nobody reads it (`docs/decisions/`,
+2026-10-07, "A list's change log shares the requests' view and the
+database's clean-up"). `anon` executes four functions,
+`get_shared_list(text)`, its revision overload `get_shared_list(text,bigint)`
+(security invoker: it answers `unchanged` for a revision the list has not
+passed, else what `get_shared_list(text)` answers), that one and
+`get_homebrew_item(uuid)`, and reads no table (`tests/db/harness.test.mjs`;
 `docs/DECISIONS.md`, 2026-09-26, "Purchase requests are written only by a
 bounded function any link holder calls").
+
+Data with a lifecycle is deleted by the backend on a schedule, never by a
+client: `public.lifecycle_cleanup()`, which `pg_cron` runs hourly at minute
+7 as the job `dhloot-lifecycle`, and the nightly usage report for its own
+`usage_snapshots` (kept 400 days). A client may hide such a row by its
+clock; a reader's explicit delete is not lifecycle logic. No API role
+executes the function. The nightly usage report warns when a row outlives
+its retention by 2 hours, or the job's newest run failed or is older than 2
+hours (`docs/decisions/`, 2026-10-07, "Lifecycle data is deleted by the
+database on a schedule").
+
+| Rows | Deleted |
+|---|---|
+| `purchase_requests`, pending or decided (with their lines) | when `expires_at` passes: 1 hour after the first read, apply or decline, or 30 days after `created_at` unread |
+| `list_notices` read | 1 hour after `read_at` |
+| `list_notices` unread | 30 days after `created_at`, which each new change of the item resets |
+| `list_shares` stopped | 30 days after `revoked_at`, only when a newer row of the same list and audience exists: the owner's panel draws the newest row of each audience |
+| `cron.job_run_details` | 7 days after `end_time` |
 
 Homebrew items, their sources and sections, and the author's set and rule
 cards live in the account only: never in the browser's storage, and never
 in a `#/l/` link. They leave it only as the reader's own file: a homebrew
 file, the data zip's `homebrew.json`, or a lists file's version 2 entry with
-its snapshot (`FEATURES.md`, "Homebrew"). An own item opens for its author
-alone.
+its snapshot (`FEATURES.md`, "Homebrew"). Any homebrew item opens for
+anyone who holds its id, through two definer functions,
+`get_homebrew_item(uuid)` (`anon` and `authenticated`) and
+`get_homebrew_items(uuid[])` (`authenticated`, at most 1000 ids); nobody
+can list items, and neither answer holds the owner. `get_homebrew_item`
+also answers `updated_at`, when the item, its source or a card it names
+was last changed, with two known limits: a rename of a source moves the
+time of every item in it, and an «Обновить» import that writes the same
+content moves it too (`docs/decisions/`,
+2026-10-07, "An item is read by its id by anyone; a list holds a live
+link").
 
 An account's lists leave it only as the reader's own file: the lists JSON
 or the data zip of `#/account` (`FEATURES.md`, "Account and browser
 lists", "Exports"), which is the per-user backup and the way between two
-accounts. The site keeps no copy of a file, and «Импорт из файла» and
-«Импорт предметов» import only a file the reader chose, through the same
+accounts. The site keeps no copy of a file, and «Импорт из файла» on `#/lists` and
+on «Мои предметы» import only a file the reader chose, through the same
 Supabase backend.
 
 Add no server beside the Supabase backend: no upload endpoint and no paste

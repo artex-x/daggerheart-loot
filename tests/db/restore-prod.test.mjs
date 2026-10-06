@@ -4,7 +4,9 @@
   from tests/db/fixtures/restore-prod/current.sql and reached through the
   same libpq environment path as a hosted target. The right ref restores
   the backup after an encrypted safety backup, keeps a user the backup
-  lacks and never lowers the sequence; the safety backup undoes it; a wrong
+  lacks and never lowers the sequence, with the clean-up job active again
+  after the load; a resume that fails after a good load is its own report
+  line and leaves the verdict PASS; the safety backup undoes it; a wrong
   ref, a missing or stale receipt and a failing load write nothing. main
   refuses without a terminal before it reads the key, and no error holds
   the connection string. .claude/README.md, "Restore production (owner)".
@@ -26,6 +28,7 @@ import {
   receiptFor
 } from '../../tools/supabase/lib.mjs';
 import {
+  LIFECYCLE_JOB,
   LOCAL_PG_ENV,
   dumpDatabase,
   newestMigration,
@@ -121,6 +124,14 @@ async function withSql(fn) {
   }
 }
 
+/* Answers whether the clean-up job is active. */
+const jobActive = () =>
+  withSql(async (sql) => {
+    const [{ active }] =
+      await sql`select active from cron.job where jobname = ${LIFECYCLE_JOB}`;
+    return active;
+  });
+
 const seed = () => withSql((sql) => sql.unsafe(read(FIXTURES, 'current.sql')));
 
 /* Row counts, emails, token ids, C's lists and the sequence. */
@@ -197,6 +208,7 @@ describe('restoreToTarget', () => {
     assert.equal(now.listsOfC, 0);
     assert.deepEqual(now.tokens, [1, 2, 3, 50]);
     assert.ok(now.seq >= 80, `refresh_tokens_id_seq is ${now.seq}`);
+    assert.equal(await jobActive(), true);
     noFixtureValue(report.lines);
   });
 
@@ -279,8 +291,39 @@ describe('restoreToTarget', () => {
     assert.equal(report.verdict, 'FAIL');
     assert.equal(state.load.sqlstate, '42703');
     assert.deepEqual(await snapshot(), seeded);
+    assert.equal(await jobActive(), true);
     assert.ok(existsSync(path.join(state.safety.dir, 'data.sql.age')));
     noFixtureValue(report.lines);
+  });
+
+  it('reports a failed resume after a good load as its own line and still passes', async () => {
+    // The load's last statement makes every new postgres session read-only:
+    // the verify only reads, and the resume's update of cron.job fails.
+    const readOnly = source(
+      'run 4',
+      `${backup.dataText}\nALTER ROLE postgres SET default_transaction_read_only = on;\n`
+    );
+    try {
+      const { state, report } = await restore(readOnly, { receipts: [receiptOf(readOnly)] });
+      assert.equal(report.verdict, 'PASS', report.lines.join('\n'));
+      assert.match(state.resume.jobid, /^\d+$/);
+      assert.ok(
+        report.lines.includes(
+          `the clean-up job was not resumed: ${state.resume.message}; run select cron.alter_job(${state.resume.jobid}, active := true)`
+        ),
+        report.lines.join('\n')
+      );
+      assert.equal(await jobActive(), false);
+    } finally {
+      await withSql(async (sql) => {
+        await sql.unsafe('set default_transaction_read_only = off');
+        await sql.unsafe('alter role postgres reset default_transaction_read_only');
+      });
+      await withSql(
+        (sql) => sql`select cron.alter_job(jobid, active := true)
+        from cron.job where jobname = ${LIFECYCLE_JOB}`
+      );
+    }
   });
 
   it('leaves no fixture row after the reset', async () => {

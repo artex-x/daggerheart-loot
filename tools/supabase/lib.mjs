@@ -1010,8 +1010,10 @@ const PROD_SQLSTATE_HINTS = new Map([
  * at }`), `target` (`{ publicTables }`), `safety` (`{ dir }`), `rows` (`[{
  * table, now, backup }]`), `confirmed` (true or false), `load` (as
  * drillReport's), `verify` (`{ tables, mismatches: [{ name, got, want }],
- * sequences: [{ seq, ok }] }`); each may be absent. The lines only grow as
- * the state grows, so a caller may print a prefix before the prompt. */
+ * sequences: [{ seq, ok }] }`), `resume` (`{ jobid, message }`, the clean-up
+ * job's failed resume, which changes no verdict); each may be absent. The
+ * lines only grow as the state grows, so a caller may print a prefix before
+ * the prompt. */
 export function prodReport(state) {
   const lines = [];
   let pass = true;
@@ -1019,7 +1021,8 @@ export function prodReport(state) {
     pass = false;
     lines.push(line);
   };
-  const { failure, source, receipt, target, safety, rows, confirmed, load, verify } = state;
+  const { failure, source, receipt, target, safety, rows, confirmed, load, verify, resume } =
+    state;
   if (source) {
     const at = receipt
       ? `, receipt ${String(receipt.at).slice(0, 16).replace('T', ' ')} UTC ok`
@@ -1063,6 +1066,11 @@ export function prodReport(state) {
     }
   }
   if (failure) fail(`FAIL: ${failure}`);
+  if (resume) {
+    lines.push(
+      `the clean-up job was not resumed: ${resume.message}; run select cron.alter_job(${resume.jobid}, active := true)`
+    );
+  }
   if (safety) {
     const stamp = safety.dir.split(/[\\/]/).pop();
     if (load && !rolledBack) {

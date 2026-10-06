@@ -25,7 +25,10 @@ function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask') {
     list: () => Promise.resolve({ ok: false }),
     send,
     apply: () => Promise.resolve({ ok: false, error: 'network' }),
-    decline: () => Promise.resolve({ ok: false, error: 'network' })
+    decline: () => Promise.resolve({ ok: false, error: 'network' }),
+    notices: () => Promise.resolve({ ok: false as const }),
+    hideNotices: () => Promise.resolve({ ok: true as const }),
+    markRead: () => Promise.resolve({ ok: false, error: 'network' })
   };
   const hooks = {
     newId: () => 'id-' + String(++n),
@@ -134,7 +137,10 @@ describe('RequestSender.send', () => {
         list: () => Promise.resolve({ ok: false }),
         send: () => Promise.resolve(refusal),
         apply: () => Promise.resolve({ ok: false, error: 'network' }),
-        decline: () => Promise.resolve({ ok: false, error: 'network' })
+        decline: () => Promise.resolve({ ok: false, error: 'network' }),
+        notices: () => Promise.resolve({ ok: false as const }),
+        hideNotices: () => Promise.resolve({ ok: true as const }),
+        markRead: () => Promise.resolve({ ok: false, error: 'network' })
       },
       {
         newId: () => 'x',

@@ -30,6 +30,7 @@
  */
 import type {
   ImportRow,
+  LinkedRow,
   ListOp,
   ListRow,
   ShareAudience,
@@ -51,7 +52,7 @@ import type {
 import type { HomebrewImported, HomebrewImportRows } from '../lib/homebrewFile.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
-import type { OwnerRequest, ShortLine } from '../lib/requests.js';
+import type { NoticeRow, OwnerRequest, ShortLine } from '../lib/requests.js';
 import type { Random } from '../lib/roll.js';
 
 export interface StoragePort {
@@ -421,6 +422,14 @@ export interface ListRepository {
   /** Inserts every list and entry in one transaction (`import_lists`), or nothing; a list
    *  id already the caller's is a retry and adds only its missing entries. */
   import(lists: ImportRow[]): Promise<ListWrite>;
+  /** The records of the homebrew items `ids` name, of any account (`get_homebrew_items`, at
+   *  most 1000 ids a call: more go in several calls); an id with no item answers nothing.
+   *  `{ ok: false }` is signed out or a read that failed. */
+  items(ids: readonly string[]): Promise<{ ok: true; items: LinkedRow[] } | { ok: false }>;
+  /** One homebrew item by its id, for anyone, signed out too (`get_homebrew_item`): the raw
+   *  answer, which `itemOf` reads; `item` null for an id no item has. `{ ok: false }` is a
+   *  read that failed. */
+  item(id: string): Promise<{ ok: true; item: unknown } | { ok: false }>;
 }
 
 /** The owner's shares of one list, stopped ones included; `{ ok: false }` is signed out
@@ -501,6 +510,15 @@ export interface RequestRepository {
   /** Takes the request's counts from its list; `clamp` takes what is there. */
   apply(id: string, clamp: boolean): Promise<RequestApplied>;
   decline(id: string): Promise<RequestDeclined>;
+  /** Marks the list's unread requests (and notices) read now (`mark_list_read`): each such
+   *  request expires an hour later at most. Only unread rows change. */
+  markRead(listId: string): Promise<ListWrite>;
+  /** The signed-in owner's change-log rows, newest first: of one list with `listId`, else of
+   *  every list, which PostgREST cuts at its row cap (`max_rows`), so only a count reads it.
+   *  `{ ok: false }` is signed out or a read that failed. */
+  notices(listId?: string): Promise<{ ok: true; notices: NoticeRow[] } | { ok: false }>;
+  /** Deletes the list's notices `ids` (the owner's «Скрыть»); a row already gone is ok. */
+  hideNotices(listId: string, ids: readonly string[]): Promise<ListWrite>;
 }
 
 /** `{ ok: false }` is signed out or a read that failed; a limit is null for no limit and

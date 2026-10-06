@@ -1,6 +1,7 @@
 <script lang="ts">
-  /* «Импорт предметов из файла JSON» on `#/homebrew` (m15): a `homebrew-v1` file or the data
-     zip's `homebrew.json`, its preview with the counts, the held keys and the repeated names,
+  /* «Импорт предметов из файла JSON» under «Импорт из файла» on «Мои предметы» (m15): a
+     `homebrew-v1` file or the data zip's `homebrew.json`, its preview with the counts, the
+     names of the held items, cards and sources and of the new items with a held name,
      one «Куда» row per source of the file, skip or update for the held keys, and the press
      that writes every row or none (`import_homebrew`). Loaded with `lib/homebrewFile.ts` as
      one lazy chunk on the first open. The rows are built once per file and mapping, so a
@@ -51,6 +52,7 @@
     type FileName,
     type FileNote,
     type HomebrewFile,
+    type NamedPair,
     type PlanRow,
     type Target
   } from '../lib/homebrewFile.js';
@@ -116,10 +118,13 @@
   let customErr = $state<(string | null)[]>([]);
   let update = $state(false);
   let allRows = $state(false);
+  /* The name lines past `NAMES_SHOWN` that are open: `items`, `cards`, `books`, `same`. */
+  let namesOpen = $state<string[]>([]);
   /* The ids and keys of this file's rows, made once: a retry sends the same. */
   let ids = new SvelteMap<string, string>();
 
   const ROWS_SHOWN = 20;
+  const NAMES_SHOWN = 10;
   const REFUSALS: Record<FileRefusal, Refusal> = {
     tooBig: 'importTooBig',
     zipTooBig: 'importZipTooBig',
@@ -180,6 +185,7 @@
       customErr = rows.map(() => null);
       update = false;
       allRows = false;
+      namesOpen = [];
       view = {
         kind: 'preview',
         file: p.file,
@@ -353,6 +359,19 @@
 
   const held = $derived(view.kind === 'preview' ? heldOf(view.file, store) : null);
   const heldN = $derived(held ? held.items + held.cards : 0);
+  const heldLines = $derived(
+    held
+      ? [
+          { id: 'items', what: t.hbItems, names: held.names.items },
+          { id: 'cards', what: t.hbCards, names: held.names.cards },
+          { id: 'books', what: t.hbSources, names: held.names.books }
+        ].filter((l) => l.names.length)
+      : []
+  );
+
+  function toggleNames(id: string): void {
+    namesOpen = namesOpen.includes(id) ? namesOpen.filter((x) => x !== id) : [...namesOpen, id];
+  }
   /* The targets drawn and sent: a held source another tab deleted during the preview falls
      back to the row's default, so its items never go to «Хоумбрю» unseen. */
   const targets = $derived.by((): Target[] => {
@@ -572,6 +591,29 @@
   }
 </script>
 
+<!-- One line of names: the lead, the first `NAMES_SHOWN` names, then «и ещё N» or «свернуть»;
+     the same button both ways, so the focus stays on it. -->
+{#snippet nameLine(id: string, lead: string, names: readonly NamedPair[])}
+  {@const open = namesOpen.includes(id)}
+  {@const shown = open ? names : names.slice(0, NAMES_SHOWN)}
+  <p class="preview names">
+    {lead}
+    {shown.map(named).join(', ') +
+      (names.length > NAMES_SHOWN ? ' ' : '')}{#if names.length > NAMES_SHOWN}<Button
+        variant="bare"
+        size="sm"
+        caret
+        expanded={open}
+        onclick={() => {
+          toggleNames(id);
+        }}
+        >{open
+          ? t.relLess
+          : t.andMore.replace('%n', String(names.length - NAMES_SHOWN))}</Button
+      >{/if}.
+  </p>
+{/snippet}
+
 <!-- A `{@render}` tag reads as a void expression to this rule wherever it sits among text. -->
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -->
 {#snippet bold(parts: string[])}{#each parts as part, i (i)}{#if i % 2}<b>{part}</b
@@ -609,11 +651,8 @@
   {:else if view.kind === 'preview' && counts}
     {@const rows = view.rows}
     <p class="preview">{@render bold(counts)}</p>
-    {#if heldN}
-      <p class="preview">{t.hbImportHeld.replace('%n', String(heldN))}</p>
-    {/if}
-    {#if held?.sameNames}
-      <p class="preview">{t.hbImportSameNames.replace('%n', String(held.sameNames))}</p>
+    {#if held?.names.sameNamed.length}
+      {@render nameLine('same', t.hbImportSameNamed, held.names.sameNamed)}
     {/if}
     {#if view.sibling}
       <p class="preview">{t.hbImportZipLists}</p>
@@ -706,6 +745,13 @@
             update = v === 'update';
           }}
         />
+        {#each heldLines as l (l.id)}
+          {@render nameLine(
+            l.id,
+            (update ? t.hbImportHeldReplace : t.hbImportHeldKeep).replace('%k', () => l.what),
+            l.names
+          )}
+        {/each}
         <p class="fhint">
           {#if heldN}
             {(update ? t.hbImportUpdateNote : t.hbImportSkipNote).replace('%n', String(heldN))}
@@ -743,6 +789,14 @@
     margin: 12px 0 0;
     font-size: 13.5px;
     line-height: 1.55;
+  }
+
+  .names {
+    overflow-wrap: anywhere;
+  }
+
+  .held .names {
+    margin: 8px 0 0;
   }
 
   .lbl {

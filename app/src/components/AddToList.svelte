@@ -14,7 +14,7 @@
   import SignInPrompt from './SignInPrompt.svelte';
   import { NAME_MAX } from '../lib/cloudLists.js';
   import type { Msg } from '../lib/dict.js';
-  import { recordHash } from '../lib/hash.js';
+  import { recordHref } from '../lib/hash.js';
   import { isHomebrewKey } from '../lib/homebrew.js';
   import type { ListEntryMeta } from '../lib/listLink.js';
   import {
@@ -202,7 +202,7 @@
       })
     );
     return {
-      hash: inModal ? recordHash(key) : app.hash,
+      hash: inModal ? recordHref(app.recordFor(key) ?? { id: key }) : app.hash,
       action: {
         do: 'addToList' as const,
         key,

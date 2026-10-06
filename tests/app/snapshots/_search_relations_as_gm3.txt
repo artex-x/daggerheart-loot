@@ -28,13 +28,14 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=112 namehash=65538d79]
+    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=113 namehash=23503818]
     searchbox "Поиск по названию или описанию…" [value=спальный мешок focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    button "Хоумбрю" [description=Показывать свои предметы pressed=true]
+    switch "Свои предметы" [checked=true]
+    StaticText "Свои предметы"
     checkbox "Выбрать все (17)" [checked=false]
     StaticText "Выбрать все (17)"
     checkbox "Первоклассный Спальный Мешок" [checked=false]
@@ -45,7 +46,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     checkbox "Мешок спокойных снов" [checked=false]
     button "Мешок спокойных снов Спальный мешок для долгой дороги. Получаетс..." [namelen=114 namehash=bb42df51]
     checkbox "Базовые припасы" [checked=false]
-    button "Базовые припасы Стартовый предмет Core. Палатка, спальный мешок,..." [namelen=124 namehash=dd5a25f7]
+    button "Базовые припасы Стартовый предмет базовой книги. Палатка, спальн..." [namelen=133 namehash=5019780a]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -66,7 +67,7 @@ daggerheart.com
 Аккаунт: gm3@example.test
 Альт. таблицы
 Базовые припасы
-Базовые припасыСтартовый предмет Core. Палатка, спальный мешок, ... [namelen=121 namehash=40e014e5]
+Базовые припасыСтартовый предмет базовой книги. Палатка, спальны... [namelen=130 namehash=510c9b6d]
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -76,7 +77,6 @@ daggerheart.com
 Открывать этот раздел при запуске
 Первоклассный Спальный Мешок
 Поиск
-Показывать свои предметы
 Предметы
 Расходники
 Снаряжение
@@ -139,13 +139,14 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/sear
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=116 namehash=31143e49]
+    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=116 namehash=068c7634]
     searchbox "Search by name or description…" [value=спальный мешок focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    button "Homebrew" [description=Show your own items pressed=true]
+    switch "Own items" [checked=true]
+    StaticText "Own items"
     checkbox "Select all (17)" [checked=false]
     StaticText "Select all (17)"
     checkbox "Premium Bedroll" [checked=false]
@@ -207,7 +208,6 @@ Sack of Quiet DreamsA bedroll for a long road.Made from: Premium... [namelen=84 
 Search
 Sentry's Bedroll
 Sentry's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=51ea9f63]
-Show your own items
 Skip to content
 Standard rules
 Tables

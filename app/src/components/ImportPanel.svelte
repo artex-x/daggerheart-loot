@@ -15,9 +15,10 @@
     parseBundle,
     type BundleError,
     type ImportList,
+    type ImportPlan,
     type Skipped
   } from '../lib/bundle.js';
-  import { limitText, type ImportRow } from '../lib/cloudLists.js';
+  import { limitText } from '../lib/cloudLists.js';
   import { fewNames, nameOf } from '../lib/i18n.js';
   import { plural } from '../lib/plural.js';
   import type { ReportLine as Line } from '../lib/types.js';
@@ -42,7 +43,7 @@
         kind: 'preview';
         lists: ImportList[];
         skipped: Skipped[];
-        rows: ImportRow[];
+        plan: ImportPlan;
         sibling: boolean;
         other: string[];
         otherMore: number;
@@ -63,7 +64,9 @@
     | 'importZipPacked';
 
   const t = $derived(app.t);
-  let view = $state<View>({ kind: 'empty' });
+  /* Raw: every change replaces the view whole, and its plan reaches the ports as built,
+     never as a reactive proxy a structured clone refuses. */
+  let view = $state.raw<View>({ kind: 'empty' });
   /* The text of a v2 file read while the account's items load: read again once they are. */
   let waiting = $state<{
     text: string;
@@ -109,8 +112,8 @@
     else read(r.text, r.sibling, r.other, r.more);
   }
 
-  /* A v2 file names own items: its rows wait for the account's items, so a held key is a
-     reference, never a frozen copy by a read that has not answered yet. */
+  /* A v2 file names own items: its plan waits for the account's items, so a held key is
+     linked, never copied by a read that has not answered yet. */
   const homebrewLoading = (): boolean => {
     const status = app.homebrew?.status;
     return status !== undefined && status !== 'ready';
@@ -130,12 +133,12 @@
         view = { kind: 'empty' };
         return;
       }
-      const rows = app.cloudLists?.importRows(p.lists) ?? [];
+      const plan = app.importPlan(p.lists) ?? { rows: [], copies: null };
       view = {
         kind: 'preview',
         lists: p.lists,
         skipped: p.skipped,
-        rows,
+        plan,
         sibling,
         other,
         otherMore
@@ -271,18 +274,26 @@
   /* The preview's head: the texts with each number in bold (the odd parts). */
   const head = $derived.by(() => {
     if (view.kind !== 'preview') return null;
-    const { lists, skipped, other, otherMore } = view;
+    const { lists, skipped, plan, other, otherMore } = view;
     const counts: Record<string, number> = {
       '%l': lists.length,
       '%n': lists.reduce((sum, l) => sum + l.entries.length, 0)
     };
-    /* Read from the account's items now: one deleted since the preview freezes too. */
+    /* Read from the account's items now: a copy whose key the account holds since the
+       preview is not made, and one deleted since is made at the press. */
     const own = app.homebrew;
-    const frozen = lists.reduce(
-      (n, l) =>
-        n + l.entries.filter((e) => e.source === 'homebrew' && !own?.has(e.item_key)).length,
-      0
+    const planned = new Set((plan.copies?.items ?? []).map((i) => i.key));
+    const unheld = new Set(
+      lists.flatMap((l) =>
+        l.entries.flatMap((e) =>
+          e.source === 'homebrew' && !own?.has(e.item_key) && !planned.has(e.item_key)
+            ? [e.item_key]
+            : []
+        )
+      )
     );
+    const frozen =
+      (plan.copies?.items ?? []).filter((i) => !own?.has(i.key)).length + unheld.size;
     return {
       parts: t.importPreview.split(/(%[ln])/).map((p) => String(counts[p] ?? p)),
       skipped: skipped.length
@@ -295,18 +306,16 @@
     };
   });
 
-  async function send(rows: ImportRow[], lists: ImportList[]): Promise<void> {
-    const store = app.cloudLists;
-    if (!store || sending) return;
-    /* An own item deleted or imported since the preview: the rows follow the account,
-       with the same ids. */
-    const fresh = store.importRowsFor(rows, lists);
-    if (fresh !== rows && view.kind === 'preview') view = { ...view, rows: fresh };
+  async function send(plan: ImportPlan, lists: ImportList[]): Promise<void> {
+    if (!app.cloudLists || sending) return;
+    /* An own item deleted since the preview gains its copy, with the same ids. */
+    const fresh = app.importPlan(lists, plan) ?? plan;
+    if (fresh !== plan && view.kind === 'preview') view = { ...view, plan: fresh };
     sending = true;
-    const answer = await store.import(fresh);
+    const answer = await app.importLists(fresh);
     sending = false;
     if (answer.ok) {
-      const n = fresh.length;
+      const n = fresh.rows.length;
       app.say((t) => t.importDone.replace('%n', String(n)));
       onclose();
     } else if (answer.error === 'limit') {
@@ -315,8 +324,8 @@
     } else if (answer.error === 'refused' && answer.reason === 'tooSlow') {
       app.say((t) => t.importTooSlow, { error: true });
     } else if (answer.error === 'refused') {
-      /* The account changed under the preview (a reference's item deleted): the next
-         press builds its rows from the read. */
+      /* The account changed under the preview (a linked item deleted) or a copy was
+         refused: the next press builds its plan from the read. */
       void app.homebrew?.read();
       app.say((t) => t.importRefused, { error: true });
     } else {
@@ -374,7 +383,7 @@
     {/if}
     <Actions style="margin-top:12px">{@render cancel()}</Actions>
   {:else if view.kind === 'preview' && head}
-    {@const rows = view.rows}
+    {@const plan = view.plan}
     {@const lists = view.lists}
     <p class="preview">
       {@render bold(head.parts)}{head.skipped ? ' ' : ''}{#if head.skipped}{@render bold(
@@ -421,8 +430,8 @@
         size="sm"
         variant="primary"
         disabled={sending}
-        onclick={() => void send(rows, lists)}
-        >{`${t.importGo} (${String(rows.length)})`}</Button
+        onclick={() => void send(plan, lists)}
+        >{`${t.importGo} (${String(plan.rows.length)})`}</Button
       >
       {@render cancel()}
     </Actions>

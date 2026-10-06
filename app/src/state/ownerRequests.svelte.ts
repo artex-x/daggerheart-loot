@@ -3,6 +3,10 @@
  * `request` message, on the feed's join and safety re-read, on the poll while
  * the feed is not live and when the tab is shown again; apply and decline;
  * and what was decided on this page load, with its items, until it is hidden.
+ * Beside them, the change log of the owner's lists (`list_notices`): read with the
+ * requests and on the topic's `notice` message, marked read with them, and hidden by id.
+ * The list page's panel focuses its list, whose notices are read whole: a read of every
+ * list is cut at the row cap and only counts.
  *
  * Apply sends the account's write buffer first, so a buffered quantity edit
  * never lands after it, and re-reads the lists after it: the apply's own
@@ -14,9 +18,18 @@
 
 import type { ShareAudience } from '../lib/cloudLists.js';
 import type { Msg } from '../lib/dict.js';
-import { COALESCE_MS, readRequestMessage } from '../lib/live.js';
-import { pendingFor, type OwnerRequest, type ShortLine } from '../lib/requests.js';
+import { COALESCE_MS, readNoticeMessage, readRequestMessage } from '../lib/live.js';
+import {
+  noticeOf,
+  pendingFor,
+  type ListNotice,
+  type OwnerRequest,
+  type ShortLine
+} from '../lib/requests.js';
 import type { RequestRepository } from '../ports/index.js';
+
+type NoticesRead = Awaited<ReturnType<RequestRepository['notices']>>;
+type RequestsRead = Awaited<ReturnType<RequestRepository['list']>>;
 
 export interface OwnerHooks {
   /** Sends the account's write buffer; false while a write waits for the network. */
@@ -52,8 +65,14 @@ export class OwnerRequests {
   busy = $state<string | null>(null);
   /** Bumped once per read that found a request not seen before, after the first read. */
   arrived = $state(0);
-  /** The list of the newest request that arrived. */
+  /** The list of the newest request or notice that arrived. */
   arrivedList = $state<string | null>(null);
+  /** What arrived last: a purchase request or a change-log notice. */
+  arrivedKind = $state<'request' | 'notice'>('request');
+  /** The change log of the owner's lists, newest first. */
+  notices = $state.raw<ListNotice[]>([]);
+  /** Whether the focused list's own notices read has answered since it was focused. */
+  noticesRead = $state(false);
 
   readonly #repo: RequestRepository;
   readonly #hooks: OwnerHooks;
@@ -64,6 +83,12 @@ export class OwnerRequests {
   #seen: Record<string, true> = {};
   /* Requests whose decision got no answer: the transport may have sent it twice. */
   #unsure: Record<string, true> = {};
+  /* The lists whose read mark is in flight. */
+  #marking: Record<string, true> = {};
+  /* Each notice seen, by id, at the time it was made; and the list the panel draws. */
+  #seenNotices: Record<string, string> = {};
+  #firstNotices = true;
+  #focus: string | null = null;
   #timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(repo: RequestRepository, hooks: OwnerHooks) {
@@ -80,6 +105,24 @@ export class OwnerRequests {
     return this.forList(listId, now).length;
   }
 
+  /** The list's notices, newest first. */
+  noticesFor(listId: string): ListNotice[] {
+    return this.notices.filter((n) => n.listId === listId);
+  }
+
+  /** How many of the list's notices are unread. */
+  unreadNotices(listId: string): number {
+    return this.notices.filter((n) => n.listId === listId && n.readAt === null).length;
+  }
+
+  /** The list whose panel is drawn, or null: each read then reads its notices whole. */
+  focus(listId: string | null): void {
+    if (listId === this.#focus) return;
+    this.#focus = listId;
+    this.noticesRead = false;
+    if (listId !== null) void this.read();
+  }
+
   decidedFor(listId: string): DecidedRequest[] {
     return this.decided.filter((d) => d.listId === listId);
   }
@@ -89,11 +132,54 @@ export class OwnerRequests {
     this.decided = this.decided.filter((d) => d.listId !== listId);
   }
 
-  /** Reads the pending requests; a failed read keeps what is shown. */
+  /** Reads the pending requests and the notices; a failed read keeps what is shown. */
   async read(): Promise<void> {
     const epoch = this.#epoch;
-    const r = await this.#repo.list();
-    if (epoch !== this.#epoch || !r.ok) return;
+    const focus = this.#focus;
+    const [r, all, one] = await Promise.all([
+      this.#repo.list(),
+      this.#repo.notices(),
+      focus === null ? null : this.#repo.notices(focus)
+    ]);
+    if (epoch !== this.#epoch) return;
+    this.#readNotices(all, focus, one);
+    this.#readRequests(r);
+  }
+
+  /* The cut read of every list never decides the focused list: its own read does. */
+  #readNotices(all: NoticesRead, focus: string | null, one: NoticesRead | null): void {
+    if (!all.ok && !one?.ok) return;
+    const rows = (x: NoticesRead): ListNotice[] =>
+      x.ok ? x.notices.flatMap((n) => noticeOf(n) ?? []) : [];
+    const others = all.ok ? rows(all) : this.notices;
+    const focused =
+      focus !== null && one?.ok ? rows(one) : this.notices.filter((n) => n.listId === focus);
+    if (focus !== null && one?.ok && focus === this.#focus) this.noticesRead = true;
+    const next = [...others.filter((n) => n.listId !== focus), ...focused].sort(
+      (a, b) =>
+        Date.parse(b.createdAt) - Date.parse(a.createdAt) ||
+        (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+    );
+    const fresh = next.filter((n) => this.#seenNotices[n.id] !== n.createdAt);
+    for (const n of fresh) this.#seenNotices[n.id] = n.createdAt;
+    const newest = fresh[0];
+    if (!this.#firstNotices && newest) {
+      this.arrivedList = newest.listId;
+      this.arrivedKind = 'notice';
+      this.arrived++;
+    }
+    this.#firstNotices = false;
+    const same =
+      next.length === this.notices.length &&
+      next.every((n, i) => {
+        const o = this.notices[i];
+        return o?.id === n.id && o.createdAt === n.createdAt && o.readAt === n.readAt;
+      });
+    if (!same) this.notices = next;
+  }
+
+  #readRequests(r: RequestsRead): void {
+    if (!r.ok) return;
     const fresh = r.requests.filter((x) => !this.#seen[x.id]);
     for (const x of fresh) this.#seen[x.id] = true;
     if (!this.#first && fresh.length) {
@@ -101,6 +187,7 @@ export class OwnerRequests {
         Date.parse(b.createdAt) > Date.parse(a.createdAt) ? b : a
       );
       this.arrivedList = newest.listId;
+      this.arrivedKind = 'request';
       this.arrived++;
     }
     this.#first = false;
@@ -111,11 +198,50 @@ export class OwnerRequests {
     }
   }
 
-  /** The owner topic's message: another tab's or device's request or decision. */
+  /** Marks the list's unread requests and notices read (`mark_list_read`) when it holds
+   *  one, then reads them again: each now expires within the hour. A failure changes
+   *  nothing, and the next draw asks again. */
+  async markRead(listId: string): Promise<void> {
+    if (this.#marking[listId]) return;
+    if (
+      !this.requests.some((r) => r.listId === listId && r.readAt === null) &&
+      !this.unreadNotices(listId)
+    ) {
+      return;
+    }
+    const epoch = this.#epoch;
+    this.#marking[listId] = true;
+    try {
+      const r = await this.#repo.markRead(listId);
+      if (epoch !== this.#epoch || !r.ok) return;
+      await this.read();
+    } finally {
+      if (epoch === this.#epoch) Reflect.deleteProperty(this.#marking, listId);
+    }
+  }
+
+  /** The owner topic's message: another tab's or device's request or decision, or an
+   *  author's change to an item of one of the lists. */
   message(event: string, payload: unknown): void {
+    if (readNoticeMessage(event, payload)) {
+      this.#coalesced();
+      return;
+    }
     const m = readRequestMessage(event, payload);
     if (!m || m.by === this.#hooks.tab()) return;
     this.#coalesced();
+  }
+
+  /** «Скрыть»: deletes the list's notices `ids`, drawn gone at once; a failure says so and
+   *  reads again, which brings them back. */
+  async hideNotices(listId: string, ids: readonly string[]): Promise<void> {
+    if (!ids.length) return;
+    const epoch = this.#epoch;
+    this.notices = this.notices.filter((n) => n.listId !== listId || !ids.includes(n.id));
+    const r = await this.#repo.hideNotices(listId, ids);
+    if (epoch !== this.#epoch || r.ok) return;
+    this.#hooks.say((t) => t.noticeHideFailed, true);
+    await this.read();
   }
 
   /** The owner feed joined, or its safety re-read came due. */
@@ -180,8 +306,11 @@ export class OwnerRequests {
   clear(): void {
     this.#epoch++;
     this.#first = true;
+    this.#firstNotices = true;
     this.#seen = {};
+    this.#seenNotices = {};
     this.#unsure = {};
+    this.#marking = {};
     if (this.#timer !== null) clearTimeout(this.#timer);
     this.#timer = null;
     this.requests = [];
@@ -190,6 +319,9 @@ export class OwnerRequests {
     this.busy = null;
     this.arrived = 0;
     this.arrivedList = null;
+    this.arrivedKind = 'request';
+    this.notices = [];
+    this.noticesRead = false;
   }
 
   async #refused(

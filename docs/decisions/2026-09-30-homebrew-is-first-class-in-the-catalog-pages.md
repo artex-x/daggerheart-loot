@@ -1,5 +1,7 @@
 # 2026-09-30 - Homebrew is first-class in the catalog pages; the roll pages are excluded
 
+- Superseded in part by "The own-items filter is a labelled switch, «Свои предметы»" (2026-10-08): the chip «Хоумбрю» on `#/search` and the equipment tables.
+- Superseded in part by "A source chip on `#/tables/homebrew` is the `src` filter with one value" (2026-10-08): the `src` facet and the source headings of `#/tables/homebrew`.
 - Task: `persist-7-homebrew` (owner's items 10-11 and answer to Q2, 2026-09-30; planner, passes 2-4).
 - Decision: from R7b own records join `allEquip` (the three equipment tables, in their tier
   sections), `searchable` (one merged result list; the tag tells them apart) and a table `homebrew`

@@ -6,6 +6,7 @@ import { dict } from './dict.js';
 import {
   canonJson,
   contentProblems,
+  recordOf,
   type BookRow,
   type CardRef,
   type CardRow,
@@ -24,10 +25,13 @@ import {
   fieldOf,
   formProblems,
   lineOption,
+  matchRecords,
   previewOf,
   problemText,
+  recordMatches,
   recordOption,
-  type ItemDraft
+  type ItemDraft,
+  deleteItemAsk
 } from './homebrewForm.js';
 import { foldQuery } from './search.js';
 import type { Record_ } from './types.js';
@@ -530,5 +534,44 @@ describe('the card form', () => {
   ] as const)('reads a %s card problem %o as its field and text', (kind, p, field, text) => {
     expect(cardFieldOf(p)).toBe(field);
     expect(cardProblemText(kind, p, t, ' Кузня ')).toBe(text);
+  });
+});
+
+describe('deleteItemAsk', () => {
+  it('puts the consequence for other lists before the undo sentence', () => {
+    const t = dict('ru');
+    expect(deleteItemAsk('Удалить предмет «А»?', false, t)).toBe(
+      'Удалить предмет «А»? ' + t.hbDeleteOthers + ' Отменить удаление нельзя.'
+    );
+    expect(deleteItemAsk('Удалить предметы (2)?', true, dict('en'))).toBe(
+      'Удалить предметы (2)? ' + dict('en').hbDeleteOthersMany + ' This cannot be undone.'
+    );
+  });
+});
+
+describe('matchRecords', () => {
+  const rec = (id: string, ru: string, en: string): Record_ =>
+    recordOf(id, { kind: 'item', ru, en }, null);
+  const all = [
+    rec('hb_aaaaaaaaaaaaaaaa', 'Ёлочный шар', 'Bauble'),
+    rec('hb_bbbbbbbbbbbbbbbb', 'Кольцо', 'Ring'),
+    rec('hb_cccccccccccccccc', 'Скатка', 'Bedroll')
+  ];
+
+  it('keeps every record for a blank or a space query, in order', () => {
+    expect(matchRecords(all, '')).toEqual(all);
+    expect(matchRecords(all, '   ')).toEqual(all);
+  });
+
+  it('matches either language and folds ё to е as search does', () => {
+    expect(matchRecords(all, 'ring').map((r) => r.id)).toEqual(['hb_bbbbbbbbbbbbbbbb']);
+    expect(matchRecords(all, ' КОЛЬ ').map((r) => r.id)).toEqual(['hb_bbbbbbbbbbbbbbbb']);
+    expect(matchRecords(all, 'елоч').map((r) => r.id)).toEqual(['hb_aaaaaaaaaaaaaaaa']);
+    expect(matchRecords(all, 'zzz')).toEqual([]);
+  });
+
+  it('tests one record against a folded query', () => {
+    expect(recordMatches(all[2]!, 'bed')).toBe(true);
+    expect(recordMatches(all[2]!, 'ring')).toBe(false);
   });
 });

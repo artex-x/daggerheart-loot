@@ -9,6 +9,8 @@ import {
   isHomebrewKey,
   isHomebrewRecord,
   snapshotValid,
+  type HomebrewEquip,
+  type HomebrewKind,
   type HomebrewRecord
 } from './homebrew.js';
 import type { DecodedList, ListEntryMeta, MoneyMode } from './listLink.js';
@@ -35,7 +37,9 @@ export interface EntryRow {
   id: string;
   item_key: string;
   source: 'official' | 'homebrew';
-  snapshot: unknown;
+  /** A homebrew entry's linked item (`homebrew_items.id`), of any account; null for an
+   *  official one, or for a homebrew one sent by key, which links the list owner's item. */
+  hb_item: string | null;
   position: number;
   quantity: number;
   price_coins: number | null;
@@ -79,7 +83,9 @@ export type ListOp =
   | { op: 'add'; list_id: string; entries: EntryRow[] }
   | { op: 'update_entry'; id: string; patch: EntryPatch }
   | { op: 'remove_entries'; ids: string[] }
-  | { op: 'reorder'; list_id: string; ids: string[] };
+  | { op: 'reorder'; list_id: string; ids: string[] }
+  /** Points the entry at another item in place: its position, quantity, price and notes stay. */
+  | { op: 'relink'; id: string; hb_item: string };
 
 /** One list of an import: the `create` op's shape (`import_lists`). */
 export interface ImportRow {
@@ -111,44 +117,48 @@ export function batchSize(ops: readonly ListOp[]): number {
 }
 
 /** An account list as the pages draw it: `ids` are the entries' record ids in list order,
- *  `entryIds` maps each to its row id, `updated` is the last edit in ms, `frozen` holds the
- *  frozen copies by key (absent when the list holds none). */
+ *  `entryIds` maps each to its row id, `updated` is the last edit in ms, `links` maps each
+ *  homebrew entry's key to its linked item's id, and `linked` holds by key the records of
+ *  the linked items the account does not hold, as `items()` read them (each absent when
+ *  empty). */
 export type CloudList = StoredList & {
   updated: number;
   entryIds: Record<string, string>;
-  frozen?: Readonly<Record<string, HomebrewRecord>>;
+  links?: Readonly<Record<string, string>>;
+  linked?: Readonly<Record<string, HomebrewRecord>>;
 };
 
-/** What an entry is written as: a catalog record, a reference to an own item (`snapshot`
- *  null), or a frozen copy of another account's item. */
+/** What an entry is written as: a catalog record, or a link to a homebrew item by its id
+ *  (`hb_item` null links the list owner's item of the key). */
 export interface EntrySource {
   source: 'official' | 'homebrew';
-  snapshot: HomebrewRecord | null;
+  hb_item: string | null;
 }
 
-export const OFFICIAL: EntrySource = Object.freeze({ source: 'official', snapshot: null });
+export const OFFICIAL: EntrySource = Object.freeze({ source: 'official', hb_item: null });
 
-/* A frozen copy the key names, as the database takes it. */
-function frozenValid(key: string, v: unknown): v is HomebrewRecord {
+/* A record the key names, as the database's projection writes it. */
+function recordValid(key: string, v: unknown): v is HomebrewRecord {
   return snapshotValid(v) && (v as { id: string }).id === key;
 }
 
 /**
  * Returns what an entry of `key` is written as (docs/specs/FEATURES.md, "Lists"): a catalog
- * key is official; a homebrew key is a reference when the account holds the item, a frozen
- * copy of `copy` when that is a valid copy of the key, and null (not written) otherwise or
- * while the account's items are not read yet, so an own item is never frozen by mistake.
+ * key is official; a homebrew key links the account's own item when the account holds it,
+ * else the item `copy` names by its `hid` (another account's record), and is null (not
+ * written) otherwise or while the account's items are not read yet, so an own item is
+ * never linked as another account's by mistake.
  */
 export function entrySource(
   key: string,
-  own: { ready: boolean; has: (key: string) => boolean },
+  own: { ready: boolean; has: (key: string) => boolean; hidOf: (key: string) => string | null },
   copy: Record_ | undefined
 ): EntrySource | null {
   if (!isHomebrewKey(key)) return OFFICIAL;
   if (!own.ready) return null;
-  if (own.has(key)) return { source: 'homebrew', snapshot: null };
-  if (copy && isHomebrewRecord(copy) && frozenValid(key, copy)) {
-    return { source: 'homebrew', snapshot: copy };
+  if (own.has(key)) return { source: 'homebrew', hb_item: own.hidOf(key) };
+  if (copy && isHomebrewRecord(copy) && copy.id === key && typeof copy.hid === 'string') {
+    return { source: 'homebrew', hb_item: copy.hid };
   }
   return null;
 }
@@ -156,21 +166,126 @@ export function entrySource(
 /* The rule before an account's items are known: a homebrew key is not written. */
 const catalogOnly = (key: string): EntrySource | null => (isHomebrewKey(key) ? null : OFFICIAL);
 
-const NO_FROZEN: Readonly<Record<string, HomebrewRecord>> = Object.freeze({});
+const NO_LINKED: Readonly<Record<string, HomebrewRecord>> = Object.freeze({});
 
-/** Returns a list's frozen copies by key: an account list's own object, else one empty
- *  object, so the answer keeps its identity while the list's copies do not change. */
-export function frozenOf(l: StoredList): Readonly<Record<string, HomebrewRecord>> {
-  return (l as Partial<CloudList>).frozen ?? NO_FROZEN;
+/** Returns the records of a list's linked items by key: an account list's own object, else
+ *  one empty object, so the answer keeps its identity while the list's records do not
+ *  change. */
+export function linkedOf(l: StoredList): Readonly<Record<string, HomebrewRecord>> {
+  return (l as Partial<CloudList>).linked ?? NO_LINKED;
 }
 
-/** Returns the valid frozen copies a share's projection carries: every homebrew entry's
- *  snapshot, a reference's included (the projection fills it from the live item). */
+/** One answer row of `get_homebrew_items`: the item's id and its record. */
+export interface LinkedRow {
+  hid: string;
+  item: unknown;
+}
+
+/** Returns the valid records of `get_homebrew_items`'s rows by item id, each with its
+ *  `hid`. */
+export function linkedRecords(rows: readonly LinkedRow[]): Map<string, HomebrewRecord> {
+  const out = new Map<string, HomebrewRecord>();
+  for (const r of rows) {
+    if (snapshotValid(r.item)) out.set(r.hid, { ...(r.item as HomebrewRecord), hid: r.hid });
+  }
+  return out;
+}
+
+/** Returns the valid records a share's projection carries, each with the `hid` of its
+ *  entry: every homebrew entry's snapshot, filled from the linked item. */
 export function snapshotRecords(row: SharedRow | null | undefined): HomebrewRecord[] {
   if (!row) return [];
   return row.entries.flatMap((e) =>
-    e.source === 'homebrew' && frozenValid(e.item_key, e.snapshot) ? [e.snapshot] : []
+    e.source === 'homebrew' && recordValid(e.item_key, e.snapshot)
+      ? [typeof e.hid === 'string' ? { ...e.snapshot, hid: e.hid } : e.snapshot]
+      : []
   );
+}
+
+/** `get_homebrew_item`'s answer for an item that exists: its id, whether the reader is
+ *  its author, the revision a re-read compares, the record and the author's related items
+ *  (no texts, no cards). `updated_at` is read by R9's page, not here. */
+export interface ItemAnswer {
+  hid: string;
+  mine: boolean;
+  revision: string;
+  item: unknown;
+  related: unknown;
+  updated_at?: string;
+}
+
+/** One item as `#/h/` draws it: the record with its `hid`, and each related item as a
+ *  record with its `hid`, empty descriptions and the relation fields it carries. */
+export interface ItemRead {
+  hid: string;
+  mine: boolean;
+  revision: string;
+  record: HomebrewRecord;
+  related: HomebrewRecord[];
+}
+
+const KINDS: readonly unknown[] = ['item', 'consumable', 'equip'];
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  v !== null && typeof v === 'object' && !Array.isArray(v);
+const isIds = (v: unknown): v is string[] =>
+  Array.isArray(v) && v.every((x) => typeof x === 'string');
+
+/* A related row as a record, or null when it lacks a key, an id, a kind or a name. */
+function relatedOf(v: unknown): HomebrewRecord | null {
+  if (!isObj(v)) return null;
+  const { key, hid, kind, en, ru } = v;
+  if (typeof key !== 'string' || !isHomebrewKey(key)) return null;
+  if (typeof hid !== 'string' || !isCloudId(hid)) return null;
+  if (!KINDS.includes(kind) || typeof en !== 'string' || typeof ru !== 'string') return null;
+  const r: HomebrewRecord = {
+    id: key,
+    src: 'homebrew',
+    hid,
+    kind: kind as HomebrewKind,
+    en,
+    ru,
+    ende: '',
+    rud: ''
+  };
+  const tier = v['tier'];
+  if (typeof tier === 'number' || typeof tier === 'string') {
+    r.tier = tier as NonNullable<HomebrewRecord['tier']>;
+  }
+  const eq = v['eq'];
+  if (isObj(eq)) {
+    const out: Partial<HomebrewEquip> = {};
+    if (typeof eq['t'] === 'string') out.t = eq['t'] as HomebrewEquip['t'];
+    if (typeof eq['tier'] === 'number' || typeof eq['tier'] === 'string') {
+      out.tier = eq['tier'] as HomebrewEquip['tier'];
+    }
+    if (typeof eq['line'] === 'string') out.line = eq['line'];
+    r.eq = out as NonNullable<HomebrewRecord['eq']>;
+  }
+  if (typeof v['set'] === 'string') r.set = v['set'];
+  if (isIds(v['craft'])) r.craft = v['craft'];
+  if (isIds(v['craft_from'])) r.craft_from = v['craft_from'];
+  return r;
+}
+
+/** Returns the item `get_homebrew_item` answered, or null when the answer is not one: `hid`
+ *  a uuid, `mine` a boolean, `revision` a string and `item` a valid record. A related row
+ *  of another shape is dropped. */
+export function itemOf(a: unknown): ItemRead | null {
+  if (!isObj(a)) return null;
+  const { hid, mine, revision, item, related } = a;
+  if (typeof hid !== 'string' || !isCloudId(hid)) return null;
+  if (typeof mine !== 'boolean' || typeof revision !== 'string') return null;
+  if (!snapshotValid(item)) return null;
+  return {
+    hid,
+    mine,
+    revision,
+    record: { ...(item as HomebrewRecord), hid },
+    related: (Array.isArray(related) ? related : []).flatMap((x) => {
+      const r = relatedOf(x);
+      return r ? [r] : [];
+    })
+  };
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -207,14 +322,12 @@ export function toCloudList(row: ListRow): CloudList {
   const entries = [...row.list_entries].sort(entryOrder);
   const meta: Record<string, ListEntryMeta> = {};
   const entryIds: Record<string, string> = {};
-  const frozen: Record<string, HomebrewRecord> = {};
+  const links: Record<string, string> = {};
   for (const e of entries) {
     entryIds[e.item_key] = e.id;
     const m = entryMetaOf(e);
     if (Object.keys(m).length) meta[e.item_key] = m;
-    if (e.source === 'homebrew' && frozenValid(e.item_key, e.snapshot)) {
-      frozen[e.item_key] = e.snapshot;
-    }
+    if (e.source === 'homebrew' && e.hb_item) links[e.item_key] = e.hb_item;
   }
   const l: CloudList = {
     id: row.id,
@@ -228,7 +341,7 @@ export function toCloudList(row: ListRow): CloudList {
   if (row.player_note) l.note = row.player_note;
   if (row.gm_note) l.hnote = row.gm_note;
   if (Object.keys(meta).length) l.meta = meta;
-  if (Object.keys(frozen).length) l.frozen = frozen;
+  if (Object.keys(links).length) l.links = links;
   return l;
 }
 
@@ -253,7 +366,13 @@ export interface SharedRow {
   /** The share's live topic is `share:<topic_key>`; a random id of its own, not the token. */
   topic_key: string;
   list: { name: string; money_mode: MoneyMode; player_note: string; gm_note?: string };
-  entries: (Omit<EntryRow, 'gm_note'> & { gm_note?: string })[];
+  /** A homebrew entry's `snapshot` is its linked item's record and `hid` that item's id;
+   *  an official entry's `snapshot` is null. */
+  entries: (Omit<EntryRow, 'gm_note' | 'hb_item'> & {
+    snapshot: unknown;
+    hid?: string;
+    gm_note?: string;
+  })[];
 }
 
 /** Returns whether two reads draw the same page; `revision`, `updated_at` and `topic_key`
@@ -332,7 +451,7 @@ export function entryRowsOf(
         id: newId(),
         item_key: key,
         source: src.source,
-        snapshot: src.snapshot,
+        hb_item: src.hb_item,
         position: from + i,
         quantity: quantityOf(m.qty),
         price_coins: priceOf(m.gold),
@@ -343,18 +462,15 @@ export function entryRowsOf(
 }
 
 /** Returns the toast for a refused write that hit a limit (`limit: <key>`, the database's
- *  message), with the number the database gave; a byte limit shows in KB, rounded up. */
+ *  message), with the number the database gave. */
 export function limitText(key: string, value: number | null, t: Dict): string {
   const named: Partial<Record<string, string>> = {
     lists_per_owner: t.limitLists,
     entries_per_list: t.limitEntries,
-    snapshot_bytes_per_list: t.limitSnapshots,
     homebrew_items_per_owner: t.limitHbItems,
     homebrew_books_per_owner: t.limitHbBooks,
     homebrew_cards_per_owner: t.limitHbCards
   };
   const text = named[key] ?? t.limitOther;
-  const shown =
-    value !== null && key === 'snapshot_bytes_per_list' ? Math.ceil(value / 1024) : value;
-  return text.replace('%n', shown === null ? '?' : String(shown));
+  return text.replace('%n', value === null ? '?' : String(value));
 }

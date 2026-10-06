@@ -522,11 +522,11 @@ describe('with sign-in configured', () => {
   const groupNames = (container: HTMLElement): string[] =>
     [...container.querySelectorAll('h2')].map((h) => h.textContent);
 
-  it('counts a frozen copy and an own item on their cards, each with a thumb', async () => {
+  it("counts another account's linked item and an own item on their cards, each with a thumb", async () => {
     const gm2 = withCloud(fakeCloud(SEED, 'gm2'));
-    const frozen = await screen.findByRole('link', { name: /^Список второго ГМа, / });
-    expect(frozen.querySelector('.listcard-meta')?.textContent).toMatch(/^1 позиция · /);
-    const known = frozen.querySelectorAll('.listcard-thumbs img').length;
+    const linked = await screen.findByRole('link', { name: /^Список второго ГМа, / });
+    expect(linked.querySelector('.listcard-meta')?.textContent).toMatch(/^1 позиция · /);
+    const known = linked.querySelectorAll('.listcard-thumbs img').length;
     expect(known).toBeGreaterThan(0);
     gm2.unmount();
     withCloud(fakeCloud(SEED, 'gm1'));
@@ -583,12 +583,41 @@ describe('with sign-in configured', () => {
     await expectNoA11yViolations(container);
   });
 
+  /* `n` unread notices on gm1's shop, each of another item. */
+  const shopNotices = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({
+      id: uuid(9600 + i),
+      listId: uuid(101),
+      itemKey: 'hb_note' + String.fromCharCode(97 + i) + 'aaaaaaaaaaaa',
+      hid: null,
+      kind: 'deleted' as const,
+      name: { en: 'Gone', ru: 'Ушёл' },
+      createdAgoMs: 60_000 * (i + 1)
+    }));
+
+  it('counts the unread notices beside the requests, and alone, in both plural forms', async () => {
+    const cloud = fakeCloud({ ...SEED, notices: shopNotices(1) }, 'gm1');
+    cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
+    const { container } = withCloud(cloud);
+    const line = await screen.findByText('2 запроса ждут ответа · 1 изменение');
+    expect(line).toHaveClass('listcard-req');
+    await expectNoA11yViolations(container);
+    cleanup();
+    withCloud(fakeCloud(SEED, 'gm2'));
+    expect(await screen.findByText('2 изменения')).toHaveClass('listcard-req');
+    cleanup();
+    withCloud(fakeCloud({ ...SEED, notices: shopNotices(5) }, 'gm1'));
+    expect(await screen.findByText('5 изменений')).toHaveClass('listcard-req');
+  });
+
   it('drops the line once the requests expire', async () => {
     const { container, storage } = withRequests();
     await screen.findByText('2 запроса ждут ответа');
     const now = Date.now;
     try {
-      Date.now = () => now() + 3_600_000;
+      /* The lists page never reads a request, so each lasts its 30 unread days. */
+      Date.now = () => now() + 30 * 86_400_000 + 60_000;
       storage.fireExternalChange(null);
       await waitFor(() => {
         expect(container.querySelector('.listcard-req')).toBeNull();

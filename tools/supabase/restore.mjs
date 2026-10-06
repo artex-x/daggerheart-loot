@@ -21,7 +21,7 @@ import {
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { connect, ownedSequences, publicTables, rowCounts } from './db.mjs';
+import { connect, ownedSequences, publicTables, rowCounts, setCronJobActive } from './db.mjs';
 import {
   LOCAL_STACK_EXCLUDES,
   SUPABASE_CLI,
@@ -423,9 +423,55 @@ export function dumpDatabase({ container, pgEnv }) {
   return { schemaText, dataText: cliShapedDataDump(data) };
 }
 
+/** The hourly clean-up job of the 20261007120000 migration. */
+export const LIFECYCLE_JOB = 'dhloot-lifecycle';
+
+/** Runs `fn()` with the clean-up job of the database at `dbUrl` paused,
+ * and activates it again after, also when `fn` throws, but only when it was
+ * active before; a database without the job runs `fn` alone. Returns what
+ * `fn` returned. The job deletes rows past their retention, so a run
+ * between a load and its count would change the count. A failed resume goes
+ * to `onResumeError(err, jobid)` when given, else it throws, but never in
+ * place of an error `fn` threw. */
+export async function withLifecyclePaused(dbUrl, fn, onResumeError = null) {
+  const set = async (active) => {
+    const sql = connect(dbUrl);
+    try {
+      return await setCronJobActive(sql, LIFECYCLE_JOB, active);
+    } finally {
+      await sql.end();
+    }
+  };
+  const job = await set(false);
+  const resume = async () => {
+    if (!job?.was) return null;
+    try {
+      await set(true);
+      return null;
+    } catch (err) {
+      return err;
+    }
+  };
+  let result;
+  try {
+    result = await fn();
+  } catch (err) {
+    const missed = await resume();
+    if (missed && onResumeError) onResumeError(missed, job.jobid);
+    throw err;
+  }
+  const missed = await resume();
+  if (missed) {
+    if (!onResumeError) throw missed;
+    onResumeError(missed, job.jobid);
+  }
+  return result;
+}
+
 /** Loads a decrypted backup into the local database and counts the rows.
  * Empties every local `public` table first and keeps each sequence the
- * dumped tables own from moving down, in the load's transaction. Returns
+ * dumped tables own from moving down, in the load's transaction; the
+ * clean-up job is paused for the load and the count. Returns
  * `{ dumpTables, localTables, load, counts }` for drillReport; a dump table
  * the migrations do not make skips the load. */
 export async function restoreDump({ dbUrl, container, schemaText, dataText }) {
@@ -443,27 +489,29 @@ export async function restoreDump({ dbUrl, container, schemaText, dataText }) {
   if (dumpTables.some((t) => !localTables.includes(t))) {
     return { dumpTables, localTables, load: { ok: false, skipped: true }, counts: null };
   }
-  const guard = sequenceGuard(sequences);
-  const load = loadDump({
-    container,
-    pgEnv: LOCAL_PG_ENV,
-    prefix: guard.before + truncateStatement(localTables),
-    dataText,
-    suffix: guard.after
+  return withLifecyclePaused(dbUrl, async () => {
+    const guard = sequenceGuard(sequences);
+    const load = loadDump({
+      container,
+      pgEnv: LOCAL_PG_ENV,
+      prefix: guard.before + truncateStatement(localTables),
+      dataText,
+      suffix: guard.after
+    });
+    if (!load.ok) return { dumpTables, localTables, load, counts: null };
+    const names = [
+      ...new Set([...dumpCounts.keys(), ...localTables.map((t) => `public.${t}`), 'auth.users'])
+    ].sort();
+    sql = connect(dbUrl);
+    let loaded;
+    try {
+      loaded = await rowCounts(sql, names);
+    } finally {
+      await sql.end();
+    }
+    const counts = new Map(
+      names.map((n) => [n, { loaded: loaded.get(n), dump: dumpCounts.get(n) ?? 0 }])
+    );
+    return { dumpTables, localTables, load, counts };
   });
-  if (!load.ok) return { dumpTables, localTables, load, counts: null };
-  const names = [
-    ...new Set([...dumpCounts.keys(), ...localTables.map((t) => `public.${t}`), 'auth.users'])
-  ].sort();
-  sql = connect(dbUrl);
-  let loaded;
-  try {
-    loaded = await rowCounts(sql, names);
-  } finally {
-    await sql.end();
-  }
-  const counts = new Map(
-    names.map((n) => [n, { loaded: loaded.get(n), dump: dumpCounts.get(n) ?? 0 }])
-  );
-  return { dumpTables, localTables, load, counts };
 }

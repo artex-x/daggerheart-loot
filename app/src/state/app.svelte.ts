@@ -22,15 +22,20 @@ import {
   bundleText,
   dataFileName,
   FILE_MAX_BYTES,
+  importPlan,
   overBounds,
   toBundle,
-  type Bundle
+  withCopies,
+  type Bundle,
+  type ImportList,
+  type ImportPlan,
+  type PlanAccount
 } from '../lib/bundle.js';
 import {
   entrySource,
-  frozenOf,
   isCloudId,
   limitText,
+  linkedOf,
   snapshotRecords,
   type CloudList
 } from '../lib/cloudLists.js';
@@ -38,6 +43,9 @@ import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict, type Msg } from '../lib/dict.js';
 import {
   appUrl,
+  homebrewItemHash,
+  itemHash,
+  keepsTicks,
   legacySource,
   PACK_MARK,
   parseHash,
@@ -51,7 +59,9 @@ import {
 } from '../lib/hash.js';
 import {
   browseIndex,
+  copyRows,
   isHomebrewKey,
+  isHomebrewRecord,
   withRecords,
   type HomebrewRecord
 } from '../lib/homebrew.js';
@@ -65,9 +75,10 @@ import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import { readPrefs, type NotifyGm, type Prefs } from '../lib/prefs.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Record_, Section } from '../lib/types.js';
-import type { AuthResult, Env, Provider, Session } from '../ports/index.js';
+import type { AuthResult, Env, ListWrite, Provider, Session } from '../ports/index.js';
 import { CloudLists } from './cloudLists.svelte.js';
 import { Homebrew } from './homebrew.svelte.js';
+import { ItemView } from './itemView.svelte.js';
 import { LegacyMove } from './legacyMove.svelte.js';
 import { ListStore, type ListModel, type MovedList } from './lists.svelte.js';
 import { OwnerRequests } from './ownerRequests.svelte.js';
@@ -189,14 +200,14 @@ export class AppState {
   });
 
   /**
-   * The «Хоумбрю» chip on search and the equipment tables: whether their row pools hold
+   * The «Свои предметы» switch on search and the equipment tables: whether their row pools hold
    * the own items. Memory only, kept across pages like `kinds`, on again at each sign-in
    * (docs/specs/STATE.md).
    */
   homebrewShown = $state(true);
 
   /** The index search and the equipment tables read their rows and facets from: `index`
-   *  without the own items in `searchable` and `allEquip` while the chip is off. */
+   *  without the own items in `searchable` and `allEquip` while the switch is off. */
   browse: Index | null = $derived.by(() =>
     this.index && this.catalog
       ? browseIndex(this.index, this.catalog, this.homebrewShown)
@@ -244,6 +255,8 @@ export class AppState {
   readonly cloudLists: CloudLists | null;
   /** The list behind the open share link; null in a build with no sign-in configured. */
   readonly sharedView: SharedView | null;
+  /** The homebrew item behind the open `#/h/`; null in a build with no sign-in configured. */
+  readonly itemView: ItemView | null;
   /** The move of this browser's lists into the account; null with no sign-in configured. */
   readonly legacyMove: LegacyMove | null;
   /** The signed-in owner's purchase requests; null with no sign-in configured. */
@@ -260,6 +273,12 @@ export class AppState {
   now = $state(Date.now());
   /** True while «Сохранить себе» copies a share link's list. */
   cloning = $state(false);
+  /** The id of the homebrew item «Сохранить себе» copies now, or null. */
+  savingItem = $state<string | null>(null);
+  /** The id of the homebrew item a sign-in left to copy, until the item's pick row makes the
+   *  copy once the account's items are read; forgotten with the pending action
+   *  (docs/specs/STATE.md, "Session"). */
+  saveItemFor = $state<string | null>(null);
   /**
    * Where a sign-in prompt's «Войти» came from and what it started - kept
    * while the reader is on `#/account`, handed to the provider redirect by
@@ -326,6 +345,11 @@ export class AppState {
     this.sel.clear();
     this.picked.clear();
     this.requestSender?.dismiss();
+  }
+
+  /* The «Мои предметы» tabs and the source chips keep the ticks (`keepsTicks`). */
+  #clearTicksOnLeave(from: Route): void {
+    if (!keepsTicks(from, this.route)) this.#clearTicks();
   }
 
   /**
@@ -506,9 +530,10 @@ export class AppState {
               key,
               {
                 ready: this.homebrew?.status === 'ready',
-                has: (k) => this.homebrew?.has(k) ?? false
+                has: (k) => this.homebrew?.has(k) ?? false,
+                hidOf: (k) => this.homebrew?.item(k)?.id ?? null
               },
-              this.frozenCopy(key)
+              this.linkedRecord(key)
             )
         )
       : null;
@@ -528,6 +553,7 @@ export class AppState {
     this.sharedView = env.cloud
       ? new SharedView(env.cloud.shares, { events: env.cloud.events, random: env.random })
       : null;
+    this.itemView = env.cloud ? new ItemView(env.cloud.lists, () => this.catalog) : null;
     this.legacyMove = env.cloud ? new LegacyMove(this, () => this.user?.userId ?? null) : null;
     this.legacyWritable = !env.cloud || legacyWritable(env.clock.now());
 
@@ -581,12 +607,13 @@ export class AppState {
         this.env.router.replace(this.hash);
         return;
       }
+      const from = this.route;
       this.hash = this.#fallback(h);
       this.#forgetSignIn();
       this.#forgetPending();
       this.navigations++;
       this.menuFor = '';
-      this.#clearTicks();
+      this.#clearTicksOnLeave(from);
       this.#applySource();
       this.#expand();
     });
@@ -628,6 +655,7 @@ export class AppState {
       if (key !== null) return;
       this.now = Date.now();
       this.#refreshShared(true);
+      if (this.route.kind === 'item') void this.itemView?.refresh();
       if (!this.user) return;
       if (this.#stale) this.#saveAccount();
       else void this.#pull();
@@ -820,8 +848,8 @@ export class AppState {
     return new Date(this.env.clock.now());
   }
 
-  /* The lists file. A homebrew entry carries its snapshot: a frozen copy its own, a
-     reference the live item as `homebrew_snapshot_of` writes it; one with neither is left
+  /* The lists file. A homebrew entry carries the snapshot of its live item: the own record
+     of its key, else the linked record of another account's item; one with neither is left
      out and counted (docs/specs/CONTRACTS.md section 4). */
   #bundle(lists: readonly CloudList[], now: Date): { b: Bundle; skipped: number } {
     const byId = this.index?.byId;
@@ -834,7 +862,7 @@ export class AppState {
       },
       this.t.untitled,
       now,
-      (id, list) => frozenOf(list)[id] ?? own?.records.find((r) => r.id === id) ?? null
+      (id, list) => own?.records.find((r) => r.id === id) ?? linkedOf(list)[id] ?? null
     );
     return { b, skipped };
   }
@@ -963,25 +991,149 @@ export class AppState {
   }
 
   /**
-   * Returns the frozen copy of another account's item that `key` names: the open share's
-   * first (the view holds a projection only while `#/s/` is on screen), then the first one an
-   * account list holds. A frozen copy is drawn only where a list carries it: never in search,
-   * tables or `#/i/` (docs/specs/FEATURES.md, "Lists"). Reads no route: `route` asks it.
+   * Returns the record of another account's item that `key` names, with its `hid`: the open
+   * share's first (the view holds a projection only while `#/s/` is on screen), then the
+   * first one an account list links. Such a record is drawn only where a list carries it:
+   * never in search, tables or `#/i/` (docs/specs/FEATURES.md, "Lists"). Reads no route:
+   * `route` asks it.
    */
-  frozenCopy(key: string): HomebrewRecord | undefined {
+  linkedRecord(key: string): HomebrewRecord | undefined {
     if (!isHomebrewKey(key)) return undefined;
+    const open = this.itemView?.record;
+    if (open?.id === key) return open;
     const shown = snapshotRecords(this.sharedView?.shared).find((r) => r.id === key);
     if (shown) return shown;
     for (const l of this.cloudLists?.lists ?? []) {
-      const copy = l.frozen?.[key];
-      if (copy) return copy;
+      const linked = l.linked?.[key];
+      if (linked) return linked;
     }
     return undefined;
   }
 
-  /** Returns the record `id` names: the catalogue's or an own item, else a frozen copy. */
+  /** Returns the record `id` names: the catalogue's or an own item, else another account's
+   *  linked one. */
   recordFor(id: string): Record_ | undefined {
-    return this.index?.byId.get(id) ?? this.frozenCopy(id);
+    return this.index?.byId.get(id) ?? this.linkedRecord(id);
+  }
+
+  /** Returns whether `it` is another account's homebrew item: a record with an id that is not
+   *  one of the reader's own items. Signed in, only once the own items are read. */
+  isForeignItem(it: Record_): boolean {
+    if (!isHomebrewRecord(it) || typeof it.hid !== 'string' || !this.homebrew) return false;
+    if (this.user === null) return true;
+    if (!this.user || this.homebrew.status !== 'ready') return false;
+    return !this.homebrew.items.some((r) => r.id === it.hid);
+  }
+
+  /** Returns the account lists whose entry of `it`'s key links `it`, another account's item:
+   *  the rows «Сохранить себе» relinks to the copy. Empty for an own item. */
+  relinkTargets(it: Record_): string[] {
+    const hid = isHomebrewRecord(it) ? it.hid : undefined;
+    if (typeof hid !== 'string' || this.homebrew?.items.some((r) => r.id === hid)) return [];
+    return (this.cloudLists?.lists ?? [])
+      .filter((l) => l.links?.[it.id] === hid)
+      .map((l) => l.id);
+  }
+
+  /**
+   * «Сохранить себе»: copies another account's item into the reader's own items, in the
+   * default source under the item's key, then relinks in place every row of the reader's
+   * lists that links the item, each keeping its position, quantity, price and notes
+   * (docs/decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md).
+   * The account's read after the import decides: a lost answer whose rows landed is a save.
+   */
+  async saveItem(it: HomebrewRecord): Promise<void> {
+    const own = this.homebrew;
+    const hid = it.hid;
+    if (!own || !this.cloudLists || typeof hid !== 'string' || !this.user) return;
+    if (this.savingItem !== null) return;
+    if (own.status === 'idle' || own.status === 'loading') {
+      this.say((t) => t.hbNotReady, { error: true });
+      return;
+    }
+    if (own.status === 'error') {
+      this.say((t) => t.hbLoadFailed, { error: true });
+      return;
+    }
+    if (own.has(it.id)) return;
+    /* Unread lists relink nothing: the copy would shadow rows still linked to the author's item. */
+    if (this.cloudLists.status === 'idle' || this.cloudLists.status === 'loading') {
+      this.say((t) => t.hbNotReady, { error: true });
+      return;
+    }
+    if (this.cloudLists.status === 'error') {
+      this.say((t) => t.cloudLoadFailed, { error: true });
+      return;
+    }
+    const lists = this.relinkTargets(it);
+    /* A plain copy: a list's linked record is reactive state, which a port may clone. */
+    const rows = copyRows($state.snapshot(it), {
+      newId: () => own.newIds().id,
+      hasCard: (k) => own.cards.some((c) => c.key === k)
+    });
+    this.savingItem = hid;
+    try {
+      const r = await own.import(rows);
+      const made = rows.items[0]?.id ?? null;
+      const ownId = own.item(it.id)?.id ?? (r.ok && r.counts.items_created === 1 ? made : null);
+      if (ownId === null) {
+        if (!r.ok && r.error === 'limit') {
+          const { key, value } = r;
+          this.say((t) => limitText(key, value, t), { error: true });
+        } else if (!r.ok && r.error === 'refused') {
+          this.say((t) => t.saveItemRefused, { error: true });
+        } else this.say((t) => t.saveItemFailed, { error: true });
+        return;
+      }
+      let relinked = false;
+      for (const list of lists) {
+        if (this.cloudLists.relink(list, it.id, ownId)) relinked = true;
+      }
+      this.say(
+        (t, lang) =>
+          (relinked ? t.saveItemRelinked : t.saveItemSaved).replace('%s', nameOf(it, lang)),
+        { action: { label: (t) => t.edit, href: homebrewItemHash(it.id) } }
+      );
+    } finally {
+      this.savingItem = null;
+    }
+  }
+
+  /* What a lists file import reads of the account; null signed out or with no cloud. */
+  #planAccount(): PlanAccount | null {
+    const cloud = this.env.cloud;
+    const own = this.homebrew;
+    if (!cloud || !own) return null;
+    return {
+      newId: () => cloud.lists.newId(),
+      newKey: () => own.newIds().key,
+      hasItem: (k) => own.has(k),
+      hasCard: (k) => own.cards.some((c) => c.key === k)
+    };
+  }
+
+  /** Returns a lists file's import plan (docs/specs/CONTRACTS.md section 4): built once per
+   *  chosen file, then, with `plan`, again for a press: a key the account no longer holds
+   *  gains its fixed copy, every id kept, `plan` itself when nothing changed. Null with no
+   *  cloud. */
+  importPlan(lists: readonly ImportList[], plan?: ImportPlan): ImportPlan | null {
+    const account = this.#planAccount();
+    if (!account) return null;
+    return plan ? withCopies(plan, lists, account) : importPlan(lists, account);
+  }
+
+  /** Imports a plan: its fixed copies first (one `import_homebrew` call, every row or none),
+   *  then its lists (one `import_lists` call). A refused copies call writes nothing; a
+   *  failed lists call keeps the copies, and a retry skips their held keys and links them. */
+  async importLists(plan: ImportPlan): Promise<ListWrite> {
+    const store = this.cloudLists;
+    if (!store) return { ok: false, error: 'network' };
+    if (plan.copies) {
+      const copied = await this.homebrew?.import(plan.copies);
+      if (!copied) return { ok: false, error: 'network' };
+      if (!copied.ok) return copied;
+    }
+    return store.import(plan.rows);
   }
 
   /** Whether `recordFor` finds a record for `id`. */
@@ -1053,6 +1205,7 @@ export class AppState {
   #forgetPending(): void {
     this.#pending = null;
     this.pendingListName = null;
+    this.saveItemFor = null;
   }
 
   /**
@@ -1115,6 +1268,12 @@ export class AppState {
       }
       this.pendingListName = action.name ?? null;
       this.menuFor = action.key;
+      return;
+    }
+    if (action.do === 'saveItem') {
+      /* The item's pick row makes the copy once the account's items are read. */
+      this.#pending = null;
+      this.saveItemFor = action.hid;
       return;
     }
     const r = this.route;
@@ -1369,11 +1528,14 @@ export class AppState {
     return appUrl(this.site, hash, this.lang);
   }
 
-  /** A record's address, which is its stub page rather than the app.
-   *  An address to hand somebody else, in the language on screen, so a
-   *  messenger builds its preview in that language. */
-  linkToRecord(id: string): string {
-    return recordUrl(this.site, id, this.lang);
+  /** A record's address to hand somebody else, in the language on screen, so a messenger
+   *  builds its preview in that language: a homebrew item's `#/h/` address in the app, else
+   *  the record's stub page. */
+  linkToRecord(it: Record_): string {
+    const hid = isHomebrewRecord(it) ? it.hid : undefined;
+    return typeof hid === 'string'
+      ? appUrl(this.site, itemHash(hid), this.lang)
+      : recordUrl(this.site, it.id, this.lang);
   }
 
   /* Art that failed to load, remembered for the session only: a missing file
@@ -1524,12 +1686,13 @@ export class AppState {
        (below), and this method deserved the same guarantee for the same
        reason: a route kind `App.svelte` cannot yet draw must not be the
        result of a call this class itself made. */
+    const from = this.route;
     this.hash = this.#fallback(hash);
     this.#forgetSignIn();
     this.#forgetPending();
     this.navigations++;
     this.menuFor = '';
-    this.#clearTicks();
+    this.#clearTicksOnLeave(from);
     this.#applySource();
     this.#expand();
   }
@@ -1574,7 +1737,7 @@ export class AppState {
     this.kinds = { ...this.kinds, [kind]: !this.kinds[kind] };
   }
 
-  /** Switches the «Хоумбрю» chip: the own items in search and the equipment tables. */
+  /** Switches «Свои предметы»: the own items in search and the equipment tables. */
   toggleHomebrew(): void {
     this.homebrewShown = !this.homebrewShown;
   }

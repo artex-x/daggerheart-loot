@@ -22,6 +22,7 @@ Before dispatching workers, create or refresh `issues/<TASK_ID>/context.md` usin
 - Workers must read context.md first and must NOT re-fetch the issue/screenshots unless context is missing a needed fact, looks stale, or the human added new information
 - Keep context.md factual and compact - not a second plan.md
 - Update context.md when a worker discovers durable facts worth sharing
+- When you record an owner answer, tag each reusable rule in it under "Decisions already settled" with its home (`.claude/README.md`, "Owner insights"); the planner adds the batch that writes it, and that batch's dispatch names the write
 
 When dispatching a subagent, pass: TASK id, GOAL, path to context.md, path to plan/handoff, and the single next action. Do not paste the entire issue body into every spawn message if it is already in context.md.
 
@@ -110,7 +111,7 @@ Known costs in this repo:
 |---|---|---|
 | `npm run check:fast` | 215-310 s (2026-10-07) | yes |
 | `npm run check:1` | 252 s with the selftest uncached (2026-10-07) | yes; in a hook batch it can pass 600 s and records the half by its exit |
-| `npm run check:2` | 308 s (2026-10-07) | yes |
+| `npm run check:2` | 308 s idle, 465-682 s under load (2026-10-07) | yes on an idle host; under load it can pass 600 s and records the half by its exit |
 | `npm run check:built` | a few minutes | yes |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | yes |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | barely, one width at a time |
@@ -522,7 +523,7 @@ Before reporting a batch or task complete:
 3. Confirm no required acceptance criterion, review blocker, or `NEEDS_HUMAN_CONFIRMATION: yes` remains unresolved. If one remains, mark the task blocked rather than done.
 4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and amend the task's commit; the reviewer stays read-only.
 5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, and anything user-owned or ambiguous. The `Stop` hook names this session's own untracked writes (excluding `docs/` and the task-document set) as a candidate set, not a verdict - it states what is there, never what to do with it. The session that watched the files appear is the one that can tell scratch from evidence; a hook cannot. Record what was removed or deliberately retained in `handoff.md`.
-6. Retire the task directory per `.claude/skills/handoff/SKILL.md`, "Finishing a task": audit, move, repair every citation `git grep -n "issues/<id>" -- ':!issues/'` finds (unslashed and scoped outside all of `issues/` - the same boundary `bash-guard.mjs` rule 2i checks, so a bare-name citation with no trailing slash is not missed; a sibling id that merely starts with this one is not a real hit), `git rm -r issues/<id>` in the closeout amend - `bash-guard.mjs` rule 2i denies the deletion while a citation stands, so the order is not optional. A citation repair that touches a non-exempt file puts the amend behind a passing `npm run check`. A directory whose task is planned but not started stays until that task closes.
+6. Retire the task directory per `.claude/skills/handoff/SKILL.md`, "Finishing a task": audit, move, check owner rules, repair every citation `git grep -n "issues/<id>" -- ':!issues/'` finds (unslashed and scoped outside all of `issues/` - the same boundary `bash-guard.mjs` rule 2i checks, so a bare-name citation with no trailing slash is not missed; a sibling id that merely starts with this one is not a real hit), `git rm -r issues/<id>` in the closeout amend - `bash-guard.mjs` rule 2i denies the deletion while a citation stands, so the order is not optional. A citation repair that touches a non-exempt file puts the amend behind a passing `npm run check`. A directory whose task is planned but not started stays until that task closes.
 7. A retired task leaves nothing behind but its commit and what it wrote to permanent homes. Closeout is not finished until the closeout summary names the pushed sha and every place something was moved to.
 8. Push the task's commit once, now that the task directory is retired; record the pushed sha in the closeout summary. The amend window is closed at that push - any further work on this task is a new commit, never an amend.
 9. Finish with a concise summary: outcome, commit (pushed sha), checks, cleanup, retained artifacts, deferred work, and whether human action is required.

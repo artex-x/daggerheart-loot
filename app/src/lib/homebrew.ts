@@ -8,6 +8,9 @@
  * docs/decisions/2026-09-30-a-homebrew-item-carries-the-whole-catalog-shape.md. */
 
 import { relate, type Index } from './data.js';
+import type { Dict } from './dict.js';
+import type { FilterState } from './filters.js';
+import type { HomebrewImportRows, ImportCardRow } from './homebrewFile.js';
 import { nameOf } from './i18n.js';
 import type {
   DamageType,
@@ -65,7 +68,7 @@ export const SECTIONS_MAX = 30;
 export function counterFrom(max: number): number {
   return Math.floor((max * 5) / 6);
 }
-/** The most bytes of a frozen copy's snapshot (`list_entries_snapshot_size`). */
+/** The most bytes of a lists file entry's snapshot, as `schema/import-v2.json` names it. */
 export const SNAPSHOT_BYTES = 131072;
 
 export type HomebrewKind = 'item' | 'consumable' | 'equip';
@@ -196,11 +199,13 @@ export interface NamedKey {
   ru: string;
 }
 
-/** A homebrew item as the app draws it, and as a frozen copy carries it. */
+/** A homebrew item as the app draws it, and as a lists file and a share's projection carry
+ *  it. `hid` is the item's id (`homebrew_items.id`), absent in a file. */
 export type HomebrewRecord = Record_ & {
   book?: NamedKey & { section?: NamedKey };
   craft_from?: readonly string[];
   cards?: RecordCards;
+  hid?: string;
 };
 
 export interface Problem {
@@ -557,8 +562,8 @@ function namedKeyValid(v: unknown, allowed: readonly string[]): boolean {
   return !problems.length;
 }
 
-/** Returns whether `v` is a frozen copy's snapshot the database takes
- *  (`homebrew_snapshot_valid`). */
+/** Returns whether `v` is a record `homebrew_snapshot_valid` takes, a `hid` beside it
+ *  ignored: a lists file's snapshot, or a linked item's record. */
 export function snapshotValid(v: unknown): boolean {
   if (!isObj(v) || v['src'] !== 'homebrew') return false;
   const id = v['id'];
@@ -577,9 +582,10 @@ export function snapshotValid(v: unknown): boolean {
   if ('cards' in v && !cardsValid(v['cards'], v['set'], v['refs'])) return false;
   const rest = Object.fromEntries(
     Object.entries(v).filter(
-      ([k]) => k !== 'id' && k !== 'src' && k !== 'book' && k !== 'cards'
+      ([k]) => k !== 'id' && k !== 'src' && k !== 'book' && k !== 'cards' && k !== 'hid'
     )
   );
+  if ('hid' in v && typeof v['hid'] !== 'string') return false;
   if (rest['kind'] === 'equip' && 'tier' in rest) {
     const eq = rest['eq'];
     if (rest['tier'] !== 'A' || !isObj(eq) || eq['tier'] !== 'A') return false;
@@ -613,12 +619,14 @@ function namedOf(key: string, v: { en?: string; ru?: string }): NamedKey {
  *  each missing or empty language filled from the other, the record's `tier` `'A'` for an
  *  artifact, and its source with the section the source holds. `book` null is the default
  *  source. Of `cards`, the set card under the item's `set` and the rule cards its `refs`
- *  names are embedded in `cards`, in the catalog's card shape; absent when none is. */
+ *  names are embedded in `cards`, in the catalog's card shape; absent when none is. `hid`,
+ *  when given, is the item's row id. */
 export function recordOf(
   key: string,
   c: HomebrewContent,
   book: BookRef | null,
-  cards: readonly CardRef[] = []
+  cards: readonly CardRef[] = [],
+  hid?: string
 ): HomebrewRecord {
   const { section, ...rest } = c;
   const out: HomebrewRecord = {
@@ -630,6 +638,7 @@ export function recordOf(
     ende: filled(c.ende, c.rud),
     rud: filled(c.rud, c.ende)
   };
+  if (hid !== undefined) out.hid = hid;
   if (c.eq?.tier === 'A') out.tier = 'A';
   const sets: Record<string, SetCard> = {};
   const refs: Record<string, RefCard> = {};
@@ -666,30 +675,96 @@ export function recordOf(
   return out;
 }
 
-/** Returns whether a record is a homebrew item: an own one, or a frozen copy. */
+/** Returns the content a record was made from (`recordOf`'s inverse): its own fields with
+ *  no `id`, `src`, `hid`, source or embedded cards, and no record `tier` of an artifact,
+ *  which its stat block holds. The item lands in the default source. */
+export function contentOfRecord(r: HomebrewRecord): HomebrewContent {
+  const rest: Record<string, unknown> = { ...r };
+  for (const k of ['id', 'src', 'hid', 'book', 'cards']) Reflect.deleteProperty(rest, k);
+  const out = rest as unknown as HomebrewContent & { tier?: unknown };
+  if (out.kind === 'equip') delete out.tier;
+  return out;
+}
+
+/** Returns the import rows of «Сохранить себе» (`import_homebrew`): one own item in the
+ *  default source from what the reader sees, under the item's own key. The `hb_` ids of
+ *  `craft`, `craft_from` and `eq.line` are dropped (the author's other items stay theirs);
+ *  catalog ids stay. A set or rule card the record embeds is copied under its key, unless
+ *  the account holds that key, which the copy then names; an `hb_` card key with no card
+ *  is dropped (docs/decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md). */
+export function copyRows(
+  r: HomebrewRecord,
+  account: { newId: () => string; hasCard: (key: string) => boolean }
+): HomebrewImportRows {
+  const content = contentOfRecord(r);
+  const cards: ImportCardRow[] = [];
+  const catalogOnly = (ids: readonly string[] | undefined): string[] =>
+    (ids ?? []).filter((id) => !isHomebrewKey(id));
+  const craft = catalogOnly(content.craft);
+  const craftFrom = catalogOnly(content.craft_from);
+  delete content.craft;
+  delete content.craft_from;
+  if (craft.length) content.craft = craft;
+  if (craftFrom.length) content.craft_from = craftFrom;
+  if (content.eq?.line !== undefined && isHomebrewKey(content.eq.line)) {
+    const eq = { ...content.eq };
+    delete eq.line;
+    content.eq = eq;
+  }
+  /* A card key the record embeds: copied, or named when the account holds it. */
+  const cardKey = (kind: CardKind, key: string): string | null => {
+    if (!isHomebrewKey(key)) return key;
+    if (account.hasCard(key)) return key;
+    const card = kind === 'set' ? r.cards?.sets?.[key] : r.cards?.refs?.[key];
+    if (!card) return null;
+    cards.push({ id: account.newId(), key, kind, book: null, content: { ...card } });
+    return key;
+  };
+  if (content.set !== undefined) {
+    const set = cardKey('set', content.set);
+    if (set === null) delete content.set;
+    else content.set = set;
+  }
+  if (content.refs !== undefined) {
+    const refs = content.refs.flatMap((ref) => {
+      const k = cardKey('ref', ref);
+      return k === null ? [] : [k];
+    });
+    if (refs.length) content.refs = refs;
+    else delete content.refs;
+  }
+  return {
+    books: [],
+    cards,
+    items: [{ id: account.newId(), key: r.id, book: null, content }],
+    update: false
+  };
+}
+
+/** Returns whether a record is a homebrew item: an own one, or another account's. */
 export function isHomebrewRecord(it: Record_): it is HomebrewRecord {
   return it.src === 'homebrew';
 }
 
-/** Returns `base` with the own records and the frozen copies in `byId`: an own record
- *  replaces nothing of `base`'s, and a frozen copy only takes a key that neither holds, so
- *  an own item stays live. The own records also follow the catalog's in `searchable` and,
- *  with a stat block, in `allEquip`, make the `homebrew` rows and join the relation maps
- *  (`relate`) over the catalog and the own records. `refs` and `sets` add the cards the
- *  own records embed, then those of the frozen copies that joined, a key kept by its first
- *  holder and the catalog's first of all. A frozen copy joins no relation. `base` itself
- *  when both are empty. */
+/** Returns `base` with the own records and the linked records of other accounts in `byId`:
+ *  an own record replaces nothing of `base`'s, and a linked one only takes a key that
+ *  neither holds, so an own item wins a key. The own records also follow the catalog's in
+ *  `searchable` and, with a stat block, in `allEquip`, make the `homebrew` rows and join the
+ *  relation maps (`relate`) over the catalog and the own records. `refs` and `sets` add the
+ *  cards the own records embed, then those of the linked records that joined, a key kept by
+ *  its first holder and the catalog's first of all. A linked record joins no relation.
+ *  `base` itself when both are empty. */
 export function withRecords(
   base: Index,
   own: readonly HomebrewRecord[],
-  frozen: readonly HomebrewRecord[]
+  linked: readonly HomebrewRecord[]
 ): Index {
-  if (!own.length && !frozen.length) return base;
+  if (!own.length && !linked.length) return base;
   const byId = new Map<string, Record_>(base.byId);
   for (const it of own) byId.set(it.id, it);
   const relations = own.length ? relate(base, own, byId) : null;
   const joined: HomebrewRecord[] = [];
-  for (const it of frozen) {
+  for (const it of linked) {
     if (byId.has(it.id)) continue;
     byId.set(it.id, it);
     joined.push(it);
@@ -716,7 +791,7 @@ export function withRecords(
 }
 
 /** Returns the index search and the equipment tables read: `index` itself while the
- *  «Хоумбрю» chip is on, else its `searchable` and `allEquip` taken from `base`. */
+ *  «Свои предметы» switch is on, else its `searchable` and `allEquip` taken from `base`. */
 export function browseIndex(index: Index, base: Index, shown: boolean): Index {
   if (shown || index === base) return index;
   return { ...index, searchable: base.searchable, allEquip: base.allEquip };
@@ -748,12 +823,17 @@ export function itemUses(items: readonly ItemRow[], key: string): number {
   ).length;
 }
 
-/** Returns how many of `items` name the card: `set` equal to `key` for a set card, `refs`
- *  holding it for a rule card. */
-export function cardUses(items: readonly ItemRow[], kind: CardKind, key: string): number {
+/** Returns the items of `items` that name the card: `set` equal to `key` for a set card,
+ *  `refs` holding it for a rule card. */
+export function cardMembers(items: readonly ItemRow[], kind: CardKind, key: string): ItemRow[] {
   return items.filter((it) =>
     kind === 'set' ? it.content.set === key : !!it.content.refs?.includes(key)
-  ).length;
+  );
+}
+
+/** Returns how many of `items` name the card (`cardMembers`). */
+export function cardUses(items: readonly ItemRow[], kind: CardKind, key: string): number {
+  return cardMembers(items, kind, key).length;
 }
 
 const folded = (s: string): string => s.trim().toLocaleLowerCase();
@@ -783,6 +863,9 @@ export interface HomebrewGroup {
 const named = (v: { en?: string; ru?: string }, lang: Lang): string =>
   (lang === 'ru' ? v.ru || v.en : v.en || v.ru) ?? '';
 
+const byCreation = (books: readonly BookRow[]): BookRow[] =>
+  [...books].sort((a, b) => a.created_at.localeCompare(b.created_at));
+
 /** Returns the groups of `#/homebrew`: each named source by `created_at`, its sections in
  *  order, then its items with no section under the source name; the default source
  *  (`home`) last; empty groups left out; the items by name in `lang`. */
@@ -799,8 +882,7 @@ export function groupsOf(
     if (items.length) out.push({ id, label, items: [...items].sort(byName) });
   };
   const known = new Set(books.map((b) => b.key));
-  const sorted = [...books].sort((a, b) => a.created_at.localeCompare(b.created_at));
-  for (const b of sorted) {
+  for (const b of byCreation(books)) {
     const mine = records.filter((r) => r.book?.key === b.key);
     const name = named(b.content, lang);
     for (const s of b.content.sections ?? []) {
@@ -819,7 +901,137 @@ export function groupsOf(
   push(
     'hb',
     home,
-    records.filter((r) => !r.book || !known.has(r.book.key))
+    records.filter((r) => sourceKeyOf(r, known) === 'hb')
+  );
+  return out;
+}
+
+/** Returns the source an own record is drawn under: its source's key while a source of
+ *  `known` holds it, else `hb`, the default source. */
+export function sourceKeyOf(r: HomebrewRecord, known: ReadonlySet<string>): string {
+  return r.book && known.has(r.book.key) ? r.book.key : 'hb';
+}
+
+/** One source chip of `#/tables/homebrew`. */
+export interface SourceChip {
+  key: string;
+  label: string;
+}
+
+/** Returns the sources that hold at least one of `records`, in `groupsOf`'s order: the
+ *  named sources by `created_at`, then the default source (`hb`, labelled `home`). */
+export function sourcesOf(
+  books: readonly BookRow[],
+  records: readonly HomebrewRecord[],
+  lang: Lang,
+  home: string
+): SourceChip[] {
+  const known = new Set(books.map((b) => b.key));
+  const held = new Set(records.map((r) => sourceKeyOf(r, known)));
+  const out: SourceChip[] = byCreation(books)
+    .filter((b) => held.has(b.key))
+    .map((b) => ({ key: b.key, label: named(b.content, lang) }));
+  if (held.has('hb')) out.push({ key: 'hb', label: home });
+  return out;
+}
+
+/** Returns the chosen source chip of `#/tables/homebrew`, or null with fewer than two
+ *  sources: the first `src` value that names a held source; else the source of the anchor
+ *  (`hb`, a source key, a section key or an item key); else the source of the first `sect`
+ *  value; else the first chip (docs/specs/ROUTES.md, "Homebrew"). */
+export function pickSource(
+  sources: readonly SourceChip[],
+  filter: FilterState,
+  anchor: string,
+  records: readonly HomebrewRecord[],
+  books: readonly BookRow[]
+): string | null {
+  const first = sources[0];
+  if (!first || sources.length < 2) return null;
+  const held = (key: string | undefined): key is string =>
+    key !== undefined && sources.some((s) => s.key === key);
+  const fromSrc = (filter['src'] ?? []).find((v) => held(v));
+  if (fromSrc) return fromSrc;
+  const bookOfSection = (key: string): string | undefined =>
+    books.find((b) => b.content.sections?.some((s) => s.key === key))?.key;
+  if (anchor) {
+    const known = new Set(books.map((b) => b.key));
+    const record = records.find((r) => r.id === anchor);
+    const of =
+      anchor === 'hb' || known.has(anchor)
+        ? anchor
+        : record
+          ? sourceKeyOf(record, known)
+          : bookOfSection(anchor);
+    if (held(of)) return of;
+  }
+  const sect = filter['sect']?.[0];
+  const ofSect = sect === undefined ? undefined : bookOfSection(sect);
+  if (held(ofSect)) return ofSect;
+  return first.key;
+}
+
+/** Returns the filter to write when the address disagrees with the chosen chip - more than
+ *  one `src` value, a `src` other than `chosen`, or a `sect` not in `sections` (the chosen
+ *  source's) - else null: `kind`, `src: [chosen]` and the agreeing `sect` values. */
+export function hbFilterFix(
+  filter: FilterState,
+  chosen: string,
+  sections: readonly string[]
+): FilterState | null {
+  const src = filter['src'] ?? [];
+  const sect = filter['sect'] ?? [];
+  const kept = sect.filter((s) => sections.includes(s));
+  if (src.length <= 1 && (src[0] ?? chosen) === chosen && kept.length === sect.length) {
+    return null;
+  }
+  const kind = filter['kind'] ?? [];
+  return {
+    ...(kind.length ? { kind } : {}),
+    src: [chosen],
+    ...(kept.length ? { sect: kept } : {})
+  };
+}
+
+/** Returns the section keys of one source: a named source's sections, none for `hb`. */
+export function sectionKeysOf(books: readonly BookRow[], source: string): string[] {
+  return (books.find((b) => b.key === source)?.content.sections ?? []).map((s) => s.key);
+}
+
+/** Returns the headings of one source chip: a named source's sections in order, each under
+ *  its own name, then its items with no section under «Без раздела»; the default source as
+ *  one heading. The ids are `groupsOf`'s, so every anchor keeps its meaning. */
+export function sourceGroups(
+  books: readonly BookRow[],
+  records: readonly HomebrewRecord[],
+  source: string,
+  lang: Lang,
+  t: Pick<Dict, 'srcHomebrew' | 'hbNoSection'>
+): HomebrewGroup[] {
+  const known = new Set(books.map((b) => b.key));
+  const mine = records.filter((r) => sourceKeyOf(r, known) === source);
+  const byName = (a: HomebrewRecord, b: HomebrewRecord): number =>
+    nameOf(a, lang).localeCompare(nameOf(b, lang), lang);
+  const out: HomebrewGroup[] = [];
+  const push = (id: string, label: string, items: HomebrewRecord[]): void => {
+    if (items.length) out.push({ id, label, items: [...items].sort(byName) });
+  };
+  const book = books.find((b) => b.key === source);
+  if (!book) {
+    push('hb', t.srcHomebrew, mine);
+    return out;
+  }
+  for (const s of book.content.sections ?? []) {
+    push(
+      s.key,
+      named(s, lang),
+      mine.filter((r) => r.book?.section?.key === s.key)
+    );
+  }
+  push(
+    book.key,
+    t.hbNoSection,
+    mine.filter((r) => !r.book?.section)
   );
   return out;
 }

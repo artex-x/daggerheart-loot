@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ many requests as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: «Запросы (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret
+# why: «Новое в списке (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret; no «истечёт»: the list is read only once every pending request is drawn
 # as: gm1
 
 ## ru :: tree
@@ -34,9 +34,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     button "Скачать JSON"
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11-hb_emberaxeaaaaaaaa]
     ... button x9 of 13 same-shape siblings elided
-    region "Запросы (4)"
-      heading "Запросы (4)" [level=2]
-      StaticText "По ссылке для мастера · только что · истечёт через 60 минут"
+    region "Новое в списке (4)"
+      heading "Новое в списке (4)" [level=2]
+      StaticText "По ссылке для мастера · только что"
       StaticText "Первоклассный Спальный Мешок"
       ... StaticText x29 of 33 same-shape siblings elided
       button "и ещё 2 позиции" [expanded=false]
@@ -222,9 +222,9 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     button "Download JSON"
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/ci1*2-q1-q313-cc1*5-voa2_a3-q23-w51-q35-di11-hb_emberaxeaaaaaaaa]
     ... button x9 of 13 same-shape siblings elided
-    region "Requests (4)"
-      heading "Requests (4)" [level=2]
-      StaticText "Through the GM link · just now · expires in 60 minutes"
+    region "New in this list (4)"
+      heading "New in this list (4)" [level=2]
+      StaticText "Through the GM link · just now"
       StaticText "Premium Bedroll"
       ... StaticText x29 of 33 same-shape siblings elided
       button "and 2 more items" [expanded=false]

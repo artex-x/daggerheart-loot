@@ -10,11 +10,19 @@ import {
   browseIndex,
   canonJson,
   cardProblems,
+  cardMembers,
   cardUses,
+  contentOfRecord,
   contentProblems,
   counterFrom,
   editLang,
   groupsOf,
+  hbFilterFix,
+  pickSource,
+  sectionKeysOf,
+  sourceGroups,
+  sourceKeyOf,
+  sourcesOf,
   hasName,
   HOMEBREW_KEY,
   isHomebrewKey,
@@ -30,8 +38,10 @@ import {
   type BookRow,
   type CardRef,
   type HomebrewContent,
+  type HomebrewRecord,
   type ItemRow,
-  type Problem
+  type Problem,
+  copyRows
 } from './homebrew.js';
 import { buildIndex, madeFrom, setOf, upgradesTo } from './data.js';
 import type { Record_ } from './types.js';
@@ -245,6 +255,28 @@ describe('recordOf and snapshotValid over docs/fixtures/homebrew/snapshots.json'
       snapshotValid({ ...axe, book: { key: 'hb_bbbbbbbbbbbbbbbb', en: 'A', section: 1 } })
     ).toBe(false);
   });
+  it('writes the row id as hid when given, which a valid record may carry beside it', () => {
+    const HID = '00000000-0000-4000-8000-000000000511';
+    const axe = snapshots.valid.find((c) => c.key === 'hb_emberaxeaaaaaaaa');
+    if (!axe) throw new Error('no axe');
+    const r = recordOf(axe.key, axe.content, axe.book, axe.cards ?? [], HID);
+    expect(r).toEqual({ ...(axe.snapshot as HomebrewRecord), hid: HID });
+    expect(snapshotValid(r)).toBe(true);
+    expect(snapshotValid({ ...r, hid: 5 })).toBe(false);
+  });
+});
+
+describe('contentOfRecord', () => {
+  it.each(snapshots.valid.map((c) => [c.name, c] as const))(
+    'gives %s back the content that makes the same record in the default source',
+    (_n, c) => {
+      const content = contentOfRecord({ ...(c.snapshot as HomebrewRecord), hid: 'x' });
+      expect(contentProblems(content, c.key)).toEqual([]);
+      const rest: Record<string, unknown> = { ...(c.snapshot as HomebrewRecord) };
+      delete rest['book'];
+      expect(recordOf(c.key, content, null, c.cards ?? [])).toEqual(rest);
+    }
+  );
 });
 
 describe('keys', () => {
@@ -527,12 +559,12 @@ describe('browseIndex', () => {
   const own = recordOf('hb_owneditemaaaaaa', { kind: 'item', ru: 'Своё' }, null);
   const index = withRecords(base, [own], []);
 
-  it('answers the index itself while the chip is on, or when it holds no own item', () => {
+  it('answers the index itself while the switch is on, or when it holds no own item', () => {
     expect(browseIndex(index, base, true)).toBe(index);
     expect(browseIndex(base, base, false)).toBe(base);
   });
 
-  it('takes search and equipment from the catalog with the chip off, and keeps byId and rows', () => {
+  it('takes search and equipment from the catalog with the switch off, and keeps byId and rows', () => {
     const hidden = browseIndex(index, base, false);
     expect(hidden.searchable).toBe(base.searchable);
     expect(hidden.allEquip).toBe(base.allEquip);
@@ -620,6 +652,144 @@ describe('groupsOf', () => {
   });
 });
 
+describe('the source chips of #/tables/homebrew', () => {
+  const alder = refOf(ALDER);
+  const axe = recordOf(
+    'hb_emberaxeaaaaaaaa',
+    { kind: 'item', ru: 'Топор', section: 'hb_sectbladesaaaaaa' },
+    alder
+  );
+  const loose = recordOf('hb_looseaaaaaaaaaaa', { kind: 'item', ru: 'Молот' }, alder);
+  const ring = recordOf('hb_ringaaaaaaaaaaaa', { kind: 'item', ru: 'Кольцо' }, null);
+  const late = recordOf('hb_lateaaaaaaaaaaaa', { kind: 'item', en: 'Late' }, refOf(LATER));
+  const all = [ring, late, loose, axe];
+  const t = { srcHomebrew: 'Хоумбрю', hbNoSection: 'Без раздела' };
+  const chips = sourcesOf([LATER, ALDER], all, 'ru', 'Хоумбрю');
+
+  it('lists the sources that hold an item by creation, «Хоумбрю» last', () => {
+    expect(chips).toEqual([
+      { key: 'hb_alderworkshopaaa', label: 'Мастерская Ольхи' },
+      { key: 'hb_laterbookaaaaaaa', label: 'Later Book' },
+      { key: 'hb', label: 'Хоумбрю' }
+    ]);
+  });
+
+  it('leaves an empty source out and counts an item of an unknown source as «Хоумбрю»', () => {
+    expect(sourcesOf([LATER, ALDER], [axe], 'ru', 'Хоумбрю').map((s) => s.key)).toEqual([
+      'hb_alderworkshopaaa'
+    ]);
+    expect(sourcesOf([ALDER], [late], 'ru', 'Хоумбрю').map((s) => s.key)).toEqual(['hb']);
+    expect(sourceKeyOf(late, new Set([ALDER.key]))).toBe('hb');
+    expect(sourceKeyOf(axe, new Set([ALDER.key]))).toBe(ALDER.key);
+  });
+
+  it('picks no chip with fewer than two sources', () => {
+    expect(pickSource(chips.slice(0, 1), { src: ['hb'] }, '', all, [ALDER])).toBeNull();
+    expect(pickSource([], {}, '', [], [])).toBeNull();
+  });
+
+  it('picks the first held src value, then the anchor, then the first sect, then the first chip', () => {
+    const pick = (filter: Record<string, string[]>, anchor = ''): string | null =>
+      pickSource(chips, filter, anchor, all, [LATER, ALDER]);
+    expect(pick({ src: ['hb_nosuchsourceaaa', 'hb', 'hb_laterbookaaaaaaa'] })).toBe('hb');
+    expect(pick({}, 'hb')).toBe('hb');
+    expect(pick({}, 'hb_laterbookaaaaaaa')).toBe('hb_laterbookaaaaaaa');
+    expect(pick({}, 'hb_sectbladesaaaaaa')).toBe('hb_alderworkshopaaa');
+    expect(pick({}, ring.id)).toBe('hb');
+    expect(pick({}, 'hb_nosuchanchoraaa')).toBe('hb_alderworkshopaaa');
+    expect(pick({ sect: ['hb_sectbladesaaaaaa'] })).toBe('hb_alderworkshopaaa');
+    expect(pick({ src: ['hb_nosuchsourceaaa'] })).toBe('hb_alderworkshopaaa');
+    expect(pick({})).toBe('hb_alderworkshopaaa');
+  });
+
+  it('skips an anchor or a sect whose source holds no item', () => {
+    const two = sourcesOf([LATER, ALDER], [ring, axe], 'ru', 'Хоумбрю');
+    expect(pickSource(two, {}, 'hb_laterbookaaaaaaa', [ring, axe], [LATER, ALDER])).toBe(
+      'hb_alderworkshopaaa'
+    );
+  });
+
+  it('writes a disagreeing filter and leaves an agreeing one', () => {
+    const blades = ['hb_sectpistolsaaaaa', 'hb_sectbladesaaaaaa'];
+    expect(hbFilterFix({}, 'hb', [])).toBeNull();
+    expect(hbFilterFix({ kind: ['item'] }, 'hb', [])).toBeNull();
+    expect(hbFilterFix({ src: ['hb'] }, 'hb', [])).toBeNull();
+    expect(
+      hbFilterFix({ src: [ALDER.key], sect: ['hb_sectbladesaaaaaa'] }, ALDER.key, blades)
+    ).toBeNull();
+    expect(hbFilterFix({ sect: ['hb_sectbladesaaaaaa'] }, ALDER.key, blades)).toBeNull();
+    expect(hbFilterFix({ src: ['hb', ALDER.key] }, 'hb', [])).toEqual({ src: ['hb'] });
+    expect(hbFilterFix({ kind: ['item'], src: ['hb_x'] }, 'hb', [])).toEqual({
+      kind: ['item'],
+      src: ['hb']
+    });
+    expect(
+      hbFilterFix(
+        { src: [ALDER.key], sect: ['hb_sectbladesaaaaaa', 'hb_sectgoneaaaaaaa'] },
+        ALDER.key,
+        blades
+      )
+    ).toEqual({ src: [ALDER.key], sect: ['hb_sectbladesaaaaaa'] });
+    expect(hbFilterFix({ sect: ['hb_sectbladesaaaaaa'] }, 'hb', [])).toEqual({ src: ['hb'] });
+  });
+
+  it('gives the section keys of a source, and none of «Хоумбрю»', () => {
+    expect(sectionKeysOf([ALDER], ALDER.key)).toEqual([
+      'hb_sectpistolsaaaaa',
+      'hb_sectbladesaaaaaa'
+    ]);
+    expect(sectionKeysOf([ALDER], 'hb')).toEqual([]);
+  });
+
+  it('heads a chip by its sections in order, then «Без раздела», and «Хоумбрю» by its name', () => {
+    expect(
+      sourceGroups([LATER, ALDER], all, ALDER.key, 'ru', t).map((g) => [
+        g.id,
+        g.label,
+        g.items.map((i) => i.id)
+      ])
+    ).toEqual([
+      ['hb_sectbladesaaaaaa', 'Холодное оружие', [axe.id]],
+      ['hb_alderworkshopaaa', 'Без раздела', [loose.id]]
+    ]);
+    expect(sourceGroups([LATER, ALDER], all, 'hb', 'ru', t)).toEqual([
+      { id: 'hb', label: 'Хоумбрю', items: [ring] }
+    ]);
+  });
+
+  it('draws 300 items of one chip under its 30 sections and «Без раздела»', () => {
+    const sections = Array.from({ length: 30 }, (_, n) => ({
+      key:
+        'hb_sect' +
+        String(n)
+          .padStart(2, '0')
+          .replace(/\d/g, (d) => 'abcdefghij'.charAt(Number(d))) +
+        'aaaaaaaaaa',
+      ru: 'Раздел ' + String(n)
+    }));
+    const big: BookRow = { ...ALDER, content: { ru: 'Большой', sections } };
+    const items = Array.from({ length: 300 }, (_, n) =>
+      recordOf(
+        'hb_big' +
+          String(n)
+            .padStart(3, '0')
+            .replace(/\d/g, (d) => 'abcdefghij'.charAt(Number(d))) +
+          'aaaaaaaaaa',
+        {
+          kind: 'item',
+          ru: 'Вещь ' + String(n),
+          ...(n % 31 === 30 ? {} : { section: sections[n % 31]?.key ?? '' })
+        },
+        { ...big.content, key: big.key }
+      )
+    );
+    const groups = sourceGroups([big], items, big.key, 'ru', t);
+    expect(groups).toHaveLength(31);
+    expect(groups.at(-1)?.label).toBe('Без раздела');
+    expect(groups.reduce((n, g) => n + g.items.length, 0)).toBe(300);
+  });
+});
+
 const used = (key: string, content: ItemRow['content']): ItemRow => ({
   id: 'id-' + key,
   key,
@@ -662,10 +832,116 @@ describe('itemUses and cardUses', () => {
     expect(cardUses(items, 'ref', 'hb_cardaaaaaaaaaaaa')).toBe(1);
     expect(cardUses(items, 'set', 'slow')).toBe(0);
   });
+
+  it('lists the members of a set card and of a rule card in order', () => {
+    expect(cardMembers(items, 'set', 'hb_setaaaaaaaaaaaaa').map((i) => i.key)).toEqual([
+      RING,
+      'hb_dddddddddddddddd'
+    ]);
+    expect(cardMembers(items, 'ref', 'slow').map((i) => i.key)).toEqual([
+      'hb_bbbbbbbbbbbbbbbb',
+      'hb_cccccccccccccccc'
+    ]);
+    expect(cardMembers(items, 'ref', 'hb_setaaaaaaaaaaaaa')).toEqual([]);
+  });
 });
 
 describe('counterFrom', () => {
   it('startsTheCounterPastFiveSixthsOfTheCap', () => {
     expect([counterFrom(3000), counterFrom(1500), counterFrom(7)]).toEqual([2500, 1250, 5]);
+  });
+});
+
+describe('copyRows', () => {
+  const ids = (): (() => string) => {
+    let n = 0;
+    return () => 'id' + String(++n);
+  };
+  const SET = 'hb_starsleepsetaaaa';
+  const REFS = ['hb_refoneaaaaaaaaaa', 'hb_reftwoaaaaaaaaaa', 'hb_refthreeaaaaaaaa'];
+  const ref = (en: string) => ({
+    en,
+    ru: en,
+    ensub: '',
+    rusub: '',
+    ende: 'T',
+    rud: 'Т',
+    url: ''
+  });
+  const record = recordOf(
+    'hb_rangerrollaaaaaa',
+    {
+      kind: 'equip',
+      ru: 'Скатка',
+      craft: ['hb_sentryrollaaaaaa', 'ci1'],
+      craft_from: ['hb_travelrollaaaaaa'],
+      set: SET,
+      refs: REFS,
+      eq: { t: 'armor', tier: 2, as: 3, th: [5, 9], line: 'hb_otherlineaaaaaaa' }
+    },
+    { key: 'hb_authorbookaaaaaa', ru: 'Книга' },
+    [
+      { key: SET, kind: 'set', ru: 'Сон', rud: 'Бонус' },
+      ...REFS.map((key, i) => ({ key, kind: 'ref' as const, ...ref('R' + String(i)) }))
+    ],
+    '00000000-0000-4000-8000-000000000662'
+  );
+
+  it('keeps the key, drops the source and the author keys, keeps catalog ids, and copies every embedded card', () => {
+    const rows = copyRows(record, { newId: ids(), hasCard: () => false });
+    expect(rows.books).toEqual([]);
+    expect(rows.update).toBe(false);
+    expect(rows.items).toEqual([
+      {
+        id: 'id5',
+        key: 'hb_rangerrollaaaaaa',
+        book: null,
+        content: {
+          kind: 'equip',
+          ru: 'Скатка',
+          en: 'Скатка',
+          ende: '',
+          rud: '',
+          craft: ['ci1'],
+          set: SET,
+          refs: REFS,
+          eq: { t: 'armor', tier: 2, as: 3, th: [5, 9] }
+        }
+      }
+    ]);
+    expect(rows.cards.map((c) => [c.id, c.key, c.kind, c.book])).toEqual([
+      ['id1', SET, 'set', null],
+      ['id2', REFS[0], 'ref', null],
+      ['id3', REFS[1], 'ref', null],
+      ['id4', REFS[2], 'ref', null]
+    ]);
+    expect(contentProblems(rows.items[0]?.content, 'hb_rangerrollaaaaaa')).toEqual([]);
+    for (const c of rows.cards) expect(cardProblems(c.kind, c.content)).toEqual([]);
+  });
+
+  it('names a card key the account holds and drops an author key with no card', () => {
+    const bare = { ...record, cards: { refs: { [REFS[0] as string]: ref('R0') } } };
+    const rows = copyRows(bare, { newId: ids(), hasCard: (k) => k === SET });
+    expect(rows.cards.map((c) => c.key)).toEqual([REFS[0]]);
+    expect(rows.items[0]?.content.set).toBe(SET);
+    expect(rows.items[0]?.content.refs).toEqual([REFS[0]]);
+  });
+
+  it('copies an item with no relations and no cards as it is', () => {
+    const plain = recordOf(
+      'hb_plainaaaaaaaaaaa',
+      { kind: 'item', ru: 'Простое', set: 'saints-ensemble' },
+      null
+    );
+    const rows = copyRows({ ...plain, hid: 'x' }, { newId: ids(), hasCard: () => false });
+    expect(rows.cards).toEqual([]);
+    expect(rows.items[0]?.content).toEqual({
+      kind: 'item',
+      ru: 'Простое',
+      en: 'Простое',
+      ende: '',
+      rud: '',
+      set: 'saints-ensemble'
+    });
   });
 });

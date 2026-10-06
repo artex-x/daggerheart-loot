@@ -1,6 +1,6 @@
 # #/lists ~ import preview v2 as gm2
 # route: #/lists
-# why: example-v2.json chosen in an account with no homebrew: «Списков: 1, позиций: 3.» and «Своих предметов, которых нет в аккаунте: 2 - они сохранятся копиями...», then «Импортировать (1)» and «Отмена»
+# why: example-v2.json chosen in an account with no homebrew: «Списков: 1, позиций: 3.» and «Своих предметов, которых нет в аккаунте: 2 - они станут вашими копиями в «Мои предметы».», then «Импортировать (1)» and «Отмена»
 # as: gm2
 
 ## ru :: tree
@@ -46,9 +46,10 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
     checkbox "Выбрать: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 2 позиции, изменён позавчера" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+    link "Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
       StaticText "Список второго ГМа"
       StaticText "2 позиции · изменён позавчера"
+      StaticText "2 изменения"
     button "Удалить"
   contentinfo ""
     navigation "Страницы сайта"
@@ -85,7 +86,7 @@ daggerheart.com
 Создать
 Сообщества
 Списки
-Список второго ГМа, 2 позиции, изменён позавчера
+Список второго ГМа, 2 позиции, изменён позавчера, 2 изменения
 Таблицы
 Удалить
 Условия использования
@@ -136,9 +137,10 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm2#/lists
     StaticText "SELECT ALL"
     generic ""
     checkbox "Select: Список второго ГМа" [checked=false]
-    link "Список второго ГМа, 2 items, edited 2 days ago" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+    link "Список второго ГМа, 2 items, edited 2 days ago, 2 changes" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
       StaticText "Список второго ГМа"
       StaticText "2 items · edited 2 days ago"
+      StaticText "2 changes"
     button "Delete"
   contentinfo ""
     navigation "Site pages"
@@ -181,4 +183,4 @@ a description for AI assistants
 daggerheart.com
 import-v1 schema
 ЛутDaggerheart
-Список второго ГМа, 2 items, edited 2 days ago
+Список второго ГМа, 2 items, edited 2 days ago, 2 changes

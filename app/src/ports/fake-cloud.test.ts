@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bundleText, toBundle } from '../lib/bundle.js';
 import {
-  frozenOf,
+  linkedOf,
   toCloudList,
   type EntryRow,
   type ImportRow,
@@ -34,13 +34,29 @@ afterEach(() => {
 describe('the fake cloud', () => {
   it('meets the cloud contract', async () => {
     const gm1 = SEED.users.gm1;
+    /* Case R reads one account's writes from another: its ports share one world. */
+    const world = fakeCloud(SEED);
     await runCloudContract(
       (as) => Promise.resolve(fakeCloud(SEED, as)),
       { member: { as: 'gm1', userId: gm1.id, email: gm1.email }, doomed: 'gm2' },
       (c, m) => {
         expect(c, m).toBe(true);
-      }
+      },
+      undefined,
+      (as) => Promise.resolve(world.as(as))
     );
+  });
+
+  it('runs a port of the same world as another user, signed out too', async () => {
+    const world = fakeCloud(SEED, 'gm1');
+    const gm2 = world.as('gm2');
+    expect((await gm2.auth.session())?.userId).toBe(SEED.users.gm2.id);
+    expect((await world.auth.session())?.userId).toBe(SEED.users.gm1.id);
+    expect(await world.as().auth.session()).toBeNull();
+    expect(() => world.as('nobody')).toThrow(/unknown user/);
+    await gm2.auth.signOut();
+    expect(await gm2.auth.session()).toBeNull();
+    expect((await world.auth.session())?.userId).toBe(SEED.users.gm1.id);
   });
 
   describe("the contract's notes-heavy import", () => {
@@ -68,13 +84,15 @@ describe('the fake cloud', () => {
 
     it('passesWhenTheHeavyImportIsRefusedTooSlowAndWritesNothing', async () => {
       const logs: string[] = [];
+      const world = fakeCloud(SEED);
       await runCloudContract(
         heavyAnswers(TOO_SLOW, false),
         users,
         (c, m) => {
           expect(c, m).toBe(true);
         },
-        (m) => logs.push(m)
+        (m) => logs.push(m),
+        (as) => Promise.resolve(world.as(as))
       );
       expect(logs).toContainEqual(
         expect.stringMatching(
@@ -235,17 +253,31 @@ describe('the seeded lists and shares', () => {
     expect(official.map((e) => e.itemKey).filter((k) => !index.byId.has(k))).toEqual([]);
     const axe = SEED.homebrew.gm1.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa');
     const own = SEED.lists.gm1.flatMap((l) => l.entries).filter((e) => e.source === 'homebrew');
-    expect(own.map((e) => [e.itemKey, e.snapshot])).toEqual([[axe?.key, undefined]]);
-    const frozen = SEED.lists.gm2
+    expect(own.map((e) => [e.itemKey, e.hbItem])).toEqual([[axe?.key, undefined]]);
+    const linked = SEED.lists.gm2
       .flatMap((l) => l.entries)
       .filter((e) => e.source === 'homebrew');
-    expect(frozen.map((e) => e.itemKey)).toEqual([axe?.key]);
-    expect(snapshotValid(frozen[0]?.snapshot)).toBe(true);
-    expect(frozen[0]?.snapshot).toMatchObject({
+    expect(linked.map((e) => [e.itemKey, e.hbItem])).toEqual([[axe?.key, axe?.id]]);
+  });
+
+  it("links gm1's entry by its key, and reads the axe for gm2 through items()", async () => {
+    const gm1 = fakeCloud(SEED, 'gm1');
+    const read = await gm1.lists.list();
+    const axe = SEED.homebrew.gm1.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa');
+    const entry = read.ok
+      ? read.lists.flatMap((l) => l.list_entries).find((e) => e.source === 'homebrew')
+      : undefined;
+    expect(entry?.hb_item).toBe(axe?.id);
+    const gm2 = fakeCloud(SEED, 'gm2');
+    const items = await gm2.lists.items([axe?.id ?? '', uuid(9999)]);
+    expect(items.ok && items.items.map((i) => i.hid)).toEqual([axe?.id]);
+    expect(items.ok && snapshotValid(items.items[0]?.item)).toBe(true);
+    expect(items.ok && items.items[0]?.item).toMatchObject({
       id: axe?.key,
       ru: 'Топор Тлеющих Углей',
       book: { key: 'hb_alderworkshopaaa', section: { key: 'hb_sectbladesaaaaaa' } }
     });
+    expect((await fakeCloud(SEED).lists.items([axe?.id ?? ''])).ok).toBe(false);
   });
 
   it('gives every list, entry and share its own id', () => {
@@ -284,7 +316,7 @@ describe("the fake's lists", () => {
     id,
     item_key: key,
     source: 'official',
-    snapshot: null,
+    hb_item: null,
     position,
     quantity: 1,
     price_coins: null,
@@ -341,7 +373,7 @@ describe("the fake's lists", () => {
     ]);
     expect(shop?.list_entries[9]).toMatchObject({
       source: 'homebrew',
-      snapshot: null,
+      hb_item: uuid(511),
       price_coins: 800
     });
     expect(shop?.list_entries[0]).toMatchObject({ quantity: 2, price_coins: 150 });
@@ -852,6 +884,49 @@ describe('installFakeCloud', () => {
     const port = installFakeCloud();
     expect(await port.auth.session()).toBeNull();
   });
+
+  it('fills the signed-in user to ?items= items, and ignores a value out of range', async () => {
+    const filled = await installFakeCloud('?as=gm1&items=300').homebrew.load();
+    expect(filled.ok && filled.items).toHaveLength(300);
+    expect(filled.ok && filled.itemLimit).toBe(300);
+    for (const bad of ['0', '1001', '2.5', 'x']) {
+      const read = await installFakeCloud('?as=gm1&items=' + bad).homebrew.load();
+      expect(read.ok && read.items).toHaveLength(4);
+      expect(read.ok && read.itemLimit).toBe(100);
+    }
+  });
+});
+
+describe('fillItems', () => {
+  it('gives gm1 300 items with valid keys after the seeded four, and an item limit of 300', async () => {
+    const read = await fakeCloud(SEED, 'gm1', { fillItems: 300 }).homebrew.load();
+    if (!read.ok) throw new Error('The fake refused the read.');
+    expect(read.itemLimit).toBe(300);
+    expect(read.items).toHaveLength(300);
+    expect(read.items.slice(0, 4).map((i) => i.id)).toEqual(
+      SEED.homebrew.gm1.items.map((i) => i.id)
+    );
+    const made = read.items.slice(4);
+    expect(made[0]?.content).toMatchObject({ ru: 'Предмет 001', en: 'Item 001' });
+    expect(made.at(-1)?.content).toMatchObject({ ru: 'Предмет 296', en: 'Item 296' });
+    expect(made.every((i) => HOMEBREW_KEY.test(i.key))).toBe(true);
+    expect(new Set(read.items.map((i) => i.key)).size).toBe(300);
+    expect(made.every((i) => contentProblems(i.content).length === 0)).toBe(true);
+    /* Every third in the first source, every third in its first section, the rest home. */
+    expect(made.slice(0, 3).map((i) => [i.book_id, i.content.section ?? null])).toEqual([
+      [uuid(501), null],
+      [uuid(501), 'hb_sectpistolsaaaaa'],
+      [null, null]
+    ]);
+    expect(
+      made.filter((i) => /[0-9]/.test(i.content.ru ?? '') && /9/.test(i.content.ru ?? ''))
+    ).toHaveLength(54);
+  });
+
+  it('puts every generated item in the default source for a user with no source', async () => {
+    const read = await fakeCloud(SEED, 'gm2', { fillItems: 5 }).homebrew.load();
+    expect(read.ok && read.items.map((i) => i.book_id)).toEqual([null, null, null, null, null]);
+  });
 });
 
 describe('the cloud slot of Env', () => {
@@ -871,7 +946,7 @@ describe("the fake's import", () => {
     id,
     item_key: key,
     source: 'official',
-    snapshot: null,
+    hb_item: null,
     position,
     quantity: 1,
     price_coins: null,
@@ -1212,20 +1287,37 @@ describe("the fake's purchase requests", () => {
     expect(await cloud.requests.send(uuid(6107), 'player-token-1', ONE)).toEqual({ ok: true });
   });
 
-  it('holds ten pending requests a list; an expired one counts for nothing and answers expired', async () => {
+  it('holds ten pending requests a list, unread for up to 30 days; once read each expires an hour later', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     for (let i = 0; i < 10; i++) {
       vi.setSystemTime(Date.now() + 13_000);
       expect((await cloud.requests.send(uuid(6100 + i), 'player-token-1', ONE)).ok).toBe(true);
     }
-    vi.setSystemTime(Date.now() + 61_000);
-    expect(await cloud.requests.send(uuid(6110), 'player-token-1', ONE)).toEqual({
+    const full = {
       ok: false,
       error: 'limit',
       key: 'pending_requests_per_list',
       value: 10
-    });
-    vi.setSystemTime(Date.parse('2026-09-25T13:00:14Z'));
+    };
+    vi.setSystemTime(Date.now() + 61_000);
+    expect(await cloud.requests.send(uuid(6110), 'player-token-1', ONE)).toEqual(full);
+    vi.setSystemTime(Date.parse('2026-10-20T12:00:00Z'));
+    expect(await cloud.requests.send(uuid(6110), 'player-token-1', ONE)).toEqual(full);
+    expect(await cloud.requests.markRead(uuid(9))).toEqual({ ok: false, error: 'refused' });
+    expect(await cloud.requests.markRead(SHOP)).toEqual({ ok: true });
+    const read = await cloud.requests.list();
+    const first = read.ok ? read.requests.find((r) => r.id === uuid(6100)) : undefined;
+    expect([first?.readAt, first?.expiresAt]).toEqual([
+      '2026-10-20T12:00:00.000Z',
+      '2026-10-20T13:00:00.000Z'
+    ]);
+    vi.setSystemTime(Date.parse('2026-10-20T12:59:00Z'));
+    expect(await cloud.requests.markRead(SHOP)).toEqual({ ok: true });
+    const again = await cloud.requests.list();
+    expect(again.ok && again.requests.find((r) => r.id === uuid(6100))?.readAt).toBe(
+      '2026-10-20T12:00:00.000Z'
+    );
+    vi.setSystemTime(Date.parse('2026-10-20T13:00:01Z'));
     expect(await cloud.requests.apply(uuid(6100), false)).toEqual({
       ok: false,
       error: 'expired'
@@ -1233,6 +1325,21 @@ describe("the fake's purchase requests", () => {
     expect(await cloud.requests.decline(uuid(6100))).toEqual({ ok: false, error: 'expired' });
     expect(await cloud.requests.send(uuid(6110), 'player-token-1', ONE)).toEqual({ ok: true });
     expect(await pending(cloud)).toHaveLength(11);
+  });
+
+  it('makes a decision the first read of an unread request: an hour left from then', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.requests.send(uuid(6100), 'player-token-1', [{ item: 'cc1', qty: 9 }]);
+    vi.setSystemTime(Date.parse('2026-10-01T12:00:00Z'));
+    expect(await cloud.requests.apply(uuid(6100), false)).toMatchObject({ error: 'short' });
+    const read = await cloud.requests.list();
+    const r = read.ok ? read.requests[0] : undefined;
+    expect([r?.readAt, r?.expiresAt]).toEqual([
+      '2026-10-01T12:00:00.000Z',
+      '2026-10-01T13:00:00.000Z'
+    ]);
+    cloud.setOffline(true);
+    expect(await cloud.requests.markRead(SHOP)).toEqual({ ok: false, error: 'network' });
   });
 
   it('answers a replay on its own link ok and adds nothing; the id on another link is gone', async () => {
@@ -1313,7 +1420,8 @@ describe("the fake's purchase requests", () => {
           listId: SHOP,
           audience: 'gm',
           createdAt: '2026-09-25T12:00:00.000Z',
-          expiresAt: '2026-09-25T13:00:00.000Z',
+          expiresAt: '2026-10-25T12:00:00.000Z',
+          readAt: null,
           lines: [
             { item: 'q1', qty: 1, price: null, applied: null },
             { item: 'cc1', qty: 3, price: 20, applied: null }
@@ -1485,15 +1593,30 @@ describe('the seeded homebrew', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("gives gm3 thirty-four items with no source that relate to ci1, q1's line and saints-ensemble", () => {
+  it("gives gm3 thirty-four items with no source that relate to ci1, q1's line and saints-ensemble, and a chain of five", () => {
     const loot = JSON.parse(
       readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
     ) as Loot;
     const index = buildIndex(loot);
-    const { books, items, cards } = SEED.homebrew.gm3;
-    expect([books, cards, SEED.lists.gm3]).toEqual([[], [], []]);
-    expect(items).toHaveLength(34);
-    expect(items.every((i) => i.bookId === undefined)).toBe(true);
+    const { books, cards } = SEED.homebrew.gm3;
+    const all = SEED.homebrew.gm3.items;
+    expect([books, SEED.lists.gm3]).toEqual([[], []]);
+    expect(all).toHaveLength(39);
+    expect(all.every((i) => i.bookId === undefined)).toBe(true);
+    const items = all.slice(0, 34);
+    /* The chain: A into B into C, and B, D, E in the own set; none says «спальный мешок». */
+    const chain = all.slice(34);
+    expect(chain.map((i) => i.id)).toEqual([661, 662, 663, 664, 665].map(uuid));
+    expect(chain[1]?.content).toMatchObject({
+      craft_from: ['hb_travelrollaaaaaa'],
+      craft: ['hb_sentryrollaaaaaa'],
+      set: 'hb_starsleepsetaaaa'
+    });
+    expect(chain.filter((i) => i.content.set === 'hb_starsleepsetaaaa')).toHaveLength(3);
+    expect(cards.map((c) => [c.key, c.kind])).toEqual([['hb_starsleepsetaaaa', 'set']]);
+    for (const i of chain) {
+      expect(JSON.stringify(i.content).toLowerCase()).not.toMatch(/спальный мешок|bedroll/);
+    }
     const made = items.filter((i) => i.content.craft_from?.includes('ci1'));
     const rungs = items.filter((i) => i.content.eq?.line === 'q1');
     const pieces = items.filter((i) => i.content.set === 'saints-ensemble');
@@ -1524,11 +1647,17 @@ describe("the fake's homebrew", () => {
   const OK = { ok: true };
   const REFUSED = { ok: false, error: 'refused' };
   const NETWORK = { ok: false, error: 'network' };
-  const hbEntry = (id: string, key: string, position: number, snapshot: unknown = null) => ({
+  const POTION_ID = uuid(512);
+  const hbEntry = (
+    id: string,
+    key: string,
+    position: number,
+    hbItem: string | null = null
+  ) => ({
     id,
     item_key: key,
     source: 'homebrew' as const,
-    snapshot,
+    hb_item: hbItem,
     position,
     quantity: 1,
     price_coins: null,
@@ -1549,13 +1678,13 @@ describe("the fake's homebrew", () => {
     if (!p) throw new Error('no potion in the seed');
     return recordOf(POTION, p.content, null);
   };
-  /* gm1's empty list gets a reference to the axe and a frozen copy of the potion. */
+  /* gm1's empty list links the axe, sent by its key, and the potion, by its id. */
   const withEntries = async (cloud: CloudPort) => {
     const r = await cloud.lists.apply([
       {
         op: 'add',
         list_id: EMPTY,
-        entries: [hbEntry(uuid(7101), AXE, 0), hbEntry(uuid(7102), POTION, 1, potionRecord())]
+        entries: [hbEntry(uuid(7101), AXE, 0), hbEntry(uuid(7102), POTION, 1, POTION_ID)]
       }
     ]);
     expect(r).toEqual({ ok: true, results: [OK] });
@@ -1740,48 +1869,63 @@ describe("the fake's homebrew", () => {
     });
   });
 
-  it('bumps each list holding a reference once, on an item edit and on a source rename', async () => {
+  it('bumps each list linking the item once, of any user, on an item edit and on a source rename', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     await withEntries(cloud);
-    const was = await revisions(cloud);
+    const gm2 = cloud.as('gm2');
+    const was = { ...(await revisions(cloud)), ...(await revisions(gm2)) };
     const axe = (await read(cloud)).items.find((i) => i.key === AXE);
     if (!axe) throw new Error('no axe');
     await cloud.homebrew.updateItem(uuid(511), { content: axe.content, book_id: ALDER }, null);
-    const edited = await revisions(cloud);
+    const edited = { ...(await revisions(cloud)), ...(await revisions(gm2)) };
     expect(edited[EMPTY]).toBe((was[EMPTY] ?? 0) + 1);
     expect(edited[uuid(101)]).toBe((was[uuid(101)] ?? 0) + 1);
+    expect(edited[uuid(201)]).toBe((was[uuid(201)] ?? 0) + 1);
     expect(edited[uuid(103)]).toBe(was[uuid(103)]);
     await cloud.homebrew.updateBook(ALDER, { ru: 'Мастерская' }, null);
     expect((await revisions(cloud))[EMPTY]).toBe((was[EMPTY] ?? 0) + 2);
-    /* The potion is only frozen in the list: its edit bumps nothing. */
     await cloud.homebrew.updateItem(
-      uuid(512),
+      POTION_ID,
       { content: { kind: 'consumable', ru: 'Настой' }, book_id: null },
       null
     );
-    expect((await revisions(cloud))[EMPTY]).toBe((was[EMPTY] ?? 0) + 2);
+    expect((await revisions(cloud))[EMPTY]).toBe((was[EMPTY] ?? 0) + 3);
+    expect((await revisions(gm2))[uuid(201)]).toBe((was[uuid(201)] ?? 0) + 2);
   });
 
-  it("removes an item with the owner's references and keeps the frozen copies", async () => {
+  it('removes an item with every entry that links it, of any user', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     await withEntries(cloud);
     const gm2 = fakeCloud(SEED, 'gm2');
     const was = await revisions(cloud);
     expect(await cloud.homebrew.removeItem(uuid(511))).toEqual(OK);
-    expect(await cloud.homebrew.removeItem(uuid(512))).toEqual(OK);
+    expect(await cloud.homebrew.removeItem(POTION_ID)).toEqual(OK);
     expect(await cloud.homebrew.removeItem(uuid(9))).toEqual(OK);
     const r = await cloud.lists.list();
     const list = r.ok ? r.lists.find((l) => l.id === EMPTY) : undefined;
-    expect(list?.list_entries.map((e) => [e.item_key, e.snapshot !== null])).toEqual([
-      [POTION, true]
-    ]);
-    expect(list?.revision).toBe((was[EMPTY] ?? 0) + 1);
+    expect(list?.list_entries).toEqual([]);
+    expect(list?.revision).toBe((was[EMPTY] ?? 0) + 2);
+    const theirs = await cloud.as('gm2').lists.list();
+    expect(
+      theirs.ok &&
+        theirs.lists.find((l) => l.id === uuid(201))?.list_entries.map((e) => e.item_key)
+    ).toEqual(['q23']);
     expect((await read(cloud)).items.map((i) => i.key)).toEqual([
       'hb_whispercapaaaaaa',
       'hb_engravedringaaaa'
     ]);
     expect(await gm2.homebrew.removeItem(uuid(513))).toEqual(OK);
     expect((await read(fakeCloud(SEED, 'gm1'))).items).toHaveLength(4);
+  });
+
+  it("takes a deleted user's items out of every list that links them", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    expect(await cloud.auth.deleteAccount()).toEqual({ ok: true });
+    const theirs = await cloud.as('gm2').lists.list();
+    expect(
+      theirs.ok &&
+        theirs.lists.find((l) => l.id === uuid(201))?.list_entries.map((e) => e.item_key)
+    ).toEqual(['q23']);
   });
 
   it('removes a source, moving its items to the default source one revision up', async () => {
@@ -1796,35 +1940,29 @@ describe("the fake's homebrew", () => {
     expect((await revisions(cloud))[EMPTY]).toBe((was[EMPTY] ?? 0) + 1);
   });
 
-  it('refuses a reference to a key the list owner lacks, and a snapshot the checks refuse', async () => {
+  it("refuses a key the list owner lacks, an unknown item and a previous bundle's frozen copy", async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    const potion = potionRecord();
     const results = await cloud.lists.apply(
       [
         [hbEntry(uuid(7201), 'hb_nosuchitemaaaaaa', 0)],
-        [hbEntry(uuid(7202), 'hb_itemcccccccccccc', 0, { ...potion, src: 'official' })],
-        [hbEntry(uuid(7203), 'hb_itemcccccccccccc', 0, potion)],
-        [{ ...hbEntry(uuid(7204), 'q9', 0, potion), source: 'official' as const }],
-        [
-          hbEntry(uuid(7205), POTION, 0, {
-            ...potion,
-            rud: 'x'.repeat(3000),
-            ende: 'y'.repeat(3000),
-            ru: 'z'.repeat(120)
-          })
-        ]
+        [hbEntry(uuid(7202), 'hb_itemcccccccccccc', 0, uuid(9))],
+        [{ ...hbEntry(uuid(7203), 'hb_itemcccccccccccc', 0), snapshot: potionRecord() }],
+        [hbEntry(uuid(7204), 'q9', 0, POTION_ID)]
       ].map((entries) => ({ op: 'add' as const, list_id: EMPTY, entries }))
     );
-    expect(results).toEqual({
-      ok: true,
-      results: [REFUSED, REFUSED, REFUSED, REFUSED, OK]
-    });
+    expect(results).toEqual({ ok: true, results: [REFUSED, REFUSED, REFUSED, OK] });
+    /* The link takes its item's key, whatever key it was sent with. */
+    const r = await cloud.lists.list();
+    expect(
+      r.ok && r.lists.find((l) => l.id === EMPTY)?.list_entries.map((e) => e.item_key)
+    ).toEqual([POTION]);
     const gm2 = fakeCloud(SEED, 'gm2');
     expect(
       await gm2.lists.apply([
-        { op: 'add', list_id: uuid(201), entries: [hbEntry(uuid(7301), AXE, 1)] }
+        { op: 'add', list_id: uuid(201), entries: [hbEntry(uuid(7301), POTION, 2)] },
+        { op: 'add', list_id: uuid(201), entries: [hbEntry(uuid(7302), POTION, 2, POTION_ID)] }
       ])
-    ).toEqual({ ok: true, results: [REFUSED] });
+    ).toEqual({ ok: true, results: [REFUSED, OK] });
     expect(
       await gm2.lists.import([
         {
@@ -1835,93 +1973,73 @@ describe("the fake's homebrew", () => {
     ).toEqual(REFUSED);
   });
 
-  it('refuses a frozen copy that takes a list past its byte limit, 1048576 bytes by default', async () => {
-    const bytesOf = (x: unknown) => new TextEncoder().encode(JSON.stringify(x)).length;
-    const limited = (value: number) => ({
-      ok: false,
-      error: 'limit',
-      key: 'snapshot_bytes_per_list',
-      value
-    });
-    /* 90 copies of about 12 KB: two-byte letters at the validator's text caps. */
-    const ALPHABET = 'abcdefghijklmnopqrstuvwxyz234567';
-    const big = Array.from({ length: 90 }, (_, i) => {
-      const key = `hb_copy${ALPHABET.charAt(Math.floor(i / 32))}${ALPHABET.charAt(i % 32)}aaaaaaaaaa`;
-      return hbEntry(uuid(8000 + i), key, i, {
-        ...potionRecord(),
-        id: key,
-        ende: 'ж'.repeat(3000),
-        rud: 'ж'.repeat(3000)
-      });
-    });
-    expect(big.reduce((n, e) => n + bytesOf(e.snapshot), 0)).toBeGreaterThan(1048576);
+  it('relinks an entry in place, keeping its id, position, quantity, price and notes', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    expect(
-      await cloud.lists.apply([
-        { op: 'add', list_id: EMPTY, entries: big.slice(0, 80) },
-        { op: 'add', list_id: EMPTY, entries: big.slice(80) }
-      ])
-    ).toEqual({ ok: true, results: [OK, limited(1048576)] });
-
-    const potion = potionRecord();
-    const low = fakeCloud(SEED, 'gm1', { limits: { snapshotBytes: bytesOf(potion) } });
-    const other = 'hb_othercopyaaaaaaa';
-    expect(
-      await low.lists.apply([
-        { op: 'add', list_id: EMPTY, entries: [hbEntry(uuid(7211), POTION, 0, potion)] },
-        {
-          op: 'add',
-          list_id: EMPTY,
-          entries: [hbEntry(uuid(7212), other, 1, { ...potion, id: other })]
-        },
-        { op: 'add', list_id: EMPTY, entries: [hbEntry(uuid(7213), AXE, 2)] }
-      ])
-    ).toEqual({ ok: true, results: [OK, limited(bytesOf(potion)), OK] });
-  });
-
-  it('checks the entry count before the byte limit, and the byte limit on a copy of a share', async () => {
-    const both = fakeCloud(SEED, 'gm1', { limits: { entries: 0, snapshotBytes: 1 } });
-    expect(
-      await both.lists.apply([
-        { op: 'add', list_id: EMPTY, entries: [hbEntry(uuid(7221), POTION, 0, potionRecord())] }
-      ])
-    ).toEqual({
+    await withEntries(cloud);
+    await cloud.lists.apply([
+      {
+        op: 'update_entry',
+        id: uuid(7102),
+        patch: { quantity: 4, price_coins: 30, gm_note: 'g' }
+      }
+    ]);
+    const results = await cloud.lists.apply([
+      { op: 'relink', id: uuid(7102), hb_item: POTION_ID },
+      { op: 'relink', id: uuid(9), hb_item: POTION_ID },
+      { op: 'relink', id: uuid(7102), hb_item: uuid(9) },
+      { op: 'relink', id: uuid(7102), hb_item: uuid(511) }
+    ]);
+    expect(results).toEqual({
       ok: true,
-      results: [{ ok: false, error: 'limit', key: 'entries_per_list', value: 0 }]
+      results: [OK, { ok: false, error: 'gone' }, REFUSED, REFUSED]
     });
-    /* gm1's shared list refers to the axe: gm2's copy freezes it. */
-    const gm2 = fakeCloud(SEED, 'gm2', { limits: { snapshotBytes: 10 } });
-    expect(await gm2.shares.clone('player-token-1', uuid(7222))).toEqual({
-      ok: false,
-      error: 'limit',
-      key: 'snapshot_bytes_per_list',
-      value: 10
+    const r = await cloud.lists.list();
+    const e = r.ok ? r.lists.find((l) => l.id === EMPTY)?.list_entries[1] : undefined;
+    expect(e).toMatchObject({
+      id: uuid(7102),
+      item_key: POTION,
+      hb_item: POTION_ID,
+      position: 1,
+      quantity: 4,
+      price_coins: 30,
+      gm_note: 'g'
     });
   });
 
-  it("projects a reference from the owner's live item and a frozen entry as written", async () => {
+  it("projects each link from its live item, of any owner, with the item's id beside it", async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     await withEntries(cloud);
     const made = await cloud.shares.create(EMPTY, 'player');
     if (!made.ok) throw new Error('no share');
-    const snapshots = async () => {
+    const entries = async () => {
       const r = await cloud.shares.read(made.token);
-      return r.ok ? r.shared?.entries.map((e) => e.snapshot) : [];
+      return (r.ok ? r.shared?.entries : undefined) ?? [];
     };
-    const [axe, potion] = (await snapshots()) ?? [];
-    expect(axe).toMatchObject({
+    const [axe, potion] = await entries();
+    expect(axe?.snapshot).toMatchObject({
       id: AXE,
       src: 'homebrew',
       book: { key: 'hb_alderworkshopaaa', section: { key: 'hb_sectbladesaaaaaa' } }
     });
-    expect(potion).toEqual(potionRecord());
+    expect([axe?.hid, potion?.hid]).toEqual([uuid(511), POTION_ID]);
+    expect(potion?.snapshot).toEqual(potionRecord());
     await cloud.homebrew.updateBook(ALDER, { ru: 'Мастерская II', en: 'Workshop II' }, null);
-    expect((await snapshots())?.[0]).toMatchObject({
+    expect((await entries())[0]?.snapshot).toMatchObject({
       book: { key: 'hb_alderworkshopaaa', ru: 'Мастерская II', en: 'Workshop II' }
     });
+    /* gm2's list links gm1's axe: the projection reads it from gm1's rows. */
+    const gm2 = cloud.as('gm2');
+    const theirs = await gm2.shares.create(uuid(201), 'player');
+    if (!theirs.ok) throw new Error('no share');
+    const read = await gm2.shares.read(theirs.token);
+    const linked = read.ok
+      ? read.shared?.entries.find((e) => e.source === 'homebrew')
+      : undefined;
+    expect(linked?.hid).toBe(uuid(511));
+    expect(linked?.snapshot).toMatchObject({ id: AXE, book: { ru: 'Мастерская II' } });
   });
 
-  it('keeps references for the owner, freezes them for another user, and keeps a frozen entry frozen', async () => {
+  it('links the same items in a copy by the owner and by another user', async () => {
     const cloud = fakeCloud({ ...SEED, defaultUser: 'gm2' }, 'gm1');
     await withEntries(cloud);
     const made = await cloud.shares.create(EMPTY, 'player');
@@ -1930,24 +2048,21 @@ describe("the fake's homebrew", () => {
       const r = await port.lists.list();
       return (r.ok ? r.lists.find((l) => l.id === id)?.list_entries : undefined) ?? [];
     };
-    /* The owner copies its own share holding a frozen entry: the frozen entry stays frozen
-       with its snapshot, the reference stays a reference. */
+    const linked = [
+      [AXE, 'homebrew', uuid(511)],
+      [POTION, 'homebrew', POTION_ID]
+    ];
     expect(await cloud.shares.clone(made.token, uuid(7500))).toEqual(OK);
-    expect((await entriesOf(cloud, uuid(7500))).map((e) => [e.item_key, e.snapshot])).toEqual([
-      [AXE, null],
-      [POTION, potionRecord()]
-    ]);
+    expect(
+      (await entriesOf(cloud, uuid(7500))).map((e) => [e.item_key, e.source, e.hb_item])
+    ).toEqual(linked);
     /* Another user of the same port: its default user is gm2. */
     await cloud.auth.signOut();
     await cloud.auth.signIn('google');
     expect(await cloud.shares.clone(made.token, uuid(7600))).toEqual(OK);
-    const copied = await entriesOf(cloud, uuid(7600));
-    expect(copied.map((e) => [e.item_key, e.source])).toEqual([
-      [AXE, 'homebrew'],
-      [POTION, 'homebrew']
-    ]);
-    expect(copied[0]?.snapshot).toMatchObject({ id: AXE, src: 'homebrew' });
-    expect(copied[1]?.snapshot).toEqual(potionRecord());
+    expect(
+      (await entriesOf(cloud, uuid(7600))).map((e) => [e.item_key, e.source, e.hb_item])
+    ).toEqual(linked);
   });
 
   it('sends one homebrew message per write with the tab, and none for a refused one', async () => {
@@ -2363,10 +2478,10 @@ describe("the fake's homebrew import and move", () => {
     expect(
       await cloud.homebrew.import({
         ...none,
-        items: Array.from({ length: 67 }, (_, i) => newItem(i))
+        items: Array.from({ length: 62 }, (_, i) => newItem(i))
       })
     ).toEqual({ ok: false, error: 'limit', key: 'homebrew_items_per_owner', value: 100 });
-    expect((await loaded(cloud)).items).toHaveLength(34);
+    expect((await loaded(cloud)).items).toHaveLength(39);
     const raised = fakeCloud(SEED, 'gm2', { limits: { items: 300 } });
     expect(
       await raised.homebrew.import({
@@ -2450,8 +2565,8 @@ describe("the fake's homebrew import and move", () => {
     expect(seen.filter((e) => e === 'homebrew')).toHaveLength(2);
   });
 
-  /* The lists export with a reference: gm1's first list refers to the axe, so the file is
-     version 2 with the live axe as its snapshot. export.json stays the frozen v1 pin. */
+  /* The lists export with a link: gm1's first list links the axe, so the file is version 2
+     with the live axe as its snapshot. export.json stays the frozen v1 pin. */
   it("writes gm1's lists with their own items as docs/fixtures/import/export-v2.json", async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const r = await loaded(cloud);
@@ -2477,7 +2592,7 @@ describe("the fake's homebrew import and move", () => {
         (id) => index.byId.get(id)?.ru ?? record(id)?.ru,
         'Без названия',
         new Date('2026-09-25T12:00:00.000Z'),
-        (id, list) => frozenOf(list)[id] ?? record(id)
+        (id, list) => record(id) ?? linkedOf(list)[id] ?? null
       ).bundle
     );
     expect(JSON.parse(text)).toMatchObject({ version: 2 });
@@ -2518,5 +2633,149 @@ describe("the fake's homebrew import and move", () => {
         'utf8'
       )
     );
+  });
+});
+
+describe("the fake's item read and change log", () => {
+  const AXE_ID = uuid(511);
+  const GM2_LIST = uuid(201);
+  const ROLL_B = uuid(662);
+
+  it('reads one item by its id for anyone, with the related items in the database order', async () => {
+    const world = fakeCloud(SEED);
+    const out = await world.as().lists.item(ROLL_B);
+    expect(out.ok).toBe(true);
+    const a = (out.ok ? out.item : null) as Record<string, unknown>;
+    expect(a).toMatchObject({ hid: ROLL_B, mine: false });
+    expect((a['item'] as { id: string }).id).toBe('hb_rangerrollaaaaaa');
+    expect(snapshotValid(a['item'])).toBe(true);
+    /* By the lowercased English name: Camp Blanket, Moss Pillow, Sentry's Roll, Traveller's Roll. */
+    expect((a['related'] as { key: string }[]).map((r) => r.key)).toEqual([
+      'hb_campblanketaaaaa',
+      'hb_mosspillowaaaaaa',
+      'hb_sentryrollaaaaaa',
+      'hb_travelrollaaaaaa'
+    ]);
+    expect((a['related'] as Record<string, unknown>[])[0]).toEqual({
+      hid: uuid(665),
+      key: 'hb_campblanketaaaaa',
+      kind: 'item',
+      en: 'Camp Blanket',
+      ru: 'Походный плед',
+      set: 'hb_starsleepsetaaaa'
+    });
+    expect(typeof a['updated_at']).toBe('string');
+    const author = await world.as('gm3').lists.item(ROLL_B);
+    expect(author.ok && (author.item as { mine: boolean }).mine).toBe(true);
+    expect(await world.as().lists.item(uuid(9999))).toEqual({ ok: true, item: null });
+    world.setOffline(true);
+    expect(await world.as().lists.item(ROLL_B)).toEqual({ ok: false });
+  });
+
+  it('moves the revision with an edit of the item or of a related item', async () => {
+    const world = fakeCloud(SEED, 'gm3');
+    const rev = async (): Promise<unknown> => {
+      const r = await world.as().lists.item(ROLL_B);
+      return r.ok ? (r.item as { revision: string }).revision : null;
+    };
+    const first = await rev();
+    expect(await rev()).toBe(first);
+    const c = SEED.homebrew.gm3.items.find((i) => i.id === uuid(663))!;
+    expect(
+      (
+        await world.homebrew.updateItem(
+          uuid(663),
+          { content: { ...c.content, en: 'Sentry Roll' }, book_id: null },
+          null
+        )
+      ).ok
+    ).toBe(true);
+    expect(await rev()).not.toBe(first);
+  });
+
+  it("reads the owner's notices newest first, marks them read and hides them by id", async () => {
+    const world = fakeCloud(SEED, 'gm2');
+    const read = await world.requests.notices();
+    expect(read.ok && read.notices.map((n) => [n.item_key, n.kind, n.read_at])).toEqual([
+      ['hb_emberaxeaaaaaaaa', 'changed', null],
+      ['hb_longroadrollaaaa', 'deleted', null]
+    ]);
+    expect(await world.as('gm1').requests.notices()).toEqual({ ok: true, notices: [] });
+    expect(await world.as().requests.notices()).toEqual({ ok: false });
+    expect((await world.requests.markRead(GM2_LIST)).ok).toBe(true);
+    const marked = await world.requests.notices(GM2_LIST);
+    expect(marked.ok && marked.notices.every((n) => n.read_at !== null)).toBe(true);
+    /* Another user's list deletes nothing. */
+    await world.as('gm1').requests.hideNotices(GM2_LIST, [uuid(681)]);
+    expect(((await world.requests.notices()) as { notices: unknown[] }).notices).toHaveLength(
+      2
+    );
+    expect(await world.requests.hideNotices(GM2_LIST, [uuid(681), uuid(9999)])).toEqual({
+      ok: true
+    });
+    const left = await world.requests.notices(GM2_LIST);
+    expect(left.ok && left.notices.map((n) => n.id)).toEqual([uuid(682)]);
+  });
+
+  it("writes a notice on another user's list when the author changes then deletes a linked item", async () => {
+    const world = fakeCloud(SEED, 'gm1');
+    const gm2 = world.as('gm2');
+    await gm2.requests.hideNotices(GM2_LIST, [uuid(681), uuid(682)]);
+    const axe = SEED.homebrew.gm1.items.find((i) => i.id === AXE_ID)!;
+    await world.homebrew.updateItem(
+      AXE_ID,
+      { content: { ...axe.content, en: 'Ash Axe' }, book_id: uuid(501) },
+      null
+    );
+    await world.homebrew.updateItem(
+      AXE_ID,
+      { content: { ...axe.content, en: 'Ash Axe 2' }, book_id: uuid(501) },
+      null
+    );
+    const changed = await gm2.requests.notices(GM2_LIST);
+    expect(changed.ok && changed.notices).toEqual([
+      expect.objectContaining({
+        item_key: 'hb_emberaxeaaaaaaaa',
+        hid: AXE_ID,
+        kind: 'changed',
+        read_at: null,
+        name: { en: 'Ash Axe 2', ru: 'Топор Тлеющих Углей' }
+      })
+    ]);
+    /* gm1's own list links the axe too, and gets no notice. */
+    expect(await world.requests.notices()).toEqual({ ok: true, notices: [] });
+    await world.homebrew.removeItem(AXE_ID);
+    const deleted = await gm2.requests.notices(GM2_LIST);
+    expect(deleted.ok && deleted.notices.map((n) => [n.kind, n.hid])).toEqual([
+      ['deleted', null]
+    ]);
+  });
+
+  it('cuts a read of every list at 1000 notices, and reads one list whole', async () => {
+    const lists = Array.from({ length: 11 }, (_, l) => ({
+      id: uuid(9100 + l),
+      name: 'L' + String(l),
+      entries: [],
+      createdAgoMs: 1000,
+      editedAgoMs: 1000
+    }));
+    const notices = lists.flatMap((l, li) =>
+      Array.from({ length: li === 10 ? 1 : 100 }, (_, n) => ({
+        id: uuid(20000 + li * 100 + n),
+        listId: l.id,
+        itemKey: 'hb_x' + String(n),
+        hid: null,
+        kind: 'deleted' as const,
+        name: { en: 'X', ru: 'Х' },
+        /* The last list's one notice is the oldest of all. */
+        createdAgoMs: li === 10 ? 10_000_000 : li * 1000 + n
+      }))
+    );
+    const world = fakeCloud({ ...SEED, lists: { ...SEED.lists, gm2: lists }, notices }, 'gm2');
+    const all = await world.requests.notices();
+    expect(all.ok && all.notices.length).toBe(1000);
+    expect(all.ok && all.notices.some((n) => n.list_id === uuid(9110))).toBe(false);
+    const one = await world.requests.notices(uuid(9110));
+    expect(one.ok && one.notices.map((n) => n.id)).toEqual([uuid(21000)]);
   });
 });
