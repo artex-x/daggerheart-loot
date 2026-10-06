@@ -38,7 +38,10 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
     as a bug) and becomes a labelled switch «Свои предметы» / "My items", on
     by default, apart from the filter chips; the same control in the
     equipment tables' toolbar. `STATE.md`: memory only, unchanged.
-- Open questions: none.
+- Change-log expiry (owner, 2026-10-06): an entry expires 1 hour after it
+  is read, or 30 days after it was created if nobody reads it.
+- Open questions: Q1 (conversion rule 3) and Q2 (the purchase request
+  lifecycle), `plan.md` 8.1; both before `B7h.3`.
 
 ## Screenshot / attachment findings
 - Owner screenshots 01 and 02 (below). Mocks m01-m05 (planner, 2026-10-02

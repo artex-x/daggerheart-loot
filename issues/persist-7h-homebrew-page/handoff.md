@@ -2,9 +2,9 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (re-planned 2026-10-06 with W1-W6; next: the plan review, then `B7h.1`)
+- Task status: in_progress (plan review fix-then-continue applied 2026-10-06; next: `B7h.1`)
 - Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: no
+- NEEDS_HUMAN_CONFIRMATION: no for `B7h.1`; owner questions Q1 and Q2 (`plan.md` 8.1) must be answered before `B7h.3`
 - Branch: `claude/r7h-homebrew-replan-275175` (planning); the release branch is the orchestrator's choice
 - Base / starting commit: `70fe5598` (on `d997f4f0`, origin/main; R7d closed and live)
 - Pushed: no
@@ -20,8 +20,12 @@
 - Deviations and rationale: the 2026-10-02 single batch `B7h.1` is gone;
   its items 2.1-2.6 are kept and placed in `B7h.5` (2.1-2.5) and `B7h.6`
   (2.6), as the owner's R2 moves the search and the counter onto the tabs.
-- Review: plan review required before `B7h.1` (`plan.md` Status names the
-  triggers); report to `issues/persist-7h-homebrew-page/reviews/plan-B7h.1.md`.
+- Review: plan review `reviews/plan-B7h.1.md` (fix-then-continue, reviewed
+  `438b3315`); every finding 1-26 applied once (`plan.md` Status, "Plan
+  review findings applied"); findings 19 and 26 placed in `B7h.1` and
+  `B7h.4`; finding 9 is owner question Q1. Owner input of 2026-10-06
+  (change-log expiry 1 hour after read, or 30 days after creation) applied;
+  the request lifecycle is owner question Q2. No second plan review.
 
 ## Verification
 - Commands run (exact): `npx prettier --check .` (result in the commit
@@ -34,26 +38,32 @@
   section 3).
 - Objective: `public.lifecycle_cleanup()` deletes lifecycle rows past their
   retention, `pg_cron` runs it hourly, `create_purchase_request` loses its
-  write-time delete, the usage report warns on overdue rows, and the law is
-  a decision file.
+  write-time delete, the usage report warns on overdue rows and on a
+  failed or missing run, `restore:drill` and `restore:prod` pause the job,
+  and the law is a decision file.
 - In scope: `plan.md` 2.7 and section 3.
 - Out of scope: the change log (B7h.3), every screen and string.
 - Files expected: `plan.md` section 3, "Files to create" and "Files to
   edit".
 - Steps: `plan.md` section 3, steps 1-9 (step 1 probes `pg_cron` on the
-  local stack and stops if it cannot be created).
+  local stack and stops if it cannot be created; step 5's usage and
+  restore edits come before step 6's `check:db`). Gates about 24 minutes.
 - Acceptance criteria: `plan.md` section 3, "Acceptance".
 - Verification commands: `npm run check:db` (PowerShell tool);
   `rtk npm run check` (Bash, timeout 600000); after the batch review
   approves: `npm run db:push -- --project test`, then `npm run e2e`.
-- Risks / do-nots: no execute grant on the function; never delete inside a
-  retention or the newest share row of an audience; no production push.
+- Risks / do-nots: no execute for `anon`, `authenticated` or
+  `service_role` on the function; every test seed in a rolled-back
+  transaction; never delete inside a retention or the newest share row of
+  an audience; no production push.
 - Fallback (optional): if `pg_cron` cannot be created locally or on the
   test project, stop and report; option C of 2.7 (a step of `usage.yml`)
   needs the planner.
 
 ## Blockers
-- The plan review (`plan.md` Status) before the first implementer dispatch.
+- None for `B7h.1`.
+- `B7h.3` waits for the owner's answers to Q1 (conversion rule 3) and Q2
+  (the purchase request lifecycle), `plan.md` 8.1.
 
 ## Deferred
 - To the owner, not `DEBT.md`: an author-side count of other players'
