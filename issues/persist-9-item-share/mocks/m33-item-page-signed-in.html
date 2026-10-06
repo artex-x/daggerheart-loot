@@ -1,0 +1,1442 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>m33 - #/h/item-token-1 as gm2 (not the owner) and as gm1 (the owner)</title>
+    <style>
+      /* R8/R9 mocks. :root copies app/src/styles/tokens.css (values, not a redesign).
+   Component rules are copied from the named .svelte files, shortened. One theme (dark).
+   Dashed violet outlines (.new) mark what the plan proposes; the rest exists today. */
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --gold-rgb: 216 171 94;
+        --item: #7a8ee0;
+        --cons: #9ec96a;
+        --eq-weapon: #d48e6a;
+        --danger: #e0685f;
+        --danger-text: #f0a49d;
+        --badge-bg: rgb(10 8 16 / 50%);
+        --r: 14px;
+        --r-sm: 9px;
+        --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
+        --ui:
+          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+          Arial, sans-serif;
+        --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        --ink-on-gold: #1a1206;
+        --gap-sm: 6px;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(1200px 700px at 12% -8%, #251c3d 0%, transparent 62%),
+          radial-gradient(900px 600px at 100% 0%, #1b2b3d 0%, transparent 55%), var(--bg);
+        background-attachment: fixed;
+        color: var(--txt);
+        font: 15.5px/1.6 var(--ui);
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      a {
+        color: var(--gold-soft);
+      }
+
+      /* ---- mock chrome (not app UI) ---- */
+      .mockbar {
+        max-width: 1420px;
+        margin: 20px auto 10px;
+        padding: 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .mockbar h1 {
+        font-size: 18px;
+        color: var(--txt);
+        margin: 0 0 4px;
+      }
+      .mockbar p {
+        margin: 4px 0;
+        max-width: 120ch;
+      }
+      .mockbar code,
+      .note code,
+      td code {
+        font: 12px/1.4 var(--mono);
+        color: #e6d7ff;
+      }
+      .state {
+        max-width: 1420px;
+        margin: 26px auto 6px;
+        padding: 0 16px;
+        font: 600 13px/1.4 var(--mono);
+        color: #c8a0ff;
+      }
+      .pair {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 28px;
+        max-width: 1420px;
+        margin: 0 auto 30px;
+        padding: 0 16px;
+      }
+      .frame {
+        position: relative;
+        border: 1px dashed #5a5070;
+        border-radius: 6px;
+        padding: 0 0 18px;
+      }
+      .frame.desk {
+        flex: 0 0 960px;
+        width: 960px;
+        max-width: 100%;
+        min-width: 0;
+      }
+      .frame.phone {
+        flex: 0 0 360px;
+        width: 360px;
+      }
+      .frame.text {
+        flex: 1 1 640px;
+        min-width: 0;
+      }
+      .frame > .cap {
+        display: block;
+        font: 600 12px/1.4 var(--mono);
+        color: #c8a0ff;
+        padding: 6px 10px;
+        border-bottom: 1px dashed #5a5070;
+      }
+      .frame .in {
+        padding: 0 16px;
+      }
+      .new {
+        outline: 2px dashed #c8a0ff;
+        outline-offset: 3px;
+      }
+      .note {
+        border: 1px dashed #c8a0ff;
+        background: rgb(200 160 255 / 8%);
+        color: #d9c8f5;
+        font-size: 12.5px;
+        padding: 6px 10px;
+        margin: 14px 0 0;
+        border-radius: 4px;
+        line-height: 1.5;
+      }
+      .said {
+        border: 1px dotted #7a6f96;
+        color: #b8acd6;
+        font: 12px/1.4 var(--mono);
+        padding: 4px 8px;
+        margin: 12px 0 0;
+        border-radius: 4px;
+      }
+      .said::before {
+        content: 'role=status (hidden): ';
+        color: #7a6f96;
+      }
+      table.strings {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13px;
+        margin-top: 10px;
+      }
+      table.strings th,
+      table.strings td {
+        text-align: left;
+        border-top: 1px solid var(--line);
+        padding: 6px 10px 6px 0;
+        vertical-align: top;
+      }
+      table.strings th {
+        color: var(--muted2);
+        font-size: 11.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      /* ---- Shell.svelte header ---- */
+      .chrome {
+        opacity: 0.62;
+        margin-bottom: 4px;
+      }
+      .topbar {
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 16px;
+        gap: 12px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand .star {
+        color: var(--gold);
+        font-size: 22px;
+        line-height: 1;
+      }
+      .brand b {
+        font-size: 16px;
+        display: block;
+        line-height: 1.1;
+      }
+      .brand i {
+        font-style: normal;
+        font-size: 10.5px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .frame.phone .brand i {
+        display: none;
+      }
+      .hright {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .langsw {
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px;
+        background: var(--surface);
+      }
+      .langsw span {
+        padding: 4px 11px;
+        border-radius: 999px;
+        font: 650 12px/1.4 var(--ui);
+        color: var(--muted);
+      }
+      .langsw span.on {
+        background: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .acct {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        min-width: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12.5px;
+        font-weight: 650;
+      }
+      .acct.in {
+        padding: 0;
+        width: 38px;
+        background: var(--surface2);
+        border-color: rgb(216 171 94 / 45%);
+        color: var(--gold-soft);
+        font-size: 14px;
+      }
+      .tabs {
+        display: flex;
+        gap: 18px;
+        padding: 8px 16px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 13.5px;
+        color: var(--muted);
+        overflow: hidden;
+      }
+      .tabs span {
+        padding-bottom: 8px;
+        white-space: nowrap;
+      }
+      main {
+        padding-top: 22px;
+      }
+
+      /* ---- PageTitle.svelte ---- */
+      .page-h {
+        margin: 0 0 4px;
+        font-size: 23px;
+        font-weight: 680;
+        letter-spacing: -0.01em;
+        overflow-wrap: anywhere;
+      }
+      .page-sub {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 70ch;
+      }
+      .page-sub a {
+        white-space: nowrap;
+        font-size: 13px;
+        text-decoration: none;
+        margin-left: 6px;
+      }
+      .updated {
+        margin: -14px 0 18px;
+        font-size: 12.5px;
+        color: var(--muted2);
+      }
+      .ownline {
+        margin: 0 0 16px;
+        padding: 10px 12px;
+        border: 1px solid rgb(var(--gold-rgb) / 45%);
+        border-radius: var(--r-sm);
+        background: rgb(var(--gold-rgb) / 6%);
+        font-size: 13.5px;
+      }
+
+      /* ---- Panel.svelte, fields ---- */
+      .panel {
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+      .panel.tight {
+        padding: 14px 16px;
+      }
+      .field {
+        margin-bottom: 16px;
+      }
+      .lbl {
+        display: block;
+        font-size: 11.5px;
+        font-weight: 650;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted2);
+        margin: 0 0 8px;
+      }
+      .input {
+        width: 100%;
+        height: 46px;
+        padding: 0 14px;
+        border-radius: var(--r-sm);
+        background: var(--bg2);
+        border: 1px solid var(--line2);
+        color: var(--txt);
+        font: inherit;
+        display: flex;
+        align-items: center;
+      }
+      textarea.input {
+        height: 76px;
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+      .hint {
+        margin: 8px 0 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .err {
+        margin: 8px 0 0;
+        font-size: 13px;
+        color: var(--danger-text);
+      }
+      .loadline {
+        font-size: 14px;
+        color: var(--muted);
+        padding: 6px 0;
+      }
+      .loadline.fail {
+        color: var(--danger-text);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      /* ---- Button.svelte ---- */
+      .btn {
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--txt);
+        padding: 0 18px;
+        height: 46px;
+        border-radius: var(--r-sm);
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .btn.sm {
+        height: 32px;
+        padding: 0 11px;
+        font-size: 12.5px;
+        border-radius: 8px;
+        gap: 6px;
+      }
+      .btn.on {
+        border-color: var(--gold);
+        color: var(--gold-soft);
+      }
+      .btn.primary {
+        background: linear-gradient(180deg, #e2b76c, var(--gold));
+        border-color: #e8c27c;
+        color: var(--ink-on-gold);
+        font-weight: 700;
+      }
+      .btn.ghost {
+        background: transparent;
+        border-color: var(--line);
+      }
+      .btn.danger {
+        border-color: rgb(224 104 95 / 40%);
+        color: var(--danger-text);
+      }
+      .btn[disabled] {
+        opacity: 0.45;
+      }
+      .caret {
+        width: 0;
+        height: 0;
+        border: 4px solid transparent;
+        border-top-color: currentcolor;
+        transform: translateY(2px);
+        display: inline-block;
+      }
+      .ic {
+        display: inline-block;
+        width: 13px;
+        text-align: center;
+        font-weight: 700;
+      }
+      .acts {
+        display: flex;
+        gap: var(--gap-sm);
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      /* ---- Badge.svelte ---- */
+      .badge {
+        font-size: 10.5px;
+        font-weight: 650;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        padding: 3px 7px;
+        border-radius: 6px;
+        background: var(--badge-bg);
+        border: 1px solid var(--line2);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .badge.eq {
+        color: var(--eq-weapon);
+        border-color: #d48e6a73;
+      }
+      .badge.item {
+        color: var(--item);
+        border-color: #7a8ee073;
+      }
+      .badge.src {
+        color: #9a9aa6;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+
+      /* ---- pictures: CSS stand-ins for real files ---- */
+      .pic {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background:
+          radial-gradient(circle at 35% 30%, #f3b26b 0 12%, transparent 13%),
+          linear-gradient(135deg, #5b2a1d, #2b1830 60%, #13101c);
+        position: relative;
+      }
+      .pic::after {
+        content: attr(data-l);
+        position: absolute;
+        left: 6px;
+        bottom: 4px;
+        font: 10px/1.2 var(--mono);
+        color: rgb(255 255 255 / 55%);
+      }
+      .pic.bed {
+        background:
+          radial-gradient(circle at 70% 25%, #e8e0a8 0 9%, transparent 10%),
+          linear-gradient(160deg, #1e3b4a, #23314f 55%, #121022);
+      }
+      .pic.cat {
+        background:
+          radial-gradient(circle at 50% 45%, #9fb7d8 0 18%, transparent 19%),
+          linear-gradient(135deg, #2d3a58, #151726);
+      }
+      .pic.none {
+        background: #0a0810;
+      }
+      .pic.none::before {
+        content: '\2726';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3a3350;
+        font-size: 28px;
+      }
+      .pic.local {
+        outline: 2px dashed #c8a0ff;
+        outline-offset: -2px;
+      }
+
+      /* ---- TableRows.svelte / RowMain.svelte ---- */
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .row {
+        display: flex;
+        align-items: flex-start;
+        gap: 2px;
+        padding: 3px 5px 3px 3px;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+      }
+      .rtick {
+        flex: none;
+        width: 42px;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .rtick i {
+        width: 17px;
+        height: 17px;
+        border-radius: 4px;
+        border: 1px solid var(--line2);
+        background: var(--bg2);
+        display: block;
+      }
+      .row.sel {
+        border-color: var(--gold);
+      }
+      .row.sel .rtick i {
+        background: var(--gold);
+        border-color: var(--gold);
+      }
+      .row-main {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        flex: 1;
+        min-width: 0;
+        padding: 8px;
+      }
+      .row-main .th {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex: none;
+      }
+      .row-main .rt {
+        flex: 1;
+        min-width: 0;
+      }
+      .row-main .rt b {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 620;
+        overflow-wrap: anywhere;
+        flex-wrap: wrap;
+      }
+      .row-main .rt > span {
+        display: block;
+        font-size: 12.5px;
+        color: var(--muted2);
+        margin-top: 3px;
+        line-height: 1.45;
+      }
+      .row-main .rt .rtail {
+        font-weight: 600;
+        color: var(--gold-soft);
+        font-size: 12.5px;
+      }
+
+      /* ---- RecordCard.svelte (full) ---- */
+      .card {
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        overflow: clip;
+        display: flex;
+        flex-direction: column;
+        max-width: 520px;
+        box-shadow: var(--shadow);
+      }
+      .card-media {
+        width: 100%;
+        aspect-ratio: 1;
+        max-height: 420px;
+        overflow: hidden;
+      }
+      .card.short .card-media {
+        aspect-ratio: auto;
+        height: 180px;
+      }
+      .card-body {
+        padding: 13px 15px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .card-meta {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .card-name {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 680;
+        line-height: 1.28;
+        display: flex;
+        align-items: baseline;
+        gap: 7px;
+        overflow-wrap: anywhere;
+        flex-wrap: wrap;
+      }
+      .card-name .nacts {
+        margin-left: auto;
+        display: flex;
+        gap: 4px;
+      }
+      .iconbtn {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .eqstats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .eqstats span {
+        font: 600 11.5px/1 var(--mono);
+        color: var(--muted);
+        background: rgb(255 255 255 / 3.5%);
+        border: 1px solid var(--line2);
+        border-radius: 6px;
+        padding: 5px 7px;
+      }
+      .desc {
+        font-size: 14px;
+        color: #d8d2e8;
+        margin: 0;
+      }
+      .rel {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .refblock {
+        border: 1px solid var(--line2);
+        border-radius: 9px;
+        padding: 8px 10px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .cardpick {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 10px 15px 14px;
+        border-top: 1px solid var(--line);
+      }
+      .cardpick .sub {
+        flex-basis: 100%;
+        font-size: 12.5px;
+        color: var(--muted2);
+        margin: 2px 0 0;
+      }
+
+      /* ---- AddToList.svelte menu (dropmenu), SignInPrompt.svelte ---- */
+      .dropmenu {
+        margin-top: 8px;
+        border: 1px solid var(--line2);
+        border-radius: 11px;
+        background: var(--surface);
+        padding: 10px;
+        box-shadow: 0 16px 40px -14px rgb(0 0 0 / 85%);
+        max-width: 360px;
+      }
+      .dropmenu .lbl {
+        margin-bottom: 6px;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        display: inline-block;
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--muted);
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+      .signin {
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        padding: 10px 12px;
+        font-size: 13.5px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: rgb(255 255 255 / 2%);
+        margin-top: 8px;
+      }
+      .signin span {
+        flex: 1 1 200px;
+      }
+
+      /* ---- SharePanel.svelte ---- */
+      .sharepanel {
+        margin-top: 12px;
+        max-width: 520px;
+      }
+      .sharerow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 2px 0 10px;
+      }
+      .sharerow .who {
+        flex: 1 1 220px;
+        min-width: 0;
+      }
+      .sharerow .who b {
+        display: block;
+        font-size: 14px;
+      }
+      .sharelink,
+      .stopped {
+        display: block;
+        font: 12px/1.4 var(--mono);
+        color: var(--muted2);
+        overflow-wrap: anywhere;
+      }
+
+      /* ---- Toast.svelte (drawn in place, not fixed) ---- */
+      .toastbox {
+        margin: 16px 0 0;
+        display: flex;
+        justify-content: center;
+      }
+      .toast {
+        background: var(--gold);
+        color: var(--ink-on-gold);
+        font-weight: 650;
+        font-size: 13.5px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        box-shadow: 0 12px 30px -10px rgb(0 0 0 / 70%);
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+      }
+      .toast.err {
+        background: var(--danger);
+        color: #fff;
+      }
+      .toast .tact {
+        background: rgb(0 0 0 / 14%);
+        border: 0;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-weight: 700;
+        text-decoration: underline;
+      }
+
+      /* ---- the record modal (RecordModal.svelte, simplified) ---- */
+      .modal {
+        border: 1px solid var(--line2);
+        border-radius: var(--r);
+        background: var(--bg2);
+        padding: 12px;
+        box-shadow: 0 30px 60px -20px #000;
+        max-width: 560px;
+      }
+      .modal .mhead {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 8px;
+      }
+
+      /* ---- the crop dialog (NEW) ---- */
+      .cropdlg {
+        border: 1px solid var(--line2);
+        border-radius: var(--r);
+        background: var(--surface);
+        padding: 16px;
+        box-shadow: 0 30px 60px -20px #000;
+        max-width: 520px;
+      }
+      .cropdlg h2 {
+        margin: 0 0 6px;
+        font-size: 18px;
+      }
+      .cropstage {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+        overflow: hidden;
+        border-radius: 10px;
+        background: #07060b;
+        margin: 10px 0;
+      }
+      .cropstage .src {
+        position: absolute;
+        left: -18%;
+        top: -6%;
+        width: 150%;
+        height: 115%;
+      }
+      .cropstage .mask {
+        position: absolute;
+        inset: 0;
+        box-shadow: inset 0 0 0 9999px rgb(0 0 0 / 0%);
+      }
+      .cropstage .sq {
+        position: absolute;
+        left: 6%;
+        top: 6%;
+        width: 88%;
+        height: 88%;
+        border: 2px solid var(--gold);
+        box-shadow: 0 0 0 9999px rgb(7 6 11 / 62%);
+        border-radius: 4px;
+      }
+      .cropstage .sq::before,
+      .cropstage .sq::after {
+        content: '';
+        position: absolute;
+        inset: 33.3% 0;
+        border-top: 1px solid rgb(255 255 255 / 22%);
+        border-bottom: 1px solid rgb(255 255 255 / 22%);
+      }
+      .range {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .range .track {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--line2);
+        position: relative;
+      }
+      .range .track i {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 38%;
+        background: var(--gold);
+        border-radius: 3px;
+      }
+      .range .track b {
+        position: absolute;
+        left: 38%;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        margin: -9px 0 0 -9px;
+        border-radius: 50%;
+        background: var(--gold-soft);
+      }
+
+      /* ---- the editor's picture field (NEW) ---- */
+      .artfield {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .artfield .th {
+        width: 96px;
+        height: 96px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--line2);
+        flex: none;
+      }
+      .artfield .side {
+        flex: 1 1 180px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      /* ---- the editor grid (HomebrewEditor.svelte) ---- */
+      .hbedit {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        align-items: start;
+      }
+      .frame.phone .hbedit {
+        grid-template-columns: 1fr;
+      }
+      .legend {
+        font-size: 12.5px;
+        color: var(--muted2);
+        margin: 0 0 12px;
+      }
+
+      /* ---- PrintCard.svelte (simplified to its frame) ---- */
+      .psheet {
+        background: #fff;
+        padding: 10px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        border-radius: 4px;
+      }
+      .frame.phone .psheet {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .pcard {
+        aspect-ratio: 63 / 88;
+        border: 2px solid #b8945a;
+        border-radius: 6px;
+        background: #fbf7ef;
+        color: #000;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        font-size: 9px;
+      }
+      .pcard.bw {
+        border-color: #000;
+        background: #fff;
+      }
+      .pcard .pc-art {
+        height: 44%;
+      }
+      .pcard .pc-name {
+        font-weight: 900;
+        font-size: 11px;
+        margin: 4px 6px 2px;
+      }
+      .pcard .pc-src {
+        font-style: italic;
+        margin: 0 6px;
+        color: #333;
+      }
+      .pcard .pc-text {
+        margin: 4px 6px;
+        line-height: 1.3;
+      }
+      .pcard.blank {
+        border: 1px dashed #ccc;
+        background: #fff;
+      }
+      .printbar {
+        margin-bottom: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>m33 - #/h/item-token-1 as gm2 (not the owner) and as gm1 (the owner)</h1>
+      <p>
+        Signed in, «Добавить в список» adds a frozen copy (the page's projection is the copy, as
+        on <code>#/s/</code>); «Сохранить себе» saves a copy to «Мои предметы» («Хоумбрю») in
+        one call and keeps the reader on the page; its toast offers «Изменить» (a new tab, R7e's
+        toast), worded as a saved copy like «Сохранить себе» on <code>#/s/</code>. The button
+        then reads «Сохранено», disabled for the visit, so a second press saves no second copy.
+        The owner sees «Это ваш предмет.» with «Открыть для правки», and no «Сохранить себе».
+      </p>
+    </div>
+    <div class="state">1. As gm2: the page, the add-to-list menu open</div>
+    <div class="pair">
+      <div class="frame desk">
+        <span class="cap">desktop - as gm2</span>
+        <div class="chrome">
+          <div class="topbar">
+            <div class="brand">
+              <span class="star">&#10022;</span>
+              <div><b>Лут Daggerheart</b><i>генератор</i></div>
+            </div>
+            <div class="hright">
+              <div class="langsw"><span class="on">RU</span><span class="">EN</span></div>
+              <span class="acct in">v</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <span>Основные</span><span>Альтернативные</span><span>Чудесный лут</span
+            ><span>…</span>
+          </div>
+        </div>
+        <main class="in">
+          <h1 class="page-h">Топор Тлеющих Углей</h1>
+          <p class="page-sub new">
+            Предмет от другого игрока · Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2
+          </p>
+          <p class="updated">Обновлено 3 дня назад</p>
+          <div class="card short">
+            <div class="card-media"><span class="pic none" data-l=""></span></div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="badge eq">Оружие</span><span class="badge">Ранг 2</span
+                ><span class="badge src">Мастерская Ольхи (HB)</span>
+              </div>
+              <h3 class="card-name">
+                Топор Тлеющих Углей<span class="nacts"
+                  ><span class="iconbtn">&#9113;</span
+                  ><span class="iconbtn">&#8599;</span></span
+                >
+              </h3>
+              <div class="eqstats">
+                <span>Маг.</span><span>Хар. Заклинателя</span><span>Вплотную</span
+                ><span>d10+2 маг.</span><span>Двуручное</span>
+              </div>
+              <p class="desc">Лезвие тлеет и не гаснет под дождём.</p>
+              <div class="acts">
+                <span class="btn sm">Скопировать текст</span
+                ><span class="btn sm">Отправить</span>
+              </div>
+            </div>
+            <div class="cardpick">
+              <span class="btn sm primary"
+                ><span class="ic">+</span>Добавить в список <i class="caret"></i></span
+              ><span class="btn sm"><span class="ic">&#9113;</span>Печать</span
+              ><span class="btn sm new">Сохранить себе</span
+              ><span class="sub new"
+                >Копия попадёт в «Хоумбрю» - без источника автора и без связей с другими его
+                предметами.</span
+              >
+            </div>
+          </div>
+        </main>
+      </div>
+      <div class="frame phone">
+        <span class="cap">360 px - menu open</span>
+        <div class="chrome">
+          <div class="topbar">
+            <div class="brand">
+              <span class="star">&#10022;</span>
+              <div><b>Лут Daggerheart</b><i>генератор</i></div>
+            </div>
+            <div class="hright">
+              <div class="langsw"><span class="on">RU</span><span class="">EN</span></div>
+              <span class="acct in">v</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <span>Основные</span><span>Альтернативные</span><span>Чудесный лут</span
+            ><span>…</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="card short">
+            <div class="card-media"><span class="pic none" data-l=""></span></div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="badge eq">Оружие</span><span class="badge">Ранг 2</span
+                ><span class="badge src">Мастерская Ольхи (HB)</span>
+              </div>
+              <h3 class="card-name">
+                Топор Тлеющих Углей<span class="nacts"
+                  ><span class="iconbtn">&#9113;</span
+                  ><span class="iconbtn">&#8599;</span></span
+                >
+              </h3>
+              <div class="eqstats">
+                <span>Маг.</span><span>Хар. Заклинателя</span><span>Вплотную</span
+                ><span>d10+2 маг.</span><span>Двуручное</span>
+              </div>
+              <p class="desc">Лезвие тлеет и не гаснет под дождём.</p>
+              <div class="acts">
+                <span class="btn sm">Скопировать текст</span
+                ><span class="btn sm">Отправить</span>
+              </div>
+            </div>
+            <div class="cardpick">
+              <span class="btn sm primary"
+                ><span class="ic">+</span>Добавить в список <i class="caret"></i></span
+              ><span class="btn sm"><span class="ic">&#9113;</span>Печать</span
+              ><span class="btn sm new">Сохранить себе</span
+              ><span class="sub new"
+                >Копия попадёт в «Хоумбрю» - без источника автора и без связей с другими его
+                предметами.</span
+              >
+            </div>
+          </div>
+          <div class="dropmenu">
+            <span class="lbl">Добавить в список</span>
+            <div class="chips">
+              <span class="chip">Список второго ГМа</span
+              ><span class="chip">+ Новый список</span>
+            </div>
+          </div>
+          <div class="toastbox">
+            <span class="toast">Добавлено в «Список второго ГМа»</span>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div class="state">
+      2. As gm2: «Сохранить себе» - success, the limit, a lost network, items still loading
+    </div>
+    <div class="pair">
+      <div class="frame phone">
+        <span class="cap">success</span>
+        <div class="chrome">
+          <div class="topbar">
+            <div class="brand">
+              <span class="star">&#10022;</span>
+              <div><b>Лут Daggerheart</b><i>генератор</i></div>
+            </div>
+            <div class="hright">
+              <div class="langsw"><span class="on">RU</span><span class="">EN</span></div>
+              <span class="acct in">v</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <span>Основные</span><span>Альтернативные</span><span>Чудесный лут</span
+            ><span>…</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="card short">
+            <div class="card-media"><span class="pic none" data-l=""></span></div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="badge eq">Оружие</span><span class="badge">Ранг 2</span
+                ><span class="badge src">Мастерская Ольхи (HB)</span>
+              </div>
+              <h3 class="card-name">
+                Топор Тлеющих Углей<span class="nacts"
+                  ><span class="iconbtn">&#9113;</span
+                  ><span class="iconbtn">&#8599;</span></span
+                >
+              </h3>
+              <div class="eqstats">
+                <span>Маг.</span><span>Хар. Заклинателя</span><span>Вплотную</span
+                ><span>d10+2 маг.</span><span>Двуручное</span>
+              </div>
+              <p class="desc">Лезвие тлеет и не гаснет под дождём.</p>
+              <div class="acts">
+                <span class="btn sm">Скопировать текст</span
+                ><span class="btn sm">Отправить</span>
+              </div>
+            </div>
+            <div class="cardpick">
+              <span class="btn sm primary"
+                ><span class="ic">+</span>Добавить в список <i class="caret"></i></span
+              ><span class="btn sm"><span class="ic">&#9113;</span>Печать</span
+              ><span class="btn sm new" disabled>Сохранено</span>
+            </div>
+          </div>
+          <div class="toastbox">
+            <span class="toast"
+              >Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы»<span class="tact"
+                >Изменить</span
+              ></span
+            >
+          </div>
+        </main>
+      </div>
+      <div class="frame phone">
+        <span class="cap">the item limit</span>
+        <div class="chrome">
+          <div class="topbar">
+            <div class="brand">
+              <span class="star">&#10022;</span>
+              <div><b>Лут Daggerheart</b><i>генератор</i></div>
+            </div>
+            <div class="hright">
+              <div class="langsw"><span class="on">RU</span><span class="">EN</span></div>
+              <span class="acct in">v</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <span>Основные</span><span>Альтернативные</span><span>Чудесный лут</span
+            ><span>…</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="card short">
+            <div class="card-media"><span class="pic none" data-l=""></span></div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="badge eq">Оружие</span><span class="badge">Ранг 2</span
+                ><span class="badge src">Мастерская Ольхи (HB)</span>
+              </div>
+              <h3 class="card-name">
+                Топор Тлеющих Углей<span class="nacts"
+                  ><span class="iconbtn">&#9113;</span
+                  ><span class="iconbtn">&#8599;</span></span
+                >
+              </h3>
+              <div class="eqstats">
+                <span>Маг.</span><span>Хар. Заклинателя</span><span>Вплотную</span
+                ><span>d10+2 маг.</span><span>Двуручное</span>
+              </div>
+              <p class="desc">Лезвие тлеет и не гаснет под дождём.</p>
+              <div class="acts">
+                <span class="btn sm">Скопировать текст</span
+                ><span class="btn sm">Отправить</span>
+              </div>
+            </div>
+            <div class="cardpick">
+              <span class="btn sm primary"
+                ><span class="ic">+</span>Добавить в список <i class="caret"></i></span
+              ><span class="btn sm"><span class="ic">&#9113;</span>Печать</span
+              ><span class="btn sm new">Сохранить себе</span
+              ><span class="sub new"
+                >Копия попадёт в «Хоумбрю» - без источника автора и без связей с другими его
+                предметами.</span
+              >
+            </div>
+          </div>
+          <div class="toastbox">
+            <span class="toast err"
+              >Достигнут предел своих предметов: 100. Нужно больше - напишите на
+              daggerheart.loot@gmail.com.</span
+            >
+          </div>
+        </main>
+      </div>
+      <div class="frame phone">
+        <span class="cap">lost network</span>
+        <div class="chrome">
+          <div class="topbar">
+            <div class="brand">
+              <span class="star">&#10022;</span>
+              <div><b>Лут Daggerheart</b><i>генератор</i></div>
+            </div>
+            <div class="hright">
+              <div class="langsw"><span class="on">RU</span><span class="">EN</span></div>
+              <span class="acct in">v</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <span>Основные</span><span>Альтернативные</span><span>Чудесный лут</span
+            ><span>…</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="card short">
+            <div class="card-media"><span class="pic none" data-l=""></span></div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="badge eq">Оружие</span><span class="badge">Ранг 2</span
+                ><span class="badge src">Мастерская Ольхи (HB)</span>
+              </div>
+              <h3 class="card-name">
+                Топор Тлеющих Углей<span class="nacts"
+                  ><span class="iconbtn">&#9113;</span
+                  ><span class="iconbtn">&#8599;</span></span
+                >
+              </h3>
+              <div class="eqstats">
+                <span>Маг.</span><span>Хар. Заклинателя</span><span>Вплотную</span
+                ><span>d10+2 маг.</span><span>Двуручное</span>
+              </div>
+              <p class="desc">Лезвие тлеет и не гаснет под дождём.</p>
+              <div class="acts">
+                <span class="btn sm">Скопировать текст</span
+                ><span class="btn sm">Отправить</span>
+              </div>
+            </div>
+            <div class="cardpick">
+              <span class="btn sm primary"
+                ><span class="ic">+</span>Добавить в список <i class="caret"></i></span
+              ><span class="btn sm"><span class="ic">&#9113;</span>Печать</span
+              ><span class="btn sm new">Сохранить себе</span
+              ><span class="sub new"
+                >Копия попадёт в «Хоумбрю» - без источника автора и без связей с другими его
+                предметами.</span
+              >
+            </div>
+          </div>
+          <div class="toastbox">
+            <span class="toast err new"
+              >Не получилось сохранить предмет себе. Проверьте соединение и попробуйте ещё
+              раз.</span
+            >
+          </div>
+        </main>
+      </div>
+      <div class="frame phone">
+        <span class="cap">own items still loading</span>
+        <div class="chrome">
+          <div class="topbar">
+            <div class="brand">
+              <span class="star">&#10022;</span>
+              <div><b>Лут Daggerheart</b><i>генератор</i></div>
+            </div>
+            <div class="hright">
+              <div class="langsw"><span class="on">RU</span><span class="">EN</span></div>
+              <span class="acct in">v</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <span>Основные</span><span>Альтернативные</span><span>Чудесный лут</span
+            ><span>…</span>
+          </div>
+        </div>
+        <main class="in">
+          <div class="card short">
+            <div class="card-media"><span class="pic none" data-l=""></span></div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="badge eq">Оружие</span><span class="badge">Ранг 2</span
+                ><span class="badge src">Мастерская Ольхи (HB)</span>
+              </div>
+              <h3 class="card-name">
+                Топор Тлеющих Углей<span class="nacts"
+                  ><span class="iconbtn">&#9113;</span
+                  ><span class="iconbtn">&#8599;</span></span
+                >
+              </h3>
+              <div class="eqstats">
+                <span>Маг.</span><span>Хар. Заклинателя</span><span>Вплотную</span
+                ><span>d10+2 маг.</span><span>Двуручное</span>
+              </div>
+              <p class="desc">Лезвие тлеет и не гаснет под дождём.</p>
+              <div class="acts">
+                <span class="btn sm">Скопировать текст</span
+                ><span class="btn sm">Отправить</span>
+              </div>
+            </div>
+            <div class="cardpick">
+              <span class="btn sm primary"
+                ><span class="ic">+</span>Добавить в список <i class="caret"></i></span
+              ><span class="btn sm"><span class="ic">&#9113;</span>Печать</span
+              ><span class="btn sm new">Сохранить себе</span
+              ><span class="sub new"
+                >Копия попадёт в «Хоумбрю» - без источника автора и без связей с другими его
+                предметами.</span
+              >
+            </div>
+          </div>
+          <div class="toastbox">
+            <span class="toast err"
+              >Ваши предметы ещё загружаются - повторите через секунду.</span
+            >
+          </div>
+        </main>
+      </div>
+    </div>
+    <div class="state">3. As gm1 (the owner)</div>
+    <div class="pair">
+      <div class="frame phone">
+        <span class="cap">360 px - the owner</span>
+        <div class="chrome">
+          <div class="topbar">
+            <div class="brand">
+              <span class="star">&#10022;</span>
+              <div><b>Лут Daggerheart</b><i>генератор</i></div>
+            </div>
+            <div class="hright">
+              <div class="langsw"><span class="on">RU</span><span class="">EN</span></div>
+              <span class="acct in">g</span>
+            </div>
+          </div>
+          <div class="tabs">
+            <span>Основные</span><span>Альтернативные</span><span>Чудесный лут</span
+            ><span>…</span>
+          </div>
+        </div>
+        <main class="in">
+          <p class="ownline new">Это ваш предмет. <a>Открыть для правки</a></p>
+          <h1 class="page-h">Топор Тлеющих Углей</h1>
+          <p class="page-sub new">
+            Предмет от другого игрока · Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2
+          </p>
+          <p class="updated">Обновлено 3 дня назад</p>
+          <div class="card short">
+            <div class="card-media"><span class="pic none" data-l=""></span></div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="badge eq">Оружие</span><span class="badge">Ранг 2</span
+                ><span class="badge src">Мастерская Ольхи (HB)</span>
+              </div>
+              <h3 class="card-name">
+                Топор Тлеющих Углей<span class="nacts"
+                  ><span class="iconbtn">&#9113;</span
+                  ><span class="iconbtn">&#8599;</span></span
+                >
+              </h3>
+              <div class="eqstats">
+                <span>Маг.</span><span>Хар. Заклинателя</span><span>Вплотную</span
+                ><span>d10+2 маг.</span><span>Двуручное</span>
+              </div>
+              <p class="desc">Лезвие тлеет и не гаснет под дождём.</p>
+              <div class="acts">
+                <span class="btn sm">Скопировать текст</span
+                ><span class="btn sm">Отправить</span>
+              </div>
+            </div>
+            <div class="cardpick">
+              <span class="btn sm primary"
+                ><span class="ic">+</span>Добавить в список <i class="caret"></i></span
+              ><span class="btn sm"><span class="ic">&#9113;</span>Печать</span>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <p class="note">
+      The card limit refuses the same way when the copy brings own cards («Достигнут предел карт
+      (комплектов и карт правил): N. ...»). The copy is one <code>import_homebrew</code> call:
+      the item and its embedded own cards, all or nothing.
+    </p>
+  </body>
+</html>
