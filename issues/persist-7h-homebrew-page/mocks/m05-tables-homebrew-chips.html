@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>R7h m05 - source chips on the homebrew table</title>
+    <style>
+      /* R7h mocks m02-m05. :root copies app/src/styles/tokens.css (values, not a
+   redesign); component rules approximate Panel, Chip, Button, TableRows,
+   RecordCard and RequestsPanel. One theme (dark). `.new` marks a proposal. */
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --item: #7a8ee0;
+        --eq-weapon: #d48e6a;
+        --danger-text: #f0a49d;
+        --r: 14px;
+        --r-sm: 9px;
+        --ink-on-gold: #1a1206;
+        --ui: 'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        --mono: ui-monospace, Menlo, Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--txt);
+        font: 15.5px/1.6 var(--ui);
+      }
+      a {
+        color: var(--gold-soft);
+      }
+      .mockbar {
+        max-width: 1420px;
+        margin: 20px auto 10px;
+        padding: 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .mockbar h1 {
+        font-size: 18px;
+        color: var(--txt);
+        margin: 0 0 4px;
+      }
+      .mockbar p {
+        margin: 4px 0;
+        max-width: 120ch;
+      }
+      .pair {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 28px;
+        max-width: 1420px;
+        margin: 0 auto 40px;
+        padding: 0 16px;
+      }
+      .frame {
+        border: 1px dashed #5a5070;
+        border-radius: 6px;
+        padding: 0 0 18px;
+      }
+      .frame.desk {
+        flex: 0 0 960px;
+        max-width: 100%;
+      }
+      .frame.phone {
+        flex: 0 0 360px;
+        width: 360px;
+      }
+      .frame > .cap {
+        display: block;
+        font: 600 12px/1.4 var(--mono);
+        color: #c8a0ff;
+        padding: 6px 10px;
+        border-bottom: 1px dashed #5a5070;
+        margin-bottom: 16px;
+      }
+      .in {
+        padding: 0 16px;
+      }
+      .new {
+        outline: 2px dashed #c8a0ff;
+        outline-offset: 3px;
+      }
+      .note {
+        border: 1px dashed #c8a0ff;
+        background: rgb(200 160 255 / 8%);
+        color: #d9c8f5;
+        font-size: 12.5px;
+        padding: 6px 10px;
+        margin: 14px 0 0;
+        border-radius: 4px;
+      }
+      .page-h {
+        margin: 0 0 4px;
+        font-size: 23px;
+        font-weight: 680;
+      }
+      .page-sub {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .count {
+        font: 600 12px/1 var(--mono);
+        color: var(--muted2);
+        margin: 12px 0 8px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 16px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 4px 13px;
+        border-radius: 999px;
+        border: 1px solid var(--line2);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 13.5px;
+        text-decoration: none;
+      }
+      .chip.on {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--ink-on-gold);
+        font-weight: 650;
+      }
+      .chip small {
+        font: 600 11px/1 var(--mono);
+        opacity: 0.8;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 6px 14px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--line2);
+        background: var(--surface2);
+        color: var(--txt);
+        font: 600 13.5px/1.2 var(--ui);
+      }
+      .btn.gold {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .btn.ghost {
+        background: transparent;
+      }
+      .btn.small {
+        min-height: 30px;
+        padding: 3px 10px;
+        font-size: 12.5px;
+      }
+      .btnrow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .panel {
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        padding: 16px;
+        margin: 12px 0;
+      }
+      .input {
+        width: 100%;
+        height: 42px;
+        padding: 0 14px;
+        border-radius: var(--r-sm);
+        background: var(--bg2);
+        border: 1px solid var(--line2);
+        color: var(--muted2);
+        font: inherit;
+        display: flex;
+        align-items: center;
+      }
+      .strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        background: var(--bg2);
+        font-size: 13px;
+        color: var(--muted);
+      }
+      h2.grp {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted2);
+        margin: 18px 0 6px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-top: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .row .tick {
+        width: 16px;
+        height: 16px;
+        border: 1px solid var(--line2);
+        border-radius: 4px;
+        flex: 0 0 auto;
+      }
+      .row .nm {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      .row .meta {
+        color: var(--muted2);
+        font-size: 12.5px;
+        white-space: nowrap;
+      }
+      .badge {
+        display: inline-block;
+        font: 650 11px/1.4 var(--ui);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--line2);
+        color: var(--muted);
+        margin-right: 6px;
+      }
+      .badge.kind {
+        color: var(--item);
+        border-color: var(--item);
+      }
+      .card {
+        border: 1px solid var(--line2);
+        border-radius: var(--r);
+        background: var(--surface);
+        padding: 14px 16px;
+      }
+      .card h3 {
+        margin: 8px 0 6px;
+        font-size: 20px;
+      }
+      .rel {
+        font-size: 13.5px;
+        margin: 3px 0;
+      }
+      .rel .lab {
+        font-size: 11.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted2);
+        margin-right: 6px;
+      }
+      .req {
+        border-top: 1px solid var(--line);
+        padding: 10px 0;
+        font-size: 14px;
+      }
+      .req .who {
+        color: var(--muted2);
+        font-size: 12.5px;
+      }
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--gold);
+        margin-right: 6px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .preview p {
+        margin: 6px 0;
+        font-size: 14px;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--line2);
+        border-radius: 999px;
+        padding: 3px;
+        background: var(--surface);
+      }
+      .seg span {
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .seg span.on {
+        background: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .more {
+        background: none;
+        border: 0;
+        color: var(--gold-soft);
+        text-decoration: underline;
+        padding: 0;
+        font: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>m05 - <code>#/tables/homebrew</code> with one chip per source (plan 2.11, B7h.6)</h1>
+      <p>
+        Existing: the table group chips, the filter panel, the section headings, the rows.
+        Proposed (dashed): the source chip row, drawn from two sources; the chip is the
+        <code>src</code> filter with one value; the panel loses its <code>src</code> row and
+        <code>sect</code> lists the chosen source's sections only.
+      </p>
+    </div>
+
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap">#/tables/homebrew/f_src-hb_alderworkshopaaa as gm1, 1180 px</span>
+        <div class="in">
+          <nav class="chips">
+            <a class="chip">Предметы</a><a class="chip">Расходники</a
+            ><a class="chip">Снаряжение</a><a class="chip on">Хоумбрю</a>
+          </nav>
+          <nav class="chips new" aria-label="Источники">
+            <a class="chip on" aria-current="true">Мастерская Олдера <small>9</small></a>
+            <a class="chip">Привал у костра <small>12</small></a>
+            <a class="chip">Хоумбрю <small>3</small></a>
+          </nav>
+          <div class="panel">
+            <div class="muted" style="font-size: 12px; letter-spacing: 0.1em">РАЗДЕЛ</div>
+            <div class="chips new" style="margin: 6px 0 0">
+              <span class="chip">Инструменты</span><span class="chip">Заготовки</span>
+            </div>
+          </div>
+          <h2 class="grp new">Инструменты</h2>
+          <div class="row">
+            <span class="nm">Молот Олдера</span><span class="meta">Оружие · Ранг 2</span>
+          </div>
+          <div class="row"><span class="nm">Клещи</span><span class="meta">Предмет</span></div>
+          <h2 class="grp new">Без раздела</h2>
+          <div class="row">
+            <span class="nm">Фартук мастера</span><span class="meta">Броня · Ранг 1</span>
+          </div>
+          <p class="note">
+            Headings are the source's sections only, not «&lt;source&gt; · &lt;section&gt;». A
+            bare
+            <code>#/tables/homebrew</code> picks the first chip; an anchor picks its source's
+            chip; «Скопировать ссылку» copies the chip's address. With one source, no chip row.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">the same at 360 px</span>
+        <div class="in">
+          <nav class="chips new">
+            <a class="chip on">Мастерская Олдера <small>9</small></a>
+            <a class="chip">Привал у костра <small>12</small></a>
+            <a class="chip">Хоумбрю <small>3</small></a>
+          </nav>
+          <h2 class="grp">Инструменты</h2>
+          <div class="row"><span class="nm">Молот Олдера</span></div>
+          <p class="note">
+            The chip row wraps; 21 chips (20 sources and «Хоумбрю») take about four lines.
+          </p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

@@ -9,6 +9,17 @@
   removals), `ImportPanel.svelte` and the goldens; check the file lists and
   the golden lists of section 7 against the tree after R7h's closeout. The
   design does not depend on them.
+- R7h re-plan (2026-10-06; owner R1, 2026-10-03): superseded in part,
+  re-plan at dispatch. R7h's W1 (`issues/persist-7h-homebrew-page/plan.md`
+  2.8, batches `B7h.3` and `B7h.4`) ships the item address `#/h/<uuid>`
+  (the item's own id, read by anyone through `get_homebrew_item`), live
+  links to any item in a list, «Сохранить себе», the list change log, the
+  conversion of every frozen copy, and D71. Not built any more: 3.1
+  (`homebrew_shares` and its three functions), 3.2 (contract case P), 3.4
+  (the share panel), the token page of 3.5, the frozen-copy add of 3.6, and
+  most strings of 3.10. Still owed by R9: the print routes of 3.7 and D70
+  (now `#/print/h/<uuid>` and `#/print/s/<token>/<ids>`), D65 (3.8), the
+  `#/s/` loading state.
 - NEEDS_HUMAN_CONFIRMATION: no - the owner answered Q9-1 to Q9-5 on
   2026-10-02 (section 9); the batches follow the answers.
 - Plan review: required before B9.1 (trigger: a migration with three

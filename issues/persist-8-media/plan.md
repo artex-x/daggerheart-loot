@@ -7,6 +7,15 @@
   `B9.1` and `B9.2` add `get_shared_homebrew`, `#/h/<token>`,
   `#/print/h/<token>` and «Сохранить себе», which this plan extends; check
   section 3 and the file lists against the tree after R9's closeout.
+- R7h re-plan (2026-10-06; owner R1, 2026-10-03): refresh at dispatch.
+  After R7h's `B7h.3` no snapshot is stored (`list_entries.snapshot` is
+  dropped; a list holds live links by `hb_item`), so the
+  `homebrew_snapshot_valid` row of 3.1, the frozen-copy picture of 3.5 and
+  Q8-5 change: `img` reaches readers through R7h's `get_homebrew_item`,
+  `get_homebrew_items` and `get_shared_list`, not R9's
+  `get_shared_homebrew`; R9's `#/h/<token>` is R7h's `#/h/<uuid>`;
+  «Сохранить себе» is R7h's (`B7h.4`), and Q8-6's file copy applies to it.
+  Q8-7 is unchanged: the lists file v2 still writes snapshots.
 - NEEDS_HUMAN_CONFIRMATION: no - the owner answered Q8-1 to Q8-8 on
   2026-10-02 (section 9): decision 40's Edge Function stays, and CI deploys it
   with two project-scoped tokens (Q8-1 B and follow-ups); Q8-4 takes the item limit + 5. The batches follow the answers.

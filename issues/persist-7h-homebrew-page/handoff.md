@@ -2,63 +2,71 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (owner answered plan.md section 7.4 on 2026-10-03; next: the planner pass)
+- Task status: in_progress (re-planned 2026-10-06 with W1-W6; next: the plan review, then `B7h.1`)
 - Last agent: planner
 - NEEDS_HUMAN_CONFIRMATION: no
-- Branch: `main`
-- Base / starting commit: R7d's closing commit (not yet made; HEAD at planning was `d82e3e1f`, R7d `B7d.1`)
+- Branch: `claude/r7h-homebrew-replan-275175` (planning); the release branch is the orchestrator's choice
+- Base / starting commit: `70fe5598` (on `d997f4f0`, origin/main; R7d closed and live)
 - Pushed: no
 
 ## Completed
-- Batch name/id: none. The planner wrote `context.md`, `plan.md` and mock m01.
+- Batch name/id: none. The planner re-planned the release: `plan.md`
+  sections 2-9 (six batches), mocks m02-m05, `context.md` refreshed, and a
+  Status note in the R9 and R8 plans.
 - What shipped: nothing.
-- Files changed: `issues/persist-7h-homebrew-page/` only.
+- Files changed: `issues/persist-7h-homebrew-page/`,
+  `issues/persist-9-item-share/plan.md`, `issues/persist-8-media/plan.md`.
 - Previous sha (batch diff base): -
-- Deviations and rationale: -
-- Review: plan review not required (no trigger fired; `plan.md` Status); a
-  batch review is recommended for `B7h.1`.
+- Deviations and rationale: the 2026-10-02 single batch `B7h.1` is gone;
+  its items 2.1-2.6 are kept and placed in `B7h.5` (2.1-2.5) and `B7h.6`
+  (2.6), as the owner's R2 moves the search and the counter onto the tabs.
+- Review: plan review required before `B7h.1` (`plan.md` Status names the
+  triggers); report to `issues/persist-7h-homebrew-page/reviews/plan-B7h.1.md`.
 
 ## Verification
-- Commands run (exact): none (planning only).
-- Results: the switch mock m01 renders in the Browser pane.
+- Commands run (exact): `npx prettier --check .` (result in the commit
+  report).
+- Results: planning only; the mocks open from `mocks/index.html`.
 - Gates: none.
 
 ## Next batch (implement-ready)
-- Name: `B7h.1` - the homebrew page fixes (`plan.md` section 3).
-- Objective: the «?» off «Ранг» and «Урон» with rule 15's principle; the
-  `#/homebrew` search from the eighth item and the counter at the head of
-  the rows (rule 1); the 300-item measurement, paging only if slow; the
-  «Карты» search; the «Хоумбрю» chip replaced by the switch «Свои
-  предметы» on `#/search` and in the equipment tables.
-- In scope: `plan.md` 2.1-2.6.
-- Out of scope: anything of R7d (import, export, move, zip); a search on
-  `#/tables/homebrew`; a stored switch or query.
+- Name: `B7h.1` - W2: the scheduled clean-up in the database (`plan.md`
+  section 3).
+- Objective: `public.lifecycle_cleanup()` deletes lifecycle rows past their
+  retention, `pg_cron` runs it hourly, `create_purchase_request` loses its
+  write-time delete, the usage report warns on overdue rows, and the law is
+  a decision file.
+- In scope: `plan.md` 2.7 and section 3.
+- Out of scope: the change log (B7h.3), every screen and string.
 - Files expected: `plan.md` section 3, "Files to create" and "Files to
-  edit"; refresh both against the tree after R7d's closeout.
-- Steps: `plan.md` section 3, steps 1-7.
-- Acceptance criteria: C1-C7.
-- Verification commands: `rtk npm run check` (Bash, timeout 600000);
-  `npm run build:test`; `npm run check:built`; `node tests/run-all.js
-  app/states`; `node tests/run-all.js app/contracts`; `node
-  tests/app/golden.js --shard=n/4` (four calls, compare, then a re-seed of
-  the named states; a `--only` starting with `#/` needs
-  `MSYS_NO_PATHCONV=1`); `node tests/app/sweep.js 360`; `rtk npm run check`
-  again after the re-seed.
-- Risks / do-nots: memory only for the switch and the query; keep the other
-  editor hints; reduced motion is forced in the browser suite.
-- Fallback (optional): if 2.4's thresholds fail, the fold of 100 rows with
-  «Показать ещё», then measure again.
+  edit".
+- Steps: `plan.md` section 3, steps 1-9 (step 1 probes `pg_cron` on the
+  local stack and stops if it cannot be created).
+- Acceptance criteria: `plan.md` section 3, "Acceptance".
+- Verification commands: `npm run check:db` (PowerShell tool);
+  `rtk npm run check` (Bash, timeout 600000); after the batch review
+  approves: `npm run db:push -- --project test`, then `npm run e2e`.
+- Risks / do-nots: no execute grant on the function; never delete inside a
+  retention or the newest share row of an audience; no production push.
+- Fallback (optional): if `pg_cron` cannot be created locally or on the
+  test project, stop and report; option C of 2.7 (a step of `usage.yml`)
+  needs the planner.
 
 ## Blockers
-- None. Next: a planner pass re-plans the widened release (W1-W5) with the answers in `plan.md` section 7.4.
-- R7d must close first (owner's release order).
+- The plan review (`plan.md` Status) before the first implementer dispatch.
 
 ## Deferred
-- None.
+- To the owner, not `DEBT.md`: an author-side count of other players'
+  lists that link an item before a delete; live updates on `#/h/` through
+  a topic (`plan.md` section 9).
 
 ## Notes
-- Mocks path: `issues/persist-7h-homebrew-page/mocks/index.html` (m01).
-- Screenshot findings: none from the owner.
+- Mocks path: `issues/persist-7h-homebrew-page/mocks/index.html` (m01-m05).
+- Screenshot findings: 01 (author) and 02 (reader of a frozen copy) differ
+  in «Получается из» and the set members; W1's acceptance line closes it.
+  The «(НВ)» look is the Latin «(HB)»: `hbTag` is `'%s (HB)'` in both
+  languages of `lib/dict.ts` (checked 2026-10-06); no change.
 - Cleanup performed / retained artifacts: none.
 - Session end partial progress (if any): none.
-- Durable items written to their homes this batch (file, section): none.
+- Durable items written to their homes this batch (file, section): none
+  (the decision files are written by the batches that establish them).

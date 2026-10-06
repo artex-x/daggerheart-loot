@@ -7,11 +7,9 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
   (2026-10-02) so R7d's import and export go live first. After R7d, before
   R9 (roadmap row in `issues/persistent-storage/plan.md`, written by the
   orchestrator).
-- Six items, one batch `B7h.1` (`plan.md`): the «?» removed from «Ранг» and
-  «Урон» with rule 15's principle; a search box on `#/homebrew` from the
-  eighth item; the item counter at the head of the rows (rule 1); a
-  measurement at 300 items, paging only if slow; the «Карты» search from the
-  eighth card; the «Хоумбрю» chip becomes the switch «Свои предметы».
+- Widened by the rework W1-W6 (below); six batches `B7h.1`-`B7h.6`
+  (`plan.md`, re-planned 2026-10-06). The six page fixes of 2026-10-02 stay
+  as `plan.md` 2.1-2.6, placed in `B7h.5` and `B7h.6`.
 
 ## GitHub issue (if any)
 - URL: none (owner requests in chat, 2026-10-02).
@@ -43,8 +41,8 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
 - Open questions: none.
 
 ## Screenshot / attachment findings
-- None from the owner. Mock: `mocks/m01-page-and-switch.html` (planner,
-  2026-10-02, from R7d's m16 markup).
+- Owner screenshots 01 and 02 (below). Mocks m01-m05 (planner, 2026-10-02
+  and 2026-10-06; `mocks/index.html`).
 
 ## Key paths
 - Specs: `docs/specs/FEATURES.md` ("Tables and search" - "The «Хоумбрю»
@@ -162,6 +160,30 @@ the planner decides how to batch it (`plan.md` section 7).
   snapshots needs a migration path for stored rows (no silent loss).
 - RU/EN for every text; the consistency rules 1-16 in `FEATURES.md`.
 - Scale target: 3x the default limits.
+
+## Facts found by the re-plan (planner, 2026-10-06)
+
+- Keys are unique per owner only (`unique (owner_id, key)`); a homebrew file
+  imported into a second account carries the same keys. `homebrew_items.id`
+  is a client-made uuid.
+- Set membership and rule-card use live on the item (`content.set`,
+  `content.refs`, at most 3); `homebrew_cards` holds only the card text,
+  kind and source.
+- `create_purchase_request` deletes decided rows (24 h after the decision)
+  and pending expired rows (24 h after expiry) only when a new request is
+  sent; no index on `decided_at` or `expires_at`. Revoked `list_shares` rows
+  are never deleted. No `pg_cron` use exists in the repository; scheduled
+  jobs are GitHub workflows (`backup.yml` 03:17, `usage.yml` 03:47 with
+  `SUPABASE_DB_URL_PROD`, `previews.yml`).
+- Functions that read or write `list_entries.snapshot`: `get_shared_list`,
+  `clone_shared_list`, `apply_list_writes`, `import_lists`,
+  `list_entries_snapshot_limit`, the homebrew touch and delete triggers,
+  `list_entries_reference_exists`.
+- `#/tables/homebrew`: the second slot is an anchor (section, source, `hb`
+  or item key) or a filter `f_...` (groups `kind`, `src`, `sect`), never
+  both; the facet panel has a `src` and a `sect` row and no `kind` row.
+- The «(HB)» marker is Latin in `lib/dict.ts` (`hbTag`).
+- Lifecycle audit: `plan.md` 2.7 (findings A1-A10 and their placement).
 
 ## Do not re-fetch unless
 - Human provides new info
