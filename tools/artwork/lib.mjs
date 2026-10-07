@@ -444,3 +444,461 @@ export function planIngest({ sources, records, missingAssets, map }) {
     }
   };
 }
+
+/* ---------- image review (docs/artwork.md, "Image review") ----------
+   Pure functions over plain data for tools/artwork/review/. No clock, no
+   globals: the page passes the date in. */
+
+// The catalog in the order tools/derived.js `everything()` uses.
+export function catalogRecords(L) {
+  return [].concat(...Object.values(L.items), L.eq);
+}
+
+// { [asset]: iso | 'uncommitted' } from `git log --format=@%cI --name-only
+// --no-renames -- img/` (newest commit first) and `git status --porcelain
+// --untracked-files=all -- img/`. Thumbnails under img/thumb/ are ignored.
+export function parseImageDates(logText, statusText) {
+  const dates = {};
+  let current = null;
+  for (const line of String(logText || '').split(/\r?\n/)) {
+    if (line.startsWith('@')) {
+      current = line.slice(1).trim();
+      continue;
+    }
+    const m = /^img\/([^/]+\.webp)$/.exec(line.trim());
+    if (m && current && !(m[1] in dates)) dates[m[1]] = current;
+  }
+  for (const line of String(statusText || '').split(/\r?\n/)) {
+    if (line.length < 4) continue;
+    let path = line.slice(3);
+    const arrow = path.indexOf(' -> ');
+    if (arrow >= 0) path = path.slice(arrow + 4);
+    const m = /^img\/([^/]+\.webp)$/.exec(path.trim());
+    if (m) dates[m[1]] = 'uncommitted';
+  }
+  return dates;
+}
+
+// { all, ids } from a location.search string.
+export function parseReviewQuery(search) {
+  const params = new URLSearchParams(String(search || ''));
+  const ids = [];
+  for (const part of (params.get('ids') || '').split(',')) {
+    const id = part.trim();
+    if (id && !ids.includes(id)) ids.push(id);
+  }
+  return { all: params.get('all') === '1', ids };
+}
+
+function validVerdict(verdicts, asset, shas) {
+  const v = verdicts[asset];
+  return v && shas[asset] && v.sha256 === shas[asset] ? v : null;
+}
+
+function dateRank(date) {
+  if (date === undefined) return 3;
+  if (date === 'uncommitted') return 2;
+  return 1;
+}
+
+// One card per distinct `img` value, oldest picture first (the order is
+// documented in docs/artwork.md, "Image review").
+export function buildDeck({ records, dates, shas, verdicts, query }) {
+  const groups = new Map();
+  for (const r of records) {
+    if (!r.img) continue;
+    if (!groups.has(r.img)) groups.set(r.img, []);
+    groups.get(r.img).push(r);
+  }
+  const missingFiles = [];
+  let candidates = [];
+  for (const [asset, list] of groups) {
+    if (!(asset in shas)) {
+      missingFiles.push(asset);
+      continue;
+    }
+    candidates.push({ asset, list, index: candidates.length });
+  }
+  const unknownIds = [];
+  if (query.ids.length) {
+    const known = new Set(records.map((r) => r.id));
+    for (const id of query.ids) if (!known.has(id)) unknownIds.push(id);
+    const wanted = new Set(query.ids);
+    candidates = candidates.filter((c) => c.list.some((r) => wanted.has(r.id)));
+  }
+  const total = candidates.length;
+  let skippedKeep = 0;
+  let skippedRegen = 0;
+  const cards = [];
+  for (const c of candidates) {
+    const verdict = validVerdict(verdicts, c.asset, shas);
+    if (verdict && !query.all) {
+      if (verdict.verdict === 'keep') skippedKeep++;
+      else skippedRegen++;
+      continue;
+    }
+    cards.push({
+      asset: c.asset,
+      id: c.list[0].id,
+      record: c.list[0],
+      others: c.list.slice(1),
+      date: dates[c.asset],
+      sha256: shas[c.asset],
+      verdict: verdict ? verdict.verdict : null,
+      index: c.index
+    });
+  }
+  cards.sort((a, b) => {
+    const ra = dateRank(a.date);
+    const rb = dateRank(b.date);
+    if (ra !== rb) return ra - rb;
+    if (ra === 1) {
+      const d = Date.parse(a.date) - Date.parse(b.date);
+      if (d !== 0) return d;
+    }
+    return a.index - b.index;
+  });
+  for (const c of cards) delete c.index;
+  return { cards, total, skippedKeep, skippedRegen, unknownIds, missingFiles };
+}
+
+const MAX_COMMENT = 500;
+const SHA_HEX = /^[0-9a-f]{64}$/;
+
+function cleanComment(text) {
+  if (typeof text !== 'string') return '';
+  return text.trim().slice(0, MAX_COMMENT).trim();
+}
+
+// Reads the localStorage text of `dhl-image-review`.
+export function readVerdicts(text) {
+  if (text === null || text === undefined || text === '') return { ok: true, verdicts: {} };
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return { ok: false, reason: 'unreadable' };
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { ok: false, reason: 'unreadable' };
+  }
+  if (data.v !== 1) return { ok: false, reason: 'version ' + String(data.v) };
+  const verdicts = {};
+  const stored = data.verdicts && typeof data.verdicts === 'object' ? data.verdicts : {};
+  for (const [asset, e] of Object.entries(stored)) {
+    if (!e || typeof e !== 'object') continue;
+    if (e.verdict !== 'keep' && e.verdict !== 'regen') continue;
+    if (typeof e.sha256 !== 'string' || !SHA_HEX.test(e.sha256)) continue;
+    const entry = {
+      verdict: e.verdict,
+      sha256: e.sha256,
+      at: typeof e.at === 'string' ? e.at : ''
+    };
+    if (
+      e.verdict === 'regen' &&
+      typeof e.comment === 'string' &&
+      e.comment.length > 0 &&
+      e.comment.length <= MAX_COMMENT
+    ) {
+      entry.comment = e.comment;
+    }
+    verdicts[asset] = entry;
+  }
+  return { ok: true, verdicts };
+}
+
+// A new verdicts object; `verdict: null` removes the entry.
+export function setVerdict(verdicts, { asset, verdict, sha256, at, comment }) {
+  if (verdict === null) {
+    return Object.fromEntries(Object.entries(verdicts).filter(([name]) => name !== asset));
+  }
+  const out = { ...verdicts };
+  const entry = { verdict, sha256, at };
+  const text = cleanComment(comment);
+  if (verdict === 'regen' && text) entry.comment = text;
+  out[asset] = entry;
+  return out;
+}
+
+// A new verdicts object whose `regen` entry of `asset` has the comment
+// (empty removes it); every other field stays.
+export function setComment(verdicts, asset, text) {
+  const entry = verdicts[asset];
+  if (!entry || entry.verdict !== 'regen') return verdicts;
+  const next = { ...entry };
+  delete next.comment;
+  const value = cleanComment(text);
+  if (value) next.comment = value;
+  return { ...verdicts, [asset]: next };
+}
+
+// Drops the entries whose picture is gone or whose bytes changed.
+export function pruneVerdicts(verdicts, shas) {
+  const out = {};
+  for (const [asset, e] of Object.entries(verdicts)) {
+    if (shas[asset] && shas[asset] === e.sha256) out[asset] = e;
+  }
+  return out;
+}
+
+// [{ id, comment }]: the valid `regen` verdicts, one per picture under its
+// anchor id, in catalog order.
+export function pendingRegen({ records, verdicts, shas }) {
+  const seen = new Set();
+  const list = [];
+  for (const r of records) {
+    if (!r.img || seen.has(r.img)) continue;
+    seen.add(r.img);
+    const v = validVerdict(verdicts, r.img, shas);
+    if (v && v.verdict === 'regen') list.push({ id: r.id, comment: v.comment || null });
+  }
+  return list;
+}
+
+// The list format of docs/artwork.md, "Image review", "The list format".
+export function regenJson(list) {
+  const obj = {};
+  for (const { id, comment } of list) obj[id] = comment;
+  return JSON.stringify(obj, null, 2);
+}
+
+export const REVIEW_KEYS = {
+  start: {
+    Enter: 'start',
+    ArrowRight: 'start',
+    'Shift+Delete': 'forget',
+    l: 'lang',
+    L: 'lang'
+  },
+  card: {
+    ArrowRight: 'keep',
+    ArrowLeft: 'regen',
+    'Shift+ArrowLeft': 'regenComment',
+    ArrowUp: 'undo',
+    Backspace: 'undo',
+    ArrowDown: 'finish',
+    Enter: 'finish',
+    l: 'lang',
+    L: 'lang'
+  },
+  comment: { Enter: 'save', Escape: 'cancel' },
+  end: {
+    c: 'copy',
+    C: 'copy',
+    ArrowUp: 'prev',
+    ArrowDown: 'next',
+    e: 'edit',
+    E: 'edit',
+    Escape: 'back',
+    l: 'lang',
+    L: 'lang'
+  }
+};
+
+export function reviewKeyAction(mode, key) {
+  const table = REVIEW_KEYS[mode];
+  return table && Object.hasOwn(table, key) ? table[key] : null;
+}
+
+const IMG_NAME = /^[A-Za-z0-9_-]+$/;
+const LIB_NAME = /^[A-Za-z0-9]+$/;
+const JS = 'text/javascript; charset=utf-8';
+const REVIEW_FILES = {
+  '/data.js': ['data.js', JS],
+  '/app/src/styles/tokens.css': ['app/src/styles/tokens.css', 'text/css; charset=utf-8'],
+  '/tools/artwork/lib.mjs': ['tools/artwork/lib.mjs', JS],
+  '/tools/artwork/review/index.html': [
+    'tools/artwork/review/index.html',
+    'text/html; charset=utf-8'
+  ],
+  '/tools/artwork/review/review.mjs': ['tools/artwork/review/review.mjs', JS]
+};
+
+// The allowlist of the read-only review server.
+export function reviewRoute(pathname) {
+  if (pathname === '/') return { redirect: '/tools/artwork/review/index.html' };
+  if (pathname === '/review-state.json') return { state: true };
+  if (pathname === '/card.css') return { css: true };
+  if (Object.hasOwn(REVIEW_FILES, pathname)) {
+    const [file, type] = REVIEW_FILES[pathname];
+    return { file, type };
+  }
+  let m = /^\/img\/(thumb\/)?([^/]+)\.webp$/.exec(pathname);
+  if (m && IMG_NAME.test(m[2])) {
+    return { file: 'img/' + (m[1] || '') + m[2] + '.webp', type: 'image/webp' };
+  }
+  m = /^\/app\/src\/lib\/([^/]+)\.js$/.exec(pathname);
+  if (m && LIB_NAME.test(m[1])) {
+    return { ts: 'app/src/lib/' + m[1] + '.ts', type: JS };
+  }
+  return null;
+}
+
+// 'en' for exactly 'en', else 'ru'.
+export function readLang(text) {
+  return text === 'en' ? 'en' : 'ru';
+}
+
+// Index of the `)` that closes the `(` at `open`, or -1.
+function closingParen(text, open) {
+  let depth = 0;
+  for (let i = open; i < text.length; i++) {
+    if (text[i] === '(') depth++;
+    else if (text[i] === ')' && --depth === 0) return i;
+  }
+  return -1;
+}
+
+function unwrapGlobal(css) {
+  const marker = ':global(';
+  let out = css;
+  for (;;) {
+    const at = out.indexOf(marker);
+    if (at < 0) return out;
+    const open = at + marker.length - 1;
+    const close = closingParen(out, open);
+    if (close < 0) throw new Error('unbalanced :global( in a style block');
+    out = out.slice(0, at) + out.slice(open + 1, close) + out.slice(close + 1);
+  }
+}
+
+// The `<style>` content of each Svelte source, each `:global(<x>)` unwrapped
+// to `<x>`, joined in order.
+export function cardCss(texts) {
+  return texts
+    .map((text, n) => {
+      const m = /<style[^>]*>([\s\S]*?)<\/style>/.exec(text);
+      if (!m) throw new Error(n + ': no <style> block');
+      return unwrapGlobal(m[1]);
+    })
+    .join('\n');
+}
+
+// The bodies of every rule whose selector is exactly `selector` (a rule
+// inside an @media block counts), joined by a newline.
+export function ruleBody(css, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp('(?:^|[\\n}{])\\s*' + escaped + '\\s*\\{', 'g');
+  const bodies = [];
+  let m;
+  while ((m = re.exec(css))) {
+    const start = m.index + m[0].length;
+    const end = css.indexOf('}', start);
+    bodies.push(css.slice(start, end < 0 ? css.length : end));
+  }
+  return bodies.join('\n');
+}
+
+// Every class renderCard and the header toggle put on an element.
+export const REVIEW_CARD_CLASSES = [
+  'card',
+  'full',
+  'card-media',
+  'card-body',
+  'card-meta',
+  'card-name',
+  'eqstats',
+  'card-desc',
+  'badge',
+  'num',
+  'src',
+  'item',
+  'cons',
+  'eq-weapon',
+  'eq-secondary',
+  'eq-armor',
+  'uniq',
+  'tier',
+  'seg',
+  'on'
+];
+
+const COMPONENTS = 'app/src/components/';
+
+// The sizes at which the app draws item art, each with the declarations in
+// the rule it is read from. The guard is in lib.test.mjs.
+export const REVIEW_ART_SIZES = [
+  {
+    label: 'tile 168',
+    px: 168,
+    dir: 'img/',
+    radius: 0,
+    file: COMPONENTS + 'TableRows.svelte',
+    selector: '.tgrid',
+    declarations: ['minmax(168px, 1fr)']
+  },
+  {
+    label: 'list card 132',
+    px: 132,
+    dir: 'img/',
+    radius: 0,
+    file: COMPONENTS + 'RecordCard.svelte',
+    selector: '.card.compact .card-media',
+    declarations: ['width: 132px']
+  },
+  {
+    label: 'phone card 96',
+    px: 96,
+    dir: 'img/',
+    radius: 0,
+    file: COMPONENTS + 'RecordCard.svelte',
+    selector: '.card.compact .card-media',
+    declarations: ['width: 96px']
+  },
+  {
+    label: 'row 60, thumb',
+    px: 60,
+    dir: 'img/thumb/',
+    radius: 8,
+    file: COMPONENTS + 'RowMain.svelte',
+    selector: '.row-main img',
+    declarations: ['width: 60px', 'border-radius: 8px']
+  },
+  {
+    label: 'lists 40, thumb',
+    px: 40,
+    dir: 'img/thumb/',
+    radius: 7,
+    file: COMPONENTS + 'ListCard.svelte',
+    selector: '.listcard-thumbs img',
+    declarations: ['width: 40px', 'border-radius: 7px']
+  }
+];
+
+// The lines of RecordCard.svelte that the card-drift rule pins: the
+// derivations of the card head and its markup from card-meta to the end of
+// card-desc, each line trimmed.
+export function cardHeadSource(svelteText) {
+  const lines = svelteText.split(/\r?\n/);
+  const find = (pred, from, what) => {
+    const i = lines.findIndex((l, n) => n >= from && pred(l));
+    if (i < 0) throw new Error('RecordCard.svelte has no ' + what);
+    return i;
+  };
+  const a = find((l) => l.trim() === 'const t = $derived(dict(lang));', 0, 'dict derivation');
+  const b = find((l) => l.trim().startsWith('const badges ='), a, 'badges derivation');
+  const c = find((l) => l.trim() === '<div class="card-meta">', b, 'card-meta row');
+  const d = find((l) => l.trim() === '<div class="card-desc">', c, 'card-desc block');
+  const indent = /^\s*/.exec(lines[d])[0];
+  const e = find((l) => l === indent + '</div>', d, 'end of card-desc');
+  return lines
+    .slice(a, b + 1)
+    .concat(lines.slice(c, e + 1))
+    .map((l) => l.trim())
+    .join('\n');
+}
+
+// Transpiles one app/src/lib TypeScript module to an ES module; `ts` is the
+// repository's own `typescript` package, passed in so this file keeps no import.
+export function transpileLibSource(ts, source) {
+  return ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 }
+  }).outputText;
+}
+
+// [command, args] that opens `url` in the default browser.
+export function openCommand(platform, url) {
+  if (platform === 'win32') return ['cmd', ['/c', 'start', '', url]];
+  if (platform === 'darwin') return ['open', [url]];
+  return ['xdg-open', [url]];
+}

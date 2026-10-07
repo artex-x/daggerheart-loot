@@ -12,24 +12,38 @@
   machine where `tools/artwork/node_modules/` does not exist.
 */
 import { createHash } from 'node:crypto';
+import { execFileSync, spawn } from 'node:child_process';
 import {
   readFileSync,
   writeFileSync,
   renameSync,
   readdirSync,
   existsSync,
-  mkdirSync
+  mkdirSync,
+  statSync
 } from 'node:fs';
+import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { planInstall, planIngest, planThumbs, affectedStubUrls, staleDelta } from './lib.mjs';
+import {
+  planInstall,
+  planIngest,
+  planThumbs,
+  affectedStubUrls,
+  staleDelta,
+  parseImageDates,
+  reviewRoute,
+  cardCss,
+  transpileLibSource,
+  openCommand
+} from './lib.mjs';
 
 const require = createRequire(import.meta.url);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, '..', '..');
 
-const VERBS = ['plan', 'install', 'verify', 'verify-previews', 'ingest', 'thumbs'];
+const VERBS = ['plan', 'install', 'verify', 'verify-previews', 'ingest', 'thumbs', 'review'];
 
 // The settings measured across three refreshes and documented once, in
 // docs/artwork.md - not restated anywhere else in the repository.
@@ -57,6 +71,10 @@ function parseFlags(argv) {
     const a = argv[i];
     if (a === '--dry-run') {
       out.dryRun = true;
+      continue;
+    }
+    if (a === '--open') {
+      out.open = true;
       continue;
     }
     if (!a.startsWith('--')) throw new Error('unexpected argument: ' + a);
@@ -589,6 +607,158 @@ async function verbVerifyPreviews(flags) {
   return delta.ok ? 0 : 1;
 }
 
+// The read-only image review server (docs/artwork.md, "Image review"). It
+// serves an allowlist of files, the card CSS of the app's own components,
+// the transpiled app/src/lib/ modules and the picture dates and hashes. It
+// writes nothing and never imports `sharp`.
+const CARD_COMPONENTS = ['RecordCard', 'Badge', 'Seg'].map(
+  (n) => 'app/src/components/' + n + '.svelte'
+);
+
+function reviewState(repo) {
+  const git = (args) =>
+    execFileSync('git', ['-c', 'core.quotepath=off', ...args], {
+      cwd: repo,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024
+    });
+  const dates = parseImageDates(
+    git(['log', '--format=@%cI', '--name-only', '--no-renames', '--', 'img/']),
+    git(['status', '--porcelain', '--untracked-files=all', '--', 'img/'])
+  );
+  const shas = {};
+  for (const name of webpNames(join(repo, 'img'))) {
+    shas[name] = sha256(readFileSync(join(repo, 'img', name)));
+  }
+  return { dates, shas };
+}
+
+function verbReview(flags) {
+  const repo = flags.repo || REPO_ROOT;
+  const port = flags.port === undefined ? 4791 : Number(flags.port);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error('--port needs a number from 1 to 65535: ' + flags.port);
+  }
+  let tsModule = null;
+  const transpiled = new Map();
+
+  function send(res, status, type, body) {
+    res.writeHead(status, { 'Content-Type': type, 'Cache-Control': 'no-store' });
+    res.end(body);
+  }
+
+  function handle(req, res) {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      send(res, 405, 'text/plain; charset=utf-8', 'method not allowed');
+      return;
+    }
+    let url;
+    try {
+      url = new URL(req.url, 'http://x');
+    } catch {
+      send(res, 400, 'text/plain; charset=utf-8', 'bad request target');
+      return;
+    }
+    const route = reviewRoute(url.pathname);
+    if (!route) {
+      send(res, 404, 'text/plain; charset=utf-8', 'not found');
+      return;
+    }
+    if (route.redirect) {
+      // The query (?all=1, ?ids=) travels with the redirect.
+      res.writeHead(302, {
+        Location: route.redirect + url.search,
+        'Cache-Control': 'no-store'
+      });
+      res.end();
+      return;
+    }
+    try {
+      if (route.state) {
+        send(res, 200, 'application/json; charset=utf-8', JSON.stringify(reviewState(repo)));
+      } else if (route.css) {
+        const texts = CARD_COMPONENTS.map((f) => readFileSync(join(REPO_ROOT, f), 'utf8'));
+        send(res, 200, 'text/css; charset=utf-8', cardCss(texts));
+      } else if (route.ts) {
+        const path = join(REPO_ROOT, route.ts);
+        let mtime;
+        try {
+          mtime = statSync(path).mtimeMs;
+        } catch {
+          send(res, 404, 'text/plain; charset=utf-8', 'not found');
+          return;
+        }
+        let hit = transpiled.get(path);
+        if (!hit || hit.mtime !== mtime) {
+          if (!tsModule) {
+            try {
+              tsModule = createRequire(join(REPO_ROOT, 'package.json'))('typescript');
+            } catch {
+              send(
+                res,
+                500,
+                'text/plain; charset=utf-8',
+                'typescript is not installed: run npm ci at the repository root'
+              );
+              return;
+            }
+          }
+          hit = { mtime, text: transpileLibSource(tsModule, readFileSync(path, 'utf8')) };
+          transpiled.set(path, hit);
+        }
+        send(res, 200, route.type, hit.text);
+      } else {
+        let buf;
+        try {
+          // --repo moves only the data and the pictures; the page and the app code are this checkout's.
+          const base =
+            route.file === 'data.js' || route.file.startsWith('img/') ? repo : REPO_ROOT;
+          buf = readFileSync(join(base, route.file));
+        } catch {
+          send(res, 404, 'text/plain; charset=utf-8', 'not found');
+          return;
+        }
+        send(res, 200, route.type, buf);
+      }
+    } catch (err) {
+      send(
+        res,
+        500,
+        'application/json; charset=utf-8',
+        JSON.stringify({ error: err && err.message ? err.message : String(err) })
+      );
+    }
+  }
+
+  return new Promise((resolve) => {
+    const server = createServer(handle);
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(
+          'port ' +
+            port +
+            ' is in use: stop the other review or pass --port <n>; verdicts are kept per port'
+        );
+      } else {
+        console.error('review server failed: ' + err.message);
+      }
+      resolve(1);
+    });
+    server.listen(port, '127.0.0.1', () => {
+      const url = 'http://127.0.0.1:' + port + '/';
+      log('image review: ' + url + ' (Ctrl+C stops it)');
+      if (flags.open) {
+        const [cmd, args] = openCommand(process.platform, url);
+        const child = spawn(cmd, args, { detached: true, stdio: 'ignore' });
+        child.on('error', (err) => {
+          console.error('could not open a browser: ' + err.message + '; open ' + url);
+        });
+        child.unref();
+      }
+    });
+  });
+}
+
 async function main() {
   const [verb, ...rest] = process.argv.slice(2);
   if (!verb || !VERBS.includes(verb)) {
@@ -603,6 +773,11 @@ async function main() {
   else if (verb === 'verify-previews') process.exitCode = await verbVerifyPreviews(flags);
   else if (verb === 'ingest') process.exitCode = await verbIngest(flags);
   else if (verb === 'thumbs') process.exitCode = await verbThumbs(flags);
+  else if (verb === 'review') {
+    // Resolves only when the server fails; a running server keeps the process alive.
+    const code = await verbReview(flags);
+    if (code) process.exitCode = code;
+  }
 }
 
 main().catch((err) => {

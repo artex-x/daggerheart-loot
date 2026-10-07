@@ -38,6 +38,7 @@ node tools/artwork/run.mjs verify          --uploads <dir> [--repo <dir>] [--map
 node tools/artwork/run.mjs verify-previews --before <f> --after <f> --report <f>
 node tools/artwork/run.mjs ingest          --uploads <dir> [--repo <dir>] [--map <f>] [--report <f>] [--dry-run]
 node tools/artwork/run.mjs thumbs          [--repo <dir>] [--dry-run]
+node tools/artwork/run.mjs review          [--port <n>] [--repo <dir>] [--open]
 ```
 
 `--repo <dir>` defaults to the repository root; point it at a scratch tree
@@ -94,6 +95,8 @@ and `og/` to "try it out" (Risks, below).
   `git rm` - the tool never deletes a committed file. After writing, it
   re-encodes every thumbnail and compares it with the file just written.
   `--dry-run` prints the count and writes nothing.
+- **`review`** - serves the image review page ("Image review", below) from a
+  read-only server on `127.0.0.1`. It writes nothing and needs no encoder.
 
 ## The drop-is-the-ledger precondition
 
@@ -327,6 +330,139 @@ A card's bytes are part of the Telegram fingerprint of the URL that names
 it (`docs/tg-preview.md`). After a re-render, the next `previews.yml` run
 finds the root (or the English root) stale, sends it and presses "Update
 with content"; no manual push is necessary.
+
+## Image review
+
+A developer page that shows each catalog picture as the site's card, oldest
+picture first, so the owner can keep it or mark it for regeneration from the
+keyboard. It needs the root `npm ci` (it transpiles `app/src/lib/` with the
+root `typescript`) and no encoder.
+
+Start it with `npm run review:images`. Expected output:
+`image review: http://127.0.0.1:4791/ (Ctrl+C stops it)`, and the default
+browser opens the page (`node tools/artwork/run.mjs review` alone opens
+nothing). The first load takes about 4 s while the card code transpiles.
+The server only reads: it serves an allowlist of files, the card CSS, the
+transpiled `app/src/lib/` modules and the picture dates and hashes.
+
+Each card shows the picture, the site's card head (badges, name, stat chips,
+description) in RU or EN, then the image date, the asset, the record id and
+the position. A shared picture is one card under its first record, with the
+other records named. Beside the card (under it below 900 px) the same
+picture is drawn at the sizes the site uses: tile 168, list card 132, phone
+card 96 (`img/`), row 60 and lists 40 (`img/thumb/`).
+
+### Keys
+
+| Screen | Key | Action |
+|---|---|---|
+| Start | Enter, Right | start |
+| Start | Shift+Delete | forget all verdicts (asks first) |
+| Card | Right | keep |
+| Card | Left | mark for regeneration, no comment |
+| Card | Shift+Left | open the comment field; Enter marks with the comment, Esc closes it with no mark |
+| Card | Up, Backspace | undo |
+| Card | Down, Enter | finish now |
+| End | C | copy the JSON list |
+| End | Up, Down, E | choose a marked record, edit its comment (Enter saves, Esc cancels) |
+| End | Esc | back to the cards |
+| Every screen | L | switch RU and EN |
+
+A held key and a key with Ctrl, Alt or Meta do nothing. Each action also has
+a button, and the card can be dragged past 30% of its width.
+
+The RU/EN toggle in the header is remembered in the browser (localStorage
+`dhl-image-review-lang`). It switches the card text and labels; the tool's own
+text stays English.
+
+`tools/artwork/review/review.mjs` and the server in `run.mjs` have no unit
+test. After a change to either, run the page against the real server
+(`node tools/artwork/run.mjs review --port 4792`, so the store of port 4791
+stays untouched) and press every key of the table above in a browser, with
+the keyboard only.
+
+### Run modes
+
+| Address | Shows |
+|---|---|
+| `/` | pictures with no valid verdict |
+| `/?all=1` | every picture; stored verdicts are shown and a new decision replaces them |
+| `/?ids=ci2,q4` | only the pictures of those record ids; combines with `all=1` |
+
+### Verdicts
+
+Each decision is saved at once in the browser's localStorage, key
+`dhl-image-review`, per origin: `http://127.0.0.1:4791` by default, so another
+`--port` is another store. An entry is
+`{ "verdict": "keep" or "regen", "sha256", "at", "comment" }` under the
+asset name. It counts only while its `sha256` equals the hash of
+`img/<asset>` now, so a regenerated picture shows again. Another browser or
+cleared site data starts from zero. Shift+Delete on the start screen forgets
+all verdicts; an unreadable store is not overwritten until then.
+
+Pictures come oldest first by the committer date of the last commit that
+touched `img/<asset>.webp`; an uncommitted picture follows every dated one.
+Decisions in one run reach the end screen as the list below, with earlier
+marks whose picture is unchanged.
+
+### The list format
+
+The end screen and C give one JSON object, written with
+`JSON.stringify(obj, null, 2)`.
+
+| Part | Value |
+|---|---|
+| key | the id of the first record that claims the picture |
+| value | the comment, a string of 1 to 500 characters, or `null` |
+| key order | catalog order |
+| empty list | `{}` |
+
+```json
+{
+  "ci2": "lettering on the whistle",
+  "ci8": null
+}
+```
+
+The format is stable. A change to it is a new documented format, never a
+silent one. The re-check address is `/?ids=` followed by the keys joined by
+commas.
+
+### The owner's loop
+
+1. Run `npm run review:images` and review the oldest pictures.
+2. Press Down to finish, then C to copy the list.
+3. Regenerate the listed pictures. The number of keys is the expected item
+   count of "The drop-is-the-ledger precondition", check 1.
+4. Install the drop with the replacement command sequence above.
+5. Open `/?ids=<the keys>` to check the new pictures.
+
+### The card follows the site's card
+
+The page takes from the site, by construction: the card CSS (`/card.css` is
+the `<style>` blocks of `RecordCard.svelte`, `Badge.svelte` and `Seg.svelte`)
+and the labels (`/app/src/lib/*.js` is `app/src/lib/*.ts` transpiled on
+request). It does not take the structure of the card head: `renderCard` in
+`tools/artwork/review/review.mjs` builds it by hand.
+
+The rule, for the same commit:
+
+- A change to the card head of `RecordCard.svelte` (the derivations from
+  `const t = $derived(dict(lang))` to `const badges`, or the markup from
+  `card-meta` to `card-desc`), to `Badge.svelte` or to `Seg.svelte` checks
+  `renderCard`.
+- A change to the size, radius or file of item art in `RecordCard.svelte`,
+  `TableRows.svelte`, `RowMain.svelte` or `ListCard.svelte`, or a new place that
+  draws item art, checks `REVIEW_ART_SIZES` in `tools/artwork/lib.mjs`.
+
+Guards in `tools/artwork/lib.test.mjs`:
+
+| Guard | A failure means |
+|---|---|
+| every class in `REVIEW_CARD_CLASSES` is a selector in the real CSS | a component renamed or dropped a class `renderCard` uses; update `renderCard` and the list |
+| the sha256 of `cardHeadSource` equals `CARD_HEAD_SHA256` | the card head changed; check `renderCard`, then set the constant to the hash in the message |
+| the label modules transpile, load and give the measured values for `q4` | `app/src/lib/` imports outside itself, or a label changed |
+| each `REVIEW_ART_SIZES` declaration is found in its source rule | the site draws item art at another size or file; update the table |
 
 ## Risks
 

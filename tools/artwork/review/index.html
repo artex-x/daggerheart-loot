@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Image review</title>
+    <link rel="stylesheet" href="/app/src/styles/tokens.css" />
+    <link rel="stylesheet" href="/card.css" />
+    <style>
+      /* Only the tool's own rules. The card, badge and segmented control come from
+         /card.css (the app's components); the colours and the page base from
+         tokens.css (docs/artwork.md, "The card follows the site's card"). */
+      .wrap {
+        width: min(900px, 100% - 32px);
+        margin: 0 auto;
+        padding: 18px 0 32px;
+      }
+      .head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .head h1 {
+        margin: 0;
+        font-size: var(--h-page-size);
+        font-weight: var(--h-page-weight);
+        letter-spacing: var(--h-page-spacing);
+      }
+      .progress {
+        font: 600 12.5px/1.4 var(--mono);
+        color: var(--muted);
+      }
+      .progress b {
+        color: var(--txt);
+        font-weight: 650;
+      }
+      .progress .regen {
+        color: var(--danger-text);
+      }
+      .warning {
+        margin: 0 0 12px;
+        padding: 8px 12px;
+        font-size: 12.5px;
+        color: var(--danger-text);
+        background: var(--warn-bg);
+        border: 1px solid var(--warn-line);
+        border-radius: var(--r-sm);
+      }
+
+      /* Departures of the review: the whole picture and the text fit, and the swipe
+         replaces the entrance animation. */
+      .review .card {
+        animation: none;
+        transition:
+          transform 0.22s ease,
+          opacity 0.22s ease;
+        touch-action: pan-y;
+        position: relative;
+      }
+      .review .card.dragging {
+        transition: none;
+      }
+      .review .card.out-right {
+        transform: translateX(60%) rotate(8deg);
+        opacity: 0;
+      }
+      .review .card.out-left {
+        transform: translateX(-60%) rotate(-8deg);
+        opacity: 0;
+      }
+      .review .card-body > #c-head {
+        display: contents;
+      }
+      .review .card.full .card-media {
+        max-height: 46vh;
+      }
+      .review .card.full .card-media img {
+        object-fit: contain;
+      }
+      .media-error {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        padding: 12px;
+        text-align: center;
+        font: 600 12.5px/1.4 var(--mono);
+        color: var(--danger-text);
+      }
+
+      .facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        font: 600 11.5px/1.4 var(--mono);
+        color: var(--muted2);
+      }
+      .facts b {
+        color: var(--gold-soft);
+        font-weight: 650;
+      }
+      .shared {
+        font-size: 12.5px;
+        line-height: 1.45;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+        padding-top: 8px;
+      }
+      .shared span {
+        color: var(--muted2);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 10.5px;
+        margin-right: 6px;
+      }
+
+      .keys {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        margin-top: 12px;
+      }
+      .keys button {
+        font: 600 12.5px/1.3 var(--ui);
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        padding: 7px 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+      }
+      .keys button.regen {
+        color: var(--danger-text);
+        border-color: var(--warn-line);
+      }
+      .keys button.keep {
+        color: var(--cons);
+        border-color: color-mix(in srgb, var(--cons) 45%, transparent);
+      }
+      kbd {
+        font: 650 11px/1 var(--mono);
+        color: var(--txt);
+        background: var(--bg2);
+        border: 1px solid var(--line2);
+        border-radius: 5px;
+        padding: 3px 6px;
+      }
+      .subkeys {
+        margin-top: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .panel {
+        max-width: 680px;
+        background: linear-gradient(180deg, var(--surface2), var(--surface));
+        border: 1px solid var(--line);
+        border-radius: var(--r);
+        box-shadow: var(--shadow);
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .panel h2 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 680;
+      }
+      .mode {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 13.5px;
+      }
+      .mode .on {
+        color: var(--gold-soft);
+        font-weight: 650;
+      }
+      .mode .off {
+        color: var(--muted2);
+      }
+      code {
+        font: 600 12.5px var(--mono);
+        color: var(--txt);
+        background: var(--bg2);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 1px 5px;
+        overflow-wrap: anywhere;
+      }
+      table.counts {
+        border-collapse: collapse;
+        font-size: 13.5px;
+        width: 100%;
+      }
+      .counts td {
+        padding: 5px 0;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      .counts td.n {
+        text-align: right;
+        font: 650 13px var(--mono);
+        padding-left: 12px;
+        white-space: nowrap;
+      }
+      .counts tr.total td {
+        color: var(--gold-soft);
+        font-weight: 650;
+        border-bottom: 0;
+      }
+      .note {
+        font-size: 12.5px;
+        color: var(--muted2);
+        margin: 0;
+      }
+      textarea {
+        width: 100%;
+        min-height: 72px;
+        resize: vertical;
+        font: 600 13px/1.5 var(--mono);
+        color: var(--txt);
+        background: var(--bg2);
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        padding: 8px 10px;
+      }
+      .status {
+        font-size: 12.5px;
+        color: var(--cons);
+        min-height: 1.4em;
+      }
+
+      .stage {
+        display: grid;
+        grid-template-columns: minmax(0, 560px) 320px;
+        gap: 16px;
+        align-items: start;
+      }
+      @media (max-width: 899px) {
+        .stage {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      @media (max-width: 899px) {
+        /* 168 + 132 px and the gap fit one row of a 328 px column. */
+        .panel.sizes {
+          padding-inline: 8px;
+        }
+      }
+      .sizes h3 {
+        margin: 0;
+        font-size: 13.5px;
+        font-weight: 650;
+      }
+      .sizes .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 12px 10px;
+      }
+      .sizes figure {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .sizes img {
+        display: block;
+        object-fit: cover;
+        background: var(--bg);
+      }
+      .sizes figcaption {
+        font: 600 11px/1.3 var(--mono);
+        color: var(--muted);
+      }
+
+      .comment {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        border-top: 1px solid var(--line);
+        padding-top: 8px;
+      }
+      .comment label {
+        font-size: 12.5px;
+        color: var(--danger-text);
+      }
+      .comment input {
+        font: 13.5px/1.4 var(--ui);
+        color: var(--txt);
+        background: var(--bg2);
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        padding: 7px 10px;
+        width: 100%;
+      }
+
+      .marks {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .marks li {
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: 2px 10px;
+        padding: 6px 8px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        font-size: 13px;
+      }
+      .marks li.sel {
+        border-color: var(--gold);
+      }
+      .marks .mid {
+        font: 650 12px/1.5 var(--mono);
+        color: var(--gold-soft);
+      }
+      .marks .mc {
+        grid-column: 2;
+        color: var(--muted);
+        overflow-wrap: anywhere;
+      }
+      .marks .mc.none {
+        color: var(--muted2);
+        font-style: italic;
+      }
+      .marks input {
+        grid-column: 2;
+        font: 13px/1.4 var(--ui);
+        color: var(--txt);
+        background: var(--bg2);
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        padding: 5px 8px;
+      }
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="review">
+    <div class="wrap">
+      <div class="head">
+        <h1>Image review</h1>
+        <div class="seg" role="group" aria-label="Card language">
+          <button type="button" tabindex="-1" data-lang="ru" aria-pressed="false">RU</button>
+          <button type="button" tabindex="-1" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <div class="progress" id="progress"></div>
+      </div>
+      <p class="warning hidden" id="warning" role="status"></p>
+
+      <section id="s-start" class="panel" aria-live="polite">
+        <h2>Loading</h2>
+        <p class="note">Loading pictures...</p>
+      </section>
+
+      <section id="s-card" class="hidden">
+        <div class="stage">
+          <div>
+            <article class="card full" id="card">
+              <div class="card-media" id="c-media"></div>
+              <div class="card-body">
+                <div id="c-head"></div>
+                <div class="facts" id="c-facts"></div>
+                <div class="shared hidden" id="c-shared"></div>
+                <div class="comment hidden" id="c-comment">
+                  <label for="c-comment-in">Regenerate, with a comment (optional)</label>
+                  <input id="c-comment-in" type="text" maxlength="500" autocomplete="off" />
+                  <div class="subkeys">
+                    <kbd>Enter</kbd> mark with this comment &nbsp; <kbd>Esc</kbd> cancel, no
+                    mark
+                  </div>
+                </div>
+              </div>
+            </article>
+            <div class="keys">
+              <button type="button" class="regen" tabindex="-1" data-act="regen">
+                <kbd>Left</kbd>Regenerate
+              </button>
+              <button type="button" tabindex="-1" data-act="undo"><kbd>Up</kbd>Undo</button>
+              <button type="button" tabindex="-1" data-act="finish">
+                <kbd>Down</kbd>Finish, get list
+              </button>
+              <button type="button" class="keep" tabindex="-1" data-act="keep">
+                <kbd>Right</kbd>Keep
+              </button>
+            </div>
+            <div class="subkeys">
+              <kbd>Shift</kbd>+<kbd>Left</kbd> regenerate with a comment &nbsp; <kbd>L</kbd> RU
+              / EN (card text and labels) &nbsp; <kbd>Enter</kbd> also finishes &nbsp;
+              <kbd>Backspace</kbd> also undoes &nbsp; or drag the card left or right
+            </div>
+          </div>
+          <aside class="panel sizes" aria-label="Sizes the site draws">
+            <h3>As the site draws it</h3>
+            <div class="row" id="c-sizes"></div>
+            <p class="note">
+              CSS pixels, the file the site uses at each size. The big picture above is the full
+              card.
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="s-end" class="panel hidden">
+        <h2>Marked for regeneration</h2>
+        <table class="counts">
+          <tr>
+            <td>Reviewed in this run</td>
+            <td class="n" id="e-reviewed"></td>
+          </tr>
+          <tr>
+            <td>Kept in this run</td>
+            <td class="n" id="e-kept"></td>
+          </tr>
+          <tr>
+            <td>Marked in this run</td>
+            <td class="n" id="e-run"></td>
+          </tr>
+          <tr>
+            <td>Marked earlier, picture still unchanged</td>
+            <td class="n" id="e-earlier"></td>
+          </tr>
+          <tr class="total">
+            <td>Records in the list</td>
+            <td class="n" id="e-total"></td>
+          </tr>
+        </table>
+        <ol class="marks" id="e-marks"></ol>
+        <textarea
+          id="e-list"
+          readonly
+          rows="7"
+          aria-label="Regeneration list as JSON"
+        ></textarea>
+        <div class="status" id="e-status" role="status"></div>
+        <p class="note">
+          JSON: each record id maps to its comment, or null without one. Pictures not yet
+          reviewed are not in it; the next run starts with them. A shared picture appears once,
+          under its first record. Re-check after the refresh: <code id="e-recheck"></code>
+        </p>
+        <div class="subkeys">
+          <kbd>C</kbd> copy the JSON &nbsp; <kbd>Up</kbd> / <kbd>Down</kbd> choose a record
+          &nbsp; <kbd>E</kbd> edit its comment (<kbd>Enter</kbd> saves, <kbd>Esc</kbd> cancels)
+          &nbsp; <kbd>Esc</kbd> back to the cards &nbsp; <kbd>L</kbd> RU / EN
+        </div>
+      </section>
+    </div>
+
+    <script src="/data.js"></script>
+    <script type="module" src="review.mjs"></script>
+  </body>
+</html>

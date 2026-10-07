@@ -452,6 +452,9 @@ means "a thing". Do not round a card to a pill or square a chip.
   square image beside it.
 - **Entrance:** a 0.28s `pop` (10px up, 0.985 to 1) on
   `cubic-bezier(0.2, 0.8, 0.3, 1)`, cancelled under reduced motion.
+- **Image review:** the page under `tools/artwork/review/` draws this card
+  head from the same CSS and label code. A change to it follows
+  `docs/artwork.md`, "The card follows the site's card".
 
 ### Badges
 

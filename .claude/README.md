@@ -2577,7 +2577,10 @@ lockfile carry `sharp`, so root `package.json` gains no dependency and root
 tools/artwork/lib.test.mjs` is wired into `npm run check` as its own step;
 `run.mjs` (which imports `sharp` lazily), `icons.mjs` (the app icons) and
 `cards.mjs` (the two site share cards) are not - their honest proof is the
-filesystem and the encoder, not a unit test. `cards.mjs` renders only with
+filesystem and the encoder, not a unit test. The `review` verb is the one
+verb that serves a page: it is read-only, binds `127.0.0.1`, and transpiles
+`app/src/lib/` with the root `typescript` on request (`docs/artwork.md`,
+"Image review"). `cards.mjs` renders only with
 the Inter files under `tools/artwork/fonts/`: it points fontconfig at that
 directory alone, from a second process, so a host font never stands in
 (`docs/artwork.md`, "The site share cards"). No skill was

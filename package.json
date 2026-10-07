@@ -26,6 +26,7 @@
     "check:db": "node tests/db/run.mjs",
     "smoke": "node tools/smoke-http.mjs",
     "previews": "node tools/tg-preview/run.mjs",
+    "review:images": "node tools/artwork/run.mjs review --open",
     "config:diff": "node tools/supabase/config.mjs diff",
     "config:push": "node tools/supabase/config.mjs push",
     "db:push": "node tools/supabase/db-push.mjs",

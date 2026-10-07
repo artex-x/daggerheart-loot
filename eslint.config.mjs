@@ -207,6 +207,11 @@ export default ts.config(
     }
   },
   {
+    /* The image review page is a browser module that lives under tools/. */
+    files: ['tools/artwork/review/**/*.mjs'],
+    languageOptions: { globals: { ...globals.browser } }
+  },
+  {
     /* Narrower than the block above: every `no-require-imports` finding is
        in a `.js` CommonJS file (60 sites, measured), never a `.mjs` one, so
        scoping the turn-off to `*.js` still catches a future `.mjs` tool that

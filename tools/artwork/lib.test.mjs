@@ -2,8 +2,14 @@
   node:test over lib.mjs's pure logic. No filesystem, no sharp, no network -
   hand-built record fixtures, in the style of tools/tg-preview/lib.test.mjs.
 */
-import { describe, it } from 'node:test';
+import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   normalizeName,
   indexRecords,
@@ -14,7 +20,28 @@ import {
   staleDelta,
   shareCardSvg,
   CARD_TEXT,
-  CARD_FONT
+  CARD_FONT,
+  catalogRecords,
+  parseImageDates,
+  parseReviewQuery,
+  buildDeck,
+  readVerdicts,
+  setVerdict,
+  setComment,
+  pruneVerdicts,
+  pendingRegen,
+  regenJson,
+  REVIEW_KEYS,
+  reviewKeyAction,
+  reviewRoute,
+  readLang,
+  cardCss,
+  ruleBody,
+  cardHeadSource,
+  transpileLibSource,
+  REVIEW_CARD_CLASSES,
+  REVIEW_ART_SIZES,
+  openCommand
 } from './lib.mjs';
 
 const SITE = 'https://example.test/';
@@ -412,5 +439,592 @@ describe('shareCardSvg', () => {
 
   it('throws for an unknown language', () => {
     assert.throws(() => shareCardSvg('de'), /No share card text for language "de"/);
+  });
+});
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const rootRequire = createRequire(join(ROOT, 'package.json'));
+
+function loadLoot() {
+  if (!globalThis.window) globalThis.window = {};
+  if (!globalThis.window.LOOT) rootRequire(join(ROOT, 'data.js'));
+  return globalThis.window.LOOT;
+}
+
+function readRepo(path) {
+  return readFileSync(join(ROOT, path), 'utf8');
+}
+
+const sha = (n) => String(n).repeat(64).slice(0, 64);
+const RULE = 'docs/artwork.md, "The card follows the site\'s card"';
+
+// The pinned hash of RecordCard.svelte's card head (docs/artwork.md, "The card
+// follows the site's card").
+const CARD_HEAD_SHA256 = '0c26dbb04a5e83538e27c5c86ad47530ed737f1600b129994f84851cd884f66e';
+
+const CARD_FILES = ['RecordCard', 'Badge', 'Seg'].map((n) => `app/src/components/${n}.svelte`);
+
+function classesMissingFrom(css) {
+  return REVIEW_CARD_CLASSES.filter(
+    (c) => !new RegExp('\\.' + c + '(?![A-Za-z0-9_-])').test(css)
+  );
+}
+
+function artSizeProblems(sources) {
+  const problems = [];
+  for (const size of REVIEW_ART_SIZES) {
+    const body = ruleBody(cardCss([sources[size.file]]), size.selector);
+    for (const d of size.declarations) {
+      if (!body.includes(d)) problems.push(`${size.label}: "${d}" not in ${size.selector}`);
+    }
+  }
+  return problems;
+}
+
+describe('image review', () => {
+  const records = [
+    { id: 'a1', img: 'a.webp' },
+    { id: 'b1', img: 'b.webp' },
+    { id: 'a2', img: 'a.webp' },
+    { id: 'a3', img: 'a.webp' },
+    { id: 'a4', img: 'a.webp' },
+    { id: 'c1', img: 'c.webp' },
+    { id: 'n1', img: '' }
+  ];
+  const shas = { 'a.webp': sha(1), 'b.webp': sha(2), 'c.webp': sha(3) };
+  const noQuery = { all: false, ids: [] };
+  const deck = (extra) =>
+    buildDeck({ records, dates: {}, shas, verdicts: {}, query: noQuery, ...extra });
+
+  it('catalogRecords keeps the order of tools/derived.js everything()', () => {
+    const L = loadLoot();
+    const { everything } = rootRequire(join(ROOT, 'tools', 'derived.js'));
+    assert.deepEqual(
+      catalogRecords(L).map((r) => r.id),
+      everything(L).map((r) => r.id)
+    );
+  });
+
+  describe('parseImageDates', () => {
+    const log = [
+      '@2026-10-06T10:00:00+02:00',
+      'img/a.webp',
+      'img/thumb/a.webp',
+      '',
+      '@2026-08-02T10:00:00+02:00',
+      'img/a.webp',
+      'img/b.webp',
+      'img/thumb/b.webp'
+    ].join('\n');
+
+    it('keeps the newest date of a picture and ignores thumbnails', () => {
+      assert.deepEqual(parseImageDates(log, ''), {
+        'a.webp': '2026-10-06T10:00:00+02:00',
+        'b.webp': '2026-08-02T10:00:00+02:00'
+      });
+    });
+
+    it('marks a modified and an untracked picture uncommitted', () => {
+      const status = ' M img/b.webp\n?? img/new.webp\n M img/thumb/b.webp';
+      const out = parseImageDates(log, status);
+      assert.equal(out['b.webp'], 'uncommitted');
+      assert.equal(out['new.webp'], 'uncommitted');
+      assert.equal(out['thumb/b.webp'], undefined);
+      assert.equal(out['a.webp'], '2026-10-06T10:00:00+02:00');
+    });
+
+    it('takes the new path of a rename line', () => {
+      assert.equal(
+        parseImageDates('', 'R  img/old.webp -> img/new.webp')['new.webp'],
+        'uncommitted'
+      );
+    });
+
+    it('returns an empty object for empty inputs', () => {
+      assert.deepEqual(parseImageDates('', ''), {});
+    });
+  });
+
+  describe('parseReviewQuery', () => {
+    it('reads the all flag and the ids', () => {
+      assert.deepEqual(parseReviewQuery(''), { all: false, ids: [] });
+      assert.deepEqual(parseReviewQuery('?all=1'), { all: true, ids: [] });
+      assert.deepEqual(parseReviewQuery('?all=0'), { all: false, ids: [] });
+      assert.deepEqual(parseReviewQuery('?ids=ci2,,q4,ci2'), {
+        all: false,
+        ids: ['ci2', 'q4']
+      });
+      assert.deepEqual(parseReviewQuery('?all=1&ids=x'), { all: true, ids: ['x'] });
+    });
+  });
+
+  describe('buildDeck', () => {
+    it('gives a shared picture one card with the anchor and the other claimants', () => {
+      const d = deck();
+      const a = d.cards.find((c) => c.asset === 'a.webp');
+      assert.equal(a.id, 'a1');
+      assert.deepEqual(
+        a.others.map((r) => r.id),
+        ['a2', 'a3', 'a4']
+      );
+      assert.equal(d.total, 3);
+    });
+
+    it('orders by date, then catalog order', () => {
+      const dates = {
+        'a.webp': '2026-08-03T00:00:00+02:00',
+        'b.webp': '2026-08-02T00:00:00+02:00',
+        'c.webp': '2026-08-02T00:00:00+02:00'
+      };
+      assert.deepEqual(
+        deck({ dates }).cards.map((c) => c.asset),
+        ['b.webp', 'c.webp', 'a.webp']
+      );
+    });
+
+    it('compares dates as instants, not as strings', () => {
+      const dates = {
+        'a.webp': '2026-03-28T23:00:00+00:00',
+        'b.webp': '2026-03-29T00:30:00+02:00',
+        'c.webp': '2026-03-30T00:00:00+00:00'
+      };
+      assert.deepEqual(
+        deck({ dates }).cards.map((c) => c.asset),
+        ['b.webp', 'a.webp', 'c.webp']
+      );
+    });
+
+    it('puts uncommitted after dated pictures and undated ones last', () => {
+      const dates = { 'a.webp': 'uncommitted', 'c.webp': '2026-08-02T00:00:00+02:00' };
+      assert.deepEqual(
+        deck({ dates }).cards.map((c) => c.asset),
+        ['c.webp', 'a.webp', 'b.webp']
+      );
+    });
+
+    it('skips and counts a valid keep and a valid regen', () => {
+      const verdicts = {
+        'a.webp': { verdict: 'keep', sha256: sha(1), at: 'x' },
+        'b.webp': { verdict: 'regen', sha256: sha(2), at: 'x' }
+      };
+      const d = deck({ verdicts });
+      assert.deepEqual(
+        d.cards.map((c) => c.asset),
+        ['c.webp']
+      );
+      assert.equal(d.skippedKeep, 1);
+      assert.equal(d.skippedRegen, 1);
+      assert.equal(d.total, 3);
+    });
+
+    it('shows a picture again when its hash changed', () => {
+      const verdicts = { 'a.webp': { verdict: 'keep', sha256: sha(9), at: 'x' } };
+      const d = deck({ verdicts });
+      assert.equal(d.cards.length, 3);
+      assert.equal(d.skippedKeep, 0);
+    });
+
+    it('skips nothing in all mode and shows the stored verdict', () => {
+      const verdicts = { 'a.webp': { verdict: 'keep', sha256: sha(1), at: 'x' } };
+      const d = deck({ verdicts, query: { all: true, ids: [] } });
+      assert.equal(d.cards.length, 3);
+      assert.equal(d.cards.find((c) => c.asset === 'a.webp').verdict, 'keep');
+      assert.equal(d.skippedKeep, 0);
+    });
+
+    it('filters by ids through any claimant and reports an unknown id', () => {
+      const d = deck({ query: { all: false, ids: ['a3', 'zzz'] } });
+      assert.deepEqual(
+        d.cards.map((c) => c.asset),
+        ['a.webp']
+      );
+      assert.deepEqual(d.unknownIds, ['zzz']);
+      assert.equal(d.total, 1);
+    });
+
+    it('reports a picture with no file and makes no card of it', () => {
+      const d = deck({ shas: { 'a.webp': sha(1), 'b.webp': sha(2) } });
+      assert.deepEqual(d.missingFiles, ['c.webp']);
+      assert.equal(d.cards.length, 2);
+    });
+  });
+
+  describe('readVerdicts', () => {
+    const entry = { verdict: 'regen', sha256: sha(1), at: '2026-10-07' };
+    const store = (verdicts, v = 1) => JSON.stringify({ v, verdicts });
+
+    it('reads an empty store', () => {
+      assert.deepEqual(readVerdicts(null), { ok: true, verdicts: {} });
+      assert.deepEqual(readVerdicts(''), { ok: true, verdicts: {} });
+    });
+
+    it('refuses bad JSON and another version', () => {
+      assert.deepEqual(readVerdicts('{'), { ok: false, reason: 'unreadable' });
+      assert.deepEqual(readVerdicts('[]'), { ok: false, reason: 'unreadable' });
+      assert.deepEqual(readVerdicts(store({}, 2)), { ok: false, reason: 'version 2' });
+    });
+
+    it('drops an entry of the wrong shape and keeps the others', () => {
+      const out = readVerdicts(
+        store({
+          ok: entry,
+          badVerdict: { ...entry, verdict: 'maybe' },
+          badSha: { ...entry, sha256: 'abc' },
+          notObject: 5
+        })
+      );
+      assert.deepEqual(Object.keys(out.verdicts), ['ok']);
+    });
+
+    it('drops a bad comment from its entry and keeps the entry', () => {
+      const out = readVerdicts(
+        store({
+          empty: { ...entry, comment: '' },
+          long: { ...entry, comment: 'x'.repeat(501) },
+          number: { ...entry, comment: 4 },
+          onKeep: { ...entry, verdict: 'keep', comment: 'no' },
+          good: { ...entry, comment: 'ok' }
+        })
+      );
+      assert.equal(out.verdicts.empty.comment, undefined);
+      assert.equal(out.verdicts.long.comment, undefined);
+      assert.equal(out.verdicts.number.comment, undefined);
+      assert.equal(out.verdicts.onKeep.comment, undefined);
+      assert.equal(out.verdicts.onKeep.verdict, 'keep');
+      assert.equal(out.verdicts.good.comment, 'ok');
+    });
+  });
+
+  describe('setVerdict', () => {
+    const base = { asset: 'a.webp', sha256: sha(1), at: '2026-10-07' };
+
+    it('stores keep and regen, with and without a comment', () => {
+      assert.deepEqual(setVerdict({}, { ...base, verdict: 'keep' })['a.webp'], {
+        verdict: 'keep',
+        sha256: sha(1),
+        at: '2026-10-07'
+      });
+      assert.equal(setVerdict({}, { ...base, verdict: 'regen' })['a.webp'].comment, undefined);
+      assert.equal(
+        setVerdict({}, { ...base, verdict: 'regen', comment: '  dark  ' })['a.webp'].comment,
+        'dark'
+      );
+    });
+
+    it('drops a whitespace comment and a comment on keep', () => {
+      assert.equal(
+        setVerdict({}, { ...base, verdict: 'regen', comment: '   ' })['a.webp'].comment,
+        undefined
+      );
+      assert.equal(
+        setVerdict({}, { ...base, verdict: 'keep', comment: 'x' })['a.webp'].comment,
+        undefined
+      );
+    });
+
+    it('cuts a comment to 500 characters', () => {
+      const out = setVerdict({}, { ...base, verdict: 'regen', comment: 'x'.repeat(600) });
+      assert.equal(out['a.webp'].comment.length, 500);
+    });
+
+    it('removes an entry for a null verdict and never mutates the input', () => {
+      const input = { 'a.webp': { verdict: 'keep', sha256: sha(1), at: 'x' } };
+      const copy = JSON.stringify(input);
+      assert.deepEqual(setVerdict(input, { ...base, verdict: null }), {});
+      setVerdict(input, { ...base, verdict: 'regen' });
+      assert.equal(JSON.stringify(input), copy);
+    });
+  });
+
+  it('setVerdict keeps an entry whose hash this tab does not know', () => {
+    const other = { verdict: 'regen', sha256: sha(9), at: 'x', comment: 'newer tab' };
+    const out = setVerdict(
+      { 'x.webp': other },
+      { asset: 'a.webp', verdict: 'keep', sha256: sha(1), at: 'y' }
+    );
+    assert.deepEqual(out['x.webp'], other);
+    assert.deepEqual(setVerdict(out, { asset: 'a.webp', verdict: null })['x.webp'], other);
+  });
+
+  describe('setComment', () => {
+    const regen = { verdict: 'regen', sha256: sha(1), at: 'x', comment: 'old' };
+    const verdicts = {
+      'a.webp': regen,
+      'b.webp': { verdict: 'keep', sha256: sha(2), at: 'x' }
+    };
+
+    it('sets, changes and removes a comment and keeps the hash', () => {
+      assert.equal(setComment(verdicts, 'a.webp', ' new ')['a.webp'].comment, 'new');
+      assert.equal(setComment(verdicts, 'a.webp', '')['a.webp'].comment, undefined);
+      assert.equal(setComment(verdicts, 'a.webp', 'new')['a.webp'].sha256, sha(1));
+      assert.equal(verdicts['a.webp'].comment, 'old');
+    });
+
+    it('returns the input for a keep entry and a missing asset', () => {
+      assert.equal(setComment(verdicts, 'b.webp', 'x'), verdicts);
+      assert.equal(setComment(verdicts, 'zzz.webp', 'x'), verdicts);
+    });
+  });
+
+  it('pruneVerdicts drops a missing picture and a changed hash', () => {
+    const verdicts = {
+      'a.webp': { verdict: 'keep', sha256: sha(1), at: 'x' },
+      'b.webp': { verdict: 'keep', sha256: sha(9), at: 'x' },
+      'gone.webp': { verdict: 'keep', sha256: sha(1), at: 'x' }
+    };
+    assert.deepEqual(Object.keys(pruneVerdicts(verdicts, shas)), ['a.webp']);
+  });
+
+  describe('pendingRegen and regenJson', () => {
+    const verdicts = {
+      'c.webp': { verdict: 'regen', sha256: sha(3), at: 'x', comment: 'say "hi"\nline' },
+      'a.webp': { verdict: 'regen', sha256: sha(1), at: 'x' },
+      'b.webp': { verdict: 'regen', sha256: sha(9), at: 'x' }
+    };
+    const list = pendingRegen({ records, verdicts, shas });
+
+    it('lists valid regen verdicts under the anchor id in catalog order', () => {
+      assert.deepEqual(
+        list.map((e) => e.id),
+        ['a1', 'c1']
+      );
+      assert.equal(list[0].comment, null);
+    });
+
+    it('keeps a comment with quotes and a newline through JSON.parse', () => {
+      assert.equal(JSON.parse(regenJson(list)).c1, 'say "hi"\nline');
+    });
+
+    it('writes the documented format', () => {
+      assert.equal(
+        regenJson([
+          { id: 'ci2', comment: 'lettering on the whistle' },
+          { id: 'ci8', comment: null }
+        ]),
+        '{\n  "ci2": "lettering on the whistle",\n  "ci8": null\n}'
+      );
+      assert.equal(regenJson([]), '{}');
+    });
+  });
+
+  describe('reviewKeyAction', () => {
+    const offered = {
+      start: ['start', 'forget', 'lang'],
+      card: ['keep', 'regen', 'regenComment', 'undo', 'finish', 'lang'],
+      comment: ['save', 'cancel'],
+      end: ['copy', 'prev', 'next', 'edit', 'back', 'lang']
+    };
+
+    it('gives every action of every screen a key and no other', () => {
+      for (const [mode, actions] of Object.entries(offered)) {
+        const reachable = new Set(
+          Object.keys(REVIEW_KEYS[mode]).map((k) => reviewKeyAction(mode, k))
+        );
+        assert.deepEqual([...reachable].sort(), [...actions].sort(), mode);
+      }
+    });
+
+    it('lets a field take l, c, e and the arrows', () => {
+      for (const key of [
+        'l',
+        'L',
+        'c',
+        'e',
+        'ArrowLeft',
+        'ArrowRight',
+        'ArrowUp',
+        'ArrowDown'
+      ]) {
+        assert.equal(reviewKeyAction('comment', key), null, key);
+      }
+    });
+
+    it('returns null for an unknown mode or key', () => {
+      assert.equal(reviewKeyAction('nope', 'Enter'), null);
+      assert.equal(reviewKeyAction('card', 'x'), null);
+      assert.equal(reviewKeyAction('card', 'toString'), null);
+    });
+  });
+
+  describe('reviewRoute', () => {
+    it('allows each documented path', () => {
+      assert.deepEqual(reviewRoute('/'), { redirect: '/tools/artwork/review/index.html' });
+      assert.deepEqual(reviewRoute('/review-state.json'), { state: true });
+      assert.deepEqual(reviewRoute('/card.css'), { css: true });
+      assert.equal(reviewRoute('/data.js').file, 'data.js');
+      assert.equal(reviewRoute('/app/src/styles/tokens.css').type, 'text/css; charset=utf-8');
+      assert.equal(reviewRoute('/tools/artwork/lib.mjs').file, 'tools/artwork/lib.mjs');
+      assert.equal(
+        reviewRoute('/tools/artwork/review/index.html').type,
+        'text/html; charset=utf-8'
+      );
+      assert.equal(
+        reviewRoute('/tools/artwork/review/review.mjs').file,
+        'tools/artwork/review/review.mjs'
+      );
+      assert.deepEqual(reviewRoute('/img/ci2.webp'), {
+        file: 'img/ci2.webp',
+        type: 'image/webp'
+      });
+      assert.deepEqual(reviewRoute('/img/thumb/ci2.webp'), {
+        file: 'img/thumb/ci2.webp',
+        type: 'image/webp'
+      });
+      assert.deepEqual(reviewRoute('/app/src/lib/label.js'), {
+        ts: 'app/src/lib/label.ts',
+        type: 'text/javascript; charset=utf-8'
+      });
+    });
+
+    it('refuses every path outside the allowlist', () => {
+      for (const p of [
+        '/img/thumb/a/b.webp',
+        '/img/../data.js',
+        '/img/%2e%2e/x.webp',
+        '/package.json',
+        '/tools/artwork/run.mjs',
+        '/.git/config',
+        '/app/src/lib/label.test.js',
+        '/app/src/lib/../ports/storage.js',
+        '/app/src/ports/storage.js',
+        '/img/a.png',
+        '/toString'
+      ]) {
+        assert.equal(reviewRoute(p), null, p);
+      }
+    });
+  });
+
+  it('readLang returns en only for exactly en', () => {
+    assert.equal(readLang(null), 'ru');
+    assert.equal(readLang(''), 'ru');
+    assert.equal(readLang('en'), 'en');
+    assert.equal(readLang('EN'), 'ru');
+    assert.equal(readLang('de'), 'ru');
+  });
+
+  describe('cardCss and ruleBody', () => {
+    it('unwraps :global with balanced parentheses', () => {
+      const out = cardCss([
+        '<script></script><style>a :global(.b .c:has(.d)) { x: 1 } e :global(p) { y: 2 }</style>',
+        '<style lang="css">f { z: 3 }</style>'
+      ]);
+      assert.ok(out.includes('a .b .c:has(.d) { x: 1 }'));
+      assert.ok(out.includes('e p { y: 2 }'));
+      assert.ok(out.includes('f { z: 3 }'));
+      assert.ok(!out.includes(':global'));
+    });
+
+    it('throws for a source with no style block', () => {
+      assert.throws(
+        () => cardCss(['<style></style>', '<p></p>']),
+        /^Error: 1: no <style> block/
+      );
+    });
+
+    it('reads the real components', () => {
+      const css = cardCss(CARD_FILES.map(readRepo));
+      assert.ok(!css.includes(':global('));
+      assert.ok(css.includes('.card-meta {'));
+    });
+
+    it('finds every rule of a selector, inside @media too', () => {
+      const css = '.a { x: 1 }\n@media (max-width: 1px) {\n  .a { y: 2 }\n}\n.b .a { z: 3 }';
+      const body = ruleBody(css, '.a');
+      assert.ok(body.includes('x: 1') && body.includes('y: 2'));
+      assert.ok(!body.includes('z: 3'));
+    });
+  });
+
+  describe('the card follows the site card', () => {
+    it('uses only classes that the real components style', () => {
+      const missing = classesMissingFrom(cardCss(CARD_FILES.map(readRepo)));
+      assert.deepEqual(missing, [], `class not styled by the components. See ${RULE}`);
+    });
+
+    it('fails the class guard for a renamed class', () => {
+      const texts = CARD_FILES.map(readRepo).map((t) =>
+        t.replaceAll('.card-meta {', '.card-metax {')
+      );
+      assert.deepEqual(classesMissingFrom(cardCss(texts)), ['card-meta']);
+    });
+
+    it('pins the card head of RecordCard.svelte', () => {
+      const hash = createHash('sha256')
+        .update(cardHeadSource(readRepo('app/src/components/RecordCard.svelte')))
+        .digest('hex');
+      assert.equal(
+        hash,
+        CARD_HEAD_SHA256,
+        `RecordCard.svelte's card head changed. Check renderCard in tools/artwork/review/review.mjs (${RULE}), then set CARD_HEAD_SHA256 to ${hash}.`
+      );
+    });
+
+    it('changes the card head hash for an added line', () => {
+      const text = readRepo('app/src/components/RecordCard.svelte');
+      const marker = 'const parts = $derived(descParts(it, lang));';
+      assert.ok(text.includes(marker));
+      assert.notEqual(
+        cardHeadSource(text),
+        cardHeadSource(text.replace(marker, marker + '\n  const extra = 1;'))
+      );
+      assert.throws(() => cardHeadSource('<p></p>'), /no dict derivation/);
+    });
+
+    it('finds each art size in its source rule', () => {
+      const sources = {};
+      for (const s of REVIEW_ART_SIZES) sources[s.file] = readRepo(s.file);
+      assert.deepEqual(artSizeProblems(sources), [], `an art size moved. See ${RULE}`);
+    });
+
+    it('fails the art size guard for a changed width', () => {
+      const sources = {};
+      for (const s of REVIEW_ART_SIZES) sources[s.file] = readRepo(s.file);
+      const file = 'app/src/components/RowMain.svelte';
+      sources[file] = sources[file].replace('width: 60px', 'width: 64px');
+      assert.equal(artSizeProblems(sources).length, 1);
+    });
+
+    describe('the transpiled label code', () => {
+      const dir = mkdtempSync(join(tmpdir(), 'review-lib-'));
+      after(() => rmSync(dir, { recursive: true, force: true }));
+
+      it('loads and gives the values of the site', async () => {
+        const ts = rootRequire('typescript');
+        writeFileSync(join(dir, 'package.json'), '{"type":"module"}');
+        const done = new Set();
+        const queue = ['label', 'i18n', 'desc', 'dict'];
+        while (queue.length) {
+          const name = queue.pop();
+          if (done.has(name)) continue;
+          done.add(name);
+          const source = readRepo(`app/src/lib/${name}.ts`);
+          const js = transpileLibSource(ts, source);
+          for (const m of js.matchAll(/(?:from|import)\s+['"]\.\/([A-Za-z0-9]+)\.js['"]/g)) {
+            readRepo(`app/src/lib/${m[1]}.ts`);
+            queue.push(m[1]);
+          }
+          mkdirSync(dir, { recursive: true });
+          writeFileSync(join(dir, name + '.js'), js);
+        }
+        const load = (n) => import(pathToFileURL(join(dir, n + '.js')).href);
+        const { cardBadges, srcLabel } = await load('label');
+        const { dict } = await load('dict');
+        const q4 = catalogRecords(loadLoot()).find((r) => r.id === 'q4');
+        assert.deepEqual(cardBadges(q4, 'en', dict('en')), [
+          { cls: 'eq-weapon', text: 'Primary weapon' }
+        ]);
+        assert.equal(srcLabel(q4, 'ru'), 'Core');
+      });
+    });
+  });
+
+  it('openCommand picks the opener of each platform', () => {
+    assert.deepEqual(openCommand('win32', 'http://x/'), [
+      'cmd',
+      ['/c', 'start', '', 'http://x/']
+    ]);
+    assert.deepEqual(openCommand('darwin', 'http://x/'), ['open', ['http://x/']]);
+    assert.deepEqual(openCommand('linux', 'http://x/'), ['xdg-open', ['http://x/']]);
   });
 });

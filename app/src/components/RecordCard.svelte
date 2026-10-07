@@ -8,7 +8,10 @@
      nearly right was a value that failed.
 
      Nothing here injects HTML. The description arrives parsed - see
-     lib/desc.ts - so a label is an <i> element and a list is a real <ul>. */
+     lib/desc.ts - so a label is an <i> element and a list is a real <ul>.
+
+     The image review page draws this card's head too: docs/artwork.md, "The
+     card follows the site's card". */
   import Actions from './Actions.svelte';
   import Badge from './Badge.svelte';
   import Button from './Button.svelte';

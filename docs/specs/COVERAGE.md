@@ -1322,6 +1322,17 @@ filenames, `img: ''` landing in `unarted`, a missing asset with no resolving
 source landing in `unsourced` by asset and waiting record ids, and the same
 unmatched/ambiguous/duplicate-bytes/`map.assign` handling `planInstall` uses
 via the matching helper the two planners share.
+
+The same suite covers the image review page's pure logic: the catalog order,
+the picture dates from `git`, the run query, the deck (shared pictures, date
+order, skipped verdicts, `ids`), the verdict store (read, set, comment, prune),
+the JSON list, the key table (every action of every screen has a key), the
+server allowlist, the language key, `cardCss` and `ruleBody`. It also holds the
+four card-drift guards of `docs/artwork.md`, "The card follows the site's
+card": the classes, the pinned card head, the transpiled label code and the
+art sizes. `run.mjs review` and `review/review.mjs` are outside it (a socket
+and the DOM); a manual keyboard pass in a browser against the real server is their proof
+(`docs/artwork.md`, "Image review").
 See `docs/artwork.md`.
 
 `tools/supabase/lib.test.mjs` is a separate suite again, run under `node
