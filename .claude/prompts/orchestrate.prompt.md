@@ -239,7 +239,8 @@ closeout the register's open rows go to `docs/specs/DEBT.md` or are named to
 the human and dropped.
 
 ## Model selection (orchestrator only)
-Agents must not choose models or effort.
+Workers choose no role's model or effort; a helper's tier follows
+`.claude/README.md`, "Helper agents".
 The agent frontmatter is the default:
 
 | Role | Model | Effort | Why this tier |
@@ -255,17 +256,40 @@ agentic coding on Sonnet 5.5 and Opus 5.5; at `low`, Sonnet 5.5 is more
 likely to report a change done without running its check, so `low` suits
 only a role whose prompt names each check. Every role pins its level, so a
 raised session effort does not reach the workers. The frontmatter key
-overrides the session, and the Agent tool takes no per-dispatch effort
-(`.claude/README.md`, "Facts settled during measurement (`agent-effort`)").
+overrides the session. The Agent tool has an `effort` parameter at 2.1.293,
+but its precedence against the frontmatter key is unmeasured, so do not pass
+it (`.claude/README.md`, "Facts settled during measurement (`agent-effort`)").
 
 `xhigh` and `max` are exceptions. Propose one in chat only when a pass at
 `high` failed on reasoning, not on missing facts, and name the role and the
 task. The human decides and edits the frontmatter; the change takes effect in
 the next session and is reverted when the task closes.
 
-A search or lookup helper you dispatch (`Explore`, `general-purpose`) names
-`model: sonnet`; it never runs on `opus` or `fable`, and it runs at the
-session's effort.
+### Usage profile
+
+Usage profile: max
+
+This line is the one switch between the columns below. Set it to `pro` on
+the day the account moves to the Pro plan; the owner sets the main session
+to `sonnet` the same day (`.claude/README.md`, "Usage profiles"). Pro gives
+a fifth of the Max 5x usage per five-hour window and covers Fable only
+through paid usage credits.
+
+| Dispatch | `max` | `pro` |
+|---|---|---|
+| planner, new plan | frontmatter (`opus`) | `opus` when the GOAL meets writer test 2, no shipped pattern covers it, or a `sonnet` pass on this task came back not implement-ready; else `sonnet` |
+| planner, next-batch refresh | `sonnet`; `opus` when the next outline carries `Open design question:`, meets writer test 2 or follows a `replan` | as `max` |
+| implementer | frontmatter (`sonnet`); `opus` on writer tests 1-4 | `sonnet`; `opus` on writer test 2 only; a test-1 batch goes back to the planner first |
+| reviewer, plan review or second look | frontmatter (`opus`) | as `max` |
+| reviewer, batch review | the tier the batch's writer ran on; `opus` for the uncertainty-or-deviation trigger as `max` |
+| add-source | frontmatter (`opus`); `sonnet` for records only (no new mechanic, craft, table or filter) | as `max` |
+| refresh-artwork | frontmatter (`sonnet`); `opus` for a crop, pad or regeneration exception or a changed image mapping | as `max` |
+| helper | `haiku`; `sonnet` for synthesis under an `opus` parent | as `max` |
+| Fable | planner only, under "Planner tier" and the human's yes | not offered |
+
+A dispatch whose tier equals the frontmatter names no `model`. Name the row
+and the test in chat with each dispatch that names one. Unsure is the higher
+tier.
 
 ### Writer tier: `sonnet` by default, `opus` for a batch that needs judgement
 
@@ -286,18 +310,18 @@ any test below is dispatched with `model: opus`:
    early, reported a deviation, or failed review. A resume keeps the tier
    ("Resume, do not replace"), so this is a fresh dispatch.
 
-Unsure is `opus`. Name the test in the dispatch message in chat. Dispatch
-add-source with `model: sonnet` when it extends an existing source with
-records only - no new mechanic, craft, table or filter. Dispatch
-refresh-artwork with `model: opus` when the delivery needs a crop, pad or
-regeneration exception, or changes an image mapping.
+Unsure is `opus`. Name the test in the dispatch message in chat. On the
+`pro` profile only test 2 dispatches `opus`: send a test-1 batch back to the
+planner to settle its question, and run tests 3 and 4 on `sonnet`. The
+table above gives the add-source and refresh-artwork tiers.
 
 ### Planner tier: `opus` by default, `fable` only with the human's yes
 
 Fable costs 2.5 times Opus per token and runs longer turns, so it is the
 last resort, not the tier for hard work. `planner.md`'s frontmatter is
-`opus` and stays so; a routine planning dispatch names no `model`. Opus at
-`high` plans large features, next-batch refreshes and source-ingest design.
+`opus` and stays so; a new plan on `max` names no `model`; a next-batch
+refresh names `model: sonnet` unless the table sends it to `opus`. Opus at
+`high` plans large features and source-ingest design.
 
 Propose `model: fable` for one dispatch only when test 1 holds, or tests 2
 and 3 both hold:
@@ -315,8 +339,8 @@ human is in a hurry, or Fable is available. Before the dispatch, name the
 tests in chat and ask the human; dispatch on `fable` only after a clear
 yes, and on `opus` otherwise. Escalation is per dispatch and never edits
 the frontmatter; a resume carries no `model`, so a tier change is a fresh
-dispatch. When Fable is not available, plan on `opus` and say so - never
-wait. Fable is never the tier of an implementer, reviewer, add-source or
+dispatch. When the tests hold but Fable is not available or the profile is `pro`, plan on `opus`
+and say so - never wait. Fable is never the tier of an implementer, reviewer, add-source or
 helper dispatch. Announce the routing in chat only; never write it into
 `plan.md`, `handoff.md` or `context.md`.
 

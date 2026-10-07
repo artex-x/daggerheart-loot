@@ -4,8 +4,9 @@ description: >
   Technical design and implement-ready batches for this repo.
   Use when planning a feature, refreshing the next batch, or designing
   source-ingest work. Does not implement production code.
-  Does not choose models for other agents. Default: Opus at high effort;
-  Fable only on the human's yes.
+  Does not choose a role's model. Default: Opus at high effort;
+  the orchestrator dispatches a routine next-batch refresh on Sonnet; Fable
+  only on the Max profile and the human's yes.
 model: opus
 effort: high
 ---

@@ -194,6 +194,6 @@ Feature work uses roles (see `.claude/`):
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 - a single-file visual bug pinned to a width skips planner and review: `/small-fix` (`.claude/skills/small-fix/SKILL.md`)
 
-Prompts: `.claude/prompts/`. Agents: `.claude/agents/`. Kickoff: `/orchestrate`. Pass `TASK: <id>` at runtime. Orchestrator selects models: Sonnet implements, Opus plans and reviews, Fable only on the human's yes. Each role pins its effort from `low` to `high`; `xhigh` and `max` are the human's exception. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
+Prompts: `.claude/prompts/`. Agents: `.claude/agents/`. Kickoff: `/orchestrate`. Pass `TASK: <id>` at runtime. Orchestrator selects models by the usage profile in `orchestrate.prompt.md`, "Model selection": Sonnet implements and takes routine plan refreshes and reviews, Opus plans and reviews judgement work, Haiku runs read-only helpers, Fable only on Max and the human's yes. Each role pins its effort from `low` to `high`; `xhigh` and `max` are the human's exception. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
 Hosts without agent tools run the prompt files sequentially with `issues/<id>/` as the handoff bus; closeout and cleanup are the orchestrate prompt's.
 <!-- setup-claude-agents:end -->

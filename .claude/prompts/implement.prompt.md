@@ -16,7 +16,8 @@ This prompt is written for Claude Code; a host without agent tools runs it as a 
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
 
 Follow the plan tightly: it is written so that a smaller model can execute it.
-Do not select models.
+Do not select a role's model. A helper you dispatch follows
+`.claude/README.md`, "Helper agents".
 Spawn no subagent for reads, searches, reviews or verification that you can
 finish in a few tool calls. The batch's gates are the verification.
 Only one implementer should be writing this working tree at a time.

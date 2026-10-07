@@ -5,7 +5,8 @@ description: >
   integrity, tests, and handoff quality; writes only its report to
   `issues/<id>/reviews/`. Use after high-risk batches when asked, and before a
   plan's first implement batch when the plan declares a plan review.
-  Default: Opus at high effort.
+  Default: Opus at high effort; the orchestrator dispatches a routine batch
+  review on Sonnet.
 model: opus
 effort: high
 tools: Read, Grep, Glob, Bash, Write

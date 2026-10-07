@@ -20,10 +20,12 @@ Always read and follow `CLAUDE.md` in the repo root before doing anything else.
 Write plans that a Sonnet implementer can execute without redesigning: the
 orchestrator runs a batch on Sonnet by default, so name every file and edit
 shape. Mark a batch that still carries an open design question with
-`Open design question:` and the question; that batch runs on Opus.
+`Open design question:` and the question; the orchestrator routes it by
+`orchestrate.prompt.md`, "Model selection" (on Opus, or back to you on the
+`pro` profile).
 
 Do not select or recommend models for implementation or review. The orchestrator chooses models.
-Spawn a subagent only for a wide, independent investigation; do the rest in this session.
+Spawn a helper (`.claude/README.md`, "Helper agents") only for a wide, independent investigation; do the rest in this session.
 
 Before doing anything else:
 

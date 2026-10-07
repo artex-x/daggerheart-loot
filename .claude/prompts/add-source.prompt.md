@@ -13,9 +13,9 @@ Add a new item source (or extend an existing one) into daggerheart-loot end-to-e
 
 This prompt is written for Claude Code; a host without agent tools runs it as a plain prompt.
 Always read and follow `CLAUDE.md` in the repo root before doing anything else.
-Do not select models - the orchestrator chooses models.
+Do not select a role's model - the orchestrator chooses it.
 Only one writer should own this working tree at a time.
-Spawn a subagent only for a wide, independent track; do reads, checks and verification in this session.
+Spawn a helper (`.claude/README.md`, "Helper agents") only for a wide, independent track; do reads, checks and verification in this session.
 
 Prefer one coherent pass (this operation is rare). Split only on a hard verification boundary or missing inputs.
 When durable notes help multi-session recovery, write `plan.md` / `handoff.md` under TASK_DIR using `.claude/templates/handoff.template.md` headings.

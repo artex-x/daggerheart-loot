@@ -9,7 +9,7 @@ Interpret it as:
 
 Replace existing daggerheart-loot catalog artwork from an audited, regenerated, or otherwise approved delivery set. This is an asset refresh, not content ingest: use `add-source` when records, text, ids, mechanics, roll tables, filters, or source metadata must be added or changed.
 
-This prompt is agent-agnostic. Always read and follow `CLAUDE.md` before doing anything else. Do not select models. Only one writer owns the working tree at a time.
+This prompt is agent-agnostic. Always read and follow `CLAUDE.md` before doing anything else. Do not select a role's model. A helper you dispatch follows `.claude/README.md`, "Helper agents". Only one writer owns the working tree at a time.
 
 ## Discover inputs
 

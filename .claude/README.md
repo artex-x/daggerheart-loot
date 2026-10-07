@@ -15,12 +15,10 @@ Orchestrator: prompts/orchestrate.prompt.md
 Workers use the frontmatter defaults above. Every role pins an effort from
 `low` to `high`, so the human's session effort does not reach a worker;
 `xhigh` and `max` are the human's exception for one task. The routing rules
-and their reasons are in
-prompts/orchestrate.prompt.md, "Model selection". The planner's
-tier goes to `fable` for one dispatch only under the tests in "Planner tier"
-and after the human's yes; the frontmatter stays `opus`, and a resume keeps
-its tier. An implementer batch goes to `opus` when it meets a test in
-"Writer tier" in the same prompt.
+and their reasons are in prompts/orchestrate.prompt.md, "Model selection".
+Its `Usage profile:` line picks the `max` or the `pro` column of the routing
+table. A dispatch names `model` only where the active column differs from
+the frontmatter, and a resume keeps its tier.
 
 The orchestrator owns final reconciliation and cleanup: wait for workers, align context/plan/handoff, preserve evidence and unrelated work, and remove only clearly disposable task-scoped scratch artifacts.
 
@@ -33,6 +31,94 @@ Kickoff:
   Follow .claude/prompts/orchestrate.prompt.md
   TASK: <id>
   GOAL: <feature or add source items...>
+
+### Usage profiles
+
+The `Usage profile:` line in prompts/orchestrate.prompt.md, "Model
+selection" names the plan of the account. These facts set the two columns
+(read 2026-10-08):
+
+| Fact | Value | Source |
+|---|---|---|
+| Price | Pro $20 per month; Max 5x $100 per month | the owner, 2026-10-08 |
+| Usage per window | Max 5x gives 5x the Pro usage per five-hour window | claude.com/pricing |
+| Weekly limits | paid plans add weekly limits to the five-hour window | claude.com/pricing |
+| Fable | Pro: only through paid usage credits, outside the plan's limits; Max: up to 50% of the weekly limits | claude.com/pricing; support.claude.com/en/articles/15424964 |
+| Opus, Sonnet, Haiku | included on Pro and on Max | claude.com/pricing |
+| Default model | Opus 5.5 on Pro and on Max | code.claude.com/docs/en/model-config |
+
+Opus costs several times more per turn than Sonnet, and Sonnet more than
+Haiku (support.claude.com/en/articles/14552983). All models share the
+session and weekly windows; only a model-specific limit ("Opus limit") lets
+`/model` continue the work (code.claude.com/docs/en/costs).
+
+Switch to the Pro plan:
+
+1. Set the line to `Usage profile: pro` in
+   prompts/orchestrate.prompt.md, "Model selection".
+2. Set the main session to `sonnet`: run `/model sonnet`, or keep
+   `"model": "sonnet"` in `~/.claude/settings.json`. Use the alias, not a
+   pinned id: a `sonnet` subagent runs on the main session's exact Sonnet
+   model. The main session
+   re-reads the longest transcript each turn, so its tier multiplies the
+   cost of every orchestrator turn. Select `opus` by `/model` for one
+   session only when you need it.
+
+Not verified (2026-10-08):
+
+- The absolute Pro and Max token limits.
+- The weight of a Haiku turn against a Sonnet turn in the limits.
+- The weight of cache reads in the limits (the docs say "count less", with
+  no number).
+- Which of a per-call `effort` and the frontmatter `effort` wins.
+- The fixed token cost of an `Explore` spawn.
+
+### Helper agents
+
+A helper is a read-only subagent that a worker or the orchestrator
+dispatches for wide material that needs a short answer.
+
+- Who: a role whose tools include Agent. The reviewer's `tools:` line omits
+  Agent and stays so.
+- Type: `Explore`, or `claude-code-guide` for documentation. `Explore` is
+  read-only and has no Agent tool (probe below), so a helper dispatches nothing;
+  `claude-code-guide` answers from documentation. Never use
+  `general-purpose`: it can write.
+- Tier: `model: haiku` for these uses: H1 locate (every call site of a name,
+  every file that cites a path); H2 log extraction (failing tests and first
+  errors from `gh run view --log-failed` or a saved suite log); H3 corpus
+  counts (command shapes over session transcripts before a hook decision);
+  H4 documentation facts quoted verbatim with their URL. `model: sonnet` for
+  synthesis across files under an `opus` parent. Never `opus` or `fable`.
+  Pass no `effort`.
+- When: the material is wide and the answer is short. A spawn carries about
+  63K tokens of context before its first tool call (measured 2026-10-08 on
+  this host: a Haiku probe with one tool call reported 63,162 tokens). A
+  read that a few tool calls finish stays in the parent.
+- The request: ask for paths with line numbers, counts, verbatim quotes with
+  their URL, and the exact commands. Re-run a quoted command yourself before
+  a conclusion rests on "no match" - an `rtk grep` without `-E` reads a real
+  match as absent.
+- Never delegate: a review verdict, a design choice, a judgement on a
+  contract, an RLS policy or stored data, Russian text, a gate run, or any
+  write.
+
+Facts settled during measurement (`haiku-routing`, 2026-10-08, Claude Code
+2.1.293, desktop host):
+
+- `model: haiku` on the Agent tool runs Haiku 5.5: two probes, `Explore`
+  and `general-purpose`, each reported `claude-haiku-5-5`. The `Explore`
+  probe has no Agent, Edit or Write tool.
+- A subagent can dispatch a subagent: a planner at depth 1 dispatched both
+  probes, and the depth-2 `general-purpose` probe had the Agent tool. The
+  docs allow three layers below the main conversation
+  (`CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, `1` turns nesting off); a
+  `tools:` list without `Agent` blocks it (code.claude.com/docs/en/sub-agents).
+- Subagent model precedence (docs): the per-call `model`, then the
+  frontmatter, then `CLAUDE_CODE_SUBAGENT_MODEL`, then the main session's
+  model. The environment variable does not change the built-in `Explore`
+  and `Plan` agents; `CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1` forces one model
+  on all (code.claude.com/docs/en/sub-agents).
 
 ## Skills
 
@@ -1136,12 +1222,16 @@ Facts settled during measurement (`agent-effort`, 2026-09-11):
   `claude.exe -p` cannot run a probe: it is not logged in on this host.
 - An edit to `.claude/agents/*.md` takes effect in the next session, not the
   current one (the probe above).
-- Model default effort is `high` on every model that supports effort, which
-  is why a single `high` reading under a `high` session proves nothing;
-  contrast levels must be `low` vs `high`.
+- Model default effort is `high` on every model that supports effort, except
+  Opus 5.5, Sonnet 5.5 and Haiku 5.5, which default to `medium`
+  (code.claude.com/docs/en/model-config, read 2026-10-08). This is why a
+  single `high` reading under a `high` session proves nothing; contrast
+  levels must be `low` vs `high`.
 - `set_session_effort` refuses the calling session and targets sessions, not
-  subagents. The Agent tool has no `effort` parameter (2.1.284), so the
-  orchestrator has no per-dispatch lever; the frontmatter key is per role.
+  subagents. The Agent tool had no `effort` parameter at 2.1.284; at 2.1.293
+  it has one (`low` to `max`). Its precedence against the frontmatter key is
+  unmeasured, so the orchestrator does not pass it; the frontmatter key is
+  per role.
 
 Facts settled during measurement (`rtk-coverage`, 2026-09-18): the measured
 boundary behind rule 2j (candidate row 43), pinned to `rtk 0.48.0`. Every row

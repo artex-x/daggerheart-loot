@@ -14,6 +14,8 @@ deleted.
 
 ## Index
 
+- 2026-10-08 - [A usage-profile line picks Max or Pro routing; review tier follows the writer](decisions/2026-10-08-a-usage-profile-line-picks-max-or-pro.md)
+- 2026-10-08 - [Workers dispatch read-only Haiku helpers for wide locate and extract work](decisions/2026-10-08-workers-dispatch-read-only-haiku-helpers-for-wide.md)
 - 2026-10-07 - [A local check skips a stage whose inputs match its last local pass](decisions/2026-10-07-a-local-check-skips-a-stage-whose-inputs.md)
 - 2026-10-07 - [Arazo's Artifacts: source arazo, ids aa1-aa51, tier formulas as lines](decisions/2026-10-07-arazos-artifacts-source-arazo-section-roll-arazo-ids-aa.md)
 - 2026-10-07 - [The image review keeps its verdicts in the browser, keyed by hash](decisions/2026-10-07-the-image-review-keeps-its-verdicts-in-the-browser-by-hash.md)
