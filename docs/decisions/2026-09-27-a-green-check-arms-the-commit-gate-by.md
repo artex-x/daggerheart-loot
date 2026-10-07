@@ -1,5 +1,6 @@
 # 2026-09-27 - A green check arms the commit gate by its own exit, not a host-wide lock
 
+- Amended by "A local check skips a stage whose inputs match its last local pass" (2026-10-07): a skipped stage counts as passed.
 - Task: `process-guards` (owner, 2026-09-27, from the two answers the planner offered; mechanism by the planner).
 - Decision: `npm run check` and `npm run check:db` arm their commit gate
   themselves (`.claude/hooks/gate-credit.mjs`): a first step records the

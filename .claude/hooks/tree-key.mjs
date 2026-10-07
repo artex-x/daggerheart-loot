@@ -34,6 +34,38 @@ function indexPath(root) {
 }
 
 /**
+ * Returns the `git ls-files -s` lines of the working tree of the checkout
+ * that holds `cwd` (the main checkout without one), after `git add -A` on a
+ * copy of the index at `copyPath`: staged, unstaged and untracked changes
+ * in, gitignored files out. The real index is never touched. Returns null
+ * on any failure. `copyPath` must be one path per process: a second
+ * process that copies over it between `git add -A` and `git ls-files -s`
+ * makes this return the raw index. tools/check/run.mjs passes
+ * `index-<pid>` beside its store and deletes it after the call.
+ */
+export function indexRows(cwd, copyPath) {
+  try {
+    const root = checkoutRoot(cwd);
+    const gitIndex = indexPath(root);
+    if (!gitIndex || !existsSync(gitIndex)) return null;
+    copyFileSync(gitIndex, copyPath);
+    const env = { ...process.env, GIT_INDEX_FILE: copyPath };
+    const add = spawnSync('git', ['add', '-A'], { cwd: root, env, encoding: 'utf8' });
+    if (add.error || add.status !== 0) return null;
+    const ls = spawnSync('git', ['ls-files', '-s'], {
+      cwd: root,
+      env,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024
+    });
+    if (ls.error || ls.status !== 0) return null;
+    return ls.stdout.split('\n').filter(Boolean);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * A content-only fingerprint of the working tree of the checkout that holds
  * `cwd` (the main checkout without one): staged, unstaged and
  * untracked changes in, gitignored files out, HEAD excluded. Copies the
@@ -43,21 +75,12 @@ function indexPath(root) {
  */
 export function treeKey(cwd) {
   try {
-    const root = checkoutRoot(cwd);
-    const gitIndex = indexPath(root);
-    if (!gitIndex || !existsSync(gitIndex)) return null;
-    const copyPath = checkIndexPath(cwd);
-    copyFileSync(gitIndex, copyPath);
-    const env = { ...process.env, GIT_INDEX_FILE: copyPath };
-    const add = spawnSync('git', ['add', '-A'], { cwd: root, env, encoding: 'utf8' });
-    if (add.error || add.status !== 0) return null;
-    const ls = spawnSync('git', ['ls-files', '-s'], { cwd: root, env, encoding: 'utf8' });
-    if (ls.error || ls.status !== 0) return null;
+    const lines = indexRows(cwd, checkIndexPath(cwd));
+    if (lines === null) return null;
     // Drop every isExempt() row before hashing: the commit gate in
     // bash-guard.mjs only requires a passing check for covered paths, so a
     // row this fingerprint would otherwise move on (a handoff edit, a plan
     // edit) must not change the key - see isExempt()'s comment in lib.mjs.
-    const lines = ls.stdout.split('\n').filter(Boolean);
     const covered = lines.filter((line) => {
       const tab = line.indexOf('\t');
       const p = tab === -1 ? line : line.slice(tab + 1);

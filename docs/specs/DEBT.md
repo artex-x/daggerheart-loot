@@ -26,6 +26,46 @@ Owns: search defects found at the review of the words-in-any-order search
 - **How to verify the fix**: `search.test.ts` finds q80 for `keeper‘s
   staff`, and the cached and uncached paths agree on it.
 
+## Check tooling (no task filed yet; the owner names the task)
+
+Owns: defects in the commit gate's tree key and in the check observer,
+found at the stage cache task (`check-cache`, 2026-10-07).
+
+### D91 - two gate runs in one checkout share one copy of the index
+
+- **Where**: `treeKey()` in `.claude/hooks/tree-key.mjs`, which copies the
+  index to `.claude/.check-index`; its callers `bash-guard.mjs`,
+  `check-observer.mjs` and `gate-credit.mjs` (for `check` and `check:db`).
+- **What**: the copy has one fixed path for each checkout. When two callers
+  take a key at the same time, one can copy the real index over the other's
+  copy between its `git add -A` and its `git ls-files -s`. That key then
+  leaves out unstaged and untracked changes and can equal an armed key: a
+  false green on the commit gate. Two `git add -A` calls can also collide
+  on `index.lock`, which gives a null key (fail open). The stage runner
+  already uses one copy for each process (`index-<pid>`).
+- **Why deferred**: it predates the stage cache, and the protocol of one
+  session for each working tree makes two callers at once rare; a
+  `check:db` beside a `check` in one checkout is the real case.
+- **How to verify the fix**: `treeKey()` copies to a path unique to the
+  process and deletes it in `finally`; a selftest case runs two `treeKey()`
+  calls at once on a dirty tree and gets the same key from both.
+
+### D92 - the check observer reads the session's checkout, not the worktree the check ran in
+
+- **Where**: `check-observer.mjs`, `armedByExit` and `treeKey(input.cwd)`.
+- **What**: an agent whose session cwd is the primary checkout runs `cd
+  <worktree> && rtk npm run check`. The check passes and `gate-credit.mjs`
+  writes the worktree's `.claude/.check-cache.json` (`by: "exit"`, key
+  equal to the worktree's `treeKey()`). The observer reads the cache and
+  the key of `input.cwd`, the primary checkout, so it prints "the commit
+  gate is not armed" after a run that armed it.
+- **Why deferred**: the message is wrong, but the gate is right: the
+  commit in the worktree reads the worktree's cache. Found at the closeout.
+- **How to verify the fix**: the observer resolves the checkout from the
+  `cd` target of the command; a selftest case with a session cwd in one
+  repository and `cd <other> && npm run check` in a second repository says
+  `PASS - armed by the check's own exit.`
+
 ## Slimmer account client (no task filed yet)
 
 Owns: an account client built from the Supabase packages the app uses,

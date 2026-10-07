@@ -23,7 +23,10 @@ Four layers (owner, 2026-09-24):
 | 4 | Hosted E2E | `tests/e2e/`, `npm run e2e`, against the test project `rdjxcjkhsklhprmzxajq` | real Auth, network and RLS end to end; the fake-vs-real agreement check |
 
 Rules: pixel and structural comparisons exist only in layer 2. Real network
-and real Supabase exist only in layers 3 and 4.
+and real Supabase exist only in layers 3 and 4. A local `npm run check` may
+skip the typed lint, the typecheck, the hook selftest and vitest when their
+inputs match a recent local pass; CI runs every stage
+(`tools/check/lib.test.mjs`, below).
 
 **Layer 2's subject: the test build and the fake cloud.** `npm run
 build:test` (`vite build --mode test`) writes `dist-test/`, the same app
@@ -771,7 +774,7 @@ before deletion, `23c00a6^`: `git show 23c00a6^:app.js` (or `:style.css`,
 | Suite | Kind | Fate | Responsible for |
 |---|---|---|---|
 | `dataint` | data | kept | ids, numbering, required fields, cross-references, equipment fields, text hygiene, image and stub files, and (since art-tooling B3) an `og/*.jpg` orphan check mirroring the existing `img/*.webp` one, and (task 69) the row thumbnails: one `img/thumb/*.webp` per `img/*.webp`, no orphan, each a 160x160 lossy WebP read from its header |
-| `derived` | data | kept, re-pointed at R0c | `data.json` / `catalog.csv` / `i/*.html` / `pages/*.html` (`tools/build-pages.js`) rebuilt and compared byte for byte against what `npm run data` (run immediately before, in the same `npm run check`) just wrote - proving the generator agrees with its own output, not that a commit ships the matching bytes; in CI, a `git diff --exit-code` step after `npm run check` is what makes that second comparison bite (B4); counts spelled out in the files `tests/derived.js`'s `COUNT_BEARING_FILES` array names; `noindex` and the head (`headFacts`) read from `app/index.html` alone - before R0c this also compared it against the now-deleted root `index.html`'s head; the licence notice; die vectors read from `app/src/lib/dice.ts`'s `DIE_ART` (before R0c: parsed out of `app.js`); per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `browser` matrix; the decisions registry - `docs/DECISIONS.md` equals `tools/decisions.js`'s render of `docs/decisions/`, every file validates against the template (names, headings, required fields, both-way supersession pointers, the caps on files dated 2026-09-26 or later), the template agrees with the tool, and every quoted `DECISIONS.md` citation resolves to a title (a citation wrapped onto the next line included), every cited `docs/decisions/` path exists, and a file dated 2026-09-26 or later carries no "none recorded" marker |
+| `derived` | data | kept, re-pointed at R0c | `data.json` / `catalog.csv` / `i/*.html` / `pages/*.html` (`tools/build-pages.js`) rebuilt and compared byte for byte against what `npm run data` (run immediately before, in the same `npm run check`) just wrote - proving the generator agrees with its own output, not that a commit ships the matching bytes; in CI, a `git diff --exit-code` step after `npm run check` is what makes that second comparison bite (B4); counts spelled out in the files `tests/derived.js`'s `COUNT_BEARING_FILES` array names; `noindex` and the head (`headFacts`) read from `app/index.html` alone - before R0c this also compared it against the now-deleted root `index.html`'s head; the licence notice; die vectors read from `app/src/lib/dice.ts`'s `DIE_ART` (before R0c: parsed out of `app.js`); per-source pins (Dread, Vault of Ages, frames, equipment); `deploy.needs` includes the structural `browser` matrix; the decisions registry - `docs/DECISIONS.md` equals `tools/decisions.js`'s render of `docs/decisions/`, every file validates against the template (names, headings, required fields, both-way supersession pointers, the caps on files dated 2026-09-26 or later), the template agrees with the tool, and every quoted `DECISIONS.md` citation resolves to a title (a citation wrapped onto the next line included), every cited `docs/decisions/` path exists, and a file dated 2026-09-26 or later carries no "none recorded" marker; the check's lint split (the typed half is `tsconfig.json`'s `include` and runs uncached; the untyped half and prettier use their caches under `node_modules/.cache/`); `scripts.check` runs its stages through `tools/check/run.mjs`, and CI's check step sets `CHECK_CACHE: 'off'` |
 | `parity` | migration | **deleted at R0c** (`23c00a6`) | was: the rewrite against the live app, the same script on both, differences reported - see "The rewrite against the app it replaces" below |
 | `contracts` | contract | pure half kept; browser half ported to `tests/app/contracts.js` | golden fixtures: list encode and decode, both link variants, truncation, the equipment stat line in both languages, filter group key names against the docs, `data.json` top-level keys against `CONTRACTS.md` section 4, the `craft` of every `data.json` record is a list of known ids |
 | `i18n` | source | **deleted at R0c**; superseded by a compile-time check | before R0c: dictionary parity in both directions, and no key the code asks for that is missing (`tests/i18n.js`, parsed out of `app.js`). Now: `app/src/lib/dict.ts`'s `Dict` type makes the same parity a `tsc`/`svelte-check` error in both directions - part of `npm run check`, not a separate suite. The one thing lost: the informational dead-key report (`I18N.md`) |
@@ -1444,6 +1447,37 @@ transport `tools/check-site.mjs` actually runs post-deploy) is deliberately
 outside it, the same argument as `client.mjs`/`live.mjs`/`run.mjs` above: a
 thin wrapper around a real network call, where the only honest proof is a
 real deploy.
+
+`tools/check/lib.test.mjs` runs under `node --test` as the first step of
+`npm run check` after gate credit's `begin`, before
+`tools/check/run.mjs` runs the stages: it covers the stage cache's pure
+half (`tools/check/lib.mjs`) - the selector tables (`TYPED`, `HOOKS`,
+`VITEST` and the `ALWAYS` paths, one row per path with its expected
+answer), git's quoted paths, the stage key (a selected row, the command,
+Node's version, the platform and the arch move it; an unselected row does
+not; the git version counts for the selftest only), the off switch
+(`CHECK_CACHE=off` and any non-empty `CI`), the store record (newest
+first, 8 at most, a malformed record read as empty, a file name without
+`:`), and `runStages` with fakes: a
+skip on a stored key, a record only after exit 0 with an unchanged key,
+none after an edit during the run, a failure that stops the loop with its
+code, a spawn error named by its code, off mode reading and writing nothing, a null snapshot running the
+stage with no record, and no line with one of `check-observer.mjs`'s
+failure markers. It pins the stage table (order, the four cached stages,
+`lint:untyped` before `lint:typed` and no `npm run lint`, every `npm run`
+script present) and `scripts.check` itself. Three guards read the real
+tree: G1 collects every repository path a vitest file builds from its own
+directory and every string literal that starts with `../` and leaves
+`app/` (a `require`, a `new URL`), adds `data.js` by hand behind
+`tools/build-share-pages.js` (G1 does not follow a required module),
+requires `VITEST` to select each, and finds no import in `app/` that
+leaves `app/`; G2 walks the relative imports from every
+`.claude/hooks/*.mjs` and `tests/db/run.mjs`, plus `selftest.mjs`'s
+`join(hooksDir, ...)` paths, and requires `HOOKS` to select each; G3
+requires `TYPED` to select `tsconfig.json`'s `include` and the lint
+config's imports. Each guard also asserts the reads it knows of, so a
+broken extractor cannot pass. `run.mjs` (the real git, store and spawn)
+is proven by the check itself.
 
 `tests/app/golden.test.mjs` covers `tests/app/
 golden.js`'s pure half the same way - the DOM-adjacent normalisation and

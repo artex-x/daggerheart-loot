@@ -775,6 +775,47 @@ async function testWorktreeTreeKey() {
   }
 }
 
+// #314-#316 - indexRows() with its own copy path, as tools/check/run.mjs
+// calls it: the stage runner must never race a hook over `.check-index`.
+async function testIndexRows() {
+  const copyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-rows-'));
+  const exclude = path.join(scratchRoot, '.git', 'info', 'exclude');
+  const savedExclude = fs.existsSync(exclude) ? fs.readFileSync(exclude, 'utf8') : null;
+  const saved = [process.env.LOOT_HOOK_ROOT, process.env.LOOT_HOOK_STATE_DIR];
+  try {
+    process.env.LOOT_HOOK_ROOT = scratchRoot;
+    process.env.LOOT_HOOK_STATE_DIR = scratchState;
+    fs.mkdirSync(path.dirname(exclude), { recursive: true });
+    fs.writeFileSync(exclude, `${savedExclude || ''}\nrows-ignored.txt\n`);
+    writeFile('rows-untracked.txt', 'untracked\n');
+    writeFile('rows-ignored.txt', 'ignored\n');
+    const checkIndex = path.join(scratchState, '.check-index');
+    const before = fs.existsSync(checkIndex) ? fs.statSync(checkIndex).mtimeMs : null;
+    const { indexRows } = await importTreeKey();
+    const rows = indexRows(scratchRoot, path.join(copyDir, 'index'));
+    const paths = (rows || []).map((line) => line.slice(line.indexOf('\t') + 1));
+    check('#314 indexRows lists an untracked file', paths.includes('rows-untracked.txt'));
+    check('#315 indexRows omits a gitignored file', !paths.includes('rows-ignored.txt'));
+    const after = fs.existsSync(checkIndex) ? fs.statSync(checkIndex).mtimeMs : null;
+    check(
+      '#316 indexRows with its own copy path leaves .check-index untouched',
+      before === after && fs.existsSync(path.join(copyDir, 'index')),
+      `${before} -> ${after}`
+    );
+  } finally {
+    ['LOOT_HOOK_ROOT', 'LOOT_HOOK_STATE_DIR'].forEach((name, i) => {
+      if (saved[i] === undefined) Reflect.deleteProperty(process.env, name);
+      else process.env[name] = saved[i];
+    });
+    for (const name of ['rows-untracked.txt', 'rows-ignored.txt']) {
+      fs.rmSync(path.join(scratchRoot, name), { force: true });
+    }
+    if (savedExclude === null) fs.rmSync(exclude, { force: true });
+    else fs.writeFileSync(exclude, savedExclude);
+    fs.rmSync(copyDir, { recursive: true, force: true });
+  }
+}
+
 // ---------- bash-guard.mjs: persistence-era families (#202-#240) ----------
 //
 // 2l gitleaks, 2m the check:db commit rule, 2n hosted Supabase writes, 2o
@@ -5266,6 +5307,7 @@ async function main() {
     testCommitAttribution();
     await testCommitGateAsync();
     await testWorktreeTreeKey();
+    await testIndexRows();
     await testPersistenceGuards();
     testHostGuards();
     testReviewerGuards();

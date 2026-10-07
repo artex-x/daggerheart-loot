@@ -47,7 +47,11 @@ jobs:
 
       - run: npm ci
 
+      # CI runs every stage cold: the stage cache is a local speed-up only
+      # (.claude/README.md, "Run a long check", "Stage cache").
       - name: The same gate a person has to pass locally
+        env:
+          CHECK_CACHE: 'off'
         run: npm run check
 
       # `npm run check` (above) already ran `npm run data`, which regenerates

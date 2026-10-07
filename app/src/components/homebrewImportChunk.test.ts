@@ -46,6 +46,10 @@ describe('the import chunk', () => {
     );
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
-    expect(await screen.findByText('Импорт предметов из файла JSON')).toBeInTheDocument();
+    /* The retry compiles the real chunk cold, which passed the default 1 s on a
+       4-core laptop (measured 2026-10-07). */
+    expect(
+      await screen.findByText('Импорт предметов из файла JSON', undefined, { timeout: 10_000 })
+    ).toBeInTheDocument();
   });
 });

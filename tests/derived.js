@@ -1504,6 +1504,60 @@ ok(
   '.claude/.gitignore must keep the line `.check-pending.json`: an unignored pending file changes the tree key it records'
 );
 
+/* Check caches (docs/decisions/2026-10-07-a-local-check-skips-a-stage-whose-inputs.md):
+   prettier and the untyped ESLint half cache per file under node_modules/.cache/;
+   the typed half is tsconfig.json's `include` and never takes --cache. */
+const pkgScripts = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).scripts;
+const typedRoots = JSON.parse(fs.readFileSync(path.join(ROOT, 'tsconfig.json'), 'utf8'))
+  .include.map((entry) => entry.slice(0, entry.includes('*') ? entry.indexOf('*') : undefined))
+  .map((entry) => entry.replace(/\/$/, ''))
+  .filter((entry, index, all) => all.indexOf(entry) === index)
+  .sort()
+  .join(' ');
+ok(
+  pkgScripts['format:check'].includes('--cache') &&
+    pkgScripts['format:check'].includes('--cache-location node_modules/.cache/'),
+  'scripts.format:check must use --cache with --cache-location node_modules/.cache/: the default location is not gitignored by every tool, and formatting reads one file'
+);
+ok(
+  pkgScripts['lint:typed']
+    .split(/\s+/)
+    .slice(1)
+    .filter((token) => !token.startsWith('-'))
+    .sort()
+    .join(' ') === typedRoots,
+  "scripts.lint:typed must lint exactly tsconfig.json's `include` roots: the typed half and the untyped half must partition the files `eslint .` lints"
+);
+ok(
+  !pkgScripts['lint:typed'].includes('--cache'),
+  "scripts.lint:typed must not use --cache: a typed rule reads other files' types, and ESLint's cache keys a result on the file's own content"
+);
+ok(
+  [...pkgScripts['lint:untyped'].matchAll(/--ignore-pattern\s+("[^"]*"|\S+)/g)]
+    .map((match) => match[1].replace(/"/g, '').replace(/\/\*\*$/, ''))
+    .sort()
+    .join(' ') === typedRoots &&
+    pkgScripts['lint:untyped'].includes('--cache ') &&
+    pkgScripts['lint:untyped'].includes('--cache-strategy content') &&
+    pkgScripts['lint:untyped'].includes('--cache-location node_modules/.cache/'),
+  "scripts.lint:untyped must ignore exactly tsconfig.json's `include` roots and cache under node_modules/.cache/ by content: the two halves must partition `eslint .`"
+);
+/* The stages between `begin` and `arm` run through tools/check/run.mjs, whose
+   own suite (tools/check/lib.test.mjs) pins the stage table and the lint
+   split; CI runs every stage cold. */
+ok(
+  checkScript.includes(' && node tools/check/run.mjs && '),
+  'scripts.check must run its stages through `node tools/check/run.mjs`: lib.test.mjs pins the stage table there'
+);
+const checkJob = jobOf('check');
+ok(
+  checkJob &&
+    /- name: The same gate a person has to pass locally\r?\n {8}env:\r?\n {10}CHECK_CACHE: 'off'\r?\n {8}run: npm run check\r?\n/.test(
+      checkJob[1]
+    ),
+  "ci.yml: the check step must set `CHECK_CACHE: 'off'`: CI runs every stage uncached"
+);
+
 /* Agents read no .env file
    (docs/decisions/2026-09-27-agents-read-no-env-file-the-program-loads.md):
    the Read tool is denied on them; `node --env-file=<file>` loads one. */

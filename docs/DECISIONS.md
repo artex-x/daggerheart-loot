@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-07 - [A local check skips a stage whose inputs match its last local pass](decisions/2026-10-07-a-local-check-skips-a-stage-whose-inputs.md)
 - 2026-10-07 - [Arazo's Artifacts: source arazo, ids aa1-aa51, tier formulas as lines](decisions/2026-10-07-arazos-artifacts-source-arazo-section-roll-arazo-ids-aa.md)
 - 2026-10-07 - [The image review keeps its verdicts in the browser, keyed by hash](decisions/2026-10-07-the-image-review-keeps-its-verdicts-in-the-browser-by-hash.md)
 - 2026-10-02 - [A homebrew import matches items by key, never by name](decisions/2026-10-02-a-homebrew-import-matches-items-by-key-never-by-name.md)

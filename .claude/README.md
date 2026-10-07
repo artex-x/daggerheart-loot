@@ -240,7 +240,7 @@ pending files and `.check-index` in the worktree's own `.claude/`
 | `.check-db-cache.json` | `check-observer.mjs`, `gate-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check:db`, against the same tree key. |
 | `.check-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }`: the tree key at the start of the running `npm run check` and its script shell; `arm` reads it, and deletes it when the `ppid` is its own run's. Gitignored, because an unignored file would change the key it records (`tests/derived.js` pins the line). |
 | `.check-db-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }` of the running `npm run check:db`. |
-| `.check-index` | `tree-key.mjs` | A throwaway copy of the real index, never the index itself. `tree-key.mjs` finds the index with `git rev-parse --git-path index`: in a linked worktree `.git` is a file, and the old `<root>/.git/index` path made the key null there, so every commit gate failed open in a worktree until 2026-09-24. |
+| `.check-index` | `tree-key.mjs` | A throwaway copy of the real index, never the index itself. `tree-key.mjs` finds the index with `git rev-parse --git-path index`: in a linked worktree `.git` is a file, and the old `<root>/.git/index` path made the key null there, so every commit gate failed open in a worktree until 2026-09-24. The stage runner keeps its own copy for each process at `node_modules/.cache/check/index-<pid>` ("Run a long check", "Stage cache"). |
 | `.restore-receipts.json` | `tools/supabase/restore-drill.mjs` | The receipts of passed restore drills, newest first, 20 at most, one per source: the source id, the hashes of the decrypted files, the newest migration, the host and the time; no row count and no row. `npm run restore:prod` refuses a source without a receipt under 24 h old. It lives in the main checkout's `.claude/`, also for a drill run from a worktree. |
 | `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. Holds the 64 most recently active sessions; the session being written is always kept. The cap bounds the session count, not a session's own `wrote` map, which still grows without limit for the life of one session. A save writes a temp file and renames it over this one, so a reader never parses a half write. The read-modify-write is not guarded against a second session saving in between: one session per working tree is the protocol, and a lost save costs one duplicate reminder or one missing Stop sentence (fail open). |
 
@@ -280,7 +280,9 @@ Each part is load-bearing:
   deny (rule 2k), because 61 of 71 recorded invocations piped anyway.
   Unpiped, the two outcomes are each unambiguous on their own line: a
   failure opens with `Exit code 1`, and a pass ends with
-  `check-observer.mjs` saying `npm run check: PASS. Commit gate armed`.
+  `check-observer.mjs` saying `npm run check: PASS. Commit gate armed`
+  (`PASS - armed by the check's own exit.` when the stage cache skipped
+  vitest; "Stage cache" below).
   (The observer says nothing on a failure here - a failed Bash call
   returns a plain string rather than the usual object and the hook does
   not speak; probed 2026-09-18 against a check failed at its prettier
@@ -298,11 +300,9 @@ Each part is load-bearing:
   command; when it outlives its `timeout` it is moved to the
   background (`Command did not complete within its 120s timeout and
   was moved to the background`), and for a subagent that is a lost
-  run. The default is 120 s and the check is ~165 s (stage by stage:
-  format 11s, lint 30s, typecheck 12s, data 4s, derived 1s, dataint
-  ~2.6s,
-  selftest 19s, vitest with coverage 88s), so a check call without a
-  timeout cannot finish in the foreground. 600000 is the tool's
+  run. The default is 120 s and the check takes minutes (stage costs:
+  "Batch size and the fixed cost of a run", the 2026-10-07 table), so a
+  check call without a timeout cannot finish in the foreground. 600000 is the tool's
   maximum; a check that outlives even that is the fork-pool stall
   below, not a timeout problem.
 - **Measured with `rtk`, it crossed the output cap until 2026-09-25.** A result over about
@@ -412,8 +412,80 @@ passed and armed the gate. A hand run of `gate-credit.mjs` is denied (rule
 trusts the chain's exit, so a step that exits 0 on a failure would credit
 it; the observer's FAIL markers still speak for a foreground run.
 
+**Stage cache.** Between `begin` and `arm`, the chain runs `node --test
+tools/check/lib.test.mjs` and then `node tools/check/run.mjs`, which runs
+the stages one at a time in the order of `STAGES` in `tools/check/lib.mjs`
+(`docs/decisions/`, 2026-10-07, "A local check skips a stage whose inputs
+match its last local pass"). Four stages are cached: `lint:typed` and
+`typecheck` (selector `TYPED`), `selftest` (`HOOKS`, plus `git --version`)
+and `vitest` (`VITEST`). Every other stage always runs; prettier and the
+untyped ESLint half use their own caches.
+
+- The key of a cached stage is a sha256 over the stage name, its command,
+  Node's version, the platform, the arch and every `git ls-files -s` row its
+  selector selects, after `git add -A` on a copy of the index (the commit
+  gate's view of the tree; `tree-key.mjs`, `indexRows`). `package.json`,
+  `package-lock.json`, `.nvmrc`, `tools/check/` and
+  `.claude/hooks/tree-key.mjs` are in every key. The runner takes the key
+  before the stage and again after its exit 0, and records it only when
+  the two are equal.
+- When a key matches one of the stage's last 8 passes, the run prints
+  `check: <stage> skipped - inputs unchanged since its pass at <YYYY-MM-DD
+  HH:MM>`. The last line is `check: <n> stages run, <m> skipped (<names>),
+  <s> s`. A failure prints `check: <stage> exited <code>` and stops the
+  chain, so `arm` does not run. A stage that cannot start prints
+  `check: <stage> could not start (<code>)`.
+- The store is `node_modules/.cache/check/<stage>.json` (a `:` in a stage
+  name becomes `-`). Each snapshot copies the index to `index-<pid>` beside
+  the store and deletes the copy after it. Each worktree has its own store;
+  `npm ci` deletes it.
+- A run that skips vitest prints no coverage summary, so
+  `check-observer.mjs` says `npm run check: PASS - armed by the check's own
+  exit.` A run that runs vitest still ends with `npm run check: PASS.
+  Commit gate armed`.
+- To force a full run: `node tools/check/run.mjs --forget` (deletes
+  `node_modules/.cache/prettier/`, `eslint/` and `check/`), then `rtk npm
+  run check`. `CHECK_CACHE=off`, or `CI` set to any non-empty value, deletes the
+  same three directories, runs every stage and writes no record. CI's check
+  step sets `CHECK_CACHE: 'off'` (`tests/derived.js` pins the line).
+- The guards G1-G3 in `tools/check/lib.test.mjs` fail with the stage and
+  the path to add when a vitest file, the selftest or the typed files read
+  a path that their selector does not select. G1 finds a path that a
+  vitest file builds with `join` or `resolve` on `import.meta.dirname` or on
+  a constant, and any string literal that starts with `../` and leaves
+  `app/` (`require`, `new URL`, `import.meta.glob`). G1 does not follow the
+  reads of a required module, so it lists `data.js` (loaded by
+  `tools/build-share-pages.js`) by hand. A path built in a new shape can
+  pass them; the uncached CI run is the backstop. Selftest #314-#316
+  cover `indexRows`.
+
 **More host facts about a long check, recorded so nobody re-derives them:**
 
+- The host (owner, 2026-10-07): ASUS ZenBook UX433FA, Intel Core i7-8565U
+  (15 W, 4 cores and 8 threads, base 1.8 GHz, throttles under sustained
+  all-core load), 15.8 GB RAM with about 4.2 GB free, commit limit 31.6 GB
+  with 7.7 GB free, one QLC NVMe SSD, the repository on an 80 GB ReFS Dev
+  Drive (E:), power plan Balanced, Node v24.15.0, Windows 11. Skip work; do
+  not parallelise. Run two stages at once at most, never beside vitest, and
+  only after a measurement.
+- Prettier and the untyped ESLint half keep their own per-file caches under
+  `node_modules/.cache/prettier/` and `node_modules/.cache/eslint/`. `npm ci`
+  deletes them, and each worktree has its own. To force a cold run, delete
+  `node_modules/.cache/`.
+- Never put `--cache` on the typed ESLint half (`lint:typed`) or on `eslint
+  .`: a typed rule reads other files' types, and ESLint's cache keys a
+  result on the file's own content (`docs/decisions/`, 2026-10-07, "A local check skips a stage whose
+  inputs match its last local pass"). Never let ESLint write
+  `.eslintcache` to the repository root: it is not gitignored and moves the
+  tree key.
+- Two vitest timing tests fail under host load on a cold run and pass on
+  the next run (2026-10-07, CPU near 94 %): `homebrewEditor.test.ts`,
+  "picks and removes in every picker", at its 30 s timeout (vitest
+  Duration 467.6 s), and `importPanel.test.ts`, "draws 20 list blocks ...
+  for 1000 lists", at 3213.6 ms against its 3000 ms budget (Duration
+  571 s). Symptom: one of these two names fails and nothing else does. Run
+  the check once more; if either fails on an idle host, record it in
+  `docs/specs/DEBT.md` as a test defect.
 - Without `rtk` (the Linux cloud container, measured 2026-09-24) a plain
   `npm run check` prints about 65 KB, over the tool's output cap, so the
   result is persisted to a file and `check-observer.mjs` cannot attribute
@@ -635,6 +707,15 @@ tests/run-all.js app/states` 243 s (53 cases); `node tests/run-all.js
 app/print,app/contracts,app/typo,app/hues,stub` 432 s pooled
 (`app/contracts` 414 s); `npm run e2e` (contract cases A-J, F0-F11)
 passed inside one 600 s call.
+
+Re-measured on this host on 2026-10-07, loaded (CPU 94 %, 29 node
+processes, 4.3 GB free), per stage: the hook selftest (1467 cases) 563 s,
+then 253 s at 26 % CPU - the 19 s in older notes is stale; prettier 35 s
+cold and 8 s with a warm `--cache`; ESLint over the typed half (243 files)
+85 s and over the untyped half (103 files) 10.6 s, `eslint .` 116 s; the
+seven `node --test` calls 4.3 s together; one tree key 0.17-0.33 s.
+`npm run check` prints no per-stage time: time a stage alone, and only on
+an idle host.
 
 `check:built` and the `tests/app/` filters are paid once per batch; `npm run
 check` is paid once per commit inside it. None of these scale with the
