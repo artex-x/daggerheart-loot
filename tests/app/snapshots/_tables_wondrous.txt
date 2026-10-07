@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -181,6 +183,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 98Луковица ЯдолилииЭту луковицу можно разделить на 1d4 дольки, к... [namelen=198 namehash=ea3b714a]
 99Лепестки Цветка ТроицыЗаварите эти лепестки в чай, который мог... [namelen=223 namehash=4c9ba70c]
 9Архивная ГнильНа время сцены вы получаете преимущество ко всем ... [namelen=190 namehash=b1dfa118]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -349,6 +352,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -365,6 +369,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -518,6 +523,7 @@ Alconite Crystal
 Alt. tables
 Anchoring Hook
 Ancient Runestone
+Arazo's Artifacts
 Arcane Scalpel
 Arcane Stuffing
 Archivist's Rot

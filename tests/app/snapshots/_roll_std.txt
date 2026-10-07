@@ -19,6 +19,7 @@ RootWebArea "Обычные правила — Генератор лута — D
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -84,6 +85,7 @@ RootWebArea "Обычные правила — Генератор лута — D
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -143,6 +145,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -209,6 +212,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
 
 ## en :: controls
 Alt. tables
+Arazo's Artifacts
 Communities
 Consumables
 Copy every option

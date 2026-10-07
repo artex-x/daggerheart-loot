@@ -34,6 +34,7 @@ const TABLES = [
   'dread',
   'voa',
   'dv',
+  'arazo',
   'frames',
   'community',
   'alt_item',
@@ -54,6 +55,7 @@ const PAGES = [
   ['#/roll/dread', 'dread'],
   ['#/roll/voa', 'vault of ages'],
   ['#/roll/dv', "dragon's vault"],
+  ['#/roll/arazo', "arazo's artifacts"],
   ['#/roll/community', 'сообщества'],
   ['#/lists', 'списки'],
   ['#/lists/a', 'список'],
@@ -418,7 +420,7 @@ async function focusWalk(page, where) {
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
             const known =
-              /^(roll\/(std|alt|wondrous|dread|voa|dv|community)|tables|lists|search|print\/|i\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
+              /^(roll\/(std|alt|wondrous|dread|voa|dv|arazo|community)|tables|lists|search|print\/|i\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);
@@ -463,8 +465,9 @@ async function focusWalk(page, where) {
               ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0))
               : 0;
           });
-          /* The signed-in strip carries the Homebrew group chip: docs/specs/FEATURES.md, "Rolling". */
-          const cap = width < 500 ? (as ? 300 : 260) : width < 1000 ? 150 : 130;
+          /* Eleven group chips, twelve signed in, wrap to six rows under 500 px:
+             docs/specs/FEATURES.md, "Rolling". */
+          const cap = width < 500 ? 300 : width < 1000 ? 150 : 130;
           ok(strip <= cap, where + ': section strip ' + strip + 'px, cap ' + cap);
         }
 

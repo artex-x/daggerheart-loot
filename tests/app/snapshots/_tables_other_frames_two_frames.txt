@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -75,6 +77,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -248,6 +251,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_frames/f
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -264,6 +268,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_frames/f
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -315,6 +320,7 @@ Advanced ShotgunTier 3 · Physical · Strength · Very Close · d6+8... [namelen
 Advanced Small Revolver
 Advanced Small RevolverTier 3 · Physical · Finesse · Far · d6+6 ... [namelen=189 namehash=83813175]
 Alt. tables
+Arazo's Artifacts
 Baking Tray Breastplate
 Baking Tray BreastplateTier 1 · Thresholds 8/17 · Armor 4Very He... [namelen=119 namehash=88b62e16]
 Barrel Lid Shield

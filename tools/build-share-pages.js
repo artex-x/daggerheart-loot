@@ -77,7 +77,7 @@ const ROOT_TEXT = {
     n.loot +
     ' items and consumables, ' +
     n.eq +
-    " weapons and armour. Core, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, community items and alternative tables. Russian and English.",
+    " weapons and armour. Core, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, community items and alternative tables. Russian and English.",
   card: (n) =>
     n.all +
     ' entries with pictures: loot, consumables, weapons and armour from Core, Hope & Fear, Wondrous Loot and community items. Russian and English.',
@@ -177,6 +177,7 @@ const PATH_TEXT = {
     dread: 'Dread GM Toolbox',
     voa: 'Vault of Ages',
     dv: "Dragon's Vault",
+    arazo: "Arazo's Artifacts",
     community: 'Сообщества',
     eq: 'Снаряжение',
     other: 'Прочее',
@@ -199,6 +200,7 @@ const PATH_TEXT = {
     dread: 'Dread GM Toolbox',
     voa: 'Vault of Ages',
     dv: "Dragon's Vault",
+    arazo: "Arazo's Artifacts",
     community: 'Communities',
     eq: 'Equipment',
     other: 'Other',
@@ -225,6 +227,7 @@ const TABLE_PATH = {
   dread: ['dread'],
   voa: ['voa'],
   dv: ['dv'],
+  arazo: ['arazo'],
   community: ['community'],
   eq_weapon: ['eq', 'weapon'],
   eq_secondary: ['eq', 'secondary'],
@@ -238,6 +241,7 @@ function tableOf(it) {
   if (isFrame(it)) return 'other_frames';
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
+  if (it.src === 'arazo') return 'arazo';
   if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (['wondrous', 'dread', 'dv', 'community'].includes(it.src)) return it.src;
   if (it.src === 'core' || it.src === 'hnf')

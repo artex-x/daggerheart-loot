@@ -871,31 +871,31 @@ describe('the Lists tab and the cutoff', () => {
       (a) => a.getAttribute('href') ?? ''
     );
 
-  it('draws nine tabs and no Lists tab from the cutoff, in a build with sign-in', () => {
+  it('draws ten tabs and no Lists tab from the cutoff, in a build with sign-in', () => {
     render(App, {
       env: at('#/roll/std', {
         cloud: fakeCloud(SEED),
         clock: fixedClock(LEGACY_WRITE_UNTIL)
       })
     });
-    expect(tabLinks()).toHaveLength(9);
+    expect(tabLinks()).toHaveLength(10);
     expect(tabLinks()).not.toContain('#/lists');
   });
 
-  it('draws ten tabs the moment before the cutoff', () => {
+  it('draws eleven tabs the moment before the cutoff', () => {
     render(App, {
       env: at('#/roll/std', {
         cloud: fakeCloud(SEED),
         clock: fixedClock(LEGACY_WRITE_UNTIL - 1)
       })
     });
-    expect(tabLinks()).toHaveLength(10);
+    expect(tabLinks()).toHaveLength(11);
     expect(tabLinks()).toContain('#/lists');
   });
 
-  it('keeps ten tabs after the cutoff in a build with no sign-in', () => {
+  it('keeps eleven tabs after the cutoff in a build with no sign-in', () => {
     render(App, { env: at('#/roll/std', { clock: fixedClock(LEGACY_WRITE_UNTIL) }) });
-    expect(tabLinks()).toHaveLength(10);
+    expect(tabLinks()).toHaveLength(11);
   });
 });
 

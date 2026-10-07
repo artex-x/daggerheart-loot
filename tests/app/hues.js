@@ -135,7 +135,13 @@ const gap = (a, b) => {
     new Set(std.map((x) => x.look)).size === 1,
     'roll dice look different: ' + [...new Set(std.map((x) => x.look))].join(' / ')
   );
-  for (const h of ['#/roll/alt', '#/roll/wondrous', '#/roll/voa', '#/roll/dv']) {
+  for (const h of [
+    '#/roll/alt',
+    '#/roll/wondrous',
+    '#/roll/voa',
+    '#/roll/dv',
+    '#/roll/arazo'
+  ]) {
     const one = await rollLook(h);
     ok(one.length === 1, h + ': not exactly one roll button');
     ok(!!one[0]?.die, h + ': the roll button has no die');

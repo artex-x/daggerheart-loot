@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -63,6 +65,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 28Кольцо ТишиныПотратьте Надежду, чтобы активировать это кольцо.... [namelen=124 namehash=1ece900e]
 32Кольцо СопротивленияОдин раз за продолжительный отдых вы может... [namelen=168 namehash=337f7771]
 59Кольцо Несокрушимой РешимостиОдин раз за сессию, когда Мастер ... [namelen=162 namehash=0915f512]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -116,6 +119,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -132,6 +136,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -161,6 +166,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
 32Ring of ResistanceOnce per long rest, you can activate this ri... [namelen=133 namehash=e0f2b0e1]
 59Ring of Unbreakable ResolveOnce per session, when the GM spend... [namelen=144 namehash=7e147df4]
 Alt. tables
+Arazo's Artifacts
 Communities
 Consumables
 Core

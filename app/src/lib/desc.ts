@@ -54,10 +54,10 @@ export function splitLabel(line: string, inList = false): Line {
   return ok ? { label: head, body: line.slice(i + 1) } : { label: '', body: line };
 }
 
-/** Only equipment, Vault of Ages and homebrew items print named properties, so only they
- *  get labels: an author writes a property as a catalog book does. */
+/** Only equipment, Vault of Ages, Arazo's Artifacts and homebrew items print named
+ *  properties, so only they get labels: an author writes a property as a catalog book does. */
 export function hasLabels(it: Record_): boolean {
-  return !!it.eq || it.src === 'voa' || it.src === 'homebrew';
+  return !!it.eq || it.src === 'voa' || it.src === 'arazo' || it.src === 'homebrew';
 }
 
 export type DescPart =

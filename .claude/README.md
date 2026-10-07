@@ -160,6 +160,10 @@ Host and tool facts behind this design, kept so nobody re-derives them:
   isolation guard then refuses it because it cannot read which root the
   launcher targets. `git.exe` matches neither. Measured 2026-09-19.
   Rule 2w does not judge a `git.exe` pipe for this reason.
+- A Bash command on a path with an apostrophe (`Downloads\Arazo's Aritfacts`)
+  fails after the RTK rewrite: `cat` reports "cannot find the path". Read the
+  file with the Read tool or PowerShell, or copy it to the scratchpad first.
+  Measured 2026-10-07.
 - A second session editing `.claude/hooks/**` concurrently makes this
   session's `npm run check` fail in ways that read as its own bug:
   `selftest.mjs`'s pass count changes between consecutive runs with no edit

@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -122,6 +124,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 7Флакон Мягкого ПаденияВыпейте это зелье, чтобы до конца сцены н... [namelen=111 namehash=d2002631]
 8Слюна ХимерыСмажьте этой слюной физическое оружие, и до следующ... [namelen=122 namehash=197d5fb9]
 9Пакетик Космической ПылиВсё, что покрыто этой пылью, становится... [namelen=179 namehash=934712ed]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -232,6 +235,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -248,6 +252,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -336,6 +341,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable
 8Chimeric SalivaYou can apply this saliva to a weapon that deals... [namelen=158 namehash=833b7cd8]
 9Packet of Space DustThis dust causes anything it covers to beco... [namelen=213 namehash=379f2520]
 Alt. tables
+Arazo's Artifacts
 Arcticite Shard
 Berserker's Brew
 Bundle of Spiderlegs

@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -49,19 +51,24 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Артефакты" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "1 из 381"
+    StaticText "10 из 410"
     ... StaticText x13 of 17 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x27 of 31 same-shape siblings elided
+    ... button x28 of 32 same-shape siblings elided
     button "Артефакты" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
     StaticText "АРТЕФАКТЫ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (1)" [checked=false]
-    StaticText "Выбрать все (1)"
+    checkbox "Выбрать все (10)" [checked=false]
+    StaticText "Выбрать все (10)"
     checkbox "Клятва Равновесия" [checked=false]
-    button "9 Клятва Равновесия Артефакт · Магическое · Инстинкт · Далеко · ..." [namelen=847 namehash=70e32327]
+    ... button x8 of 12 same-shape siblings elided
+    ... checkbox x7 of 11 same-shape siblings elided
+    checkbox "Алебарда Урзо" [checked=false]
+    button "41 Алебарда Урзо Артефакт · Физическое · Влияние · Близко · d12 ..." [namelen=232 namehash=e17bb1f0]
+    checkbox "Кнут из Хвоста Виверны" [checked=false]
+    button "50 Кнут из Хвоста Виверны Артефакт · Физическое · Проворность · ..." [namelen=539 namehash=e0eca26e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -71,10 +78,20 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 
 ## ru :: controls
 1
+1Нестареющее Око ЗверяАртефакт · Физическое · Проворность · Впло... [namelen=389 namehash=d8e6fa4e]
 2
+25Жезл СопротивленияАртефакт · Магическое · Характеристика Закли... [namelen=355 namehash=27bb2f82]
+2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=396 namehash=212c8af2]
 3
+32Посох Запредельной ПустотыАртефакт · Магическое · Характеристи... [namelen=228 namehash=2463e278]
+34Моргенштерн ТарианаАртефакт · Физическое · Сила · Близко · d10... [namelen=304 namehash=b906cb29]
 4
+41Алебарда УрзоАртефакт · Физическое · Влияние · Близко · d12 фи... [namelen=225 namehash=cebca89c]
+50Кнут из Хвоста ВиверныАртефакт · Физическое · Проворность · Бл... [namelen=530 namehash=af543359]
+5Кортик МёртвыхАртефакт · Физическое · Искусность · Вплотную · d... [namelen=522 namehash=935c72b3]
+6Драконий ЛукАртефакт · Физическое · Искусность · Очень далеко ·... [namelen=361 namehash=2c9874af]
 9Клятва РавновесияАртефакт · Магическое · Инстинкт · Далеко · d1... [namelen=837 namehash=9d97f73b]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -86,6 +103,7 @@ Vault of Ages
 Wondrous
 Wondrous Loot
 daggerheart.com
+Алебарда Урзо
 Альт. таблицы
 Артефакты
 Близко
@@ -96,16 +114,22 @@ daggerheart.com
 Вторичное
 Далеко
 Двуручное
+Драконий Лук
+Жезл Сопротивления
 Знание
 Инстинкт
 Искусность
 К содержимому
 Как это работает
 Клятва Равновесия
+Кнут из Хвоста Виверны
 Колоссы Сухоземья
 Конфиденциальность
+Кортик Мёртвых
 ЛутDaggerheart
 Магическое
+Моргенштерн Тариана
+Нестареющее Око Зверя
 Обычные правила
 Одноручное
 Оружие
@@ -113,6 +137,7 @@ daggerheart.com
 Очень далеко
 Пир зверей
 Поиск
+Посох Запредельной Пустоты
 Проворность
 Прочее
 Сбросить всё
@@ -127,6 +152,7 @@ daggerheart.com
 Ссылка на таблицу
 Ссылка на фильтры
 Таблицы
+Топор Рассвета
 Тёмное сердце Андалурии
 Убрать из фильтра
 Улучшаемые
@@ -153,6 +179,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -169,6 +196,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -183,19 +211,24 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "Artifacts" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "1 of 381"
+    StaticText "10 of 410"
     ... StaticText x13 of 17 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x27 of 31 same-shape siblings elided
+    ... button x28 of 32 same-shape siblings elided
     button "Artifacts" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
     StaticText "ARTIFACTS"
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (1)" [checked=false]
-    StaticText "Select all (1)"
+    checkbox "Select all (10)" [checked=false]
+    StaticText "Select all (10)"
     checkbox "Oath of Balance" [checked=false]
-    button "9 Oath of Balance Artifact · Magic · Instinct · Far · d12+12 mag..." [namelen=762 namehash=4e67f12e]
+    ... button x8 of 12 same-shape siblings elided
+    ... checkbox x7 of 11 same-shape siblings elided
+    checkbox "Urzo's Halberd" [checked=false]
+    button "41 Urzo's Halberd Artifact · Physical · Presence · Very Close · ..." [namelen=231 namehash=779ec294]
+    checkbox "Wyverntail Whip" [checked=false]
+    button "50 Wyverntail Whip Artifact · Physical · Agility · Very Close · ..." [namelen=455 namehash=186bcdbf]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -205,14 +238,25 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
 
 ## en :: controls
 1
+1The Ageless Eye of the BeastArtifact · Physical · Agility · Mel... [namelen=382 namehash=bbc60a0b]
 2
+25Rod of ResistanceArtifact · Magic · Spellcast · Far · d10 phy/... [namelen=297 namehash=b04eeb1c]
+2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=365 namehash=c4dcd301]
 3
+32Staff of the Void BeyondArtifact · Magic · Spellcast · Very Fa... [namelen=198 namehash=c51a09b4]
+34Taryan's MorningstarArtifact · Physical · Strength · Very Clos... [namelen=308 namehash=39870c33]
 4
+41Urzo's HalberdArtifact · Physical · Presence · Very Close · d1... [namelen=224 namehash=3f7cdfe5]
+50Wyverntail WhipArtifact · Physical · Agility · Very Close · d1... [namelen=446 namehash=c4744a95]
+5Dirk of the DeadArtifact · Physical · Finesse · Melee · d6 phy ... [namelen=549 namehash=49760210]
+6DrakebowArtifact · Physical · Finesse · Very Far · d8 phy · One... [namelen=325 namehash=d64b4b04]
 9Oath of BalanceArtifact · Magic · Instinct · Far · d12+12 mag ·... [namelen=752 namehash=9a8afa74]
 Agility
 Alt. tables
+Arazo's Artifacts
 Armor
 Artifacts
+Axe of the Dawn
 Beast Feast
 Close
 Colossus of the Drylands
@@ -220,7 +264,9 @@ Communities
 Copy a link to this section
 Core
 Dark Heart of Andaluria
+Dirk of the Dead
 Dragon's Vault
+Drakebow
 Dread
 Dread GM Toolbox
 EN
@@ -250,22 +296,28 @@ Privacy
 RU
 Remove from the filter
 Reset all
+Rod of Resistance
 Search
 Secondary
 Sign in
 Skip to content
+Staff of the Void Beyond
 Standard rules
 Strength
 Tables
+Taryan's Morningstar
 Terms of use
+The Ageless Eye of the Beast
 Two-Handed
 Unique
 Upgradable
+Urzo's Halberd
 Vault of Ages
 Very Close
 Very Far
 Weapons
 Wondrous
 Wondrous Loot
+Wyverntail Whip
 daggerheart.com
 ЛутDaggerheart

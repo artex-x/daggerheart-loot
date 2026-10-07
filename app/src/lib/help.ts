@@ -285,6 +285,42 @@ const DV: Record<Lang, Help> = {
   }
 };
 
+const ARAZO_LINK: HelpLink = {
+  href: 'https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts',
+  label: "The Guide to Arazo's Artifacts"
+};
+
+const ARAZO: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      p(
+        'В таблице 51 позиция — 10 предметов и 41 единица оружия и брони, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'Своей таблицы броска у книги нет, вместо неё — «Предназначение»: на нулевой сессии каждый игрок выбирает из всех карточек четыре интересные, а мастер раскладывает их по ролям в кампании. Слух — о предмете только говорят; Немезида — им владеет враг; Приз — его нужно заслужить или купить; Суждённый — он найдётся сам, в нужный момент. Кнопка здесь только на случай, когда бросок всё же нужен.'
+      ),
+      p(
+        'Восемь вещей растут вместе с владельцем: в книге их сила зависит от ранга, а здесь у каждой четыре версии — базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому эти восемь выпадают чаще. Ещё девять единиц снаряжения — артефакты без ранга.'
+      ),
+      { parts: ['Источник: дополнение ', ARAZO_LINK, '.'] }
+    ]
+  },
+  en: {
+    paragraphs: [
+      p(
+        "The table holds 51 entries — 10 items and 41 weapons and armor, in the book's own order. No die covers that range, so the button picks an entry at random."
+      ),
+      p(
+        'The book has no roll table; it offers Destiny instead: at session zero each player picks four cards that interest them from the whole set, and the GM gives each a role in the campaign. A Rumor is only talked about; a Nemesis item is borne by an enemy; a Prize must be earned or bought; a Fated item turns up on its own, at the right moment. The button is here only for when a roll is still wanted.'
+      ),
+      p(
+        'Eight of them grow with their bearer: the book scales them by tier, and here each has four versions — base, Improved, Advanced and Legendary. Each version has its own number, so these eight come up more often. Nine more pieces of equipment are artifacts with no tier.'
+      ),
+      { parts: ['Source: the ', ARAZO_LINK, ' supplement.'] }
+    ]
+  }
+};
+
 const COMMUNITY_LINK: HelpLink = {
   href: 'https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit',
   label: 'Community Magic Items'
@@ -440,16 +476,16 @@ const TABLES: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        "Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы по источникам и разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
+        "Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы по источникам и разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
       ),
       {
         lead: 'Снаряжение',
         parts: [
-          " собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault и фреймах. Отобрать нужную книгу можно фильтром «Источник»."
+          " собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и фреймах. Отобрать нужную книгу можно фильтром «Источник»."
         ]
       },
       p(
-        "Снаряжение устроено иначе, чем добыча: вне Wondrous Loot, Dread, Vault of Ages и The Dragon's Vault у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании."
+        "Снаряжение устроено иначе, чем добыча: вне Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault и Arazo's Artifacts у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании."
       ),
       p(
         'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope & Fear.'
@@ -476,7 +512,7 @@ const TABLES: Record<Lang, Help> = {
         'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество, у «Хоумбрю» тип, источник и раздел. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
       ),
       p(
-        "Оружие и броня из Wondrous Loot, Dread, Vault of Ages и The Dragon's Vault лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
+        "Оружие и броня из Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault и Arazo's Artifacts лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
       ),
       {
         parts: [
@@ -490,16 +526,16 @@ const TABLES: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own. Signed in, the row ends with one more group, "Homebrew": your own items by source and section; your own equipment also sits in "Equipment", after the books\'.'
+        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own. Signed in, the row ends with one more group, "Homebrew": your own items by source and section; your own equipment also sits in "Equipment", after the books\'.'
       ),
       {
         lead: 'Equipment',
         parts: [
-          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages, The Dragon\'s Vault and the campaign frames too. Narrow it to one book with the "Source" filter.'
+          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts and the campaign frames too. Narrow it to one book with the "Source" filter.'
         ]
       },
       p(
-        "Equipment works differently from loot: outside Wondrous Loot, Dread, Vault of Ages and The Dragon's Vault it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
+        "Equipment works differently from loot: outside Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault and Arazo's Artifacts it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
       ),
       p(
         'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope & Fear.'
@@ -526,7 +562,7 @@ const TABLES: Record<Lang, Help> = {
         'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items, and type, source and section for Homebrew. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
       ),
       p(
-        "The weapons and armor of Wondrous Loot, Dread, Vault of Ages and The Dragon's Vault sit in two places: in their book's table, with a roll number, and here."
+        "The weapons and armor of Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault and Arazo's Artifacts sit in two places: in their book's table, with a roll number, and here."
       ),
       p('Sources: the Daggerheart Core Set and Hope & Fear, with the errata applied.')
     ]
@@ -678,6 +714,7 @@ const HELP: Record<string, Record<Lang, Help>> = {
   dread: DREAD,
   voa: VOA,
   dv: DV,
+  arazo: ARAZO,
   community: COMMUNITY,
   tables: TABLES,
   lists: LISTS

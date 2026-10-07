@@ -9,7 +9,7 @@ import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
-const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'community'];
+const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community'];
 
 /** What one part reads as, so a paragraph can be compared as plain text. */
 const partText = (part: HelpPart): string => {
@@ -209,7 +209,8 @@ describe('the tables help against the data', () => {
     wondrous: 'Wondrous Loot',
     dread: 'Dread',
     voa: 'Vault of Ages',
-    dv: "The Dragon's Vault"
+    dv: "The Dragon's Vault",
+    arazo: "Arazo's Artifacts"
   };
   const rolled = [
     ...new Set(

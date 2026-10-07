@@ -19,6 +19,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -26,23 +27,23 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=8026affd]
+    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=6f14b11a]
     searchbox "Поиск по названию или описанию…" [value=меч focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=false]
-    checkbox "Выбрать все (43)" [checked=false]
-    StaticText "Выбрать все (43)"
+    checkbox "Выбрать все (46)" [checked=false]
+    StaticText "Выбрать все (46)"
     checkbox "Лист Исполинского Дерева" [checked=false]
     button "3 Лист Исполинского Дерева Огромный лист, прочный как кожа и шир..." [namelen=224 namehash=36578017]
-    ... checkbox x40 of 44 same-shape siblings elided
+    ... checkbox x43 of 47 same-shape siblings elided
     button "18 Ледяное Масло Покрывает предмет размером не больше двуручного..." [namelen=202 namehash=a9d06fa3]
-    ... button x39 of 43 same-shape siblings elided
-    checkbox "Амулет Горнила" [checked=false]
-    button "32 Амулет Горнила Когда вы носите этот амулет и совершаете Бросо..." [namelen=357 namehash=740a7666]
-    checkbox "Теневая Призма" [checked=false]
-    button "76 Теневая Призма Бросьте d8 и положите её на эту карту как Тене..." [namelen=487 namehash=6a6558c8]
+    ... button x42 of 46 same-shape siblings elided
+    checkbox "Чаша Обета" [checked=false]
+    button "4 Чаша Обета Один раз за продолжительный отдых вы получаете допо..." [namelen=333 namehash=6240b014]
+    checkbox "Перчатка Скорпиона" [checked=false]
+    button "26 Перчатка Скорпиона Когда вы держите в перчатке оружие, нанося..." [namelen=279 namehash=db668cd3]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -70,6 +71,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 20Ртутный ФамильярВы можете разбить это, чтобы создать ртутного ... [namelen=377 namehash=51f1d97a]
 21Перчатка Ползучего КороляЧтобы использовать этот предмет, позв... [namelen=563 namehash=1f76777b]
 23Карманные Часы Странника ВремениСтоимость Призыва: 1Один раз з... [namelen=392 namehash=990dcc8a]
+26Перчатка СкорпионаКогда вы держите в перчатке оружие, наносяще... [namelen=274 namehash=43f9409a]
 29Успокаивающий КулонКогда вы должны отметить последний Стресс, ... [namelen=131 namehash=734f72e2]
 2Проклятая ГоловаСтоимость Призыва: 2Один раз за продолжительный... [namelen=348 namehash=40505bb8]
 2Стекло Разбитой СудьбыСущество, заглянувшее в это зеркало, види... [namelen=720 namehash=924e5a5c]
@@ -80,8 +82,10 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 37Перчатки РасторопностиКогда вы должны отметить Стресс, чтобы п... [namelen=122 namehash=4847aa54]
 3Агатовый ПаукВы можете приказать украшению в виде паука прыгнут... [namelen=262 namehash=16569d42]
 3Лист Исполинского ДереваОгромный лист, прочный как кожа и широк... [namelen=220 namehash=2072bd32]
+3Наручи Солнца и ЛуныНаруч Луны: Один раз за продолжительный отд... [namelen=276 namehash=f196bb5d]
 4Амулет Праведной ЯростиПризовите заключённую в амулете небесную... [namelen=296 namehash=4620947c]
 4Взгляд ВаэтСтоимость Призыва: 3Один раз за продолжительный отды... [namelen=357 namehash=c6da99d1]
+4Чаша ОбетаОдин раз за продолжительный отдых вы получаете дополн... [namelen=328 namehash=468030d0]
 53Кольца ТовариществаЭту пару деревянных колец могут носить два ... [namelen=174 namehash=ee31ba27]
 5Амулет Кровавого ОхотникаПока вы носите этот амулет, каждый раз... [namelen=384 namehash=4a14bd0d]
 5Маска ФаибосаКак только вы надеваете эту маску, она срастается ... [namelen=656 namehash=f6df1b2d]
@@ -93,6 +97,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 7Амулет из Пальца ДьяволаСтоимость Призыва: 3Вражда: Когда вы ил... [namelen=517 namehash=ebfd1e29]
 9Пиратская Карта СокровищЭта зачарованная карта постоянно перери... [namelen=298 namehash=088f36f6]
 9Часы Хранителя ВремениСтоимость Призыва: 2Если у вас 6 Надежды,... [namelen=314 namehash=d64b7daf]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -130,11 +135,13 @@ daggerheart.com
 Масло Зелёной Слизи
 Мистическая Смола
 Монета Палача
+Наручи Солнца и Луны
 Нектар Обетного Цветка
 Обычные правила
 Осколок Эмберита
 Открывать этот раздел при запуске
 Перчатка Ползучего Короля
+Перчатка Скорпиона
 Перчатки Расторопности
 Пиратская Карта Сокровищ
 Пифийская Вилка
@@ -158,6 +165,7 @@ daggerheart.com
 Успокаивающий Кулон
 Установить как приложение
 Часы Хранителя Времени
+Чаша Обета
 Шлем Белого Когтя
 Шлем Возмездия
 
@@ -178,6 +186,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -185,23 +194,23 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1272 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=5c6c39fd]
+    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c8a75867]
     searchbox "Search by name or description…" [value=меч focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=false]
-    checkbox "Select all (43)" [checked=false]
-    StaticText "Select all (43)"
+    checkbox "Select all (46)" [checked=false]
+    StaticText "Select all (46)"
     checkbox "Leaf of the Giant Tree" [checked=false]
     button "3 Leaf of the Giant Tree A massive leaf sturdy as leather and br..." [namelen=197 namehash=1a3732f4]
-    ... checkbox x40 of 44 same-shape siblings elided
+    ... checkbox x43 of 47 same-shape siblings elided
     button "18 Frost Oil Coats an item no bigger than a greatsword and turns..." [namelen=169 namehash=f4601efe]
-    ... button x39 of 43 same-shape siblings elided
-    checkbox "Furnace Amulet" [checked=false]
-    button "32 Furnace Amulet While wearing this amulet, when you take the R..." [namelen=346 namehash=31f5fe6f]
-    checkbox "Umbral Prism" [checked=false]
-    button "76 Umbral Prism Roll a d8 and place it on this card as the Umbra..." [namelen=456 namehash=adb3eb87]
+    ... button x42 of 46 same-shape siblings elided
+    checkbox "Chalice of Commitment" [checked=false]
+    button "4 Chalice of Commitment Once per long rest, you gain an addition..." [namelen=338 namehash=4c4b0cdb]
+    checkbox "Scorpion Gauntlet" [checked=false]
+    button "26 Scorpion Gauntlet When you hold a weapon that does physical d..." [namelen=277 namehash=7e4a40d0]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -229,6 +238,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 20Sprite BottleWhen you mark your last Hit Point, this bottle sh... [namelen=196 namehash=32835a4a]
 21Crawling King's GauntletTo use this item, you must allow it to... [namelen=513 namehash=af0a0834]
 23Timewalker PocketwatchRecall Cost: 1Once per long rest, when y... [namelen=337 namehash=b7140399]
+26Scorpion GauntletWhen you hold a weapon that does physical dam... [namelen=272 namehash=779c686f]
 29Calming PendantWhen you would mark your last Stress, roll a d6... [namelen=116 namehash=ab3edc19]
 2Cursed HeadRecall Cost: 2Once per long rest, you allow the head... [namelen=293 namehash=99e6b3dd]
 2Glass of Shattered FateA creature peering into this mirror sees... [namelen=693 namehash=1fd2ef5f]
@@ -238,8 +248,10 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 35Emberite ShardChoose a point within Far range. All targets wit... [namelen=374 namehash=c631c064]
 37Gloves of AlacrityWhen you would mark a Stress to reload a wea... [namelen=102 namehash=47157714]
 3Agate SpiderYou can command this spider ornament to leap onto a... [namelen=237 namehash=ddd0528e]
+3Bracers of the Sun and MoonBracer of the Moon: Once per long re... [namelen=249 namehash=826b0aef]
 3Leaf of the Giant TreeA massive leaf sturdy as leather and broa... [namelen=193 namehash=c89505d9]
 4Amulet of Righteous FuryWhen you invoke the celestial power imb... [namelen=284 namehash=9c34148f]
+4Chalice of CommitmentOnce per long rest, you gain an additional... [namelen=333 namehash=9f593f32]
 4Gaze of VaethRecall Cost: 3Once per long rest you can spend a H... [namelen=342 namehash=3a3c8d90]
 53Rings of CamaraderieTwo creatures can wear this pair of wooden... [namelen=195 namehash=6aef9f89]
 5Amulet of the Bloody HunterWhile wearing this amulet, whenever ... [namelen=315 namehash=d9222cc5]
@@ -257,8 +269,11 @@ Alt. tables
 Amulet of Righteous Fury
 Amulet of the Bloody Hunter
 Anima Colligationem
+Arazo's Artifacts
 Arcane Resin
+Bracers of the Sun and Moon
 Calming Pendant
+Chalice of Commitment
 Charm of Vacitos
 Cloak of the Dunes
 Communities
@@ -298,6 +313,7 @@ Pythian Fork
 RU
 Ring of the Blood Matron
 Rings of Camaraderie
+Scorpion Gauntlet
 Search
 Sign in
 Skip to content

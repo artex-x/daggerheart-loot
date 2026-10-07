@@ -19,6 +19,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -26,20 +27,20 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=8026affd]
+    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=6f14b11a]
     searchbox "Поиск по названию или описанию…" [value=меч focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    checkbox "Выбрать все (121)" [checked=false]
-    StaticText "Выбрать все (121)"
+    checkbox "Выбрать все (130)" [checked=false]
+    StaticText "Выбрать все (130)"
     checkbox "Меч Хрустального Духа" [checked=true]
     button "89 Меч Хрустального Духа Ранг 4 · Физическое · Искусность · Впло..." [namelen=284 namehash=e6f3ec0e]
     checkbox "Меч Призрачного Касания" [checked=false]
     button "105 Меч Призрачного Касания Ранг 2 · Физическое · Проворность · ..." [namelen=278 namehash=7b22872b]
-    ... checkbox x117 of 121 same-shape siblings elided
-    ... button x117 of 121 same-shape siblings elided
+    ... checkbox x126 of 130 same-shape siblings elided
+    ... button x126 of 130 same-shape siblings elided
     checkbox "Божественный Пластинчатый Доспех" [checked=false]
     button "Божественный Пластинчатый Доспех Ранг 4 · Пороги 13/36 · Броня 6..." [namelen=155 namehash=ddbafa4a]
     checkbox "Латы Ужаса" [checked=false]
@@ -94,6 +95,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 23Голодный Кулачный КлинокРанг 4 · Физическое · Искусность · Впл... [namelen=424 namehash=e6e4f137]
 23Карманные Часы Странника ВремениСтоимость Призыва: 1Один раз з... [namelen=392 namehash=990dcc8a]
 26Мантия АрхимагаРанг 4 · Пороги 10/30 · Броня 2Стоимость Призыв... [namelen=336 namehash=0adc4ed6]
+26Перчатка СкорпионаКогда вы держите в перчатке оружие, наносяще... [namelen=274 namehash=43f9409a]
 27Посох Чёрной ДырыРанг 4 · Магическое · Знание · Далеко · d20+7... [namelen=666 namehash=f24f876c]
 29Успокаивающий КулонКогда вы должны отметить последний Стресс, ... [namelen=131 namehash=734f72e2]
 2Клинок ЖивущихРанг 3 · Магическое · Сила · Вплотную · d10+11 ма... [namelen=216 namehash=cf0225f3]
@@ -109,10 +111,18 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 37Перчатки РасторопностиКогда вы должны отметить Стресс, чтобы п... [namelen=122 namehash=4847aa54]
 3Агатовый ПаукВы можете приказать украшению в виде паука прыгнут... [namelen=262 namehash=16569d42]
 3Лист Исполинского ДереваОгромный лист, прочный как кожа и широк... [namelen=220 namehash=2072bd32]
+3Наручи Солнца и ЛуныНаруч Луны: Один раз за продолжительный отд... [namelen=276 namehash=f196bb5d]
+46Кольчуга из Змиевой ЧешуиРанг 1 · Пороги 9/20 · Броня 3Оберега... [namelen=230 namehash=2414bfcc]
+47Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=e058939b]
+48Продвинутая Кольчуга из Змиевой ЧешуиРанг 3 · Пороги 11/24 · Б... [namelen=243 namehash=d7e6d353]
+49Легендарная Кольчуга из Змиевой ЧешуиРанг 4 · Пороги 12/26 · Б... [namelen=243 namehash=4b702769]
 4Амулет Праведной ЯростиПризовите заключённую в амулете небесную... [namelen=296 namehash=4620947c]
 4Взгляд ВаэтСтоимость Призыва: 3Один раз за продолжительный отды... [namelen=357 namehash=c6da99d1]
+4Чаша ОбетаОдин раз за продолжительный отдых вы получаете дополн... [namelen=328 namehash=468030d0]
+50Кнут из Хвоста ВиверныАртефакт · Физическое · Проворность · Бл... [namelen=530 namehash=af543359]
 53Кольца ТовариществаЭту пару деревянных колец могут носить два ... [namelen=174 namehash=ee31ba27]
 5Амулет Кровавого ОхотникаПока вы носите этот амулет, каждый раз... [namelen=384 namehash=4a14bd0d]
+5Кортик МёртвыхАртефакт · Физическое · Искусность · Вплотную · d... [namelen=522 namehash=935c72b3]
 5Маска ФаибосаКак только вы надеваете эту маску, она срастается ... [namelen=656 namehash=f6df1b2d]
 5Предательский КастетВы можете отметить Стресс перед Броском Ата... [namelen=128 namehash=bf531987]
 5Стенающая Костяная ФлейтаСтоимость Призыва: 1Один раз за продол... [namelen=394 namehash=01e31635]
@@ -132,6 +142,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 9Клятва РавновесияАртефакт · Магическое · Инстинкт · Далеко · d1... [namelen=837 namehash=9d97f73b]
 9Пиратская Карта СокровищЭта зачарованная карта постоянно перери... [namelen=298 namehash=088f36f6]
 9Часы Хранителя ВремениСтоимость Призыва: 2Если у вас 6 Надежды,... [namelen=314 namehash=d64b7daf]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -175,18 +186,22 @@ daggerheart.com
 Кинетическое Лезвие
 Клинок Живущих
 Клятва Равновесия
+Кнут из Хвоста Виверны
 Колдующий Меч
 Колдующий МечРанг 2 · Магическое · Сила · Вплотную · d10+4 маг ·... [namelen=207 namehash=b0d9835c]
 Колчан Фей
 Кольца Товарищества
 Кольцо Кровавой Матроны
+Кольчуга из Змиевой Чешуи
 Конфиденциальность
 Короткий Меч
 Короткий МечРанг 1 · Физическое · Проворность · Вплотную · d8 фи... [namelen=158 namehash=2f28c030]
+Кортик Мёртвых
 Кровоглот
 Ласты Лужелуточки
 Латы Ужаса
 Латы УжасаРанг 4 · Пороги 14/38 · Броня 6Проклятое: Когда вы отм... [namelen=202 namehash=fec7b8b6]
+Легендарная Кольчуга из Змиевой Чешуи
 Легендарный Двуручный Меч
 Легендарный Двуручный МечРанг 4 · Физическое · Сила · Вплотную ·... [namelen=232 namehash=7e6dded7]
 Легендарный Длинный меч
@@ -227,6 +242,7 @@ daggerheart.com
 Меч-ХлыстРанг 1 · Физическое · Искусность · Близко · d8 физ · Од... [namelen=211 namehash=2e50a47f]
 Мистическая Смола
 Монета Палача
+Наручи Солнца и Луны
 Нектар Обетного Цветка
 Неугомонное Возмездие
 Нож Единорога
@@ -237,6 +253,7 @@ daggerheart.com
 Осколок Эмберита
 Открывать этот раздел при запуске
 Перчатка Ползучего Короля
+Перчатка Скорпиона
 Перчатки Расторопности
 Пиратская Карта Сокровищ
 Пифийская Вилка
@@ -252,6 +269,7 @@ daggerheart.com
 Поющий МечРанг 3 · Физическое · Влияние · Близко · d8+5 физ · Од... [namelen=235 namehash=fdbcd2cd]
 Предательский Кастет
 Предметы
+Продвинутая Кольчуга из Змиевой Чешуи
 Продвинутый Двуручный Меч
 Продвинутый Двуручный МечРанг 3 · Физическое · Сила · Вплотную ·... [namelen=231 namehash=31e203a1]
 Продвинутый Длинный Меч
@@ -295,6 +313,7 @@ daggerheart.com
 Узы Души
 Укреплённый Полный Доспех
 Укреплённый Полный ДоспехРанг 4 · Пороги 15/40 · Броня 4Укреплен... [namelen=177 namehash=f44b17b9]
+Улучшенная Кольчуга из Змиевой Чешуи
 Улучшенный Двуручный Меч
 Улучшенный Двуручный МечРанг 2 · Физическое · Сила · Вплотную · ... [namelen=230 namehash=7a2b840f]
 Улучшенный Длинный Меч
@@ -316,6 +335,7 @@ daggerheart.com
 Фроствирд (Пробуждённый)
 Харроклив
 Часы Хранителя Времени
+Чаша Обета
 Шлем Белого Когтя
 Шлем Возмездия
 Щит Отталкивания
@@ -345,6 +365,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -352,20 +373,20 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1272 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=5c6c39fd]
+    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c8a75867]
     searchbox "Search by name or description…" [value=меч focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    checkbox "Select all (121)" [checked=false]
-    StaticText "Select all (121)"
+    checkbox "Select all (130)" [checked=false]
+    StaticText "Select all (130)"
     checkbox "Crystal Spirit Sword" [checked=true]
     button "89 Crystal Spirit Sword Tier 4 · Physical · Finesse · Melee · d1..." [namelen=259 namehash=bd18897a]
     checkbox "Ghost Touch Sword" [checked=false]
     button "105 Ghost Touch Sword Tier 2 · Physical · Agility · Melee · d8+3..." [namelen=232 namehash=8a380fde]
-    ... checkbox x117 of 121 same-shape siblings elided
-    ... button x117 of 121 same-shape siblings elided
+    ... checkbox x126 of 130 same-shape siblings elided
+    ... button x126 of 130 same-shape siblings elided
     checkbox "Godbound Laminar" [checked=false]
     button "Godbound Laminar Tier 4 · Thresholds 13/36 · Armor 6 Divine: Whe..." [namelen=127 namehash=7a71d3e9]
     checkbox "Circle-Forged Dreadplate" [checked=false]
@@ -420,6 +441,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 23Hungry Fist BladeTier 4 · Physical · Finesse · Melee · d6+7 ph... [namelen=410 namehash=37a2f1b6]
 23Timewalker PocketwatchRecall Cost: 1Once per long rest, when y... [namelen=337 namehash=b7140399]
 26Arch-Magus's RobesTier 4 · Thresholds 10/30 · Armor 2Recall Co... [namelen=294 namehash=31ef7315]
+26Scorpion GauntletWhen you hold a weapon that does physical dam... [namelen=272 namehash=779c686f]
 27Black Hole StaffTier 4 · Magic · Knowledge · Far · d20+7 mag ·... [namelen=598 namehash=ea194387]
 29Calming PendantWhen you would mark your last Stress, roll a d6... [namelen=116 namehash=ab3edc19]
 2Blade of the LivingTier 3 · Magic · Strength · Melee · d10+11 m... [namelen=223 namehash=1352e44d]
@@ -434,11 +456,19 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 35Emberite ShardChoose a point within Far range. All targets wit... [namelen=374 namehash=c631c064]
 37Gloves of AlacrityWhen you would mark a Stress to reload a wea... [namelen=102 namehash=47157714]
 3Agate SpiderYou can command this spider ornament to leap onto a... [namelen=237 namehash=ddd0528e]
+3Bracers of the Sun and MoonBracer of the Moon: Once per long re... [namelen=249 namehash=826b0aef]
 3Leaf of the Giant TreeA massive leaf sturdy as leather and broa... [namelen=193 namehash=c89505d9]
+46Wyrmscale HauberkTier 1 · Thresholds 9/20 · Armor 3Guarding: W... [namelen=200 namehash=4c4e6345]
+47Improved Wyrmscale HauberkTier 2 · Thresholds 10/22 · Armor 4G... [namelen=210 namehash=e8a3e449]
+48Advanced Wyrmscale HauberkTier 3 · Thresholds 11/24 · Armor 5G... [namelen=210 namehash=6ad9f359]
+49Legendary Wyrmscale HauberkTier 4 · Thresholds 12/26 · Armor 6... [namelen=211 namehash=69b1035a]
 4Amulet of Righteous FuryWhen you invoke the celestial power imb... [namelen=284 namehash=9c34148f]
+4Chalice of CommitmentOnce per long rest, you gain an additional... [namelen=333 namehash=9f593f32]
 4Gaze of VaethRecall Cost: 3Once per long rest you can spend a H... [namelen=342 namehash=3a3c8d90]
+50Wyverntail WhipArtifact · Physical · Agility · Very Close · d1... [namelen=446 namehash=c4744a95]
 53Rings of CamaraderieTwo creatures can wear this pair of wooden... [namelen=195 namehash=6aef9f89]
 5Amulet of the Bloody HunterWhile wearing this amulet, whenever ... [namelen=315 namehash=d9222cc5]
+5Dirk of the DeadArtifact · Physical · Finesse · Melee · d6 phy ... [namelen=549 namehash=49760210]
 5Keening Bone FluteRecall Cost: 1Once per long rest, you can pla... [namelen=302 namehash=c2058871]
 5Phaibos MaskOnce you don this mask, it fuses to your flesh maki... [namelen=651 namehash=fa9b72a4]
 5Treacherous Knuckle-DusterYou may mark 1 Stress before an attac... [namelen=134 namehash=6c5d102e]
@@ -474,12 +504,14 @@ Advanced Shortsword
 Advanced ShortswordTier 3 · Physical · Agility · Melee · d8+4 ph... [namelen=163 namehash=59bab3f3]
 Advanced Whipsword
 Advanced WhipswordTier 3 · Physical · Finesse · Very Close · d8+... [namelen=191 namehash=521ccd6a]
+Advanced Wyrmscale Hauberk
 Aether Rifle
 Agate Spider
 Alt. tables
 Amulet of Righteous Fury
 Amulet of the Bloody Hunter
 Anima Colligationem
+Arazo's Artifacts
 Arcane Resin
 Arch-Magus's Robes
 Black Corruption Axe
@@ -490,6 +522,7 @@ Blade of the Living
 Bladefare Armor
 Bladefare ArmorTier 3 · Thresholds 16/39 · Armor 6Physical: You ... [namelen=127 namehash=aeb5e429]
 Bloodgorger
+Bracers of the Sun and Moon
 Braveshield
 BraveshieldTier 4 · Physical · Agility · Melee · d4+6 phy · One-... [namelen=229 namehash=b2e8622e]
 Bravesword
@@ -501,6 +534,7 @@ Cane Sword
 Cane SwordTier 2 · Physical · Finesse · Melee · d8+4 phy · One-H... [namelen=168 namehash=3befd4c1]
 Casting Sword
 Casting SwordTier 2 · Magic · Strength · Melee · d10+4 mag · Two... [namelen=178 namehash=90659915]
+Chalice of Commitment
 Charm of Vacitos
 Circle-Forged Dreadplate
 Circle-Forged DreadplateTier 4 · Thresholds 14/38 · Armor 6Accur... [namelen=224 namehash=7e650623]
@@ -517,6 +551,7 @@ Crawling King's Gauntlet
 Crystal Spirit Sword
 Cursed Head
 Devil-Finger Charm
+Dirk of the Dead
 Doomsday Potion
 Dragon's Vault
 Dread
@@ -568,6 +603,7 @@ Improved Shortsword
 Improved ShortswordTier 2 · Physical · Agility · Melee · d8+2 ph... [namelen=163 namehash=e7b1bcec]
 Improved Whipsword
 Improved WhipswordTier 2 · Physical · Finesse · Very Close · d8+... [namelen=191 namehash=49bed7a6]
+Improved Wyrmscale Hauberk
 Install as an app
 Irontree Breastplate Armor
 Irontree Breastplate ArmorTier 2 · Thresholds 9/20 · Armor 4Rein... [namelen=199 namehash=1768c922]
@@ -591,6 +627,7 @@ Legendary Shortsword
 Legendary ShortswordTier 4 · Physical · Agility · Melee · d8+6 p... [namelen=164 namehash=a50b2be3]
 Legendary Whipsword
 Legendary WhipswordTier 4 · Physical · Finesse · Very Close · d8... [namelen=192 namehash=bdf7811e]
+Legendary Wyrmscale Hauberk
 Lists
 Little Forest Spirit
 Longsword
@@ -615,6 +652,7 @@ Ring of the Blood Matron
 Rings of Camaraderie
 Runes of Fortification
 Runes of FortificationTier 3 · Thresholds 17/43 · Armor 6Painful... [namelen=138 namehash=438b299e]
+Scorpion Gauntlet
 Search
 Seeker's Bow
 Shadowblade
@@ -650,6 +688,8 @@ Whipsword
 WhipswordTier 1 · Physical · Finesse · Very Close · d8 phy · One... [namelen=178 namehash=6546440d]
 White Talon Helm
 Wondrous
+Wyrmscale Hauberk
+Wyverntail Whip
 Zanthak's Rage
 daggerheart.com
 ЛутDaggerheart

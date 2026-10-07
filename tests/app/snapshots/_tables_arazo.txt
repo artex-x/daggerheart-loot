@@ -1,0 +1,397 @@
+# #/tables/arazo
+# route: #/tables/arazo
+# why: a plain body with a kind row, 51 rows in book order, four rungs per scaling piece
+
+## ru :: tree
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/arazo]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Таблицы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
+    link "Сообщества" [url=#/tables/community]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
+    searchbox "Поиск по названию или описанию…"
+    button "Ссылка на таблицу"
+    button "Списком" [pressed=true]
+    button "Сеткой" [pressed=false]
+    button "Фильтры" [expanded=false]
+    StaticText "51"
+    checkbox "Выбрать все (51)" [checked=false]
+    StaticText "Выбрать все (51)"
+    checkbox "Нестареющее Око Зверя" [checked=false]
+    button "1 Нестареющее Око Зверя Артефакт · Физическое · Проворность · Вп..." [namelen=397 namehash=320adcb8]
+    ... checkbox x48 of 52 same-shape siblings elided
+    ... button x48 of 52 same-shape siblings elided
+    checkbox "Кнут из Хвоста Виверны" [checked=false]
+    button "50 Кнут из Хвоста Виверны Артефакт · Физическое · Проворность · ..." [namelen=539 namehash=e0eca26e]
+    checkbox "Ларец Зерана" [checked=false]
+    button "51 Ларец Зерана Личное: Предмет, помещённый в Ларец, может увиде..." [namelen=254 namehash=a005535e]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+10Легендарный Лук из Эльфийских ВолосРанг 4 · Физическое · Прово... [namelen=256 namehash=a3674609]
+11ЗерцалоВы получаете дополнительный Ход Отдыха: Сменить Облик.С... [namelen=413 namehash=1aea98e1]
+12Дубина из Зубов ОграРанг 1 · Физическое · Сила · Близко · d20 ... [namelen=311 namehash=a910c942]
+13Улучшенная Дубина из Зубов ОграРанг 2 · Физическое · Сила · Бл... [namelen=322 namehash=a9234d4c]
+14Продвинутая Дубина из Зубов ОграРанг 3 · Физическое · Сила · Б... [namelen=323 namehash=888e847c]
+15Легендарная Дубина из Зубов ОграРанг 4 · Физическое · Сила · Б... [namelen=323 namehash=7f60fb84]
+16Сфера ПредвиденияВы получаете дополнительный Ход Отдыха: Узрет... [namelen=379 namehash=384da122]
+17Праща ФениксаРанг 1 · Физическое · Искусность · Далеко · d10 ф... [namelen=236 namehash=2d86b5e3]
+18Улучшенная Праща ФениксаРанг 2 · Физическое · Искусность · Дал... [namelen=247 namehash=9f2f9a39]
+19Продвинутая Праща ФениксаРанг 3 · Физическое · Искусность · Да... [namelen=248 namehash=2888673f]
+1Нестареющее Око ЗверяАртефакт · Физическое · Проворность · Впло... [namelen=389 namehash=d8e6fa4e]
+20Легендарная Праща ФениксаРанг 4 · Физическое · Искусность · Да... [namelen=248 namehash=018b15ce]
+21Латы ПринцаРанг 1 · Пороги 11/22 · Броня 2Крепость: Когда вы п... [namelen=310 namehash=94d738ac]
+22Улучшенные Латы ПринцаРанг 2 · Пороги 12/24 · Броня 4Крепость:... [namelen=198 namehash=afaef85d]
+23Продвинутые Латы ПринцаРанг 3 · Пороги 13/26 · Броня 6Крепость... [namelen=199 namehash=967a11f7]
+24Легендарные Латы ПринцаРанг 4 · Пороги 14/28 · Броня 8Крепость... [namelen=199 namehash=22f1fabc]
+25Жезл СопротивленияАртефакт · Магическое · Характеристика Закли... [namelen=355 namehash=27bb2f82]
+26Перчатка СкорпионаКогда вы держите в перчатке оружие, наносяще... [namelen=274 namehash=43f9409a]
+27Змеиный МотокКогда вы заканчиваете продолжительный отдых, полу... [namelen=577 namehash=a541c0c4]
+28Щит АрктураРанг 1 · Физическое · Сила · Вплотную · d8 физ · Од... [namelen=279 namehash=6a6c242d]
+29Улучшенный Щит АрктураРанг 2 · Физическое · Сила · Вплотную · ... [namelen=290 namehash=ba38cba7]
+2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=396 namehash=212c8af2]
+30Продвинутый Щит АрктураРанг 3 · Физическое · Сила · Вплотную ·... [namelen=291 namehash=c9a2da59]
+31Легендарный Щит АрктураРанг 4 · Физическое · Сила · Вплотную ·... [namelen=291 namehash=4f245c90]
+32Посох Запредельной ПустотыАртефакт · Магическое · Характеристи... [namelen=228 namehash=2463e278]
+33Каменная Рука ЭзриганаАдаптивное: Попав к владельцу, Каменная ... [namelen=310 namehash=607579d8]
+34Моргенштерн ТарианаАртефакт · Физическое · Сила · Близко · d10... [namelen=304 namehash=b906cb29]
+35Торквес ИскусителяОбольщающее: Когда вы заканчиваете продолжит... [namelen=331 namehash=5eae8a54]
+36Фляга ПутникаОсвежающее: Любая жидкость, налитая во Флягу Путн... [namelen=398 namehash=e87f07c8]
+37Копьё-КамертонРанг 1 · Физическое · Искусность · Близко · d10 ... [namelen=346 namehash=8e0b5a66]
+38Улучшенное Копьё-КамертонРанг 2 · Физическое · Искусность · Бл... [namelen=357 namehash=00fb6b9c]
+39Продвинутое Копьё-КамертонРанг 3 · Физическое · Искусность · Б... [namelen=358 namehash=89b005ab]
+3Наручи Солнца и ЛуныНаруч Луны: Один раз за продолжительный отд... [namelen=276 namehash=f196bb5d]
+40Легендарное Копьё-КамертонРанг 4 · Физическое · Искусность · Б... [namelen=359 namehash=5b207235]
+41Алебарда УрзоАртефакт · Физическое · Влияние · Близко · d12 фи... [namelen=225 namehash=cebca89c]
+42Боевой Молот БазаРанг 1 · Физическое · Сила · Вплотную · d12 ф... [namelen=245 namehash=74aa51a3]
+43Улучшенный Боевой Молот БазаРанг 2 · Физическое · Сила · Вплот... [namelen=256 namehash=11a7c4d2]
+44Продвинутый Боевой Молот БазаРанг 3 · Физическое · Сила · Впло... [namelen=257 namehash=4a45d9ca]
+45Легендарный Боевой Молот БазаРанг 4 · Физическое · Сила · Впло... [namelen=257 namehash=ffb97328]
+46Кольчуга из Змиевой ЧешуиРанг 1 · Пороги 9/20 · Броня 3Оберега... [namelen=230 namehash=2414bfcc]
+47Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=e058939b]
+48Продвинутая Кольчуга из Змиевой ЧешуиРанг 3 · Пороги 11/24 · Б... [namelen=243 namehash=d7e6d353]
+49Легендарная Кольчуга из Змиевой ЧешуиРанг 4 · Пороги 12/26 · Б... [namelen=243 namehash=4b702769]
+4Чаша ОбетаОдин раз за продолжительный отдых вы получаете дополн... [namelen=328 namehash=468030d0]
+50Кнут из Хвоста ВиверныАртефакт · Физическое · Проворность · Бл... [namelen=530 namehash=af543359]
+51Ларец ЗеранаЛичное: Предмет, помещённый в Ларец, может увидеть... [namelen=249 namehash=6092fe0e]
+5Кортик МёртвыхАртефакт · Физическое · Искусность · Вплотную · d... [namelen=522 namehash=935c72b3]
+6Драконий ЛукАртефакт · Физическое · Искусность · Очень далеко ·... [namelen=361 namehash=2c9874af]
+7Лук из Эльфийских ВолосРанг 1 · Физическое · Проворность · Очен... [namelen=243 namehash=af9c6bc6]
+8Улучшенный Лук из Эльфийских ВолосРанг 2 · Физическое · Проворн... [namelen=254 namehash=2b5337b9]
+9Продвинутый Лук из Эльфийских ВолосРанг 3 · Физическое · Провор... [namelen=255 namehash=1de29346]
+Arazo's Artifacts
+Core
+Dragon's Vault
+Dread
+Dread GM Toolbox
+EN
+Hope & Fear
+RU
+Vault of Ages
+Wondrous
+Wondrous Loot
+daggerheart.com
+Алебарда Урзо
+Альт. таблицы
+Боевой Молот База
+Войти
+Драконий Лук
+Дубина из Зубов Огра
+Жезл Сопротивления
+Зерцало
+Змеиный Моток
+К содержимому
+Как это работает
+Каменная Рука Эзригана
+Кнут из Хвоста Виверны
+Кольчуга из Змиевой Чешуи
+Конфиденциальность
+Копьё-Камертон
+Кортик Мёртвых
+Ларец Зерана
+Латы Принца
+Легендарная Дубина из Зубов Огра
+Легендарная Кольчуга из Змиевой Чешуи
+Легендарная Праща Феникса
+Легендарное Копьё-Камертон
+Легендарные Латы Принца
+Легендарный Боевой Молот База
+Легендарный Лук из Эльфийских Волос
+Легендарный Щит Арктура
+Лук из Эльфийских Волос
+ЛутDaggerheart
+Моргенштерн Тариана
+Наручи Солнца и Луны
+Нестареющее Око Зверя
+Обычные правила
+Открывать этот раздел при запуске
+Перчатка Скорпиона
+Поиск
+Посох Запредельной Пустоты
+Праща Феникса
+Продвинутая Дубина из Зубов Огра
+Продвинутая Кольчуга из Змиевой Чешуи
+Продвинутая Праща Феникса
+Продвинутое Копьё-Камертон
+Продвинутые Латы Принца
+Продвинутый Боевой Молот База
+Продвинутый Лук из Эльфийских Волос
+Продвинутый Щит Арктура
+Прочее
+Сеткой
+Снаряжение
+Сообщества
+Списки
+Списком
+Ссылка на таблицу
+Сфера Предвидения
+Таблицы
+Топор Рассвета
+Торквес Искусителя
+Улучшенная Дубина из Зубов Огра
+Улучшенная Кольчуга из Змиевой Чешуи
+Улучшенная Праща Феникса
+Улучшенное Копьё-Камертон
+Улучшенные Латы Принца
+Улучшенный Боевой Молот База
+Улучшенный Лук из Эльфийских Волос
+Улучшенный Щит Арктура
+Условия использования
+Установить как приложение
+Фильтры
+Фляга Путника
+Чаша Обета
+Щит Арктура
+
+## en :: tree
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/arazo]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Tables" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    link "Core" [url=#/tables/core_item]
+    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Alt. tables" [url=#/tables/alt_item]
+    link "Wondrous Loot" [url=#/tables/wondrous]
+    link "Dread GM Toolbox" [url=#/tables/dread]
+    link "Vault of Ages" [url=#/tables/voa]
+    link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
+    link "Communities" [url=#/tables/community]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
+    searchbox "Search by name or description…"
+    button "Link to this table"
+    button "List" [pressed=true]
+    button "Grid" [pressed=false]
+    button "Filters" [expanded=false]
+    StaticText "51"
+    checkbox "Select all (51)" [checked=false]
+    StaticText "Select all (51)"
+    checkbox "The Ageless Eye of the Beast" [checked=false]
+    button "1 The Ageless Eye of the Beast Artifact · Physical · Agility · M..." [namelen=390 namehash=d887f3b8]
+    ... checkbox x48 of 52 same-shape siblings elided
+    ... button x48 of 52 same-shape siblings elided
+    checkbox "Wyverntail Whip" [checked=false]
+    button "50 Wyverntail Whip Artifact · Physical · Agility · Very Close · ..." [namelen=455 namehash=186bcdbf]
+    checkbox "Zeran's Coffer" [checked=false]
+    button "51 Zeran's Coffer Private: Once an object is placed in the Coffe..." [namelen=292 namehash=1c100451]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+10Legendary Elfhair BowTier 4 · Physical · Agility · Very Far · ... [namelen=238 namehash=a97c46fc]
+11The Looking GlassYou gain an additional downtime move: Modify ... [namelen=399 namehash=fed790af]
+12Ogre-teeth ClubTier 1 · Physical · Strength · Very Close · d20... [namelen=285 namehash=c140981a]
+13Improved Ogre-teeth ClubTier 2 · Physical · Strength · Very Cl... [namelen=294 namehash=4f2fd09b]
+14Advanced Ogre-teeth ClubTier 3 · Physical · Strength · Very Cl... [namelen=294 namehash=9bf58525]
+15Legendary Ogre-teeth ClubTier 4 · Physical · Strength · Very C... [namelen=295 namehash=7bbdbbef]
+16Orb of ForesightYou gain an additional downtime move: Scry the... [namelen=337 namehash=45d04564]
+17Phoenix SlingTier 1 · Physical · Finesse · Far · d10 phy · Two... [namelen=226 namehash=12c39d8b]
+18Improved Phoenix SlingTier 2 · Physical · Finesse · Far · d10 ... [namelen=235 namehash=6a594d6e]
+19Advanced Phoenix SlingTier 3 · Physical · Finesse · Far · d10 ... [namelen=235 namehash=aac68020]
+1The Ageless Eye of the BeastArtifact · Physical · Agility · Mel... [namelen=382 namehash=bbc60a0b]
+20Legendary Phoenix SlingTier 4 · Physical · Finesse · Far · d10... [namelen=236 namehash=49f05f8b]
+21Plate of the PrinceTier 1 · Thresholds 11/22 · Armor 2Fortress... [namelen=284 namehash=002b5cbe]
+22Improved Plate of the PrinceTier 2 · Thresholds 12/24 · Armor ... [namelen=182 namehash=2525c569]
+23Advanced Plate of the PrinceTier 3 · Thresholds 13/26 · Armor ... [namelen=182 namehash=7a71a899]
+24Legendary Plate of the PrinceTier 4 · Thresholds 14/28 · Armor... [namelen=183 namehash=3cca335a]
+25Rod of ResistanceArtifact · Magic · Spellcast · Far · d10 phy/... [namelen=297 namehash=b04eeb1c]
+26Scorpion GauntletWhen you hold a weapon that does physical dam... [namelen=272 namehash=779c686f]
+27Serpent's CoilWhen you finish a long rest, gain a number of to... [namelen=543 namehash=71016d67]
+28Shield of ArcturusTier 1 · Physical · Strength · Melee · d8 ph... [namelen=252 namehash=47936021]
+29Improved Shield of ArcturusTier 2 · Physical · Strength · Mele... [namelen=261 namehash=417aa90f]
+2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=365 namehash=c4dcd301]
+30Advanced Shield of ArcturusTier 3 · Physical · Strength · Mele... [namelen=261 namehash=caafd1ed]
+31Legendary Shield of ArcturusTier 4 · Physical · Strength · Mel... [namelen=262 namehash=db49176c]
+32Staff of the Void BeyondArtifact · Magic · Spellcast · Very Fa... [namelen=198 namehash=c51a09b4]
+33Stone Arm of EzriganAdaptable: When acquired, the Stone Arm of... [namelen=290 namehash=c6f4126d]
+34Taryan's MorningstarArtifact · Physical · Strength · Very Clos... [namelen=308 namehash=39870c33]
+35Torc of the TempterBeguiling: When you finish a long rest, gai... [namelen=296 namehash=b884af65]
+36Traveler's FlaskRefreshing: Any liquid placed in the Traveler'... [namelen=383 namehash=30c1213f]
+37Tuning SpearTier 1 · Physical · Finesse · Very Close · d10 phy... [namelen=322 namehash=e91a57d3]
+38Improved Tuning SpearTier 2 · Physical · Finesse · Very Close ... [namelen=331 namehash=f6c300d0]
+39Advanced Tuning SpearTier 3 · Physical · Finesse · Very Close ... [namelen=331 namehash=84641596]
+3Bracers of the Sun and MoonBracer of the Moon: Once per long re... [namelen=249 namehash=826b0aef]
+40Legendary Tuning SpearTier 4 · Physical · Finesse · Very Close... [namelen=332 namehash=bd4cd9aa]
+41Urzo's HalberdArtifact · Physical · Presence · Very Close · d1... [namelen=224 namehash=3f7cdfe5]
+42Warhammer of BazTier 1 · Physical · Strength · Melee · d12 phy... [namelen=223 namehash=db0522dd]
+43Improved Warhammer of BazTier 2 · Physical · Strength · Melee ... [namelen=232 namehash=4d6b001a]
+44Advanced Warhammer of BazTier 3 · Physical · Strength · Melee ... [namelen=232 namehash=ac071412]
+45Legendary Warhammer of BazTier 4 · Physical · Strength · Melee... [namelen=233 namehash=4fdcfb36]
+46Wyrmscale HauberkTier 1 · Thresholds 9/20 · Armor 3Guarding: W... [namelen=200 namehash=4c4e6345]
+47Improved Wyrmscale HauberkTier 2 · Thresholds 10/22 · Armor 4G... [namelen=210 namehash=e8a3e449]
+48Advanced Wyrmscale HauberkTier 3 · Thresholds 11/24 · Armor 5G... [namelen=210 namehash=6ad9f359]
+49Legendary Wyrmscale HauberkTier 4 · Thresholds 12/26 · Armor 6... [namelen=211 namehash=69b1035a]
+4Chalice of CommitmentOnce per long rest, you gain an additional... [namelen=333 namehash=9f593f32]
+50Wyverntail WhipArtifact · Physical · Agility · Very Close · d1... [namelen=446 namehash=c4744a95]
+51Zeran's CofferPrivate: Once an object is placed in the Coffer,... [namelen=287 namehash=a2480593]
+5Dirk of the DeadArtifact · Physical · Finesse · Melee · d6 phy ... [namelen=549 namehash=49760210]
+6DrakebowArtifact · Physical · Finesse · Very Far · d8 phy · One... [namelen=325 namehash=d64b4b04]
+7Elfhair BowTier 1 · Physical · Agility · Very Far · d10 phy · T... [namelen=227 namehash=9b26b85e]
+8Improved Elfhair BowTier 2 · Physical · Agility · Very Far · d1... [namelen=236 namehash=f0357818]
+9Advanced Elfhair BowTier 3 · Physical · Agility · Very Far · d1... [namelen=236 namehash=1b040ec8]
+Advanced Elfhair Bow
+Advanced Ogre-teeth Club
+Advanced Phoenix Sling
+Advanced Plate of the Prince
+Advanced Shield of Arcturus
+Advanced Tuning Spear
+Advanced Warhammer of Baz
+Advanced Wyrmscale Hauberk
+Alt. tables
+Arazo's Artifacts
+Axe of the Dawn
+Bracers of the Sun and Moon
+Chalice of Commitment
+Communities
+Core
+Dirk of the Dead
+Dragon's Vault
+Drakebow
+Dread
+Dread GM Toolbox
+EN
+Elfhair Bow
+Equipment
+Filters
+Grid
+Hope & Fear
+How this works
+Improved Elfhair Bow
+Improved Ogre-teeth Club
+Improved Phoenix Sling
+Improved Plate of the Prince
+Improved Shield of Arcturus
+Improved Tuning Spear
+Improved Warhammer of Baz
+Improved Wyrmscale Hauberk
+Install as an app
+Legendary Elfhair Bow
+Legendary Ogre-teeth Club
+Legendary Phoenix Sling
+Legendary Plate of the Prince
+Legendary Shield of Arcturus
+Legendary Tuning Spear
+Legendary Warhammer of Baz
+Legendary Wyrmscale Hauberk
+Link to this table
+List
+Lists
+Ogre-teeth Club
+Open this section on start
+Orb of Foresight
+Other
+Phoenix Sling
+Plate of the Prince
+Privacy
+RU
+Rod of Resistance
+Scorpion Gauntlet
+Search
+Serpent's Coil
+Shield of Arcturus
+Sign in
+Skip to content
+Staff of the Void Beyond
+Standard rules
+Stone Arm of Ezrigan
+Tables
+Taryan's Morningstar
+Terms of use
+The Ageless Eye of the Beast
+The Looking Glass
+Torc of the Tempter
+Traveler's Flask
+Tuning Spear
+Urzo's Halberd
+Vault of Ages
+Warhammer of Baz
+Wondrous
+Wondrous Loot
+Wyrmscale Hauberk
+Wyverntail Whip
+Zeran's Coffer
+daggerheart.com
+ЛутDaggerheart

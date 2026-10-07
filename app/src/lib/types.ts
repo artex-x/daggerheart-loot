@@ -48,6 +48,7 @@ export const TABLE_IDS = [
   'dread',
   'voa',
   'dv',
+  'arazo',
   'other_starting',
   'other_frames',
   'alt_item',
@@ -67,7 +68,7 @@ export function isTableId(v: string): v is TableId {
   return (TABLE_IDS as readonly string[]).includes(v);
 }
 
-/** The ten sections: also the tabs, also what may be pinned as the start. */
+/** The eleven sections: also the tabs, also what may be pinned as the start. */
 export const SECTIONS = [
   'roll/std',
   'roll/alt',
@@ -75,6 +76,7 @@ export const SECTIONS = [
   'roll/dread',
   'roll/voa',
   'roll/dv',
+  'roll/arazo',
   'roll/community',
   'tables',
   'lists',
@@ -90,7 +92,8 @@ export function isSection(v: string): v is Section {
 /** The stat block. Not only records in `eq` carry one. */
 export interface Equip {
   t: EquipKind;
-  /** `'A'` only for equipment the book prints in its Artifacts section; the
+  /** `'A'` only for equipment the book prints as an artifact - Vault of Ages'
+   *  Artifacts section, or an Arazo's Artifacts piece with no tier formula; the
    *  record's own `tier` is then `'A'` too. Never inferred from the stats. */
   tier: Tier | 'A';
   cls?: EquipClass;
@@ -151,7 +154,7 @@ export interface Record_ {
   /** Keys into `refs`: the Core cards a description points at. */
   refs?: string[];
   eq?: Equip;
-  /** Vault of Ages section only - not equipment tier, which lives on
+  /** Vault of Ages section, or `'A'` beside an artifact's `eq.tier` - not equipment tier, which lives on
    * `eq.tier` and is required there. The two overlap on 1-4 by coincidence
    * of range, not by meaning: never read this field where `eq.tier` is
    * meant, and never derive either from stats (`CLAUDE.md`). */

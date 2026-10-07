@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SUB_LABEL, TABLE_GROUPS, groupOf, subLabelOf } from './tables.js';
 import { TABLE_IDS, type TableId } from './types.js';
 
-describe('the eleven groups', () => {
+describe('the twelve groups', () => {
   it('together cover every table id exactly once', () => {
     const all = TABLE_GROUPS.flatMap((g) => g.subs);
     expect([...all].sort()).toEqual([...TABLE_IDS].sort());
@@ -21,6 +21,7 @@ describe('the eleven groups', () => {
       'dread',
       'voa',
       'dv',
+      'arazo',
       'comm',
       'hb'
     ]);

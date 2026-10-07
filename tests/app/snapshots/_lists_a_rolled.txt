@@ -19,6 +19,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -105,6 +106,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
 
 ## ru :: controls
 7 мешков 5 горстей
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -186,6 +188,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -275,6 +278,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
 Alistair's Torch
 Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
 Alt. tables
+Arazo's Artifacts
 Arcane Cloak
 Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
 As in the book

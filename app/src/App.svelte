@@ -10,7 +10,8 @@
   const ROLL_TABLE: Partial<Record<Section, { table: string; title: keyof Dict }>> = {
     'roll/wondrous': { table: 'wondrous', title: 'pageWondrous' },
     'roll/dread': { table: 'dread', title: 'pageDread' },
-    'roll/dv': { table: 'dv', title: 'pageDv' }
+    'roll/dv': { table: 'dv', title: 'pageDv' },
+    'roll/arazo': { table: 'arazo', title: 'pageArazo' }
   };
 </script>
 

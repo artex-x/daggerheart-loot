@@ -14,7 +14,7 @@
 ссылка на неё в подвале рядом с политикой конфиденциальности
 (`pages/privacy.html`) и условиями использования (`pages/terms.html`).
 
-Всего 1272 записи - 891 предмет и расходник плюс 381 единица снаряжения, - у
+Всего 1323 записи - 942 предмета и расходника плюс 381 единица снаряжения, - у
 каждой название, описание, строка характеристик, если она есть, и картинка.
 Слежки нет; вход в аккаунт необязателен, и без него ничего о вас не попадает
 на сервер.
@@ -39,6 +39,7 @@
 | Dread | 1-29 | 1 предмет |
 | Vault of Ages | 1-144 | 1 предмет |
 | The Dragon's Vault | 1-145 | 1 предмет |
+| Arazo's Artifacts | 1-51 | 1 предмет |
 | Сообщества | сообщество + 1-10 | 1 предмет |
 
 Корник и Hope & Fear - это один и тот же бросок Nd12 по таблице 1-60, поэтому
@@ -56,7 +57,7 @@
 
 **Таблицы** - это все таблицы целиком, включая альтернативные и три таблицы
 снаряжения (оружие, вторичное оружие, броня), у каждой свой поиск и переключение
-списком или сеткой. **Поиск** идёт сразу по 1272 записям: названия,
+списком или сеткой. **Поиск** идёт сразу по 1323 записям: названия,
 описания и характеристики, на обоих языках.
 
 Разделы адресуются напрямую, и у каждого заголовка есть кнопка копирования
@@ -212,6 +213,7 @@ https://artex-x.github.io/daggerheart-loot/i/ci15.html
 | `di` | Dread GM Toolbox | `di3` |
 | `voa` | Vault of Ages | `voa2_a1` |
 | `dv` / `dve` | The Dragon's Vault, добыча / снаряжение | `dv26`, `dve19` |
+| `aa` | Arazo's Artifacts | `aa7` |
 | `cm` | Предметы сообществ | `cm81` |
 | `f` | Снаряжение фреймов | `f7` |
 | `q` | Снаряжение Core и Hope & Fear | `q26` |
@@ -291,10 +293,10 @@ app/src/styles/       tokens.css и общие стили
 app/index.html        входной документ, собирается в dist/index.html
 data.js               данные: window.LOOT
 card/*.svg            36 векторов для печатных карточек, экспорт из Figma
-img/*.webp            1057 картинок, 640x640, ~34 МБ
+img/*.webp            1084 картинки, 640x640, ~34 МБ
 img/thumb/*.webp      по одной миниатюре 160x160 на картинку, для строк
 og/*.jpg              те же картинки в JPEG для превью ссылок, ~47 МБ
-i/*.html              1272 страницы-заглушки на каждом языке с Open Graph разметкой:
+i/*.html              1323 страницы-заглушки на каждом языке с Open Graph разметкой:
                       i/ на русском, i/en/ на английском; генерируются, не в репозитории
 en/index.html         английская входная страница (английское превью сайта),
                       генерируется, не в репозитории
@@ -485,10 +487,10 @@ build:test`) - `npm run check` не собирает.
 туда.
 
 Снаряжение лежит не только в `eq`. Одиннадцать записей Wondrous Loot, все 68
-единиц оружия и брони The Dragon's Vault, всё снаряжение фреймов, часть Vault
+единиц оружия и брони The Dragon's Vault, все 41 единица Arazo's Artifacts, всё снаряжение фреймов, часть Vault
 of Ages и Dread несут такой же блок `eq`,
 оставаясь в `items`; фреймы кампаний не образуют таблицу бросков. Три таблицы снаряжения собирают их
-все: основного оружия там 381, вторичного 123, брони 100. До двух книг их сужает
+все: основного оружия там 410, вторичного 127, брони 108. До двух книг их сужает
 фильтр по источнику (239 / 73 / 69).
 
 ## Цвета категорий
@@ -514,6 +516,7 @@ of Ages и Dread несут такой же блок `eq`,
 | Dread GM Toolbox | 29 | [Dread GM Toolbox](https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart) | любительский перевод |
 | Vault of Ages | 144 | Vault of Ages [1](https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1), [2](https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2), [3](https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3), [4](https://www.drivethrurpg.com/en/product/582544/vault-of-ages-volume-4) | любительский перевод |
 | The Dragon's Vault | 145 | [The Dragon's Vault](https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault) | любительский перевод |
+| Arazo's Artifacts | 51 | [The Guide to Arazo's Artifacts](https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts) | любительский перевод |
 | Предметы сообществ | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | любительский перевод, названия сообществ по [daggerheart.su](https://ru.daggerheart.su/community) |
 | Снаряжение фреймов | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | любительский перевод |
 | Оружие | 239 | Daggerheart SRD, Hope & Fear | Core - [daggerheart.su](https://ru.daggerheart.su/), H&F - таблица сообщества |
@@ -559,7 +562,7 @@ d119 совпадает со степенями свободы, перекос �
   число игр, на которые лицензия распространяется. SRD 1.0 остаётся в силе для
   материалов, выпущенных до этого.
 - **Wondrous Environments**, **Dread GM Toolbox**, **Vault of Ages**,
-  **The Dragon's Vault**, **Community Magic Items** и **Alternate Loot &
+  **The Dragon's Vault**, **The Guide to Arazo's Artifacts**, **Community Magic Items** и **Alternate Loot &
   Consumable Tables** под эту лицензию не подпадают: это платные и фанатские
   дополнения, права на тексты которых принадлежат их авторам.
 

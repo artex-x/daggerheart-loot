@@ -19,6 +19,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -67,6 +68,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
 ## ru :: controls
 1Первоклассный Спальный Мешок×2Во время отдыха вы автоматически ... [namelen=91 namehash=7ebe99fa]
 21Доспешный Сшиватель×5 · 5 горстейВы можете использовать этот ш... [namelen=168 namehash=d72d6026]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -121,6 +123,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -171,6 +174,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
 21Armor Stitcher×5 · 5 handfulsYou can use this stitcher to spen... [namelen=131 namehash=fb0e945f]
 Add to list
 Alt. tables
+Arazo's Artifacts
 Armor Stitcher
 Clear selection
 Communities

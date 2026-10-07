@@ -19,6 +19,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -70,6 +71,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
 1Первоклассный Спальный Мешок×2 · 150 зол.Во время отдыха вы авт... [namelen=102 namehash=f527509a]
 3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
 51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -134,6 +136,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -187,6 +190,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
 51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=351 namehash=189625cc]
 Add to list
 Alt. tables
+Arazo's Artifacts
 Art History Booklet
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]

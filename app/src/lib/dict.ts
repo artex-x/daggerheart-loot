@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1272 pairs maintained with
+ * small, typed and reviewed, while record text is 1323 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -26,13 +26,14 @@ const ru = {
   langLabel: 'Язык',
   close: 'Закрыть',
 
-  /* The ten sections, in tab order */
+  /* The eleven sections, in tab order */
   std: 'Обычные правила',
   alt: 'Альт. таблицы',
   wondrous: 'Wondrous',
   dread: 'Dread',
   voa: 'Vault of Ages',
   dv: "Dragon's Vault",
+  arazo: "Arazo's Artifacts",
   community: 'Сообщества',
   tables: 'Таблицы',
   lists: 'Списки',
@@ -64,6 +65,7 @@ const ru = {
   srcDread: 'Dread',
   srcVoa: 'Vault of Ages',
   srcDv: "Dragon's Vault",
+  srcArazo: "Arazo's Artifacts",
   /* Matches `frameF`/`subFrames` below - one word for the concept in
      Russian, verified against ru.daggerheart.su/frame ("Сеттинги" is both
      that page's own title and its term for one entry on it). */
@@ -99,7 +101,7 @@ const ru = {
      markup in a string. The verbatim citation lives entirely in the first
      part - tests/derived.js pins it in app.js, and it must read the same here. */
   footBefore:
-    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   /* The folded notice's one visible line; the full text above sits under it. */
@@ -117,6 +119,7 @@ const ru = {
   pageDread: 'Dread GM Toolbox',
   pageVoa: 'Vault of Ages',
   pageDv: "The Dragon's Vault",
+  pageArazo: "The Guide to Arazo's Artifacts",
   pageCommunity: 'Предметы сообществ',
   pageStd: 'Обычные правила',
   subStd: 'Бросок по таблицам корника и дополнения Hope & Fear.',
@@ -231,7 +234,7 @@ const ru = {
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
   subSearch:
-    'Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, на русском и на английском.',
+    'Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, на русском и на английском.',
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию…',
@@ -1017,6 +1020,7 @@ const en: Dict = {
   dread: 'Dread',
   voa: 'Vault of Ages',
   dv: "Dragon's Vault",
+  arazo: "Arazo's Artifacts",
   community: 'Communities',
   tables: 'Tables',
   lists: 'Lists',
@@ -1043,6 +1047,7 @@ const en: Dict = {
   srcDread: 'Dread',
   srcVoa: 'Vault of Ages',
   srcDv: "Dragon's Vault",
+  srcArazo: "Arazo's Artifacts",
   srcFrame: 'Frame',
   srcComm: 'Communities',
   copyLink: 'Copy link',
@@ -1064,7 +1069,7 @@ const en: Dict = {
   stepUp: 'One higher',
 
   footBefore:
-    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and licence',
@@ -1077,6 +1082,7 @@ const en: Dict = {
   pageDread: 'Dread GM Toolbox',
   pageVoa: 'Vault of Ages',
   pageDv: "The Dragon's Vault",
+  pageArazo: "The Guide to Arazo's Artifacts",
   pageCommunity: 'Community items',
   pageStd: 'Standard rules',
   subStd: 'A roll over the core book and the Hope & Fear tables.',
@@ -1165,7 +1171,7 @@ const en: Dict = {
   subTables: 'Every table in full, weapons and armor included - browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
-    'Search all 1272 entries at once - loot, consumables and equipment, in Russian and English.',
+    'Search all 1323 entries at once - loot, consumables and equipment, in Russian and English.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description…',
@@ -1917,6 +1923,7 @@ export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/dread': 'dread',
   'roll/voa': 'voa',
   'roll/dv': 'dv',
+  'roll/arazo': 'arazo',
   'roll/community': 'community',
   tables: 'tables',
   lists: 'lists',

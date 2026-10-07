@@ -85,6 +85,17 @@
     }
   },
   {
+    "hash": "#/roll/arazo",
+    "why": "Arazo's Artifacts",
+    "resolves": {
+      "hash": "#/roll/arazo",
+      "tab": "#/roll/arazo",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/roll/community",
     "why": "communities",
     "resolves": {
@@ -157,10 +168,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon",
       "tab": "#/tables",
-      "rows": 381,
+      "rows": 410,
       "printCards": 0,
       "picked": [],
-      "count": "381"
+      "count": "410"
     }
   },
   {
@@ -173,6 +184,18 @@
       "printCards": 0,
       "picked": [],
       "count": "145"
+    }
+  },
+  {
+    "hash": "#/tables/arazo",
+    "why": "a plain table by name, the book chip after Dragon's Vault",
+    "resolves": {
+      "hash": "#/tables/arazo",
+      "tab": "#/tables",
+      "rows": 51,
+      "printCards": 0,
+      "picked": [],
+      "count": "51"
     }
   },
   {
@@ -210,7 +233,7 @@
         "tier:2",
         "cls:mag"
       ],
-      "count": "40 из 381"
+      "count": "40 из 410"
     }
   },
   {
@@ -219,12 +242,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_range-melee",
       "tab": "#/tables",
-      "rows": 186,
+      "rows": 193,
       "printCards": 0,
       "picked": [
         "range:melee"
       ],
-      "count": "186 из 381"
+      "count": "193 из 410"
     }
   },
   {
@@ -233,12 +256,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_burden-2",
       "tab": "#/tables",
-      "rows": 200,
+      "rows": 224,
       "printCards": 0,
       "picked": [
         "burden:2"
       ],
-      "count": "200 из 381"
+      "count": "224 из 410"
     }
   },
   {
@@ -247,13 +270,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1-2",
       "tab": "#/tables",
-      "rows": 180,
+      "rows": 190,
       "printCards": 0,
       "picked": [
         "tier:1",
         "tier:2"
       ],
-      "count": "180 из 381"
+      "count": "190 из 410"
     }
   },
   {
@@ -262,12 +285,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-A",
       "tab": "#/tables",
-      "rows": 1,
+      "rows": 10,
       "printCards": 0,
       "picked": [
         "tier:A"
       ],
-      "count": "1 из 381"
+      "count": "10 из 410"
     }
   },
   {
@@ -326,13 +349,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
       "tab": "#/tables",
-      "rows": 46,
+      "rows": 51,
       "printCards": 0,
       "picked": [
         "tier:1",
         "cls:phy"
       ],
-      "count": "46 из 381"
+      "count": "51 из 410"
     }
   },
   {
@@ -341,10 +364,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_nosuch-1",
       "tab": "#/tables",
-      "rows": 381,
+      "rows": 410,
       "printCards": 0,
       "picked": [],
-      "count": "381"
+      "count": "410"
     }
   },
   {

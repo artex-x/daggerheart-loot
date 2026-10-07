@@ -20,6 +20,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm1#/roll/community]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
@@ -70,6 +71,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
 ## ru :: controls
 #/s/share-token-1
 #/s/share-token-2
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -128,6 +130,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Communities" [url=index.html?as=gm1#/roll/community]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
@@ -180,6 +183,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
 #/s/share-token-2
 Account: gm1@example.test
 Alt. tables
+Arazo's Artifacts
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
 Communities

@@ -19,6 +19,7 @@ RootWebArea "Фроствирд (Пробуждённый) — Генерато�
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -49,6 +50,7 @@ RootWebArea "Фроствирд (Пробуждённый) — Генерато�
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -97,6 +99,7 @@ RootWebArea "Frostwyrd (Awakened) — Daggerheart Loot Generator" [url=#/i/dve25
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -129,6 +132,7 @@ RootWebArea "Frostwyrd (Awakened) — Daggerheart Loot Generator" [url=#/i/dve25
 ## en :: controls
 Add to list
 Alt. tables
+Arazo's Artifacts
 Communities
 Copy image
 Copy link

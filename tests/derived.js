@@ -700,8 +700,8 @@ ok(
   'equipment grew a new kind: ' + Object.keys(BY_T).join()
 );
 ok(
-  EVERY_EQ.length === L.eq.length + 223,
-  'equipment outside the two base books is not 223, but ' + (EVERY_EQ.length - L.eq.length)
+  EVERY_EQ.length === L.eq.length + 264,
+  'equipment outside the two base books is not 264, but ' + (EVERY_EQ.length - L.eq.length)
 );
 /* Every piece of equipment must carry a tier. Wondrous's is derived from the
    book: the "Loot items by environment" table ties an item to a location,
@@ -1065,6 +1065,15 @@ COUNT_BEARING_FILES.forEach(function (file) {
     }
   });
   ok(text.indexOf(String(N.all)) >= 0, file + ': the overall record count went unmentioned');
+});
+/* The specs also cite list caps ("5000 entries"), so they are read by one
+   sentence each rather than by the counter words above. */
+[
+  ['docs/specs/FEATURES.md', /Search covers all (\d+) records/],
+  ['docs/specs/I18N.md', /is (\d+) pairs maintained with the data/]
+].forEach(function ([file, re]) {
+  const m = re.exec(fs.readFileSync(path.join(ROOT, file), 'utf8'));
+  ok(m && +m[1] === N.all, file + ': the record count is not ' + N.all + ' - ' + (m && m[1]));
 });
 
 console.log('legacy write cutoff');
@@ -1696,6 +1705,52 @@ ok(
   'slow: expected the Huge Green Ooze page'
 );
 
+console.log("Arazo's Artifacts");
+const arazo = L.items.arazo;
+ok(arazo.length === 51, 'items.arazo is not 51, but ' + arazo.length);
+ok(
+  arazo.every((x, i) => x.id === 'aa' + (i + 1) && x.roll === i + 1),
+  'items.arazo is not aa1..aa51 with rolls 1..51 in book order'
+);
+ok(arazo.filter((x) => x.kind === 'item').length === 10, 'items.arazo items are not 10');
+const aaEq = arazo.filter((x) => x.eq);
+const aaByKind = { weapon: 0, secondary: 0, armor: 0 };
+aaEq.forEach((x) => aaByKind[x.eq.t]++);
+ok(
+  aaByKind.weapon === 29 && aaByKind.secondary === 4 && aaByKind.armor === 8,
+  'arazo equipment by kind: ' + JSON.stringify(aaByKind)
+);
+/* A piece with a tier formula is a four-tier line; one without is an artifact. */
+ok(
+  aaEq.filter((x) => x.eq.tier === 'A').every((x) => x.tier === 'A' && !x.eq.line) &&
+    aaEq.filter((x) => x.eq.tier === 'A').length === 9,
+  'arazo artifacts are not 9 unlined records with tier A'
+);
+ok(
+  new Set(aaEq.filter((x) => x.eq.line).map((x) => x.eq.line)).size === 8 &&
+    aaEq.filter((x) => x.eq.line).every((x) => x.tier === undefined),
+  'arazo lines are not 8, or a rung carries a record tier'
+);
+const aaById = Object.fromEntries(arazo.map((x) => [x.id, x]));
+ok(
+  JSON.stringify([
+    aaById.aa21.eq.as,
+    aaById.aa21.eq.th,
+    aaById.aa24.eq.as,
+    aaById.aa24.eq.th
+  ]) === JSON.stringify([2, [11, 22], 8, [14, 28]]),
+  'Plate of the Prince is not 10+t / 20+2t, score 2t'
+);
+ok(
+  JSON.stringify([
+    aaById.aa46.eq.as,
+    aaById.aa46.eq.th,
+    aaById.aa49.eq.as,
+    aaById.aa49.eq.th
+  ]) === JSON.stringify([3, [9, 20], 6, [12, 26]]),
+  'Wyrmscale Hauberk is not 8+t / 18+2t, score t+2'
+);
+
 console.log('Vault of Ages Volume 4');
 const voa4ById = Object.fromEntries(
   VOA.filter((x) => x.id.startsWith('voa4_')).map((x) => [x.id, x])
@@ -1704,10 +1759,13 @@ ok(Object.keys(voa4ById).length === 36, 'Volume 4 does not have 36 records');
 Object.values(voa4ById).forEach((x) =>
   ok(x.img === x.id + '.webp', x.id + ': expected img === ' + x.id + '.webp, got ' + x.img)
 );
-const artifactEq = EVERY_EQ.filter((x) => x.eq.tier === 'A').map((x) => x.id);
+const artifactEq = EVERY_EQ.filter((x) => x.eq.tier === 'A' && x.src !== 'arazo').map(
+  (x) => x.id
+);
 ok(
   artifactEq.join() === 'voa4_a3',
-  'expected voa4_a3 alone to carry eq.tier A, got ' + artifactEq.join()
+  "expected voa4_a3 alone outside Arazo's Artifacts to carry eq.tier A, got " +
+    artifactEq.join()
 );
 const VOA4_REFS = { 'rotted-zombie': 'voa4_t1b' };
 Object.entries(VOA4_REFS).forEach(([key, id]) => {

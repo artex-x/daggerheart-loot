@@ -20,6 +20,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm1#/roll/community]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
@@ -36,6 +37,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
     link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
     link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
     link "Сообщества" [url=index.html?as=gm1#/tables/community]
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
@@ -52,10 +54,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Мастерская Ольхи" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "1 из 382"
+    StaticText "1 из 411"
     ... StaticText x13 of 17 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x28 of 32 same-shape siblings elided
+    ... button x29 of 33 same-shape siblings elided
     button "Мастерская Ольхи" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
@@ -77,6 +79,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 2
 3
 4
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -159,6 +162,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Communities" [url=index.html?as=gm1#/roll/community]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
@@ -175,6 +179,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
     link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
     link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
     link "Communities" [url=index.html?as=gm1#/tables/community]
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
@@ -191,10 +196,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "Alder Workshop" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "1 of 382"
+    StaticText "1 of 411"
     ... StaticText x13 of 17 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x28 of 32 same-shape siblings elided
+    ... button x29 of 33 same-shape siblings elided
     button "Alder Workshop" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
@@ -220,6 +225,7 @@ Account: gm1@example.test
 Agility
 Alder Workshop
 Alt. tables
+Arazo's Artifacts
 Armor
 Artifacts
 Beast Feast

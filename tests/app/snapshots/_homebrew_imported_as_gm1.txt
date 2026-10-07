@@ -20,6 +20,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm1#/roll/community]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
@@ -57,6 +58,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     StaticText "Импортировано предметов: 3, новых карт: 2"
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -119,6 +121,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Communities" [url=index.html?as=gm1#/roll/community]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
@@ -158,6 +161,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
 ## en :: controls
 Account: gm1@example.test
 Alt. tables
+Arazo's Artifacts
 Communities
 Delete
 Double-Barrelled Pistol

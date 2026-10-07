@@ -3434,20 +3434,25 @@ async function readOnlyAfterTheCutoff() {
     ),
     at + 'the own #/l/ payload does not draw the retired page'
   );
+  const tabBar = () =>
+    page.evaluate(() => {
+      const links = [...document.querySelectorAll('nav.tabs a')];
+      return {
+        n: links.length,
+        lists: links.some((a) => a.textContent.trim() === 'Списки'),
+        h1: document.querySelector('h1')?.textContent ?? ''
+      };
+    });
+  /* Compared with the bar before the cutoff, so a new section does not stale the count. */
+  await d.open('#/lists', { today: '2026-10-01' });
+  const open = await tabBar();
   await d.open('#/lists', { today });
-  const bar = await page.evaluate(() => {
-    const links = [...document.querySelectorAll('nav.tabs a')];
-    return {
-      n: links.length,
-      lists: links.some((a) => a.textContent.trim() === 'Списки'),
-      h1: document.querySelector('h1')?.textContent ?? ''
-    };
-  });
+  const bar = await tabBar();
   ok(
-    bar.n === 9 && !bar.lists && bar.h1 === 'Мои списки',
+    open.lists && bar.n === open.n - 1 && !bar.lists && bar.h1 === 'Мои списки',
     at +
-      'the bar is not nine tabs without «Списки» over the lists index - ' +
-      JSON.stringify(bar)
+      'the bar is not the open bar without «Списки» over the lists index - ' +
+      JSON.stringify({ open, bar })
   );
   await d.press('Клад дракона');
   ok(

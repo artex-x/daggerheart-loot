@@ -198,6 +198,45 @@ describe("The Dragon's Vault over the real data", () => {
   });
 });
 
+describe("Arazo's Artifacts over the real data", () => {
+  /* An upgrade line's rungs roll as their own rows, right after the head,
+     and keep their stat block in the result card. */
+  const REAL = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const field = (): HTMLInputElement =>
+    screen.getByRole<HTMLInputElement>('textbox', { name: 'Результат броска' });
+  const typed = async (n: string): Promise<void> => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/roll/arazo'), data: fakeData(REAL) })
+    });
+    await userEvent.clear(field());
+    await userEvent.type(field(), n);
+    await userEvent.tab();
+  };
+
+  it('names the whole range on the button', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/roll/arazo'), data: fakeData(REAL) })
+    });
+    expect(screen.getByRole('button', { name: 'Случайно 1–51' })).toBeInTheDocument();
+  });
+
+  it('draws an upgrade rung, stat line and all, at 8', async () => {
+    await typed('8');
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Улучшенный Лук из Эльфийских Волос' })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/d10/)).toBeInTheDocument();
+  });
+
+  it('draws the last row at 51', async () => {
+    await typed('51');
+    expect(field().value).toBe('51');
+    expect(screen.getByRole('heading', { level: 2, name: 'Ларец Зерана' })).toBeInTheDocument();
+  });
+});
+
 describe('pinning the section', () => {
   const OFF = 'Открывать этот раздел при запуске';
   const ON = 'Открывается при запуске';

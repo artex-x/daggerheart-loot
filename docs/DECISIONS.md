@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-07 - [Arazo's Artifacts: source arazo, ids aa1-aa51, tier formulas as lines](decisions/2026-10-07-arazos-artifacts-source-arazo-section-roll-arazo-ids-aa.md)
 - 2026-10-02 - [A homebrew import matches items by key, never by name](decisions/2026-10-02-a-homebrew-import-matches-items-by-key-never-by-name.md)
 - 2026-10-02 - [A lists file is version 2 only when it holds homebrew](decisions/2026-10-02-a-lists-file-is-version-2-only-when-it-holds-homebrew.md)
 - 2026-10-02 - [A list's frozen copies hold up to 1048576 bytes together](decisions/2026-10-02-a-lists-frozen-copies-hold-up-to-1048576-bytes.md)

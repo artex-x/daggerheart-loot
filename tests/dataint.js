@@ -20,7 +20,7 @@ ALL.forEach((x) => {
   ok(!byId[x.id], 'duplicate id: ' + x.id);
   byId[x.id] = x;
 });
-ok(ALL.length === 1272, 'records are not 1272, but ' + ALL.length);
+ok(ALL.length === 1323, 'records are not 1323, but ' + ALL.length);
 /* Vault of Ages numbers its cards by book volume and section, not straight
    through: voa2_a1 - volume two, first artifact. Links, filenames and list
    codes all hang on id, so the book's own scheme is different but just as
@@ -43,7 +43,9 @@ ALL.forEach((x) => {
   });
   ok(['item', 'consumable', 'equip'].indexOf(x.kind) >= 0, x.id + ': unknown kind ' + x.kind);
   ok(
-    ['core', 'hnf', 'wondrous', 'dread', 'voa', 'dv', 'frame', 'community'].indexOf(x.src) >= 0,
+    ['core', 'hnf', 'wondrous', 'dread', 'voa', 'dv', 'frame', 'community', 'arazo'].indexOf(
+      x.src
+    ) >= 0,
     x.id + ': unknown src ' + x.src
   );
 });
@@ -190,9 +192,10 @@ const EQUIP = ALL.filter((x) => x.eq);
 EQUIP.forEach((x) => {
   const e = x.eq;
   ok(['weapon', 'secondary', 'armor'].indexOf(e.t) >= 0, x.id + ': unknown type ' + e.t);
-  /* `A` is the book's Artifacts section, printed there, never inferred. */
+  /* `A` is set from the source, never inferred: the book's Artifacts section,
+     or an Arazo's Artifacts piece with no tier formula. */
   if (e.tier === 'A')
-    ok(x.tier === 'A', x.id + ': equipment tier A outside the Artifacts section');
+    ok(x.tier === 'A', x.id + ': equipment tier A, but the record tier is not A');
   else ok(e.tier >= 1 && e.tier <= 4, x.id + ': tier outside 1-4');
   if (e.t === 'armor') {
     ok(
@@ -223,9 +226,10 @@ EQUIP.forEach((x) => {
 });
 /* four steps per line, and the head is its own first step; a named chain
    outside Core and Hope & Fear is a craft chain (DECISIONS, "Frostwyrd is a
-   two-step craft chain") */
+   two-step craft chain"). Lines outside `eq` (frames, Arazo's Artifacts)
+   hold the same rule. */
 const lines = {};
-EQ.filter((x) => x.eq.line).forEach((x) => {
+EQUIP.filter((x) => x.eq.line).forEach((x) => {
   (lines[x.eq.line] = lines[x.eq.line] || []).push(x);
 });
 Object.keys(lines).forEach((head) => {
@@ -234,8 +238,8 @@ Object.keys(lines).forEach((head) => {
   ok(byId[head].eq.tier === 1, 'line ' + head + ' does not start at tier 1');
 });
 ok(
-  Object.keys(lines).length === 58,
-  'upgrade lines are not 58, but ' + Object.keys(lines).length
+  Object.keys(lines).length === 80,
+  'upgrade lines are not 80, but ' + Object.keys(lines).length
 );
 
 console.log('sets');

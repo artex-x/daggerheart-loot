@@ -14,7 +14,7 @@ The site installs as an app on a phone or a desktop; the guide is at
 in the footer beside the privacy policy (`pages/privacy.html`) and the terms
 of use (`pages/terms.html`).
 
-1272 records in all - 891 items and consumables plus 381 pieces of equipment -
+1323 records in all - 942 items and consumables plus 381 pieces of equipment -
 each with a name, a description, a stat line where it has one, and an
 illustration. No tracking; signing in is optional, and without it nothing about
 you reaches a server.
@@ -38,6 +38,7 @@ you reaches a server.
 | Dread | 1-29 | 1 item |
 | Vault of Ages | 1-144 | 1 item |
 | The Dragon's Vault | 1-145 | 1 item |
+| Arazo's Artifacts | 1-51 | 1 item |
 | Communities | community + 1-10 | 1 item |
 
 Core and Hope & Fear are the same Nd12 roll against the same 1-60 table, so they
@@ -54,7 +55,7 @@ next to rarities are a recommendation rather than a limit.
 
 **Tables** holds every table in full, including the alternate ones and the three
 equipment tables (weapons, secondary weapons, armour), each with its own search
-box and a list/grid switch. **Search** covers all 1272 records at once - names,
+box and a list/grid switch. **Search** covers all 1323 records at once - names,
 descriptions and stat lines, in both languages.
 
 Sections are addressable, and every heading has a copy-link button:
@@ -207,6 +208,7 @@ will not show WebP in `og:image`. Ids are stable and match `id` in `data.js`:
 | `di` | Dread GM Toolbox | `di3` |
 | `voa` | Vault of Ages | `voa2_a1` |
 | `dv` / `dve` | The Dragon's Vault, loot / equipment | `dv26`, `dve19` |
+| `aa` | Arazo's Artifacts | `aa7` |
 | `cm` | Community items | `cm81` |
 | `f` | Campaign frame equipment | `f7` |
 | `q` | Core and Hope & Fear equipment | `q26` |
@@ -238,7 +240,7 @@ is ignored whole.
 
 The app opens on Core rules. The house icon beside a heading pins the current
 section as the starting one; pressing it again restores the default. Any of the
-ten sections works, as does any table by name. An item card or a list cannot be
+eleven sections works, as does any table by name. An item card or a list cannot be
 pinned - it is a snapshot that drifts away from the data.
 
 ## Running and developing
@@ -283,10 +285,10 @@ app/src/styles/       tokens.css and shared styles
 app/index.html        entry document, built into dist/index.html
 data.js               the data: window.LOOT
 card/*.svg            36 vectors for the print cards, exported from Figma
-img/*.webp            1057 pictures, 640x640, ~34 MB
+img/*.webp            1084 pictures, 640x640, ~34 MB
 img/thumb/*.webp      one 160x160 thumbnail per picture, drawn in rows
 og/*.jpg              the same pictures as JPEG for link previews, ~47 MB
-i/*.html              1272 stub pages per language with Open Graph markup: i/ Russian,
+i/*.html              1323 stub pages per language with Open Graph markup: i/ Russian,
                       i/en/ English; generated, not committed
 en/index.html         the English entry document (the site's English preview card),
                       generated, not committed
@@ -472,10 +474,10 @@ it deals. They usually agree, but the Shadowblade and the Ghostblade are
 `cls:'mag'` with `dt:'any'`. The filter works on `cls`, and `any` lands in both.
 
 Equipment is not only in `eq`. Eleven Wondrous Loot records, all 68 of The
-Dragon's Vault's weapons and armour, and every campaign frame entry, plus some of
-Vault of Ages and Dread, carry the same `eq` block
+Dragon's Vault's weapons and armour, all 41 of Arazo's Artifacts', and every campaign
+frame entry, plus some of Vault of Ages and Dread, carry the same `eq` block
 while staying in `items`; campaign frames are not a roll table. The three equipment tables
-gather all of them: 381 weapons, 123 secondary weapons, 100 armour. The source
+gather all of them: 410 weapons, 127 secondary weapons, 108 armour. The source
 filter is what narrows those to the two books (239 / 73 / 69).
 
 ## Category colours
@@ -501,6 +503,7 @@ is a caption, not a category - and the stat line carries no colour of its own.
 | Dread GM Toolbox | 29 | [Dread GM Toolbox](https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart) | fan translation |
 | Vault of Ages | 144 | Vault of Ages [1](https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1), [2](https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2), [3](https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3), [4](https://www.drivethrurpg.com/en/product/582544/vault-of-ages-volume-4) | fan translation |
 | The Dragon's Vault | 145 | [The Dragon's Vault](https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault) | fan translation |
+| Arazo's Artifacts | 51 | [The Guide to Arazo's Artifacts](https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts) | fan translation |
 | Community items | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | fan translation, community names per [daggerheart.su](https://ru.daggerheart.su/community) |
 | Campaign frames | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | fan translation |
 | Weapons | 239 | Daggerheart SRD, Hope & Fear | Core from [daggerheart.su](https://ru.daggerheart.su/), H&F from a community sheet |
@@ -544,7 +547,7 @@ play at the table:
   adds Hope & Fear to the games the licence covers. SRD 1.0 remains in force for
   material published before that.
 - **Wondrous Environments**, **Dread GM Toolbox**, **Vault of Ages**,
-  **The Dragon's Vault**, **Community Magic Items** and the **Alternate Loot &
+  **The Dragon's Vault**, **The Guide to Arazo's Artifacts**, **Community Magic Items** and the **Alternate Loot &
   Consumable Tables** fall outside that licence: they are paid and fan
   supplements whose text belongs to their own authors.
 

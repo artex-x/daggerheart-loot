@@ -20,6 +20,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
       link "Dread" [url=index.html?as=gm2#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm2#/roll/community]
       link "Таблицы" [url=index.html?as=gm2#/tables]
       link "Списки" [url=index.html?as=gm2#/lists]
@@ -79,6 +80,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
 ## ru :: controls
 1 горсть
 5 горстей
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -140,6 +142,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
       link "Dread" [url=index.html?as=gm2#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
       link "Communities" [url=index.html?as=gm2#/roll/community]
       link "Tables" [url=index.html?as=gm2#/tables]
       link "Lists" [url=index.html?as=gm2#/lists]
@@ -201,6 +204,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
 5 handfuls
 Account: gm2@example.test
 Alt. tables
+Arazo's Artifacts
 Armor Stitcher
 Armor StitcherYou can use this stitcher to spend any number of H... [namelen=114 namehash=0de533ee]
 As in the book

@@ -20,6 +20,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
       link "Dread" [url=index.html?as=gm3#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm3#/roll/community]
       link "Таблицы" [url=index.html?as=gm3#/tables]
       link "Списки" [url=index.html?as=gm3#/lists]
@@ -27,7 +28,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, ..." [namelen=112 namehash=8fe50dfa]
+    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=112 namehash=65538d79]
     searchbox "Поиск по названию или описанию…" [value=спальный мешок focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
@@ -54,6 +55,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
 
 ## ru :: controls
 1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=138 namehash=2d9d8575]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -129,6 +131,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/sear
       link "Dread" [url=index.html?as=gm3#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
       link "Communities" [url=index.html?as=gm3#/roll/community]
       link "Tables" [url=index.html?as=gm3#/tables]
       link "Lists" [url=index.html?as=gm3#/lists]
@@ -136,7 +139,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/sear
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1272 entries at once - loot, consumables and equipmen..." [namelen=116 namehash=17343acc]
+    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=116 namehash=31143e49]
     searchbox "Search by name or description…" [value=спальный мешок focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
@@ -165,6 +168,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/sear
 1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=115 namehash=7ce280b8]
 Account: gm3@example.test
 Alt. tables
+Arazo's Artifacts
 Ash Bedroll
 Ash BedrollA bedroll for a long road.Made from: Premium BedrollI... [namelen=75 namehash=d39b7d20]
 Basic supplies

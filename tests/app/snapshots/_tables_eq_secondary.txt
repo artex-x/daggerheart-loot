@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -46,23 +48,23 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "123"
+    StaticText "127"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (30)" [checked=false]
+    checkbox "Выбрать все (31)" [checked=false]
     checkbox "Короткий Меч" [checked=false]
     button "Короткий Меч Ранг 1 · Физическое · Проворность · Вплотную · d8 ф..." [namelen=162 namehash=bdf96fba]
-    ... checkbox x123 of 127 same-shape siblings elided
-    ... button x120 of 124 same-shape siblings elided
+    ... checkbox x127 of 131 same-shape siblings elided
+    ... button x124 of 128 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (28)"
-    checkbox "Голодный Кулачный Клинок" [checked=false]
-    button "23 Голодный Кулачный Клинок Ранг 4 · Физическое · Искусность · В..." [namelen=432 namehash=d407a09e]
+    StaticText "Выбрать все (29)"
     checkbox "Нож Единорога" [checked=false]
     button "32 Нож Единорога Ранг 4 · Физическое · Искусность · Вплотную · d..." [namelen=346 namehash=240c1322]
+    checkbox "Легендарный Щит Арктура" [checked=false]
+    button "31 Легендарный Щит Арктура Ранг 4 · Физическое · Сила · Вплотную..." [namelen=297 namehash=a4d1027d]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -83,6 +85,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 25Зуб Аку-ХаптлекаРанг 2 · Физическое · Проворность · Вплотную ·... [namelen=702 namehash=9559ae61]
 27Щит Стекла СудьбыРанг 2 · Физическое · Инстинкт · Вплотную · d... [namelen=504 namehash=f8dcbcde]
 28Святой ЩитРанг 3 · Магическое · Инстинкт · Вплотную · d6+3 маг... [namelen=356 namehash=048ae74f]
+28Щит АрктураРанг 1 · Физическое · Сила · Вплотную · d8 физ · Од... [namelen=279 namehash=6a6c242d]
+29Улучшенный Щит АрктураРанг 2 · Физическое · Сила · Вплотную · ... [namelen=290 namehash=ba38cba7]
+30Продвинутый Щит АрктураРанг 3 · Физическое · Сила · Вплотную ·... [namelen=291 namehash=c9a2da59]
+31Легендарный Щит АрктураРанг 4 · Физическое · Сила · Вплотную ·... [namelen=291 namehash=4f245c90]
 32Нож ЕдинорогаРанг 4 · Физическое · Искусность · Вплотную · d8+... [namelen=338 namehash=9927c62a]
 57Кандальные БоласРанг 2 · Физическое · Искусность · Средне · d4... [namelen=276 namehash=fd032e1c]
 6Ритуальный Клинок СехметРанг 3 · Магическое · Искусность · Впло... [namelen=300 namehash=a127fa90]
@@ -94,6 +100,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 90Клинок из Драконьей КостиРанг 1 · Физическое · Сила · Вплотную... [namelen=283 namehash=d9a1ed5e]
 97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=313 namehash=2e6e07f1]
 99Ослепляющий ДротикРанг 1 · Физическое · Искусность · Далеко · ... [namelen=238 namehash=ba3d96dd]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -192,6 +199,7 @@ daggerheart.com
 Легендарный ХлыстРанг 4 · Физическое · Влияние · Близко · d6+6 ф... [namelen=239 namehash=e3a5b5ec]
 Легендарный Цепной Хлыст
 Легендарный Цепной ХлыстРанг 4 · Физическое · Влияние · Близко ·... [namelen=195 namehash=ba90213f]
+Легендарный Щит Арктура
 ЛутDaggerheart
 Малый Кинжал
 Малый КинжалРанг 1 · Физическое · Искусность · Вплотную · d8 физ... [namelen=157 namehash=5f9248c3]
@@ -255,6 +263,7 @@ daggerheart.com
 Продвинутый ХлыстРанг 3 · Физическое · Влияние · Близко · d6+4 ф... [namelen=239 namehash=90f07291]
 Продвинутый Цепной Хлыст
 Продвинутый Цепной ХлыстРанг 3 · Физическое · Влияние · Близко ·... [namelen=195 namehash=04d0fcc5]
+Продвинутый Щит Арктура
 Прочее
 Пылающий Браслет
 Рассекатель Завесы
@@ -325,6 +334,7 @@ daggerheart.com
 Улучшенный ХлыстРанг 2 · Физическое · Влияние · Близко · d6+2 фи... [namelen=238 namehash=a6dcc85c]
 Улучшенный Цепной Хлыст
 Улучшенный Цепной ХлыстРанг 2 · Физическое · Влияние · Близко · ... [namelen=194 namehash=3cdcb3c2]
+Улучшенный Щит Арктура
 Усиленная Рукавица
 Усиленная РукавицаРанг 3 · Физическое · Знание · Средне · d6+4 ф... [namelen=202 namehash=05e487d1]
 Условия использования
@@ -338,6 +348,7 @@ daggerheart.com
 Цепной ХлыстРанг 1 · Физическое · Влияние · Близко · d6+1 физ · ... [namelen=183 namehash=7a5b5949]
 Шипастый Щит
 Шипастый ЩитРанг 2 · Физическое · Сила · Вплотную · d6+2 физ · О... [namelen=193 namehash=3a9602f3]
+Щит Арктура
 Щит Небес
 Щит Отталкивания
 Щит Охотника на Жуков
@@ -370,6 +381,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -386,6 +398,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -397,23 +410,23 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "123"
+    StaticText "127"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (30)" [checked=false]
+    checkbox "Select all (31)" [checked=false]
     checkbox "Shortsword" [checked=false]
     button "Shortsword Tier 1 · Physical · Agility · Melee · d8 phy · One-Ha..." [namelen=156 namehash=56db7551]
-    ... checkbox x123 of 127 same-shape siblings elided
-    ... button x120 of 124 same-shape siblings elided
+    ... checkbox x127 of 131 same-shape siblings elided
+    ... button x124 of 128 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "Select all (28)"
-    checkbox "Hungry Fist Blade" [checked=false]
-    button "23 Hungry Fist Blade Tier 4 · Physical · Finesse · Melee · d6+7 ..." [namelen=418 namehash=d5966222]
+    StaticText "Select all (29)"
     checkbox "Unicorn Knife" [checked=false]
     button "32 Unicorn Knife Tier 4 · Physical · Finesse · Melee · d8+6 phy ..." [namelen=312 namehash=1d5303db]
+    checkbox "Legendary Shield of Arcturus" [checked=false]
+    button "31 Legendary Shield of Arcturus Tier 4 · Physical · Strength · M..." [namelen=268 namehash=1e930c82]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -434,6 +447,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
 25Aku-Haptlek's ToothTier 2 · Physical · Agility · Melee · d8+5 ... [namelen=642 namehash=ccdc701a]
 27Fateglass ShieldTier 2 · Physical · Instinct · Melee · d6 phy ... [namelen=433 namehash=2f0ec2a9]
 28Saintly GuardTier 3 · Magic · Instinct · Melee · d6+3 mag · On... [namelen=323 namehash=a7f3ecbb]
+28Shield of ArcturusTier 1 · Physical · Strength · Melee · d8 ph... [namelen=252 namehash=47936021]
+29Improved Shield of ArcturusTier 2 · Physical · Strength · Mele... [namelen=261 namehash=417aa90f]
+30Advanced Shield of ArcturusTier 3 · Physical · Strength · Mele... [namelen=261 namehash=caafd1ed]
+31Legendary Shield of ArcturusTier 4 · Physical · Strength · Mel... [namelen=262 namehash=db49176c]
 32Unicorn KnifeTier 4 · Physical · Finesse · Melee · d8+6 phy · ... [namelen=304 namehash=21ee9788]
 57Manacle BolasTier 2 · Physical · Finesse · Close · d4+1 phy · ... [namelen=245 namehash=b496382f]
 6Ritual Blade of SekhmetTier 3 · Magic · Finesse · Melee · d8+4 ... [namelen=274 namehash=938b6ddd]
@@ -468,6 +485,7 @@ Advanced Round Shield
 Advanced Round ShieldTier 3 · Physical · Strength · Melee · d4+4... [namelen=130 namehash=b38bf260]
 Advanced Rune Shield
 Advanced Rune ShieldTier 3 · Magic · Knowledge · Melee · d4+4 ma... [namelen=134 namehash=5f727880]
+Advanced Shield of Arcturus
 Advanced Shortsword
 Advanced ShortswordTier 3 · Physical · Agility · Melee · d8+4 ph... [namelen=163 namehash=59bab3f3]
 Advanced Small Dagger
@@ -484,6 +502,7 @@ Advanced Wooden Stake
 Advanced Wooden StakeTier 3 · Physical · Strength · Melee · d8+4... [namelen=219 namehash=955f17dd]
 Aku-Haptlek's Tooth
 Alt. tables
+Arazo's Artifacts
 Arcane Scalpel
 Armor
 Barrel Lid Shield
@@ -562,6 +581,7 @@ Improved Round Shield
 Improved Round ShieldTier 2 · Physical · Strength · Melee · d4+2... [namelen=130 namehash=33c03a97]
 Improved Rune Shield
 Improved Rune ShieldTier 2 · Magic · Knowledge · Melee · d4+2 ma... [namelen=134 namehash=5ead169e]
+Improved Shield of Arcturus
 Improved Shortsword
 Improved ShortswordTier 2 · Physical · Agility · Melee · d8+2 ph... [namelen=163 namehash=e7b1bcec]
 Improved Small Dagger
@@ -605,6 +625,7 @@ Legendary Round Shield
 Legendary Round ShieldTier 4 · Physical · Strength · Melee · d4+... [namelen=131 namehash=53f0ac10]
 Legendary Rune Shield
 Legendary Rune ShieldTier 4 · Magic · Knowledge · Melee · d4+6 m... [namelen=135 namehash=0d39a21e]
+Legendary Shield of Arcturus
 Legendary Shortsword
 Legendary ShortswordTier 4 · Physical · Agility · Melee · d8+6 p... [namelen=164 namehash=a50b2be3]
 Legendary Small Dagger
@@ -654,6 +675,7 @@ Search
 Secondary
 Segmented Staff
 Segmented StaffTier 2 · Physical · Agility · Very Close · d6+4 p... [namelen=190 namehash=edc280eb]
+Shield of Arcturus
 Shield of Foresight
 Shield of Repulsion
 Shield of the Heavens

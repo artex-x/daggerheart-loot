@@ -83,6 +83,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 7Мистический ПлащСущество с Характеристикой Заклинателя, носящее... [namelen=148 namehash=b4e130c4]
 8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=187 namehash=548690a6]
 9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=165 namehash=8235d08d]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -269,6 +270,7 @@ Add to list
 Airblade Charm
 Alistair's Torch
 Alt. tables
+Arazo's Artifacts
 Arcane Cloak
 Arcane Prism
 Attune Relic

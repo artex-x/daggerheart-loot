@@ -971,7 +971,7 @@ tracing a feature back through history).
 
 | Feature | Covered by |
 |---|---|
-| Seven roll modes | `std.test.ts`, `roll.test.ts`, `alt.test.ts`, `tests/app/sweep.js` |
+| Eight roll modes | `std.test.ts`, `roll.test.ts`, `alt.test.ts`, `tests/app/sweep.js` |
 | Source switch, cannot be emptied | `state/app.test.ts`, `contracts` (legacy routes set it) |
 | Crit jump to the table | `tests/app/states.js`, `tests/app/sweep.js` |
 | Tables, list/grid (a pick for this visit, the note from `KeepNote.svelte`), search | `tables.test.ts`, `state/app.test.ts`, `searchPage.test.ts`, `homebrewCatalog.test.ts`, the `#/tables ~ grid` golden, `tests/app/sweep.js` |

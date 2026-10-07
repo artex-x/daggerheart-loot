@@ -19,6 +19,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3Qu
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -48,6 +49,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3Qu
 ## ru :: controls
 1Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Пр... [namelen=129 namehash=cf06372b]
 1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=89 namehash=4fe26622]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -88,6 +90,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaT
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -118,6 +121,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaT
 1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=74 namehash=dc485a4a]
 1Stride PotionYou gain a +1 bonus to your next Agility Roll.Upgr... [namelen=106 namehash=2481b3ac]
 Alt. tables
+Arazo's Artifacts
 Communities
 Dragon's Vault
 Dread

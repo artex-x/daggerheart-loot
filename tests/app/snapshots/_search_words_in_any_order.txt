@@ -19,6 +19,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -26,7 +27,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=8026affd]
+    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=6f14b11a]
     searchbox "Поиск по названию или описанию…" [value=лечения зелья focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
@@ -56,6 +57,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 29Фляга ПутникаСтоимость Призыва: 1Эта фляга всегда полна холодн... [namelen=236 namehash=9a994db9]
 43Большое Зелье ЛеченияИзлечите 1d4+2 Ран.Получается из: Зелье Л... [namelen=83 namehash=da1f102c]
 7Малое Зелье ЛеченияИзлечите 1d4 Ран.Получается из: Рецепт Малог... [namelen=121 namehash=323f2852]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -102,6 +104,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -109,7 +112,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1272 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=5c6c39fd]
+    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c8a75867]
     searchbox "Search by name or description…" [value=лечения зелья focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
@@ -140,6 +143,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 43Major Health PotionClear 1d4+2 HP.Made from: Health PotionCons... [namelen=74 namehash=522c5e63]
 7Minor Health PotionClear 1d4 HP.Made from: Minor Health Potion ... [namelen=111 namehash=a7eac893]
 Alt. tables
+Arazo's Artifacts
 Communities
 Consumables
 Dragon's Vault

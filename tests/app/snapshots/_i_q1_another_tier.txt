@@ -24,6 +24,7 @@ RootWebArea "Палаш — Генератор лута — Daggerheart" [url=#/
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/q38]
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -83,6 +84,7 @@ RootWebArea "Broadsword — Daggerheart Loot Generator" [url=#/i/q1]
 Add to list
 Advanced Broadsword
 Alt. tables
+Arazo's Artifacts
 Broadsword
 Close
 Communities

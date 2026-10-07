@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -163,6 +165,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 9Сфера Пространственной ТюрьмыВы можете заключить существо разме... [namelen=172 namehash=a3635eee]
 9Тотем Горного ЗверяОдин раз за продолжительный отдых вы можете ... [namelen=247 namehash=f5dc74b8]
 9Шахматы АрхивариусаВо время отдыха вы можете использовать этот ... [namelen=175 namehash=f834f89b]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -312,6 +315,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -328,6 +332,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -458,6 +463,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
 9Totem of the Ridge BeastOnce per long rest, you may activate th... [namelen=237 namehash=f5f8099c]
 Alleyway Ocarina
 Alt. tables
+Arazo's Artifacts
 Arcane Restraining Manacles
 Archivist's Chess Set
 Beastkeeper's Feed Sack

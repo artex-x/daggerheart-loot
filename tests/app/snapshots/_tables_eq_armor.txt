@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -46,23 +48,23 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "100"
+    StaticText "108"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (16)" [checked=false]
+    checkbox "Выбрать все (18)" [checked=false]
     checkbox "Стеганый Доспех" [checked=false]
     button "Стеганый Доспех Ранг 1 · Пороги 5/11 · Броня 3 Гибкое: +1 к Укло..." [namelen=80 namehash=1a6d1d56]
-    ... checkbox x100 of 104 same-shape siblings elided
-    ... button x97 of 101 same-shape siblings elided
+    ... checkbox x108 of 112 same-shape siblings elided
+    ... button x105 of 109 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (28)"
-    checkbox "Нейроплащ" [checked=false]
-    button "29 Нейроплащ Ранг 4 · Пороги 13/36 · Броня 5 Стоимость Призыва: ..." [namelen=514 namehash=28f1ba16]
-    checkbox "Непробиваемые Одеяния" [checked=false]
-    button "142 Непробиваемые Одеяния Ранг 4 · Пороги 15/38 · Броня 5 Защищё..." [namelen=243 namehash=095f0d24]
+    StaticText "Выбрать все (30)"
+    checkbox "Легендарные Латы Принца" [checked=false]
+    button "24 Легендарные Латы Принца Ранг 4 · Пороги 14/28 · Броня 8 Крепо..." [namelen=204 namehash=1de15d89]
+    checkbox "Легендарная Кольчуга из Змиевой Чешуи" [checked=false]
+    button "49 Легендарная Кольчуга из Змиевой Чешуи Ранг 4 · Пороги 12/26 ·..." [namelen=248 namehash=8f31f25e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -78,6 +80,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 145Оберег ТенейРанг 2 · Пороги 9/20 · Броня 4Укрытое тенями: Пок... [namelen=163 namehash=96e791e6]
 17Одеяния Повелителя ТруповРанг 2 · Пороги 9/19 · Броня 3Стоимос... [namelen=410 namehash=b0da6c4d]
 19Латный Доспех ДемоностражаРанг 4 · Пороги 17/44 · Броня 7Стоим... [namelen=326 namehash=973b56c2]
+21Латы ПринцаРанг 1 · Пороги 11/22 · Броня 2Крепость: Когда вы п... [namelen=310 namehash=94d738ac]
+22Улучшенные Латы ПринцаРанг 2 · Пороги 12/24 · Броня 4Крепость:... [namelen=198 namehash=afaef85d]
+23Продвинутые Латы ПринцаРанг 3 · Пороги 13/26 · Броня 6Крепость... [namelen=199 namehash=967a11f7]
+24Легендарные Латы ПринцаРанг 4 · Пороги 14/28 · Броня 8Крепость... [namelen=199 namehash=22f1fabc]
 24Панцирь Подземного ОбитателяРанг 2 · Пороги 10/22 · Броня 4Сто... [namelen=260 namehash=a24f855b]
 26Мантия АрхимагаРанг 4 · Пороги 10/30 · Броня 2Стоимость Призыв... [namelen=336 namehash=0adc4ed6]
 26ПылестранникРанг 2 · Пороги 8/16 · Броня 4Стоимость Призыва: 1... [namelen=539 namehash=e93efc18]
@@ -86,6 +92,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 29НейроплащРанг 4 · Пороги 13/36 · Броня 5Стоимость Призыва: 2Пр... [namelen=506 namehash=1adbd3cf]
 30Святое ОблачениеРанг 3 · Пороги 9/24 · Броня 4Стоимость Призыв... [namelen=269 namehash=5abe0dc8]
 3Доспех Морозного ПоцелуяРанг 1 · Пороги 7/14 · Броня 3Стоимость... [namelen=219 namehash=b4f7e7ce]
+46Кольчуга из Змиевой ЧешуиРанг 1 · Пороги 9/20 · Броня 3Оберега... [namelen=230 namehash=2414bfcc]
+47Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=e058939b]
+48Продвинутая Кольчуга из Змиевой ЧешуиРанг 3 · Пороги 11/24 · Б... [namelen=243 namehash=d7e6d353]
+49Легендарная Кольчуга из Змиевой ЧешуиРанг 4 · Пороги 12/26 · Б... [namelen=243 namehash=4b702769]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -136,6 +147,7 @@ daggerheart.com
 Кожаный ФартукРанг 1 · Пороги 6/13 · Броня 3БроняУникальноеПир з... [namelen=69 namehash=0d76c9c7]
 Кольчуга Спасителя
 Кольчуга СпасителяРанг 4 · Пороги 18/48 · Броня 8Сложное: −1 ко ... [namelen=115 namehash=cb6d3929]
+Кольчуга из Змиевой Чешуи
 Кольчужный Доспех
 Кольчужный ДоспехРанг 1 · Пороги 7/15 · Броня 4Тяжелое: −1 к Укл... [namelen=79 namehash=7872a65d]
 Конфиденциальность
@@ -144,12 +156,15 @@ daggerheart.com
 Латный ДоспехРанг 1 · Пороги 8/17 · Броня 4Очень тяжелое: −2 к У... [namelen=99 namehash=45d3a871]
 Латы Кровокамня
 Латы КровокамняРанг 3 · Пороги 13/35 · Броня 6Кровожадное: Когда... [namelen=166 namehash=aebc2e7a]
+Латы Принца
 Латы Ужаса
 Латы УжасаРанг 4 · Пороги 14/38 · Броня 6Проклятое: Когда вы отм... [namelen=202 namehash=fec7b8b6]
+Легендарная Кольчуга из Змиевой Чешуи
 Легендарная Мантия Мага
 Легендарная Мантия МагаРанг 4 · Пороги 10/31 · Броня 5Зачарованн... [namelen=160 namehash=d67b0ccc]
 Легендарная Среброшелковая Броня
 Легендарная Среброшелковая БроняРанг 4 · Пороги 11/32 · Броня 6З... [namelen=238 namehash=a3ecbc0a]
+Легендарные Латы Принца
 Легендарный Бригантный Доспех
 Легендарный Бригантный ДоспехРанг 4 · Пороги 13/35 · Броня 6Обли... [namelen=137 namehash=24661c2a]
 Легендарный Доспех из Гробового Дерева
@@ -215,10 +230,12 @@ daggerheart.com
 Покров ТьмыРанг 4 · Пороги 13/36 · Броня 5Призрачное: Один раз д... [namelen=195 namehash=c52c4054]
 Проводящий Доспех
 Проводящий ДоспехРанг 4 · Пороги 13/36 · Броня 5Проводящее: +1 к... [namelen=102 namehash=fdeeeb69]
+Продвинутая Кольчуга из Змиевой Чешуи
 Продвинутая Мантия Мага
 Продвинутая Мантия МагаРанг 3 · Пороги 8/22 · Броня 4Зачарованно... [namelen=159 namehash=fd73db8f]
 Продвинутая Среброшелковая Броня
 Продвинутая Среброшелковая БроняРанг 3 · Пороги 9/23 · Броня 5За... [namelen=237 namehash=acdd7f3f]
+Продвинутые Латы Принца
 Продвинутый Бригантный Доспех
 Продвинутый Бригантный ДоспехРанг 3 · Пороги 11/26 · Броня 5Обли... [namelen=137 namehash=560b6386]
 Продвинутый Доспех из Гробового Дерева
@@ -269,10 +286,12 @@ daggerheart.com
 Туника из Паучьего ШелкаРанг 2 · Пороги 9/20 · Броня 4Карабкающе... [namelen=165 namehash=1b03af51]
 Укреплённый Полный Доспех
 Укреплённый Полный ДоспехРанг 4 · Пороги 15/40 · Броня 4Укреплен... [namelen=177 namehash=f44b17b9]
+Улучшенная Кольчуга из Змиевой Чешуи
 Улучшенная Мантия Мага
 Улучшенная Мантия МагаРанг 2 · Пороги 6/15 · Броня 3Зачарованное... [namelen=158 namehash=baa1635e]
 Улучшенная Среброшелковая Броня
 Улучшенная Среброшелковая БроняРанг 2 · Пороги 7/16 · Броня 4Защ... [namelen=236 namehash=cb48fa24]
+Улучшенные Латы Принца
 Улучшенный Бригантный Доспех
 Улучшенный Бригантный ДоспехРанг 2 · Пороги 9/19 · Броня 4Облицо... [namelen=135 namehash=45cc628b]
 Улучшенный Доспех из Гробового Дерева
@@ -324,6 +343,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -340,6 +360,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -351,23 +372,23 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "100"
+    StaticText "108"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (16)" [checked=false]
+    checkbox "Select all (18)" [checked=false]
     checkbox "Gambeson Armor" [checked=false]
     button "Gambeson Armor Tier 1 · Thresholds 5/11 · Armor 3 Flexible: +1 t..." [namelen=84 namehash=86e0c136]
-    ... checkbox x100 of 104 same-shape siblings elided
-    ... button x97 of 101 same-shape siblings elided
+    ... checkbox x108 of 112 same-shape siblings elided
+    ... button x105 of 109 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "Select all (28)"
-    checkbox "Neuromantle" [checked=false]
-    button "29 Neuromantle Tier 4 · Thresholds 13/36 · Armor 5 Recall Cost: ..." [namelen=457 namehash=02fe736e]
-    checkbox "Impervious Vestments" [checked=false]
-    button "142 Impervious Vestments Tier 4 · Thresholds 15/38 · Armor 5 War..." [namelen=221 namehash=3b0d6d12]
+    StaticText "Select all (30)"
+    checkbox "Legendary Plate of the Prince" [checked=false]
+    button "24 Legendary Plate of the Prince Tier 4 · Thresholds 14/28 · Arm..." [namelen=188 namehash=4f1548b5]
+    checkbox "Legendary Wyrmscale Hauberk" [checked=false]
+    button "49 Legendary Wyrmscale Hauberk Tier 4 · Thresholds 12/26 · Armor..." [namelen=216 namehash=ed7522c4]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -383,6 +404,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
 145Ward of ShadowsTier 2 · Thresholds 9/20 · Armor 4Shrouded: Wh... [namelen=147 namehash=61584e08]
 17Corpse Lord's RaimentsTier 2 · Thresholds 9/19 · Armor 3Recall... [namelen=360 namehash=2789c1d4]
 19Demonguard PlatemailTier 4 · Thresholds 17/44 · Armor 7Recall ... [namelen=301 namehash=916e1970]
+21Plate of the PrinceTier 1 · Thresholds 11/22 · Armor 2Fortress... [namelen=284 namehash=002b5cbe]
+22Improved Plate of the PrinceTier 2 · Thresholds 12/24 · Armor ... [namelen=182 namehash=2525c569]
+23Advanced Plate of the PrinceTier 3 · Thresholds 13/26 · Armor ... [namelen=182 namehash=7a71a899]
+24Legendary Plate of the PrinceTier 4 · Thresholds 14/28 · Armor... [namelen=183 namehash=3cca335a]
 24Underdweller CarapaceTier 2 · Thresholds 10/22 · Armor 4Recall... [namelen=239 namehash=2e95d7fb]
 26Arch-Magus's RobesTier 4 · Thresholds 10/30 · Armor 2Recall Co... [namelen=294 namehash=31ef7315]
 26DustwanderTier 2 · Thresholds 8/16 · Armor 4Recall Cost: 1Ward... [namelen=443 namehash=5b79775b]
@@ -391,6 +416,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
 29NeuromantleTier 4 · Thresholds 13/36 · Armor 5Recall Cost: 2Ch... [namelen=449 namehash=6d21c24f]
 30Saintly VestmentsTier 3 · Thresholds 9/24 · Armor 4Recall Cost... [namelen=230 namehash=d60bf7c1]
 3Frost-Kissed ArmorTier 1 · Thresholds 7/14 · Armor 3Recall Cost... [namelen=197 namehash=54905261]
+46Wyrmscale HauberkTier 1 · Thresholds 9/20 · Armor 3Guarding: W... [namelen=200 namehash=4c4e6345]
+47Improved Wyrmscale HauberkTier 2 · Thresholds 10/22 · Armor 4G... [namelen=210 namehash=e8a3e449]
+48Advanced Wyrmscale HauberkTier 3 · Thresholds 11/24 · Armor 5G... [namelen=210 namehash=6ad9f359]
+49Legendary Wyrmscale HauberkTier 4 · Thresholds 12/26 · Armor 6... [namelen=211 namehash=69b1035a]
 Advanced Banded Armor
 Advanced Banded ArmorTier 3 · Thresholds 15/34 · Armor 6Bulky: −... [namelen=146 namehash=5c24eac4]
 Advanced Brigandine Armor
@@ -409,11 +438,14 @@ Advanced Leather Longcoat
 Advanced Leather LongcoatTier 3 · Thresholds 10/25 · Armor 5Quie... [namelen=146 namehash=fe6a4b11]
 Advanced Mage Robes
 Advanced Mage RobesTier 3 · Thresholds 8/22 · Armor 4Enchanted: ... [namelen=149 namehash=51d71cbe]
+Advanced Plate of the Prince
 Advanced Scale Mail Armor
 Advanced Scale Mail ArmorTier 3 · Thresholds 13/30 · Armor 5Cumb... [namelen=101 namehash=dc1c8786]
 Advanced Silverweave Armor
 Advanced Silverweave ArmorTier 3 · Thresholds 9/23 · Armor 5Ward... [namelen=194 namehash=8f352fb4]
+Advanced Wyrmscale Hauberk
 Alt. tables
+Arazo's Artifacts
 Arch-Magus's Robes
 Armor
 Astral Raiment
@@ -510,10 +542,12 @@ Improved Leather Longcoat
 Improved Leather LongcoatTier 2 · Thresholds 8/18 · Armor 4Quiet... [namelen=145 namehash=eb597a25]
 Improved Mage Robes
 Improved Mage RobesTier 2 · Thresholds 6/15 · Armor 3Enchanted: ... [namelen=149 namehash=4b7e245f]
+Improved Plate of the Prince
 Improved Scale Mail Armor
 Improved Scale Mail ArmorTier 2 · Thresholds 11/23 · Armor 4Cumb... [namelen=101 namehash=7197161d]
 Improved Silverweave Armor
 Improved Silverweave ArmorTier 2 · Thresholds 7/16 · Armor 4Ward... [namelen=194 namehash=9c6cb0db]
+Improved Wyrmscale Hauberk
 Install as an app
 Irontree Breastplate Armor
 Irontree Breastplate ArmorTier 2 · Thresholds 9/20 · Armor 4Rein... [namelen=199 namehash=1768c922]
@@ -541,10 +575,12 @@ Legendary Leather Longcoat
 Legendary Leather LongcoatTier 4 · Thresholds 12/34 · Armor 6Qui... [namelen=147 namehash=9c118b34]
 Legendary Mage Robes
 Legendary Mage RobesTier 4 · Thresholds 10/31 · Armor 5Enchanted... [namelen=151 namehash=22eca1b1]
+Legendary Plate of the Prince
 Legendary Scale Mail Armor
 Legendary Scale Mail ArmorTier 4 · Thresholds 15/39 · Armor 6Cum... [namelen=102 namehash=049e354a]
 Legendary Silverweave Armor
 Legendary Silverweave ArmorTier 4 · Thresholds 11/32 · Armor 6Wa... [namelen=196 namehash=0c075a89]
+Legendary Wyrmscale Hauberk
 Link to this table
 List
 Lists
@@ -557,6 +593,7 @@ Nightshroud
 Open this section on start
 Ordo Draconis Scale
 Other
+Plate of the Prince
 Privacy
 Quilted Clothing
 Quilted ClothingTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 t... [namelen=95 namehash=a59647cc]
@@ -609,5 +646,6 @@ Wondrous
 Wondrous Loot
 Wyrdwood Splint Armor
 Wyrdwood Splint ArmorTier 2 · Thresholds 10/21 · Armor 5Quick-St... [namelen=173 namehash=ef97f30b]
+Wyrmscale Hauberk
 daggerheart.com
 ЛутDaggerheart

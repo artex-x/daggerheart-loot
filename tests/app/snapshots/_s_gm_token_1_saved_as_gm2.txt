@@ -20,6 +20,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
       link "Dread" [url=index.html?as=gm2#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm2#/roll/community]
       link "Таблицы" [url=index.html?as=gm2#/tables]
       link "Списки" [url=index.html?as=gm2#/lists]
@@ -109,6 +110,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     StaticText "Список «Лавка кузнеца» создан"
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -189,6 +191,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
       link "Dread" [url=index.html?as=gm2#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
       link "Communities" [url=index.html?as=gm2#/roll/community]
       link "Tables" [url=index.html?as=gm2#/tables]
       link "Lists" [url=index.html?as=gm2#/lists]
@@ -280,6 +283,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
 ## en :: controls
 Account: gm2@example.test
 Alt. tables
+Arazo's Artifacts
 Art History Booklet
 Art History BookletThis is a finely illustrated booklet (donatio... [namelen=532 namehash=f84ac14a]
 As in the book

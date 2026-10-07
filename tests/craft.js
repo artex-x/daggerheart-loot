@@ -66,8 +66,7 @@ const leftover = ALL.filter((x) =>
 );
 ok(leftover.length === 0, 'stale craft sentence in: ' + leftover.map((x) => x.id).join(', '));
 
-// nothing else got damaged while rewriting data.js
-ok(ALL.length === 891, 'expected 891 records, got ' + ALL.length);
+// nothing else got damaged while rewriting data.js; tests/dataint.js pins the record count
 ALL.forEach((x) => {
   ok(!!(x.id && x.en && x.ru), x.id + ': empty field');
   /* Equipment from a campaign frame carries no feature from the book at all -
@@ -108,15 +107,12 @@ ok(
   ),
   'i/dve25.html: og description must name made-from before upgrades-to'
 );
-/* loot + consumables + the equipment tables */
-ok(
-  fs.readdirSync(path.join(ROOT, 'i')).filter((f) => f.endsWith('.html')).length === 1272,
-  'i/: expected 1272 stubs'
-);
-ok(
-  fs.readdirSync(path.join(ROOT, 'i', 'en')).filter((f) => f.endsWith('.html')).length === 1272,
-  'i/en/: expected 1272 stubs'
-);
+/* loot + consumables + the equipment tables: one stub per record */
+const STUBS = ALL.length + global.window.LOOT.eq.length;
+['i', 'i/en'].forEach((dir) => {
+  const n = fs.readdirSync(path.join(ROOT, dir)).filter((f) => f.endsWith('.html')).length;
+  ok(n === STUBS, dir + '/: expected ' + STUBS + ' stubs, got ' + n);
+});
 const stale = ALL.filter((x) => {
   const p = path.join(ROOT, 'i', x.id + '.html');
   /* Only the first line, not a raw 40-char slice: the generator prints one
@@ -136,7 +132,7 @@ ok(
       .join(', ')
 );
 
-/* 140 of 1272 stub pages (every record whose rud carries a newline) render a
+/* Every stub page whose record rud carries a newline renders a
    multi-line description, and nothing pins the new shape - the staleness
    probe above only proves a stub isn't stale, not what a fresh one actually
    renders. Pin it directly: descHtml() in tools/build-share-pages.js renders

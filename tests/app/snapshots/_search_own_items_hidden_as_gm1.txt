@@ -20,6 +20,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm1#/roll/community]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
@@ -27,20 +28,20 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, ..." [namelen=111 namehash=5b7cfbdc]
+    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=111 namehash=3bbb5f2f]
     searchbox "Поиск по названию или описанию…" [value=топор focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
     button "Хоумбрю" [description=Показывать свои предметы pressed=false]
-    checkbox "Выбрать все (13)" [checked=false]
-    StaticText "Выбрать все (13)"
+    checkbox "Выбрать все (14)" [checked=false]
+    StaticText "Выбрать все (14)"
     checkbox "Топор-Пила Лесоруба" [checked=false]
     button "10 Топор-Пила Лесоруба Этот массивный гибридный инструмент рубит..." [namelen=231 namehash=8a95748b]
-    ... checkbox x10 of 14 same-shape siblings elided
+    ... checkbox x11 of 15 same-shape siblings elided
     button "4 Топор Лесного Стража Этот внешне обычный топор несёт в себе бл..." [namelen=232 namehash=eec036d1]
-    ... button x9 of 13 same-shape siblings elided
+    ... button x10 of 14 same-shape siblings elided
     checkbox "Стопорный Ключ" [checked=false]
     button "49 Стопорный Ключ При успешном Броске Искусности вставьте этот и..." [namelen=359 namehash=bb980761]
     checkbox "Неугомонное Возмездие" [checked=false]
@@ -55,9 +56,11 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
 ## ru :: controls
 10Топор-Пила ЛесорубаЭтот массивный гибридный инструмент рубит д... [namelen=227 namehash=501f18ee]
 116Неугомонное ВозмездиеРанг 3 · Физическое · Сила · Вплотную · ... [namelen=454 namehash=414955ac]
+2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=396 namehash=212c8af2]
 49Стопорный КлючПри успешном Броске Искусности вставьте этот инс... [namelen=355 namehash=691d5d78]
 4Топор Лесного СтражаЭтот внешне обычный топор несёт в себе благ... [namelen=228 namehash=932d8976]
 84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -95,6 +98,7 @@ daggerheart.com
 Топор Лабрис
 Топор ЛабрисРанг 3 · Физическое · Сила · Вплотную · d10+7 физ · ... [namelen=133 namehash=b72600d1]
 Топор Лесного Стража
+Топор Рассвета
 Топор Чёрной Порчи
 Топор-Пила Лесоруба
 Топоры Рикошета
@@ -121,6 +125,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Communities" [url=index.html?as=gm1#/roll/community]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
@@ -128,20 +133,20 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1272 entries at once - loot, consumables and equipmen..." [namelen=115 namehash=80075275]
+    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=115 namehash=4c3ca56b]
     searchbox "Search by name or description…" [value=топор focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
     button "Homebrew" [description=Show your own items pressed=false]
-    checkbox "Select all (13)" [checked=false]
-    StaticText "Select all (13)"
+    checkbox "Select all (14)" [checked=false]
+    StaticText "Select all (14)"
     checkbox "Felling Axe-Saw" [checked=false]
     button "10 Felling Axe-Saw This massive hybrid tool cuts through wood, r..." [namelen=234 namehash=b9fd3bb4]
-    ... checkbox x10 of 14 same-shape siblings elided
+    ... checkbox x11 of 15 same-shape siblings elided
     button "4 Forestwarden's Axe This seemingly ordinary axe carries the ble..." [namelen=200 namehash=1cca126c]
-    ... button x9 of 13 same-shape siblings elided
+    ... button x10 of 14 same-shape siblings elided
     checkbox "Jamming Spanner" [checked=false]
     button "49 Jamming Spanner Make a successful Finesse Roll to place this ..." [namelen=339 namehash=005e0aec]
     checkbox "Restless Vengeance" [checked=false]
@@ -156,6 +161,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
 ## en :: controls
 10Felling Axe-SawThis massive hybrid tool cuts through wood, roo... [namelen=230 namehash=a621d03c]
 116Restless VengeanceTier 3 · Physical · Strength · Melee · d10+... [namelen=462 namehash=3dedac99]
+2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=365 namehash=c4dcd301]
 49Jamming SpannerMake a successful Finesse Roll to place this to... [namelen=335 namehash=b33f324c]
 4Forestwarden's AxeThis seemingly ordinary axe carries the bless... [namelen=196 namehash=5664cde5]
 84Black Corruption AxeTier 4 · Physical · Presence · Very Close ... [namelen=452 namehash=18cf1bda]
@@ -163,6 +169,8 @@ Account: gm1@example.test
 Advanced Hallowed Axe
 Advanced Hallowed AxeTier 3 · Magic · Strength · Melee · d8+7 ma... [namelen=96 namehash=6fa84112]
 Alt. tables
+Arazo's Artifacts
+Axe of the Dawn
 Black Corruption Axe
 Butcher's Axe
 Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy · ... [namelen=125 namehash=f9a3c4ef]

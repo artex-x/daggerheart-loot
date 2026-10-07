@@ -20,7 +20,8 @@ const SRC = {
   dread: 'Dread GM Toolbox',
   frame: 'Campaign Frames',
   voa: 'Vault of Ages',
-  dv: "The Dragon's Vault"
+  dv: "The Dragon's Vault",
+  arazo: "Arazo's Artifacts"
 };
 const RANGE = {
   melee: 'Melee',

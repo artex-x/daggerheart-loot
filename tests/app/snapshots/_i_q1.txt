@@ -19,6 +19,7 @@ RootWebArea "Палаш — Генератор лута — Daggerheart" [url=#/
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -50,6 +51,7 @@ RootWebArea "Палаш — Генератор лута — Daggerheart" [url=#/
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -99,6 +101,7 @@ RootWebArea "Broadsword — Daggerheart Loot Generator" [url=#/i/q1]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -133,6 +136,7 @@ RootWebArea "Broadsword — Daggerheart Loot Generator" [url=#/i/q1]
 Add to list
 Advanced Broadsword
 Alt. tables
+Arazo's Artifacts
 Communities
 Copy image
 Copy link

@@ -20,6 +20,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm1#/roll/community]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
@@ -36,6 +37,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
     link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
     link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
     link "Сообщества" [url=index.html?as=gm1#/tables/community]
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
@@ -93,6 +95,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 7Молниевая Пушка ЙитианцевYithian Lightning Gun
 8Амулет ЗариAmulet of the Dawn
 9Амулет ЖизнестойкостиAmulet of Vitality
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -172,6 +175,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Communities" [url=index.html?as=gm1#/roll/community]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
@@ -188,6 +192,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
     link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
     link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
     link "Communities" [url=index.html?as=gm1#/tables/community]
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
@@ -250,6 +255,7 @@ Aether Rifle
 Alt. tables
 Amulet of Vitality
 Amulet of the Dawn
+Arazo's Artifacts
 Arcane Resin
 Art History Booklet
 Blade of the Living

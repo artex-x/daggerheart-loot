@@ -110,9 +110,10 @@ export function srcName(key: string, lang: Lang): string {
     wondrous: t.srcWond,
     dread: t.srcDread,
     voa: t.srcVoa,
-    dv: t.srcDv
+    dv: t.srcDv,
+    arazo: t.srcArazo
   };
-  /* Anything not one of the five books above is assumed to be a frame id -
+  /* Anything not one of the books above is assumed to be a frame id -
      the same assumption `EQ_SRC` bakes into the facet's own value list. */
   return named[key] ?? frameName(key as FrameId, lang);
 }
@@ -144,6 +145,7 @@ export function srcLabel(it: Record_, lang: Lang): string {
     case 'dread':
     case 'voa':
     case 'dv':
+    case 'arazo':
       return srcName(it.src, lang);
     case 'frame':
       /* `it.frame` is checked, and returned on, above - reachable here only
@@ -173,7 +175,7 @@ const EQ_TABLE_OF = {
 /**
  * Which table a record is printed in, off `tableIdOf` in app.js.
  *
- * Starting inventory, Vault of Ages and campaign frames are checked before equipment on purpose:
+ * Starting inventory, Vault of Ages, Arazo's Artifacts and campaign frames are checked before equipment on purpose:
  * their pieces carry stat blocks but live in their source tables, and sending
  * the "show in the table" link to a weapons table would land the reader in a
  * section their record is not in.
@@ -183,6 +185,7 @@ export function tableOf(it: Record_): TableId | null {
   if (it.frame || it.src === 'frame') return 'other_frames';
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
+  if (it.src === 'arazo') return 'arazo';
   if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (it.src === 'wondrous') return 'wondrous';
   if (it.src === 'dread') return 'dread';

@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -50,25 +52,25 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Двуручное" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "39 из 381"
+    StaticText "44 из 410"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
-    ... button x26 of 30 same-shape siblings elided
+    ... button x27 of 31 same-shape siblings elided
     button "Двуручное" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
     StaticText "РАНГ 1"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (39)" [checked=false]
-    StaticText "Выбрать все (39)"
+    checkbox "Выбрать все (44)" [checked=false]
+    StaticText "Выбрать все (44)"
     checkbox "Длинный Меч" [checked=false]
-    ... button x37 of 41 same-shape siblings elided
-    ... checkbox x36 of 40 same-shape siblings elided
-    checkbox "Фрикционные Обмотки" [checked=false]
-    button "100 Фрикционные Обмотки Ранг 1 · Физическое · Проворность · Впло..." [namelen=268 namehash=bd6250e4]
-    checkbox "Разящие Клыки" [checked=false]
-    button "132 Разящие Клыки Ранг 1 · Физическое · Проворность · Близко · d..." [namelen=265 namehash=c70cb0df]
+    ... button x42 of 46 same-shape siblings elided
+    ... checkbox x41 of 45 same-shape siblings elided
+    checkbox "Копьё-Камертон" [checked=false]
+    button "37 Копьё-Камертон Ранг 1 · Физическое · Искусность · Близко · d1..." [namelen=351 namehash=6bbb0973]
+    checkbox "Боевой Молот База" [checked=false]
+    button "42 Боевой Молот База Ранг 1 · Физическое · Сила · Вплотную · d12..." [namelen=250 namehash=252a7d46]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -79,10 +81,16 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 ## ru :: controls
 1
 100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
+12Дубина из Зубов ОграРанг 1 · Физическое · Сила · Близко · d20 ... [namelen=311 namehash=a910c942]
 132Разящие КлыкиРанг 1 · Физическое · Проворность · Близко · d8+... [namelen=259 namehash=759c5181]
+17Праща ФениксаРанг 1 · Физическое · Искусность · Далеко · d10 ф... [namelen=236 namehash=2d86b5e3]
 2
 3
+37Копьё-КамертонРанг 1 · Физическое · Искусность · Близко · d10 ... [namelen=346 namehash=8e0b5a66]
 4
+42Боевой Молот БазаРанг 1 · Физическое · Сила · Вплотную · d12 ф... [namelen=245 namehash=74aa51a3]
+7Лук из Эльфийских ВолосРанг 1 · Физическое · Проворность · Очен... [namelen=243 namehash=af9c6bc6]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -100,6 +108,7 @@ daggerheart.com
 Артефакты
 Близко
 Боевой Молот
+Боевой Молот База
 Боевой МолотРанг 1 · Физическое · Сила · Вплотную · d12+3 физ · ... [namelen=115 namehash=9de2a9e2]
 Боевой Посох
 Боевой ПосохРанг 1 · Физическое · Инстинкт · Вплотную · d10+3 фи... [namelen=96 namehash=dce1dc4b]
@@ -126,6 +135,7 @@ daggerheart.com
 Длинный МечРанг 1 · Физическое · Проворность · Вплотную · d10+3 ... [namelen=98 namehash=adb86655]
 Дробовик
 ДробовикРанг 1 · Физическое · Сила · Близко · d6+2 физ · Двуручн... [namelen=204 namehash=6d8ab543]
+Дубина из Зубов Огра
 Заточенные Грабли
 Заточенные ГраблиРанг 1 · Физическое · Проворность · Вплотную · ... [namelen=119 namehash=6091128f]
 Зачарованная Метла
@@ -150,6 +160,7 @@ daggerheart.com
 Колоссы Сухоземья
 Конфиденциальность
 Копьё
+Копьё-Камертон
 КопьёРанг 1 · Физическое · Искусность · Близко · d8+3 физ · Двур... [namelen=88 namehash=1aaad172]
 Короткий Лук
 Короткий ЛукРанг 1 · Физическое · Проворность · Далеко · d6+3 фи... [namelen=96 namehash=86eb6e82]
@@ -157,6 +168,7 @@ daggerheart.com
 КосаРанг 1 · Физическое · Искусность · Близко · d8+2 физ · Двуру... [namelen=103 namehash=4652d252]
 Кувалда
 КувалдаРанг 1 · Физическое · Сила · Вплотную · d10+3 физ · Двуру... [namelen=231 namehash=ba57fede]
+Лук из Эльфийских Волос
 ЛутDaggerheart
 Магическая Винтовка
 Магическая ВинтовкаРанг 1 · Магическое · Проворность · Очень дал... [namelen=300 namehash=c9066e07]
@@ -178,6 +190,7 @@ daggerheart.com
 Поиск
 Походная Палка
 Походная ПалкаРанг 1 · Физическое · Инстинкт · Вплотную · d10+3 ... [namelen=114 namehash=71d486bb]
+Праща Феникса
 Проворность
 Прочее
 Разящие Клыки
@@ -236,6 +249,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -252,6 +266,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -267,25 +282,25 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "Two-Handed" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "39 of 381"
+    StaticText "44 of 410"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
-    ... button x26 of 30 same-shape siblings elided
+    ... button x27 of 31 same-shape siblings elided
     button "Two-Handed" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
     StaticText "TIER 1"
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (39)" [checked=false]
-    StaticText "Select all (39)"
+    checkbox "Select all (44)" [checked=false]
+    StaticText "Select all (44)"
     checkbox "Longsword" [checked=false]
-    ... button x37 of 41 same-shape siblings elided
-    ... checkbox x36 of 40 same-shape siblings elided
-    checkbox "Friction Wraps" [checked=false]
-    button "100 Friction Wraps Tier 1 · Physical · Agility · Melee · d8 phy ..." [namelen=252 namehash=af6335fd]
-    checkbox "Striking Fangs" [checked=false]
-    button "132 Striking Fangs Tier 1 · Physical · Agility · Very Close · d8..." [namelen=262 namehash=06204c97]
+    ... button x42 of 46 same-shape siblings elided
+    ... checkbox x41 of 45 same-shape siblings elided
+    checkbox "Tuning Spear" [checked=false]
+    button "37 Tuning Spear Tier 1 · Physical · Finesse · Very Close · d10 p..." [namelen=327 namehash=5da8e950]
+    checkbox "Warhammer of Baz" [checked=false]
+    button "42 Warhammer of Baz Tier 1 · Physical · Strength · Melee · d12 p..." [namelen=228 namehash=6ca772d8]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -296,12 +311,18 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
 ## en :: controls
 1
 100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=246 namehash=036eb4fb]
+12Ogre-teeth ClubTier 1 · Physical · Strength · Very Close · d20... [namelen=285 namehash=c140981a]
 132Striking FangsTier 1 · Physical · Agility · Very Close · d8+2... [namelen=256 namehash=d8b9474b]
+17Phoenix SlingTier 1 · Physical · Finesse · Far · d10 phy · Two... [namelen=226 namehash=12c39d8b]
 2
 3
+37Tuning SpearTier 1 · Physical · Finesse · Very Close · d10 phy... [namelen=322 namehash=e91a57d3]
 4
+42Warhammer of BazTier 1 · Physical · Strength · Melee · d12 phy... [namelen=223 namehash=db0522dd]
+7Elfhair BowTier 1 · Physical · Agility · Very Far · d10 phy · T... [namelen=227 namehash=9b26b85e]
 Agility
 Alt. tables
+Arazo's Artifacts
 Arcane Gauntlets
 Arcane GauntletsTier 1 · Magic · Strength · Melee · d10+3 mag · ... [namelen=92 namehash=dccbeb9b]
 Arcane Rifle
@@ -329,6 +350,7 @@ Dread GM Toolbox
 Dualstaff
 DualstaffTier 1 · Magic · Instinct · Far · d6+3 mag · Two-Handed... [namelen=82 namehash=c9686662]
 EN
+Elfhair Bow
 Enchanted Boomerang
 Enchanted BoomerangTier 1 · Magic · Instinct · Far · d6+3 mag · ... [namelen=105 namehash=a55885f8]
 Enchanted Broomstick
@@ -376,9 +398,11 @@ Longsword
 LongswordTier 1 · Physical · Agility · Melee · d10+3 phy · Two-H... [namelen=87 namehash=178a0439]
 Magic
 Melee
+Ogre-teeth Club
 One-Handed
 Open this section on start
 Other
+Phoenix Sling
 Physical
 Pitchfork
 PitchforkTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=101 namehash=17e33479]
@@ -420,6 +444,7 @@ Strength
 Striking Fangs
 Tables
 Terms of use
+Tuning Spear
 Two-Handed
 Unique
 Upgradable
@@ -429,6 +454,7 @@ Very Far
 Walking Staff
 Walking StaffTier 1 · Physical · Instinct · Melee · d10+3 phy · ... [namelen=105 namehash=94b13a2f]
 Warhammer
+Warhammer of Baz
 WarhammerTier 1 · Physical · Strength · Melee · d12+3 phy · Two-... [namelen=108 namehash=0f0f38af]
 Weapons
 Wondrous

@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* The ten sections, nine from the cutoff: `#/lists` is then reached from the
+  /* The eleven sections, ten from the cutoff: `#/lists` is then reached from the
    * account menu (docs/specs/ROUTES.md, "Sections").
    *
    * Real links, not buttons: middle-click, copy-link and open-in-new-tab all
@@ -26,6 +26,7 @@
     ['roll/dread', 'dread'],
     ['roll/voa', 'voa'],
     ['roll/dv', 'dv'],
+    ['roll/arazo', 'arazo'],
     ['roll/community', 'community'],
     ['tables', 'tables'],
     ['lists', 'lists'],

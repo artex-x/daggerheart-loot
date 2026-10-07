@@ -22,7 +22,7 @@ is always complete.
 ## Product Purpose
 
 The product turns the published Daggerheart loot tables into a tool for play. A
-person rolls on any table, browses a table in full, searches all 1272 records,
+person rolls on any table, browses a table in full, searches all 1323 records,
 collects records into a list, hands that list to the players as one link, or
 prints the list as cards. Success has two parts. The GM gets a result without
 leaving the session. The players read and keep what they received.
@@ -33,7 +33,7 @@ The catalogue, the sharing mechanism and the print layout all run on the client.
 A list lives in the URL fragment and in `localStorage`, so the product shares and
 prints without an account, a server or tracking. It carries every published
 source at once - Core Rulebook, Hope and Fear, Wondrous Environments, Dread GM
-Toolbox, Vault of Ages, The Dragon's Vault, Community Magic Items, the
+Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Community Magic Items, the
 alternate tables and the campaign frames - in Russian and in English. Complete
 bilingual coverage plus
 serverless sharing is the combination a neighbouring generator cannot copy
@@ -55,13 +55,13 @@ The app is served over HTTP only; running from `file://` was retired on
 
 **Confirmed capabilities**
 
-- Seven roll modes: Core rules, alternate tables, Wondrous, Dread, Vault of
-  Ages, The Dragon's Vault and Communities. Other is two browsable tables, not
+- Eight roll modes: Core rules, alternate tables, Wondrous, Dread, Vault of
+  Ages, The Dragon's Vault, Arazo's Artifacts and Communities. Other is two browsable tables, not
   a roll mode.
-- 16 catalog tables with per-table search, a list and grid switch, addressable
+- 18 catalog tables with per-table search, a list and grid switch, addressable
   sections, copy-link buttons and a filter panel driven from the address, and a
-  seventeenth for a signed-in GM's own items.
-- One search across all 1272 records, over names, descriptions and stat lines, in
+  eighteenth for a signed-in GM's own items.
+- One search across all 1323 records, over names, descriptions and stat lines, in
   both languages at once.
 - Lists: create, rename, reorder, remove with undo, share as a link, copy as
   text, print as cards.
@@ -104,8 +104,8 @@ The app is served over HTTP only; running from `file://` was retired on
 
 ## Evidence on Hand
 
-- 1272 records, each with a name, a description, a stat line where it has one,
-  and an illustration. 891 items and consumables, 381 pieces of equipment.
+- 1323 records, each with a name, a description, a stat line where it has one,
+  and an illustration. 942 items and consumables, 381 pieces of equipment.
 - Published machine-readable artefacts: `catalog.csv`, `data.json`, `llms.txt`,
   `schema/import-v1.json`.
 - Behaviour specifications in `docs/specs/`, decisions in `docs/DECISIONS.md`,

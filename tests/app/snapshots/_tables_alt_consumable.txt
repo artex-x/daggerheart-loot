@@ -19,6 +19,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
@@ -196,6 +198,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 9Саван Проводника ДушНакройте этим саваном тело недавно умершего... [namelen=246 namehash=13e76894]
 9Тоник Львиного СердцаВыпейте этот тоник, чтобы получить +1 к Ма... [namelen=130 namehash=2fb59c06]
 9Цветок СплетенПосадите это семя в землю. Оно мгновенно вырастае... [namelen=216 namehash=a96ded46]
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -367,6 +370,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_consumable
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -383,6 +387,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_consumable
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
+    link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
@@ -546,6 +551,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_consumable
 9Stake of AbjurationYou can hammer this stake into the ground an... [namelen=281 namehash=1ea2e560]
 Acidpaste
 Alt. tables
+Arazo's Artifacts
 Arcticite Shard
 Armor Stitcher
 Attune Potion

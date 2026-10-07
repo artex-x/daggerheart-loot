@@ -662,6 +662,19 @@ const STATES = [
       await d.click('Как это работает');
     }
   },
+  {
+    id: '#/roll/arazo',
+    route: '#/roll/arazo',
+    why: "a roll on Arazo's Artifacts, the eleventh section"
+  },
+  {
+    id: '#/roll/arazo ~ help',
+    route: '#/roll/arazo',
+    why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of a scaling piece',
+    enter: async (d) => {
+      await d.click('Как это работает');
+    }
+  },
   { id: '#/roll/community', route: '#/roll/community', why: 'communities' },
 
   /* The picker is the whole point of these two, and it is a state: the length
@@ -908,6 +921,11 @@ const STATES = [
     id: '#/tables/dv',
     route: '#/tables/dv',
     why: "a plain body with a kind row, 145 rows: the tenth table's loot, then its equipment"
+  },
+  {
+    id: '#/tables/arazo',
+    route: '#/tables/arazo',
+    why: 'a plain body with a kind row, 51 rows in book order, four rungs per scaling piece'
   },
   {
     id: '#/tables/other_starting',

@@ -20,6 +20,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?today=
       link "Dread" [url=index.html?today=2026-10-26#/roll/dread]
       link "Vault of Ages" [url=index.html?today=2026-10-26#/roll/voa]
       link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?today=2026-10-26#/roll/arazo]
       link "Сообщества" [url=index.html?today=2026-10-26#/roll/community]
       link "Таблицы" [url=index.html?today=2026-10-26#/tables]
       link "Поиск" [url=index.html?today=2026-10-26#/search]
@@ -85,6 +86,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?today=
 
 ## ru :: controls
 7 мешков 5 горстей
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -152,6 +154,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists
       link "Dread" [url=index.html?today=2026-10-26#/roll/dread]
       link "Vault of Ages" [url=index.html?today=2026-10-26#/roll/voa]
       link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?today=2026-10-26#/roll/arazo]
       link "Communities" [url=index.html?today=2026-10-26#/roll/community]
       link "Tables" [url=index.html?today=2026-10-26#/tables]
       link "Search" [url=index.html?today=2026-10-26#/search]
@@ -220,6 +223,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists
 Alistair's Torch
 Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
 Alt. tables
+Arazo's Artifacts
 Arcane Cloak
 Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
 As in the book

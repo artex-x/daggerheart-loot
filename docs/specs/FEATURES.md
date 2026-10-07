@@ -18,6 +18,7 @@ across.
 | Dread | 1-29 | 1 | `dread {n}` |
 | Vault of Ages | section + roll within it | 1 | `voa {k, n}` |
 | The Dragon's Vault | 1-145 | 1 | `dv {n}` |
+| Arazo's Artifacts | 1-51 | 1 | `arazo {n}` |
 | Communities | community + 1-10 | 1 | `comm {c, n}` |
 
 - The source switch on Core rules cannot be emptied - unticking the last one is
@@ -38,10 +39,11 @@ across.
   descriptive wording measured 293 px on a 360 px viewport against the
   subchip's 260 px cap. Shrinking type, reducing spacing, wrapping,
   truncating, horizontal scroll and any other layout change were rejected -
-  the short wording is the fix. A signed-in strip (width under 500 px) has a
-  300 px cap, because the Homebrew group chip adds a row: at 360 px as gm1
-  the Equipment and Other strips measure 298 px, past 260 px; every other
-  group's strip stays at or under 256 px (measured 2026-10-01).
+  the short wording is the fix. A strip under 500 px wide has a 300 px cap:
+  eleven group chips (twelve signed in, with Homebrew) wrap to six rows. At
+  360 px a strip with subchips measures 298 px, signed in or out, and a
+  strip without them 256 px (measured 2026-10-07). No group label is short
+  enough to put three chips on one row, so a shorter label is no fix here.
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
   consumables off on one switches them off everywhere, not per page.
@@ -72,14 +74,14 @@ across.
 
 ## Tables and search
 
-- 17 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
-  the seventeenth, `homebrew`, has its group chip signed in only.
+- 18 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
+  the eighteenth, `homebrew`, has its group chip signed in only.
   The switch changes the view until the page reloads; the default is the
   Display section's «Таблицы» row ("Account"). While the view differs from
   the default, a build with sign-in draws the note «Только до перезагрузки.
   Чтобы сохранить, измените в настройках аккаунта.» under the toolbar, its
   last words a link to `#/account`.
-- Search covers all 1272 records: names, descriptions and stat lines, both
+- Search covers all 1323 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
   hits, a "300 из <n>" line - the same shown-of-total wording the table
@@ -121,12 +123,13 @@ across.
   re-play them - the live app re-rendered and re-scrolled on each, a defect
   not reproduced.
 - **The three equipment tables hold equipment from every source, not only the
-  two books**: 381 weapons, 123 secondary, 100 armour. The `src` facet is how you
+  two books**: 410 weapons, 127 secondary, 108 armour. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages,
-  The Dragon's Vault, Wondrous and Dread equipment appears there too.
+  The Dragon's Vault, Arazo's Artifacts, Wondrous and Dread equipment appears there too.
 - An equipment table is sectioned by tier, `Ранг 1` to `Ранг 4`, then
   `Артефакты` (key `tA`) for equipment the book prints in its Artifacts
-  section (`eq.tier: 'A'`); a section with no rows is not drawn. The stat
+  section, or an Arazo's Artifacts piece with no tier formula
+  (`eq.tier: 'A'`); a section with no rows is not drawn. The stat
   line, copied text and the stub page read `Артефакт` / `Artifact` where the
   rank goes; the tier facet offers an `A` chip, `Артефакты` / `Artifacts`
   (the section's label, as on the `voa` table), only on a table whose kind has
@@ -1600,7 +1603,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   on all your devices. A tables view or a print layout picked on its own
   page is kept only until the page reloads.", then five rows with six
   controls, each saving the account row: «Язык» (the RU/EN switch); «Раздел при
-  запуске» / "Section on start" (a select over the ten sections; choosing
+  запуске» / "Section on start" (a select over the eleven sections; choosing
   «Таблицы» pins `#/tables/core_item`, the table a bare `#/tables` opens
   on, never the bare address (`STATE.md`, "localStorage keys"); a pinned
   table, or an older bare `#/tables` pin, shows as «Таблицы» and keeps its
@@ -1620,7 +1623,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
 
 ## Chrome
 
-- Language switch, tab bar, skip link, starting-section pin (nine sections
+- Language switch, tab bar, skip link, starting-section pin (ten sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   never a record or a list).
 - Focusing the skip link moves focus straight to `#main` and never touches
@@ -1699,10 +1702,10 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the menu and the control, focus moving elsewhere, a navigation or a
   change of user close it. A second press on the control closes it. An
   item is 44px tall at 600px and below.
-- The tab bar draws the ten sections; from the legacy write cutoff
-  (2026-10-26, `legacyWritable`) a build with sign-in draws nine, without
+- The tab bar draws the eleven sections; from the legacy write cutoff
+  (2026-10-26, `legacyWritable`) a build with sign-in draws ten, without
   «Списки»: `#/lists` is then reached from the account menu (`ROUTES.md`,
-  "Sections"). A build with no sign-in keeps ten.
+  "Sections"). A build with no sign-in keeps eleven.
 - No tab is lit on a record, a list page, a print sheet or the account page -
   the live `renderTabs` compared against the raw route string, and none of
   those route kinds was ever that string.

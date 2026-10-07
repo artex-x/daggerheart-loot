@@ -20,6 +20,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm1#/roll/community]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
@@ -36,6 +37,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
     link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
     link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
     link "Сообщества" [url=index.html?as=gm1#/tables/community]
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
@@ -49,24 +51,24 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Сеткой" [pressed=true]
     button "Хоумбрю" [description=Показывать свои предметы pressed=true]
     button "Фильтры" [expanded=false]
-    StaticText "382"
+    StaticText "411"
     ... StaticText x8 of 12 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (75)" [checked=false]
+    checkbox "Выбрать все (80)" [checked=false]
     checkbox "Палаш" [checked=false]
     button "Ранг 1 Палаш Broadsword"
-    ... checkbox x383 of 387 same-shape siblings elided
-    ... button x379 of 383 same-shape siblings elided
+    ... checkbox x412 of 416 same-shape siblings elided
+    ... button x408 of 412 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    button "133 Меч Ангелов Sword of Angels"
     StaticText "АРТЕФАКТЫ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (1)" [checked=false]
-    StaticText "Выбрать все (1)"
-    checkbox "Клятва Равновесия" [checked=false]
-    button "9 Клятва Равновесия Oath of Balance"
+    StaticText "Выбрать все (10)"
+    checkbox "Алебарда Урзо" [checked=false]
+    button "41 Алебарда Урзо Urzo's Halberd"
+    checkbox "Кнут из Хвоста Виверны" [checked=false]
+    button "50 Кнут из Хвоста Виверны Wyverntail Whip"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -85,6 +87,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 108Меч Адского ПламениHellfire Sword
 109Метеор ХиларадаHilarad's Meteor
 10Клинок ШаманаShaman's Blade
+10Легендарный Лук из Эльфийских ВолосLegendary Elfhair Bow
 10НимойрасNimoiras
 111Клинок ГидрыHydra Blade
 112Инфернальные КастетыInfernal Knuckles
@@ -102,6 +105,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 126Боевой Посох Душевного ОгняSoulfire Quarterstaff
 127Заклинательный КлинокSpellblade
 129Посох ЛейтисаStaff of Laethys
+12Дубина из Зубов ОграOgre-teeth Club
 12Посох Мохового ЦветкаMossblossom Staff
 130Звёздное КопьёStar Lance
 131Паровые РукавицыSteampowered Gauntlets
@@ -113,39 +117,64 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 137Глефа ТиранаTyrant's Glaive
 138Двуручный Меч ВайатыWaiata Greatsword
 139Жезл Нестабильной АрканыWand of Unstable Arcana
+13Улучшенная Дубина из Зубов ОграImproved Ogre-teeth Club
 13ХаррокливHarrowcleave
 140Жало ОсыWasp's Sting
 141Дротик Гребня ВолныWavecrest Javelin
+14Продвинутая Дубина из Зубов ОграAdvanced Ogre-teeth Club
+15Легендарная Дубина из Зубов ОграLegendary Ogre-teeth Club
 17Клинок БраксусаBlade of Braxus
+17Праща ФениксаPhoenix Sling
 17Церебральный ШипCerebral Spike
+18Улучшенная Праща ФениксаImproved Phoenix Sling
 19Мясницкий ТесакMeat Cleaver
+19Продвинутая Праща ФениксаAdvanced Phoenix Sling
 1Благословенный Нож Шеф-ПовараBlessed Chef's Knife
+1Нестареющее Око ЗверяThe Ageless Eye of the Beast
 1Эфирная ВинтовкаAether Rifle
 20Железный КонстебльIron Constable
+20Легендарная Праща ФениксаLegendary Phoenix Sling
 23Всадник ВолнWaverider
+25Жезл СопротивленияRod of Resistance
 25Когти ИфангаClaws of Yifang
 26Губитель из СухостояDeadwood Slayer
 27Посох Чёрной ДырыBlack Hole Staff
 29Святой КлинокSaintly Blade
 2Клинок ЖивущихBlade of the Living
+2Топор РассветаAxe of the Dawn
 30Крушитель МонолитовMonolith Smasher
 30ТенерубShadowcull
 31Войнарианский АрбалетVoynarian Crossbow
 31Молот Инфернального КузнецаDevil's Smithing Hammer
 31Посох ПоганкиToadstool Staff
 32Вихревой РезакWhirlwind Slasher
+32Посох Запредельной ПустотыStaff of the Void Beyond
 33Ярость ЗантакаZanthak's Rage
 34Дочь ЗелениVerdant Daughter
+34Моргенштерн ТарианаTaryan's Morningstar
+37Копьё-КамертонTuning Spear
+38Улучшенное Копьё-КамертонImproved Tuning Spear
+39Продвинутое Копьё-КамертонAdvanced Tuning Spear
 3Длинный Лук ФираLongbow of Fyr
 3Кулаки РазорителяFists of the Ravager
+40Легендарное Копьё-КамертонLegendary Tuning Spear
+41Алебарда УрзоUrzo's Halberd
+42Боевой Молот БазаWarhammer of Baz
+43Улучшенный Боевой Молот БазаImproved Warhammer of Baz
+44Продвинутый Боевой Молот БазаAdvanced Warhammer of Baz
+45Легендарный Боевой Молот БазаLegendary Warhammer of Baz
 4Туманный Проектор Ми-ГоMi-Go Mist Projector
+50Кнут из Хвоста ВиверныWyverntail Whip
 51Гарпун ЛевиафанаLeviathan Harpoon
 54Жезл ЖизниLife Wand
 5ИнееметательRimecaster
+5Кортик МёртвыхDirk of the Dead
 5Посох Тайного ПламениStaff of the Secret Flame
+6Драконий ЛукDrakebow
 6Последний РубежLast Stand
 79Кислотное ЛезвиеAcid Edge
 79Лук ИскателяSeeker's Bow
+7Лук из Эльфийских ВолосElfhair Bow
 7Молниевая Пушка ЙитианцевYithian Lightning Gun
 80Янтарный МолотAmber Hammer
 81Крюк АнанимусаAnanimus Hook
@@ -160,6 +189,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 88ХладноклинокChillblade
 89Меч Хрустального ДухаCrystal Spirit Sword
 8ТемпрусTemprus
+8Улучшенный Лук из Эльфийских ВолосImproved Elfhair Bow
 91Драконий КлыкDraketooth
 92Шип ДриадыDryad's Thorn
 93Дука СаламетDuka Salamet
@@ -168,6 +198,8 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 96УголёкEmber
 98Булава СкверныFilth Mace
 9Клятва РавновесияOath of Balance
+9Продвинутый Лук из Эльфийских ВолосAdvanced Elfhair Bow
+Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
@@ -181,6 +213,7 @@ Wondrous Loot
 daggerheart.com
 Аккаунт: gm1@example.test
 Алебарда
+Алебарда Урзо
 Альт. таблицы
 Арбалет
 Арбалет Гравитации
@@ -193,6 +226,7 @@ daggerheart.com
 Боевая Кирка
 Боевая Коса
 Боевой Молот
+Боевой Молот База
 Боевой Посох
 Боевой Посох Душевного Огня
 Большой Лук
@@ -231,14 +265,17 @@ daggerheart.com
 Длинный Меч
 Дочь Зелени
 Драконий Клык
+Драконий Лук
 Древний Лук
 Дробовик
 Дротик Гребня Волны
+Дубина из Зубов Огра
 Дука Саламет
 Жало Осы
 Жезл Жизни
 Жезл Нестабильной Арканы
 Жезл Пылающих Черепов
+Жезл Сопротивления
 Железная Сковорода
 Железный Констебль
 Заклинательный Клинок
@@ -284,6 +321,7 @@ daggerheart.com
 Клинок из Звездного Металла
 Клык Гадюки
 Клятва Равновесия
+Кнут из Хвоста Виверны
 Кованый Крюк
 Когти Ифанга
 Колдующий Кинжал
@@ -291,8 +329,10 @@ daggerheart.com
 Колючий Лук
 Конфиденциальность
 Копьё
+Копьё-Камертон
 Короткий Лук
 Короткий Посох
+Кортик Мёртвых
 Коса
 Коса Мидаса
 Кристалл Ярости
@@ -309,18 +349,22 @@ daggerheart.com
 Легендарная Булава
 Легендарная Винтовка
 Легендарная Волшебная палочка
+Легендарная Дубина из Зубов Огра
 Легендарная Катана
 Легендарная Магическая Винтовка
+Легендарная Праща Феникса
 Легендарная Рапира
 Легендарная Сабля
 Легендарная Секира
 Легендарное Копьё
+Легендарное Копьё-Камертон
 Легендарные Магические Наручи
 Легендарные Наручные Руны
 Легендарные Сияющие Кольца
 Легендарный Арбалет
 Легендарный Благословленный Медный Кастет
 Легендарный Боевой Молот
+Легендарный Боевой Молот База
 Легендарный Боевой Посох
 Легендарный Возвращающийся клинок
 Легендарный Волнистый Кинжал
@@ -337,6 +381,7 @@ daggerheart.com
 Легендарный Колдующий Кинжал
 Легендарный Короткий Лук
 Легендарный Короткий Посох
+Легендарный Лук из Эльфийских Волос
 Легендарный Меч Света
 Легендарный Меч Тьмы
 Легендарный Меч-Хлыст
@@ -350,6 +395,7 @@ daggerheart.com
 Легендарный Скипетр
 Лук Аантари
 Лук Искателя
+Лук из Эльфийских Волос
 ЛутDaggerheart
 Магическая Винтовка
 Магическая Сфера
@@ -374,10 +420,12 @@ daggerheart.com
 Молот Грифона
 Молот Инфернального Кузнеца
 Молот Экзоты
+Моргенштерн Тариана
 Мушкетон
 Мясницкий Тесак
 Мясницкий Топор
 Наручные Руны
+Нестареющее Око Зверя
 Неугомонное Возмездие
 Нимойрас
 Обоюдоострый Меч
@@ -404,6 +452,7 @@ daggerheart.com
 Последний Рубеж
 Посох Аугмы
 Посох Бесконечности
+Посох Запредельной Пустоты
 Посох Крови
 Посох Лейтиса
 Посох Мохового Цветка
@@ -415,24 +464,29 @@ daggerheart.com
 Посох Шепчущего Архива
 Походная Палка
 Поющий Меч
+Праща Феникса
 Призрачный Клинок
 Пробник
 Продвинутая Алебарда
 Продвинутая Булава
 Продвинутая Винтовка
 Продвинутая Волшебная Палочка
+Продвинутая Дубина из Зубов Огра
 Продвинутая Катана
 Продвинутая Магическая Винтовка
+Продвинутая Праща Феникса
 Продвинутая Рапира
 Продвинутая Сабля
 Продвинутая Секира
 Продвинутое Копьё
+Продвинутое Копьё-Камертон
 Продвинутые Магические Наручи
 Продвинутые Наручные Руны
 Продвинутые Сияющие Кольца
 Продвинутый Арбалет
 Продвинутый Благословленный Медный Кастет
 Продвинутый Боевой Молот
+Продвинутый Боевой Молот База
 Продвинутый Боевой Посох
 Продвинутый Возвращающийся Клинок
 Продвинутый Волнистый Кинжал
@@ -449,6 +503,7 @@ daggerheart.com
 Продвинутый Колдующий Кинжал
 Продвинутый Короткий Лук
 Продвинутый Короткий Посох
+Продвинутый Лук из Эльфийских Волос
 Продвинутый Меч Света
 Продвинутый Меч Тьмы
 Продвинутый Меч-Хлыст
@@ -801,6 +856,7 @@ daggerheart.com
 Тенеруб
 Тесак
 Топор Лабрис
+Топор Рассвета
 Топор Тлеющих Углей
 Топор Чёрной Порчи
 Топоры Рикошета
@@ -815,18 +871,22 @@ daggerheart.com
 Улучшенная Булава
 Улучшенная Винтовка
 Улучшенная Волшебная Палочка
+Улучшенная Дубина из Зубов Огра
 Улучшенная Катана
 Улучшенная Магическая Винтовка
+Улучшенная Праща Феникса
 Улучшенная Рапира
 Улучшенная Сабля
 Улучшенная Секира
 Улучшенное Копьё
+Улучшенное Копьё-Камертон
 Улучшенные Магические Наручи
 Улучшенные Наручные Руны
 Улучшенные Сияющие Кольца
 Улучшенный Арбалет
 Улучшенный Благословленный Медный Кастет
 Улучшенный Боевой Молот
+Улучшенный Боевой Молот База
 Улучшенный Боевой Посох
 Улучшенный Возвращающийся Клинок
 Улучшенный Волнистый Кинжал
@@ -843,6 +903,7 @@ daggerheart.com
 Улучшенный Колдующий Кинжал
 Улучшенный Короткий Лук
 Улучшенный Короткий Посох
+Улучшенный Лук из Эльфийских Волос
 Улучшенный Меч Света
 Улучшенный Меч Тьмы
 Улучшенный Меч-Хлыст
@@ -894,6 +955,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
       link "Dread" [url=index.html?as=gm1#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
       link "Communities" [url=index.html?as=gm1#/roll/community]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
@@ -910,6 +972,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
     link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
     link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
+    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
     link "Communities" [url=index.html?as=gm1#/tables/community]
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
@@ -923,24 +986,24 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "Grid" [pressed=true]
     button "Homebrew" [description=Show your own items pressed=true]
     button "Filters" [expanded=false]
-    StaticText "382"
+    StaticText "411"
     ... StaticText x8 of 12 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (75)" [checked=false]
+    checkbox "Select all (80)" [checked=false]
     checkbox "Broadsword" [checked=false]
     button "Tier 1 Broadsword Палаш"
-    ... checkbox x383 of 387 same-shape siblings elided
-    ... button x379 of 383 same-shape siblings elided
+    ... checkbox x412 of 416 same-shape siblings elided
+    ... button x408 of 412 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
-    button "133 Sword of Angels Меч Ангелов"
     StaticText "ARTIFACTS"
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (1)" [checked=false]
-    StaticText "Select all (1)"
-    checkbox "Oath of Balance" [checked=false]
-    button "9 Oath of Balance Клятва Равновесия"
+    StaticText "Select all (10)"
+    checkbox "Urzo's Halberd" [checked=false]
+    button "41 Urzo's Halberd Алебарда Урзо"
+    checkbox "Wyverntail Whip" [checked=false]
+    button "50 Wyverntail Whip Кнут из Хвоста Виверны"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -958,6 +1021,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 107Gryphon HammerМолот Грифона
 108Hellfire SwordМеч Адского Пламени
 109Hilarad's MeteorМетеор Хиларада
+10Legendary Elfhair BowЛегендарный Лук из Эльфийских Волос
 10NimoirasНимойрас
 10Shaman's BladeКлинок Шамана
 111Hydra BladeКлинок Гидры
@@ -977,6 +1041,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 127SpellbladeЗаклинательный Клинок
 129Staff of LaethysПосох Лейтиса
 12Mossblossom StaffПосох Мохового Цветка
+12Ogre-teeth ClubДубина из Зубов Огра
 130Star LanceЗвёздное Копьё
 131Steampowered GauntletsПаровые Рукавицы
 132Striking FangsРазящие Клыки
@@ -988,38 +1053,63 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 138Waiata GreatswordДвуручный Меч Вайаты
 139Wand of Unstable ArcanaЖезл Нестабильной Арканы
 13HarrowcleaveХарроклив
+13Improved Ogre-teeth ClubУлучшенная Дубина из Зубов Огра
 140Wasp's StingЖало Осы
 141Wavecrest JavelinДротик Гребня Волны
+14Advanced Ogre-teeth ClubПродвинутая Дубина из Зубов Огра
+15Legendary Ogre-teeth ClubЛегендарная Дубина из Зубов Огра
 17Blade of BraxusКлинок Браксуса
 17Cerebral SpikeЦеребральный Шип
+17Phoenix SlingПраща Феникса
+18Improved Phoenix SlingУлучшенная Праща Феникса
+19Advanced Phoenix SlingПродвинутая Праща Феникса
 19Meat CleaverМясницкий Тесак
 1Aether RifleЭфирная Винтовка
 1Blessed Chef's KnifeБлагословенный Нож Шеф-Повара
+1The Ageless Eye of the BeastНестареющее Око Зверя
 20Iron ConstableЖелезный Констебль
+20Legendary Phoenix SlingЛегендарная Праща Феникса
 23WaveriderВсадник Волн
 25Claws of YifangКогти Ифанга
+25Rod of ResistanceЖезл Сопротивления
 26Deadwood SlayerГубитель из Сухостоя
 27Black Hole StaffПосох Чёрной Дыры
 29Saintly BladeСвятой Клинок
+2Axe of the DawnТопор Рассвета
 2Blade of the LivingКлинок Живущих
 30Monolith SmasherКрушитель Монолитов
 30ShadowcullТенеруб
 31Devil's Smithing HammerМолот Инфернального Кузнеца
 31Toadstool StaffПосох Поганки
 31Voynarian CrossbowВойнарианский Арбалет
+32Staff of the Void BeyondПосох Запредельной Пустоты
 32Whirlwind SlasherВихревой Резак
 33Zanthak's RageЯрость Зантака
+34Taryan's MorningstarМоргенштерн Тариана
 34Verdant DaughterДочь Зелени
+37Tuning SpearКопьё-Камертон
+38Improved Tuning SpearУлучшенное Копьё-Камертон
+39Advanced Tuning SpearПродвинутое Копьё-Камертон
 3Fists of the RavagerКулаки Разорителя
 3Longbow of FyrДлинный Лук Фира
+40Legendary Tuning SpearЛегендарное Копьё-Камертон
+41Urzo's HalberdАлебарда Урзо
+42Warhammer of BazБоевой Молот База
+43Improved Warhammer of BazУлучшенный Боевой Молот База
+44Advanced Warhammer of BazПродвинутый Боевой Молот База
+45Legendary Warhammer of BazЛегендарный Боевой Молот База
 4Mi-Go Mist ProjectorТуманный Проектор Ми-Го
+50Wyverntail WhipКнут из Хвоста Виверны
 51Leviathan HarpoonГарпун Левиафана
 54Life WandЖезл Жизни
+5Dirk of the DeadКортик Мёртвых
 5RimecasterИнееметатель
 5Staff of the Secret FlameПосох Тайного Пламени
+6DrakebowДраконий Лук
 6Last StandПоследний Рубеж
 79Acid EdgeКислотное Лезвие
 79Seeker's BowЛук Искателя
+7Elfhair BowЛук из Эльфийских Волос
 7Yithian Lightning GunМолниевая Пушка Йитианцев
 80Amber HammerЯнтарный Молот
 81Ananimus HookКрюк Ананимуса
@@ -1033,6 +1123,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 88ChillbladeХладноклинок
 88Staff of the Whispering ArchiveПосох Шепчущего Архива
 89Crystal Spirit SwordМеч Хрустального Духа
+8Improved Elfhair BowУлучшенный Лук из Эльфийских Волос
 8TemprusТемпрус
 91DraketoothДраконий Клык
 92Dryad's ThornШип Дриады
@@ -1041,6 +1132,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 95Elemental LongbowСтихийный Длинный Лук
 96EmberУголёк
 98Filth MaceБулава Скверны
+9Advanced Elfhair BowПродвинутый Лук из Эльфийских Волос
 9Oath of BalanceКлятва Равновесия
 Aantari Bow
 Account: gm1@example.test
@@ -1058,6 +1150,7 @@ Advanced Crossbow
 Advanced Cutlass
 Advanced Dagger
 Advanced Dualstaff
+Advanced Elfhair Bow
 Advanced Enchanted Chakram
 Advanced Glowing Rings
 Advanced Greatstaff
@@ -1070,6 +1163,8 @@ Advanced Katana
 Advanced Longbow
 Advanced Longsword
 Advanced Mace
+Advanced Ogre-teeth Club
+Advanced Phoenix Sling
 Advanced Quarterstaff
 Advanced Rapier
 Advanced Repeating Crossbow
@@ -1085,14 +1180,17 @@ Advanced Shortbow
 Advanced Shortstaff
 Advanced Shotgun
 Advanced Spear
+Advanced Tuning Spear
 Advanced Twisted Dagger
 Advanced Wand
 Advanced Warhammer
+Advanced Warhammer of Baz
 Advanced Whipsword
 Aether Rifle
 Alt. tables
 Amber Hammer
 Ananimus Hook
+Arazo's Artifacts
 Arc Wand
 Arc-Lightning Claymore
 Arcane Gauntlets
@@ -1101,6 +1199,7 @@ Armor
 Arquebus
 Astral Glaive
 Axe of Fortunis
+Axe of the Dawn
 Battleaxe
 Bec de Corbin
 Black Corruption Axe
@@ -1150,9 +1249,11 @@ Deadwood Slayer
 Demon's Edge
 Devil's Smithing Hammer
 Devouring Dagger
+Dirk of the Dead
 Displacement Razor
 Double Flail
 Dragon's Vault
+Drakebow
 Draketooth
 Dread
 Dread GM Toolbox
@@ -1165,6 +1266,7 @@ EN
 Ego Blade
 Elder Bow
 Elemental Longbow
+Elfhair Bow
 Ember
 Ember Axe
 Enchanted Boomerang
@@ -1239,6 +1341,7 @@ Improved Crossbow
 Improved Cutlass
 Improved Dagger
 Improved Dualstaff
+Improved Elfhair Bow
 Improved Enchanted Chakram
 Improved Glowing Rings
 Improved Greatstaff
@@ -1251,6 +1354,8 @@ Improved Katana
 Improved Longbow
 Improved Longsword
 Improved Mace
+Improved Ogre-teeth Club
+Improved Phoenix Sling
 Improved Quarterstaff
 Improved Rapier
 Improved Repeating Crossbow
@@ -1266,9 +1371,11 @@ Improved Shortbow
 Improved Shortstaff
 Improved Shotgun
 Improved Spear
+Improved Tuning Spear
 Improved Twisted Dagger
 Improved Wand
 Improved Warhammer
+Improved Warhammer of Baz
 Improved Whipsword
 Infernal Knuckles
 Infinite Staff
@@ -1295,6 +1402,7 @@ Legendary Crossbow
 Legendary Cutlass
 Legendary Dagger
 Legendary Dualstaff
+Legendary Elfhair Bow
 Legendary Enchanted Chakram
 Legendary Glowing Rings
 Legendary Greatstaff
@@ -1307,6 +1415,8 @@ Legendary Katana
 Legendary Longbow
 Legendary Longsword
 Legendary Mace
+Legendary Ogre-teeth Club
+Legendary Phoenix Sling
 Legendary Quarterstaff
 Legendary Rapier
 Legendary Repeating Crossbow
@@ -1322,9 +1432,11 @@ Legendary Shortbow
 Legendary Shortstaff
 Legendary Shotgun
 Legendary Spear
+Legendary Tuning Spear
 Legendary Twisted Dagger
 Legendary Wand
 Legendary Warhammer
+Legendary Warhammer of Baz
 Legendary Whipsword
 Leviathan Harpoon
 Life Wand
@@ -1347,8 +1459,10 @@ Murderer's Gauntlets
 Nature's Fall
 Nimoiras
 Oath of Balance
+Ogre-teeth Club
 Open this section on start
 Other
+Phoenix Sling
 Pitchfork
 Platinum Estoc
 Privacy
@@ -1366,6 +1480,7 @@ Rime Scepter
 Rimecaster
 Rocket Maul
 Rod of Flaming Skulls
+Rod of Resistance
 Rolling Pin
 Rope Dart
 Roseblade
@@ -1411,6 +1526,7 @@ Splintershaft Bow
 Staff of Augma
 Staff of Laethys
 Staff of the Secret Flame
+Staff of the Void Beyond
 Staff of the Whispering Archive
 Standard rules
 Star Lance
@@ -1425,9 +1541,11 @@ Sword of Light & Flame
 Sword of Undeath
 Tables
 Talon Blades
+Taryan's Morningstar
 Temprus
 Tendon Bow
 Terms of use
+The Ageless Eye of the Beast
 Thistlebow
 Tier 1Arcane GauntletsМагические Наручи
 Tier 1Arcane RifleМагическая Винтовка
@@ -1720,9 +1838,11 @@ Tier 4ThistlebowКолючий Лук
 Tier 4Wand of EssekПалочка Эссека
 Toadstool Staff
 Trinity Club
+Tuning Spear
 Twisted Dagger
 Tyrant's Glaive
 Urok Broadsword
+Urzo's Halberd
 Vault of Ages
 Verdant Daughter
 Voynarian Crossbow
@@ -1735,6 +1855,7 @@ Wand of Unstable Arcana
 War Pick
 War Scythe
 Warhammer
+Warhammer of Baz
 Wasp's Sting
 Wavecrest Javelin
 Waverider
@@ -1745,6 +1866,7 @@ Whisk Wand
 Widogast Pendant
 Wondrous
 Wondrous Loot
+Wyverntail Whip
 Yithian Lightning Gun
 Yutari Bloodbow
 Zanthak's Rage

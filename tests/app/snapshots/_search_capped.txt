@@ -19,6 +19,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -26,13 +27,13 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1272 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=8026affd]
+    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=6f14b11a]
     searchbox "Поиск по названию или описанию…" [value=а focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    StaticText "300 из 1272"
+    StaticText "300 из 1323"
     checkbox "Выбрать все (300)" [checked=false]
     StaticText "Выбрать все (300)"
     checkbox "Факел Алистера" [checked=false]
@@ -40,10 +41,10 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     ... checkbox x297 of 301 same-shape siblings elided
     button "35 Амулет Воздушного Клинка Вы можете прикрепить этот амулет к о..." [namelen=200 namehash=6c622faa]
     ... button x296 of 300 same-shape siblings elided
-    checkbox "Перо Памяти" [checked=false]
-    button "73 Перо Памяти Вы можете написать до ста слов этим пером в качес..." [namelen=252 namehash=f95bdd85]
-    checkbox "Лучезарный Осколок" [checked=false]
-    button "74 Лучезарный Осколок Когда вы разбиваете этот осколок планарной..." [namelen=296 namehash=e8fdd8d0]
+    checkbox "Межпланарная Древесина" [checked=false]
+    button "67 Межпланарная Древесина При создании магического оружия из это..." [namelen=262 namehash=a237ac4b]
+    checkbox "Зелье Спирального Зрения" [checked=false]
+    button "69 Зелье Спирального Зрения Один раз за сцену до следующего отды..." [namelen=380 namehash=2005611d]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -143,10 +144,12 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 28Мазь СаламандрыНанесите эту мазь на кожу, чтобы до следующего ... [namelen=117 namehash=90d796ed]
 28Монета ШулераПодбрасывая эту монету, вы можете потратить Надеж... [namelen=122 namehash=dca19bff]
 28Тёмный КаменьЕсли этот ониксовый камень подвергается воздейств... [namelen=244 namehash=a013734b]
+28Щит АрктураРанг 1 · Физическое · Сила · Вплотную · d8 физ · Од... [namelen=279 namehash=6a6c242d]
 29Большое Зелье ОбаянияВы получаете бонус +1 к Влиянию до следую... [namelen=120 namehash=645f89b5]
 29Желчь Демонической ЖабыКогда эта жидкость контактирует с возду... [namelen=225 namehash=ebef10e2]
 29Колокол Хранителя МогилЭтот колокол звонит, когда призрак или ... [namelen=138 namehash=1c87607c]
 29Масло Зелёной СлизиСмажьте этим маслом оружие. При следующей у... [namelen=246 namehash=f1a57d75]
+29Улучшенный Щит АрктураРанг 2 · Физическое · Сила · Вплотную · ... [namelen=290 namehash=ba38cba7]
 29Успокаивающий КулонКогда вы должны отметить последний Стресс, ... [namelen=131 namehash=734f72e2]
 2Крюк-КошкаВы получаете преимущество на Броски Действия, когда в... [namelen=118 namehash=34a8fe47]
 2Переносная АстролябияВ качестве Хода Отдыха вы можете изучить э... [namelen=206 namehash=c221b3ac]
@@ -154,11 +157,13 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 2Радужная ПыльЭтот разноцветный порошок липнет ко всему, и сущес... [namelen=132 namehash=bf6320dc]
 2Чай ЭфироцветаДо следующего отдыха вы можете обнаруживать прису... [namelen=187 namehash=2d9e00d1]
 30Двойная ФлягаВ эту флягу можно налить две разные жидкости. Пер... [namelen=163 namehash=2e5b5dd9]
+30Продвинутый Щит АрктураРанг 3 · Физическое · Сила · Вплотную ·... [namelen=291 namehash=c9a2da59]
 30РасстроительОдин раз за продолжительный отдых вы можете потрат... [namelen=293 namehash=e196ae60]
 30Реликварий Незрячего СвятогоВы получаете +1 к Кости Надежды, к... [namelen=131 namehash=17ab1d99]
 30Сфера Солнечного СветаРазбейте эту сферу, и целые сутки област... [namelen=169 namehash=67184d25]
 31Войнарианский АрбалетРанг 3 · Физическое · Искусность · Далеко... [namelen=444 namehash=aef3b2c8]
 31Карта ОткровенияВы можете настроить эту карту на одно существо... [namelen=125 namehash=22eaa8a0]
+31Легендарный Щит АрктураРанг 4 · Физическое · Сила · Вплотную ·... [namelen=291 namehash=4f245c90]
 31Мешочек Своенравного ПескаВы можете убедить этот маленький меш... [namelen=285 namehash=3fcfe2fb]
 31Молот Инфернального КузнецаРанг 3 · Магическое · Сила · Вплотн... [namelen=298 namehash=395ffb04]
 31Сфера Лунного СветаРазбейте эту сферу, и целые сутки область в... [namelen=163 namehash=57b7c56e]
@@ -204,6 +209,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 3Семя ВергласаЭтим осколком льда можно мгновенно заморозить учас... [namelen=122 namehash=b4567b5c]
 40Бездонная СумкаКогда вы храните предметы в этом мешке, они нах... [namelen=181 namehash=5ce30242]
 40МерцацветПока вы несёте этот цветок, вы получаете преимущество... [namelen=186 namehash=2f7f9605]
+41Алебарда УрзоАртефакт · Физическое · Влияние · Близко · d12 фи... [namelen=225 namehash=cebca89c]
 41Гравитационная ПривязьПока вы носите этот пояс, вы получаете п... [namelen=226 namehash=b335cdd3]
 41Какофоническая МикстураВыпейте это зелье, и на час всё, что вы... [namelen=255 namehash=b48d3ceb]
 41Оракул ИменующегоОдин раз за сессию вы можете бросить этот наб... [namelen=168 namehash=6e2ea414]
@@ -298,11 +304,6 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 6Пастилка ЛирохвостаРассосите эту пастилку, чтобы до конца сцены... [namelen=132 namehash=486bae35]
 6Совиный Амулет КараванаОдин раз за сессию, когда вы должны отме... [namelen=148 namehash=202ffa70]
 6Эльфийская Подзорная ТрубаЭта подзорная труба увеличивает изобр... [namelen=99 namehash=48982960]
-70Призматическая ВодаПитьё этой воды имеет непредсказуемые эффек... [namelen=320 namehash=93263974]
-71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=267 namehash=47fce802]
-72Чистый КристаллОдин раз за сессию, когда вы используете свойст... [namelen=154 namehash=ffa12966]
-73Перо ПамятиВы можете написать до ста слов этим пером в качеств... [namelen=248 namehash=fae9ebb2]
-74Лучезарный ОсколокКогда вы разбиваете этот осколок планарной э... [namelen=292 namehash=672b7c87]
 7Амулет из Пальца ДьяволаСтоимость Призыва: 3Вражда: Когда вы ил... [namelen=517 namehash=ebfd1e29]
 7Арканный СкальпельРанг 3 · Магическое · Искусность · Далеко · d... [namelen=197 namehash=4a18cab6]
 7Малое Зелье ЛеченияИзлечите 1d4 Ран.Получается из: Рецепт Малог... [namelen=121 namehash=323f2852]
@@ -329,6 +330,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 9Перо ЧернокрылаВ этом пере никогда не кончаются чернила, и его ... [namelen=102 namehash=277cfa47]
 9Шахматы АрхивариусаВо время отдыха вы можете использовать этот ... [namelen=175 namehash=f834f89b]
 9Яд СкрежетозубаВы можете нанести этот яд на оружие, наносящее ф... [namelen=199 namehash=7061834b]
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -338,6 +340,7 @@ Wondrous
 daggerheart.com
 Агатовый Паук
 Алебарда
+Алебарда Урзо
 АлебардаРанг 1 · Физическое · Сила · Близко · d10+2 физ · Двуруч... [namelen=113 namehash=09db8fd0]
 Алконитовый Кристалл
 Альт Сказочника
@@ -448,7 +451,6 @@ daggerheart.com
 Кулон Железного Кинжала
 Кулон Светлячка
 Кулон Хранителя Времени
-Ласты Лужелуточки
 Легендарная Алебарда
 Легендарная АлебардаРанг 4 · Физическое · Сила · Близко · d10+11... [namelen=126 namehash=69c91bec]
 Легендарный Арбалет
@@ -457,6 +459,7 @@ daggerheart.com
 Легендарный Многозарядный АрбалетРанг 4 · Физическое · Искусност... [namelen=261 namehash=23582bdf]
 Легендарный Ручной Арбалет
 Легендарный Ручной АрбалетРанг 4 · Физическое · Искусность · Дал... [namelen=111 namehash=9e9d8bcb]
+Легендарный Щит Арктура
 Ледяные Рукавицы
 Лепесток Цветочной Вуали
 Листья Варика
@@ -464,7 +467,6 @@ daggerheart.com
 Лук АантариРанг 4 · Физическое · Искусность · Далеко · d6+11 физ... [namelen=133 namehash=c41c82a0]
 Лупа Зачарователя
 ЛутDaggerheart
-Лучезарный Осколок
 Магическая Призма
 Мазь Саламандры
 Мазь Стальной Кожи
@@ -524,7 +526,6 @@ daggerheart.com
 Пергамент Копирования
 Переливающийся Амулет
 Переносная Астролябия
-Перо Памяти
 Перо Феникса
 Перо Чернокрыла
 Перчатки Геккона
@@ -547,7 +548,6 @@ daggerheart.com
 Пояс Титана
 Превосходный Алконитовый Кристалл
 Предметы
-Призматическая Вода
 Проводящий Камень
 Продвинутая Алебарда
 Продвинутая АлебардаРанг 3 · Физическое · Сила · Близко · d10+8 ... [namelen=125 namehash=4ed24694]
@@ -557,6 +557,7 @@ daggerheart.com
 Продвинутый Многозарядный АрбалетРанг 3 · Физическое · Искусност... [namelen=260 namehash=33e0fa16]
 Продвинутый Ручной Арбалет
 Продвинутый Ручной АрбалетРанг 3 · Физическое · Искусность · Дал... [namelen=111 namehash=ff577239]
+Продвинутый Щит Арктура
 Проклятие Заклинателя
 Пронзающие Стрелы
 Пронзительная Свирель
@@ -642,6 +643,7 @@ daggerheart.com
 Улучшенный Многозарядный АрбалетРанг 2 · Физическое · Искусность... [namelen=259 namehash=c81271b9]
 Улучшенный Ручной Арбалет
 Улучшенный Ручной АрбалетРанг 2 · Физическое · Искусность · Дале... [namelen=110 namehash=00094336]
+Улучшенный Щит Арктура
 Улучшенный Яд Скрежетозуба
 Условия использования
 Усмиряющее Кадило
@@ -666,10 +668,10 @@ daggerheart.com
 Часовой Арбалет
 Часовой АрбалетРанг 4 · Физическое · Искусность · Далеко · d6+11... [namelen=242 namehash=957c34f2]
 Челюсти Астрального Термита
-Чистый Кристалл
 Чёрная Нить
 Шахматы Архивариуса
 Шляпа Чародея
+Щит Арктура
 Щит Охотника на Жуков
 Эльфийская Подзорная Труба
 Яд Каплезуба
@@ -693,6 +695,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -700,13 +703,13 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1272 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=5c6c39fd]
+    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c8a75867]
     searchbox "Search by name or description…" [value=а focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    StaticText "300 of 1236"
+    StaticText "300 of 1287"
     checkbox "Select all (300)" [checked=false]
     StaticText "Select all (300)"
     checkbox "Alistair's Torch" [checked=false]
@@ -714,10 +717,10 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     ... checkbox x297 of 301 same-shape siblings elided
     button "35 Airblade Charm You can attach this charm to a weapon with a M..." [namelen=174 namehash=92fd785c]
     ... button x296 of 300 same-shape siblings elided
-    checkbox "Quill of Memory" [checked=false]
-    button "73 Quill of Memory You can write up to a hundred words with this..." [namelen=241 namehash=6102efe2]
-    checkbox "Radiant Shard" [checked=false]
-    button "74 Radiant Shard When you shatter this shard of planar energy, i..." [namelen=255 namehash=1c6cc52c]
+    checkbox "Planar Wood" [checked=false]
+    button "67 Planar Wood When crafting a magic weapon from this infused wo..." [namelen=243 namehash=84afefd1]
+    checkbox "Potion of Spiraling Vision" [checked=false]
+    button "69 Potion of Spiraling Vision Once per scene until your next res..." [namelen=344 namehash=b531679f]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -817,22 +820,26 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 28DarkstoneIf this onyx stone is exposed to magical light, it ex... [namelen=201 namehash=2860f451]
 28Major Attune PotionYou gain a +1 bonus to your Instinct until ... [namelen=117 namehash=956f5e54]
 28Salamander SalveYou can apply this salve to your skin to make ... [namelen=130 namehash=b7c32714]
+28Shield of ArcturusTier 1 · Physical · Strength · Melee · d8 ph... [namelen=252 namehash=47936021]
 29Calming PendantWhen you would mark your last Stress, roll a d6... [namelen=116 namehash=ab3edc19]
 29Demon Toad BileWhen this liquid is exposed to air, start a Cou... [namelen=201 namehash=b174c983]
 29Gravewarden's BellThis bell rings when a ghost or undead creat... [namelen=112 namehash=6e94bf91]
 29Green Ooze OilYou can coat your weapon in this oil. The next s... [namelen=270 namehash=981c6548]
+29Improved Shield of ArcturusTier 2 · Physical · Strength · Mele... [namelen=261 namehash=417aa90f]
 29Major Charm PotionYou gain a +1 bonus to your Presence until y... [namelen=115 namehash=9cdba1f1]
 2Aetherflower TeaUntil your next rest, you can detect the presen... [namelen=180 namehash=69138f85]
 2GrapnelYou gain advantage on action rolls to climb sheer surfac... [namelen=82 namehash=143f2291]
 2Iridian DustThis multicolored powder sticks to everything and p... [namelen=138 namehash=1dbae285]
 2Piper WhistleThis handcrafted whistle has a distinctive sound. ... [namelen=154 namehash=b382f653]
 2Portable AstrolabeDuring downtime, you may study this astrolabe... [namelen=196 namehash=65fbdf08]
+30Advanced Shield of ArcturusTier 3 · Physical · Strength · Mele... [namelen=261 namehash=caafd1ed]
 30DetunerOnce per long rest, you can spend a Hope to activate th... [namelen=230 namehash=0e3415b3]
 30Dual FlaskThis flask can hold two different liquids. You can s... [namelen=136 namehash=4d2fcbf7]
 30Reliquary of the Sightless SaintYou gain a +1 bonus to your Ho... [namelen=127 namehash=b78305a6]
 30Sunlight OrbYou can shatter this orb to make the area within V... [namelen=158 namehash=ac53c1f8]
 31Bag of FicklesandYou can convince this small bag of sand to be... [namelen=268 namehash=f7e3495b]
 31Devil's Smithing HammerTier 3 · Magic · Strength · Melee · d6+... [namelen=262 namehash=05d4a101]
+31Legendary Shield of ArcturusTier 4 · Physical · Strength · Mel... [namelen=262 namehash=db49176c]
 31Map of RevelationYou can attune this map to one creature at a ... [namelen=138 namehash=d36297d1]
 31Moonlight OrbYou can shatter this orb to make the area within ... [namelen=162 namehash=4e6431d0]
 31Voynarian CrossbowTier 3 · Physical · Finesse · Far · d6+8 phy... [namelen=371 namehash=ae98ce6b]
@@ -883,6 +890,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 41Namer's OracleOnce per session, you can roll this set of runic... [namelen=140 namehash=18f5078b]
 41Stride RelicYou gain a +1 bonus to your Agility. You can only ... [namelen=88 namehash=5cfda7d7]
 41Sun Tree SapConsume this sap to roll a d6. On a result of 5-6,... [namelen=212 namehash=3c45da26]
+41Urzo's HalberdArtifact · Physical · Presence · Very Close · d1... [namelen=224 namehash=3f7cdfe5]
 42Crucible FramesThese eyeglasses reveal weak points in objects ... [namelen=173 namehash=f219c46f]
 42Dripfang PoisonA creature who consumes this poison takes 8d10 ... [namelen=98 namehash=e1a830f9]
 42Griefroot PowderWhen you inhale this powder, you add a d8 to y... [namelen=356 namehash=64180628]
@@ -972,11 +980,6 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 6Guild AmuletWhen you would take magical damage, you may reduce ... [namelen=182 namehash=b2ea6be5]
 6Lyrebird LozengeYou can dissolve this lozenge in your mouth to ... [namelen=151 namehash=33fdcc3b]
 6ManaclesThis pair of locking cuffs comes with a key.ItemCore
-70Prismatic WaterDrinking this water has unpredictable effects. ... [namelen=299 namehash=31f08b27]
-71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=276 namehash=b8ac17aa]
-72Pure CrystalOnce per session, when you use a feature that rest... [namelen=125 namehash=666ea671]
-73Quill of MemoryYou can write up to a hundred words with this q... [namelen=237 namehash=88aef944]
-74Radiant ShardWhen you shatter this shard of planar energy, it ... [namelen=251 namehash=661dca2d]
 7Arcane CloakA creature with a Spellcast trait wearing this cloa... [namelen=122 namehash=12599eee]
 7Arcane ScalpelTier 3 · Magic · Finesse · Far · d6+2 mag · One-H... [namelen=196 namehash=238e063d]
 7Devil-Finger CharmRecall Cost: 3Enmity: When you or an ally mak... [namelen=493 namehash=b976e705]
@@ -1015,6 +1018,7 @@ Advanced Hand Crossbow
 Advanced Hand CrossbowTier 3 · Physical · Finesse · Far · d6+5 p... [namelen=99 namehash=2390b198]
 Advanced Repeating Crossbow
 Advanced Repeating CrossbowTier 3 · Physical · Finesse · Far · d... [namelen=215 namehash=c1c3e6e0]
+Advanced Shield of Arcturus
 Aetherflower Tea
 Agate Spider
 Airblade Charm
@@ -1029,6 +1033,7 @@ Amulet of the Dawn
 Ananimus Hook
 Anchoring Hook
 Ancient Runestone
+Arazo's Artifacts
 Arcane Cloak
 Arcane Prism
 Arcane Scalpel
@@ -1191,6 +1196,7 @@ Improved Hand Crossbow
 Improved Hand CrossbowTier 2 · Physical · Finesse · Far · d6+3 p... [namelen=99 namehash=aac4b1ca]
 Improved Repeating Crossbow
 Improved Repeating CrossbowTier 2 · Physical · Finesse · Far · d... [namelen=215 namehash=62b25011]
+Improved Shield of Arcturus
 Incantor's Chalk
 Infinite Bag
 Insomniac's Periapt
@@ -1213,6 +1219,7 @@ Legendary Hand Crossbow
 Legendary Hand CrossbowTier 4 · Physical · Finesse · Far · d6+7 ... [namelen=100 namehash=fe7a67e6]
 Legendary Repeating Crossbow
 Legendary Repeating CrossbowTier 4 · Physical · Finesse · Far · ... [namelen=217 namehash=ed5b62e2]
+Legendary Shield of Arcturus
 Leviathan Harpoon
 Life Force Beacon
 Lightning Scarab
@@ -1268,16 +1275,11 @@ Portal Frames
 Portal Seed
 Potion of Spiraling Vision
 Premium Bedroll
-Prismatic Water
 Privacy
 Psychopomp's Shroud
-Puddleduck's Fins
-Pure Crystal
-Quill of Memory
 Quillshawl
 Quintessential Severant
 RU
-Radiant Shard
 Red Ooze Oil
 Redthorn Saliva
 Reliquary of the Sightless Saint
@@ -1296,6 +1298,7 @@ Self-Sewing Thread
 Self-Tying Rope
 Shadow Amulet
 Shard of Memory
+Shield of Arcturus
 Sign in
 Silee's Folding Knife
 Skip to content
@@ -1329,6 +1332,7 @@ Timekeeper's Pendant
 Titan's Girdle
 Traveler's Bell
 Unstable Arcane Shard
+Urzo's Halberd
 Valorstone
 Varik Leaves
 Vault of Ages

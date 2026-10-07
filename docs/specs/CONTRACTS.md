@@ -54,6 +54,7 @@ shared list. Never renumber a record that has shipped.
 | `di` | Dread GM Toolbox |
 | `voa` | Vault of Ages (`voa<vol>_<tier><n>`) |
 | `dv` / `dve` | The Dragon's Vault loot / equipment |
+| `aa` | Arazo's Artifacts, book order, an upgrade line's rungs after its head |
 | `cm` | Community items |
 | `f` | Campaign frame equipment |
 | `q` | Core and Hope & Fear equipment |

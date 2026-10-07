@@ -19,6 +19,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/lists/00000000-
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -35,6 +36,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/lists/00000000-
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -72,6 +74,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/lists/00000000-0000-4000-8000-00
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -89,6 +92,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/lists/00000000-0000-4000-8000-00
 
 ## en :: controls
 Alt. tables
+Arazo's Artifacts
 Communities
 Dragon's Vault
 Dread

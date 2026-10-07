@@ -81,6 +81,7 @@ const EQ_SRC: readonly string[] = [
   'dread',
   'voa',
   'dv',
+  'arazo',
   ...FRAME_ORDER
 ];
 

@@ -115,6 +115,7 @@ describe('which records get labels at all', () => {
   it('is equipment, Vault of Ages and homebrew items, and nothing else', () => {
     expect(hasLabels(rec({ eq: { t: 'weapon', tier: 1 } }))).toBe(true);
     expect(hasLabels(rec({ src: 'voa' }))).toBe(true);
+    expect(hasLabels(rec({ src: 'arazo' }))).toBe(true);
     expect(hasLabels(rec({ src: 'homebrew' }))).toBe(true);
     expect(hasLabels(rec({ src: 'wondrous' }))).toBe(false);
   });

@@ -20,6 +20,7 @@ RootWebArea "Святой Щит — Генератор лута — Daggerheart
       link "Dread" [url=index.html?as=gm3#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm3#/roll/community]
       link "Таблицы" [url=index.html?as=gm3#/tables]
       link "Списки" [url=index.html?as=gm3#/lists]
@@ -54,6 +55,7 @@ RootWebArea "Святой Щит — Генератор лута — Daggerheart
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -106,6 +108,7 @@ RootWebArea "Saintly Guard — Daggerheart Loot Generator" [url=index.html?as=gm
       link "Dread" [url=index.html?as=gm3#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
       link "Communities" [url=index.html?as=gm3#/roll/community]
       link "Tables" [url=index.html?as=gm3#/tables]
       link "Lists" [url=index.html?as=gm3#/lists]
@@ -143,6 +146,7 @@ RootWebArea "Saintly Guard — Daggerheart Loot Generator" [url=index.html?as=gm
 Account: gm3@example.test
 Add to list
 Alt. tables
+Arazo's Artifacts
 Communities
 Copy image
 Copy link

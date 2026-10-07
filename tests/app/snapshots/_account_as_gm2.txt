@@ -20,6 +20,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
       link "Dread" [url=index.html?as=gm2#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
       link "Сообщества" [url=index.html?as=gm2#/roll/community]
       link "Таблицы" [url=index.html?as=gm2#/tables]
       link "Списки" [url=index.html?as=gm2#/lists]
@@ -36,7 +37,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
       option "Обычные правила" [selected=true]
       option "Альт. таблицы" [selected=false]
       option "Wondrous" [selected=false]
-      ... option x5 of 9 same-shape siblings elided
+      ... option x6 of 10 same-shape siblings elided
       option "Списки" [selected=false]
       option "Поиск" [selected=false]
     button "Списком" [pressed=true]
@@ -67,6 +68,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -82,7 +84,7 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Обычные правила
-Обычные правилаАльт. таблицыWondrousDreadVault of AgesDragon's V... [namelen=96 namehash=df6717c4]
+Обычные правилаАльт. таблицыWondrousDreadVault of AgesDragon's V... [namelen=113 namehash=e6fe3645]
 Подключить Discord
 Поиск
 Сеткой
@@ -115,6 +117,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm2#/acc
       link "Dread" [url=index.html?as=gm2#/roll/dread]
       link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
       link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
       link "Communities" [url=index.html?as=gm2#/roll/community]
       link "Tables" [url=index.html?as=gm2#/tables]
       link "Lists" [url=index.html?as=gm2#/lists]
@@ -131,7 +134,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm2#/acc
       option "Standard rules" [selected=true]
       option "Alt. tables" [selected=false]
       option "Wondrous" [selected=false]
-      ... option x5 of 9 same-shape siblings elided
+      ... option x6 of 10 same-shape siblings elided
       option "Lists" [selected=false]
       option "Search" [selected=false]
     button "List" [pressed=true]
@@ -164,6 +167,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm2#/acc
 ## en :: controls
 Account: gm2@example.test
 Alt. tables
+Arazo's Artifacts
 AskNotify the ownerDon't notify
 Black and white
 Colour
@@ -185,7 +189,7 @@ Sign out
 Sign out everywhere
 Skip to content
 Standard rules
-Standard rulesAlt. tablesWondrousDreadVault of AgesDragon's Vaul... [namelen=93 namehash=db671663]
+Standard rulesAlt. tablesWondrousDreadVault of AgesDragon's Vaul... [namelen=110 namehash=288ab316]
 Tables
 Terms of use
 Vault of Ages

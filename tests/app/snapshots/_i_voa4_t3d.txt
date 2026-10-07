@@ -19,6 +19,7 @@ RootWebArea "Святой Щит — Генератор лута — Daggerheart
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
@@ -49,6 +50,7 @@ RootWebArea "Святой Щит — Генератор лута — Daggerheart
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
@@ -97,6 +99,7 @@ RootWebArea "Saintly Guard — Daggerheart Loot Generator" [url=#/i/voa4_t3d]
       link "Dread" [url=#/roll/dread]
       link "Vault of Ages" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
@@ -129,6 +132,7 @@ RootWebArea "Saintly Guard — Daggerheart Loot Generator" [url=#/i/voa4_t3d]
 ## en :: controls
 Add to list
 Alt. tables
+Arazo's Artifacts
 Communities
 Copy image
 Copy link
