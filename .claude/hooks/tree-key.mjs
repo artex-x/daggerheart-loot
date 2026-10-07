@@ -8,14 +8,14 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { repoRoot, stateDir, isExempt } from './lib.mjs';
+import { checkoutRoot, stateDir, isExempt } from './lib.mjs';
 
-function checkIndexPath() {
-  return path.join(stateDir(), '.check-index');
+function checkIndexPath(cwd) {
+  return path.join(stateDir(cwd), '.check-index');
 }
 
-function cacheFilePath(name) {
-  return path.join(stateDir(), name);
+function cacheFilePath(name, cwd) {
+  return path.join(stateDir(cwd), name);
 }
 
 /** The real index file of the tree at `root`. In a linked worktree `.git` is
@@ -34,18 +34,19 @@ function indexPath(root) {
 }
 
 /**
- * A content-only fingerprint of the working tree: staged, unstaged and
+ * A content-only fingerprint of the working tree of the checkout that holds
+ * `cwd` (the main checkout without one): staged, unstaged and
  * untracked changes in, gitignored files out, HEAD excluded. Copies the
  * index rather than touching the real one, so this never contends with (or
  * corrupts) the human's own git state. Returns null on any failure - null
  * always means "cannot tell", and callers treat that as allow.
  */
-export function treeKey() {
+export function treeKey(cwd) {
   try {
-    const root = repoRoot();
+    const root = checkoutRoot(cwd);
     const gitIndex = indexPath(root);
     if (!gitIndex || !existsSync(gitIndex)) return null;
-    const copyPath = checkIndexPath();
+    const copyPath = checkIndexPath(cwd);
     copyFileSync(gitIndex, copyPath);
     const env = { ...process.env, GIT_INDEX_FILE: copyPath };
     const add = spawnSync('git', ['add', '-A'], { cwd: root, env, encoding: 'utf8' });
@@ -72,9 +73,9 @@ export function treeKey() {
  * cache file, or null if there is none or the file is unreadable or
  * corrupt. `by` is `observer` (check-observer.mjs saw the output) or `exit`
  * (gate-credit.mjs, after the check's own exit 0). */
-export function readCache(name = '.check-cache.json') {
+export function readCache(name = '.check-cache.json', cwd) {
   try {
-    const raw = readFileSync(cacheFilePath(name), 'utf8');
+    const raw = readFileSync(cacheFilePath(name, cwd), 'utf8');
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed.key === 'string') return parsed;
     return null;
@@ -87,11 +88,12 @@ export function writeCache(
   key,
   name = '.check-cache.json',
   command = 'npm run check',
-  by = 'observer'
+  by = 'observer',
+  cwd
 ) {
   try {
     const payload = { key, at: Math.floor(Date.now() / 1000), command, by };
-    writeFileSync(cacheFilePath(name), JSON.stringify(payload));
+    writeFileSync(cacheFilePath(name, cwd), JSON.stringify(payload));
   } catch {
     // fail open: a lost cache write just means the gate asks again
   }

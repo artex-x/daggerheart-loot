@@ -13,7 +13,7 @@
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { readInput, guard, deny, repoRoot, parseReviewHead } from './lib.mjs';
+import { readInput, guard, deny, checkoutRoot, parseReviewHead } from './lib.mjs';
 
 const TASK_RE = /\bTASK:\s*([A-Za-z0-9][A-Za-z0-9._-]*)/;
 const PLAN_REVIEW_RE = /^\s*-\s*Plan review:\s*(.*)$/;
@@ -126,7 +126,7 @@ guard(() => {
   const m = TASK_RE.exec(String(ti.prompt || ''));
   if (!m) return undefined;
   const id = m[1];
-  const taskDir = path.join(repoRoot(), 'issues', id);
+  const taskDir = path.join(checkoutRoot(input.cwd), 'issues', id);
   let text;
   try {
     text = readFileSync(path.join(taskDir, 'plan.md'), 'utf8');

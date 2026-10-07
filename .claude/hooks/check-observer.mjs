@@ -157,22 +157,22 @@ function responseText(response) {
 /** True when the named cache already holds the current tree key: the
  * check's own exit armed the gate (gate-credit.mjs) although this hook
  * could not attribute the output. */
-function armedByExit(cacheName) {
-  const cache = readCache(cacheName);
+function armedByExit(cacheName, cwd) {
+  const cache = readCache(cacheName, cwd);
   if (!cache || cache.by !== 'exit') return false;
-  const key = treeKey();
+  const key = treeKey(cwd);
   return key !== null && cache.key === key;
 }
 
 /** Writes the cache unless it already holds `key`, so a record that the
  * check's own exit wrote (`by: "exit"`) is kept. */
-function recordPass(key, cacheName, command) {
-  const cache = readCache(cacheName);
+function recordPass(key, cacheName, command, cwd) {
+  const cache = readCache(cacheName, cwd);
   if (cache && cache.key === key) return;
-  writeCache(key, cacheName, command);
+  writeCache(key, cacheName, command, undefined, cwd);
 }
 
-function observeCheckDb(response) {
+function observeCheckDb(response, cwd) {
   if (response && typeof response === 'object' && response.interrupted === true)
     return undefined;
   const exitCode = firstExitCode(response);
@@ -196,7 +196,7 @@ function observeCheckDb(response) {
     );
   }
   if (!/^check:db: PASS\s*$/m.test(text)) {
-    if (armedByExit('.check-db-cache.json')) {
+    if (armedByExit('.check-db-cache.json', cwd)) {
       return speak(EVENT, "npm run check:db: PASS - armed by the check's own exit.");
     }
     return speak(
@@ -204,9 +204,9 @@ function observeCheckDb(response) {
       `npm run check:db: no failure seen${code}, but its final PASS line never reached this hook, so the run cannot be attributed and the commit gate for supabase/ and tests/db/ is not armed. Run it plainly in the foreground, with no pipe and no redirect.`
     );
   }
-  const key = treeKey();
+  const key = treeKey(cwd);
   if (key === null) return undefined; // fail open: nothing to cache against
-  recordPass(key, '.check-db-cache.json', 'npm run check:db');
+  recordPass(key, '.check-db-cache.json', 'npm run check:db', cwd);
   return speak(
     EVENT,
     `npm run check:db: PASS${code}. Commit gate armed for supabase/ and tests/db/.`
@@ -226,7 +226,7 @@ guard(() => {
   if (input.tool_input && input.tool_input.run_in_background === true) return undefined;
 
   if (isCheckInvocation(command, CHECK_DB_INVOCATION_RE)) {
-    return observeCheckDb(input.tool_response);
+    return observeCheckDb(input.tool_response, input.cwd);
   }
   // `npm run check` arms from Bash only: its attribution rests on the Bash
   // result shape measured in the header above.
@@ -254,7 +254,7 @@ guard(() => {
   }
 
   if (!COVERAGE_SUMMARY_RE.test(stdout) || !COVERAGE_LINES_RE.test(stdout)) {
-    if (armedByExit('.check-cache.json')) {
+    if (armedByExit('.check-cache.json', input.cwd)) {
       return speak(EVENT, "npm run check: PASS - armed by the check's own exit.");
     }
     return speak(
@@ -263,10 +263,10 @@ guard(() => {
     );
   }
 
-  const key = treeKey();
+  const key = treeKey(input.cwd);
   if (key === null) return undefined; // fail open: nothing to cache against
 
-  recordPass(key, '.check-cache.json', 'npm run check');
+  recordPass(key, '.check-cache.json', 'npm run check', input.cwd);
   return speak(
     EVENT,
     `npm run check: PASS${code}. Commit gate armed for this tree - it stays armed until a covered file changes.`

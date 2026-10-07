@@ -20,6 +20,7 @@ import {
   speak,
   once,
   repoRoot,
+  checkoutRoot,
   relPath,
   pathKey,
   isExempt,
@@ -449,7 +450,7 @@ function evaluateReviewerWrite(quotedSegs, agentType) {
 const TASK_PATH_RE = /^issues\/([^/]+)(?:\/(.+))?$/;
 const BARE_ISSUES = 'issues';
 
-function orphanTaskTargets(segList, cwd) {
+function orphanTaskTargets(segList, cwd, root) {
   const targets = new Set();
   for (const segment of segList) {
     const info = segmentInfo(segment);
@@ -465,7 +466,7 @@ function orphanTaskTargets(segList, cwd) {
     if (!candidateTokens) continue;
     for (const token of candidateTokens.filter((t) => !t.startsWith('-'))) {
       const stripped = token.endsWith('/') ? token.slice(0, -1) : token;
-      const rel = relPath(stripped, cwd);
+      const rel = relPath(stripped, cwd, root);
       if (!rel) continue;
       const key = pathKey(rel);
       if (key === BARE_ISSUES) {
@@ -545,8 +546,8 @@ function hasLiveCitation(content, needle) {
  * paths it is retiring would otherwise cite - and so deny - its own
  * instruction), and any hit with no live (boundary-matched, non-sha-
  * qualified) occurrence of `needle` - see hasLiveCitation. */
-function citingLines(needle) {
-  const out = git(['grep', '-n', '--fixed-strings', '--', needle]);
+function citingLines(needle, root) {
+  const out = git(['grep', '-n', '--fixed-strings', '--', needle], { cwd: root });
   if (out === null) return [];
   const hits = [];
   for (const row of out.split('\n')) {
@@ -565,11 +566,12 @@ function citingLines(needle) {
 }
 
 function evaluateOrphanTask(segList, cwd) {
-  for (const target of orphanTaskTargets(segList, cwd)) {
+  const root = checkoutRoot(cwd);
+  for (const target of orphanTaskTargets(segList, cwd, root)) {
     if (target === BARE_ISSUES) {
       return { id: 'orphan-task', message: MSG.orphanTaskBare };
     }
-    const hits = citingLines(target);
+    const hits = citingLines(target, root);
     if (hits.length) return { id: 'orphan-task', message: MSG.orphanTask(target, hits) };
   }
   return null;
@@ -588,25 +590,23 @@ function evaluateOrphanTask(segList, cwd) {
 
 const MIGRATIONS_KEY = MIGRATIONS_DIR.slice(0, -1);
 
-/** Returns the repo-relative paths of every file under `rel`, a directory. */
-function filesUnder(rel) {
+/** Returns the root-relative paths of every file under `rel`, a directory. */
+function filesUnder(rel, root) {
   let entries;
   try {
-    entries = readdirSync(path.join(repoRoot(), rel), { recursive: true, withFileTypes: true });
+    entries = readdirSync(path.join(root, rel), { recursive: true, withFileTypes: true });
   } catch {
     return [];
   }
   return entries
     .filter((e) => e.isFile())
-    .map((e) =>
-      path.relative(repoRoot(), path.join(e.parentPath, e.name)).split(path.sep).join('/')
-    );
+    .map((e) => path.relative(root, path.join(e.parentPath, e.name)).split(path.sep).join('/'));
 }
 
 /** Returns the migration paths that `rel` names: itself, the files under a
  * directory at, under or above supabase/migrations, or the matches of a
  * glob in its last segment. */
-function expandMigrationToken(rel, { expandDirectory }) {
+function expandMigrationToken(rel, { expandDirectory, root }) {
   const key = pathKey(rel);
   const slash = rel.lastIndexOf('/');
   const last = rel.slice(slash + 1);
@@ -621,7 +621,7 @@ function expandMigrationToken(rel, { expandDirectory }) {
     const re = new RegExp(`^${source}$`, process.platform === 'win32' ? 'i' : '');
     let names;
     try {
-      names = readdirSync(path.join(repoRoot(), parent));
+      names = readdirSync(path.join(root, parent));
     } catch {
       return [];
     }
@@ -636,16 +636,17 @@ function expandMigrationToken(rel, { expandDirectory }) {
     key === '.' ||
     MIGRATIONS_DIR.startsWith(`${key}/`);
   if (expandDirectory && holds) {
-    const stat = statSync(path.join(repoRoot(), rel), { throwIfNoEntry: false });
+    const stat = statSync(path.join(root, rel), { throwIfNoEntry: false });
     if (stat && stat.isDirectory()) {
       const base = key.startsWith(MIGRATIONS_DIR) ? rel : MIGRATIONS_KEY;
-      return filesUnder(base).filter((p) => pathKey(p).startsWith(MIGRATIONS_DIR));
+      return filesUnder(base, root).filter((p) => pathKey(p).startsWith(MIGRATIONS_DIR));
     }
   }
   return key.startsWith(MIGRATIONS_DIR) && key.length > MIGRATIONS_DIR.length ? [rel] : [];
 }
 
 function migrationTargets(segList, cwd) {
+  const root = checkoutRoot(cwd);
   const targets = [];
   for (const segment of segList) {
     const info = segmentInfo(segment);
@@ -662,10 +663,10 @@ function migrationTargets(segList, cwd) {
     if (!candidates) continue;
     const positional = candidates.filter((t) => !t.startsWith('-'));
     for (const [i, token] of positional.entries()) {
-      const rel = relPath(token, cwd);
+      const rel = relPath(token, cwd, root);
       if (!rel) continue;
       const destination = verb === 'mv' && i === positional.length - 1 && i > 0;
-      targets.push(...expandMigrationToken(rel, { expandDirectory: !destination }));
+      targets.push(...expandMigrationToken(rel, { expandDirectory: !destination, root }));
     }
   }
   return targets;
@@ -895,12 +896,12 @@ function evaluateCommitGate(segList, cwd, quotedSegs = segList) {
   // nothing npm run check or check:db reads
   if (covered.length === 0 && dbPaths.length === 0) return null;
 
-  const key = treeKey();
+  const key = treeKey(cwd);
   if (key === null) return null; // fail open: cannot fingerprint the tree
 
-  const cache = readCache();
+  const cache = readCache(undefined, cwd);
   const needCheck = covered.length > 0 && !(cache && cache.key === key);
-  const dbCache = readCache('.check-db-cache.json');
+  const dbCache = readCache('.check-db-cache.json', cwd);
   const needDb = dbPaths.length > 0 && !(dbCache && dbCache.key === key);
   if (!needCheck && !needDb) return null; // already passing
 
@@ -1210,9 +1211,10 @@ function writesTestMigrations(info, cwd) {
   return cloudPushChangesMigrations(info, cwd);
 }
 
-/** Returns every issues/<task>/reviews/*.md as `{ task, file, full }`. */
-function reviewReports() {
-  const issuesDir = path.join(repoRoot(), 'issues');
+/** Returns every issues/<task>/reviews/*.md of the checkout that holds
+ * `cwd` as `{ task, file, full }`. */
+function reviewReports(cwd) {
+  const issuesDir = path.join(checkoutRoot(cwd), 'issues');
   const list = (dir, opts) => {
     try {
       return readdirSync(dir, opts);
@@ -1257,7 +1259,7 @@ function migrationsApproved(cwd) {
   if (head === null) return null;
   const trees = new Map();
   const seen = [];
-  for (const { task, file, full } of reviewReports()) {
+  for (const { task, file, full } of reviewReports(cwd)) {
     const report = reviewHeadOf(full);
     seen.push(`${task}/${file}: ${report.verdict || 'no Verdict: line'}`);
     if (report.verdict !== 'approve' || !report.reviewed) continue;
@@ -1312,13 +1314,13 @@ function touchesLocalStack(rest) {
   return !hosted;
 }
 
-function evaluateStackLock(segList) {
+function evaluateStackLock(segList, cwd) {
   for (const segment of segList) {
     const info = segmentInfo(segment);
     if (!info) continue;
     const rest = isSupabaseCall(info.tokens);
     if (!rest || !touchesLocalStack(rest)) continue;
-    const lock = foreignStackLock();
+    const lock = foreignStackLock(Date.now(), checkoutRoot(cwd));
     if (lock) return { id: 'stack-lock', message: MSG.stackLock(lock) };
     return null;
   }
@@ -1565,7 +1567,7 @@ function gitleaksCommand() {
 
 /** Runs one gitleaks scan: the index with `staged`, else the unstaged
  * working-tree diff. Returns a verdict, or null when the scan is clean. */
-function gitleaksScan(staged) {
+function gitleaksScan(staged, cwd) {
   const [program, ...prefix] = gitleaksCommand();
   // Two scans (`-a`, a pathspec) must both finish inside the hook's 10 s.
   const timeout = Number(process.env.LOOT_GITLEAKS_TIMEOUT_MS) || 4000;
@@ -1590,7 +1592,7 @@ function gitleaksScan(staged) {
       '-',
       '.'
     ],
-    { cwd: repoRoot(), encoding: 'utf8', timeout }
+    { cwd: checkoutRoot(cwd), encoding: 'utf8', timeout }
   );
   if (r.error) {
     if (r.error.code === 'ENOENT') return { type: 'speak', message: MSG.gitleaksMissing };
@@ -1614,14 +1616,14 @@ function gitleaksScan(staged) {
   return { type: 'speak', message: MSG.gitleaksFailed(`exit ${r.status}`) };
 }
 
-function evaluateGitleaks(segList, quotedSegs = segList) {
+function evaluateGitleaks(segList, cwd, quotedSegs = segList) {
   const info = commitInfo(segList, quotedSegs);
   if (!info.isCommit || info.hasDryRun) return null;
-  const first = gitleaksScan(true);
+  const first = gitleaksScan(true, cwd);
   if (first) return first;
   // `-a` and a pathspec also commit unstaged changes; the two scans together
   // cover whatever any commit form can take from the tree.
-  if (info.hasAllFlag || info.pathspec.length) return gitleaksScan(false);
+  if (info.hasAllFlag || info.pathspec.length) return gitleaksScan(false, cwd);
   return null;
 }
 
@@ -2077,7 +2079,7 @@ guard(() => {
   const migrationPush = evaluateMigrationPush(segList, cwd);
   if (migrationPush) return deny(event, migrationPush.message);
 
-  const stackLock = evaluateStackLock(segList);
+  const stackLock = evaluateStackLock(segList, cwd);
   if (stackLock) return deny(event, stackLock.message);
 
   const ownerRestore = evaluateOwnerRestore(quotedSegs);
@@ -2097,7 +2099,7 @@ guard(() => {
 
   // A gitleaks note (not scanned) rides along with whatever speaks later,
   // or speaks alone; any deny below still wins.
-  const leaks = evaluateGitleaks(segList, quotedSegs);
+  const leaks = evaluateGitleaks(segList, cwd, quotedSegs);
   if (leaks && leaks.type === 'deny') return deny(event, leaks.message);
   const note = leaks ? leaks.message : null;
   const say = (message) => speak(event, note ? `${note}\n${message}` : message);

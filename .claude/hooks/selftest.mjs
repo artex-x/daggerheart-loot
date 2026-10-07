@@ -5037,6 +5037,154 @@ function testMigrationPush() {
   }
 }
 
+// ---------- worktree gates read the session's checkout (#308-#313) ----------
+//
+// A worktree session runs the main checkout's hook copy, so LOOT_HOOK_ROOT
+// stays scratchRoot while cwd is the worktree.
+
+async function testWorktreeGates() {
+  const wt = path.join(scratchRoot, '.claude', 'worktrees', 'x');
+  const wtState = path.join(wt, '.claude');
+  const saved = [process.env.LOOT_HOOK_ROOT, process.env.LOOT_HOOK_STATE_DIR];
+  gitSh(['worktree', 'add', '-q', '--detach', wt]);
+  try {
+    // The real .claude/.gitignore keeps the gate state out of the tree key.
+    fs.mkdirSync(wtState, { recursive: true });
+    fs.writeFileSync(
+      path.join(wtState, '.gitignore'),
+      '.check-cache.json\n.check-index\n.check-db-cache.json\n'
+    );
+    fs.appendFileSync(path.join(wt, 'app/src/lib/x.ts'), '// worktree change\n');
+    gitSh(['add', 'app/src/lib/x.ts'], wt);
+    const { treeKey, writeCache } = await importTreeKey();
+    const commit = () =>
+      runHook('bash-guard.mjs', bashPayload('git commit -m "chore: wt"', { cwd: wt }));
+
+    // The worktree's own gate-credit copy: its repoRoot() is the worktree.
+    process.env.LOOT_HOOK_ROOT = wt;
+    process.env.LOOT_HOOK_STATE_DIR = wtState;
+    writeCache(treeKey(), '.check-cache.json', 'npm run check', 'exit');
+    process.env.LOOT_HOOK_ROOT = scratchRoot;
+    process.env.LOOT_HOOK_STATE_DIR = scratchState;
+    clearCache();
+    {
+      const result = commit();
+      check('#308 a worktree pass arms a worktree commit', isSilent(result), result.stdout);
+    }
+
+    fs.rmSync(path.join(wtState, '.check-cache.json'), { force: true });
+    writeCache(treeKey(), '.check-cache.json', 'npm run check', 'exit');
+    {
+      const result = commit();
+      check(
+        '#309 a pass recorded only in the main checkout does not arm a worktree commit',
+        isDeny(result) && denyReason(result).includes('has not passed for this working tree'),
+        result.stdout
+      );
+    }
+    clearCache();
+    {
+      const response = { stdout: 'x\n' + COVERAGE_SUMMARY, stderr: '', interrupted: false };
+      runHook('check-observer.mjs', {
+        ...observerPayload('Bash', 'npm run check', response),
+        cwd: wt
+      });
+      const file = path.join(wtState, '.check-cache.json');
+      const cache = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+      check(
+        "#311 an attributed PASS in a worktree writes the worktree's cache",
+        cache && cache.key === treeKey(wt) && !fs.existsSync(cacheFilePath()),
+        JSON.stringify(cache)
+      );
+    }
+    gitSh(['reset', '-q'], wt);
+
+    try {
+      writeScratchLock({
+        task: 'wt-task',
+        branch: 'main',
+        root: wt,
+        command: 'npm run check:db',
+        at: new Date().toISOString(),
+        nonce: '0123456789abcdef'
+      });
+      const reset = (cwd) =>
+        runHook('bash-guard.mjs', bashPayload('npx supabase db reset --local', { cwd }));
+      const own = reset(wt);
+      check("#312 rule 2u: the worktree's own lock allows it", !isDeny(own), denyReason(own));
+      const main = reset(scratchRoot);
+      check('#312 rule 2u: the worktree lock is foreign to the main checkout', isDeny(main));
+    } finally {
+      clearScratchLock();
+    }
+
+    fs.mkdirSync(path.join(wt, 'supabase', 'migrations'), { recursive: true });
+    fs.writeFileSync(path.join(wt, 'supabase/migrations/20261104120000_wt.sql'), 'select 4;\n');
+    gitSh(['add', 'supabase/migrations/20261104120000_wt.sql'], wt);
+    gitCommit('chore: a worktree migration', wt);
+    const reviewed = gitSh(['rev-parse', 'HEAD'], wt).trim();
+    const push = () =>
+      runHook(
+        'bash-guard.mjs',
+        bashPayload('npx supabase db push --project-ref rdjxcjkhsklhprmzxajq', { cwd: wt })
+      );
+    {
+      const result = push();
+      check(
+        '#310 setup: no worktree report denies the push',
+        isDeny(result) && denyReason(result).includes('seen: none'),
+        denyReason(result)
+      );
+    }
+    fs.mkdirSync(path.join(wt, 'issues', 'x', 'reviews'), { recursive: true });
+    fs.writeFileSync(
+      path.join(wt, 'issues', 'x', 'reviews', 'B9.md'),
+      `Verdict: approve\nReviewed: ${reviewed}\nScope: batch B9\n`
+    );
+    {
+      const result = push();
+      check(
+        "#310 rule 2r finds a report in the worktree's issues/",
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+  } finally {
+    ['LOOT_HOOK_ROOT', 'LOOT_HOOK_STATE_DIR'].forEach((name, i) => {
+      if (saved[i] === undefined) Reflect.deleteProperty(process.env, name);
+      else process.env[name] = saved[i];
+    });
+    clearCache();
+    spawnSync('git', ['worktree', 'remove', '--force', wt], {
+      cwd: scratchRoot,
+      encoding: 'utf8'
+    });
+    fs.rmSync(path.join(scratchRoot, '.claude'), { recursive: true, force: true });
+    spawnSync('git', ['worktree', 'prune'], { cwd: scratchRoot, encoding: 'utf8' });
+  }
+
+  // Only a `.git` file marks a checkout: an empty nested `.git` directory
+  // made the commit gate and gitleaks fail open.
+  const sub = path.join(scratchRoot, 'sub');
+  fs.mkdirSync(path.join(sub, '.git'), { recursive: true });
+  gitSh(['add', 'app/src/lib/x.ts']);
+  clearCache();
+  try {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('git commit -m "chore: sub"', { cwd: sub })
+    );
+    check(
+      '#313 an empty nested .git directory does not open the commit gate',
+      isDeny(result) && denyReason(result).includes('has not passed for this working tree'),
+      result.stdout
+    );
+  } finally {
+    gitSh(['reset', '-q']);
+    fs.rmSync(sub, { recursive: true, force: true });
+  }
+}
+
 // ---------- fail-open contract, all twelve scripts (#56-58) ----------
 
 function testFailOpen() {
@@ -5110,6 +5258,7 @@ async function main() {
     testHostGuards();
     testReviewerGuards();
     testMigrationPush();
+    await testWorktreeGates();
     testLongCheck();
     testBackgroundCheck();
     testBackgroundCheckScope();

@@ -130,17 +130,17 @@ export function releaseStackLock(nonce) {
 }
 
 /** Returns the fresh lock that another checkout holds, else null. A
- * hand-written lock is always foreign; a lock whose `root` is this
- * repoRoot() (case folded) is this checkout's own. */
-export function foreignStackLock(now = Date.now()) {
+ * hand-written lock is always foreign; a lock whose `root` is `root`
+ * (case folded; the session's checkout) is this checkout's own. */
+export function foreignStackLock(now = Date.now(), root = repoRoot()) {
   try {
     const lock = readStackLock(now);
     if (!lock || lock.stale) return null;
-    const root = lock.holder.root;
+    const holderRoot = lock.holder.root;
     if (
       typeof lock.holder.raw !== 'string' &&
-      typeof root === 'string' &&
-      pathKey(path.resolve(root)) === pathKey(path.resolve(repoRoot()))
+      typeof holderRoot === 'string' &&
+      pathKey(path.resolve(holderRoot)) === pathKey(path.resolve(root))
     ) {
       return null;
     }

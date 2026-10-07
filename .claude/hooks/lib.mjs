@@ -77,7 +77,8 @@ export function repoRoot() {
   return path.resolve(path.dirname(here), '..', '..');
 }
 
-/** Returns the nearest ancestor of `cwd` with a `.git` entry when it is
+/** Returns the nearest ancestor of `cwd` with a `.git` file (a linked
+ * worktree) when it is
  * repoRoot() or inside it, else repoRoot(). Why a worktree session needs
  * it: .claude/README.md, "Hooks", the edit-guard row. */
 export function checkoutRoot(cwd) {
@@ -90,8 +91,10 @@ export function checkoutRoot(cwd) {
       const dirCmp = process.platform === 'win32' ? dir.toLowerCase() : dir;
       const rel = path.relative(rootCmp, dirCmp);
       if (rel.startsWith('..') || path.isAbsolute(rel)) return root;
-      if (existsSync(path.join(dir, '.git'))) return dir;
       if (rel === '') return root;
+      // Only a linked worktree, whose `.git` is a file: an empty nested `.git`
+      // directory made the commit gate and gitleaks fail open.
+      if (statSync(path.join(dir, '.git'), { throwIfNoEntry: false })?.isFile()) return dir;
       dir = path.dirname(dir);
     }
   } catch {
@@ -99,7 +102,12 @@ export function checkoutRoot(cwd) {
   }
 }
 
-export function stateDir() {
+/** Returns the hook state directory of the checkout that holds `cwd`: a
+ * worktree keeps its gate caches in its own .claude, where its own
+ * gate-credit copy writes them. Without `cwd`, the main checkout's. */
+export function stateDir(cwd) {
+  const checkout = checkoutRoot(cwd);
+  if (checkout !== repoRoot()) return path.join(checkout, '.claude');
   if (process.env.LOOT_HOOK_STATE_DIR) return process.env.LOOT_HOOK_STATE_DIR;
   return path.join(repoRoot(), '.claude');
 }

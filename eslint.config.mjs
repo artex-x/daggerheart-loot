@@ -21,6 +21,8 @@ export default ts.config(
          machine-written file is noise for no behaviour change. */
       'data.js',
       'i/**',
+      /* Untracked artwork scratch, gitignored for the same reason (.gitignore). */
+      'work/**',
       /* Everything under .claude/ except the hooks themselves: agent
          wiring (settings, prompts, skills) that is not JS, plus
          `.claude/worktrees/`, a dispatched agent's own isolated checkout
