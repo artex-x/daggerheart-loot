@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>R9 m39 - the item page: print, announcements and the owner's options</title>
+    <style>
+      /* R9 refresh mocks m37-m39: the token block of m37, plus RecordCard, the toast and the
+         sign-in prompt. The base is R7h's m03 (#/h/<uuid> as a reader). `.new` (dashed violet)
+         marks an R9 proposal; `.opt` (dashed amber) marks a shape only one option of a
+         question draws. */
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --item: #7a8ee0;
+        --r: 14px;
+        --r-sm: 9px;
+        --ink-on-gold: #1a1206;
+        --ui: 'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        --mono: ui-monospace, Menlo, Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--txt);
+        font: 15.5px/1.6 var(--ui);
+      }
+      a {
+        color: var(--gold-soft);
+      }
+      .mockbar {
+        max-width: 1420px;
+        margin: 20px auto 10px;
+        padding: 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .mockbar h1 {
+        font-size: 18px;
+        color: var(--txt);
+        margin: 0 0 4px;
+      }
+      .mockbar h2 {
+        font-size: 15px;
+        color: var(--txt);
+        margin: 18px 0 4px;
+      }
+      .mockbar p {
+        margin: 4px 0;
+        max-width: 120ch;
+      }
+      .pair {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 28px;
+        max-width: 1420px;
+        margin: 0 auto 40px;
+        padding: 0 16px;
+      }
+      .frame {
+        border: 1px dashed #5a5070;
+        border-radius: 6px;
+        padding: 0 0 18px;
+        flex: 0 0 360px;
+        width: 360px;
+      }
+      .frame > .cap {
+        display: block;
+        font: 600 12px/1.4 var(--mono);
+        color: #c8a0ff;
+        padding: 6px 10px;
+        border-bottom: 1px dashed #5a5070;
+        margin-bottom: 16px;
+        overflow-wrap: anywhere;
+      }
+      .in {
+        padding: 0 16px;
+      }
+      .new {
+        outline: 2px dashed #c8a0ff;
+        outline-offset: 3px;
+      }
+      .opt {
+        outline: 2px dashed #e0b050;
+        outline-offset: 3px;
+      }
+      .note {
+        border: 1px dashed #c8a0ff;
+        background: rgb(200 160 255 / 8%);
+        color: #d9c8f5;
+        font-size: 12.5px;
+        padding: 6px 10px;
+        margin: 14px 0 0;
+        border-radius: 4px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 6px 14px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--line2);
+        background: var(--surface2);
+        color: var(--txt);
+        font: 600 13.5px/1.2 var(--ui);
+      }
+      .btn.gold {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .btn.ghost {
+        background: transparent;
+      }
+      .btn.off {
+        opacity: 0.55;
+      }
+      .btnrow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .badge {
+        display: inline-block;
+        font: 650 11px/1.4 var(--ui);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--line2);
+        color: var(--muted);
+        margin-right: 6px;
+      }
+      .badge.kind {
+        color: var(--item);
+        border-color: var(--item);
+      }
+      .card {
+        border: 1px solid var(--line2);
+        border-radius: var(--r);
+        background: var(--surface);
+        padding: 14px 16px;
+      }
+      .card h3 {
+        margin: 8px 0 6px;
+        font-size: 20px;
+        overflow-wrap: anywhere;
+      }
+      .rel {
+        font-size: 13.5px;
+        margin: 3px 0;
+      }
+      .rel .lab {
+        font-size: 11.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted2);
+        margin-right: 6px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .small {
+        font-size: 12.5px;
+        margin: 0;
+      }
+      .sr {
+        margin-top: 12px;
+        border: 1px dotted #c8a0ff;
+        color: #c8a0ff;
+        font: 600 12px/1.4 var(--mono);
+        padding: 4px 8px;
+      }
+      .toast {
+        margin-top: 14px;
+        background: var(--surface2);
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        padding: 10px 12px;
+        font-size: 13.5px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        overflow-wrap: anywhere;
+      }
+      .prompt {
+        border: 1px solid var(--line2);
+        border-radius: var(--r-sm);
+        background: var(--bg2);
+        padding: 12px;
+        margin-top: 10px;
+        font-size: 13.5px;
+      }
+      .switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13.5px;
+      }
+      .switch i {
+        width: 34px;
+        height: 20px;
+        border-radius: 999px;
+        background: var(--gold);
+        position: relative;
+      }
+      .switch i::after {
+        content: '';
+        position: absolute;
+        right: 3px;
+        top: 3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--ink-on-gold);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>
+        m39 - <code>#/h/&lt;uuid&gt;</code> after R9: «Печать» for a reader, «Обновлено N
+        назад», the 45 s re-read, the announcements, and the shapes of Q9-6 and Q9-9 (plan 3.6,
+        3.9 and 9; owner's answers of 2026-10-07)
+      </h1>
+      <p>
+        The base is R7h's m03 (<code>issues/persist-7h-homebrew-page/mocks/</code>): a reader's
+        card with the author's relations. Violet is what B9.1 builds; amber is a shape the owner
+        placed in R7h B7h.4 (Q9-9 A) or did not take (Q9-6 B and C).
+      </p>
+    </div>
+
+    <div class="pair">
+      <section class="frame">
+        <span class="cap">#/h/&lt;gm1 bedroll uuid&gt; as gm2 - B9.1</span>
+        <div class="in">
+          <div class="card">
+            <span class="badge kind">Предмет</span
+            ><span class="badge">Привал у костра (HB)</span>
+            <h3>Скатка следопыта</h3>
+            <p class="muted small">Предмет другого игрока</p>
+            <p class="muted small new" style="margin: 4px 0 6px">Обновлено 3 дня назад</p>
+            <p style="font-size: 14px; margin: 0 0 8px">
+              Как Скатка путника; кроме того, вы просыпаетесь при первом звуке опасности.
+            </p>
+            <div class="rel">
+              <span class="lab">Получается из</span><a href="#">Скатка путника (HB)</a>
+            </div>
+            <div class="rel">
+              <span class="lab">Улучшается до</span><a href="#">Скатка стража (HB)</a>
+            </div>
+            <div class="btnrow">
+              <span class="btn gold">Отправить</span><span class="btn ghost">Текст</span>
+            </div>
+            <div class="btnrow">
+              <span class="btn gold">Добавить в список</span
+              ><span class="btn ghost new">Печать</span
+              ><span class="btn ghost">Сохранить себе</span>
+            </div>
+            <p class="muted small">
+              Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.
+            </p>
+          </div>
+          <div class="sr new">status region (hidden): «Предмет обновлён» after a re-read</div>
+          <p class="note">
+            «Печать» goes to <code>#/print/h/&lt;uuid&gt;</code> (m37); R7h draws none for a
+            reader until R9 (plan-B7h.1-14). Order: the primary action first, then «Печать», as
+            the author's row, then «Сохранить себе». The hidden region says «Предмет обновлён»
+            when a re-read changes what the card draws, and «Предмет не найден» when the item
+            went while the page was open - D65's rule on the item page.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame">
+        <span class="cap">B9.1, owner's Q9-7 B and Q9-8 B: after the author's edit</span>
+        <div class="in">
+          <div class="card">
+            <span class="badge kind">Предмет</span
+            ><span class="badge">Привал у костра (HB)</span>
+            <h3>Скатка следопыта</h3>
+            <p class="muted small">Предмет другого игрока</p>
+            <p class="muted small new" style="margin: 4px 0 6px">Обновлено только что</p>
+            <p style="font-size: 14px; margin: 0 0 8px">
+              Как Скатка путника; кроме того, вы просыпаетесь у костра…
+            </p>
+            <div class="btnrow">
+              <span class="btn gold">Добавить в список</span
+              ><span class="btn ghost">Печать</span
+              ><span class="btn ghost">Сохранить себе</span>
+            </div>
+          </div>
+          <div class="sr new">status region (hidden): «Предмет обновлён»</div>
+          <p class="note">
+            The page re-reads every 45 s while it is open, signed out too (Q9-7 B), so the
+            author's edit shows within 45 s; the card redraws and the region says «Предмет
+            обновлён». «Обновлено N назад» (Q9-8 B) is the line <code>#/s/</code> draws, from
+            <code>updated_at</code> in <code>get_homebrew_item</code>'s answer (plan 3.9: R7h
+            B7h.3 recommended, else R9 <code>B9.0</code>); an answer without the key draws no
+            line.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame">
+        <span class="cap">Q9-9 A: R7h B7h.4 - «Сохранить себе» signed out, then saved</span>
+        <div class="in">
+          <div class="btnrow">
+            <span class="btn gold">Добавить в список</span><span class="btn ghost">Печать</span
+            ><span class="btn ghost opt" aria-expanded="true">Сохранить себе</span>
+          </div>
+          <div class="prompt opt">
+            Войдите, и копия предмета сохранится в «Мои предметы».
+            <div class="btnrow"><span class="btn gold">Войти через Google</span></div>
+          </div>
+          <p class="muted small" style="margin-top: 14px">
+            After the sign-in, back on the page:
+          </p>
+          <div class="btnrow">
+            <span class="btn gold">Добавить в список</span><span class="btn ghost">Печать</span
+            ><span class="btn ghost off opt">Сохранено</span>
+          </div>
+          <div class="toast opt">
+            Предмет «Скатка следопыта» сохранён в «Мои предметы»
+            <span class="btn ghost" style="min-height: 28px">Изменить</span>
+          </div>
+          <p class="note">
+            (a) the prompt and the copy made by itself after the sign-in; (b) «Сохранено»,
+            disabled until the page is left, so a second press makes no second copy; (d) the
+            toast's «Изменить» opens the copy in a new tab. The owner placed them in R7h B7h.4
+            (Q9-9 A); R9 builds only what B7h.4 ships without.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame">
+        <span class="cap">Q9-9 A (c): R7h B7h.4 - on a row of the reader's own list</span>
+        <div class="in">
+          <div class="card">
+            <span class="badge kind">Предмет</span
+            ><span class="badge">Привал у костра (HB)</span>
+            <h3>Скатка следопыта</h3>
+            <div class="btnrow">
+              <span class="btn gold">Добавить в список</span
+              ><span class="btn ghost">Сохранить себе</span>
+            </div>
+            <p class="muted small opt">
+              Копия попадёт в «Хоумбрю», а эта строка списка будет вести на неё.
+            </p>
+          </div>
+          <div class="toast opt">
+            Предмет «Скатка следопыта» сохранён в «Мои предметы», строка списка ведёт на копию
+            <span class="btn ghost" style="min-height: 28px">Изменить</span>
+          </div>
+          <p class="note">
+            R7h relinks the row to the copy; these two lines say so before and after the press.
+            (e) While the reader's own items still load, the press says «Ваши предметы ещё
+            загружаются - повторите через секунду.» and writes nothing.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame">
+        <span class="cap">Q9-6 A (owner's answer): #/i/hb_... as gm1 - no share panel</span>
+        <div class="in">
+          <div class="card">
+            <span class="badge kind">Предмет</span
+            ><span class="badge">Привал у костра (HB)</span>
+            <h3>Скатка следопыта</h3>
+            <div class="btnrow">
+              <span class="btn gold">Отправить</span><span class="btn ghost">Текст</span>
+            </div>
+            <div class="btnrow">
+              <span class="btn gold">Добавить в список</span
+              ><span class="btn ghost">Печать</span><span class="btn ghost">Изменить</span>
+            </div>
+          </div>
+          <p class="note">
+            Taken (owner, 2026-10-07). «Отправить» and the copied address carry
+            <code>#/h/&lt;uuid&gt;</code>. Anybody with the address reads the item, for as long
+            as the item exists; the privacy pages say so (R7h B7h.4). Lost from the 2026-10-02
+            design: «Удалить ссылку» (stop access and keep the item), a new link after that, and
+            the panel's hint (old m30, m31).
+          </p>
+        </div>
+      </section>
+
+      <section class="frame">
+        <span class="cap">Q9-6 B or C (not taken): the editor of an own item</span>
+        <div class="in">
+          <div class="card">
+            <h3 style="font-size: 17px">Скатка следопыта</h3>
+            <p class="switch opt"><i></i>Открыт по ссылке</p>
+            <p class="muted small opt">
+              Выключите, и предмет перестанет открываться у других; в чужих списках строка
+              покажет «Предмет недоступен».
+            </p>
+            <div class="btnrow" style="margin-top: 16px">
+              <span class="btn ghost opt">Новая ссылка</span>
+            </div>
+            <p class="muted small opt">
+              Старая ссылка перестанет открывать предмет; чужие списки сохранят его.
+            </p>
+          </div>
+          <p class="note">
+            B: a switch «Открыт по ссылке» (off: <code>get_homebrew_item</code> answers nothing
+            to others; their list rows draw a missing item). C: «Новая ссылка» gives the item a
+            new id (the lists that link it follow; the old address stops). Each needs a
+            migration and a definer change; both are drawn only to size the question.
+          </p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

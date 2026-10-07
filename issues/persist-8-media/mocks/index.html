@@ -8,37 +8,60 @@
   <body>
     <h1>R8 mocks - persist-8-media</h1>
     <p>
-      For the owner's review before dispatch (R8 ships after R9). Dashed violet outlines mark
-      what is new; a violet dashed square is a picture held in memory, not saved. Plan:
-      <code>issues/persist-8-media/plan.md</code>; owner answers of 2026-10-02: its section 9;
-      owner steps: 9.1.
+      For the owner's review before dispatch (R8 ships after R7h and R9). Dashed violet outlines
+      mark what is new; a violet dashed square is a picture held in memory, not saved. Plan:
+      <code>issues/persist-8-media/plan.md</code>; the open question Q8-9 is its section 9.
     </p>
+    <h2>Current (refresh of 2026-10-07)</h2>
     <ul>
       <li>
         <a href="m40-editor-picture-field.html"
           >m40 - the editor's «Картинка» field, #/homebrew/hb_emberaxeaaaaaaaa as gm1</a
         >
+        (unchanged; its "the old file is deleted at the save" note is now the database's)
       </li>
-      <li><a href="m41-crop-dialog.html">m41 - the square crop dialog</a></li>
+      <li><a href="m41-crop-dialog.html">m41 - the square crop dialog</a> (unchanged)</li>
       <li>
         <a href="m42-picture-from-an-item.html"
           >m42 - «Выбрать из предметов» (Q8-3 B, owner 2026-10-02)</a
         >
+        (unchanged)
       </li>
+      <li>
+        <a href="m46-live-surfaces.html"
+          >m46 - the picture on «Мои предметы», #/h/&lt;uuid&gt;, a live list link, the change
+          log and «Сохранить себе»</a
+        >
+      </li>
+      <li>
+        <a href="m47-print-routes-with-pictures.html"
+          >m47 - print with own pictures on R9's #/print/s/ and #/print/h/</a
+        >
+      </li>
+      <li>
+        <a href="m48-account-files-and-texts.html"
+          >m48 - account deletion (Q8-9 A and B), the data zip, the editor's new refusal, the
+          privacy paragraph</a
+        >
+      </li>
+    </ul>
+    <h2>Superseded (the design of 2026-10-02, kept for the record)</h2>
+    <ul>
       <li>
         <a href="m43-pictures-everywhere.html"
-          >m43 - the picture on rows, cards, lists, #/h/ and a missing file</a
+          >m43 - rows, cards, #/h/&lt;token&gt;, a frozen copy</a
         >
+        - replaced by m46 (no frozen copies after R7h)
       </li>
       <li>
-        <a href="m44-print-with-a-picture.html"
-          >m44 - print: colour card with the own picture; black-and-white unchanged</a
-        >
+        <a href="m44-print-with-a-picture.html">m44 - print colour and black-and-white</a> -
+        still valid; m47 adds R9's routes
       </li>
       <li>
         <a href="m45-account-deletion-and-files.html"
-          >m45 - #/account: deletion with pictures, and the data zip without them</a
+          >m45 - deletion through the Edge Function</a
         >
+        - Q8-9 B; m48 draws A beside it
       </li>
     </ul>
   </body>

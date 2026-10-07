@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>R9 m38 - the shared list page: loading and a live revoke</title>
+    <style>
+      /* R9 refresh mocks m37-m39: the token block of m37, plus TableRows and the hidden
+         status region shown as a violet box. `.new` (dashed violet) marks a proposal. */
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --danger-text: #f0a49d;
+        --r-sm: 9px;
+        --ink-on-gold: #1a1206;
+        --ui: 'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        --mono: ui-monospace, Menlo, Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--txt);
+        font: 15.5px/1.6 var(--ui);
+      }
+      .mockbar {
+        max-width: 1420px;
+        margin: 20px auto 10px;
+        padding: 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .mockbar h1 {
+        font-size: 18px;
+        color: var(--txt);
+        margin: 0 0 4px;
+      }
+      .mockbar p {
+        margin: 4px 0;
+        max-width: 120ch;
+      }
+      .pair {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 28px;
+        max-width: 1420px;
+        margin: 0 auto 40px;
+        padding: 0 16px;
+      }
+      .frame {
+        border: 1px dashed #5a5070;
+        border-radius: 6px;
+        padding: 0 0 18px;
+      }
+      .frame.phone {
+        flex: 0 0 360px;
+        width: 360px;
+      }
+      .frame.desk {
+        flex: 0 0 720px;
+        max-width: 100%;
+      }
+      .frame > .cap {
+        display: block;
+        font: 600 12px/1.4 var(--mono);
+        color: #c8a0ff;
+        padding: 6px 10px;
+        border-bottom: 1px dashed #5a5070;
+        margin-bottom: 16px;
+        overflow-wrap: anywhere;
+      }
+      .in {
+        padding: 0 16px;
+      }
+      .new {
+        outline: 2px dashed #c8a0ff;
+        outline-offset: 3px;
+      }
+      .note {
+        border: 1px dashed #c8a0ff;
+        background: rgb(200 160 255 / 8%);
+        color: #d9c8f5;
+        font-size: 12.5px;
+        padding: 6px 10px;
+        margin: 14px 0 0;
+        border-radius: 4px;
+      }
+      .page-h {
+        margin: 0 0 4px;
+        font-size: 23px;
+        font-weight: 680;
+        overflow-wrap: anywhere;
+      }
+      .page-sub {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .updated {
+        margin: -10px 0 14px;
+        font-size: 12.5px;
+        color: var(--muted2);
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 6px 14px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--line2);
+        background: var(--surface2);
+        color: var(--txt);
+        font: 600 13.5px/1.2 var(--ui);
+      }
+      .btn.gold {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .ls {
+        margin: 0 0 14px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-top: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .row .tick {
+        width: 16px;
+        height: 16px;
+        border: 1px solid var(--line2);
+        border-radius: 4px;
+        flex: 0 0 auto;
+      }
+      .row .nm {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      .row .meta {
+        color: var(--muted2);
+        font-size: 12.5px;
+        white-space: nowrap;
+      }
+      .sr {
+        margin-top: 12px;
+        border: 1px dotted #c8a0ff;
+        color: #c8a0ff;
+        font: 600 12px/1.4 var(--mono);
+        padding: 4px 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>
+        m38 - <code>#/s/&lt;token&gt;</code>: the first read and a live revoke (plan 3.7, B9.1)
+      </h1>
+      <p>
+        Two fixes on the shared list page: «Загружаем...» while the first read runs (rule 6;
+        today the page draws nothing), and D65 - the polite status region moves out of the
+        drawn-list branch, so a live revoke is announced once. The violet dotted box stands for
+        the visually hidden region: it draws nothing on screen.
+      </p>
+    </div>
+
+    <div class="pair">
+      <section class="frame phone">
+        <span class="cap">#/s/player-token-1 - the first read in flight (360 px)</span>
+        <div class="in">
+          <p class="ls new" role="status">Загружаем...</p>
+          <p class="note">
+            No heading: the list's name is the heading, and it is not known yet (rule 7 binds a
+            fixed heading only). The line shows only while the first read runs, so «Список
+            больше не доступен» never flashes.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">#/s/player-token-1 - drawn (today's page, 360 px)</span>
+        <div class="in">
+          <h1 class="page-h">Лавка кузнеца</h1>
+          <p class="page-sub">Список от другого игрока · 9 предметов</p>
+          <p class="updated">Обновлено 3 дня назад</p>
+          <span class="btn gold">Сохранить себе</span>
+          <div style="margin-top: 14px">
+            <div class="row">
+              <span class="tick"></span><span class="nm">Первоклассный Спальный Мешок</span
+              ><span class="meta">×2</span>
+            </div>
+            <div class="row">
+              <span class="tick"></span><span class="nm">Топор Тлеющих Углей (HB)</span>
+            </div>
+            <div class="row">
+              <span class="tick"></span><span class="nm">Зелье Быстрого Шага</span>
+            </div>
+          </div>
+          <div class="sr new">status region (hidden): empty</div>
+          <p class="note">
+            The region is now mounted outside every branch of the page, for as long as the page
+            is on screen.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">the owner deleted the link while the page was open (360 px)</span>
+        <div class="in">
+          <h1 class="page-h">Список больше не доступен</h1>
+          <p class="page-sub">Владелец удалил эту ссылку или список.</p>
+          <span class="btn gold">На главную</span>
+          <div class="sr new">status region (hidden): «Список больше не доступен»</div>
+          <p class="note">
+            Today the page swaps within about a second and a screen reader hears nothing (D65).
+            The region says the heading once; the page itself is today's. A first read that
+            finds nothing says nothing (the reader did not see a list go).
+          </p>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

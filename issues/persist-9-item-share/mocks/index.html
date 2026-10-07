@@ -4,45 +4,99 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>R9 mocks - persist-9-item-share</title>
+    <style>
+      :root {
+        --ui:
+          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+          Arial, sans-serif;
+      }
+      body {
+        margin: 0 auto;
+        max-width: 960px;
+        padding: 16px;
+        font: 15px/1.6 var(--ui);
+        background: #0e0c15;
+        color: #ece8f6;
+      }
+      a {
+        color: #f0d091;
+      }
+      .old {
+        color: #9b93b3;
+      }
+    </style>
   </head>
   <body>
     <h1>R9 mocks - persist-9-item-share</h1>
     <p>
-      For the owner's review before dispatch. Dashed violet outlines mark what is new; the rest
-      exists today. Plan: <code>issues/persist-9-item-share/plan.md</code>; owner answers of
-      2026-10-02: its section 9.
+      Dashed violet outlines mark what R9 builds; dashed amber marks a shape the owner placed in
+      R7h or did not take; the rest exists today or ships in R7h. Plan:
+      <code>issues/persist-9-item-share/plan.md</code> (refresh of 2026-10-07 against R7h's plan
+      at <code>ac23ce36</code>); the owner's answers to Q9-6 to Q9-10 (2026-10-07): its section
+      9.
     </p>
+
+    <h2>The refreshed R9 (2026-10-07)</h2>
     <ul>
       <li>
-        <a href="m30-item-share-panel.html"
-          >m30 - «Поделиться» on an own item, #/i/hb_emberaxeaaaaaaaa as gm1</a
+        <a href="m37-print-routes.html"
+          >m37 - the print routes #/print/s/&lt;token&gt;/&lt;ids&gt; and
+          #/print/h/&lt;uuid&gt;: the sheet, loading, failed, a link that opens nothing, an
+          unknown item; where the app writes each address</a
         >
       </li>
       <li>
-        <a href="m31-editor-share.html"
-          >m31 - «Поделиться» in the editor, #/homebrew/hb_emberaxeaaaaaaaa as gm1</a
+        <a href="m38-shared-page-states.html"
+          >m38 - #/s/&lt;token&gt;: «Загружаем...» on the first read, and a live revoke
+          announced once (D65)</a
         >
       </li>
-      <li><a href="m32-item-page-signed-out.html">m32 - #/h/item-token-1 signed out</a></li>
+      <li>
+        <a href="m39-item-page-additions.html"
+          >m39 - #/h/&lt;uuid&gt; as a reader: «Печать», «Обновлено N назад», the 45 s re-read,
+          the announcements; the shapes of Q9-6 and Q9-9</a
+        >
+      </li>
+    </ul>
+
+    <h2 class="old">
+      Superseded by R7h (2026-10-02 design, kept for the record of the dropped features)
+    </h2>
+    <p class="old">
+      R7h opens an item by its id at #/h/&lt;uuid&gt; and holds live links in lists, so these
+      screens are not built. They show what Q9-6 to Q9-9 asked about.
+    </p>
+    <ul class="old">
+      <li>
+        <a href="m30-item-share-panel.html"
+          >m30 - «Поделиться» on an own item with a revocable link (Q9-6)</a
+        >
+      </li>
+      <li><a href="m31-editor-share.html">m31 - «Поделиться» in the editor (Q9-6)</a></li>
+      <li>
+        <a href="m32-item-page-signed-out.html"
+          >m32 - #/h/&lt;token&gt; signed out, with the sign-in prompt for «Сохранить себе»
+          (Q9-9)</a
+        >
+      </li>
       <li>
         <a href="m33-item-page-signed-in.html"
-          >m33 - #/h/item-token-1 as gm2 (not the owner) and as gm1 (the owner)</a
+          >m33 - #/h/&lt;token&gt; as a reader and as the owner; «Сохранено» (Q9-9)</a
         >
       </li>
       <li>
         <a href="m34-item-page-states.html"
-          >m34 - #/h/&lt;token> states: loading, gone, failed, live update, long name</a
+          >m34 - #/h/&lt;token&gt; states: «Обновлено N назад», a live update (Q9-7, Q9-8)</a
         >
       </li>
       <li>
         <a href="m35-save-from-a-list.html"
-          >m35 - «Сохранить себе» from a list row (Q9-1 A, owner 2026-10-02)</a
+          >m35 - «Сохранить себе» from a list row with the replace toast (Q9-9)</a
         >
       </li>
       <li>
         <a href="m36-print-routes.html"
-          >m36 - the print routes: #/print/s/&lt;token>/&lt;ids> and #/print/h/&lt;token> (Q9-2
-          A, owner 2026-10-02)</a
+          >m36 - the print routes with a share token (replaced by m37)</a
         >
       </li>
     </ul>

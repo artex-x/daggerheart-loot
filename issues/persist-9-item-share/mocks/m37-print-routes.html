@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>R9 m37 - the print routes of another account's items</title>
+    <style>
+      /* R9 refresh mocks m37-m39. :root copies app/src/styles/tokens.css (values, not a
+         redesign); component rules approximate PageTitle, Actions, Button, Seg, LoadState and
+         PrintCard. One theme (dark). `.new` (dashed violet) marks a proposal; the rest exists. */
+      :root {
+        color-scheme: dark;
+        --bg: #0e0c15;
+        --bg2: #14111d;
+        --surface: #1a1626;
+        --surface2: #221d31;
+        --line: #312a45;
+        --line2: #3f3758;
+        --txt: #ece8f6;
+        --muted: #9b93b3;
+        --muted2: #8a83a3;
+        --gold: #d8ab5e;
+        --gold-soft: #f0d091;
+        --danger: #e0685f;
+        --danger-text: #f0a49d;
+        --r-sm: 9px;
+        --ink-on-gold: #1a1206;
+        --ui: 'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        --mono: ui-monospace, Menlo, Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--txt);
+        font: 15.5px/1.6 var(--ui);
+      }
+      .mockbar {
+        max-width: 1420px;
+        margin: 20px auto 10px;
+        padding: 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .mockbar h1 {
+        font-size: 18px;
+        color: var(--txt);
+        margin: 0 0 4px;
+      }
+      .mockbar p {
+        margin: 4px 0;
+        max-width: 120ch;
+      }
+      .pair {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 28px;
+        max-width: 1420px;
+        margin: 0 auto 40px;
+        padding: 0 16px;
+      }
+      .frame {
+        border: 1px dashed #5a5070;
+        border-radius: 6px;
+        padding: 0 0 18px;
+      }
+      .frame.desk {
+        flex: 0 0 960px;
+        max-width: 100%;
+      }
+      .frame.phone {
+        flex: 0 0 360px;
+        width: 360px;
+      }
+      .frame > .cap {
+        display: block;
+        font: 600 12px/1.4 var(--mono);
+        color: #c8a0ff;
+        padding: 6px 10px;
+        border-bottom: 1px dashed #5a5070;
+        margin-bottom: 16px;
+        overflow-wrap: anywhere;
+      }
+      .in {
+        padding: 0 16px;
+      }
+      .new {
+        outline: 2px dashed #c8a0ff;
+        outline-offset: 3px;
+      }
+      .note {
+        border: 1px dashed #c8a0ff;
+        background: rgb(200 160 255 / 8%);
+        color: #d9c8f5;
+        font-size: 12.5px;
+        padding: 6px 10px;
+        margin: 14px 0 0;
+        border-radius: 4px;
+      }
+      .page-h {
+        margin: 0 0 4px;
+        font-size: 23px;
+        font-weight: 680;
+        overflow-wrap: anywhere;
+      }
+      .page-sub {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 6px 14px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--line2);
+        background: var(--surface2);
+        color: var(--txt);
+        font: 600 13.5px/1.2 var(--ui);
+      }
+      .btn.gold {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .btn.small {
+        min-height: 30px;
+        padding: 3px 10px;
+        font-size: 12.5px;
+      }
+      .acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
+      }
+      .seg {
+        display: inline-flex;
+        border: 1px solid var(--line2);
+        border-radius: 999px;
+        padding: 3px;
+        background: var(--surface);
+      }
+      .seg span {
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .seg span.on {
+        background: var(--gold);
+        color: var(--ink-on-gold);
+      }
+      .printnote {
+        margin: 12px 0 0;
+        font-size: 12.5px;
+        color: var(--muted2);
+        max-width: 62ch;
+      }
+      .ls {
+        margin: 0 0 14px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .ls.err {
+        color: var(--danger-text);
+      }
+      .sheet {
+        background: #fff;
+        color: #000;
+        padding: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-top: 18px;
+        box-shadow: 0 0 0 1px rgb(0 0 0 / 50%);
+      }
+      .pc {
+        border: 1px solid #000;
+        aspect-ratio: 63 / 88;
+        padding: 6px;
+        font-size: 9px;
+        line-height: 1.3;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .pc b {
+        font-size: 11px;
+        font-weight: 900;
+      }
+      .pc i {
+        margin-top: auto;
+        color: #333;
+      }
+      .pc.blank {
+        border: 0;
+      }
+      .addr {
+        font: 600 12px/1.4 var(--mono);
+        color: var(--gold-soft);
+        overflow-wrap: anywhere;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mockbar">
+      <h1>
+        m37 - <code>#/print/s/&lt;token&gt;/&lt;ids&gt;</code> and
+        <code>#/print/h/&lt;uuid&gt;</code> (plan 3.1-3.5, B9.1; Q9-2 A, owner 2026-10-02)
+      </h1>
+      <p>
+        The print sheet itself is today's (<code>PrintPage.svelte</code>): the bar, the two
+        switches, «Ссылка на набор», the sheets. New: the two addresses that read another
+        account's items through a link (D70), and the states while the link reads. Cards are
+        drawn as plain white boxes here; the real cards are <code>PrintCard.svelte</code>,
+        unchanged.
+      </p>
+    </div>
+
+    <div class="pair">
+      <section class="frame desk">
+        <span class="cap"
+          >#/print/s/player-token-1/hb_emberaxeaaaaaaaa-ci1*2 signed out, after a reload - D70's
+          proof</span
+        >
+        <div class="in">
+          <h1 class="page-h">Печать карточек</h1>
+          <p class="page-sub">
+            Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной игральной.
+          </p>
+          <div class="acts">
+            <span class="btn">Назад</span><span class="btn gold">Отправить на печать</span
+            ><span class="seg"><span class="on">Цветная</span><span>Чёрно-белая</span></span
+            ><span class="seg"><span class="on">Обычная</span><span>Компактная</span></span
+            ><span class="btn new">Ссылка на набор</span>
+          </div>
+          <p class="printnote">
+            «Ссылка на набор» copies the address on screen:
+            <span class="addr">…/#/print/s/player-token-1/hb_emberaxeaaaaaaaa-ci1*2</span>, not
+            <code>#/print/hb_emberaxeaaaaaaaa-ci1*2</code>.
+          </p>
+          <div class="sheet">
+            <div class="pc new">
+              <b>Топор Тлеющих Углей</b><span>Мастерская Ольхи (HB)</span
+              ><span>Тяжёлое оружие · d10+3 · Сила · Вплотную</span
+              ><i>Мастерская Ольхи · Холодное оружие</i>
+            </div>
+            <div class="pc">
+              <b>Первоклассный Спальный Мешок ×2</b><span>Добыча</span
+              ><span>Во время короткого отдыха…</span><i>Основная книга</i>
+            </div>
+            <div class="pc blank"></div>
+          </div>
+          <p class="note">
+            The gm1 axe is a homebrew entry of gm1's list, read through the players' link with
+            <code>get_shared_list</code> (any reader, signed out too). The «×2» is the taken
+            count the selection bar wrote, as today. Today the same sheet after a reload holds
+            only the sleeping bag (D70).
+          </p>
+        </div>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap"
+          >#/print/s/&lt;token&gt;/&lt;ids&gt; while the link reads (360 px)</span
+        >
+        <div class="in">
+          <h1 class="page-h">Печать карточек</h1>
+          <p class="ls new" role="status">Загружаем...</p>
+          <p class="note">
+            One <code>LoadState</code> (rule 6) under the fixed heading (rule 7). Today the page
+            draws «Печатать нечего» for a moment. The same line shows on
+            <code>#/print/&lt;ids&gt;</code> while a signed-in reader's lists and own items
+            read, when the address names an <code>hb_</code> key the page does not know yet
+            (3.5).
+          </p>
+        </div>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">the read failed or the reader is offline (360 px)</span>
+        <div class="in">
+          <h1 class="page-h">Печать карточек</h1>
+          <p class="ls err new" role="alert">Не получилось загрузить карточки.</p>
+          <span class="btn small">Повторить</span>
+          <p class="note">
+            Rule 2's load line; rule 6's small retry, because the fixed title does not state the
+            failure (as on <code>#/homebrew</code>). The retry reads the link again.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">#/print/s/unknown-token/ci1 - the link opens nothing (360 px)</span>
+        <div class="in">
+          <h1 class="page-h">Печать карточек</h1>
+          <p class="page-sub new">
+            Список больше не доступен: владелец удалил ссылку или сам список.
+          </p>
+          <span class="btn gold">На главную</span>
+          <p class="note">
+            The address is kept. A stopped, deleted, unknown or empty token, and every token in
+            a build with no sign-in, draw this one page (the <code>#/s/</code> rule). The
+            catalog ids are not printed alone: the address was a list's selection.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">#/print/h/&lt;gm1 bedroll uuid&gt; signed out (360 px)</span>
+        <div class="in">
+          <h1 class="page-h">Печать карточек</h1>
+          <p class="page-sub">Карточек: 1. Листов A4: 1. Размер карты 63×88 мм…</p>
+          <div class="acts">
+            <span class="btn">Назад</span><span class="btn gold">Отправить на печать</span>
+          </div>
+          <div class="acts">
+            <span class="seg"><span class="on">Цветная</span><span>Чёрно-белая</span></span>
+            <span class="seg"><span class="on">Обычная</span><span>Компактная</span></span>
+          </div>
+          <div class="acts"><span class="btn">Ссылка на набор</span></div>
+          <div class="sheet" style="grid-template-columns: 1fr 1fr">
+            <div class="pc new">
+              <b>Скатка следопыта</b><span>Привал у костра (HB)</span
+              ><span>Как Скатка путника; кроме того…</span
+              ><span>Сон под звёздами (Комплект: Подушка из мха, Походный плед)</span
+              ><i>Привал у костра</i>
+            </div>
+            <div class="pc blank"></div>
+          </div>
+          <p class="note">
+            Read with <code>get_homebrew_item</code> (R7h). The set line names the members from
+            the answer's <code>related</code>, as the reader's <code>#/h/</code> card does.
+          </p>
+        </div>
+      </section>
+
+      <section class="frame phone">
+        <span class="cap">#/print/h/&lt;unknown uuid&gt; (360 px)</span>
+        <div class="in">
+          <h1 class="page-h">Печать карточек</h1>
+          <p class="page-sub new">Предмет не найден: автор удалил его, или в адресе ошибка.</p>
+          <span class="btn gold">На главную</span>
+          <p class="note">The address is kept; a malformed id reads the same.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="mockbar">
+      <h1>Where the app writes each address (3.3)</h1>
+      <p>
+        <code>#/s/&lt;token&gt;</code>, the selection bar or a row card's «Печать»: with any
+        <code>hb_</code> key ticked, <code>#/print/s/&lt;token&gt;/&lt;ids&gt;</code>; a
+        catalog-only selection keeps <code>#/print/&lt;ids&gt;</code>, so a catalog print
+        address never stops working. <code>#/h/&lt;uuid&gt;</code> of another account's item,
+        the pick row's «Печать» (new for a reader; R7h draws none):
+        <code>#/print/h/&lt;uuid&gt;</code>; the author's «Печать» on <code>#/h/</code> and a
+        linked foreign item's row card on an own list write it too. <code>#/i/</code>, tables,
+        search and an own account list's print button keep <code>#/print/&lt;ids&gt;</code>.
+      </p>
+      <p>
+        Q9-10 B (not recommended) would replace both new addresses with one id form inside
+        <code>#/print/&lt;ids&gt;</code>, for example
+        <code>#/print/h0f3c9a7e2b4d4c1a9e6f5b2d8c7a1e30-ci1*2</code>, readable by anyone.
+      </p>
+    </div>
+  </body>
+</html>
