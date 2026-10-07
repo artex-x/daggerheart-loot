@@ -82,8 +82,9 @@ for the command (`node`/`vitest`/`parity`, plus a stray `chrome.exe`).
   run passed and armed the gate by its own exit ("Gate credit"), so resume
   the worker to commit. Otherwise resume the worker - `SendMessage` to its
   name, see "Resume, do not replace" - with one instruction: re-run the
-  check in the foreground, one call, `rtk npm run check` with the
-  Bash timeout at 600000, then commit or report. It holds the context a
+  check in the foreground as its two halves, `rtk npm run check:1`, then
+  `rtk npm run check:2`, each with the Bash timeout at 600000, then commit
+  or report. It holds the context a
   fresh agent would re-derive at full cost.
 
 Prose failed at this three times; `bash-guard.mjs` now denies a subagent's
@@ -107,7 +108,9 @@ Known costs in this repo:
 
 | Command | Wall clock | Fits one foreground call (600s cap)? |
 |---|---|---|
-| `npm run check` | a few minutes | yes |
+| `npm run check:fast` | 215-310 s (2026-10-07) | yes |
+| `npm run check:1` | 252 s with the selftest uncached (2026-10-07) | yes; in a hook batch it can pass 600 s and records the half by its exit |
+| `npm run check:2` | 308 s (2026-10-07) | yes |
 | `npm run check:built` | a few minutes | yes |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | yes |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | barely, one width at a time |

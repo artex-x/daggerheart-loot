@@ -72,17 +72,23 @@ For the current batch:
 1. Confirm objective, scope, acceptance criteria, mock/visual constraints
 2. Implement the complete batch, including necessary local fixes in touched code per `CLAUDE.md`
 3. Add or update focused tests
-4. Run focused checks during development
+4. Run focused checks during development. Before the gate, run `rtk npm run check:fast`
+   (one call, Bash timeout 600000): prettier, svelte-check and the snapshot test on the
+   tree, vitest with coverage on the tests of the changed files, and the bundle budget
+   when app code changed. It arms nothing; fix what it finds.
 5. Run verification from handoff, including as applicable:
-   - `npm run check` when code/app surface changed
+   - `npm run check` when code/app surface changed, as its two halves (step 7)
    - `npm run check:built` when screen output / dist assets may change (per CLAUDE.md)
    - data/image/stub/build steps for data batches
 6. Do not commit if required checks fail
 7. Never end a turn with a check still running: its output dies with your shell, and
-   from outside a stopped turn is indistinguishable from a dead agent. Run it as
-   `rtk npm run check` with the Bash timeout set to 600000 (no pipe, no
-   `set -o pipefail`; `rtk` propagates the exit code directly) and stay in the turn
-   until it finishes - do not redirect it to a file, which
+   from outside a stopped turn is indistinguishable from a dead agent. Run the gate as
+   two foreground calls, `rtk npm run check:1`, then `rtk npm run check:2`, each with the
+   Bash timeout set to 600000 (no pipe, no `set -o pipefail`, no redirect). The commit
+   gate arms when both halves pass on one tree. If the tool moves a half to the
+   background, stay in the turn until it exits and read its output for the
+   `gate credit:` line; run the half again only when that line is missing (a re-run
+   repeats the uncached stages). A redirect to a file
    hides the result from the commit gate and blocks the commit. See `.claude/README.md`.
    If you must stop first, name the command and its task id in your final message - the
    orchestrator can resume you with your context intact, so say exactly

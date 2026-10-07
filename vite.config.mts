@@ -9,7 +9,7 @@ import {
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
-import { defineConfig, type Plugin } from 'vitest/config';
+import { configDefaults, defineConfig, type Plugin } from 'vitest/config';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
@@ -201,10 +201,36 @@ export default defineConfig(({ command, mode }) => {
          and lives in app/src/test/a11y.ts instead: expectNoA11yViolations
          clears axe's `_running` flag before every run, so an abandoned run from
          a timed-out neighbour can no longer block the next one. See
-         app/src/test/a11y.test.ts for the regression test. */
+         app/src/test/a11y.test.ts for the regression test.
+
+         Since 2026-10-07 a timing bound, and a case that passed 30s under host
+         load, runs in the `timed` project below, not under a longer timeout. */
       testTimeout: 30_000,
-      include: ['src/**/*.test.ts'],
       setupFiles: ['./vitest-setup.ts'],
+      /* Two projects, one run and one coverage report. `timed` holds the cases
+         whose time is the assertion or whose time crossed the timeout under
+         load: one file at a time, after every `unit` file, so another worker's
+         load does not decide them. No root `include`: mergeConfig concatenates
+         arrays, so it would reach both projects. */
+      projects: [
+        {
+          extends: true,
+          test: {
+            name: 'unit',
+            include: ['src/**/*.test.ts'],
+            exclude: [...configDefaults.exclude, 'src/**/*.timed.test.ts']
+          }
+        },
+        {
+          extends: true,
+          test: {
+            name: 'timed',
+            include: ['src/**/*.timed.test.ts'],
+            fileParallelism: false,
+            sequence: { groupOrder: 1 }
+          }
+        }
+      ],
       coverage: {
         provider: 'v8',
         /* Everything that ships, not only the parts that are easy to measure.

@@ -315,18 +315,21 @@ opposite has now been observed twice, deny path included: a script edited
 mid-session blocked a command minutes later, so the scripts are re-read per
 invocation here. Do not rely on either behaviour across hosts.
 
-Seven runtime files live under `.claude/` and are gitignored
-(`.claude/.gitignore`). A worktree session keeps the two caches, the two
-pending files and `.check-index` in the worktree's own `.claude/`
-("Known limitations", the desktop worktree session):
+Eleven kinds of runtime file live under `.claude/` and are gitignored
+(`.claude/.gitignore`). A worktree session keeps the two caches, the
+pending files, the half records and the index copies in the worktree's own
+`.claude/` ("Known limitations", the desktop worktree session):
 
 | File | Written by | Contents |
 |---|---|---|
-| `.check-cache.json` | `check-observer.mjs`, `gate-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check`; `by` is `observer` (the hook saw the output) or `exit` (the check's own exit armed it). |
+| `.check-cache.json` | `check-observer.mjs`, `gate-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check`; `by` is `observer` (the hook saw the output), `exit` (the check's own exit armed it) or `halves` (`check:1` and `check:2` passed on this key). |
+| `.check-1-pass.json`, `.check-2-pass.json` | `gate-credit.mjs` | `{ key, at }` of the last pass of that half ("Two halves" below). Only `gate-credit.mjs` writes them; `check-observer.mjs` reads them. |
+| `.check-1-pending.json`, `.check-2-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }` of the running half, as `.check-pending.json`. |
 | `.check-db-cache.json` | `check-observer.mjs`, `gate-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check:db`, against the same tree key. |
 | `.check-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }`: the tree key at the start of the running `npm run check` and its script shell; `arm` reads it, and deletes it when the `ppid` is its own run's. Gitignored, because an unignored file would change the key it records (`tests/derived.js` pins the line). |
 | `.check-db-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }` of the running `npm run check:db`. |
-| `.check-index` | `tree-key.mjs` | A throwaway copy of the real index, never the index itself. `tree-key.mjs` finds the index with `git rev-parse --git-path index`: in a linked worktree `.git` is a file, and the old `<root>/.git/index` path made the key null there, so every commit gate failed open in a worktree until 2026-09-24. The stage runner keeps its own copy for each process at `node_modules/.cache/check/index-<pid>` ("Run a long check", "Stage cache"). |
+| `.check-index-<pid>` | `tree-key.mjs` | A throwaway copy of the real index for one process, never the index itself; `treeKey()` deletes it after the read, so two processes never share one copy. Main's older `tree-key.mjs` writes `.check-index`, which stays ignored. |
+| `.check-index` (older hooks) | `tree-key.mjs` before 2026-10-07 | The one shared copy the older code wrote. `tree-key.mjs` finds the index with `git rev-parse --git-path index`: in a linked worktree `.git` is a file, and the old `<root>/.git/index` path made the key null there, so every commit gate failed open in a worktree until 2026-09-24. The stage runner keeps its own copy for each process at `node_modules/.cache/check/index-<pid>` ("Run a long check", "Stage cache"). |
 | `.restore-receipts.json` | `tools/supabase/restore-drill.mjs` | The receipts of passed restore drills, newest first, 20 at most, one per source: the source id, the hashes of the decrypted files, the newest migration, the host and the time; no row count and no row. `npm run restore:prod` refuses a source without a receipt under 24 h old. It lives in the main checkout's `.claude/`, also for a drill run from a worktree. |
 | `.hook-state.json` | `lib.mjs` | Per-session dedupe markers and the set of paths each session wrote. Holds the 64 most recently active sessions; the session being written is always kept. The cap bounds the session count, not a session's own `wrote` map, which still grows without limit for the life of one session. A save writes a temp file and renames it over this one, so a reader never parses a half write. The read-modify-write is not guarded against a second session saving in between: one session per working tree is the protocol, and a lost save costs one duplicate reminder or one missing Stop sentence (fail open). |
 
@@ -354,7 +357,10 @@ to 600000:
 rtk npm run check
 ```
 
-Each part is load-bearing:
+An agent runs it as its two halves, `rtk npm run check:1` and `rtk npm run
+check:2`, after the fast pre-check `rtk npm run check:fast` ("Two halves"
+and "The fast pre-check" below); the rules below apply to each call. Each
+part is load-bearing:
 
 - **No pipe needed to learn whether it passed** - and, since candidate 46,
   no pipe allowed. `rtk` propagates the
@@ -498,6 +504,59 @@ passed and armed the gate. A hand run of `gate-credit.mjs` is denied (rule
 trusts the chain's exit, so a step that exits 0 on a failure would credit
 it; the observer's FAIL markers still speak for a foreground run.
 
+**Two halves.** An agent runs the gate as two foreground calls, each with the
+Bash timeout set to 600000 (`docs/decisions/`, 2026-10-07, "The commit gate
+arms when both halves of the check pass on one tree"):
+
+```text
+rtk npm run check:1
+rtk npm run check:2
+```
+
+`check:1` runs every stage of `STAGES` except `vitest`; `check:2` runs
+`vitest`. Each half has its own `begin` and `arm` (`check-1`, `check-2`).
+`arm` writes `.check-<n>-pass.json` with the tree key, then reads the other
+half's record:
+- the same key: it writes `.check-cache.json` with `by: "halves"` and prints
+  `gate credit: armed (npm run check:1 and npm run check:2 passed on this tree)`;
+- no record or another key: it prints `gate credit: npm run check:<n>
+  passed; run npm run check:<m> on this tree to arm the gate`;
+- a half that fails, or a tree that changed during the half, writes nothing.
+The order of the halves is free. An edit between them gives two keys, so the
+half with the old key runs again; an edit undone (K, K', K) is the same
+content and arms. When the tool moves a half to the background, stay in the
+turn until it exits and read its output for the `gate credit:` line; run the
+half again only when that line is missing, because a re-run repeats the
+uncached stages. The exception to "each under 600 s": in a batch that changes
+the hooks, `check:1` runs the selftest uncached and can pass 600 s on a
+loaded host (252 s on an idle host, 2026-10-07; `check:2` 308 s); its exit
+still records the half, and the `gate
+credit:` line is the evidence. `npm run check` stays the full chain, arms
+alone and is what CI runs. Until the main checkout holds this change (the
+desktop app runs the main checkout's hook copy), its older hooks run: the
+observer says nothing about a half and rules 2g and 2k do not know the halves,
+but the commit gate accepts a `.check-cache.json` with any `by`, so the
+halves arm it all the same.
+
+**The fast pre-check.** `rtk npm run check:fast` (one call, Bash timeout
+600000) finds the cheap failures before the halves, and arms nothing.
+`tools/check/fast.mjs` takes the paths changed against `HEAD` (or
+`--base=<rev>`) and untracked files, then runs, stopping at the first
+failure:
+1. `stages`: `node tools/check/run.mjs --only=format,typecheck,test:golden`
+   (prettier, svelte-check, and the 1 s test that reads every golden
+   snapshot). A passing typecheck is recorded, so `check:1` skips it.
+2. `vitest` (when a path under `app/src/` changed): `vitest related` on the
+   changed files, with coverage and its per-file thresholds limited to the
+   changed sources.
+3. `budget` (when app code or the build changed): `npm run build`, then
+   `npm run budget`.
+Each step prints `check:fast: <step> passed (<s> s)` or `failed (exit <n>)`;
+the last line is `check:fast: PASS in <s> s - this arms nothing; ...` or
+`check:fast: FAIL at <step>`. A change to a module that most files import
+(`lib/dict.ts`, `state/app.svelte.ts`) makes the related run close to the
+whole vitest stage; then go straight to `check:2`. Measured 215-310 s (2026-10-07).
+
 **Stage cache.** Between `begin` and `arm`, the chain runs `node --test
 tools/check/lib.test.mjs` and then `node tools/check/run.mjs`, which runs
 the stages one at a time in the order of `STAGES` in `tools/check/lib.mjs`
@@ -564,14 +623,17 @@ untyped ESLint half use their own caches.
   inputs match its last local pass"). Never let ESLint write
   `.eslintcache` to the repository root: it is not gitignored and moves the
   tree key.
-- Two vitest timing tests fail under host load on a cold run and pass on
-  the next run (2026-10-07, CPU near 94 %): `homebrewEditor.test.ts`,
-  "picks and removes in every picker", at its 30 s timeout (vitest
-  Duration 467.6 s), and `importPanel.test.ts`, "draws 20 list blocks ...
-  for 1000 lists", at 3213.6 ms against its 3000 ms budget (Duration
-  571 s). Symptom: one of these two names fails and nothing else does. Run
-  the check once more; if either fails on an idle host, record it in
-  `docs/specs/DEBT.md` as a test defect.
+- Three vitest tests failed under host load (2026-10-07): "picks and
+  removes in every picker" at its 30 s timeout (3.5 s on an idle host),
+  "draws 20 list blocks ... for 1000 lists" at 3213.6 ms against its 3000 ms
+  bound, and the field help case "names its field, starts closed ..." at
+  30 s in two full runs in a row (5.3 s alone). All three now run in
+  the `timed` vitest project (`homebrewEditor.timed.test.ts`,
+  `importPanel.timed.test.ts`; `vite.config.mts`): one file at a time,
+  after every `unit` file, in the same run and coverage report. A new
+  timing bound, or a case that passes 30 s under load, goes to a
+  `*.timed.test.ts` file with its helpers in `app/src/test/`; the timeout
+  stays 30 s.
 - Without `rtk` (the Linux cloud container, measured 2026-09-24) a plain
   `npm run check` prints about 65 KB, over the tool's output cap, so the
   result is persisted to a file and `check-observer.mjs` cannot attribute
@@ -737,6 +799,9 @@ documented; the parity rows below are replaced by the gates that survive.
 | gate | idle host | loaded host |
 |---|---|---|
 | `npm run check` | ~165s | near or past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded and still arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
+| `npm run check:fast` | 215-310 s (2026-10-07) | longer; one call |
+| `npm run check:1` | 252 s with the selftest uncached (2026-10-07) | longer; past 600 s it records the half by its exit |
+| `npm run check:2` | 308 s (2026-10-07) | longer |
 | `npm run check:built` | a few minutes | longer |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | longer; `app/sweep` as a whole (`run-all.js app/sweep`, all four widths) is past the cap and must run width by width |
@@ -1103,9 +1168,6 @@ adversary:
   `row.slice(3)`: a rename row (`R old -> new`) or a quoted path (spaces,
   non-ASCII) is mis-parsed, and the Stop warning names the wrong path or
   goes silent. A parser, not a one-line fix.
-- `LONG_CHECKS`'s pattern for `npm run check` also matches `check:fast`, so
-  the long-check reminder quotes the full-check wall clock for a command
-  that costs far less.
 - `check-observer.mjs`'s attribution rule strips a leading `cd` before
   testing for a `$(...)`/backtick substitution, so `cd $(pwd) && npm run
   check` passes the test - judged not a forgery vector, since a

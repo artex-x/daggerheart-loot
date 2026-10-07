@@ -7,7 +7,7 @@
 // See .claude/README.md, "Hooks", which documents this file's own case
 // numbering inline (numbered #1 upward in the comments below).
 
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -4120,6 +4120,378 @@ async function testGateCredit() {
   clearDbCache();
 }
 
+// ---------- the check in two halves (#317-#332) ----------
+
+/** The gate-state lines of the real .claude/.gitignore: a gate file that
+ * is not ignored changes the tree key it records. */
+const GATE_STATE_IGNORE = [
+  '.check-cache.json',
+  '.check-index',
+  '.check-index-*',
+  '.check-db-cache.json',
+  '.check-1-pending.json',
+  '.check-2-pending.json',
+  '.check-1-pass.json',
+  '.check-2-pass.json',
+  ''
+].join('\n');
+
+function halfPassPath(n, state = scratchState) {
+  return path.join(state, `.check-${n}-pass.json`);
+}
+
+function clearHalves() {
+  clearCache();
+  for (const n of [1, 2]) {
+    fs.rmSync(halfPassPath(n), { force: true });
+    fs.rmSync(path.join(scratchState, `.check-${n}-pending.json`), { force: true });
+  }
+}
+
+function runHalf(n) {
+  runCredit(['begin', `check-${n}`]);
+  return runCredit(['arm', `check-${n}`]);
+}
+
+async function testCheckHalves() {
+  process.env.LOOT_HOOK_ROOT = scratchRoot;
+  process.env.LOOT_HOOK_STATE_DIR = scratchState;
+  const { treeKey, writeCache } = await importTreeKey();
+  const readJson = (file) =>
+    fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+  const ARMED = 'gate credit: armed (npm run check:1 and npm run check:2 passed on this tree)';
+
+  clearHalves();
+  {
+    const arm = runHalf(1);
+    check(
+      '#317 check:1 alone: says to run check:2',
+      arm.status === 0 &&
+        arm.stdout.trim() ===
+          'gate credit: npm run check:1 passed; run npm run check:2 on this tree to arm the gate',
+      arm.stdout
+    );
+    check('#317 check:1 alone: records its key', readJson(halfPassPath(1))?.key === treeKey());
+    check('#317 check:1 alone: the gate is not armed', !fs.existsSync(cacheFilePath()));
+  }
+  {
+    const arm = runHalf(2);
+    const cache = readJson(cacheFilePath());
+    check('#318 check:2 on the same tree: armed', arm.stdout.trim() === ARMED, arm.stdout);
+    check(
+      '#318 check:2 on the same tree: the cache holds the key, by halves',
+      cache && cache.key === treeKey() && cache.by === 'halves',
+      JSON.stringify(cache)
+    );
+  }
+  clearHalves();
+  {
+    runHalf(2);
+    const arm = runHalf(1);
+    check(
+      '#319 the halves in the other order: armed',
+      arm.stdout.trim() === ARMED && readJson(cacheFilePath())?.by === 'halves',
+      arm.stdout
+    );
+  }
+  clearHalves();
+  {
+    runHalf(1);
+    appendFile('app/src/lib/x.ts', '// changed between the halves\n');
+    const arm = runHalf(2);
+    check(
+      '#320 a covered file changed between the halves: not armed',
+      arm.stdout.trim() ===
+        'gate credit: npm run check:2 passed; run npm run check:1 on this tree to arm the gate' &&
+        !fs.existsSync(cacheFilePath()),
+      arm.stdout
+    );
+  }
+  clearHalves();
+  {
+    runCredit(['begin', 'check-1']);
+    appendFile('app/src/lib/x.ts', '// changed during a half\n');
+    const arm = runCredit(['arm', 'check-1']);
+    check(
+      '#321 a covered file changed during a half: no record',
+      arm.stdout.trim() === 'gate credit: not armed - the tree changed during the run' &&
+        !fs.existsSync(halfPassPath(1)),
+      arm.stdout
+    );
+  }
+
+  // #322-#325 - the observer reads the records and writes nothing.
+  const passing = {
+    stdout: 'check: 16 stages run, 0 skipped, 1 s\n',
+    stderr: '',
+    interrupted: false
+  };
+  clearHalves();
+  fs.writeFileSync(halfPassPath(1), JSON.stringify({ key: treeKey(), at: 1 }));
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('Bash', 'rtk npm run check:1', passing)
+    );
+    check(
+      '#322 observer: one half recorded names the other',
+      systemMessage(result) ===
+        'npm run check:1: PASS - recorded for this tree. Run `rtk npm run check:2` to arm the commit gate.',
+      systemMessage(result)
+    );
+    check('#322 observer: writes no cache', !fs.existsSync(cacheFilePath()));
+  }
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('Bash', 'rtk npm run check:2', passing)
+    );
+    check(
+      '#322 observer: a half with no record says to run it again',
+      systemMessage(result).startsWith('npm run check:2: no failure seen') &&
+        systemMessage(result).includes('Run it again.'),
+      systemMessage(result)
+    );
+  }
+  writeCache(treeKey(), '.check-cache.json', 'npm run check:1 + npm run check:2', 'halves');
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('Bash', 'rtk npm run check:2', passing)
+    );
+    check(
+      '#323 observer: both halves armed',
+      systemMessage(result) ===
+        'npm run check:2: PASS - both halves passed on this tree. Commit gate armed.',
+      systemMessage(result)
+    );
+  }
+  clearHalves();
+  {
+    const failing = { stdout: 'x\n', stderr: 'npm error code 1\n', interrupted: false };
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('Bash', 'rtk npm run check:1', failing)
+    );
+    check(
+      '#324 observer: a failure marker says FAIL',
+      systemMessage(result).startsWith('npm run check:1: FAIL') &&
+        systemMessage(result).includes('`rtk npm run check:1`'),
+      systemMessage(result)
+    );
+  }
+  {
+    const result = runHook(
+      'check-observer.mjs',
+      observerPayload('Bash', 'rtk npm run check:1', passing, true)
+    );
+    check('#325 observer: a backgrounded half is silent', isSilent(result), result.stdout);
+  }
+
+  for (const command of ['npm run check:1 | tail -n 5', 'npm run check:2 > o.txt']) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { session_id: 's-half-blind' })
+    );
+    check(`#326 rule 2k denies "${command}"`, isDeny(result), JSON.stringify(result.json));
+  }
+  {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload('rtk npm run check:2', { session_id: 's-half-blind-ok' })
+    );
+    check(
+      '#326 rule 2k allows "rtk npm run check:2"',
+      !isDeny(result),
+      JSON.stringify(result.json)
+    );
+  }
+  {
+    const payload = bashPayload('rtk npm run check:1', {
+      run_in_background: true,
+      session_id: 's-half-bg'
+    });
+    const sub = runHook('bash-guard.mjs', payload);
+    check(
+      '#327 rule 2g denies a subagent backgrounded half',
+      isDeny(sub) &&
+        denyReason(sub).includes('rtk npm run check:1') &&
+        denyReason(sub).includes('rtk npm run check:2'),
+      sub.stdout
+    );
+    delete payload.agent_id;
+    delete payload.agent_type;
+    const main = runHook('bash-guard.mjs', payload);
+    check('#327 rule 2g allows it for the main session', !isDeny(main), main.stdout);
+  }
+  {
+    const first = runHook(
+      'bash-guard.mjs',
+      bashPayload('rtk npm run check:1', { session_id: 's-half-long' })
+    );
+    check(
+      '#328 the half reminder names both halves',
+      systemMessage(first).includes('600000') &&
+        systemMessage(first).includes('rtk npm run check:1') &&
+        systemMessage(first).includes('rtk npm run check:2'),
+      systemMessage(first)
+    );
+    const second = runHook(
+      'bash-guard.mjs',
+      bashPayload('rtk npm run check:2', { session_id: 's-half-long' })
+    );
+    check('#328 the half reminder fires once per session', isSilent(second), second.stdout);
+  }
+  gitSh(['add', 'app/src/lib/x.ts']);
+  clearHalves();
+  try {
+    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: halves"'));
+    check(
+      '#329 the commit gate deny names both halves',
+      isDeny(result) &&
+        denyReason(result).includes('rtk npm run check:1') &&
+        denyReason(result).includes('rtk npm run check:2'),
+      denyReason(result)
+    );
+  } finally {
+    gitSh(['reset', '-q']);
+  }
+
+  // #330 - treeKey() takes one index copy per process and deletes it after the read.
+  {
+    const keys = await Promise.all(
+      [0, 1, 2].map(
+        () =>
+          new Promise((resolve) => {
+            const child = spawn(
+              process.execPath,
+              [
+                '--input-type=module',
+                '-e',
+                `import { treeKey } from ${JSON.stringify(pathToFileUrlHref('tree-key.mjs'))}; process.stdout.write(String(treeKey()));`
+              ],
+              {
+                env: {
+                  ...process.env,
+                  LOOT_HOOK_ROOT: scratchRoot,
+                  LOOT_HOOK_STATE_DIR: scratchState
+                }
+              }
+            );
+            let out = '';
+            child.stdout.on('data', (d) => {
+              out += d;
+            });
+            child.on('close', () => resolve(out));
+          })
+      )
+    );
+    check(
+      '#330 three treeKey processes at once on a dirty tree give one key',
+      keys.every((k) => k === treeKey() && k !== 'null'),
+      keys.join(' ')
+    );
+    check(
+      '#330 no .check-index-* copy is left behind',
+      !fs.readdirSync(scratchState).some((name) => name.startsWith('.check-index-')),
+      fs.readdirSync(scratchState).join(' ')
+    );
+  }
+
+  // #331 - `cd <checkout> && npm run check...` reads and writes that
+  // checkout's records, not the session's.
+  const wt = path.join(scratchRoot, '.claude', 'worktrees', 'halves');
+  const wtState = path.join(wt, '.claude');
+  const wtPosix = wt.replace(/\\/g, '/');
+  gitSh(['worktree', 'add', '-q', '--detach', wt]);
+  try {
+    fs.mkdirSync(wtState, { recursive: true });
+    fs.writeFileSync(path.join(wtState, '.gitignore'), GATE_STATE_IGNORE);
+    fs.appendFileSync(path.join(wt, 'app/src/lib/x.ts'), '// worktree change\n');
+    const wtKey = treeKey(wt);
+    clearHalves();
+    fs.writeFileSync(halfPassPath(1, wtState), JSON.stringify({ key: wtKey, at: 1 }));
+    {
+      const result = runHook(
+        'check-observer.mjs',
+        observerPayload('Bash', `cd ${wtPosix} && rtk npm run check:1`, passing)
+      );
+      check(
+        "#331 cd <checkout> && check:1 reads that checkout's record",
+        systemMessage(result).startsWith('npm run check:1: PASS - recorded for this tree'),
+        systemMessage(result)
+      );
+    }
+    fs.writeFileSync(
+      path.join(wtState, '.check-cache.json'),
+      JSON.stringify({ key: wtKey, at: 1, command: 'npm run check', by: 'exit' })
+    );
+    {
+      const result = runHook(
+        'check-observer.mjs',
+        observerPayload('Bash', `cd ${wtPosix} && rtk npm run check`, {
+          stdout: 'the output was persisted\n',
+          stderr: '',
+          interrupted: false
+        })
+      );
+      check(
+        '#331 cd <checkout> && check, armed by its exit there: says PASS',
+        systemMessage(result) === "npm run check: PASS - armed by the check's own exit.",
+        systemMessage(result)
+      );
+    }
+    fs.rmSync(path.join(wtState, '.check-cache.json'), { force: true });
+    clearCache();
+    {
+      runHook(
+        'check-observer.mjs',
+        observerPayload('Bash', `cd ${wtPosix} && rtk npm run check`, {
+          stdout: 'x\n' + COVERAGE_SUMMARY,
+          stderr: '',
+          interrupted: false
+        })
+      );
+      const cache = readJson(path.join(wtState, '.check-cache.json'));
+      check(
+        "#331 an attributed pass after cd writes that checkout's cache only",
+        cache && cache.key === wtKey && !fs.existsSync(cacheFilePath()),
+        JSON.stringify(cache)
+      );
+    }
+  } finally {
+    spawnSync('git', ['worktree', 'remove', '--force', wt], {
+      cwd: scratchRoot,
+      encoding: 'utf8'
+    });
+    fs.rmSync(path.join(scratchRoot, '.claude'), { recursive: true, force: true });
+    spawnSync('git', ['worktree', 'prune'], { cwd: scratchRoot, encoding: 'utf8' });
+  }
+
+  {
+    const first = runHook(
+      'bash-guard.mjs',
+      bashPayload('npm run check:fast', { session_id: 's-fast' })
+    );
+    check(
+      '#332 the check:fast reminder names its cost',
+      systemMessage(first).includes('npm run check:fast') &&
+        systemMessage(first).includes('600000'),
+      systemMessage(first)
+    );
+    const second = runHook(
+      'bash-guard.mjs',
+      bashPayload('npm run check:fast', { session_id: 's-fast' })
+    );
+    check(
+      '#332 the check:fast reminder fires once per session',
+      isSilent(second),
+      second.stdout
+    );
+  }
+  clearHalves();
+}
+
 // ---------- stack-lock.mjs (#276-#280) ----------
 
 async function testStackLock() {
@@ -5103,10 +5475,7 @@ async function testWorktreeGates() {
   try {
     // The real .claude/.gitignore keeps the gate state out of the tree key.
     fs.mkdirSync(wtState, { recursive: true });
-    fs.writeFileSync(
-      path.join(wtState, '.gitignore'),
-      '.check-cache.json\n.check-index\n.check-db-cache.json\n'
-    );
+    fs.writeFileSync(path.join(wtState, '.gitignore'), GATE_STATE_IGNORE);
     fs.appendFileSync(path.join(wt, 'app/src/lib/x.ts'), '// worktree change\n');
     gitSh(['add', 'app/src/lib/x.ts'], wt);
     const { treeKey, writeCache } = await importTreeKey();
@@ -5328,6 +5697,7 @@ async function main() {
     await testCheckDbObserver();
     await testCreditObserver();
     await testGateCredit();
+    await testCheckHalves();
     await testStackLock();
     await testPathKeyPortability();
     testSessionStart();

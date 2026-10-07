@@ -76,44 +76,108 @@ export const VITEST = {
 
 /** The stages of `npm run check` between gate credit's `begin` and `arm`,
  * in order. A stage with `select` is skipped when its key matches a recent
- * local pass; every other stage always runs. */
+ * local pass; every other stage always runs. `half` is the stage's part of
+ * the check in two calls: `npm run check:1` runs half 1, `check:2` half 2. */
 export const STAGES = [
-  { name: 'format', command: 'npm run format:check' },
-  { name: 'lint:untyped', command: 'npm run lint:untyped' },
-  { name: 'lint:typed', command: 'npm run lint:typed', select: TYPED },
-  { name: 'typecheck', command: 'npm run typecheck', select: TYPED },
-  { name: 'site-syntax', command: 'node --check tools/check-site.mjs' },
-  { name: 'data', command: 'npm run data' },
-  { name: 'derived', command: 'node tests/derived.js' },
-  { name: 'dataint', command: 'node tests/dataint.js' },
+  { name: 'format', command: 'npm run format:check', half: 1 },
+  { name: 'lint:untyped', command: 'npm run lint:untyped', half: 1 },
+  { name: 'lint:typed', command: 'npm run lint:typed', select: TYPED, half: 1 },
+  { name: 'typecheck', command: 'npm run typecheck', select: TYPED, half: 1 },
+  { name: 'site-syntax', command: 'node --check tools/check-site.mjs', half: 1 },
+  { name: 'data', command: 'npm run data', half: 1 },
+  { name: 'derived', command: 'node tests/derived.js', half: 1 },
+  { name: 'dataint', command: 'node tests/dataint.js', half: 1 },
   {
     name: 'selftest',
     command: 'node .claude/hooks/selftest.mjs',
     select: HOOKS,
-    gitVersion: true
+    gitVersion: true,
+    half: 1
   },
   {
     name: 'test:tg-preview',
-    command: 'node --test --test-reporter=dot tools/tg-preview/lib.test.mjs'
+    command: 'node --test --test-reporter=dot tools/tg-preview/lib.test.mjs',
+    half: 1
   },
   {
     name: 'test:artwork',
-    command: 'node --test --test-reporter=dot tools/artwork/lib.test.mjs'
+    command: 'node --test --test-reporter=dot tools/artwork/lib.test.mjs',
+    half: 1
   },
   {
     name: 'test:supabase',
     command:
-      'node --test --test-reporter=dot tools/supabase/lib.test.mjs tools/supabase/usage-lib.test.mjs'
+      'node --test --test-reporter=dot tools/supabase/lib.test.mjs tools/supabase/usage-lib.test.mjs',
+    half: 1
   },
   {
     name: 'test:check-site',
-    command: 'node --test --test-reporter=dot tools/check-site.test.mjs'
+    command: 'node --test --test-reporter=dot tools/check-site.test.mjs',
+    half: 1
   },
-  { name: 'test:golden', command: 'node --test --test-reporter=dot tests/app/golden.test.mjs' },
-  { name: 'test:sw', command: 'node --test --test-reporter=dot tests/sw.test.mjs' },
-  { name: 'test:e2e-lib', command: 'node --test --test-reporter=dot tests/e2e/lib.test.mjs' },
-  { name: 'vitest', command: 'npm run test', select: VITEST }
+  {
+    name: 'test:golden',
+    command: 'node --test --test-reporter=dot tests/app/golden.test.mjs',
+    half: 1
+  },
+  { name: 'test:sw', command: 'node --test --test-reporter=dot tests/sw.test.mjs', half: 1 },
+  {
+    name: 'test:e2e-lib',
+    command: 'node --test --test-reporter=dot tests/e2e/lib.test.mjs',
+    half: 1
+  },
+  { name: 'vitest', command: 'npm run test', select: VITEST, half: 2 }
 ];
+
+/**
+ * Returns the stages of `stages` to run, in table order: those of `half`
+ * (1 or 2), or those named in `only`, or all of them. Throws on both, on
+ * another half and on an unknown name.
+ */
+export function selectStages(stages, { half, only } = {}) {
+  if (half !== undefined && only !== undefined) {
+    throw new Error('check: give --half or --only, not both');
+  }
+  if (half !== undefined) {
+    if (half !== 1 && half !== 2) throw new Error(`check: no half ${half}; use 1 or 2`);
+    return stages.filter((s) => s.half === half);
+  }
+  if (only !== undefined) {
+    for (const name of only) {
+      if (!stages.some((s) => s.name === name))
+        throw new Error(`check: no stage named ${name}`);
+    }
+    return stages.filter((s) => only.includes(s.name));
+  }
+  return stages;
+}
+
+/** Files outside app/ whose change can move the production bundle. */
+const BUDGET_FILES = [
+  'vite.config.mts',
+  'package.json',
+  'package-lock.json',
+  'tools/bundle-budget.mjs'
+];
+
+/**
+ * Returns what the fast pre-check runs for the changed `paths` (`/`
+ * separators): `related`, the paths vitest finds the tests of; `sources`,
+ * the related sources relative to app/, whose coverage is measured; and
+ * `budget`, true when the bundle can change.
+ */
+export function fastPlan(paths) {
+  const related = paths.filter((p) => p.startsWith('app/src/') || p === 'app/vitest-setup.ts');
+  const sources = related
+    .filter((p) => /\.(ts|svelte)$/.test(p) && !p.endsWith('.test.ts'))
+    .map((p) => p.slice('app/'.length));
+  const budget = paths.some(
+    (p) =>
+      (p.startsWith('app/') && !p.endsWith('.test.ts') && !p.startsWith('app/src/test/')) ||
+      BUDGET_FILES.includes(p)
+  );
+  return { related, sources, budget };
+}
 
 /** The most recent passes a stage keeps, so a revert to a recent state still hits. */
 export const MAX_PASSES = 8;

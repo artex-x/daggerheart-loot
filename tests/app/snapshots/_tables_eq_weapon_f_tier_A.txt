@@ -81,7 +81,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 1Нестареющее Око ЗверяАртефакт · Физическое · Проворность · Впло... [namelen=389 namehash=d8e6fa4e]
 2
 25Жезл СопротивленияАртефакт · Магическое · Характеристика Закли... [namelen=355 namehash=27bb2f82]
-2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=396 namehash=212c8af2]
+2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=417 namehash=6a1e358a]
 3
 32Посох Запредельной ПустотыАртефакт · Магическое · Характеристи... [namelen=228 namehash=2463e278]
 34Моргенштерн ТарианаАртефакт · Физическое · Сила · Близко · d10... [namelen=304 namehash=b906cb29]
@@ -241,7 +241,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
 1The Ageless Eye of the BeastArtifact · Physical · Agility · Mel... [namelen=382 namehash=bbc60a0b]
 2
 25Rod of ResistanceArtifact · Magic · Spellcast · Far · d10 phy/... [namelen=297 namehash=b04eeb1c]
-2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=365 namehash=c4dcd301]
+2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=374 namehash=8152378c]
 3
 32Staff of the Void BeyondArtifact · Magic · Spellcast · Very Fa... [namelen=198 namehash=c51a09b4]
 34Taryan's MorningstarArtifact · Physical · Strength · Very Clos... [namelen=308 namehash=39870c33]

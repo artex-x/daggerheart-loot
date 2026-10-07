@@ -6,60 +6,31 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { FILE_MAX_BYTES, ZIP_MAX_BYTES } from '../lib/bundle.js';
-import type { Loot } from '../lib/data.js';
 import { zipStored } from '../lib/zip.js';
-import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
+import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import {
+  LOOT,
+  ROOT,
+  alertText,
+  cardNames,
+  choose,
+  doc,
+  fixture,
+  importButton,
+  lineTexts,
+  opened,
+  utf8
+} from '../test/importPanel.js';
 
 afterEach(cleanup);
-
-const ROOT = join(import.meta.dirname, '..', '..', '..');
-const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
-const fixture = (name: string): Uint8Array =>
-  new Uint8Array(readFileSync(join(ROOT, 'docs', 'fixtures', 'import', name)));
-const utf8 = (s: string): Uint8Array => new TextEncoder().encode(s);
-const doc = (lists: unknown, extra: Record<string, unknown> = {}): string =>
-  JSON.stringify({ format: 'daggerheart-loot/lists', version: 1, lists, ...extra });
-
-async function opened(options: FakeCloudOptions = {}) {
-  const cloud = fakeCloud(SEED, 'gm1', options);
-  const view = render(App, {
-    env: fakeEnv({
-      router: memoryRouter('#/lists'),
-      data: fakeData(LOOT),
-      dialog: fakeDialog(),
-      cloud
-    })
-  });
-  await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
-  return { ...view, cloud };
-}
-
-/* The input is `hidden`; its files are set as the browser's picker would. */
-function choose(container: HTMLElement, bytes: Uint8Array | File, name = 'file.json'): File {
-  const input = container.querySelector<HTMLInputElement>('input[type="file"]');
-  if (!input) throw new Error('no file input');
-  const file = bytes instanceof File ? bytes : new File([new Uint8Array(bytes)], name);
-  Object.defineProperty(input, 'files', { value: [file], configurable: true });
-  void fireEvent.change(input);
-  return file;
-}
-
-const alertText = async (): Promise<string> =>
-  (await screen.findByRole('alert', {}, { timeout: 3000 })).textContent.trim();
-const importButton = (n: number): Promise<HTMLElement> =>
-  screen.findByRole('button', { name: `Импортировать (${String(n)})` });
-const cardNames = (c: HTMLElement): string[] =>
-  [...c.querySelectorAll('.listcard-top b')].map((b) => b.textContent);
-const lineTexts = (el: Element): string[] =>
-  [...el.querySelectorAll('li')].map((li) => li.textContent.replace(/\s+/g, ' ').trim());
 
 describe('the import field', () => {
   it('opens under the name row with the pick button, the hint and its two links', async () => {
@@ -533,28 +504,6 @@ describe('own items in a lists file', () => {
       ['official', true],
       ...file.items.map(() => ['homebrew', true])
     ]);
-  });
-});
-
-describe('the report past 20 lists', () => {
-  it('draws 20 list blocks, then «и ещё N списков», for 1000 lists with skips', async () => {
-    const { container } = await opened();
-    /* The bound times the read and the render of 1000 lists, not the single pass over the
-       skips: a per-list scan of these 2000 skips also stays under it. */
-    const lists = Array.from({ length: 1000 }, (_, i) => ({
-      name: 'Список ' + String(i),
-      entries: [{ id: 'ci1' }, { id: 'ci1' }, { id: 'zzz' + String(i) }]
-    }));
-    const started = performance.now();
-    choose(container, utf8(doc(lists)));
-    await importButton(1000);
-    expect(container.querySelectorAll('.rep-list')).toHaveLength(20);
-    const more = screen.getByRole('button', { name: 'и ещё 980 списков' });
-    expect(performance.now() - started).toBeLessThan(3000);
-    await userEvent.click(more);
-    expect(container.querySelectorAll('.rep-list')).toHaveLength(1000);
-    await userEvent.click(screen.getByRole('button', { name: 'свернуть' }));
-    expect(container.querySelectorAll('.rep-list')).toHaveLength(20);
   });
 });
 

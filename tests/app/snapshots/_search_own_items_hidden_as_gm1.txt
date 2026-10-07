@@ -56,7 +56,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
 ## ru :: controls
 10Топор-Пила ЛесорубаЭтот массивный гибридный инструмент рубит д... [namelen=227 namehash=501f18ee]
 116Неугомонное ВозмездиеРанг 3 · Физическое · Сила · Вплотную · ... [namelen=454 namehash=414955ac]
-2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=396 namehash=212c8af2]
+2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=417 namehash=6a1e358a]
 49Стопорный КлючПри успешном Броске Искусности вставьте этот инс... [namelen=355 namehash=691d5d78]
 4Топор Лесного СтражаЭтот внешне обычный топор несёт в себе благ... [namelen=228 namehash=932d8976]
 84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
@@ -161,7 +161,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
 ## en :: controls
 10Felling Axe-SawThis massive hybrid tool cuts through wood, roo... [namelen=230 namehash=a621d03c]
 116Restless VengeanceTier 3 · Physical · Strength · Melee · d10+... [namelen=462 namehash=3dedac99]
-2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=365 namehash=c4dcd301]
+2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=374 namehash=8152378c]
 49Jamming SpannerMake a successful Finesse Roll to place this to... [namelen=335 namehash=b33f324c]
 4Forestwarden's AxeThis seemingly ordinary axe carries the bless... [namelen=196 namehash=5664cde5]
 84Black Corruption AxeTier 4 · Physical · Presence · Very Close ... [namelen=452 namehash=18cf1bda]

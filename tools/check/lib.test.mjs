@@ -19,10 +19,12 @@ import {
   VITEST,
   addPass,
   cacheMode,
+  fastPlan,
   findPass,
   recordPath,
   rowPath,
   runStages,
+  selectStages,
   selects,
   stageKey,
   stamp
@@ -403,6 +405,118 @@ describe('the stage table', () => {
       pkg.scripts.check,
       'node .claude/hooks/gate-credit.mjs begin check && node --test --test-reporter=dot tools/check/lib.test.mjs && node tools/check/run.mjs && node .claude/hooks/gate-credit.mjs arm check'
     );
+  });
+
+  it('runs each half between its own gate-credit steps', () => {
+    for (const n of [1, 2]) {
+      assert.equal(
+        pkg.scripts[`check:${n}`],
+        `node .claude/hooks/gate-credit.mjs begin check-${n} && node --test --test-reporter=dot tools/check/lib.test.mjs && node tools/check/run.mjs --half=${n} && node .claude/hooks/gate-credit.mjs arm check-${n}`
+      );
+    }
+    assert.equal(pkg.scripts['check:fast'], 'node tools/check/fast.mjs');
+  });
+
+  it('puts vitest alone in half 2 and every other stage in half 1', () => {
+    for (const s of STAGES) assert.ok(s.half === 1 || s.half === 2, s.name);
+    assert.deepEqual(
+      STAGES.filter((s) => s.half === 2).map((s) => s.name),
+      ['vitest']
+    );
+    assert.deepEqual(
+      [...selectStages(STAGES, { half: 1 }), ...selectStages(STAGES, { half: 2 })],
+      STAGES
+    );
+  });
+});
+
+describe('selectStages', () => {
+  const table = [
+    { name: 'a', half: 1 },
+    { name: 'b', half: 1 },
+    { name: 'c', half: 2 }
+  ];
+
+  it('returns one half in table order', () => {
+    assert.deepEqual(
+      selectStages(table, { half: 1 }).map((s) => s.name),
+      ['a', 'b']
+    );
+    assert.deepEqual(
+      selectStages(table, { half: 2 }).map((s) => s.name),
+      ['c']
+    );
+  });
+
+  it('returns the named stages in table order, not argument order', () => {
+    assert.deepEqual(
+      selectStages(table, { only: ['c', 'a'] }).map((s) => s.name),
+      ['a', 'c']
+    );
+  });
+
+  it('returns every stage with no filter', () => {
+    assert.deepEqual(selectStages(table, {}), table);
+    assert.deepEqual(selectStages(table), table);
+  });
+
+  it('throws on both filters, another half and an unknown name', () => {
+    assert.throws(() => selectStages(table, { half: 1, only: ['a'] }), /not both/);
+    assert.throws(() => selectStages(table, { half: 3 }), /^Error: check: no half 3/);
+    assert.throws(
+      () => selectStages(table, { only: ['x'] }),
+      /^Error: check: no stage named x$/
+    );
+  });
+
+  it('names stages that the real table has', () => {
+    assert.deepEqual(
+      selectStages(STAGES, { only: ['typecheck', 'format', 'test:golden'] }).map((s) => s.name),
+      ['format', 'typecheck', 'test:golden']
+    );
+  });
+});
+
+describe('fastPlan', () => {
+  it('runs nothing for no path and for a document', () => {
+    for (const paths of [[], ['docs/x.md']]) {
+      assert.deepEqual(fastPlan(paths), { related: [], sources: [], budget: false });
+    }
+  });
+
+  it('runs the tests of a test file with no coverage list and no budget', () => {
+    assert.deepEqual(fastPlan(['app/src/lib/x.test.ts']), {
+      related: ['app/src/lib/x.test.ts'],
+      sources: [],
+      budget: false
+    });
+  });
+
+  it('measures a component relative to app/ and builds the bundle', () => {
+    assert.deepEqual(fastPlan(['app/src/components/X.svelte', 'app/src/lib/y.ts']), {
+      related: ['app/src/components/X.svelte', 'app/src/lib/y.ts'],
+      sources: ['src/components/X.svelte', 'src/lib/y.ts'],
+      budget: true
+    });
+  });
+
+  it('builds no bundle for a test helper', () => {
+    assert.equal(fastPlan(['app/src/test/x.ts']).budget, false);
+  });
+
+  it('builds the bundle for a build input outside app/ and runs no tests for it', () => {
+    for (const p of [
+      'vite.config.mts',
+      'package.json',
+      'package-lock.json',
+      'tools/bundle-budget.mjs'
+    ]) {
+      assert.deepEqual(fastPlan([p]), { related: [], sources: [], budget: true }, p);
+    }
+  });
+
+  it('runs the tests of the vitest setup file', () => {
+    assert.deepEqual(fastPlan(['app/vitest-setup.ts']).related, ['app/vitest-setup.ts']);
   });
 });
 

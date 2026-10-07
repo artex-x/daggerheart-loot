@@ -248,8 +248,9 @@ export function tokensOf(segment) {
 }
 
 /** `npm run check` and nothing else: `check:built` never runs the suite
- * and `check:fast` skips half of it, so neither may satisfy the gate, and
- * neither is the backgrounded run bash-guard blocks. The optional leading
+ * and the pre-check `check:fast` arms nothing. The two halves `check:1`
+ * and `check:2` (CHECK_HALF_INVOCATION_RE) arm the gate only together,
+ * through gate-credit.mjs. The optional leading
  * `rtk ` is tolerated because RTK's own PreToolUse hook rewrites a bare
  * `npm run check` into `rtk npm run check` before any of these hooks ever
  * see it (verified live: a probe on `check-observer.mjs` logged `cat
@@ -262,6 +263,11 @@ export function tokensOf(segment) {
  * both stdout and stderr, so the non-zero test below still refuses to
  * arm on a real failure. */
 export const CHECK_INVOCATION_RE = /^(?:rtk\s+)?npm\s+run\s+(?:-s\s+)?check(?![:\w-])/;
+
+/** `npm run check:1` or `npm run check:2`, one half of the check; the
+ * group is the half. Same prefix rules as CHECK_INVOCATION_RE. */
+export const CHECK_HALF_INVOCATION_RE =
+  /^(?:rtk\s+)?npm\s+run\s+(?:-s\s+)?check:([12])(?![:\w-])/;
 
 /** `npm run check:db` and nothing else, the database suite that arms the
  * second commit gate (supabase/ and tests/db/). Same prefix rules as

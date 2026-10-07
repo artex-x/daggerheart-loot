@@ -144,7 +144,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 27Посох Чёрной ДырыРанг 4 · Магическое · Знание · Далеко · d20+7... [namelen=666 namehash=f24f876c]
 29Святой КлинокРанг 3 · Физическое · Сила · Вплотную · d10+10 фи... [namelen=534 namehash=ea387960]
 2Клинок ЖивущихРанг 3 · Магическое · Сила · Вплотную · d10+11 ма... [namelen=216 namehash=cf0225f3]
-2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=396 namehash=212c8af2]
+2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=417 namehash=6a1e358a]
 3
 30Крушитель МонолитовРанг 2 · Физическое · Сила · Вплотную · d8+... [namelen=450 namehash=f5d94d86]
 30ТенерубРанг 4 · Физическое · Искусность · Вплотную · d10+9 физ... [namelen=571 namehash=43bbb55f]
@@ -1101,7 +1101,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 26Deadwood SlayerTier 1 · Physical · Instinct · Melee · d8+1 phy... [namelen=667 namehash=01aa9ee2]
 27Black Hole StaffTier 4 · Magic · Knowledge · Far · d20+7 mag ·... [namelen=598 namehash=ea194387]
 29Saintly BladeTier 3 · Physical · Strength · Melee · d10+10 phy... [namelen=491 namehash=8f87f457]
-2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=365 namehash=c4dcd301]
+2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=374 namehash=8152378c]
 2Blade of the LivingTier 3 · Magic · Strength · Melee · d10+11 m... [namelen=223 namehash=1352e44d]
 3
 30Monolith SmasherTier 2 · Physical · Strength · Melee · d8+5 ph... [namelen=402 namehash=01fb6537]

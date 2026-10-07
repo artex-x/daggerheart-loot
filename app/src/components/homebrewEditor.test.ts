@@ -4,27 +4,32 @@
    docs/specs/FEATURES.md, "Homebrew". */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import HomebrewEditor from './HomebrewEditor.svelte';
 import { dict } from '../lib/dict.js';
 import { canonJson, type HomebrewContent } from '../lib/homebrew.js';
-import type { Loot } from '../lib/data.js';
-import { COALESCE_MS } from '../lib/live.js';
-import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
+import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import {
-  fakeData,
-  fakeDialog,
-  fakeEnv,
-  fakePage,
-  memoryRouter,
-  memoryStorage
-} from '../ports/index.js';
-import { AppState } from '../state/app.svelte.js';
+import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import {
+  ALDER,
+  AXE,
+  editor,
+  flush,
+  group,
+  helpButton,
+  openRel,
+  picker,
+  press,
+  relFold,
+  relSummary,
+  save,
+  seeded,
+  stored,
+  toastSays
+} from '../test/homebrewEditor.js';
 
 afterEach(cleanup);
 
@@ -33,82 +38,14 @@ afterEach(cleanup);
 Element.prototype.scrollIntoView = vi.fn();
 
 const t = dict('ru');
-const AXE = 'hb_emberaxeaaaaaaaa';
 const RING = 'hb_engravedringaaaa';
 const CAP = 'hb_whispercapaaaaaa';
 const POTION = 'hb_smithpotionaaaaa';
-const ALDER = uuid(501);
 
-const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
-
-const REAL = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
-
-async function editor(
-  key: string | null,
-  opts: {
-    as?: 'gm1' | 'gm2' | null;
-    lang?: 'ru' | 'en';
-    answer?: boolean;
-    fake?: FakeCloudOptions;
-    cloud?: FakeCloud;
-    /* The real catalogue, for the relations to catalog records. */
-    real?: boolean;
-  } = {}
-) {
-  const as = opts.as === undefined ? 'gm1' : opts.as;
-  const cloud =
-    opts.cloud ??
-    (as === null ? fakeCloud(SEED, undefined, opts.fake) : fakeCloud(SEED, as, opts.fake));
-  const hash = '#/homebrew/' + (key ?? 'new');
-  const router = memoryRouter(hash);
-  const dialog = fakeDialog(opts.answer ?? true);
-  const page = fakePage();
-  const storage = memoryStorage(opts.lang ? { 'dhloot.lang.v1': opts.lang } : {});
-  const data = opts.real ? { data: fakeData(REAL) } : {};
-  const app = new AppState(fakeEnv({ cloud, router, dialog, page, storage, ...data }));
-  app.start();
-  await flush();
-  /* The owner feed's join asks for one coalesced read; it lands before a test acts as
-     another device. */
-  await new Promise((r) => setTimeout(r, COALESCE_MS + 50));
-  if (opts.lang) app.setLang(opts.lang);
-  const store = app.homebrew;
-  if (!store) throw new Error('The editor needs a configured sign-in. Pass a cloud port.');
-  const view = render(HomebrewEditor, { app, store, key });
-  await flush();
-  current = app;
-  return { ...view, app, cloud, router, dialog, page, store };
-}
-
-/* The toast is the frame's; a render of the editor alone has no frame, so a test reads the
-   toast from the state. */
-let current: AppState | null = null;
-const toastSays = async (want: string | RegExp): Promise<void> => {
-  await waitFor(() => {
-    const msg = current?.toast?.msg ?? '';
-    if (typeof want === 'string') expect(msg).toBe(want);
-    else expect(msg).toMatch(want);
-  });
-};
-
-const group = (name: string): HTMLElement => screen.getByRole('group', { name });
-const press = async (groupName: string, option: string): Promise<void> => {
-  await userEvent.click(within(group(groupName)).getByRole('button', { name: option }));
-};
-const save = (): Promise<void> => userEvent.click(screen.getByRole('button', { name: t.save }));
 /* The main damage pair by its own labels; the second set's carry its prefix. */
 const dieBox = (): HTMLElement => screen.getByRole('combobox', { name: t.hbDmgDie });
 const bonusBox = (): HTMLElement => screen.getByRole('textbox', { name: t.hbDmgBonus });
 const altButton = (): HTMLElement => screen.getByRole('button', { name: t.hbAlt });
-const helpButton = (label: string): HTMLElement =>
-  screen.getByRole('button', { name: t.fieldHelp.replace('%s', label) });
-const stored = async (cloud: FakeCloud, key: string): Promise<HomebrewContent | undefined> => {
-  const r = await cloud.homebrew.load();
-  return r.ok ? r.items.find((i) => i.key === key)?.content : undefined;
-};
-
 describe('the form', () => {
   it('draws a new loot item: the legend, the marks, the default source and a preview', async () => {
     const { container } = await editor(null);
@@ -910,38 +847,6 @@ describe('the tier', () => {
 });
 
 describe('the «?» of a field', () => {
-  const HELP: [string, string, string][] = [
-    [t.hbSource, 'hb-book-help', t.hbSourceHelp],
-    [t.tier, 'hb-eqtier-help', t.hbTierHelp],
-    [t.hbDmg, 'hb-dmg-help', t.hbDmgHelp],
-    [t.hbAlt, 'hb-alt-help', t.hbAltHint],
-    [t.hbLine, 'hb-line-help', t.hbLineHelp],
-    [t.craftInto, 'hb-craft-help', t.hbCraftIntoHelp],
-    [t.craftFrom, 'hb-craft-from-help', t.hbCraftFromHelp],
-    [t.setLabel, 'hb-set-help', t.hbSetHelp],
-    [t.hbRefs, 'hb-refs-help', t.hbRefsHelp]
-  ];
-
-  it('names its field, starts closed and shows its hint under the label on a press', async () => {
-    const { container } = await editor(AXE);
-    await openRel();
-    for (const [label, id, text] of HELP) {
-      const button = helpButton(label);
-      const hint = document.getElementById(id);
-      expect(button).toHaveAttribute('aria-expanded', 'false');
-      expect(button).toHaveAttribute('aria-controls', id);
-      expect(hint).toHaveTextContent(text);
-      expect(hint).not.toBeVisible();
-    }
-    await expectNoA11yViolations(container);
-    for (const [label, id] of HELP) {
-      await userEvent.click(helpButton(label));
-      expect(helpButton(label)).toHaveAttribute('aria-expanded', 'true');
-      expect(document.getElementById(id)).toBeVisible();
-    }
-    await expectNoA11yViolations(container);
-  });
-
   it('toggles with Enter and Space', async () => {
     await editor(null);
     const button = helpButton(t.hbSource);
@@ -990,26 +895,6 @@ describe('«Добавить в список» in the preview', () => {
   });
 });
 
-/* A fake cloud whose item `key` holds `patch` over its seeded content. */
-async function seeded(patches: Record<string, Partial<HomebrewContent>>): Promise<FakeCloud> {
-  const cloud = fakeCloud(SEED, 'gm1');
-  const r = await cloud.homebrew.load();
-  for (const [key, patch] of Object.entries(patches)) {
-    const row = r.ok ? r.items.find((i) => i.key === key) : undefined;
-    if (!row) throw new Error(`The seed has no item ${key}. Restore it in fake-cloud-seed.ts.`);
-    const content: HomebrewContent = { ...row.content, ...patch };
-    const w = await cloud.homebrew.updateItem(row.id, { content, book_id: row.book_id }, null);
-    if (!w.ok) throw new Error(`The fake refused ${key}: ${w.error}. Fix the test patch.`);
-  }
-  return cloud;
-}
-
-const relSummary = (): HTMLElement => screen.getByText(/^Связи/, { selector: 'summary' });
-const relFold = (): HTMLDetailsElement => relSummary().closest('details') as HTMLDetailsElement;
-const openRel = async (): Promise<void> => {
-  if (!relFold().open) await userEvent.click(relSummary());
-};
-const picker = (name: string): HTMLElement => screen.getByRole('combobox', { name });
 const preview = (c: HTMLElement): HTMLElement => c.querySelector('.preview') as HTMLElement;
 const setOptions = (): string[] =>
   [...screen.getByLabelText<HTMLSelectElement>(t.setLabel).options].map((o) => o.text);
@@ -1307,60 +1192,6 @@ describe('the fold «Связи»', () => {
       expect(screen.getByLabelText(/^Название карты/)).toHaveFocus();
     });
     expect((await stored(cloud, RING))?.ru).toBe('Кольцо с гравировкой');
-  });
-
-  it('picks and removes in every picker, picks a set, and cancels the inline forms', async () => {
-    const cloud = await seeded({});
-    await cloud.homebrew.createCard({
-      id: uuid(7050),
-      key: 'hb_forgerulecardaaa',
-      kind: 'ref',
-      book_id: ALDER,
-      content: { ru: 'Клеймо кузни', rusub: 'Черта' }
-    });
-    const { container } = await editor(AXE, { cloud, real: true });
-    await openRel();
-    await press(t.hbLine, t.hbLineIn);
-    await userEvent.type(picker(t.hbLinePick), 'Палаш');
-    await userEvent.keyboard('{Enter}');
-    await userEvent.click(screen.getByRole('button', { name: 'Убрать: Палаш' }));
-    expect(picker(t.hbLinePick)).toHaveFocus();
-    await press(t.hbLine, t.hbLineUnique);
-    for (const [label, query, name] of [
-      [t.craftInto, 'Первоклассный Спальный', 'Первоклассный Спальный Мешок'],
-      [t.craftFrom, 'Пронзительная', 'Пронзительная Свирель']
-    ] as const) {
-      await userEvent.type(picker(label), query);
-      await userEvent.click(screen.getByRole('option', { name: new RegExp('^' + name) }));
-      await userEvent.click(screen.getByRole('button', { name: 'Убрать: ' + name }));
-    }
-    await userEvent.type(picker(t.hbRefs), 'клеймо');
-    expect(screen.getByRole('option', { name: /^Клеймо кузни/ })).toBeInTheDocument();
-    expect(screen.getByText('Черта · Мастерская Ольхи (HB)')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('option', { name: /^Клеймо Ольхи/ }));
-    await userEvent.type(picker(t.hbRefs), 'медл');
-    await userEvent.keyboard('{Enter}');
-    await userEvent.click(screen.getByRole('button', { name: 'Убрать: Медленный' }));
-    await userEvent.selectOptions(screen.getByLabelText(t.setLabel), 'ember-spark');
-    await userEvent.selectOptions(screen.getByLabelText(t.setLabel), '__new');
-    await userEvent.click(
-      within(screen.getByRole('group', { name: t.hbNewSet })).getByRole('button', {
-        name: t.cancel
-      })
-    );
-    await waitFor(() => {
-      expect(screen.getByLabelText(t.setLabel)).toHaveFocus();
-    });
-    expect(screen.getByLabelText(t.setLabel)).toHaveValue('ember-spark');
-    await userEvent.click(screen.getByRole('button', { name: t.hbNewCard }));
-    await userEvent.keyboard('{Escape}');
-    expect(screen.queryByRole('group', { name: t.hbNewCard })).toBeNull();
-    await expectNoA11yViolations(container);
-    await save();
-    await toastSays(/^Сохранено/);
-    const c = await stored(cloud, AXE);
-    expect([c?.craft, c?.craft_from, c?.eq?.line]).toEqual([undefined, undefined, undefined]);
-    expect([c?.set, c?.refs]).toEqual(['ember-spark', ['hb_alderrulecardaaa']]);
   });
 
   it('asks the delete confirm with the items that name the item', async () => {

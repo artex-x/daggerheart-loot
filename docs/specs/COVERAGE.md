@@ -17,7 +17,7 @@ Four layers (owner, 2026-09-24):
 
 | Layer | Name | Runs | Covers |
 |---|---|---|---|
-| 1 | Unit and component | vitest with fakes, `npm run test` (inside `npm run check`) | pure logic, ports against fake clients, components with axe |
+| 1 | Unit and component | vitest with fakes, `npm run test` (inside `npm run check`; its half `npm run check:2`); a timing bound runs in the `timed` project (`*.timed.test.ts`), one file at a time after the `unit` files | pure logic, ports against fake clients, components with axe |
 | 2 | Built app in a browser | `tests/app/` goldens, states, sweep, print, contracts, typo, hues over HTTP against `dist-test/`, the build with the deterministic fake cloud | every screen, signed out and signed in, offline and in parallel |
 | 3 | Database | `tests/db/`, `npm run check:db`, local Supabase in Docker (PowerShell tool on the owner's Windows host) | RLS, SQL functions, migrations and their reversals |
 | 4 | Hosted E2E | `tests/e2e/`, `npm run e2e`, against the test project `rdjxcjkhsklhprmzxajq` | real Auth, network and RLS end to end; the fake-vs-real agreement check |

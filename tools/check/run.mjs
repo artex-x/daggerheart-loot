@@ -1,4 +1,5 @@
 // CLI of the `npm run check` stages: `node tools/check/run.mjs` runs them,
+// `--half=1|2` one half of them, `--only=a,b` the named ones, and
 // `--forget` deletes the stage store and the tool caches and exits. The
 // logic is lib.mjs; this file is the real git, store, clock and spawn.
 // .claude/README.md, "Run a long check", "Stage cache".
@@ -7,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { indexRows } from '../../.claude/hooks/tree-key.mjs';
-import { STAGES, cacheMode, recordPath, runStages } from './lib.mjs';
+import { STAGES, cacheMode, recordPath, runStages, selectStages } from './lib.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const CACHE = path.join(ROOT, 'node_modules', '.cache');
@@ -68,14 +69,38 @@ function spawn(command) {
   return r.status;
 }
 
+/** Returns the `selectStages` filter of `--half=1|2` and `--only=a,b`. */
+function parseFilter(argv) {
+  const filter = {};
+  for (const arg of argv) {
+    if (arg.startsWith('--half=')) {
+      const value = arg.slice('--half='.length);
+      if (!/^\d+$/.test(value)) throw new Error(`check: no half ${value}; use 1 or 2`);
+      filter.half = Number(value);
+    } else if (arg.startsWith('--only=')) {
+      filter.only = arg.slice('--only='.length).split(',').filter(Boolean);
+    } else {
+      throw new Error(`check: unknown argument ${arg}`);
+    }
+  }
+  return filter;
+}
+
 function main(argv) {
   if (argv.includes('--forget')) {
     forget();
     console.log('check: the stage store and the tool caches are deleted');
     return 0;
   }
+  let stages;
+  try {
+    stages = selectStages(STAGES, parseFilter(argv));
+  } catch (error) {
+    console.log(error.message);
+    return 2;
+  }
   if (cacheMode(process.env) !== 'on') forget();
-  const result = runStages(STAGES, {
+  const result = runStages(stages, {
     snapshot,
     readRecord,
     writeRecord,

@@ -5,13 +5,15 @@
 // See .claude/README.md, "Hooks", for the commit gate's rationale.
 
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { checkoutRoot, stateDir, isExempt } from './lib.mjs';
 
+/** One index copy per process: two processes that share one copy can read
+ * each other's half-written index (see indexRows). */
 function checkIndexPath(cwd) {
-  return path.join(stateDir(cwd), '.check-index');
+  return path.join(stateDir(cwd), `.check-index-${process.pid}`);
 }
 
 function cacheFilePath(name, cwd) {
@@ -74,8 +76,9 @@ export function indexRows(cwd, copyPath) {
  * always means "cannot tell", and callers treat that as allow.
  */
 export function treeKey(cwd) {
+  const copy = checkIndexPath(cwd);
   try {
-    const lines = indexRows(cwd, checkIndexPath(cwd));
+    const lines = indexRows(cwd, copy);
     if (lines === null) return null;
     // Drop every isExempt() row before hashing: the commit gate in
     // bash-guard.mjs only requires a passing check for covered paths, so a
@@ -89,13 +92,20 @@ export function treeKey(cwd) {
     return createHash('sha256').update(covered.join('\n')).digest('hex').slice(0, 16);
   } catch {
     return null;
+  } finally {
+    try {
+      rmSync(copy, { force: true });
+    } catch {
+      // a copy left behind is gitignored (`.check-index-*`)
+    }
   }
 }
 
 /** { key, at, command, by } of the last passing run recorded in the named
  * cache file, or null if there is none or the file is unreadable or
- * corrupt. `by` is `observer` (check-observer.mjs saw the output) or `exit`
- * (gate-credit.mjs, after the check's own exit 0). */
+ * corrupt. `by` is `observer` (check-observer.mjs saw the output), `exit`
+ * (gate-credit.mjs, after the check's own exit 0) or `halves`
+ * (gate-credit.mjs, when `check:1` and `check:2` passed on one tree key). */
 export function readCache(name = '.check-cache.json', cwd) {
   try {
     const raw = readFileSync(cacheFilePath(name, cwd), 'utf8');

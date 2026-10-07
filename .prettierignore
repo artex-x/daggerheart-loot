@@ -33,6 +33,11 @@ docs/fixtures/
 .claude/.check-pending.json
 .claude/.check-db-pending.json
 .claude/.check-index
+.claude/.check-index-*
+.claude/.check-1-pending.json
+.claude/.check-2-pending.json
+.claude/.check-1-pass.json
+.claude/.check-2-pass.json
 .claude/.hook-state.json
 
 # Same class: the impeccable skill's hook and CLI rewrite these four during

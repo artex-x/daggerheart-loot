@@ -64,6 +64,18 @@ async function newListInputBox(page) {
   });
 }
 
+/** A screenshot clip in document coordinates: `page.screenshot({ clip })`
+ *  captures beyond the viewport, so a viewport rect `r` is shifted by the
+ *  page scroll `r.sx`, `r.sy` that the same `evaluate` read. */
+function pageClip(r) {
+  return {
+    x: Math.round(r.x + r.sx),
+    y: Math.round(r.y + r.sy),
+    width: Math.round(r.width),
+    height: Math.round(r.height)
+  };
+}
+
 /** Whether box `a` lies entirely inside box `b` - `.modal-card`'s own
  *  bounds, for case 3. */
 function inside(a, b) {
@@ -1024,14 +1036,9 @@ async function dragReorder() {
        object built from them, not the `DOMRect` itself. */
     const rect = await notePage.evaluate((idx) => {
       const r = document.querySelectorAll('.lrow')[idx].getBoundingClientRect();
-      return { x: r.x, bottom: r.bottom };
+      return { x: r.x, y: r.bottom - 3, width: 200, height: 3, sx: scrollX, sy: scrollY };
     }, i);
-    const clip = {
-      x: Math.round(rect.x),
-      y: Math.round(rect.bottom - 3),
-      width: 200,
-      height: 3
-    };
+    const clip = pageClip(rect);
     const png = PNG.sync.read(await notePage.screenshot({ type: 'png', clip }));
     let n = 0;
     for (let p = 0; p < png.width * png.height; p++) {
@@ -1985,10 +1992,11 @@ async function noteClearTargetYieldsToTextarea() {
 
 /** 31. The card image's focus ring is drawn, not clipped by the card, at
  *  both card sizes: a pixel read of a 3px band inside each edge of the
- *  focused `.card-media`, against the ring's own colour. */
+ *  focused `.card-media`, against the ring's own colour. The 600 px height
+ *  scrolls the page on every host, so the clip's scroll offset is tested. */
 async function cardMediaRingVisible() {
   async function ringAt(route, selector, label) {
-    const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+    const { ctx, page, d } = await fresh({ width: 1180, height: 600 });
     await d.open(route);
     let reached = false;
     for (let i = 0; i < 80 && !reached; i++) {
@@ -2000,8 +2008,10 @@ async function cardMediaRingVisible() {
     }
     ok(reached, '31 (card image focus ring, ' + label + '): Tab never reached ' + selector);
     if (reached) {
+      /* `end`, not `center`: a 420 px card centred in 600 px starts under the
+         sticky top bar (about 106 px), which hides the ring's top edge. */
       await page.evaluate(
-        (sel) => document.querySelector(sel).scrollIntoView({ block: 'center' }),
+        (sel) => document.querySelector(sel).scrollIntoView({ block: 'end' }),
         selector
       );
       const box = await page.evaluate((sel) => {
@@ -2011,17 +2021,15 @@ async function cardMediaRingVisible() {
         return {
           x: r.x,
           y: r.y,
-          w: r.width,
-          h: r.height,
+          width: r.width,
+          height: r.height,
+          sx: window.scrollX,
+          sy: window.scrollY,
           rgb: m ? m.slice(1, 4).map(Number) : null
         };
       }, selector);
-      const clip = {
-        x: Math.round(box.x),
-        y: Math.round(box.y),
-        width: Math.round(box.w),
-        height: Math.round(box.h)
-      };
+      const clip = pageClip(box);
+      console.log('31 (card image focus ring, ' + label + '): scrollY ' + box.sy);
       ok(!!box.rgb, '31 (card image focus ring, ' + label + '): no outline colour to match');
       if (!box.rgb) {
         await ctx.close();
@@ -2051,7 +2059,12 @@ async function cardMediaRingVisible() {
             ' edge shows ' +
             n +
             '/' +
-            len
+            len +
+            ' (rect ' +
+            JSON.stringify(clip) +
+            ', scrollY ' +
+            box.sy +
+            ')'
         );
       }
     }

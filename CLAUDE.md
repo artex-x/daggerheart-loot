@@ -116,7 +116,7 @@ Before every commit:
 ```text
 npm run check
 ```
-Agents: one foreground call, `rtk npm run check`, Bash timeout 600000 - see `.claude/README.md`, "Run a long check".
+Agents: two foreground calls, `rtk npm run check:1` then `rtk npm run check:2`, Bash timeout 600000 each; the gate arms when both pass on one tree. Before them, `rtk npm run check:fast` - see `.claude/README.md`, "Run a long check".
 
 If a change alters what a screen draws, also run `npm run check:built`; a change under
 `supabase/` or `tests/db/` also runs `npm run check:db` (on Windows through the PowerShell tool), which the commit gate requires.

@@ -1503,6 +1503,34 @@ ok(
   ),
   '.claude/.gitignore must keep the line `.check-pending.json`: an unignored pending file changes the tree key it records'
 );
+/* The two halves (docs/decisions/2026-10-07-the-commit-gate-arms-when-both-halves-of-the.md):
+   each half records its pass by its own exit, so each chain starts with
+   `begin` and ends with `arm`, and its state files stay out of the tree key. */
+const scripts = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).scripts;
+for (const n of [1, 2]) {
+  const half = scripts[`check:${n}`] || '';
+  ok(
+    half.startsWith(`node .claude/hooks/gate-credit.mjs begin check-${n} && `) &&
+      half.endsWith(` && node .claude/hooks/gate-credit.mjs arm check-${n}`),
+    `package.json scripts.check:${n} must start with \`gate-credit.mjs begin check-${n}\` and end with \`gate-credit.mjs arm check-${n}\`: the half records its pass by its own exit`
+  );
+}
+{
+  const ignore = fs.readFileSync(path.join(ROOT, '.claude', '.gitignore'), 'utf8');
+  const missing = [
+    '.check-1-pending.json',
+    '.check-2-pending.json',
+    '.check-1-pass.json',
+    '.check-2-pass.json',
+    '.check-index-*'
+  ].filter((line) => !new RegExp(`^${line.replace(/[.*]/g, '\\$&')}\\r?$`, 'm').test(ignore));
+  ok(
+    missing.length === 0,
+    '.claude/.gitignore must keep the gate state lines ' +
+      missing.join(', ') +
+      ': an unignored gate file changes the tree key it records'
+  );
+}
 
 /* Check caches (docs/decisions/2026-10-07-a-local-check-skips-a-stage-whose-inputs.md):
    prettier and the untyped ESLint half cache per file under node_modules/.cache/;

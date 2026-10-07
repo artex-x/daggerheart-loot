@@ -37,6 +37,7 @@ import {
   migrationLockedMessage,
   MIGRATIONS_DIR,
   CHECK_INVOCATION_RE,
+  CHECK_HALF_INVOCATION_RE,
   parseReviewHead
 } from './lib.mjs';
 import { treeKey, readCache } from './tree-key.mjs';
@@ -103,7 +104,7 @@ const MSG = {
   gitleaksFailed: (what) =>
     `gitleaks did not finish (${what}); this commit was not scanned for secrets.`,
   backgroundCheck:
-    "Blocked: a subagent's backgrounded `npm run check` dies with its turn. The check arms the commit gate by its own exit, but the result is lost. Run it in the foreground in this turn, Bash timeout 600000: `rtk npm run check` (no pipe, no `set -o pipefail` - with nothing piping the output away, the exit code the tool reports is already the check's).",
+    "Blocked: a subagent's backgrounded `npm run check` (or one half of it) dies with its turn. The check arms the commit gate by its own exit, but the result is lost. Run it in the foreground in this turn, Bash timeout 600000 for each call: `rtk npm run check:1`, then `rtk npm run check:2` (no pipe, no `set -o pipefail` - with nothing piping the output away, the exit code the tool reports is already the check's).",
   blindCheckPipe:
     "Blocked: piping the check hands the Bash tool the *last* stage's exit status, not the check's, so a failed run comes back indistinguishable from a passing one and you spend a second run learning what you already ran. Drop the pipe: `rtk npm run check`, Bash timeout 600000. `rtk` propagates the child's exit code directly and prints both stdout and stderr (measured: 21,382 characters, under the tool's output cap), and check-observer.mjs reports PASS or FAIL in one line of its own - there is nothing left to recover through a pipe.",
   blindCheckRedirect:
@@ -921,7 +922,7 @@ function evaluateCommitGate(segList, cwd, quotedSegs = segList) {
   return {
     type: 'deny',
     id: 'commit-gate',
-    message: `Blocked: \`npm run check\` has not passed for this working tree (${covered.length} checked files in this commit). Run \`npm run check\`, then commit again - a passing result is remembered until the tree changes.${alsoDb}\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`
+    message: `Blocked: \`npm run check\` has not passed for this working tree (${covered.length} checked files in this commit). Run \`rtk npm run check:1\` and \`rtk npm run check:2\` (or \`npm run check\`), then commit again - a passing result is remembered until the tree changes.${alsoDb}\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`
   };
 }
 
@@ -1646,9 +1647,23 @@ const LONG_CHECKS = [
       `\`${joined}\` takes ${cost}. Set the tool timeout to 600000 and stay in this turn until it prints its final \`check:db: PASS\`, \`check:db: FAIL\` or \`check:db: BUSY\` line (BUSY: another checkout holds the local stack lock, and nothing ran). check-observer.mjs arms the commit gate for supabase/ and tests/db/ from the PASS line, and the suite also arms it by its own exit. Run it in the foreground, with no pipe and no redirect.`
   },
   {
+    re: /^(?:rtk\s+)?npm run check:[12](?![:\w-])/,
+    family: 'check-half',
+    cost: 'check:1 about 250 s with the hook selftest uncached and check:2 (vitest) about 310 s (measured 2026-10-07 on this host)',
+    message: (joined, cost) =>
+      `${longCheckMessage(joined, cost)} The commit gate arms when both halves, \`rtk npm run check:1\` and \`rtk npm run check:2\`, pass on one tree.`
+  },
+  {
     re: /^(?:rtk\s+)?npm run check(?![:\w-])/,
     family: 'check',
-    cost: '396-544 s on this host (measured 2026-09-26/27)'
+    cost: '10-18 min on this host with nothing cached (2026-10-07), past the 600 s cap',
+    message: (joined, cost) =>
+      `\`${joined}\` takes ${cost}. Run \`rtk npm run check:1\`, then \`rtk npm run check:2\`, instead: two foreground calls with the Bash timeout set to 600000 each, and the commit gate arms when both pass on one tree; stay in this turn until each call finishes: a turn that ends with a check still running loses the result. Before them, \`rtk npm run check:fast\` finds the cheap failures and arms nothing.`
+  },
+  {
+    re: /^(?:rtk\s+)?npm run check:fast(?![:\w-])/,
+    family: 'check-fast',
+    cost: '215-310 s on this host (measured 2026-10-07): longer when the changed files reach many tests'
   },
   {
     // No `--shard=` exemption, unlike `golden`/`sweep` below: a run-all
@@ -1694,7 +1709,8 @@ function evaluateBackgroundCheck(segList, toolInput, agentId) {
   for (const segment of segList) {
     const info = segmentInfo(segment);
     if (!info) continue;
-    if (CHECK_INVOCATION_RE.test(info.tokens.join(' '))) {
+    const joined = info.tokens.join(' ');
+    if (CHECK_INVOCATION_RE.test(joined) || CHECK_HALF_INVOCATION_RE.test(joined)) {
       return { id: 'background-check', message: MSG.backgroundCheck };
     }
   }
@@ -1733,7 +1749,7 @@ function evaluateBackgroundCheck(segList, toolInput, agentId) {
 // gate. This fires per pipe stage, not first-segment: the recorded shapes
 // put the check behind `cd ... &&` and after `set -o pipefail;` as often as
 // not.
-const BLIND_CHECK_RE = /^(?:rtk\s+)?npm run check(?::built)?(?![:\w-])/;
+const BLIND_CHECK_RE = /^(?:rtk\s+)?npm run check(?::built|:1|:2)?(?![:\w-])/;
 
 function evaluateBlindCheck(sanitized) {
   // `2>&1` is a stderr merge, not a stdout redirect - the retired canonical
@@ -2011,6 +2027,14 @@ function evaluateRtkPipe(sanitized, rawCommand) {
 
 // ---------- 2f: long-check reminder (allow, not block) ----------
 
+function longCheckMessage(joined, cost) {
+  // joined may already carry a leading `rtk ` (RTK rewrote it, or the
+  // model typed it directly) - strip before re-adding so the
+  // suggestion never doubles up as `rtk rtk npm run check`.
+  const suggested = joined.replace(/^rtk\s+/, '');
+  return `\`${joined}\` takes ${cost} here. Run it as \`rtk ${suggested}\` with the Bash timeout set to 600000 - the default 120000 is shorter than the run, and the tool moves a call that outlives its timeout to the background - and stay in this turn until it finishes: a turn that ends with a check still running loses the result. No pipe and no \`set -o pipefail\` needed: \`rtk\` propagates the child's exit code directly and shows both stdout and stderr, so there is nothing to recover through a pipe. Do not redirect it to a file; the commit gate only trusts output it can see. If the result comes back persisted as too large, grep the file it names rather than running it again.`;
+}
+
 function evaluateLongCheck(segList, sessionId) {
   for (const segment of segList) {
     const info = segmentInfo(segment);
@@ -2021,14 +2045,7 @@ function evaluateLongCheck(segList, sessionId) {
       if (matches) {
         if (!once(sessionId, `long-check:${spec.family}`)) return null;
         if (spec.message) return { type: 'speak', message: spec.message(joined, spec.cost) };
-        // joined may already carry a leading `rtk ` (RTK rewrote it, or the
-        // model typed it directly) - strip before re-adding so the
-        // suggestion never doubles up as `rtk rtk npm run check`.
-        const suggested = joined.replace(/^rtk\s+/, '');
-        return {
-          type: 'speak',
-          message: `\`${joined}\` takes ${spec.cost} here. Run it as \`rtk ${suggested}\` with the Bash timeout set to 600000 - the default 120000 is shorter than the run, and the tool moves a call that outlives its timeout to the background - and stay in this turn until it finishes: a turn that ends with a check still running loses the result. No pipe and no \`set -o pipefail\` needed: \`rtk\` propagates the child's exit code directly and shows both stdout and stderr, so there is nothing to recover through a pipe. Do not redirect it to a file; the commit gate only trusts output it can see. If the result comes back persisted as too large, grep the file it names rather than running it again.`
-        };
+        return { type: 'speak', message: longCheckMessage(joined, spec.cost) };
       }
     }
   }

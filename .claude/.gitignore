@@ -8,3 +8,8 @@ settings.local.json
 .restore-receipts.json.*.tmp
 .check-pending.json
 .check-db-pending.json
+.check-index-*
+.check-1-pending.json
+.check-2-pending.json
+.check-1-pass.json
+.check-2-pass.json
