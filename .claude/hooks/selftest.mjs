@@ -4758,6 +4758,18 @@ function testReviewerGuards() {
         'the worktree report, from the main checkout',
         inWt('issues', 'x', 'reviews', 'B1.md'),
         scratchRoot,
+        'allow'
+      ],
+      [
+        'a worktree plan, from the main checkout',
+        inWt('issues', 'x', 'plan.md'),
+        scratchRoot,
+        'deny'
+      ],
+      [
+        'a worktree source file, from the main checkout',
+        inWt('app', 'src', 'lib', 'x.ts'),
+        scratchRoot,
         'deny'
       ],
       [
