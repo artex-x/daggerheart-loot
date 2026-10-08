@@ -4,3 +4,5 @@
 23c00a6eb7407ab374646d9fdb585e87b10ae06d:issues/47/handoff.md:generic-api-key:445
 cce10cbe216a9e49113eaff2b9ef478263601f50:docs/tg-preview.md:generic-api-key:72
 cce10cbe216a9e49113eaff2b9ef478263601f50:issues/tg-preview-refresh/plan.md:generic-api-key:690
+# A sample share token in a mock, base64 of an example string (owner, 2026-10-08).
+fdbc14d0721972532aa74ba36f51fc4ca270ef27:issues/71/mocks/index.html:generic-api-key:687
